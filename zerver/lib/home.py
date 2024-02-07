@@ -138,7 +138,6 @@ def build_page_params_for_home_page_load(
     narrow: List[NarrowTerm],
     narrow_stream: Optional[Stream],
     narrow_topic_name: Optional[str],
-    first_in_realm: bool,
     needs_tutorial: bool,
 ) -> Tuple[int, Dict[str, object]]:
     """
@@ -207,7 +206,6 @@ def build_page_params_for_home_page_load(
         ## Misc. extra data.
         language_list=get_language_list(),
         needs_tutorial=needs_tutorial,
-        first_in_realm=first_in_realm,
         furthest_read_time=furthest_read_time,
         bot_types=get_bot_types(user_profile),
         two_fa_enabled=two_fa_enabled,

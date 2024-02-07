@@ -18,7 +18,6 @@ from zerver.lib.narrow_helpers import NarrowTerm
 from zerver.lib.request import RequestNotes
 from zerver.lib.streams import access_stream_by_name
 from zerver.lib.subdomains import get_subdomain
-from zerver.lib.user_counts import realm_user_count
 from zerver.models import Realm, RealmUserDefault, Stream, UserProfile
 
 
@@ -215,11 +214,9 @@ def home_real(request: HttpRequest) -> HttpResponse:
     narrow, narrow_stream, narrow_topic_name = detect_narrowed_window(request, user_profile)
 
     if user_profile is not None:
-        first_in_realm = realm_user_count(user_profile.realm) == 1
         needs_tutorial = user_profile.tutorial_status == UserProfile.TUTORIAL_WAITING
 
     else:
-        first_in_realm = False
         # The current tutorial doesn't super make sense for logged-out users.
         needs_tutorial = False
 
@@ -231,7 +228,6 @@ def home_real(request: HttpRequest) -> HttpResponse:
         narrow=narrow,
         narrow_stream=narrow_stream,
         narrow_topic_name=narrow_topic_name,
-        first_in_realm=first_in_realm,
         needs_tutorial=needs_tutorial,
     )
 
