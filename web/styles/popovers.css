@@ -408,6 +408,11 @@ ul {
 
         .group-name {
             font-weight: bold;
+            .zulip-icon {
+                position: relative;
+                top: +3px;
+                margin-right: 5px;
+            }
         }
     }
 
