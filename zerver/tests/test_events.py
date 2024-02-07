@@ -80,7 +80,7 @@ from zerver.actions.realm_settings import (
     do_set_realm_authentication_methods,
     do_set_realm_new_stream_announcements_stream,
     do_set_realm_property,
-    do_set_realm_signup_notifications_stream,
+    do_set_realm_signup_announcements_stream,
     do_set_realm_user_default_setting,
 )
 from zerver.actions.scheduled_messages import (
@@ -2307,23 +2307,23 @@ class NormalActionsTest(BaseAction):
             )
             check_realm_update("events[0]", events[0], "new_stream_announcements_stream_id")
 
-    def test_change_realm_signup_notifications_stream(self) -> None:
+    def test_change_realm_signup_announcements_stream(self) -> None:
         stream = get_stream("Rome", self.user_profile.realm)
 
-        for signup_notifications_stream, signup_notifications_stream_id in (
+        for signup_announcements_stream, signup_announcements_stream_id in (
             (stream, stream.id),
             (None, -1),
         ):
             events = self.verify_action(
                 partial(
-                    do_set_realm_signup_notifications_stream,
+                    do_set_realm_signup_announcements_stream,
                     self.user_profile.realm,
-                    signup_notifications_stream,
-                    signup_notifications_stream_id,
+                    signup_announcements_stream,
+                    signup_announcements_stream_id,
                     acting_user=None,
                 )
             )
-            check_realm_update("events[0]", events[0], "signup_notifications_stream_id")
+            check_realm_update("events[0]", events[0], "signup_announcements_stream_id")
 
     def test_change_is_admin(self) -> None:
         reset_email_visibility_to_everyone_in_zulip_realm()

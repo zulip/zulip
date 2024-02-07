@@ -368,11 +368,11 @@ def fetch_initial_state_data(
         else:
             state["realm_new_stream_announcements_stream_id"] = -1
 
-        signup_notifications_stream = realm.get_signup_notifications_stream()
-        if signup_notifications_stream:
-            state["realm_signup_notifications_stream_id"] = signup_notifications_stream.id
+        signup_announcements_stream = realm.get_signup_announcements_stream()
+        if signup_announcements_stream:
+            state["realm_signup_announcements_stream_id"] = signup_announcements_stream.id
         else:
-            state["realm_signup_notifications_stream_id"] = -1
+            state["realm_signup_announcements_stream_id"] = -1
 
         state["max_stream_name_length"] = Stream.MAX_NAME_LENGTH
         state["max_stream_description_length"] = Stream.MAX_DESCRIPTION_LENGTH

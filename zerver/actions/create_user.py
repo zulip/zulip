@@ -89,14 +89,14 @@ def create_historical_user_messages(
 def send_message_to_signup_notification_stream(
     sender: UserProfile, realm: Realm, message: str
 ) -> None:
-    signup_notifications_stream = realm.get_signup_notifications_stream()
-    if signup_notifications_stream is None:
+    signup_announcements_stream = realm.get_signup_announcements_stream()
+    if signup_announcements_stream is None:
         return
 
     with override_language(realm.default_language):
         topic_name = _("signups")
 
-    internal_send_stream_message(sender, signup_notifications_stream, topic_name, message)
+    internal_send_stream_message(sender, signup_announcements_stream, topic_name, message)
 
 
 def notify_new_user(user_profile: UserProfile) -> None:
@@ -576,9 +576,9 @@ def do_create_user(
         )
 
     if realm_creation:
-        assert realm.signup_notifications_stream is not None
+        assert realm.signup_announcements_stream is not None
         bulk_add_subscriptions(
-            realm, [realm.signup_notifications_stream], [user_profile], acting_user=None
+            realm, [realm.signup_announcements_stream], [user_profile], acting_user=None
         )
 
         from zerver.lib.onboarding import send_initial_realm_messages

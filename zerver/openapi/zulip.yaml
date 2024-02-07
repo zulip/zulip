@@ -4540,7 +4540,7 @@ paths:
                                       description: |
                                         Whether or not this organization is configured to send the standard Zulip
                                         [welcome emails](/help/disable-welcome-emails) to new users joining the organization.
-                                    signup_notifications_stream_id:
+                                    signup_announcements_stream_id:
                                       type: integer
                                       description: |
                                         The ID of the stream to which automated messages announcing
@@ -4552,6 +4552,9 @@ paths:
                                         primarily relevant to clients containing UI for changing it.
 
                                         [new-user-announce]: /help/configure-notification-bot#new-user-announcements
+
+                                        **Changes**: In Zulip 9.0 (feature level 241), renamed
+                                        'signup_notifications_stream_id' to `signup_announcements_stream_id`.
                                     user_group_edit_policy:
                                       type: integer
                                       description: |
@@ -15134,7 +15137,7 @@ paths:
 
                           **Changes**: In Zulip 9.0 (feature level 241), renamed 'realm_notifications_stream_id'
                           to `realm_new_stream_announcements_stream_id`.
-                      realm_signup_notifications_stream_id:
+                      realm_signup_announcements_stream_id:
                         type: integer
                         description: |
                           Present if `realm` is present in `fetch_event_types`.
@@ -15148,6 +15151,9 @@ paths:
                           primarily relevant to clients containing UI for changing it.
 
                           [new-user-announce]: /help/configure-notification-bot#new-user-announcements
+
+                          **Changes**: In Zulip 9.0 (feature level 241), renamed
+                          'realm_signup_notifications_stream_id' to `realm_signup_announcements_stream_id`.
                       realm_user_settings_defaults:
                         type: object
                         additionalProperties: false

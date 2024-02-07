@@ -956,7 +956,7 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
     re_map_foreign_keys(
         data, "zerver_realm", "new_stream_announcements_stream", related_table="stream"
     )
-    re_map_foreign_keys(data, "zerver_realm", "signup_notifications_stream", related_table="stream")
+    re_map_foreign_keys(data, "zerver_realm", "signup_announcements_stream", related_table="stream")
     if "zerver_usergroup" in data:
         update_model_ids(UserGroup, data, "usergroup")
         for setting_name in Realm.REALM_PERMISSION_GROUP_SETTINGS:

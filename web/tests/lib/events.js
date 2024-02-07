@@ -358,10 +358,10 @@ exports.fixtures = {
         value: 50,
     },
 
-    realm__update__signup_notifications_stream_id: {
+    realm__update__signup_announcements_stream_id: {
         type: "realm",
         op: "update",
-        property: "signup_notifications_stream_id",
+        property: "signup_announcements_stream_id",
         value: 41,
     },
 

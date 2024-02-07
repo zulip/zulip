@@ -188,7 +188,7 @@ class HomeTest(ZulipTestCase):
         "realm_push_notifications_enabled",
         "realm_push_notifications_enabled_end_timestamp",
         "realm_send_welcome_emails",
-        "realm_signup_notifications_stream_id",
+        "realm_signup_announcements_stream_id",
         "realm_upload_quota_mib",
         "realm_uri",
         "realm_user_group_edit_policy",
@@ -661,15 +661,15 @@ class HomeTest(ZulipTestCase):
         change_user_is_active(user, False)
         return user
 
-    def test_signup_notifications_stream(self) -> None:
+    def test_signup_announcements_stream(self) -> None:
         realm = get_realm("zulip")
-        realm.signup_notifications_stream = get_stream("Denmark", realm)
+        realm.signup_announcements_stream = get_stream("Denmark", realm)
         realm.save()
         self.login("hamlet")
         result = self._get_home_page()
         page_params = self._get_page_params(result)
         self.assertEqual(
-            page_params["state_data"]["realm_signup_notifications_stream_id"],
+            page_params["state_data"]["realm_signup_announcements_stream_id"],
             get_stream("Denmark", realm).id,
         )
 
