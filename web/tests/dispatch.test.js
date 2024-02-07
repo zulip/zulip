@@ -527,10 +527,10 @@ run_test("realm settings", ({override}) => {
     event = event_fixtures.realm__update__disallow_disposable_email_addresses;
     test_realm_boolean(event, "realm_disallow_disposable_email_addresses");
 
-    event = event_fixtures.realm__update__notifications_stream_id;
+    event = event_fixtures.realm__update__new_stream_announcements_stream_id;
     dispatch(event);
-    assert_same(realm.realm_notifications_stream_id, 42);
-    realm.realm_notifications_stream_id = -1; // make sure to reset for future tests
+    assert_same(realm.realm_new_stream_announcements_stream_id, 42);
+    realm.realm_new_stream_announcements_stream_id = -1; // make sure to reset for future tests
 
     event = event_fixtures.realm__update__signup_notifications_stream_id;
     dispatch(event);

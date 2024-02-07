@@ -233,7 +233,7 @@ export function dispatch_normal_event(event) {
                 move_messages_between_streams_policy: noop,
                 name: narrow_title.redraw_title,
                 name_changes_disabled: settings_account.update_name_change_display,
-                notifications_stream_id: stream_ui_updates.update_announce_stream_option,
+                new_stream_announcements_stream_id: stream_ui_updates.update_announce_stream_option,
                 org_type: noop,
                 private_message_policy: compose_recipient.check_posting_policy_for_compose_box,
                 push_notifications_enabled: noop,
@@ -560,9 +560,9 @@ export function dispatch_normal_event(event) {
                         }
                         settings_streams.update_default_streams_table();
                         stream_data.remove_default_stream(stream.stream_id);
-                        if (realm.realm_notifications_stream_id === stream.stream_id) {
-                            realm.realm_notifications_stream_id = -1;
-                            settings_org.sync_realm_settings("notifications_stream_id");
+                        if (realm.realm_new_stream_announcements_stream_id === stream.stream_id) {
+                            realm.realm_new_stream_announcements_stream_id = -1;
+                            settings_org.sync_realm_settings("new_stream_announcements_stream_id");
                         }
                         if (realm.realm_signup_notifications_stream_id === stream.stream_id) {
                             realm.realm_signup_notifications_stream_id = -1;

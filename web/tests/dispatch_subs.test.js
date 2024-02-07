@@ -241,7 +241,7 @@ test("stream delete (special streams)", ({override}) => {
 
     // sanity check data
     assert.equal(event.streams.length, 2);
-    realm.realm_notifications_stream_id = event.streams[0].stream_id;
+    realm.realm_new_stream_announcements_stream_id = event.streams[0].stream_id;
     realm.realm_signup_notifications_stream_id = event.streams[1].stream_id;
 
     override(stream_settings_ui, "remove_stream", noop);
@@ -253,7 +253,7 @@ test("stream delete (special streams)", ({override}) => {
 
     dispatch(event);
 
-    assert.equal(realm.realm_notifications_stream_id, -1);
+    assert.equal(realm.realm_new_stream_announcements_stream_id, -1);
     assert.equal(realm.realm_signup_notifications_stream_id, -1);
 });
 

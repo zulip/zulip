@@ -453,8 +453,8 @@ class TestCreateStreams(ZulipTestCase):
         announce_stream = ensure_stream(
             realm, "announce", False, "announcements here.", acting_user=None
         )
-        realm.notifications_stream_id = announce_stream.id
-        realm.save(update_fields=["notifications_stream_id"])
+        realm.new_stream_announcements_stream_id = announce_stream.id
+        realm.save(update_fields=["new_stream_announcements_stream_id"])
 
         self.subscribe(iago, announce_stream.name)
         self.subscribe(hamlet, announce_stream.name)
@@ -4138,8 +4138,8 @@ class SubscriptionAPITest(ZulipTestCase):
         other_params = {
             "announce": "true",
         }
-        notifications_stream = get_stream(self.streams[0], self.test_realm)
-        self.test_realm.notifications_stream_id = notifications_stream.id
+        new_stream_announcements_stream = get_stream(self.streams[0], self.test_realm)
+        self.test_realm.new_stream_announcements_stream_id = new_stream_announcements_stream.id
         self.test_realm.save()
 
         with self.capture_send_event_calls(expected_num_events=7) as events:
@@ -4187,8 +4187,8 @@ class SubscriptionAPITest(ZulipTestCase):
         current_stream = self.get_streams(invitee)[0]
         invite_streams = self.make_random_stream_names([current_stream])[:1]
 
-        notifications_stream = get_stream(current_stream, self.test_realm)
-        self.test_realm.notifications_stream_id = notifications_stream.id
+        new_stream_announcements_stream = get_stream(current_stream, self.test_realm)
+        self.test_realm.new_stream_announcements_stream_id = new_stream_announcements_stream.id
         self.test_realm.save()
 
         self.common_subscribe_to_streams(
@@ -4203,7 +4203,7 @@ class SubscriptionAPITest(ZulipTestCase):
 
         msg = self.get_second_to_last_message()
         self.assertEqual(msg.recipient.type, Recipient.STREAM)
-        self.assertEqual(msg.recipient.type_id, notifications_stream.id)
+        self.assertEqual(msg.recipient.type_id, new_stream_announcements_stream.id)
         self.assertEqual(msg.sender_id, self.notification_bot(self.test_realm).id)
         expected_msg = (
             f"@_**{invitee_full_name}|{invitee.id}** created a new stream #**{invite_streams[0]}**."
@@ -4227,8 +4227,8 @@ class SubscriptionAPITest(ZulipTestCase):
         """
         realm = do_create_realm("testrealm", "Test Realm")
 
-        notifications_stream = Stream.objects.get(name="general", realm=realm)
-        realm.notifications_stream = notifications_stream
+        new_stream_announcements_stream = Stream.objects.get(name="general", realm=realm)
+        realm.new_stream_announcements_stream = new_stream_announcements_stream
         realm.save()
 
         invite_streams = ["cross_stream"]
@@ -4248,7 +4248,7 @@ class SubscriptionAPITest(ZulipTestCase):
 
         msg = self.get_second_to_last_message()
         self.assertEqual(msg.recipient.type, Recipient.STREAM)
-        self.assertEqual(msg.recipient.type_id, notifications_stream.id)
+        self.assertEqual(msg.recipient.type_id, new_stream_announcements_stream.id)
         self.assertEqual(msg.sender_id, self.notification_bot(realm).id)
         stream_id = Stream.objects.latest("id").id
         expected_rendered_msg = f'<p><span class="user-mention silent" data-user-id="{user.id}">{user.full_name}</span> created a new stream <a class="stream" data-stream-id="{stream_id}" href="/#narrow/stream/{stream_id}-{invite_streams[0]}">#{invite_streams[0]}</a>.</p>'
@@ -4262,8 +4262,8 @@ class SubscriptionAPITest(ZulipTestCase):
         invitee = self.example_user("iago")
 
         current_stream = self.get_streams(invitee)[0]
-        notifications_stream = get_stream(current_stream, self.test_realm)
-        self.test_realm.notifications_stream_id = notifications_stream.id
+        new_stream_announcements_stream = get_stream(current_stream, self.test_realm)
+        self.test_realm.new_stream_announcements_stream_id = new_stream_announcements_stream.id
         self.test_realm.save()
 
         invite_streams = ["strange ) \\ test"]
@@ -4277,7 +4277,9 @@ class SubscriptionAPITest(ZulipTestCase):
         )
 
         msg = self.get_second_to_last_message()
-        self.assertEqual(msg.sender_id, self.notification_bot(notifications_stream.realm).id)
+        self.assertEqual(
+            msg.sender_id, self.notification_bot(new_stream_announcements_stream.realm).id
+        )
         expected_msg = (
             f"@_**{invitee_full_name}|{invitee.id}** created a new stream #**{invite_streams[0]}**."
         )
@@ -5538,9 +5540,9 @@ class SubscriptionAPITest(ZulipTestCase):
                 invite_only=True,
             )
 
-        # Test creating a public stream with announce when realm has a notification stream.
-        notifications_stream = get_stream(self.streams[0], self.test_realm)
-        self.test_realm.notifications_stream_id = notifications_stream.id
+        # Test creating a public stream with announce when realm has a new_stream_announcements_stream.
+        new_stream_announcements_stream = get_stream(self.streams[0], self.test_realm)
+        self.test_realm.new_stream_announcements_stream_id = new_stream_announcements_stream.id
         self.test_realm.save()
         with self.assert_database_query_count(47):
             self.common_subscribe_to_streams(

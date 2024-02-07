@@ -78,7 +78,7 @@ from zerver.actions.realm_settings import (
     do_deactivate_realm,
     do_set_push_notifications_enabled_end_timestamp,
     do_set_realm_authentication_methods,
-    do_set_realm_notifications_stream,
+    do_set_realm_new_stream_announcements_stream,
     do_set_realm_property,
     do_set_realm_signup_notifications_stream,
     do_set_realm_user_default_setting,
@@ -2289,20 +2289,23 @@ class NormalActionsTest(BaseAction):
                     value=value,
                 )
 
-    def test_change_realm_notifications_stream(self) -> None:
+    def test_change_realm_new_stream_announcements_stream(self) -> None:
         stream = get_stream("Rome", self.user_profile.realm)
 
-        for notifications_stream, notifications_stream_id in ((stream, stream.id), (None, -1)):
+        for new_stream_announcements_stream, new_stream_announcements_stream_id in (
+            (stream, stream.id),
+            (None, -1),
+        ):
             events = self.verify_action(
                 partial(
-                    do_set_realm_notifications_stream,
+                    do_set_realm_new_stream_announcements_stream,
                     self.user_profile.realm,
-                    notifications_stream,
-                    notifications_stream_id,
+                    new_stream_announcements_stream,
+                    new_stream_announcements_stream_id,
                     acting_user=None,
                 )
             )
-            check_realm_update("events[0]", events[0], "notifications_stream_id")
+            check_realm_update("events[0]", events[0], "new_stream_announcements_stream_id")
 
     def test_change_realm_signup_notifications_stream(self) -> None:
         stream = get_stream("Rome", self.user_profile.realm)

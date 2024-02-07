@@ -335,7 +335,7 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
     DEFAULT_NOTIFICATION_STREAM_NAME = "general"
     INITIAL_PRIVATE_STREAM_NAME = "core team"
     STREAM_EVENTS_NOTIFICATION_TOPIC_NAME = gettext_lazy("stream events")
-    notifications_stream = models.ForeignKey(
+    new_stream_announcements_stream = models.ForeignKey(
         "Stream",
         related_name="+",
         null=True,
@@ -784,9 +784,12 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
     def get_bot_domain(self) -> str:
         return get_fake_email_domain(self.host)
 
-    def get_notifications_stream(self) -> Optional["Stream"]:
-        if self.notifications_stream is not None and not self.notifications_stream.deactivated:
-            return self.notifications_stream
+    def get_new_stream_announcements_stream(self) -> Optional["Stream"]:
+        if (
+            self.new_stream_announcements_stream is not None
+            and not self.new_stream_announcements_stream.deactivated
+        ):
+            return self.new_stream_announcements_stream
         return None
 
     def get_signup_notifications_stream(self) -> Optional["Stream"]:
