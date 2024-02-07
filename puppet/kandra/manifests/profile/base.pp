@@ -63,11 +63,13 @@ class kandra::profile::base {
     home            => '/root',
     keys            => 'internal-read-only-deploy-key',
     authorized_keys => 'common',
+    known_hosts     => ['github.com'],
   }
 
   kandra::user_dotfiles { 'zulip':
     keys            => 'internal-read-only-deploy-key',
     authorized_keys => 'common',
+    known_hosts     => ['github.com'],
   }
 
   service { 'ssh':

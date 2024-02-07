@@ -64,10 +64,19 @@ define kandra::user_dotfiles (
       require => File["${homedir}/.ssh"],
     }
     $known_hosts.each |String $hostname| {
-      exec { "${user} ssh known_hosts ${hostname}":
-        command => "ssh-keyscan ${hostname} >> ${homedir}/.ssh/known_hosts",
-        unless  => "grep ${hostname} ${homedir}/.ssh/known_hosts",
-        require => File["${homedir}/.ssh/known_hosts"],
+      if $hostname == 'github.com' {
+        $github_keys = file('kandra/github.keys')
+        exec { "${user} ssh known_hosts ${hostname}":
+          command => "echo '${github_keys}' >> ${homedir}/.ssh/known_hosts",
+          unless  => "grep ${hostname} ${homedir}/.ssh/known_hosts",
+          require => File["${homedir}/.ssh/known_hosts"],
+        }
+      } else {
+        exec { "${user} ssh known_hosts ${hostname}":
+          command => "ssh-keyscan ${hostname} >> ${homedir}/.ssh/known_hosts",
+          unless  => "grep ${hostname} ${homedir}/.ssh/known_hosts",
+          require => File["${homedir}/.ssh/known_hosts"],
+        }
       }
     }
   }
