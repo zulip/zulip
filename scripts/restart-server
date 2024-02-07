@@ -25,6 +25,7 @@ from scripts.lib.zulip_tools import (
     has_process_fts_updates,
     overwrite_symlink,
     start_arg_parser,
+    su_to_zulip,
 )
 
 action = "restart"
@@ -41,7 +42,10 @@ args = parser.parse_args()
 deploy_path = os.path.realpath(os.path.join(os.path.dirname(__file__), ".."))
 os.chdir(deploy_path)
 
-if pwd.getpwuid(os.getuid()).pw_name != "zulip":
+username = pwd.getpwuid(os.getuid()).pw_name
+if username == "root":
+    su_to_zulip()
+elif username != "zulip":
     logging.error("Must be run as user 'zulip'.")
     sys.exit(1)
 
