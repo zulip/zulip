@@ -63,8 +63,10 @@ define kandra::user_dotfiles (
       mode    => '0644',
       require => File["${homedir}/.ssh"],
     }
-    $known_hosts.each |String $hostname| {
-      if $hostname == 'github.com' {
+    $known_hosts.each |Optional[String] $hostname| {
+      if $hostname == undef {
+        # pass
+      } elsif $hostname == 'github.com' {
         $github_keys = file('kandra/github.keys')
         exec { "${user} ssh known_hosts ${hostname}":
           command => "echo '${github_keys}' >> ${homedir}/.ssh/known_hosts",
