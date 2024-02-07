@@ -544,7 +544,7 @@ def do_gc_event_queues(
 
 
 def gc_event_queues(port: int) -> None:
-    start = time.time()
+    start = time.perf_counter()
     to_remove: Set[str] = set()
     affected_users: Set[int] = set()
     affected_realms: Set[int] = set()
@@ -566,7 +566,7 @@ def gc_event_queues(port: int) -> None:
             port,
             len(to_remove),
             len(affected_users),
-            time.time() - start,
+            time.perf_counter() - start,
             len(clients),
             handler_stats_string(),
         )
@@ -584,7 +584,7 @@ def persistent_queue_filename(port: int, last: bool = False) -> str:
 
 
 def dump_event_queues(port: int) -> None:
-    start = time.time()
+    start = time.perf_counter()
 
     with open(persistent_queue_filename(port), "wb") as stored_queues:
         stored_queues.write(
@@ -593,13 +593,16 @@ def dump_event_queues(port: int) -> None:
 
     if len(clients) > 0 or settings.PRODUCTION:
         logging.info(
-            "Tornado %d dumped %d event queues in %.3fs", port, len(clients), time.time() - start
+            "Tornado %d dumped %d event queues in %.3fs",
+            port,
+            len(clients),
+            time.perf_counter() - start,
         )
 
 
 def load_event_queues(port: int) -> None:
     global clients
-    start = time.time()
+    start = time.perf_counter()
 
     try:
         with open(persistent_queue_filename(port), "rb") as stored_queues:
@@ -623,7 +626,10 @@ def load_event_queues(port: int) -> None:
 
     if len(clients) > 0 or settings.PRODUCTION:
         logging.info(
-            "Tornado %d loaded %d event queues in %.3fs", port, len(clients), time.time() - start
+            "Tornado %d loaded %d event queues in %.3fs",
+            port,
+            len(clients),
+            time.perf_counter() - start,
         )
 
 
@@ -1524,7 +1530,7 @@ def reformat_legacy_send_message_event(
 def process_notification(notice: Mapping[str, Any]) -> None:
     event: Mapping[str, Any] = notice["event"]
     users: Union[List[int], List[Mapping[str, Any]]] = notice["users"]
-    start_time = time.time()
+    start_time = time.perf_counter()
 
     if event["type"] == "message":
         if len(users) > 0 and isinstance(users[0], dict) and "stream_push_notify" in users[0]:
@@ -1573,7 +1579,7 @@ def process_notification(notice: Mapping[str, Any]) -> None:
         "Tornado: Event %s for %s users took %sms",
         event["type"],
         len(users),
-        int(1000 * (time.time() - start_time)),
+        int(1000 * (time.perf_counter() - start_time)),
     )
 
 
