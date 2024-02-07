@@ -19,7 +19,7 @@ from zerver.lib.request import RequestNotes
 from zerver.lib.streams import access_stream_by_name
 from zerver.lib.subdomains import get_subdomain
 from zerver.lib.user_counts import realm_user_count
-from zerver.models import PreregistrationUser, Realm, RealmUserDefault, Stream, UserProfile
+from zerver.models import Realm, RealmUserDefault, Stream, UserProfile
 
 
 def need_accept_tos(user_profile: Optional[UserProfile]) -> bool:
@@ -216,17 +216,10 @@ def home_real(request: HttpRequest) -> HttpResponse:
 
     if user_profile is not None:
         first_in_realm = realm_user_count(user_profile.realm) == 1
-        # If you are the only person in the realm and you didn't invite
-        # anyone, we'll continue to encourage you to do so on the frontend.
-        prompt_for_invites = (
-            first_in_realm
-            and not PreregistrationUser.objects.filter(referred_by=user_profile).count()
-        )
         needs_tutorial = user_profile.tutorial_status == UserProfile.TUTORIAL_WAITING
 
     else:
         first_in_realm = False
-        prompt_for_invites = False
         # The current tutorial doesn't super make sense for logged-out users.
         needs_tutorial = False
 
@@ -239,7 +232,6 @@ def home_real(request: HttpRequest) -> HttpResponse:
         narrow_stream=narrow_stream,
         narrow_topic_name=narrow_topic_name,
         first_in_realm=first_in_realm,
-        prompt_for_invites=prompt_for_invites,
         needs_tutorial=needs_tutorial,
     )
 
