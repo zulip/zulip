@@ -167,7 +167,23 @@ AUTHENTICATION_BACKENDS: tuple[str, ...] = (
 ## optionally using LDAP as an authentication mechanism.
 
 import ldap
-from django_auth_ldap.config import GroupOfNamesType, LDAPGroupQuery, LDAPSearch  # noqa: F401
+from django_auth_ldap.config import (  # noqa: F401
+    ActiveDirectoryGroupType,
+    GroupOfNamesType,
+    GroupOfUniqueNamesType,
+    LDAPGroupQuery,
+    LDAPGroupType,
+    LDAPSearch,
+    LDAPSearchUnion,
+    MemberDNGroupType,
+    NestedActiveDirectoryGroupType,
+    NestedGroupOfNamesType,
+    NestedGroupOfUniqueNamesType,
+    NestedMemberDNGroupType,
+    NestedOrganizationalRoleGroupType,
+    OrganizationalRoleGroupType,
+    PosixGroupType,
+)
 
 ## Connecting to the LDAP server.
 ##
