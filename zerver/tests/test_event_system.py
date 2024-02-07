@@ -36,6 +36,7 @@ from zerver.tornado.event_queue import (
     allocate_client_descriptor,
     clear_client_event_queues_for_testing,
     get_client_info_for_message_event,
+    mark_clients_to_reload,
     process_message_event,
     send_web_reload_client_events,
 )
@@ -1141,7 +1142,10 @@ class WebReloadClientsTest(ZulipTestCase):
         client = allocate_client_descriptor(queue_data)
 
         send_web_reload_client_events()
+        self.assert_length(client.event_queue.queue, 0)
 
+        mark_clients_to_reload([client.event_queue.id])
+        send_web_reload_client_events()
         self.assert_length(client.event_queue.queue, 1)
         reload_event = client.event_queue.queue[0]
 
