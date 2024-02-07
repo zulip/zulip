@@ -223,12 +223,9 @@ $(() => {
     update_full_name_section();
 
     let timer: number;
-    $("#id_team_subdomain").on("keydown", () => {
+    $("#id_team_subdomain").on("input", () => {
         $(".team_subdomain_error_server").text("").css("display", "none");
         $("#id_team_subdomain_error_client").css("display", "none");
-        clearTimeout(timer);
-    });
-    $("#id_team_subdomain").on("keyup", () => {
         clearTimeout(timer);
         timer = setTimeout(check_subdomain_available, 250, $("#id_team_subdomain").val());
     });
