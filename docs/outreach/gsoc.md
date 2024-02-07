@@ -64,7 +64,7 @@ Django, TypeScript/JavaScript, and CSS.
   documents hundreds of issues that we've identified as important to
   the project. A great project can be 3-5 significant features around
   a theme (often, but not necessarily, an [area
-  label](https://github.com/zulip/zulip/labels); the goal will be to
+  label](https://github.com/zulip/zulip/labels)); the goal will be to
   implement and get fully merged a cluster of features with a
   meaningful impact on the project. Zulip has a lot of half-finished
   PRs, so some features might be completed by reading, understanding,
@@ -74,7 +74,7 @@ Django, TypeScript/JavaScript, and CSS.
   once we've gotten to know you and your strengths through your getting
   involved in the project.
 
-  Experts: Varies with project area.
+  Experts: Tim Abbott and various others depending on project area
 
 - **Complete some unfinished projects**. This is a variant of the
   previous project idea category, but focused on projects with
@@ -82,19 +82,19 @@ Django, TypeScript/JavaScript, and CSS.
   projects that have not been seriously attempted previously.
 
   Recent sweeps through the Zulip server and web app tracker have
-  identified about 100 older pull requests where a previous
-  contributor (sometimes via GSoC!) did significant work towards
-  something valuable, and there's significant feedback from
-  maintainers, but the project was never finished, and requires
-  significant further effort from a new contributor in order to
-  progress. These are tracked via the [completion candidate
-  label][completion-candidate]. One of our goals for this summer's
-  GSoC is to complete many of these issues. Start by picking something
-  that's interesting to you and you feel you have the skills required
-  to complete, reading the code and the feedback, and then creating
-  your own PR for the issue, doing your own careful testing and
-  cross-linking the original work. Remember to credit the original
-  contributor [as documented in our commit
+  identified about 100 open pull requests where a previous contributor
+  (sometimes via GSoC!) did significant work towards something
+  valuable, and there's significant feedback from maintainers, but the
+  project was never finished, and requires significant further effort
+  from a new contributor in order to progress. These are tracked via
+  the [completion candidate label][completion-candidate]. One of our
+  goals for this summer's GSoC is to complete many of these
+  issues. Start by picking something that's interesting to you, and
+  you feel you have the skills required to complete. Read the code and
+  the feedback, and then create your own PR for the issue. Remember to
+  carefully test your work (there may be problems that the reviewers
+  missed, or that were introduced by rebasing across other changes!),
+  and credit the original contributor [as documented in our commit
   guidelines](../contributing/commit-discipline.md). We expect to have
   a more detailed guide on this process available this Spring.
   **Skills required**: Varies with project; a common skill will be
@@ -105,7 +105,7 @@ Django, TypeScript/JavaScript, and CSS.
   really good at resolving merge conflicts is likely to be valuable
   here as well.
 
-  Experts: Varies with project area.
+  Experts: Tim Abbott and various others depending on project area
 
 [completion-candidate]: https://github.com/zulip/zulip/pulls?q=is%3Aopen+is%3Apr+label%3A%22completion+candidate%22
 
@@ -143,9 +143,9 @@ Django, TypeScript/JavaScript, and CSS.
   prior Pydantic experience required, but please take the time to go
   through the Pydantic upstream tutorials and skim all the existing
   endpoints using `typed_endpoint` before doing your first Zulip
-  changes (likely to migrate a smaller views file to the new
+  changes. A good first PR is to migrate a smaller views file to the new
   framework; one commit per smaller file is likely to be a good
-  structure). See the last commits from [the new framework's main
+  structure. See the last commits from [the new framework's main
   PR](https://github.com/zulip/zulip/pull/26365) for examples of
   well-written migration commits.
 
@@ -189,8 +189,7 @@ Django, TypeScript/JavaScript, and CSS.
 
 - Migrate Zulip's **[direct message recipient data
   structures](https://github.com/zulip/zulip/issues/25713)** to a new
-  model with better performance characteristics and that more
-  importantly enables personal settings associated with a direct
+  model that enables personal settings associated with a direct
   message conversation, and add several settings (see the linked
   issues) enabled by that infrastructure work. **Skills required**:
   This project will be deep Python 3/PostgreSQL work. Concretely,
