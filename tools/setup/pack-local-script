@@ -13,10 +13,12 @@ set -eu
 var="$1"
 file="$2"
 
+mode="$(stat -c "%a" "$file")"
+
 encoded="$(gzip --stdout "$file" | base64)"
 cat <<embedded-shell-output
 $var="\$(mktemp)"
-chmod 755 "\$$var"
+chmod "$mode" "\$$var"
 base64 -d <<"encoded-shell-script" | gzip -d > "\$$var"
 $encoded
 encoded-shell-script
