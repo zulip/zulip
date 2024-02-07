@@ -308,6 +308,7 @@ export function start(msg_type, opts) {
     }
 
     compose_recipient.check_posting_policy_for_compose_box();
+    drafts.update_compose_draft_count();
 
     // Reset the `max-height` property of `compose-textarea` so that the
     // compose-box do not cover the last messages of the current stream
@@ -410,6 +411,7 @@ export function on_topic_narrow() {
     compose_validate.warn_if_topic_resolved(true);
     compose_fade.set_focused_recipient("stream");
     compose_fade.update_message_list();
+    drafts.update_compose_draft_count();
     $("textarea#compose-textarea").trigger("focus");
 }
 

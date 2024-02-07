@@ -234,6 +234,7 @@ test_ui("send_message", ({override, override_rewire, mock_template}) => {
     const $container = $(".top_left_drafts");
     const $child = $(".unread_count");
     $container.set_find_results(".unread_count", $child);
+    override_rewire(drafts, "update_compose_draft_count", noop);
 
     override(server_events, "assert_get_events_running", () => {
         stub_state.get_events_running_called += 1;
@@ -576,6 +577,7 @@ test_ui("update_fade", ({override, override_rewire}) => {
     override_rewire(compose_recipient, "update_narrow_to_recipient_visibility", () => {
         update_narrow_to_recipient_visibility_called = true;
     });
+    override_rewire(drafts, "update_compose_draft_count", noop);
 
     compose_state.set_message_type(undefined);
     compose_recipient.update_on_recipient_change();

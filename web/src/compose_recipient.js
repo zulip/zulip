@@ -11,6 +11,7 @@ import * as compose_pm_pill from "./compose_pm_pill";
 import * as compose_state from "./compose_state";
 import * as compose_ui from "./compose_ui";
 import * as compose_validate from "./compose_validate";
+import * as drafts from "./drafts";
 import * as dropdown_widget from "./dropdown_widget";
 import {$t} from "./i18n";
 import * as narrow_state from "./narrow_state";
@@ -95,6 +96,7 @@ function update_fade() {
 export function update_on_recipient_change() {
     update_fade();
     update_narrow_to_recipient_visibility();
+    drafts.update_compose_draft_count();
     check_posting_policy_for_compose_box();
 }
 

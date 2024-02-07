@@ -144,25 +144,27 @@ test("fix buggy drafts", ({override_rewire}) => {
     assert.equal(draft.topic, "");
 });
 
-test("draft_model add", () => {
+test("draft_model add", ({override_rewire}) => {
     const draft_model = drafts.draft_model;
     const ls = localstorage();
     assert.equal(ls.get("draft"), undefined);
 
     const $unread_count = $("<unread-count-stub>");
     $(".top_left_drafts").set_find_results(".unread_count", $unread_count);
+    override_rewire(drafts, "update_compose_draft_count", noop);
 
     const id = draft_model.addDraft(draft_1);
     assert.deepEqual(draft_model.getDraft(id), draft_1);
 });
 
-test("draft_model edit", () => {
+test("draft_model edit", ({override_rewire}) => {
     const draft_model = drafts.draft_model;
     const ls = localstorage();
     assert.equal(ls.get("draft"), undefined);
 
     const $unread_count = $("<unread-count-stub>");
     $(".top_left_drafts").set_find_results(".unread_count", $unread_count);
+    override_rewire(drafts, "update_compose_draft_count", noop);
 
     const id = draft_model.addDraft(draft_1);
     assert.deepEqual(draft_model.getDraft(id), draft_1);
@@ -171,13 +173,14 @@ test("draft_model edit", () => {
     assert.deepEqual(draft_model.getDraft(id), draft_2);
 });
 
-test("draft_model delete", () => {
+test("draft_model delete", ({override_rewire}) => {
     const draft_model = drafts.draft_model;
     const ls = localstorage();
     assert.equal(ls.get("draft"), undefined);
 
     const $unread_count = $("<unread-count-stub>");
     $(".top_left_drafts").set_find_results(".unread_count", $unread_count);
+    override_rewire(drafts, "update_compose_draft_count", noop);
 
     const id = draft_model.addDraft(draft_1);
     assert.deepEqual(draft_model.getDraft(id), draft_1);
@@ -253,7 +256,7 @@ test("initialize", ({override_rewire}) => {
     drafts_overlay_ui.initialize();
 });
 
-test("remove_old_drafts", () => {
+test("remove_old_drafts", ({override_rewire}) => {
     const draft_3 = {
         topic: "topic",
         type: "stream",
@@ -275,6 +278,7 @@ test("remove_old_drafts", () => {
 
     const $unread_count = $("<unread-count-stub>");
     $(".top_left_drafts").set_find_results(".unread_count", $unread_count);
+    override_rewire(drafts, "update_compose_draft_count", noop);
 
     drafts.remove_old_drafts();
     assert.deepEqual(draft_model.get(), {id3: draft_3});
@@ -294,6 +298,7 @@ test("update_draft", ({override, override_rewire}) => {
     const $container = $(".top_left_drafts");
     const $child = $(".unread_count");
     $container.set_find_results(".unread_count", $child);
+    override_rewire(drafts, "update_compose_draft_count", noop);
 
     tippy_args = {
         content: "translated: Saved as draft",
@@ -343,6 +348,7 @@ test("update_draft", ({override, override_rewire}) => {
 
 test("rename_stream_recipient", ({override_rewire}) => {
     override_rewire(drafts, "set_count", noop);
+    override_rewire(drafts, "update_compose_draft_count", noop);
 
     const stream_A = {
         subscribed: false,
@@ -425,7 +431,7 @@ test("rename_stream_recipient", ({override_rewire}) => {
     assert_draft("id4", stream_B.stream_id, "e");
 });
 
-test("delete_all_drafts", () => {
+test("delete_all_drafts", ({override_rewire}) => {
     const draft_model = drafts.draft_model;
     const ls = localstorage();
     const data = {draft_1, draft_2, short_msg};
@@ -434,6 +440,7 @@ test("delete_all_drafts", () => {
 
     const $unread_count = $("<unread-count-stub>");
     $(".top_left_drafts").set_find_results(".unread_count", $unread_count);
+    override_rewire(drafts, "update_compose_draft_count", noop);
 
     drafts.delete_all_drafts();
     assert.deepEqual(draft_model.get(), {});
