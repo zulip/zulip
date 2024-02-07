@@ -2583,10 +2583,12 @@ div.focused-message-list {
     right: 8px;
     border-radius: 4px;
 
-    /* For FontAwesome icons used in place of images for some users. */
-    font-size: 19px;
-    text-align: center;
-
+    /* For FontAwesome and Zulip icons used in place of images for some users. */
+    &.icon{
+        font-size: 19px;
+        text-align: center;
+    }
+    
     &.no-presence-circle {
         margin-left: 9px;
         top: 3px;
@@ -3584,7 +3586,8 @@ select.invite-as {
         color: var(--color-navbar-icon);
     }
 
-    .zulip-icon-gear {
+    .zulip-icon-gear, 
+    .zulip-icon-user-list{
         font-size: 18px;
     }
 
