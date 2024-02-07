@@ -42,7 +42,7 @@ export function get_realm_time_limits_in_minutes(property) {
         return "";
     }
     let val = (realm[property] / 60).toFixed(1);
-    if (Number.parseFloat(val, 10) === Number.parseInt(val, 10)) {
+    if (Number.parseFloat(val) === Number.parseInt(val, 10)) {
         val = Number.parseInt(val, 10);
     }
     return val.toString();
@@ -475,7 +475,7 @@ export function get_auth_method_list_data() {
 }
 
 export function parse_time_limit($elem) {
-    return Math.floor(Number.parseFloat(Number($elem.val()), 10).toFixed(1) * 60);
+    return Math.floor(Number.parseFloat(Number($elem.val())).toFixed(1) * 60);
 }
 
 function get_time_limit_setting_value($input_elem, for_api_data = true) {
