@@ -2523,6 +2523,24 @@ class UserSignUpTest(ZulipTestCase):
                 # Account wasn't created.
                 get_user(email, get_realm("zulip"))
 
+def test_signup_with_too_long_password(self) -> None:
+    """
+    Check if signing up with a password that exceeds the maximum length fails.
+    """
+    email = "newguy@zulip.com"
+    too_long_password = "a" * 101
+
+    with self.assertRaises(ValidationError) as context:
+        # Simulate the signup attempt with a too-long password.
+        self.verify_signup(email=email, password=too_long_password)
+
+    expected_error_msg = "Ensure this value has at most 100 characters."
+    self.assertIn(expected_error_msg, str(context.exception))
+
+    # Verify that the account wasn't created.
+    with self.assertRaises(UserProfile.DoesNotExist):
+        get_user(email, get_realm("zulip"))
+
     def test_signup_with_default_stream_group(self) -> None:
         # Check if user is subscribed to the streams of default
         # stream group as well as default streams.
