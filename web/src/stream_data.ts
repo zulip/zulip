@@ -483,8 +483,8 @@ export function is_stream_muted_by_name(stream_name: string): boolean {
     return sub.is_muted;
 }
 
-export function is_notifications_stream_muted(): boolean {
-    return is_muted(realm.realm_notifications_stream_id);
+export function is_new_stream_announcements_stream_muted(): boolean {
+    return is_muted(realm.realm_new_stream_announcements_stream_id);
 }
 
 export function can_toggle_subscription(sub: StreamSubscription): boolean {
@@ -808,12 +808,12 @@ export function get_streams_for_admin(): StreamSubscription[] {
   is the authoritative source of this data, and it will be updated by
   server_events_dispatch in case of changes.
 */
-export function realm_has_notifications_stream(): boolean {
-    return realm.realm_notifications_stream_id !== -1;
+export function realm_has_new_stream_announcements_stream(): boolean {
+    return realm.realm_new_stream_announcements_stream_id !== -1;
 }
 
-export function get_notifications_stream(): string {
-    const stream_id = realm.realm_notifications_stream_id;
+export function get_new_stream_announcements_stream(): string {
+    const stream_id = realm.realm_new_stream_announcements_stream_id;
     if (stream_id !== -1) {
         const stream_obj = sub_store.get(stream_id);
         if (stream_obj) {

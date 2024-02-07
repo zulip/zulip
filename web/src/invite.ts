@@ -318,7 +318,7 @@ function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void
         expires_in_options: settings_config.expires_in_values,
         time_choices: time_unit_choices,
         streams: get_invite_streams(),
-        notifications_stream: stream_data.get_notifications_stream(),
+        new_stream_announcements_stream: stream_data.get_new_stream_announcements_stream(),
         show_select_default_streams_option: stream_data.get_default_stream_ids().length !== 0,
         user_has_email_set: !settings_data.user_email_not_configured(),
     });

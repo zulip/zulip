@@ -362,11 +362,11 @@ def fetch_initial_state_data(
             else server_default_jitsi_server_url
         )
 
-        notifications_stream = realm.get_notifications_stream()
-        if notifications_stream:
-            state["realm_notifications_stream_id"] = notifications_stream.id
+        new_stream_announcements_stream = realm.get_new_stream_announcements_stream()
+        if new_stream_announcements_stream:
+            state["realm_new_stream_announcements_stream_id"] = new_stream_announcements_stream.id
         else:
-            state["realm_notifications_stream_id"] = -1
+            state["realm_new_stream_announcements_stream_id"] = -1
 
         signup_notifications_stream = realm.get_signup_notifications_stream()
         if signup_notifications_stream:

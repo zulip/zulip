@@ -260,7 +260,7 @@ def do_set_realm_authentication_methods(
 
 def do_set_realm_stream(
     realm: Realm,
-    field: Literal["notifications_stream", "signup_notifications_stream"],
+    field: Literal["new_stream_announcements_stream", "signup_notifications_stream"],
     stream: Optional[Stream],
     stream_id: int,
     *,
@@ -268,10 +268,10 @@ def do_set_realm_stream(
 ) -> None:
     # We could calculate more of these variables from `field`, but
     # it's probably more readable to not do so.
-    if field == "notifications_stream":
-        old_value = realm.notifications_stream_id
-        realm.notifications_stream = stream
-        property = "notifications_stream_id"
+    if field == "new_stream_announcements_stream":
+        old_value = realm.new_stream_announcements_stream_id
+        realm.new_stream_announcements_stream = stream
+        property = "new_stream_announcements_stream_id"
     elif field == "signup_notifications_stream":
         old_value = realm.signup_notifications_stream_id
         realm.signup_notifications_stream = stream
@@ -304,10 +304,12 @@ def do_set_realm_stream(
     send_event(realm, event, active_user_ids(realm.id))
 
 
-def do_set_realm_notifications_stream(
+def do_set_realm_new_stream_announcements_stream(
     realm: Realm, stream: Optional[Stream], stream_id: int, *, acting_user: Optional[UserProfile]
 ) -> None:
-    do_set_realm_stream(realm, "notifications_stream", stream, stream_id, acting_user=acting_user)
+    do_set_realm_stream(
+        realm, "new_stream_announcements_stream", stream, stream_id, acting_user=acting_user
+    )
 
 
 def do_set_realm_signup_notifications_stream(

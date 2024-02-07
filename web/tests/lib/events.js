@@ -344,10 +344,10 @@ exports.fixtures = {
         value: "new_realm_name",
     },
 
-    realm__update__notifications_stream_id: {
+    realm__update__new_stream_announcements_stream_id: {
         type: "realm",
         op: "update",
-        property: "notifications_stream_id",
+        property: "new_stream_announcements_stream_id",
         value: 42,
     },
 

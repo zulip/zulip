@@ -121,8 +121,8 @@ let stream_announce_previous_value;
 
 // Within the new stream modal...
 function update_announce_stream_state() {
-    // If there is no notifications_stream, we simply hide the widget.
-    if (stream_data.get_notifications_stream() === "") {
+    // If there is no new_stream_announcements_stream, we simply hide the widget.
+    if (stream_data.get_new_stream_announcements_stream() === "") {
         $("#announce-new-stream").hide();
         return;
     }
@@ -238,12 +238,12 @@ function create_stream() {
     data.message_retention_days = JSON.stringify(message_retention_selection);
 
     let announce =
-        stream_data.get_notifications_stream() !== "" &&
+        stream_data.get_new_stream_announcements_stream() !== "" &&
         $("#announce-new-stream input").prop("checked");
 
     if (
-        stream_data.get_notifications_stream() === "" &&
-        stream_data.realm_has_notifications_stream() &&
+        stream_data.get_new_stream_announcements_stream() === "" &&
+        stream_data.realm_has_new_stream_announcements_stream() &&
         !invite_only
     ) {
         announce = true;
@@ -449,7 +449,8 @@ export function set_up_handlers() {
         content: () =>
             parse_html(
                 render_announce_stream_docs({
-                    notifications_stream: stream_data.get_notifications_stream(),
+                    new_stream_announcements_stream:
+                        stream_data.get_new_stream_announcements_stream(),
                 }),
             ),
     });

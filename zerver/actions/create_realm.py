@@ -272,17 +272,17 @@ def do_create_realm(
         maybe_enqueue_audit_log_upload(realm)
 
     # Create stream once Realm object has been saved
-    notifications_stream = ensure_stream(
+    new_stream_announcements_stream = ensure_stream(
         realm,
         Realm.DEFAULT_NOTIFICATION_STREAM_NAME,
         stream_description="Everyone is added to this stream by default. Welcome! :octopus:",
         acting_user=None,
     )
-    realm.notifications_stream = notifications_stream
+    realm.new_stream_announcements_stream = new_stream_announcements_stream
 
     # With the current initial streams situation, the only public
-    # stream is the notifications_stream.
-    DefaultStream.objects.create(stream=notifications_stream, realm=realm)
+    # stream is the new_stream_announcements_stream.
+    DefaultStream.objects.create(stream=new_stream_announcements_stream, realm=realm)
 
     signup_notifications_stream = ensure_stream(
         realm,
@@ -293,7 +293,7 @@ def do_create_realm(
     )
     realm.signup_notifications_stream = signup_notifications_stream
 
-    realm.save(update_fields=["notifications_stream", "signup_notifications_stream"])
+    realm.save(update_fields=["new_stream_announcements_stream", "signup_notifications_stream"])
 
     if plan_type is None and settings.BILLING_ENABLED:
         # We use acting_user=None for setting the initial plan type.

@@ -283,16 +283,18 @@ export function update_announce_stream_option() {
     if (!hash_parser.is_create_new_stream_narrow()) {
         return;
     }
-    if (stream_data.get_notifications_stream() === "") {
+    if (stream_data.get_new_stream_announcements_stream() === "") {
         $("#announce-new-stream").hide();
         return;
     }
     $("#announce-new-stream").show();
 
-    const notifications_stream = stream_data.get_notifications_stream();
-    const notifications_stream_sub = stream_data.get_sub_by_name(notifications_stream);
+    const new_stream_announcements_stream = stream_data.get_new_stream_announcements_stream();
+    const new_stream_announcements_stream_sub = stream_data.get_sub_by_name(
+        new_stream_announcements_stream,
+    );
     const rendered_announce_stream = render_announce_stream_checkbox({
-        notifications_stream_sub,
+        new_stream_announcements_stream_sub,
     });
     $("#announce-new-stream").expectOne().html(rendered_announce_stream);
 }

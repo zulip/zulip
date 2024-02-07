@@ -175,10 +175,10 @@ class HomeTest(ZulipTestCase):
         "realm_move_messages_within_stream_limit_seconds",
         "realm_name",
         "realm_name_changes_disabled",
+        "realm_new_stream_announcements_stream_id",
         "realm_night_logo_source",
         "realm_night_logo_url",
         "realm_non_active_users",
-        "realm_notifications_stream_id",
         "realm_org_type",
         "realm_password_auth_enabled",
         "realm_plan_type",
@@ -626,15 +626,15 @@ class HomeTest(ZulipTestCase):
             set(result["Cache-Control"].split(", ")), {"must-revalidate", "no-store", "no-cache"}
         )
 
-    def test_notifications_stream(self) -> None:
+    def test_new_stream_announcements_stream(self) -> None:
         realm = get_realm("zulip")
-        realm.notifications_stream_id = get_stream("Denmark", realm).id
+        realm.new_stream_announcements_stream_id = get_stream("Denmark", realm).id
         realm.save()
         self.login("hamlet")
         result = self._get_home_page()
         page_params = self._get_page_params(result)
         self.assertEqual(
-            page_params["state_data"]["realm_notifications_stream_id"],
+            page_params["state_data"]["realm_new_stream_announcements_stream_id"],
             get_stream("Denmark", realm).id,
         )
 

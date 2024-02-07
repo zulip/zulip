@@ -689,15 +689,15 @@ test("is_muted", () => {
     assert.ok(stream_data.is_stream_muted_by_name("EEXISTS"));
 });
 
-test("is_notifications_stream_muted", () => {
+test("is_new_stream_announcements_stream_muted", () => {
     stream_data.add_sub(tony);
     stream_data.add_sub(jazy);
 
-    realm.realm_notifications_stream_id = tony.stream_id;
-    assert.ok(!stream_data.is_notifications_stream_muted());
+    realm.realm_new_stream_announcements_stream_id = tony.stream_id;
+    assert.ok(!stream_data.is_new_stream_announcements_stream_muted());
 
-    realm.realm_notifications_stream_id = jazy.stream_id;
-    assert.ok(stream_data.is_notifications_stream_muted());
+    realm.realm_new_stream_announcements_stream_id = jazy.stream_id;
+    assert.ok(stream_data.is_new_stream_announcements_stream_muted());
 });
 
 test("muted_stream_ids", () => {
@@ -746,11 +746,11 @@ test("muted_stream_ids", () => {
     assert.deepEqual(stream_data.muted_stream_ids(), [1, 3]);
 });
 
-test("realm_has_notifications_stream", () => {
-    realm.realm_notifications_stream_id = 10;
-    assert.ok(stream_data.realm_has_notifications_stream());
-    realm.realm_notifications_stream_id = -1;
-    assert.ok(!stream_data.realm_has_notifications_stream());
+test("realm_has_new_stream_announcements_stream", () => {
+    realm.realm_new_stream_announcements_stream_id = 10;
+    assert.ok(stream_data.realm_has_new_stream_announcements_stream());
+    realm.realm_new_stream_announcements_stream_id = -1;
+    assert.ok(!stream_data.realm_has_new_stream_announcements_stream());
 });
 
 test("remove_default_stream", () => {
@@ -843,7 +843,7 @@ test("initialize", () => {
         stream_data.initialize(get_params());
     }
 
-    realm.realm_notifications_stream_id = -1;
+    realm.realm_new_stream_announcements_stream_id = -1;
 
     initialize();
 
@@ -851,12 +851,12 @@ test("initialize", () => {
     assert.ok(stream_names.has("subscriptions"));
     assert.ok(stream_names.has("unsubscribed"));
     assert.ok(stream_names.has("never_subscribed"));
-    assert.equal(stream_data.get_notifications_stream(), "");
+    assert.equal(stream_data.get_new_stream_announcements_stream(), "");
 
     // Simulate a private stream the user isn't subscribed to
-    realm.realm_notifications_stream_id = 89;
+    realm.realm_new_stream_announcements_stream_id = 89;
     initialize();
-    assert.equal(stream_data.get_notifications_stream(), "");
+    assert.equal(stream_data.get_new_stream_announcements_stream(), "");
 
     // Now actually subscribe the user to the stream
     initialize();
@@ -867,7 +867,7 @@ test("initialize", () => {
 
     stream_data.add_sub(foo);
     initialize();
-    assert.equal(stream_data.get_notifications_stream(), "foo");
+    assert.equal(stream_data.get_new_stream_announcements_stream(), "foo");
 });
 
 test("edge_cases", () => {

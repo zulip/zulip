@@ -239,7 +239,7 @@ export function sort_object_by_key(obj) {
 }
 
 export let default_code_language_widget = null;
-export let notifications_stream_widget = null;
+export let new_stream_announcements_stream_widget = null;
 export let signup_notifications_stream_widget = null;
 export let create_multiuse_invite_group_widget = null;
 export let can_remove_subscribers_group_widget = null;
@@ -249,8 +249,8 @@ export let new_group_can_mention_group_widget = null;
 
 export function get_widget_for_dropdown_list_settings(property_name) {
     switch (property_name) {
-        case "realm_notifications_stream_id":
-            return notifications_stream_widget;
+        case "realm_new_stream_announcements_stream_id":
+            return new_stream_announcements_stream_widget;
         case "realm_signup_notifications_stream_id":
             return signup_notifications_stream_widget;
         case "realm_default_code_block_language":
@@ -273,8 +273,8 @@ export function set_default_code_language_widget(widget) {
     default_code_language_widget = widget;
 }
 
-export function set_notifications_stream_widget(widget) {
-    notifications_stream_widget = widget;
+export function set_new_stream_announcements_stream_widget(widget) {
+    new_stream_announcements_stream_widget = widget;
 }
 
 export function set_signup_notifications_stream_widget(widget) {
@@ -504,7 +504,7 @@ export function check_property_changed(elem, for_realm_default_settings, sub, gr
             proposed_val = get_auth_method_list_data();
             proposed_val = JSON.stringify(proposed_val);
             break;
-        case "realm_notifications_stream_id":
+        case "realm_new_stream_announcements_stream_id":
         case "realm_signup_notifications_stream_id":
         case "realm_default_code_block_language":
         case "can_remove_subscribers_group":

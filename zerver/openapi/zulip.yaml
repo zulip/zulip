@@ -4474,7 +4474,7 @@ paths:
                                       description: |
                                         The URL of the organization's dark theme wide-format logo configured in the
                                         [organization profile](/help/create-your-organization-profile).
-                                    notifications_stream_id:
+                                    new_stream_announcements_stream_id:
                                       type: integer
                                       description: |
                                         The ID of the stream to which automated messages announcing the
@@ -4486,6 +4486,9 @@ paths:
                                         primarily relevant to clients containing UI for changing it.
 
                                         [new-stream-announce]: /help/configure-notification-bot#new-stream-announcements
+
+                                        **Changes**: In Zulip 9.0 (feature level 241), renamed 'notifications_stream_id'
+                                        to `new_stream_announcements_stream_id`.
                                     org_type:
                                       type: integer
                                       description: |
@@ -15114,7 +15117,7 @@ paths:
                           **Changes**: New in Zulip 5.0 (feature level 74). Previously,
                           this was hardcoded to 90 seconds, and clients should use that as a fallback
                           value when interacting with servers where this field is not present.
-                      realm_notifications_stream_id:
+                      realm_new_stream_announcements_stream_id:
                         type: integer
                         description: |
                           Present if `realm` is present in `fetch_event_types`.
@@ -15128,6 +15131,9 @@ paths:
                           primarily relevant to clients containing UI for changing it.
 
                           [new-stream-announce]: /help/configure-notification-bot#new-stream-announcements
+
+                          **Changes**: In Zulip 9.0 (feature level 241), renamed 'realm_notifications_stream_id'
+                          to `realm_new_stream_announcements_stream_id`.
                       realm_signup_notifications_stream_id:
                         type: integer
                         description: |
