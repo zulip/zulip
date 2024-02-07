@@ -65,6 +65,7 @@ DEACTIVATED_ACCOUNT_ERROR = gettext_lazy(
 PASSWORD_TOO_WEAK_ERROR = gettext_lazy("The password is too weak.")
 PASSWORD_TOO_LONG_ERROR = gettext_lazy("The password must not exceed 100 characters in length.")
 
+
 def email_is_not_mit_mailing_list(email: str) -> None:
     """Prevent MIT mailing lists from signing up for Zulip"""
     address = Address(addr_spec=email)

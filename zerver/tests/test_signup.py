@@ -2525,13 +2525,13 @@ class UserSignUpTest(ZulipTestCase):
 
     def test_signup_with_too_long_password(self) -> None:
 
-        #Check if signing up with a password that exceeds the maximum length fails.
+        # Check if signing up with a password that exceeds the maximum length fails.
 
         email = "newguy@zulip.com"
         too_long_password = "a" * 101
 
         with self.assertRaises(ValidationError) as context:
-        # Simulate the signup attempt with a too-long password.
+            # Simulate the signup attempt with a too-long password.
             self.verify_signup(email=email, password=too_long_password)
 
         expected_error_msg = "Ensure this value has at most 100 characters."
