@@ -173,6 +173,7 @@ function build_stream_popover(opts) {
                 $(this).closest(".popover").fadeOut(500).delay(500).remove();
 
                 const sub = stream_popover_sub(e);
+                hide_stream_popover();
                 stream_settings_components.sub_or_unsub(sub);
                 e.preventDefault();
                 e.stopPropagation();
