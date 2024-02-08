@@ -1,5 +1,7 @@
+import * as hash_util from "./hash_util";
 import * as message_lists from "./message_lists";
 import * as message_viewport from "./message_viewport";
+import * as narrow from "./narrow";
 import * as unread_ops from "./unread_ops";
 
 function go_to_row(msg_id) {
@@ -41,9 +43,20 @@ export function down(with_centering) {
 }
 
 export function to_home() {
-    message_viewport.set_last_movement_direction(-1);
-    const first_id = message_lists.current.first().id;
-    message_lists.current.select_id(first_id, {then_scroll: true, from_scroll: true});
+    const found_oldest = message_lists.current.data.fetch_status.has_found_oldest();
+    if (found_oldest) {
+        message_viewport.set_last_movement_direction(-1);
+        const first_id = message_lists.current.first().id;
+        message_lists.current.select_id(first_id, {then_scroll: true, from_scroll: true});
+    } else {
+        // NB: In Firefox, window.location.hash is URI-decoded.
+        // Even if the URL bar says #%41%42%43%44, the value here will
+        // be #ABCD.
+        const hash = window.location.hash.split("/");
+        const operators = hash_util.parse_narrow(hash);
+        const opts = { trigger: "home", then_select_id: "first" };
+        narrow.activate(operators, opts);
+    }
 }
 
 export function to_end() {

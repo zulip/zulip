@@ -205,6 +205,11 @@ export function activate(raw_terms, opts) {
             id_info.target_id = Number.parseInt(filter.operands("id")[0], 10);
         }
 
+        if (opts.then_select_id === "first") {
+            // Set anchor to fetch first message in view
+            id_info.target_id = -1;
+        }
+
         // Narrow with near / id operator. There are two possibilities:
         // * The user is clicking a permanent link to a conversation, in which
         //   case we want to look up the anchor message and see if it has moved.
