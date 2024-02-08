@@ -510,6 +510,7 @@ export function check_property_changed(elem, for_realm_default_settings, sub, gr
         case "can_remove_subscribers_group":
         case "realm_create_multiuse_invite_group":
         case "can_mention_group":
+        case "realm_can_access_all_users_group":
             proposed_val = get_dropdown_list_widget_setting_value($elem);
             break;
         case "email_notifications_batching_period_seconds":
