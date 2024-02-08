@@ -1122,7 +1122,7 @@ class BillingSession(ABC):
             payment_method_types=["card"],
             success_url=f"{self.billing_session_url}/billing/event_status/?stripe_session_id={{CHECKOUT_SESSION_ID}}",
             billing_address_collection="required",
-            customer_update={"address": "auto"},
+            customer_update={"address": "auto", "name": "auto"},
         )
         Session.objects.create(
             stripe_session_id=stripe_session.id,
