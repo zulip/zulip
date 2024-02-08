@@ -828,7 +828,7 @@ export function populate_data_for_request(subsection, for_realm_default_settings
                 group,
             )
         ) {
-            const input_value = settings_components.get_input_element_value($input_elem);
+            const input_value = settings_components.get_input_element_value(input_elem);
             if (input_value !== undefined) {
                 let property_name;
                 if (for_realm_default_settings || sub || group) {
