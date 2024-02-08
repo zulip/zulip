@@ -666,7 +666,7 @@ def mark_clients_to_reload(queue_ids: Iterable[str]) -> None:
         web_reload_clients[qid] = True
 
 
-def send_web_reload_client_events(immediate: bool = False, count: Optional[int] = None) -> None:
+def send_web_reload_client_events(immediate: bool = False, count: Optional[int] = None) -> int:
     event: Dict[str, Any] = dict(
         type="web_reload_client",
         immediate=immediate,
@@ -679,6 +679,7 @@ def send_web_reload_client_events(immediate: bool = False, count: Optional[int] 
         client = clients[qid]
         if client.accepts_event(event):
             client.add_event(event)
+    return len(queue_ids)
 
 
 async def setup_event_queue(

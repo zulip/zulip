@@ -270,6 +270,19 @@ class EventsEndpointTest(ZulipTestCase):
         self.assertEqual(str(context.exception), "Missing 'data' argument")
         self.assertEqual(context.exception.http_status_code, 400)
 
+    def test_web_reload_clients(self) -> None:
+        # Minimal testing of the /api/internal/web_reload_clients endpoint
+        post_data = {
+            "client_count": "1",
+            "immediate": orjson.dumps(False).decode(),
+            "secret": settings.SHARED_SECRET,
+        }
+        req = HostRequestMock(post_data, tornado_handler=dummy_handler)
+        req.META["REMOTE_ADDR"] = "127.0.0.1"
+        result = self.client_post_request("/api/internal/web_reload_clients", req)
+        self.assert_json_success(result)
+        self.assertEqual(orjson.loads(result.content)["sent_events"], 0)
+
 
 class GetEventsTest(ZulipTestCase):
     def tornado_call(
