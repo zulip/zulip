@@ -14,6 +14,7 @@ import "../templates";
 import "../zulip_test";
 
 // Import styles
+import "tippy.js/dist/border.css";
 import "tippy.js/dist/tippy.css";
 import "tippy.js/themes/light-border.css";
 import "spectrum-colorpicker/spectrum.css";

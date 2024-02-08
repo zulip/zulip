@@ -16,7 +16,7 @@ import * as user_status from "./user_status";
 
 export function initialize() {
     popover_menus.register_popover_menu("#personal-menu", {
-        theme: "navbar-dropdown-menu",
+        theme: "popover-menu",
         placement: "bottom",
         offset: [-50, 0],
         // The strategy: "fixed"; and eventlisteners modifier option
