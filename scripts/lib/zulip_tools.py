@@ -682,6 +682,11 @@ def start_arg_parser(action: str, add_help: bool = False) -> argparse.ArgumentPa
     parser.add_argument(
         "--skip-checks", action="store_true", help="Skip syntax and database checks"
     )
+    parser.add_argument(
+        "--skip-client-reloads",
+        action="store_true",
+        help="Do not send reload events to web clients",
+    )
     if action == "restart":
         parser.add_argument(
             "--less-graceful",
