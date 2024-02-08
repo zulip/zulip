@@ -63,7 +63,9 @@ DEACTIVATED_ACCOUNT_ERROR = gettext_lazy(
     " Please contact your organization administrator to reactivate it."
 )
 PASSWORD_TOO_WEAK_ERROR = gettext_lazy("The password is too weak.")
-PASSWORD_TOO_LONG_ERROR = gettext_lazy("The password must not exceed 100 characters in length.")
+PASSWORD_TOO_LONG_ERROR = gettext_lazy(
+    "The password must not exceed {MAX_PASSWORD_LENGTH} characters in length."
+)
 
 
 def email_is_not_mit_mailing_list(email: str) -> None:
