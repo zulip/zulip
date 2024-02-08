@@ -38,15 +38,16 @@ export function get_sorted_options_list(option_values_object) {
 }
 
 export function get_realm_time_limits_in_minutes(property) {
-    if (realm[property] === null) {
+    const setting_value = realm[property];
+    if (setting_value === null) {
         // This represents "Anytime" case.
         return "";
     }
-    let val = (realm[property] / 60).toFixed(1);
+    let val = (setting_value / 60).toFixed(1);
     if (Number.parseFloat(val) === Number.parseInt(val, 10)) {
-        val = Number.parseInt(val, 10);
+        val = (setting_value / 60).toFixed(0);
     }
-    return val.toString();
+    return val;
 }
 
 export function get_property_value(property_name, for_realm_default_settings, sub, group) {
