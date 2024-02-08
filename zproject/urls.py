@@ -745,7 +745,7 @@ urls += [
     #
     # Since these views don't use rest_dispatch, they cannot have
     # asynchronous Tornado behavior.
-    path("notify_tornado", notify),
+    path("api/internal/notify_tornado", notify),
     path("api/v1/events/internal", get_events_internal),
 ]
 
