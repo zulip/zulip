@@ -82,30 +82,33 @@
 }
 
 .tippy-box[data-theme="popover-menu"] {
-    border: 0;
+    background-color: var(--color-background-popover-menu);
+    border: 1px solid var(--color-border-popover-menu);
     border-radius: 6px;
+    box-shadow: var(--box-shadow-popover-menu);
 
     > .tippy-content {
         padding: 0;
     }
 
     > .tippy-arrow {
-        top: -5.5px;
-        width: 16px;
-        height: 8px;
-        z-index: 1;
-        filter: drop-shadow(0 -1.25px 0 var(--color-border-dropdown-menu));
+        color: var(--color-background-popover-menu);
+    }
 
-        &::before {
-            content: "";
-            top: 0;
-            width: 100%;
-            height: 100%;
-            mask-image: url("../shared/icons/popover-arrow.svg");
-            mask-size: contain;
-            mask-repeat: no-repeat;
-            color: var(--color-background-dropdown-menu);
-        }
+    &[data-placement^="top"] > .tippy-arrow::before {
+        bottom: var(--popover-tippy-arrow-before-offset);
+    }
+
+    &[data-placement^="bottom"] > .tippy-arrow::before {
+        top: var(--popover-tippy-arrow-before-offset);
+    }
+
+    &[data-placement^="left"] > .tippy-arrow::before {
+        right: var(--popover-tippy-arrow-before-offset);
+    }
+
+    &[data-placement^="right"] > .tippy-arrow::before {
+        left: var(--popover-tippy-arrow-before-offset);
     }
 }
 
@@ -1230,13 +1233,10 @@ ul {
 
 .popover-menu {
     margin: 0;
-    border: 1px solid var(--color-border-popover-menu);
-    background-color: var(--color-background-popover-menu);
     max-height: 85vh;
     overflow-x: hidden;
     user-select: none;
     border-radius: 6px;
-    box-shadow: var(--box-shadow-popover-menu);
 
     .simplebar-content {
         min-width: var(--popover-menu-min-width);

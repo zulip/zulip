@@ -143,6 +143,15 @@
     /* Gap between tabs in the tab picker */
     --grid-gap-tab-picker: 2px;
 
+    /*
+    The tippy arrow which matches the color of the popover's border,
+    is formed by stacking two arrows on top of each other, via the
+    use of `::before` and `::after` pseudo-elements. This value overrides
+    the offset of the `::before` pseudo element to create a thicker border,
+    visually consistent with that of it's parent popover.
+    */
+    --popover-tippy-arrow-before-offset: -6.5px;
+
     /* Colors used across the app */
     --color-date: hsl(0deg 0% 15% / 75%);
     --color-background-private-message-header: hsl(46deg 35% 93%);
