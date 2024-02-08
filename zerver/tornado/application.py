@@ -17,10 +17,10 @@ def create_tornado_application(*, autoreload: bool = False) -> tornado.web.Appli
     django_handler.load_middleware()
 
     urls = (
-        r"/notify_tornado",
         r"/json/events",
         r"/api/v1/events",
         r"/api/v1/events/internal",
+        r"/api/internal/notify_tornado",
     )
 
     return tornado.web.Application(
