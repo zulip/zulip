@@ -5,6 +5,7 @@ from asgiref.sync import async_to_sync
 from django.conf import settings
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import gettext as _
+from pydantic import Json
 from typing_extensions import ParamSpec
 
 from zerver.decorator import internal_api_view, process_client
@@ -12,6 +13,7 @@ from zerver.lib.exceptions import JsonableError
 from zerver.lib.queue import get_queue_client
 from zerver.lib.request import REQ, RequestNotes, has_request_variables
 from zerver.lib.response import AsynchronousResponse, json_success
+from zerver.lib.typed_endpoint import typed_endpoint
 from zerver.lib.validator import (
     check_bool,
     check_dict,
@@ -24,7 +26,12 @@ from zerver.models import Client, UserProfile
 from zerver.models.clients import get_client
 from zerver.models.users import get_user_profile_by_id
 from zerver.tornado.descriptors import is_current_port
-from zerver.tornado.event_queue import access_client_descriptor, fetch_events, process_notification
+from zerver.tornado.event_queue import (
+    access_client_descriptor,
+    fetch_events,
+    process_notification,
+    send_web_reload_client_events,
+)
 from zerver.tornado.sharding import get_user_tornado_port, notify_tornado_queue_name
 
 P = ParamSpec("P")
@@ -47,6 +54,26 @@ def notify(
     # injects an event, as if read from RabbitMQ.
     in_tornado_thread(process_notification)(data)
     return json_success(request)
+
+
+@internal_api_view(True)
+@typed_endpoint
+def web_reload_clients(
+    request: HttpRequest,
+    *,
+    client_count: Optional[Json[int]] = None,
+    immediate: Json[bool] = False,
+) -> HttpResponse:
+    sent_events = in_tornado_thread(send_web_reload_client_events)(
+        immediate=immediate, count=client_count
+    )
+    return json_success(
+        request,
+        {
+            "sent_events": sent_events,
+            "complete": client_count is None or client_count != sent_events,
+        },
+    )
 
 
 @has_request_variables

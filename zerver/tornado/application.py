@@ -21,6 +21,7 @@ def create_tornado_application(*, autoreload: bool = False) -> tornado.web.Appli
         r"/api/v1/events",
         r"/api/v1/events/internal",
         r"/api/internal/notify_tornado",
+        r"/api/internal/web_reload_clients",
     )
 
     return tornado.web.Application(
