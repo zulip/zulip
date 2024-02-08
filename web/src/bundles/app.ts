@@ -15,6 +15,9 @@ import "../zulip_test";
 
 // Import styles
 import "tippy.js/dist/tippy.css";
+// Adds color inheritance to the borders when using the default CSS Arrow.
+// https://atomiks.github.io/tippyjs/v6/themes/#arrow-border
+import "tippy.js/dist/border.css";
 import "tippy.js/themes/light-border.css";
 import "spectrum-colorpicker/spectrum.css";
 import "katex/dist/katex.css";
