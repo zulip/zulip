@@ -7,7 +7,7 @@ from django.http import HttpRequest, HttpResponse
 from django.utils.translation import gettext as _
 from typing_extensions import ParamSpec
 
-from zerver.decorator import internal_notify_view, process_client
+from zerver.decorator import internal_api_view, process_client
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.queue import get_queue_client
 from zerver.lib.request import REQ, RequestNotes, has_request_variables
@@ -38,7 +38,7 @@ def in_tornado_thread(f: Callable[P, T]) -> Callable[P, T]:
     return async_to_sync(wrapped)
 
 
-@internal_notify_view(True)
+@internal_api_view(True)
 @has_request_variables
 def notify(
     request: HttpRequest, data: Mapping[str, Any] = REQ(json_validator=check_dict([]))
@@ -79,7 +79,7 @@ def cleanup_event_queue(
     return json_success(request)
 
 
-@internal_notify_view(True)
+@internal_api_view(True)
 @has_request_variables
 def get_events_internal(
     request: HttpRequest, user_profile_id: int = REQ(json_validator=check_int)
