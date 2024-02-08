@@ -537,8 +537,6 @@ export function check_property_changed(elem, for_realm_default_settings, sub, gr
             proposed_val = get_dropdown_list_widget_setting_value($elem);
             break;
         case "email_notifications_batching_period_seconds":
-            proposed_val = get_time_limit_setting_value($elem, false);
-            break;
         case "realm_message_content_edit_limit_seconds":
         case "realm_message_content_delete_limit_seconds":
         case "realm_move_messages_between_streams_limit_seconds":
