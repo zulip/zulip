@@ -221,6 +221,11 @@ if action == "start" or args.less_graceful:
         logging.info("Starting workers")
         subprocess.check_call(["supervisorctl", "start", *workers])
 
+if has_application_server() and not args.skip_client_reloads:
+    # All of the servers have been (re)started; now enqueue events in
+    # the Tornado servers to tell clients to reload.
+    subprocess.check_call(["./scripts/reload-clients"])
+
 logging.info("Done!")
 print(OKGREEN + f"Zulip {action}ed successfully!" + ENDC)
 

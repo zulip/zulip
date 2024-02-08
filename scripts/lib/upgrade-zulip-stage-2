@@ -495,7 +495,7 @@ else:
         )
 
     logging.info("Restarting Zulip...")
-    start_args = ["--skip-checks"]
+    start_args = ["--skip-checks", "--skip-client-reloads"]
     if not HAS_FILLED_CACHES:
         start_args.append("--fill-cache")
     if IS_SERVER_UP:
@@ -508,6 +508,9 @@ else:
     logging.info("Upgrade complete!")
 
     run_hooks("post-deploy")
+
+    if not args.skip_client_reloads:
+        subprocess.check_call(["./scripts/reload-clients"], preexec_fn=su_to_zulip)
 
 if args.audit_fts_indexes:
     logging.info("Correcting full-text search indexes for updated dictionary files")
