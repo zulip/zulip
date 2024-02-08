@@ -41,6 +41,11 @@ class Command(BaseCommand):
     def add_arguments(self, parser: CommandParser) -> None:
         parser.add_argument("--autoreload", action="store_true", help="Enable Tornado autoreload")
         parser.add_argument(
+            "--no-immediate-reloads",
+            action="store_true",
+            help="Do not tell old web app clients to immediately reload.",
+        )
+        parser.add_argument(
             "addrport",
             help="[port number or ipaddr:port]",
         )
@@ -127,7 +132,8 @@ class Command(BaseCommand):
                 from zerver.tornado.ioloop_logging import logging_data
 
                 logging_data["port"] = str(port)
-                await setup_event_queue(http_server, port)
+                send_reloads = not options.get("no_immediate_reloads", False)
+                await setup_event_queue(http_server, port, send_reloads)
                 stack.callback(dump_event_queues, port)
                 add_client_gc_hook(missedmessage_hook)
                 if settings.USING_RABBITMQ:
