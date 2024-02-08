@@ -1543,7 +1543,7 @@ class TestEmailMirrorTornadoView(ZulipTestCase):
 
         with mock_queue_publish("zerver.lib.email_mirror.queue_json_publish") as m:
             m.side_effect = check_queue_json_publish
-            return self.client_post("/email_mirror_message", post_data)
+            return self.client_post("/api/internal/email_mirror_message", post_data)
 
     def test_success_stream(self) -> None:
         stream = get_stream("Denmark", get_realm("zulip"))
