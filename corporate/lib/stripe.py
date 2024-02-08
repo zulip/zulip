@@ -779,6 +779,39 @@ class BillingSession(ABC):
             return_url=f"{self.billing_session_url}/billing/",
         ).url
 
+    def get_stripe_customer_portal_url(
+        self,
+        return_to_billing_page: bool,
+        manual_license_management: bool,
+        tier: Optional[int] = None,
+    ) -> str:
+        customer = self.get_customer()
+        assert customer is not None and customer.stripe_customer_id is not None
+
+        if return_to_billing_page:
+            return_url = f"{self.billing_session_url}/billing/"
+        else:
+            assert tier is not None
+            base_return_url = f"{self.billing_session_url}/upgrade/"
+            params = {
+                "manual_license_management": str(manual_license_management).lower(),
+                "tier": str(tier),
+            }
+            return_url = f"{base_return_url}?{urlencode(params)}"
+
+        configuration = stripe.billing_portal.Configuration.create(
+            business_profile={
+                "headline": "Invoice and receipt billing information",
+            },
+            features={"customer_update": {"enabled": True, "allowed_updates": ["address", "name"]}},
+        )
+
+        return stripe.billing_portal.Session.create(
+            customer=customer.stripe_customer_id,
+            configuration=configuration.id,
+            return_url=return_url,
+        ).url
+
     def generate_invoice_for_upgrade(
         self,
         customer: Customer,
@@ -1149,7 +1182,6 @@ class BillingSession(ABC):
             payment_method_types=["card"],
             success_url=f"{self.billing_session_url}/billing/event_status/?stripe_session_id={{CHECKOUT_SESSION_ID}}",
             billing_address_collection="required",
-            customer_update={"address": "auto"},
         )
         Session.objects.create(
             stripe_session_id=stripe_session.id,

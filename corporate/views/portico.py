@@ -8,6 +8,7 @@ from django.contrib.auth.views import redirect_to_login
 from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
 from django.template.response import TemplateResponse
 from django.urls import reverse
+from pydantic import Json
 
 from corporate.lib.decorator import (
     authenticated_remote_realm_management_endpoint,
@@ -30,6 +31,7 @@ from zerver.lib.github import (
 from zerver.lib.realm_description import get_realm_text_description
 from zerver.lib.realm_icon import get_realm_icon_url
 from zerver.lib.subdomains import is_subdomain_root_or_alias
+from zerver.lib.typed_endpoint import typed_endpoint
 from zerver.models import Realm
 
 
@@ -389,3 +391,57 @@ def remote_server_invoices_page(
 ) -> HttpResponseRedirect:
     list_invoices_session_url = billing_session.get_past_invoices_session_url()
     return HttpResponseRedirect(list_invoices_session_url)
+
+
+@zulip_login_required
+@typed_endpoint
+def customer_portal(
+    request: HttpRequest,
+    *,
+    return_to_billing_page: Json[bool] = False,
+    manual_license_management: Json[bool] = False,
+    tier: Optional[Json[int]] = None,
+) -> HttpResponseRedirect:
+    user = request.user
+    assert user.is_authenticated
+
+    if not user.has_billing_access:
+        return HttpResponseRedirect(reverse("billing_page"))
+
+    billing_session = RealmBillingSession(user=user, realm=user.realm)
+    review_billing_information_url = billing_session.get_stripe_customer_portal_url(
+        return_to_billing_page, manual_license_management, tier
+    )
+    return HttpResponseRedirect(review_billing_information_url)
+
+
+@authenticated_remote_realm_management_endpoint
+@typed_endpoint
+def remote_realm_customer_portal(
+    request: HttpRequest,
+    billing_session: RemoteRealmBillingSession,
+    *,
+    return_to_billing_page: Json[bool] = False,
+    manual_license_management: Json[bool] = False,
+    tier: Optional[Json[int]] = None,
+) -> HttpResponseRedirect:
+    review_billing_information_url = billing_session.get_stripe_customer_portal_url(
+        return_to_billing_page, manual_license_management, tier
+    )
+    return HttpResponseRedirect(review_billing_information_url)
+
+
+@authenticated_remote_server_management_endpoint
+@typed_endpoint
+def remote_server_customer_portal(
+    request: HttpRequest,
+    billing_session: RemoteServerBillingSession,
+    *,
+    return_to_billing_page: Json[bool] = False,
+    manual_license_management: Json[bool] = False,
+    tier: Optional[Json[int]] = None,
+) -> HttpResponseRedirect:
+    review_billing_information_url = billing_session.get_stripe_customer_portal_url(
+        return_to_billing_page, manual_license_management, tier
+    )
+    return HttpResponseRedirect(review_billing_information_url)

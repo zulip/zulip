@@ -220,6 +220,15 @@
                                 <object class="loader upgrade-button-loader" type="image/svg+xml" data="{{ static('images/loading/loader-white.svg') }}"></object>
                             </button>
                         </div>
+                        {% if not free_trial_days and payment_method %}
+                        <div class="stripe-billing-information not-editable-realm-field">
+                            {% if not manual_license_management %}
+                            <a href="{{ page_params.billing_base_url }}/customer_portal/?tier={{ page_params.tier }}">View and update</a> billing information that will be displayed on your invoice and receipt.
+                            {% else %}
+                            <a href="{{ page_params.billing_base_url }}/customer_portal/?manual_license_management=true&tier={{ page_params.tier }}">View and update</a> billing information that will be displayed on your invoice and receipt.
+                            {% endif %}
+                        </div>
+                        {% endif %}
                         <div id="upgrade-cardchange-error" class="alert alert-danger upgrade-page-error"></div>
                     </div>
                     {% endif %}
