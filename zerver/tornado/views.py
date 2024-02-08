@@ -43,6 +43,8 @@ def in_tornado_thread(f: Callable[P, T]) -> Callable[P, T]:
 def notify(
     request: HttpRequest, data: Mapping[str, Any] = REQ(json_validator=check_dict([]))
 ) -> HttpResponse:
+    # Only the puppeteer full-stack tests use this endpoint; it
+    # injects an event, as if read from RabbitMQ.
     in_tornado_thread(process_notification)(data)
     return json_success(request)
 

@@ -227,9 +227,10 @@ class EventsEndpointTest(ZulipTestCase):
         self.assert_json_error(result, "User not authorized for this query")
 
     def test_tornado_endpoint(self) -> None:
-        # This test is mostly intended to get minimal coverage on
-        # the /notify_tornado endpoint, so we can have 100% URL coverage,
-        # but it does exercise a little bit of the codepath.
+        # This test is mostly intended to get minimal coverage on the
+        # /api/internal/notify_tornado endpoint (only used in
+        # puppeteer tests), so we can have 100% URL coverage, but it
+        # does exercise a little bit of the codepath.
         post_data = dict(
             data=orjson.dumps(
                 dict(
@@ -243,7 +244,7 @@ class EventsEndpointTest(ZulipTestCase):
         req = HostRequestMock(post_data)
         req.META["REMOTE_ADDR"] = "127.0.0.1"
         with self.assertRaises(RequestVariableMissingError) as context:
-            result = self.client_post_request("/notify_tornado", req)
+            result = self.client_post_request("/api/internal/notify_tornado", req)
         self.assertEqual(str(context.exception), "Missing 'secret' argument")
         self.assertEqual(context.exception.http_status_code, 400)
 
@@ -251,21 +252,21 @@ class EventsEndpointTest(ZulipTestCase):
         req = HostRequestMock(post_data, user_profile=None)
         req.META["REMOTE_ADDR"] = "127.0.0.1"
         with self.assertRaises(AccessDeniedError) as access_denied_error:
-            result = self.client_post_request("/notify_tornado", req)
+            result = self.client_post_request("/api/internal/notify_tornado", req)
         self.assertEqual(str(access_denied_error.exception), "Access denied")
         self.assertEqual(access_denied_error.exception.http_status_code, 403)
 
         post_data["secret"] = settings.SHARED_SECRET
         req = HostRequestMock(post_data, tornado_handler=dummy_handler)
         req.META["REMOTE_ADDR"] = "127.0.0.1"
-        result = self.client_post_request("/notify_tornado", req)
+        result = self.client_post_request("/api/internal/notify_tornado", req)
         self.assert_json_success(result)
 
         post_data = dict(secret=settings.SHARED_SECRET)
         req = HostRequestMock(post_data, tornado_handler=dummy_handler)
         req.META["REMOTE_ADDR"] = "127.0.0.1"
         with self.assertRaises(RequestVariableMissingError) as context:
-            result = self.client_post_request("/notify_tornado", req)
+            result = self.client_post_request("/api/internal/notify_tornado", req)
         self.assertEqual(str(context.exception), "Missing 'data' argument")
         self.assertEqual(context.exception.http_status_code, 400)
 

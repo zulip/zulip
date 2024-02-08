@@ -155,9 +155,12 @@ def send_notification_http(port: int, data: Mapping[str, Any]) -> None:
 
         process_notification(data)
     else:
+        # This codepath is only used when running full-stack puppeteer
+        # tests, which don't have RabbitMQ but do have a separate
+        # Tornado process.
         tornado_url = get_tornado_url(port)
         requests_client().post(
-            tornado_url + "/notify_tornado",
+            tornado_url + "/api/internal/notify_tornado",
             data=dict(data=orjson.dumps(data), secret=settings.SHARED_SECRET),
         )
 
