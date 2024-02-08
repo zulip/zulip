@@ -23,7 +23,7 @@ from zerver.decorator import (
     authenticated_json_view,
     authenticated_rest_api_view,
     authenticated_uploads_api_view,
-    internal_notify_view,
+    internal_api_view,
     process_client,
     public_json_view,
     return_success_on_head_request,
@@ -995,7 +995,7 @@ class TestInternalNotifyView(ZulipTestCase):
 
     def internal_notify(self, is_tornado: bool, req: HttpRequest) -> HttpResponse:
         boring_view = lambda req: json_response(msg=self.BORING_RESULT)
-        return internal_notify_view(is_tornado)(boring_view)(req)
+        return internal_api_view(is_tornado)(boring_view)(req)
 
     def test_valid_internal_requests(self) -> None:
         secret = "random"
