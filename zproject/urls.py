@@ -726,11 +726,6 @@ v1_api_mobile_patterns = [
     path("jwt/fetch_api_key", jwt_fetch_api_key),
 ]
 
-# View for uploading messages from email mirror
-urls += [
-    path("email_mirror_message", email_mirror_message),
-]
-
 # Include URL configuration files for site-specified extra installed
 # Django apps
 for app_name in settings.EXTRA_INSTALLED_APPS:
@@ -739,12 +734,10 @@ for app_name in settings.EXTRA_INSTALLED_APPS:
         urls += [path("", include(f"{app_name}.urls"))]
         i18n_urls += import_string(f"{app_name}.urls.i18n_urlpatterns")
 
-# Tornado views
+# Used internally for communication between command-line, Django,
+# and Tornado processes
 urls += [
-    # Used internally for communication between Django and Tornado processes
-    #
-    # Since these views don't use rest_dispatch, they cannot have
-    # asynchronous Tornado behavior.
+    path("api/internal/email_mirror_message", email_mirror_message),
     path("api/internal/notify_tornado", notify),
     path("api/v1/events/internal", get_events_internal),
 ]
