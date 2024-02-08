@@ -688,11 +688,6 @@ def start_arg_parser(action: str, add_help: bool = False) -> argparse.ArgumentPa
             action="store_true",
             help="Restart with more concern for expediency than minimizing availability interruption",
         )
-        parser.add_argument(
-            "--skip-tornado",
-            action="store_true",
-            help="Do not restart Tornado processes",
-        )
     return parser
 
 
