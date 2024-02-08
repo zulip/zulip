@@ -19,7 +19,7 @@ from zerver.actions.realm_settings import do_deactivate_realm, do_reactivate_rea
 from zerver.actions.user_settings import do_change_user_setting
 from zerver.actions.users import change_user_is_active, do_deactivate_user
 from zerver.decorator import (
-    authenticate_notify,
+    authenticate_internal_api,
     authenticated_json_view,
     authenticated_rest_api_view,
     authenticated_uploads_api_view,
@@ -1005,7 +1005,7 @@ class TestInternalNotifyView(ZulipTestCase):
         )
 
         with self.settings(SHARED_SECRET=secret):
-            self.assertTrue(authenticate_notify(request))
+            self.assertTrue(authenticate_internal_api(request))
             self.assertEqual(
                 orjson.loads(self.internal_notify(False, request).content).get("msg"),
                 self.BORING_RESULT,
@@ -1021,7 +1021,7 @@ class TestInternalNotifyView(ZulipTestCase):
             tornado_handler=dummy_handler,
         )
         with self.settings(SHARED_SECRET=secret):
-            self.assertTrue(authenticate_notify(request))
+            self.assertTrue(authenticate_internal_api(request))
             self.assertEqual(
                 orjson.loads(self.internal_notify(True, request).content).get("msg"),
                 self.BORING_RESULT,
@@ -1054,7 +1054,7 @@ class TestInternalNotifyView(ZulipTestCase):
         )
 
         with self.settings(SHARED_SECRET="broken"):
-            self.assertFalse(authenticate_notify(request))
+            self.assertFalse(authenticate_internal_api(request))
             with self.assertRaises(AccessDeniedError) as access_denied_error:
                 self.internal_notify(True, request)
             self.assertEqual(access_denied_error.exception.http_status_code, 403)
@@ -1067,7 +1067,7 @@ class TestInternalNotifyView(ZulipTestCase):
         )
 
         with self.settings(SHARED_SECRET=secret):
-            self.assertFalse(authenticate_notify(request))
+            self.assertFalse(authenticate_internal_api(request))
             with self.assertRaises(AccessDeniedError) as context:
                 self.internal_notify(True, request)
             self.assertEqual(context.exception.http_status_code, 403)
