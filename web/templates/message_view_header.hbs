@@ -16,7 +16,11 @@
     {{#if rendered_narrow_description}}
     {{rendered_markdown rendered_narrow_description}}
     {{else}}
-    {{t "(no description)"}}
+    {{#if is_admin}}
+    <a href="{{stream_settings_link}}">
+        {{t "Add a description"}}
+    </a>
+    {{/if}}
     {{/if}}
 </span>
 {{else}}

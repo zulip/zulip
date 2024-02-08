@@ -10,6 +10,7 @@ import * as peer_data from "./peer_data";
 import * as recent_view_util from "./recent_view_util";
 import * as rendered_markdown from "./rendered_markdown";
 import * as search from "./search";
+import {current_user} from "./state_data";
 
 function get_message_view_header_context(filter) {
     if (recent_view_util.is_visible()) {
@@ -47,8 +48,9 @@ function get_message_view_header_context(filter) {
         // involves a stream which exists and
         // the current user can access.
         const current_stream = filter._sub;
-        context.rendered_narrow_description = current_stream.rendered_description;
         const sub_count = peer_data.get_subscriber_count(current_stream.stream_id);
+        context.is_admin = current_user.is_admin;
+        context.rendered_narrow_description = current_stream.rendered_description;
         context.sub_count = sub_count;
         context.stream = current_stream;
         context.stream_settings_link =
