@@ -927,7 +927,7 @@ def authenticate_internal_api(request: HttpRequest, secret: str = REQ("secret"))
     )
 
 
-def internal_notify_view(
+def internal_api_view(
     is_tornado_view: bool,
 ) -> Callable[
     [Callable[Concatenate[HttpRequest, ParamT], HttpResponse]],
