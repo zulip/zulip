@@ -559,11 +559,11 @@ export function check_property_changed(elem, for_realm_default_settings, sub, gr
         case "emojiset":
         case "user_list_style":
         case "stream_privacy":
-            proposed_val = get_input_element_value($elem, "radio-group");
+            proposed_val = get_input_element_value(elem, "radio-group");
             break;
         default:
             if (current_val !== undefined) {
-                proposed_val = get_input_element_value($elem, typeof current_val);
+                proposed_val = get_input_element_value(elem, typeof current_val);
             } else {
                 blueslip.error("Element refers to unknown property", {property_name});
             }
@@ -578,7 +578,7 @@ function switching_to_private(properties_elements, for_realm_default_settings) {
         if (property_name !== "stream_privacy") {
             continue;
         }
-        const proposed_val = get_input_element_value($elem, "radio-group");
+        const proposed_val = get_input_element_value(elem, "radio-group");
         return proposed_val === "invite-only-public-history" || proposed_val === "invite-only";
     }
     return false;
