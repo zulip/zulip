@@ -681,7 +681,9 @@ def send_web_reload_client_events(immediate: bool = False, count: Optional[int] 
             client.add_event(event)
 
 
-async def setup_event_queue(server: tornado.httpserver.HTTPServer, port: int) -> None:
+async def setup_event_queue(
+    server: tornado.httpserver.HTTPServer, port: int, send_reloads: bool = True
+) -> None:
     if not settings.TEST_SUITE:
         load_event_queues(port)
         autoreload.add_reload_hook(lambda: dump_event_queues(port))
@@ -694,7 +696,8 @@ async def setup_event_queue(server: tornado.httpserver.HTTPServer, port: int) ->
     pc.start()
 
     send_restart_events()
-    send_web_reload_client_events(immediate=settings.DEVELOPMENT)
+    if send_reloads:
+        send_web_reload_client_events(immediate=settings.DEVELOPMENT)
 
 
 def fetch_events(
