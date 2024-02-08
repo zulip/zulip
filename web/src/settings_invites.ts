@@ -277,7 +277,7 @@ export function on_load_success(
         const html_body = render_settings_resend_invite_modal({email});
 
         confirm_dialog.launch({
-            html_heading: $t_html({defaultMessage: "Resend invitation"}),
+            html_heading: $t_html({defaultMessage: "Resend invitation?"}),
             html_body,
             on_click() {
                 do_resend_invite({$row, invite_id});
