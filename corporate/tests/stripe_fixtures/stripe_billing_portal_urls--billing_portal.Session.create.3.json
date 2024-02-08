@@ -1,0 +1,13 @@
+{
+  "configuration": "bpc_1OjJrFDEQaroqDjscpxrDOV3",
+  "created": 1000000000,
+  "customer": "cus_NORMALIZED0001",
+  "flow": null,
+  "id": "bps_1OjJrGDEQaroqDjsliqRaUpe",
+  "livemode": false,
+  "locale": null,
+  "object": "billing_portal.session",
+  "on_behalf_of": null,
+  "return_url": "http://zulip.testserver/billing/",
+  "url": "https://billing.stripe.com/p/session/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QWVFpbGV4a2tnN0wyeFNTQThiZDFhalJNdjdjZjQw0100aqFy16Up"
+}
