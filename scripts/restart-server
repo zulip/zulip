@@ -162,15 +162,14 @@ if action == "restart" and len(workers) > 0:
 
 if has_application_server():
     # Next, we restart the Tornado processes sequentially, in order to
-    # minimize downtime of the tornado service caused by too many Python
-    # processes restarting at the same time, resulting in each receiving
-    # insufficient priority.  This is important, because Tornado is the
-    # main source of user-visible downtime when we restart a Zulip server.
-    # We do this before restarting Django, in case there are new event
-    # types which it will need to know how to deal with.
-    if action == "restart" and args.skip_tornado:
-        logging.info("Skipping restart of Tornado")
-    elif len(tornado_ports) > 1:
+    # minimize downtime of the tornado service caused by too many
+    # Python processes restarting at the same time, resulting in each
+    # receiving insufficient priority.  This is important, because
+    # Tornado being unavailable for too long is the main source of
+    # user-visible downtime when we restart a Zulip server.  We do
+    # this before restarting Django, in case there are new event types
+    # which it will need to know how to deal with.
+    if len(tornado_ports) > 1:
         for p in tornado_ports:
             # Restart Tornado processes individually for a better rate of
             # restarts.  This also avoids behavior with restarting a whole
