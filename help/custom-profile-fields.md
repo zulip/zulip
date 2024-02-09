@@ -43,20 +43,20 @@ methods][authentication-production] documentation for details.
 
 ## Profile field types
 
-There are several different types of fields available.
+Choose the profile field type that's most appropriate for the requested information.
 
-* **Text (short)**: For one line responses, like
-    "Job title". Responses are limited to 50 characters.
-* **Text (long)**: For multiline responses, like "Biography".
-* **Date**: For dates, like "Birthday".
-* **Link**: For links to websites.
-* **External account**: For linking to GitHub, Twitter, etc.
+* **Date**: For dates (e.g., birthdays or work anniversaries).
+* **Link**: For links to websites, including company-internal pages.
+* **External account**: For linking to an account on GitHub, X (Twitter), etc.
+* **List of options**: A dropdown with a list of predefined options (e.g.,
+  office location).
 * **Pronouns**: What pronouns should people use to refer to the user? Pronouns
   are displayed in [user mention](/help/mention-a-user-or-group) autocomplete
   suggestions.
-* **List of options**: Creates a dropdown with a list of options.
-* **Users**: For selecting one or more users, like "Manager" or
-    "Direct reports".
+* **Text (long)**: For multiline responses (e.g., a user's intro message).
+* **Text (short)**: For one-line responses up to 50 characters (e.g., team
+  name or role in your organization).
+* **Users**: For selecting one or more users (e.g., manager or direct reports).
 
 ## Display custom fields on user card
 
