@@ -199,8 +199,9 @@ test("msg_moved_var", () => {
 
 test("msg_edited_vars", () => {
     // This is a test to verify that only one of the three bools,
-    // `edited_in_left_col`, `edited_alongside_sender`, `edited_status_msg`
-    // is not false; Tests for three different kinds of messages:
+    // `message_edit_notices_in_left_col`, `message_edit_notices_alongside_sender`,
+    // `message_edit_notices_for_status_message` is not false; Tests for three
+    // different kinds of messages:
     //   * "/me" message
     //   * message that includes sender
     //   * message without sender
@@ -236,21 +237,34 @@ test("msg_edited_vars", () => {
     }
 
     function assert_left_col(message_container) {
-        assert.equal(message_container.edited_in_left_col, true);
-        assert.equal(message_container.edited_alongside_sender, false);
-        assert.equal(message_container.edited_status_msg, false);
+        assert.equal(message_container.modified, true);
+        assert.equal(message_container.message_edit_notices_in_left_col, true);
+        assert.equal(message_container.message_edit_notices_alongside_sender, false);
+        assert.equal(message_container.message_edit_notices_for_status_message, false);
     }
 
     function assert_alongside_sender(message_container) {
-        assert.equal(message_container.edited_in_left_col, false);
-        assert.equal(message_container.edited_alongside_sender, true);
-        assert.equal(message_container.edited_status_msg, false);
+        assert.equal(message_container.modified, true);
+        assert.equal(message_container.message_edit_notices_in_left_col, false);
+        assert.equal(message_container.message_edit_notices_alongside_sender, true);
+        assert.equal(message_container.message_edit_notices_for_status_message, false);
     }
 
     function assert_status_msg(message_container) {
-        assert.equal(message_container.edited_in_left_col, false);
-        assert.equal(message_container.edited_alongside_sender, false);
-        assert.equal(message_container.edited_status_msg, true);
+        assert.equal(message_container.modified, true);
+        assert.equal(message_container.message_edit_notices_in_left_col, false);
+        assert.equal(message_container.message_edit_notices_alongside_sender, false);
+        assert.equal(message_container.message_edit_notices_for_status_message, true);
+    }
+
+    function set_edited_notice_locations(message_container) {
+        const include_sender = message_container.include_sender;
+        const is_hidden = message_container.is_hidden;
+        const status_message = Boolean(message_container.status_message);
+        message_container.message_edit_notices_in_left_col = !include_sender && !is_hidden;
+        message_container.message_edit_notices_alongside_sender = include_sender && !status_message;
+        message_container.message_edit_notices_for_status_message =
+            include_sender && status_message;
     }
 
     (function test_msg_edited_vars() {
@@ -269,8 +283,13 @@ test("msg_edited_vars", () => {
 
         const result = list._message_groups[0].message_containers;
 
+        set_edited_notice_locations(result[0]);
         assert_alongside_sender(result[0]);
+
+        set_edited_notice_locations(result[1]);
         assert_left_col(result[1]);
+
+        set_edited_notice_locations(result[2]);
         assert_status_msg(result[2]);
     })();
 });

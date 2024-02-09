@@ -1,13 +1,15 @@
-{{#if msg/local_edit_timestamp}}
-<div class="message_edit_notice" data-tippy-content="{{t 'Last edited {last_edit_timestr}.' }}">
-    {{t "SAVING" }}
-</div>
-{{else if moved}}
-<div class="message_edit_notice" data-tippy-content="{{t 'Last moved {last_edit_timestr}.' }}">
-    {{t "MOVED" }}
-</div>
-{{else}}
-<div class="message_edit_notice" data-tippy-content="{{t 'Last edited {last_edit_timestr}.' }}">
-    {{t "EDITED" }}
-</div>
+{{#if modified}}
+    {{#if msg/local_edit_timestamp}}
+        <div class="message_edit_notice" data-tippy-content="{{t 'Last edited {last_edit_timestr}.'}}">
+            {{t "SAVING"}}
+        </div>
+    {{else if moved}}
+        <div class="message_edit_notice" data-tippy-content="{{t 'Last moved {last_edit_timestr}.'}}">
+            {{t "MOVED"}}
+        </div>
+    {{else}}
+        <div class="message_edit_notice" data-tippy-content="{{t 'Last edited {last_edit_timestr}.'}}">
+            {{t "EDITED"}}
+        </div>
+    {{/if}}
 {{/if}}
