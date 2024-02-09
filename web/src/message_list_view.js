@@ -355,9 +355,6 @@ export class MessageListView {
         //   * `edited_alongside_sender` -- when label appears alongside sender info.
         //   * `edited_status_msg`       -- when label appears for a "/me" message.
         const last_edit_timestr = this._get_msg_timestring(message_container);
-        const include_sender = message_container.include_sender;
-        const is_hidden = message_container.is_hidden;
-        const status_message = Boolean(message_container.status_message);
         const edit_history_details = analyze_edit_history(message_container.msg, last_edit_timestr);
 
         if (
@@ -377,10 +374,8 @@ export class MessageListView {
         }
 
         message_container.last_edit_timestr = last_edit_timestr;
-        message_container.edited_in_left_col = !include_sender && !is_hidden;
-        message_container.edited_alongside_sender = include_sender && !status_message;
-        message_container.edited_status_msg = include_sender && status_message;
         message_container.moved = edit_history_details.moved && !edit_history_details.edited;
+        message_container.modified = true;
     }
 
     set_calculated_message_container_variables(message_container, is_revealed) {
@@ -803,6 +798,18 @@ export class MessageListView {
         );
     }
 
+    set_edited_notice_locations(message_container) {
+        // Based on the variables that define the overall message's HTML layout, set
+        // variables defining where the message-edited notices should be placed.
+        const include_sender = message_container.include_sender;
+        const is_hidden = message_container.is_hidden;
+        const status_message = Boolean(message_container.status_message);
+        message_container.message_edit_notices_in_left_col = !include_sender && !is_hidden;
+        message_container.message_edit_notices_alongside_sender = include_sender && !status_message;
+        message_container.message_edit_notices_for_status_message =
+            include_sender && status_message;
+    }
+
     render(messages, where, messages_are_new) {
         // This function processes messages into chunks with separators between them,
         // and templates them to be inserted as table rows into the DOM.
@@ -866,6 +873,7 @@ export class MessageListView {
         let $last_group_row;
 
         for (const message_container of message_containers) {
+            this.set_edited_notice_locations(message_container);
             this.message_containers.set(message_container.msg.id, message_container);
         }
 
