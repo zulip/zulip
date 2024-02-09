@@ -49,6 +49,9 @@ run_test("user_groups", () => {
     user_groups.add(admins);
     assert.deepEqual(user_groups.get_user_group_from_id(admins.id), admins);
 
+    assert.equal(user_groups.maybe_get_user_group_from_id(99), undefined);
+    assert.deepEqual(user_groups.get_user_group_from_id(admins.id), admins);
+
     const update_name_event = {
         group_id: admins.id,
         data: {

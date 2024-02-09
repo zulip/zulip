@@ -568,33 +568,20 @@ export function change_state(section, right_side_tab) {
         return;
     }
 
-    if (section === "your") {
-        group_list_toggler.goto("your-groups");
-        empty_right_panel();
-        return;
-    }
-
     // if the section is a valid number.
     if (/\d+/.test(section)) {
         const group_id = Number.parseInt(section, 10);
         const group = user_groups.get_user_group_from_id(group_id);
-        if (!group) {
-            // Some users can type random url of the form
-            // /#groups/<random-group-id> we need to handle that.
-            group_list_toggler.goto("your-groups");
-        } else {
-            show_right_section();
-            // We show the list of user groups in the left panel
-            // based on the tab that is active. It is `your-groups`
-            // tab by default.
-            redraw_user_group_list();
-            select_tab = right_side_tab;
-            switch_to_group_row(group);
-        }
+        show_right_section();
+        // We show the list of user groups in the left panel
+        // based on the tab that is active. It is `your-groups`
+        // tab by default.
+        redraw_user_group_list();
+        select_tab = right_side_tab;
+        switch_to_group_row(group);
         return;
     }
 
-    blueslip.info("invalid section for groups: " + section);
     group_list_toggler.goto("your-groups");
     empty_right_panel();
 }
