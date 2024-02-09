@@ -244,6 +244,11 @@ export function validate_group_settings_hash(hash: string): string {
     const hash_components = hash.slice(1).split(/\//);
     const section = hash_components[1];
 
+    const can_create_groups = settings_data.user_can_edit_user_groups();
+    if (section === "new" && !can_create_groups) {
+        return "#groups/your";
+    }
+
     if (/\d+/.test(section)) {
         const group_id = Number.parseInt(section, 10);
         const group = user_groups.maybe_get_user_group_from_id(group_id);
