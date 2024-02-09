@@ -67,6 +67,10 @@ export function get_user_group_from_id(group_id: number): UserGroup {
     return user_group;
 }
 
+export function maybe_get_user_group_from_id(group_id: number): UserGroup | undefined {
+    return user_group_by_id_dict.get(group_id);
+}
+
 export function update(event: UserGroupUpdateEvent): void {
     const group = get_user_group_from_id(event.group_id);
     if (event.data.name !== undefined) {

@@ -248,8 +248,12 @@ function do_hashchange_overlay(old_hash) {
         }
     }
 
-    if (base === "groups" && !section) {
-        history.replaceState(null, "", browser_history.get_full_url("groups/your"));
+    if (base === "groups") {
+        const valid_hash = hash_util.validate_group_settings_hash(window.location.hash);
+        if (valid_hash !== window.location.hash) {
+            history.replaceState(null, "", browser_history.get_full_url(valid_hash));
+            section = hash_parser.get_current_hash_section();
+        }
     }
 
     // Start by handling the specific case of going

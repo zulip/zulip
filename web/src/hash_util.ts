@@ -8,6 +8,7 @@ import * as settings_data from "./settings_data";
 import * as stream_data from "./stream_data";
 import * as sub_store from "./sub_store";
 import type {StreamSubscription} from "./sub_store";
+import * as user_groups from "./user_groups";
 import type {UserGroup} from "./user_groups";
 
 // TODO(typescript): Move to filter.js when it's converted to typescript.
@@ -235,6 +236,39 @@ export function validate_stream_settings_hash(hash: string): string {
     if (!valid_section_values.includes(section)) {
         blueslip.warn("invalid section for streams: " + section);
         return "#streams/subscribed";
+    }
+    return hash;
+}
+
+export function validate_group_settings_hash(hash: string): string {
+    const hash_components = hash.slice(1).split(/\//);
+    const section = hash_components[1];
+
+    if (/\d+/.test(section)) {
+        const group_id = Number.parseInt(section, 10);
+        const group = user_groups.maybe_get_user_group_from_id(group_id);
+        if (!group) {
+            // Some users can type random url of the form
+            // /#groups/<random-group-id> we need to handle that.
+            return "#groups/your";
+        }
+
+        const group_name = hash_components[2];
+        let right_side_tab = hash_components[3];
+        const valid_right_side_tab_values = new Set(["general", "members"]);
+        if (group.name === group_name && valid_right_side_tab_values.has(right_side_tab)) {
+            return hash;
+        }
+        if (!valid_right_side_tab_values.has(right_side_tab)) {
+            right_side_tab = "general";
+        }
+        return group_edit_url(group, right_side_tab);
+    }
+
+    const valid_section_values = ["new", "your", "all"];
+    if (!valid_section_values.includes(section)) {
+        blueslip.info("invalid section for groups: " + section);
+        return "#groups/your";
     }
     return hash;
 }
