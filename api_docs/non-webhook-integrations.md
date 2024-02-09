@@ -4,14 +4,14 @@
 fastest to write, but sometimes a third-party product just doesn't support
 them. Zulip supports several other types of integrations.
 
-1. **Python script integrations**
+* **Python script integrations**
    (examples: SVN, Git), where we can get the service to call our integration
    (by shelling out or otherwise), passing in the required data.  Our preferred
    model for these is to ship these integrations in the
    [Zulip Python API distribution](https://github.com/zulip/python-zulip-api/tree/main/zulip),
    within the `integrations` directory there.
 
-1. **Plugin integrations** (examples:
+* **Plugin integrations** (examples:
    Jenkins, Hubot, Trac) where the user needs to install a plugin into their
    existing software.  These are often more work, but for some products are the
    only way to integrate with the product at all.
@@ -20,7 +20,7 @@ them. Zulip supports several other types of integrations.
     documentation for the third party software in order to learn how to
     write the integration.
 
-1. **Interactive bots**. See [Writing bots](/api/writing-bots).
+* **Interactive bots**. See [Writing bots](/api/writing-bots).
 
 A few notes on how to do these:
 
@@ -51,3 +51,9 @@ examples of ideal UAs are:
 
 * The [general advice](/api/incoming-webhooks-overview#general-advice) for
   webhook integrations applies here as well.
+
+## Related articles
+
+* [Running bots](/api/running-bots)
+* [Deploying bots](/api/deploying-bots)
+* [Writing bots](/api/writing-bots)

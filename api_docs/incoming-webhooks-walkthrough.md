@@ -289,15 +289,19 @@ the [management commands][management-commands] documentation.
 ### Integrations Dev Panel
 This is the GUI tool.
 
+{start_tabs}
+
 1. Run `./tools/run-dev` then go to http://localhost:9991/devtools/integrations/.
 
-2. Set the following mandatory fields:
+1. Set the following mandatory fields:
 **Bot** - Any incoming webhook bot.
 **Integration** - One of the integrations.
 **Fixture** - Though not mandatory, it's recommended that you select one and then tweak it if necessary.
 The remaining fields are optional, and the URL will automatically be generated.
 
-3. Click **Send**!
+1. Click **Send**!
+
+{end_tabs}
 
 By opening Zulip in one tab and then this tool in another, you can quickly tweak
 your code and send sample messages for many different test fixtures.
@@ -480,24 +484,21 @@ screenshot. Mostly you should plan on templating off an existing guide, like
 
 ## Step 7: Preparing a pull request to zulip/zulip
 
-When you have finished your webhook integration and are ready for it to be
-available in the Zulip product, follow these steps to prepare your pull
-request:
+When you have finished your webhook integration, follow these guidelines before
+pushing the code to your fork and submitting a pull request to zulip/zulip:
 
-1. Run tests including linters and ensure you have addressed any issues they
-   report. See [Testing](https://zulip.readthedocs.io/en/latest/testing/testing.html)
-   and [Linters](https://zulip.readthedocs.io/en/latest/testing/linters.html) for details.
-2. Read through [Code styles and conventions](
-   https://zulip.readthedocs.io/en/latest/contributing/code-style.html) and take a look
-   through your code to double-check that you've followed Zulip's guidelines.
-3. Take a look at your Git history to ensure your commits have been clear and
-   logical (see [Commit discipline](
-   https://zulip.readthedocs.io/en/latest/contributing/commit-discipline.html) for tips). If not,
-   consider revising them with `git rebase --interactive`. For most incoming webhooks,
-   you'll want to squash your changes into a single commit and include a good,
-   clear commit message.
-4. Push code to your fork.
-5. Submit a pull request to zulip/zulip.
+- Run tests including linters and ensure you have addressed any issues they
+  report. See [Testing](https://zulip.readthedocs.io/en/latest/testing/testing.html)
+  and [Linters](https://zulip.readthedocs.io/en/latest/testing/linters.html) for details.
+- Read through [Code styles and conventions](
+  https://zulip.readthedocs.io/en/latest/contributing/code-style.html) and take a look
+  through your code to double-check that you've followed Zulip's guidelines.
+- Take a look at your Git history to ensure your commits have been clear and
+  logical (see [Commit discipline](
+  https://zulip.readthedocs.io/en/latest/contributing/commit-discipline.html) for tips). If not,
+  consider revising them with `git rebase --interactive`. For most incoming webhooks,
+  you'll want to squash your changes into a single commit and include a good,
+  clear commit message.
 
 If you would like feedback on your integration as you go, feel free to post a
 message on the [public Zulip instance](https://chat.zulip.org/#narrow/stream/integrations).
@@ -652,3 +653,8 @@ with a string describing the unsupported event type, like so:
 ```
 raise UnsupportedWebhookEventTypeError(event_type)
 ```
+
+## Related articles
+
+* [Integrations overview](/api/integrations-overview)
+* [Incoming webhook integrations](/api/incoming-webhooks-overview)

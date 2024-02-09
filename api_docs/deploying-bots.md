@@ -44,7 +44,7 @@ Botserver interaction are:
 
 1. The Zulip server sends a POST request to the Botserver on `https://bot-server.example.com/`:
 
-    ```json
+    ```
     {
       "message":{
         "content":"@**My Bot User** hello world",
@@ -57,9 +57,8 @@ Botserver interaction are:
 
     This URL is configured in the Zulip web-app in your Bot User's settings.
 
-1. The Botserver searches for a bot to handle the message.
-
-1. The Botserver executes your bot's `handle_message` code.
+1. The Botserver searches for a bot to handle the message, and executes your
+   bot's `handle_message` code.
 
 Your bot's code should work just like it does with `zulip-run-bot`;
 for example, you reply using
@@ -75,6 +74,7 @@ pip3 install zulip_botserver
 
 ### Running a bot using the Zulip Botserver
 
+{start_tabs}
 
 1. Construct the URL for your bot, which will be of the form:
 
@@ -108,10 +108,14 @@ pip3 install zulip_botserver
 1.  Congrats, everything is set up! Test your Botserver like you would
     test a normal bot.
 
+{end_tabs}
+
 ### Running multiple bots using the Zulip Botserver
 
 The Zulip Botserver also supports running multiple bots from a single
 Botserver process.  You can do this with the following procedure.
+
+{start_tabs}
 
 1. Download the `botserverrc` from the `your-bots` settings page, using
    the "Download config of all active outgoing webhook bots in Zulip
@@ -160,6 +164,8 @@ Botserver process.  You can do this with the following procedure.
 
      If omitted, `hostname` defaults to `127.0.0.1` and `port` to `5002`.
 
+{end_tabs}
+
 ### Running Zulip Botserver with supervisord
 
 [supervisord](http://supervisord.org/) is a popular tool for running
@@ -169,6 +175,8 @@ section documents how to run the Zulip Botserver using *supervisord*.
 
 Running the Zulip Botserver with *supervisord* works almost like
 running it manually.
+
+{start_tabs}
 
 1.  Install *supervisord* via your package manager; e.g. on Debian/Ubuntu:
 
@@ -216,6 +224,8 @@ running it manually.
     The standard output of the Botserver will be logged to the path in
     your *supervisord* configuration.
 
+{end_tabs}
+
 If you are hosting the Botserver yourself (as opposed to using a
 hosting service that provides SSL), we recommend securing your
 Botserver with SSL using an `nginx` or `Apache` reverse proxy and
@@ -223,18 +233,17 @@ Botserver with SSL using an `nginx` or `Apache` reverse proxy and
 
 ### Troubleshooting
 
-1. Make sure the API key you're using is for an [outgoing webhook
-   bot](/api/outgoing-webhooks) and you've
-   correctly configured the URL for your Botserver.
+- Make sure the API key you're using is for an [outgoing webhook
+  bot](/api/outgoing-webhooks) and you've
+  correctly configured the URL for your Botserver.
 
-1.  Your Botserver needs to be accessible from your Zulip server over
-    HTTP(S).  Make sure any firewall allows the connection.  We
-    recommend using [zulip-run-bot](running-bots) instead for
-    development/testing on a laptop or other non-server system.
-
-    If your Zulip server is self-hosted, you can test by running `curl
-    http://zulipbotserver.example.com:5002` from your Zulip server;
-    the output should be:
+- Your Botserver needs to be accessible from your Zulip server over
+  HTTP(S).  Make sure any firewall allows the connection.  We
+  recommend using [zulip-run-bot](running-bots) instead for
+  development/testing on a laptop or other non-server system.
+  If your Zulip server is self-hosted, you can test by running `curl
+  http://zulipbotserver.example.com:5002` from your Zulip server;
+  the output should be:
 
     ```
     $ curl http://zulipbotserver.example.com:5002/
@@ -243,3 +252,9 @@ Botserver with SSL using an `nginx` or `Apache` reverse proxy and
     <h1>Method Not Allowed</h1>
     <p>The method is not allowed for the requested URL.</p>
     ```
+
+## Related articles
+
+* [Non-webhook integrations](/api/non-webhook-integrations)
+* [Running bots](/api/running-bots)
+* [Writing bots](/api/writing-bots)
