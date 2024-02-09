@@ -359,9 +359,8 @@ class EventQueue:
         event["id"] = self.next_event_id
         self.next_event_id += 1
         full_event_type = compute_full_event_type(event)
-        if full_event_type == "restart" or (
-            full_event_type.startswith("flags/")
-            and not full_event_type.startswith("flags/remove/read")
+        if full_event_type.startswith("flags/") and not full_event_type.startswith(
+            "flags/remove/read"
         ):
             # virtual_events are an optimization that allows certain
             # simple events, such as update_message_flags events that
@@ -384,13 +383,10 @@ class EventQueue:
             # Update the virtual event with the values from the event
             virtual_event = self.virtual_events[full_event_type]
             virtual_event["id"] = event["id"]
+            virtual_event["messages"] += event["messages"]
             if "timestamp" in event:
                 virtual_event["timestamp"] = event["timestamp"]
 
-            if full_event_type == "restart":
-                virtual_event["server_generation"] = event["server_generation"]
-            elif full_event_type.startswith("flags/"):
-                virtual_event["messages"] += event["messages"]
         else:
             self.queue.append(event)
 
