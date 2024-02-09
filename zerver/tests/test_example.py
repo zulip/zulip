@@ -413,7 +413,7 @@ class TestDevelopmentEmailsLog(ZulipTestCase):
 
             # assert_in_success_response() is another helper that is commonly used to ensure
             # we are on the right page by verifying a string exists in the page's content.
-            self.assert_in_success_response(["All the emails sent in the Zulip"], result)
+            self.assert_in_success_response(["All emails sent in the Zulip"], result)
 
 
 class TestMocking(ZulipTestCase):
