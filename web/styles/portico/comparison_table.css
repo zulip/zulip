@@ -221,7 +221,7 @@
     .comparison-table td.subheader.comparison-table-feature {
         font-weight: 600;
         color: hsl(223deg 40% 30% / 80%);
-        top: 60px;
+        top: 64px;
         z-index: 2;
         padding-top: 8px;
         padding-bottom: 8px;
@@ -550,10 +550,19 @@
 
     .comparison-table th.comparison-table-feature {
         padding-top: 28px;
+        /* Don't apply transitions to the
+           padding. This prevents the "Features"
+           label from sliding into place when
+           switching over to the All view. */
+        transition: none;
     }
 
     .comparison-table td.stuck {
-        padding-top: 28px;
+        padding-top: 24px;
+        /* Don't apply transitions to the
+           padding. This makes the stuck state
+           look more precise. */
+        transition: none;
     }
 
     @media (width <= 730px) {
