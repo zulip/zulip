@@ -6,24 +6,21 @@
 {% endblock %}
 
 {% block content %}
-<div class="container" id="dev-emails-container">
-    <div class="header">
-        <div class="alert">
-            All the emails sent in the Zulip development environment are logged here. You can also
-            manually generate most of the emails by clicking <a href="/emails/generate">here</a>.
-            To clear this log click <a href="/emails/clear">here</a>
+<div class="container" id="dev-email-log-container">
+    <div class="dev-email-log-header">
+        <div class="dev-email-log-actions">
+            All emails sent in the Zulip development environment are logged here. <a href="/emails/clear">Clear this log</a>
+            | <a href="/emails/generate">Manually generate most emails</a>
+            | <a href="#" class="open-forward-email-modal">Forward emails to an email account</a>
         </div>
-        <div class="config-options">
+        <div class="dev-email-log-text-only">
             <label>
                 <input type="checkbox" autocomplete="off" id="toggle"/>
                 <strong>Show text only version</strong>
             </label>
-            <a href="#" class="open-forward-email-modal">
-                <strong>Forward emails to an email account</strong>
-            </a>
         </div>
     </div>
-    <div class="emails">
+    <div class="dev-email-log-content">
         {{ log |safe }}
     </div>
     <div id="forward_email_modal" class="micromodal" aria-hidden="true">
@@ -39,7 +36,7 @@
                     <div class="input-group">
                         <form id="smtp_form">
                             {{ csrf_input }}
-                            <div class="alert alert-info" id="smtp_form_status">
+                            <div class="dev-forward-email-alert" id="smtp_form_status">
                                 Updated successfully.
                             </div>
                             <label for="forward">
@@ -55,8 +52,7 @@
                                 <label for="forward_address"><strong>Address to which emails should be forwarded</strong></label>
                                 <input type="text" id="address" name="forward_address" placeholder="eg: your-email@example.com" value="{{forward_address}}"/>
                             </div>
-                            <br />
-                            <div class="alert alert-info">
+                            <div class="dev-forward-email-alert">
                                 You must set up SMTP as described
                                 <a target="_blank" rel="noopener noreferrer" href="https://zulip.readthedocs.io/en/latest/subsystems/email.html#development-and-testing"> here</a>
                                 first before enabling this.
