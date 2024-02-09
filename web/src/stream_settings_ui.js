@@ -702,7 +702,11 @@ function show_right_section() {
 export function change_state(section, right_side_tab) {
     // if in #streams/new form.
     if (section === "new") {
-        if (!current_user.is_guest) {
+        const can_create_streams =
+            settings_data.user_can_create_private_streams() ||
+            settings_data.user_can_create_public_streams() ||
+            settings_data.user_can_create_web_public_streams();
+        if (can_create_streams) {
             do_open_create_stream();
             show_right_section();
         } else {
