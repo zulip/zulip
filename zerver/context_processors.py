@@ -202,6 +202,7 @@ def zulip_default_context(request: HttpRequest) -> Dict[str, Any]:
         "find_team_link_disabled": find_team_link_disabled,
         "password_min_length": settings.PASSWORD_MIN_LENGTH,
         "password_min_guesses": settings.PASSWORD_MIN_GUESSES,
+        "password_max_length": settings.PASSWORD_MAX_LENGTH,
         "zulip_version": ZULIP_VERSION,
         "user_is_authenticated": request.user.is_authenticated,
         "settings_path": settings_path,

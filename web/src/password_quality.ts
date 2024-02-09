@@ -52,6 +52,7 @@ export function password_quality(
 
 export function password_warning(password: string, $password_field: JQuery): string {
     const min_length = $password_field.data("minLength");
+    const max_length = $password_field.data("maxLength");
 
     if (password.length < min_length) {
         return $t(
@@ -59,5 +60,13 @@ export function password_warning(password: string, $password_field: JQuery): str
             {length: min_length},
         );
     }
+
+    if (password.length < max_length) {
+        return $t(
+            {defaultMessage: "Password should be atmost {length} characters long"},
+            {length: max_length},
+        )
+    }
+
     return zxcvbn(password).feedback.warning ?? $t({defaultMessage: "Password is too weak"});
 }

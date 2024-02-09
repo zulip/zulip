@@ -340,6 +340,7 @@ def fetch_initial_state_data(
 
         state["password_min_length"] = settings.PASSWORD_MIN_LENGTH
         state["password_min_guesses"] = settings.PASSWORD_MIN_GUESSES
+        state["password_max_length"] = settings.PASSWORD_MAX_LENGTH
         state["server_inline_image_preview"] = settings.INLINE_IMAGE_PREVIEW
         state["server_inline_url_embed_preview"] = settings.INLINE_URL_EMBED_PREVIEW
         state["server_avatar_changes_disabled"] = settings.AVATAR_CHANGES_DISABLED

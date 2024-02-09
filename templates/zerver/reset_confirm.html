@@ -33,6 +33,7 @@
                       value="{% if form.new_password1.value() %}{{ form.new_password1.value() }}{% endif %}"
                       maxlength="100"
                       data-min-length="{{password_min_length}}"
+                      data-max-length="{{password_max_length}}"
                       data-min-guesses="{{password_min_guesses}}" autofocus required />
                     <i class="fa fa-eye-slash password_visibility_toggle" role="button"></i>
                     {% if form.new_password1.errors %}

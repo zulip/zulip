@@ -116,6 +116,7 @@ elif os.path.isfile(_candidate_apns_cert_file):
 # Don't require anything about password strength in development
 PASSWORD_MIN_LENGTH = 0
 PASSWORD_MIN_GUESSES = 0
+PASSWORD_MAX_LENGTH = 100
 
 # Two factor authentication: Use the fake backend for development.
 TWO_FACTOR_CALL_GATEWAY = "two_factor.gateways.fake.Fake"
