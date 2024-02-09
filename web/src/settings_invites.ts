@@ -27,7 +27,7 @@ export const invite_schema = z.intersection(
         id: z.number(),
         invited_as: z.number(),
     }),
-    z.union([
+    z.discriminatedUnion("is_multiuse", [
         z.object({
             is_multiuse: z.literal(false),
             email: z.string(),
