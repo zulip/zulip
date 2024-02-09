@@ -44,11 +44,11 @@ You can run the command `brew upgrade zulip` to immediately upgrade the app.
     The app will not update automatically. You can repeat these steps to upgrade
     to future versions.
 
-1. Download [zulip-x.x.x-x64.nsis.7z][latest] for 64-bit desktops
-   (common), or [zulip-x.x.x-ia32.nsis.7z][latest] for 32-bit (rare).
+1. Download [zulip-x.x.x-x64.msi][latest] for 64-bit desktops
+   (common), or [zulip-x.x.x-ia32.msi][latest] for 32-bit (rare).
 
 1. Copy the installer file to the machine you want to install the app
-   on, and run it there.
+   on, and open it there.
 
 1. Run Zulip from the **Start** menu.
 
