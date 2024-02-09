@@ -197,3 +197,9 @@ Parameters accepted in the URL include:
 [browse-streams]: /help/browse-and-subscribe-to-streams
 [add-bot]: /help/add-a-bot-or-integration
 [url-encoder]: https://www.urlencoder.org/
+
+## Related articles
+
+* [Integrations overview](/api/integrations-overview)
+* [Incoming webhook walkthrough](/api/incoming-webhooks-walkthrough)
+* [Non-webhook integrations](/api/non-webhook-integrations)

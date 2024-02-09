@@ -2,9 +2,9 @@
 
 An **API key** is how a bot identifies itself to Zulip. For the official
 clients, such as the Python bindings, we recommend [downloading a `zuliprc`
-file](/api/configuring-python-bindings#download-a-zuliprc-file).
-This file contains an API key along with other necessary configuration values
-for using the Zulip API with a specific account on a Zulip server.
+file](/api/configuring-python-bindings#download-a-zuliprc-file). This file
+contains an API key and other necessary configuration values for using the
+Zulip API with a specific account on a Zulip server.
 
 ## Get a bot's API key
 

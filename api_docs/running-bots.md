@@ -20,39 +20,42 @@ You'll need:
 
 **Note: Please be considerate when testing experimental bots on public servers such as chat.zulip.org.**
 
-1. Go to your Zulip account and
-   [add a bot](/help/add-a-bot-or-integration). Use **Generic bot** as the bot type.
+{start_tabs}
 
-1. Download the bot's `zuliprc` configuration file to your computer.
+1. [Create a bot](/help/add-a-bot-or-integration), making sure to select
+   **Generic bot** as the **Bot type**.
 
-1. Download the `zulip_bots` Python package to your computer using `pip3 install zulip_bots`.
+1. [Download the bot's `zuliprc` file](/api/configuring-python-bindings#download-a-zuliprc-file).
 
-     *Note: Click
-     [here](
-     writing-bots#installing-a-development-version-of-the-zulip-bots-package)
-     to install the latest development version of the package.*
+1. Use the following command to install the
+   [`zulip_bots` Python package](https://pypi.org/project/zulip-bots/):
 
-1. Start the bot process on your computer.
+        pip3 install zulip_bots
 
-    * Run
-      ```
-      zulip-run-bot <bot-name> --config-file ~/path/to/zuliprc
-      ```
+1. Use the following command to start the bot process *(replacing
+   `~/path/to/zuliprc` with the path to the `zuliprc` file you downloaded above)*:
 
-      (replacing `~/path/to/zuliprc` with the path to the `zuliprc` file you downloaded above).
+        zulip-run-bot <bot-name> --config-file ~/path/to/zuliprc
 
-    * Check the output of the command. It should include the following line:
+1. Check the output of the command above to make sure your bot is running.
+   It should include the following line:
 
-            INFO:root:starting message handling...
+        INFO:root:starting message handling...
 
-        Congrats! Your bot is running.
+1. Test your setup by [starting a new direct message](/help/starting-a-new-direct-message)
+   with the bot or [mentioning](/help/mention-a-user-or-group) the bot on a stream.
 
-1. To talk with the bot, at-mention its name, like `@**bot-name**`.
+!!! tip ""
+
+    To use the latest development version of the `zulip_bots` package, follow
+    [these steps](writing-bots#installing-a-development-version-of-the-zulip-bots-package).
+
+{end_tabs}
 
 You can now play around with the bot and get it configured the way you
 like.  Eventually, you'll probably want to run it in a production
-environment where it'll stay up, by [deploying](/api/deploying-bots) it on a server using the
-Zulip Botserver.
+environment where it'll stay up, by [deploying](/api/deploying-bots) it on a
+server using the Zulip Botserver.
 
 ## Common problems
 
@@ -63,3 +66,9 @@ Zulip Botserver.
       the Vagrant environment.
     * Some bots require Python 3. Try switching to a Python 3 environment before running
       your bot.
+
+## Related articles
+
+* [Non-webhook integrations](/api/non-webhook-integrations)
+* [Deploying bots](/api/deploying-bots)
+* [Writing bots](/api/writing-bots)
