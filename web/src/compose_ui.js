@@ -419,8 +419,8 @@ export function format_text($textarea, type, inserted_content) {
     // Check if selected text itself has syntax inside it.
     const is_inner_text_formatted = (syntax_start, syntax_end = syntax_start) =>
         range.length >= syntax_start.length + syntax_end.length &&
-        selected_text.slice(0, syntax_start.length) === syntax_start &&
-        selected_text.slice(-syntax_end.length) === syntax_end;
+        selected_text.startsWith(syntax_start) &&
+        selected_text.endsWith(syntax_end);
 
     const section_off_selected_lines = () => {
         // Divide all lines of text (separated by `\n`) into those entirely or
@@ -539,10 +539,10 @@ export function format_text($textarea, type, inserted_content) {
     const format = (syntax_start, syntax_end = syntax_start) => {
         let linebreak_start = "";
         let linebreak_end = "";
-        if (syntax_start[0] === "\n") {
+        if (syntax_start.startsWith("\n")) {
             linebreak_start = "\n";
         }
-        if (syntax_end.at(-1) === "\n") {
+        if (syntax_end.endsWith("\n")) {
             linebreak_end = "\n";
         }
         if (is_selection_formatted(syntax_start, syntax_end)) {
@@ -900,16 +900,14 @@ export function format_text($textarea, type, inserted_content) {
             } else if (
                 selected_text.length > italic_syntax.length * 2 &&
                 // If the selected text contains italic syntax
-                selected_text.slice(0, italic_syntax.length) === italic_syntax &&
-                selected_text.slice(-italic_syntax.length) === italic_syntax
+                selected_text.startsWith(italic_syntax) &&
+                selected_text.endsWith(italic_syntax)
             ) {
                 if (is_inner_text_formatted(bold_syntax)) {
                     if (
                         selected_text.length > bold_and_italic_syntax.length * 2 &&
-                        selected_text.slice(0, bold_and_italic_syntax.length) ===
-                            bold_and_italic_syntax &&
-                        selected_text.slice(-bold_and_italic_syntax.length) ===
-                            bold_and_italic_syntax
+                        selected_text.startsWith(bold_and_italic_syntax) &&
+                        selected_text.endsWith(bold_and_italic_syntax)
                     ) {
                         // If selected text is both bold and italic.
                         is_inner_text_italic = true;
