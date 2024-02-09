@@ -347,9 +347,7 @@ export function update_placeholder_text() {
         message_type: compose_state.get_message_type(),
         stream_id: compose_state.stream_id(),
         topic: compose_state.topic(),
-        // TODO: to remove a circular import, direct message recipient needs
-        // to be calculated in compose_state instead of compose_pm_pill.
-        private_message_recipient: compose_pm_pill.get_emails(),
+        direct_message_user_ids: compose_pm_pill.get_user_ids(),
     };
 
     $("textarea#compose-textarea").attr("placeholder", compose_ui.compute_placeholder_text(opts));

@@ -25,6 +25,12 @@ type ComposeTriggeredOptions = {
     topic: string;
     stream_id: number;
 };
+type ComposePlaceholderOptions = {
+    direct_message_user_ids: number[];
+    message_type: messageType;
+    stream_id: number;
+    topic: string;
+};
 type SelectedLinesSections = {
     before_lines: string;
     separating_new_line_before: boolean;
@@ -255,9 +261,7 @@ export function replace_syntax(
     return old_text !== new_text;
 }
 
-export function compute_placeholder_text(
-    opts: {message_type: messageType} & ComposeTriggeredOptions,
-): string {
+export function compute_placeholder_text(opts: ComposePlaceholderOptions): string {
     // Computes clear placeholder text for the compose box, depending
     // on what heading values have already been filled out.
     //
@@ -276,24 +280,20 @@ export function compute_placeholder_text(
         } else if (stream_name) {
             return $t({defaultMessage: "Message #{stream_name}"}, {stream_name});
         }
-    }
-
-    // For direct messages
-    if (opts.private_message_recipient) {
-        const recipient_list = opts.private_message_recipient.split(",");
-        const recipient_parts = recipient_list.map((recipient) => {
-            const user = people.get_by_email(recipient);
-            if (people.should_add_guest_user_indicator(user!.user_id)) {
-                return $t({defaultMessage: "{name} (guest)"}, {name: user!.full_name});
+    } else if (opts.direct_message_user_ids.length > 0) {
+        const users = people.get_users_from_ids(opts.direct_message_user_ids);
+        const recipient_parts = users.map((user) => {
+            if (people.should_add_guest_user_indicator(user.user_id)) {
+                return $t({defaultMessage: "{name} (guest)"}, {name: user.full_name});
             }
-            return user!.full_name;
+            return user.full_name;
         });
         const recipient_names = util.format_array_as_list(recipient_parts, "long", "conjunction");
 
-        if (recipient_list.length === 1) {
+        if (users.length === 1) {
             // If it's a single user, display status text if available
-            const user = people.get_by_email(recipient_list[0]);
-            const status = user_status.get_status_text(user!.user_id);
+            const user = users[0];
+            const status = user_status.get_status_text(user.user_id);
             if (status) {
                 return $t(
                     {defaultMessage: "Message {recipient_name} ({recipient_status})"},
