@@ -119,6 +119,25 @@ def validate_message_edit_payload(
         raise JsonableError(_("Widgets cannot be edited."))
 
 
+def validate_user_can_edit_message(
+    user_profile: UserProfile, message: Message, edit_limit_buffer: int
+) -> None:
+    """
+    Checks if the user has the permission to edit the message.
+    """
+    if not user_profile.realm.allow_message_editing:
+        raise JsonableError(_("Your organization has turned off message editing"))
+
+    # You cannot edit the content of message sent by someone else.
+    if message.sender_id != user_profile.id:
+        raise JsonableError(_("You don't have permission to edit this message"))
+
+    if user_profile.realm.message_content_edit_limit_seconds is not None:
+        deadline_seconds = user_profile.realm.message_content_edit_limit_seconds + edit_limit_buffer
+        if (timezone_now() - message.date_sent) > timedelta(seconds=deadline_seconds):
+            raise JsonableError(_("The time limit for editing this message has passed"))
+
+
 def maybe_send_resolve_topic_notifications(
     *,
     user_profile: UserProfile,
@@ -1202,8 +1221,14 @@ def check_update_message(
     """
     message, ignored_user_message = access_message(user_profile, message_id, lock_message=True)
 
-    if content is not None and not user_profile.realm.allow_message_editing:
-        raise JsonableError(_("Your organization has turned off message editing"))
+    # If there is a change to the content, check that it hasn't been too long
+    # Allow an extra 20 seconds since we potentially allow editing 15 seconds
+    # past the limit, and in case there are network issues, etc. The 15 comes
+    # from (min_seconds_to_edit + seconds_left_buffer) in message_edit.js; if
+    # you change this value also change those two parameters in message_edit.js.
+    edit_limit_buffer = 20
+    if content is not None:
+        validate_user_can_edit_message(user_profile, message, edit_limit_buffer)
 
     # The zerver/views/message_edit.py call point already strips this
     # via REQ_topic; so we can delete this line if we arrange a
@@ -1216,26 +1241,8 @@ def check_update_message(
 
     validate_message_edit_payload(message, stream_id, topic_name, propagate_mode, content)
 
-    if (
-        content is not None
-        # You cannot edit the content of message sent by someone else.
-        and message.sender_id != user_profile.id
-    ):
-        raise JsonableError(_("You don't have permission to edit this message"))
-
     if topic_name is not None and not user_profile.can_move_messages_to_another_topic():
         raise JsonableError(_("You don't have permission to edit this message"))
-
-    # If there is a change to the content, check that it hasn't been too long
-    # Allow an extra 20 seconds since we potentially allow editing 15 seconds
-    # past the limit, and in case there are network issues, etc. The 15 comes
-    # from (min_seconds_to_edit + seconds_left_buffer) in message_edit.js; if
-    # you change this value also change those two parameters in message_edit.js.
-    edit_limit_buffer = 20
-    if content is not None and user_profile.realm.message_content_edit_limit_seconds is not None:
-        deadline_seconds = user_profile.realm.message_content_edit_limit_seconds + edit_limit_buffer
-        if (timezone_now() - message.date_sent) > timedelta(seconds=deadline_seconds):
-            raise JsonableError(_("The time limit for editing this message has passed"))
 
     # If there is a change to the topic, check that the user is allowed to
     # edit it and that it has not been too long. If user is not admin or moderator,
