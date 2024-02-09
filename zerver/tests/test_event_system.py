@@ -1143,13 +1143,8 @@ class RestartEventsTest(ZulipTestCase):
 
         send_restart_events(immediate=True)
 
-        # For now we only verify that a virtual event
-        # gets added to the client's event_queue.  We
-        # may decide to write a deeper test in the future
-        # that exercises the finish_handler.
-        virtual_events = client.event_queue.virtual_events
-        self.assert_length(virtual_events, 1)
-        restart_event = virtual_events["restart"]
+        self.assert_length(client.event_queue.queue, 1)
+        restart_event = client.event_queue.queue[0]
 
         check_restart_event("restart_event", restart_event)
         self.assertEqual(
