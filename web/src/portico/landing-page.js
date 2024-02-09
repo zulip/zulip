@@ -164,17 +164,6 @@ $(() => {
             // Set the correct values for span and colspan
             $(".features-col-group").attr("span", plans_columns_count);
             $(".subheader-filler").attr("colspan", plans_columns_count);
-
-            const observer = new IntersectionObserver(
-                ([entries]) => {
-                    entries.target.classList.toggle("stuck", entries.intersectionRatio < 1);
-                },
-                {thresholds: [0.8], rootMargin: "-120px 0px 0px 0px"},
-            );
-
-            for (const subheader of document.querySelectorAll("td.subheader")) {
-                observer.observe(subheader);
-            }
         }
     }
 });
@@ -228,4 +217,83 @@ $(document).on("click", ".comparison-tab", function () {
     // Set the correct values for span and colspan
     $(".features-col-group").attr("span", plans_columns_count);
     $(".subheader-filler").attr("colspan", plans_columns_count);
+
+    // To accommodate the icons in the All view, we need to attach
+    // additional logic to handle the increased subheader-row size.
+    if (visible_plans_id === "showing-tab-all") {
+        // We need to be aware of user scroll direction
+        let previous_y_position = 0;
+        // We need to be aware of the y value of the
+        // entry record for the IntersectionObserver callback
+        // on subheaders of interest (those about to be sticky)
+        let previous_entry_y = 0;
+
+        const isScrollingUp = () => {
+            let is_scrolling_up = true;
+            if (window.scrollY > previous_y_position) {
+                is_scrolling_up = false;
+            }
+
+            previous_y_position = window.scrollY;
+
+            return is_scrolling_up;
+        };
+
+        const observer = new IntersectionObserver(
+            ([entries]) => {
+                // We want to stop an infinite jiggle when a change in subheader
+                // padding erroneously triggers the observer at just the right spot.
+                // There may be a momentary jiggle, but it will resolve almost
+                // immediately. Rounding to the nearest full pixel is precise enough;
+                // full values would cause the jiggle to continue.
+                const rounded_entry_y = Math.ceil(entries.boundingClientRect.y);
+                if (rounded_entry_y === previous_entry_y) {
+                    // Jiggles might end with the class being removed, which
+                    // is the poorer behavior, so always make sure the "stuck"
+                    // class is present on a jiggling element.
+                    entries.target.classList.add("stuck");
+                    return;
+                }
+
+                // `intersectionRatio` values are 0 when the element first comes into
+                // view at the bottom of the page, and then again at the top--which is
+                // what we care about. That why we only want to force the class toggle
+                // when dealing with subheader elements closer to the top of the page.
+
+                // But: once the "stuck" class has been applied, it can be removed
+                // too eagerly should a user scroll back down. So we want to determine
+                // whether a user is scrolling up, in which case we want to act below
+                // a certain y value. When they scroll down, we want them to scroll
+                // down a bit further, and check for a greater-than y value before
+                // removing it.
+                let force_class_toggle;
+                if (isScrollingUp()) {
+                    force_class_toggle =
+                        entries.intersectionRatio < 1 && entries.boundingClientRect.y > 125;
+                } else {
+                    force_class_toggle =
+                        entries.intersectionRatio < 1 && entries.boundingClientRect.y < 185;
+                }
+
+                // Rather than blindly toggle, we force `classList.toggle` to add
+                // (which may mean keeping the class on) or remove (keeping it off)
+                // depending on scroll direction, etc.
+                entries.target.classList.toggle("stuck", force_class_toggle);
+
+                // Track the entry's previous rounded y.
+                previous_entry_y = rounded_entry_y;
+            },
+            // To better catch subtle changes on IntersectionObserver, we use
+            // an array of threshold values to detect exits (0) as well as
+            // full intersections (1).
+            // The -110px rootMargin value is arrived at from 60px worth of
+            // navigation menu, and the header-row height minus extra top
+            // padding.
+            {threshold: [0, 1], rootMargin: "-110px 0px 0px 0px"},
+        );
+
+        for (const subheader of document.querySelectorAll("#showing-tab-all td.subheader")) {
+            observer.observe(subheader);
+        }
+    }
 });
