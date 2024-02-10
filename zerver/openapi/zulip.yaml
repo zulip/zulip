@@ -4000,10 +4000,15 @@ paths:
                                 for the user is restarted; in particular, this will always happen
                                 when the Zulip server is upgraded.
 
-                                Clients can use this event to know when they should get a new
-                                event queue after a server upgrade. Clients doing so must implement
-                                a random delay strategy to spread such restarts over 10 minutes or
-                                more to avoid creating a synchronized thundering herd effect.
+                                Clients should use this event to update their tracking of the
+                                server's capabilities, and to decide if they wish to get a new
+                                event queue after a server upgrade. Clients doing so must
+                                implement a random delay strategy to spread such restarts over 5
+                                minutes or more to avoid creating a synchronized thundering herd
+                                effect.
+
+                                **Changes**: Removed the `immediate` flag, which was only used by
+                                web clients in development, in Zulip 9.0 (feature level 240).
                               properties:
                                 id:
                                   $ref: "#/components/schemas/EventIdSchema"
@@ -4034,20 +4039,15 @@ paths:
                                     The [Zulip feature level](/api/changelog) of the server
                                     after the restart.
 
-                                    Clients can safely avoid refetching their state and
-                                    creating a new event queue when the API feature level has not
-                                    changed, or when they know the specific feature level change
-                                    is not relevant to the client (E.g. it just adds a new endpoint
-                                    that the client doesn't use).
+                                    Clients should use this to update their tracking of the
+                                    server's capabilities, and may choose to refetch their state
+                                    and create a new event queue when the API feature level has
+                                    changed in a way that the client finds significant. Clients
+                                    choosing to do so must implement a random delay strategy to
+                                    spread such restarts over 5 or more minutes to avoid creating
+                                    a synchronized thundering herd effect.
 
                                     **Changes**: New in Zulip 4.0 (feature level 59).
-                                immediate:
-                                  type: boolean
-                                  description: |
-                                    Whether the client should fetch a new event queue immediately,
-                                    rather than using a backoff strategy to avoid thundering herds.
-                                    A Zulip development server uses this parameter to reload
-                                    clients immediately.
                                 server_generation:
                                   type: integer
                                   description: |
@@ -4056,12 +4056,46 @@ paths:
                               example:
                                 {
                                   "id": 0,
-                                  "immediate": true,
                                   "server_generation": 1619334181,
                                   "type": "restart",
                                   "zulip_feature_level": 57,
                                   "zulip_version": "5.0-dev-1650-gc3fd37755f",
                                   "zulip_merge_base": "5.0-dev-1646-gea6b21cd8c",
+                                }
+                            - type: object
+                              description: |
+                                An event which signals the official Zulip web/desktop app to update,
+                                by reloading the page and fetching a new queue; this will generally
+                                follow a `restart` event. Clients which do not obtain their code
+                                from the server (e.g. mobile and terminal clients, which store their
+                                code locally) should ignore this event.
+
+                                Clients choosing to reload the application must implement a random
+                                delay strategy to spread such restarts over 5 or more minutes to
+                                avoid creating a synchronized thundering herd effect.
+
+                                **Changes**: New in Zulip 9.0 (feature level 240).
+                              properties:
+                                id:
+                                  $ref: "#/components/schemas/EventIdSchema"
+                                type:
+                                  allOf:
+                                    - $ref: "#/components/schemas/EventTypeSchema"
+                                    - enum:
+                                        - web_reload_client
+                                immediate:
+                                  type: boolean
+                                  description: |
+                                    Whether the client should fetch a new event queue immediately,
+                                    rather than using a backoff strategy to avoid thundering herds.
+                                    A Zulip development server uses this parameter to reload
+                                    clients immediately.
+                              additionalProperties: false
+                              example:
+                                {
+                                  "id": 0,
+                                  "type": "web_reload_client",
+                                  "immediate": true,
                                 }
                             - type: object
                               additionalProperties: false

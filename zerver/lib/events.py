@@ -91,9 +91,10 @@ from zerver.tornado.django_api import get_user_events, request_event_queue
 from zproject.backends import email_auth_enabled, password_auth_enabled
 
 
-class RestartEventError(Exception):
-    """
-    Special error for handling restart events in apply_events.
+class WebReloadClientError(Exception):
+    """Special error for handling web_reload_client events in
+    apply_events.
+
     """
 
 
@@ -711,8 +712,8 @@ def apply_events(
     user_list_incomplete: bool,
 ) -> None:
     for event in events:
-        if event["type"] == "restart":
-            raise RestartEventError
+        if event["type"] == "web_reload_client":
+            raise WebReloadClientError
         if fetch_event_types is not None and event["type"] not in fetch_event_types:
             # TODO: continuing here is not, most precisely, correct.
             # In theory, an event of one type, e.g. `realm_user`,
@@ -1652,7 +1653,7 @@ def do_events_register(
                 linkifier_url_template=linkifier_url_template,
                 user_list_incomplete=user_list_incomplete,
             )
-        except RestartEventError:
+        except WebReloadClientError:
             # This represents a rare race condition, where Tornado
             # restarted (and sent `restart` events) while we were waiting
             # for fetch_initial_state_data to return. To avoid the client

@@ -165,7 +165,12 @@ export function dispatch_normal_event(event) {
             activity_ui.update_presence_info(event.user_id, event.presence, event.server_timestamp);
             break;
 
-        case "restart": {
+        case "restart":
+            realm.zulip_version = event.zulip_version;
+            realm.zulip_merge_base = event.zulip_merge_base;
+            break;
+
+        case "web_reload_client": {
             const reload_options = {
                 save_pointer: true,
                 save_narrow: true,
