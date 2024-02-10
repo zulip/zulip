@@ -1,17 +1,16 @@
 # Counting contributions
 
-The [Zulip team page](https://zulip.com/team/) displays statistics
-about contributors to Zulip and its projects. We display these
-statistics prominently because they are easy to compute and can be fun
-and motivating for some of our contributors; we do not consider them
-to be a good way to measure someone's code contributions to a software
-project.
+The [Zulip team page](https://zulip.com/team/) displays commit counts for
+contributors to Zulip projects. We display these statistics prominently because
+they are easy to compute, and can be fun and motivating for some of our
+contributors.
 
-More importantly, many invaluable contributions may not result in the
-contributor authoring any code at all, including design, feedback,
-translations, bug reports, participation in our [development
-community][dev-community]. These non-code contributions are essential
-to making the Zulip project successful.
+We do not consider commit count to be a good way to measure someone's
+contributions to a software project. Many invaluable contributions may not
+result in the contributor authoring any code at all, including design, feedback,
+translations, bug reports, helping new contributors, and other types of
+participation in our [development community][dev-community]. These non-code
+contributions are essential to making the Zulip project successful.
 
 Thus, Zulip's policy is to always express appreciation for non-code
 contributions to the project whenever we discuss code contribution
