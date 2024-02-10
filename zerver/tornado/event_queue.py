@@ -629,7 +629,7 @@ def load_event_queues(port: int) -> None:
         )
 
 
-def send_restart_events(immediate: bool = False) -> None:
+def send_restart_events() -> None:
     event: Dict[str, Any] = dict(
         type="restart",
         zulip_version=ZULIP_VERSION,
@@ -637,8 +637,16 @@ def send_restart_events(immediate: bool = False) -> None:
         zulip_feature_level=API_FEATURE_LEVEL,
         server_generation=settings.SERVER_GENERATION,
     )
-    if immediate:
-        event["immediate"] = True
+    for client in clients.values():
+        if client.accepts_event(event):
+            client.add_event(event)
+
+
+def send_web_reload_client_events(immediate: bool = False) -> None:
+    event: Dict[str, Any] = dict(
+        type="web_reload_client",
+        immediate=immediate,
+    )
     for client in clients.values():
         if client.accepts_event(event):
             client.add_event(event)
@@ -656,7 +664,8 @@ async def setup_event_queue(server: tornado.httpserver.HTTPServer, port: int) ->
     pc = tornado.ioloop.PeriodicCallback(lambda: gc_event_queues(port), EVENT_QUEUE_GC_FREQ_MSECS)
     pc.start()
 
-    send_restart_events(immediate=settings.DEVELOPMENT)
+    send_restart_events()
+    send_web_reload_client_events(immediate=settings.DEVELOPMENT)
 
 
 def fetch_events(

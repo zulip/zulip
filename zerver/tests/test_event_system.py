@@ -10,13 +10,12 @@ from django.test import override_settings
 from django.utils.timezone import now as timezone_now
 from typing_extensions import override
 
-from version import API_FEATURE_LEVEL, ZULIP_MERGE_BASE, ZULIP_VERSION
 from zerver.actions.custom_profile_fields import try_update_realm_custom_profile_field
 from zerver.actions.message_send import check_send_message
 from zerver.actions.presence import do_update_user_presence
 from zerver.actions.user_settings import do_change_user_setting
 from zerver.actions.users import do_change_user_role
-from zerver.lib.event_schema import check_restart_event
+from zerver.lib.event_schema import check_web_reload_client_event
 from zerver.lib.events import fetch_initial_state_data
 from zerver.lib.exceptions import AccessDeniedError
 from zerver.lib.request import RequestVariableMissingError
@@ -38,7 +37,7 @@ from zerver.tornado.event_queue import (
     clear_client_event_queues_for_testing,
     get_client_info_for_message_event,
     process_message_event,
-    send_restart_events,
+    send_web_reload_client_events,
 )
 from zerver.tornado.exceptions import BadEventQueueIdError
 from zerver.tornado.views import get_events, get_events_backend
@@ -1100,7 +1099,7 @@ class ClientDescriptorsTest(ZulipTestCase):
         )
 
 
-class RestartEventsTest(ZulipTestCase):
+class WebReloadClientsTest(ZulipTestCase):
     def tornado_call(
         self,
         view_func: Callable[[HttpRequest, UserProfile], HttpResponse],
@@ -1122,7 +1121,7 @@ class RestartEventsTest(ZulipTestCase):
         )
         return view_func(request, user_profile)
 
-    def test_restart(self) -> None:
+    def test_web_reload_clients(self) -> None:
         hamlet = self.example_user("hamlet")
         realm = hamlet.realm
 
@@ -1141,28 +1140,24 @@ class RestartEventsTest(ZulipTestCase):
         )
         client = allocate_client_descriptor(queue_data)
 
-        send_restart_events(immediate=True)
+        send_web_reload_client_events()
 
         self.assert_length(client.event_queue.queue, 1)
-        restart_event = client.event_queue.queue[0]
+        reload_event = client.event_queue.queue[0]
 
-        check_restart_event("restart_event", restart_event)
+        check_web_reload_client_event("web_reload_client_event", reload_event)
         self.assertEqual(
-            restart_event,
+            reload_event,
             dict(
-                type="restart",
-                zulip_version=ZULIP_VERSION,
-                zulip_merge_base=ZULIP_MERGE_BASE,
-                zulip_feature_level=API_FEATURE_LEVEL,
-                server_generation=settings.SERVER_GENERATION,
-                immediate=True,
+                type="web_reload_client",
+                immediate=False,
                 id=0,
             ),
         )
 
-    def test_restart_event_recursive_call_logic(self) -> None:
+    def test_web_reload_client_event_recursive_call_logic(self) -> None:
         # This is a test for a subtle corner case; see the comments
-        # around RestartEventError for details.
+        # around WebReloadClientError for details.
         hamlet = self.example_user("hamlet")
         realm = hamlet.realm
 
@@ -1182,16 +1177,16 @@ class RestartEventsTest(ZulipTestCase):
         )
         client = allocate_client_descriptor(queue_data)
 
-        # Add a restart event to it.
-        send_restart_events(immediate=True)
+        # Add a reload event to it.
+        send_web_reload_client_events()
 
-        # Make a second queue after the restart events were sent.
+        # Make a second queue after the reload events were sent.
         second_client = allocate_client_descriptor(queue_data)
 
-        # Fetch the restart event just sent above, without removing it
+        # Fetch the reload event just sent above, without removing it
         # from the queue. We will use this as a mock return value in
         # get_user_events.
-        restart_event = orjson.loads(
+        reload_event = orjson.loads(
             self.tornado_call(
                 get_events_backend,
                 hamlet,
@@ -1209,7 +1204,7 @@ class RestartEventsTest(ZulipTestCase):
 
         # Now the tricky part: We call events_register_backend,
         # arranging it so that the first `get_user_events` call
-        # returns our restart event (triggering the recursive
+        # returns our reload event (triggering the recursive
         # behavior), but the second (with a new queue) returns no
         # events.
         #
@@ -1219,7 +1214,7 @@ class RestartEventsTest(ZulipTestCase):
         with mock.patch(
             "zerver.lib.events.request_event_queue",
             side_effect=[client.event_queue.id, second_client.event_queue.id],
-        ), mock.patch("zerver.lib.events.get_user_events", side_effect=[restart_event, []]):
+        ), mock.patch("zerver.lib.events.get_user_events", side_effect=[reload_event, []]):
             self.tornado_call(
                 events_register_backend,
                 hamlet,
