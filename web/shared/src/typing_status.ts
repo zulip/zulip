@@ -124,7 +124,7 @@ export function maybe_ping_server(
  * See docs/subsystems/typing-indicators.md for detailed background on the
  * typing indicators system.
  *
- * @param {*} worker Callbacks for reaching the real world. See typing.js
+ * @param {*} worker Callbacks for reaching the real world. See typing.ts
  *   for implementations.
  * @param {*} new_recipient Depends on type of message being composed. If
  *   * Direct message: An Object containing id of users the DM being composed is addressed to

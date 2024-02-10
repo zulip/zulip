@@ -1786,7 +1786,7 @@ test("navbar_helpers", () => {
 
     // TODO: test every single one of the "ALL" redirects from the navbar behaviour table
 
-    // incomplete and weak test cases just to restore coverage of filter.js
+    // incomplete and weak test cases just to restore coverage of filter.ts
     const complex_term = [
         {operator: "stream", operand: "foo"},
         {operator: "topic", operand: "bar"},

@@ -190,7 +190,7 @@ export function initialize_kitchen_sink_stuff() {
     //      This function is a historical dumping ground
     //      for lots of miscellaneous setup.  Almost all of
     //      the code here can probably be moved to more
-    //      specific-purpose modules like message_viewport.js.
+    //      specific-purpose modules like message_viewport.ts.
 
     const throttled_mousewheelhandler = _.throttle((_e, delta) => {
         // Most of the mouse wheel's work will be handled by the

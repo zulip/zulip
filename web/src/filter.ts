@@ -1139,7 +1139,7 @@ export class Filter {
         // The use case of this function is that we want
         // to know if a filter can start with a bucketing
         // data structure similar to the ones we have in
-        // unread.js to pre-filter ids, rather than apply
+        // unread.ts to pre-filter ids, rather than apply
         // a predicate to a larger list of candidate ids.
         //
         // (It's for optimization, basically.)

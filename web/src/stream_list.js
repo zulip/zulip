@@ -237,7 +237,7 @@ export function build_stream_list(force_rerender) {
         return;
     }
 
-    // The main logic to build the list is in stream_list_sort.js, and
+    // The main logic to build the list is in stream_list_sort.ts, and
     // we get five lists of streams (pinned/normal/muted_pinned/muted_normal/dormant).
     const stream_groups = stream_list_sort.sort_groups(streams, get_search_term());
 

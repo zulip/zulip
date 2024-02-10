@@ -220,7 +220,7 @@ test("errors", ({disallow_rewire}) => {
     blueslip.expect("error", "Unknown user id", 1); // From person.js
 
     // Expect each to throw two blueslip errors
-    // One from message_store.js, one from person.js
+    // One from message_store.ts, one from person.js
     const emails = message_store.get_pm_emails(message);
     assert.equal(emails, "?");
 
