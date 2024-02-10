@@ -24,7 +24,9 @@ const MAX_USERS_TO_DISPLAY_NAME = 3;
 
 function get_users_typing_for_narrow() {
     if (narrow_state.narrowed_by_topic_reply()) {
-        return typing_data.get_topic_typists(narrow_state.stream_id(), narrow_state.topic());
+        const current_stream_id = narrow_state.stream_id();
+        const current_topic = narrow_state.topic();
+        return typing_data.get_topic_typists(current_stream_id, current_topic);
     }
 
     if (!narrow_state.narrowed_to_pms()) {
