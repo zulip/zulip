@@ -10,7 +10,7 @@ type PMListConversation = {
     user_ids_string: string;
 };
 
-type PMNode =
+export type PMNode =
     | {
           type: "conversation";
           conversation: PMListConversation;
