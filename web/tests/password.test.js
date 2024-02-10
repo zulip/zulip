@@ -7,7 +7,7 @@ const {run_test} = require("./lib/test");
 
 const {password_quality, password_warning} = zrequire("password_quality");
 
-function password_field(min_length, min_guesses, max_length) {
+function password_field(min_length, min_guesses) {
     const self = {};
 
     self.data = (field) => {
@@ -16,8 +16,6 @@ function password_field(min_length, min_guesses, max_length) {
                 return min_length;
             case "minGuesses":
                 return min_guesses;
-            case "maxLength":
-                return max_length;
             /* istanbul ignore next */
             default:
                 throw new Error(`Unknown field ${field}`);
@@ -54,7 +52,7 @@ run_test("basics w/progress bar", () => {
     })();
 
     password = "z!X4@S_&";
-    accepted = password_quality(password, $bar, password_field(10, 80000, 100));
+    accepted = password_quality(password, $bar, password_field(10, 80000));
     assert.ok(!accepted);
     assert.equal($bar.w, "39.7%");
     assert.equal($bar.added_class, "bar-danger");
@@ -62,7 +60,7 @@ run_test("basics w/progress bar", () => {
     assert.equal(warning, "translated: Password should be at least 10 characters long");
 
     password = "foo";
-    accepted = password_quality(password, $bar, password_field(2, 200, 100));
+    accepted = password_quality(password, $bar, password_field(2, 200));
     assert.ok(accepted);
     assert.equal($bar.w, "10.390277164940581%");
     assert.equal($bar.added_class, "bar-success");
@@ -70,7 +68,7 @@ run_test("basics w/progress bar", () => {
     assert.equal(warning, "translated: Password is too weak");
 
     password = "aaaaaaaa";
-    accepted = password_quality(password, $bar, password_field(6, 1e100, 100));
+    accepted = password_quality(password, $bar, password_field(6, 1e100));
     assert.ok(!accepted);
     assert.equal($bar.added_class, "bar-danger");
     warning = password_warning(password, password_field(6));
