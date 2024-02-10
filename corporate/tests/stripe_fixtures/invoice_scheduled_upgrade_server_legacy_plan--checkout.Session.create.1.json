@@ -5,9 +5,10 @@
   "amount_total": null,
   "automatic_tax": {
     "enabled": false,
+    "liability": null,
     "status": null
   },
-  "billing_address_collection": null,
+  "billing_address_collection": "required",
   "cancel_url": "http://selfhosting.testserver/server/6cde5f7a-1f7e-4978-9716-49f69ebfc9fe/upgrade/?manual_license_management=false&tier=1",
   "client_reference_id": null,
   "client_secret": null,
@@ -35,13 +36,13 @@
   },
   "customer_email": null,
   "expires_at": 1000000000,
-  "id": "cs_test_NORMALIZED02tZPg16h6lq8MUzJcTR3fCVEFLSGvXuTt9jgKURdDLGo8nc",
+  "id": "cs_test_NORMALIZED02waTwb1c8zL6hQdUCxIk0tkOefxQYzt8b39omWP9VSj3gyp",
   "invoice": null,
   "invoice_creation": null,
   "livemode": false,
   "locale": null,
   "metadata": {
-    "remote_server_user_id": "1",
+    "remote_server_user_id": "6",
     "type": "card_update"
   },
   "mode": "setup",
@@ -59,7 +60,7 @@
     "enabled": false
   },
   "recovered_from": null,
-  "setup_intent": "seti_1ObOgdDEQaroqDjspz8sVDGN",
+  "setup_intent": "seti_1OhuqrDEQaroqDjsNo3GKuO7",
   "shipping": null,
   "shipping_address_collection": null,
   "shipping_options": [],
@@ -70,5 +71,5 @@
   "success_url": "http://selfhosting.testserver/server/6cde5f7a-1f7e-4978-9716-49f69ebfc9fe/billing/event_status/?stripe_session_id={CHECKOUT_SESSION_ID}",
   "total_details": null,
   "ui_mode": "hosted",
-  "url": "https://checkout.stripe.com/c/pay/cs_test_NORMALIZED02tZPg16h6lq8MUzJcTR3fCVEFLSGvXuTt9jgKURdDLGo8nc#fid1d2BpamRhQ2prcSc%2FJ1ZqcHdmYCVWZGt2JVV3aicpJ2R1bE5gfCc%2FJ3VuWnFgdnFaXVRmMU5zNkldQTY9SnNRY09XZml2UXNQJyknY3dqaFZgd3Ngdyc%2FcXdwYCknaWR8anBxUXx1YCc%2FJ3Zsa2JpYFpmamlwaGsnKSdga2RnaWBVaWRmYG1qaWFgd3YnP3F3cGB4JSUl"
+  "url": "https://checkout.stripe.com/c/pay/cs_test_NORMALIZED02waTwb1c8zL6hQdUCxIk0tkOefxQYzt8b39omWP9VSj3gyp#fid1d2BpamRhQ2prcSc%2FJ1ZqcHdmYCVWZGt2JVV3aicpJ2R1bE5gfCc%2FJ3VuWnFgdnFaXVRmMU5zNkldQTY9SnNRY09XZml2UXNQJyknY3dqaFZgd3Ngdyc%2FcXdwYCknaWR8anBxUXx1YCc%2FJ3Zsa2JpYFpmamlwaGsnKSdga2RnaWBVaWRmYG1qaWFgd3YnP3F3cGB4JSUl"
 }

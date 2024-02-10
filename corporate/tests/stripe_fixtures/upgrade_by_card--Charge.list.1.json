@@ -26,7 +26,7 @@
       "created": 1010000001,
       "currency": "usd",
       "customer": "cus_NORMALIZED0001",
-      "description": "Upgrade to Zulip Cloud Standard, $80.0 x 6",
+      "description": "Payment for Invoice",
       "destination": null,
       "dispute": null,
       "disputed": false,
@@ -35,22 +35,9 @@
       "failure_message": null,
       "fraud_details": {},
       "id": "ch_NORMALIZED00000000000001",
-      "invoice": null,
+      "invoice": "in_NORMALIZED00000000000001",
       "livemode": false,
-      "metadata": {
-        "billing_modality": "charge_automatically",
-        "billing_schedule": "1",
-        "license_management": "automatic",
-        "licenses": "6",
-        "plan_tier": "1",
-        "price_per_license": "8000",
-        "realm_id": "1",
-        "realm_str": "zulip",
-        "seat_count": "6",
-        "type": "upgrade",
-        "user_email": "hamlet@zulip.com",
-        "user_id": "10"
-      },
+      "metadata": {},
       "object": "charge",
       "on_behalf_of": null,
       "order": null,
@@ -64,7 +51,7 @@
       },
       "paid": true,
       "payment_intent": "pi_NORMALIZED00000000000001",
-      "payment_method": "pm_1OOgwjDEQaroqDjsFqxK22DG",
+      "payment_method": "pm_1OhumlDEQaroqDjsUUiVtdc7",
       "payment_method_details": {
         "card": {
           "amount_authorized": 48000,
@@ -75,8 +62,8 @@
             "cvc_check": "pass"
           },
           "country": "US",
-          "exp_month": 12,
-          "exp_year": 2024,
+          "exp_month": 2,
+          "exp_year": 2025,
           "extended_authorization": {
             "status": "disabled"
           },
@@ -104,9 +91,10 @@
         },
         "type": "card"
       },
+      "radar_options": {},
       "receipt_email": "hamlet@zulip.com",
       "receipt_number": null,
-      "receipt_url": "https://pay.stripe.com/receipts/payment/CAcaFwoVYWNjdF8xN3ZUa3dERVFhcm9xRGpzKK6UgawGMgbse4fC-bw6LBYZgx6Qd3P6pRfn1E5sdXKsDloJxaLyYNV1XlEUB5XXB0hFMRyNAzFrrmJU",
+      "receipt_url": "https://pay.stripe.com/receipts/invoices/CAcaFwoVYWNjdF8xN3ZUa3dERVFhcm9xRGpzKOTkmK4GMgaQx0rXimM6LBZj2DEPdwClSseryeZ5eOc9VpA2FQ-AHsNMjAPpa_F5VjoK101ntx9qXyW8?s=ap",
       "refunded": false,
       "refunds": {
         "data": [],

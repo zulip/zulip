@@ -113,7 +113,7 @@ class Event(models.Model):
 
 
 def get_last_associated_event_by_type(
-    content_object: Union["PaymentIntent", "Session"], event_type: str
+    content_object: Union["Invoice", "PaymentIntent", "Session"], event_type: str
 ) -> Optional[Event]:
     content_type = ContentType.objects.get_for_model(type(content_object))
     return Event.objects.filter(
@@ -168,7 +168,7 @@ class Session(models.Model):
         return get_last_associated_event_by_type(self, "checkout.session.completed")
 
 
-class PaymentIntent(models.Model):
+class PaymentIntent(models.Model):  # nocoverage
     customer = models.ForeignKey(Customer, on_delete=CASCADE)
     stripe_payment_intent_id = models.CharField(max_length=255, unique=True)
 
@@ -221,7 +221,31 @@ class Invoice(models.Model):
 
     SENT = 1
     PAID = 2
+    VOID = 3
     status = models.SmallIntegerField()
+
+    def get_status_as_string(self) -> str:
+        return {
+            Invoice.SENT: "sent",
+            Invoice.PAID: "paid",
+            Invoice.VOID: "void",
+        }[self.status]
+
+    def get_last_associated_event(self) -> Optional[Event]:
+        if self.status == Invoice.PAID:
+            event_type = "invoice.paid"
+        # TODO: Add test for this case. Not sure how to trigger naturally.
+        else:  # nocoverage
+            return None  # nocoverage
+        return get_last_associated_event_by_type(self, event_type)
+
+    def to_dict(self) -> Dict[str, Any]:
+        stripe_invoice_dict: Dict[str, Any] = {}
+        stripe_invoice_dict["status"] = self.get_status_as_string()
+        event = self.get_last_associated_event()
+        if event is not None:
+            stripe_invoice_dict["event_handler"] = event.get_event_handler_details_as_dict()
+        return stripe_invoice_dict
 
 
 class AbstractCustomerPlan(models.Model):

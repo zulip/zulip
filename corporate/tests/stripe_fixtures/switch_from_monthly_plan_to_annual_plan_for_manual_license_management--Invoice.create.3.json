@@ -13,6 +13,7 @@
   "auto_advance": true,
   "automatic_tax": {
     "enabled": false,
+    "liability": null,
     "status": null
   },
   "billing_reason": "manual",
@@ -43,6 +44,9 @@
   "hosted_invoice_url": null,
   "id": "in_NORMALIZED00000000000003",
   "invoice_pdf": null,
+  "issuer": {
+    "type": "self"
+  },
   "last_finalization_error": null,
   "latest_revision": null,
   "lines": {
@@ -55,8 +59,8 @@
         "discount_amounts": [],
         "discountable": false,
         "discounts": [],
-        "id": "il_NORMALIZED00000000000004",
-        "invoice_item": "ii_NORMALIZED00000000000004",
+        "id": "il_NORMALIZED00000000000003",
+        "invoice_item": "ii_NORMALIZED00000000000003",
         "livemode": false,
         "metadata": {},
         "object": "line_item",
@@ -71,13 +75,13 @@
           "created": 1000000000,
           "currency": "usd",
           "custom_unit_amount": null,
-          "id": "price_NORMALIZED00000000000003",
+          "id": "price_NORMALIZED00000000000002",
           "livemode": false,
           "lookup_key": null,
           "metadata": {},
           "nickname": null,
           "object": "price",
-          "product": "prod_NORMALIZED0003",
+          "product": "prod_NORMALIZED0002",
           "recurring": null,
           "tax_behavior": "unspecified",
           "tiers_mode": null,

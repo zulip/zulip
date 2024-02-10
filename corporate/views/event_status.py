@@ -30,10 +30,10 @@ def event_status(
     user: UserProfile,
     *,
     stripe_session_id: Optional[str] = None,
-    stripe_payment_intent_id: Optional[str] = None,
+    stripe_invoice_id: Optional[str] = None,
 ) -> HttpResponse:
     event_status_request = EventStatusRequest(
-        stripe_session_id=stripe_session_id, stripe_payment_intent_id=stripe_payment_intent_id
+        stripe_session_id=stripe_session_id, stripe_invoice_id=stripe_invoice_id
     )
     billing_session = RealmBillingSession(user)
     data = billing_session.get_event_status(event_status_request)
@@ -47,10 +47,10 @@ def remote_realm_event_status(
     billing_session: RemoteRealmBillingSession,
     *,
     stripe_session_id: Optional[str] = None,
-    stripe_payment_intent_id: Optional[str] = None,
+    stripe_invoice_id: Optional[str] = None,
 ) -> HttpResponse:
     event_status_request = EventStatusRequest(
-        stripe_session_id=stripe_session_id, stripe_payment_intent_id=stripe_payment_intent_id
+        stripe_session_id=stripe_session_id, stripe_invoice_id=stripe_invoice_id
     )
     data = billing_session.get_event_status(event_status_request)
     return json_success(request, data)
@@ -63,10 +63,10 @@ def remote_server_event_status(
     billing_session: RemoteServerBillingSession,
     *,
     stripe_session_id: Optional[str] = None,
-    stripe_payment_intent_id: Optional[str] = None,
+    stripe_invoice_id: Optional[str] = None,
 ) -> HttpResponse:  # nocoverage
     event_status_request = EventStatusRequest(
-        stripe_session_id=stripe_session_id, stripe_payment_intent_id=stripe_payment_intent_id
+        stripe_session_id=stripe_session_id, stripe_invoice_id=stripe_invoice_id
     )
     data = billing_session.get_event_status(event_status_request)
     return json_success(request, data)
@@ -78,11 +78,11 @@ def event_status_page(
     request: HttpRequest,
     *,
     stripe_session_id: str = "",
-    stripe_payment_intent_id: str = "",
+    stripe_invoice_id: str = "",
 ) -> HttpResponse:
     context = {
         "stripe_session_id": stripe_session_id,
-        "stripe_payment_intent_id": stripe_payment_intent_id,
+        "stripe_invoice_id": stripe_invoice_id,
         "billing_base_url": "",
     }
     return render(request, "corporate/billing/event_status.html", context=context)
@@ -96,11 +96,11 @@ def remote_realm_event_status_page(
     realm_uuid: str = "",
     server_uuid: str = "",
     stripe_session_id: str = "",
-    stripe_payment_intent_id: str = "",
+    stripe_invoice_id: str = "",
 ) -> HttpResponse:  # nocoverage
     context = {
         "stripe_session_id": stripe_session_id,
-        "stripe_payment_intent_id": stripe_payment_intent_id,
+        "stripe_invoice_id": stripe_invoice_id,
         "billing_base_url": f"/realm/{realm_uuid}",
     }
     return render(request, "corporate/billing/event_status.html", context=context)
@@ -114,11 +114,11 @@ def remote_server_event_status_page(
     realm_uuid: str = "",
     server_uuid: str = "",
     stripe_session_id: str = "",
-    stripe_payment_intent_id: str = "",
+    stripe_invoice_id: str = "",
 ) -> HttpResponse:  # nocoverage
     context = {
         "stripe_session_id": stripe_session_id,
-        "stripe_payment_intent_id": stripe_payment_intent_id,
+        "stripe_invoice_id": stripe_invoice_id,
         "billing_base_url": f"/server/{server_uuid}",
     }
     return render(request, "corporate/billing/event_status.html", context=context)

@@ -13,6 +13,7 @@
   "auto_advance": true,
   "automatic_tax": {
     "enabled": false,
+    "liability": null,
     "status": null
   },
   "billing_reason": "manual",
@@ -43,6 +44,9 @@
   "hosted_invoice_url": null,
   "id": "in_NORMALIZED00000000000002",
   "invoice_pdf": null,
+  "issuer": {
+    "type": "self"
+  },
   "last_finalization_error": null,
   "latest_revision": null,
   "lines": {
@@ -61,8 +65,8 @@
         "metadata": {},
         "object": "line_item",
         "period": {
-          "end": 1357095845,
-          "start": 1325473445
+          "end": 1000000000,
+          "start": 1000000000
         },
         "plan": null,
         "price": {
@@ -71,13 +75,13 @@
           "created": 1000000000,
           "currency": "usd",
           "custom_unit_amount": null,
-          "id": "price_NORMALIZED00000000000002",
+          "id": "price_NORMALIZED00000000000001",
           "livemode": false,
           "lookup_key": null,
           "metadata": {},
           "nickname": null,
           "object": "price",
-          "product": "prod_NORMALIZED0002",
+          "product": "prod_NORMALIZED0001",
           "recurring": null,
           "tax_behavior": "unspecified",
           "tiers_mode": null,
@@ -104,7 +108,12 @@
     "url": "/v1/invoices/in_NORMALIZED00000000000002/lines"
   },
   "livemode": false,
-  "metadata": {},
+  "metadata": {
+    "billing_schedule": "1",
+    "licenses": "123",
+    "plan_tier": "1",
+    "user_id": "10"
+  },
   "next_payment_attempt": null,
   "number": null,
   "object": "invoice",

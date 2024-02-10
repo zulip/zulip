@@ -7,15 +7,16 @@
       "amount_total": null,
       "automatic_tax": {
         "enabled": false,
+        "liability": null,
         "status": null
       },
-      "billing_address_collection": null,
+      "billing_address_collection": "required",
       "cancel_url": "http://zulip.testserver/upgrade/?manual_license_management=false&tier=1",
       "client_reference_id": null,
       "client_secret": null,
       "consent": null,
       "consent_collection": null,
-      "created": 1010000002,
+      "created": 1010000001,
       "currency": null,
       "currency_conversion": null,
       "custom_fields": [],
@@ -37,7 +38,7 @@
       },
       "customer_email": null,
       "expires_at": 1000000000,
-      "id": "cs_test_NORMALIZED01wEjO9xRWPRGJ8szQaJL2dvZ2SUz1wjdge9qbGf5kyI2wyG",
+      "id": "cs_test_NORMALIZED01QxNzb4qnBPnbvN7Txt0MOBqB1gXLO7BzLO3uBsBpVp7gsh",
       "invoice": null,
       "invoice_creation": null,
       "livemode": false,
@@ -61,7 +62,7 @@
         "enabled": false
       },
       "recovered_from": null,
-      "setup_intent": "seti_1OOgx8DEQaroqDjsTZJ5zf88",
+      "setup_intent": "seti_1OhunEDEQaroqDjsXVHrF4MV",
       "shipping": null,
       "shipping_address_collection": null,
       "shipping_options": [],
@@ -69,10 +70,10 @@
       "status": "open",
       "submit_type": null,
       "subscription": null,
-      "success_url": "http://zulip.testserver/billing/event_status?stripe_session_id={CHECKOUT_SESSION_ID}",
+      "success_url": "http://zulip.testserver/billing/event_status/?stripe_session_id={CHECKOUT_SESSION_ID}",
       "total_details": null,
       "ui_mode": "hosted",
-      "url": "https://checkout.stripe.com/c/pay/cs_test_NORMALIZED01wEjO9xRWPRGJ8szQaJL2dvZ2SUz1wjdge9qbGf5kyI2wyG#fid1d2BpamRhQ2prcSc%2FJ1ZqcHdmYCVWZGt2JVV3aicpJ2R1bE5gfCc%2FJ3VuWnFgdnFaXVRmMU5zNkldQTY9SnNRY09XZml2UXNQJyknY3dqaFZgd3Ngdyc%2FcXdwYCknaWR8anBxUXx1YCc%2FJ3Zsa2JpYFpmamlwaGsnKSdga2RnaWBVaWRmYG1qaWFgd3YnP3F3cGB4JSUl"
+      "url": "https://checkout.stripe.com/c/pay/cs_test_NORMALIZED01QxNzb4qnBPnbvN7Txt0MOBqB1gXLO7BzLO3uBsBpVp7gsh#fid1d2BpamRhQ2prcSc%2FJ1ZqcHdmYCVWZGt2JVV3aicpJ2R1bE5gfCc%2FJ3VuWnFgdnFaXVRmMU5zNkldQTY9SnNRY09XZml2UXNQJyknY3dqaFZgd3Ngdyc%2FcXdwYCknaWR8anBxUXx1YCc%2FJ3Zsa2JpYFpmamlwaGsnKSdga2RnaWBVaWRmYG1qaWFgd3YnP3F3cGB4JSUl"
     }
   ],
   "has_more": true,

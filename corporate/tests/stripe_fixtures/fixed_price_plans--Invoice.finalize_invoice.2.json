@@ -13,6 +13,7 @@
   "auto_advance": true,
   "automatic_tax": {
     "enabled": false,
+    "liability": null,
     "status": null
   },
   "billing_reason": "manual",
@@ -40,9 +41,12 @@
   "ending_balance": 0,
   "footer": null,
   "from_invoice": null,
-  "hosted_invoice_url": "https://invoice.stripe.com/i/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QRDc3aWpwd0hQSHZ2RWpuNGF0TU9uOXhoS1haRnJpLDkzNDQ2OTYy0200GXUIFnXH?s=ap",
+  "hosted_invoice_url": "https://invoice.stripe.com/i/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QV3lmd25tSHB5dlIxU3dvcGljYzBNR2M2c0JIeEhhLDk4MDI4MzUx0200yq99oZge?s=ap",
   "id": "in_NORMALIZED00000000000003",
-  "invoice_pdf": "https://pay.stripe.com/invoice/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QRDc3aWpwd0hQSHZ2RWpuNGF0TU9uOXhoS1haRnJpLDkzNDQ2OTYy0200GXUIFnXH/pdf?s=ap",
+  "invoice_pdf": "https://pay.stripe.com/invoice/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QV3lmd25tSHB5dlIxU3dvcGljYzBNR2M2c0JIeEhhLDk4MDI4MzUx0200yq99oZge/pdf?s=ap",
+  "issuer": {
+    "type": "self"
+  },
   "last_finalization_error": null,
   "latest_revision": null,
   "lines": {
@@ -71,13 +75,13 @@
           "created": 1000000000,
           "currency": "usd",
           "custom_unit_amount": null,
-          "id": "price_NORMALIZED00000000000003",
+          "id": "price_NORMALIZED00000000000002",
           "livemode": false,
           "lookup_key": null,
           "metadata": {},
           "nickname": null,
           "object": "price",
-          "product": "prod_NORMALIZED0003",
+          "product": "prod_NORMALIZED0002",
           "recurring": null,
           "tax_behavior": "unspecified",
           "tiers_mode": null,

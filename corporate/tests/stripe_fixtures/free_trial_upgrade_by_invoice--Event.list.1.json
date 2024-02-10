@@ -19,12 +19,13 @@
           "auto_advance": true,
           "automatic_tax": {
             "enabled": false,
+            "liability": null,
             "status": null
           },
           "billing_reason": "manual",
           "charge": null,
           "collection_method": "charge_automatically",
-          "created": 1010000003,
+          "created": 1010000002,
           "currency": "usd",
           "custom_fields": null,
           "customer": "cus_NORMALIZED0002",
@@ -46,9 +47,12 @@
           "ending_balance": 0,
           "footer": null,
           "from_invoice": null,
-          "hosted_invoice_url": "https://invoice.stripe.com/i/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QRDc5NnRzckJuV2UxR0FtRExtTGh3M25ocnZQQ3hWLDkzNDQ3MDkw0200OKhTHYVj?s=ap",
+          "hosted_invoice_url": "https://invoice.stripe.com/i/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QV3loNzd6cGZyZXF3OGp1TlQ1ZTVrUjJST2plWFNYLDk4MDI4NDg30200z9cen6lj?s=ap",
           "id": "in_NORMALIZED00000000000001",
-          "invoice_pdf": "https://pay.stripe.com/invoice/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QRDc5NnRzckJuV2UxR0FtRExtTGh3M25ocnZQQ3hWLDkzNDQ3MDkw0200OKhTHYVj/pdf?s=ap",
+          "invoice_pdf": "https://pay.stripe.com/invoice/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QV3loNzd6cGZyZXF3OGp1TlQ1ZTVrUjJST2plWFNYLDk4MDI4NDg30200z9cen6lj/pdf?s=ap",
+          "issuer": {
+            "type": "self"
+          },
           "last_finalization_error": null,
           "latest_revision": null,
           "lines": {
@@ -74,7 +78,7 @@
                 "price": {
                   "active": false,
                   "billing_scheme": "per_unit",
-                  "created": 1010000004,
+                  "created": 1010000003,
                   "currency": "usd",
                   "custom_unit_amount": null,
                   "id": "price_NORMALIZED00000000000001",
@@ -163,13 +167,13 @@
           "webhooks_delivered_at": null
         }
       },
-      "id": "evt_1OOgusDEQaroqDjssSJcv9t4",
+      "id": "evt_1OhukNDEQaroqDjs40VUHRUw",
       "livemode": false,
       "object": "event",
       "pending_webhooks": 0,
       "request": {
         "id": "req_NORMALIZED0001",
-        "idempotency_key": "a105c496-8c6f-4195-ac85-c8ab7bec4d89"
+        "idempotency_key": "d2ecbced-d6ac-49f4-a24c-d18cacb52e73"
       },
       "type": "invoice.finalized"
     }

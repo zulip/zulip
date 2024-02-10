@@ -2,7 +2,7 @@
   "active": true,
   "application": null,
   "business_profile": {
-    "headline": "List of past invoices ($0 invoices include payment)",
+    "headline": "List of past invoices",
     "privacy_policy_url": null,
     "terms_of_service_url": null
   },
@@ -43,7 +43,7 @@
       "proration_behavior": "none"
     }
   },
-  "id": "bpc_1OfceEDEQaroqDjsGd97jZLg",
+  "id": "bpc_1Ohuo9DEQaroqDjsagGpaT7K",
   "is_default": false,
   "livemode": false,
   "login_page": {
