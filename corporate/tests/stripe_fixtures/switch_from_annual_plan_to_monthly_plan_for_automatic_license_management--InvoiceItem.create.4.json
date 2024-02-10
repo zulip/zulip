@@ -1,19 +1,19 @@
 {
-  "amount": 36610,
+  "amount": 20000,
   "currency": "usd",
   "customer": "cus_NORMALIZED0001",
   "date": 1000000000,
-  "description": "Additional license (Feb 2, 2012 - Jan 2, 2013)",
+  "description": "Zulip Cloud Standard - renewal",
   "discountable": false,
   "discounts": [],
-  "id": "ii_NORMALIZED00000000000003",
+  "id": "ii_NORMALIZED00000000000004",
   "invoice": null,
   "livemode": false,
   "metadata": {},
   "object": "invoiceitem",
   "period": {
-    "end": 1357095845,
-    "start": 1328151845
+    "end": 1359774245,
+    "start": 1357095845
   },
   "plan": null,
   "price": {
@@ -22,26 +22,26 @@
     "created": 1000000000,
     "currency": "usd",
     "custom_unit_amount": null,
-    "id": "price_NORMALIZED00000000000003",
+    "id": "price_NORMALIZED00000000000004",
     "livemode": false,
     "lookup_key": null,
     "metadata": {},
     "nickname": null,
     "object": "price",
-    "product": "prod_NORMALIZED0003",
+    "product": "prod_NORMALIZED0004",
     "recurring": null,
     "tax_behavior": "unspecified",
     "tiers_mode": null,
     "transform_quantity": null,
     "type": "one_time",
-    "unit_amount": 7322,
-    "unit_amount_decimal": "7322"
+    "unit_amount": 800,
+    "unit_amount_decimal": "800"
   },
   "proration": false,
-  "quantity": 5,
+  "quantity": 25,
   "subscription": null,
   "tax_rates": [],
   "test_clock": null,
-  "unit_amount": 7322,
-  "unit_amount_decimal": "7322"
+  "unit_amount": 800,
+  "unit_amount_decimal": "800"
 }

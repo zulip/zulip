@@ -1,601 +1,168 @@
 {
-  "_message": "Your card was declined.",
-  "code": "card_declined",
-  "error": {
-    "charge": "ch_NORMALIZED00000000000002",
-    "code": "card_declined",
-    "decline_code": "generic_decline",
-    "doc_url": "https://stripe.com/docs/error-codes/card-declined",
-    "message": "Your card was declined.",
-    "param": null,
-    "payment_intent": {
-      "amount": 5000,
-      "amount_capturable": 0,
-      "amount_details": {
-        "tip": {}
-      },
-      "amount_received": 0,
-      "application": null,
-      "application_fee_amount": null,
-      "automatic_payment_methods": null,
-      "canceled_at": null,
-      "cancellation_reason": null,
-      "capture_method": "automatic",
-      "charges": {
-        "data": [
-          {
-            "amount": 5000,
-            "amount_captured": 0,
-            "amount_refunded": 0,
-            "application": null,
-            "application_fee": null,
-            "application_fee_amount": null,
-            "balance_transaction": null,
-            "billing_details": {
-              "address": {
-                "city": null,
-                "country": null,
-                "line1": null,
-                "line2": null,
-                "postal_code": null,
-                "state": null
-              },
-              "email": null,
-              "name": null,
-              "phone": null
-            },
-            "calculated_statement_descriptor": "ZULIP",
-            "captured": false,
-            "created": 1000000000,
-            "currency": "usd",
-            "customer": "cus_NORMALIZED0001",
-            "description": "Payment for Invoice",
-            "destination": null,
-            "dispute": null,
-            "disputed": false,
-            "failure_balance_transaction": null,
-            "failure_code": "card_declined",
-            "failure_message": "Your card was declined.",
-            "fraud_details": {},
-            "id": "ch_NORMALIZED00000000000002",
-            "invoice": "in_NORMALIZED00000000000002",
-            "livemode": false,
-            "metadata": {},
-            "object": "charge",
-            "on_behalf_of": null,
-            "order": null,
-            "outcome": {
-              "network_status": "declined_by_network",
-              "reason": "generic_decline",
-              "risk_level": "normal",
-              "risk_score": 0,
-              "seller_message": "The bank did not return any further details with this decline.",
-              "type": "issuer_declined"
-            },
-            "paid": false,
-            "payment_intent": "pi_NORMALIZED00000000000002",
-            "payment_method": "pm_1OOhBZDEQaroqDjsjrr4p4dg",
-            "payment_method_details": {
-              "card": {
-                "amount_authorized": null,
-                "brand": "visa",
-                "checks": {
-                  "address_line1_check": null,
-                  "address_postal_code_check": null,
-                  "cvc_check": "pass"
-                },
-                "country": "US",
-                "exp_month": 12,
-                "exp_year": 2024,
-                "extended_authorization": {
-                  "status": "disabled"
-                },
-                "fingerprint": "NORMALIZED000002",
-                "funding": "credit",
-                "incremental_authorization": {
-                  "status": "unavailable"
-                },
-                "installments": null,
-                "last4": "0341",
-                "mandate": null,
-                "multicapture": {
-                  "status": "unavailable"
-                },
-                "network": "visa",
-                "network_token": {
-                  "used": false
-                },
-                "overcapture": {
-                  "maximum_amount_capturable": 5000,
-                  "status": "unavailable"
-                },
-                "three_d_secure": null,
-                "wallet": null
-              },
-              "type": "card"
-            },
-            "radar_options": {},
-            "receipt_email": "hamlet@zulip.com",
-            "receipt_number": null,
-            "receipt_url": null,
-            "refunded": false,
-            "refunds": {},
-            "review": null,
-            "shipping": null,
-            "source": null,
-            "source_transfer": null,
-            "statement_descriptor": null,
-            "statement_descriptor_suffix": null,
-            "status": "failed",
-            "transfer_data": null,
-            "transfer_group": null
-          }
-        ],
-        "has_more": false,
-        "object": "list",
-        "total_count": 1,
-        "url": "/v1/charges?payment_intent=pi_NORMALIZED00000000000002"
-      },
-      "client_secret": "pi_NORMALIZED00000000000002_secret_Ov2D1BDnuVPiuN9rhlcAgnEtf",
-      "confirmation_method": "automatic",
-      "created": 1000000000,
-      "currency": "usd",
-      "customer": "cus_NORMALIZED0001",
-      "description": "Payment for Invoice",
-      "id": "pi_NORMALIZED00000000000002",
-      "invoice": "in_NORMALIZED00000000000002",
-      "last_payment_error": {
-        "charge": "ch_NORMALIZED00000000000002",
-        "code": "card_declined",
-        "decline_code": "generic_decline",
-        "doc_url": "https://stripe.com/docs/error-codes/card-declined",
-        "message": "Your card was declined.",
-        "payment_method": {
-          "billing_details": {
-            "address": {
-              "city": null,
-              "country": null,
-              "line1": null,
-              "line2": null,
-              "postal_code": null,
-              "state": null
-            },
-            "email": null,
-            "name": null,
-            "phone": null
-          },
-          "card": {
-            "brand": "visa",
-            "checks": {
-              "address_line1_check": null,
-              "address_postal_code_check": null,
-              "cvc_check": "pass"
-            },
-            "country": "US",
-            "exp_month": 12,
-            "exp_year": 2024,
-            "fingerprint": "NORMALIZED000002",
-            "funding": "credit",
-            "generated_from": null,
-            "last4": "0341",
-            "networks": {
-              "available": [
-                "visa"
-              ],
-              "preferred": null
-            },
-            "three_d_secure_usage": {
-              "supported": true
-            },
-            "wallet": null
-          },
-          "created": 1000000000,
-          "customer": "cus_NORMALIZED0001",
-          "id": "pm_1OOhBZDEQaroqDjsjrr4p4dg",
-          "livemode": false,
-          "metadata": {},
-          "object": "payment_method",
-          "type": "card"
-        },
-        "type": "card_error"
-      },
-      "latest_charge": "ch_NORMALIZED00000000000002",
-      "livemode": false,
-      "metadata": {},
-      "next_action": null,
-      "object": "payment_intent",
-      "on_behalf_of": null,
-      "payment_method": null,
-      "payment_method_configuration_details": null,
-      "payment_method_options": {
-        "card": {
-          "installments": null,
-          "mandate_options": null,
-          "network": null,
-          "request_three_d_secure": "automatic"
-        },
-        "cashapp": {}
-      },
-      "payment_method_types": [
-        "card",
-        "cashapp"
-      ],
-      "processing": null,
-      "receipt_email": "hamlet@zulip.com",
-      "review": null,
-      "setup_future_usage": null,
-      "shipping": null,
-      "source": null,
-      "statement_descriptor": null,
-      "statement_descriptor_suffix": null,
-      "status": "requires_payment_method",
-      "transfer_data": null,
-      "transfer_group": null
-    },
-    "payment_method": {
-      "billing_details": {
-        "address": {
-          "city": null,
-          "country": null,
-          "line1": null,
-          "line2": null,
-          "postal_code": null,
-          "state": null
-        },
-        "email": null,
-        "name": null,
-        "phone": null
-      },
-      "card": {
-        "brand": "visa",
-        "checks": {
-          "address_line1_check": null,
-          "address_postal_code_check": null,
-          "cvc_check": "pass"
-        },
-        "country": "US",
-        "exp_month": 12,
-        "exp_year": 2024,
-        "fingerprint": "NORMALIZED000002",
-        "funding": "credit",
-        "generated_from": null,
-        "last4": "0341",
-        "networks": {
-          "available": [
-            "visa"
-          ],
-          "preferred": null
-        },
-        "three_d_secure_usage": {
-          "supported": true
-        },
-        "wallet": null
-      },
-      "created": 1000000000,
-      "customer": "cus_NORMALIZED0001",
-      "id": "pm_1OOhBZDEQaroqDjsjrr4p4dg",
-      "livemode": false,
-      "metadata": {},
-      "object": "payment_method",
-      "type": "card"
-    },
-    "request_log_url": "https://dashboard.stripe.com/test/logs/req_NORMALIZED0007?t=1702907327",
-    "setup_intent": null,
-    "source": null,
-    "type": "card_error"
+  "account_country": "US",
+  "account_name": "Kandra Labs, Inc.",
+  "account_tax_ids": null,
+  "amount_due": 48000,
+  "amount_paid": 48000,
+  "amount_remaining": 0,
+  "amount_shipping": 0,
+  "application": null,
+  "application_fee_amount": null,
+  "attempt_count": 1,
+  "attempted": true,
+  "auto_advance": false,
+  "automatic_tax": {
+    "enabled": false,
+    "liability": null,
+    "status": null
   },
-  "headers": {
-    "Access-Control-Allow-Credentials": "true",
-    "Access-Control-Allow-Methods": "GET,HEAD,PUT,PATCH,POST,DELETE",
-    "Access-Control-Allow-Origin": "*",
-    "Access-Control-Expose-Headers": "Request-Id, Stripe-Manage-Version, Stripe-Should-Retry, X-Stripe-External-Auth-Required, X-Stripe-Privileged-Session-Required",
-    "Access-Control-Max-Age": "300",
-    "Cache-Control": "no-cache, no-store",
-    "Connection": "keep-alive",
-    "Content-Length": "9107",
-    "Content-Security-Policy": "report-uri https://q.stripe.com/csp-report?p=v1%2Finvoices%2F%3Ainvoice%2Fpay; block-all-mixed-content; default-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; img-src 'self'; script-src 'self' 'report-sample'; style-src 'self'",
-    "Content-Type": "application/json",
-    "Date": "NORMALIZED DATETIME",
-    "Idempotency-Key": "36aa1721-9236-4330-97c3-85e372e003fd",
-    "Original-Request": "req_NORMALIZED0007",
-    "Request-Id": "req_NORMALIZED0007",
-    "Server": "nginx",
-    "Strict-Transport-Security": "max-age=63072000; includeSubDomains; preload",
-    "Stripe-Should-Retry": "false",
-    "Stripe-Version": "2020-08-27",
-    "Vary": "Origin",
-    "X-Stripe-Routing-Context-Priority-Tier": "api-testmode"
+  "billing_reason": "manual",
+  "charge": "ch_NORMALIZED00000000000001",
+  "collection_method": "charge_automatically",
+  "created": 1000000000,
+  "currency": "usd",
+  "custom_fields": null,
+  "customer": "cus_NORMALIZED0001",
+  "customer_address": null,
+  "customer_email": "hamlet@zulip.com",
+  "customer_name": null,
+  "customer_phone": null,
+  "customer_shipping": null,
+  "customer_tax_exempt": "none",
+  "customer_tax_ids": [],
+  "default_payment_method": null,
+  "default_source": null,
+  "default_tax_rates": [],
+  "description": null,
+  "discount": null,
+  "discounts": [],
+  "due_date": null,
+  "effective_at": 1000000000,
+  "ending_balance": 0,
+  "footer": null,
+  "from_invoice": null,
+  "hosted_invoice_url": "https://invoice.stripe.com/i/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QV3lpWlU1azJlcG5pbFlrZkVYZW84a01wb1RpUWg2LDk4MDI4NTI302006jqdvgGK?s=ap",
+  "id": "in_NORMALIZED00000000000001",
+  "invoice_pdf": "https://pay.stripe.com/invoice/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QV3lpWlU1azJlcG5pbFlrZkVYZW84a01wb1RpUWg2LDk4MDI4NTI302006jqdvgGK/pdf?s=ap",
+  "issuer": {
+    "type": "self"
   },
-  "http_body": "{\n  \"error\": {\n    \"charge\": \"ch_NORMALIZED00000000000002\",\n    \"code\": \"card_declined\",\n    \"decline_code\": \"generic_decline\",\n    \"doc_url\": \"https://stripe.com/docs/error-codes/card-declined\",\n    \"message\": \"Your card was declined.\",\n    \"payment_intent\": {\n      \"id\": \"pi_NORMALIZED00000000000002\",\n      \"object\": \"payment_intent\",\n      \"amount\": 5000,\n      \"amount_capturable\": 0,\n      \"amount_details\": {\n        \"tip\": {\n        }\n      },\n      \"amount_received\": 0,\n      \"application\": null,\n      \"application_fee_amount\": null,\n      \"automatic_payment_methods\": null,\n      \"canceled_at\": null,\n      \"cancellation_reason\": null,\n      \"capture_method\": \"automatic\",\n      \"charges\": {\n        \"object\": \"list\",\n        \"data\": [\n          {\n            \"id\": \"ch_NORMALIZED00000000000002\",\n            \"object\": \"charge\",\n            \"amount\": 5000,\n            \"amount_captured\": 0,\n            \"amount_refunded\": 0,\n            \"application\": null,\n            \"application_fee\": null,\n            \"application_fee_amount\": null,\n            \"balance_transaction\": null,\n            \"billing_details\": {\n              \"address\": {\n                \"city\": null,\n                \"country\": null,\n                \"line1\": null,\n                \"line2\": null,\n                \"postal_code\": null,\n                \"state\": null\n              },\n              \"email\": null,\n              \"name\": null,\n              \"phone\": null\n            },\n            \"calculated_statement_descriptor\": \"ZULIP\",\n            \"captured\": false,\n            \"created\": 1000000000,\n            \"currency\": \"usd\",\n            \"customer\": \"cus_NORMALIZED0001\",\n            \"description\": \"Payment for Invoice\",\n            \"destination\": null,\n            \"dispute\": null,\n            \"disputed\": false,\n            \"failure_balance_transaction\": null,\n            \"failure_code\": \"card_declined\",\n            \"failure_message\": \"Your card was declined.\",\n            \"fraud_details\": {\n            },\n            \"invoice\": \"in_NORMALIZED00000000000002\",\n            \"livemode\": false,\n            \"metadata\": {\n            },\n            \"on_behalf_of\": null,\n            \"order\": null,\n            \"outcome\": {\n              \"network_status\": \"declined_by_network\",\n              \"reason\": \"generic_decline\",\n              \"risk_level\": \"normal\",\n              \"risk_score\": 6,\n              \"seller_message\": \"The bank did not return any further details with this decline.\",\n              \"type\": \"issuer_declined\"\n            },\n            \"paid\": false,\n            \"payment_intent\": \"pi_NORMALIZED00000000000002\",\n            \"payment_method\": \"pm_1OAbesDEQaroqDjs5R6CuXDC\",\n            \"payment_method_details\": {\n              \"card\": {\n                \"amount_authorized\": null,\n                \"brand\": \"visa\",\n                \"checks\": {\n                  \"address_line1_check\": null,\n                  \"address_postal_code_check\": null,\n                  \"cvc_check\": \"pass\"\n                },\n                \"country\": \"US\",\n                \"exp_month\": 11,\n                \"exp_year\": 2024,\n                \"extended_authorization\": {\n                  \"status\": \"disabled\"\n                },\n                \"fingerprint\": \"NORMALIZED000001\",\n                \"funding\": \"credit\",\n                \"incremental_authorization\": {\n                  \"status\": \"unavailable\"\n                },\n                \"installments\": null,\n                \"last4\": \"0341\",\n                \"mandate\": null,\n                \"multicapture\": {\n                  \"status\": \"unavailable\"\n                },\n                \"network\": \"visa\",\n                \"network_token\": {\n                  \"used\": false\n                },\n                \"overcapture\": {\n                  \"maximum_amount_capturable\": 5000,\n                  \"status\": \"unavailable\"\n                },\n                \"three_d_secure\": null,\n                \"wallet\": null\n              },\n              \"type\": \"card\"\n            },\n            \"receipt_email\": \"hamlet@zulip.com\",\n            \"receipt_number\": null,\n            \"receipt_url\": null,\n            \"refunded\": false,\n            \"refunds\": {\n              \"object\": \"list\",\n              \"data\": [\n\n              ],\n              \"has_more\": false,\n              \"total_count\": 0,\n              \"url\": \"/v1/charges/ch_NORMALIZED00000000000002/refunds\"\n            },\n            \"review\": null,\n            \"shipping\": null,\n            \"source\": null,\n            \"source_transfer\": null,\n            \"statement_descriptor\": null,\n            \"statement_descriptor_suffix\": null,\n            \"status\": \"failed\",\n            \"transfer_data\": null,\n            \"transfer_group\": null\n          }\n        ],\n        \"has_more\": false,\n        \"total_count\": 1,\n        \"url\": \"/v1/charges?payment_intent=pi_NORMALIZED00000000000002\"\n      },\n      \"client_secret\": \"pi_NORMALIZED00000000000002_secret_Xnfeb3bcGcLT0u7Y6t4QrBywl\",\n      \"confirmation_method\": \"automatic\",\n      \"created\": 1000000000,\n      \"currency\": \"usd\",\n      \"customer\": \"cus_NORMALIZED0001\",\n      \"description\": \"Payment for Invoice\",\n      \"invoice\": \"in_NORMALIZED00000000000002\",\n      \"last_payment_error\": {\n        \"charge\": \"ch_NORMALIZED00000000000002\",\n        \"code\": \"card_declined\",\n        \"decline_code\": \"generic_decline\",\n        \"doc_url\": \"https://stripe.com/docs/error-codes/card-declined\",\n        \"message\": \"Your card was declined.\",\n        \"payment_method\": {\n          \"id\": \"pm_1OAbesDEQaroqDjs5R6CuXDC\",\n          \"object\": \"payment_method\",\n          \"billing_details\": {\n            \"address\": {\n              \"city\": null,\n              \"country\": null,\n              \"line1\": null,\n              \"line2\": null,\n              \"postal_code\": null,\n              \"state\": null\n            },\n            \"email\": null,\n            \"name\": null,\n            \"phone\": null\n          },\n          \"card\": {\n            \"brand\": \"visa\",\n            \"checks\": {\n              \"address_line1_check\": null,\n              \"address_postal_code_check\": null,\n              \"cvc_check\": \"pass\"\n            },\n            \"country\": \"US\",\n            \"exp_month\": 11,\n            \"exp_year\": 2024,\n            \"fingerprint\": \"NORMALIZED000001\",\n            \"funding\": \"credit\",\n            \"generated_from\": null,\n            \"last4\": \"0341\",\n            \"networks\": {\n              \"available\": [\n                \"visa\"\n              ],\n              \"preferred\": null\n            },\n            \"three_d_secure_usage\": {\n              \"supported\": true\n            },\n            \"wallet\": null\n          },\n          \"created\": 1000000000,\n          \"customer\": \"cus_NORMALIZED0001\",\n          \"livemode\": false,\n          \"metadata\": {\n          },\n          \"type\": \"card\"\n        },\n        \"type\": \"card_error\"\n      },\n      \"latest_charge\": \"ch_NORMALIZED00000000000002\",\n      \"livemode\": false,\n      \"metadata\": {\n      },\n      \"next_action\": null,\n      \"on_behalf_of\": null,\n      \"payment_method\": null,\n      \"payment_method_configuration_details\": null,\n      \"payment_method_options\": {\n        \"card\": {\n          \"installments\": null,\n          \"mandate_options\": null,\n          \"network\": null,\n          \"request_three_d_secure\": \"automatic\"\n        },\n        \"cashapp\": {\n        }\n      },\n      \"payment_method_types\": [\n        \"card\",\n        \"cashapp\"\n      ],\n      \"processing\": null,\n      \"receipt_email\": \"hamlet@zulip.com\",\n      \"review\": null,\n      \"setup_future_usage\": null,\n      \"shipping\": null,\n      \"source\": null,\n      \"statement_descriptor\": null,\n      \"statement_descriptor_suffix\": null,\n      \"status\": \"requires_payment_method\",\n      \"transfer_data\": null,\n      \"transfer_group\": null\n    },\n    \"payment_method\": {\n      \"id\": \"pm_1OAbesDEQaroqDjs5R6CuXDC\",\n      \"object\": \"payment_method\",\n      \"billing_details\": {\n        \"address\": {\n          \"city\": null,\n          \"country\": null,\n          \"line1\": null,\n          \"line2\": null,\n          \"postal_code\": null,\n          \"state\": null\n        },\n        \"email\": null,\n        \"name\": null,\n        \"phone\": null\n      },\n      \"card\": {\n        \"brand\": \"visa\",\n        \"checks\": {\n          \"address_line1_check\": null,\n          \"address_postal_code_check\": null,\n          \"cvc_check\": \"pass\"\n        },\n        \"country\": \"US\",\n        \"exp_month\": 11,\n        \"exp_year\": 2024,\n        \"fingerprint\": \"NORMALIZED000001\",\n        \"funding\": \"credit\",\n        \"generated_from\": null,\n        \"last4\": \"0341\",\n        \"networks\": {\n          \"available\": [\n            \"visa\"\n          ],\n          \"preferred\": null\n        },\n        \"three_d_secure_usage\": {\n          \"supported\": true\n        },\n        \"wallet\": null\n      },\n      \"created\": 1000000000,\n      \"customer\": \"cus_NORMALIZED0001\",\n      \"livemode\": false,\n      \"metadata\": {\n      },\n      \"type\": \"card\"\n    },\n    \"request_log_url\": \"https://dashboard.stripe.com/test/logs/req_NORMALIZED0012?t=1699549490\",\n    \"type\": \"card_error\"\n  }\n}\n",
-  "http_status": 402,
-  "json_body": {
-    "error": {
-      "charge": "ch_NORMALIZED00000000000002",
-      "code": "card_declined",
-      "decline_code": "generic_decline",
-      "doc_url": "https://stripe.com/docs/error-codes/card-declined",
-      "message": "Your card was declined.",
-      "payment_intent": {
-        "amount": 5000,
-        "amount_capturable": 0,
-        "amount_details": {
-          "tip": {}
-        },
-        "amount_received": 0,
-        "application": null,
-        "application_fee_amount": null,
-        "automatic_payment_methods": null,
-        "canceled_at": null,
-        "cancellation_reason": null,
-        "capture_method": "automatic",
-        "charges": {
-          "data": [
-            {
-              "amount": 5000,
-              "amount_captured": 0,
-              "amount_refunded": 0,
-              "application": null,
-              "application_fee": null,
-              "application_fee_amount": null,
-              "balance_transaction": null,
-              "billing_details": {
-                "address": {
-                  "city": null,
-                  "country": null,
-                  "line1": null,
-                  "line2": null,
-                  "postal_code": null,
-                  "state": null
-                },
-                "email": null,
-                "name": null,
-                "phone": null
-              },
-              "calculated_statement_descriptor": "ZULIP",
-              "captured": false,
-              "created": 1000000000,
-              "currency": "usd",
-              "customer": "cus_NORMALIZED0001",
-              "description": "Payment for Invoice",
-              "destination": null,
-              "dispute": null,
-              "disputed": false,
-              "failure_balance_transaction": null,
-              "failure_code": "card_declined",
-              "failure_message": "Your card was declined.",
-              "fraud_details": {},
-              "id": "ch_NORMALIZED00000000000002",
-              "invoice": "in_NORMALIZED00000000000002",
-              "livemode": false,
-              "metadata": {},
-              "object": "charge",
-              "on_behalf_of": null,
-              "order": null,
-              "outcome": {
-                "network_status": "declined_by_network",
-                "reason": "generic_decline",
-                "risk_level": "normal",
-                "risk_score": 0,
-                "seller_message": "The bank did not return any further details with this decline.",
-                "type": "issuer_declined"
-              },
-              "paid": false,
-              "payment_intent": "pi_NORMALIZED00000000000002",
-              "payment_method": "pm_1OOhBZDEQaroqDjsjrr4p4dg",
-              "payment_method_details": {
-                "card": {
-                  "amount_authorized": null,
-                  "brand": "visa",
-                  "checks": {
-                    "address_line1_check": null,
-                    "address_postal_code_check": null,
-                    "cvc_check": "pass"
-                  },
-                  "country": "US",
-                  "exp_month": 12,
-                  "exp_year": 2024,
-                  "extended_authorization": {
-                    "status": "disabled"
-                  },
-                  "fingerprint": "NORMALIZED000002",
-                  "funding": "credit",
-                  "incremental_authorization": {
-                    "status": "unavailable"
-                  },
-                  "installments": null,
-                  "last4": "0341",
-                  "mandate": null,
-                  "multicapture": {
-                    "status": "unavailable"
-                  },
-                  "network": "visa",
-                  "network_token": {
-                    "used": false
-                  },
-                  "overcapture": {
-                    "maximum_amount_capturable": 5000,
-                    "status": "unavailable"
-                  },
-                  "three_d_secure": null,
-                  "wallet": null
-                },
-                "type": "card"
-              },
-              "radar_options": {},
-              "receipt_email": "hamlet@zulip.com",
-              "receipt_number": null,
-              "receipt_url": null,
-              "refunded": false,
-              "refunds": {
-                "data": [],
-                "has_more": false,
-                "object": "list",
-                "total_count": 0,
-                "url": "/v1/charges/ch_NORMALIZED00000000000002/refunds"
-              },
-              "review": null,
-              "shipping": null,
-              "source": null,
-              "source_transfer": null,
-              "statement_descriptor": null,
-              "statement_descriptor_suffix": null,
-              "status": "failed",
-              "transfer_data": null,
-              "transfer_group": null
-            }
-          ],
-          "has_more": false,
-          "object": "list",
-          "total_count": 1,
-          "url": "/v1/charges?payment_intent=pi_NORMALIZED00000000000002"
-        },
-        "client_secret": "pi_NORMALIZED00000000000002_secret_Ov2D1BDnuVPiuN9rhlcAgnEtf",
-        "confirmation_method": "automatic",
-        "created": 1000000000,
+  "last_finalization_error": null,
+  "latest_revision": null,
+  "lines": {
+    "data": [
+      {
+        "amount": 48000,
+        "amount_excluding_tax": 48000,
         "currency": "usd",
-        "customer": "cus_NORMALIZED0001",
-        "description": "Payment for Invoice",
-        "id": "pi_NORMALIZED00000000000002",
-        "invoice": "in_NORMALIZED00000000000002",
-        "last_payment_error": {
-          "charge": "ch_NORMALIZED00000000000002",
-          "code": "card_declined",
-          "decline_code": "generic_decline",
-          "doc_url": "https://stripe.com/docs/error-codes/card-declined",
-          "message": "Your card was declined.",
-          "payment_method": {
-            "billing_details": {
-              "address": {
-                "city": null,
-                "country": null,
-                "line1": null,
-                "line2": null,
-                "postal_code": null,
-                "state": null
-              },
-              "email": null,
-              "name": null,
-              "phone": null
-            },
-            "card": {
-              "brand": "visa",
-              "checks": {
-                "address_line1_check": null,
-                "address_postal_code_check": null,
-                "cvc_check": "pass"
-              },
-              "country": "US",
-              "exp_month": 12,
-              "exp_year": 2024,
-              "fingerprint": "NORMALIZED000002",
-              "funding": "credit",
-              "generated_from": null,
-              "last4": "0341",
-              "networks": {
-                "available": [
-                  "visa"
-                ],
-                "preferred": null
-              },
-              "three_d_secure_usage": {
-                "supported": true
-              },
-              "wallet": null
-            },
-            "created": 1000000000,
-            "customer": "cus_NORMALIZED0001",
-            "id": "pm_1OOhBZDEQaroqDjsjrr4p4dg",
-            "livemode": false,
-            "metadata": {},
-            "object": "payment_method",
-            "type": "card"
-          },
-          "type": "card_error"
-        },
-        "latest_charge": "ch_NORMALIZED00000000000002",
+        "description": "Zulip Cloud Standard",
+        "discount_amounts": [],
+        "discountable": false,
+        "discounts": [],
+        "id": "il_NORMALIZED00000000000001",
+        "invoice_item": "ii_NORMALIZED00000000000001",
         "livemode": false,
         "metadata": {},
-        "next_action": null,
-        "object": "payment_intent",
-        "on_behalf_of": null,
-        "payment_method": null,
-        "payment_method_configuration_details": null,
-        "payment_method_options": {
-          "card": {
-            "installments": null,
-            "mandate_options": null,
-            "network": null,
-            "request_three_d_secure": "automatic"
-          },
-          "cashapp": {}
+        "object": "line_item",
+        "period": {
+          "end": 1000000000,
+          "start": 1000000000
         },
-        "payment_method_types": [
-          "card",
-          "cashapp"
-        ],
-        "processing": null,
-        "receipt_email": "hamlet@zulip.com",
-        "review": null,
-        "setup_future_usage": null,
-        "shipping": null,
-        "source": null,
-        "statement_descriptor": null,
-        "statement_descriptor_suffix": null,
-        "status": "requires_payment_method",
-        "transfer_data": null,
-        "transfer_group": null
-      },
-      "payment_method": {
-        "billing_details": {
-          "address": {
-            "city": null,
-            "country": null,
-            "line1": null,
-            "line2": null,
-            "postal_code": null,
-            "state": null
-          },
-          "email": null,
-          "name": null,
-          "phone": null
+        "plan": null,
+        "price": {
+          "active": false,
+          "billing_scheme": "per_unit",
+          "created": 1000000000,
+          "currency": "usd",
+          "custom_unit_amount": null,
+          "id": "price_NORMALIZED00000000000001",
+          "livemode": false,
+          "lookup_key": null,
+          "metadata": {},
+          "nickname": null,
+          "object": "price",
+          "product": "prod_NORMALIZED0001",
+          "recurring": null,
+          "tax_behavior": "unspecified",
+          "tiers_mode": null,
+          "transform_quantity": null,
+          "type": "one_time",
+          "unit_amount": 8000,
+          "unit_amount_decimal": "8000"
         },
-        "card": {
-          "brand": "visa",
-          "checks": {
-            "address_line1_check": null,
-            "address_postal_code_check": null,
-            "cvc_check": "pass"
-          },
-          "country": "US",
-          "exp_month": 12,
-          "exp_year": 2024,
-          "fingerprint": "NORMALIZED000002",
-          "funding": "credit",
-          "generated_from": null,
-          "last4": "0341",
-          "networks": {
-            "available": [
-              "visa"
-            ],
-            "preferred": null
-          },
-          "three_d_secure_usage": {
-            "supported": true
-          },
-          "wallet": null
+        "proration": false,
+        "proration_details": {
+          "credited_items": null
         },
-        "created": 1000000000,
-        "customer": "cus_NORMALIZED0001",
-        "id": "pm_1OOhBZDEQaroqDjsjrr4p4dg",
-        "livemode": false,
-        "metadata": {},
-        "object": "payment_method",
-        "type": "card"
-      },
-      "request_log_url": "https://dashboard.stripe.com/test/logs/req_NORMALIZED0007?t=1702907327",
-      "type": "card_error"
+        "quantity": 6,
+        "subscription": null,
+        "tax_amounts": [],
+        "tax_rates": [],
+        "type": "invoiceitem",
+        "unit_amount_excluding_tax": "8000"
+      }
+    ],
+    "has_more": false,
+    "object": "list",
+    "total_count": 1,
+    "url": "/v1/invoices/in_NORMALIZED00000000000001/lines"
+  },
+  "livemode": false,
+  "metadata": {
+    "billing_schedule": "1",
+    "license_management": "automatic",
+    "licenses": "6",
+    "plan_tier": "1",
+    "user_id": "10"
+  },
+  "next_payment_attempt": null,
+  "number": "NORMALI-0002",
+  "object": "invoice",
+  "on_behalf_of": null,
+  "paid": true,
+  "paid_out_of_band": false,
+  "payment_intent": "pi_NORMALIZED00000000000001",
+  "payment_settings": {
+    "default_mandate": null,
+    "payment_method_options": null,
+    "payment_method_types": null
+  },
+  "period_end": 1000000000,
+  "period_start": 1000000000,
+  "post_payment_credit_notes_amount": 0,
+  "pre_payment_credit_notes_amount": 0,
+  "quote": null,
+  "receipt_number": null,
+  "rendering": {
+    "amount_tax_display": null,
+    "pdf": {
+      "page_size": "letter"
     }
   },
-  "param": null,
-  "request_id": "req_NORMALIZED0007"
+  "rendering_options": null,
+  "shipping_cost": null,
+  "shipping_details": null,
+  "starting_balance": 0,
+  "statement_descriptor": "Zulip Cloud Standard",
+  "status": "paid",
+  "status_transitions": {
+    "finalized_at": 1000000000,
+    "marked_uncollectible_at": null,
+    "paid_at": 1000000000,
+    "voided_at": null
+  },
+  "subscription": null,
+  "subscription_details": {
+    "metadata": null
+  },
+  "subtotal": 48000,
+  "subtotal_excluding_tax": 48000,
+  "tax": null,
+  "test_clock": null,
+  "total": 48000,
+  "total_discount_amounts": [],
+  "total_excluding_tax": 48000,
+  "total_tax_amounts": [],
+  "transfer_data": null,
+  "webhooks_delivered_at": 1000000000
 }

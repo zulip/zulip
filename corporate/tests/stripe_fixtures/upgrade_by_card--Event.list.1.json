@@ -19,6 +19,7 @@
           "auto_advance": true,
           "automatic_tax": {
             "enabled": false,
+            "liability": null,
             "status": null
           },
           "billing_reason": "manual",
@@ -46,9 +47,12 @@
           "ending_balance": 0,
           "footer": null,
           "from_invoice": null,
-          "hosted_invoice_url": "https://invoice.stripe.com/i/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QRDdBajJvNDJuQ1FqckpveXVsZ2p3dHJEN2FSdndxLDkzNDQ3MjAx0200IJq0OugX?s=ap",
-          "id": "in_NORMALIZED00000000000001",
-          "invoice_pdf": "https://pay.stripe.com/invoice/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QRDdBajJvNDJuQ1FqckpveXVsZ2p3dHJEN2FSdndxLDkzNDQ3MjAx0200IJq0OugX/pdf?s=ap",
+          "hosted_invoice_url": "https://invoice.stripe.com/i/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QV3lrbllJUVF1cE5aZHM4aDRzQUNXQkh6VE0zbHJYLDk4MDI4NjMw0200UfxszQfl?s=ap",
+          "id": "in_NORMALIZED00000000000002",
+          "invoice_pdf": "https://pay.stripe.com/invoice/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QV3lrbllJUVF1cE5aZHM4aDRzQUNXQkh6VE0zbHJYLDk4MDI4NjMw0200UfxszQfl/pdf?s=ap",
+          "issuer": {
+            "type": "self"
+          },
           "last_finalization_error": null,
           "latest_revision": null,
           "lines": {
@@ -107,7 +111,7 @@
             "has_more": false,
             "object": "list",
             "total_count": 1,
-            "url": "/v1/invoices/in_NORMALIZED00000000000001/lines"
+            "url": "/v1/invoices/in_NORMALIZED00000000000002/lines"
           },
           "livemode": false,
           "metadata": {},
@@ -163,13 +167,13 @@
           "webhooks_delivered_at": null
         }
       },
-      "id": "evt_1OOgwfDEQaroqDjsjo7pmZRu",
+      "id": "evt_1OhumgDEQaroqDjsDcclWoC5",
       "livemode": false,
       "object": "event",
       "pending_webhooks": 0,
       "request": {
         "id": "req_NORMALIZED0001",
-        "idempotency_key": "8e3cbff0-495d-48f2-9ce7-9dae1c49ab5f"
+        "idempotency_key": "0651699c-3851-4e9d-b8d5-297e38b573db"
       },
       "type": "invoice.finalized"
     }

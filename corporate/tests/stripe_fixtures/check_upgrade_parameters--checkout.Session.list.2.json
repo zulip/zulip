@@ -7,9 +7,10 @@
       "amount_total": null,
       "automatic_tax": {
         "enabled": false,
+        "liability": null,
         "status": null
       },
-      "billing_address_collection": null,
+      "billing_address_collection": "required",
       "cancel_url": "http://zulip.testserver/upgrade/?manual_license_management=false&tier=1",
       "client_reference_id": null,
       "client_secret": null,
@@ -37,7 +38,7 @@
       },
       "customer_email": null,
       "expires_at": 1000000000,
-      "id": "cs_test_NORMALIZED02ADyiROFqD8zEaBcyLAvMoFLm0Isklw3uBR0OC2PBAO0EuC",
+      "id": "cs_test_NORMALIZED02lyPuMuPqqx0IVXEFbtMJUp5Pl2djAkMUwqaLMupVPphM4a",
       "invoice": null,
       "invoice_creation": null,
       "livemode": false,
@@ -61,7 +62,7 @@
         "enabled": false
       },
       "recovered_from": null,
-      "setup_intent": "seti_1OOgtVDEQaroqDjsST1yhcsy",
+      "setup_intent": "seti_1OhuizDEQaroqDjsIu7hmst3",
       "shipping": null,
       "shipping_address_collection": null,
       "shipping_options": [],
@@ -69,10 +70,10 @@
       "status": "open",
       "submit_type": null,
       "subscription": null,
-      "success_url": "http://zulip.testserver/billing/event_status?stripe_session_id={CHECKOUT_SESSION_ID}",
+      "success_url": "http://zulip.testserver/billing/event_status/?stripe_session_id={CHECKOUT_SESSION_ID}",
       "total_details": null,
       "ui_mode": "hosted",
-      "url": "https://checkout.stripe.com/c/pay/cs_test_NORMALIZED02ADyiROFqD8zEaBcyLAvMoFLm0Isklw3uBR0OC2PBAO0EuC#fid1d2BpamRhQ2prcSc%2FJ1ZqcHdmYCVWZGt2JVV3aicpJ2R1bE5gfCc%2FJ3VuWnFgdnFaXVRmMU5zNkldQTY9SnNRY09XZml2UXNQJyknY3dqaFZgd3Ngdyc%2FcXdwYCknaWR8anBxUXx1YCc%2FJ3Zsa2JpYFpmamlwaGsnKSdga2RnaWBVaWRmYG1qaWFgd3YnP3F3cGB4JSUl"
+      "url": "https://checkout.stripe.com/c/pay/cs_test_NORMALIZED02lyPuMuPqqx0IVXEFbtMJUp5Pl2djAkMUwqaLMupVPphM4a#fid1d2BpamRhQ2prcSc%2FJ1ZqcHdmYCVWZGt2JVV3aicpJ2R1bE5gfCc%2FJ3VuWnFgdnFaXVRmMU5zNkldQTY9SnNRY09XZml2UXNQJyknY3dqaFZgd3Ngdyc%2FcXdwYCknaWR8anBxUXx1YCc%2FJ3Zsa2JpYFpmamlwaGsnKSdga2RnaWBVaWRmYG1qaWFgd3YnP3F3cGB4JSUl"
     }
   ],
   "has_more": true,

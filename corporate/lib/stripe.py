@@ -32,7 +32,6 @@ from corporate.models import (
     CustomerPlanOffer,
     Invoice,
     LicenseLedger,
-    PaymentIntent,
     Session,
     SponsoredPlanTypes,
     ZulipSponsorshipRequest,
@@ -530,14 +529,6 @@ class StripeCustomerData:
 
 
 @dataclass
-class StripePaymentIntentData:
-    amount: int
-    description: str
-    plan_name: str
-    email: str
-
-
-@dataclass
 class UpgradeRequest:
     billing_modality: str
     schedule: str
@@ -567,7 +558,7 @@ class UpdatePlanRequest:
 @dataclass
 class EventStatusRequest:
     stripe_session_id: Optional[str]
-    stripe_payment_intent_id: Optional[str]
+    stripe_invoice_id: Optional[str]
 
 
 class SupportType(Enum):
@@ -747,7 +738,7 @@ class BillingSession(ABC):
         pass
 
     @abstractmethod
-    def update_data_for_checkout_session_and_payment_intent(
+    def update_data_for_checkout_session_and_invoice_payment(
         self, metadata: Dict[str, Any]
     ) -> Dict[str, Any]:
         pass
@@ -787,7 +778,7 @@ class BillingSession(ABC):
             return_url=f"{self.billing_session_url}/billing/",
         ).url
 
-    def get_data_for_stripe_payment_intent(
+    def generate_invoice_for_upgrade(
         self,
         customer: Customer,
         price_per_license: Optional[int],
@@ -795,36 +786,77 @@ class BillingSession(ABC):
         licenses: int,
         plan_tier: int,
         billing_schedule: int,
-        email: str,
-    ) -> StripePaymentIntentData:
-        if hasattr(self, "support_session") and self.support_session:  # nocoverage
-            raise BillingError(
-                "invalid support session",
-                "Support requests do not set any stripe billing information.",
-            )
-
+        charge_automatically: bool,
+        license_management: Optional[str] = None,
+    ) -> stripe.Invoice:
         plan_name = CustomerPlan.name_from_tier(plan_tier)
         assert price_per_license is None or fixed_price is None
-        if price_per_license is not None:
-            amount = price_per_license * licenses
-            description = f"Upgrade to {plan_name}, ${price_per_license/100} x {licenses}"
+        price_args: PriceArgs = {}
+        if fixed_price is None:
+            assert price_per_license is not None
+            price_args = {
+                "quantity": licenses,
+                "unit_amount": price_per_license,
+            }
         else:
             assert fixed_price is not None
-            amount = get_amount_due_fixed_price_plan(fixed_price, billing_schedule)
-            description = plan_name
+            amount_due = get_amount_due_fixed_price_plan(fixed_price, billing_schedule)
+            price_args = {"amount": amount_due}
+
+        stripe.InvoiceItem.create(
+            currency="usd",
+            customer=customer.stripe_customer_id,
+            description=plan_name,
+            discountable=False,
+            **price_args,
+        )
 
         if fixed_price is None and customer.flat_discounted_months > 0:
             num_months = 12 if billing_schedule == CustomerPlan.BILLING_SCHEDULE_ANNUAL else 1
             flat_discounted_months = min(customer.flat_discounted_months, num_months)
-            amount -= customer.flat_discount * flat_discounted_months
-            description += f" - ${customer.flat_discount/100} x {flat_discounted_months}"
+            discount = customer.flat_discount * flat_discounted_months
+            customer.flat_discounted_months -= flat_discounted_months
+            customer.save(update_fields=["flat_discounted_months"])
 
-        return StripePaymentIntentData(
-            amount=amount,
-            description=description,
-            plan_name=plan_name,
-            email=email,
+            stripe.InvoiceItem.create(
+                currency="usd",
+                customer=customer.stripe_customer_id,
+                description=f"${cents_to_dollar_string(customer.flat_discount)}/month new customer discount",
+                # Negative value to apply discount.
+                amount=(-1 * discount),
+            )
+
+        if charge_automatically:
+            collection_method = "charge_automatically"
+            days_until_due = None
+        else:
+            collection_method = "send_invoice"
+            days_until_due = DEFAULT_INVOICE_DAYS_UNTIL_DUE
+
+        metadata = {
+            "plan_tier": plan_tier,
+            "billing_schedule": billing_schedule,
+            "licenses": licenses,
+            "license_management": license_management,
+        }
+
+        if hasattr(self, "user"):
+            metadata["user_id"] = self.user.id
+
+        # We only need to email customer about open invoice for manual billing.
+        # If automatic charge fails, we simply void the invoice.
+        # https://stripe.com/docs/invoicing/integration/automatic-advancement-collection
+        auto_advance = not charge_automatically
+        stripe_invoice = stripe.Invoice.create(
+            auto_advance=auto_advance,
+            collection_method=collection_method,
+            customer=customer.stripe_customer_id,
+            days_until_due=days_until_due,
+            statement_descriptor=plan_name,
+            metadata=metadata,
         )
+        stripe.Invoice.finalize_invoice(stripe_invoice)
+        return stripe_invoice
 
     @abstractmethod
     def update_or_create_customer(
@@ -1000,9 +1032,8 @@ class BillingSession(ABC):
     def update_or_create_stripe_customer(self, payment_method: Optional[str] = None) -> Customer:
         customer = self.get_customer()
         if customer is None or customer.stripe_customer_id is None:
-            # A stripe.PaymentMethod should be attached to a stripe.Customer via
-            # a stripe.SetupIntent or stripe.PaymentIntent. Here we just want to
-            # create a new stripe.Customer.
+            # A stripe.PaymentMethod should be attached to a stripe.Customer via replace_payment_method.
+            # Here we just want to create a new stripe.Customer.
             assert payment_method is None
             # We could do a better job of handling race conditions here, but if two
             # people try to upgrade at exactly the same time, the main bad thing that
@@ -1013,22 +1044,13 @@ class BillingSession(ABC):
             self.replace_payment_method(customer.stripe_customer_id, payment_method, True)
         return customer
 
-    def create_stripe_payment_intent(
+    def create_stripe_invoice_and_charge(
         self,
         metadata: Dict[str, Any],
     ) -> str:
         # NOTE: This charges users immediately.
         customer = self.get_customer()
         assert customer is not None and customer.stripe_customer_id is not None
-        payment_intent_data = self.get_data_for_stripe_payment_intent(
-            customer,
-            metadata["price_per_license"],
-            metadata["fixed_price"],
-            metadata["licenses"],
-            metadata["plan_tier"],
-            metadata["billing_schedule"],
-            self.get_email(),
-        )
         # Ensure customers have a default payment method set.
         stripe_customer = stripe_get_customer(customer.stripe_customer_id)
         if not stripe_customer_has_credit_card_as_default_payment_method(stripe_customer):
@@ -1039,29 +1061,42 @@ class BillingSession(ABC):
 
         assert stripe_customer.invoice_settings is not None
         assert stripe_customer.invoice_settings.default_payment_method is not None
+        stripe_invoice = None
         try:
-            # Try to charge user immediately, and if that fails, we inform the user about the failure.
-            stripe_payment_intent = stripe.PaymentIntent.create(
-                amount=payment_intent_data.amount,
-                currency="usd",
-                customer=customer.stripe_customer_id,
-                description=payment_intent_data.description,
-                receipt_email=payment_intent_data.email,
-                confirm=True,
-                statement_descriptor=payment_intent_data.plan_name,
-                metadata=metadata,
-                off_session=True,
-                payment_method=stripe_customer.invoice_settings.default_payment_method,
+            stripe_invoice = self.generate_invoice_for_upgrade(
+                customer,
+                metadata["price_per_license"],
+                metadata["fixed_price"],
+                metadata["licenses"],
+                metadata["plan_tier"],
+                metadata["billing_schedule"],
+                charge_automatically=True,
+                license_management=metadata["license_management"],
             )
-        except stripe.CardError as e:
-            raise StripeCardError("card error", e.user_message)
+            assert stripe_invoice.id is not None
+            invoice = Invoice.objects.create(
+                stripe_invoice_id=stripe_invoice.id,
+                customer=customer,
+                status=Invoice.SENT,
+            )
+            # Stripe takes its sweet hour to charge customers after creating an invoice.
+            # Since we want to charge customers immediately, we charge them manually.
+            # Then poll for the status of the invoice to see if the payment succeeded.
+            stripe_invoice = stripe.Invoice.pay(stripe_invoice.id)
+        except Exception as e:
+            if stripe_invoice is not None:
+                assert stripe_invoice.id is not None
+                # Void invoice to avoid double charging if customer tries to upgrade again.
+                stripe.Invoice.void_invoice(stripe_invoice.id)
+                invoice.status = Invoice.VOID
+                invoice.save(update_fields=["status"])
+            if isinstance(e, stripe.CardError):
+                raise StripeCardError("card error", e.user_message)
+            else:  # nocoverage
+                raise e
 
-        PaymentIntent.objects.create(
-            customer=customer,
-            stripe_payment_intent_id=stripe_payment_intent.id,
-            status=PaymentIntent.get_status_integer_from_status_text(stripe_payment_intent.status),
-        )
-        return stripe_payment_intent.id
+        assert stripe_invoice.id is not None
+        return stripe_invoice.id
 
     def create_card_update_session_for_upgrade(
         self,
@@ -1392,7 +1427,7 @@ class BillingSession(ABC):
             f"No current plan for {self.billing_entity_display_name}."
         )  # nocoverage
 
-    def setup_upgrade_payment_intent_and_charge(
+    def generate_stripe_invoice_and_charge_immediately(
         self,
         plan_tier: int,
         seat_count: int,
@@ -1423,11 +1458,10 @@ class BillingSession(ABC):
             general_metadata["price_per_license"] = price_per_license
         else:
             general_metadata["fixed_price"] = fixed_price_plan_offer.fixed_price
-        updated_metadata = self.update_data_for_checkout_session_and_payment_intent(
+        updated_metadata = self.update_data_for_checkout_session_and_invoice_payment(
             general_metadata
         )
-        stripe_payment_intent_id = self.create_stripe_payment_intent(updated_metadata)
-        return stripe_payment_intent_id
+        return self.create_stripe_invoice_and_charge(updated_metadata)
 
     def ensure_current_plan_is_upgradable(self, customer: Customer, new_plan_tier: int) -> None:
         # Upgrade for customers with an existing plan is only supported for remote realm / server right now.
@@ -1614,11 +1648,30 @@ class BillingSession(ABC):
                     plan=plan,
                     is_renewal=True,
                     event_time=event_time,
-                    licenses=billed_licenses,
-                    licenses_at_next_renewal=billed_licenses,
+                    licenses=licenses,
+                    licenses_at_next_renewal=licenses,
                 )
                 plan.invoiced_through = ledger_entry
                 plan.save(update_fields=["invoiced_through"])
+
+                # TODO: Do a check for max licenses for fixed price plans here after we add that.
+                if (
+                    stripe_invoice_paid
+                    and billed_licenses != licenses
+                    and not customer.exempt_from_license_number_check
+                    and not fixed_price_plan_offer
+                ):
+                    # Customer paid for less licenses than they have.
+                    # We need to create a new ledger entry to track the additional licenses.
+                    LicenseLedger.objects.create(
+                        plan=plan,
+                        is_renewal=False,
+                        event_time=event_time,
+                        licenses=billed_licenses,
+                        licenses_at_next_renewal=billed_licenses,
+                    )
+                    # Creates due today invoice for additional licenses.
+                    self.invoice_plan(plan, event_time)
 
             self.write_to_audit_log(
                 event_type=AuditLogEventType.CUSTOMER_PLAN_CREATED,
@@ -1630,60 +1683,15 @@ class BillingSession(ABC):
             free_trial or should_schedule_upgrade_for_legacy_remote_server
         ):
             assert plan is not None
-            price_args: PriceArgs = {}
-            if plan.fixed_price is None:
-                price_args = {
-                    "quantity": billed_licenses,
-                    "unit_amount": price_per_license,
-                }
-            else:
-                assert plan.fixed_price is not None
-                amount_due = get_amount_due_fixed_price_plan(plan.fixed_price, billing_schedule)
-                price_args = {"amount": amount_due}
-            assert customer.stripe_customer_id is not None
-            stripe.InvoiceItem.create(
-                currency="usd",
-                customer=customer.stripe_customer_id,
-                description=plan.name,
-                discountable=False,
-                period={
-                    "start": datetime_to_timestamp(billing_cycle_anchor),
-                    "end": datetime_to_timestamp(period_end),
-                },
-                **price_args,
+            self.generate_invoice_for_upgrade(
+                customer,
+                price_per_license=price_per_license,
+                fixed_price=plan.fixed_price,
+                licenses=billed_licenses,
+                plan_tier=plan.tier,
+                billing_schedule=billing_schedule,
+                charge_automatically=False,
             )
-
-            if plan.fixed_price is None and customer.flat_discounted_months > 0:
-                num_months = 12 if billing_schedule == CustomerPlan.BILLING_SCHEDULE_ANNUAL else 1
-                flat_discounted_months = min(customer.flat_discounted_months, num_months)
-                discount = customer.flat_discount * flat_discounted_months
-                customer.flat_discounted_months -= flat_discounted_months
-                customer.save(update_fields=["flat_discounted_months"])
-
-                stripe.InvoiceItem.create(
-                    currency="usd",
-                    customer=customer.stripe_customer_id,
-                    description=f"${cents_to_dollar_string(customer.flat_discount)}/month new customer discount",
-                    # Negative value to apply discount.
-                    amount=(-1 * discount),
-                )
-
-            if charge_automatically:
-                collection_method = "charge_automatically"
-                days_until_due = None
-            else:
-                collection_method = "send_invoice"
-                days_until_due = DEFAULT_INVOICE_DAYS_UNTIL_DUE
-
-            stripe_invoice = stripe.Invoice.create(
-                auto_advance=True,
-                collection_method=collection_method,
-                customer=customer.stripe_customer_id,
-                days_until_due=days_until_due,
-                statement_descriptor=plan.name,
-            )
-            stripe.Invoice.finalize_invoice(stripe_invoice)
-
         if plan.status < CustomerPlan.LIVE_STATUS_THRESHOLD:
             # Tier and usage limit change will happen when plan becomes live.
             self.do_change_plan_type(tier=plan_tier)
@@ -1758,7 +1766,7 @@ class BillingSession(ABC):
             )
             data["organization_upgrade_successful"] = True
         else:
-            stripe_payment_intent_id = self.setup_upgrade_payment_intent_and_charge(
+            stripe_invoice_id = self.generate_stripe_invoice_and_charge_immediately(
                 upgrade_request.tier,
                 seat_count,
                 licenses,
@@ -1766,7 +1774,7 @@ class BillingSession(ABC):
                 billing_schedule,
                 billing_modality,
             )
-            data["stripe_payment_intent_id"] = stripe_payment_intent_id
+            data["stripe_invoice_id"] = stripe_invoice_id
         return data
 
     def do_change_schedule_after_free_trial(self, plan: CustomerPlan, schedule: int) -> None:
@@ -2824,18 +2832,18 @@ class BillingSession(ABC):
                 raise JsonableError(_("Must be a billing administrator or an organization owner"))
             return {"session": session.to_dict()}
 
-        stripe_payment_intent_id = event_status_request.stripe_payment_intent_id
-        if stripe_payment_intent_id is not None:
-            payment_intent = PaymentIntent.objects.filter(
-                stripe_payment_intent_id=stripe_payment_intent_id,
+        stripe_invoice_id = event_status_request.stripe_invoice_id
+        if stripe_invoice_id is not None:
+            stripe_invoice = Invoice.objects.filter(
+                stripe_invoice_id=stripe_invoice_id,
                 customer=customer,
             ).last()
 
-            if payment_intent is None:
+            if stripe_invoice is None:
                 raise JsonableError(_("Payment intent not found"))
-            return {"payment_intent": payment_intent.to_dict()}
+            return {"stripe_invoice": stripe_invoice.to_dict()}
 
-        raise JsonableError(_("Pass stripe_session_id or stripe_payment_intent_id"))
+        raise JsonableError(_("Pass stripe_session_id or stripe_invoice_id"))
 
     def get_sponsorship_plan_name(
         self, customer: Optional[Customer], is_remotely_hosted: bool
@@ -3375,7 +3383,7 @@ class RealmBillingSession(BillingSession):
         return realm_stripe_customer_data
 
     @override
-    def update_data_for_checkout_session_and_payment_intent(
+    def update_data_for_checkout_session_and_invoice_payment(
         self, metadata: Dict[str, Any]
     ) -> Dict[str, Any]:
         assert self.user is not None
@@ -3768,7 +3776,7 @@ class RemoteRealmBillingSession(BillingSession):
         return realm_stripe_customer_data
 
     @override
-    def update_data_for_checkout_session_and_payment_intent(
+    def update_data_for_checkout_session_and_invoice_payment(
         self, metadata: Dict[str, Any]
     ) -> Dict[str, Any]:
         assert self.remote_billing_user is not None
@@ -4191,7 +4199,7 @@ class RemoteServerBillingSession(BillingSession):
         return realm_stripe_customer_data
 
     @override
-    def update_data_for_checkout_session_and_payment_intent(
+    def update_data_for_checkout_session_and_invoice_payment(
         self, metadata: Dict[str, Any]
     ) -> Dict[str, Any]:
         assert self.remote_billing_user is not None
