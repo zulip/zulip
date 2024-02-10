@@ -106,8 +106,7 @@ function get_notification_title(message, msg_count) {
                 // If the message has too many recipients to list them all...
                 if (title.length + other_recipients.length > 50) {
                     // Then count how many people are in the conversation and summarize
-                    // by saying the conversation is with "you and [number] other people"
-                    other_recipients = message.display_recipient.length - 2 + " other people";
+                    other_recipients = message.display_recipient.length - 2 + " more";
                 }
 
                 title += " (to you and " + other_recipients + ")";
