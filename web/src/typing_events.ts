@@ -1,4 +1,5 @@
 import $ from "jquery";
+import assert from "minimalistic-assert";
 
 import render_typing_notifications from "../templates/typing_notifications.hbs";
 
@@ -22,10 +23,35 @@ const MAX_USERS_TO_DISPLAY_NAME = 3;
 // Note!: There are also timing constants in typing_status.js
 // that make typing indicators work.
 
-function get_users_typing_for_narrow() {
+type UserInfo = {
+    email: string;
+    user_id: number;
+};
+
+type TypingEvent = {
+    id: number;
+    op: "start" | "stop";
+    type: "typing";
+} & (
+    | {
+          message_type: "stream";
+          sender: UserInfo;
+          stream_id: number;
+          topic: string;
+      }
+    | {
+          message_type: "direct";
+          recipients: UserInfo[];
+          sender: UserInfo;
+      }
+);
+
+function get_users_typing_for_narrow(): number[] {
     if (narrow_state.narrowed_by_topic_reply()) {
         const current_stream_id = narrow_state.stream_id();
         const current_topic = narrow_state.topic();
+        assert(current_stream_id !== undefined);
+        assert(current_topic !== undefined);
         return typing_data.get_topic_typists(current_stream_id, current_topic);
     }
 
@@ -58,7 +84,7 @@ function get_users_typing_for_narrow() {
     return typing_data.get_all_direct_message_typists();
 }
 
-export function render_notifications_for_narrow() {
+export function render_notifications_for_narrow(): void {
     const user_ids = get_users_typing_for_narrow();
     const users_typing = user_ids
         .map((user_id) => people.get_user_by_id_assert_valid(user_id))
@@ -78,7 +104,7 @@ export function render_notifications_for_narrow() {
     }
 }
 
-function get_key(event) {
+function get_key(event: TypingEvent): string {
     if (event.message_type === "stream") {
         return typing_data.get_topic_key(event.stream_id, event.topic);
     }
@@ -90,7 +116,7 @@ function get_key(event) {
     throw new Error("Invalid typing notification type", event);
 }
 
-export function hide_notification(event) {
+export function hide_notification(event: TypingEvent): void {
     const key = get_key(event);
     typing_data.clear_inbound_timer(key);
 
@@ -101,7 +127,7 @@ export function hide_notification(event) {
     }
 }
 
-export function display_notification(event) {
+export function display_notification(event: TypingEvent): void {
     const sender_id = event.sender.user_id;
 
     const key = get_key(event);
