@@ -145,7 +145,7 @@ export function initialize_left_sidebar() {
             user_settings.web_home_view === settings_config.web_home_view_values.all_messages.code,
         is_recent_view_home_view:
             user_settings.web_home_view === settings_config.web_home_view_values.recent_topics.code,
-        hide_unread_counts: settings_data.should_mask_unread_count(),
+        hide_unread_counts: settings_data.should_mask_unread_count(false),
     });
 
     $("#left-sidebar-container").html(rendered_sidebar);
