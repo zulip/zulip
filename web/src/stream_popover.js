@@ -168,10 +168,7 @@ function build_stream_popover(opts) {
             });
 
             // Unsubscribe
-            $popper.on("click", ".popover_sub_unsub_button", function (e) {
-                $(this).toggleClass("unsub");
-                $(this).closest(".popover").fadeOut(500).delay(500).remove();
-
+            $popper.on("click", ".popover_sub_unsub_button", (e) => {
                 const sub = stream_popover_sub(e);
                 hide_stream_popover();
                 stream_settings_components.sub_or_unsub(sub);
