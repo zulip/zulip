@@ -832,7 +832,6 @@ export function initialize() {
                 // should not have any effect on the compose
                 // state.
                 !$(e.target).closest(".overlay").length &&
-                !$(e.target).closest(".popover").length &&
                 !$(e.target).closest(".micromodal").length &&
                 !$(e.target).closest("[data-tippy-root]").length &&
                 !$(e.target).closest(".typeahead").length &&
