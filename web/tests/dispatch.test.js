@@ -747,8 +747,15 @@ run_test("realm_user", ({override}) => {
     assert.equal(removed_person.full_name, "translated: Unknown user");
 });
 
-run_test("restart", ({override}) => {
+run_test("restart", ({_override}) => {
     const event = event_fixtures.restart;
+    dispatch(event);
+    assert_same(realm.zulip_version, event.zulip_version);
+    assert_same(realm.zulip_merge_base, event.zulip_merge_base);
+});
+
+run_test("web_reload_client", ({override}) => {
+    const event = event_fixtures.web_reload_client;
     const stub = make_stub();
     override(reload, "initiate", stub.f);
     dispatch(event);

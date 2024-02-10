@@ -604,11 +604,10 @@ exports.fixtures = {
 
     restart: {
         type: "restart",
-        zulip_version: "4.0-dev+git",
-        zulip_merge_base: "",
-        zulip_feature_level: 55,
-        server_generation: 2,
-        immediate: true,
+        zulip_version: "9.0-dev-753-gced3e85da9",
+        zulip_merge_base: "9.0-dev-743-g54053c1d28",
+        zulip_feature_level: 237,
+        server_generation: 1707511515,
     },
 
     scheduled_messages__add: {
@@ -1083,5 +1082,10 @@ exports.fixtures = {
         topic_name: "js",
         last_updated: fake_now,
         visibility_policy: 1,
+    },
+
+    web_reload_client: {
+        type: "web_reload_client",
+        immediate: true,
     },
 };
