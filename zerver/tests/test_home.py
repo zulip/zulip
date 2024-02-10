@@ -96,7 +96,7 @@ class HomeTest(ZulipTestCase):
         "onboarding_steps",
         "password_min_guesses",
         "password_min_length",
-        "password_max_length"
+        "password_max_length",
         "presences",
         "promote_sponsoring_zulip",
         "prompt_for_invites",

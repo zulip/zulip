@@ -65,7 +65,7 @@ export function password_warning(password: string, $password_field: JQuery): str
         return $t(
             {defaultMessage: "Password should be atmost {length} characters long"},
             {length: max_length},
-        )
+        );
     }
 
     return zxcvbn(password).feedback.warning ?? $t({defaultMessage: "Password is too weak"});
