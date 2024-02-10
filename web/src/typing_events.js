@@ -2,7 +2,6 @@ import $ from "jquery";
 
 import render_typing_notifications from "../templates/typing_notifications.hbs";
 
-import * as blueslip from "./blueslip";
 import * as narrow_state from "./narrow_state";
 import {page_params} from "./page_params";
 import * as people from "./people";
@@ -78,23 +77,15 @@ export function render_notifications_for_narrow() {
 }
 
 function get_key(event) {
-    let key;
-    let recipients;
-    switch (event.message_type) {
-        case "stream":
-            key = typing_data.get_topic_key(event.stream_id, event.topic);
-            break;
-        case "direct":
-            recipients = event.recipients.map((user) => user.user_id);
-            recipients.sort();
-
-            key = typing_data.get_direct_message_conversation_key(recipients);
-            break;
-        default:
-            blueslip.error("Unexpected message_type in typing event: " + event.message_type);
-            break;
+    if (event.message_type === "stream") {
+        return typing_data.get_topic_key(event.stream_id, event.topic);
     }
-    return key;
+    if (event.message_type === "direct") {
+        const recipients = event.recipients.map((user) => user.user_id);
+        recipients.sort();
+        return typing_data.get_direct_message_conversation_key(recipients);
+    }
+    throw new Error("Invalid typing notification type", event);
 }
 
 export function hide_notification(event) {
