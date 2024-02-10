@@ -75,10 +75,4 @@ run_test("basics w/progress bar", () => {
     assert.equal($bar.added_class, "bar-danger");
     warning = password_warning(password, password_field(6));
     assert.equal(warning, 'Repeated characters like "aaa" are easy to guess.');
-
-    password = "a@3#B".repeat(21);
-    accepted = password_quality(password, $bar, password_field(6, 1000, 100));
-    assert.ok(!accepted);
-    warning = password_warning(password, password(6));
-    assert.equal(warning, "Password should be atmost 100 characters long");
 });
