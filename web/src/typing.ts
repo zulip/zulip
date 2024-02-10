@@ -26,7 +26,7 @@ type TypingAPIRequest = {op: "start" | "stop"} & (
 
 // This module handles the outbound side of typing indicators.
 // We detect changes in the compose box and notify the server
-// when we are typing.  For the inbound side see typing_events.js.
+// when we are typing.  For the inbound side see typing_events.ts.
 // See docs/subsystems/typing-indicators.md for more details.
 
 function send_typing_notification_ajax(data: TypingAPIRequest): void {
