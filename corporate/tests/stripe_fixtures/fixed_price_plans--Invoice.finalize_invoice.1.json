@@ -13,6 +13,7 @@
   "auto_advance": true,
   "automatic_tax": {
     "enabled": false,
+    "liability": null,
     "status": null
   },
   "billing_reason": "manual",
@@ -40,9 +41,12 @@
   "ending_balance": 0,
   "footer": null,
   "from_invoice": null,
-  "hosted_invoice_url": "https://invoice.stripe.com/i/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QRDc2bzhJUDc4NFhJUmVmSTRMaGZHTTcyOGFwTXdHLDkzNDQ2OTYw0200PsugUzKg?s=ap",
+  "hosted_invoice_url": "https://invoice.stripe.com/i/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QV3lmNTRwQWNyNU00WFJSbW95NGZTY2xKbk52bEM4LDk4MDI4MzQ50200KzFIO3lj?s=ap",
   "id": "in_NORMALIZED00000000000002",
-  "invoice_pdf": "https://pay.stripe.com/invoice/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QRDc2bzhJUDc4NFhJUmVmSTRMaGZHTTcyOGFwTXdHLDkzNDQ2OTYw0200PsugUzKg/pdf?s=ap",
+  "invoice_pdf": "https://pay.stripe.com/invoice/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QV3lmNTRwQWNyNU00WFJSbW95NGZTY2xKbk52bEM4LDk4MDI4MzQ50200KzFIO3lj/pdf?s=ap",
+  "issuer": {
+    "type": "self"
+  },
   "last_finalization_error": null,
   "latest_revision": null,
   "lines": {
@@ -61,8 +65,8 @@
         "metadata": {},
         "object": "line_item",
         "period": {
-          "end": 1357095845,
-          "start": 1325473445
+          "end": 1000000000,
+          "start": 1000000000
         },
         "plan": null,
         "price": {
@@ -71,13 +75,13 @@
           "created": 1000000000,
           "currency": "usd",
           "custom_unit_amount": null,
-          "id": "price_NORMALIZED00000000000002",
+          "id": "price_NORMALIZED00000000000001",
           "livemode": false,
           "lookup_key": null,
           "metadata": {},
           "nickname": null,
           "object": "price",
-          "product": "prod_NORMALIZED0002",
+          "product": "prod_NORMALIZED0001",
           "recurring": null,
           "tax_behavior": "unspecified",
           "tiers_mode": null,
@@ -104,7 +108,12 @@
     "url": "/v1/invoices/in_NORMALIZED00000000000002/lines"
   },
   "livemode": false,
-  "metadata": {},
+  "metadata": {
+    "billing_schedule": "1",
+    "licenses": "123",
+    "plan_tier": "1",
+    "user_id": "10"
+  },
   "next_payment_attempt": null,
   "number": "NORMALI-0002",
   "object": "invoice",
@@ -154,5 +163,5 @@
   "total_excluding_tax": 984000,
   "total_tax_amounts": [],
   "transfer_data": null,
-  "webhooks_delivered_at": null
+  "webhooks_delivered_at": 1000000000
 }

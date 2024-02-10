@@ -2,12 +2,12 @@
   "data": [
     {
       "api_version": "2020-08-27",
-      "created": 1704972533,
+      "created": 1000000000,
       "data": {
         "object": {
           "address": null,
           "balance": 0,
-          "created": 1704972529,
+          "created": 1000000000,
           "currency": null,
           "default_currency": null,
           "default_source": null,
@@ -15,11 +15,11 @@
           "description": "demo.example.com 6cde5f7a-1f7",
           "discount": null,
           "email": "hamlet@zulip.com",
-          "id": "cus_PM4axrAbUxZIzJ",
-          "invoice_prefix": "5A968AD5",
+          "id": "cus_NORMALIZED0001",
+          "invoice_prefix": "NORMA01",
           "invoice_settings": {
             "custom_fields": null,
-            "default_payment_method": "pm_1OXMRKDEQaroqDjsjvn2UVaa",
+            "default_payment_method": "pm_1OhuqPDEQaroqDjsHtreBTeP",
             "footer": null,
             "rendering_options": null
           },
@@ -43,13 +43,13 @@
           }
         }
       },
-      "id": "evt_1OXMRNDEQaroqDjspS7tadlp",
+      "id": "evt_1OhuqRDEQaroqDjskvIY9lY7",
       "livemode": false,
       "object": "event",
       "pending_webhooks": 0,
       "request": {
-        "id": "req_0Gytbn9jcS60AC",
-        "idempotency_key": "f54efee0-fd34-410d-92c8-4bb77e63aa06"
+        "id": "req_NORMALIZED0001",
+        "idempotency_key": "76d31ad3-3cc0-42a2-9175-f4d6b069869d"
       },
       "type": "customer.updated"
     }

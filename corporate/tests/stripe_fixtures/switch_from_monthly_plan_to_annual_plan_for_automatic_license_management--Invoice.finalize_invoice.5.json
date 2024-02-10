@@ -13,6 +13,7 @@
   "auto_advance": true,
   "automatic_tax": {
     "enabled": false,
+    "liability": null,
     "status": null
   },
   "billing_reason": "manual",
@@ -40,9 +41,12 @@
   "ending_balance": 0,
   "footer": null,
   "from_invoice": null,
-  "hosted_invoice_url": "https://invoice.stripe.com/i/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QRDdBclpaSzBzQ3ZTQUpWbXlWbmZDSlZVYVBINlZELDkzNDQ3MTY20200sQnUJGQU?s=ap",
+  "hosted_invoice_url": "https://invoice.stripe.com/i/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QV3lqRFZnN0h5QjFWWFlhd2FxOWVaSnZjOFJpRHV5LDk4MDI4NTk00200BADQHQCf?s=ap",
   "id": "in_NORMALIZED00000000000005",
-  "invoice_pdf": "https://pay.stripe.com/invoice/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QRDdBclpaSzBzQ3ZTQUpWbXlWbmZDSlZVYVBINlZELDkzNDQ3MTY20200sQnUJGQU/pdf?s=ap",
+  "invoice_pdf": "https://pay.stripe.com/invoice/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QV3lqRFZnN0h5QjFWWFlhd2FxOWVaSnZjOFJpRHV5LDk4MDI4NTk00200BADQHQCf/pdf?s=ap",
+  "issuer": {
+    "type": "self"
+  },
   "last_finalization_error": null,
   "latest_revision": null,
   "lines": {
@@ -55,8 +59,8 @@
         "discount_amounts": [],
         "discountable": false,
         "discounts": [],
-        "id": "il_NORMALIZED00000000000007",
-        "invoice_item": "ii_NORMALIZED00000000000007",
+        "id": "il_NORMALIZED00000000000006",
+        "invoice_item": "ii_NORMALIZED00000000000006",
         "livemode": false,
         "metadata": {},
         "object": "line_item",
@@ -71,13 +75,13 @@
           "created": 1000000000,
           "currency": "usd",
           "custom_unit_amount": null,
-          "id": "price_NORMALIZED00000000000005",
+          "id": "price_NORMALIZED00000000000004",
           "livemode": false,
           "lookup_key": null,
           "metadata": {},
           "nickname": null,
           "object": "price",
-          "product": "prod_NORMALIZED0005",
+          "product": "prod_NORMALIZED0004",
           "recurring": null,
           "tax_behavior": "unspecified",
           "tiers_mode": null,
@@ -154,5 +158,5 @@
   "total_excluding_tax": 240000,
   "total_tax_amounts": [],
   "transfer_data": null,
-  "webhooks_delivered_at": null
+  "webhooks_delivered_at": 1000000000
 }

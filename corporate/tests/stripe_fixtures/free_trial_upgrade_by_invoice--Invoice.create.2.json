@@ -13,12 +13,13 @@
   "auto_advance": true,
   "automatic_tax": {
     "enabled": false,
+    "liability": null,
     "status": null
   },
   "billing_reason": "manual",
   "charge": null,
   "collection_method": "send_invoice",
-  "created": 1010000006,
+  "created": 1010000005,
   "currency": "usd",
   "custom_fields": null,
   "customer": "cus_NORMALIZED0001",
@@ -43,6 +44,9 @@
   "hosted_invoice_url": null,
   "id": "in_NORMALIZED00000000000003",
   "invoice_pdf": null,
+  "issuer": {
+    "type": "self"
+  },
   "last_finalization_error": null,
   "latest_revision": null,
   "lines": {
@@ -68,7 +72,7 @@
         "price": {
           "active": false,
           "billing_scheme": "per_unit",
-          "created": 1010000004,
+          "created": 1010000003,
           "currency": "usd",
           "custom_unit_amount": null,
           "id": "price_NORMALIZED00000000000001",

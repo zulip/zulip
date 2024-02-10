@@ -41,9 +41,9 @@
   "ending_balance": 0,
   "footer": null,
   "from_invoice": null,
-  "hosted_invoice_url": "https://invoice.stripe.com/i/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QUk43VGFMUVF5Smg1d043dEllVWtPQXJXVUtpRTVULDk2NzM1NDc002008yCItbkM?s=ap",
+  "hosted_invoice_url": "https://invoice.stripe.com/i/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QV3lwbFpxd0J6RzE2cW5rVWlPREpwaEZTYzdjVkF3LDk4MDI4OTMz0200SdPIuPug?s=ap",
   "id": "in_NORMALIZED00000000000002",
-  "invoice_pdf": "https://pay.stripe.com/invoice/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QUk43VGFMUVF5Smg1d043dEllVWtPQXJXVUtpRTVULDk2NzM1NDc002008yCItbkM/pdf?s=ap",
+  "invoice_pdf": "https://pay.stripe.com/invoice/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QV3lwbFpxd0J6RzE2cW5rVWlPREpwaEZTYzdjVkF3LDk4MDI4OTMz0200SdPIuPug/pdf?s=ap",
   "issuer": {
     "type": "self"
   },
@@ -59,8 +59,8 @@
         "discount_amounts": [],
         "discountable": false,
         "discounts": [],
-        "id": "il_NORMALIZED00000000000004",
-        "invoice_item": "ii_NORMALIZED00000000000004",
+        "id": "il_NORMALIZED00000000000003",
+        "invoice_item": "ii_NORMALIZED00000000000003",
         "livemode": false,
         "metadata": {},
         "object": "line_item",
@@ -75,13 +75,13 @@
           "created": 1000000000,
           "currency": "usd",
           "custom_unit_amount": null,
-          "id": "price_NORMALIZED00000000000004",
+          "id": "price_NORMALIZED00000000000003",
           "livemode": false,
           "lookup_key": null,
           "metadata": {},
           "nickname": null,
           "object": "price",
-          "product": "prod_NORMALIZED0004",
+          "product": "prod_NORMALIZED0003",
           "recurring": null,
           "tax_behavior": "unspecified",
           "tiers_mode": null,
@@ -158,5 +158,5 @@
   "total_excluding_tax": 120000,
   "total_tax_amounts": [],
   "transfer_data": null,
-  "webhooks_delivered_at": 1000000000
+  "webhooks_delivered_at": null
 }

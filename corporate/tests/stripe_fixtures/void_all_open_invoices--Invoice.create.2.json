@@ -13,6 +13,7 @@
   "auto_advance": true,
   "automatic_tax": {
     "enabled": false,
+    "liability": null,
     "status": null
   },
   "billing_reason": "manual",
@@ -43,6 +44,9 @@
   "hosted_invoice_url": null,
   "id": "in_NORMALIZED00000000000002",
   "invoice_pdf": null,
+  "issuer": {
+    "type": "self"
+  },
   "last_finalization_error": null,
   "latest_revision": null,
   "lines": {
