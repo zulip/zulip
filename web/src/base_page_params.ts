@@ -47,6 +47,10 @@ const home_params_schema = default_params_schema
         narrow_stream: z.optional(z.string()),
         needs_tutorial: z.boolean(),
         promote_sponsoring_zulip: z.boolean(),
+        // `realm_rendered_description` is only sent for spectators, because
+        // it isn't displayed for logged-in users and requires markdown
+        // processor time to compute.
+        realm_rendered_description: z.optional(z.string()),
         show_billing: z.boolean(),
         show_plans: z.boolean(),
         show_webathena: z.boolean(),
