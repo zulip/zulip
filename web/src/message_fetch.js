@@ -51,7 +51,7 @@ function process_result(data, opts) {
     const has_found_newest = opts.msg_list?.data.fetch_status.has_found_newest() ?? false;
 
     // In some rare situations, we expect to discover new unread
-    // messages not tracked in unread.js during this fetching process.
+    // messages not tracked in unread.ts during this fetching process.
     message_util.do_unread_count_updates(messages, true);
 
     // If we're loading more messages into the home view, save them to

@@ -14,13 +14,13 @@ import * as typing_data from "./typing_data";
 // When another user is typing, we process the events here.
 //
 // We also handle the local event of re-narrowing.
-// (For the outbound code, see typing.js.)
+// (For the outbound code, see typing.ts.)
 
 // If number of users typing exceed this,
 // we render "Several people are typing..."
 const MAX_USERS_TO_DISPLAY_NAME = 3;
 
-// Note!: There are also timing constants in typing_status.js
+// Note!: There are also timing constants in typing_status.ts
 // that make typing indicators work.
 
 type UserInfo = {
