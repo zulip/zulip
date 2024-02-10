@@ -1,4 +1,4 @@
-# Contributor statistics
+# Counting contributions
 
 The [Zulip team page](https://zulip.com/team/) displays statistics
 about contributors to Zulip and its projects. We display these
