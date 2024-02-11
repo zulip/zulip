@@ -1,3 +1,4 @@
+import {isValid, parseISO} from "date-fns";
 import $ from "jquery";
 
 import {PollData} from "../shared/src/poll_data";
@@ -7,6 +8,7 @@ import type {
     QuestionOutboundData,
     VoteOutboundData,
 } from "../shared/src/poll_data";
+import render_markdown_timestamp from "../templates/markdown_timestamp.hbs";
 import render_widgets_poll_widget from "../templates/widgets/poll_widget.hbs";
 import render_widgets_poll_widget_results from "../templates/widgets/poll_widget_results.hbs";
 
@@ -15,6 +17,7 @@ import {$t} from "./i18n";
 import * as keydown_util from "./keydown_util";
 import type {Message} from "./message_store";
 import * as people from "./people";
+import * as timerender from "./timerender";
 
 type Event = {sender_id: number; data: InboundData};
 
@@ -225,10 +228,9 @@ export function activate({
 
     function render_results(): void {
         const widget_data = poll_data.get_widget_data();
-
         const html = render_widgets_poll_widget_results(widget_data);
         $elem.find("ul.poll-widget").html(html);
-
+        render_poll_timestamp($elem);
         $elem
             .find("button.poll-vote")
             .off("click")
@@ -237,6 +239,24 @@ export function activate({
                 const key = $(e.target).attr("data-key")!;
                 submit_vote(key);
             });
+    }
+
+    function render_poll_timestamp($elem: JQuery): void {
+        $elem.find("ul.poll-widget time").each(function () {
+            const time_str = $(this).attr("datetime");
+            if (time_str === undefined) {
+                return;
+            }
+            const timestamp = parseISO(time_str);
+            if (isValid(timestamp)) {
+                const rendered_timestamp = render_markdown_timestamp({
+                    text: timerender.format_markdown_time(timestamp),
+                });
+                $(this).html(rendered_timestamp);
+            } else {
+                blueslip.error("Could not parse datetime supplied by backend", {time_str});
+            }
+        });
     }
 
     $elem.handle_events = function (events: Event[]) {

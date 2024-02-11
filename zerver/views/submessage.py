@@ -1,3 +1,5 @@
+import json
+
 import orjson
 from django.core.exceptions import ValidationError
 from django.db import transaction
@@ -6,6 +8,7 @@ from django.utils.translation import gettext as _
 
 from zerver.actions.submessage import do_add_submessage, verify_submessage_sender
 from zerver.lib.exceptions import JsonableError
+from zerver.lib.markdown import markdown_convert_inline
 from zerver.lib.message import access_message
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
@@ -34,6 +37,15 @@ def process_submessage(
 
     try:
         widget_data = orjson.loads(content)
+        if (
+            isinstance(widget_data, dict)
+            and widget_data.get("type") == "new_option"
+            and widget_data.get("option")
+        ):
+            rendered_content = markdown_convert_inline(str(widget_data["option"])).rendered_content
+            widget_data["option"] = rendered_content
+            content = json.dumps(widget_data)
+
     except orjson.JSONDecodeError:
         raise JsonableError(_("Invalid json for submessage"))
 

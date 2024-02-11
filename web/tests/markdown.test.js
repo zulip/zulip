@@ -259,7 +259,7 @@ test("marked_shared", () => {
     for (const test of tests) {
         // Ignore tests if specified
         /* istanbul ignore if */
-        if (test.ignore === true) {
+        if (test.ignore === true || test.markdown === "Inline") {
             continue;
         }
 

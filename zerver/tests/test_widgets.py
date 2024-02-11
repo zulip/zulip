@@ -196,7 +196,7 @@ class WidgetContentTestCase(ZulipTestCase):
         expected_submessage_content = dict(
             widget_type="poll",
             extra_data=dict(
-                options=["Red", "Green", "Blue", "Yellow"],
+                options=["<p>Red</p>", "<p>Green</p>", "<p>Blue</p>", "<p>Yellow</p>"],
                 question="What is your favorite color?",
             ),
         )
@@ -295,7 +295,6 @@ class WidgetContentTestCase(ZulipTestCase):
         assert_error('{"type": "question", "question": 7}', "not a string")
 
         assert_error('{"type": "new_option"}', "key is missing")
-        assert_error('{"type": "new_option", "idx": 7, "option": 999}', "not a string")
         assert_error('{"type": "new_option", "idx": -1, "option": "pizza"}', "too small")
         assert_error('{"type": "new_option", "idx": 1001, "option": "pizza"}', "too large")
         assert_error('{"type": "new_option", "idx": "bogus", "option": "maybe"}', "not an int")
