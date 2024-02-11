@@ -10,10 +10,10 @@ import * as ui_util from "./ui_util";
 
 let playground_links_popover_instance;
 
-// Playground_info contains all the data we need to generate a popover of
+// Playground_store contains all the data we need to generate a popover of
 // playground links for each code block. The element is the target element
 // to pop off of.
-function toggle_playground_links_popover(element, playground_info) {
+function toggle_playground_links_popover(element, playground_store) {
     if (is_open()) {
         return;
     }
@@ -31,6 +31,10 @@ function toggle_playground_links_popover(element, playground_info) {
             ],
         },
         onCreate(instance) {
+            // We extract all the values out of playground_store map into
+            // the playground_info array. Each element of the array is an
+            // object with all properties the template needs for rendering.
+            const playground_info = [...playground_store.values()];
             playground_links_popover_instance = instance;
             instance.setContent(
                 ui_util.parse_html(render_playground_links_popover({playground_info})),
@@ -103,14 +107,16 @@ function register_click_handlers() {
                     url_template.expand({code: extracted_code}),
                 );
             } else {
+                const playground_store = new Map();
                 for (const playground of playground_info) {
                     const url_template = url_template_lib.parse(playground.url_template);
-                    playground.playground_url = url_template.expand({code: extracted_code});
+                    const playground_url = url_template.expand({code: extracted_code});
+                    playground_store.set(playground.id, {...playground, playground_url});
                 }
                 const popover_target = $view_in_playground_button.find(
                     ".playground-links-popover-container",
                 )[0];
-                toggle_playground_links_popover(popover_target, playground_info);
+                toggle_playground_links_popover(popover_target, playground_store);
             }
         },
     );
