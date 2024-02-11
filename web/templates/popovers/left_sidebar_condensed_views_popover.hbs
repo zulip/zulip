@@ -1,8 +1,8 @@
 {{! Contents of the condensed nav vdots popup }}
 <ul class="nav nav-list condensed-views-popover-menu">
-    <li class="condensed-views-popover-menu-drafts">
+    <li class="tippy-views-tooltip condensed-views-popover-menu-drafts" data-tooltip-template-id="drafts-tooltip-template">
         {{! tabindex="0" Makes anchor tag focusable. Needed for keyboard support. }}
-        <a tabindex="0" href="#drafts" class="left-sidebar-popover-icon-label-count tippy-left-sidebar-tooltip" data-tooltip-template-id="drafts-tooltip-template">
+        <a tabindex="0" href="#drafts" class="left-sidebar-popover-icon-label-count">
             <span class="filter-icon">
                 <i class="zulip-icon zulip-icon-drafts" aria-hidden="true"></i>
             </span>
@@ -11,7 +11,7 @@
         </a>
     </li>
     {{#if has_scheduled_messages }}
-    <li class="condensed-views-popover-menu-scheduled-messages">
+    <li class="tippy-views-tooltip condensed-views-popover-menu-scheduled-messages" data-tooltip-template-id="scheduled-tooltip-template">
         <a tabindex="0" href="#scheduled" class="left-sidebar-popover-icon-label-count">
             <span class="filter-icon">
                 <i class="zulip-icon zulip-icon-scheduled-messages" aria-hidden="true"></i>
