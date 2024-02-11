@@ -844,6 +844,10 @@ export type FullUnreadCountsData = {
     home_unread_messages: number;
 };
 
+export function get_mentioned_message_count(): number {
+    return unread_mentions_counter.size;
+}
+
 // Return a data structure with various counts.  This function should be
 // pretty cheap, even if you don't care about all the counts, and you
 // should strive to keep it free of side effects on globals or DOM.
