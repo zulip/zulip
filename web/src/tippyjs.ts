@@ -5,6 +5,10 @@ import tippy, {delegate} from "tippy.js";
 import render_tooltip_templates from "../templates/tooltip_templates.hbs";
 
 import {$t} from "./i18n";
+import {localstorage} from "./localstorage";
+import * as scheduled_messages from "./scheduled_messages";
+import * as starred_messages from "./starred_messages";
+import * as unread from "./unread";
 import {user_settings} from "./user_settings";
 
 // For tooltips without data-tippy-content, we use the HTML content of
@@ -157,9 +161,91 @@ export function initialize(): void {
         delay: EXTRA_LONG_HOVER_DELAY,
         appendTo: () => document.body,
         onShow(instance) {
-            const $container = $(instance.popper).find(".views-tooltip-container");
+            const $popper = $(instance.popper);
+            const $container = $popper.find(".views-tooltip-container");
             if ($container.data("view-code") === user_settings.web_home_view) {
                 $container.find(".views-tooltip-home-view-note").removeClass("hide");
+            }
+
+            const $view_option_type = $(instance.reference);
+            const option_attr = $view_option_type.attr("data-tooltip-template-id");
+            const $content_box = $popper.find(".tippy-content");
+
+            // For singular and plural words.
+            const $inner_content = $content_box.find(".tooltip-inner-content");
+            let display_count = 0;
+
+            // todo: later remove this function and use it from the drafts module since
+            // drafts module has not been migrated to TypeScript yet.
+            function get_draft_count(): number {
+                const KEY = "drafts";
+                const drafts = localstorage().get(KEY) ?? {};
+                return Object.keys(drafts).length;
+            }
+
+            // For each type of view, show the relevant tooltip with its count.
+            switch (option_attr) {
+                case "all-message-tooltip-template":
+                    display_count = unread.get_unread_message_count();
+                    $inner_content.text(
+                        $t(
+                            {
+                                defaultMessage:
+                                    "{display_count, plural, one {You have {display_count} unread message.} other {You have {display_count} unread messages.}}",
+                            },
+                            {display_count},
+                        ),
+                    );
+                    $container.find(".views-tooltip-home-view-note").removeClass("hide");
+                    break;
+                case "mentions-tooltip-template":
+                    display_count = unread.get_mentioned_message_count();
+                    $inner_content.text(
+                        $t(
+                            {
+                                defaultMessage:
+                                    "{display_count, plural, one {You have {display_count} unread mention.} other {You have {display_count} unread mentions.}}",
+                            },
+                            {display_count},
+                        ),
+                    );
+                    break;
+                case "starred-tooltip-template":
+                    display_count = starred_messages.get_count();
+                    $inner_content.text(
+                        $t(
+                            {
+                                defaultMessage:
+                                    "{display_count, plural, one {You have {display_count} starred message.} other {You have {display_count} starred messages.}}",
+                            },
+                            {display_count},
+                        ),
+                    );
+                    break;
+                case "scheduled-tooltip-template":
+                    display_count = scheduled_messages.get_count();
+                    $inner_content.text(
+                        $t(
+                            {
+                                defaultMessage:
+                                    "{display_count, plural, one {You have {display_count} scheduled message.} other {You have {display_count} scheduled messages.}}",
+                            },
+                            {display_count},
+                        ),
+                    );
+                    break;
+                case "drafts-tooltip-template":
+                    display_count = get_draft_count();
+                    $inner_content.text(
+                        $t(
+                            {
+                                defaultMessage:
+                                    "{display_count, plural, one {You have {display_count} draft.} other {You have {display_count} drafts.}}",
+                            },
+                            {display_count},
+                        ),
+                    );
+                    break;
             }
         },
         onHidden(instance) {
