@@ -8,10 +8,12 @@ type StreamTopic = {
 export type Recipient =
     | {
           message_type: "direct";
+          notification_event_type: "typing";
           ids: number[];
       }
     | (StreamTopic & {
           message_type: "stream";
+          notification_event_type: "typing";
       });
 type TypingStatusWorker = {
     get_current_time: () => number;

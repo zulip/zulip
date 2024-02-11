@@ -113,6 +113,7 @@ export function get_recipient(): Recipient | null {
     if (message_type === "private") {
         return {
             message_type: "direct",
+            notification_event_type: "typing",
             ids: get_user_ids_array()!,
         };
     }
@@ -122,6 +123,7 @@ export function get_recipient(): Recipient | null {
         const topic = compose_state.topic();
         return {
             message_type: "stream",
+            notification_event_type: "typing",
             stream_id,
             topic,
         };
