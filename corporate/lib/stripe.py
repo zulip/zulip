@@ -1736,6 +1736,9 @@ class BillingSession(ABC):
                 free_trial = False
 
         remote_server_legacy_plan = self.get_remote_server_legacy_plan(customer)
+        if remote_server_legacy_plan is not None:
+            # Free trial is not available for legacy customers.
+            free_trial = False
         should_schedule_upgrade_for_legacy_remote_server = (
             remote_server_legacy_plan is not None
             and upgrade_request.remote_server_plan_start_date == "billing_cycle_end_date"
