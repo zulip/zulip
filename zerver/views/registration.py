@@ -1140,18 +1140,30 @@ def find_account(request: HttpRequest) -> HttpResponse:
                 context.setdefault(key, {})
                 context[key].setdefault("realms", [])
                 context[key]["realms"].append(user.realm)
-                context[key]["external_host"] = settings.EXTERNAL_HOST
                 # This value will end up being the last user ID among
                 # matching accounts; since it's only used for minor
                 # details like language, that arbitrary choice is OK.
                 context[key]["to_user_id"] = user.id
 
+            # Links in find_team emails use the server's information
+            # and not any particular realm's information.
+            external_host_base_url = f"{settings.EXTERNAL_URI_SCHEME}{settings.EXTERNAL_HOST}"
+            help_base_url = f"{external_host_base_url}/help"
+            help_reset_password_link = (
+                f"{help_base_url}/change-your-password#if-youve-forgotten-or-never-had-a-password"
+            )
+
             for delivery_email, realm_context in context.items():
-                realm_context["email"] = delivery_email
                 send_email(
                     "zerver/emails/find_team",
                     to_user_ids=[realm_context["to_user_id"]],
-                    context=realm_context,
+                    context={
+                        "external_host": settings.EXTERNAL_HOST,
+                        "corporate_enabled": settings.CORPORATE_ENABLED,
+                        "help_reset_password_link": help_reset_password_link,
+                        "realms": realm_context["realms"],
+                        "email": delivery_email,
+                    },
                     from_address=FromAddress.SUPPORT,
                     request=request,
                 )
