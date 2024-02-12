@@ -257,7 +257,7 @@ class DocPageTest(ZulipTestCase):
         self._test("/hello/", ["your mission-critical communications with Zulip"])
         self._test("/communities/", ["Open communities directory"])
         self._test("/development-community/", ["Zulip development community"])
-        self._test("/features/", ["Beautiful messaging"])
+        self._test("/features/", ["Complete team chat solution"])
         self._test("/jobs/", ["Work with us"])
         self._test("/self-hosting/", ["Self-host Zulip"])
         self._test("/security/", ["TLS encryption"])
