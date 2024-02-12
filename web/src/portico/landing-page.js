@@ -159,6 +159,12 @@ $(() => {
         $(".features-col-group").attr("span", plans_columns_count);
         $(".subheader-filler").attr("colspan", plans_columns_count);
     }
+
+    if (window.location.pathname.endsWith("/features/")) {
+        // Default to Cloud and its three columns
+        $(".features-col-group").attr("span", 3);
+        $(".subheader-filler").attr("colspan", 3);
+    }
 });
 
 // Scroll to anchor link when clicked. Note that help.js has a similar
