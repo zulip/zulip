@@ -80,9 +80,6 @@ function resend_message(message, $row, {on_send_message_success, send_message}) 
         return;
     }
 
-    // Always re-set queue_id if we've gotten a new one
-    // since the time when the message object was initially created
-    message.queue_id = page_params.queue_id;
     message.resend = true;
 
     function on_success(data) {
