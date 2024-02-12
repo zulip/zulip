@@ -16,6 +16,10 @@ import * as watchdog from "./watchdog";
 
 // Docs: https://zulip.readthedocs.io/en/latest/subsystems/events-system.html
 
+export let queue_id;
+let last_event_id;
+let event_queue_longpoll_timeout_seconds;
+
 let waiting_on_homeview_load = true;
 
 let events_stored_while_loading = [];
@@ -172,8 +176,8 @@ function get_events({dont_block = false} = {}) {
         watchdog.set_suspect_offline(true);
     }
     if (get_events_params.queue_id === undefined) {
-        get_events_params.queue_id = page_params.queue_id;
-        get_events_params.last_event_id = page_params.last_event_id;
+        get_events_params.queue_id = queue_id;
+        get_events_params.last_event_id = last_event_id;
     }
 
     if (get_events_xhr !== undefined) {
@@ -190,7 +194,7 @@ function get_events({dont_block = false} = {}) {
     get_events_xhr = channel.get({
         url: "/json/events",
         data: get_events_params,
-        timeout: page_params.event_queue_longpoll_timeout_seconds * 1000,
+        timeout: event_queue_longpoll_timeout_seconds * 1000,
         success(data) {
             watchdog.set_suspect_offline(false);
             try {
@@ -283,7 +287,11 @@ export function home_view_loaded() {
     get_events_success([]);
 }
 
-export function initialize() {
+export function initialize(params) {
+    queue_id = params.queue_id;
+    last_event_id = params.last_event_id;
+    event_queue_longpoll_timeout_seconds = params.event_queue_longpoll_timeout_seconds;
+
     reload.add_reload_hook(cleanup_event_queue);
     watchdog.on_unsuspend(() => {
         // Immediately poll for new events on unsuspend
@@ -304,7 +312,7 @@ function cleanup_event_queue() {
     event_queue_expired = true;
     channel.del({
         url: "/json/events",
-        data: {queue_id: page_params.queue_id},
+        data: {queue_id},
         ignore_reload: true,
     });
 }

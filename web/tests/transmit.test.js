@@ -18,6 +18,7 @@ const sent_messages = mock_esm("../src/sent_messages", {
     }),
     start_send: noop,
 });
+const server_events = mock_esm("../src/server_events");
 
 const people = zrequire("people");
 const transmit = zrequire("transmit");
@@ -150,7 +151,7 @@ run_test("reply_message_stream", ({override}) => {
     });
 
     page_params.user_id = 44;
-    page_params.queue_id = 66;
+    server_events.queue_id = 66;
     sent_messages.get_new_local_id = () => "99";
 
     transmit.reply_message({
@@ -191,7 +192,7 @@ run_test("reply_message_private", ({override}) => {
     });
 
     page_params.user_id = 155;
-    page_params.queue_id = 177;
+    server_events.queue_id = 177;
     sent_messages.get_new_local_id = () => "199";
 
     transmit.reply_message({
