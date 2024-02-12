@@ -90,7 +90,7 @@ export function create_message_object() {
         type: compose_state.get_message_type(),
         content: compose_state.message_content(),
         sender_id: page_params.user_id,
-        queue_id: page_params.queue_id,
+        queue_id: server_events.queue_id,
         stream_id: undefined,
     };
     message.topic = "";
