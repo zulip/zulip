@@ -148,23 +148,16 @@ $(() => {
         $pricing_wrapper.removeClass("showing-cloud showing-self-hosted");
         $pricing_wrapper.addClass(`showing-${tab_to_show.slice(1)}`);
 
-        const $comparison_table = $(".zulip-plans-comparison");
-
-        // Not all pages that show plans include the comparison
-        // table, but when it's present, make sure to align the
-        // comparison table with the current active plans tab
-        if ($comparison_table.length > 0) {
-            // Make sure that links coming from elsewhere scroll
-            // to the comparison table
-            if (target_hash.includes("plan-comparison")) {
-                document.querySelector(target_hash).scrollIntoView();
-            }
-            const plans_columns_count = tab_to_show.slice(1) === "self-hosted" ? 4 : 3;
-
-            // Set the correct values for span and colspan
-            $(".features-col-group").attr("span", plans_columns_count);
-            $(".subheader-filler").attr("colspan", plans_columns_count);
+        // Make sure that links coming from elsewhere scroll
+        // to the comparison table
+        if (target_hash.includes("plan-comparison")) {
+            document.querySelector(target_hash).scrollIntoView();
         }
+
+        const plans_columns_count = tab_to_show.slice(1) === "self-hosted" ? 4 : 3;
+        // Set the correct values for span and colspan
+        $(".features-col-group").attr("span", plans_columns_count);
+        $(".subheader-filler").attr("colspan", plans_columns_count);
     }
 });
 
