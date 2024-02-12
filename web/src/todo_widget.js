@@ -1,5 +1,7 @@
+import {isValid, parseISO} from "date-fns";
 import $ from "jquery";
 
+import render_markdown_timestamp from "../templates/markdown_timestamp.hbs";
 import render_widgets_todo_widget from "../templates/widgets/todo_widget.hbs";
 import render_widgets_todo_widget_tasks from "../templates/widgets/todo_widget_tasks.hbs";
 
@@ -7,7 +9,7 @@ import * as blueslip from "./blueslip";
 import {$t} from "./i18n";
 import {page_params} from "./page_params";
 import * as people from "./people";
-
+import * as timerender from "./timerender";
 // Any single user should send add a finite number of tasks
 // to a todo list. We arbitrarily pick this value.
 const MAX_IDX = 1000;
@@ -183,6 +185,7 @@ export function activate(opts) {
         const widget_data = task_data.get_widget_data();
         const html = render_widgets_todo_widget_tasks(widget_data);
         $elem.find("ul.todo-widget").html(html);
+        render_todo_timestamp($elem);
         $elem.find(".widget-error").text("");
 
         $elem.find("input.task").on("click", (e) => {
@@ -202,6 +205,24 @@ export function activate(opts) {
 
             const data = task_data.handle.strike.outbound(key);
             callback(data);
+        });
+    }
+
+    function render_todo_timestamp($elem) {
+        $elem.find("ul.todo-widget time").each(function () {
+            const time_str = $(this).attr("datetime");
+            if (time_str === undefined) {
+                return;
+            }
+            const timestamp = parseISO(time_str);
+            if (isValid(timestamp)) {
+                const rendered_timestamp = render_markdown_timestamp({
+                    text: timerender.format_markdown_time(timestamp),
+                });
+                $(this).html(rendered_timestamp);
+            } else {
+                blueslip.error("Could not parse datetime supplied by backend", {time_str});
+            }
         });
     }
 

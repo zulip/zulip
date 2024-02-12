@@ -32,11 +32,25 @@
         position: relative;
         vertical-align: top;
 
+        .task,
+        .task_desc,
+        .description {
+            display: inline-block;
+        }
+
+        .task_complete,
+        .task_desc_complete,
+        .description_complete {
+            display: inline-block;
+            text-decoration: line-through;
+        }
+
         & input[type="checkbox"] {
             ~ span {
                 height: 12px;
                 width: 12px;
                 border: 2px solid hsl(156deg 28% 70%);
+                top: 2px;
 
                 border-radius: 4px;
                 filter: brightness(1);

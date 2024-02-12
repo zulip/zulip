@@ -37,13 +37,24 @@ def process_submessage(
 
     try:
         widget_data = orjson.loads(content)
-        if (
-            isinstance(widget_data, dict)
-            and widget_data.get("type") == "new_option"
-            and widget_data.get("option")
-        ):
-            rendered_content = markdown_convert_inline(str(widget_data["option"])).rendered_content
-            widget_data["option"] = rendered_content
+        if isinstance(widget_data, dict):
+            if widget_data.get("type") == "new_option" and widget_data.get("option"):
+                rendered_content = markdown_convert_inline(
+                    str(widget_data["option"])
+                ).rendered_content
+                widget_data["option"] = rendered_content
+                content = json.dumps(widget_data)
+
+            elif widget_data.get("type") == "new_task" and widget_data.get("task"):
+                rendered_task = markdown_convert_inline(str(widget_data["task"])).rendered_content
+                if widget_data.get("desc"):
+                    rendered_desc = markdown_convert_inline(
+                        str(widget_data["desc"])
+                    ).rendered_content
+                    rendered_desc = rendered_desc.replace("<p>", "<p>&nbsp;")
+                    widget_data["desc"] = rendered_desc
+                widget_data["task"] = rendered_task
+
             content = json.dumps(widget_data)
 
     except orjson.JSONDecodeError:
