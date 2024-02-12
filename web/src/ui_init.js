@@ -481,6 +481,12 @@ export function initialize_everything() {
     const user_settings_params = pop_fields("user_settings");
     const realm_settings_defaults_params = pop_fields("realm_user_settings_defaults");
     const scheduled_messages_params = pop_fields("scheduled_messages");
+    const server_events_params = pop_fields(
+        "queue_id",
+        "server_generation",
+        "event_queue_longpoll_timeout_seconds",
+        "last_event_id",
+    );
 
     /* To store theme data for spectators, we need to initialize
        user_settings before setting the theme. */
@@ -613,7 +619,7 @@ export function initialize_everything() {
     overlays.initialize();
     invite.initialize();
     message_view_header.initialize();
-    server_events.initialize();
+    server_events.initialize(server_events_params);
     user_status.initialize(user_status_params);
     compose_recipient.initialize();
     compose_pm_pill.initialize({

@@ -109,7 +109,7 @@ export function reply_message(opts) {
 
     const reply = {
         sender_id: page_params.user_id,
-        queue_id: page_params.queue_id,
+        queue_id: server_events.queue_id,
         local_id,
     };
 
