@@ -1156,7 +1156,7 @@ class TestRealmAuditLog(ZulipTestCase):
             [hamlet, cordelia],
             acting_user=hamlet,
             description="lorem",
-            group_settings_map={"can_mention_group": public_group},
+            group_settings_map={"can_mention_groups": public_group},
         )
 
         audit_log_entries = RealmAuditLog.objects.filter(
@@ -1311,13 +1311,14 @@ class TestRealmAuditLog(ZulipTestCase):
             },
         )
 
-        old_group = user_group.can_mention_group
+        old_group = user_group.can_mention_groups.first()
+        assert old_group is not None
         new_group = UserGroup.objects.get(
             name=SystemGroups.EVERYONE_ON_INTERNET, realm=user_group.realm
         )
         self.assertNotEqual(old_group.id, new_group.id)
         do_change_user_group_permission_setting(
-            user_group, "can_mention_group", new_group, acting_user=None
+            user_group, "can_mention_groups", new_group, acting_user=None
         )
         audit_log_entries = RealmAuditLog.objects.filter(
             event_type=RealmAuditLog.USER_GROUP_GROUP_BASED_SETTING_CHANGED,
@@ -1330,6 +1331,6 @@ class TestRealmAuditLog(ZulipTestCase):
             {
                 RealmAuditLog.OLD_VALUE: old_group.id,
                 RealmAuditLog.NEW_VALUE: new_group.id,
-                "property": "can_mention_group",
+                "property": "can_mention_groups",
             },
         )

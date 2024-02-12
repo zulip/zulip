@@ -262,9 +262,8 @@ def create_user_group_data() -> Dict[str, object]:
     ["/user_groups/{user_group_id}:patch", "/user_groups/{user_group_id}:delete"]
 )
 def get_temp_user_group_id() -> Dict[str, object]:
-    user_group, _ = UserGroup.objects.get_or_create(
-        name="temp", realm=get_realm("zulip"), can_mention_group_id=11
-    )
+    user_group, _ = UserGroup.objects.get_or_create(name="temp", realm=get_realm("zulip"))
+    user_group.can_mention_groups.set({user_group})
     return {
         "user_group_id": user_group.id,
     }

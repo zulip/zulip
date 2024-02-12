@@ -2444,8 +2444,7 @@ class EditMessageTest(EditMessageTestCase):
         )
         self.assert_json_success(result)
 
-        leadership.can_mention_group = moderators_system_group
-        leadership.save()
+        leadership.can_mention_groups.set({moderators_system_group})
 
         msg_id = self.send_stream_message(cordelia, "test_stream", "Test message")
         content = "Edited test message @*leadership*"
@@ -2494,8 +2493,7 @@ class EditMessageTest(EditMessageTestCase):
 
         test = check_add_user_group(shiva.realm, "test", [shiva], acting_user=None)
         add_subgroups_to_user_group(leadership, [test], acting_user=None)
-        support.can_mention_group = leadership
-        support.save()
+        support.can_mention_groups.set({leadership})
 
         content = "Test mentioning user group @*support*"
         result = self.client_patch(

@@ -60,7 +60,10 @@ def add_user_group(
     group_settings_map = {}
     request_settings_dict = locals()
     for setting_name, permission_config in UserGroup.GROUP_PERMISSION_SETTINGS.items():
-        setting_group_id_name = permission_config.id_field_name
+        if permission_config.id_field_name == "can_mention_group_ids":
+            # This is just a temporary hack till we rename the API request
+            # paramters to use can_mention_groups/can_mention_group_ids.
+            setting_group_id_name = "can_mention_group_id"
 
         if setting_group_id_name not in request_settings_dict:  # nocoverage
             continue
@@ -120,14 +123,19 @@ def edit_user_group(
 
     request_settings_dict = locals()
     for setting_name, permission_config in UserGroup.GROUP_PERMISSION_SETTINGS.items():
-        setting_group_id_name = permission_config.id_field_name
+        if permission_config.id_field_name == "can_mention_group_ids":
+            # This is just a temporary hack till we rename the API request
+            # paramters to use can_mention_groups/can_mention_group_ids.
+            setting_group_id_name = "can_mention_group_id"
 
         if setting_group_id_name not in request_settings_dict:  # nocoverage
             continue
 
-        if request_settings_dict[setting_group_id_name] is not None and request_settings_dict[
-            setting_group_id_name
-        ] != getattr(user_group, setting_group_id_name):
+        if (
+            request_settings_dict[setting_group_id_name] is not None
+            and request_settings_dict[setting_group_id_name]
+            != getattr(user_group, setting_name).first().id
+        ):
             setting_value_group_id = request_settings_dict[setting_group_id_name]
             setting_value_group = access_user_group_for_setting(
                 setting_value_group_id,

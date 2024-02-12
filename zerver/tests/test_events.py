@@ -1832,13 +1832,13 @@ class NormalActionsTest(BaseAction):
         )
         check_user_group_update("events[0]", events[0], "description")
 
-        # Test can_mention_group setting update
+        # Test can_mention_groups setting update
         moderators_group = UserGroup.objects.get(
             name="role:moderators", realm=self.user_profile.realm, is_system_group=True
         )
         events = self.verify_action(
             lambda: do_change_user_group_permission_setting(
-                backend, "can_mention_group", moderators_group, acting_user=None
+                backend, "can_mention_groups", moderators_group, acting_user=None
             )
         )
         check_user_group_update("events[0]", events[0], "can_mention_group")

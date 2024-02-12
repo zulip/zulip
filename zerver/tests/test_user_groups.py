@@ -258,12 +258,12 @@ class UserGroupAPITestCase(UserGroupTestCase):
         self.assert_json_success(result)
         self.assert_length(UserGroup.objects.filter(realm=hamlet.realm), 10)
 
-        # Check default value of can_mention_group setting.
+        # Check default value of can_mention_groups setting.
         everyone_system_group = UserGroup.objects.get(
             name="role:everyone", realm=hamlet.realm, is_system_group=True
         )
         support_group = UserGroup.objects.get(name="support", realm=hamlet.realm)
-        self.assertEqual(support_group.can_mention_group, everyone_system_group)
+        self.assertEqual(support_group.can_mention_groups.first(), everyone_system_group)
 
         # Test invalid member error
         params = {
@@ -353,7 +353,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
         result = self.client_post("/json/user_groups/create", info=params)
         self.assert_json_success(result)
         support_group = UserGroup.objects.get(name="support", realm=hamlet.realm)
-        self.assertEqual(support_group.can_mention_group, moderators_group)
+        self.assertEqual(support_group.can_mention_groups.first(), moderators_group)
 
         params = {
             "name": "test",
@@ -364,7 +364,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
         result = self.client_post("/json/user_groups/create", info=params)
         self.assert_json_success(result)
         test_group = UserGroup.objects.get(name="test", realm=hamlet.realm)
-        self.assertEqual(test_group.can_mention_group, leadership_group)
+        self.assertEqual(test_group.can_mention_groups.first(), leadership_group)
 
         nobody_group = UserGroup.objects.get(
             name="role:nobody", realm=hamlet.realm, is_system_group=True
@@ -378,7 +378,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
         result = self.client_post("/json/user_groups/create", info=params)
         self.assert_json_success(result)
         marketing_group = UserGroup.objects.get(name="marketing", realm=hamlet.realm)
-        self.assertEqual(marketing_group.can_mention_group, nobody_group)
+        self.assertEqual(marketing_group.can_mention_groups.first(), nobody_group)
 
         internet_group = UserGroup.objects.get(
             name="role:internet", realm=hamlet.realm, is_system_group=True
@@ -391,7 +391,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
         }
         result = self.client_post("/json/user_groups/create", info=params)
         self.assert_json_error(
-            result, "'can_mention_group' setting cannot be set to 'role:internet' group."
+            result, "'can_mention_groups' setting cannot be set to 'role:internet' group."
         )
 
         owners_group = UserGroup.objects.get(
@@ -405,7 +405,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
         }
         result = self.client_post("/json/user_groups/create", info=params)
         self.assert_json_error(
-            result, "'can_mention_group' setting cannot be set to 'role:owners' group."
+            result, "'can_mention_groups' setting cannot be set to 'role:owners' group."
         )
 
         params = {
@@ -508,7 +508,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
         result = self.client_patch(f"/json/user_groups/{user_group.id}", info=params)
         self.assert_json_error(result, "User group name cannot start with 'channel:'.")
 
-    def test_update_can_mention_group_setting(self) -> None:
+    def test_update_can_mention_groups_setting(self) -> None:
         hamlet = self.example_user("hamlet")
         support_group = check_add_user_group(hamlet.realm, "support", [hamlet], acting_user=None)
         marketing_group = check_add_user_group(
@@ -526,7 +526,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
         result = self.client_patch(f"/json/user_groups/{support_group.id}", info=params)
         self.assert_json_success(result)
         support_group = UserGroup.objects.get(name="support", realm=hamlet.realm)
-        self.assertEqual(support_group.can_mention_group, moderators_group)
+        self.assertEqual(support_group.can_mention_groups.first(), moderators_group)
 
         params = {
             "can_mention_group": orjson.dumps(marketing_group.id).decode(),
@@ -534,7 +534,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
         result = self.client_patch(f"/json/user_groups/{support_group.id}", info=params)
         self.assert_json_success(result)
         support_group = UserGroup.objects.get(name="support", realm=hamlet.realm)
-        self.assertEqual(support_group.can_mention_group, marketing_group)
+        self.assertEqual(support_group.can_mention_groups.first(), marketing_group)
 
         nobody_group = UserGroup.objects.get(
             name="role:nobody", realm=hamlet.realm, is_system_group=True
@@ -545,7 +545,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
         result = self.client_patch(f"/json/user_groups/{support_group.id}", info=params)
         self.assert_json_success(result)
         support_group = UserGroup.objects.get(name="support", realm=hamlet.realm)
-        self.assertEqual(support_group.can_mention_group, nobody_group)
+        self.assertEqual(support_group.can_mention_groups.first(), nobody_group)
 
         owners_group = UserGroup.objects.get(
             name="role:owners", realm=hamlet.realm, is_system_group=True
@@ -555,7 +555,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
         }
         result = self.client_patch(f"/json/user_groups/{support_group.id}", info=params)
         self.assert_json_error(
-            result, "'can_mention_group' setting cannot be set to 'role:owners' group."
+            result, "'can_mention_groups' setting cannot be set to 'role:owners' group."
         )
 
         internet_group = UserGroup.objects.get(
@@ -566,7 +566,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
         }
         result = self.client_patch(f"/json/user_groups/{support_group.id}", info=params)
         self.assert_json_error(
-            result, "'can_mention_group' setting cannot be set to 'role:internet' group."
+            result, "'can_mention_groups' setting cannot be set to 'role:internet' group."
         )
 
         params = {
@@ -636,7 +636,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
             for i in range(50)
         ]
 
-        with self.assert_database_query_count(4):
+        with self.assert_database_query_count(5):
             user_group = create_user_group_in_database(
                 name="support",
                 members=[hamlet, cordelia, *original_users],

@@ -135,6 +135,7 @@ ID_MAP: Dict[str, Dict[int, int]] = {
     "usergroup": {},
     "usergroupmembership": {},
     "groupgroupmembership": {},
+    "usergroup_can_mention_groups": {},
     "botstoragedata": {},
     "botconfigdata": {},
     "analytics_realmcount": {},
@@ -991,10 +992,6 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
 
         if "zerver_usergroup" in data:
             re_map_foreign_keys(data, "zerver_usergroup", "realm", related_table="realm")
-            for setting_name in UserGroup.GROUP_PERMISSION_SETTINGS:
-                re_map_foreign_keys(
-                    data, "zerver_usergroup", setting_name, related_table="usergroup"
-                )
             bulk_import_model(data, UserGroup)
 
         # We expect Zulip server exports to contain these system groups,
@@ -1237,6 +1234,16 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
         )
         update_model_ids(GroupGroupMembership, data, "groupgroupmembership")
         bulk_import_model(data, GroupGroupMembership)
+
+        for setting_name in UserGroup.GROUP_PERMISSION_SETTINGS:
+            through_table_name = "zerver_usergroup_" + setting_name
+            re_map_foreign_keys(
+                data, through_table_name, "from_usergroup", related_table="usergroup"
+            )
+            re_map_foreign_keys(data, through_table_name, "to_usergroup", related_table="usergroup")
+            through_table = getattr(UserGroup, setting_name).through
+            update_model_ids(through_table, data, "usergroup_" + setting_name)
+            bulk_import_model(data, through_table)
 
     # We expect Zulip server exports to contain UserGroupMembership objects
     # for system groups, this logic here is needed to handle the imports from

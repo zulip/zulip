@@ -1182,13 +1182,13 @@ def stream_wildcard_mention_allowed(sender: UserProfile, stream: Stream, realm: 
 
 
 def check_user_group_mention_allowed(sender: UserProfile, user_group_ids: List[int]) -> None:
-    user_groups = UserGroup.objects.filter(id__in=user_group_ids).select_related(
-        "can_mention_group"
+    user_groups = UserGroup.objects.filter(id__in=user_group_ids).prefetch_related(
+        "can_mention_groups"
     )
     sender_is_system_bot = is_cross_realm_bot_email(sender.delivery_email)
 
     for group in user_groups:
-        can_mention_group = group.can_mention_group
+        can_mention_group = group.can_mention_groups.all()[0]
 
         if sender_is_system_bot:
             if can_mention_group.name == SystemGroups.EVERYONE:
