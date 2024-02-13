@@ -170,7 +170,7 @@ class TestRemoteServerSupportEndpoint(ZulipTestCase):
                     "<b>Date created</b>:",
                     "<b>UUID</b>:",
                     "<b>Zulip version</b>:",
-                    "<b>Plan type</b>: Self-managed<br />",
+                    "<b>Plan type</b>: Free<br />",
                     "<b>Non-guest user count</b>: 0<br />",
                     "<b>Guest user count</b>: 0<br />",
                 ],
@@ -242,7 +242,7 @@ class TestRemoteServerSupportEndpoint(ZulipTestCase):
             self.assert_in_success_response(
                 [
                     "<h4>📅 Current plan information:</h4>",
-                    "<b>Plan name</b>: Self-managed (legacy plan)<br />",
+                    "<b>Plan name</b>: Free (legacy plan)<br />",
                     "<b>Status</b>: New plan scheduled<br />",
                     "<b>End date</b>: 01 February 2050<br />",
                     "<h4>⏱️ Next plan information:</h4>",
@@ -261,7 +261,7 @@ class TestRemoteServerSupportEndpoint(ZulipTestCase):
             self.assert_in_success_response(
                 [
                     "<h4>📅 Current plan information:</h4>",
-                    "<b>Plan name</b>: Self-managed (legacy plan)<br />",
+                    "<b>Plan name</b>: Free (legacy plan)<br />",
                     "<b>Status</b>: Active<br />",
                     "<b>End date</b>: 01 February 2050<br />",
                 ],

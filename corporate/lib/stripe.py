@@ -2882,7 +2882,7 @@ class BillingSession(ABC):
 
         plan_name = "Zulip Cloud Free"
         if is_remotely_hosted:
-            plan_name = "Self-managed"
+            plan_name = "Free"
 
         context: Dict[str, Any] = {
             "billing_base_url": self.billing_base_url,
