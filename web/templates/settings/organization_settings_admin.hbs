@@ -60,6 +60,17 @@
                         <option value="6">{{t "Sunday" }}</option>
                     </select>
                 </div>
+                {{> settings_checkbox
+                  setting_name="realm_welcome_bot_custom_message_enabled"
+                  prefix="id_"
+                  is_checked=realm_welcome_bot_custom_message_enabled
+                  label=admin_settings_label.realm_welcome_bot_custom_message_enabled}}
+
+                <div id="custom-welcome-bot-textbox-container">
+                    <label for="realm_custom_welcome_bot_message">Custom Welcome Message:</label>
+                    <input type="text" id="id_custom_welcome_bot_message"/>
+                    <button id ="test-welcome-message">Send me a test message</button>
+                </div>
             </div>
         </div>
 

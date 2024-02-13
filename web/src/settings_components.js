@@ -540,6 +540,10 @@ export function check_property_changed(elem, for_realm_default_settings, sub, gr
         case "stream_privacy":
             proposed_val = get_input_element_value($elem, "radio-group");
             break;
+        // case "realm_welcome_bot_custom_message_enabled":
+        //     // console.log(current_val)
+        //     // proposed_val = current_val
+        // break;
         default:
             if (current_val !== undefined) {
                 proposed_val = get_input_element_value($elem, typeof current_val);

@@ -46,6 +46,9 @@ const admin_settings_label = {
     realm_digest_emails_enabled: $t({
         defaultMessage: "Send weekly digest emails to inactive users",
     }),
+    realm_welcome_bot_custom_message_enabled: $t({
+        defaultMessage: "Allow custom welcome bot message",
+    }),
     realm_default_code_block_language: $t({defaultMessage: "Default language for code blocks"}),
 
     // Organization permissions

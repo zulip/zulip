@@ -140,6 +140,10 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
     # See RealmDomain for the domains that apply for a given organization.
     emails_restricted_to_domains = models.BooleanField(default=False)
 
+    # welcome bot custom message field and custom message
+    welcome_bot_custom_message_field = models.BooleanField(default=False)
+    welcome_bot_custom_message = models.TextField(default="")
+
     invite_required = models.BooleanField(default=True)
 
     _max_invites = models.IntegerField(null=True, db_column="max_invites")
