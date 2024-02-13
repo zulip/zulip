@@ -571,6 +571,7 @@ class SupportType(Enum):
     update_plan_end_date = 7
     update_required_plan_tier = 8
     configure_fixed_price_plan = 9
+    delete_fixed_price_next_plan = 10
 
 
 class SupportViewRequest(TypedDict, total=False):
@@ -3030,6 +3031,15 @@ class BillingSession(ABC):
                 assert support_request["new_plan_tier"] is not None
                 new_plan_tier = support_request["new_plan_tier"]
                 success_message = self.do_change_plan_to_new_tier(new_plan_tier)
+        elif support_type == SupportType.delete_fixed_price_next_plan:
+            customer = self.get_customer()
+            assert customer is not None
+            fixed_price_offer = CustomerPlanOffer.objects.filter(
+                customer=customer, status=CustomerPlanOffer.CONFIGURED
+            ).first()
+            assert fixed_price_offer is not None
+            fixed_price_offer.delete()
+            success_message = "Fixed price offer deleted"
 
         return success_message
 

@@ -170,6 +170,7 @@ tr.admin td:first-child {
     }
 }
 
+.delete-next-fixed-price-plan-button,
 .approve-sponsorship-button,
 .support-search-button,
 .support-submit-button,
@@ -228,6 +229,7 @@ tr.admin td:first-child {
     }
 }
 
+.delete-next-fixed-price-plan-button,
 .delete-user-button,
 .scrub-realm-button {
     color: hsl(0deg 0% 100%);
