@@ -104,7 +104,8 @@
     {{#if should_display_read_receipts_option}}
     <li>
         <a class="view_read_receipts" data-message-id="{{message_id}}" tabindex="0">
-            <i class="zulip-icon zulip-icon-readreceipts" aria-label="{{t 'View read receipts' }}"></i> {{t "View read receipts" }}
+            <i class="zulip-icon zulip-icon-readreceipts" aria-label="{{t 'View read receipts' }}"></i>
+            {{t "View read receipts" }} <span class="hotkey-hint">(V)</span>
         </a>
     </li>
     {{/if}}

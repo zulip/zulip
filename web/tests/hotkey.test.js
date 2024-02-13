@@ -81,6 +81,7 @@ const popovers = mock_esm("../src/user_card_popover", {
     },
 });
 const reactions = mock_esm("../src/reactions");
+const read_receipts = mock_esm("../src/read_receipts");
 const search = mock_esm("../src/search");
 const settings_data = mock_esm("../src/settings_data");
 const stream_list = mock_esm("../src/stream_list");
@@ -185,6 +186,7 @@ run_test("mappings", () => {
     assert.equal(map_down(46).name, "delete");
     assert.equal(map_down(13, true).name, "enter");
     assert.equal(map_down(78, true).name, "narrow_to_next_unread_followed_topic");
+    assert.equal(map_down(86, true).name, "toggle_read_receipts"); // Shift + V
 
     assert.equal(map_press(47).name, "search"); // slash
     assert.equal(map_press(106).name, "vim_down"); // j
@@ -363,7 +365,7 @@ run_test("modal open", ({override}) => {
 
 run_test("misc", ({override}) => {
     // Next, test keys that only work on a selected message.
-    const message_view_only_keys = "@+>RjJkKsuvi:GM";
+    const message_view_only_keys = "@+>RjJkKsuvVi:GM";
 
     // Check that they do nothing without a selected message
     with_overrides(({override}) => {
@@ -374,7 +376,7 @@ run_test("misc", ({override}) => {
     // Check that they do nothing while in the settings overlay
     with_overrides(({override}) => {
         override(overlays, "settings_open", () => true);
-        assert_unmapped("@*+->rRjJkKsSuvi:GM");
+        assert_unmapped("@*+->rRjJkKsSuvVi:GM");
     });
 
     // TODO: Similar check for being in the subs page
@@ -413,6 +415,12 @@ run_test("misc", ({override}) => {
 
     override(message_edit, "can_move_message", () => false);
     assert_unmapped("m");
+
+    assert_mapping("V", read_receipts, "show_user_list", true, true);
+
+    override(modals, "any_active", () => true);
+    override(modals, "active_modal", () => "#read_receipts_modal");
+    assert_mapping("V", read_receipts, "hide_user_list", true, true);
 });
 
 run_test("lightbox overlay open", ({override}) => {

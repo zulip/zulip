@@ -93,3 +93,7 @@ export function show_user_list(message_id: number): void {
         },
     });
 }
+
+export function hide_user_list(): void {
+    modals.close_if_open("read_receipts_modal");
+}

@@ -42,6 +42,7 @@ import * as playground_links_popover from "./playground_links_popover";
 import * as popover_menus from "./popover_menus";
 import * as popovers from "./popovers";
 import * as reactions from "./reactions";
+import * as read_receipts from "./read_receipts";
 import * as recent_view_ui from "./recent_view_ui";
 import * as recent_view_util from "./recent_view_util";
 import * as scheduled_messages_overlay_ui from "./scheduled_messages_overlay_ui";
@@ -92,6 +93,7 @@ const keydown_shift_mappings = {
     40: {name: "down_arrow", message_view_only: false}, // down arrow
     72: {name: "view_edit_history", message_view_only: true}, // 'H'
     78: {name: "narrow_to_next_unread_followed_topic", message_view_only: false}, // 'N'
+    86: {name: "toggle_read_receipts", message_view_only: true}, // 'V'
 };
 
 const keydown_unshift_mappings = {
@@ -715,8 +717,18 @@ export function process_hotkey(e, hotkey) {
         return emoji_picker.navigate(event_name);
     }
 
+    // modals.any_active() and modals.active_modal() both query the dom to
+    // find and retrieve any active modal. Thus, we limit the number of calls
+    // to the DOM by storing these values as constansts to be reused.
+    const is_any_modal_active = modals.any_active();
+    const active_modal = is_any_modal_active ? modals.active_modal() : null;
+
     // `list_util` will process the event in send later modal.
-    if (modals.any_active() && modals.active_modal() !== "#send_later_modal") {
+    if (is_any_modal_active && active_modal !== "#send_later_modal") {
+        if (event_name === "toggle_read_receipts" && active_modal === "#read_receipts_modal") {
+            read_receipts.hide_user_list();
+            return true;
+        }
         return false;
     }
 
@@ -890,7 +902,7 @@ export function process_hotkey(e, hotkey) {
     }
 
     // Prevent navigation in the background when the overlays are active.
-    if (overlays.any_active() || modals.any_active()) {
+    if (overlays.any_active() || is_any_modal_active) {
         if (event_name === "view_selected_stream" && overlays.streams_open()) {
             stream_settings_ui.view_stream();
             return true;
@@ -1144,6 +1156,10 @@ export function process_hotkey(e, hotkey) {
             }
 
             stream_popover.build_move_topic_to_stream_popover(msg.stream_id, msg.topic, false, msg);
+            return true;
+        }
+        case "toggle_read_receipts": {
+            read_receipts.show_user_list(msg.id);
             return true;
         }
         case "zoom_to_message_near": {
