@@ -63,6 +63,8 @@
         {% set plan_data = support_data[remote_realm.id].plan_data %}
         {% set format_discount = format_discount %}
         {% set dollar_amount = dollar_amount %}
+        {% set remote_id = remote_realm.id %}
+        {% set remote_type = "remote_realm_id" %}
         {% include 'corporate/support/next_plan_details.html' %}
     {% endwith %}
 </div>

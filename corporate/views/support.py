@@ -503,6 +503,7 @@ def remote_servers_support(
     modify_plan: Optional[str] = REQ(
         default=None, str_validator=check_string_in(VALID_MODIFY_PLAN_METHODS)
     ),
+    delete_fixed_price_next_plan: bool = REQ(default=False, json_validator=check_bool),
 ) -> HttpResponse:
     context: Dict[str, Any] = {}
 
@@ -572,6 +573,10 @@ def remote_servers_support(
             support_view_request = SupportViewRequest(
                 support_type=SupportType.modify_plan,
                 plan_modification=modify_plan,
+            )
+        elif delete_fixed_price_next_plan:
+            support_view_request = SupportViewRequest(
+                support_type=SupportType.delete_fixed_price_next_plan,
             )
         if support_view_request is not None:
             if remote_realm_support_request:
