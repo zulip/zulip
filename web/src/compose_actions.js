@@ -22,6 +22,7 @@ import * as reload_state from "./reload_state";
 import * as resize from "./resize";
 import * as settings_config from "./settings_config";
 import * as spectators from "./spectators";
+import {realm} from "./state_data";
 import * as stream_bar from "./stream_bar";
 import * as stream_data from "./stream_data";
 
@@ -446,7 +447,7 @@ export function on_narrow(opts) {
         // Do not open compose box if organization has disabled sending
         // direct messages and recipient is not a bot.
         if (
-            page_params.realm_private_message_policy ===
+            realm.realm_private_message_policy ===
                 settings_config.private_message_policy_values.disabled.code &&
             opts.private_message_recipient
         ) {

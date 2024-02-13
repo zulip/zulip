@@ -23,7 +23,7 @@ import * as reactions from "./reactions";
 import * as recent_senders from "./recent_senders";
 import * as settings_config from "./settings_config";
 import * as settings_data from "./settings_data";
-import {current_user} from "./state_data";
+import {current_user, realm} from "./state_data";
 import * as stream_data from "./stream_data";
 import * as sub_store from "./sub_store";
 import * as util from "./util";
@@ -159,7 +159,7 @@ export function warn_if_private_stream_is_linked(linked_stream, $textarea) {
     // we may not know their stream's subscribers.)
     if (
         peer_data.is_subscriber_subset(stream_id, linked_stream.stream_id) &&
-        !page_params.realm_is_zephyr_mirror_realm
+        !realm.realm_is_zephyr_mirror_realm
     ) {
         return;
     }
@@ -186,7 +186,7 @@ export function warn_if_private_stream_is_linked(linked_stream, $textarea) {
 
 export function warn_if_mentioning_unsubscribed_user(mentioned, $textarea) {
     // Disable for Zephyr mirroring realms, since we never have subscriber lists there
-    if (page_params.realm_is_zephyr_mirror_realm) {
+    if (realm.realm_is_zephyr_mirror_realm) {
         return;
     }
 
@@ -467,33 +467,33 @@ function is_recipient_large_topic() {
 
 function wildcard_mention_policy_authorizes_user() {
     if (
-        page_params.realm_wildcard_mention_policy ===
+        realm.realm_wildcard_mention_policy ===
         settings_config.wildcard_mention_policy_values.by_everyone.code
     ) {
         return true;
     }
     if (
-        page_params.realm_wildcard_mention_policy ===
+        realm.realm_wildcard_mention_policy ===
         settings_config.wildcard_mention_policy_values.nobody.code
     ) {
         return false;
     }
     if (
-        page_params.realm_wildcard_mention_policy ===
+        realm.realm_wildcard_mention_policy ===
         settings_config.wildcard_mention_policy_values.by_admins_only.code
     ) {
         return current_user.is_admin;
     }
 
     if (
-        page_params.realm_wildcard_mention_policy ===
+        realm.realm_wildcard_mention_policy ===
         settings_config.wildcard_mention_policy_values.by_moderators_only.code
     ) {
         return current_user.is_admin || current_user.is_moderator;
     }
 
     if (
-        page_params.realm_wildcard_mention_policy ===
+        realm.realm_wildcard_mention_policy ===
         settings_config.wildcard_mention_policy_values.by_full_members.code
     ) {
         if (current_user.is_admin) {
@@ -504,7 +504,7 @@ function wildcard_mention_policy_authorizes_user() {
         const person_date_joined = new Date(person.date_joined);
         const days = (current_datetime - person_date_joined) / 1000 / 86400;
 
-        return days >= page_params.realm_waiting_period_threshold && !current_user.is_guest;
+        return days >= realm.realm_waiting_period_threshold && !current_user.is_guest;
     }
     return !current_user.is_guest;
 }
@@ -623,7 +623,7 @@ function validate_stream_message(scheduling_message) {
         return false;
     }
 
-    if (page_params.realm_mandatory_topics) {
+    if (realm.realm_mandatory_topics) {
         const topic = compose_state.topic();
         // TODO: We plan to migrate the empty topic to only using the
         // `""` representation for i18n reasons, but have not yet done so.
@@ -680,7 +680,7 @@ function validate_private_message() {
     const $banner_container = $("#compose_banners");
 
     if (
-        page_params.realm_private_message_policy ===
+        realm.realm_private_message_policy ===
             settings_config.private_message_policy_values.disabled.code &&
         (user_ids.length !== 1 || !people.get_by_user_id(user_ids[0]).is_bot)
     ) {
@@ -702,7 +702,7 @@ function validate_private_message() {
             $("#private_message_recipient"),
         );
         return false;
-    } else if (page_params.realm_is_zephyr_mirror_realm) {
+    } else if (realm.realm_is_zephyr_mirror_realm) {
         // For Zephyr mirroring realms, the frontend doesn't know which users exist
         return true;
     }
@@ -752,7 +752,7 @@ export function check_overflow_text() {
     // compose box, so it's important that it not doing anything
     // expensive.
     const text = compose_state.message_content();
-    const max_length = page_params.max_message_length;
+    const max_length = realm.max_message_length;
     const $indicator = $("#compose-limit-indicator");
 
     if (text.length > max_length) {
@@ -799,7 +799,7 @@ export function check_overflow_text() {
 }
 
 export function validate_message_length() {
-    if (compose_state.message_content().length > page_params.max_message_length) {
+    if (compose_state.message_content().length > realm.max_message_length) {
         $("textarea#compose-textarea").addClass("flash");
         setTimeout(() => $("textarea#compose-textarea").removeClass("flash"), 1500);
         return false;

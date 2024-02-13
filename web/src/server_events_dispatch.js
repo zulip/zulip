@@ -33,7 +33,6 @@ import * as narrow_title from "./narrow_title";
 import * as navbar_alerts from "./navbar_alerts";
 import * as onboarding_steps from "./onboarding_steps";
 import * as overlays from "./overlays";
-import {page_params} from "./page_params";
 import * as peer_data from "./peer_data";
 import * as people from "./people";
 import * as pm_list from "./pm_list";
@@ -67,7 +66,7 @@ import * as settings_users from "./settings_users";
 import * as sidebar_ui from "./sidebar_ui";
 import * as starred_messages from "./starred_messages";
 import * as starred_messages_ui from "./starred_messages_ui";
-import {current_user} from "./state_data";
+import {current_user, realm} from "./state_data";
 import * as stream_data from "./stream_data";
 import * as stream_events from "./stream_events";
 import * as stream_list from "./stream_list";
@@ -100,8 +99,8 @@ export function dispatch_normal_event(event) {
             break;
 
         case "custom_profile_fields":
-            page_params.custom_profile_fields = event.fields;
-            settings_profile_fields.populate_profile_fields(page_params.custom_profile_fields);
+            realm.custom_profile_fields = event.fields;
+            settings_profile_fields.populate_profile_fields(realm.custom_profile_fields);
             settings_account.add_custom_profile_fields_to_settings();
             break;
 
@@ -250,7 +249,7 @@ export function dispatch_normal_event(event) {
             switch (event.op) {
                 case "update":
                     if (Object.hasOwn(realm_settings, event.property)) {
-                        page_params["realm_" + event.property] = event.value;
+                        realm["realm_" + event.property] = event.value;
                         realm_settings[event.property]();
                         settings_org.sync_realm_settings(event.property);
 
@@ -284,7 +283,7 @@ export function dispatch_normal_event(event) {
                     switch (event.property) {
                         case "default":
                             for (const [key, value] of Object.entries(event.data)) {
-                                page_params["realm_" + key] = value;
+                                realm["realm_" + key] = value;
                                 if (Object.hasOwn(realm_settings, key)) {
                                     settings_org.sync_realm_settings(key);
                                 }
@@ -306,8 +305,8 @@ export function dispatch_normal_event(event) {
                             }
                             break;
                         case "icon":
-                            page_params.realm_icon_url = event.data.icon_url;
-                            page_params.realm_icon_source = event.data.icon_source;
+                            realm.realm_icon_url = event.data.icon_url;
+                            realm.realm_icon_source = event.data.icon_source;
                             realm_icon.rerender();
                             {
                                 const electron_bridge = window.electron_bridge;
@@ -320,13 +319,13 @@ export function dispatch_normal_event(event) {
                             }
                             break;
                         case "logo":
-                            page_params.realm_logo_url = event.data.logo_url;
-                            page_params.realm_logo_source = event.data.logo_source;
+                            realm.realm_logo_url = event.data.logo_url;
+                            realm.realm_logo_source = event.data.logo_source;
                             realm_logo.render();
                             break;
                         case "night_logo":
-                            page_params.realm_night_logo_url = event.data.night_logo_url;
-                            page_params.realm_night_logo_source = event.data.night_logo_source;
+                            realm.realm_night_logo_url = event.data.night_logo_url;
+                            realm.realm_night_logo_source = event.data.night_logo_source;
                             realm_logo.render();
                             break;
                         default:
@@ -390,15 +389,15 @@ export function dispatch_normal_event(event) {
             break;
 
         case "realm_linkifiers":
-            page_params.realm_linkifiers = event.realm_linkifiers;
-            linkifiers.update_linkifier_rules(page_params.realm_linkifiers);
-            settings_linkifiers.populate_linkifiers(page_params.realm_linkifiers);
+            realm.realm_linkifiers = event.realm_linkifiers;
+            linkifiers.update_linkifier_rules(realm.realm_linkifiers);
+            settings_linkifiers.populate_linkifiers(realm.realm_linkifiers);
             break;
 
         case "realm_playgrounds":
-            page_params.realm_playgrounds = event.realm_playgrounds;
-            realm_playground.update_playgrounds(page_params.realm_playgrounds);
-            settings_playgrounds.populate_playgrounds(page_params.realm_playgrounds);
+            realm.realm_playgrounds = event.realm_playgrounds;
+            realm_playground.update_playgrounds(realm.realm_playgrounds);
+            settings_playgrounds.populate_playgrounds(realm.realm_playgrounds);
             break;
 
         case "realm_domains":
@@ -406,36 +405,30 @@ export function dispatch_normal_event(event) {
                 let i;
                 switch (event.op) {
                     case "add":
-                        page_params.realm_domains.push(event.realm_domain);
-                        settings_org.populate_realm_domains_label(page_params.realm_domains);
-                        settings_realm_domains.populate_realm_domains_table(
-                            page_params.realm_domains,
-                        );
+                        realm.realm_domains.push(event.realm_domain);
+                        settings_org.populate_realm_domains_label(realm.realm_domains);
+                        settings_realm_domains.populate_realm_domains_table(realm.realm_domains);
                         break;
                     case "change":
-                        for (i = 0; i < page_params.realm_domains.length; i += 1) {
-                            if (page_params.realm_domains[i].domain === event.realm_domain.domain) {
-                                page_params.realm_domains[i].allow_subdomains =
+                        for (i = 0; i < realm.realm_domains.length; i += 1) {
+                            if (realm.realm_domains[i].domain === event.realm_domain.domain) {
+                                realm.realm_domains[i].allow_subdomains =
                                     event.realm_domain.allow_subdomains;
                                 break;
                             }
                         }
-                        settings_org.populate_realm_domains_label(page_params.realm_domains);
-                        settings_realm_domains.populate_realm_domains_table(
-                            page_params.realm_domains,
-                        );
+                        settings_org.populate_realm_domains_label(realm.realm_domains);
+                        settings_realm_domains.populate_realm_domains_table(realm.realm_domains);
                         break;
                     case "remove":
-                        for (i = 0; i < page_params.realm_domains.length; i += 1) {
-                            if (page_params.realm_domains[i].domain === event.domain) {
-                                page_params.realm_domains.splice(i, 1);
+                        for (i = 0; i < realm.realm_domains.length; i += 1) {
+                            if (realm.realm_domains[i].domain === event.domain) {
+                                realm.realm_domains.splice(i, 1);
                                 break;
                             }
                         }
-                        settings_org.populate_realm_domains_label(page_params.realm_domains);
-                        settings_realm_domains.populate_realm_domains_table(
-                            page_params.realm_domains,
-                        );
+                        settings_org.populate_realm_domains_label(realm.realm_domains);
+                        settings_realm_domains.populate_realm_domains_table(realm.realm_domains);
                         break;
                     default:
                         blueslip.error("Unexpected event type realm_domains/" + event.op);
@@ -562,12 +555,12 @@ export function dispatch_normal_event(event) {
                         }
                         settings_streams.update_default_streams_table();
                         stream_data.remove_default_stream(stream.stream_id);
-                        if (page_params.realm_notifications_stream_id === stream.stream_id) {
-                            page_params.realm_notifications_stream_id = -1;
+                        if (realm.realm_notifications_stream_id === stream.stream_id) {
+                            realm.realm_notifications_stream_id = -1;
                             settings_org.sync_realm_settings("notifications_stream_id");
                         }
-                        if (page_params.realm_signup_notifications_stream_id === stream.stream_id) {
-                            page_params.realm_signup_notifications_stream_id = -1;
+                        if (realm.realm_signup_notifications_stream_id === stream.stream_id) {
+                            realm.realm_signup_notifications_stream_id = -1;
                             settings_org.sync_realm_settings("signup_notifications_stream_id");
                         }
                     }

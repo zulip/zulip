@@ -7,8 +7,8 @@ import * as blueslip from "./blueslip";
 import * as channel from "./channel";
 import * as compose_pm_pill from "./compose_pm_pill";
 import * as compose_state from "./compose_state";
-import {page_params} from "./page_params";
 import * as people from "./people";
+import {realm} from "./state_data";
 import * as stream_data from "./stream_data";
 import {user_settings} from "./user_settings";
 
@@ -145,8 +145,8 @@ export function initialize(): void {
         typing_status.update(
             worker,
             new_recipient,
-            page_params.server_typing_started_wait_period_milliseconds,
-            page_params.server_typing_stopped_wait_period_milliseconds,
+            realm.server_typing_started_wait_period_milliseconds,
+            realm.server_typing_stopped_wait_period_milliseconds,
         );
     });
 
@@ -156,8 +156,8 @@ export function initialize(): void {
         typing_status.update(
             worker,
             null,
-            page_params.server_typing_started_wait_period_milliseconds,
-            page_params.server_typing_stopped_wait_period_milliseconds,
+            realm.server_typing_started_wait_period_milliseconds,
+            realm.server_typing_stopped_wait_period_milliseconds,
         );
     });
 }

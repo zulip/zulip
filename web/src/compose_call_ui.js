@@ -5,9 +5,8 @@ import * as compose_call from "./compose_call";
 import {get_recipient_label} from "./compose_closed_ui";
 import * as compose_ui from "./compose_ui";
 import {$t, $t_html} from "./i18n";
-import {page_params} from "./page_params";
 import * as rows from "./rows";
-import {current_user} from "./state_data";
+import {current_user, realm} from "./state_data";
 import * as ui_report from "./ui_report";
 import * as util from "./util";
 
@@ -46,11 +45,11 @@ export function generate_and_insert_audio_or_video_call_link($target_element, is
         $target_textarea = $(`#edit_form_${CSS.escape(edit_message_id)} .message_edit_content`);
     }
 
-    const available_providers = page_params.realm_available_video_chat_providers;
+    const available_providers = realm.realm_available_video_chat_providers;
 
     if (
         available_providers.zoom &&
-        page_params.realm_video_chat_provider === available_providers.zoom.id
+        realm.realm_video_chat_provider === available_providers.zoom.id
     ) {
         compose_call.abort_video_callbacks(edit_message_id);
         const key = edit_message_id || "";
@@ -104,7 +103,7 @@ export function generate_and_insert_audio_or_video_call_link($target_element, is
         }
     } else if (
         available_providers.big_blue_button &&
-        page_params.realm_video_chat_provider === available_providers.big_blue_button.id
+        realm.realm_video_chat_provider === available_providers.big_blue_button.id
     ) {
         if (is_audio_call) {
             // TODO: Add support for audio-only BigBlueButton calls here.

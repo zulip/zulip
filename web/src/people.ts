@@ -13,7 +13,7 @@ import {page_params} from "./page_params";
 import * as reload_state from "./reload_state";
 import * as settings_config from "./settings_config";
 import * as settings_data from "./settings_data";
-import {current_user} from "./state_data";
+import {current_user, realm} from "./state_data";
 import * as timerender from "./timerender";
 import {user_settings} from "./user_settings";
 import * as util from "./util";
@@ -792,7 +792,7 @@ export function is_valid_bot_user(user_id: number): boolean {
 }
 
 export function should_add_guest_user_indicator(user_id: number): boolean {
-    if (!page_params.realm_enable_guest_user_indicator) {
+    if (!realm.realm_enable_guest_user_indicator) {
         return false;
     }
 
@@ -812,7 +812,7 @@ export function user_can_direct_message(recipient_ids_string: string): boolean {
     }
 
     if (
-        page_params.realm_private_message_policy ===
+        realm.realm_private_message_policy ===
         settings_config.private_message_policy_values.disabled.code
     ) {
         return false;
@@ -1439,7 +1439,7 @@ export function remove_inaccessible_user(user_id: number): void {
     active_user_dict.delete(user_id);
 
     // Create unknown user object for the inaccessible user.
-    const email = "user" + user_id + "@" + page_params.realm_bot_domain;
+    const email = "user" + user_id + "@" + realm.realm_bot_domain;
     const unknown_user = make_user(user_id, email, INACCESSIBLE_USER_NAME);
     _add_user(unknown_user);
 }
@@ -1506,7 +1506,7 @@ export function make_user(user_id: number, email: string, full_name: string): Us
 }
 
 export function add_inaccessible_user(user_id: number): User {
-    const email = "user" + user_id + "@" + page_params.realm_bot_domain;
+    const email = "user" + user_id + "@" + realm.realm_bot_domain;
     const unknown_user = make_user(user_id, email, INACCESSIBLE_USER_NAME);
     _add_user(unknown_user);
     return unknown_user;
@@ -1710,7 +1710,7 @@ export function get_custom_fields_by_type(
         return null;
     }
     const filteredProfileData: ProfileData[] = [];
-    for (const field of page_params.custom_profile_fields) {
+    for (const field of realm.custom_profile_fields) {
         if (field.type === field_type) {
             filteredProfileData.push(profile_data[field.id]);
         }

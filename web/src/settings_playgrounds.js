@@ -8,10 +8,9 @@ import * as confirm_dialog from "./confirm_dialog";
 import * as dialog_widget from "./dialog_widget";
 import {$t_html} from "./i18n";
 import * as ListWidget from "./list_widget";
-import {page_params} from "./page_params";
 import * as realm_playground from "./realm_playground";
 import * as scroll_util from "./scroll_util";
-import {current_user} from "./state_data";
+import {current_user, realm} from "./state_data";
 import {render_typeahead_item} from "./typeahead_helper";
 import * as ui_report from "./ui_report";
 
@@ -81,7 +80,7 @@ export function set_up() {
 
 function build_page() {
     meta.loaded = true;
-    populate_playgrounds(page_params.realm_playgrounds);
+    populate_playgrounds(realm.realm_playgrounds);
 
     $(".admin_playgrounds_table").on("click", ".delete", function (e) {
         e.preventDefault();

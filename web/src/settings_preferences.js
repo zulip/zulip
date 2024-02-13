@@ -13,6 +13,7 @@ import * as overlays from "./overlays";
 import {page_params} from "./page_params";
 import * as settings_components from "./settings_components";
 import * as settings_ui from "./settings_ui";
+import {realm} from "./state_data";
 import * as ui_report from "./ui_report";
 import {user_settings} from "./user_settings";
 
@@ -132,7 +133,7 @@ export function launch_default_language_setting_modal() {
     let selected_language = user_settings.default_language;
 
     if (hash_parser.get_current_hash_category() === "organization") {
-        selected_language = page_params.realm_default_language;
+        selected_language = realm.realm_default_language;
     }
 
     const html_body = render_dialog_default_language({

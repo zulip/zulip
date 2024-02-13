@@ -10,10 +10,9 @@ import * as confirm_dialog from "./confirm_dialog";
 import * as dialog_widget from "./dialog_widget";
 import {$t_html} from "./i18n";
 import * as ListWidget from "./list_widget";
-import {page_params} from "./page_params";
 import * as scroll_util from "./scroll_util";
 import * as settings_ui from "./settings_ui";
-import {current_user} from "./state_data";
+import {current_user, realm} from "./state_data";
 import * as ui_report from "./ui_report";
 
 const meta = {
@@ -31,7 +30,7 @@ export function maybe_disable_widgets() {
 }
 
 function open_linkifier_edit_form(linkifier_id) {
-    const linkifiers_list = page_params.realm_linkifiers;
+    const linkifiers_list = realm.realm_linkifiers;
     const linkifier = linkifiers_list.find((linkifier) => linkifier.id === linkifier_id);
     const html_body = render_admin_linkifier_edit_form({
         linkifier_id,
@@ -180,7 +179,7 @@ export function build_page() {
     meta.loaded = true;
 
     // Populate linkifiers table
-    populate_linkifiers(page_params.realm_linkifiers);
+    populate_linkifiers(realm.realm_linkifiers);
 
     $(".admin_linkifiers_table").on("click", ".delete", function (e) {
         e.preventDefault();

@@ -11,6 +11,7 @@ import * as message_store from "./message_store";
 import type {Message} from "./message_store";
 import {page_params} from "./page_params";
 import * as people from "./people";
+import {realm} from "./state_data";
 import * as stream_data from "./stream_data";
 import type {StreamSubscription} from "./sub_store";
 import * as unread from "./unread";
@@ -176,7 +177,7 @@ function message_matches_search_term(message: Message, operator: string, operand
             }
 
             operand = operand.toLowerCase();
-            if (page_params.realm_is_zephyr_mirror_realm) {
+            if (realm.realm_is_zephyr_mirror_realm) {
                 return zephyr_stream_name_match(message, operand);
             }
 
@@ -192,7 +193,7 @@ function message_matches_search_term(message: Message, operator: string, operand
             }
 
             operand = operand.toLowerCase();
-            if (page_params.realm_is_zephyr_mirror_realm) {
+            if (realm.realm_is_zephyr_mirror_realm) {
                 return zephyr_topic_name_match(message, operand);
             }
             return message.topic.toLowerCase() === operand;
