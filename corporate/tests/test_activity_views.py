@@ -169,6 +169,11 @@ class ActivityTest(ZulipTestCase):
             hostname="demo.example.com",
             contact_email="email@example.com",
         )
+        RemoteZulipServerAuditLog.objects.create(
+            event_type=RemoteZulipServerAuditLog.REMOTE_SERVER_CREATED,
+            server=server,
+            event_time=server.last_updated,
+        )
         extra_data = {
             RemoteRealmAuditLog.ROLE_COUNT: {
                 RemoteRealmAuditLog.ROLE_COUNT_HUMANS: {
