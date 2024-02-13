@@ -26,9 +26,10 @@ export function password_quality(
 ): boolean {
     const min_length = $password_field.data("minLength");
     const min_guesses = $password_field.data("minGuesses");
+    const max_length = $password_field.data("maxLength");
 
     const result = zxcvbn(password);
-    const acceptable = password.length >= min_length && result.guesses >= min_guesses;
+    const acceptable = password.length >= min_length && result.guesses >= min_guesses && password.length <= max_length;
 
     if ($bar !== undefined) {
         const t = result.crackTimesSeconds.offlineSlowHashing1e4PerSecond;
@@ -53,7 +54,7 @@ export function password_quality(
 export function password_warning(password: string, $password_field: JQuery): string {
     const min_length = $password_field.data("minLength");
     const max_length = $password_field.data("maxLength");
-
+    console.log("min-lenghth ->",min_length)
     if (password.length < min_length) {
         return $t(
             {defaultMessage: "Password should be at least {length} characters long"},
@@ -61,7 +62,7 @@ export function password_warning(password: string, $password_field: JQuery): str
         );
     }
 
-    if (password.length < max_length) {
+    if (password.length > max_length) {
         return $t(
             {defaultMessage: "Password should be atmost {length} characters long"},
             {length: max_length},

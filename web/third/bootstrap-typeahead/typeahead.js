@@ -301,7 +301,7 @@ import {get_string_diff} from "../../src/util";
       this.query = this.$element.is("[contenteditable]") ? this.$element.text() :  this.$element.val();
 
       if (!this.options.helpOnEmptyStrings || hideOnEmpty) {
-        if (!this.query || this.query.length < this.options.minLength) {
+        if (!this.query || this.query.length < this.options.minLength || this.query.length > this.options.maxLength) {
           return this.shown ? this.hide() : this
         }
       }
@@ -638,6 +638,7 @@ import {get_string_diff} from "../../src/util";
   , menu: '<ul class="typeahead-menu"></ul>'
   , item: '<li><a></a></li>'
   , minLength: 1
+  , maxLength: 100
   , stopAdvance: false
   , dropup: false
   , advanceKeyCodes: []
