@@ -15,6 +15,7 @@ from corporate.lib.activity import (
     dictfetchall,
     estimate_annual_recurring_revenue_by_realm,
     fix_rows,
+    format_datetime_as_date,
     format_optional_datetime,
     get_query_data,
     get_realms_with_default_discount_dict,
@@ -183,7 +184,7 @@ def realm_summary_table() -> str:
     cursor.close()
 
     for row in rows:
-        row["date_created_day"] = row["date_created"].strftime("%Y-%m-%d")
+        row["date_created_day"] = format_datetime_as_date(row["date_created"])
         row["age_days"] = int((now - row["date_created"]).total_seconds() / 86400)
         row["is_new"] = row["age_days"] < 12 * 7
 
