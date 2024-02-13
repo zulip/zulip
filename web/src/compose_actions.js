@@ -52,7 +52,7 @@ function hide_box() {
     blur_compose_inputs();
     $("#compose_recipient_box").hide();
     $("#compose-direct-recipient").hide();
-    $(".new_message_textarea").css("min-height", "");
+    $(".new_message_textarea").css({minHeight: ""});
     compose_fade.clear_compose();
     $(".message_comp").hide();
     $("#compose_controls").show();
@@ -62,7 +62,7 @@ function show_compose_box(msg_type, opts) {
     compose_recipient.update_compose_for_message_type(msg_type, opts);
     $("#compose").css({visibility: "visible"});
     // When changing this, edit the 42px in _maybe_autoscroll
-    $(".new_message_textarea").css("min-height", "3em");
+    $(".new_message_textarea").css({minHeight: "3em"});
     compose_ui.set_focus(msg_type, opts);
 }
 
