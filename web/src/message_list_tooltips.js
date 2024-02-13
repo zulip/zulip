@@ -8,9 +8,9 @@ import render_narrow_tooltip from "../templates/narrow_tooltip.hbs";
 
 import {$t} from "./i18n";
 import * as message_lists from "./message_lists";
-import {page_params} from "./page_params";
 import * as reactions from "./reactions";
 import * as rows from "./rows";
+import {realm} from "./state_data";
 import * as timerender from "./timerender";
 import {INTERACTIVE_HOVER_DELAY, LONG_HOVER_DELAY} from "./tippyjs";
 import {parse_html} from "./ui_util";
@@ -306,7 +306,7 @@ export function initialize() {
                 parse_html(
                     render_message_edit_notice_tooltip({
                         edited_notice_str,
-                        realm_allow_edit_history: page_params.realm_allow_edit_history,
+                        realm_allow_edit_history: realm.realm_allow_edit_history,
                     }),
                 ),
             );

@@ -12,6 +12,7 @@ import {page_params} from "./page_params";
 import * as settings_components from "./settings_components";
 import * as settings_config from "./settings_config";
 import * as settings_ui from "./settings_ui";
+import {realm} from "./state_data";
 import * as stream_data from "./stream_data";
 import * as stream_settings_api from "./stream_settings_api";
 import * as stream_settings_data from "./stream_settings_data";
@@ -95,7 +96,7 @@ export function set_notification_batching_ui($container, setting_seconds, force_
 }
 
 export function set_enable_digest_emails_visibility($container, for_realm_settings) {
-    if (page_params.realm_digest_emails_enabled) {
+    if (realm.realm_digest_emails_enabled) {
         if (for_realm_settings) {
             $container.find(".other_email_notifications").show();
             return;
@@ -300,7 +301,7 @@ export function update_page(settings_panel) {
     for (const setting of settings_config.all_notification_settings) {
         switch (setting) {
             case "enable_offline_push_notifications": {
-                if (!page_params.realm_push_notifications_enabled) {
+                if (!realm.realm_push_notifications_enabled) {
                     // If push notifications are disabled at the realm level,
                     // we should just leave the checkbox always off.
                     break;
@@ -350,7 +351,7 @@ export function update_muted_stream_state(sub) {
     }
     $row.find('[name="push_notifications"]').prop(
         "disabled",
-        !page_params.realm_push_notifications_enabled,
+        !realm.realm_push_notifications_enabled,
     );
 }
 

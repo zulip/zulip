@@ -21,7 +21,7 @@ import {page_params} from "./page_params";
 import * as scroll_util from "./scroll_util";
 import * as settings_config from "./settings_config";
 import * as settings_data from "./settings_data";
-import {current_user} from "./state_data";
+import {current_user, realm} from "./state_data";
 import * as stream_data from "./stream_data";
 import * as timerender from "./timerender";
 import * as ui_report from "./ui_report";
@@ -294,7 +294,7 @@ function set_streams_to_join_list_visibility(): void {
 }
 
 function generate_invite_tips_data(): Record<string, boolean> {
-    const {realm_description, realm_icon_source, custom_profile_fields} = page_params;
+    const {realm_description, realm_icon_source, custom_profile_fields} = realm;
 
     return {
         realm_has_description:

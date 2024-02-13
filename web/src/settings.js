@@ -19,7 +19,7 @@ import * as settings_panel_menu from "./settings_panel_menu";
 import * as settings_preferences from "./settings_preferences";
 import * as settings_sections from "./settings_sections";
 import * as settings_toggle from "./settings_toggle";
-import {current_user} from "./state_data";
+import {current_user, realm} from "./state_data";
 import * as timerender from "./timerender";
 import {user_settings} from "./user_settings";
 
@@ -78,7 +78,7 @@ function user_can_change_password() {
     if (settings_data.user_email_not_configured()) {
         return false;
     }
-    return page_params.realm_email_auth_enabled;
+    return realm.realm_email_auth_enabled;
 }
 
 export function update_lock_icon_in_sidebar() {
@@ -111,6 +111,7 @@ export function build_page() {
         date_joined_text: get_parsed_date_of_joining(),
         current_user,
         page_params,
+        realm,
         enable_sound_select:
             user_settings.enable_sounds || user_settings.enable_stream_audible_notifications,
         zuliprc: "zuliprc",
@@ -143,7 +144,7 @@ export function build_page() {
         user_role_text: people.get_user_type(current_user.user_id),
         default_language_name: settings_preferences.user_default_language_name,
         default_language: user_settings.default_language,
-        realm_push_notifications_enabled: page_params.realm_push_notifications_enabled,
+        realm_push_notifications_enabled: realm.realm_push_notifications_enabled,
         settings_object: user_settings,
         send_read_receipts_tooltip: $t({
             defaultMessage: "Read receipts are currently disabled in this organization.",
@@ -187,7 +188,7 @@ export function initialize() {
         is_owner: current_user.is_owner,
         is_admin: current_user.is_admin,
         is_guest: current_user.is_guest,
-        show_uploaded_files_section: page_params.max_file_upload_size_mib > 0,
+        show_uploaded_files_section: realm.max_file_upload_size_mib > 0,
         show_emoji_settings_lock: !settings_data.user_can_add_custom_emoji(),
         can_create_new_bots: settings_bots.can_create_new_bots(),
     });

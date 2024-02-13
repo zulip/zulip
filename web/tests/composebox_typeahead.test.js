@@ -7,7 +7,7 @@ const {mock_banners} = require("./lib/compose_banner");
 const {mock_esm, set_global, with_overrides, zrequire} = require("./lib/namespace");
 const {run_test, noop} = require("./lib/test");
 const $ = require("./lib/zjquery");
-const {current_user, page_params, user_settings} = require("./lib/zpage_params");
+const {current_user, realm, user_settings} = require("./lib/zpage_params");
 
 let autosize_called;
 
@@ -739,7 +739,7 @@ test("initialize", ({override, override_rewire, mock_template}) => {
     });
 
     let expected_value;
-    page_params.custom_profile_field_types = {
+    realm.custom_profile_field_types = {
         PRONOUNS: {id: 8, name: "Pronouns"},
     };
 

@@ -98,6 +98,7 @@ run_test("tr_tag", ({mock_template}) => {
             delivery_email: "john@zulip.com",
         },
         page_params: {},
+        realm: {},
         settings_object: {},
         settings_label: {
             desktop_icon_count_display:

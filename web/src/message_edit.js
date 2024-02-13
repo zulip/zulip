@@ -32,12 +32,11 @@ import * as message_lists from "./message_lists";
 import * as message_live_update from "./message_live_update";
 import * as message_store from "./message_store";
 import * as message_viewport from "./message_viewport";
-import {page_params} from "./page_params";
 import * as people from "./people";
 import * as resize from "./resize";
 import * as rows from "./rows";
 import * as settings_data from "./settings_data";
-import {current_user} from "./state_data";
+import {current_user, realm} from "./state_data";
 import * as stream_data from "./stream_data";
 import * as timerender from "./timerender";
 import * as ui_report from "./ui_report";
@@ -75,14 +74,14 @@ export function is_topic_editable(message, edit_limit_seconds_buffer = 0) {
         return true;
     }
 
-    if (page_params.realm_move_messages_within_stream_limit_seconds === null) {
+    if (realm.realm_move_messages_within_stream_limit_seconds === null) {
         // This means no time limit for editing topics.
         return true;
     }
 
     // If you're using community topic editing, there's a deadline.
     return (
-        page_params.realm_move_messages_within_stream_limit_seconds +
+        realm.realm_move_messages_within_stream_limit_seconds +
             edit_limit_seconds_buffer +
             (message.timestamp - Date.now() / 1000) >
         0
@@ -129,7 +128,7 @@ export function is_content_editable(message, edit_limit_seconds_buffer = 0) {
         return false;
     }
 
-    if (!page_params.realm_allow_message_editing) {
+    if (!realm.realm_allow_message_editing) {
         return false;
     }
 
@@ -141,12 +140,12 @@ export function is_content_editable(message, edit_limit_seconds_buffer = 0) {
         return false;
     }
 
-    if (page_params.realm_message_content_edit_limit_seconds === null) {
+    if (realm.realm_message_content_edit_limit_seconds === null) {
         return true;
     }
 
     if (
-        page_params.realm_message_content_edit_limit_seconds +
+        realm.realm_message_content_edit_limit_seconds +
             edit_limit_seconds_buffer +
             (message.timestamp - Date.now() / 1000) >
         0
@@ -182,14 +181,13 @@ export function get_deletability(message) {
         return false;
     }
 
-    if (page_params.realm_message_content_delete_limit_seconds === null) {
+    if (realm.realm_message_content_delete_limit_seconds === null) {
         // This means no time limit for message deletion.
         return true;
     }
 
     if (
-        page_params.realm_message_content_delete_limit_seconds +
-            (message.timestamp - Date.now() / 1000) >
+        realm.realm_message_content_delete_limit_seconds + (message.timestamp - Date.now() / 1000) >
         0
     ) {
         return true;
@@ -217,13 +215,13 @@ export function is_stream_editable(message, edit_limit_seconds_buffer = 0) {
         return true;
     }
 
-    if (page_params.realm_move_messages_between_streams_limit_seconds === null) {
+    if (realm.realm_move_messages_between_streams_limit_seconds === null) {
         // This means no time limit for editing streams.
         return true;
     }
 
     return (
-        page_params.realm_move_messages_between_streams_limit_seconds +
+        realm.realm_move_messages_between_streams_limit_seconds +
             edit_limit_seconds_buffer +
             (message.timestamp - Date.now() / 1000) >
         0
@@ -445,7 +443,7 @@ function edit_message($row, raw_content) {
     // If you change this number also change edit_limit_buffer in
     // zerver.actions.message_edit.check_update_message
     const seconds_left_buffer = 5;
-    const max_file_upload_size = page_params.max_file_upload_size_mib;
+    const max_file_upload_size = realm.max_file_upload_size_mib;
     let file_upload_enabled = false;
 
     if (max_file_upload_size > 0) {
@@ -461,8 +459,8 @@ function edit_message($row, raw_content) {
             content: raw_content,
             file_upload_enabled,
             giphy_enabled: giphy.is_giphy_enabled(),
-            minutes_to_edit: Math.floor(page_params.realm_message_content_edit_limit_seconds / 60),
-            max_message_length: page_params.max_message_length,
+            minutes_to_edit: Math.floor(realm.realm_message_content_edit_limit_seconds / 60),
+            max_message_length: realm.max_message_length,
         }),
     );
 
@@ -505,7 +503,7 @@ function edit_message($row, raw_content) {
     }
 
     // Add tooltip and timer
-    if (is_editable && page_params.realm_message_content_edit_limit_seconds > 0) {
+    if (is_editable && realm.realm_message_content_edit_limit_seconds > 0) {
         $row.find(".message-edit-timer").show();
 
         // Give them at least 10 seconds.
@@ -513,7 +511,7 @@ function edit_message($row, raw_content) {
         // zerver.actions.message_edit.check_update_message
         const min_seconds_to_edit = 10;
         let seconds_left =
-            page_params.realm_message_content_edit_limit_seconds +
+            realm.realm_message_content_edit_limit_seconds +
             (message.timestamp - Date.now() / 1000);
         seconds_left = Math.floor(Math.max(seconds_left, min_seconds_to_edit));
 
@@ -676,7 +674,7 @@ function get_resolve_topic_time_limit_error_string(time_limit, time_limit_unit, 
 
 function handle_resolve_topic_failure_due_to_time_limit(topic_is_resolved) {
     const time_limit_for_resolving_topic = timerender.get_time_limit_setting_in_appropriate_unit(
-        page_params.realm_move_messages_within_stream_limit_seconds,
+        realm.realm_move_messages_within_stream_limit_seconds,
     );
     const resolve_topic_time_limit_error_string = get_resolve_topic_time_limit_error_string(
         time_limit_for_resolving_topic.value,
@@ -761,7 +759,7 @@ export function toggle_resolve_topic(
 export function start_inline_topic_edit($recipient_row) {
     const $form = $(
         render_topic_edit_form({
-            max_topic_length: page_params.max_topic_length,
+            max_topic_length: realm.max_topic_length,
         }),
     );
     message_lists.current.show_edit_topic_on_recipient_row($recipient_row, $form);

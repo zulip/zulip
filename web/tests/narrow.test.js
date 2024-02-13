@@ -6,7 +6,7 @@ const {mock_esm, zrequire} = require("./lib/namespace");
 const {run_test} = require("./lib/test");
 const blueslip = require("./lib/zblueslip");
 const $ = require("./lib/zjquery");
-const {page_params} = require("./lib/zpage_params");
+const {page_params, realm} = require("./lib/zpage_params");
 
 const hash_util = zrequire("hash_util");
 const compose_state = zrequire("compose_state");
@@ -199,7 +199,7 @@ run_test("urls", () => {
 });
 
 run_test("show_empty_narrow_message", ({mock_template}) => {
-    page_params.stop_words = [];
+    realm.stop_words = [];
 
     mock_template("empty_feed_notice.hbs", true, (_data, html) => html);
 
@@ -292,7 +292,7 @@ run_test("show_empty_narrow_message", ({mock_template}) => {
     );
 
     // organization has disabled sending direct messages
-    page_params.realm_private_message_policy =
+    realm.realm_private_message_policy =
         settings_config.private_message_policy_values.disabled.code;
     set_filter([["is", "dm"]]);
     narrow_banner.show_empty_narrow_message();
@@ -304,7 +304,7 @@ run_test("show_empty_narrow_message", ({mock_template}) => {
     );
 
     // sending direct messages enabled
-    page_params.realm_private_message_policy =
+    realm.realm_private_message_policy =
         settings_config.private_message_policy_values.by_anyone.code;
     set_filter([["is", "dm"]]);
     narrow_banner.show_empty_narrow_message();
@@ -331,7 +331,7 @@ run_test("show_empty_narrow_message", ({mock_template}) => {
     );
 
     // organization has disabled sending direct messages
-    page_params.realm_private_message_policy =
+    realm.realm_private_message_policy =
         settings_config.private_message_policy_values.disabled.code;
 
     // prioritize information about invalid user(s) in narrow/search
@@ -384,7 +384,7 @@ run_test("show_empty_narrow_message", ({mock_template}) => {
     );
 
     // sending direct messages enabled
-    page_params.realm_private_message_policy =
+    realm.realm_private_message_policy =
         settings_config.private_message_policy_values.by_anyone.code;
     set_filter([["dm", "alice@example.com"]]);
     narrow_banner.show_empty_narrow_message();
@@ -419,7 +419,7 @@ run_test("show_empty_narrow_message", ({mock_template}) => {
     );
 
     // organization has disabled sending direct messages
-    page_params.realm_private_message_policy =
+    realm.realm_private_message_policy =
         settings_config.private_message_policy_values.disabled.code;
 
     // prioritize information about invalid user in narrow/search
@@ -449,7 +449,7 @@ run_test("show_empty_narrow_message", ({mock_template}) => {
     );
 
     // sending direct messages enabled
-    page_params.realm_private_message_policy =
+    realm.realm_private_message_policy =
         settings_config.private_message_policy_values.by_anyone.code;
     set_filter([["dm-including", "alice@example.com"]]);
     narrow_banner.show_empty_narrow_message();
@@ -525,7 +525,7 @@ run_test("show_empty_narrow_message", ({mock_template}) => {
 });
 
 run_test("show_empty_narrow_message_with_search", ({mock_template}) => {
-    page_params.stop_words = [];
+    realm.stop_words = [];
 
     mock_template("empty_feed_notice.hbs", true, (_data, html) => html);
 
@@ -541,7 +541,7 @@ run_test("hide_empty_narrow_message", () => {
 });
 
 run_test("show_search_stopwords", ({mock_template}) => {
-    page_params.stop_words = ["what", "about"];
+    realm.stop_words = ["what", "about"];
 
     mock_template("empty_feed_notice.hbs", true, (_data, html) => html);
 

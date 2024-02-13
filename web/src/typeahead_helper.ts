@@ -6,12 +6,12 @@ import render_typeahead_list_item from "../templates/typeahead_list_item.hbs";
 
 import * as buddy_data from "./buddy_data";
 import * as compose_state from "./compose_state";
-import {page_params} from "./page_params";
 import * as people from "./people";
 import type {PseudoMentionUser, User} from "./people";
 import * as pm_conversations from "./pm_conversations";
 import * as pygments_data from "./pygments_data";
 import * as recent_senders from "./recent_senders";
+import {realm} from "./state_data";
 import * as stream_data from "./stream_data";
 import * as stream_list_sort from "./stream_list_sort";
 import type {StreamSubscription} from "./sub_store";
@@ -121,7 +121,7 @@ export function render_person(person: UserOrMention): string {
 
     const status_emoji_info = user_status.get_status_emoji(person.user_id);
 
-    const PRONOUNS_ID = page_params.custom_profile_field_types.PRONOUNS.id;
+    const PRONOUNS_ID = realm.custom_profile_field_types.PRONOUNS.id;
     const pronouns_list = people.get_custom_fields_by_type(person.user_id, PRONOUNS_ID);
 
     const pronouns = pronouns_list?.[0]?.value;

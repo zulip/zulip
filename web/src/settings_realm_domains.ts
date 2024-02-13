@@ -6,7 +6,7 @@ import render_realm_domains_modal from "../templates/settings/realm_domains_moda
 import * as channel from "./channel";
 import * as dialog_widget from "./dialog_widget";
 import {$t_html} from "./i18n";
-import {page_params} from "./page_params";
+import {realm} from "./state_data";
 import * as ui_report from "./ui_report";
 
 type RealmDomain = {
@@ -155,7 +155,7 @@ export function show_realm_domains_modal(): void {
         single_footer_button: true,
         post_render() {
             setup_realm_domains_modal_handlers();
-            populate_realm_domains_table(page_params.realm_domains);
+            populate_realm_domains_table(realm.realm_domains);
         },
     });
 }

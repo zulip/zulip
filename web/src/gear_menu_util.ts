@@ -1,11 +1,11 @@
 import {$t} from "./i18n";
-import {page_params} from "./page_params";
+import {realm} from "./state_data";
 
 export function version_display_string(): string {
-    const version = page_params.zulip_version;
-    const is_fork = page_params.zulip_merge_base && page_params.zulip_merge_base !== version;
+    const version = realm.zulip_version;
+    const is_fork = realm.zulip_merge_base && realm.zulip_merge_base !== version;
 
-    if (page_params.zulip_version.endsWith("-dev+git")) {
+    if (realm.zulip_version.endsWith("-dev+git")) {
         // The development environment uses this version string format.
         return $t({defaultMessage: "Zulip Server dev environment"});
     }
@@ -13,7 +13,7 @@ export function version_display_string(): string {
     if (is_fork) {
         // For forks, we want to describe the Zulip version this was
         // forked from, and that it was modified.
-        const display_version = page_params.zulip_merge_base
+        const display_version = realm.zulip_merge_base
             .replace(/\+git.*/, "")
             .replace(/(-beta\d+).*/, "$1")
             .replace(/-dev.*/, "-dev");

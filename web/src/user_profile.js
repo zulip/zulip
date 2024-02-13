@@ -25,13 +25,12 @@ import * as integration_url_modal from "./integration_url_modal";
 import * as ListWidget from "./list_widget";
 import * as loading from "./loading";
 import * as modals from "./modals";
-import {page_params} from "./page_params";
 import * as peer_data from "./peer_data";
 import * as people from "./people";
 import * as settings_config from "./settings_config";
 import * as settings_data from "./settings_data";
 import * as settings_profile_fields from "./settings_profile_fields";
-import {current_user} from "./state_data";
+import {current_user, realm} from "./state_data";
 import * as stream_data from "./stream_data";
 import * as stream_ui_updates from "./stream_ui_updates";
 import * as sub_store from "./sub_store";
@@ -345,8 +344,8 @@ function initialize_user_type_fields(user) {
 }
 
 export function show_user_profile(user, default_tab_key = "profile-tab") {
-    const field_types = page_params.custom_profile_field_types;
-    const profile_data = page_params.custom_profile_fields
+    const field_types = realm.custom_profile_field_types;
+    const profile_data = realm.custom_profile_fields
         .map((f) => get_custom_profile_field_data(user, f, field_types))
         .filter((f) => f.name !== undefined);
     const user_streams = stream_data.get_streams_for_user(user.user_id).subscribed;

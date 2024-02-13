@@ -4,9 +4,9 @@ import * as favicon from "./favicon";
 import type {Filter} from "./filter";
 import {$t} from "./i18n";
 import * as inbox_util from "./inbox_util";
-import {page_params} from "./page_params";
 import * as people from "./people";
 import * as recent_view_util from "./recent_view_util";
+import {realm} from "./state_data";
 import * as unread from "./unread";
 import type {FullUnreadCountsData} from "./unread";
 
@@ -85,7 +85,7 @@ export function redraw_title(): void {
         (unread_count ? "(" + unread_count + ") " : "") +
         narrow_title +
         " - " +
-        page_params.realm_name +
+        realm.realm_name +
         " - " +
         "Zulip";
 

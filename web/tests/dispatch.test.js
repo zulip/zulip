@@ -11,6 +11,7 @@ const $ = require("./lib/zjquery");
 const {
     current_user,
     page_params,
+    realm,
     realm_user_settings_defaults,
     user_settings,
 } = require("./lib/zpage_params");
@@ -114,7 +115,7 @@ message_lists.all_rendered_message_lists = () => [message_lists.home, message_li
 
 page_params.test_suite = false;
 current_user.is_admin = true;
-page_params.realm_description = "already set description";
+realm.realm_description = "already set description";
 
 // For data-oriented modules, just use them, don't stub them.
 const alert_words = zrequire("alert_words");
@@ -292,7 +293,7 @@ run_test("custom profile fields", ({override}) => {
     override(settings_profile_fields, "populate_profile_fields", noop);
     override(settings_account, "add_custom_profile_fields_to_settings", noop);
     dispatch(event);
-    assert_same(page_params.custom_profile_fields, event.fields);
+    assert_same(realm.custom_profile_fields, event.fields);
 });
 
 run_test("default_streams", ({override}) => {
@@ -420,7 +421,7 @@ run_test("scheduled_messages", ({override}) => {
 
 run_test("realm settings", ({override}) => {
     current_user.is_admin = true;
-    page_params.realm_date_created = new Date("2023-01-01Z");
+    realm.realm_date_created = new Date("2023-01-01Z");
 
     override(settings_org, "sync_realm_settings", noop);
     override(settings_bots, "update_bot_permissions_ui", noop);
@@ -438,33 +439,33 @@ run_test("realm settings", ({override}) => {
 
     // realm
     function test_realm_boolean(event, parameter_name) {
-        page_params[parameter_name] = true;
+        realm[parameter_name] = true;
         event = {...event};
         event.value = false;
         dispatch(event);
-        assert.equal(page_params[parameter_name], false);
+        assert.equal(realm[parameter_name], false);
         event = {...event};
         event.value = true;
         dispatch(event);
-        assert.equal(page_params[parameter_name], true);
+        assert.equal(realm[parameter_name], true);
     }
 
     function test_realm_integer(event, parameter_name) {
-        page_params[parameter_name] = 1;
+        realm[parameter_name] = 1;
         event = {...event};
         event.value = 2;
         dispatch(event);
-        assert.equal(page_params[parameter_name], 2);
+        assert.equal(realm[parameter_name], 2);
 
         event = {...event};
         event.value = 3;
         dispatch(event);
-        assert.equal(page_params[parameter_name], 3);
+        assert.equal(realm[parameter_name], 3);
 
         event = {...event};
         event.value = 1;
         dispatch(event);
-        assert.equal(page_params[parameter_name], 1);
+        assert.equal(realm[parameter_name], 1);
     }
 
     let update_called = false;
@@ -490,7 +491,7 @@ run_test("realm settings", ({override}) => {
         update_called = true;
     };
     dispatch(event);
-    assert_same(page_params.realm_create_web_public_stream_policy, 2);
+    assert_same(realm.realm_create_web_public_stream_policy, 2);
     assert_same(update_called, true);
 
     event = event_fixtures.realm__update__invite_to_stream_policy;
@@ -514,11 +515,11 @@ run_test("realm settings", ({override}) => {
         assert_same(key, "realm_name");
         assert_same(val, "new_realm_name");
     });
-    assert_same(page_params.realm_name, "new_realm_name");
+    assert_same(realm.realm_name, "new_realm_name");
 
     event = event_fixtures.realm__update__org_type;
     dispatch(event);
-    assert_same(page_params.realm_org_type, 50);
+    assert_same(realm.realm_org_type, 50);
 
     event = event_fixtures.realm__update__emails_restricted_to_domains;
     test_realm_boolean(event, "realm_emails_restricted_to_domains");
@@ -528,17 +529,17 @@ run_test("realm settings", ({override}) => {
 
     event = event_fixtures.realm__update__notifications_stream_id;
     dispatch(event);
-    assert_same(page_params.realm_notifications_stream_id, 42);
-    page_params.realm_notifications_stream_id = -1; // make sure to reset for future tests
+    assert_same(realm.realm_notifications_stream_id, 42);
+    realm.realm_notifications_stream_id = -1; // make sure to reset for future tests
 
     event = event_fixtures.realm__update__signup_notifications_stream_id;
     dispatch(event);
-    assert_same(page_params.realm_signup_notifications_stream_id, 41);
-    page_params.realm_signup_notifications_stream_id = -1; // make sure to reset for future tests
+    assert_same(realm.realm_signup_notifications_stream_id, 41);
+    realm.realm_signup_notifications_stream_id = -1; // make sure to reset for future tests
 
     event = event_fixtures.realm__update__default_code_block_language;
     dispatch(event);
-    assert_same(page_params.realm_default_code_block_language, "javascript");
+    assert_same(realm.realm_default_code_block_language, "javascript");
 
     update_called = false;
     stream_settings_ui.update_stream_privacy_choices = (property) => {
@@ -547,21 +548,21 @@ run_test("realm settings", ({override}) => {
     };
     event = event_fixtures.realm__update__enable_spectator_access;
     dispatch(event);
-    assert_same(page_params.realm_enable_spectator_access, true);
+    assert_same(realm.realm_enable_spectator_access, true);
     assert_same(update_called, true);
 
     event = event_fixtures.realm__update_dict__default;
-    page_params.realm_create_multiuse_invite_group = 1;
-    page_params.realm_allow_message_editing = false;
-    page_params.realm_message_content_edit_limit_seconds = 0;
-    page_params.realm_edit_topic_policy = 3;
+    realm.realm_create_multiuse_invite_group = 1;
+    realm.realm_allow_message_editing = false;
+    realm.realm_message_content_edit_limit_seconds = 0;
+    realm.realm_edit_topic_policy = 3;
     override(settings_org, "populate_auth_methods", noop);
     dispatch(event);
-    assert_same(page_params.realm_create_multiuse_invite_group, 3);
-    assert_same(page_params.realm_allow_message_editing, true);
-    assert_same(page_params.realm_message_content_edit_limit_seconds, 5);
-    assert_same(page_params.realm_edit_topic_policy, 4);
-    assert_same(page_params.realm_authentication_methods, {Google: true});
+    assert_same(realm.realm_create_multiuse_invite_group, 3);
+    assert_same(realm.realm_allow_message_editing, true);
+    assert_same(realm.realm_message_content_edit_limit_seconds, 5);
+    assert_same(realm.realm_edit_topic_policy, 4);
+    assert_same(realm.realm_authentication_methods, {Google: true});
 
     event = event_fixtures.realm__update_dict__icon;
     override(realm_icon, "rerender", noop);
@@ -571,20 +572,20 @@ run_test("realm settings", ({override}) => {
         assert_same(val, "icon.png");
     });
 
-    assert_same(page_params.realm_icon_url, "icon.png");
-    assert_same(page_params.realm_icon_source, "U");
+    assert_same(realm.realm_icon_url, "icon.png");
+    assert_same(realm.realm_icon_source, "U");
 
     override(realm_logo, "render", noop);
 
     event = event_fixtures.realm__update_dict__logo;
     dispatch(event);
-    assert_same(page_params.realm_logo_url, "logo.png");
-    assert_same(page_params.realm_logo_source, "U");
+    assert_same(realm.realm_logo_url, "logo.png");
+    assert_same(realm.realm_logo_source, "U");
 
     event = event_fixtures.realm__update_dict__night_logo;
     dispatch(event);
-    assert_same(page_params.realm_night_logo_url, "night_logo.png");
-    assert_same(page_params.realm_night_logo_source, "U");
+    assert_same(realm.realm_night_logo_url, "night_logo.png");
+    assert_same(realm.realm_night_logo_source, "U");
 
     event = event_fixtures.realm__deactivated;
     set_global("location", {});
@@ -665,41 +666,41 @@ run_test("realm_emoji", ({override}) => {
 
 run_test("realm_linkifiers", ({override}) => {
     const event = event_fixtures.realm_linkifiers;
-    page_params.realm_linkifiers = [];
+    realm.realm_linkifiers = [];
     override(settings_linkifiers, "populate_linkifiers", noop);
     override(linkifiers, "update_linkifier_rules", noop);
     dispatch(event);
-    assert_same(page_params.realm_linkifiers, event.realm_linkifiers);
+    assert_same(realm.realm_linkifiers, event.realm_linkifiers);
 });
 
 run_test("realm_playgrounds", ({override}) => {
     const event = event_fixtures.realm_playgrounds;
-    page_params.realm_playgrounds = [];
+    realm.realm_playgrounds = [];
     override(settings_playgrounds, "populate_playgrounds", noop);
     override(realm_playground, "update_playgrounds", noop);
     dispatch(event);
-    assert_same(page_params.realm_playgrounds, event.realm_playgrounds);
+    assert_same(realm.realm_playgrounds, event.realm_playgrounds);
 });
 
 run_test("realm_domains", ({override}) => {
     let event = event_fixtures.realm_domains__add;
-    page_params.realm_domains = [];
+    realm.realm_domains = [];
     override(settings_org, "populate_realm_domains_label", noop);
     override(settings_realm_domains, "populate_realm_domains_table", noop);
     dispatch(event);
-    assert_same(page_params.realm_domains, [event.realm_domain]);
+    assert_same(realm.realm_domains, [event.realm_domain]);
 
     override(settings_org, "populate_realm_domains_label", noop);
     override(settings_realm_domains, "populate_realm_domains_table", noop);
     event = event_fixtures.realm_domains__change;
     dispatch(event);
-    assert_same(page_params.realm_domains, [event.realm_domain]);
+    assert_same(realm.realm_domains, [event.realm_domain]);
 
     override(settings_org, "populate_realm_domains_label", noop);
     override(settings_realm_domains, "populate_realm_domains_table", noop);
     event = event_fixtures.realm_domains__remove;
     dispatch(event);
-    assert_same(page_params.realm_domains, []);
+    assert_same(realm.realm_domains, []);
 });
 
 run_test("realm_user", ({override}) => {

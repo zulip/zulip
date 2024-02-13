@@ -2,6 +2,7 @@
 
 exports.current_user = {};
 exports.page_params = {};
+exports.realm = {};
 exports.realm_user_settings_defaults = {};
 exports.user_settings = {};
 
@@ -14,6 +15,11 @@ exports.reset = () => {
     for (const field in exports.page_params) {
         if (Object.hasOwn(exports.page_params, field)) {
             delete exports.page_params[field];
+        }
+    }
+    for (const field in exports.realm) {
+        if (Object.hasOwn(exports.realm, field)) {
+            delete exports.realm[field];
         }
     }
     for (const field in exports.user_settings) {

@@ -5,7 +5,7 @@ const {strict: assert} = require("assert");
 const {zrequire} = require("./lib/namespace");
 const {run_test} = require("./lib/test");
 const blueslip = require("./lib/zblueslip");
-const {current_user, page_params, user_settings} = require("./lib/zpage_params");
+const {current_user, page_params, realm, user_settings} = require("./lib/zpage_params");
 
 // TODO: Remove after we enable support for
 // web_public_streams in production.
@@ -256,8 +256,7 @@ test("get_streams_for_user", () => {
     peer_data.set_subscribers(test.stream_id, [test_user.user_id]);
     peer_data.set_subscribers(world.stream_id, [me.user_id]);
 
-    page_params.realm_invite_to_stream_policy =
-        settings_config.common_policy_values.by_admins_only.code;
+    realm.realm_invite_to_stream_policy = settings_config.common_policy_values.by_admins_only.code;
     assert.deepEqual(stream_data.get_streams_for_user(me.user_id).can_subscribe, [social, errors]);
 
     // test_user is subscribed to all three streams, but current user (me)
@@ -280,8 +279,7 @@ test("get_streams_for_user", () => {
     ]);
     current_user.is_admin = false;
 
-    page_params.realm_invite_to_stream_policy =
-        settings_config.common_policy_values.by_members.code;
+    realm.realm_invite_to_stream_policy = settings_config.common_policy_values.by_members.code;
     assert.deepEqual(stream_data.get_streams_for_user(test_user.user_id).can_subscribe, [
         world,
         errors,
@@ -695,10 +693,10 @@ test("is_notifications_stream_muted", () => {
     stream_data.add_sub(tony);
     stream_data.add_sub(jazy);
 
-    page_params.realm_notifications_stream_id = tony.stream_id;
+    realm.realm_notifications_stream_id = tony.stream_id;
     assert.ok(!stream_data.is_notifications_stream_muted());
 
-    page_params.realm_notifications_stream_id = jazy.stream_id;
+    realm.realm_notifications_stream_id = jazy.stream_id;
     assert.ok(stream_data.is_notifications_stream_muted());
 });
 
@@ -749,9 +747,9 @@ test("muted_stream_ids", () => {
 });
 
 test("realm_has_notifications_stream", () => {
-    page_params.realm_notifications_stream_id = 10;
+    realm.realm_notifications_stream_id = 10;
     assert.ok(stream_data.realm_has_notifications_stream());
-    page_params.realm_notifications_stream_id = -1;
+    realm.realm_notifications_stream_id = -1;
     assert.ok(!stream_data.realm_has_notifications_stream());
 });
 
@@ -845,7 +843,7 @@ test("initialize", () => {
         stream_data.initialize(get_params());
     }
 
-    page_params.realm_notifications_stream_id = -1;
+    realm.realm_notifications_stream_id = -1;
 
     initialize();
 
@@ -856,7 +854,7 @@ test("initialize", () => {
     assert.equal(stream_data.get_notifications_stream(), "");
 
     // Simulate a private stream the user isn't subscribed to
-    page_params.realm_notifications_stream_id = 89;
+    realm.realm_notifications_stream_id = 89;
     initialize();
     assert.equal(stream_data.get_notifications_stream(), "");
 
@@ -953,7 +951,7 @@ test("can_post_messages_in_stream", () => {
     social.stream_post_policy = settings_config.stream_post_policy_values.non_new_members.code;
     current_user.is_moderator = false;
     me.date_joined = new Date(Date.now());
-    page_params.realm_waiting_period_threshold = 10;
+    realm.realm_waiting_period_threshold = 10;
     assert.equal(stream_data.can_post_messages_in_stream(social), false);
 
     me.date_joined = new Date(Date.now() - 20 * 86400000);

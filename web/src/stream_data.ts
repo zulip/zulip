@@ -6,7 +6,7 @@ import * as peer_data from "./peer_data";
 import * as people from "./people";
 import * as settings_config from "./settings_config";
 import * as settings_data from "./settings_data";
-import {current_user} from "./state_data";
+import {current_user, realm} from "./state_data";
 import * as sub_store from "./sub_store";
 import type {
     ApiStreamSubscription,
@@ -484,7 +484,7 @@ export function is_stream_muted_by_name(stream_name: string): boolean {
 }
 
 export function is_notifications_stream_muted(): boolean {
-    return is_muted(page_params.realm_notifications_stream_id);
+    return is_muted(realm.realm_notifications_stream_id);
 }
 
 export function can_toggle_subscription(sub: StreamSubscription): boolean {
@@ -614,7 +614,7 @@ export function can_post_messages_in_stream(stream: StreamSubscription): boolean
     if (
         stream.stream_post_policy ===
             settings_config.stream_post_policy_values.non_new_members.code &&
-        days < page_params.realm_waiting_period_threshold
+        days < realm.realm_waiting_period_threshold
     ) {
         return false;
     }
@@ -764,7 +764,7 @@ export function create_sub_from_server_data(
     delete attrs.subscribers;
 
     sub = {
-        render_subscribers: !page_params.realm_is_zephyr_mirror_realm || attrs.invite_only,
+        render_subscribers: !realm.realm_is_zephyr_mirror_realm || attrs.invite_only,
         newly_subscribed: false,
         is_muted: false,
         desktop_notifications: null,
@@ -804,16 +804,16 @@ export function get_streams_for_admin(): StreamSubscription[] {
 
 /*
   This module provides a common helper for finding the notification
-  stream, but we don't own the data.  The `page_params` structure
+  stream, but we don't own the data.  The `realm` structure
   is the authoritative source of this data, and it will be updated by
   server_events_dispatch in case of changes.
 */
 export function realm_has_notifications_stream(): boolean {
-    return page_params.realm_notifications_stream_id !== -1;
+    return realm.realm_notifications_stream_id !== -1;
 }
 
 export function get_notifications_stream(): string {
-    const stream_id = page_params.realm_notifications_stream_id;
+    const stream_id = realm.realm_notifications_stream_id;
     if (stream_id !== -1) {
         const stream_obj = sub_store.get(stream_id);
         if (stream_obj) {
@@ -839,10 +839,10 @@ export function initialize(params: StreamInitParams): void {
     const realm_default_streams = params.realm_default_streams;
 
     /*
-        We also consume some data directly from `page_params`.
+        We also consume some data directly from `realm`.
         This data can be accessed by any other module,
         and we consider the authoritative source to be
-        `page_params`.  Some of this data should eventually
+        `realm`.  Some of this data should eventually
         be fully handled by stream_data.
     */
 

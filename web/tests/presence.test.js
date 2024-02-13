@@ -4,7 +4,7 @@ const {strict: assert} = require("assert");
 
 const {zrequire} = require("./lib/namespace");
 const {run_test} = require("./lib/test");
-const {page_params, user_settings} = require("./lib/zpage_params");
+const {realm, user_settings} = require("./lib/zpage_params");
 
 const people = zrequire("people");
 const presence = zrequire("presence");
@@ -72,7 +72,7 @@ people.initialize_current_user(me.user_id);
 
 function test(label, f) {
     run_test(label, (helpers) => {
-        page_params.server_presence_offline_threshold_seconds = OFFLINE_THRESHOLD_SECS;
+        realm.server_presence_offline_threshold_seconds = OFFLINE_THRESHOLD_SECS;
         user_settings.presence_enabled = true;
         presence.clear_internal_data();
         f(helpers);
