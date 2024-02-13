@@ -793,9 +793,15 @@ export function end_inline_topic_edit($row) {
 
 function remove_uploads_from_row(row_id) {
     const uploads_for_row = upload.upload_objects_by_message_edit_row.get(row_id);
+    if (!uploads_for_row) {
+        return;
+    }
     // We need to cancel all uploads, reset their progress,
     // and clear the files upon ending the edit.
-    uploads_for_row?.cancelAll();
+    upload.deactivate_upload(uploads_for_row, {
+        mode: "edit",
+        row: row_id,
+    });
     // Since we removed all the uploads from the row, we should
     // now remove the corresponding upload object from the store.
     upload.upload_objects_by_message_edit_row.delete(row_id);

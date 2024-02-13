@@ -437,6 +437,18 @@ export function setup_upload(config) {
     return uppy;
 }
 
+export function deactivate_upload(uppy, config) {
+    // Remove event listeners added for handling uploads.
+    $(get_item("file_input_identifier", config)).off("change");
+    get_item("banner_container", config).off("click");
+    get_item("drag_drop_container", config).off("dragover dragenter drop paste");
+
+    // Uninstall all plugins and close down the Uppy instance.
+    // Also runs uppy.cancelAll() before uninstalling - which
+    // cancels all uploads, resets progress and removes all files.
+    uppy.close();
+}
+
 export function initialize() {
     compose_upload_object = setup_upload({
         mode: "compose",
