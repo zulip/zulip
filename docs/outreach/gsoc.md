@@ -31,9 +31,9 @@ amazed at what you can accomplish.
 
 ## Focus areas
 
-For 2023, we are particularly interested in GSoC contributors who have
+For 2024, we are particularly interested in GSoC contributors who have
 strong skills at full-stack feature development, Typescript, visual design,
-HTML/CSS, or performance optimization. So if you're an applicant with
+HTML/CSS, Flutter, or performance optimization. So if you're an applicant with
 those skills and are looking for an organization to join, we'd love to
 talk to you!
 
