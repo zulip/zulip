@@ -5,7 +5,7 @@ import * as typeahead from "../shared/src/typeahead";
 import {$t} from "./i18n";
 import * as pygments_data from "./pygments_data";
 
-type RealmPlayground = {
+export type RealmPlayground = {
     id: number;
     name: string;
     pygments_language: string;
