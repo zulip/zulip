@@ -360,13 +360,13 @@ function initialize_unread_ui() {
     unread_ui.initialize({notify_server_messages_read: unread_ops.notify_server_messages_read});
 }
 
-export function initialize_everything() {
+export function initialize_everything(state_data) {
     /*
         When we initialize our various modules, a lot
         of them will consume data from the server
-        in the form of `page_params`.
+        in the form of `state_data`.
 
-        The `page_params` variable is basically a
+        The `state_data` variable is basically a
         massive dictionary with all the information
         that the client needs to run the app.  Here
         are some examples of what it includes:
@@ -382,13 +382,13 @@ export function initialize_everything() {
 
         Except for the actual Zulip messages, basically
         any data that you see in the app soon after page
-        load comes from `page_params`.
+        load comes from `state_data`.
 
         ## Mostly static data
 
-        Now, we mostly leave `page_params` intact through
+        Now, we mostly leave `state_data` intact through
         the duration of the app.  Most of the data in
-        `page_params` is fairly static in nature, and we
+        `state_data` is fairly static in nature, and we
         will simply update it for basic changes like
         the following (meant as examples, not gospel):
 
@@ -398,13 +398,13 @@ export function initialize_everything() {
             - I switched from light theme to dark theme.
 
         Especially for things that are settings-related,
-        we rarely abstract away the data from `page_params`.
+        we rarely abstract away the data from `state_data`.
         As of this writing, over 90 modules refer directly
-        to `page_params` for some reason or another.
+        to `state_data` for some reason or another.
 
         ## Dynamic data
 
-        Some of the data in `page_params` is either
+        Some of the data in `state_data` is either
         more highly dynamic than settings data, or
         has more performance requirements than
         simple settings data, or both.  Examples
@@ -421,11 +421,11 @@ export function initialize_everything() {
         module called `stream_data` to actually track
         all the info about the streams that a user
         can know about.  We populate this module
-        with data from `page_params`, but thereafter
+        with data from `state_data`, but thereafter
         `stream_data.js` "owns" the stream data:
 
             - other modules should ask `stream_data`
-              for stuff (and not go to `page_params`)
+              for stuff (and not go to `state_data`)
             - when server events come in, they should
               be processed by stream_data to update
               its own data structures
@@ -434,17 +434,17 @@ export function initialize_everything() {
         following:
 
             - only pass `stream_data` what it needs
-              from `page_params`
+              from `state_data`
             - delete the reference to data owned by
-              `stream_data` in `page_params` itself
+              `stream_data` in `state_data` itself
     */
 
     function pop_fields(...fields) {
         const result = {};
 
         for (const field of fields) {
-            result[field] = page_params[field];
-            delete page_params[field];
+            result[field] = state_data[field];
+            delete state_data[field];
         }
 
         return result;
@@ -479,7 +479,6 @@ export function initialize_everything() {
     const user_topics_params = pop_fields("user_topics");
 
     const user_status_params = pop_fields("user_status");
-    const i18n_params = pop_fields("language_list");
     const user_settings_params = pop_fields("user_settings");
     const realm_settings_defaults_params = pop_fields("realm_user_settings_defaults");
     const scheduled_messages_params = pop_fields("scheduled_messages");
@@ -644,7 +643,7 @@ export function initialize_everything() {
         }
     }
 
-    i18n.initialize(i18n_params);
+    i18n.initialize({language_list: page_params.language_list});
     timerender.initialize();
     widgets.initialize();
     tippyjs.initialize();
@@ -875,8 +874,7 @@ $(async () => {
             url: "/json/register",
             data,
             success(response_data) {
-                Object.assign(page_params, response_data);
-                initialize_everything();
+                initialize_everything(response_data);
             },
             error() {
                 $("#app-loading-middle-content").hide();
@@ -886,6 +884,6 @@ $(async () => {
             },
         });
     } else {
-        initialize_everything();
+        initialize_everything(page_params.state_data);
     }
 });
