@@ -122,8 +122,8 @@
 }
 
 #compose-direct-recipient .pill-container {
-    padding: 0 2px;
-    border: 1px solid hsl(0deg 0% 0% / 20%);
+    padding: 0;
+    border: 1px solid var(--color-compose-recipient-box-border);
     background-color: hsl(0deg 0% 100%);
 
     .input {

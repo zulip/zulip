@@ -185,19 +185,36 @@
         }
 
         & a.narrow_to_compose_recipients {
-            background: transparent;
-            font-size: 18px;
-            padding: 0 1px;
-            align-self: center;
+            display: flex;
+            align-items: center;
+            background: var(--color-narrow-to-compose-recipients-background);
+            color: var(--color-narrow-to-compose-recipients-color);
+            border: 1px solid var(--color-narrow-to-compose-recipients-border);
+            font-size: 20px;
+            /* extra 3px padding, and -ive 4px margin on the right so that the curved
+            edge of the next element will overlap the 3px padding + 1 px border by 4px */
+            padding: 0 7px 0 4px;
+            margin-right: -4px;
             line-height: 20px;
-            opacity: 0.7;
-            border: 0;
-            margin-left: 3px;
             text-decoration: none;
-            color: inherit;
+            transition: all 100ms ease-in-out;
+            border-radius: 4px 0 0 4px;
 
             &:hover {
-                opacity: 1;
+                background: var(
+                    --color-narrow-to-compose-recipients-background-hover
+                );
+                color: var(--color-narrow-to-compose-recipients-color-hover);
+            }
+
+            &.no-transition {
+                transition: none;
+            }
+
+            &.collapsed {
+                width: 0;
+                padding: 0;
+                border-width: 0;
             }
         }
     }
@@ -205,7 +222,7 @@
     #compose-direct-recipient {
         flex-grow: 1;
         display: grid;
-        grid-template-columns: 1fr;
+        grid-template-columns: auto 1fr;
         align-items: stretch;
     }
 
@@ -348,18 +365,18 @@
     align-items: center;
     height: var(--compose-recipient-box-min-height);
     /* Align to compose controls; that's 112px width,
-       minus 23px for the narrow indicator, but then
-       add back 6px of grid gap for 95px here.
+       but then add back 6px of grid gap for 118px
+       here.
 
        TODO: Make variables here; expanded use of grid
        on the compose box will make these unnecessary,
        eventually. */
-    width: calc(112px - 23px + 6px);
+    width: calc(112px + 6px);
     justify-content: flex-end;
 
     @media ((width >= $sm_min) and (width < $mc_min)) {
         /* Align to compose controls at narrower widths */
-        width: calc(62px - 23px + 6px);
+        width: calc(62px + 6px);
     }
 
     @media (width < $sm_min) {
@@ -717,8 +734,17 @@ textarea.new_message_textarea {
     resize: vertical !important;
     margin-top: 5px;
     border-radius: 4px;
-    color: hsl(0deg 0% 33%);
     background-color: hsl(0deg 0% 100%);
+    border: 1px solid hsl(0deg 0% 0% / 20%);
+    box-shadow: none;
+    transition: border 0.2s ease;
+    color: var(--color-text-default);
+
+    &:focus {
+        outline: 0;
+        border: 1px solid hsl(0deg 0% 67%);
+        box-shadow: none;
+    }
 
     &.over_limit,
     &.over_limit:focus {
@@ -742,41 +768,23 @@ textarea.new_message_textarea {
     }
 }
 
-textarea.new_message_textarea,
-#compose_recipient_box {
-    border: 1px solid hsl(0deg 0% 0% / 20%);
-    box-shadow: none;
-    transition: border 0.2s ease;
-    color: var(--color-text-default);
-
-    &:focus {
-        outline: 0;
-        border: 1px solid hsl(0deg 0% 67%);
-        box-shadow: none;
-    }
-}
-
 #compose_recipient_box {
     display: grid;
-    grid-template-columns: 1fr auto;
+    grid-template-columns: auto 1fr auto;
     align-items: stretch;
     flex: 1 1 0;
-    border-radius: 3px;
+    border-radius: 4px;
     background: hsl(0deg 0% 100%);
-
-    /* Give the recipient box, a `<div>`, the
-       correct styles when focus is in the
-       #stream_message_recipient_topic `<input>` */
-    &:focus-within {
-        outline: 0;
-        border: 1px solid hsl(0deg 0% 67%);
-        box-shadow: none;
-    }
 
     #stream_message_recipient_topic,
     #recipient_box_clear_topic_button {
-        background: none;
-        border: none;
+        /* background: none makes the topic input transparent in which
+        case it would not hide the edge of .narrow_to_compose_recipients
+        it overlaps, hence we use inherit instead */
+        background: inherit;
+        /* We make the borders of both these elements look like 1
+        single element's border */
+        border: 1px solid var(--color-compose-recipient-box-border);
     }
 
     /* Styles for input in the recipient_box */
@@ -784,21 +792,21 @@ textarea.new_message_textarea,
         /* Override grid's effective `max-content` min-width */
         overflow: hidden;
         text-overflow: ellipsis;
-
         box-shadow: none;
         outline: none;
-
-        padding: 4px 6px;
-        /* Reset height to let `align-items: stretch` on the grid parent handle this. */
+        border-right: none;
+        border-radius: 4px 0 0 4px;
+        /* Reset height to let `align-items: stretch` on the grid parent handle this */
         height: auto;
+        padding: 4px;
     }
 
     /* Styles for new conversation button in the recipient_box */
     #recipient_box_clear_topic_button {
-        /* Set the border radius smaller, relative to the parent */
-        border-radius: 2px;
+        border-left: none;
+        border-radius: 0 4px 4px 0;
         padding: 6px;
-        margin: 1px;
+        margin: 0;
         color: var(--color-compose-embedded-button-text-color);
 
         .zulip-icon {
@@ -814,6 +822,26 @@ textarea.new_message_textarea,
 
         &:focus {
             outline: 0;
+        }
+    }
+
+    &.empty {
+        #stream_message_recipient_topic {
+            border-radius: 4px;
+            border-right: 1px solid var(--color-compose-recipient-box-border);
+        }
+
+        #recipient_box_clear_topic_button {
+            display: none;
+        }
+    }
+
+    /* Darken the combined border of the topic input and clear
+    topic button when focus is in the topic input */
+    &:focus-within {
+        #stream_message_recipient_topic,
+        #recipient_box_clear_topic_button {
+            border-color: hsl(0deg 0% 67%);
         }
     }
 

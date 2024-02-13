@@ -298,7 +298,7 @@ async function drafts_test(page: Page): Promise<void> {
     await create_private_message_draft(page);
     // Narrow to the conversation so that the compose box will restore it,
     // then close and try restoring it by opening the composebox again.
-    await page.click("#compose .narrow_to_compose_recipients");
+    await page.click("#compose-direct-recipient .narrow_to_compose_recipients");
     await page.click("#compose_close");
     await test_restore_private_message_draft_by_opening_composebox(page);
 
