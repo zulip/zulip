@@ -9,10 +9,9 @@ import * as confirm_dialog from "./confirm_dialog";
 import {$t, $t_html} from "./i18n";
 import * as keydown_util from "./keydown_util";
 import * as loading from "./loading";
-import {page_params} from "./page_params";
 import * as people from "./people";
 import * as settings_data from "./settings_data";
-import {current_user} from "./state_data";
+import {current_user, realm} from "./state_data";
 import * as stream_create_subscribers from "./stream_create_subscribers";
 import * as stream_data from "./stream_data";
 import * as stream_settings_components from "./stream_settings_components";
@@ -349,11 +348,11 @@ export function show_new_stream_modal() {
         // "realm_default" for realms on limited plans, so we disable the setting.
         $("#stream_creation_form select[name=stream_message_retention_setting]").prop(
             "disabled",
-            !page_params.zulip_plan_is_not_limited,
+            !realm.zulip_plan_is_not_limited,
         );
 
         // This listener is only needed if the dropdown setting is enabled.
-        if (page_params.zulip_plan_is_not_limited) {
+        if (realm.zulip_plan_is_not_limited) {
             // Add listener to .show stream-message-retention-days-input that we've hidden above
             $("#stream_creation_form .stream_message_retention_setting").on("change", (e) => {
                 if (e.target.value === "custom_period") {

@@ -5,7 +5,7 @@ const {strict: assert} = require("assert");
 const {mock_esm, set_global, zrequire} = require("./lib/namespace");
 const {run_test, noop} = require("./lib/test");
 const $ = require("./lib/zjquery");
-const {page_params} = require("./lib/zpage_params");
+const {realm} = require("./lib/zpage_params");
 
 set_global("navigator", {
     userAgent: "Mozilla/5.0 (compatible; MSIE 9.0; Windows NT 6.1; Trident/5.0)",
@@ -34,7 +34,7 @@ message_lists.current = {
 };
 function test(label, f) {
     run_test(label, (helpers) => {
-        page_params.max_file_upload_size_mib = 25;
+        realm.max_file_upload_size_mib = 25;
         return f(helpers);
     });
 }
@@ -256,12 +256,12 @@ test("upload_files", async ({mock_template, override_rewire}) => {
         banner_shown = true;
         return "<banner-stub>";
     });
-    page_params.max_file_upload_size_mib = 0;
+    realm.max_file_upload_size_mib = 0;
     $("#compose_banners .upload_banner .upload_msg").text("");
     await upload.upload_files(uppy, config, files);
     assert.ok(banner_shown);
 
-    page_params.max_file_upload_size_mib = 25;
+    realm.max_file_upload_size_mib = 25;
     let on_click_close_button_callback;
 
     $("#compose_banners .upload_banner.file_id_123 .upload_banner_cancel_button").one = (

@@ -7,10 +7,10 @@ import render_topic_sidebar_actions from "../templates/topic_sidebar_actions.hbs
 import * as confirm_dialog from "./confirm_dialog";
 import {$t_html} from "./i18n";
 import * as message_edit from "./message_edit";
-import {page_params} from "./page_params";
 import * as popover_menus from "./popover_menus";
 import * as popover_menus_data from "./popover_menus_data";
 import * as starred_messages_ui from "./starred_messages_ui";
+import {realm} from "./state_data";
 import * as stream_popover from "./stream_popover";
 import * as ui_util from "./ui_util";
 import * as unread_ops from "./unread_ops";
@@ -33,7 +33,7 @@ export function initialize() {
                     const $elt = $(instance.reference);
                     stream_id = Number.parseInt($elt.attr("data-stream-id"), 10);
                     topic_name = $elt.attr("data-topic-name");
-                    url = new URL($elt.attr("data-topic-url"), page_params.realm_uri);
+                    url = new URL($elt.attr("data-topic-url"), realm.realm_uri);
                 } else {
                     const $elt = $(instance.reference)
                         .closest(".topic-sidebar-menu-icon")

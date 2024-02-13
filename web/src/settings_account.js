@@ -25,7 +25,7 @@ import * as settings_bots from "./settings_bots";
 import * as settings_data from "./settings_data";
 import * as settings_org from "./settings_org";
 import * as settings_ui from "./settings_ui";
-import {current_user} from "./state_data";
+import {current_user, realm} from "./state_data";
 import * as ui_report from "./ui_report";
 import * as ui_util from "./ui_util";
 import * as user_pill from "./user_pill";
@@ -174,7 +174,7 @@ export function maybe_update_deactivate_account_button() {
 }
 
 export function update_send_read_receipts_tooltip() {
-    if (page_params.realm_enable_read_receipts) {
+    if (realm.realm_enable_read_receipts) {
         $("#send_read_receipts_label .settings-info-icon").hide();
     } else {
         $("#send_read_receipts_label .settings-info-icon").show();
@@ -300,7 +300,7 @@ export function set_up() {
             request_api_key(data);
         }
 
-        if (page_params.realm_password_auth_enabled === false) {
+        if (realm.realm_password_auth_enabled === false) {
             // Skip the password prompt step, since the user doesn't have one.
             request_api_key({});
         } else {
@@ -438,8 +438,8 @@ export function set_up() {
         dialog_widget.launch({
             html_heading: $t_html({defaultMessage: "Change password"}),
             html_body: render_dialog_change_password({
-                password_min_length: page_params.password_min_length,
-                password_min_guesses: page_params.password_min_guesses,
+                password_min_length: realm.password_min_length,
+                password_min_guesses: realm.password_min_guesses,
             }),
             html_submit_button: $t_html({defaultMessage: "Change"}),
             loading_spinner: true,
@@ -450,7 +450,7 @@ export function set_up() {
             validate_input,
         });
 
-        if (page_params.realm_password_auth_enabled !== false) {
+        if (realm.realm_password_auth_enabled !== false) {
             // zxcvbn.js is pretty big, and is only needed on password
             // change, so load it asynchronously.
             password_quality = (await import("./password_quality")).password_quality;
@@ -644,7 +644,7 @@ export function set_up() {
         }
 
         if (
-            page_params.demo_organization_scheduled_deletion_date &&
+            realm.demo_organization_scheduled_deletion_date &&
             current_user.is_owner &&
             current_user.delivery_email === ""
         ) {

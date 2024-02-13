@@ -114,7 +114,7 @@ import * as sidebar_ui from "./sidebar_ui";
 import * as spoilers from "./spoilers";
 import * as starred_messages from "./starred_messages";
 import * as starred_messages_ui from "./starred_messages_ui";
-import {current_user, set_current_user} from "./state_data";
+import {current_user, realm, set_current_user, set_realm} from "./state_data";
 import * as stream_data from "./stream_data";
 import * as stream_edit from "./stream_edit";
 import * as stream_edit_subscribers from "./stream_edit_subscribers";
@@ -173,10 +173,10 @@ function initialize_compose_box() {
     $("#compose-container").append(
         render_compose({
             embedded: $("#compose").attr("data-embedded") === "",
-            file_upload_enabled: page_params.max_file_upload_size_mib > 0,
+            file_upload_enabled: realm.max_file_upload_size_mib > 0,
             giphy_enabled: giphy.is_giphy_enabled(),
-            max_stream_name_length: page_params.max_stream_name_length,
-            max_topic_length: page_params.max_topic_length,
+            max_stream_name_length: realm.max_stream_name_length,
+            max_topic_length: realm.max_topic_length,
         }),
     );
     $(`.enter_sends_${user_settings.enter_sends}`).show();
@@ -329,11 +329,11 @@ export function initialize_kitchen_sink_stuff() {
         }
     });
 
-    if (!page_params.realm_allow_message_editing) {
+    if (!realm.realm_allow_message_editing) {
         $("#edit-message-hotkey-help").hide();
     }
 
-    if (page_params.realm_presence_disabled) {
+    if (realm.realm_presence_disabled) {
         $("#user-list").hide();
     }
 }
@@ -514,7 +514,122 @@ export function initialize_everything() {
         "user_id",
     );
 
+    const realm_params = pop_fields(
+        "custom_profile_field_types",
+        "custom_profile_fields",
+        "demo_organization_scheduled_deletion_date",
+        "giphy_api_key",
+        "giphy_rating_options",
+        "max_avatar_file_size_mib",
+        "max_file_upload_size_mib",
+        "max_icon_file_size_mib",
+        "max_logo_file_size_mib",
+        "max_message_length",
+        "max_stream_description_length",
+        "max_stream_name_length",
+        "max_topic_length",
+        "password_min_guesses",
+        "password_min_length",
+        "realm_add_custom_emoji_policy",
+        "realm_allow_edit_history",
+        "realm_allow_message_editing",
+        "realm_authentication_methods",
+        "realm_available_video_chat_providers",
+        "realm_avatar_changes_disabled",
+        "realm_bot_creation_policy",
+        "realm_bot_domain",
+        "realm_can_access_all_users_group",
+        "realm_create_multiuse_invite_group",
+        "realm_create_private_stream_policy",
+        "realm_create_public_stream_policy",
+        "realm_create_web_public_stream_policy",
+        "realm_date_created",
+        "realm_default_code_block_language",
+        "realm_default_external_accounts",
+        "realm_default_language",
+        "realm_delete_own_message_policy",
+        "realm_description",
+        "realm_digest_emails_enabled",
+        "realm_digest_weekday",
+        "realm_disallow_disposable_email_addresses",
+        "realm_domains",
+        "realm_edit_topic_policy",
+        "realm_email_auth_enabled",
+        "realm_email_changes_disabled",
+        "realm_emails_restricted_to_domains",
+        "realm_embedded_bots",
+        "realm_enable_guest_user_indicator",
+        "realm_enable_read_receipts",
+        "realm_enable_spectator_access",
+        "realm_giphy_rating",
+        "realm_icon_source",
+        "realm_icon_url",
+        "realm_incoming_webhook_bots",
+        "realm_inline_image_preview",
+        "realm_inline_url_embed_preview",
+        "realm_invite_required",
+        "realm_invite_to_realm_policy",
+        "realm_invite_to_stream_policy",
+        "realm_is_zephyr_mirror_realm",
+        "realm_jitsi_server_url",
+        "realm_linkifiers",
+        "realm_logo_source",
+        "realm_logo_url",
+        "realm_mandatory_topics",
+        "realm_message_content_allowed_in_email_notifications",
+        "realm_message_content_delete_limit_seconds",
+        "realm_message_content_edit_limit_seconds",
+        "realm_message_retention_days",
+        "realm_move_messages_between_streams_limit_seconds",
+        "realm_move_messages_between_streams_policy",
+        "realm_move_messages_within_stream_limit_seconds",
+        "realm_name",
+        "realm_name_changes_disabled",
+        "realm_night_logo_source",
+        "realm_night_logo_url",
+        "realm_notifications_stream_id",
+        "realm_org_type",
+        "realm_password_auth_enabled",
+        "realm_plan_type",
+        "realm_playgrounds",
+        "realm_presence_disabled",
+        "realm_private_message_policy",
+        "realm_push_notifications_enabled",
+        "realm_push_notifications_enabled_end_timestamp",
+        "realm_send_welcome_emails",
+        "realm_signup_notifications_stream_id",
+        "realm_upload_quota_mib",
+        "realm_uri",
+        "realm_user_group_edit_policy",
+        "realm_video_chat_provider",
+        "realm_waiting_period_threshold",
+        "realm_want_advertise_in_communities_directory",
+        "realm_wildcard_mention_policy",
+        "server_avatar_changes_disabled",
+        "server_emoji_data_url",
+        "server_inline_image_preview",
+        "server_inline_url_embed_preview",
+        "server_jitsi_server_url",
+        "server_name_changes_disabled",
+        "server_needs_upgrade",
+        "server_presence_offline_threshold_seconds",
+        "server_presence_ping_interval_seconds",
+        "server_supported_permission_settings",
+        "server_typing_started_expiry_period_milliseconds",
+        "server_typing_started_wait_period_milliseconds",
+        "server_typing_stopped_wait_period_milliseconds",
+        "server_web_public_streams_enabled",
+        "settings_send_digest_emails",
+        "stop_words",
+        "upgrade_text_for_wide_organization_logo",
+        "zulip_feature_level",
+        "zulip_merge_base",
+        "zulip_plan_is_not_limited",
+        "zulip_version",
+    );
+
     set_current_user(current_user_params);
+    set_realm(realm_params);
 
     /* To store theme data for spectators, we need to initialize
        user_settings before setting the theme. */
@@ -662,9 +777,9 @@ export function initialize_everything() {
     message_fetch.initialize(server_events.home_view_loaded);
     message_scroll.initialize();
     markdown.initialize(markdown_config.get_helpers());
-    linkifiers.initialize(page_params.realm_linkifiers);
+    linkifiers.initialize(realm.realm_linkifiers);
     realm_playground.initialize({
-        playground_data: page_params.realm_playgrounds,
+        playground_data: realm.realm_playgrounds,
         pygments_comparator_func: typeahead_helper.compare_language,
     });
     compose_setup.initialize();

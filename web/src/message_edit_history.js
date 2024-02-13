@@ -12,6 +12,7 @@ import * as people from "./people";
 import * as rendered_markdown from "./rendered_markdown";
 import * as rows from "./rows";
 import * as spectators from "./spectators";
+import {realm} from "./state_data";
 import * as sub_store from "./sub_store";
 import {is_same_day} from "./time_zone_util";
 import * as timerender from "./timerender";
@@ -171,13 +172,13 @@ export function show_history(message) {
 
 export function initialize() {
     $("body").on("mouseenter", ".message_edit_notice", (e) => {
-        if (page_params.realm_allow_edit_history) {
+        if (realm.realm_allow_edit_history) {
             $(e.currentTarget).addClass("message_edit_notice_hover");
         }
     });
 
     $("body").on("mouseleave", ".message_edit_notice", (e) => {
-        if (page_params.realm_allow_edit_history) {
+        if (realm.realm_allow_edit_history) {
             $(e.currentTarget).removeClass("message_edit_notice_hover");
         }
     });
@@ -195,7 +196,7 @@ export function initialize() {
             return;
         }
 
-        if (page_params.realm_allow_edit_history) {
+        if (realm.realm_allow_edit_history) {
             show_history(message);
             $("#message-history-cancel").trigger("focus");
         }

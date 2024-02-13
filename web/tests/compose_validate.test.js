@@ -8,7 +8,7 @@ const {mock_esm, zrequire} = require("./lib/namespace");
 const {run_test, noop} = require("./lib/test");
 const blueslip = require("./lib/zblueslip");
 const $ = require("./lib/zjquery");
-const {current_user, page_params} = require("./lib/zpage_params");
+const {current_user, page_params, realm} = require("./lib/zpage_params");
 
 const channel = mock_esm("../src/channel");
 const compose_banner = zrequire("compose_banner");
@@ -223,9 +223,9 @@ test_ui("validate", ({mock_template}) => {
     assert.ok(!compose_validate.validate());
     assert.ok(deactivated_user_error_rendered);
 
-    page_params.realm_is_zephyr_mirror_realm = true;
+    realm.realm_is_zephyr_mirror_realm = true;
     assert.ok(compose_validate.validate());
-    page_params.realm_is_zephyr_mirror_realm = false;
+    realm.realm_is_zephyr_mirror_realm = false;
 
     initialize_pm_pill();
     add_content_to_compose_box();
@@ -290,7 +290,7 @@ test_ui("validate", ({mock_template}) => {
     };
     stream_data.add_sub(denmark);
     compose_state.set_stream_id(denmark.stream_id);
-    page_params.realm_mandatory_topics = true;
+    realm.realm_mandatory_topics = true;
     compose_state.topic("");
     let missing_topic_error_rendered = false;
     mock_template("compose_banner/compose_banner.hbs", false, (data) => {
@@ -338,18 +338,18 @@ test_ui("test_stream_wildcard_mention_allowed", ({override_rewire}) => {
     // policy matters.
     override_rewire(peer_data, "get_subscriber_count", () => 16);
 
-    page_params.realm_wildcard_mention_policy =
+    realm.realm_wildcard_mention_policy =
         settings_config.wildcard_mention_policy_values.by_everyone.code;
     current_user.is_guest = true;
     current_user.is_admin = false;
     assert.ok(compose_validate.stream_wildcard_mention_allowed());
 
-    page_params.realm_wildcard_mention_policy =
+    realm.realm_wildcard_mention_policy =
         settings_config.wildcard_mention_policy_values.nobody.code;
     current_user.is_admin = true;
     assert.ok(!compose_validate.stream_wildcard_mention_allowed());
 
-    page_params.realm_wildcard_mention_policy =
+    realm.realm_wildcard_mention_policy =
         settings_config.wildcard_mention_policy_values.by_members.code;
     current_user.is_guest = true;
     current_user.is_admin = false;
@@ -358,7 +358,7 @@ test_ui("test_stream_wildcard_mention_allowed", ({override_rewire}) => {
     current_user.is_guest = false;
     assert.ok(compose_validate.stream_wildcard_mention_allowed());
 
-    page_params.realm_wildcard_mention_policy =
+    realm.realm_wildcard_mention_policy =
         settings_config.wildcard_mention_policy_values.by_moderators_only.code;
     current_user.is_moderator = false;
     assert.ok(!compose_validate.stream_wildcard_mention_allowed());
@@ -366,7 +366,7 @@ test_ui("test_stream_wildcard_mention_allowed", ({override_rewire}) => {
     current_user.is_moderator = true;
     assert.ok(compose_validate.stream_wildcard_mention_allowed());
 
-    page_params.realm_wildcard_mention_policy =
+    realm.realm_wildcard_mention_policy =
         settings_config.wildcard_mention_policy_values.by_admins_only.code;
     current_user.is_admin = false;
     assert.ok(!compose_validate.stream_wildcard_mention_allowed());
@@ -376,11 +376,11 @@ test_ui("test_stream_wildcard_mention_allowed", ({override_rewire}) => {
     current_user.is_admin = true;
     assert.ok(compose_validate.stream_wildcard_mention_allowed());
 
-    page_params.realm_wildcard_mention_policy =
+    realm.realm_wildcard_mention_policy =
         settings_config.wildcard_mention_policy_values.by_full_members.code;
     const person = people.get_by_user_id(current_user.user_id);
     person.date_joined = new Date(Date.now());
-    page_params.realm_waiting_period_threshold = 10;
+    realm.realm_waiting_period_threshold = 10;
 
     assert.ok(compose_validate.stream_wildcard_mention_allowed());
     current_user.is_admin = false;
@@ -389,7 +389,7 @@ test_ui("test_stream_wildcard_mention_allowed", ({override_rewire}) => {
     // Now, check for small streams (<=15 subscribers) where the wildcard mention
     // policy doesn't matter; everyone is allowed to use wildcard mentions.
     override_rewire(peer_data, "get_subscriber_count", () => 14);
-    page_params.realm_wildcard_mention_policy =
+    realm.realm_wildcard_mention_policy =
         settings_config.wildcard_mention_policy_values.by_admins_only.code;
     current_user.is_admin = false;
     current_user.is_guest = true;
@@ -403,7 +403,7 @@ test_ui("validate_stream_message", ({override_rewire, mock_template}) => {
     // of execution should not be changed.
     mock_banners();
     current_user.user_id = me.user_id;
-    page_params.realm_mandatory_topics = false;
+    realm.realm_mandatory_topics = false;
 
     const special_sub = {
         stream_id: 101,
@@ -563,7 +563,7 @@ test_ui("test_validate_stream_message_post_policy_full_members_only", ({mock_tem
 
 test_ui("test_check_overflow_text", ({mock_template}) => {
     mock_banners();
-    page_params.max_message_length = 10000;
+    realm.max_message_length = 10000;
 
     const $textarea = $("textarea#compose-textarea");
     const $indicator = $("#compose-limit-indicator");
@@ -746,7 +746,7 @@ test_ui("warn_if_mentioning_unsubscribed_user", ({override, mock_template}) => {
         new_banner_rendered = false;
         const msg_type = is_private ? "private" : "stream";
         compose_state.set_message_type(msg_type);
-        page_params.realm_is_zephyr_mirror_realm = is_zephyr_mirror;
+        realm.realm_is_zephyr_mirror_realm = is_zephyr_mirror;
         mentioned_details.is_broadcast = is_broadcast;
         compose_validate.warn_if_mentioning_unsubscribed_user(mentioned_details, $textarea);
         assert.ok(!new_banner_rendered);
@@ -758,7 +758,7 @@ test_ui("warn_if_mentioning_unsubscribed_user", ({override, mock_template}) => {
 
     $("#compose_invite_users").hide();
     compose_state.set_message_type("stream");
-    page_params.realm_is_zephyr_mirror_realm = false;
+    realm.realm_is_zephyr_mirror_realm = false;
 
     // Test with empty stream name in compose box. It should return noop.
     new_banner_rendered = false;

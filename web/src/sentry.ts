@@ -2,7 +2,7 @@ import * as Sentry from "@sentry/browser";
 import _ from "lodash";
 
 import {page_params} from "./page_params";
-import {current_user} from "./state_data";
+import {current_user, realm} from "./state_data";
 
 type UserInfo = {
     id?: string;
@@ -38,8 +38,8 @@ if (page_params.server_sentry_dsn) {
             new RegExp("^" + _.escapeRegExp(new URL(".", document.currentScript.src).href)),
         );
     }
-    if (page_params.realm_uri !== undefined) {
-        url_matches.push(new RegExp("^" + _.escapeRegExp(page_params.realm_uri) + "/"));
+    if (realm.realm_uri !== undefined) {
+        url_matches.push(new RegExp("^" + _.escapeRegExp(realm.realm_uri) + "/"));
     }
     const sentry_key =
         // No parameter is the portico pages, empty string is the empty realm
@@ -109,7 +109,7 @@ if (page_params.server_sentry_dsn) {
             tags: {
                 realm: sentry_key,
                 user_role: user_info.role ?? "Browser",
-                server_version: page_params.zulip_version,
+                server_version: realm.zulip_version,
             },
             user: user_info,
         },

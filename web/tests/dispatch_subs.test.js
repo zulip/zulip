@@ -7,7 +7,7 @@ const {mock_esm, zrequire} = require("./lib/namespace");
 const {make_stub} = require("./lib/stub");
 const {run_test, noop} = require("./lib/test");
 const blueslip = require("./lib/zblueslip");
-const {page_params} = require("./lib/zpage_params");
+const {realm} = require("./lib/zpage_params");
 
 const event_fixtures = events.fixtures;
 const test_user = events.test_user;
@@ -241,8 +241,8 @@ test("stream delete (special streams)", ({override}) => {
 
     // sanity check data
     assert.equal(event.streams.length, 2);
-    page_params.realm_notifications_stream_id = event.streams[0].stream_id;
-    page_params.realm_signup_notifications_stream_id = event.streams[1].stream_id;
+    realm.realm_notifications_stream_id = event.streams[0].stream_id;
+    realm.realm_signup_notifications_stream_id = event.streams[1].stream_id;
 
     override(stream_settings_ui, "remove_stream", noop);
     override(settings_org, "sync_realm_settings", noop);
@@ -253,8 +253,8 @@ test("stream delete (special streams)", ({override}) => {
 
     dispatch(event);
 
-    assert.equal(page_params.realm_notifications_stream_id, -1);
-    assert.equal(page_params.realm_signup_notifications_stream_id, -1);
+    assert.equal(realm.realm_notifications_stream_id, -1);
+    assert.equal(realm.realm_signup_notifications_stream_id, -1);
 });
 
 test("stream delete (stream is selected in compose)", ({override, override_rewire}) => {

@@ -11,11 +11,10 @@ import * as confirm_dialog from "./confirm_dialog";
 import {$t, $t_html} from "./i18n";
 import * as ListWidget from "./list_widget";
 import * as loading from "./loading";
-import {page_params} from "./page_params";
 import * as people from "./people";
 import * as settings_config from "./settings_config";
 import * as settings_data from "./settings_data";
-import {current_user} from "./state_data";
+import {current_user, realm} from "./state_data";
 import * as timerender from "./timerender";
 import * as ui_report from "./ui_report";
 import * as util from "./util";
@@ -295,7 +294,7 @@ export function update_invite_users_setting_tip(): void {
         return;
     }
     const permission_type = settings_config.email_invite_to_realm_policy_values;
-    const current_permission = page_params.realm_invite_to_realm_policy;
+    const current_permission = realm.realm_invite_to_realm_policy;
     let tip_text;
     switch (current_permission) {
         case permission_type.by_admins_only.code: {

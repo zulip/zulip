@@ -4,9 +4,8 @@ import assert from "minimalistic-assert";
 import render_typing_notifications from "../templates/typing_notifications.hbs";
 
 import * as narrow_state from "./narrow_state";
-import {page_params} from "./page_params";
 import * as people from "./people";
-import {current_user} from "./state_data";
+import {current_user, realm} from "./state_data";
 import * as typing_data from "./typing_data";
 
 // See docs/subsystems/typing-indicators.md for details on typing indicators.
@@ -138,7 +137,7 @@ export function display_notification(event: TypingEvent): void {
 
     typing_data.kickstart_inbound_timer(
         key,
-        page_params.server_typing_started_expiry_period_milliseconds,
+        realm.server_typing_started_expiry_period_milliseconds,
         () => {
             hide_notification(event);
         },

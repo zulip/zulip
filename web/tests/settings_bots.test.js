@@ -4,7 +4,7 @@ const {strict: assert} = require("assert");
 
 const {zrequire} = require("./lib/namespace");
 const {run_test} = require("./lib/test");
-const {current_user, page_params} = require("./lib/zpage_params");
+const {current_user, realm} = require("./lib/zpage_params");
 
 const bot_data_params = {
     realm_bots: [
@@ -34,8 +34,8 @@ bot_data.initialize(bot_data_params);
 
 function test(label, f) {
     run_test(label, ({override}) => {
-        page_params.realm_uri = "https://chat.example.com";
-        page_params.realm_embedded_bots = [
+        realm.realm_uri = "https://chat.example.com";
+        realm.realm_embedded_bots = [
             {name: "converter", config: {}},
             {name: "giphy", config: {key: "12345678"}},
             {name: "foobot", config: {bar: "baz", qux: "quux"}},
@@ -96,9 +96,9 @@ test("can_create_new_bots", () => {
     assert.ok(settings_bots.can_create_new_bots());
 
     current_user.is_admin = false;
-    page_params.realm_bot_creation_policy = 1;
+    realm.realm_bot_creation_policy = 1;
     assert.ok(settings_bots.can_create_new_bots());
 
-    page_params.realm_bot_creation_policy = 3;
+    realm.realm_bot_creation_policy = 3;
     assert.ok(!settings_bots.can_create_new_bots());
 });
