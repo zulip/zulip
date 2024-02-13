@@ -16,3 +16,11 @@
     {% endif %}
 {% endif %}
 <b>Estimated annual revenue</b>: ${{ dollar_amount(plan_data.estimated_next_plan_revenue) }}<br />
+{% if plan_data.next_plan.fixed_price %}
+<form method="POST">
+    {{ csrf_input }}
+    <input type="hidden" name="{{ remote_type }}" value="{{ remote_id }}" />
+    <input type="hidden" name="delete_fixed_price_next_plan" value="true" />
+    <button type="submit" class="delete-next-fixed-price-plan-button">Delete configured fixed price next plan</button>
+</form>
+{% endif %}
