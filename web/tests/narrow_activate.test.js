@@ -9,7 +9,7 @@ const $ = require("./lib/zjquery");
 mock_esm("../src/resize", {
     resize_stream_filters_container() {},
 });
-
+const {Filter} = zrequire("../src/filter");
 const all_messages_data = mock_esm("../src/all_messages_data");
 const browser_history = mock_esm("../src/browser_history", {
     state: {changing_hash: false},
@@ -36,6 +36,9 @@ const message_lists = mock_esm("../src/message_lists", {
                 removeClass: noop,
                 addClass: noop,
             },
+        },
+        data: {
+            filter: new Filter([{operator: "in", operand: "all"}]),
         },
     },
     update_current_message_list(msg_list) {

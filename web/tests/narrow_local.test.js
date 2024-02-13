@@ -11,11 +11,16 @@ const {Filter} = zrequire("../src/filter");
 const {MessageListData} = zrequire("../src/message_list_data");
 const narrow_state = zrequire("narrow_state");
 const narrow = zrequire("narrow");
+const message_lists = zrequire("message_lists");
 const resolved_topic = zrequire("../shared/src/resolved_topic");
 
 function test_with(fixture) {
     const filter = new Filter(fixture.filter_terms);
-    narrow_state.set_current_filter(filter);
+    message_lists.set_current({
+        data: {
+            filter,
+        },
+    });
 
     // Make sure our simulated tests data satisfies the
     // invariant that the first unread message we find

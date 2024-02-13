@@ -80,7 +80,11 @@ const frontend = {
 
 function narrow_to_frontend() {
     const filter = new Filter([{operator: "stream", operand: "frontend"}]);
-    narrow_state.set_current_filter(filter);
+    message_lists.current = {
+        data: {
+            filter,
+        },
+    };
 }
 
 function test(label, f) {
@@ -321,7 +325,7 @@ test("marked_subscribed (normal)", ({override}) => {
     assert.equal(list_updated, true);
 
     assert.equal(sub.color, "blue");
-    narrow_state.reset_current_filter();
+    message_lists.current = undefined;
 });
 
 test("marked_subscribed (color)", ({override}) => {
@@ -433,7 +437,7 @@ test("mark_unsubscribed (render_title_area)", ({override}) => {
 
     assert.equal(message_view_header_stub.num_calls, 1);
 
-    narrow_state.reset_current_filter();
+    message_lists.current = undefined;
 });
 
 test("remove_deactivated_user_from_all_streams", () => {

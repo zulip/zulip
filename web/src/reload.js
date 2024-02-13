@@ -1,5 +1,4 @@
 import $ from "jquery";
-import assert from "minimalistic-assert";
 
 import * as blueslip from "./blueslip";
 import * as compose_state from "./compose_state";
@@ -8,7 +7,6 @@ import * as drafts from "./drafts";
 import * as hash_util from "./hash_util";
 import {localstorage} from "./localstorage";
 import * as message_lists from "./message_lists";
-import * as narrow_state from "./narrow_state";
 import {page_params} from "./page_params";
 import * as reload_state from "./reload_state";
 import * as ui_report from "./ui_report";
@@ -80,16 +78,15 @@ function preserve_state(send_after_reload, save_pointer, save_narrow, save_compo
     }
 
     if (save_narrow) {
-        const $row = message_lists.home.selected_row();
-        if (!narrow_state.active()) {
+        if (message_lists.current === message_lists.home) {
+            const $row = message_lists.home.selected_row();
             if ($row.length > 0) {
                 url += "+offset=" + $row.get_offset_to_window().top;
             }
-        } else {
-            assert(message_lists.current !== undefined);
+        } else if (message_lists.current !== undefined) {
             url += "+offset=" + message_lists.home.pre_narrow_offset;
 
-            // narrow_state.active() is true, so this is the current
+            // narrow_state.filter() is not undefined, so this is the current
             // narrowed message list.
             const narrow_pointer = message_lists.current.selected_id();
             if (narrow_pointer !== -1) {
@@ -99,6 +96,8 @@ function preserve_state(send_after_reload, save_pointer, save_narrow, save_compo
             if ($narrow_row.length > 0) {
                 url += "+narrow_offset=" + $narrow_row.get_offset_to_window().top;
             }
+        } else {
+            url += "+offset=" + message_lists.home.pre_narrow_offset;
         }
     }
 

@@ -218,7 +218,7 @@ export function try_deliver_locally(message_request, insert_new_messages) {
         return undefined;
     }
 
-    if (narrow_state.active() && !narrow_state.filter().can_apply_locally(true)) {
+    if (narrow_state.filter() !== undefined && !narrow_state.filter().can_apply_locally(true)) {
         return undefined;
     }
 

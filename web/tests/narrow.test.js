@@ -11,7 +11,6 @@ const {page_params, realm} = require("./lib/zpage_params");
 const hash_util = zrequire("hash_util");
 const compose_state = zrequire("compose_state");
 const narrow_banner = zrequire("narrow_banner");
-const narrow_state = zrequire("narrow_state");
 const people = zrequire("people");
 const stream_data = zrequire("stream_data");
 const {Filter} = zrequire("../src/filter");
@@ -20,6 +19,7 @@ const narrow_title = zrequire("narrow_title");
 const settings_config = zrequire("settings_config");
 const recent_view_util = zrequire("recent_view_util");
 const inbox_util = zrequire("inbox_util");
+const message_lists = zrequire("message_lists");
 
 mock_esm("../src/compose_banner", {
     clear_search_view_banner() {},
@@ -43,7 +43,11 @@ function set_filter(terms) {
         operator: op[0],
         operand: op[1],
     }));
-    narrow_state.set_current_filter(new Filter(terms));
+    message_lists.set_current({
+        data: {
+            filter: new Filter(terms),
+        },
+    });
 }
 
 const me = {
@@ -203,7 +207,7 @@ run_test("show_empty_narrow_message", ({mock_template}) => {
 
     mock_template("empty_feed_notice.hbs", true, (_data, html) => html);
 
-    narrow_state.reset_current_filter();
+    message_lists.set_current(undefined);
     narrow_banner.show_empty_narrow_message();
     assert.equal(
         $(".empty_feed_notice_main").html(),
@@ -529,7 +533,7 @@ run_test("show_empty_narrow_message_with_search", ({mock_template}) => {
 
     mock_template("empty_feed_notice.hbs", true, (_data, html) => html);
 
-    narrow_state.reset_current_filter();
+    message_lists.set_current(undefined);
     set_filter([["search", "grail"]]);
     narrow_banner.show_empty_narrow_message();
     assert.match($(".empty_feed_notice_main").html(), /<span>grail<\/span>/);
@@ -553,7 +557,7 @@ run_test("show_search_stopwords", ({mock_template}) => {
             {query_word: "grail", is_stop_word: false},
         ],
     };
-    narrow_state.reset_current_filter();
+    message_lists.set_current(undefined);
     set_filter([["search", "what about grail"]]);
     narrow_banner.show_empty_narrow_message();
     assert.equal(
@@ -607,7 +611,7 @@ run_test("show_search_stopwords", ({mock_template}) => {
 });
 
 run_test("show_invalid_narrow_message", ({mock_template}) => {
-    narrow_state.reset_current_filter();
+    message_lists.set_current(undefined);
     mock_template("empty_feed_notice.hbs", true, (_data, html) => html);
 
     stream_data.add_sub({name: "streamA", stream_id: 88});

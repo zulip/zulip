@@ -580,12 +580,11 @@ export function update_streams_sidebar(force_rerender = false): void {
 
     stream_cursor.redraw();
 
-    if (!narrow_state.active()) {
+    const filter = narrow_state.filter();
+    if (!filter) {
         return;
     }
 
-    const filter = narrow_state.filter();
-    assert(filter !== undefined);
     update_stream_sidebar_for_narrow(filter);
 }
 

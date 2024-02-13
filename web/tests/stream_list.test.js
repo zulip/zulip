@@ -16,9 +16,6 @@ page_params.realm_users = [];
 let unread_unmuted_count;
 let stream_has_any_unread_mentions;
 
-mock_esm("../src/narrow_state", {
-    active: () => false,
-});
 const topic_list = mock_esm("../src/topic_list");
 const scroll_util = mock_esm("../src/scroll_util", {
     scroll_element_into_container() {},

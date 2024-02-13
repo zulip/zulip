@@ -2,7 +2,6 @@ import $ from "jquery";
 
 import * as blueslip from "./blueslip";
 import * as message_lists from "./message_lists";
-import * as narrow_state from "./narrow_state";
 
 export const widgets = new Map();
 export const widget_contents = new Map();
@@ -49,12 +48,8 @@ export function activate(in_opts) {
         });
     };
 
-    if (
-        $row.attr("id").startsWith(`message-row-${message_lists.home.id}-`) &&
-        narrow_state.active()
-    ) {
-        // Don't place widget in a home message row if we are narrowed
-        // to active state
+    if (!$row.attr("id").startsWith(`message-row-${message_lists.current?.id}-`)) {
+        // Don't activate widgets for messages that are not in the current view.
         return;
     }
 

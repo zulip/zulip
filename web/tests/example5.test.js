@@ -45,7 +45,6 @@ message_lists.all_rendered_message_lists = () => [message_lists.home, message_li
 // And we will also test some real code, of course.
 const message_events = zrequire("message_events");
 const message_store = zrequire("message_store");
-const narrow_state = zrequire("narrow_state");
 const people = zrequire("people");
 
 const isaac = {
@@ -106,8 +105,6 @@ run_test("insert_message", ({override}) => {
     helper.redirect(stream_list, "update_streams_sidebar");
     helper.redirect(unread_ops, "process_visible");
     helper.redirect(unread_ui, "update_unread_counts");
-
-    narrow_state.reset_current_filter();
 
     message_events.insert_new_messages([new_message]);
 

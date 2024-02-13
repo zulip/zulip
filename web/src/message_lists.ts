@@ -54,7 +54,7 @@ export type MessageList = {
 export let home: MessageList | undefined;
 export let current: MessageList | undefined;
 
-function set_current(msg_list: MessageList | undefined): void {
+export function set_current(msg_list: MessageList | undefined): void {
     // NOTE: Use update_current_message_list instead of this function.
     current = msg_list;
 }
