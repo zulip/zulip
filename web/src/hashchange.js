@@ -27,6 +27,7 @@ import * as settings_panel_menu from "./settings_panel_menu";
 import * as settings_toggle from "./settings_toggle";
 import * as sidebar_ui from "./sidebar_ui";
 import * as spectators from "./spectators";
+import {current_user} from "./state_data";
 import * as stream_settings_ui from "./stream_settings_ui";
 import * as ui_report from "./ui_report";
 import * as user_group_edit from "./user_group_edit";
@@ -213,7 +214,7 @@ function do_hashchange_overlay(old_hash) {
     const old_base = hash_parser.get_hash_category(old_hash);
     let section = hash_parser.get_current_hash_section();
 
-    if (base === "groups" && page_params.is_guest) {
+    if (base === "groups" && current_user.is_guest) {
         // The #groups settings page is unfinished, and disabled in production.
         show_home_view();
         return;

@@ -4,7 +4,7 @@ const {strict: assert} = require("assert");
 
 const {mock_esm, zrequire} = require("./lib/namespace");
 const {run_test, noop} = require("./lib/test");
-const {page_params} = require("./lib/zpage_params");
+const {current_user, page_params} = require("./lib/zpage_params");
 
 const narrow_state = mock_esm("../src/narrow_state");
 const stream_topic_history_util = mock_esm("../src/stream_topic_history_util");
@@ -52,7 +52,7 @@ const jeff = {
 const example_avatar_url = "http://example.com/example.png";
 
 function init() {
-    page_params.is_admin = true;
+    current_user.is_admin = true;
 
     people.init();
     people.add_active_user(bob);

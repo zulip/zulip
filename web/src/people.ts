@@ -13,6 +13,7 @@ import {page_params} from "./page_params";
 import * as reload_state from "./reload_state";
 import * as settings_config from "./settings_config";
 import * as settings_data from "./settings_data";
+import {current_user} from "./state_data";
 import * as timerender from "./timerender";
 import {user_settings} from "./user_settings";
 import * as util from "./util";
@@ -190,7 +191,7 @@ export function get_bot_owner_user(user: User & {is_bot: true}): User | undefine
 
 export function can_admin_user(user: User): boolean {
     return (
-        (user.is_bot && user.bot_owner_id !== null && user.bot_owner_id === page_params.user_id) ||
+        (user.is_bot && user.bot_owner_id !== null && user.bot_owner_id === current_user.user_id) ||
         is_my_user_id(user.user_id)
     );
 }
@@ -978,7 +979,7 @@ export function is_active_user_for_popover(user_id: number): boolean {
 }
 
 export function is_current_user_only_owner(): boolean {
-    if (!page_params.is_owner) {
+    if (!current_user.is_owner) {
         return false;
     }
 

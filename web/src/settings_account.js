@@ -25,6 +25,7 @@ import * as settings_bots from "./settings_bots";
 import * as settings_data from "./settings_data";
 import * as settings_org from "./settings_org";
 import * as settings_ui from "./settings_ui";
+import {current_user} from "./state_data";
 import * as ui_report from "./ui_report";
 import * as ui_util from "./ui_util";
 import * as user_pill from "./user_pill";
@@ -115,7 +116,7 @@ function upload_avatar($file_input) {
         },
         error(xhr) {
             display_avatar_upload_complete();
-            if (page_params.avatar_source === "G") {
+            if (current_user.avatar_source === "G") {
                 $("#user-avatar-source").show();
             }
             if (xhr.responseJSON?.msg) {
@@ -156,7 +157,7 @@ export function update_account_settings_display() {
 }
 
 export function maybe_update_deactivate_account_button() {
-    if (!page_params.is_owner) {
+    if (!current_user.is_owner) {
         return;
     }
 
@@ -318,7 +319,7 @@ export function set_up() {
         }
 
         $("#regenerate_api_key").on("click", (e) => {
-            const email = page_params.delivery_email;
+            const email = current_user.delivery_email;
             const api_key = $("#api_key_value").text();
             const authorization_header = "Basic " + btoa(`${email}:${api_key}`);
 
@@ -343,7 +344,7 @@ export function set_up() {
         $("#download_zuliprc").on("click", function () {
             const bot_object = {
                 user_id: people.my_current_user_id(),
-                email: page_params.delivery_email,
+                email: current_user.delivery_email,
                 api_key: $("#api_key_value").text(),
             };
             const data = settings_bots.generate_zuliprc_content(bot_object);
@@ -567,7 +568,7 @@ export function set_up() {
         if (settings_data.user_can_change_email()) {
             dialog_widget.launch({
                 html_heading: $t_html({defaultMessage: "Change email"}),
-                html_body: render_change_email_modal({delivery_email: page_params.delivery_email}),
+                html_body: render_change_email_modal({delivery_email: current_user.delivery_email}),
                 html_submit_button: $t_html({defaultMessage: "Change"}),
                 loading_spinner: true,
                 id: "change_email_modal",
@@ -644,14 +645,14 @@ export function set_up() {
 
         if (
             page_params.demo_organization_scheduled_deletion_date &&
-            page_params.is_owner &&
-            page_params.delivery_email === ""
+            current_user.is_owner &&
+            current_user.delivery_email === ""
         ) {
             dialog_widget.launch({
                 html_heading: $t_html({defaultMessage: "Add email"}),
                 html_body: render_demo_organization_add_email_modal({
-                    delivery_email: page_params.delivery_email,
-                    full_name: page_params.full_name,
+                    delivery_email: current_user.delivery_email,
+                    full_name: current_user.full_name,
                 }),
                 html_submit_button: $t_html({defaultMessage: "Add"}),
                 loading_spinner: true,

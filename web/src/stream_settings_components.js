@@ -11,11 +11,11 @@ import * as hash_util from "./hash_util";
 import {$t, $t_html} from "./i18n";
 import * as loading from "./loading";
 import * as overlays from "./overlays";
-import {page_params} from "./page_params";
 import * as peer_data from "./peer_data";
 import * as people from "./people";
 import * as settings_config from "./settings_config";
 import * as settings_data from "./settings_data";
+import {current_user} from "./state_data";
 import * as stream_ui_updates from "./stream_ui_updates";
 import * as ui_report from "./ui_report";
 import * as user_groups from "./user_groups";
@@ -228,7 +228,7 @@ export function unsubscribe_from_private_stream(sub) {
 export function sub_or_unsub(sub, $stream_row) {
     if (sub.subscribed) {
         // TODO: This next line should allow guests to access web-public streams.
-        if (sub.invite_only || page_params.is_guest) {
+        if (sub.invite_only || current_user.is_guest) {
             unsubscribe_from_private_stream(sub);
             return;
         }

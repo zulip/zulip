@@ -114,6 +114,7 @@ import * as sidebar_ui from "./sidebar_ui";
 import * as spoilers from "./spoilers";
 import * as starred_messages from "./starred_messages";
 import * as starred_messages_ui from "./starred_messages_ui";
+import {current_user, set_current_user} from "./state_data";
 import * as stream_data from "./stream_data";
 import * as stream_edit from "./stream_edit";
 import * as stream_edit_subscribers from "./stream_edit_subscribers";
@@ -162,7 +163,7 @@ function initialize_bottom_whitespace() {
 function initialize_navbar() {
     const rendered_navbar = render_navbar({
         embedded: page_params.narrow_stream !== undefined,
-        user_avatar: page_params.avatar_url_medium,
+        user_avatar: current_user.avatar_url_medium,
     });
 
     $("#header-container").html(rendered_navbar);
@@ -490,6 +491,31 @@ export function initialize_everything() {
     );
     const local_message_params = pop_fields("max_message_id");
 
+    const current_user_params = pop_fields(
+        "avatar_source",
+        "avatar_url",
+        "avatar_url_medium",
+        "can_create_private_streams",
+        "can_create_public_streams",
+        "can_create_streams",
+        "can_create_web_public_streams",
+        "can_invite_others_to_realm",
+        "can_subscribe_other_users",
+        "delivery_email",
+        "email",
+        "full_name",
+        "has_zoom_token",
+        "is_admin",
+        "is_billing_admin",
+        "is_guest",
+        "is_moderator",
+        "is_owner",
+        "onboarding_steps",
+        "user_id",
+    );
+
+    set_current_user(current_user_params);
+
     /* To store theme data for spectators, we need to initialize
        user_settings before setting the theme. */
     initialize_user_settings(user_settings_params);
@@ -521,12 +547,12 @@ export function initialize_everything() {
     scheduled_messages_popover.initialize();
 
     realm_user_settings_defaults.initialize(realm_settings_defaults_params);
-    people.initialize(page_params.user_id, people_params);
+    people.initialize(current_user.user_id, people_params);
     starred_messages.initialize(starred_messages_params);
 
     let date_joined;
     if (!page_params.is_spectator) {
-        const user = people.get_by_user_id(page_params.user_id);
+        const user = people.get_by_user_id(current_user.user_id);
         date_joined = user.date_joined;
     } else {
         // Spectators don't have an account, so we just prevent their

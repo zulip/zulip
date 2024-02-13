@@ -20,6 +20,7 @@ import * as settings_panel_menu from "./settings_panel_menu";
 import * as settings_sections from "./settings_sections";
 import * as settings_toggle from "./settings_toggle";
 import * as settings_users from "./settings_users";
+import {current_user} from "./state_data";
 
 const admin_settings_label = {
     // Organization profile
@@ -70,10 +71,10 @@ const admin_settings_label = {
 };
 
 function insert_tip_box() {
-    if (page_params.is_admin) {
+    if (current_user.is_admin) {
         return;
     }
-    const tip_box = render_settings_organization_settings_tip({is_admin: page_params.is_admin});
+    const tip_box = render_settings_organization_settings_tip({is_admin: current_user.is_admin});
     $(".organization-box")
         .find(".settings-section")
         .not("#emoji-settings")
@@ -102,7 +103,7 @@ function get_realm_level_notification_settings(options) {
 export function build_page() {
     const options = {
         custom_profile_field_types: page_params.custom_profile_field_types,
-        full_name: page_params.full_name,
+        full_name: current_user.full_name,
         realm_name: page_params.realm_name,
         realm_org_type: page_params.realm_org_type,
         realm_available_video_chat_providers: page_params.realm_available_video_chat_providers,
@@ -138,9 +139,9 @@ export function build_page() {
         realm_waiting_period_threshold: page_params.realm_waiting_period_threshold,
         realm_notifications_stream_id: page_params.realm_notifications_stream_id,
         realm_signup_notifications_stream_id: page_params.realm_signup_notifications_stream_id,
-        is_admin: page_params.is_admin,
-        is_guest: page_params.is_guest,
-        is_owner: page_params.is_owner,
+        is_admin: current_user.is_admin,
+        is_guest: current_user.is_guest,
+        is_owner: current_user.is_owner,
         user_can_change_logo: settings_data.user_can_change_logo(),
         realm_icon_source: page_params.realm_icon_source,
         realm_icon_url: page_params.realm_icon_url,
@@ -244,7 +245,7 @@ export function build_page() {
     settings_invites.update_invite_user_panel();
     insert_tip_box();
 
-    if (page_params.demo_organization_scheduled_deletion_date && page_params.is_admin) {
+    if (page_params.demo_organization_scheduled_deletion_date && current_user.is_admin) {
         demo_organizations_ui.insert_demo_organization_warning();
         demo_organizations_ui.handle_demo_organization_conversion();
     }
@@ -255,7 +256,7 @@ export function build_page() {
 
     const is_plan_plus = page_params.realm_plan_type === 10;
     const is_plan_self_hosted = page_params.realm_plan_type === 1;
-    if (page_params.is_admin && !(is_plan_plus || is_plan_self_hosted)) {
+    if (current_user.is_admin && !(is_plan_plus || is_plan_self_hosted)) {
         $("#realm_can_access_all_users_group_widget").prop("disabled", true);
         const opts = {
             content: $t({

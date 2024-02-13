@@ -8,7 +8,12 @@ const {make_stub} = require("./lib/stub");
 const {run_test, noop} = require("./lib/test");
 const blueslip = require("./lib/zblueslip");
 const $ = require("./lib/zjquery");
-const {page_params, realm_user_settings_defaults, user_settings} = require("./lib/zpage_params");
+const {
+    current_user,
+    page_params,
+    realm_user_settings_defaults,
+    user_settings,
+} = require("./lib/zpage_params");
 
 const event_fixtures = events.fixtures;
 const test_message = events.test_message;
@@ -108,7 +113,7 @@ message_lists.all_rendered_message_lists = () => [message_lists.home, message_li
 // page_params is highly coupled to dispatching now
 
 page_params.test_suite = false;
-page_params.is_admin = true;
+current_user.is_admin = true;
 page_params.realm_description = "already set description";
 
 // For data-oriented modules, just use them, don't stub them.
@@ -303,11 +308,11 @@ run_test("default_streams", ({override}) => {
 });
 
 run_test("onboarding_steps", ({override}) => {
-    page_params.onboarding_steps = [];
+    current_user.onboarding_steps = [];
     const event = event_fixtures.onboarding_steps;
     override(hotspots, "load_new", noop);
     dispatch(event);
-    assert_same(page_params.onboarding_steps, event.onboarding_steps);
+    assert_same(current_user.onboarding_steps, event.onboarding_steps);
 });
 
 run_test("invites_changed", ({override}) => {
@@ -414,7 +419,7 @@ run_test("scheduled_messages", ({override}) => {
 });
 
 run_test("realm settings", ({override}) => {
-    page_params.is_admin = true;
+    current_user.is_admin = true;
     page_params.realm_date_created = new Date("2023-01-01Z");
 
     override(settings_org, "sync_realm_settings", noop);
@@ -772,7 +777,7 @@ run_test("submessage", ({override}) => {
 
 run_test("typing", ({override}) => {
     // Simulate that we are not typing.
-    page_params.user_id = typing_person1.user_id + 1;
+    current_user.user_id = typing_person1.user_id + 1;
 
     let event = event_fixtures.typing__start;
     {
@@ -795,10 +800,10 @@ run_test("typing", ({override}) => {
     }
 
     // Get line coverage--we ignore our own typing events.
-    page_params.user_id = typing_person1.user_id;
+    current_user.user_id = typing_person1.user_id;
     event = event_fixtures.typing__start;
     dispatch(event);
-    page_params.user_id = undefined; // above change shouldn't effect stream_typing tests below
+    current_user.user_id = undefined; // above change shouldn't effect stream_typing tests below
 });
 
 run_test("stream_typing", ({override}) => {

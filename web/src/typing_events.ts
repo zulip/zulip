@@ -6,6 +6,7 @@ import render_typing_notifications from "../templates/typing_notifications.hbs";
 import * as narrow_state from "./narrow_state";
 import {page_params} from "./page_params";
 import * as people from "./people";
+import {current_user} from "./state_data";
 import * as typing_data from "./typing_data";
 
 // See docs/subsystems/typing-indicators.md for details on typing indicators.
@@ -77,7 +78,7 @@ function get_users_typing_for_narrow(): number[] {
         const narrow_user_ids = narrow_user_ids_string
             .split(",")
             .map((user_id_string) => Number.parseInt(user_id_string, 10));
-        const group = [...narrow_user_ids, page_params.user_id];
+        const group = [...narrow_user_ids, current_user.user_id];
         return typing_data.get_group_typists(group);
     }
     // Get all users typing (in all direct message conversations with current user)

@@ -2,6 +2,7 @@ import * as Sentry from "@sentry/browser";
 import _ from "lodash";
 
 import {page_params} from "./page_params";
+import {current_user} from "./state_data";
 
 type UserInfo = {
     id?: string;
@@ -51,21 +52,21 @@ if (page_params.server_sentry_dsn) {
         realm: sentry_key,
     };
     if (sentry_key !== "www") {
-        user_info.role = page_params.is_owner
+        user_info.role = current_user.is_owner
             ? "Organization owner"
-            : page_params.is_admin
+            : current_user.is_admin
               ? "Organization administrator"
-              : page_params.is_moderator
+              : current_user.is_moderator
                 ? "Moderator"
-                : page_params.is_guest
+                : current_user.is_guest
                   ? "Guest"
                   : page_params.is_spectator
                     ? "Spectator"
-                    : page_params.user_id
+                    : current_user.user_id
                       ? "Member"
                       : "Logged out";
-        if (page_params.user_id) {
-            user_info.id = page_params.user_id.toString();
+        if (current_user.user_id) {
+            user_info.id = current_user.user_id.toString();
         }
     }
 

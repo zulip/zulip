@@ -1,10 +1,16 @@
 "use strict";
 
+exports.current_user = {};
 exports.page_params = {};
 exports.realm_user_settings_defaults = {};
 exports.user_settings = {};
 
 exports.reset = () => {
+    for (const field in exports.current_user) {
+        if (Object.hasOwn(exports.current_user, field)) {
+            delete exports.current_user[field];
+        }
+    }
     for (const field in exports.page_params) {
         if (Object.hasOwn(exports.page_params, field)) {
             delete exports.page_params[field];

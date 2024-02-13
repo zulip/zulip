@@ -5,7 +5,7 @@ const {strict: assert} = require("assert");
 const {mock_esm, zrequire} = require("./lib/namespace");
 const {run_test} = require("./lib/test");
 const $ = require("./lib/zjquery");
-const {page_params} = require("./lib/zpage_params");
+const {current_user} = require("./lib/zpage_params");
 
 const settings_data = mock_esm("../src/settings_data");
 
@@ -45,7 +45,7 @@ people.add_active_user(levin);
 people.add_active_user(kitty);
 
 run_test("render_notifications_for_narrow", ({override, mock_template}) => {
-    override(page_params, "user_id", anna.user_id);
+    override(current_user, "user_id", anna.user_id);
     override(settings_data, "user_can_access_all_other_users", () => true);
     const group = [anna.user_id, vronsky.user_id, levin.user_id, kitty.user_id];
     const conversation_key = typing_data.get_direct_message_conversation_key(group);

@@ -23,6 +23,7 @@ import * as settings_data from "./settings_data";
 import * as settings_notifications from "./settings_notifications";
 import * as settings_realm_domains from "./settings_realm_domains";
 import * as settings_ui from "./settings_ui";
+import {current_user} from "./state_data";
 import * as stream_settings_data from "./stream_settings_data";
 import * as ui_report from "./ui_report";
 import * as user_groups from "./user_groups";
@@ -39,7 +40,7 @@ export function reset() {
 const DISABLED_STATE_ID = -1;
 
 export function maybe_disable_widgets() {
-    if (page_params.is_owner) {
+    if (current_user.is_owner) {
         return;
     }
 
@@ -47,7 +48,7 @@ export function maybe_disable_widgets() {
         .find("input, button, select, checked")
         .prop("disabled", true);
 
-    if (page_params.is_admin) {
+    if (current_user.is_admin) {
         $(".deactivate_realm_button").prop("disabled", true);
         $("#deactivate_realm_button_container").addClass("disabled_setting_tooltip");
         $("#org-message-retention").find("input, select").prop("disabled", true);
@@ -382,7 +383,7 @@ function can_configure_auth_methods() {
     if (settings_data.user_email_not_configured()) {
         return false;
     }
-    if (page_params.is_owner) {
+    if (current_user.is_owner) {
         return true;
     }
     return false;
