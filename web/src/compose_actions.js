@@ -116,7 +116,7 @@ export function complete_starting_tasks(msg_type, opts) {
     compose_fade.start_compose(msg_type);
     $(document).trigger(new $.Event("compose_started.zulip", opts));
     compose_recipient.update_placeholder_text();
-    compose_recipient.update_narrow_to_recipient_visibility();
+    compose_recipient.update_narrow_to_recipient_visibility(true);
 }
 
 export function maybe_scroll_up_selected_message(opts) {
@@ -279,11 +279,11 @@ export function start(msg_type, opts) {
         compose_validate.check_overflow_text();
     }
 
-    const $clear_topic_button = $("#recipient_box_clear_topic_button");
+    const $compose_recipient_box = $("#compose_recipient_box");
     if (is_clear_topic_button_triggered || opts.topic.length === 0) {
-        $clear_topic_button.hide();
+        $compose_recipient_box.toggleClass("empty", true);
     } else {
-        $clear_topic_button.show();
+        $compose_recipient_box.toggleClass("empty", false);
     }
 
     // Show a warning if topic is resolved

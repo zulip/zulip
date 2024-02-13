@@ -23,6 +23,10 @@ import * as sub_store from "./sub_store";
 import * as ui_util from "./ui_util";
 import * as util from "./util";
 
+// This state variable tracks whether the narrow_to_compose_recipients
+// button should be shown when beside the topic input, on blur.
+let show_narrow_to_compose_recipients = true;
+
 function composing_to_current_topic_narrow() {
     return (
         util.lower_same(compose_state.stream_name(), narrow_state.stream_name() || "") &&
@@ -49,7 +53,14 @@ function composing_to_current_private_message_narrow() {
     );
 }
 
-export function update_narrow_to_recipient_visibility() {
+export function update_narrow_to_recipient_visibility(opening_compose = false) {
+    // We skip the transition when opening a collapsed compose box.
+    if (opening_compose) {
+        $(".narrow_to_compose_recipients").toggleClass("no-transition", true);
+        setTimeout(() => {
+            $(".narrow_to_compose_recipients").toggleClass("no-transition", false);
+        }, 10);
+    }
     const message_type = compose_state.get_message_type();
     if (message_type === "stream") {
         const stream_exists = Boolean(compose_state.stream_id());
@@ -59,9 +70,15 @@ export function update_narrow_to_recipient_visibility() {
             !composing_to_current_topic_narrow() &&
             compose_state.has_full_recipient()
         ) {
-            $(".narrow_to_compose_recipients").toggleClass("invisible", false);
+            show_narrow_to_compose_recipients = true;
+            // If focus is in the adjacent input, we slide in the button later on blur.
+            if (!$("#stream_message_recipient_topic").is(":focus")) {
+                // Else, we slide in the button immediately.
+                $(".narrow_to_compose_recipients").toggleClass("collapsed", false);
+            }
             return;
         }
+        show_narrow_to_compose_recipients = false;
     } else if (message_type === "private") {
         const recipients = compose_state.private_message_recipient();
         if (
@@ -69,11 +86,11 @@ export function update_narrow_to_recipient_visibility() {
             !composing_to_current_private_message_narrow() &&
             compose_state.has_full_recipient()
         ) {
-            $(".narrow_to_compose_recipients").toggleClass("invisible", false);
+            $(".narrow_to_compose_recipients").toggleClass("collapsed", false);
             return;
         }
     }
-    $(".narrow_to_compose_recipients").toggleClass("invisible", true);
+    $(".narrow_to_compose_recipients").toggleClass("collapsed", true);
 }
 
 function update_fade() {
@@ -331,6 +348,12 @@ export function initialize() {
     $("#stream_message_recipient_topic,#private_message_recipient").on("change", () => {
         update_on_recipient_change();
         compose_state.set_recipient_edited_manually(true);
+    });
+
+    $("#stream_message_recipient_topic").on("blur", () => {
+        if (show_narrow_to_compose_recipients) {
+            $(".narrow_to_compose_recipients").toggleClass("collapsed", false);
+        }
     });
 }
 
