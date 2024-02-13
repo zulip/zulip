@@ -83,7 +83,6 @@ export function show(opts) {
 
     unread_ui.hide_unread_banner();
     opts.update_compose();
-    narrow_state.reset_current_filter();
     narrow_title.update_narrow_title(narrow_state.filter());
     message_view_header.render_title_area();
     compose_recipient.handle_middle_pane_transition();

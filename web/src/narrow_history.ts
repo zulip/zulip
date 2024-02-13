@@ -1,4 +1,5 @@
 import _ from "lodash";
+import assert from "minimalistic-assert";
 
 import * as hash_util from "./hash_util";
 import * as message_lists from "./message_lists";
@@ -8,13 +9,14 @@ import * as narrow_state from "./narrow_state";
 // history, so that we are able to restore it if the user
 // navigates back to this page.
 function _save_narrow_state(): void {
-    if (!narrow_state.active() || message_lists.current === undefined) {
+    const current_filter = narrow_state.filter();
+    if (current_filter === undefined) {
         return;
     }
 
+    assert(message_lists.current !== undefined);
     // We don't want to save state in the middle of a narrow change
     // to the wrong hash.
-    const current_filter = message_lists.current.data.filter;
     if (hash_util.search_terms_to_hash(current_filter.terms()) !== window.location.hash) {
         return;
     }

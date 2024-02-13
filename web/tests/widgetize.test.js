@@ -54,8 +54,7 @@ const fake_poll_widget = {
     },
 };
 
-const message_lists = mock_esm("../src/message_lists", {current: {}, home: {id: 1}});
-const narrow_state = mock_esm("../src/narrow_state");
+const message_lists = mock_esm("../src/message_lists", {current: {id: 2}, home: {id: 1}});
 mock_esm("../src/poll_widget", fake_poll_widget);
 
 set_global("document", "document-stub");
@@ -80,12 +79,9 @@ test("activate", ({override}) => {
     // Both widgetize.activate and widgetize.handle_event are tested
     // here to use the "caching" of widgets
     const $row = $.create("<stub message row>");
-    $row.attr("id", "message-row-1-2909");
-    const $message_content = $.create("#message-row-1-2909");
+    $row.attr("id", `message-row-${message_lists.current.id}-2909`);
+    const $message_content = $.create(`#message-row-${message_lists.current.id}-2909`);
     $row.set_find_results(".message_content", $message_content);
-
-    let narrow_active;
-    override(narrow_state, "active", () => narrow_active);
 
     const opts = {
         events: [...events],
@@ -133,7 +129,7 @@ test("activate", ({override}) => {
     assert.ok(!is_widget_activated);
     assert.ok(!is_event_handled);
 
-    narrow_active = true;
+    message_lists.current = undefined;
     is_widget_elem_inserted = false;
     is_widget_activated = false;
     is_event_handled = false;
@@ -146,7 +142,6 @@ test("activate", ({override}) => {
     assert.ok(!is_event_handled);
 
     blueslip.expect("warn", "unknown widget_type");
-    narrow_active = false;
     is_widget_elem_inserted = false;
     is_widget_activated = false;
     is_event_handled = false;
@@ -187,6 +182,7 @@ test("activate", ({override}) => {
     widgetize.handle_event(post_activate_event);
     assert.ok(!is_event_handled);
 
+    message_lists.current = {id: 2};
     /* Test narrow change message update */
     override(message_lists.current, "get", (idx) => {
         assert.equal(idx, 2001);

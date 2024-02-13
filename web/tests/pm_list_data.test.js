@@ -18,6 +18,7 @@ const narrow_state = zrequire("narrow_state");
 const people = zrequire("people");
 const pm_conversations = zrequire("pm_conversations");
 const pm_list_data = zrequire("pm_list_data");
+const message_lists = zrequire("message_lists");
 
 const alice = {
     email: "alice@zulip.com",
@@ -67,7 +68,7 @@ people.initialize_current_user(me.user_id);
 
 function test(label, f) {
     run_test(label, (helpers) => {
-        narrow_state.reset_current_filter();
+        message_lists.set_current(undefined);
         pm_conversations.clear_for_testing();
         f(helpers);
     });
@@ -75,7 +76,11 @@ function test(label, f) {
 
 function set_pm_with_filter(emails) {
     const active_filter = new Filter([{operator: "dm", operand: emails}]);
-    narrow_state.set_current_filter(active_filter);
+    message_lists.set_current({
+        data: {
+            filter: active_filter,
+        },
+    });
 }
 
 function check_list_info(list, length, more_unread, recipients_array) {
@@ -183,7 +188,11 @@ test("get_active_user_ids_string", () => {
     assert.equal(pm_list_data.get_active_user_ids_string(), undefined);
 
     const stream_filter = new Filter([{operator: "stream", operand: "test"}]);
-    narrow_state.set_current_filter(stream_filter);
+    message_lists.set_current({
+        data: {
+            filter: stream_filter,
+        },
+    });
     assert.equal(pm_list_data.get_active_user_ids_string(), undefined);
 
     set_pm_with_filter("bob@zulip.com,alice@zulip.com");

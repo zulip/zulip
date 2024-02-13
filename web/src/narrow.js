@@ -123,7 +123,8 @@ export function activate(raw_terms, opts) {
          or rerendering due to server-side changes.
     */
 
-    const was_narrowed_already = narrow_state.active();
+    // Use to determine if user read any unread messages in non-All Messages narrow.
+    const was_narrowed_already = narrow_state.filter() !== undefined;
 
     // Since narrow.activate is called directly from various
     // places in our code without passing through hashchange,
@@ -409,12 +410,10 @@ export function activate(raw_terms, opts) {
         // From here on down, any calls to the narrow_state API will
         // reflect the upcoming narrow.
         narrow_state.set_has_shown_message_list_view();
-        narrow_state.set_current_filter(filter);
-
-        const excludes_muted_topics = narrow_state.excludes_muted_topics();
+        const excludes_muted_topics = narrow_state.excludes_muted_topics(filter);
 
         let msg_data = new MessageListData({
-            filter: narrow_state.filter(),
+            filter,
             excludes_muted_topics,
         });
 
@@ -435,7 +434,7 @@ export function activate(raw_terms, opts) {
             // maybe_add_local_messages is likely not be contiguous with
             // the block we're about to request from the server instead.
             msg_data = new MessageListData({
-                filter: narrow_state.filter(),
+                filter,
                 excludes_muted_topics,
             });
         }
@@ -591,7 +590,8 @@ export function maybe_add_local_messages(opts) {
     //  - add messages into our message list from our local cache
     const id_info = opts.id_info;
     const msg_data = opts.msg_data;
-    const unread_info = narrow_state.get_first_unread_info();
+    const filter = msg_data.filter;
+    const unread_info = narrow_state.get_first_unread_info(filter);
 
     // If we don't have a specific message we're hoping to select
     // (i.e. no `target_id`) and the narrow's filter doesn't
@@ -607,7 +607,7 @@ export function maybe_add_local_messages(opts) {
     // If we're able to render the narrow locally, we'll end up
     // overwriting this value with the ID of the latest message in the
     // narrow later in this function.
-    if (!id_info.target_id && !narrow_state.filter().allow_use_first_unread_when_narrowing()) {
+    if (!id_info.target_id && !filter.allow_use_first_unread_when_narrowing()) {
         // Note that this may be overwritten; see above comment.
         id_info.final_select_id = LARGER_THAN_MAX_MESSAGE_ID;
     }
@@ -628,13 +628,10 @@ export function maybe_add_local_messages(opts) {
         return;
     }
 
-    // We can now assume narrow_state.filter().can_apply_locally(),
+    // We can now assume filter.can_apply_locally(),
     // because !can_apply_locally => cannot_compute
 
-    if (
-        unread_info.flavor === "found" &&
-        narrow_state.filter().allow_use_first_unread_when_narrowing()
-    ) {
+    if (unread_info.flavor === "found" && filter.allow_use_first_unread_when_narrowing()) {
         // We have at least one unread message in this narrow, and the
         // narrow is one where we use the first unread message in
         // narrowing positioning decisions.  So either we aim for the
@@ -1098,9 +1095,7 @@ export function deactivate() {
             compose_actions.cancel();
         }
 
-        narrow_state.reset_current_filter();
         narrow_state.set_has_shown_message_list_view();
-
         message_lists.update_current_message_list(message_lists.home);
         assert(message_lists.current === message_lists.home);
         message_lists.current.resume_reading();

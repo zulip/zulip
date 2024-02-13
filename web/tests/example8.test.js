@@ -27,7 +27,7 @@ mock_esm("../src/settings_data", {
 */
 
 const {Filter} = zrequire("filter");
-const narrow_state = zrequire("narrow_state");
+const message_lists = zrequire("message_lists");
 const people = zrequire("people");
 const typing_data = zrequire("typing_data");
 const typing_events = zrequire("typing_events");
@@ -82,7 +82,11 @@ run_test("typing_events.render_notifications_for_narrow", ({override, mock_templ
     const group = [anna.user_id, vronsky.user_id, levin.user_id, kitty.user_id];
     const conversation_key = typing_data.get_direct_message_conversation_key(group);
     const group_emails = `${anna.email},${vronsky.email},${levin.email},${kitty.email}`;
-    narrow_state.set_current_filter(new Filter([{operator: "dm", operand: group_emails}]));
+    message_lists.set_current({
+        data: {
+            filter: new Filter([{operator: "dm", operand: group_emails}]),
+        },
+    });
 
     // Based on typing_events.MAX_USERS_TO_DISPLAY_NAME (which is currently 3),
     // we display either the list of all users typing (if they do not exceed

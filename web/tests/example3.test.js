@@ -70,11 +70,12 @@ run_test("filter", () => {
 // state with the narrow_state module.
 
 const narrow_state = zrequire("narrow_state");
+const message_lists = zrequire("message_lists");
 
 run_test("narrow_state", () => {
     stream_data.clear_subscriptions();
     stream_data.add_sub(denmark_stream);
-    narrow_state.reset_current_filter();
+    message_lists.set_current(undefined);
 
     // As we often do, first make assertions about the starting
     // state:
@@ -90,8 +91,11 @@ run_test("narrow_state", () => {
     const filter = new Filter(filter_terms);
 
     // And here is where we actually change state.
-    narrow_state.set_current_filter(filter);
-
+    message_lists.set_current({
+        data: {
+            filter,
+        },
+    });
     assert.equal(narrow_state.stream_name(), "Denmark");
     assert.equal(narrow_state.topic(), "copenhagen");
 });
