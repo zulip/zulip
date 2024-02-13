@@ -76,7 +76,6 @@ export const page_params: {
     max_icon_file_size_mib: number;
     max_logo_file_size_mib: number;
     max_message_id: number;
-    muted_users: {id: number; timestamp: number}[];
     narrow?: Term[];
     narrow_stream?: string;
     needs_tutorial: boolean;
