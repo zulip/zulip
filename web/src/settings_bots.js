@@ -18,6 +18,7 @@ import * as list_widget from "./list_widget";
 import {page_params} from "./page_params";
 import * as people from "./people";
 import * as settings_data from "./settings_data";
+import {current_user} from "./state_data";
 import * as ui_report from "./ui_report";
 import * as user_deactivation_ui from "./user_deactivation_ui";
 import * as user_profile from "./user_profile";
@@ -139,11 +140,11 @@ export const bot_creation_policy_values = {
 };
 
 export function can_create_new_bots() {
-    if (page_params.is_admin) {
+    if (current_user.is_admin) {
         return true;
     }
 
-    if (page_params.is_guest) {
+    if (current_user.is_guest) {
         return false;
     }
 
@@ -152,14 +153,14 @@ export function can_create_new_bots() {
 
 export function update_bot_settings_tip($tip_container, for_org_settings) {
     if (
-        !page_params.is_admin &&
+        !current_user.is_admin &&
         page_params.realm_bot_creation_policy === bot_creation_policy_values.everyone.code
     ) {
         $tip_container.hide();
         return;
     }
 
-    if (page_params.is_admin && !for_org_settings) {
+    if (current_user.is_admin && !for_org_settings) {
         $tip_container.hide();
         return;
     }

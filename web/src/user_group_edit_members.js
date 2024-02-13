@@ -11,10 +11,10 @@ import * as channel from "./channel";
 import * as confirm_dialog from "./confirm_dialog";
 import {$t, $t_html} from "./i18n";
 import * as ListWidget from "./list_widget";
-import {page_params} from "./page_params";
 import * as people from "./people";
 import * as scroll_util from "./scroll_util";
 import * as settings_data from "./settings_data";
+import {current_user} from "./state_data";
 import * as user_groups from "./user_groups";
 import * as user_sort from "./user_sort";
 
@@ -53,7 +53,7 @@ function format_member_list_elem(person) {
     return render_user_group_member_list_entry({
         name: person.full_name,
         user_id: person.user_id,
-        is_current_user: person.user_id === page_params.user_id,
+        is_current_user: person.user_id === current_user.user_id,
         email: person.delivery_email,
         can_remove_subscribers: settings_data.can_edit_user_group(current_group_id),
         for_user_group_members: true,
@@ -181,13 +181,13 @@ function add_new_members({pill_user_ids}) {
     const user_id_set = new Set(active_user_ids);
 
     if (
-        user_id_set.has(page_params.user_id) &&
-        user_groups.is_user_in_group(group.id, page_params.user_id)
+        user_id_set.has(current_user.user_id) &&
+        user_groups.is_user_in_group(group.id, current_user.user_id)
     ) {
         // We don't want to send a request to add ourselves if we
         // are already added to this group. This case occurs
         // when creating user pills from a stream or user group.
-        user_id_set.delete(page_params.user_id);
+        user_id_set.delete(current_user.user_id);
     }
 
     let ignored_deactivated_users;
@@ -286,7 +286,7 @@ function remove_member({group_id, target_user_id, $list_entry}) {
         });
     }
 
-    if (people.is_my_user_id(target_user_id) && !page_params.is_admin) {
+    if (people.is_my_user_id(target_user_id) && !current_user.is_admin) {
         const html_body = render_leave_user_group_modal({
             message: $t({
                 defaultMessage: "Once you leave this group, you will not be able to rejoin.",

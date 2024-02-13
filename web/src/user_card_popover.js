@@ -32,6 +32,7 @@ import {hide_all} from "./popovers";
 import * as rows from "./rows";
 import * as settings_config from "./settings_config";
 import * as sidebar_ui from "./sidebar_ui";
+import {current_user} from "./state_data";
 import * as timerender from "./timerender";
 import * as ui_report from "./ui_report";
 import * as ui_util from "./ui_util";
@@ -479,7 +480,7 @@ function toggle_user_card_popover_manage_menu(element, user) {
 
     const args = {
         can_mute: muting_allowed && !is_muted,
-        can_manage_user: page_params.is_admin && !is_me && !is_system_bot,
+        can_manage_user: current_user.is_admin && !is_me && !is_system_bot,
         can_unmute: muting_allowed && is_muted,
         is_active: people.is_active_user_for_popover(user.user_id),
         is_bot: user.is_bot,

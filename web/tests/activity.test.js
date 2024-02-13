@@ -6,7 +6,7 @@ const {mock_esm, set_global, with_overrides, zrequire} = require("./lib/namespac
 const {run_test, noop} = require("./lib/test");
 const blueslip = require("./lib/zblueslip");
 const $ = require("./lib/zjquery");
-const {page_params, user_settings} = require("./lib/zpage_params");
+const {current_user, page_params, user_settings} = require("./lib/zpage_params");
 
 const $window_stub = $.create("window-stub");
 set_global("to_$", () => $window_stub);
@@ -138,17 +138,17 @@ run_test("reload_defaults", () => {
 
 test("get_status", () => {
     page_params.realm_users = [];
-    page_params.user_id = 999;
+    current_user.user_id = 999;
 
-    assert.equal(presence.get_status(page_params.user_id), "active");
+    assert.equal(presence.get_status(current_user.user_id), "active");
     assert.equal(presence.get_status(alice.user_id), "active");
     assert.equal(presence.get_status(mark.user_id), "idle");
     assert.equal(presence.get_status(fred.user_id), "active");
 
     user_settings.presence_enabled = false;
-    assert.equal(presence.get_status(page_params.user_id), "offline");
+    assert.equal(presence.get_status(current_user.user_id), "offline");
     user_settings.presence_enabled = true;
-    assert.equal(presence.get_status(page_params.user_id), "active");
+    assert.equal(presence.get_status(current_user.user_id), "active");
 
     presence.presence_info.delete(zoe.user_id);
     assert.equal(presence.get_status(zoe.user_id), "offline");

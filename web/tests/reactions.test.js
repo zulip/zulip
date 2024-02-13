@@ -7,7 +7,7 @@ const {make_stub} = require("./lib/stub");
 const {run_test, noop} = require("./lib/test");
 const blueslip = require("./lib/zblueslip");
 const $ = require("./lib/zjquery");
-const {page_params, user_settings} = require("./lib/zpage_params");
+const {current_user, page_params, user_settings} = require("./lib/zpage_params");
 
 const alice_user_id = 5;
 
@@ -108,7 +108,7 @@ people.add_active_user(alexus);
 
 function test(label, f) {
     run_test(label, (helpers) => {
-        page_params.user_id = alice_user_id;
+        current_user.user_id = alice_user_id;
         f(helpers);
     });
 }

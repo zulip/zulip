@@ -7,7 +7,7 @@ const _ = require("lodash");
 const {mock_esm, zrequire} = require("./lib/namespace");
 const {run_test} = require("./lib/test");
 const blueslip = require("./lib/zblueslip");
-const {page_params, user_settings} = require("./lib/zpage_params");
+const {current_user, page_params, user_settings} = require("./lib/zpage_params");
 
 const timerender = mock_esm("../src/timerender");
 
@@ -316,7 +316,7 @@ test("title_data", () => {
         third_line: "translated: Active now",
         show_you: true,
     };
-    page_params.user_id = me.user_id;
+    current_user.user_id = me.user_id;
     assert.deepEqual(buddy_data.get_title_data(me.user_id, is_group), expected_data);
 
     expected_data = {

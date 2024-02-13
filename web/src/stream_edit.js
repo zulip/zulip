@@ -24,6 +24,7 @@ import * as scroll_util from "./scroll_util";
 import * as settings_components from "./settings_components";
 import * as settings_config from "./settings_config";
 import * as settings_org from "./settings_org";
+import {current_user} from "./state_data";
 import * as stream_color from "./stream_color";
 import * as stream_data from "./stream_data";
 import * as stream_edit_subscribers from "./stream_edit_subscribers";
@@ -255,7 +256,7 @@ export function show_settings_for(node) {
             page_params.upgrade_text_for_wide_organization_logo,
         is_business_type_org:
             page_params.realm_org_type === settings_config.all_org_type_values.business.code,
-        is_admin: page_params.is_admin,
+        is_admin: current_user.is_admin,
         org_level_message_retention_setting: get_display_text_for_realm_message_retention_setting(),
         can_access_stream_email: stream_data.can_access_stream_email(sub),
     });

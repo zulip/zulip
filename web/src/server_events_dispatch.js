@@ -67,6 +67,7 @@ import * as settings_users from "./settings_users";
 import * as sidebar_ui from "./sidebar_ui";
 import * as starred_messages from "./starred_messages";
 import * as starred_messages_ui from "./starred_messages_ui";
+import {current_user} from "./state_data";
 import * as stream_data from "./stream_data";
 import * as stream_events from "./stream_events";
 import * as stream_list from "./stream_list";
@@ -134,7 +135,7 @@ export function dispatch_normal_event(event) {
         }
 
         case "has_zoom_token":
-            page_params.has_zoom_token = event.value;
+            current_user.has_zoom_token = event.value;
             if (event.value) {
                 for (const callback of compose_call.zoom_token_callbacks.values()) {
                     callback();
@@ -146,8 +147,8 @@ export function dispatch_normal_event(event) {
         case "onboarding_steps":
             hotspots.load_new(onboarding_steps.filter_new_hotspots(event.onboarding_steps));
             onboarding_steps.update_notice_to_display(event.onboarding_steps);
-            page_params.onboarding_steps = page_params.onboarding_steps
-                ? [...page_params.onboarding_steps, ...event.onboarding_steps]
+            current_user.onboarding_steps = current_user.onboarding_steps
+                ? [...current_user.onboarding_steps, ...event.onboarding_steps]
                 : event.onboarding_steps;
             break;
 
@@ -346,7 +347,7 @@ export function dispatch_normal_event(event) {
                     window.location.href = "/accounts/deactivated/";
                     break;
             }
-            if (page_params.is_admin) {
+            if (current_user.is_admin) {
                 // Update the UI notice about the user's profile being
                 // incomplete, as we might have filled in the missing field(s).
                 navbar_alerts.show_profile_incomplete(navbar_alerts.check_profile_incomplete());
@@ -639,7 +640,7 @@ export function dispatch_normal_event(event) {
             }
             break;
         case "typing":
-            if (event.sender.user_id === page_params.user_id) {
+            if (event.sender.user_id === current_user.user_id) {
                 // typing notifications are sent to the user who is typing
                 // as well as recipients; we ignore such self-generated events.
                 return;
@@ -817,7 +818,7 @@ export function dispatch_normal_event(event) {
             if (event.property === "presence_enabled") {
                 user_settings.presence_enabled = event.value;
                 $("#user_presence_enabled").prop("checked", user_settings.presence_enabled);
-                activity_ui.redraw_user(page_params.user_id);
+                activity_ui.redraw_user(current_user.user_id);
                 break;
             }
             if (event.property === "email_address_visibility") {

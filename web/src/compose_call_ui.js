@@ -7,6 +7,7 @@ import * as compose_ui from "./compose_ui";
 import {$t, $t_html} from "./i18n";
 import {page_params} from "./page_params";
 import * as rows from "./rows";
+import {current_user} from "./state_data";
 import * as ui_report from "./ui_report";
 import * as util from "./util";
 
@@ -79,7 +80,7 @@ export function generate_and_insert_audio_or_video_call_link($target_element, is
                             xhr.responseJSON &&
                             xhr.responseJSON.code === "INVALID_ZOOM_TOKEN"
                         ) {
-                            page_params.has_zoom_token = false;
+                            current_user.has_zoom_token = false;
                         }
                         if (status !== "abort") {
                             ui_report.generic_embed_error(
@@ -91,7 +92,7 @@ export function generate_and_insert_audio_or_video_call_link($target_element, is
             );
         };
 
-        if (page_params.has_zoom_token) {
+        if (current_user.has_zoom_token) {
             make_zoom_call();
         } else {
             compose_call.zoom_token_callbacks.set(key, make_zoom_call);

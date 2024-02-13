@@ -7,6 +7,7 @@ import * as confirm_dialog from "./confirm_dialog";
 import {$t_html} from "./i18n";
 import {page_params} from "./page_params";
 import * as settings_data from "./settings_data";
+import {current_user} from "./state_data";
 import * as upload_widget from "./upload_widget";
 import type {UploadFunction, UploadWidget} from "./upload_widget";
 
@@ -75,7 +76,7 @@ export function build_user_avatar_widget(upload_function: UploadFunction): void 
         return $<HTMLInputElement>("#user-avatar-upload-widget input.image_file_input").expectOne();
     };
 
-    if (page_params.avatar_source === "G") {
+    if (current_user.avatar_source === "G") {
         $("#user-avatar-upload-widget .image-delete-button").hide();
         $("#user-avatar-source").show();
     } else {

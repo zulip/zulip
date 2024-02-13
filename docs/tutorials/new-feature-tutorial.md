@@ -546,7 +546,7 @@ Then add the new form control in `web/src/admin.js`.
  export function build_page() {
      const options = {
          custom_profile_field_types: page_params.custom_profile_field_types,
-         full_name: page_params.full_name,
+         full_name: current_user.full_name,
          realm_name: page_params.realm_name,
          // ...
 +        realm_mandatory_topics: page_params.realm_mandatory_topics,

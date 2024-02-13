@@ -23,6 +23,7 @@ import * as reactions from "./reactions";
 import * as recent_senders from "./recent_senders";
 import * as settings_config from "./settings_config";
 import * as settings_data from "./settings_data";
+import {current_user} from "./state_data";
 import * as stream_data from "./stream_data";
 import * as sub_store from "./sub_store";
 import * as util from "./util";
@@ -481,31 +482,31 @@ function wildcard_mention_policy_authorizes_user() {
         page_params.realm_wildcard_mention_policy ===
         settings_config.wildcard_mention_policy_values.by_admins_only.code
     ) {
-        return page_params.is_admin;
+        return current_user.is_admin;
     }
 
     if (
         page_params.realm_wildcard_mention_policy ===
         settings_config.wildcard_mention_policy_values.by_moderators_only.code
     ) {
-        return page_params.is_admin || page_params.is_moderator;
+        return current_user.is_admin || current_user.is_moderator;
     }
 
     if (
         page_params.realm_wildcard_mention_policy ===
         settings_config.wildcard_mention_policy_values.by_full_members.code
     ) {
-        if (page_params.is_admin) {
+        if (current_user.is_admin) {
             return true;
         }
-        const person = people.get_by_user_id(page_params.user_id);
+        const person = people.get_by_user_id(current_user.user_id);
         const current_datetime = new Date(Date.now());
         const person_date_joined = new Date(person.date_joined);
         const days = (current_datetime - person_date_joined) / 1000 / 86400;
 
-        return days >= page_params.realm_waiting_period_threshold && !page_params.is_guest;
+        return days >= page_params.realm_waiting_period_threshold && !current_user.is_guest;
     }
-    return !page_params.is_guest;
+    return !current_user.is_guest;
 }
 
 export function stream_wildcard_mention_allowed() {

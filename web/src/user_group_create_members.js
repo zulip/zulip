@@ -5,8 +5,8 @@ import render_new_user_group_users from "../templates/user_group_settings/new_us
 
 import * as add_subscribers_pill from "./add_subscribers_pill";
 import * as ListWidget from "./list_widget";
-import {page_params} from "./page_params";
 import * as people from "./people";
+import {current_user} from "./state_data";
 import * as user_group_create_members_data from "./user_group_create_members_data";
 import * as user_sort from "./user_sort";
 
@@ -88,7 +88,7 @@ export function build_widgets() {
     build_pill_widget({$parent_container: $add_people_container});
 
     user_group_create_members_data.initialize_with_current_user();
-    const current_user_id = page_params.user_id;
+    const current_user_id = current_user.user_id;
 
     all_users_list_widget = ListWidget.create($("#create_user_group_members"), [current_user_id], {
         name: "new_user_group_add_users",

@@ -6,6 +6,7 @@ import * as peer_data from "./peer_data";
 import * as people from "./people";
 import * as settings_config from "./settings_config";
 import * as settings_data from "./settings_data";
+import {current_user} from "./state_data";
 import * as sub_store from "./sub_store";
 import type {
     ApiStreamSubscription,
@@ -498,13 +499,14 @@ export function can_toggle_subscription(sub: StreamSubscription): boolean {
     // deactivated streams are automatically made private during the
     // archive stream process.
     return (
-        (sub.subscribed || (!page_params.is_guest && !sub.invite_only)) && !page_params.is_spectator
+        (sub.subscribed || (!current_user.is_guest && !sub.invite_only)) &&
+        !page_params.is_spectator
     );
 }
 
 export function can_access_stream_email(sub: StreamSubscription): boolean {
     return (
-        (sub.subscribed || sub.is_web_public || (!page_params.is_guest && !sub.invite_only)) &&
+        (sub.subscribed || sub.is_web_public || (!current_user.is_guest && !sub.invite_only)) &&
         !page_params.is_spectator
     );
 }
@@ -521,19 +523,19 @@ export function can_preview(sub: StreamSubscription): boolean {
 }
 
 export function can_change_permissions(sub: StreamSubscription): boolean {
-    return page_params.is_admin && (!sub.invite_only || sub.subscribed);
+    return current_user.is_admin && (!sub.invite_only || sub.subscribed);
 }
 
 export function can_view_subscribers(sub: StreamSubscription): boolean {
     // Guest users can't access subscribers of any(public or private) non-subscribed streams.
-    return page_params.is_admin || sub.subscribed || (!page_params.is_guest && !sub.invite_only);
+    return current_user.is_admin || sub.subscribed || (!current_user.is_guest && !sub.invite_only);
 }
 
 export function can_subscribe_others(sub: StreamSubscription): boolean {
     // User can add other users to stream if stream is public or user is subscribed to stream
     // and realm level setting allows user to add subscribers.
     return (
-        !page_params.is_guest &&
+        !current_user.is_guest &&
         (!sub.invite_only || sub.subscribed) &&
         settings_data.user_can_subscribe_other_users()
     );
@@ -567,7 +569,7 @@ export function can_unsubscribe_others(sub: StreamSubscription): boolean {
         return false;
     }
 
-    if (page_params.is_admin) {
+    if (current_user.is_admin) {
         return true;
     }
 
@@ -582,7 +584,7 @@ export function can_post_messages_in_stream(stream: StreamSubscription): boolean
         return false;
     }
 
-    if (page_params.is_admin) {
+    if (current_user.is_admin) {
         return true;
     }
 
@@ -590,7 +592,7 @@ export function can_post_messages_in_stream(stream: StreamSubscription): boolean
         return false;
     }
 
-    if (page_params.is_moderator) {
+    if (current_user.is_moderator) {
         return true;
     }
 
@@ -599,7 +601,7 @@ export function can_post_messages_in_stream(stream: StreamSubscription): boolean
     }
 
     if (
-        page_params.is_guest &&
+        current_user.is_guest &&
         stream.stream_post_policy !== settings_config.stream_post_policy_values.everyone.code
     ) {
         return false;

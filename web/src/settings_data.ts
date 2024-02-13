@@ -1,5 +1,6 @@
 import {page_params} from "./page_params";
 import * as settings_config from "./settings_config";
+import {current_user} from "./state_data";
 import * as user_groups from "./user_groups";
 import {user_settings} from "./user_settings";
 
@@ -20,7 +21,7 @@ export function initialize(current_user_join_date: Date): void {
 */
 
 export function user_can_change_name(): boolean {
-    if (page_params.is_admin) {
+    if (current_user.is_admin) {
         return true;
     }
     if (page_params.realm_name_changes_disabled || page_params.server_name_changes_disabled) {
@@ -30,7 +31,7 @@ export function user_can_change_name(): boolean {
 }
 
 export function user_can_change_avatar(): boolean {
-    if (page_params.is_admin) {
+    if (current_user.is_admin) {
         return true;
     }
     if (page_params.realm_avatar_changes_disabled || page_params.server_avatar_changes_disabled) {
@@ -40,7 +41,7 @@ export function user_can_change_avatar(): boolean {
 }
 
 export function user_can_change_email(): boolean {
-    if (page_params.is_admin) {
+    if (current_user.is_admin) {
         return true;
     }
     if (page_params.realm_email_changes_disabled) {
@@ -50,7 +51,7 @@ export function user_can_change_email(): boolean {
 }
 
 export function user_can_change_logo(): boolean {
-    return page_params.is_admin && page_params.zulip_plan_is_not_limited;
+    return current_user.is_admin && page_params.zulip_plan_is_not_limited;
 }
 
 function user_has_permission(policy_value: number): boolean {
@@ -62,7 +63,7 @@ function user_has_permission(policy_value: number): boolean {
         return false;
     }
 
-    if (page_params.is_owner) {
+    if (current_user.is_owner) {
         return true;
     }
 
@@ -72,7 +73,7 @@ function user_has_permission(policy_value: number): boolean {
         return false;
     }
 
-    if (page_params.is_admin) {
+    if (current_user.is_admin) {
         return true;
     }
 
@@ -87,7 +88,7 @@ function user_has_permission(policy_value: number): boolean {
         return true;
     }
 
-    if (page_params.is_guest) {
+    if (current_user.is_guest) {
         return false;
     }
 
@@ -95,7 +96,7 @@ function user_has_permission(policy_value: number): boolean {
         return false;
     }
 
-    if (page_params.is_moderator) {
+    if (current_user.is_moderator) {
         return true;
     }
 
@@ -125,12 +126,12 @@ export function user_can_invite_users_by_email(): boolean {
 }
 
 export function user_can_create_multiuse_invite(): boolean {
-    if (!page_params.user_id) {
+    if (!current_user.user_id) {
         return false;
     }
     return user_groups.is_user_in_group(
         page_params.realm_create_multiuse_invite_group,
-        page_params.user_id,
+        current_user.user_id,
     );
 }
 
@@ -166,7 +167,7 @@ export function user_can_edit_user_groups(): boolean {
 }
 
 export function can_edit_user_group(group_id: number): boolean {
-    if (!page_params.user_id) {
+    if (!current_user.user_id) {
         return false;
     }
 
@@ -177,11 +178,11 @@ export function can_edit_user_group(group_id: number): boolean {
     // Admins and moderators are allowed to edit user groups even if they
     // are not a member of that user group. Members can edit user groups
     // only if they belong to that group.
-    if (page_params.is_admin || page_params.is_moderator) {
+    if (current_user.is_admin || current_user.is_moderator) {
         return true;
     }
 
-    return user_groups.is_direct_member_of(page_params.user_id, group_id);
+    return user_groups.is_direct_member_of(current_user.user_id, group_id);
 }
 
 export function user_can_add_custom_emoji(): boolean {
@@ -233,7 +234,7 @@ export function user_email_not_configured(): boolean {
     // The following should also be true in the only circumstance
     // under which we expect this condition to be possible:
     // page_params.demo_organization_scheduled_deletion_date
-    return page_params.is_owner && page_params.delivery_email === "";
+    return current_user.is_owner && current_user.delivery_email === "";
 }
 
 export function bot_type_id_to_string(type_id: number): string | undefined {
@@ -247,13 +248,13 @@ export function bot_type_id_to_string(type_id: number): string | undefined {
 }
 
 export function user_can_access_all_other_users(): boolean {
-    if (!page_params.user_id) {
+    if (!current_user.user_id) {
         return true;
     }
 
     return user_groups.is_user_in_group(
         page_params.realm_can_access_all_users_group,
-        page_params.user_id,
+        current_user.user_id,
     );
 }
 

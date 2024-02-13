@@ -5,11 +5,11 @@ const {strict: assert} = require("assert");
 const {mock_esm, set_global, zrequire} = require("./lib/namespace");
 const {run_test, noop} = require("./lib/test");
 const $ = require("./lib/zjquery");
-const {page_params, user_settings} = require("./lib/zpage_params");
+const {current_user, page_params, user_settings} = require("./lib/zpage_params");
 
 set_global("document", "document-stub");
 
-page_params.is_admin = false;
+current_user.is_admin = false;
 page_params.realm_users = [];
 
 // We use this with override.

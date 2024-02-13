@@ -93,10 +93,11 @@ run_test("tr_tag", ({mock_template}) => {
             settings: {},
         },
         notification_settings: {},
-        page_params: {
+        current_user: {
             full_name: "John Doe",
             delivery_email: "john@zulip.com",
         },
+        page_params: {},
         settings_object: {},
         settings_label: {
             desktop_icon_count_display:

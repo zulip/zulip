@@ -10,7 +10,7 @@ const {$t} = require("./lib/i18n");
 const {mock_esm, set_global, zrequire} = require("./lib/namespace");
 const {run_test, noop} = require("./lib/test");
 const $ = require("./lib/zjquery");
-const {page_params, user_settings} = require("./lib/zpage_params");
+const {current_user, page_params, user_settings} = require("./lib/zpage_params");
 
 const settings_config = zrequire("settings_config");
 
@@ -231,7 +231,7 @@ test_ui("send_message", ({override, override_rewire, mock_template}) => {
         stub_state = initialize_state_stub_dict();
         compose_state.topic("");
         compose_state.set_message_type("private");
-        page_params.user_id = new_user.user_id;
+        current_user.user_id = new_user.user_id;
         override(compose_pm_pill, "get_emails", () => "alice@example.com");
 
         const server_message_id = 127;
@@ -367,7 +367,7 @@ test_ui("enter_with_preview_open", ({override, override_rewire}) => {
         show_button_spinner_called = true;
     });
 
-    page_params.user_id = new_user.user_id;
+    current_user.user_id = new_user.user_id;
 
     // Test sending a message with content.
     compose_state.set_message_type("stream");

@@ -16,6 +16,7 @@ import * as loading from "./loading";
 import {page_params} from "./page_params";
 import * as people from "./people";
 import * as settings_ui from "./settings_ui";
+import {current_user} from "./state_data";
 import * as ui_report from "./ui_report";
 
 const meta = {
@@ -30,7 +31,7 @@ function display_success_status() {
 }
 
 export function maybe_disable_widgets() {
-    if (page_params.is_admin) {
+    if (current_user.is_admin) {
         return;
     }
 
@@ -663,7 +664,7 @@ export function do_populate_profile_fields(profile_fields_data) {
                     display_in_profile_summary,
                     valid_to_display_in_summary: is_valid_to_display_in_summary(profile_field.type),
                 },
-                can_modify: page_params.is_admin,
+                can_modify: current_user.is_admin,
                 realm_default_external_accounts: page_params.realm_default_external_accounts,
             }),
         );
@@ -677,7 +678,7 @@ export function do_populate_profile_fields(profile_fields_data) {
     // Update whether we're at the limit for display_in_profile_summary.
     display_in_profile_summary_fields_limit_reached = display_in_profile_summary_fields_count >= 2;
 
-    if (page_params.is_admin) {
+    if (current_user.is_admin) {
         const field_list = $("#admin_profile_fields_table")[0];
         Sortable.create(field_list, {
             onUpdate: update_field_order,
@@ -695,7 +696,7 @@ function set_up_select_field() {
 
     create_choice_row("#profile_field_choices");
 
-    if (page_params.is_admin) {
+    if (current_user.is_admin) {
         const choice_list = $("#profile_field_choices")[0];
         Sortable.create(choice_list, {
             onUpdate() {},

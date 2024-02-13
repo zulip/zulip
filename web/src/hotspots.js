@@ -9,7 +9,7 @@ import * as blueslip from "./blueslip";
 import * as message_viewport from "./message_viewport";
 import * as onboarding_steps from "./onboarding_steps";
 import * as overlays from "./overlays";
-import {page_params} from "./page_params";
+import {current_user} from "./state_data";
 
 // popover orientations
 const TOP = "top";
@@ -336,7 +336,7 @@ export function load_new(new_hotspots) {
 }
 
 export function initialize() {
-    load_new(onboarding_steps.filter_new_hotspots(page_params.onboarding_steps));
+    load_new(onboarding_steps.filter_new_hotspots(current_user.onboarding_steps));
 
     // open
     $("body").on("click", ".hotspot-icon", function (e) {
