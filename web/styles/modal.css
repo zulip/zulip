@@ -209,7 +209,7 @@
         margin: auto;
     }
 
-    #read_receipts_list {
+    .read_receipts_list {
         margin-left: 0;
 
         & li {

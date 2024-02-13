@@ -1221,7 +1221,7 @@
         }
     }
 
-    #read_receipts_modal #read_receipts_list li {
+    #read_receipts_modal .read_receipts_list li {
         &:hover {
             background-color: hsl(0deg 0% 100% / 5%);
         }
