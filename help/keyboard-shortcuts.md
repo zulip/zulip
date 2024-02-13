@@ -146,14 +146,14 @@ in the Zulip app to add more to your repertoire as needed.
 
 ### For a selected message (outlined in blue)
 
+* **Edit message or view message source**: <kbd>E</kbd>
+
 * **Show message sender's user card**: <kbd>U</kbd>
 
 * **View read receipts**: <kbd>Shift</kbd> + <kbd>V</kbd> — Same shortcut
   also closes the read receipts menu (if open).
 
 * **View image**: <kbd>V</kbd>
-
-* **Edit message or view message source**: <kbd>E</kbd>
 
 * **Move message and (optionally) other messages in the same topic**: <kbd>M</kbd>
 
