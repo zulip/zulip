@@ -828,7 +828,7 @@ export function get_notifications_stream(): string {
 export function initialize(params: StreamInitParams): void {
     /*
         We get `params` data, which is data that we "own"
-        and which has already been removed from `page_params`.
+        and which has already been removed from `state_data`.
         We only use it in this function to populate other
         data structures.
     */
