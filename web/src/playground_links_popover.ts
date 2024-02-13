@@ -1,4 +1,5 @@
 import $ from "jquery";
+import type {Instance as PopoverInstance, ReferenceElement} from "tippy.js";
 import url_template_lib from "url-template";
 
 import render_playground_links_popover from "../templates/popovers/playground_links_popover.hbs";
@@ -6,14 +7,20 @@ import render_playground_links_popover from "../templates/popovers/playground_li
 import * as blueslip from "./blueslip";
 import * as popover_menus from "./popover_menus";
 import * as realm_playground from "./realm_playground";
+import type {RealmPlayground} from "./realm_playground";
 import * as ui_util from "./ui_util";
 
-let playground_links_popover_instance;
+type RealmPlaygroundWithURL = RealmPlayground & {playground_url: string};
+
+let playground_links_popover_instance: PopoverInstance;
 
 // Playground_store contains all the data we need to generate a popover of
 // playground links for each code block. The element is the target element
 // to pop off of.
-function toggle_playground_links_popover(element, playground_store) {
+function toggle_playground_links_popover(
+    element: ReferenceElement,
+    playground_store: Map<number, RealmPlaygroundWithURL>,
+): void {
     if (is_open()) {
         return;
     }
@@ -50,21 +57,20 @@ function toggle_playground_links_popover(element, playground_store) {
     });
 }
 
-export function is_open() {
+export function is_open(): boolean {
     return Boolean(playground_links_popover_instance);
 }
 
-export function hide() {
+export function hide(): void {
     if (is_open()) {
         $(playground_links_popover_instance.reference)
             .parent()
             .removeClass("active-playground-links-reference");
         playground_links_popover_instance.destroy();
-        playground_links_popover_instance = undefined;
     }
 }
 
-function get_playground_links_popover_items() {
+function get_playground_links_popover_items(): JQuery | undefined {
     if (!is_open()) {
         blueslip.error("Trying to get menu items when playground links popover is closed.");
         return undefined;
@@ -79,12 +85,12 @@ function get_playground_links_popover_items() {
     return $("li:not(.divider):visible a", $popover);
 }
 
-export function handle_keyboard(key) {
+export function handle_keyboard(key: string): void {
     const $items = get_playground_links_popover_items();
     popover_menus.popover_items_handle_keyboard(key, $items);
 }
 
-function register_click_handlers() {
+function register_click_handlers(): void {
     $("#main_div, #preview_content, #message-history").on(
         "click",
         ".code_external_link",
@@ -107,7 +113,7 @@ function register_click_handlers() {
                     url_template.expand({code: extracted_code}),
                 );
             } else {
-                const playground_store = new Map();
+                const playground_store = new Map<number, RealmPlaygroundWithURL>();
                 for (const playground of playground_info) {
                     const url_template = url_template_lib.parse(playground.url_template);
                     const playground_url = url_template.expand({code: extracted_code});
@@ -127,6 +133,6 @@ function register_click_handlers() {
     });
 }
 
-export function initialize() {
+export function initialize(): void {
     register_click_handlers();
 }
