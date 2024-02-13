@@ -14,6 +14,7 @@ import * as desktop_notifications from "./desktop_notifications";
 import * as keydown_util from "./keydown_util";
 import {localstorage} from "./localstorage";
 import {page_params} from "./page_params";
+import {current_user} from "./state_data";
 import {should_display_profile_incomplete_alert} from "./timerender";
 import * as unread from "./unread";
 import * as unread_ops from "./unread_ops";
@@ -77,7 +78,7 @@ export function dismiss_upgrade_nag(ls) {
 }
 
 export function check_profile_incomplete() {
-    if (!page_params.is_admin) {
+    if (!current_user.is_admin) {
         return false;
     }
     if (!should_display_profile_incomplete_alert(page_params.realm_date_created)) {
@@ -141,7 +142,7 @@ export function initialize() {
                 rendered_alert_content_html: render_server_needs_upgrade_alert_content(),
             });
         }
-    } else if (page_params.warn_no_email === true && page_params.is_admin) {
+    } else if (page_params.warn_no_email === true && current_user.is_admin) {
         // if email has not been set up and the user is the admin,
         // display a warning to tell them to set up an email server.
         open({

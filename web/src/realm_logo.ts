@@ -3,6 +3,7 @@ import $ from "jquery";
 import * as channel from "./channel";
 import {page_params} from "./page_params";
 import * as settings_data from "./settings_data";
+import {current_user} from "./state_data";
 import * as ui_util from "./ui_util";
 import * as upload_widget from "./upload_widget";
 import type {UploadFunction} from "./upload_widget";
@@ -25,7 +26,7 @@ export function build_realm_logo_widget(upload_function: UploadFunction, is_nigh
         return $file_input_elem.expectOne();
     };
 
-    if (!page_params.is_admin) {
+    if (!current_user.is_admin) {
         return;
     }
 

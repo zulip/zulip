@@ -10,7 +10,7 @@ const {$t} = require("./lib/i18n");
 const {mock_esm, zrequire} = require("./lib/namespace");
 const {run_test} = require("./lib/test");
 const blueslip = require("./lib/zblueslip");
-const {page_params, user_settings} = require("./lib/zpage_params");
+const {current_user, page_params, user_settings} = require("./lib/zpage_params");
 
 const message_user_ids = mock_esm("../src/message_user_ids");
 const settings_data = mock_esm("../src/settings_data", {
@@ -698,11 +698,11 @@ test_people("set_custom_profile_field_data", () => {
 test_people("is_current_user_only_owner", () => {
     const person = people.get_by_email(me.email);
     person.is_owner = false;
-    page_params.is_owner = false;
+    current_user.is_owner = false;
     assert.ok(!people.is_current_user_only_owner());
 
     person.is_owner = true;
-    page_params.is_owner = true;
+    current_user.is_owner = true;
     assert.ok(people.is_current_user_only_owner());
 
     people.add_active_user(realm_owner);
@@ -1237,7 +1237,7 @@ test_people("filter_for_user_settings_search", () => {
         so that is where we do more thorough testing.
         This test is just a sanity check for now.
     */
-    page_params.is_admin = false;
+    current_user.is_admin = false;
 
     const fred_smith = {full_name: "Fred Smith"};
     const alice_lee = {full_name: "Alice Lee"};
@@ -1256,12 +1256,12 @@ test_people("filter_for_user_settings_search", () => {
 test_people("matches_user_settings_search", () => {
     const match = people.matches_user_settings_search;
 
-    page_params.is_admin = false;
+    current_user.is_admin = false;
 
     assert.equal(match({email: "fred@example.com"}, "fred"), false);
     assert.equal(match({full_name: "Fred Smith"}, "fr"), true);
 
-    page_params.is_admin = true;
+    current_user.is_admin = true;
 
     assert.equal(match({delivery_email: "fred@example.com"}, "fr"), true);
     assert.equal(

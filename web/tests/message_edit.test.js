@@ -4,7 +4,7 @@ const {strict: assert} = require("assert");
 
 const {mock_esm, zrequire} = require("./lib/namespace");
 const {run_test} = require("./lib/test");
-const {page_params} = require("./lib/zpage_params");
+const {current_user, page_params} = require("./lib/zpage_params");
 
 page_params.realm_move_messages_within_stream_limit_seconds = 259200;
 
@@ -92,7 +92,7 @@ run_test("is_topic_editable", ({override}) => {
     };
     page_params.realm_allow_message_editing = true;
     override(settings_data, "user_can_move_messages_to_another_topic", () => true);
-    page_params.is_admin = true;
+    current_user.is_admin = true;
 
     assert.equal(message_edit.is_topic_editable(message), false);
 
@@ -109,7 +109,7 @@ run_test("is_topic_editable", ({override}) => {
     override(settings_data, "user_can_move_messages_to_another_topic", () => false);
     assert.equal(message_edit.is_topic_editable(message), false);
 
-    page_params.is_admin = false;
+    current_user.is_admin = false;
     assert.equal(message_edit.is_topic_editable(message), false);
 
     message.topic = "translated: (no topic)";
@@ -128,7 +128,7 @@ run_test("is_topic_editable", ({override}) => {
     message.timestamp = current_timestamp - 600000;
     assert.equal(message_edit.is_topic_editable(message), false);
 
-    page_params.is_moderator = true;
+    current_user.is_moderator = true;
     assert.equal(message_edit.is_topic_editable(message), true);
 
     page_params.realm_allow_message_editing = false;
@@ -146,7 +146,7 @@ run_test("is_stream_editable", ({override}) => {
     };
     page_params.realm_allow_message_editing = true;
     override(settings_data, "user_can_move_messages_between_streams", () => true);
-    page_params.is_admin = true;
+    current_user.is_admin = true;
 
     assert.equal(message_edit.is_stream_editable(message), false);
 
@@ -163,7 +163,7 @@ run_test("is_stream_editable", ({override}) => {
     override(settings_data, "user_can_move_messages_between_streams", () => false);
     assert.equal(message_edit.is_stream_editable(message), false);
 
-    page_params.is_admin = false;
+    current_user.is_admin = false;
     assert.equal(message_edit.is_stream_editable(message), false);
 
     page_params.realm_move_messages_between_streams_limit_seconds = 259200;
@@ -175,12 +175,12 @@ run_test("is_stream_editable", ({override}) => {
     message.timestamp = current_timestamp - 600000;
     assert.equal(message_edit.is_stream_editable(message), false);
 
-    page_params.is_moderator = true;
+    current_user.is_moderator = true;
     assert.equal(message_edit.is_stream_editable(message), true);
 });
 
 run_test("get_deletability", ({override}) => {
-    page_params.is_admin = true;
+    current_user.is_admin = true;
     override(settings_data, "user_can_delete_own_message", () => false);
     page_params.realm_message_content_delete_limit_seconds = null;
     const test_user = {
@@ -208,7 +208,7 @@ run_test("get_deletability", ({override}) => {
     assert.equal(message_edit.get_deletability(message), true);
 
     // Non-admin can't delete message sent by others
-    page_params.is_admin = false;
+    current_user.is_admin = false;
     assert.equal(message_edit.get_deletability(message), false);
 
     // Locally echoed messages are not deletable

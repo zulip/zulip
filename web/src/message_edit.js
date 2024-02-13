@@ -37,6 +37,7 @@ import * as people from "./people";
 import * as resize from "./resize";
 import * as rows from "./rows";
 import * as settings_data from "./settings_data";
+import {current_user} from "./state_data";
 import * as stream_data from "./stream_data";
 import * as timerender from "./timerender";
 import * as ui_report from "./ui_report";
@@ -70,7 +71,7 @@ export function is_topic_editable(message, edit_limit_seconds_buffer = 0) {
     // Organization admins and moderators can edit message topics indefinitely,
     // irrespective of the topic editing deadline, if edit_topic_policy allows
     // them to do so.
-    if (page_params.is_admin || page_params.is_moderator) {
+    if (current_user.is_admin || current_user.is_moderator) {
         return true;
     }
 
@@ -167,7 +168,7 @@ export function is_message_sent_by_my_bot(message) {
 }
 
 export function get_deletability(message) {
-    if (page_params.is_admin) {
+    if (current_user.is_admin) {
         return true;
     }
 
@@ -212,7 +213,7 @@ export function is_stream_editable(message, edit_limit_seconds_buffer = 0) {
     // Organization admins and moderators can edit stream indefinitely,
     // irrespective of the stream editing deadline, if
     // move_messages_between_streams_policy allows them to do so.
-    if (page_params.is_admin || page_params.is_moderator) {
+    if (current_user.is_admin || current_user.is_moderator) {
         return true;
     }
 

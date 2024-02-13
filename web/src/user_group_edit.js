@@ -23,6 +23,7 @@ import * as scroll_util from "./scroll_util";
 import * as settings_components from "./settings_components";
 import * as settings_data from "./settings_data";
 import * as settings_org from "./settings_org";
+import {current_user} from "./state_data";
 import * as stream_ui_updates from "./stream_ui_updates";
 import * as ui_report from "./ui_report";
 import * as user_group_components from "./user_group_components";
@@ -79,7 +80,7 @@ function update_add_members_elements(group) {
     // We are only concerned with the Members tab for editing groups.
     const $add_members_container = $(".edit_members_for_user_group .add_members_container");
 
-    if (page_params.is_guest || page_params.realm_is_zephyr_mirror_realm) {
+    if (current_user.is_guest || page_params.realm_is_zephyr_mirror_realm) {
         // For guest users, we just hide the add_members feature.
         $add_members_container.hide();
         return;

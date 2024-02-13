@@ -6,7 +6,7 @@ const events = require("./lib/events");
 const {mock_esm, set_global, with_overrides, zrequire} = require("./lib/namespace");
 const {run_test, noop} = require("./lib/test");
 const $ = require("./lib/zjquery");
-const {page_params} = require("./lib/zpage_params");
+const {current_user, page_params} = require("./lib/zpage_params");
 
 const channel = mock_esm("../src/channel");
 const compose_closed_ui = mock_esm("../src/compose_closed_ui");
@@ -171,7 +171,7 @@ test("videos", ({override}) => {
         });
 
         page_params.realm_video_chat_provider = realm_available_video_chat_providers.zoom.id;
-        page_params.has_zoom_token = false;
+        current_user.has_zoom_token = false;
 
         window.open = (url) => {
             assert.ok(url.endsWith("/calls/zoom/register"));

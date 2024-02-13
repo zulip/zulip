@@ -6,7 +6,7 @@ const {addDays} = require("date-fns");
 
 const {mock_esm, zrequire} = require("./lib/namespace");
 const {run_test} = require("./lib/test");
-const {page_params} = require("./lib/zpage_params");
+const {current_user, page_params} = require("./lib/zpage_params");
 
 page_params.is_spectator = false;
 
@@ -68,16 +68,16 @@ test("profile_incomplete_alert", ({override}) => {
     override(timerender, "should_display_profile_incomplete_alert", () => true);
 
     // Show alert.
-    page_params.is_admin = true;
+    current_user.is_admin = true;
     page_params.realm_description = "Organization imported from Slack!";
     assert.equal(navbar_alerts.check_profile_incomplete(), true);
 
     // Avoid showing if the user is not admin.
-    page_params.is_admin = false;
+    current_user.is_admin = false;
     assert.equal(navbar_alerts.check_profile_incomplete(), false);
 
     // Avoid showing if the realm description is already updated.
-    page_params.is_admin = true;
+    current_user.is_admin = true;
     assert.equal(navbar_alerts.check_profile_incomplete(), true);
     page_params.realm_description = "Organization description already set!";
     assert.equal(navbar_alerts.check_profile_incomplete(), false);

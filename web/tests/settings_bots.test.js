@@ -4,7 +4,7 @@ const {strict: assert} = require("assert");
 
 const {zrequire} = require("./lib/namespace");
 const {run_test} = require("./lib/test");
-const {page_params} = require("./lib/zpage_params");
+const {current_user, page_params} = require("./lib/zpage_params");
 
 const bot_data_params = {
     realm_bots: [
@@ -92,10 +92,10 @@ test("generate_botserverrc_content", () => {
 });
 
 test("can_create_new_bots", () => {
-    page_params.is_admin = true;
+    current_user.is_admin = true;
     assert.ok(settings_bots.can_create_new_bots());
 
-    page_params.is_admin = false;
+    current_user.is_admin = false;
     page_params.realm_bot_creation_policy = 1;
     assert.ok(settings_bots.can_create_new_bots());
 

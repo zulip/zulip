@@ -19,6 +19,7 @@ import * as settings_panel_menu from "./settings_panel_menu";
 import * as settings_preferences from "./settings_preferences";
 import * as settings_sections from "./settings_sections";
 import * as settings_toggle from "./settings_toggle";
+import {current_user} from "./state_data";
 import * as timerender from "./timerender";
 import {user_settings} from "./user_settings";
 
@@ -66,7 +67,7 @@ function setup_settings_label() {
 }
 
 function get_parsed_date_of_joining() {
-    const user_date_joined = people.get_by_user_id(page_params.user_id, false).date_joined;
+    const user_date_joined = people.get_by_user_id(current_user.user_id, false).date_joined;
     return timerender.get_localized_date_or_time_for_format(
         parseISO(user_date_joined),
         "dayofyear_year",
@@ -81,11 +82,11 @@ function user_can_change_password() {
 }
 
 export function update_lock_icon_in_sidebar() {
-    if (page_params.is_owner) {
+    if (current_user.is_owner) {
         $(".org-settings-list .locked").hide();
         return;
     }
-    if (page_params.is_admin) {
+    if (current_user.is_admin) {
         $(".org-settings-list .locked").hide();
         $(".org-settings-list li[data-section='auth-methods'] .locked").show();
         return;
@@ -108,6 +109,7 @@ export function build_page() {
     const rendered_settings_tab = render_settings_tab({
         full_name: people.my_full_name(),
         date_joined_text: get_parsed_date_of_joining(),
+        current_user,
         page_params,
         enable_sound_select:
             user_settings.enable_sounds || user_settings.enable_stream_audible_notifications,
@@ -138,7 +140,7 @@ export function build_page() {
         user_can_change_name: settings_data.user_can_change_name(),
         user_can_change_avatar: settings_data.user_can_change_avatar(),
         user_can_change_email: settings_data.user_can_change_email(),
-        user_role_text: people.get_user_type(page_params.user_id),
+        user_role_text: people.get_user_type(current_user.user_id),
         default_language_name: settings_preferences.user_default_language_name,
         default_language: user_settings.default_language,
         realm_push_notifications_enabled: page_params.realm_push_notifications_enabled,
@@ -182,9 +184,9 @@ export function launch(section) {
 
 export function initialize() {
     const rendered_settings_overlay = render_settings_overlay({
-        is_owner: page_params.is_owner,
-        is_admin: page_params.is_admin,
-        is_guest: page_params.is_guest,
+        is_owner: current_user.is_owner,
+        is_admin: current_user.is_admin,
+        is_guest: current_user.is_guest,
         show_uploaded_files_section: page_params.max_file_upload_size_mib > 0,
         show_emoji_settings_lock: !settings_data.user_can_add_custom_emoji(),
         can_create_new_bots: settings_bots.can_create_new_bots(),

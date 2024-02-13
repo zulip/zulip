@@ -2,6 +2,7 @@ import $ from "jquery";
 
 import * as channel from "./channel";
 import {page_params} from "./page_params";
+import {current_user} from "./state_data";
 import * as upload_widget from "./upload_widget";
 import type {UploadFunction} from "./upload_widget";
 
@@ -10,7 +11,7 @@ export function build_realm_icon_widget(upload_function: UploadFunction): void {
         return $<HTMLInputElement>("#realm-icon-upload-widget .image_file_input").expectOne();
     };
 
-    if (!page_params.is_admin) {
+    if (!current_user.is_admin) {
         return;
     }
     if (page_params.realm_icon_source === "G") {

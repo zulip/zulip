@@ -5,7 +5,7 @@ const {strict: assert} = require("assert");
 const {mock_esm, zrequire} = require("./lib/namespace");
 const {run_test, noop} = require("./lib/test");
 const $ = require("./lib/zjquery");
-const {page_params} = require("./lib/zpage_params");
+const {current_user, page_params} = require("./lib/zpage_params");
 
 const loading = mock_esm("../src/loading");
 
@@ -53,7 +53,7 @@ function test_populate(opts, template_data) {
     const fields_data = opts.fields_data;
 
     page_params.custom_profile_field_types = custom_profile_field_types;
-    page_params.is_admin = opts.is_admin;
+    current_user.is_admin = opts.is_admin;
     const $table = $("#admin_profile_fields_table");
     const $rows = $.create("rows");
     const $form = $.create("forms");

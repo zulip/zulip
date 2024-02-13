@@ -11,6 +11,7 @@ import {page_params} from "./page_params";
 import * as settings_config from "./settings_config";
 import * as settings_data from "./settings_data";
 import * as settings_org from "./settings_org";
+import {current_user} from "./state_data";
 import * as stream_data from "./stream_data";
 import * as stream_edit_toggler from "./stream_edit_toggler";
 import * as stream_settings_containers from "./stream_settings_containers";
@@ -231,7 +232,7 @@ export function update_default_stream_and_stream_privacy_state($container) {
 
     // In the stream creation UI, if the user is a non-admin hide the
     // "Default stream for new users" widget
-    if (is_stream_creation && !page_params.is_admin) {
+    if (is_stream_creation && !current_user.is_admin) {
         $default_stream.hide();
         return;
     }
@@ -271,7 +272,7 @@ export function enable_or_disable_permission_settings_in_edit_panel(sub) {
     update_default_stream_and_stream_privacy_state($stream_settings);
 
     const disable_message_retention_setting =
-        !page_params.zulip_plan_is_not_limited || !page_params.is_owner;
+        !page_params.zulip_plan_is_not_limited || !current_user.is_owner;
     $stream_settings
         .find(".stream_message_retention_setting")
         .prop("disabled", disable_message_retention_setting);
@@ -347,7 +348,7 @@ export function update_stream_row_in_settings_tab(sub) {
         const $sub_row = row_for_stream_id(sub.stream_id);
         if (sub.subscribed) {
             $sub_row.removeClass("notdisplayed");
-        } else if (sub.invite_only || page_params.is_guest) {
+        } else if (sub.invite_only || current_user.is_guest) {
             $sub_row.addClass("notdisplayed");
         }
     }
@@ -361,7 +362,7 @@ export function update_add_subscriptions_elements(sub) {
     // We are only concerned with the Subscribers tab for editing streams.
     const $add_subscribers_container = $(".edit_subscribers_for_stream .subscriber_list_settings");
 
-    if (page_params.is_guest || page_params.realm_is_zephyr_mirror_realm) {
+    if (current_user.is_guest || page_params.realm_is_zephyr_mirror_realm) {
         // For guest users, we just hide the add_subscribers feature.
         $add_subscribers_container.hide();
         return;

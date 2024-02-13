@@ -13,6 +13,7 @@ import * as ListWidget from "./list_widget";
 import {page_params} from "./page_params";
 import * as scroll_util from "./scroll_util";
 import * as settings_ui from "./settings_ui";
+import {current_user} from "./state_data";
 import * as ui_report from "./ui_report";
 
 const meta = {
@@ -24,7 +25,7 @@ export function reset() {
 }
 
 export function maybe_disable_widgets() {
-    if (page_params.is_admin) {
+    if (current_user.is_admin) {
         return;
     }
 }
@@ -140,7 +141,7 @@ export function populate_linkifiers(linkifiers_data) {
                     url_template: linkifier.url_template,
                     id: linkifier.id,
                 },
-                can_modify: page_params.is_admin,
+                can_modify: current_user.is_admin,
                 can_drag: filter_value.length === 0,
             });
         },
@@ -160,7 +161,7 @@ export function populate_linkifiers(linkifiers_data) {
         $simplebar_container: $("#linkifier-settings .progressive-table-wrapper"),
     });
 
-    if (page_params.is_admin) {
+    if (current_user.is_admin) {
         Sortable.create($linkifiers_table[0], {
             onUpdate: update_linkifiers_order,
             handle: ".move-handle",

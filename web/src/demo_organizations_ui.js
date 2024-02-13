@@ -12,12 +12,13 @@ import {page_params} from "./page_params";
 import * as settings_config from "./settings_config";
 import * as settings_data from "./settings_data";
 import * as settings_org from "./settings_org";
+import {current_user} from "./state_data";
 
 export function insert_demo_organization_warning() {
     const days_remaining = get_demo_organization_deadline_days_remaining();
     const rendered_demo_organization_warning = render_demo_organization_warning({
         is_demo_organization: page_params.demo_organization_scheduled_deletion_date,
-        is_owner: page_params.is_owner,
+        is_owner: current_user.is_owner,
         days_remaining,
     });
     $(".organization-box").find(".settings-section").prepend(rendered_demo_organization_warning);
@@ -25,7 +26,7 @@ export function insert_demo_organization_warning() {
 
 export function handle_demo_organization_conversion() {
     $(".convert-demo-organization-button").on("click", () => {
-        if (!page_params.is_owner) {
+        if (!current_user.is_owner) {
             return;
         }
 

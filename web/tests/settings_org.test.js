@@ -7,7 +7,7 @@ const {mock_esm, zrequire} = require("./lib/namespace");
 const {run_test, noop} = require("./lib/test");
 const blueslip = require("./lib/zblueslip");
 const $ = require("./lib/zjquery");
-const {page_params} = require("./lib/zpage_params");
+const {current_user, page_params} = require("./lib/zpage_params");
 
 const realm_icon = mock_esm("../src/realm_icon");
 
@@ -29,7 +29,7 @@ const dropdown_widget = zrequire("dropdown_widget");
 function test(label, f) {
     run_test(label, (helpers) => {
         $("#realm-icon-upload-widget .upload-spinner-background").css = noop;
-        page_params.is_admin = false;
+        current_user.is_admin = false;
         page_params.realm_domains = [
             {domain: "example.com", allow_subdomains: true},
             {domain: "example.org", allow_subdomains: false},
@@ -634,7 +634,7 @@ test("set_up", ({override, override_rewire}) => {
 
     // TEST set_up() here, but this mostly just allows us to
     // get access to the click handlers.
-    override(page_params, "is_owner", true);
+    override(current_user, "is_owner", true);
     settings_org.set_up();
 
     test_submit_settings_form(
@@ -770,7 +770,7 @@ test("test get_sorted_options_list", () => {
 });
 
 test("misc", () => {
-    page_params.is_admin = false;
+    current_user.is_admin = false;
     $("#user-avatar-upload-widget").length = 1;
     $("#user_details_section").length = 1;
 
@@ -824,7 +824,7 @@ test("misc", () => {
     assert.ok($("#user-avatar-upload-widget .image_upload_button").hasClass("hide"));
 
     // If organization admin, these UI elements are never disabled.
-    page_params.is_admin = true;
+    current_user.is_admin = true;
     settings_account.update_name_change_display();
     assert.ok(!$("#full_name").prop("disabled"));
     assert.ok(!$("#full_name_input_container").hasClass("disabled_setting_tooltip"));

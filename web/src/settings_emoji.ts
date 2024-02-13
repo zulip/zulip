@@ -20,6 +20,7 @@ import * as people from "./people";
 import * as scroll_util from "./scroll_util";
 import * as settings_config from "./settings_config";
 import * as settings_data from "./settings_data";
+import {current_user} from "./state_data";
 import * as ui_report from "./ui_report";
 import * as upload_widget from "./upload_widget";
 import * as util from "./util";
@@ -29,7 +30,7 @@ const meta = {
 };
 
 function can_delete_emoji(emoji: ServerEmoji): boolean {
-    if (page_params.is_admin) {
+    if (current_user.is_admin) {
         return true;
     }
     if (emoji.author_id === null) {
@@ -56,7 +57,7 @@ export function update_custom_emoji_ui(): void {
     } else {
         $(".add-emoji-text").show();
         $("#add-custom-emoji-button").show();
-        if (page_params.is_admin) {
+        if (current_user.is_admin) {
             $("#emoji-settings .emoji-settings-tip-container").show();
         } else {
             $("#emoji-settings .emoji-settings-tip-container").hide();
@@ -269,7 +270,7 @@ function show_modal(): void {
         }
 
         if (is_default_emoji(emoji.name)) {
-            if (!page_params.is_admin) {
+            if (!current_user.is_admin) {
                 ui_report.client_error(
                     $t_html({
                         defaultMessage:

@@ -6,7 +6,6 @@ import type {GroupPermissionSetting} from "./types";
 const t1 = performance.now();
 export const page_params: {
     apps_page_url: string;
-    avatar_source: string;
     bot_types: {
         type_id: number;
         name: string;
@@ -56,14 +55,8 @@ export const page_params: {
             name: string;
         };
     };
-    delivery_email: string;
     development_environment: boolean;
     furthest_read_time: number | null;
-    is_admin: boolean;
-    is_billing_admin: boolean;
-    is_guest: boolean;
-    is_moderator: boolean;
-    is_owner: boolean;
     is_spectator: boolean;
     language_list: {
         code: string;
@@ -150,7 +143,6 @@ export const page_params: {
     sponsorship_pending: boolean;
     stop_words: string[];
     translation_data: Record<string, string>;
-    user_id: number;
     zulip_merge_base: string;
     zulip_plan_is_not_limited: boolean;
     zulip_version: string;

@@ -31,6 +31,7 @@ import * as people from "./people";
 import * as settings_config from "./settings_config";
 import * as settings_data from "./settings_data";
 import * as settings_profile_fields from "./settings_profile_fields";
+import {current_user} from "./state_data";
 import * as stream_data from "./stream_data";
 import * as stream_ui_updates from "./stream_ui_updates";
 import * as sub_store from "./sub_store";
@@ -361,7 +362,7 @@ export function show_user_profile(user, default_tab_key = "profile-tab") {
     // We currently have the main UI for editing your own profile in
     // settings, so can_manage_profile is artificially false for those.
     const can_manage_profile =
-        (people.can_admin_user(user) || page_params.is_admin) &&
+        (people.can_admin_user(user) || current_user.is_admin) &&
         !user.is_system_bot &&
         !people.is_my_user_id(user.user_id);
     const args = {
@@ -498,7 +499,7 @@ export function show_edit_bot_info_modal(user_id, $container) {
         email: bot.email,
         full_name: bot.full_name,
         user_role_values: settings_config.user_role_values,
-        disable_role_dropdown: !page_params.is_admin || (bot.is_owner && !page_params.is_owner),
+        disable_role_dropdown: !current_user.is_admin || (bot.is_owner && !current_user.is_owner),
         bot_avatar_url: bot.avatar_url,
         owner_full_name,
         current_bot_owner: bot.bot_owner_id,
@@ -606,7 +607,7 @@ export function show_edit_bot_info_modal(user_id, $container) {
         bot_owner_dropdown_widget.setup();
 
         $("#bot-role-select").val(bot.role);
-        if (!page_params.is_owner) {
+        if (!current_user.is_owner) {
             $("#bot-role-select")
                 .find(`option[value="${CSS.escape(settings_config.user_role_values.owner.code)}"]`)
                 .hide();
@@ -722,7 +723,7 @@ export function show_edit_user_info_modal(user_id, $container) {
         email: person.delivery_email,
         full_name: person.full_name,
         user_role_values: settings_config.user_role_values,
-        disable_role_dropdown: person.is_owner && !page_params.is_owner,
+        disable_role_dropdown: person.is_owner && !current_user.is_owner,
         owner_is_only_user_in_organization: people.get_active_human_count() === 1,
         is_active,
     });
@@ -730,7 +731,7 @@ export function show_edit_user_info_modal(user_id, $container) {
     $container.append(html_body);
     // Set role dropdown and fields user pills
     $("#user-role-select").val(person.role);
-    if (!page_params.is_owner) {
+    if (!current_user.is_owner) {
         $("#user-role-select")
             .find(`option[value="${CSS.escape(settings_config.user_role_values.owner.code)}"]`)
             .hide();
