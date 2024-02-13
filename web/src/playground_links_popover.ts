@@ -101,6 +101,9 @@ function register_click_handlers(): void {
             const playground_info = realm_playground.get_playground_info_for_languages(
                 $codehilite_div.data("code-language"),
             );
+            if (playground_info === undefined) {
+                return;
+            }
             // We do the code extraction here and set the target href expanding
             // the url_template with the extracted code. Depending on whether
             // the language has multiple playground links configured, a popover
