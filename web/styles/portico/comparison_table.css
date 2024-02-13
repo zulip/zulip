@@ -594,3 +594,17 @@
         }
     }
 }
+
+.features-page {
+    /* Always suppress subheadings on /features */
+    #cloud-plan-comparison,
+    #self-hosted-plan-comparison,
+    #all-plan-comparison {
+        display: none !important;
+    }
+    /* Maintain the margin-top ordinarily set on
+       the subheadings. */
+    .comparison-tabs {
+        margin-top: 64px;
+    }
+}
