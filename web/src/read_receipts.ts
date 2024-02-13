@@ -19,10 +19,10 @@ const read_receipts_api_response_schema = z.object({
 });
 
 export function show_user_list(message_id: number): void {
-    $("body").append(render_read_receipts_modal());
+    $("#read-receipts-modal-container").html(render_read_receipts_modal({message_id}));
     modals.open("read_receipts_modal", {
         autoremove: true,
-        on_show() {
+        on_shown() {
             const message = message_store.get(message_id);
             assert(message !== undefined, "message is undefined");
 
@@ -39,6 +39,14 @@ export function show_user_list(message_id: number): void {
                 void channel.get({
                     url: `/json/messages/${message_id}/read_receipts`,
                     success(raw_data) {
+                        const $modal = $("#read_receipts_modal").filter(
+                            "[data-message-id=" + message_id + "]",
+                        );
+                        // If the read receipts modal for the selected message ID is closed
+                        // by the time we receive the response, return immediately.
+                        if (!$modal.length) {
+                            return;
+                        }
                         const data = read_receipts_api_response_schema.parse(raw_data);
                         const users = data.user_ids.map((id) => {
                             const user = people.get_user_by_id_assert_valid(id);
@@ -78,7 +86,7 @@ export function show_user_list(message_id: number): void {
                             $("#read_receipts_modal .modal__container").addClass(
                                 "showing_read_receipts_list",
                             );
-                            $("#read_receipts_modal .modal__content").append(
+                            $("#read_receipts_modal .read_receipts_list").html(
                                 render_read_receipts(context),
                             );
                             new SimpleBar($("#read_receipts_modal .modal__content")[0]);
