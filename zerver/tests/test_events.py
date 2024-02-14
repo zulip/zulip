@@ -200,12 +200,7 @@ from zerver.lib.event_schema import (
     check_user_status,
     check_user_topic,
 )
-from zerver.lib.events import (
-    WebReloadClientError,
-    apply_events,
-    fetch_initial_state_data,
-    post_process_state,
-)
+from zerver.lib.events import apply_events, fetch_initial_state_data, post_process_state
 from zerver.lib.markdown import render_message_markdown
 from zerver.lib.mention import MentionBackend, MentionData
 from zerver.lib.muted_users import get_mute_object
@@ -3468,8 +3463,16 @@ class NormalActionsTest(BaseAction):
             num_events=0,
             state_change_expected=False,
         )
-        with self.assertRaises(WebReloadClientError):
-            self.verify_action(lambda: send_web_reload_client_events(), client_is_old=True)
+        with self.assertLogs(level="WARNING") as logs:
+            self.verify_action(
+                lambda: send_web_reload_client_events(),
+                client_is_old=True,
+                num_events=1,
+                state_change_expected=False,
+            )
+            self.assertEqual(
+                logs.output, ["WARNING:root:Got a web_reload_client event during apply_events"]
+            )
 
     def test_display_setting_event_not_sent(self) -> None:
         events = self.verify_action(
