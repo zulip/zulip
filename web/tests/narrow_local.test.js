@@ -33,9 +33,9 @@ function test_with(fixture) {
         }
     }
 
-    const excludes_muted_topics = narrow_state.excludes_muted_topics();
+    const excludes_muted_topics = filter.excludes_muted_topics();
     const msg_data = new MessageListData({
-        filter: narrow_state.filter(),
+        filter,
         excludes_muted_topics,
     });
     const id_info = {
