@@ -26,6 +26,9 @@ format used by the Zulip server that they are interacting with.
   [`GET /user_groups`](/api/get-user-groups): Renamed group setting
   `can_mention_group` field to `can_mention_groups`, which now passes
   list of group IDs instead of a single group ID.
+* [`POST /user_groups/create`](/api/create-user-group): Renamed `can_mention_group`
+  parameter to `can_mention_groups` and the setting can now be set to multiple
+  groups during user group creation.
 
 **Feature level 242**
 

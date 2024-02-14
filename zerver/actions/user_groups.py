@@ -38,7 +38,7 @@ def create_user_group_in_database(
     *,
     acting_user: Optional[UserProfile],
     description: str = "",
-    group_settings_map: Mapping[str, UserGroup] = {},
+    group_settings_map: Mapping[str, List[UserGroup]] = {},
     is_system_group: bool = False,
 ) -> UserGroup:
     user_group = UserGroup(
@@ -50,7 +50,7 @@ def create_user_group_in_database(
 
     for setting_name, setting_value in group_settings_map.items():
         current_setting_value = getattr(user_group, setting_name)
-        current_setting_value.set({setting_value})
+        current_setting_value.set(setting_value)
 
     set_defaults_for_group_settings([user_group], group_settings_map, system_groups_name_dict)
 
@@ -181,7 +181,7 @@ def check_add_user_group(
     name: str,
     initial_members: List[UserProfile],
     description: str = "",
-    group_settings_map: Mapping[str, UserGroup] = {},
+    group_settings_map: Mapping[str, List[UserGroup]] = {},
     *,
     acting_user: Optional[UserProfile],
 ) -> UserGroup:

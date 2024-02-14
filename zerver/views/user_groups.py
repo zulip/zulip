@@ -26,6 +26,7 @@ from zerver.lib.response import json_success
 from zerver.lib.user_groups import (
     access_user_group_by_id,
     access_user_group_for_setting,
+    access_user_groups_for_setting,
     check_user_group_name,
     get_direct_memberships_of_users,
     get_subgroup_ids,
@@ -50,8 +51,8 @@ def add_user_group(
     name: str = REQ(),
     members: Sequence[int] = REQ(json_validator=check_list(check_int), default=[]),
     description: str = REQ(),
-    can_mention_group_id: Optional[int] = REQ(
-        "can_mention_group", json_validator=check_int, default=None
+    can_mention_group_ids: Sequence[int] = REQ(
+        "can_mention_groups", json_validator=check_list(check_int), default=[]
     ),
 ) -> HttpResponse:
     user_profiles = user_ids_to_users(members, user_profile.realm)
@@ -60,23 +61,19 @@ def add_user_group(
     group_settings_map = {}
     request_settings_dict = locals()
     for setting_name, permission_config in UserGroup.GROUP_PERMISSION_SETTINGS.items():
-        if permission_config.id_field_name == "can_mention_group_ids":
-            # This is just a temporary hack till we rename the API request
-            # paramters to use can_mention_groups/can_mention_group_ids.
-            setting_group_id_name = "can_mention_group_id"
-
+        setting_group_id_name = permission_config.id_field_name
         if setting_group_id_name not in request_settings_dict:  # nocoverage
             continue
 
-        if request_settings_dict[setting_group_id_name] is not None:
-            setting_value_group_id = request_settings_dict[setting_group_id_name]
-            setting_value_group = access_user_group_for_setting(
-                setting_value_group_id,
+        if request_settings_dict[setting_group_id_name]:
+            setting_value_group_ids = request_settings_dict[setting_group_id_name]
+            setting_value_groups = access_user_groups_for_setting(
+                setting_value_group_ids,
                 user_profile,
                 setting_name=setting_name,
                 permission_configuration=permission_config,
             )
-            group_settings_map[setting_name] = setting_value_group
+            group_settings_map[setting_name] = setting_value_groups
 
     check_add_user_group(
         user_profile.realm,

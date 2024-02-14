@@ -228,6 +228,80 @@ def access_user_group_for_setting(
     return user_group
 
 
+def access_user_groups_for_setting(
+    user_group_ids: List[int],
+    user_profile: UserProfile,
+    *,
+    setting_name: str,
+    permission_configuration: GroupPermissionSetting,
+) -> List[UserGroup]:
+    realm = user_profile.realm
+    user_groups = list(UserGroup.objects.filter(id__in=user_group_ids, realm=realm))
+    found_group_ids = [group.id for group in user_groups]
+
+    for group_id in user_group_ids:
+        if group_id not in found_group_ids:
+            raise JsonableError(_("Invalid user group ID: {group_id}").format(group_id=group_id))
+
+    for user_group in user_groups:
+        if permission_configuration.require_system_group and not user_group.is_system_group:
+            raise JsonableError(
+                _("'{setting_name}' must be a system user group.").format(setting_name=setting_name)
+            )
+
+        if (
+            not permission_configuration.allow_internet_group
+            and user_group.name == SystemGroups.EVERYONE_ON_INTERNET
+        ):
+            raise JsonableError(
+                _("'{setting_name}' setting cannot be set to 'role:internet' group.").format(
+                    setting_name=setting_name
+                )
+            )
+
+        if (
+            not permission_configuration.allow_owners_group
+            and user_group.name == SystemGroups.OWNERS
+        ):
+            raise JsonableError(
+                _("'{setting_name}' setting cannot be set to 'role:owners' group.").format(
+                    setting_name=setting_name
+                )
+            )
+
+        if (
+            not permission_configuration.allow_nobody_group
+            and user_group.name == SystemGroups.NOBODY
+        ):
+            raise JsonableError(
+                _("'{setting_name}' setting cannot be set to 'role:nobody' group.").format(
+                    setting_name=setting_name
+                )
+            )
+
+        if (
+            not permission_configuration.allow_everyone_group
+            and user_group.name == SystemGroups.EVERYONE
+        ):
+            raise JsonableError(
+                _("'{setting_name}' setting cannot be set to 'role:everyone' group.").format(
+                    setting_name=setting_name
+                )
+            )
+
+        if (
+            permission_configuration.allowed_system_groups
+            and user_group.name not in permission_configuration.allowed_system_groups
+        ):
+            raise JsonableError(
+                _("'{setting_name}' setting cannot be set to '{group_name}' group.").format(
+                    setting_name=setting_name, group_name=user_group.name
+                )
+            )
+
+    return user_groups
+
+
 def check_user_group_name(group_name: str) -> str:
     if group_name.strip() == "":
         raise JsonableError(_("User group name can't be empty!"))
@@ -414,7 +488,7 @@ def get_role_based_system_groups_dict(realm: Realm) -> Dict[str, UserGroup]:
 
 def set_defaults_for_group_settings(
     user_groups: List[UserGroup],
-    group_settings_map: Mapping[str, UserGroup],
+    group_settings_map: Mapping[str, List[UserGroup]],
     system_groups_name_dict: Dict[str, UserGroup],
 ) -> None:
     for setting_name, permission_config in UserGroup.GROUP_PERMISSION_SETTINGS.items():

@@ -372,22 +372,29 @@ class UserGroupAPITestCase(UserGroupTestCase):
         moderators_group = UserGroup.objects.get(
             name="role:moderators", realm=hamlet.realm, is_system_group=True
         )
+        hamletcharacters_group = UserGroup.objects.get(
+            name="hamletcharacters", realm=hamlet.realm, is_system_group=False
+        )
         params = {
             "name": "support",
             "members": orjson.dumps([hamlet.id]).decode(),
             "description": "Support team",
-            "can_mention_group": orjson.dumps(moderators_group.id).decode(),
+            "can_mention_groups": orjson.dumps(
+                [moderators_group.id, hamletcharacters_group.id]
+            ).decode(),
         }
         result = self.client_post("/json/user_groups/create", info=params)
         self.assert_json_success(result)
         support_group = UserGroup.objects.get(name="support", realm=hamlet.realm)
-        self.assertEqual(support_group.can_mention_groups.first(), moderators_group)
+        self.assertCountEqual(
+            list(support_group.can_mention_groups.all()), [moderators_group, hamletcharacters_group]
+        )
 
         params = {
             "name": "test",
             "members": orjson.dumps([hamlet.id]).decode(),
             "description": "Test group",
-            "can_mention_group": orjson.dumps(leadership_group.id).decode(),
+            "can_mention_groups": orjson.dumps([leadership_group.id]).decode(),
         }
         result = self.client_post("/json/user_groups/create", info=params)
         self.assert_json_success(result)
@@ -401,7 +408,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
             "name": "marketing",
             "members": orjson.dumps([hamlet.id]).decode(),
             "description": "Marketing team",
-            "can_mention_group": orjson.dumps(nobody_group.id).decode(),
+            "can_mention_groups": orjson.dumps([moderators_group.id, nobody_group.id]).decode(),
         }
         result = self.client_post("/json/user_groups/create", info=params)
         self.assert_json_success(result)
@@ -415,7 +422,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
             "name": "frontend",
             "members": orjson.dumps([hamlet.id]).decode(),
             "description": "Frontend team",
-            "can_mention_group": orjson.dumps(internet_group.id).decode(),
+            "can_mention_groups": orjson.dumps([internet_group.id]).decode(),
         }
         result = self.client_post("/json/user_groups/create", info=params)
         self.assert_json_error(
@@ -429,7 +436,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
             "name": "frontend",
             "members": orjson.dumps([hamlet.id]).decode(),
             "description": "Frontend team",
-            "can_mention_group": orjson.dumps(owners_group.id).decode(),
+            "can_mention_groups": orjson.dumps([owners_group.id]).decode(),
         }
         result = self.client_post("/json/user_groups/create", info=params)
         self.assert_json_error(
@@ -440,10 +447,10 @@ class UserGroupAPITestCase(UserGroupTestCase):
             "name": "frontend",
             "members": orjson.dumps([hamlet.id]).decode(),
             "description": "Frontend team",
-            "can_mention_group": orjson.dumps(1111).decode(),
+            "can_mention_groups": orjson.dumps([moderators_group.id, 1111]).decode(),
         }
         result = self.client_post("/json/user_groups/create", info=params)
-        self.assert_json_error(result, "Invalid user group")
+        self.assert_json_error(result, "Invalid user group ID: 1111")
 
     def test_user_group_get(self) -> None:
         # Test success
