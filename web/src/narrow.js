@@ -410,7 +410,7 @@ export function activate(raw_terms, opts) {
         // From here on down, any calls to the narrow_state API will
         // reflect the upcoming narrow.
         narrow_state.set_has_shown_message_list_view();
-        const excludes_muted_topics = narrow_state.excludes_muted_topics(filter);
+        const excludes_muted_topics = filter.excludes_muted_topics();
 
         let msg_data = new MessageListData({
             filter,

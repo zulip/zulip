@@ -378,15 +378,6 @@ export function narrowed_to_starred(current_filter: Filter | undefined = filter(
     return current_filter.has_operand("is", "starred");
 }
 
-export function excludes_muted_topics(filter: Filter): boolean {
-    return (
-        !narrowed_to_topic(filter) &&
-        !narrowed_to_search(filter) &&
-        !narrowed_to_pms(filter) &&
-        !narrowed_to_starred(filter)
-    );
-}
-
 export function is_for_stream_id(stream_id: number, filter?: Filter): boolean {
     // This is not perfect, since we still track narrows by
     // name, not id, but at least the interface is good going

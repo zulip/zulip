@@ -1208,4 +1208,17 @@ export class Filter {
         }
         return false;
     }
+
+    excludes_muted_topics(): boolean {
+        return (
+            // not narrowed to a topic
+            !(this.has_operator("stream") && this.has_operator("topic")) &&
+            // not narrowed to search
+            !this.is_keyword_search() &&
+            // not narrowed to dms
+            !(this.has_operator("dm") || this.has_operand("is", "dm")) &&
+            // not narrowed to starred messages
+            !this.has_operand("is", "starred")
+        );
+    }
 }

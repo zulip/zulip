@@ -17,11 +17,14 @@ function set_filter(raw_terms) {
         operator: op[0],
         operand: op[1],
     }));
+    const filter = new Filter(terms);
     message_lists.set_current({
         data: {
-            filter: new Filter(terms),
+            filter,
         },
     });
+
+    return filter;
 }
 
 function test(label, f) {
@@ -160,26 +163,27 @@ test("terms", () => {
 });
 
 test("excludes_muted_topics", () => {
-    set_filter([["stream", "devel"]]);
-    assert.ok(narrow_state.excludes_muted_topics());
+    let filter = set_filter([["stream", "devel"]]);
+    assert.ok(filter.excludes_muted_topics());
 
-    message_lists.current = undefined; // not narrowed, basically
-    assert.ok(narrow_state.excludes_muted_topics());
+    // All messages view.
+    filter = set_filter([["in", "home"]]);
+    assert.ok(filter.excludes_muted_topics());
 
-    set_filter([
+    filter = set_filter([
         ["stream", "devel"],
         ["topic", "mac"],
     ]);
-    assert.ok(!narrow_state.excludes_muted_topics());
+    assert.ok(!filter.excludes_muted_topics());
 
-    set_filter([["search", "whatever"]]);
-    assert.ok(!narrow_state.excludes_muted_topics());
+    filter = set_filter([["search", "whatever"]]);
+    assert.ok(!filter.excludes_muted_topics());
 
-    set_filter([["is", "private"]]);
-    assert.ok(!narrow_state.excludes_muted_topics());
+    filter = set_filter([["is", "private"]]);
+    assert.ok(!filter.excludes_muted_topics());
 
-    set_filter([["is", "starred"]]);
-    assert.ok(!narrow_state.excludes_muted_topics());
+    filter = set_filter([["is", "starred"]]);
+    assert.ok(!filter.excludes_muted_topics());
 });
 
 test("set_compose_defaults", () => {
