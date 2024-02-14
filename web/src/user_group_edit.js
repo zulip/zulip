@@ -290,8 +290,6 @@ export function show_settings_for(group) {
     $edit_container.show();
     show_membership_settings(group);
     user_group_components.setup_permissions_dropdown(group, false);
-
-    $edit_container.find("button").prop("disabled", !settings_data.can_edit_user_group(group.id));
 }
 
 export function setup_group_settings(group) {
