@@ -1,5 +1,8 @@
 <div class="header portico-header">
     <div class="header-main" id="top_navbar">
+        {% if page_is_help_center or page_is_api_center %}
+        <a id="skip-navigation" href="#main-content">{{ _('Skip to main content') }}</a>
+        {% endif %}
         <div class="float-left">
             {% if custom_logo_url %}
             <a class="brand logo" href="{{ root_domain_url }}/"><img draggable="false" src="{{ custom_logo_url }}" class="portico-logo" alt="{{ _('Zulip') }}" content="Zulip" /></a>

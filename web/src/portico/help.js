@@ -121,4 +121,22 @@ $(".markdown").on("click", () => {
 
 render_tabbed_sections();
 
-$(".highlighted")[0]?.scrollIntoView({block: "center"});
+if ($(window).width() > 800) {
+    $(".highlighted")[0]?.scrollIntoView({block: "center"});
+    $(".highlighted").eq(0).trigger("focus");
+    $(".highlighted")
+        .eq(0)
+        .on("keydown", (e) => {
+            if (e.key === "Tab" && !e.shiftKey && !$("#skip-navigation").hasClass("tabbed")) {
+                e.preventDefault();
+                $("#skip-navigation").trigger("focus");
+            }
+        });
+    $("#skip-navigation").on("keydown", function (e) {
+        if (e.key === "Tab" && !e.shiftKey) {
+            e.preventDefault();
+            $(".highlighted").eq(0).trigger("focus");
+            $(this).addClass("tabbed");
+        }
+    });
+}
