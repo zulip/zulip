@@ -106,6 +106,10 @@ export function enable_member_management({group, $parent_container}) {
         get_potential_subscribers: get_potential_members,
     });
 
+    $pill_container.find(".input").on("input", () => {
+        $parent_container.find(".user_group_subscription_request_result").empty();
+    });
+
     member_list_widget = make_list_widget({
         $parent_container,
         name: "user_group_members",
