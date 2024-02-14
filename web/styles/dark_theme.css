@@ -378,6 +378,10 @@
         }
     }
 
+    .stream_header_colorblock.disabled {
+        filter: brightness(50%);
+    }
+
     /* this one is because in the app we have blue and in dark-theme it should be white. */
     .popover a {
         color: inherit;
