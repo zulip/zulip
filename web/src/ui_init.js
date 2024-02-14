@@ -53,6 +53,7 @@ import * as left_sidebar_navigation_area from "./left_sidebar_navigation_area";
 import * as left_sidebar_navigation_area_popovers from "./left_sidebar_navigation_area_popovers";
 import * as lightbox from "./lightbox";
 import * as linkifiers from "./linkifiers";
+import * as local_message from "./local_message";
 import {localstorage} from "./localstorage";
 import * as markdown from "./markdown";
 import * as markdown_config from "./markdown_config";
@@ -487,6 +488,7 @@ export function initialize_everything() {
         "event_queue_longpoll_timeout_seconds",
         "last_event_id",
     );
+    const local_message_params = pop_fields("max_message_id");
 
     /* To store theme data for spectators, we need to initialize
        user_settings before setting the theme. */
@@ -583,6 +585,7 @@ export function initialize_everything() {
     navbar_alerts.initialize();
     message_list_hover.initialize();
     initialize_kitchen_sink_stuff();
+    local_message.initialize(local_message_params);
     echo.initialize({
         on_send_message_success: compose.send_message_success,
         send_message: transmit.send_message,
