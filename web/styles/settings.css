@@ -359,7 +359,7 @@ td .button {
 /* list_select is similar to settings_select, but without the height styling. */
 .settings_select,
 .list_select {
-    padding: 0 17px 0 6px;
+    padding: 0 19px 0 6px;
     color: hsl(0deg 0% 33%);
     border-radius: 4px;
     border: 1px solid hsl(0deg 0% 80%);
