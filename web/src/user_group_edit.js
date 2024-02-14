@@ -91,13 +91,13 @@ function update_add_members_elements(group) {
     const $button_element = $add_members_container.find('button[name="add_member"]').expectOne();
 
     if (settings_data.can_edit_user_group(group.id)) {
-        $input_element.prop("disabled", false);
+        $input_element.prop("contenteditable", true);
         $button_element.prop("disabled", false);
         $button_element.css("pointer-events", "");
         $add_members_container[0]._tippy?.destroy();
         $add_members_container.removeClass("add_members_disabled");
     } else {
-        $input_element.prop("disabled", true);
+        $input_element.prop("contenteditable", false);
         $button_element.prop("disabled", true);
         $add_members_container.addClass("add_members_disabled");
 
