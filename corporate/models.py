@@ -400,6 +400,10 @@ class CustomerPlan(AbstractCustomerPlan):
     NEVER_STARTED = 12
     status = models.SmallIntegerField(default=ACTIVE)
 
+    # Currently, all the fixed-price plans are configured for one year.
+    # In future, we might change this to a field.
+    FIXED_PRICE_PLAN_DURATION_MONTHS = 12
+
     # TODO maybe override setattr to ensure billing_cycle_anchor, etc
     # are immutable.
 

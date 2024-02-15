@@ -1,0 +1,82 @@
+{
+  "data": [
+    {
+      "after_expiration": null,
+      "allow_promotion_codes": null,
+      "amount_subtotal": null,
+      "amount_total": null,
+      "automatic_tax": {
+        "enabled": false,
+        "liability": null,
+        "status": null
+      },
+      "billing_address_collection": "required",
+      "cancel_url": "http://selfhosting.testserver/realm/f267ada0-3e8e-4c92-991d-5715db017e75/upgrade/?manual_license_management=false&tier=1",
+      "client_reference_id": null,
+      "client_secret": null,
+      "consent": null,
+      "consent_collection": null,
+      "created": 1708008527,
+      "currency": null,
+      "currency_conversion": null,
+      "custom_fields": [],
+      "custom_text": {
+        "after_submit": null,
+        "shipping_address": null,
+        "submit": null,
+        "terms_of_service_acceptance": null
+      },
+      "customer": "cus_PZEia820z9Zo16",
+      "customer_creation": null,
+      "customer_details": {
+        "address": null,
+        "email": "hamlet@zulip.com",
+        "name": null,
+        "phone": null,
+        "tax_exempt": null,
+        "tax_ids": null
+      },
+      "customer_email": null,
+      "expires_at": 1708094927,
+      "id": "cs_test_c1AW8fEbcPdhctLWfgzkQ41lXw0DdofTO2wFS3ttiE2UqiqJI3B0R0xQ3P",
+      "invoice": null,
+      "invoice_creation": null,
+      "livemode": false,
+      "locale": null,
+      "metadata": {
+        "remote_realm_user_id": "1",
+        "type": "card_update"
+      },
+      "mode": "setup",
+      "object": "checkout.session",
+      "payment_intent": null,
+      "payment_link": null,
+      "payment_method_collection": "always",
+      "payment_method_configuration_details": null,
+      "payment_method_options": {},
+      "payment_method_types": [
+        "card"
+      ],
+      "payment_status": "no_payment_required",
+      "phone_number_collection": {
+        "enabled": false
+      },
+      "recovered_from": null,
+      "setup_intent": "seti_1Ok6F1DEQaroqDjsaAnghUo3",
+      "shipping": null,
+      "shipping_address_collection": null,
+      "shipping_options": [],
+      "shipping_rate": null,
+      "status": "open",
+      "submit_type": null,
+      "subscription": null,
+      "success_url": "http://selfhosting.testserver/realm/f267ada0-3e8e-4c92-991d-5715db017e75/billing/event_status/?stripe_session_id={CHECKOUT_SESSION_ID}",
+      "total_details": null,
+      "ui_mode": "hosted",
+      "url": "https://checkout.stripe.com/c/pay/cs_test_c1AW8fEbcPdhctLWfgzkQ41lXw0DdofTO2wFS3ttiE2UqiqJI3B0R0xQ3P#fid1d2BpamRhQ2prcSc%2FJ1ZqcHdmYCVWZGt2JVV3aicpJ2p1cWxobHZxbGZSZGlpYHFXYGthYHcnP3F3cGApJ2R1bE5gfCc%2FJ3VuWnFgdnFaXVRmMU5zNkldQTY9SnNRY09XZml2UXNQJyknY3dqaFZgd3Ngdyc%2FcXdwYCknaWR8anBxUXx1YCc%2FJ3Zsa2JpYFpmamlwaGsnKSdga2RnaWBVaWRmYG1qaWFgd3YnP3F3cGB4JSUl"
+    }
+  ],
+  "has_more": true,
+  "object": "list",
+  "url": "/v1/checkout/sessions"
+}
