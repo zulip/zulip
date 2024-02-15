@@ -29,6 +29,7 @@ from zerver.lib.user_groups import (
     get_subgroup_ids,
     get_user_group_member_ids,
     has_user_group_access,
+    is_user_in_any_group,
     is_user_in_group,
     user_groups_in_realm_serialized,
 )
@@ -224,6 +225,33 @@ class UserGroupTestCase(ZulipTestCase):
 
         self.assertFalse(is_user_in_group(moderators_group, hamlet))
         self.assertFalse(is_user_in_group(moderators_group, hamlet, direct_member_only=True))
+
+    def test_is_user_in_any_group(self) -> None:
+        realm = get_realm("zulip")
+        shiva = self.example_user("shiva")
+        iago = self.example_user("iago")
+        hamlet = self.example_user("hamlet")
+
+        moderators_group = UserGroup.objects.get(
+            name=SystemGroups.MODERATORS, realm=realm, is_system_group=True
+        )
+        hamletcharacters_group = UserGroup.objects.get(name="hamletcharacters", realm=realm)
+
+        self.assertTrue(is_user_in_any_group([moderators_group], shiva))
+        self.assertFalse(is_user_in_any_group([hamletcharacters_group], shiva))
+
+        self.assertFalse(is_user_in_any_group([moderators_group], hamlet))
+        self.assertTrue(is_user_in_any_group([hamletcharacters_group], hamlet))
+
+        self.assertTrue(is_user_in_any_group([moderators_group, hamletcharacters_group], shiva))
+        self.assertTrue(is_user_in_any_group([moderators_group, hamletcharacters_group], hamlet))
+
+        self.assertTrue(is_user_in_any_group([moderators_group, hamletcharacters_group], iago))
+        self.assertFalse(
+            is_user_in_any_group(
+                [moderators_group, hamletcharacters_group], iago, direct_member_only=True
+            )
+        )
 
     def test_has_user_group_access_to_subgroup(self) -> None:
         iago = self.example_user("iago")

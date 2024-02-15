@@ -353,6 +353,20 @@ def is_user_in_group(
     return get_recursive_group_members(user_group=user_group).filter(id=user.id).exists()
 
 
+def is_user_in_any_group(
+    user_groups: List[UserGroup], user: UserProfile, *, direct_member_only: bool = False
+) -> bool:
+    if direct_member_only:
+        return UserGroupMembership.objects.filter(
+            user_group__in=user_groups, user_profile=user
+        ).exists()
+
+    user_group_ids = [group.id for group in user_groups]
+    recursive_subgroups = get_recursive_subgroups_for_groups(user_group_ids, user.realm)
+
+    return UserProfile.objects.filter(id=user.id, direct_groups__in=recursive_subgroups).exists()
+
+
 def get_user_group_member_ids(
     user_group: UserGroup, *, direct_member_only: bool = False
 ) -> List[int]:

@@ -2097,13 +2097,14 @@ class StreamMessagesTest(ZulipTestCase):
         shiva = self.example_user("shiva")
         cordelia = self.example_user("cordelia")
         othello = self.example_user("othello")
+        prospero = self.example_user("prospero")
         self.subscribe(iago, "test_stream")
         self.subscribe(shiva, "test_stream")
         self.subscribe(othello, "test_stream")
         self.subscribe(cordelia, "test_stream")
 
         leadership = check_add_user_group(othello.realm, "leadership", [othello], acting_user=None)
-        support = check_add_user_group(othello.realm, "support", [othello], acting_user=None)
+        support = check_add_user_group(othello.realm, "support", [prospero], acting_user=None)
 
         moderators_system_group = UserGroup.objects.get(
             realm=iago.realm, name=SystemGroups.MODERATORS, is_system_group=True
@@ -2114,10 +2115,10 @@ class StreamMessagesTest(ZulipTestCase):
         result = self.api_get(cordelia, "/api/v1/messages/" + str(msg_id))
         self.assert_json_success(result)
 
-        leadership.can_mention_groups.set({moderators_system_group})
+        leadership.can_mention_groups.set({moderators_system_group, support})
         with self.assertRaisesRegex(
             JsonableError,
-            f"You are not allowed to mention user group '{leadership.name}'. You must be a member of '{moderators_system_group.name}' to mention this group.",
+            f"You are not allowed to mention user group '{leadership.name}'.",
         ):
             self.send_stream_message(cordelia, "test_stream", content)
 
@@ -2143,7 +2144,7 @@ class StreamMessagesTest(ZulipTestCase):
         content = "Test mentioning user group @*support*"
         with self.assertRaisesRegex(
             JsonableError,
-            f"You are not allowed to mention user group '{support.name}'. You must be a member of '{leadership.name}' to mention this group.",
+            f"You are not allowed to mention user group '{support.name}'.",
         ):
             self.send_stream_message(iago, "test_stream", content)
 
@@ -2158,13 +2159,13 @@ class StreamMessagesTest(ZulipTestCase):
         content = "Test mentioning user group @*support* @*leadership*"
         with self.assertRaisesRegex(
             JsonableError,
-            f"You are not allowed to mention user group '{support.name}'. You must be a member of '{leadership.name}' to mention this group.",
+            f"You are not allowed to mention user group '{support.name}'.",
         ):
             self.send_stream_message(iago, "test_stream", content)
 
         with self.assertRaisesRegex(
             JsonableError,
-            f"You are not allowed to mention user group '{leadership.name}'. You must be a member of '{moderators_system_group.name}' to mention this group.",
+            f"You are not allowed to mention user group '{leadership.name}'.",
         ):
             self.send_stream_message(othello, "test_stream", content)
 
@@ -2177,20 +2178,20 @@ class StreamMessagesTest(ZulipTestCase):
         members_group = UserGroup.objects.get(
             name=SystemGroups.MEMBERS, realm=iago.realm, is_system_group=True
         )
-        support.can_mention_groups.set({members_group})
+        support.can_mention_groups.set({members_group, leadership})
 
         internal_realm = get_realm(settings.SYSTEM_BOT_REALM)
         system_bot = get_system_bot(settings.EMAIL_GATEWAY_BOT, internal_realm.id)
         with self.assertRaisesRegex(
             JsonableError,
-            f"You are not allowed to mention user group '{support.name}'. You must be a member of '{members_group.name}' to mention this group.",
+            f"You are not allowed to mention user group '{support.name}'.",
         ):
             self.send_stream_message(system_bot, "test_stream", content, recipient_realm=iago.realm)
 
         everyone_group = UserGroup.objects.get(
             name=SystemGroups.EVERYONE, realm=iago.realm, is_system_group=True
         )
-        support.can_mention_groups.set({everyone_group})
+        support.can_mention_groups.set({everyone_group, leadership})
 
         msg_id = self.send_stream_message(
             system_bot, "test_stream", content, recipient_realm=iago.realm

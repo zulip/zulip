@@ -39,7 +39,7 @@ from zerver.lib.stream_subscription import (
 from zerver.lib.streams import can_access_stream_history, get_web_public_streams_queryset
 from zerver.lib.topic import MESSAGE__TOPIC, TOPIC_NAME, messages_for_topic
 from zerver.lib.types import UserDisplayRecipient
-from zerver.lib.user_groups import is_user_in_group
+from zerver.lib.user_groups import is_user_in_any_group
 from zerver.lib.user_topics import build_get_topic_visibility_policy, get_topic_visibility_policy
 from zerver.lib.users import get_inaccessible_user_ids
 from zerver.models import (
@@ -1188,22 +1188,25 @@ def check_user_group_mention_allowed(sender: UserProfile, user_group_ids: List[i
     sender_is_system_bot = is_cross_realm_bot_email(sender.delivery_email)
 
     for group in user_groups:
-        can_mention_group = group.can_mention_groups.all()[0]
+        can_mention_groups = group.can_mention_groups.all()
+        can_mention_group_names = {group.name for group in can_mention_groups}
+        if SystemGroups.EVERYONE in can_mention_group_names:
+            continue
 
         if sender_is_system_bot:
-            if can_mention_group.name == SystemGroups.EVERYONE:
-                continue
             raise JsonableError(
-                _(
-                    "You are not allowed to mention user group '{user_group_name}'. You must be a member of '{can_mention_group_name}' to mention this group."
-                ).format(user_group_name=group.name, can_mention_group_name=can_mention_group.name)
+                _("You are not allowed to mention user group '{user_group_name}'.").format(
+                    user_group_name=group.name,
+                    can_mention_group_string=", ".join(sorted(can_mention_group_names)),
+                )
             )
 
-        if not is_user_in_group(can_mention_group, sender, direct_member_only=False):
+        if not is_user_in_any_group(can_mention_groups, sender, direct_member_only=False):
             raise JsonableError(
-                _(
-                    "You are not allowed to mention user group '{user_group_name}'. You must be a member of '{can_mention_group_name}' to mention this group."
-                ).format(user_group_name=group.name, can_mention_group_name=can_mention_group.name)
+                _("You are not allowed to mention user group '{user_group_name}'.").format(
+                    user_group_name=group.name,
+                    can_mention_group_string=", ".join(sorted(can_mention_group_names)),
+                )
             )
 
 
