@@ -215,7 +215,7 @@ Django, TypeScript/JavaScript, and CSS.
 
   Experts: Tim Abbott, Prakhar Pratyush
 
-- Zulip's [**REST API documentation**](https://zulip.com/api), which is an
+- Zulip's [**REST API documentation**](https://zulip.com/api/), which is an
   important resource for any organization integrating with Zulip, as
   well as the developers of our API clients. Zulip has a [nice
   framework](../documentation/api.md) for writing API documentation
