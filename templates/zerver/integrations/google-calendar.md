@@ -20,7 +20,7 @@ your reminders directly in your Zulip feed.
     then clicking on **Personal settings**.
 
 1.  Click on the tab that’s labeled **Account & privacy** and click on
-    **Show/change your API key**. Enter your password if prompted, and
+    **Manage your API key**. Enter your password if prompted, and
     download the `zuliprc` file. Save this file as `.zuliprc` to your `~/`
     directory.
 

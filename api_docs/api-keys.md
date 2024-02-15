@@ -17,7 +17,7 @@ Anyone with your API key can impersonate you, so be doubly careful with it.
 
 {settings_tab|account-and-privacy}
 
-1. Under **API key**, click **Show/change your API key**.
+1. Under **API key**, click **Manage your API key**.
 
 1. Enter your password, and click **Get API key**. If you don't know your
    password, click **reset it** and follow the
