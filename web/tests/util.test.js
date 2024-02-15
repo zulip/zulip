@@ -7,6 +7,8 @@ const _ = require("lodash");
 const {set_global, zrequire} = require("./lib/namespace");
 const {run_test} = require("./lib/test");
 
+const blueslip = zrequire("blueslip");
+
 set_global("document", {});
 const util = zrequire("util");
 
@@ -44,6 +46,14 @@ run_test("lower_bound", () => {
     assert.equal(util.lower_bound(arr, 15, compare), 1);
     assert.equal(util.lower_bound(arr, 50, compare), 4);
     assert.equal(util.lower_bound(arr, 55, compare), 5);
+});
+
+run_test("lower_same", () => {
+    assert.ok(util.lower_same("abc", "AbC"));
+    assert.ok(!util.lower_same("abbc", "AbC"));
+
+    blueslip.expect("error", "Cannot compare strings; at least one value is undefined");
+    util.lower_same("abc", undefined);
 });
 
 run_test("same_recipient", () => {
