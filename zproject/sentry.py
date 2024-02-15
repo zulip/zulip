@@ -1,5 +1,5 @@
 import os
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING, Any, Dict, Optional, Union
 
 import sentry_sdk
 from django.utils.translation import override as override_language
@@ -50,6 +50,19 @@ def add_context(event: "Event", hint: "Hint") -> Optional["Event"]:
     return event
 
 
+def traces_sampler(sampling_context: Dict[str, Any]) -> Union[float, bool]:
+    from django.conf import settings
+
+    queue = sampling_context.get("queue")
+    if queue is not None and isinstance(queue, str):
+        if isinstance(settings.SENTRY_TRACE_WORKER_RATE, float):
+            return settings.SENTRY_TRACE_WORKER_RATE
+        else:
+            return settings.SENTRY_TRACE_WORKER_RATE.get(queue, 0.0)
+    else:
+        return settings.SENTRY_TRACE_RATE
+
+
 def setup_sentry(dsn: Optional[str], environment: str) -> None:
     from django.conf import settings
 
@@ -82,7 +95,7 @@ def setup_sentry(dsn: Optional[str], environment: str) -> None:
         # PII while having the identifiers needed to determine that an
         # exception only affects a small subset of users or realms.
         send_default_pii=True,
-        traces_sample_rate=settings.SENTRY_TRACE_RATE,
+        traces_sampler=traces_sampler,
         profiles_sample_rate=settings.SENTRY_PROFILE_RATE,
     )
 
