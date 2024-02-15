@@ -65,9 +65,11 @@ sudo -s  # If not already root
     --email=YOUR_EMAIL --hostname=YOUR_HOSTNAME
 ```
 
-This takes a few minutes to run, as it installs Zulip's dependencies.
-For more information, see [installer details](deployment.md#zulip-installer-details)
-and [troubleshooting](#troubleshooting).
+This takes a few minutes to run, as it installs Zulip's dependencies. It is
+designed to be idempotent: if the script fails, once you've corrected the cause
+of the failure, you can just rerun the script. For more information, see
+[installer details](deployment.md#zulip-installer-details) and
+[troubleshooting](troubleshooting.md#troubleshooting-the-zulip-installer).
 
 #### Installer options
 
@@ -153,35 +155,3 @@ Learning more:
   server.
 
 [realm-admin-docs]: https://zulip.com/help/getting-your-organization-started-with-zulip
-
-## Troubleshooting
-
-**Install script.**
-The Zulip install script is designed to be idempotent. This means
-that if it fails, then once you've corrected the cause of the failure,
-you can just rerun the script.
-
-The install script automatically logs a transcript to
-`/var/log/zulip/install.log`. In case of failure, you might find the
-log handy for resolving the issue. Please include a copy of this log
-file in any bug reports.
-
-**The `zulip` user's password.**
-By default, the `zulip` user doesn't
-have a password, and is intended to be accessed by `su zulip` from the
-`root` user (or via SSH keys or a password, if you want to set those
-up, but that's up to you as the system administrator). Most people
-who are prompted for a password when running `su zulip` turn out to
-already have switched to the `zulip` user earlier in their session,
-and can just skip that step.
-
-**After the install script.**
-If you get an error after `scripts/setup/install` completes, check
-the bottom of `/var/log/zulip/errors.log` for a traceback, and consult
-the [troubleshooting section](troubleshooting.md) for advice on
-how to debug.
-
-**Still having trouble?**
-Please see the [troubleshooting and monitoring
-guide](../production/troubleshooting.md) for additional advice and ways to get
-help.
