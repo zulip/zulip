@@ -2,10 +2,11 @@
 :root {
     /* Exit buttons are sometimes Cancel, but sometimes
        other "Nah, forget it" actions. */
-    --color-exit-button-text: hsl(0deg 0% 0%);
-    --color-exit-button-border: hsl(300deg 2% 11% / 30%);
-    --color-exit-button-background: hsl(0deg 0% 100%);
+    --color-exit-button-text: hsl(180deg 0 54);
+    --color-exit-button-border: hsl(0deg 1% 48%);
+    --color-exit-button-background: hsl(240deg 2% 84%);
     --color-exit-button-background-interactive: hsl(0deg 0% 97%);
+    --color-exit-button-background-disabled: hsl(0deg 0% 90%);
 }
 
 .modal__overlay {
@@ -143,6 +144,10 @@
 
     &:hover {
         background: var(--color-exit-button-background-interactive);
+    }
+
+    &:disabled {
+        background: var(--color-exit-button-background-disabled);
     }
 }
 
