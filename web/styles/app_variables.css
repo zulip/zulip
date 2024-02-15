@@ -1,0 +1,713 @@
+:root {
+    color-scheme: light;
+
+    /*
+    This is the header, aka the navbar.
+    */
+    --header-height: 40px;
+
+    /*
+    At 600px, the header starts taking up more than 5%
+    of the screen. We make it shorter to leave more space
+    to see the rest of the app. */
+    @media (height < $short_navbar_cutoff_height) {
+        --header-height: 30px;
+    }
+
+    /*
+    Height of the search box, which appears in the header.
+    On very short screens, the search box's height becomes
+    the height of its parent (i.e. the header height).
+    */
+    --search-box-height: 28px;
+    --search-box-width: 150px;
+
+    @media (height < $short_navbar_cutoff_height) {
+        --search-box-height: var(--header-height);
+    }
+
+    @media (width < $md_min) {
+        --search-box-width: 40px;
+    }
+
+    /*
+    Since #navbar_alerts_wrapper can take variable height depending upon
+    window width / language, we sync its height in navbar_alerts.js
+    */
+    --navbar-alerts-wrapper-height: 0px;
+    --navbar-fixed-height: calc(
+        var(--header-height) + var(--navbar-alerts-wrapper-height)
+    );
+    /* Keep content from colliding with the search box. */
+    --navbar-content-righthand-offset: 5px;
+
+    /*
+    We have a 10px gutter below the header,
+    which often needs to be respected by both
+    the elements above it and below it on
+    the y-axis, due to absolute positioning.
+    */
+    --header-padding-bottom: 10px;
+
+    /*
+    Our sidebars (and anything that top-align
+    with them) go beneath the header.
+    */
+    --left-sidebar-collapse-widget-gutter: 10px;
+    --left-sidebar-width: 270px;
+    --right-sidebar-width: 250px;
+    --left-sidebar-header-icon-width: 15px;
+
+    /* Tippy popover related values */
+    --popover-menu-min-width: 230px;
+
+    /*
+    Message box elements and values.
+    */
+    --message-box-avatar-width: 35px;
+    --message-box-avatar-height: var(--message-box-avatar-width);
+    --message-box-line-height: 1.214;
+    --message-box-icon-width: 26px;
+    --message-box-icon-height: 25px;
+
+    /*
+    Reaction container UI scaling.
+    */
+    --scale-message-reaction-active: 0.96;
+
+    /*
+    Left position of unread marker. Only needs to be tracked if it is negative so that
+    it doesn't leak through message header.
+    */
+    --unread-marker-left: -1px;
+
+    /*
+    Compose-recipient box minimum height. Used in a flexbox context to
+    allow elements like DM pills to stack without breaking out of their
+    flex item.
+    */
+    --compose-recipient-box-min-height: 30.5px;
+
+    /*
+    Width to be reserved for document scrollbar when scrolling is disabled.
+    Using `scrollbar-gutter` would be more appropriate but doesn't has wide
+    support and doesn't work for `fixed` elements.
+    */
+    --disabled-scrollbar-width: 0px;
+
+    /*
+    Right offset of simplebar scrollbar for `.column-right` when browser has
+    overlay scrollbars which don't occupy any space. Currently only
+    known to present on Mac (all browsers) and Firefox (all OS?). This seems
+    more than enough to differentiate right sidebar scrollbar and browser
+    scrollbar even if the browser scrollbar is wider.
+    */
+    --browser-overlay-scrollbar-width: 10px;
+
+    /* This is a rough estimate for height occupied by Recent Conversations filters.
+       We expect `resize.ts` to update this once UI is initialized. */
+    --recent-topics-filters-height: 50px;
+
+    /* Overlay heights for streams modal */
+    --overlay-container-height: 95vh;
+    --overlay-container-max-height: 1000px;
+    /* .subscriptions-header */
+    --subscriptions-overlay-header-height: 45px;
+    /* .display-type */
+    --subscriptions-overlay-display-type-height: 44px;
+    /* .settings-sticky-footer */
+    --subscriptions-overlay-sticky-footer-height: 60px;
+
+    /*
+    Maximum height of the compose box when it is not in expanded state. This
+    is equal to the height of `#bottom_whitespace`. We expect resize.ts to
+    replace it with its pixel calculation since even if `vh` has great support,
+    it can change depending on browser / OS on mobile devices.
+    */
+    --max-unexpanded-compose-height: 40vh;
+
+    /*
+    Line height of the message buttons in compose box. Here it's necessary
+    to control this value uniformly and precisely to avoid issues with
+    layout shifts originating with non-Latin characters in this area.
+    */
+    --line-height-compose-buttons: 20px;
+
+    /*
+    Maximum height of the subscribers list in stream settings so that
+    it doesn't cause the container to have a second scrollbar.
+    This value will be overridden when stream settings is opened.
+    */
+    --stream-subscriber-list-max-height: 100%;
+
+    /* Colors used across the app */
+    --color-date: hsl(0deg 0% 15% / 75%);
+    --color-background-private-message-header: hsl(46deg 35% 93%);
+    --color-background-private-message-content: hsl(45deg 20% 96%);
+    --color-background-stream-message-content: hsl(0deg 0% 100%);
+    --color-message-list-border: hsl(0deg 0% 0% / 16%);
+    --color-message-header-contents-border: hsl(0deg 0% 0% / 10%);
+    --color-private-message-header-border: hsl(0deg 0% 0% / 10%);
+    --color-message-header-contents-border-bottom: hsl(0deg 0% 0% / 5%);
+    --color-private-message-header-border-bottom: hsl(0deg 0% 0% / 7%);
+    --color-message-header-icon-non-interactive: hsl(0deg 0% 0% / 30%);
+    --color-message-header-icon-interactive: hsl(0deg 0% 0%);
+    --color-background: hsl(0deg 0% 94%);
+    --color-background-widget-input: hsl(0deg 0% 100%);
+    --color-background-navbar: hsl(0deg 0% 97%);
+    --color-background-active-narrow-filter: hsl(202deg 56% 91%);
+    --color-background-hover-narrow-filter: hsl(120deg 12.3% 71.4% / 38%);
+    --color-navbar-bottom-border: hsl(0deg 0% 80%);
+    --color-unread-marker: hsl(217deg 64% 59%);
+    --color-masked-unread-marker: hsl(0deg 0% 80%);
+    --color-failed-message-send-icon: hsl(3.88deg 98.84% 66.27%);
+    --color-background-modal: hsl(0deg 0% 98%);
+    --color-unmuted-or-followed-topic-list-item: hsl(0deg 0% 20%);
+    --color-outline-focus: hsl(215deg 47% 50%);
+    --color-background-search: hsl(0deg 0% 100%);
+    --color-background-search-option-hover: hsl(0deg 0% 94%);
+    --color-search-box-hover-shadow: hsl(0deg 0% 0% / 10%);
+    --color-search-shadow-wide: hsl(0deg 0% 0% / 25%);
+    --color-search-shadow-tight: hsl(0deg 0% 0% / 10%);
+    --color-search-dropdown-top-border: hsla(0deg 0% 0% / 10%);
+    --color-background-image-loader: hsl(0deg 0% 0% / 10%);
+    --color-icon-purple: hsl(240deg 35% 60%);
+    --color-background-dropdown-menu: hsl(0deg 0% 100%);
+    --color-border-popover-menu: hsl(0deg 0% 0% / 10%);
+    --color-hotkey-hint: hsl(227deg 78% 59%);
+    --color-background-hover-dropdown-menu: hsl(220deg 12% 5% / 5%);
+    --color-background-active-dropdown-menu: hsl(220deg 12% 5% / 7%);
+    --color-border-dropdown-menu: hsl(0deg 0% 0% / 40%);
+    --color-border-personal-menu-avatar: hsl(0deg 0% 0% / 10%);
+    --color-background-unread-counter: hsl(105deg 2% 50%);
+    /* There's no alpha channel here, but this keeps
+       the variable names in line. */
+    --color-background-unread-counter-no-alpha: var(
+        --color-background-unread-counter
+    );
+    --color-background-unread-counter-dot: var(
+        --color-background-unread-counter
+    );
+    --color-background-unread-counter-popover-menu: hsl(200deg 100% 40%);
+    --color-border-unread-counter: var(--color-background-unread-counter);
+    --color-border-unread-counter-popover-menu: inherit;
+    --color-background-tab-picker-container: hsl(0deg 0% 0% / 7%);
+    --color-background-tab-picker-selected-tab: hsl(0deg 0% 100%);
+    --color-outline-tab-picker-tab-option: hsl(0deg 0% 0% / 30%);
+    --color-background-tab-picker-tab-option-hover: hsl(0deg 0% 100% / 60%);
+    --color-background-popover: hsl(0deg 0% 100%);
+    --color-background-alert-word: hsl(18deg 100% 84%);
+
+    /* Compose box colors */
+    --color-compose-send-button-icon-color: hsl(0deg 0% 100%);
+    --color-compose-send-button-background: hsl(240deg 96% 68%);
+    --color-compose-send-button-background-interactive: hsl(240deg 41% 50%);
+    --color-compose-send-button-focus-border: hsl(232deg 20% 10%);
+    --color-compose-send-button-focus-shadow: hsl(230deg 100% 20%);
+    --color-compose-send-control-button: hsl(240deg 30% 50% / 80%);
+    --color-compose-send-control-button-background: transparent;
+    --color-compose-send-control-button-interactive: hsl(240deg 30% 50%);
+    --color-compose-send-control-button-background-interactive: hsl(
+        240deg 100% 30% / 5%
+    );
+    --color-compose-send-control-button-focus-shadow: var(
+        --color-compose-send-button-focus-shadow
+    );
+    --color-compose-collapsed-reply-button-area-background: hsl(0deg 0% 100%);
+    --color-compose-collapsed-reply-button-area-background-interactive: var(
+        --color-compose-collapsed-reply-button-area-background
+    );
+    --color-compose-collapsed-reply-button-area-border: hsl(0deg 0% 80%);
+    --color-compose-collapsed-reply-button-area-border-interactive: hsl(
+        0deg 0% 60%
+    );
+    --color-compose-embedded-button-text-color: hsl(231deg 20% 55%);
+    --color-compose-embedded-button-text-color-hover: hsl(231deg 20% 30%);
+    --color-compose-embedded-button-background: transparent;
+    --color-compose-embedded-button-background-hover: hsl(
+        231deg 100% 90% / 50%
+    );
+
+    /* Text colors */
+    --color-text-default: hsl(0deg 0% 20%);
+    --color-text-message-default: hsl(0deg 0% 15%);
+    --color-text-message-view-header: hsl(0deg 0% 20% / 100%);
+    --color-text-message-header: hsl(0deg 0% 15%);
+    --color-text-dropdown-input: hsl(0deg 0% 13.33%);
+    --color-text-self-direct-mention: hsl(240deg 52% 45% / 100%);
+    --color-text-self-group-mention: hsl(183deg 52% 26% / 100%);
+    --color-text-show-more-less-button: hsl(240deg 52% 53%);
+    --color-text-search: hsl(0deg 0% 35%);
+    --color-text-search-hover: hsl(0deg 0% 0%);
+    --color-text-search-placeholder: hsl(0deg 0% 50%);
+    --color-text-dropdown-menu: hsl(0deg 0% 15%);
+    --color-text-full-name: hsl(0deg 0% 15%);
+    --color-text-item: hsl(0deg 0% 40%);
+    --color-text-personal-menu-no-status: hsl(0deg 0% 50%);
+    --color-text-personal-menu-some-status: hsl(0deg 0% 40%);
+    --color-text-sidebar-heading: hsl(0deg 0% 43%);
+    --color-text-sidebar-popover-menu: hsl(0deg 0% 20%);
+
+    /* Markdown code colors */
+    --color-markdown-code-text: hsl(0deg 0% 0%);
+    --color-markdown-code-background: hsl(0deg 0% 0% / 6%);
+    --color-markdown-code-background-mentions: hsl(0deg 0% 0% / 7%);
+    --color-markdown-pre-text: var(--color-markdown-code-text);
+    --color-markdown-pre-border: transparent;
+    --color-markdown-pre-background: hsl(0deg 0% 0% / 4%);
+    --color-markdown-pre-background-mentions: hsl(0deg 0% 0% / 4%);
+    --color-markdown-pre-border-mentions: transparent;
+    --color-markdown-link: hsl(200deg 100% 40%);
+    --color-markdown-code-link: var(--color-markdown-link);
+    --color-markdown-link-hover: hsl(200deg 100% 25%);
+    --color-markdown-code-link-hover: var(--color-markdown-link-hover);
+
+    /* Icon colors */
+    --color-icon-bot: hsl(180deg 8% 65% / 100%);
+    --color-message-action-visible: hsl(216deg 43% 20% / 50%);
+    --color-message-action-interactive: hsl(216deg 43% 20% / 100%);
+    --color-message-star-action: hsl(41deg 100% 47% / 100%);
+    /* The gray on the filter icons is the same as
+       what's set on ul.filters, but with 70% opacity. */
+    --color-left-sidebar-navigation-icon: hsl(0deg 0% 20% / 70%);
+    --color-vdots-hint: hsl(0deg 0% 0% / 30%);
+    --color-vdots-visible: hsl(0deg 0% 0% / 53%);
+    --color-vdots-hover: hsl(0deg 0% 0%);
+    --color-left-sidebar-header-vdots-visible: var(
+        --color-left-sidebar-navigation-icon
+    );
+    --color-tab-picker-icon: hsl(200deg 100% 40%);
+
+    /* Reaction container colors */
+    --color-message-reaction-border: hsl(0deg 0% 0% / 12%);
+    --color-message-reaction-border-reacted: hsl(0deg 0% 0% / 40%);
+    --color-message-reaction-background: hsl(0deg 0% 100%);
+    --color-message-reaction-background-reacted: hsl(0deg 0% 100%);
+    --color-message-reaction-background-hover: hsl(210deg 30% 96%);
+    --color-message-reaction-shadow-inner: hsl(210deg 50% 50% / 15%);
+    --color-message-reaction-text: hsl(210deg 20% 25% / 100%);
+    --color-message-reaction-text-reacted: hsl(210deg 20% 20% / 100%);
+    --color-message-reaction-button-text: hsl(210deg 20% 20% / 60%);
+    --color-message-reaction-button-text-hover: var(
+        --color-message-reaction-text
+    );
+    --color-message-reaction-button-background: inherit;
+    --color-message-reaction-button-background-hover: var(
+        --color-message-reaction-background
+    );
+    --color-message-reaction-button-border: transparent;
+    --color-message-reaction-button-border-hover: var(
+        --color-message-reaction-border
+    );
+    --font-weight-message-reaction: 600;
+
+    /* Message feed loading indicator colors */
+    --color-zulip-logo: hsl(0deg 0% 0% / 34%);
+    --color-zulip-logo-loading: hsl(0deg 0% 27%);
+    --color-recent-view-loading-spinner: hsl(0deg 0% 27%);
+    --color-zulip-logo-z: hsl(0deg 0% 100%);
+
+    /* Message collapsing/condensing button colors */
+    --color-show-more-less-button-background: hsl(240deg 44% 56% / 8%);
+    --color-show-more-less-button-background-hover: hsl(240deg 44% 56% / 15%);
+    --color-show-more-less-button-background-active: hsl(240deg 44% 56% / 20%);
+
+    /* Mention pill colors */
+    --color-background-direct-mention: hsl(240deg 52% 95%);
+    --color-background-group-mention: hsl(180deg 40% 94%);
+    --color-background-text-direct-mention: hsl(240deg 70% 70% / 20%);
+    --color-background-text-hover-direct-mention: hsl(240deg 70% 70% / 30%);
+    --color-background-text-group-mention: hsl(183deg 60% 45% / 18%);
+    --color-background-text-hover-group-mention: hsl(183deg 60% 45% / 30%);
+
+    /* Inbox view constants - Values from Figma design */
+    --height-inbox-search: 26px;
+    --width-inbox-search: 346px;
+    --width-inbox-filters-dropdown: 150px;
+    --color-background-inbox-no-unreads-illustration: hsl(147deg 57% 25%);
+    --color-background-inbox: var(--color-background);
+    --color-icon-search-inbox: hsl(0deg 0% 0%);
+    --color-inbox-search-text: hsl(0deg 0% 0%);
+    --color-border-inbox-search: hsl(229.09deg 21.57% 10% / 30%);
+    --color-border-inbox-search-hover: hsl(229.09deg 21.57% 10% / 60%);
+    --color-background-inbox-search: hsl(0deg 0% 100%);
+    --color-background-inbox-search-hover: hsl(0deg 0% 100%);
+    --color-background-inbox-search-focus: hsl(0deg 0% 100%);
+    --color-border-inbox-search-focus: hsl(229.09deg 21.57% 10% / 80%);
+    --color-box-shadow-inbox-search-focus: hsl(228deg 9.8% 20% / 30%);
+    --color-background-inbox-row: hsl(0deg 0% 100%);
+    --color-background-inbox-row-hover: linear-gradient(
+            0deg,
+            hsl(0deg 0% 0% / 5%) 0%,
+            hsl(0deg 0% 0% / 5%) 100%
+        ),
+        hsl(0deg 0% 100%);
+    --color-background-btn-inbox-selected: hsl(0deg 0% 0% / 5%);
+    --color-background-btn-inbox-focus: hsl(0deg 0% 80%);
+    --color-icons-inbox: hsl(0deg 0% 0%);
+    --color-background-icon-close-hover: hsl(0deg 0% 0% / 5%);
+
+    /* Navbar dropdown menu constants - Values from Figma design */
+    --box-shadow-navbar-dropdown-menu: 0 2.78px 4.11px 0 hsl(0deg 0% 0% / 6%),
+        0 5.5113px 8.5783px 0 hsl(0deg 0% 0% / 7%),
+        0 8.438px 13.9271px 0 hsl(0deg 0% 0% / 8%),
+        0 12.177px 21.4737px 0 hsl(0deg 0% 0% / 9%),
+        0 18.7257px 35.4802px 0 hsl(0deg 0% 0% / 9%),
+        0 41px 80px 0 hsl(0deg 0% 0% / 13%);
+    --box-shadow-gear-menu: 0 2.7798px 4.1129px 0 hsl(0deg 0% 0% / 10%),
+        0 5.5113px 8.5783px 0 hsl(0deg 0% 0% / 9%),
+        0 8.4377px 13.9271px 0 hsl(0deg 0% 0% / 11%),
+        0 12.177px 21.4737px 0 hsl(0deg 0% 0% / 11%),
+        0 18.7257px 35.4802px 0 hsl(0deg 0% 0% / 15%),
+        0 41px 80px 0 hsl(0deg 0% 0% / 20%);
+    --color-navbar-icon: hsl(240deg 20% 50%);
+    --color-navbar-spectator-low-attention-brand-button-text: hsl(
+        240deg 40% 50%
+    );
+    --color-navbar-spectator-low-attention-brand-button-background: transparent;
+    --color-navbar-spectator-low-attention-brand-button-background-hover: hsl(
+        240deg 100% 30% / 5%
+    );
+    --color-navbar-spectator-low-attention-brand-button-background-active: hsl(
+        240deg 100% 30% / 8%
+    );
+    --color-navbar-spectator-medium-attention-brand-button-text: hsl(
+        240deg 40% 40% / 100%
+    );
+    --color-navbar-spectator-medium-attention-brand-button-background: hsl(
+        244deg 64% 47% / 10%
+    );
+    --color-navbar-spectator-medium-attention-brand-button-background-hover: hsl(
+        244deg 64% 47% / 15%
+    );
+    --color-navbar-spectator-medium-attention-brand-button-background-active: hsl(
+        244deg 64% 47% / 18%
+    );
+    --color-gear-menu-lighter-text: hsl(0deg 0% 40%);
+    --color-gear-menu-blue-text: hsl(217deg 100% 50%);
+    --color-header-button-hover: hsl(0deg 0% 0% / 5%);
+    /* This is a technique for directing CSS to do
+       the color mixing ordinarily handled by the
+       alpha channel in hsl(); here, the alpha value
+       is omitted from the hsl() syntax and instead
+       used as the percentage for mixing over top of
+       the navbar background. This is needed so that
+       elements like the unread-count dot can make
+       use of the color, but neither compound alpha
+       values or apply alpha values over different
+       colors, such as the background color on the
+       unread dot.
+
+       The second color value aligns with
+       --color-background-navbar. We use the value
+       directly so that this gets compiled down to
+       an rgb() value by PostCSS Preset Env. */
+    --color-header-button-hover-no-alpha: color-mix(
+        in srgb,
+        hsl(0deg 0% 0%) 5%,
+        hsl(0deg 0% 97%)
+    );
+    --color-header-button-focus: hsl(0deg 0% 0% / 8%);
+    /* The second color value aligns with
+       --color-background-navbar */
+    --color-header-button-focus-no-alpha: color-mix(
+        in srgb,
+        hsl(0deg 0% 0%) 8%,
+        hsl(0deg 0% 97%)
+    );
+    --color-fill-hover-copy-icon: hsl(200deg 100% 40%);
+    --color-fill-user-invite-copy-icon: hsl(0deg 0% 46.7%);
+    --icon-chevron-down: url("data:image/svg+xml,%3Csvg width='16' height='16' viewBox='0 0 16 16' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath fill-rule='evenodd' clip-rule='evenodd' d='M3.52977 5.52973C3.78947 5.27004 4.21053 5.27004 4.47023 5.52973L8 9.05951L11.5298 5.52973C11.7895 5.27004 12.2105 5.27004 12.4702 5.52973C12.7299 5.78943 12.7299 6.21049 12.4702 6.47019L8.47023 10.4702C8.21053 10.7299 7.78947 10.7299 7.52977 10.4702L3.52977 6.47019C3.27008 6.21049 3.27008 5.78943 3.52977 5.52973Z' fill='%23333333'/%3E%3C/svg%3E%0A");
+
+    /* Button colors on modals and message editing. */
+    /* Don't define light theme colors for modal here
+       since the modal is also used on billing pages and
+       this file is not imported on billing pages. */
+}
+
+%dark-theme {
+    --color-date: hsl(0deg 0% 100% / 75%);
+    --color-background-private-message-header: hsl(46deg 15% 20%);
+    --color-background-private-message-content: hsl(46deg 7% 16%);
+    --color-background-stream-message-content: hsl(0deg 0% 15%);
+    --color-message-header-icon-non-interactive: hsl(0deg 0% 100% / 30%);
+    --color-message-header-icon-interactive: hsl(0deg 0% 100%);
+    --color-message-header-contents-border: hsl(0deg 0% 0% / 60%);
+    --color-private-message-header-border: hsl(0deg 0% 0% / 48%);
+    --color-message-header-contents-border-bottom: hsl(0deg 0% 0% / 50%);
+    --color-private-message-header-border-bottom: hsl(0deg 0% 0% / 37%);
+    --color-message-list-border: hsl(0deg 0% 0% / 40%);
+    --color-background: hsl(0deg 0% 11%);
+    --color-background-widget-input: hsl(225deg 6% 10%);
+    --color-background-navbar: hsl(0deg 0% 13%);
+    --color-background-active-narrow-filter: hsl(200deg 17% 18%);
+    --color-background-hover-narrow-filter: hsl(136deg 25% 73% / 20%);
+    --color-navbar-bottom-border: hsl(0deg 0% 0% / 60%);
+    --color-unread-marker: hsl(217deg 64% 59%);
+    --color-masked-unread-marker: hsl(0deg 0% 30%);
+    --color-background-modal: hsl(212deg 28% 18%);
+    --color-unmuted-or-followed-topic-list-item: hsl(236deg 33% 90%);
+    --color-recipient-bar-controls-spinner: hsl(0deg 0% 100%);
+    --color-background-search: hsl(0deg 0% 20%);
+    --color-background-search-option-hover: hsl(0deg 0% 30%);
+    --color-search-box-hover-shadow: hsl(0deg 0% 0% / 30%);
+    --color-search-dropdown-top-border: hsla(0deg 0% 0% / 35%);
+    --color-background-image-loader: hsl(0deg 0% 100% / 10%);
+    --color-background-dropdown-menu: hsl(0deg 0% 17%);
+    --color-border-popover-menu: hsl(0deg 0% 0% / 40%);
+    --color-hotkey-hint: hsl(225deg 100% 84%);
+    --color-background-hover-dropdown-menu: hsl(220deg 12% 95% / 5%);
+    --color-background-active-dropdown-menu: hsl(220deg 12% 95% / 7%);
+    --color-border-dropdown-menu: hsl(0deg 0% 0%);
+    --color-border-personal-menu-avatar: hsl(0deg 0% 100% / 20%);
+    --color-background-unread-counter: hsl(105deg 2% 50% / 50%);
+    /* When unreads are hovered on the condensed
+       views, they should not have an alpha.
+
+       The second color aligns with dark mode's
+       --color-background. We use the value
+       directly so that this gets compiled down to
+       an rgb() value by PostCSS Preset Env. */
+    --color-background-unread-counter-no-alpha: color-mix(
+        in srgb,
+        hsl(105deg 2% 50%) 50%,
+        hsl(0deg 0% 11%)
+    );
+    --color-background-unread-counter-dot: hsl(105deg 2% 50% / 90%);
+    --color-background-unread-counter-popover-menu: hsl(105deg 2% 50% / 50%);
+    --color-border-unread-counter: hsl(105deg 2% 50%);
+    --color-border-unread-counter-popover-menu: var(
+        --color-border-unread-counter
+    );
+    --color-background-tab-picker-container: hsl(0deg 0% 0% / 30%);
+    --color-background-tab-picker-selected-tab: hsl(0deg 0% 100% / 7%);
+    --color-outline-tab-picker-tab-option: hsl(0deg 0% 100% / 12%);
+    --color-background-tab-picker-tab-option-hover: hsl(0deg 0% 100% / 5%);
+    --color-background-alert-word: hsl(22deg 70% 35%);
+
+    /* Compose box colors */
+    --color-compose-send-button-focus-shadow: hsl(0deg 0% 100% / 80%);
+    --color-compose-send-control-button: hsl(240deg 30% 70%);
+    --color-compose-send-control-button-background: transparent;
+    --color-compose-send-control-button-interactive: var(
+        --color-compose-send-control-button
+    );
+    --color-compose-send-control-button-background-interactive: hsl(
+        235deg 100% 70% / 11%
+    );
+    --color-compose-send-control-button-focus-shadow: var(
+        --color-compose-send-button-focus-shadow
+    );
+    --color-compose-collapsed-reply-button-area-background: hsl(
+        0deg 0% 0% / 20%
+    );
+    --color-compose-collapsed-reply-button-area-background-interactive: hsl(
+        0deg 0% 0% / 15%
+    );
+    --color-compose-collapsed-reply-button-area-border: hsl(0deg 0% 0% / 60%);
+    --color-compose-collapsed-reply-button-area-border-interactive: var(
+        --color-compose-collapsed-reply-button-area-border
+    );
+    --color-compose-embedded-button-text-color: hsl(231deg 30% 65%);
+    --color-compose-embedded-button-text-color-hover: hsl(231deg 30% 70%);
+    --color-compose-embedded-button-background: transparent;
+    --color-compose-embedded-button-background-hover: hsl(
+        235deg 100% 70% / 11%
+    );
+    --color-background-popover: hsl(212deg 32% 14%);
+
+    /* Text colors */
+    --color-text-default: hsl(0deg 0% 100% / 75%);
+    /* Unlike the light theme, the dark theme renders message
+       text in the default color. */
+    --color-text-message-default: var(--color-text-default);
+    --color-text-message-view-header: hsl(0deg 0% 100% / 80%);
+    --color-text-message-header: hsl(0deg 0% 100% / 80%);
+    --color-text-sender-name: hsl(0deg 0% 100% / 85%);
+    --color-text-dropdown-input: hsl(0deg 0% 95%);
+    --color-text-other-mention: hsl(0deg 0% 100% / 80%);
+    --color-text-self-direct-mention: hsl(240deg 100% 88% / 100%);
+    --color-text-self-group-mention: hsl(184deg 52% 63% / 100%);
+    --color-text-show-more-less-button: hsl(240deg 30% 65%);
+    --color-text-search: hsl(0deg 0% 100% / 75%);
+    --color-text-search-hover: hsl(0deg 0% 100%);
+    --color-text-search-placeholder: hsl(0deg 0% 100% / 50%);
+    --color-text-dropdown-menu: hsl(0deg 0% 100% / 80%);
+    --color-text-full-name: hsl(0deg 0% 100%);
+    --color-text-item: hsl(0deg 0% 50%);
+    --color-text-personal-menu-no-status: hsl(0deg 0% 100% 35%);
+    --color-text-personal-menu-some-status: hsl(0deg 0% 100% 50%);
+    --color-text-sidebar-popover-menu: hsl(236deg 33% 90%);
+    /* 75% opacity of --color-text-default against --color-background.
+       We use color-mix here to avoid defining a separate, compounding
+       `opacity` property, and also to preserve a record of the
+       relationship of the color of sidebar headings to other colors. */
+    --color-text-sidebar-heading: color-mix(
+        in srgb,
+        hsl(0deg 0% 75%) 75%,
+        hsl(0deg 0% 11%)
+    );
+
+    /* Markdown code colors */
+    /* Note that Markdown code-link colors are identical
+       to light theme, and so are not redeclared here. */
+    --color-markdown-code-text: hsl(0deg 0% 100% / 85%);
+    --color-markdown-code-background: hsl(0deg 0% 100% / 8%);
+    --color-markdown-code-background-mentions: var(
+        --color-markdown-code-background
+    );
+    --color-markdown-pre-text: var(--color-markdown-code-text);
+    --color-markdown-pre-border: transparent;
+    --color-markdown-pre-background: hsl(0deg 0% 100% / 4%);
+    --color-markdown-pre-background-mentions: hsl(0deg 0% 100% / 5%);
+    --color-markdown-pre-border-mentions: var(--color-markdown-pre-border);
+
+    /* Icon colors */
+    --color-icon-bot: hsl(180deg 5% 50% / 100%);
+    --color-message-action-visible: hsl(217deg 41% 90% / 50%);
+    --color-message-action-interactive: hsl(217deg 41% 90% / 100%);
+    --color-left-sidebar-navigation-icon: hsl(0deg 0% 100% / 56%);
+    --color-vdots-hint: hsl(0deg 0% 100% / 30%);
+    --color-vdots-visible: hsl(236deg 33% 80%);
+    --color-vdots-hover: hsl(0deg 0% 100%);
+    --color-left-sidebar-header-vdots-visible: var(
+        --color-left-sidebar-navigation-icon
+    );
+    --color-tab-picker-icon: hsl(0deg 0% 80%);
+
+    /* Reaction container colors */
+    --color-message-reaction-border: hsl(0deg 0% 100% / 15%);
+    --color-message-reaction-border-reacted: hsl(0deg 0% 100% / 50%);
+    --color-message-reaction-background: hsl(0deg 0% 0% / 30%);
+    --color-message-reaction-background-reacted: hsl(0deg 0% 0% / 80%);
+    --color-message-reaction-background-hover: hsl(0deg 0% 100% / 10%);
+    /* No shadow in dark mode. */
+    --color-message-reaction-shadow-inner: transparent;
+    --color-message-reaction-text: hsl(0deg 0% 100% / 75%);
+    --color-message-reaction-text-reacted: hsl(0deg 0% 100% / 85%);
+    --color-message-reaction-button-text: var(--color-message-reaction-text);
+    --color-message-reaction-button-text-hover: var(
+        --color-message-reaction-text-reacted
+    );
+    --color-message-reaction-button-background: inherit;
+    --color-message-reaction-button-background-hover: var(
+        --color-message-reaction-background-hover
+    );
+    --color-message-reaction-button-border: transparent;
+    --color-message-reaction-button-border-hover: var(
+        --color-message-reaction-border
+    );
+    --font-weight-message-reaction: 550;
+
+    /* Message feed loading indicator colors */
+    --color-zulip-logo: hsl(0deg 0% 100% / 50%);
+    --color-zulip-logo-loading: hsl(0deg 0% 100%);
+    --color-recent-view-loading-spinner: hsl(0deg 0% 100% / 60%);
+    --color-zulip-logo-z: hsl(214deg 27% 18%);
+
+    /* Message collapsing/condensing button colors */
+    --color-show-more-less-button-background: hsla(240deg 44% 56% / 15%);
+    --color-show-more-less-button-background-hover: hsl(240deg 44% 56% / 25%);
+    --color-show-more-less-button-background-active: hsl(240deg 44% 56% / 15%);
+
+    /* Mention pill colors */
+    --color-background-direct-mention: hsl(240deg 13% 20%);
+    --color-background-group-mention: hsl(180deg 13% 15%);
+    --color-background-text-direct-mention: hsl(240deg 52% 60% / 25%);
+    --color-background-text-hover-direct-mention: hsl(240deg 52% 60% / 45%);
+    --color-background-text-group-mention: hsl(183deg 52% 40% / 20%);
+    --color-background-text-hover-group-mention: hsl(183deg 52% 40% / 30%);
+
+    /* Inbox view */
+    --color-background-inbox: var(--color-background);
+    --color-background-inbox-no-unreads-illustration: hsl(147deg 40% 55%);
+    --color-icon-search-inbox: hsl(0deg 0% 100%);
+    --color-inbox-search-text: hsl(0deg 0% 95%);
+    --color-border-inbox-search: hsl(0deg 0% 100% / 20%);
+    --color-border-inbox-search-hover: hsl(0deg 0% 100% / 40%);
+    --color-background-inbox-search: hsl(225deg 6% 10%);
+    --color-background-inbox-search-hover: hsl(225deg 6% 8%);
+    --color-background-inbox-search-focus: hsl(225deg 6% 7%);
+    --color-border-inbox-search-focus: hsl(0deg 0% 100% / 50%);
+    --color-box-shadow-inbox-search-focus: hsl(0deg 0% 100% / 40%);
+    --color-background-inbox-row: hsl(0deg 0% 14%);
+    --color-background-inbox-row-hover: linear-gradient(
+            0deg,
+            hsl(0deg 0% 100% / 5%) 0%,
+            hsl(0deg 0% 100% / 5%) 100%
+        ),
+        hsl(0deg 0% 14.12%);
+    --color-background-btn-inbox-selected: hsl(0deg 0% 100% / 5%);
+    --color-background-btn-inbox-focus: hsl(0deg 0% 20%);
+    --color-icons-inbox: hsl(0deg 0% 100%);
+    --color-background-icon-close-hover: hsl(0deg 0% 100% / 5%);
+
+    /* Navbar dropdown menu constants - Values from Figma design */
+    --box-shadow-navbar-dropdown-menu: 0 2.78px 4.12px 0 hsl(0deg 0% 0% / 10%),
+        0 5.5113px 8.5783px 0 hsl(0deg 0% 0% / 9%),
+        0 8.4377px 13.9271px 0 hsl(0deg 0% 0% / 11%),
+        0 12.177px 21.4737px 0 hsl(0deg 0% 0% / 11%),
+        0 18.7257px 35.4802px 0 hsl(0deg 0% 0% / 15%),
+        0 41px 80px 0 hsl(0deg 0% 0% / 20%);
+    --color-navbar-icon: hsl(240deg 35% 60%);
+    --color-navbar-spectator-low-attention-brand-button-text: hsl(
+        240deg 55% 72% / 100%
+    );
+    --color-navbar-spectator-low-attention-brand-button-background: transparent;
+    --color-navbar-spectator-low-attention-brand-button-background-hover: hsl(
+        240deg 56% 70% / 10%
+    );
+    --color-navbar-spectator-low-attention-brand-button-background-active: hsl(
+        240deg 56% 70% / 13%
+    );
+    --color-navbar-spectator-medium-attention-brand-button-text: hsl(
+        240deg 64% 76% / 100%
+    );
+    --color-navbar-spectator-medium-attention-brand-button-background: hsl(
+        240deg 56% 70% / 12%
+    );
+    --color-navbar-spectator-medium-attention-brand-button-background-hover: hsl(
+        240deg 56% 70% / 17%
+    );
+    --color-navbar-spectator-medium-attention-brand-button-background-active: hsl(
+        240deg 56% 70% / 12%
+    );
+    --color-gear-menu-lighter-text: hsl(0deg 0% 50%);
+    --color-gear-menu-blue-text: hsl(217deg 100% 65%);
+    --color-header-button-hover: hsl(0deg 0% 100% / 4%);
+    /* The second color value aligns with
+       --color-background-navbar */
+    --color-header-button-hover-no-alpha: color-mix(
+        in srgb,
+        hsl(0deg 0% 100%) 4%,
+        hsl(0deg 0% 13%)
+    );
+    --color-header-button-focus: hsl(0deg 0% 100% / 7%);
+    /* The second color value aligns with
+       --color-background-navbar */
+    --color-header-button-focus-no-alpha: color-mix(
+        in srgb,
+        hsl(0deg 0% 100%) 7%,
+        hsl(0deg 0% 13%)
+    );
+    --color-fill-user-invite-copy-icon: hsl(236deg 33% 90%);
+    --icon-chevron-down: url("data:image/svg+xml,%3Csvg width='16' height='16' viewBox='0 0 16 16' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath fill-rule='evenodd' clip-rule='evenodd' d='M3.52977 5.52973C3.78947 5.27004 4.21053 5.27004 4.47023 5.52973L8 9.05951L11.5298 5.52973C11.7895 5.27004 12.2105 5.27004 12.4702 5.52973C12.7299 5.78943 12.7299 6.21049 12.4702 6.47019L8.47023 10.4702C8.21053 10.7299 7.78947 10.7299 7.52977 10.4702L3.52977 6.47019C3.27008 6.21049 3.27008 5.78943 3.52977 5.52973Z' fill='%23FFFFFFBF'/%3E%3C/svg%3E%0A");
+
+    /* Button colors on modals and message editing. */
+    --color-exit-button-text: hsl(0deg 0% 100%);
+    --color-exit-button-border: hsl(0deg 0% 0% / 60%);
+    --color-exit-button-background: hsl(211deg 29% 14%);
+    --color-exit-button-background-interactive: hsl(211deg 29% 17%);
+}
+
+@media screen {
+    :root.dark-theme {
+        @extend %dark-theme;
+    }
+}
+
+@media screen and (prefers-color-scheme: dark) {
+    :root.color-scheme-automatic {
+        @extend %dark-theme;
+    }
+}

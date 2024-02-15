@@ -27,6 +27,7 @@ import "flatpickr/dist/flatpickr.css";
 import "flatpickr/dist/plugins/confirmDate/confirmDate.css";
 import "../../third/bootstrap/css/bootstrap.app.css";
 import "../../third/bootstrap-typeahead/typeahead.css";
+import "../../styles/app_variables.css";
 import "../../styles/tooltips.css";
 import "../../styles/components.css";
 import "../../styles/app_components.css";
