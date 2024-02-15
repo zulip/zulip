@@ -22,9 +22,9 @@ to all Zulip Cloud organizations:
   exported.
 
 Two additional types of data exports are available to **corporate** [Zulip Cloud
-Standard][standard] customers:
+Standard][plans] and [Zulip Cloud Plus][plans] customers:
 
-[standard]: https://zulip.com/plans/
+[plans]: https://zulip.com/plans/
 
 * [**Full export without member consent**](#full-export-without-member-consent):
   All the data in the organization.
