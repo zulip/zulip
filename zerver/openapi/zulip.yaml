@@ -8193,12 +8193,13 @@ paths:
 
         !!! warn ""
 
-            **Note**: This endpoint is limited to organization administrators
-            who additionally have the `can_create_users` permission for the Zulip
-            organization. Zulip Cloud users can request the `can_create_users`
-            permission for a bot by contacting [Zulip Cloud support][support]
-            with an explanation for why it is needed. Self-hosted installations
-            can toggle `can_create_users` on an account using the `manage.py
+            **Note**: On Zulip Cloud, this feature is available only for
+            organizations on a [Zulip Cloud Standard](https://zulip.com/plans/)
+            or [Zulip Cloud Plus](https://zulip.com/plans/) plan. Administrators
+            can request the required `can_create_users` permission for a bot or
+            user by contacting [Zulip Cloud support][support] with an
+            explanation for why it is needed. Self-hosted installations can
+            toggle `can_create_users` on an account using the `manage.py
             change_user_role` [management command][management-commands].
 
         **Changes**: Before Zulip 4.0 (feature level 36), this endpoint was
