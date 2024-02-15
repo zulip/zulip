@@ -508,10 +508,8 @@ test_ui("initialize", ({override}) => {
     realm.max_file_upload_size_mib = 512;
 
     let uppy_cancel_all_called = false;
-    override(upload, "compose_upload_object", {
-        cancelAll() {
-            uppy_cancel_all_called = true;
-        },
+    override(upload, "compose_upload_cancel", () => {
+        uppy_cancel_all_called = true;
     });
     override(upload, "feature_check", noop);
 

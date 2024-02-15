@@ -4,6 +4,7 @@ import $ from "jquery";
 
 import render_upload_banner from "../templates/compose_banner/upload_banner.hbs";
 
+import * as blueslip from "./blueslip";
 import * as compose_actions from "./compose_actions";
 import * as compose_banner from "./compose_banner";
 import * as compose_reply from "./compose_reply";
@@ -17,8 +18,12 @@ import * as rows from "./rows";
 import {realm} from "./state_data";
 
 let drag_drop_img = null;
-export let compose_upload_object;
-export const upload_objects_by_message_edit_row = new Map();
+let compose_upload_object;
+const upload_objects_by_message_edit_row = new Map();
+
+export function compose_upload_cancel() {
+    compose_upload_object.cancelAll();
+}
 
 // Show the upload button only if the browser supports it.
 export function feature_check($upload_button) {
@@ -292,6 +297,10 @@ export function setup_upload(config) {
         },
     });
 
+    if (config.mode === "edit") {
+        upload_objects_by_message_edit_row.set(config.row, uppy);
+    }
+
     uppy.on("upload-progress", (file, progress) => {
         const percent_complete = (100 * progress.bytesUploaded) / progress.bytesTotal;
         $(`${get_item("upload_banner_identifier", config, file.id)} .moving_bar`).css({
@@ -437,16 +446,38 @@ export function setup_upload(config) {
     return uppy;
 }
 
-export function deactivate_upload(uppy, config) {
+export function deactivate_upload(config) {
     // Remove event listeners added for handling uploads.
     $(get_item("file_input_identifier", config)).off("change");
     get_item("banner_container", config).off("click");
     get_item("drag_drop_container", config).off("dragover dragenter drop paste");
 
-    // Uninstall all plugins and close down the Uppy instance.
-    // Also runs uppy.cancelAll() before uninstalling - which
-    // cancels all uploads, resets progress and removes all files.
-    uppy.close();
+    let uppy;
+
+    if (config.mode === "edit") {
+        uppy = upload_objects_by_message_edit_row.get(config.row);
+    } else if (config.mode === "compose") {
+        uppy = compose_upload_object;
+    }
+
+    if (!uppy) {
+        return;
+    }
+
+    try {
+        // Uninstall all plugins and close down the Uppy instance.
+        // Also runs uppy.cancelAll() before uninstalling - which
+        // cancels all uploads, resets progress and removes all files.
+        uppy.close();
+    } catch (error) {
+        blueslip.error("Failed to close upload object.", {config}, error);
+    }
+
+    if (config.mode === "edit") {
+        // Since we removed all the uploads from the row, we should
+        // now remove the corresponding upload object from the store.
+        upload_objects_by_message_edit_row.delete(config.row);
+    }
 }
 
 export function initialize() {
