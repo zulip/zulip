@@ -57,10 +57,6 @@ label,
 button {
   cursor: pointer;
 }
-body {
-  margin: 0;
-  line-height: 20px;
-}
 a {
   color: #0088cc;
   text-decoration: none;
@@ -312,12 +308,6 @@ button.close {
   display: none;
   visibility: hidden;
 }
-@media (max-width: 767px) {
-  body {
-    padding-left: 20px;
-    padding-right: 20px;
-  }
-}
 @media (min-width: 768px) and (max-width: 979px) {
   input {
     margin-left: 0;
@@ -326,10 +316,5 @@ button.close {
 @media (min-width: 1180px) {
   input {
     margin-left: 0;
-  }
-}
-@media (max-width: 979px) {
-  body {
-    padding-top: 0;
   }
 }
