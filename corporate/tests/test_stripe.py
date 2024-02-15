@@ -6789,6 +6789,105 @@ class TestRemoteRealmBillingFlow(StripeTestCase, RemoteRealmBillingTestCase):
         self.assertEqual(legacy_plan.next_invoice_date, None)
 
     @responses.activate
+    @mock_stripe()
+    def test_schedule_fixed_price_plan_upgrade_to_another_fixed_price_plan(
+        self, *mocks: Mock
+    ) -> None:
+        self.login("iago")
+
+        self.add_mock_response()
+        with time_machine.travel(self.now, tick=False):
+            send_server_data_to_push_bouncer(consider_usage_statistics=False)
+
+        # Configure required_plan_tier and fixed_price.
+        annual_fixed_price = 1200
+        result = self.client_post(
+            "/activity/remote/support",
+            {
+                "remote_realm_id": f"{self.remote_realm.id}",
+                "required_plan_tier": CustomerPlan.TIER_SELF_HOSTED_BASIC,
+            },
+        )
+        result = self.client_post(
+            "/activity/remote/support",
+            {"remote_realm_id": f"{self.remote_realm.id}", "fixed_price": annual_fixed_price},
+        )
+        self.assert_in_success_response(
+            ["Customer can now buy a fixed price Zulip Basic plan."], result
+        )
+
+        self.logout()
+        self.login("hamlet")
+        hamlet = self.example_user("hamlet")
+
+        # Upgrade to fixed-price Zulip Basic plan with monthly billing_schedule.
+        self.execute_remote_billing_authentication_flow(hamlet)
+        with time_machine.travel(self.now, tick=False):
+            stripe_customer = self.add_card_and_upgrade(
+                tier=CustomerPlan.TIER_SELF_HOSTED_BASIC, schedule="monthly"
+            )
+
+        customer = Customer.objects.get(stripe_customer_id=stripe_customer.id)
+        current_plan = CustomerPlan.objects.get(customer=customer, status=CustomerPlan.ACTIVE)
+        end_date = add_months(self.now, 12)
+        self.assertIsNotNone(current_plan.fixed_price)
+        self.assertEqual(current_plan.billing_schedule, CustomerPlan.BILLING_SCHEDULE_MONTHLY)
+        self.assertEqual(current_plan.end_date, end_date)
+
+        # Invoice for february to november
+        for invoice_count in range(1, 11):
+            with time_machine.travel(add_months(self.now, invoice_count), tick=False):
+                send_server_data_to_push_bouncer(consider_usage_statistics=False)
+                invoice_plans_as_needed()
+
+        billing_entity = self.billing_session.billing_entity_display_name
+
+        self.logout()
+        self.login("iago")
+
+        # Verify that we can't schedule a new fixed-price plan until invoice for 12th month is processed.
+        result = self.client_post(
+            "/activity/remote/support",
+            {"remote_realm_id": f"{self.remote_realm.id}", "fixed_price": annual_fixed_price + 200},
+        )
+        self.assert_in_success_response(
+            [
+                f"New plan for {billing_entity} can not be scheduled until all the invoices of the current plan are processed."
+            ],
+            result,
+        )
+
+        # Customer is charged for the last month of current plan.
+        with time_machine.travel(add_months(self.now, 11), tick=False):
+            send_server_data_to_push_bouncer(consider_usage_statistics=False)
+            invoice_plans_as_needed()
+
+        # All the monthly invoices are processed, now we can schedule a plan.
+        updated_annual_fixed_price = annual_fixed_price + 500
+        result = self.client_post(
+            "/activity/remote/support",
+            {
+                "remote_realm_id": f"{self.remote_realm.id}",
+                "fixed_price": updated_annual_fixed_price,
+            },
+        )
+        self.assert_in_success_response(
+            [f"Fixed price Zulip Basic plan scheduled to start on {end_date.date()}."],
+            result,
+        )
+
+        # Cron runs on end_date and customer switches to the new plan
+        with time_machine.travel(end_date, tick=False):
+            send_server_data_to_push_bouncer(consider_usage_statistics=False)
+            invoice_plans_as_needed()
+        current_plan.refresh_from_db()
+        self.assertEqual(current_plan.status, CustomerPlan.ENDED)
+        new_plan = get_current_plan_by_customer(customer)
+        assert new_plan is not None
+        self.assertEqual(new_plan.status, CustomerPlan.ACTIVE)
+        self.assertEqual(new_plan.fixed_price, updated_annual_fixed_price * 100)
+
+    @responses.activate
     def test_request_sponsorship(self) -> None:
         self.login("hamlet")
         hamlet = self.example_user("hamlet")

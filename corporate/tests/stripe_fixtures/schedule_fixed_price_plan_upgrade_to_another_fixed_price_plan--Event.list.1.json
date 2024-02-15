@@ -1,0 +1,60 @@
+{
+  "data": [
+    {
+      "api_version": "2020-08-27",
+      "created": 1708008530,
+      "data": {
+        "object": {
+          "address": null,
+          "balance": 0,
+          "created": 1708008524,
+          "currency": null,
+          "default_currency": null,
+          "default_source": null,
+          "delinquent": false,
+          "description": "zulip.testserver f267ada0-3e8",
+          "discount": null,
+          "email": "hamlet@zulip.com",
+          "id": "cus_PZEia820z9Zo16",
+          "invoice_prefix": "4B9E7A40",
+          "invoice_settings": {
+            "custom_fields": null,
+            "default_payment_method": "pm_1Ok6F2DEQaroqDjsaS0caoc1",
+            "footer": null,
+            "rendering_options": null
+          },
+          "livemode": false,
+          "metadata": {
+            "remote_realm_host": "zulip.testserver",
+            "remote_realm_uuid": "f267ada0-3e8e-4c92-991d-5715db017e75"
+          },
+          "name": null,
+          "next_invoice_sequence": 1,
+          "object": "customer",
+          "phone": null,
+          "preferred_locales": [],
+          "shipping": null,
+          "tax_exempt": "none",
+          "test_clock": null
+        },
+        "previous_attributes": {
+          "invoice_settings": {
+            "default_payment_method": null
+          }
+        }
+      },
+      "id": "evt_1Ok6F4DEQaroqDjsJu5X6t4Y",
+      "livemode": false,
+      "object": "event",
+      "pending_webhooks": 0,
+      "request": {
+        "id": "req_8NjCZNZ5aDC1O9",
+        "idempotency_key": "38b06a5f-0d53-4a42-a7a5-82ed4a3fad9f"
+      },
+      "type": "customer.updated"
+    }
+  ],
+  "has_more": true,
+  "object": "list",
+  "url": "/v1/events"
+}

@@ -1349,7 +1349,17 @@ class BillingSession(ABC):
                 raise SupportRequestError(
                     f"Configure {self.billing_entity_display_name} current plan end-date, before scheduling a new plan."
                 )
+            # Handles the case when the current_plan is a fixed-price plan with
+            # a monthly billing schedule. We can't schedule a new plan until the
+            # invoice for the 12th month is processed.
+            if current_plan.end_date != self.get_next_billing_cycle(current_plan):
+                raise SupportRequestError(
+                    f"New plan for {self.billing_entity_display_name} can not be scheduled until all the invoices of the current plan are processed."
+                )
             fixed_price_plan_params["billing_cycle_anchor"] = current_plan.end_date
+            fixed_price_plan_params["end_date"] = add_months(
+                current_plan.end_date, CustomerPlan.FIXED_PRICE_PLAN_DURATION_MONTHS
+            )
             fixed_price_plan_params["status"] = CustomerPlan.NEVER_STARTED
             fixed_price_plan_params["next_invoice_date"] = current_plan.end_date
             fixed_price_plan_params["invoicing_status"] = (
@@ -1699,6 +1709,9 @@ class BillingSession(ABC):
                 # Manual license management is not available for fixed price plan.
                 assert automanage_licenses is True
                 plan_params["fixed_price"] = fixed_price_plan_offer.fixed_price
+                plan_params["end_date"] = add_months(
+                    billing_cycle_anchor, CustomerPlan.FIXED_PRICE_PLAN_DURATION_MONTHS
+                )
                 fixed_price_plan_offer.status = CustomerPlanOffer.PROCESSED
                 fixed_price_plan_offer.save(update_fields=["status"])
 
@@ -1952,11 +1965,7 @@ class BillingSession(ABC):
             licenses_at_next_renewal = last_ledger_entry.licenses_at_next_renewal
             assert licenses_at_next_renewal is not None
 
-            if (
-                plan.tier == CustomerPlan.TIER_SELF_HOSTED_LEGACY
-                and plan.end_date == next_billing_cycle
-                and plan.status == CustomerPlan.ACTIVE
-            ):
+            if plan.end_date == next_billing_cycle and plan.status == CustomerPlan.ACTIVE:
                 self.process_downgrade(plan, True)
                 return None, None
 
