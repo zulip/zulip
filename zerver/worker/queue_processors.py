@@ -672,6 +672,8 @@ class MissedMessageWorker(QueueProcessingWorker):
 
     def work(self) -> None:
         while True:
+            flush_per_request_caches()
+            reset_queries()
             try:
                 finished = self.background_loop()
                 if finished:
