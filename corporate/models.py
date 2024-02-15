@@ -353,6 +353,11 @@ class CustomerPlan(AbstractCustomerPlan):
     # and not every time when cron run.
     invoice_overdue_email_sent = models.BooleanField(default=False)
 
+    # Flag to track if an email has been sent to Zulip team to
+    # review the pricing, 60 days before the end date. Helps to send
+    # an email only once and not every time when cron run.
+    reminder_to_review_plan_email_sent = models.BooleanField(default=False)
+
     # On next_invoice_date, we go through ledger entries that were
     # created after invoiced_through and process them by generating
     # invoices for any additional users and/or plan renewal. Once the
