@@ -38,7 +38,7 @@
         transition: all 0.2s ease;
 
         &:hover,
-        &:focus {
+        &:focus-visible {
             background-color: var(
                 --color-compose-collapsed-reply-button-area-background-interactive
             );
@@ -263,6 +263,14 @@
 
     .message_content {
         margin-right: 0;
+    }
+
+    /* Use browser default outline color for all compose buttons */
+    #compose_close,
+    .expand_composebox_button,
+    .collapse_composebox_button,
+    .compose_control_button {
+        outline: revert;
     }
 }
 
@@ -719,7 +727,7 @@ textarea.new_message_textarea {
     background-color: hsl(0deg 0% 100%);
 
     &.over_limit,
-    &.over_limit:focus {
+    &.over_limit:focus-visible {
         box-shadow: 0 0 0 1pt hsl(0deg 76% 65%);
 
         &.flash {
@@ -734,7 +742,7 @@ textarea.new_message_textarea {
     }
 
     &.invalid,
-    &.invalid:focus {
+    &.invalid:focus-visible {
         border: 1px solid hsl(3deg 57% 33%);
         box-shadow: 0 0 2px hsl(3deg 57% 33%);
     }
@@ -747,7 +755,7 @@ textarea.new_message_textarea,
     transition: border 0.2s ease;
     color: var(--color-text-default);
 
-    &:focus {
+    &:focus-visible {
         outline: 0;
         border: 1px solid hsl(0deg 0% 67%);
         box-shadow: none;
@@ -811,8 +819,8 @@ textarea.new_message_textarea,
             color: var(--color-compose-embedded-button-text-color-hover);
         }
 
-        &:focus {
-            outline: 0;
+        &:focus-visible {
+            outline: revert;
         }
     }
 
@@ -846,10 +854,6 @@ textarea.new_message_textarea,
     &:active {
         transition: all 80ms;
         transform: scale(0.96);
-    }
-
-    &:focus {
-        outline: 0;
     }
 
     &:focus-visible {
@@ -916,7 +920,7 @@ textarea.new_message_textarea,
             cursor: pointer;
             margin: 4px 0 0;
 
-            &:focus {
+            &:focus-visible {
                 outline: 1px dotted hsl(0deg 0% 20%);
                 outline: 5px auto -webkit-focus-ring-color;
                 outline-offset: -2px;
@@ -1236,10 +1240,6 @@ textarea.new_message_textarea,
     &:active {
         transition: all 80ms;
         transform: scale(0.96);
-    }
-
-    &:focus {
-        outline: 0;
     }
 
     &:focus-visible {
