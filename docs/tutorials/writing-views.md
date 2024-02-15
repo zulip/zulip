@@ -316,7 +316,7 @@ r = requests.patch(SERVER_URL + 'api/v1/realm',
 ```
 
 This is simply an illustration; we recommend making use of the [Zulip
-Python API bindings](https://www.zulipchat.com/api) since they provide
+Python API bindings](https://zulip.com/api/) since they provide
 a nice interface for accessing the API.
 
 ## Legacy endpoints used by the web client

@@ -72,7 +72,7 @@ In practice, guests should rarely encounter content from an **Unknown user**,
 unless users in your organization frequently change their stream subscriptions
 or are [deactivated](/help/deactivate-or-reactivate-a-user).
 
-The only information guests can access about unknown users via the [API](/api)
+The only information guests can access about unknown users via the [API](/api/)
 is which user IDs exist, and
 [availability](/help/status-and-availability) updates for each user ID.
 
