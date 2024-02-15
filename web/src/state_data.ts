@@ -34,7 +34,7 @@ export let realm: {
             id: number;
             name: string;
         };
-        CHOICE: {
+        SELECT: {
             id: number;
             name: string;
         };
