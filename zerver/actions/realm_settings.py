@@ -326,11 +326,16 @@ def do_set_realm_authentication_methods(
             },
         )
 
+    event_data = dict(
+        authentication_methods=get_realm_authentication_methods_for_page_params_api(
+            realm, updated_value
+        )
+    )
     event = dict(
         type="realm",
         op="update_dict",
         property="default",
-        data=dict(authentication_methods=updated_value),
+        data=event_data,
     )
     send_event(realm, event, active_user_ids(realm.id))
 

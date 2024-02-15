@@ -50,6 +50,7 @@ import * as scheduled_messages_ui from "./scheduled_messages_ui";
 import * as scroll_bar from "./scroll_bar";
 import * as settings_account from "./settings_account";
 import * as settings_bots from "./settings_bots";
+import * as settings_components from "./settings_components";
 import * as settings_config from "./settings_config";
 import * as settings_emoji from "./settings_emoji";
 import * as settings_exports from "./settings_exports";
@@ -290,20 +291,7 @@ export function dispatch_normal_event(event) {
                     switch (event.property) {
                         case "default":
                             for (const [key, value] of Object.entries(event.data)) {
-                                if (key === "authentication_methods") {
-                                    for (const [auth_method, enabled] of Object.entries(
-                                        event.data.authentication_methods,
-                                    )) {
-                                        realm.realm_authentication_methods[auth_method].enabled =
-                                            enabled;
-                                    }
-                                    settings_org.populate_auth_methods(
-                                        event.data.authentication_methods,
-                                    );
-                                } else {
-                                    realm["realm_" + key] = value;
-                                }
-
+                                realm["realm_" + key] = value;
                                 if (Object.hasOwn(realm_settings, key)) {
                                     settings_org.sync_realm_settings(key);
                                 }
@@ -317,6 +305,11 @@ export function dispatch_normal_event(event) {
                                 if (key === "edit_topic_policy") {
                                     message_live_update.rerender_messages_view();
                                 }
+                            }
+                            if (event.data.authentication_methods !== undefined) {
+                                settings_org.populate_auth_methods(
+                                    settings_components.realm_authentication_methods_to_boolean_dict(),
+                                );
                             }
                             break;
                         case "icon":

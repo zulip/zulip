@@ -4172,13 +4172,11 @@ paths:
                                     authentication_methods:
                                       type: object
                                       additionalProperties:
-                                        description: |
-                                          Boolean describing whether the authentication method (i.e. its key)
-                                          is enabled in this organization.
-                                        type: boolean
+                                        $ref: "#/components/schemas/RealmAuthenticationMethod"
                                       description: |
-                                        Dictionary of authentication method keys with boolean values that
-                                        describe whether the named authentication method is enabled for the
+                                        Dictionary of authentication method keys mapped to dictionaries that
+                                        describe the properties of the named authentication method for the
+                                        organization - its enabled status and availability for use by the
                                         organization.
 
                                         Clients should use this to implement server-settings UI to change which
@@ -14529,29 +14527,7 @@ paths:
                       realm_authentication_methods:
                         type: object
                         additionalProperties:
-                          type: object
-                          properties:
-                            enabled:
-                              type: boolean
-                              description: |
-                                Boolean describing whether the authentication method (i.e. its key)
-                                is enabled in this organization.
-                            available:
-                              type: boolean
-                              description: |
-                                Boolean describing whether the authentication method is available for use.
-                                If false, the organization is not eligible to enable the authentication
-                                method.
-                            unavailable_reason:
-                              type: string
-                              description: |
-                                Reason why the authentication method is unavailable. This field is optional
-                                and is only present when 'available' is false.
-                          additionalProperties: false
-                          description: |
-                            Dictionary describing the properties of the named authentication method for the
-                            organization - its enabled status and availability for use by the
-                            organization.
+                          $ref: "#/components/schemas/RealmAuthenticationMethod"
                         description: |
                           Present if `realm` is present in `fetch_event_types`.
 
@@ -18992,6 +18968,30 @@ components:
             only when some specific event occurs.
 
             **Changes**: New in Zulip 8.0 (feature level 230).
+    RealmAuthenticationMethod:
+      type: object
+      properties:
+        enabled:
+          type: boolean
+          description: |
+            Boolean describing whether the authentication method (i.e. its key)
+            is enabled in this organization.
+        available:
+          type: boolean
+          description: |
+            Boolean describing whether the authentication method is available for use.
+            If false, the organization is not eligible to enable the authentication
+            method.
+        unavailable_reason:
+          type: string
+          description: |
+            Reason why the authentication method is unavailable. This field is optional
+            and is only present when 'available' is false.
+      additionalProperties: false
+      description: |
+        Dictionary describing the properties of an authentication method for the
+        organization - its enabled status and availability for use by the
+        organization.
     RealmEmoji:
       type: object
       additionalProperties: false
