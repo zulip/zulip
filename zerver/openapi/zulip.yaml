@@ -12034,7 +12034,7 @@ paths:
                             - `SHORT_TEXT`
                             - `LONG_TEXT`
                             - `DATE` for date-based fields.
-                            - `CHOICE` for a list of options.
+                            - `SELECT` for a list of options.
                             - `URL` for links.
                             - `EXTERNAL_ACCOUNT` for external accounts.
                             - `USER` for selecting a user for the field.
