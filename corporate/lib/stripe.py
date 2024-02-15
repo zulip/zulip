@@ -1477,7 +1477,28 @@ class BillingSession(ABC):
                         "property": "next_invoice_date",
                     }
                     plan.next_invoice_date = new_end_date
-                plan.save(update_fields=["end_date", "next_invoice_date"])
+                # Currently, we send a reminder email 2 months before the end date.
+                # Reset it when we are extending the end_date.
+                reminder_to_review_plan_email_sent_changed_extra_data = None
+                if (
+                    plan.reminder_to_review_plan_email_sent
+                    and old_end_date is not None  # for mypy
+                    and new_end_date > old_end_date
+                ):
+                    plan.reminder_to_review_plan_email_sent = False
+                    reminder_to_review_plan_email_sent_changed_extra_data = {
+                        "old_value": True,
+                        "new_value": False,
+                        "plan_id": plan.id,
+                        "property": "reminder_to_review_plan_email_sent",
+                    }
+                plan.save(
+                    update_fields=[
+                        "end_date",
+                        "next_invoice_date",
+                        "reminder_to_review_plan_email_sent",
+                    ]
+                )
 
                 def write_to_audit_log_plan_property_changed(extra_data: Dict[str, Any]) -> None:
                     extra_data["plan_id"] = plan.id
@@ -1496,6 +1517,11 @@ class BillingSession(ABC):
 
                 if next_invoice_date_changed_extra_data:
                     write_to_audit_log_plan_property_changed(next_invoice_date_changed_extra_data)
+
+                if reminder_to_review_plan_email_sent_changed_extra_data:
+                    write_to_audit_log_plan_property_changed(
+                        reminder_to_review_plan_email_sent_changed_extra_data
+                    )
 
                 return f"Current plan for {self.billing_entity_display_name} updated to end on {end_date_string}."
         raise SupportRequestError(
@@ -4815,6 +4841,27 @@ def invoice_plans_as_needed(event_time: Optional[datetime] = None) -> None:
 
         if remote_server:
             assert plan.next_invoice_date is not None
+            if (
+                plan.fixed_price is not None
+                and not plan.reminder_to_review_plan_email_sent
+                and plan.end_date is not None  # for mypy
+                # The max gap between two months is 62 days. (1 Jul - 1 Sep)
+                and plan.end_date - plan.next_invoice_date <= timedelta(days=62)
+            ):
+                context = {
+                    "billing_entity": billing_session.billing_entity_display_name,
+                    "end_date": plan.end_date.strftime("%Y-%m-%d"),
+                    "support_url": billing_session.support_url(),
+                }
+                send_email(
+                    "zerver/emails/reminder_to_review_plan",
+                    to_emails=[BILLING_SUPPORT_EMAIL],
+                    from_address=FromAddress.tokenized_no_reply_address(),
+                    context=context,
+                )
+                plan.reminder_to_review_plan_email_sent = True
+                plan.save(update_fields=["reminder_to_review_plan_email_sent"])
+
             last_audit_log_update = remote_server.last_audit_log_update
             if last_audit_log_update is None or plan.next_invoice_date > last_audit_log_update:
                 if (

@@ -6834,13 +6834,36 @@ class TestRemoteRealmBillingFlow(StripeTestCase, RemoteRealmBillingTestCase):
         self.assertEqual(current_plan.billing_schedule, CustomerPlan.BILLING_SCHEDULE_MONTHLY)
         self.assertEqual(current_plan.end_date, end_date)
 
-        # Invoice for february to november
-        for invoice_count in range(1, 11):
+        # Invoice for february to october
+        for invoice_count in range(1, 10):
             with time_machine.travel(add_months(self.now, invoice_count), tick=False):
                 send_server_data_to_push_bouncer(consider_usage_statistics=False)
                 invoice_plans_as_needed()
 
         billing_entity = self.billing_session.billing_entity_display_name
+
+        # Cron runs 60 days before the end date (november) & sends a reminder email.
+        self.assertFalse(current_plan.reminder_to_review_plan_email_sent)
+        with time_machine.travel(add_months(self.now, 10), tick=False):
+            send_server_data_to_push_bouncer(consider_usage_statistics=False)
+            invoice_plans_as_needed()
+        current_plan.refresh_from_db()
+        self.assertTrue(current_plan.reminder_to_review_plan_email_sent)
+
+        from django.core.mail import outbox
+
+        messages_count = len(outbox)
+        message = outbox[-1]
+        self.assert_length(message.to, 1)
+        self.assertEqual(message.to[0], "sales@zulip.com")
+        self.assertIn(
+            f"Support URL: {self.billing_session.support_url()}",
+            message.body,
+        )
+        self.assertEqual(
+            f"Fixed-price plan for {billing_entity} ends on {end_date.strftime('%Y-%m-%d')}",
+            message.subject,
+        )
 
         self.logout()
         self.login("iago")
@@ -6861,6 +6884,9 @@ class TestRemoteRealmBillingFlow(StripeTestCase, RemoteRealmBillingTestCase):
         with time_machine.travel(add_months(self.now, 11), tick=False):
             send_server_data_to_push_bouncer(consider_usage_statistics=False)
             invoice_plans_as_needed()
+
+        # Verify that we don't send another email to Zulip team.
+        self.assert_length(outbox, messages_count)
 
         # All the monthly invoices are processed, now we can schedule a plan.
         updated_annual_fixed_price = annual_fixed_price + 500

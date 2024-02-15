@@ -351,6 +351,8 @@ class TestRemoteServerSupportEndpoint(ZulipTestCase):
         customer = Customer.objects.get(remote_realm=remote_realm)
         plan = get_current_plan_by_customer(customer)
         assert plan is not None
+        plan.reminder_to_review_plan_email_sent = True
+        plan.save(update_fields=["reminder_to_review_plan_email_sent"])
         self.assertEqual(plan.status, CustomerPlan.ACTIVE)
         self.assertEqual(plan.end_date, datetime(2050, 2, 1, tzinfo=timezone.utc))
         self.assertEqual(plan.next_invoice_date, datetime(2050, 2, 1, tzinfo=timezone.utc))
@@ -359,7 +361,7 @@ class TestRemoteServerSupportEndpoint(ZulipTestCase):
         self.login_user(cordelia)
         result = self.client_post(
             "/activity/remote/support",
-            {"realm_id": f"{remote_realm.id}", "end_date": "2040-01-01"},
+            {"realm_id": f"{remote_realm.id}", "end_date": "2050-03-01"},
         )
         self.assertEqual(result.status_code, 302)
         self.assertEqual(result["Location"], "/login/")
@@ -369,29 +371,41 @@ class TestRemoteServerSupportEndpoint(ZulipTestCase):
 
         result = self.client_post(
             "/activity/remote/support",
-            {"remote_realm_id": f"{remote_realm.id}", "plan_end_date": "2040-01-01"},
+            {"remote_realm_id": f"{remote_realm.id}", "plan_end_date": "2050-03-01"},
         )
         self.assert_in_success_response(
-            ["Current plan for realm-name-5 updated to end on 2040-01-01."], result
+            ["Current plan for realm-name-5 updated to end on 2050-03-01."], result
         )
         plan.refresh_from_db()
-        self.assertEqual(plan.end_date, datetime(2040, 1, 1, tzinfo=timezone.utc))
-        self.assertEqual(plan.next_invoice_date, datetime(2040, 1, 1, tzinfo=timezone.utc))
+        self.assertEqual(plan.end_date, datetime(2050, 3, 1, tzinfo=timezone.utc))
+        self.assertEqual(plan.next_invoice_date, datetime(2050, 3, 1, tzinfo=timezone.utc))
+        self.assertFalse(plan.reminder_to_review_plan_email_sent)
         audit_logs = RemoteRealmAuditLog.objects.filter(
             event_type=RemoteRealmAuditLog.CUSTOMER_PLAN_PROPERTY_CHANGED
         ).order_by("-id")
         assert audit_logs.exists()
-        next_invoice_date_changed_audit_log = audit_logs[0]
-        end_date_changed_audit_log = audit_logs[1]
+        reminder_to_review_plan_email_sent_changed_audit_log = audit_logs[0]
+        next_invoice_date_changed_audit_log = audit_logs[1]
+        end_date_changed_audit_log = audit_logs[2]
         expected_extra_data = {
             "old_value": "2050-02-01T00:00:00Z",
-            "new_value": "2040-01-01T00:00:00Z",
+            "new_value": "2050-03-01T00:00:00Z",
             "property": "end_date",
             "plan_id": plan.id,
         }
         self.assertEqual(end_date_changed_audit_log.extra_data, expected_extra_data)
         expected_extra_data["property"] = "next_invoice_date"
         self.assertEqual(next_invoice_date_changed_audit_log.extra_data, expected_extra_data)
+        expected_extra_data.update(
+            {
+                "old_value": True,
+                "new_value": False,
+                "property": "reminder_to_review_plan_email_sent",
+            }
+        )
+        self.assertEqual(
+            reminder_to_review_plan_email_sent_changed_audit_log.extra_data, expected_extra_data
+        )
 
         result = self.client_post(
             "/activity/remote/support",

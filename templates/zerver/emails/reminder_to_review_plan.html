@@ -1,0 +1,10 @@
+{% extends "zerver/emails/email_base_default.html" %}
+
+{% block content %}
+<p>Reminder to re-evaluate the pricing and configure a new fixed-price plan accordingly.</p>
+
+<br /><br />
+
+<b>Support URL</b>: <a href="{{ support_url }}">{{ support_url }}</a>
+
+{% endblock %}

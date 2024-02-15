@@ -1,0 +1,1 @@
+Fixed-price plan for {{billing_entity}} ends on {{end_date}}
