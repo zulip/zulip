@@ -30,7 +30,7 @@ class UserGroupDict(TypedDict):
     members: List[int]
     direct_subgroup_ids: List[int]
     is_system_group: bool
-    can_mention_group: int
+    can_mention_groups: List[int]
 
 
 @dataclass
@@ -264,7 +264,9 @@ def user_groups_in_realm_serialized(realm: Realm) -> List[UserGroupDict]:
             members=[],
             direct_subgroup_ids=[],
             is_system_group=user_group.is_system_group,
-            can_mention_group=user_group.can_mention_groups.all()[0].id,
+            can_mention_groups=[
+                can_mention_group.id for can_mention_group in user_group.can_mention_groups.all()
+            ],
         )
 
     membership = UserGroupMembership.objects.filter(user_group__realm=realm).values_list(
@@ -282,6 +284,7 @@ def user_groups_in_realm_serialized(realm: Realm) -> List[UserGroupDict]:
     for group_dict in group_dicts.values():
         group_dict["members"] = sorted(group_dict["members"])
         group_dict["direct_subgroup_ids"] = sorted(group_dict["direct_subgroup_ids"])
+        group_dict["can_mention_groups"] = sorted(group_dict["can_mention_groups"])
 
     return sorted(group_dicts.values(), key=lambda group_dict: group_dict["id"])
 

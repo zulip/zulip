@@ -158,8 +158,6 @@ def promote_new_full_members() -> None:
 def do_send_create_user_group_event(
     user_group: UserGroup, members: List[UserProfile], direct_subgroups: Sequence[UserGroup] = []
 ) -> None:
-    can_mention_group = user_group.can_mention_groups.first()
-    assert can_mention_group is not None
     event = dict(
         type="user_group",
         op="add",
@@ -170,7 +168,9 @@ def do_send_create_user_group_event(
             id=user_group.id,
             is_system_group=user_group.is_system_group,
             direct_subgroup_ids=[direct_subgroup.id for direct_subgroup in direct_subgroups],
-            can_mention_group=can_mention_group.id,
+            can_mention_groups=[
+                can_mention_group.id for can_mention_group in user_group.can_mention_groups.all()
+            ],
         ),
     )
     send_event(user_group.realm, event, active_user_ids(user_group.realm_id))
@@ -201,7 +201,7 @@ def check_add_user_group(
 
 
 def do_send_user_group_update_event(
-    user_group: UserGroup, data: Dict[str, Union[str, int]]
+    user_group: UserGroup, data: Dict[str, Union[str, List[int]]]
 ) -> None:
     event = dict(type="user_group", op="update", group_id=user_group.id, data=data)
     send_event(user_group.realm, event, active_user_ids(user_group.realm_id))
@@ -443,9 +443,5 @@ def do_change_user_group_permission_setting(
         },
     )
 
-    if setting_name == "can_mention_groups":
-        # This is just a temporary hack till we update
-        # the event format to use can_mention_groups.
-        setting_name_for_event = "can_mention_group"
-    event_data_dict: Dict[str, Union[str, int]] = {setting_name_for_event: setting_value_group.id}
+    event_data_dict: Dict[str, Union[str, List[int]]] = {setting_name: [setting_value_group.id]}
     do_send_user_group_update_event(user_group, event_data_dict)

@@ -3116,7 +3116,7 @@ paths:
                                       "description": "Backend team",
                                       "id": 2,
                                       "is_system_group": false,
-                                      "can_mention_group": 11,
+                                      "can_mention_groups": [11],
                                     },
                                   "id": 0,
                                 }
@@ -3156,14 +3156,19 @@ paths:
                                       description: |
                                         The new description of the group. Only present if the description
                                         changed.
-                                    can_mention_group:
-                                      type: integer
+                                    can_mention_groups:
+                                      type: array
+                                      items:
+                                        type: integer
                                       description: |
-                                        ID of the new user group whose members are allowed to mention the
+                                        List of user group IDs whose members are allowed to mention the
                                         group.
 
-                                        **Changes**: Before Zulip 8.0 (feature level 198),
-                                        the `can_mention_group` setting
+                                        **Changes**: Before Zulip 9.0 (feature level 243), this setting was
+                                        named as `can_mention_group` and was set to a user group ID, as the
+                                        setting could only be set to a single user group before.
+
+                                        Before Zulip 8.0 (feature level 198), the `can_mention_group` setting
                                         was named `can_mention_group_id`.
 
                                         New in Zulip 8.0 (feature level 191). Previously, groups
@@ -18020,13 +18025,19 @@ paths:
                                 modified by users.
 
                                 **Changes**: New in Zulip 5.0 (feature level 93).
-                            can_mention_group:
-                              type: integer
+                            can_mention_groups:
+                              type: array
+                              items:
+                                type: integer
                               description: |
-                                ID of the user group whose members are allowed to mention the group.
+                                List of user group IDs whose members are allowed to mention the group.
 
-                                **Changes**: Before Zulip 8.0 (feature level 198),
-                                the `can_mention_group` setting was named `can_mention_group_id`.
+                                **Changes**: Before Zulip 9.0 (feature level 243), this setting was
+                                named as `can_mention_group` and was set to a user group ID, as the
+                                setting could only be set to a single user group before.
+
+                                Before Zulip 8.0 (feature level 198), the `can_mention_group` setting
+                                was named `can_mention_group_id`.
 
                                 New in Zulip 8.0 (feature level 191). Previously, groups
                                 could be mentioned if and only if they were not system groups.
@@ -18045,7 +18056,7 @@ paths:
                               "members": [1],
                               "direct_subgroup_ids": [],
                               "is_system_group": true,
-                              "can_mention_group": 11,
+                              "can_mention_groups": [11],
                             },
                             {
                               "description": "Administrators of this organization, including owners",
@@ -18054,7 +18065,7 @@ paths:
                               "members": [2],
                               "direct_subgroup_ids": [1],
                               "is_system_group": true,
-                              "can_mention_group": 12,
+                              "can_mention_groups": [12],
                             },
                             {
                               "description": "Characters of Hamlet",
@@ -18063,7 +18074,7 @@ paths:
                               "members": [3, 4],
                               "direct_subgroup_ids": [],
                               "is_system_group": false,
-                              "can_mention_group": 13,
+                              "can_mention_groups": [13],
                             },
                           ],
                       }
@@ -19156,13 +19167,19 @@ components:
             directly modified by users.
 
             **Changes**: New in Zulip 5.0 (feature level 93).
-        can_mention_group:
-          type: integer
+        can_mention_groups:
+          type: array
+          items:
+            type: integer
           description: |
-            ID of the user group whose members are allowed to mention the group.
+            List of user group IDs whose members are allowed to mention the group.
 
-            **Changes**: Before Zulip 8.0 (feature level 198),
-            the `can_mention_group` setting was named `can_mention_group_id`.
+            **Changes**: Before Zulip 9.0 (feature level 243), this setting was
+            named as `can_mention_group` and was set to a user group ID, as the
+            setting could only be set to a single user group before.
+
+            Before Zulip 8.0 (feature level 198), the `can_mention_group` setting
+            was named `can_mention_group_id`.
 
             New in Zulip 8.0 (feature level 191). Previously, groups
             could be mentioned if and only if they were not system groups.
