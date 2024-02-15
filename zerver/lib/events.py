@@ -1198,19 +1198,15 @@ def apply_event(
             )
         elif event["op"] == "update_dict":
             for key, value in event["data"].items():
+                state["realm_" + key] = value
+                # It's a bit messy, but this is where we need to
+                # update the state for whether password authentication
+                # is enabled on this server.
                 if key == "authentication_methods":
-                    state_realm_authentication_methods = state["realm_authentication_methods"]
-                    for auth_method, enabled in value.items():
-                        state_realm_authentication_methods[auth_method]["enabled"] = enabled
-
-                    # It's a bit messy, but this is where we need to
-                    # update the state for whether password authentication
-                    # is enabled on this server.
-                    state["realm_password_auth_enabled"] = value["Email"] or value["LDAP"]
-                    state["realm_email_auth_enabled"] = value["Email"]
-
-                else:
-                    state["realm_" + key] = value
+                    state["realm_password_auth_enabled"] = (
+                        value["Email"]["enabled"] or value["LDAP"]["enabled"]
+                    )
+                    state["realm_email_auth_enabled"] = value["Email"]["enabled"]
         elif event["op"] == "deactivated":
             # The realm has just been deactivated.  If our request had
             # arrived a moment later, we'd have rendered the
