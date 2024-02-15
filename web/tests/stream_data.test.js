@@ -140,6 +140,7 @@ test("basics", () => {
 
     assert.equal(stream_data.get_color(social.stream_id), "red");
     assert.equal(stream_data.get_color(undefined), "#c2c2c2");
+    assert.equal(stream_data.get_color(1234567), "#c2c2c2");
 
     assert.equal(stream_data.get_name("denMARK"), "Denmark");
     assert.equal(stream_data.get_name("unknown Stream"), "unknown Stream");
