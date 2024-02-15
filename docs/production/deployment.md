@@ -45,7 +45,23 @@ extremely reliable for years, whereas the Docker image is new and has
 rough edges, so we recommend the normal installer unless you have a
 specific reason to prefer Docker.
 
-## Advanced installer options
+## Zulip installer details
+
+The [Zulip installer](install.md) does the following:
+
+- Creates the `zulip` user, which the various Zulip servers will run as.
+- Creates `/home/zulip/deployments/`, which the Zulip code for this
+  deployment (and future deployments when you upgrade) goes into. At the
+  very end of the install process, the script moves the Zulip code tree
+  it's running from (which you unpacked from a tarball above) to a
+  directory there, and makes `/home/zulip/deployments/current` as a
+  symbolic link to it.
+- Installs Zulip's various dependencies.
+- Configures the various third-party services Zulip uses, including
+  PostgreSQL, RabbitMQ, Memcached and Redis.
+- Initializes Zulip's database.
+
+### Advanced installer options
 
 The Zulip installer supports the following advanced installer options
 as well as those mentioned in the
