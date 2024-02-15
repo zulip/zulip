@@ -34,7 +34,7 @@ import * as user_topics from "./user_topics";
 
 export function abort_xhr() {
     $("#compose-send-button").prop("disabled", false);
-    upload.compose_upload_object.cancelAll();
+    upload.compose_upload_cancel();
 }
 
 function setup_compose_actions_hooks() {

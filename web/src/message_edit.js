@@ -577,11 +577,10 @@ function start_edit_with_content($row, content, edit_box_open_callback) {
         edit_box_open_callback();
     }
     const row_id = rows.id($row);
-    const upload_object = upload.setup_upload({
+    upload.setup_upload({
         mode: "edit",
         row: row_id,
     });
-    upload.upload_objects_by_message_edit_row.set(row_id, upload_object);
 }
 
 export function start($row, edit_box_open_callback) {
@@ -791,25 +790,11 @@ export function end_inline_topic_edit($row) {
     message_lists.current.hide_edit_topic_on_recipient_row($row);
 }
 
-function remove_uploads_from_row(row_id) {
-    const uploads_for_row = upload.upload_objects_by_message_edit_row.get(row_id);
-    if (!uploads_for_row) {
-        return;
-    }
-    // We need to cancel all uploads, reset their progress,
-    // and clear the files upon ending the edit.
-    upload.deactivate_upload(uploads_for_row, {
-        mode: "edit",
-        row: row_id,
-    });
-    // Since we removed all the uploads from the row, we should
-    // now remove the corresponding upload object from the store.
-    upload.upload_objects_by_message_edit_row.delete(row_id);
-}
-
 export function end_message_row_edit($row) {
     const row_id = rows.id($row);
-    remove_uploads_from_row(row_id);
+
+    // Clean up the upload handler
+    upload.deactivate_upload({mode: "edit", row: row_id});
 
     const message = message_lists.current.get(row_id);
     if (message !== undefined && currently_editing_messages.has(message.id)) {
