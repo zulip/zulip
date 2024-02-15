@@ -636,7 +636,22 @@ input[type="checkbox"] {
             font-weight: bold;
             word-break: break-all;
         }
+
+        .notification-table-header-content {
+            display: flex;
+            justify-content: center;
+            align-items: baseline;
+
+            i {
+                align-self: center;
+            }
+        }
     }
+}
+
+.zulip-icon-at-sign-container {
+    display: inline-flex;
+    align-items: center;
 }
 
 #convert-demo-organization-form {
