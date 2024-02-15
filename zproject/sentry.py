@@ -51,6 +51,8 @@ def add_context(event: "Event", hint: "Hint") -> Optional["Event"]:
 
 
 def setup_sentry(dsn: Optional[str], environment: str) -> None:
+    from django.conf import settings
+
     if not dsn:
         return
 
@@ -80,6 +82,8 @@ def setup_sentry(dsn: Optional[str], environment: str) -> None:
         # PII while having the identifiers needed to determine that an
         # exception only affects a small subset of users or realms.
         send_default_pii=True,
+        traces_sample_rate=settings.SENTRY_TRACE_RATE,
+        profiles_sample_rate=settings.SENTRY_PROFILE_RATE,
     )
 
     # Ignore all of the loggers from django.security that are for user
