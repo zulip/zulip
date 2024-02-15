@@ -1,4 +1,4 @@
-from typing import List, Optional, Sequence
+from typing import List, Mapping, Optional, Sequence, Set
 
 from django.conf import settings
 from django.db import transaction
@@ -25,7 +25,6 @@ from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.user_groups import (
     access_user_group_by_id,
-    access_user_group_for_setting,
     access_user_groups_for_setting,
     check_user_group_name,
     get_direct_memberships_of_users,
@@ -37,7 +36,7 @@ from zerver.lib.user_groups import (
     user_groups_in_realm_serialized,
 )
 from zerver.lib.users import access_user_by_id, user_ids_to_users
-from zerver.lib.validator import check_bool, check_int, check_list
+from zerver.lib.validator import check_bool, check_dict_only, check_int, check_list, check_union
 from zerver.models import UserGroup, UserProfile
 from zerver.models.users import get_system_bot
 from zerver.views.streams import compose_views
@@ -93,6 +92,24 @@ def get_user_group(request: HttpRequest, user_profile: UserProfile) -> HttpRespo
     return json_success(request, data={"user_groups": user_groups})
 
 
+update_group_setting_schema = check_union(
+    [
+        check_dict_only(
+            required_keys=[],
+            optional_keys=[
+                ("add", check_list(check_int)),
+                ("remove", check_list(check_int)),
+            ],
+        ),
+        check_dict_only(
+            required_keys=[
+                ("set", check_list(check_int)),
+            ],
+        ),
+    ]
+)
+
+
 @transaction.atomic
 @require_user_group_edit_permission
 @has_request_variables
@@ -102,11 +119,11 @@ def edit_user_group(
     user_group_id: int = REQ(json_validator=check_int, path_only=True),
     name: Optional[str] = REQ(default=None),
     description: Optional[str] = REQ(default=None),
-    can_mention_group_id: Optional[int] = REQ(
-        "can_mention_group", json_validator=check_int, default=None
+    can_mention_group_ids: Mapping[str, Sequence[int]] = REQ(
+        "can_mention_groups", json_validator=update_group_setting_schema, default={}
     ),
 ) -> HttpResponse:
-    if name is None and description is None and can_mention_group_id is None:
+    if name is None and description is None and not can_mention_group_ids:
         raise JsonableError(_("No new data supplied"))
 
     user_group = access_user_group_by_id(user_group_id, user_profile, for_read=False)
@@ -120,28 +137,45 @@ def edit_user_group(
 
     request_settings_dict = locals()
     for setting_name, permission_config in UserGroup.GROUP_PERMISSION_SETTINGS.items():
-        if permission_config.id_field_name == "can_mention_group_ids":
-            # This is just a temporary hack till we rename the API request
-            # paramters to use can_mention_groups/can_mention_group_ids.
-            setting_group_id_name = "can_mention_group_id"
-
+        setting_group_id_name = permission_config.id_field_name
         if setting_group_id_name not in request_settings_dict:  # nocoverage
             continue
 
-        if (
-            request_settings_dict[setting_group_id_name] is not None
-            and request_settings_dict[setting_group_id_name]
-            != getattr(user_group, setting_name).first().id
-        ):
-            setting_value_group_id = request_settings_dict[setting_group_id_name]
-            setting_value_group = access_user_group_for_setting(
-                setting_value_group_id,
+        if request_settings_dict[setting_group_id_name]:
+            current_value = {group.id for group in getattr(user_group, setting_name).all()}
+
+            groups_to_add: Set[int] = set()
+            groups_to_remove: Set[int] = set()
+            if "set" in request_settings_dict[setting_group_id_name]:
+                new_group_setting_ids = set(request_settings_dict[setting_group_id_name]["set"])
+                groups_to_add = new_group_setting_ids - current_value
+                groups_to_remove = current_value - new_group_setting_ids
+            else:
+                if "add" in request_settings_dict[setting_group_id_name]:
+                    groups_to_add = (
+                        set(request_settings_dict[setting_group_id_name]["add"]) - current_value
+                    )
+                if "remove" in request_settings_dict[setting_group_id_name]:
+                    groups_to_remove = (
+                        set(request_settings_dict[setting_group_id_name]["remove"]) & current_value
+                    )
+                new_group_setting_ids = (current_value | groups_to_add) - groups_to_remove
+
+            if len(groups_to_add) == 0 and len(groups_to_remove) == 0:
+                continue
+
+            # We only check validity of groups to add to the setting since
+            # invalid group IDs in "remove" would already be ignored
+            # when we would check whether the setting is set to the
+            # groups present in the "remove" list.
+            new_setting_groups = access_user_groups_for_setting(
+                list(groups_to_add),
                 user_profile,
                 setting_name=setting_name,
                 permission_configuration=permission_config,
             )
             do_change_user_group_permission_setting(
-                user_group, setting_name, setting_value_group, acting_user=user_profile
+                user_group, setting_name, new_group_setting_ids, acting_user=user_profile
             )
 
     return json_success(request)

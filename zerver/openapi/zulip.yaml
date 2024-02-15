@@ -17898,23 +17898,53 @@ paths:
                     a required field.
                   type: string
                   example: The marketing team.
-                can_mention_group:
+                can_mention_groups:
                   description: |
                     ID of the new user group whose members are allowed to mention the
                     group.
 
+                    Clients are expected to either have just the `set` field or one
+                    or both of `add` and `remove`.
+
                     This setting cannot be set to `"role:internet"` and `"role:owners"`
                     system groups.
 
-                    **Changes**: Before Zulip 8.0 (feature level 198),
-                    the `can_mention_group` setting was named `can_mention_group_id`.
+                    **Changes**: Before Zulip 9.0 (feature level 243), this parameter was
+                    named as `can_mention_group` and accepted a user group ID, as the
+                    setting could only be set to a single user group before.
+
+                    Before Zulip 8.0 (feature level 198), the `can_mention_group` setting
+                    was named `can_mention_group_id`.
 
                     New in Zulip 8.0 (feature level 191). Previously, groups
                     could be mentioned if and only if they were not system groups.
-                  type: integer
-                  example: 12
+                  type: object
+                  additionalProperties: false
+                  properties:
+                    add:
+                      type: array
+                      items:
+                        type: integer
+                      description: |
+                        The IDs of user groups which will be added to the list of user
+                        groups allowed to mention the group.
+                    remove:
+                      type: array
+                      items:
+                        type: integer
+                      description: |
+                        The IDs of user groups which will be removed from the list of user
+                        groups allowed to mention the group.
+                    set:
+                      type: array
+                      items:
+                        type: integer
+                      description: |
+                        The complete list of IDs of user groups which would be allowed
+                        to mention the group.
+                  example: {"add": [12]}
             encoding:
-              can_mention_group:
+              can_mention_groups:
                 contentType: application/json
       responses:
         "200":

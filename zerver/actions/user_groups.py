@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Dict, List, Mapping, Optional, Sequence, TypedDict, Union
+from typing import Dict, List, Mapping, Optional, Sequence, Set, TypedDict, Union
 
 import django.db.utils
 from django.db import transaction
@@ -423,13 +423,13 @@ def check_delete_user_group(user_group: UserGroup, *, acting_user: UserProfile) 
 def do_change_user_group_permission_setting(
     user_group: UserGroup,
     setting_name: str,
-    setting_value_group: UserGroup,
+    new_setting_group_ids: Set[int],
     *,
     acting_user: Optional[UserProfile],
 ) -> None:
     setting_value = getattr(user_group, setting_name)
-    old_group_id = setting_value.first().id
-    setting_value.set({setting_value_group})
+    old_group_ids = {group.id for group in setting_value.all()}
+    setting_value.set(new_setting_group_ids)
     RealmAuditLog.objects.create(
         realm=user_group.realm,
         acting_user=acting_user,
@@ -437,11 +437,13 @@ def do_change_user_group_permission_setting(
         event_time=timezone_now(),
         modified_user_group=user_group,
         extra_data={
-            RealmAuditLog.OLD_VALUE: old_group_id,
-            RealmAuditLog.NEW_VALUE: setting_value_group.id,
+            RealmAuditLog.OLD_VALUE: sorted(old_group_ids),
+            RealmAuditLog.NEW_VALUE: sorted(new_setting_group_ids),
             "property": setting_name,
         },
     )
 
-    event_data_dict: Dict[str, Union[str, List[int]]] = {setting_name: [setting_value_group.id]}
+    event_data_dict: Dict[str, Union[str, List[int]]] = {
+        setting_name: sorted(new_setting_group_ids)
+    }
     do_send_user_group_update_event(user_group, event_data_dict)

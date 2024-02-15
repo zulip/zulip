@@ -1311,14 +1311,14 @@ class TestRealmAuditLog(ZulipTestCase):
             },
         )
 
-        old_group = user_group.can_mention_groups.first()
-        assert old_group is not None
+        old_group_ids = [group.id for group in user_group.can_mention_groups.all()]
         new_group = UserGroup.objects.get(
             name=SystemGroups.EVERYONE_ON_INTERNET, realm=user_group.realm
         )
-        self.assertNotEqual(old_group.id, new_group.id)
+        self.assertNotIn(new_group.id, old_group_ids)
+        expected_new_value = [*old_group_ids, new_group.id]
         do_change_user_group_permission_setting(
-            user_group, "can_mention_groups", new_group, acting_user=None
+            user_group, "can_mention_groups", set(expected_new_value), acting_user=None
         )
         audit_log_entries = RealmAuditLog.objects.filter(
             event_type=RealmAuditLog.USER_GROUP_GROUP_BASED_SETTING_CHANGED,
@@ -1329,8 +1329,8 @@ class TestRealmAuditLog(ZulipTestCase):
         self.assertDictEqual(
             audit_log_entries[0].extra_data,
             {
-                RealmAuditLog.OLD_VALUE: old_group.id,
-                RealmAuditLog.NEW_VALUE: new_group.id,
+                RealmAuditLog.OLD_VALUE: sorted(old_group_ids),
+                RealmAuditLog.NEW_VALUE: sorted(expected_new_value),
                 "property": "can_mention_groups",
             },
         )

@@ -29,6 +29,9 @@ format used by the Zulip server that they are interacting with.
 * [`POST /user_groups/create`](/api/create-user-group): Renamed `can_mention_group`
   parameter to `can_mention_groups` and the setting can now be set to multiple
   groups during user group creation.
+* [`PATCH /user_groups/{user_group_id}`](/api/update-user-group): Renamed
+  `can_mention_group` parameter to `can_mention_groups` and the setting can
+  now be updated to set it to multiple groups.
 
 **Feature level 242**
 
