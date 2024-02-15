@@ -1,4 +1,5 @@
 import $ from "jquery";
+import tippy from "tippy.js";
 
 import render_compose_banner from "../templates/compose_banner/compose_banner.hbs";
 
@@ -681,7 +682,40 @@ function enable_or_disable_save_button($subsection_elem) {
         disable_save_btn = should_disable_save_button_for_time_limit_settings(time_limit_settings);
     } else if ($subsection_elem.attr("id") === "org-other-settings") {
         disable_save_btn = should_disable_save_button_for_jitsi_server_url_setting();
+        const $button_wrapper = $subsection_elem.find(".subsection-changes-save");
+        const is_tippy = $button_wrapper.get(0)._tippy;
+        if (disable_save_btn) {
+            // avoid duplication of tippy
+            if (!is_tippy) {
+                const opts = {placement: "top"};
+                initialize_disable_btn_hint_popover(
+                    $button_wrapper,
+                    $t({defaultMessage: "Cannot save invalid Jitsi server URL."}),
+                    opts,
+                );
+            }
+        } else {
+            if (is_tippy) {
+                is_tippy.destroy();
+            }
+        }
     }
 
     $subsection_elem.find(".subsection-changes-save button").prop("disabled", disable_save_btn);
+}
+
+export function initialize_disable_btn_hint_popover($btn_wrapper, hint_text, opts) {
+    const tippy_opts = {
+        animation: false,
+        hideOnClick: false,
+        placement: "bottom",
+        ...opts,
+    };
+
+    // If hint_text is undefined, we use the HTML content of a
+    // <template> whose id is given by data-tooltip-template-id
+    if (hint_text !== undefined) {
+        tippy_opts.content = hint_text;
+    }
+    tippy($btn_wrapper[0], tippy_opts);
 }
