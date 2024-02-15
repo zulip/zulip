@@ -138,6 +138,8 @@ LOGGING_SHOW_PID = False
 
 # Sentry.io error defaults to off
 SENTRY_DSN: Optional[str] = None
+SENTRY_TRACE_RATE: float = 0.0
+SENTRY_PROFILE_RATE: float = 0.1
 SENTRY_FRONTEND_DSN: Optional[str] = None
 SENTRY_FRONTEND_SAMPLE_RATE: float = 1.0
 SENTRY_FRONTEND_TRACE_RATE: float = 0.1
