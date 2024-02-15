@@ -533,6 +533,8 @@ body {
     --color-background-alert-word: hsl(18deg 100% 75%);
     --color-text-alert-word: hsl(0deg 0% 15%);
     --color-text-link-tag-alert-word: hsl(210deg 100% 25%);
+    --color-background-search-highlight: hsl(51deg 100% 72%);
+    --color-text-search-highlight: hsl(0deg 0% 15%);
     /* Compose box colors */
     --color-compose-send-button-focus-shadow: hsl(0deg 0% 100% / 80%);
     --color-compose-send-control-button: hsl(240deg 30% 70%);
