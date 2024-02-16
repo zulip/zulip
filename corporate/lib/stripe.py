@@ -4924,7 +4924,7 @@ def get_push_status_for_remote_request(
             return PushNotificationsEnabledStatus(
                 can_push=False,
                 expected_end_timestamp=None,
-                message="No plan many users",
+                message="Push notifications access with 10+ users requires signing up for a plan. https://zulip.com/plans/",
             )
 
         return PushNotificationsEnabledStatus(
