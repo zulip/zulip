@@ -991,7 +991,7 @@ ul {
     }
 }
 
-.user-card-status-text {
+.user-card-status-area {
     opacity: 0.8;
 
     .status-emoji {

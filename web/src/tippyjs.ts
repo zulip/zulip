@@ -503,7 +503,7 @@ export function initialize(): void {
     });
 
     delegate("body", {
-        target: ".user-card-status-text .status-emoji",
+        target: ".user-card-status-area .status-emoji",
         appendTo: () => document.body,
     });
 
