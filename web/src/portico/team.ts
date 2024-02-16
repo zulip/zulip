@@ -8,39 +8,64 @@ import _ from "lodash";
 // referenced from Contributor, rather than having repository names be
 // direct keys in the namespace that also has `email`.
 const all_repository_names = [
-    "zulip",
-    "zulip-desktop",
-    "zulip-mobile",
+    "docker-zulip",
+    "errbot-backend-zulip",
+    "github-actions-zulip",
+    "hubot-zulip",
+    "puppet-zulip",
     "python-zulip-api",
-    "zulip-js",
-    "zulipbot",
-    "zulip-terminal",
-    "zulip-ios-legacy",
+    "trello-to-zulip",
+    "swift-zulip-api",
+    "zulint",
+    "zulip",
     "zulip-android-legacy",
+    "zulip-architecture",
+    "zulip-archive",
+    "zulip-csharp",
+    "zulip-desktop",
+    "zulip-desktop-legacy",
     "zulip-flutter",
+    "zulip-ios-legacy",
+    "zulip-js",
+    "zulip-mobile",
+    "zulip-redmine-plugin",
+    "zulip-terminal",
+    "zulip-zapier",
+    "zulipbot",
 ] as const;
 
 const all_tab_names = [
     "server",
     "desktop",
     "mobile",
-    "zulip-js",
-    "python-zulip-api",
-    "zulipbot",
     "terminal",
+    "api-clients",
+    "devtools",
 ] as const;
 
 type RepositoryName = (typeof all_repository_names)[number];
 type TabName = (typeof all_tab_names)[number];
 
 const tab_name_to_repo_list: Record<TabName, RepositoryName[]> = {
-    server: ["zulip"],
-    desktop: ["zulip-desktop"],
+    server: ["zulip", "docker-zulip"],
+    desktop: ["zulip-desktop", "zulip-desktop-legacy"],
     mobile: ["zulip-mobile", "zulip-flutter", "zulip-ios-legacy", "zulip-android-legacy"],
-    "zulip-js": ["zulip-js"],
-    "python-zulip-api": ["python-zulip-api"],
-    zulipbot: ["zulipbot"],
     terminal: ["zulip-terminal"],
+    "api-clients": [
+        "python-zulip-api",
+        "zulip-js",
+        "zulip-archive",
+        "errbot-backend-zulip",
+        "github-actions-zulip",
+        "hubot-zulip",
+        "puppet-zulip",
+        "trello-to-zulip",
+        "swift-zulip-api",
+        "zulip-csharp",
+        "zulip-redmine-plugin",
+        "zulip-zapier",
+    ],
+    devtools: ["zulipbot", "zulint", "zulip-architecture"],
 };
 
 export type Contributor = {
