@@ -352,7 +352,6 @@ export function update_messages(events) {
                 stream_topic_history.remove_messages({
                     stream_id: moved_message.stream_id,
                     topic_name: moved_message.topic,
-                    num_messages: 1,
                     max_removed_msg_id: moved_message.id,
                 });
 

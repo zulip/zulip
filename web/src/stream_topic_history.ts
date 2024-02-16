@@ -78,18 +78,11 @@ export function stream_has_topics(stream_id: number): boolean {
     return history.has_topics();
 }
 
-export type TopicHistoryEntry =
-    | {
-          historical: true;
-          message_id: number;
-          pretty_name: string;
-      }
-    | {
-          historical: false;
-          count: number;
-          message_id: number;
-          pretty_name: string;
-      };
+export type TopicHistoryEntry = {
+    historical: boolean;
+    message_id: number;
+    pretty_name: string;
+};
 
 type ServerTopicHistoryEntry = {
     name: string;
@@ -121,9 +114,6 @@ export class PerStreamHistory {
         * pretty_name: The topic_name, with original case.
         * historical: Whether the user actually received any messages in
           the topic (has UserMessage rows) or is just viewing the stream.
-        * count: Number of known messages in the topic.  Used to detect
-          when the last messages in a topic were moved to other topics or
-          deleted.
     */
 
     topics = new FoldDict<TopicHistoryEntry>();
@@ -155,41 +145,14 @@ export class PerStreamHistory {
                 message_id,
                 pretty_name: topic_name,
                 historical: false,
-                count: 1,
             });
             return;
-        }
-
-        if (!existing.historical) {
-            existing.count += 1;
         }
 
         if (message_id > existing.message_id) {
             existing.message_id = message_id;
             existing.pretty_name = topic_name;
         }
-    }
-
-    maybe_remove(topic_name: string, num_messages: number): void {
-        const existing = this.topics.get(topic_name);
-
-        if (!existing) {
-            return;
-        }
-
-        if (existing.historical) {
-            // We can't trust that a topic rename applied to
-            // the entire history of historical topic, so we
-            // will always leave it in the sidebar.
-            return;
-        }
-
-        if (existing.count <= num_messages) {
-            this.topics.delete(topic_name);
-            return;
-        }
-
-        existing.count -= num_messages;
     }
 
     add_history(server_history: ServerTopicHistoryEntry[]): void {
@@ -204,8 +167,7 @@ export class PerStreamHistory {
             const existing = this.topics.get(topic_name);
 
             if (existing && !existing.historical) {
-                // Trust out local data more, since it
-                // maintains counts.
+                // Trust out local data more.
                 continue;
             }
 
@@ -249,12 +211,10 @@ export class PerStreamHistory {
 export function remove_messages(opts: {
     stream_id: number;
     topic_name: string;
-    num_messages: number;
     max_removed_msg_id: number;
 }): void {
     const stream_id = opts.stream_id;
     const topic_name = opts.topic_name;
-    const num_messages = opts.num_messages;
     const max_removed_msg_id = opts.max_removed_msg_id;
     const history = stream_dict.get(stream_id);
 
@@ -264,9 +224,6 @@ export function remove_messages(opts: {
     if (!history) {
         return;
     }
-
-    // This is the normal case of an incoming message.
-    history.maybe_remove(topic_name, num_messages);
 
     const existing_topic = history.topics.get(topic_name);
     if (!existing_topic) {

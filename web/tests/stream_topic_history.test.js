@@ -73,7 +73,6 @@ test("basics", () => {
     stream_topic_history.remove_messages({
         stream_id,
         topic_name: "Topic1",
-        num_messages: 1,
         max_removed_msg_id: 104,
     });
     history = stream_topic_history.get_recent_topic_names(stream_id);
@@ -82,12 +81,10 @@ test("basics", () => {
     max_message_id = stream_topic_history.get_max_message_id(stream_id);
     assert.deepEqual(max_message_id, 103);
 
-    delete message_util.get_messages_in_topic;
     // Removing first topic1 message has no effect.
     stream_topic_history.remove_messages({
         stream_id,
         topic_name: "toPic1",
-        num_messages: 1,
         max_removed_msg_id: 101,
     });
     history = stream_topic_history.get_recent_topic_names(stream_id);
@@ -95,30 +92,34 @@ test("basics", () => {
     max_message_id = stream_topic_history.get_max_message_id(stream_id);
     assert.deepEqual(max_message_id, 103);
 
-    // Removing second topic1 message removes the topic.
+    // Removing second topic1 message does not remove the topic
+    // completely as we are not sure whether there are more
+    // messages in the topic.
     stream_topic_history.remove_messages({
         stream_id,
         topic_name: "Topic1",
-        num_messages: 1,
         max_removed_msg_id: 102,
     });
     history = stream_topic_history.get_recent_topic_names(stream_id);
-    assert.deepEqual(history, ["topic2"]);
+    assert.deepEqual(history, ["topic2", "Topic1"]);
 
     // Test that duplicate remove does not crash us.
     stream_topic_history.remove_messages({
         stream_id,
         topic_name: "Topic1",
-        num_messages: 1,
         max_removed_msg_id: 0,
     });
     history = stream_topic_history.get_recent_topic_names(stream_id);
-    assert.deepEqual(history, ["topic2"]);
+    assert.deepEqual(history, ["topic2", "Topic1"]);
 
     // get to 100% coverage for defensive code
     stream_topic_history.remove_messages({
         stream_id: 9999999,
-        num_messages: 1,
+    });
+
+    stream_topic_history.remove_messages({
+        stream_id,
+        topic_name: "non-existent",
     });
 });
 
@@ -202,25 +203,23 @@ test("server_history", () => {
     history = stream_topic_history.get_recent_topic_names(stream_id);
     assert.deepEqual(history, ["local", "hist2", "hist1"]);
 
-    // Removing a local message removes the topic if we have
-    // our counts right.
+    // Removing a local message does not removes the topic as we
+    // are no sure whether there are more messages in the topic.
     stream_topic_history.remove_messages({
         stream_id,
         topic_name: "local",
-        num_messages: 1,
     });
     history = stream_topic_history.get_recent_topic_names(stream_id);
-    assert.deepEqual(history, ["hist2", "hist1"]);
+    assert.deepEqual(history, ["local", "hist2", "hist1"]);
 
     // We can try to remove a historical message, but it should
     // have no effect.
     stream_topic_history.remove_messages({
         stream_id,
         topic_name: "hist2",
-        num_messages: 1,
     });
     history = stream_topic_history.get_recent_topic_names(stream_id);
-    assert.deepEqual(history, ["hist2", "hist1"]);
+    assert.deepEqual(history, ["local", "hist2", "hist1"]);
 
     // If we call back to the server for history, the
     // effect is always additive.  We may decide to prune old
@@ -231,7 +230,7 @@ test("server_history", () => {
         {name: "hist3", max_id: 5},
     ]);
     history = stream_topic_history.get_recent_topic_names(stream_id);
-    assert.deepEqual(history, ["hist2", "hist1", "hist3"]);
+    assert.deepEqual(history, ["hist2", "local", "hist1", "hist3"]);
 });
 
 test("test_unread_logic", () => {
