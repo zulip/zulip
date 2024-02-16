@@ -8,12 +8,62 @@ using Zulip's [bot framework](/api/writing-bots).
 In order to use them, you need to configure them with your API key and other
 settings. There are two ways to achieve that:
 
- - With a file called `.zuliprc`, located in your home directory.
+ - With a file called `zuliprc` passed as an argument via the `--config-file`
+   option.
  - With
    [environment variables](https://en.wikipedia.org/wiki/Environment_variable)
    set up in your host machine.
 
-A `.zuliprc` file is a plain text document that looks like this:
+## Download a `zuliprc` file
+
+{start_tabs}
+
+{tab|for-a-bot}
+
+{settings_tab|your-bots}
+
+1. Click the **download** (<i class="fa fa-download"></i>) icon on the profile
+   card of the desired bot to download the bot's `zuliprc` file.
+
+!!! tip ""
+
+    If you save or move a `zuliprc` file to your home directory as `~/.zuliprc`,
+    the Python API bindings will automatically read it in (you won't have to
+    pass the `--config-file` option).
+
+!!! warn ""
+
+    Anyone with a bot's API key can impersonate the bot, so be careful with it!
+
+{tab|for-yourself}
+
+{settings_tab|account-and-privacy}
+
+1. Under **API key**, click **Manage your API key**.
+
+1. Enter your password, and click **Get API key**. If you don't know your
+   password, click **reset it** and follow the
+   instructions from there.
+
+1. Click **Download zuliprc** to download your `zuliprc` file.
+
+!!! tip ""
+
+    If you save or move a `zuliprc` file to your home directory as `~/.zuliprc`,
+    the Python API bindings will automatically read it in (you won't have to
+    pass the `--config-file` option).
+
+!!! warn ""
+
+    Anyone with your API key can impersonate you, so be doubly careful with it.
+
+{end_tabs}
+
+## Configuration keys and environment variables
+
+`zuliprc` is a configuration file written in the
+[INI file format](https://en.wikipedia.org/wiki/INI_file),
+which contains key-value pairs as shown in the following example:
 
 ```
 [api]
@@ -29,7 +79,7 @@ can be found in the following table:
 <table class="table">
     <thead>
         <tr>
-            <th><code>.zuliprc</code> key</th>
+            <th><code>zuliprc</code> key</th>
             <th>Environment variable</th>
             <th>Required</th>
             <th>Description</th>
@@ -102,3 +152,10 @@ can be found in the following table:
         </td>
     </tr>
 </table>
+
+## Related articles
+
+* [Installation instructions](/api/installation-instructions)
+* [API keys](/api/api-keys)
+* [Running bots](/api/running-bots)
+* [Deploying bots](/api/deploying-bots)
