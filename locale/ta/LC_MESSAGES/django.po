@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-01-19 15:42+0000\n"
+"POT-Creation-Date: 2024-02-16 20:29+0000\n"
 "PO-Revision-Date: 2018-04-11 21:06+0000\n"
 "Last-Translator: Tim Abbott <tabbott@kandralabs.com>\n"
 "Language-Team: Tamil (http://www.transifex.com/zulip/zulip/language/ta/)\n"
@@ -18,7 +18,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: analytics/views/stats.py:113 zerver/decorator.py:651 zerver/decorator.py:669
+#: analytics/views/stats.py:113 zerver/decorator.py:645 zerver/decorator.py:663
 msgid "Not allowed for guest users"
 msgstr ""
 
@@ -178,89 +178,89 @@ msgstr ""
 msgid "Something went wrong. Please reload the page."
 msgstr ""
 
-#: corporate/lib/stripe.py:470
+#: corporate/lib/stripe.py:468
 msgid "Something went wrong. Please wait a few seconds and try again."
 msgstr ""
 
-#: corporate/lib/stripe.py:1220
+#: corporate/lib/stripe.py:1218
 msgid "Please add a credit card before starting your free trial."
 msgstr ""
 
-#: corporate/lib/stripe.py:1241
+#: corporate/lib/stripe.py:1239
 msgid "Please add a credit card to schedule upgrade."
 msgstr ""
 
-#: corporate/lib/stripe.py:1989
+#: corporate/lib/stripe.py:1987
 msgid ""
 "Unable to update the plan. The plan has been expired and replaced with a new "
 "plan."
 msgstr ""
 
-#: corporate/lib/stripe.py:1994
+#: corporate/lib/stripe.py:1992
 msgid "Unable to update the plan. The plan has ended."
 msgstr ""
 
-#: corporate/lib/stripe.py:2049
+#: corporate/lib/stripe.py:2047
 msgid ""
 "Cannot update licenses in the current billing period for free trial plan."
 msgstr ""
 
-#: corporate/lib/stripe.py:2054 corporate/lib/stripe.py:2082
+#: corporate/lib/stripe.py:2052 corporate/lib/stripe.py:2080
 msgid ""
 "Unable to update licenses manually. Your plan is on automatic license "
 "management."
 msgstr ""
 
-#: corporate/lib/stripe.py:2060
+#: corporate/lib/stripe.py:2058
 #, python-brace-format
 msgid ""
 "Your plan is already on {licenses} licenses in the current billing period."
 msgstr ""
 
-#: corporate/lib/stripe.py:2065
+#: corporate/lib/stripe.py:2063
 msgid "You cannot decrease the licenses in the current billing period."
 msgstr ""
 
-#: corporate/lib/stripe.py:2091
+#: corporate/lib/stripe.py:2089
 msgid ""
 "Cannot change the licenses for next billing cycle for a plan that is being "
 "downgraded."
 msgstr ""
 
-#: corporate/lib/stripe.py:2097
+#: corporate/lib/stripe.py:2095
 #, python-brace-format
 msgid ""
 "Your plan is already scheduled to renew with {licenses_at_next_renewal} "
 "licenses."
 msgstr ""
 
-#: corporate/lib/stripe.py:2112
+#: corporate/lib/stripe.py:2110
 msgid "Nothing to change."
 msgstr ""
 
-#: corporate/lib/stripe.py:2317
+#: corporate/lib/stripe.py:2315
 #, fuzzy
 #| msgid "Administrators"
 msgid "No customer for this organization!"
 msgstr "நிர்வாகிகள்"
 
-#: corporate/lib/stripe.py:2326
+#: corporate/lib/stripe.py:2324
 msgid "Session not found"
 msgstr ""
 
-#: corporate/lib/stripe.py:2332 zerver/decorator.py:200
+#: corporate/lib/stripe.py:2330 zerver/decorator.py:200
 msgid "Must be a billing administrator or an organization owner"
 msgstr ""
 
-#: corporate/lib/stripe.py:2343
+#: corporate/lib/stripe.py:2341
 msgid "Payment intent not found"
 msgstr ""
 
-#: corporate/lib/stripe.py:2346
+#: corporate/lib/stripe.py:2344
 msgid "Pass stripe_session_id or stripe_payment_intent_id"
 msgstr ""
 
-#: corporate/lib/stripe.py:2895
+#: corporate/lib/stripe.py:2893
 #, python-brace-format
 msgid ""
 "Your organization's request for sponsored hosting has been approved! You "
@@ -4194,15 +4194,15 @@ msgstr ""
 msgid "Account is not associated with this subdomain"
 msgstr ""
 
-#: zerver/decorator.py:534 zerver/decorator.py:671
+#: zerver/decorator.py:534 zerver/decorator.py:665
 msgid "This endpoint does not accept bot requests."
 msgstr ""
 
-#: zerver/decorator.py:633
+#: zerver/decorator.py:627
 msgid "Must be an server administrator"
 msgstr ""
 
-#: zerver/decorator.py:690 zerver/lib/streams.py:717 zerver/lib/streams.py:743
+#: zerver/decorator.py:684 zerver/lib/streams.py:717 zerver/lib/streams.py:743
 #: zerver/lib/streams.py:745 zerver/lib/streams.py:747
 #: zerver/lib/streams.py:766 zerver/lib/user_groups.py:97
 #: zerver/lib/user_groups.py:161 zerver/lib/users.py:232
@@ -4213,19 +4213,19 @@ msgstr ""
 msgid "Insufficient permission"
 msgstr ""
 
-#: zerver/decorator.py:732
+#: zerver/decorator.py:726
 msgid "This endpoint requires HTTP basic authentication."
 msgstr ""
 
-#: zerver/decorator.py:739
+#: zerver/decorator.py:733
 msgid "Invalid authorization header for basic auth"
 msgstr ""
 
-#: zerver/decorator.py:741
+#: zerver/decorator.py:735
 msgid "Missing authorization header for basic auth"
 msgstr ""
 
-#: zerver/decorator.py:917
+#: zerver/decorator.py:911
 msgid "Webhook bots can only access webhooks"
 msgstr ""
 
@@ -4516,176 +4516,176 @@ msgstr ""
 msgid "Could not allocate event queue"
 msgstr ""
 
-#: zerver/lib/exceptions.py:149
+#: zerver/lib/exceptions.py:150
 msgid "Not logged in: API authentication or user session required"
 msgstr ""
 
-#: zerver/lib/exceptions.py:176
+#: zerver/lib/exceptions.py:177
 #, python-brace-format
 msgid "Stream '{stream}' does not exist"
 msgstr ""
 
-#: zerver/lib/exceptions.py:189
+#: zerver/lib/exceptions.py:190
 #, python-brace-format
 msgid "Stream with ID '{stream_id}' does not exist"
 msgstr ""
 
-#: zerver/lib/exceptions.py:198
+#: zerver/lib/exceptions.py:199
 #, fuzzy
 #| msgid "Administrators"
 msgid "organization owner"
 msgstr "நிர்வாகிகள்"
 
-#: zerver/lib/exceptions.py:198
+#: zerver/lib/exceptions.py:199
 msgid "user"
 msgstr ""
 
-#: zerver/lib/exceptions.py:203
+#: zerver/lib/exceptions.py:204
 #, python-brace-format
 msgid "Cannot deactivate the only {entity}."
 msgstr ""
 
-#: zerver/lib/exceptions.py:216
+#: zerver/lib/exceptions.py:217
 #, python-brace-format
 msgid "Invalid Markdown include statement: {include_statement}"
 msgstr ""
 
-#: zerver/lib/exceptions.py:229
+#: zerver/lib/exceptions.py:230
 msgid "API usage exceeded rate limit"
 msgstr ""
 
-#: zerver/lib/exceptions.py:255 zerver/lib/request.py:445
-#: zerver/lib/typed_endpoint.py:361 zerver/lib/validator.py:795
+#: zerver/lib/exceptions.py:256 zerver/lib/request.py:440
+#: zerver/lib/typed_endpoint.py:361 zerver/lib/validator.py:790
 msgid "Malformed JSON"
 msgstr ""
 
-#: zerver/lib/exceptions.py:267
+#: zerver/lib/exceptions.py:268
 #, fuzzy
 #| msgid "Administrators"
 msgid "Must be an organization member"
 msgstr "நிர்வாகிகள்"
 
-#: zerver/lib/exceptions.py:279 zerver/views/invite.py:42
+#: zerver/lib/exceptions.py:280 zerver/views/invite.py:42
 msgid "Must be an organization administrator"
 msgstr ""
 
-#: zerver/lib/exceptions.py:291
+#: zerver/lib/exceptions.py:292
 msgid "Must be an organization owner"
 msgstr ""
 
-#: zerver/lib/exceptions.py:305
+#: zerver/lib/exceptions.py:306
 msgid "Your username or password is incorrect"
 msgstr ""
 
-#: zerver/lib/exceptions.py:314
+#: zerver/lib/exceptions.py:315
 msgid "Account is deactivated"
 msgstr ""
 
-#: zerver/lib/exceptions.py:323
+#: zerver/lib/exceptions.py:324
 msgid "This organization has been deactivated"
 msgstr ""
 
-#: zerver/lib/exceptions.py:333
+#: zerver/lib/exceptions.py:334
 msgid ""
 "The mobile push notification service registration for your server has been "
 "deactivated"
 msgstr ""
 
-#: zerver/lib/exceptions.py:343
+#: zerver/lib/exceptions.py:344
 msgid "Password authentication is disabled in this organization"
 msgstr ""
 
-#: zerver/lib/exceptions.py:352
+#: zerver/lib/exceptions.py:353
 msgid "Your password has been disabled and needs to be reset"
 msgstr ""
 
-#: zerver/lib/exceptions.py:369
+#: zerver/lib/exceptions.py:370
 msgid "Invalid API key"
 msgstr ""
 
-#: zerver/lib/exceptions.py:376
+#: zerver/lib/exceptions.py:377
 msgid "Malformed API key"
 msgstr ""
 
-#: zerver/lib/exceptions.py:416
+#: zerver/lib/exceptions.py:417
 #, python-brace-format
 msgid ""
 "The '{event_type}' event isn't currently supported by the {webhook_name} "
 "webhook; ignoring"
 msgstr ""
 
-#: zerver/lib/exceptions.py:436
+#: zerver/lib/exceptions.py:437
 #, python-brace-format
 msgid "Unable to parse request: Did {webhook_name} generate this event?"
 msgstr ""
 
-#: zerver/lib/exceptions.py:463
+#: zerver/lib/exceptions.py:464
 #, fuzzy
 #| msgid "Topic"
 msgid "User not authenticated"
 msgstr "தலைப்பு"
 
-#: zerver/lib/exceptions.py:476 zerver/views/auth.py:743
+#: zerver/lib/exceptions.py:477 zerver/views/auth.py:743
 #: zerver/views/auth.py:1078 zerver/views/auth.py:1142
 msgid "Invalid subdomain"
 msgstr ""
 
-#: zerver/lib/exceptions.py:517
+#: zerver/lib/exceptions.py:518
 msgid "Access denied"
 msgstr ""
 
-#: zerver/lib/exceptions.py:557
+#: zerver/lib/exceptions.py:558
 #, python-brace-format
 msgid ""
 "You only have permission to move the {total_messages_allowed_to_move}/"
 "{total_messages_in_topic} most recent messages in this topic."
 msgstr ""
 
-#: zerver/lib/exceptions.py:570
+#: zerver/lib/exceptions.py:571
 msgid "Reaction already exists."
 msgstr ""
 
-#: zerver/lib/exceptions.py:582
+#: zerver/lib/exceptions.py:583
 msgid "Reaction doesn't exist."
 msgstr ""
 
-#: zerver/lib/exceptions.py:607
+#: zerver/lib/exceptions.py:608
 msgid ""
 "Your organization is registered to a different Zulip server. Please contact "
 "Zulip support for assistance in resolving this issue."
 msgstr ""
 
-#: zerver/lib/exceptions.py:621
+#: zerver/lib/exceptions.py:622
 #, fuzzy
 #| msgid "Administrators"
 msgid "Organization not registered"
 msgstr "நிர்வாகிகள்"
 
-#: zerver/lib/exceptions.py:633
+#: zerver/lib/exceptions.py:634
 msgid ""
 "You do not have permission to use stream wildcard mentions in this stream."
 msgstr ""
 
-#: zerver/lib/exceptions.py:645
+#: zerver/lib/exceptions.py:646
 msgid ""
 "You do not have permission to use topic wildcard mentions in this topic."
 msgstr ""
 
-#: zerver/lib/external_accounts.py:36
+#: zerver/lib/external_accounts.py:37
 msgid "Twitter username"
 msgstr ""
 
-#: zerver/lib/external_accounts.py:42
+#: zerver/lib/external_accounts.py:43
 #, fuzzy
 #| msgid "Username"
 msgid "GitHub username"
 msgstr "பயனர்பெயர்"
 
-#: zerver/lib/external_accounts.py:71
+#: zerver/lib/external_accounts.py:72
 msgid "Custom external account must define URL pattern"
 msgstr ""
 
-#: zerver/lib/external_accounts.py:73
+#: zerver/lib/external_accounts.py:74
 msgid "Invalid external account type"
 msgstr ""
 
@@ -4805,16 +4805,16 @@ msgstr ""
 msgid "Operator {operator} not supported."
 msgstr ""
 
-#: zerver/lib/narrow.py:204
+#: zerver/lib/narrow.py:203
 #, python-brace-format
 msgid "Invalid narrow operator: {desc}"
 msgstr ""
 
-#: zerver/lib/narrow.py:1100
+#: zerver/lib/narrow.py:1099
 msgid "Missing 'anchor' argument."
 msgstr ""
 
-#: zerver/lib/narrow.py:1120
+#: zerver/lib/narrow.py:1119
 msgid "Invalid anchor"
 msgstr ""
 
@@ -5023,47 +5023,47 @@ msgid "Invalid GCM options to bouncer: {options}"
 msgstr "அறிவிப்புகளை இயக்கு"
 
 #. error
-#: zerver/lib/push_notifications.py:739 zilencer/views.py:252
+#: zerver/lib/push_notifications.py:752 zilencer/views.py:252
 msgid "Token does not exist"
 msgstr ""
 
-#: zerver/lib/push_notifications.py:913
+#: zerver/lib/push_notifications.py:926
 msgid ""
 "This organization has disabled including message content in mobile push "
 "notifications"
 msgstr ""
 
-#: zerver/lib/push_notifications.py:1026
+#: zerver/lib/push_notifications.py:1039
 #, python-brace-format
 msgid "{full_name} mentioned @{user_group_name}:"
 msgstr ""
 
-#: zerver/lib/push_notifications.py:1030
+#: zerver/lib/push_notifications.py:1043
 #, python-brace-format
 msgid "{full_name} mentioned you:"
 msgstr ""
 
-#: zerver/lib/push_notifications.py:1037
+#: zerver/lib/push_notifications.py:1050
 #, python-brace-format
 msgid "{full_name} mentioned everyone:"
 msgstr ""
 
-#: zerver/lib/push_notifications.py:1441
+#: zerver/lib/push_notifications.py:1454
 #, fuzzy
 #| msgid "Enable notifications"
 msgid "Test notification"
 msgstr "அறிவிப்புகளை இயக்கு"
 
-#: zerver/lib/push_notifications.py:1442
+#: zerver/lib/push_notifications.py:1455
 #, python-brace-format
 msgid "This is a test notification from {realm_name} ({realm_uri})."
 msgstr ""
 
-#: zerver/lib/push_notifications.py:1494
+#: zerver/lib/push_notifications.py:1507
 msgid "Device not recognized"
 msgstr ""
 
-#: zerver/lib/push_notifications.py:1506
+#: zerver/lib/push_notifications.py:1519
 msgid "Device not recognized by the push bouncer"
 msgstr ""
 
@@ -5113,12 +5113,12 @@ msgstr ""
 msgid "Bad value for '{var_name}': {bad_value}"
 msgstr ""
 
-#: zerver/lib/request.py:398 zerver/lib/typed_endpoint.py:493
+#: zerver/lib/request.py:393 zerver/lib/typed_endpoint.py:493
 #: zerver/webhooks/ifttt/view.py:37 zerver/webhooks/slack_incoming/view.py:44
 msgid "Malformed payload"
 msgstr ""
 
-#: zerver/lib/request.py:447
+#: zerver/lib/request.py:442
 #, python-brace-format
 msgid "Argument \"{name}\" is not valid JSON."
 msgstr ""
@@ -5233,19 +5233,19 @@ msgid "Unable to retrieve subscribers for private stream"
 msgstr ""
 
 #: zerver/lib/typed_endpoint.py:313 zerver/lib/typed_endpoint.py:314
-#: zerver/lib/validator.py:206
+#: zerver/lib/validator.py:207
 #, python-brace-format
 msgid "{var_name} is not a boolean"
 msgstr ""
 
 #: zerver/lib/typed_endpoint.py:315 zerver/lib/typed_endpoint.py:316
-#: zerver/lib/validator.py:158 zerver/lib/validator.py:160
+#: zerver/lib/validator.py:159 zerver/lib/validator.py:161
 #, python-brace-format
 msgid "{var_name} is not a date"
 msgstr ""
 
-#: zerver/lib/typed_endpoint.py:317 zerver/lib/validator.py:287
-#: zerver/lib/validator.py:687
+#: zerver/lib/typed_endpoint.py:317 zerver/lib/validator.py:282
+#: zerver/lib/validator.py:682
 #, python-brace-format
 msgid "{var_name} is not a dict"
 msgstr ""
@@ -5256,18 +5256,18 @@ msgid "Argument \"{argument}\" at {var_name} is unexpected"
 msgstr ""
 
 #: zerver/lib/typed_endpoint.py:319 zerver/lib/typed_endpoint.py:320
-#: zerver/lib/validator.py:200
+#: zerver/lib/validator.py:201
 #, python-brace-format
 msgid "{var_name} is not a float"
 msgstr ""
 
-#: zerver/lib/typed_endpoint.py:321 zerver/lib/validator.py:190
+#: zerver/lib/typed_endpoint.py:321 zerver/lib/validator.py:191
 #, python-brace-format
 msgid "{var_name} is too small"
 msgstr ""
 
 #: zerver/lib/typed_endpoint.py:322 zerver/lib/typed_endpoint.py:323
-#: zerver/lib/validator.py:166
+#: zerver/lib/validator.py:167
 #, python-brace-format
 msgid "{var_name} is not an integer"
 msgstr ""
@@ -5277,25 +5277,25 @@ msgstr ""
 msgid "{var_name} is not valid JSON"
 msgstr ""
 
-#: zerver/lib/typed_endpoint.py:326 zerver/lib/validator.py:192
+#: zerver/lib/typed_endpoint.py:326 zerver/lib/validator.py:193
 #, python-brace-format
 msgid "{var_name} is too large"
 msgstr ""
 
-#: zerver/lib/typed_endpoint.py:327 zerver/lib/validator.py:236
-#: zerver/lib/validator.py:684
+#: zerver/lib/typed_endpoint.py:327 zerver/lib/validator.py:237
+#: zerver/lib/validator.py:679
 #, python-brace-format
 msgid "{var_name} is not a list"
 msgstr ""
 
-#: zerver/lib/typed_endpoint.py:328 zerver/lib/validator.py:94
-#: zerver/lib/validator.py:179
+#: zerver/lib/typed_endpoint.py:328 zerver/lib/validator.py:95
+#: zerver/lib/validator.py:180
 #, fuzzy, python-brace-format
 #| msgid "Enable notifications"
 msgid "Invalid {var_name}"
 msgstr "அறிவிப்புகளை இயக்கு"
 
-#: zerver/lib/typed_endpoint.py:329 zerver/lib/validator.py:109
+#: zerver/lib/typed_endpoint.py:329 zerver/lib/validator.py:110
 #, python-brace-format
 msgid "{var_name} is too long (limit: {max_length} characters)"
 msgstr ""
@@ -5305,8 +5305,8 @@ msgstr ""
 msgid "{var_name} is too short."
 msgstr ""
 
-#: zerver/lib/typed_endpoint.py:331 zerver/lib/validator.py:79
-#: zerver/lib/validator.py:152
+#: zerver/lib/typed_endpoint.py:331 zerver/lib/validator.py:80
+#: zerver/lib/validator.py:153
 #, python-brace-format
 msgid "{var_name} is not a string"
 msgstr ""
@@ -5471,91 +5471,91 @@ msgstr ""
 msgid "User is deactivated"
 msgstr ""
 
-#: zerver/lib/validator.py:86
+#: zerver/lib/validator.py:87
 #, python-brace-format
 msgid "{item} cannot be blank."
 msgstr ""
 
-#: zerver/lib/validator.py:124
+#: zerver/lib/validator.py:125
 #, python-brace-format
 msgid "{var_name} has incorrect length {length}; should be {target_length}"
 msgstr ""
 
-#: zerver/lib/validator.py:145
+#: zerver/lib/validator.py:146
 #, python-brace-format
 msgid "{var_name} is not a recognized time zone"
 msgstr ""
 
-#: zerver/lib/validator.py:216
+#: zerver/lib/validator.py:217
 #, python-brace-format
 msgid "{var_name} is not a valid hex color code"
 msgstr ""
 
-#: zerver/lib/validator.py:240
+#: zerver/lib/validator.py:241
 #, python-brace-format
 msgid "{container} should have exactly {length} items"
 msgstr ""
 
-#: zerver/lib/validator.py:295
+#: zerver/lib/validator.py:290
 #, python-brace-format
 msgid "{key_name} key is missing from {var_name}"
 msgstr ""
 
-#: zerver/lib/validator.py:320
+#: zerver/lib/validator.py:315
 #, python-brace-format
 msgid "Unexpected arguments: {keys}"
 msgstr ""
 
-#: zerver/lib/validator.py:353
+#: zerver/lib/validator.py:348
 #, python-brace-format
 msgid "{var_name} is not an allowed_type"
 msgstr ""
 
-#: zerver/lib/validator.py:362
+#: zerver/lib/validator.py:357
 #, python-brace-format
 msgid "{variable} != {expected_value} ({value} is wrong)"
 msgstr ""
 
-#: zerver/lib/validator.py:389 zerver/lib/validator.py:403
+#: zerver/lib/validator.py:384 zerver/lib/validator.py:398
 #, python-brace-format
 msgid "{var_name} is not a URL"
 msgstr ""
 
-#: zerver/lib/validator.py:412
+#: zerver/lib/validator.py:407
 #, python-format
 msgid "URL pattern must contain '%(username)s'."
 msgstr ""
 
-#: zerver/lib/validator.py:436
+#: zerver/lib/validator.py:431
 #, python-brace-format
 msgid "'{item}' cannot be blank."
 msgstr ""
 
-#: zerver/lib/validator.py:445
+#: zerver/lib/validator.py:440
 msgid "Field must not have duplicate choices."
 msgstr ""
 
-#: zerver/lib/validator.py:458
+#: zerver/lib/validator.py:453
 #, python-brace-format
 msgid "'{value}' is not a valid choice for '{field_name}'."
 msgstr ""
 
-#: zerver/lib/validator.py:636
+#: zerver/lib/validator.py:631
 #, python-brace-format
 msgid "{var_name} is not a string or an integer list"
 msgstr ""
 
-#: zerver/lib/validator.py:646
+#: zerver/lib/validator.py:641
 #, python-brace-format
 msgid "{var_name} is not a string or integer"
 msgstr ""
 
-#: zerver/lib/validator.py:675
+#: zerver/lib/validator.py:670
 #, python-brace-format
 msgid "{var_name} does not have a length"
 msgstr ""
 
-#: zerver/lib/validator.py:735 zerver/lib/validator.py:757
+#: zerver/lib/validator.py:730 zerver/lib/validator.py:752
 #, python-brace-format
 msgid "{var_name} is missing"
 msgstr ""
@@ -5968,7 +5968,7 @@ msgstr ""
 msgid "Stream does not exist with id: {stream_id}. No invites were sent."
 msgstr ""
 
-#: zerver/views/invite.py:94
+#: zerver/views/invite.py:94 zerver/views/invite.py:231
 msgid "You do not have permission to subscribe other users to streams."
 msgstr ""
 
@@ -6600,7 +6600,7 @@ msgstr ""
 msgid "Events key is missing from payload"
 msgstr ""
 
-#: zerver/webhooks/pivotal/view.py:189
+#: zerver/webhooks/pivotal/view.py:190
 msgid "Unable to handle Pivotal payload"
 msgstr ""
 
@@ -6657,37 +6657,44 @@ msgstr ""
 msgid "Missing user_id or user_uuid"
 msgstr ""
 
-#: zilencer/views.py:463 zilencer/views.py:465
+#: zilencer/views.py:440
+#, python-brace-format
+msgid ""
+"Your plan doesn't allow sending push notifications. Reason provided by the "
+"server: {reason}"
+msgstr ""
+
+#: zilencer/views.py:473
 msgid "Your plan doesn't allow sending push notifications."
 msgstr ""
 
-#: zilencer/views.py:667
+#: zilencer/views.py:678
 #, fuzzy, python-brace-format
 #| msgid "Enable notifications"
 msgid "Invalid property {property}"
 msgstr "அறிவிப்புகளை இயக்கு"
 
-#: zilencer/views.py:670
+#: zilencer/views.py:681
 #, fuzzy
 #| msgid "Enable notifications"
 msgid "Invalid event type."
 msgstr "அறிவிப்புகளை இயக்கு"
 
-#: zilencer/views.py:677
+#: zilencer/views.py:688
 msgid "Data is out of order."
 msgstr ""
 
-#: zilencer/views.py:767
+#: zilencer/views.py:778
 msgid "Duplicate registration detected."
 msgstr ""
 
-#: zilencer/views.py:1028
+#: zilencer/views.py:1039
 msgid ""
 "Failed to migrate customer from server to realms. Please contact support for "
 "assistance."
 msgstr ""
 
-#: zilencer/views.py:1080
+#: zilencer/views.py:1091
 msgid "Malformed audit log data"
 msgstr ""
 

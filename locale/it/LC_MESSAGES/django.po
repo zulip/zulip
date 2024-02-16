@@ -4,10 +4,10 @@
 # FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
 # 
 # Translators:
-# Transifex Bot <>, 2023
 # Matteo Piotto <matteo.piotto@welaika.com>, 2023
 # Maxxer <io@maxxer.it>, 2023
-# Andrea, 2023
+# Transifex Bot <>, 2024
+# Andrea, 2024
 # 
 #, fuzzy
 msgid ""
@@ -16,7 +16,7 @@ msgstr ""
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2023-12-15 21:31+0000\n"
 "PO-Revision-Date: 2023-12-15 21:32+0000\n"
-"Last-Translator: Andrea, 2023\n"
+"Last-Translator: Andrea, 2024\n"
 "Language-Team: Italian (https://app.transifex.com/zulip/teams/53893/it/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -43,11 +43,11 @@ msgstr "Canali privati"
 
 #: analytics/views/stats.py:319
 msgid "Direct messages"
-msgstr "Messaggi diretti"
+msgstr "Messaggi privati"
 
 #: analytics/views/stats.py:320
 msgid "Group direct messages"
-msgstr "Messaggi diretti di gruppo"
+msgstr "Messaggi privati di gruppo"
 
 #: analytics/views/stats.py:343
 #, python-brace-format
@@ -2459,12 +2459,12 @@ msgstr ""
 #: templates/zerver/emails/missed_message.subject.txt:2
 #, python-format
 msgid "Group DMs with %(huddle_display_name)s"
-msgstr "Messaggi diretti di gruppo con %(huddle_display_name)s"
+msgstr "Messaggi privati di gruppo con %(huddle_display_name)s"
 
 #: templates/zerver/emails/missed_message.subject.txt:3
 #, python-format
 msgid "DMs with %(sender_str)s"
-msgstr "Messaggio diretto con %(sender_str)s"
+msgstr "Messaggio privato con %(sender_str)s"
 
 #: templates/zerver/emails/missed_message.subject.txt:12
 #, python-format
@@ -4263,11 +4263,11 @@ msgstr "Niente da cambiare"
 
 #: zerver/actions/message_edit.py:104
 msgid "Direct messages cannot be moved to streams."
-msgstr "I messaggi diretti non possono essere spostati nei canali."
+msgstr "I messaggi privati non possono essere spostati nei canali."
 
 #: zerver/actions/message_edit.py:106
 msgid "Direct messages cannot have topics."
-msgstr "I messaggi diretti non possono avere argomenti."
+msgstr "I messaggi privati non possono avere argomenti."
 
 #: zerver/actions/message_edit.py:109
 msgid "Invalid propagate_mode without topic edit"
@@ -4435,7 +4435,7 @@ msgstr ""
 
 #: zerver/actions/message_send.py:1544
 msgid "Direct messages are disabled in this organization."
-msgstr "I messaggi diretti sono disattivati in questa organizzazione."
+msgstr "I messaggi privati sono disattivati in questa organizzazione."
 
 #: zerver/actions/message_send.py:1554
 msgid "You do not have permission to access some of the recipients."
@@ -5311,7 +5311,7 @@ msgstr "Ciao, e benvenuto in Zulip!"
 
 #: zerver/lib/onboarding.py:105
 msgid "This is a direct message from me, Welcome Bot."
-msgstr "Questo è un mio messaggio diretto, Welcome Bot."
+msgstr "Questo è un mio messaggio privato, Welcome Bot."
 
 #: zerver/lib/onboarding.py:110
 msgid ""
@@ -5387,7 +5387,7 @@ msgid ""
 msgstr ""
 "Dai un'occhiata a [Conversazioni recenti](#recenti) per vedere cosa sta "
 "succedendo! Puoi tornare a questa conversazione facendo clic su \"Messaggi "
-"diretti\" in alto a sinistra."
+"privati\" in alto a sinistra."
 
 #: zerver/lib/onboarding.py:200
 msgid ""
@@ -5586,7 +5586,7 @@ msgstr "'{email}' non sta più usando Zulip."
 #: zerver/lib/recipient_users.py:82
 msgid "You can't send direct messages outside of your organization."
 msgstr ""
-"Non puoi inviare messaggi diretti al di fuori della tua organizzazione."
+"Non puoi inviare messaggi privati al di fuori della tua organizzazione."
 
 #: zerver/lib/remote_server.py:185
 #, python-brace-format
@@ -6806,7 +6806,7 @@ msgstr "Elenco 'a' vuoto"
 #: zerver/views/typing.py:58
 msgid "User has disabled typing notifications for direct messages"
 msgstr ""
-"L'utente ha disattivato le notifiche di digitazione per i messaggi diretti"
+"L'utente ha disattivato le notifiche di digitazione per i messaggi privati"
 
 #: zerver/views/upload.py:212
 msgid "<p>This file does not exist or has been deleted.</p>"

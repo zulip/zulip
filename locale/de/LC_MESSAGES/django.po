@@ -13,7 +13,7 @@
 # Felix <strifel@outlook.de>, 2023
 # Robert Hönig <robhoenig@gmail.com>, 2023
 # Torsten Bauersfeld <baurfeld@fh-potsdam.de>, 2023
-# Viktor, 2023
+# Viktor Illmer, 2023
 # Roman Bannack <apxwn@yandex.ru>, 2023
 # 
 #, fuzzy
