@@ -2,6 +2,7 @@ from functools import wraps
 from typing import Callable, Optional
 from urllib.parse import urlencode, urljoin
 
+import orjson
 from django.conf import settings
 from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
@@ -103,6 +104,18 @@ def authenticated_remote_realm_management_endpoint(
             if page_type is not None:
                 query = urlencode({"next_page": page_type})
                 url = append_url_query_string(url, query)
+
+            # Return error for AJAX requests with url.
+            if request.headers.get("x-requested-with") == "XMLHttpRequest":  # nocoverage
+                return HttpResponse(
+                    orjson.dumps(
+                        {
+                            "error_message": "Remote billing authentication expired",
+                            "login_url": url,
+                        }
+                    ),
+                    status=401,
+                )
 
             return HttpResponseRedirect(url)
 
