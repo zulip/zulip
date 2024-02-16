@@ -65,7 +65,7 @@
                     <b>Uncategorized mobile user count:</b> {{ remote_servers_support_data[remote_server.id].mobile_push_data.uncategorized_mobile_users }}<br />
                 {% endif %}
                 <b>7-day mobile pushes count</b>: {{ remote_servers_support_data[remote_server.id].mobile_push_data.mobile_pushes_forwarded }}<br />
-                <b>Last push notification sent (UTC)</b>: {{ format_optional_datetime(remote_servers_support_data[remote_server.id].mobile_push_data.last_mobile_push_sent, True) }}<br />
+                <b>Last push notification date</b>: {{ remote_servers_support_data[remote_server.id].mobile_push_data.last_mobile_push_sent }}<br />
             </div>
 
             {% if remote_server.plan_type != SPONSORED_PLAN_TYPE %}
