@@ -25,7 +25,7 @@
     <br />
     <b>Mobile user count</b>: {{ support_data[remote_realm.id].mobile_push_data.total_mobile_users }}<br />
     <b>7-day mobile pushes count</b>: {{ support_data[remote_realm.id].mobile_push_data.mobile_pushes_forwarded }}<br />
-    <b>Last push notification sent (UTC)</b>: {{ format_optional_datetime(support_data[remote_realm.id].mobile_push_data.last_mobile_push_sent, True) }}<br />
+    <b>Last push notification date</b>: {{ support_data[remote_realm.id].mobile_push_data.last_mobile_push_sent }}<br />
 </div>
 
 {% if remote_realm.plan_type != SPONSORED_PLAN_TYPE %}
