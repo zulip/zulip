@@ -2266,7 +2266,7 @@ class AnalyticsBouncerTest(BouncerTestCase):
                 "corporate.lib.stripe.get_current_plan_by_customer", return_value=None
             ) as m:
                 with mock.patch(
-                    "corporate.lib.stripe.RemoteRealmBillingSession.current_count_for_billed_licenses",
+                    "corporate.lib.stripe.RemoteServerBillingSession.current_count_for_billed_licenses",
                     return_value=11,
                 ):
                     send_server_data_to_push_bouncer(consider_usage_statistics=False)
@@ -2283,13 +2283,10 @@ class AnalyticsBouncerTest(BouncerTestCase):
         with mock.patch(
             "zilencer.views.RemoteRealmBillingSession.get_customer", return_value=dummy_customer
         ):
-            with mock.patch(
-                "corporate.lib.stripe.get_current_plan_by_customer", return_value=None
-            ) as m:
+            with mock.patch("corporate.lib.stripe.get_current_plan_by_customer", return_value=None):
                 with mock.patch(
-                    "corporate.lib.stripe.RemoteRealmBillingSession.current_count_for_billed_licenses",
-                    return_value=11,
-                ):
+                    "corporate.lib.stripe.RemoteRealmBillingSession.current_count_for_billed_licenses"
+                ) as m:
                     send_server_data_to_push_bouncer(consider_usage_statistics=False)
                     m.assert_not_called()
                     realms = Realm.objects.all()
@@ -2411,6 +2408,41 @@ class AnalyticsBouncerTest(BouncerTestCase):
                         "INFO:zulip.analytics:Reported 0 records",
                         info_log.output[0],
                     )
+
+        # Remote realm is on an inactive plan. Remote server on active plan.
+        # ACTIVE plan takes precedence.
+        dummy_remote_realm_customer = mock.MagicMock()
+        dummy_remote_server_customer = mock.MagicMock()
+        dummy_remote_server_customer_plan = mock.MagicMock()
+        dummy_remote_server_customer_plan.status = CustomerPlan.ACTIVE
+
+        def get_current_plan_by_customer(customer: mock.MagicMock) -> Optional[mock.MagicMock]:
+            assert customer in [dummy_remote_realm_customer, dummy_remote_server_customer]
+            if customer == dummy_remote_server_customer:
+                return dummy_remote_server_customer_plan
+            return None
+
+        with mock.patch(
+            "corporate.lib.stripe.RemoteRealmBillingSession.get_customer",
+            return_value=dummy_remote_realm_customer,
+        ), mock.patch(
+            "corporate.lib.stripe.RemoteServerBillingSession.get_customer",
+            return_value=dummy_remote_server_customer,
+        ), mock.patch(
+            "zilencer.views.RemoteServerBillingSession.sync_license_ledger_if_needed"
+        ), mock.patch(
+            "corporate.lib.stripe.get_current_plan_by_customer",
+            side_effect=get_current_plan_by_customer,
+        ) as m:
+            send_server_data_to_push_bouncer(consider_usage_statistics=False)
+            m.assert_called()
+            realms = Realm.objects.all()
+            for realm in realms:
+                self.assertEqual(realm.push_notifications_enabled, True)
+                self.assertEqual(
+                    realm.push_notifications_enabled_end_timestamp,
+                    None,
+                )
 
         with mock.patch("zerver.lib.remote_server.send_to_push_bouncer") as m, self.assertLogs(
             "zulip.analytics", level="WARNING"
