@@ -108,7 +108,7 @@ def update_contributor_data_file() -> None:
     repo_names = [
         "python-zulip-api",
         "zulip",
-        "zulip-android",
+        "zulip-android-legacy",
         "zulip-desktop",
         "zulip-flutter",
         "zulip-ios-legacy",

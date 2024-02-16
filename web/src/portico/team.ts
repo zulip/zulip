@@ -16,7 +16,7 @@ const all_repository_names = [
     "zulipbot",
     "zulip-terminal",
     "zulip-ios-legacy",
-    "zulip-android",
+    "zulip-android-legacy",
     "zulip-flutter",
 ] as const;
 
@@ -36,7 +36,7 @@ type TabName = (typeof all_tab_names)[number];
 const tab_name_to_repo_list: Record<TabName, RepositoryName[]> = {
     server: ["zulip"],
     desktop: ["zulip-desktop"],
-    mobile: ["zulip-mobile", "zulip-flutter", "zulip-ios-legacy", "zulip-android"],
+    mobile: ["zulip-mobile", "zulip-flutter", "zulip-ios-legacy", "zulip-android-legacy"],
     "zulip-js": ["zulip-js"],
     "python-zulip-api": ["python-zulip-api"],
     zulipbot: ["zulipbot"],
