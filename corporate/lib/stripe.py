@@ -8,7 +8,18 @@ from datetime import datetime, timedelta, timezone
 from decimal import Decimal
 from enum import Enum
 from functools import wraps
-from typing import Any, Callable, Dict, Generator, Optional, Tuple, TypedDict, TypeVar, Union
+from typing import (
+    Any,
+    Callable,
+    Dict,
+    Generator,
+    Literal,
+    Optional,
+    Tuple,
+    TypedDict,
+    TypeVar,
+    Union,
+)
 from urllib.parse import urlencode, urljoin
 
 import stripe
@@ -615,7 +626,9 @@ class BillingSessionAuditLogEventError(Exception):
         super().__init__(self.message)
 
 
+# Sync this with upgrade_params_schema in base_page_params.ts.
 class UpgradePageParams(TypedDict):
+    page_type: Literal["upgrade"]
     annual_price: int
     demo_organization_scheduled_deletion_date: Optional[datetime]
     monthly_price: int
@@ -2395,6 +2408,7 @@ class BillingSession(ABC):
             "remote_server_legacy_plan_end_date": remote_server_legacy_plan_end_date,
             "manual_license_management": initial_upgrade_request.manual_license_management,
             "page_params": {
+                "page_type": "upgrade",
                 "annual_price": get_price_per_license(
                     tier, CustomerPlan.BILLING_SCHEDULE_ANNUAL, percent_off
                 ),

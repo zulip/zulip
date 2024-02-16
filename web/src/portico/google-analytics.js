@@ -1,6 +1,6 @@
 import {gtag, install} from "ga-gtag";
 
-import {page_params} from "../page_params";
+import {page_params} from "../base_page_params";
 
 export let config;
 

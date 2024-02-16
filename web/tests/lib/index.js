@@ -118,6 +118,8 @@ test.set_verbose(files.length === 1);
         require("../../src/blueslip");
         namespace.mock_esm("../../src/i18n", stub_i18n);
         require("../../src/i18n");
+        namespace.mock_esm("../../src/base_page_params", zpage_params);
+        require("../../src/base_page_params");
         namespace.mock_esm("../../src/billing/page_params", zpage_billing_params);
         require("../../src/billing/page_params");
         namespace.mock_esm("../../src/page_params", zpage_params);

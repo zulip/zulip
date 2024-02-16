@@ -1,6 +1,7 @@
 import $ from "jquery";
+import assert from "minimalistic-assert";
 
-import {page_params} from "../page_params";
+import {page_params} from "../base_page_params";
 
 import {detect_user_os} from "./tabbed-instructions";
 import render_tabs from "./team";
@@ -119,6 +120,7 @@ $(() => {
     events();
 
     if (window.location.pathname === "/team/") {
+        assert(page_params.page_type === "team");
         const contributors = page_params.contributors;
         delete page_params.contributors;
         render_tabs(contributors);
