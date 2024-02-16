@@ -859,7 +859,7 @@ class PushBouncerNotificationTest(BouncerTestCase):
         )
         self.assert_json_error(
             result,
-            "Your plan doesn't allow sending push notifications. Reason provided by the server: No plan many users",
+            "Your plan doesn't allow sending push notifications. Reason provided by the server: Push notifications access with 10+ users requires signing up for a plan. https://zulip.com/plans/",
         )
         self.assertEqual(orjson.loads(result.content)["code"], "PUSH_NOTIFICATIONS_DISALLOWED")
 
@@ -2781,7 +2781,7 @@ class HandlePushNotificationTest(PushNotificationTest):
                 pn_logger.output,
                 [
                     f"INFO:zerver.lib.push_notifications:Sending push notifications to mobile clients for user {self.user_profile.id}",
-                    "WARNING:zerver.lib.push_notifications:Bouncer refused to send push notification: Your plan doesn't allow sending push notifications. Reason provided by the server: No plan many users",
+                    "WARNING:zerver.lib.push_notifications:Bouncer refused to send push notification: Your plan doesn't allow sending push notifications. Reason provided by the server: Push notifications access with 10+ users requires signing up for a plan. https://zulip.com/plans/",
                 ],
             )
             realm.refresh_from_db()
