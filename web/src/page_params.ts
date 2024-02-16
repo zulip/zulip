@@ -21,7 +21,6 @@ export const page_params: {
         percent_translated?: number;
     }[];
     login_page: string;
-    max_message_id: number;
     narrow?: Term[];
     narrow_stream?: string;
     needs_tutorial: boolean;
