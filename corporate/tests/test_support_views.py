@@ -353,6 +353,7 @@ class TestRemoteServerSupportEndpoint(ZulipTestCase):
         assert plan is not None
         self.assertEqual(plan.status, CustomerPlan.ACTIVE)
         self.assertEqual(plan.end_date, datetime(2050, 2, 1, tzinfo=timezone.utc))
+        self.assertEqual(plan.next_invoice_date, datetime(2050, 2, 1, tzinfo=timezone.utc))
 
         cordelia = self.example_user("cordelia")
         self.login_user(cordelia)
@@ -375,17 +376,22 @@ class TestRemoteServerSupportEndpoint(ZulipTestCase):
         )
         plan.refresh_from_db()
         self.assertEqual(plan.end_date, datetime(2040, 1, 1, tzinfo=timezone.utc))
-        audit_log = RemoteRealmAuditLog.objects.filter(
+        self.assertEqual(plan.next_invoice_date, datetime(2040, 1, 1, tzinfo=timezone.utc))
+        audit_logs = RemoteRealmAuditLog.objects.filter(
             event_type=RemoteRealmAuditLog.CUSTOMER_PLAN_PROPERTY_CHANGED
-        ).last()
-        assert audit_log is not None
+        ).order_by("-id")
+        assert audit_logs.exists()
+        next_invoice_date_changed_audit_log = audit_logs[0]
+        end_date_changed_audit_log = audit_logs[1]
         expected_extra_data = {
             "old_value": "2050-02-01T00:00:00Z",
             "new_value": "2040-01-01T00:00:00Z",
             "property": "end_date",
             "plan_id": plan.id,
         }
-        self.assertEqual(audit_log.extra_data, expected_extra_data)
+        self.assertEqual(end_date_changed_audit_log.extra_data, expected_extra_data)
+        expected_extra_data["property"] = "next_invoice_date"
+        self.assertEqual(next_invoice_date_changed_audit_log.extra_data, expected_extra_data)
 
         result = self.client_post(
             "/activity/remote/support",
