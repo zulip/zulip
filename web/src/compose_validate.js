@@ -59,7 +59,7 @@ function update_send_button_status() {
 
 export function get_disabled_send_tooltip() {
     if (message_too_long) {
-        return $t({defaultMessage: "Message length shouldn't be greater than 10000 characters."});
+        return $t({defaultMessage: "10000 characters max"});
     } else if (upload_in_progress) {
         return $t({defaultMessage: "Cannot send message while files are being uploaded."});
     }
@@ -751,14 +751,16 @@ export function check_overflow_text() {
     const text = compose_state.message_content();
     const max_length = realm.max_message_length;
     const $indicator = $("#compose-limit-indicator");
+    const result = max_length-text.length;
 
     if (text.length > max_length) {
         $indicator.addClass("over_limit");
         $("textarea#compose-textarea").addClass("over_limit");
         $indicator.html(
             render_compose_limit_indicator({
-                text_length: text.length,
-                max_length,
+                // text_length: text.length,
+                // max_length,
+                result:result
             }),
         );
         compose_banner.show_error_message(
@@ -778,8 +780,9 @@ export function check_overflow_text() {
         $("textarea#compose-textarea").removeClass("over_limit");
         $indicator.html(
             render_compose_limit_indicator({
-                text_length: text.length,
-                max_length,
+                // text_length: text.length,
+                // max_length,
+                result:result
             }),
         );
         set_message_too_long(false);

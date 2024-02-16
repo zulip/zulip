@@ -588,7 +588,7 @@ test_ui("test_check_overflow_text", ({mock_template}) => {
     $textarea.val("a".repeat(10000 + 1));
     compose_validate.check_overflow_text();
     assert.ok($indicator.hasClass("over_limit"));
-    assert.equal(limit_indicator_html, "10001&ZeroWidthSpace;/10000\n");
+    assert.equal(limit_indicator_html, "-1\n");
     assert.ok($textarea.hasClass("over_limit"));
     assert.ok(banner_rendered);
     assert.ok($(".message-send-controls").hasClass("disabled-message-send-controls"));
@@ -598,7 +598,7 @@ test_ui("test_check_overflow_text", ({mock_template}) => {
     $textarea.val("a".repeat(9000 + 1));
     compose_validate.check_overflow_text();
     assert.ok(!$indicator.hasClass("over_limit"));
-    assert.equal(limit_indicator_html, "9001&ZeroWidthSpace;/10000\n");
+    assert.equal(limit_indicator_html, "999\n");
     assert.ok(!$textarea.hasClass("over_limit"));
     assert.ok(!$(".message-send-controls").hasClass("disabled-message-send-controls"));
     assert.ok(!banner_rendered);
