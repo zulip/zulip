@@ -204,6 +204,9 @@
 
     #compose-direct-recipient {
         flex-grow: 1;
+        display: grid;
+        grid-template-columns: 1fr;
+        align-items: stretch;
     }
 
     .message_header {
@@ -752,7 +755,9 @@ textarea.new_message_textarea,
 }
 
 #compose_recipient_box {
-    display: flex;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: stretch;
     flex: 1 1 0;
     border-radius: 3px;
     background: hsl(0deg 0% 100%);
@@ -774,12 +779,7 @@ textarea.new_message_textarea,
 
     /* Styles for input in the recipient_box */
     #stream_message_recipient_topic {
-        /* Override inherited widths; flexbox will ensure
-           that it grows to fit. */
-        width: 0;
-        flex: 1 1 0;
-
-        /* Override flexbox's effective `max-content` min-width */
+        /* Override grid's effective `max-content` min-width */
         overflow: hidden;
         text-overflow: ellipsis;
 
@@ -787,6 +787,8 @@ textarea.new_message_textarea,
         outline: none;
 
         padding: 4px 6px;
+        /* Reset height to let `align-items: stretch` on the grid parent handle this. */
+        height: auto;
     }
 
     /* Styles for new conversation button in the recipient_box */
