@@ -79,7 +79,7 @@ class MobilePushData:
     total_mobile_users: int
     uncategorized_mobile_users: Optional[int] = None
     mobile_pushes_forwarded: Optional[int] = None
-    last_mobile_push_sent: Optional[datetime] = None
+    last_mobile_push_sent: str = ""
 
 
 @dataclass
@@ -259,17 +259,18 @@ def get_mobile_push_data(remote_entity: Union[RemoteZulipServer, RemoteRealm]) -
             property="mobile_pushes_forwarded::day",
         ).last()
         if latest_remote_server_push_forwarded_count is not None:  # nocoverage
-            return MobilePushData(
-                total_mobile_users=total_users,
-                uncategorized_mobile_users=uncategorized_users,
-                mobile_pushes_forwarded=mobile_pushes["total_forwarded"],
-                last_mobile_push_sent=latest_remote_server_push_forwarded_count.end_time,
-            )
+            # mobile_pushes_forwarded is a CountStat with a day frequency,
+            # so we want to show the start of the latest day interval.
+            push_forwarded_interval_start = (
+                latest_remote_server_push_forwarded_count.end_time - timedelta(days=1)
+            ).strftime("%Y-%m-%d")
+        else:
+            push_forwarded_interval_start = "None"
         return MobilePushData(
             total_mobile_users=total_users,
             uncategorized_mobile_users=uncategorized_users,
             mobile_pushes_forwarded=mobile_pushes["total_forwarded"],
-            last_mobile_push_sent=None,
+            last_mobile_push_sent=push_forwarded_interval_start,
         )
     else:
         assert isinstance(remote_entity, RemoteRealm)
@@ -288,17 +289,18 @@ def get_mobile_push_data(remote_entity: Union[RemoteZulipServer, RemoteRealm]) -
             property="mobile_pushes_forwarded::day",
         ).last()
         if latest_remote_realm_push_forwarded_count is not None:  # nocoverage
-            return MobilePushData(
-                total_mobile_users=mobile_users,
-                uncategorized_mobile_users=None,
-                mobile_pushes_forwarded=mobile_pushes["total_forwarded"],
-                last_mobile_push_sent=latest_remote_realm_push_forwarded_count.end_time,
-            )
+            # mobile_pushes_forwarded is a CountStat with a day frequency,
+            # so we want to show the start of the latest day interval.
+            push_forwarded_interval_start = (
+                latest_remote_realm_push_forwarded_count.end_time - timedelta(days=1)
+            ).strftime("%Y-%m-%d")
+        else:
+            push_forwarded_interval_start = "None"
         return MobilePushData(
             total_mobile_users=mobile_users,
             uncategorized_mobile_users=None,
             mobile_pushes_forwarded=mobile_pushes["total_forwarded"],
-            last_mobile_push_sent=None,
+            last_mobile_push_sent=push_forwarded_interval_start,
         )
 
 
