@@ -345,7 +345,7 @@ _Released 2023-08-25_
 - Fixed a bug, introduced in Zulip Server 7.2, when the
   [email gateway](../production/email-gateway.md)
   was used in conjunction with a
-  [reverse proxy](../production/deployment.md#putting-the-zulip-application-behind-a-reverse-proxy).
+  [reverse proxy](../production/reverse-proxies.md).
 - Improved the performance of
   [resolving](https://zulip.com/help/resolve-a-topic) or
   [moving](https://zulip.com/help/move-content-to-another-topic) long topics.
@@ -404,7 +404,7 @@ _Released 2023-07-05_
   `X-Forwarded-Proto` is also necessary.
 
 - Removed [reverse proxy][proxies] nginx configuration files when the
-  [`loadbalancer.ips`](../production/deployment.md#ips)
+  [`loadbalancer.ips`](../production/system-configuration.md#ips)
   setting has been unset.
 - Improved error-handling of scheduled emails, so they cannot attempt infinite
   deliveries of a message with no recipients.
@@ -422,10 +422,10 @@ _Released 2023-07-05_
   [import](https://zulip.com/help/import-from-slack#export-your-slack-data),
   such as a token having too few permissions.
 - Added support for IPv6
-  [nameservers in the nginx configuration](../production/deployment.md#nameserver).
+  [nameservers in the nginx configuration](../production/system-configuration.md#nameserver).
 - Updated translations.
 
-[proxies]: ../production/deployment.md#configuring-zulip-to-trust-proxies
+[proxies]: ../production/reverse-proxies.md#configuring-zulip-to-trust-proxies
 
 ### Zulip Server 7.1
 
@@ -593,7 +593,7 @@ _Released 2023-05-31_
 - High volume log files like `server.log` are now by default retained
   for 14 days, configured via the `access_log_retention_days`
   [deployment
-  option](../production/deployment.md#system-and-deployment-configuration). This
+  option](../production/system-configuration.md). This
   replaces a harder to understand size-based algorithm that was not
   easily configurable.
 - The URL patterns for
@@ -613,8 +613,8 @@ _Released 2023-05-31_
 - Zulip's Twitter preview integration has been disabled due to Twitter
   desupporting the API that it relied on.
 
-[reverse-proxy-docs]: ../production/deployment.md#putting-the-zulip-application-behind-a-reverse-proxy
-[loadbalancer-ips]: ../production/deployment.md#configuring-zulip-to-trust-proxies
+[reverse-proxy-docs]: ../production/reverse-proxies.md
+[loadbalancer-ips]: ../production/reverse-proxies.md#configuring-zulip-to-trust-proxies
 
 ## Zulip Server 6.x series
 
@@ -1772,7 +1772,7 @@ _Released 2021-05-13_
   codebase with Prettier.
 - Migrated testing from CircleCI to GitHub Actions.
 
-[zulip-conf-settings]: ../production/deployment.md#system-and-deployment-configuration
+[zulip-conf-settings]: ../production/system-configuration.md
 
 ## Zulip Server 3.x series
 

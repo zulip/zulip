@@ -95,7 +95,7 @@ servers; Zulip defaults this value to the first nameserver found in
 will need to run `/home/zulip/deployments/current/scripts/zulip-puppet-apply` to
 update the nginx configuration for the new value.
 
-[s3-resolver]: deployment.md#nameserver
+[s3-resolver]: system-configuration.md#nameserver
 
 ## S3 bucket policy
 
