@@ -119,10 +119,8 @@
     }
 }
 
-#compose-direct-recipient.pill-container {
+#compose-direct-recipient .pill-container {
     padding: 0 2px;
-    flex-grow: 1;
-    align-content: center;
     border: 1px solid hsl(0deg 0% 0% / 20%);
     background-color: hsl(0deg 0% 100%);
 
