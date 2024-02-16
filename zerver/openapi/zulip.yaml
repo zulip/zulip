@@ -4183,6 +4183,10 @@ paths:
                                         methods are enabled for the organization. For authentication UI itself,
                                         clients should use the pre-authentication metadata returned by
                                         [`GET /server_settings`](/api/get-server-settings).
+
+                                        **Changes**: In Zulip 9.0 (feature level 243), the values in this
+                                        dictionary were changed. Previously, the values were a simple boolean
+                                        indicating whether the backend is enabled or not.
                                     bot_creation_policy:
                                       type: integer
                                       description: |
@@ -14540,6 +14544,10 @@ paths:
                           methods are enabled for the organization. For authentication UI itself,
                           clients should use the pre-authentication metadata returned by
                           [`GET /server_settings`](/api/get-server-settings).
+
+                          **Changes**: In Zulip 9.0 (feature level 241), the values in this
+                          dictionary were changed. Previously, the values were a simple boolean
+                          indicating whether the backend is enabled or not.
                       realm_allow_message_editing:
                         type: boolean
                         description: |
