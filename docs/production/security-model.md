@@ -260,7 +260,7 @@ strength allowed is controlled by two settings in
 [go-camo]: https://github.com/cactus/go-camo
 [ssrf]: https://owasp.org/www-community/attacks/Server_Side_Request_Forgery
 [smokescreen-setup]: deployment.md#customizing-the-outgoing-http-proxy
-[proxy.enable_for_camo]: deployment.md#enable_for_camo
+[proxy.enable_for_camo]: system-configuration.md#enable_for_camo
 
 ## Rate limiting
 
