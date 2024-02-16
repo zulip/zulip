@@ -4349,17 +4349,22 @@ class RemoteServerBillingSession(BillingSession):
                 "email", flat=True
             )
         )
-        send_email(
-            "zerver/emails/sponsorship_approved_community_plan",
-            to_emails=billing_emails,
-            from_address=BILLING_SUPPORT_EMAIL,
-            context={
-                "billing_entity": self.billing_entity_display_name,
-                "plans_link": "https://zulip.com/plans/#self-hosted",
-                "link_to_zulip": "https://zulip.com/help/linking-to-zulip-website",
-            },
-        )
-        return f"Sponsorship approved for {self.billing_entity_display_name}"
+        if len(billing_emails) > 0:
+            send_email(
+                "zerver/emails/sponsorship_approved_community_plan",
+                to_emails=billing_emails,
+                from_address=BILLING_SUPPORT_EMAIL,
+                context={
+                    "billing_entity": self.billing_entity_display_name,
+                    "plans_link": "https://zulip.com/plans/#self-hosted",
+                    "link_to_zulip": "https://zulip.com/help/linking-to-zulip-website",
+                },
+            )
+            emailed_string = "Emailed existing billing users."
+        else:
+            emailed_string = "No billing users exist to email."
+
+        return f"Sponsorship approved for {self.billing_entity_display_name}; " + emailed_string
 
     @override
     def process_downgrade(
