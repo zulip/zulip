@@ -5,7 +5,7 @@ map $remote_addr $trusted_x_forwarded_proto {
 }
 map $http_x_forwarded_for $x_proxy_misconfiguration {
     default "";
-    "~." "No proxies configured in Zulip, but proxy headers detected from proxy at $remote_addr; see https://zulip.readthedocs.io/en/latest/production/deployment.html#putting-the-zulip-application-behind-a-reverse-proxy";
+    "~." "No proxies configured in Zulip, but proxy headers detected from proxy at $remote_addr; see https://zulip.readthedocs.io/en/latest/production/reverse-proxies.html";
 }
 <% else %>
 # Check if the request's original `REMOTE_ADDR` header was from a
@@ -37,8 +37,8 @@ map $is_x_forwarded_proto_trusted $trusted_x_forwarded_proto {
 }
 
 map "$is_from_proxy:$is_x_forwarded_proto_trusted:$http_x_forwarded_proto" $x_proxy_misconfiguration {
-    "~^0:0:" "Incorrect reverse proxy IPs set in Zulip (try $remote_addr?); see https://zulip.readthedocs.io/en/latest/production/deployment.html#putting-the-zulip-application-behind-a-reverse-proxy";
-    "~^0:1:$" "No X-Forwarded-Proto header sent from trusted proxy $realip_remote_addr; see example configurations in https://zulip.readthedocs.io/en/latest/production/deployment.html#putting-the-zulip-application-behind-a-reverse-proxy";
+    "~^0:0:" "Incorrect reverse proxy IPs set in Zulip (try $remote_addr?); see https://zulip.readthedocs.io/en/latest/production/reverse-proxies.html";
+    "~^0:1:$" "No X-Forwarded-Proto header sent from trusted proxy $realip_remote_addr; see example configurations in https://zulip.readthedocs.io/en/latest/production/reverse-proxies.html";
     default "";
 }
 <% end %>
