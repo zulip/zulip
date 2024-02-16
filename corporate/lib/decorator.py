@@ -133,10 +133,8 @@ def get_next_page_param_from_request_path(request: HttpRequest) -> Optional[str]
     if page_type in REMOTE_BILLING_VALID_NEXT_PAGES:
         return page_type
 
-    # Should be impossible to reach here. If this is reached, it must mean
-    # we have a registered endpoint that doesn't have a VALID_NEXT_PAGES entry
-    # or the parsing logic above is failing.
-    raise AssertionError(f"Unknown page type: {page_type}")
+    # page_type is not where we want user to go after a login, so just render the default page.
+    return None  # nocoverage
 
 
 def authenticated_remote_server_management_endpoint(
