@@ -195,7 +195,10 @@ def build_page_params_for_home_page_load(
 
     # Pass parameters to the client-side JavaScript code.
     # These end up in a JavaScript Object named 'page_params'.
+    #
+    # Sync this with home_params_schema in base_page_params.ts.
     page_params: Dict[str, object] = dict(
+        page_type="home",
         ## Server settings.
         test_suite=settings.TEST_SUITE,
         insecure_desktop_app=insecure_desktop_app,

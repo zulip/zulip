@@ -52,15 +52,3 @@ export type UpdateMessageEvent = {
     // This will not be set until it gets fixed.
     topic?: string;
 };
-
-export type GroupPermissionSetting = {
-    require_system_group: boolean;
-    allow_internet_group: boolean;
-    allow_owners_group: boolean;
-    allow_nobody_group: boolean;
-    allow_everyone_group: boolean;
-    default_group_name: string;
-    id_field_name: string;
-    default_for_system_groups: string | null;
-    allowed_system_groups: string[];
-};

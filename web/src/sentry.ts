@@ -1,6 +1,6 @@
 import * as Sentry from "@sentry/browser";
 
-import {page_params} from "./page_params";
+import {page_params} from "./base_page_params";
 import {current_user, realm} from "./state_data";
 
 type UserInfo = {
@@ -76,7 +76,11 @@ if (page_params.server_sentry_dsn) {
             const user_info: UserInfo = {
                 realm: sentry_key,
             };
-            if (sentry_key !== "www" && current_user !== undefined) {
+            if (
+                sentry_key !== "www" &&
+                page_params.page_type === "home" &&
+                current_user !== undefined
+            ) {
                 user_info.role = current_user.is_owner
                     ? "Organization owner"
                     : current_user.is_admin

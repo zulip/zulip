@@ -1,7 +1,7 @@
 import Handlebars from "handlebars/runtime";
 
+import {page_params} from "./base_page_params";
 import {$t, $t_html} from "./i18n";
-import {page_params} from "./page_params";
 import type {RealmDefaultSettings} from "./realm_user_settings_defaults";
 import {realm} from "./state_data";
 import type {StreamSpecificNotificationSettings} from "./sub_store";

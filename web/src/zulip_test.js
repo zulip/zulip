@@ -9,7 +9,7 @@ export {get_stream_id, get_sub, get_subscriber_count} from "./stream_data";
 export {get_by_user_id as get_person_by_user_id, get_user_id_from_name} from "./people";
 export {last_visible as last_visible_row, id as row_id} from "./rows";
 export {cancel as cancel_compose} from "./compose_actions";
-export {page_params, page_params_parse_time} from "./page_params";
+export {page_params, page_params_parse_time} from "./base_page_params";
 export {initiate as initiate_reload} from "./reload";
 export {page_load_time} from "./setup";
 export {current_user, realm} from "./state_data";

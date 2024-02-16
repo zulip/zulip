@@ -1,5 +1,6 @@
 import $ from "jquery";
 import _ from "lodash";
+import assert from "minimalistic-assert";
 
 import generated_emoji_codes from "../../static/generated/emoji/emoji_codes.json";
 import * as fenced_code from "../shared/src/fenced_code";
@@ -114,7 +115,7 @@ import * as sidebar_ui from "./sidebar_ui";
 import * as spoilers from "./spoilers";
 import * as starred_messages from "./starred_messages";
 import * as starred_messages_ui from "./starred_messages_ui";
-import {current_user, realm, set_current_user, set_realm} from "./state_data";
+import {current_user, realm, set_current_user, set_realm, state_data_schema} from "./state_data";
 import * as stream_data from "./stream_data";
 import * as stream_edit from "./stream_edit";
 import * as stream_edit_subscribers from "./stream_edit_subscribers";
@@ -874,7 +875,8 @@ $(async () => {
             url: "/json/register",
             data,
             success(response_data) {
-                initialize_everything(response_data);
+                const state_data = state_data_schema.parse(response_data);
+                initialize_everything(state_data);
             },
             error() {
                 $("#app-loading-middle-content").hide();
@@ -884,6 +886,7 @@ $(async () => {
             },
         });
     } else {
+        assert(page_params.state_data !== undefined);
         initialize_everything(page_params.state_data);
     }
 });
