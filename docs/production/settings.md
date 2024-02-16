@@ -33,7 +33,7 @@ to each new major release.
 
 Since Zulip’s settings file is a Python script, there are a number of
 other things that one can configure that are documented in
-[System and deployment configuration](deployment.md#system-and-deployment-configuration).
+[System and deployment configuration](system-configuration.md).
 Otherwise, ask in [the Zulip development community](https://zulip.com/development-community/)
 if there’s something you’d like to do but can’t figure out how to.
 
