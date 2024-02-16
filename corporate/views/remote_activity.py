@@ -117,8 +117,8 @@ def get_remote_server_activity(request: HttpRequest) -> HttpResponse:
     SERVER_AND_REALM_IDS = 0
     SERVER_CREATED = 1
     REALM_CREATED = 2
-    SERVER_HOST = 2
-    REALM_HOST = 3
+    SERVER_HOST = 3
+    REALM_HOST = 4
 
     # Column constants:
     DATE_CREATED = 2
