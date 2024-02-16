@@ -1444,7 +1444,12 @@ class BillingSession(ABC):
                 assert plan.status == CustomerPlan.ACTIVE
                 old_end_date = plan.end_date
                 plan.end_date = new_end_date
-                plan.save(update_fields=["end_date"])
+                old_next_invoice_date = plan.next_invoice_date
+                # Legacy plans should be invoiced once on the end_date to
+                # downgrade or switch to a new tier.
+                if plan.tier == CustomerPlan.TIER_SELF_HOSTED_LEGACY:
+                    plan.next_invoice_date = new_end_date
+                plan.save(update_fields=["end_date", "next_invoice_date"])
                 self.write_to_audit_log(
                     event_type=AuditLogEventType.CUSTOMER_PLAN_PROPERTY_CHANGED,
                     event_time=timezone_now(),
@@ -1455,6 +1460,17 @@ class BillingSession(ABC):
                         "property": "end_date",
                     },
                 )
+                if old_next_invoice_date != plan.next_invoice_date:
+                    self.write_to_audit_log(
+                        event_type=AuditLogEventType.CUSTOMER_PLAN_PROPERTY_CHANGED,
+                        event_time=timezone_now(),
+                        extra_data={
+                            "old_value": old_next_invoice_date,
+                            "new_value": new_end_date,
+                            "plan_id": plan.id,
+                            "property": "next_invoice_date",
+                        },
+                    )
                 return f"Current plan for {self.billing_entity_display_name} updated to end on {end_date_string}."
         raise SupportRequestError(
             f"No current plan for {self.billing_entity_display_name}."
