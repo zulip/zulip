@@ -23,7 +23,7 @@ What in the heck is a zcommand?
 
     Not all slash commands use zcommand under the hood.
     For more exotic things like /poll see submessage.js
-    and widgetize.js
+    and widgetize.ts
 
 */
 
