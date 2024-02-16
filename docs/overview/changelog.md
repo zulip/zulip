@@ -17,6 +17,29 @@ log][commit-log] for an up-to-date list of all changes.
 
 ## Zulip Server 8.x series
 
+### Zulip Server 8.2
+
+_Released 2024-02-16_
+
+- Fixed an error reporting bug that caused an email to be sent to the
+  server administrator each time that the server had a failed attempt
+  to send a mobile push notification. This bug could cause a lot of
+  error emails on servers that are registered with the [Mobile Push
+  Notification Service][mobile-push], but are not signed up for a plan
+  that includes access to this service, or not [uploading basic
+  metadata][mobile-push-metadata] required to verify eligibility for
+  free access to the service.
+- Fixed several scroll position bugs encountered when entering a
+  conversation view, most importantly when opening a direct message
+  conversation.
+- Fixed a minor bug in the organization settings UI.
+- Improved rate-limiting logic to avoid errors when loading the app for some users.
+- Adjusted memory usage configuration to reduce memory usage to avoid
+  OOM kills on systems with close to 4GiB of RAM, and require less
+  tuning for larger systems.
+- Upgraded dependencies.
+- Updated translations.
+
 ### Zulip Server 8.1
 
 _Released 2024-01-24_
