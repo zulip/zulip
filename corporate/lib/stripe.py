@@ -4899,17 +4899,24 @@ def get_push_status_for_remote_request(
     remote_server: RemoteZulipServer, remote_realm: Optional[RemoteRealm]
 ) -> PushNotificationsEnabledStatus:
     # First, get the operative Customer object for this
-    # installation. If there's a `RemoteRealm` customer, that
-    # takes precedence.
+    # installation.
     customer = None
+    current_plan = None
 
     if remote_realm is not None:
         billing_session: BillingSession = RemoteRealmBillingSession(remote_realm)
         customer = billing_session.get_customer()
+        if customer is not None:
+            current_plan = get_current_plan_by_customer(customer)
 
-    if customer is None:
+    # If there's a `RemoteRealm` customer with an active plan, that
+    # takes precedence, but look for a current plan on the server if
+    # there is a customer with only inactive/expired plans on the Realm.
+    if customer is None or current_plan is None:
         billing_session = RemoteServerBillingSession(remote_server)
         customer = billing_session.get_customer()
+        if customer is not None:
+            current_plan = get_current_plan_by_customer(customer)
 
     if billing_session.is_sponsored():
         return PushNotificationsEnabledStatus(
@@ -4917,11 +4924,6 @@ def get_push_status_for_remote_request(
             expected_end_timestamp=None,
             message="Community plan",
         )
-
-    if customer is not None:
-        current_plan = get_current_plan_by_customer(customer)
-    else:
-        current_plan = None
 
     user_count: Optional[int] = None
     if current_plan is None:
