@@ -4740,19 +4740,19 @@ def invoice_plans_as_needed(event_time: Optional[datetime] = None) -> None:
             billing_session = RemoteServerBillingSession(remote_server=remote_server)
 
         if remote_server:
-            assert remote_server.last_audit_log_update is not None
             assert plan.next_invoice_date is not None
-            if plan.next_invoice_date > remote_server.last_audit_log_update:
+            last_audit_log_update = remote_server.last_audit_log_update
+            if last_audit_log_update is None or plan.next_invoice_date > last_audit_log_update:
                 if (
-                    plan.next_invoice_date - remote_server.last_audit_log_update
-                    >= timedelta(days=1)
-                    and not plan.invoice_overdue_email_sent
-                ):
+                    last_audit_log_update is None
+                    or plan.next_invoice_date - last_audit_log_update >= timedelta(days=1)
+                ) and not plan.invoice_overdue_email_sent:
+                    last_audit_log_update_string = "Never uploaded"
+                    if last_audit_log_update is not None:
+                        last_audit_log_update_string = last_audit_log_update.strftime("%Y-%m-%d")
                     context = {
                         "support_url": billing_session.support_url(),
-                        "last_audit_log_update": remote_server.last_audit_log_update.strftime(
-                            "%Y-%m-%d"
-                        ),
+                        "last_audit_log_update": last_audit_log_update_string,
                     }
                     send_email(
                         "zerver/emails/invoice_overdue",
