@@ -57,6 +57,7 @@ const compose_recipient = zrequire("compose_recipient");
 const compose_state = zrequire("compose_state");
 const compose = zrequire("compose");
 const compose_setup = zrequire("compose_setup");
+const drafts = zrequire("drafts");
 const echo = zrequire("echo");
 const people = zrequire("people");
 const stream_data = zrequire("stream_data");
@@ -131,15 +132,23 @@ function initialize_handlers({override}) {
 test_ui("send_message_success", ({override, override_rewire}) => {
     mock_banners();
 
+    let draft_deleted;
+    let reify_message_id_checked;
     function reset() {
         $("textarea#compose-textarea").val("foobarfoobar");
         $("textarea#compose-textarea").trigger("blur");
         $(".compose-submit-button .loader").show();
+        draft_deleted = false;
+        reify_message_id_checked = false;
     }
 
     reset();
 
-    let reify_message_id_checked;
+    const draft_model = drafts.draft_model;
+    override(draft_model, "deleteDraft", (draft_id) => {
+        assert.equal(draft_id, 100);
+        draft_deleted = true;
+    });
     override_rewire(echo, "reify_message_id", (local_id, message_id) => {
         assert.equal(local_id, "1001");
         assert.equal(message_id, 12);
@@ -167,6 +176,7 @@ test_ui("send_message_success", ({override, override_rewire}) => {
     let request = {
         locally_echoed: false,
         local_id: "1001",
+        draft_id: 100,
         type: "stream",
         stream_id: 1,
         topic: "test",
@@ -178,10 +188,10 @@ test_ui("send_message_success", ({override, override_rewire}) => {
     assert.ok($("textarea#compose-textarea").is_focused());
     assert.ok(!$(".compose-submit-button .loader").visible());
     assert.ok(reify_message_id_checked);
+    assert.ok(draft_deleted);
 
     reset();
 
-    reify_message_id_checked = false;
     override(compose_notifications, "get_muted_narrow", (message) => {
         assert.equal(message.type, "stream");
         assert.equal(message.stream_id, 2);
@@ -191,6 +201,7 @@ test_ui("send_message_success", ({override, override_rewire}) => {
     request = {
         locally_echoed: false,
         local_id: "1001",
+        draft_id: 100,
         type: "stream",
         stream_id: 2,
         topic: "test",
@@ -202,6 +213,7 @@ test_ui("send_message_success", ({override, override_rewire}) => {
     assert.ok($("textarea#compose-textarea").is_focused());
     assert.ok(!$(".compose-submit-button .loader").visible());
     assert.ok(reify_message_id_checked);
+    assert.ok(draft_deleted);
 });
 
 test_ui("send_message", ({override, override_rewire, mock_template}) => {
@@ -238,6 +250,7 @@ test_ui("send_message", ({override, override_rewire, mock_template}) => {
         override(markdown, "render", noop);
         override(markdown, "get_topic_links", noop);
 
+        override_rewire(drafts, "update_draft", () => 100);
         override_rewire(echo, "try_deliver_locally", (message_request) => {
             const local_id_float = 123.04;
             return echo.insert_local_message(message_request, local_id_float, (messages) =>
@@ -258,6 +271,7 @@ test_ui("send_message", ({override, override_rewire, mock_template}) => {
                 reply_to: "alice@example.com",
                 private_message_recipient: "alice@example.com",
                 to_user_ids: "31",
+                draft_id: 100,
                 local_id: "123.04",
                 locally_echoed: true,
             };
