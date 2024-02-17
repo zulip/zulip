@@ -19,7 +19,6 @@ import * as sent_messages from "./sent_messages";
 import {current_user} from "./state_data";
 import * as stream_data from "./stream_data";
 import * as stream_list from "./stream_list";
-import * as stream_topic_history from "./stream_topic_history";
 import * as util from "./util";
 
 // Docs: https://zulip.readthedocs.io/en/latest/subsystems/sending-messages.html
@@ -273,30 +272,6 @@ export function edit_locally(message, request) {
     // The details of what should be changed are encoded in the request.
     const raw_content = request.raw_content;
     const message_content_edited = raw_content !== undefined && message.raw_content !== raw_content;
-
-    if (request.new_topic !== undefined || request.new_stream_id !== undefined) {
-        const new_stream_id = request.new_stream_id;
-        const new_topic = request.new_topic;
-        stream_topic_history.remove_messages({
-            stream_id: message.stream_id,
-            topic_name: message.topic,
-            num_messages: 1,
-            max_removed_msg_id: message.id,
-        });
-
-        if (new_stream_id !== undefined) {
-            message.stream_id = new_stream_id;
-        }
-        if (new_topic !== undefined) {
-            message.topic = new_topic;
-        }
-
-        stream_topic_history.add_message({
-            stream_id: message.stream_id,
-            topic_name: message.topic,
-            message_id: message.id,
-        });
-    }
 
     if (message_content_edited) {
         message.raw_content = raw_content;

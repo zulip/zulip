@@ -886,8 +886,6 @@ export function do_save_inline_topic_edit($row, message, new_topic) {
     show_topic_edit_spinner($row);
 
     if (message.locally_echoed) {
-        message = echo.edit_locally(message, {new_topic});
-        $row = message_lists.current.get_row(message.id);
         end_inline_topic_edit($row);
         return;
     }
