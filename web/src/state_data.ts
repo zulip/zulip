@@ -13,12 +13,12 @@ const group_permission_setting_schema = z.object({
 });
 export type GroupPermissionSetting = z.output<typeof group_permission_setting_schema>;
 
-export const term_schema = z.object({
+export const narrow_term_schema = z.object({
     negated: z.optional(z.boolean()),
     operator: z.string(),
     operand: z.string(),
 });
-export type Term = z.output<typeof term_schema>;
+export type NarrowTerm = z.output<typeof narrow_term_schema>;
 // Sync this with zerver.lib.events.do_events_register.
 
 export const current_user_schema = z.object({
