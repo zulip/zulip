@@ -108,7 +108,6 @@
             </div>
             {% else %}
             {% with %}
-                {% set is_current_plan_billable = remote_servers_support_data[remote_server.id].plan_data.is_current_plan_billable %}
                 {% set remote_id = remote_server.id %}
                 {% set remote_type = "remote_server_id" %}
                 {% include 'corporate/support/next_plan_forms_support.html' %}

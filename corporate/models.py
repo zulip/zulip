@@ -215,15 +215,6 @@ class PaymentIntent(models.Model):
         return payment_intent_dict
 
 
-class Invoice(models.Model):
-    customer = models.ForeignKey(Customer, on_delete=CASCADE)
-    stripe_invoice_id = models.CharField(max_length=255, unique=True)
-
-    SENT = 1
-    PAID = 2
-    status = models.SmallIntegerField()
-
-
 class AbstractCustomerPlan(models.Model):
     # A customer can only have one ACTIVE / CONFIGURED plan,
     # but old, inactive / processed plans are preserved to allow
@@ -257,9 +248,6 @@ class CustomerPlanOffer(AbstractCustomerPlan):
     CONFIGURED = 1
     PROCESSED = 2
     status = models.SmallIntegerField()
-
-    # ID of invoice sent when chose to 'Pay by invoice'.
-    sent_invoice_id = models.CharField(max_length=255, null=True)
 
     @override
     def __str__(self) -> str:

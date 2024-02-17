@@ -11,9 +11,8 @@ from corporate.lib.stripe import (
     RemoteRealmBillingSession,
     RemoteServerBillingSession,
     UpgradeWithExistingPlanError,
-    get_configured_fixed_price_plan_offer,
 )
-from corporate.models import Customer, CustomerPlan, Event, Invoice, PaymentIntent, Session
+from corporate.models import Customer, CustomerPlan, Event, PaymentIntent, Session
 from zerver.models.users import get_active_user_profile_by_id_in_realm
 
 billing_logger = logging.getLogger("corporate.stripe")
@@ -21,10 +20,9 @@ billing_logger = logging.getLogger("corporate.stripe")
 
 def error_handler(
     func: Callable[[Any, Any], None],
-) -> Callable[[Union[stripe.checkout.Session, stripe.PaymentIntent, stripe.Invoice], Event], None]:
+) -> Callable[[Union[stripe.checkout.Session, stripe.PaymentIntent], Event], None]:
     def wrapper(
-        stripe_object: Union[stripe.checkout.Session, stripe.PaymentIntent, stripe.Invoice],
-        event: Event,
+        stripe_object: Union[stripe.checkout.Session, stripe.PaymentIntent], event: Event
     ) -> None:
         event.status = Event.EVENT_HANDLER_STARTED
         event.save(update_fields=["status"])
@@ -152,34 +150,3 @@ def handle_payment_intent_succeeded_event(
         False,
         billing_session.get_remote_server_legacy_plan(payment_intent.customer),
     )
-
-
-@error_handler
-def handle_invoice_paid_event(stripe_invoice: stripe.Invoice, invoice: Invoice) -> None:
-    invoice.status = Invoice.PAID
-    invoice.save(update_fields=["status"])
-
-    customer = invoice.customer
-
-    configured_fixed_price_plan = None
-    if customer.required_plan_tier:
-        configured_fixed_price_plan = get_configured_fixed_price_plan_offer(
-            customer, customer.required_plan_tier
-        )
-
-    if stripe_invoice.collection_method == "send_invoice" and configured_fixed_price_plan:
-        billing_session = get_billing_session_for_stripe_webhook(customer, user_id=None)
-        remote_server_legacy_plan = billing_session.get_remote_server_legacy_plan(customer)
-        assert customer.required_plan_tier is not None
-        billing_session.process_initial_upgrade(
-            plan_tier=customer.required_plan_tier,
-            # TODO: Currently licenses don't play any role for fixed price plan.
-            # We plan to introduce max_licenses allowed soon.
-            licenses=0,
-            automanage_licenses=True,
-            billing_schedule=CustomerPlan.BILLING_SCHEDULE_ANNUAL,
-            charge_automatically=False,
-            free_trial=False,
-            remote_server_legacy_plan=remote_server_legacy_plan,
-            stripe_invoice_paid=True,
-        )

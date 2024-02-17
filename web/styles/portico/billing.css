@@ -734,9 +734,3 @@ input[name="licenses"] {
 .flat-discount-separator {
     border-bottom: 1px solid hsl(0deg 0% 0%);
 }
-
-#upgrade-page-details #pay-by-invoice-details {
-    width: 450px;
-    font-weight: normal;
-    padding-left: 15px;
-}

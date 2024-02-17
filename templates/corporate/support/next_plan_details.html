@@ -11,8 +11,5 @@
     <b>Estimated billed licenses</b>: {{ plan_data.current_plan.licenses_at_next_renewal() }}<br />
 {% elif plan_data.next_plan.fixed_price %}
     <b>Plan has a fixed price.</b><br />
-    {% if plan_data.next_plan.sent_invoice_id %}
-        <b>Payment pending for Invoice ID</b>: {{plan_data.next_plan.sent_invoice_id}}<br />
-    {% endif %}
 {% endif %}
 <b>Estimated annual revenue</b>: ${{ dollar_amount(plan_data.estimated_next_plan_revenue) }}<br />

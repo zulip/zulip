@@ -30,7 +30,6 @@ from corporate.models import (
     Customer,
     CustomerPlan,
     CustomerPlanOffer,
-    Invoice,
     LicenseLedger,
     PaymentIntent,
     Session,
@@ -593,7 +592,6 @@ class SupportViewRequest(TypedDict, total=False):
     plan_end_date: Optional[str]
     required_plan_tier: Optional[int]
     fixed_price: Optional[int]
-    sent_invoice_id: Optional[str]
 
 
 class AuditLogEventType(Enum):
@@ -673,7 +671,6 @@ class UpgradePageContext(TypedDict):
     payment_method: Optional[str]
     plan: str
     fixed_price_plan: bool
-    pay_by_invoice_payments_page: Optional[str]
     remote_server_legacy_plan_end_date: Optional[str]
     salt: str
     seat_count: int
@@ -1247,7 +1244,7 @@ class BillingSession(ABC):
             plan_tier_name = CustomerPlan.name_from_tier(new_plan_tier)
         return f"Required plan tier for {self.billing_entity_display_name} set to {plan_tier_name}."
 
-    def configure_fixed_price_plan(self, fixed_price: int, sent_invoice_id: Optional[str]) -> str:
+    def configure_fixed_price_plan(self, fixed_price: int) -> str:
         customer = self.get_customer()
         if customer is None:
             customer = self.update_or_create_customer()
@@ -1293,25 +1290,6 @@ class BillingSession(ABC):
             current_plan.next_invoice_date = current_plan.end_date
             current_plan.save(update_fields=["status", "next_invoice_date"])
             return f"Fixed price {required_plan_tier_name} plan scheduled to start on {current_plan.end_date.date()}."
-
-        if sent_invoice_id is not None:
-            sent_invoice_id = sent_invoice_id.strip()
-            # Verify 'sent_invoice_id' before storing in database.
-            try:
-                invoice = stripe.Invoice.retrieve(sent_invoice_id)
-                if invoice.status != "open":
-                    raise SupportRequestError(
-                        "Invoice status should be open. Please verify sent_invoice_id."
-                    )
-            except Exception as e:
-                raise SupportRequestError(str(e))
-
-            fixed_price_plan_params["sent_invoice_id"] = sent_invoice_id
-            Invoice.objects.create(
-                customer=customer,
-                stripe_invoice_id=sent_invoice_id,
-                status=Invoice.SENT,
-            )
 
         fixed_price_plan_params["status"] = CustomerPlanOffer.CONFIGURED
         CustomerPlanOffer.objects.create(
@@ -1471,13 +1449,10 @@ class BillingSession(ABC):
         free_trial: bool,
         remote_server_legacy_plan: Optional[CustomerPlan] = None,
         should_schedule_upgrade_for_legacy_remote_server: bool = False,
-        stripe_invoice_paid: bool = False,
     ) -> None:
         is_self_hosted_billing = not isinstance(self, RealmBillingSession)
-        if stripe_invoice_paid:
-            customer = self.update_or_create_customer()
-        else:
-            customer = self.update_or_create_stripe_customer()
+        customer = self.update_or_create_stripe_customer()
+        assert customer.stripe_customer_id is not None  # for mypy
         self.ensure_current_plan_is_upgradable(customer, plan_tier)
         billing_cycle_anchor = None
 
@@ -1538,7 +1513,6 @@ class BillingSession(ABC):
 
                 if charge_automatically:
                     # Ensure free trial customers not paying via invoice have a default payment method set
-                    assert customer.stripe_customer_id is not None  # for mypy
                     stripe_customer = stripe_get_customer(customer.stripe_customer_id)
                     if not stripe_customer_has_credit_card_as_default_payment_method(
                         stripe_customer
@@ -1560,7 +1534,6 @@ class BillingSession(ABC):
                 assert remote_server_legacy_plan is not None
                 if charge_automatically:
                     # Ensure customers not paying via invoice have a default payment method set.
-                    assert customer.stripe_customer_id is not None  # for mypy
                     stripe_customer = stripe_get_customer(customer.stripe_customer_id)
                     if not stripe_customer_has_credit_card_as_default_payment_method(
                         stripe_customer
@@ -1626,9 +1599,7 @@ class BillingSession(ABC):
                 extra_data=plan_params,
             )
 
-        if not stripe_invoice_paid and not (
-            free_trial or should_schedule_upgrade_for_legacy_remote_server
-        ):
+        if not (free_trial or should_schedule_upgrade_for_legacy_remote_server):
             assert plan is not None
             price_args: PriceArgs = {}
             if plan.fixed_price is None:
@@ -1640,7 +1611,6 @@ class BillingSession(ABC):
                 assert plan.fixed_price is not None
                 amount_due = get_amount_due_fixed_price_plan(plan.fixed_price, billing_schedule)
                 price_args = {"amount": amount_due}
-            assert customer.stripe_customer_id is not None
             stripe.InvoiceItem.create(
                 currency="usd",
                 customer=customer.stripe_customer_id,
@@ -2278,16 +2248,11 @@ class BillingSession(ABC):
         tier = initial_upgrade_request.tier
 
         fixed_price = None
-        pay_by_invoice_payments_page = None
         if customer is not None:
             fixed_price_plan_offer = get_configured_fixed_price_plan_offer(customer, tier)
             if fixed_price_plan_offer:
                 assert fixed_price_plan_offer.fixed_price is not None
                 fixed_price = fixed_price_plan_offer.fixed_price
-
-                if fixed_price_plan_offer.sent_invoice_id is not None:
-                    invoice = stripe.Invoice.retrieve(fixed_price_plan_offer.sent_invoice_id)
-                    pay_by_invoice_payments_page = invoice.hosted_invoice_url
 
         percent_off = Decimal(0)
         if customer is not None:
@@ -2356,7 +2321,6 @@ class BillingSession(ABC):
             "payment_method": current_payment_method,
             "plan": CustomerPlan.name_from_tier(tier),
             "fixed_price_plan": fixed_price is not None,
-            "pay_by_invoice_payments_page": pay_by_invoice_payments_page,
             "salt": salt,
             "seat_count": seat_count,
             "signed_seat_count": signed_seat_count,
@@ -2990,8 +2954,7 @@ class BillingSession(ABC):
         elif support_type == SupportType.configure_fixed_price_plan:
             assert support_request["fixed_price"] is not None
             new_fixed_price = support_request["fixed_price"]
-            sent_invoice_id = support_request["sent_invoice_id"]
-            success_message = self.configure_fixed_price_plan(new_fixed_price, sent_invoice_id)
+            success_message = self.configure_fixed_price_plan(new_fixed_price)
         elif support_type == SupportType.update_billing_modality:
             assert support_request["billing_modality"] is not None
             assert support_request["billing_modality"] in VALID_BILLING_MODALITY_VALUES
