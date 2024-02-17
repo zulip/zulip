@@ -5,7 +5,6 @@ import {all_messages_data} from "./all_messages_data";
 import * as blueslip from "./blueslip";
 import * as compose_notifications from "./compose_notifications";
 import * as compose_ui from "./compose_ui";
-import * as drafts from "./drafts";
 import * as local_message from "./local_message";
 import * as markdown from "./markdown";
 import * as message_lists from "./message_lists";
@@ -243,14 +242,6 @@ export function try_deliver_locally(message_request, insert_new_messages) {
         return undefined;
     }
 
-    // Save a locally echoed message in drafts, so it cannot be
-    // lost. It will be cleared if the message is sent successfully.
-    // We ask the drafts system to not notify the user or update the
-    // draft count, since that would be quite distracting in the very
-    // common case that the message sends normally.
-    const draft_id = drafts.update_draft({no_notify: true, update_count: false});
-    message_request.draft_id = draft_id;
-
     // Now that we've committed to delivering the message locally, we
     // shrink the compose-box if it is in the full-screen state. This
     // would have happened anyway in clear_compose_box, however, we
@@ -360,11 +351,6 @@ export function reify_message_id(local_id, server_id) {
 
     message.id = server_id;
     message.locally_echoed = false;
-
-    if (message.draft_id) {
-        // Delete the draft if message was locally echoed
-        drafts.draft_model.deleteDraft(message.draft_id);
-    }
 
     const opts = {old_id: Number.parseFloat(local_id), new_id: server_id};
 

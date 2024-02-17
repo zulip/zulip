@@ -50,7 +50,6 @@ message_lists.home = {
 };
 message_lists.all_rendered_message_lists = () => [message_lists.home, message_lists.current];
 
-const drafts = zrequire("drafts");
 const echo = zrequire("echo");
 const people = zrequire("people");
 const stream_data = zrequire("stream_data");
@@ -315,7 +314,6 @@ run_test("test reify_message_id", ({override}) => {
 
     let message_store_reify_called = false;
     let notifications_reify_called = false;
-    let draft_deleted = false;
 
     override(message_store, "reify_message_id", () => {
         message_store_reify_called = true;
@@ -325,17 +323,10 @@ run_test("test reify_message_id", ({override}) => {
         notifications_reify_called = true;
     });
 
-    const draft_model = drafts.draft_model;
-    override(draft_model, "deleteDraft", (draft_id) => {
-        assert.ok(draft_id, 100);
-        draft_deleted = true;
-    });
-
     echo.reify_message_id(local_id_float.toString(), 110);
 
     assert.ok(message_store_reify_called);
     assert.ok(notifications_reify_called);
-    assert.ok(draft_deleted);
 });
 
 run_test("reset MockDate", () => {

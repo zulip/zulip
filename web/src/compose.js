@@ -144,13 +144,11 @@ export function clear_compose_box() {
 
 export function send_message_success(request, data) {
     if (!request.locally_echoed) {
-        if ($("textarea#compose-textarea").data("draft-id")) {
-            drafts.draft_model.deleteDraft($("textarea#compose-textarea").data("draft-id"));
-        }
         clear_compose_box();
     }
 
     echo.reify_message_id(request.local_id, data.id);
+    drafts.draft_model.deleteDraft(request.draft_id);
 
     if (request.type === "stream") {
         if (data.automatic_new_visibility_policy) {
@@ -178,6 +176,10 @@ export function send_message(request = create_message_object()) {
     } else {
         request.to = JSON.stringify([request.to]);
     }
+
+    // Silently save / update a draft to ensure the message is not lost in case send fails.
+    // We delete the draft on successful send.
+    request.draft_id = drafts.update_draft({no_notify: true, update_count: false});
 
     let local_id;
     let locally_echoed;
