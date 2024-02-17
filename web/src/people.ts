@@ -770,6 +770,11 @@ export function format_small_avatar_url(raw_url: string): string {
     return url.href;
 }
 
+export function user_is_bot(user_id: number): boolean {
+    const user = get_by_user_id(user_id);
+    return user.is_bot;
+}
+
 export function sender_is_bot(message: Message): boolean {
     if (message.sender_id) {
         const person = get_by_user_id(message.sender_id);
