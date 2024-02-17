@@ -1,0 +1,13 @@
+{
+  "configuration": "bpc_1OjJtHDEQaroqDjsVWnhcYho",
+  "created": 1000000000,
+  "customer": "cus_NORMALIZED0001",
+  "flow": null,
+  "id": "bps_1OjJtHDEQaroqDjsLtIO1zGu",
+  "livemode": false,
+  "locale": null,
+  "object": "billing_portal.session",
+  "on_behalf_of": null,
+  "return_url": "http://selfhosting.testserver/realm/b5d583a5-c7cf-4f26-9b15-5cff5fbf948c/billing/",
+  "url": "https://billing.stripe.com/p/session/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QWVFrd1JCTHNuYVpma0dIOUtoT1RVT2o0eGhYMDJm0100oLtdAJdW"
+}

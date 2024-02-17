@@ -7,7 +7,7 @@ const MockDate = require("mockdate");
 const {mock_esm, zrequire} = require("./lib/namespace");
 const {make_stub} = require("./lib/stub");
 const {run_test, noop} = require("./lib/test");
-const {page_params} = require("./lib/zpage_params");
+const {current_user} = require("./lib/zpage_params");
 
 const compose_notifications = mock_esm("../src/compose_notifications");
 const markdown = mock_esm("../src/markdown");
@@ -124,7 +124,7 @@ run_test("process_from_server for differently rendered messages", ({override}) =
 });
 
 run_test("build_display_recipient", () => {
-    page_params.user_id = 123;
+    current_user.user_id = 123;
 
     const params = {};
     params.realm_users = [
@@ -141,7 +141,7 @@ run_test("build_display_recipient", () => {
     ];
     params.realm_non_active_users = [];
     params.cross_realm_bots = [];
-    people.initialize(page_params.user_id, params);
+    people.initialize(current_user.user_id, params);
 
     let message = {
         type: "stream",
@@ -260,7 +260,7 @@ run_test("insert_local_message streams", ({override}) => {
 run_test("insert_local_message direct message", ({override}) => {
     const local_id_float = 102.01;
 
-    page_params.user_id = 123;
+    current_user.user_id = 123;
 
     const params = {};
     params.realm_users = [
@@ -272,7 +272,7 @@ run_test("insert_local_message direct message", ({override}) => {
     ];
     params.realm_non_active_users = [];
     params.cross_realm_bots = [];
-    people.initialize(page_params.user_id, params);
+    people.initialize(current_user.user_id, params);
 
     let render_called = false;
     let insert_message_called = false;

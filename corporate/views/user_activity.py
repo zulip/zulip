@@ -4,7 +4,7 @@ from django.db.models import QuerySet
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import render
 
-from corporate.lib.activity import format_date_for_activity_reports, make_table
+from corporate.lib.activity import format_optional_datetime, make_table
 from zerver.decorator import require_server_admin
 from zerver.models import UserActivity, UserProfile
 from zerver.models.users import get_user_profile_by_id
@@ -40,7 +40,7 @@ def get_user_activity(request: HttpRequest, user_profile_id: int) -> HttpRespons
         "Query",
         "Client",
         "Count",
-        "Last visit",
+        "Last visit (UTC)",
     ]
 
     def row(record: UserActivity) -> List[Any]:
@@ -48,7 +48,7 @@ def get_user_activity(request: HttpRequest, user_profile_id: int) -> HttpRespons
             record.query,
             record.client.name,
             record.count,
-            format_date_for_activity_reports(record.last_visit),
+            format_optional_datetime(record.last_visit),
         ]
 
     rows = list(map(row, records))

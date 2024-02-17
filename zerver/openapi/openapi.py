@@ -8,13 +8,14 @@
 import json
 import os
 import re
-from typing import Any, Dict, List, Mapping, Optional, Set, Tuple, Union
+from typing import Any, Dict, List, Literal, Mapping, Optional, Set, Tuple, Union
 
-import openapi_core
 import orjson
-from openapi_core import Spec
+from openapi_core import OpenAPI
+from openapi_core.protocols import Request, Response
 from openapi_core.testing import MockRequest, MockResponse
 from openapi_core.validation.exceptions import ValidationError as OpenAPIValidationError
+from pydantic import BaseModel
 
 OPENAPI_SPEC_PATH = os.path.abspath(
     os.path.join(os.path.dirname(__file__), "../openapi/zulip.yaml")
@@ -77,7 +78,7 @@ class OpenAPISpec:
         self.mtime: Optional[float] = None
         self._openapi: Dict[str, Any] = {}
         self._endpoints_dict: Dict[str, str] = {}
-        self._spec: Optional[Spec] = None
+        self._spec: Optional[OpenAPI] = None
 
     def check_reload(self) -> None:
         # Because importing yaml takes significant time, and we only
@@ -102,7 +103,7 @@ class OpenAPISpec:
 
             openapi = yaml.load(f, Loader=yaml.CSafeLoader)
 
-        spec = Spec.from_dict(openapi)
+        spec = OpenAPI.from_dict(openapi)
         self._spec = spec
         self._openapi = naively_merge_allOf_dict(JsonRef.replace_refs(openapi))
         self.create_endpoints_dict()
@@ -161,7 +162,7 @@ class OpenAPISpec:
         assert len(self._endpoints_dict) > 0
         return self._endpoints_dict
 
-    def spec(self) -> Spec:
+    def spec(self) -> OpenAPI:
         """Reload the OpenAPI file if it has been modified after the last time
         it was read, and then return the openapi_core validator object. Similar
         to preceding functions. Used for proper access to OpenAPI objects.
@@ -295,7 +296,9 @@ def get_openapi_description(endpoint: str, method: str) -> str:
     """Fetch a description from the full spec object."""
     endpoint_documentation = openapi_spec.openapi()["paths"][endpoint][method.lower()]
     endpoint_description = endpoint_documentation["description"]
-    check_deprecated_consistency(endpoint_documentation, endpoint_description)
+    check_deprecated_consistency(
+        endpoint_documentation.get("deprecated", False), endpoint_description
+    )
     return endpoint_description
 
 
@@ -317,17 +320,85 @@ def get_openapi_paths() -> Set[str]:
     return set(openapi_spec.openapi()["paths"].keys())
 
 
+NO_EXAMPLE = object()
+
+
+class Parameter(BaseModel):
+    kind: Literal["query", "path", "formData"]
+    name: str
+    description: str
+    json_encoded: bool
+    value_schema: Dict[str, Any]
+    example: object
+    required: bool
+    deprecated: bool
+
+
 def get_openapi_parameters(
     endpoint: str, method: str, include_url_parameters: bool = True
-) -> List[Dict[str, Any]]:
+) -> List[Parameter]:
     operation = openapi_spec.openapi()["paths"][endpoint][method.lower()]
+    parameters = []
+
     # We do a `.get()` for this last bit to distinguish documented
     # endpoints with no parameters (empty list) from undocumented
     # endpoints (KeyError exception).
-    parameters = operation.get("parameters", [])
-    # Also, we skip parameters defined in the URL.
-    if not include_url_parameters:
-        parameters = [parameter for parameter in parameters if parameter["in"] != "path"]
+    for parameter in operation.get("parameters", []):
+        # Also, we skip parameters defined in the URL.
+        if not include_url_parameters and parameter["in"] == "path":
+            continue
+
+        json_encoded = "content" in parameter
+        if json_encoded:
+            schema = parameter["content"]["application/json"]["schema"]
+        else:
+            schema = parameter["schema"]
+
+        if "example" in parameter:
+            example = parameter["example"]
+        elif json_encoded and "example" in parameter["content"]["application/json"]:
+            example = parameter["content"]["application/json"]["example"]
+        else:
+            example = schema.get("example", NO_EXAMPLE)
+
+        parameters.append(
+            Parameter(
+                kind=parameter["in"],
+                name=parameter["name"],
+                description=parameter["description"],
+                json_encoded=json_encoded,
+                value_schema=schema,
+                example=example,
+                required=parameter.get("required", False),
+                deprecated=parameter.get("deprecated", False),
+            )
+        )
+
+    if "requestBody" in operation and "application/x-www-form-urlencoded" in (
+        content := operation["requestBody"]["content"]
+    ):
+        media_type = content["application/x-www-form-urlencoded"]
+        required = media_type["schema"].get("required", [])
+        for key, schema in media_type["schema"]["properties"].items():
+            json_encoded = (
+                "encoding" in media_type
+                and key in (encodings := media_type["encoding"])
+                and encodings[key].get("contentType") == "application/json"
+            ) or schema.get("type") == "object"
+
+            parameters.append(
+                Parameter(
+                    kind="formData",
+                    name=key,
+                    description=schema["description"],
+                    json_encoded=json_encoded,
+                    value_schema=schema,
+                    example=schema.get("example"),
+                    required=key in required,
+                    deprecated=schema.get("deprecated", False),
+                )
+            )
+
     return parameters
 
 
@@ -353,9 +424,28 @@ def find_openapi_endpoint(path: str) -> Optional[str]:
 def validate_against_openapi_schema(
     content: Dict[str, Any], path: str, method: str, status_code: str
 ) -> bool:
+    mock_request = MockRequest("http://localhost:9991/", method, "/api/v1" + path)
+    mock_response = MockResponse(
+        orjson.dumps(content),
+        status_code=int(status_code),
+    )
+    return validate_test_response(mock_request, mock_response)
+
+
+def validate_test_response(request: Request, response: Response) -> bool:
     """Compare a "content" dict with the defined schema for a specific method
     in an endpoint. Return true if validated and false if skipped.
     """
+
+    if request.path.startswith("/json/"):
+        path = request.path[len("/json") :]
+    elif request.path.startswith("/api/v1/"):
+        path = request.path[len("/api/v1") :]
+    else:
+        return False
+    assert request.method is not None
+    method = request.method.lower()
+    status_code = str(response.status_code)
 
     # This first set of checks are primarily training wheels that we
     # hope to eliminate over time as we improve our API documentation.
@@ -373,11 +463,6 @@ def validate_against_openapi_schema(
     # Return true for endpoints with only response documentation remaining
     if (endpoint, method) in EXCLUDE_DOCUMENTED_ENDPOINTS:  # nocoverage
         return True
-    # Check if the response matches its code
-    if status_code.startswith("2") and (
-        content.get("result", "success").lower() != "success"
-    ):  # nocoverage
-        raise SchemaError("Response is not 200 but is validating against 200 schema")
     # Code is not declared but appears in various 400 responses. If
     # common, it can be added to 400 response schema
     if status_code.startswith("4"):
@@ -387,14 +472,8 @@ def validate_against_openapi_schema(
         # response have been defined this should be removed.
         return True
 
-    mock_request = MockRequest("http://localhost:9991/", method, "/api/v1" + path)
-    mock_response = MockResponse(
-        # TODO: Use original response content instead of re-serializing it.
-        orjson.dumps(content).decode(),
-        status_code=int(status_code),
-    )
     try:
-        openapi_core.validate_response(mock_request, mock_response, spec=openapi_spec.spec())
+        openapi_spec.spec().validate_response(request, response)
     except OpenAPIValidationError as error:
         message = f"Response validation error at {method} /api/v1{path} ({status_code}):"
         message += f"\n\n{type(error).__name__}: {error}"
@@ -439,11 +518,11 @@ def deprecated_note_in_description(description: str) -> bool:
     return "**Deprecated**" in description
 
 
-def check_deprecated_consistency(argument: Mapping[str, Any], description: str) -> None:
+def check_deprecated_consistency(deprecated: bool, description: str) -> None:
     # Test to make sure deprecated parameters are marked so.
     if deprecated_note_in_description(description):
-        assert argument["deprecated"]
-    if "deprecated" in argument:
+        assert deprecated
+    if deprecated:
         assert deprecated_note_in_description(description)
 
 
@@ -464,10 +543,33 @@ def validate_request(
     status_code: str,
     intentionally_undocumented: bool = False,
 ) -> None:
-    # Some JSON endpoints have different parameters compared to
-    # their `/api/v1` counterparts.
-    if json_url and (url, method) in SKIP_JSON:
-        return
+    assert isinstance(data, dict)
+    mock_request = MockRequest(
+        "http://localhost:9991/",
+        method,
+        "/api/v1" + url,
+        headers=http_headers,
+        args={k: str(v) for k, v in data.items()},
+    )
+    validate_test_request(mock_request, status_code, intentionally_undocumented)
+
+
+def validate_test_request(
+    request: Request,
+    status_code: str,
+    intentionally_undocumented: bool = False,
+) -> None:
+    assert request.method is not None
+    method = request.method.lower()
+    if request.path.startswith("/json/"):
+        url = request.path[len("/json") :]
+        # Some JSON endpoints have different parameters compared to
+        # their `/api/v1` counterparts.
+        if (url, method) in SKIP_JSON:
+            return
+    else:
+        assert request.path.startswith("/api/v1/")
+        url = request.path[len("/api/v1") :]
 
     # TODO: Add support for file upload endpoints that lack the /json/
     # or /api/v1/ prefix.
@@ -485,12 +587,8 @@ def validate_request(
 
     # Now using the openapi_core APIs, validate the request schema
     # against the OpenAPI documentation.
-    assert isinstance(data, dict)
-    mock_request = MockRequest(
-        "http://localhost:9991/", method, "/api/v1" + url, headers=http_headers, args=data
-    )
     try:
-        openapi_core.validate_request(mock_request, spec=openapi_spec.spec())
+        openapi_spec.spec().validate_request(request)
     except OpenAPIValidationError as error:
         # Show a block error message explaining the options for fixing it.
         msg = f"""

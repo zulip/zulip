@@ -12,12 +12,12 @@ import * as message_lists from "./message_lists";
 import * as message_live_update from "./message_live_update";
 import * as message_store from "./message_store";
 import * as narrow_state from "./narrow_state";
-import {page_params} from "./page_params";
 import * as people from "./people";
 import * as pm_list from "./pm_list";
 import * as recent_view_data from "./recent_view_data";
 import * as rows from "./rows";
 import * as sent_messages from "./sent_messages";
+import {current_user} from "./state_data";
 import * as stream_data from "./stream_data";
 import * as stream_list from "./stream_list";
 import * as stream_topic_history from "./stream_topic_history";
@@ -54,6 +54,7 @@ function hide_retry_spinner($row) {
 function show_message_failed(message_id, failed_msg) {
     // Failed to send message, so display inline retry/cancel
     message_live_update.update_message_in_all_views(message_id, ($row) => {
+        $row.find(".slow-send-spinner").addClass("hidden");
         const $failed_div = $row.find(".message_failed");
         $failed_div.toggleClass("hide", false);
         $failed_div.find(".failed_text").attr("title", failed_msg);
@@ -79,9 +80,6 @@ function resend_message(message, $row, {on_send_message_success, send_message}) 
         return;
     }
 
-    // Always re-set queue_id if we've gotten a new one
-    // since the time when the message object was initially created
-    message.queue_id = page_params.queue_id;
     message.resend = true;
 
     function on_success(data) {
@@ -187,7 +185,7 @@ export function insert_local_message(message_request, local_id_float, insert_new
     message.content_type = "text/html";
     message.sender_email = people.my_current_email();
     message.sender_full_name = people.my_full_name();
-    message.avatar_url = page_params.avatar_url;
+    message.avatar_url = current_user.avatar_url;
     message.timestamp = Date.now() / 1000;
     message.local_id = local_id_float.toString();
     message.locally_echoed = true;
@@ -459,7 +457,10 @@ export function _patch_waiting_for_ack(data) {
 
 export function message_send_error(message_id, error_response) {
     // Error sending message, show inline
-    message_store.get(message_id).failed_request = true;
+    const message = message_store.get(message_id);
+    message.failed_request = true;
+    message.show_slow_send_spinner = false;
+
     show_message_failed(message_id, error_response);
 }
 
@@ -472,10 +473,10 @@ function abort_message(message) {
 }
 
 export function display_slow_send_loading_spinner(message) {
-    const message_list_id = message_lists.current.id;
-    const $row = $(`#message-row-${message_list_id}-${CSS.escape(message.id)}`);
+    const $rows = message_lists.all_rendered_row_for_message_id(message.id);
     if (message.locally_echoed && !message.failed_request) {
-        $row.find(".slow-send-spinner").removeClass("hidden");
+        message.show_slow_send_spinner = true;
+        $rows.find(".slow-send-spinner").removeClass("hidden");
         // We don't need to do anything special to ensure this gets
         // cleaned up if the message is delivered, because the
         // message's HTML gets replaced once the message is

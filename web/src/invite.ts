@@ -21,6 +21,7 @@ import {page_params} from "./page_params";
 import * as scroll_util from "./scroll_util";
 import * as settings_config from "./settings_config";
 import * as settings_data from "./settings_data";
+import {current_user, realm} from "./state_data";
 import * as stream_data from "./stream_data";
 import * as timerender from "./timerender";
 import * as ui_report from "./ui_report";
@@ -161,10 +162,10 @@ function submit_invitation_form(): void {
                 const error_response = render_invitation_failed_error({
                     error_message: response_body.msg,
                     error_list,
-                    is_admin: page_params.is_admin,
+                    is_admin: current_user.is_admin,
                     is_invitee_deactivated,
                     license_limit_reached: response_body.license_limit_reached,
-                    has_billing_access: page_params.is_owner || page_params.is_billing_admin,
+                    has_billing_access: current_user.is_owner || current_user.is_billing_admin,
                     daily_limit_reached: response_body.daily_limit_reached,
                 });
                 ui_report.message(error_response, $invite_status, "alert-warning");
@@ -293,7 +294,7 @@ function set_streams_to_join_list_visibility(): void {
 }
 
 function generate_invite_tips_data(): Record<string, boolean> {
-    const {realm_description, realm_icon_source, custom_profile_fields} = page_params;
+    const {realm_description, realm_icon_source, custom_profile_fields} = realm;
 
     return {
         realm_has_description:
@@ -310,8 +311,8 @@ function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void
 
     const time_unit_choices = ["minutes", "hours", "days", "weeks"];
     const html_body = render_invite_user_modal({
-        is_admin: page_params.is_admin,
-        is_owner: page_params.is_owner,
+        is_admin: current_user.is_admin,
+        is_owner: current_user.is_owner,
         development_environment: page_params.development_environment,
         invite_as_options: settings_config.user_role_values,
         expires_in_options: settings_config.expires_in_values,

@@ -19,7 +19,7 @@
           "invoice_prefix": "NORMA01",
           "invoice_settings": {
             "custom_fields": null,
-            "default_payment_method": "pm_1OOgw8DEQaroqDjs7oGMTyce",
+            "default_payment_method": "pm_1Ohum8DEQaroqDjsY32iD3tc",
             "footer": null,
             "rendering_options": null
           },
@@ -43,13 +43,13 @@
           }
         }
       },
-      "id": "evt_1OOgwADEQaroqDjsz1ekFvyh",
+      "id": "evt_1OhumADEQaroqDjsw0zVrrG0",
       "livemode": false,
       "object": "event",
       "pending_webhooks": 0,
       "request": {
         "id": "req_NORMALIZED0001",
-        "idempotency_key": "7435329c-80a1-4a73-9f8b-572ce147f6fb"
+        "idempotency_key": "efecb42f-0a2e-4c0d-a0f9-e851c7483dac"
       },
       "type": "customer.updated"
     }

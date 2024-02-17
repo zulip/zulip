@@ -17,12 +17,12 @@ class EmailLogTest(ZulipTestCase):
             self.assertIn("emails", result["Location"])
 
             result = self.client_get("/emails/")
-            self.assert_in_success_response(["All the emails sent in the Zulip"], result)
+            self.assert_in_success_response(["All emails sent in the Zulip"], result)
 
             result = self.client_get("/emails/clear/")
             self.assertEqual(result.status_code, 302)
             result = self.client_get(result["Location"])
-            self.assertIn("manually generate most of the emails by clicking", str(result.content))
+            self.assertIn("Manually generate most emails", str(result.content))
             output_log = (
                 "INFO:root:Emails sent in development are available at http://testserver/emails"
             )

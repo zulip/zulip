@@ -1,18 +1,19 @@
 import logging
-from typing import Any, Callable, Dict, Optional, Union
+from typing import Any, Callable, Optional, Union
 
 import stripe
 from django.conf import settings
 
 from corporate.lib.stripe import (
+    BILLING_SUPPORT_EMAIL,
     BillingError,
-    InvalidPlanUpgradeError,
     RealmBillingSession,
     RemoteRealmBillingSession,
     RemoteServerBillingSession,
-    UpgradeWithExistingPlanError,
+    get_configured_fixed_price_plan_offer,
 )
-from corporate.models import Customer, CustomerPlan, Event, PaymentIntent, Session
+from corporate.models import Customer, CustomerPlan, Event, Invoice, Session
+from zerver.lib.send_email import FromAddress, send_email
 from zerver.models.users import get_active_user_profile_by_id_in_realm
 
 billing_logger = logging.getLogger("corporate.stripe")
@@ -20,9 +21,10 @@ billing_logger = logging.getLogger("corporate.stripe")
 
 def error_handler(
     func: Callable[[Any, Any], None],
-) -> Callable[[Union[stripe.checkout.Session, stripe.PaymentIntent], Event], None]:
+) -> Callable[[Union[stripe.checkout.Session, stripe.Invoice], Event], None]:
     def wrapper(
-        stripe_object: Union[stripe.checkout.Session, stripe.PaymentIntent], event: Event
+        stripe_object: Union[stripe.checkout.Session, stripe.Invoice],
+        event: Event,
     ) -> None:
         event.status = Event.EVENT_HANDLER_STARTED
         event.save(update_fields=["status"])
@@ -30,7 +32,7 @@ def error_handler(
         try:
             func(stripe_object, event.content_object)
         except BillingError as e:
-            billing_logger.warning(
+            message = (
                 "BillingError in %s event handler: %s. stripe_object_id=%s, customer_id=%s metadata=%s",
                 event.type,
                 e.error_description,
@@ -38,12 +40,23 @@ def error_handler(
                 stripe_object.customer,
                 stripe_object.metadata,
             )
+            billing_logger.warning(message)
             event.status = Event.EVENT_HANDLER_FAILED
             event.handler_error = {
                 "message": e.msg,
                 "description": e.error_description,
             }
             event.save(update_fields=["status", "handler_error"])
+            if type(stripe_object) == stripe.Invoice:
+                # For Invoice processing errors, send email to billing support.
+                send_email(
+                    "zerver/emails/error_processing_invoice",
+                    to_emails=[BILLING_SUPPORT_EMAIL],
+                    from_address=FromAddress.tokenized_no_reply_address(),
+                    context={
+                        "message": message,
+                    },
+                )
         except Exception:
             billing_logger.exception(
                 "Uncaught exception in %s event handler:",
@@ -101,52 +114,63 @@ def handle_checkout_session_completed_event(
 
 
 @error_handler
-def handle_payment_intent_succeeded_event(
-    stripe_payment_intent: stripe.PaymentIntent, payment_intent: PaymentIntent
-) -> None:
-    payment_intent.status = PaymentIntent.SUCCEEDED
-    payment_intent.save()
-    metadata: Dict[str, Any] = stripe_payment_intent.metadata
+def handle_invoice_paid_event(stripe_invoice: stripe.Invoice, invoice: Invoice) -> None:
+    invoice.status = Invoice.PAID
+    invoice.save(update_fields=["status"])
 
-    description = ""
-    charge: stripe.Charge
-    for charge in stripe_payment_intent.charges:  # type: ignore[attr-defined] # https://stripe.com/docs/upgrades#2022-11-15
-        assert charge.payment_method_details is not None
-        assert charge.payment_method_details.card is not None
-        description = f"Payment (Card ending in {charge.payment_method_details.card.last4})"
-        break
+    customer = invoice.customer
 
-    stripe.InvoiceItem.create(
-        amount=stripe_payment_intent.amount * -1,
-        currency="usd",
-        customer=stripe_payment_intent.customer,
-        description=description,
-        discountable=False,
-    )
-    billing_session = get_billing_session_for_stripe_webhook(
-        payment_intent.customer, metadata.get("user_id")
-    )
-    plan_tier = int(metadata["plan_tier"])
-    try:
-        billing_session.ensure_current_plan_is_upgradable(payment_intent.customer, plan_tier)
-    except (UpgradeWithExistingPlanError, InvalidPlanUpgradeError) as e:
-        stripe_invoice = stripe.Invoice.create(
-            auto_advance=True,
-            collection_method="charge_automatically",
-            customer=stripe_payment_intent.customer,
-            days_until_due=None,
-            statement_descriptor=CustomerPlan.name_from_tier(plan_tier).replace("Zulip ", "")
-            + " Credit",
+    configured_fixed_price_plan = None
+    if customer.required_plan_tier:
+        configured_fixed_price_plan = get_configured_fixed_price_plan_offer(
+            customer, customer.required_plan_tier
         )
-        stripe.Invoice.finalize_invoice(stripe_invoice)
-        raise e
 
-    billing_session.process_initial_upgrade(
-        plan_tier,
-        int(metadata["licenses"]),
-        metadata["license_management"] == "automatic",
-        int(metadata["billing_schedule"]),
-        True,
-        False,
-        billing_session.get_remote_server_legacy_plan(payment_intent.customer),
-    )
+    if stripe_invoice.collection_method == "send_invoice" and configured_fixed_price_plan:
+        billing_session = get_billing_session_for_stripe_webhook(customer, user_id=None)
+        remote_server_legacy_plan = billing_session.get_remote_server_legacy_plan(customer)
+        assert customer.required_plan_tier is not None
+        billing_session.process_initial_upgrade(
+            plan_tier=customer.required_plan_tier,
+            # TODO: Currently licenses don't play any role for fixed price plan.
+            # We plan to introduce max_licenses allowed soon.
+            licenses=0,
+            automanage_licenses=True,
+            billing_schedule=CustomerPlan.BILLING_SCHEDULE_ANNUAL,
+            charge_automatically=False,
+            free_trial=False,
+            remote_server_legacy_plan=remote_server_legacy_plan,
+            stripe_invoice_paid=True,
+        )
+    elif stripe_invoice.collection_method == "charge_automatically":
+        metadata = stripe_invoice.metadata
+        assert metadata is not None
+        billing_session = get_billing_session_for_stripe_webhook(customer, metadata.get("user_id"))
+        remote_server_legacy_plan = billing_session.get_remote_server_legacy_plan(customer)
+        billing_schedule = int(metadata["billing_schedule"])
+        plan_tier = int(metadata["plan_tier"])
+        if configured_fixed_price_plan and customer.required_plan_tier == plan_tier:
+            assert customer.required_plan_tier is not None
+            billing_session.process_initial_upgrade(
+                plan_tier=customer.required_plan_tier,
+                # TODO: Currently licenses don't play any role for fixed price plan.
+                # We plan to introduce max_licenses allowed soon.
+                licenses=0,
+                automanage_licenses=True,
+                billing_schedule=billing_schedule,
+                charge_automatically=True,
+                free_trial=False,
+                remote_server_legacy_plan=remote_server_legacy_plan,
+                stripe_invoice_paid=True,
+            )
+        else:
+            billing_session.process_initial_upgrade(
+                plan_tier,
+                int(metadata["licenses"]),
+                metadata["license_management"] == "automatic",
+                billing_schedule=billing_schedule,
+                charge_automatically=True,
+                free_trial=False,
+                remote_server_legacy_plan=remote_server_legacy_plan,
+                stripe_invoice_paid=True,
+            )

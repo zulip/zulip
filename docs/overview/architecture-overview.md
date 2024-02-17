@@ -44,7 +44,7 @@ team to tens of thousands of users. It has [hundreds of
 features](https://zulip.com/features/) both large and small, and
 supports dedicated apps for iOS, Android, Linux, Windows, and macOS,
 all modern web browsers, several cross-protocol chat clients, and
-numerous dedicated [Zulip API](https://zulip.com/api) clients
+numerous dedicated [Zulip API](https://zulip.com/api/) clients
 (e.g., bots).
 
 A server can host multiple Zulip _realms_ (organizations), each on its

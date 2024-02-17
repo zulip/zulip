@@ -19,7 +19,7 @@ from django.utils.translation import gettext as _
 
 from confirmation.models import Confirmation, confirmation_url
 from confirmation.settings import STATUS_USED
-from corporate.lib.activity import remote_installation_stats_link
+from corporate.lib.activity import format_optional_datetime, remote_installation_stats_link
 from corporate.lib.stripe import (
     RealmBillingSession,
     RemoteRealmBillingSession,
@@ -58,6 +58,7 @@ from zerver.lib.subdomains import get_subdomain_from_hostname
 from zerver.lib.validator import (
     check_bool,
     check_date,
+    check_string,
     check_string_in,
     to_decimal,
     to_non_negative_int,
@@ -136,7 +137,7 @@ def get_plan_type_string(plan_type: int) -> str:
         Realm.PLAN_TYPE_STANDARD: "Standard",
         Realm.PLAN_TYPE_STANDARD_FREE: "Standard free",
         Realm.PLAN_TYPE_PLUS: "Plus",
-        RemoteZulipServer.PLAN_TYPE_SELF_MANAGED: "Self-managed",
+        RemoteZulipServer.PLAN_TYPE_SELF_MANAGED: "Free",
         RemoteZulipServer.PLAN_TYPE_SELF_MANAGED_LEGACY: CustomerPlan.name_from_tier(
             CustomerPlan.TIER_SELF_HOSTED_LEGACY
         ),
@@ -492,6 +493,7 @@ def remote_servers_support(
     minimum_licenses: Optional[int] = REQ(default=None, converter=to_non_negative_int),
     required_plan_tier: Optional[int] = REQ(default=None, converter=to_non_negative_int),
     fixed_price: Optional[int] = REQ(default=None, converter=to_non_negative_int),
+    sent_invoice_id: Optional[str] = REQ(default=None, str_validator=check_string),
     sponsorship_pending: Optional[bool] = REQ(default=None, json_validator=check_bool),
     approve_sponsorship: bool = REQ(default=False, json_validator=check_bool),
     billing_modality: Optional[str] = REQ(
@@ -501,6 +503,7 @@ def remote_servers_support(
     modify_plan: Optional[str] = REQ(
         default=None, str_validator=check_string_in(VALID_MODIFY_PLAN_METHODS)
     ),
+    delete_fixed_price_next_plan: bool = REQ(default=False, json_validator=check_bool),
 ) -> HttpResponse:
     context: Dict[str, Any] = {}
 
@@ -511,14 +514,9 @@ def remote_servers_support(
     acting_user = request.user
     assert isinstance(acting_user, UserProfile)
     if settings.BILLING_ENABLED and request.method == "POST":
-        # We check that request.POST only has two keys in it:
-        # either the remote_server_id or a remote_realm_id,
-        # and a field to change.
         keys = set(request.POST.keys())
         if "csrfmiddlewaretoken" in keys:
             keys.remove("csrfmiddlewaretoken")
-        if len(keys) != 2:
-            raise JsonableError(_("Invalid parameters"))
 
         if remote_realm_id is not None:
             remote_realm_support_request = True
@@ -553,9 +551,13 @@ def remote_servers_support(
                 required_plan_tier=required_plan_tier,
             )
         elif fixed_price is not None:
+            # Treat empty field submitted as None.
+            if sent_invoice_id is not None and sent_invoice_id.strip() == "":
+                sent_invoice_id = None
             support_view_request = SupportViewRequest(
                 support_type=SupportType.configure_fixed_price_plan,
                 fixed_price=fixed_price,
+                sent_invoice_id=sent_invoice_id,
             )
         elif billing_modality is not None:
             support_view_request = SupportViewRequest(
@@ -571,6 +573,10 @@ def remote_servers_support(
             support_view_request = SupportViewRequest(
                 support_type=SupportType.modify_plan,
                 plan_modification=modify_plan,
+            )
+        elif delete_fixed_price_next_plan:
+            support_view_request = SupportViewRequest(
+                support_type=SupportType.delete_fixed_price_next_plan,
             )
         if support_view_request is not None:
             if remote_realm_support_request:
@@ -638,6 +644,7 @@ def remote_servers_support(
     context["get_plan_type_name"] = get_plan_type_string
     context["get_org_type_display_name"] = get_org_type_display_name
     context["format_discount"] = format_discount_percentage
+    context["format_optional_datetime"] = format_optional_datetime
     context["dollar_amount"] = cents_to_dollar_string
     context["server_analytics_link"] = remote_installation_stats_link
     context["REMOTE_PLAN_TIERS"] = get_remote_plan_tier_options()

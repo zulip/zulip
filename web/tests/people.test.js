@@ -10,7 +10,7 @@ const {$t} = require("./lib/i18n");
 const {mock_esm, zrequire} = require("./lib/namespace");
 const {run_test} = require("./lib/test");
 const blueslip = require("./lib/zblueslip");
-const {page_params, user_settings} = require("./lib/zpage_params");
+const {current_user, page_params, realm, user_settings} = require("./lib/zpage_params");
 
 const message_user_ids = mock_esm("../src/message_user_ids");
 const settings_data = mock_esm("../src/settings_data", {
@@ -499,7 +499,7 @@ test_people("get_display_full_names", ({override}) => {
     people.add_active_user(bob);
     people.add_active_user(charles);
     people.add_active_user(guest);
-    page_params.realm_enable_guest_user_indicator = true;
+    realm.realm_enable_guest_user_indicator = true;
 
     let user_ids = [me.user_id, steven.user_id, bob.user_id, charles.user_id, guest.user_id];
     let names = people.get_display_full_names(user_ids);
@@ -515,7 +515,7 @@ test_people("get_display_full_names", ({override}) => {
     ]);
 
     muted_users.add_muted_user(charles.user_id);
-    page_params.realm_enable_guest_user_indicator = false;
+    realm.realm_enable_guest_user_indicator = false;
     names = people.get_display_full_names(user_ids);
     assert.deepEqual(names, [
         "Me Myself",
@@ -535,7 +535,7 @@ test_people("get_display_full_names", ({override}) => {
         "translated: Muted user",
     ]);
 
-    page_params.realm_enable_guest_user_indicator = true;
+    realm.realm_enable_guest_user_indicator = true;
     names = people.get_display_full_names(user_ids);
     assert.deepEqual(names, [
         "Me Myself",
@@ -562,7 +562,7 @@ test_people("my_custom_profile_data", () => {
 test_people("get_custom_fields_by_type", () => {
     people.add_active_user(stewie);
     const person = people.get_by_user_id(stewie.user_id);
-    page_params.custom_profile_field_types = {
+    realm.custom_profile_field_types = {
         SHORT_TEXT: {
             id: 1,
             name: "Short text",
@@ -572,7 +572,7 @@ test_people("get_custom_fields_by_type", () => {
             name: "Pronouns",
         },
     };
-    page_params.custom_profile_fields = [
+    realm.custom_profile_fields = [
         {
             id: 1,
             name: "Phone number (mobile)",
@@ -698,11 +698,11 @@ test_people("set_custom_profile_field_data", () => {
 test_people("is_current_user_only_owner", () => {
     const person = people.get_by_email(me.email);
     person.is_owner = false;
-    page_params.is_owner = false;
+    current_user.is_owner = false;
     assert.ok(!people.is_current_user_only_owner());
 
     person.is_owner = true;
-    page_params.is_owner = true;
+    current_user.is_owner = true;
     assert.ok(people.is_current_user_only_owner());
 
     people.add_active_user(realm_owner);
@@ -1237,7 +1237,7 @@ test_people("filter_for_user_settings_search", () => {
         so that is where we do more thorough testing.
         This test is just a sanity check for now.
     */
-    page_params.is_admin = false;
+    current_user.is_admin = false;
 
     const fred_smith = {full_name: "Fred Smith"};
     const alice_lee = {full_name: "Alice Lee"};
@@ -1256,12 +1256,12 @@ test_people("filter_for_user_settings_search", () => {
 test_people("matches_user_settings_search", () => {
     const match = people.matches_user_settings_search;
 
-    page_params.is_admin = false;
+    current_user.is_admin = false;
 
     assert.equal(match({email: "fred@example.com"}, "fred"), false);
     assert.equal(match({full_name: "Fred Smith"}, "fr"), true);
 
-    page_params.is_admin = true;
+    current_user.is_admin = true;
 
     assert.equal(match({delivery_email: "fred@example.com"}, "fr"), true);
     assert.equal(
@@ -1378,11 +1378,11 @@ test_people("should_show_guest_user_indicator", () => {
     people.add_active_user(charles);
     people.add_active_user(guest);
 
-    page_params.realm_enable_guest_user_indicator = false;
+    realm.realm_enable_guest_user_indicator = false;
     assert.equal(people.should_add_guest_user_indicator(charles.user_id), false);
     assert.equal(people.should_add_guest_user_indicator(guest.user_id), false);
 
-    page_params.realm_enable_guest_user_indicator = true;
+    realm.realm_enable_guest_user_indicator = true;
     assert.equal(people.should_add_guest_user_indicator(charles.user_id), false);
     assert.equal(people.should_add_guest_user_indicator(guest.user_id), true);
 });
@@ -1390,7 +1390,7 @@ test_people("should_show_guest_user_indicator", () => {
 test_people("get_user_by_id_assert_valid", ({override}) => {
     people.add_active_user(charles);
     const inaccessible_user_id = 99;
-    page_params.realm_bot_domain = "zulipdev.com";
+    realm.realm_bot_domain = "zulipdev.com";
     override(settings_data, "user_can_access_all_other_users", () => false);
 
     let user = people.get_user_by_id_assert_valid(inaccessible_user_id);

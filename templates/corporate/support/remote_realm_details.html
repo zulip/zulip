@@ -20,11 +20,12 @@
     <b>Date created</b>: {{ support_data[remote_realm.id].date_created.strftime('%d %B %Y') }}<br />
     <b>Org type</b>: {{ get_org_type_display_name(remote_realm.org_type) }}<br />
     <b>Plan type</b>: {{ get_plan_type_name(remote_realm.plan_type) }}<br />
-    <br />
     <b>Non-guest user count</b>: {{ support_data[remote_realm.id].user_data.non_guest_user_count }}<br />
     <b>Guest user count</b>: {{ support_data[remote_realm.id].user_data.guest_user_count }}<br />
-    <b>Mobile user count</b>: {{ support_data[remote_realm.id].mobile_push_data.mobile_users }}<br />
+    <br />
+    <b>Mobile user count</b>: {{ support_data[remote_realm.id].mobile_push_data.total_mobile_users }}<br />
     <b>7-day mobile pushes count</b>: {{ support_data[remote_realm.id].mobile_push_data.mobile_pushes_forwarded }}<br />
+    <b>Last push notification date</b>: {{ support_data[remote_realm.id].mobile_push_data.last_mobile_push_sent }}<br />
 </div>
 
 {% if remote_realm.plan_type != SPONSORED_PLAN_TYPE %}
@@ -62,11 +63,14 @@
         {% set plan_data = support_data[remote_realm.id].plan_data %}
         {% set format_discount = format_discount %}
         {% set dollar_amount = dollar_amount %}
+        {% set remote_id = remote_realm.id %}
+        {% set remote_type = "remote_realm_id" %}
         {% include 'corporate/support/next_plan_details.html' %}
     {% endwith %}
 </div>
 {% else %}
 {% with %}
+    {% set is_current_plan_billable = support_data[remote_realm.id].plan_data.is_current_plan_billable %}
     {% set remote_id = remote_realm.id %}
     {% set remote_type = "remote_realm_id" %}
     {% include 'corporate/support/next_plan_forms_support.html' %}

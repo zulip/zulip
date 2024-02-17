@@ -70,7 +70,8 @@
     }
 
     .user_profile_manage_own_edit_button,
-    .user_profile_manage_others_edit_button {
+    .user_profile_manage_others_edit_button,
+    .user_profile_manage_own_copy_link_button {
         color: hsl(200deg 100% 50%);
         cursor: pointer;
 
@@ -261,12 +262,6 @@
     .email-body {
         margin-left: 20px;
         margin-top: 20px;
-    }
-}
-
-#select_stream_widget {
-    .dropdown-toggle:disabled {
-        pointer-events: none;
     }
 }
 

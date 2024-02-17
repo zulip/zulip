@@ -30,7 +30,9 @@ from zilencer.models import (
     RemoteCustomerUserCount,
     RemoteInstallationCount,
     RemotePushDeviceToken,
+    RemoteRealm,
     RemoteRealmCount,
+    RemoteZulipServer,
     RemoteZulipServerAuditLog,
     get_remote_realm_guest_and_non_guest_count,
     get_remote_server_guest_and_non_guest_count,
@@ -66,6 +68,7 @@ class PlanData:
     next_billing_cycle_start: Optional[datetime] = None
     is_legacy_plan: bool = False
     has_fixed_price: bool = False
+    is_current_plan_billable: bool = False
     warning: Optional[str] = None
     annual_recurring_revenue: Optional[int] = None
     estimated_next_plan_revenue: Optional[int] = None
@@ -73,8 +76,10 @@ class PlanData:
 
 @dataclass
 class MobilePushData:
-    mobile_users: Optional[int] = None
+    total_mobile_users: int
+    uncategorized_mobile_users: Optional[int] = None
     mobile_pushes_forwarded: Optional[int] = None
+    last_mobile_push_sent: str = ""
 
 
 @dataclass
@@ -215,6 +220,9 @@ def get_current_plan_data_for_support_view(billing_session: BillingSession) -> P
             plan_data.current_plan.tier == CustomerPlan.TIER_SELF_HOSTED_LEGACY
         )
         plan_data.has_fixed_price = plan_data.current_plan.fixed_price is not None
+        plan_data.is_current_plan_billable = billing_session.check_plan_tier_is_billable(
+            plan_tier=plan_data.current_plan.tier
+        )
         annual_invoice_count = get_annual_invoice_count(plan_data.current_plan.billing_schedule)
         if last_ledger_entry is not None:
             plan_data.annual_recurring_revenue = (
@@ -229,6 +237,73 @@ def get_current_plan_data_for_support_view(billing_session: BillingSession) -> P
     return plan_data
 
 
+def get_mobile_push_data(remote_entity: Union[RemoteZulipServer, RemoteRealm]) -> MobilePushData:
+    if isinstance(remote_entity, RemoteZulipServer):
+        total_users = (
+            RemotePushDeviceToken.objects.filter(server=remote_entity)
+            .distinct("user_id", "user_uuid")
+            .count()
+        )
+        uncategorized_users = (
+            RemotePushDeviceToken.objects.filter(server=remote_entity, remote_realm__isnull=True)
+            .distinct("user_id", "user_uuid")
+            .count()
+        )
+        mobile_pushes = RemoteInstallationCount.objects.filter(
+            server=remote_entity,
+            property="mobile_pushes_forwarded::day",
+            end_time__gte=timezone_now() - timedelta(days=7),
+        ).aggregate(total_forwarded=Sum("value", default=0))
+        latest_remote_server_push_forwarded_count = RemoteInstallationCount.objects.filter(
+            server=remote_entity,
+            property="mobile_pushes_forwarded::day",
+        ).last()
+        if latest_remote_server_push_forwarded_count is not None:  # nocoverage
+            # mobile_pushes_forwarded is a CountStat with a day frequency,
+            # so we want to show the start of the latest day interval.
+            push_forwarded_interval_start = (
+                latest_remote_server_push_forwarded_count.end_time - timedelta(days=1)
+            ).strftime("%Y-%m-%d")
+        else:
+            push_forwarded_interval_start = "None"
+        return MobilePushData(
+            total_mobile_users=total_users,
+            uncategorized_mobile_users=uncategorized_users,
+            mobile_pushes_forwarded=mobile_pushes["total_forwarded"],
+            last_mobile_push_sent=push_forwarded_interval_start,
+        )
+    else:
+        assert isinstance(remote_entity, RemoteRealm)
+        mobile_users = (
+            RemotePushDeviceToken.objects.filter(remote_realm=remote_entity)
+            .distinct("user_id", "user_uuid")
+            .count()
+        )
+        mobile_pushes = RemoteRealmCount.objects.filter(
+            remote_realm=remote_entity,
+            property="mobile_pushes_forwarded::day",
+            end_time__gte=timezone_now() - timedelta(days=7),
+        ).aggregate(total_forwarded=Sum("value", default=0))
+        latest_remote_realm_push_forwarded_count = RemoteRealmCount.objects.filter(
+            remote_realm=remote_entity,
+            property="mobile_pushes_forwarded::day",
+        ).last()
+        if latest_remote_realm_push_forwarded_count is not None:  # nocoverage
+            # mobile_pushes_forwarded is a CountStat with a day frequency,
+            # so we want to show the start of the latest day interval.
+            push_forwarded_interval_start = (
+                latest_remote_realm_push_forwarded_count.end_time - timedelta(days=1)
+            ).strftime("%Y-%m-%d")
+        else:
+            push_forwarded_interval_start = "None"
+        return MobilePushData(
+            total_mobile_users=mobile_users,
+            uncategorized_mobile_users=None,
+            mobile_pushes_forwarded=mobile_pushes["total_forwarded"],
+            last_mobile_push_sent=push_forwarded_interval_start,
+        )
+
+
 def get_data_for_support_view(billing_session: BillingSession) -> SupportData:
     if isinstance(billing_session, RemoteServerBillingSession):
         user_data = get_remote_server_guest_and_non_guest_count(billing_session.remote_server.id)
@@ -236,36 +311,12 @@ def get_data_for_support_view(billing_session: BillingSession) -> SupportData:
             event_type=RemoteZulipServerAuditLog.REMOTE_SERVER_CREATED,
             server__id=billing_session.remote_server.id,
         ).event_time
-        mobile_users = (
-            RemotePushDeviceToken.objects.filter(server=billing_session.remote_server)
-            .distinct("user_id", "user_uuid")
-            .count()
-        )
-        mobile_pushes = RemoteInstallationCount.objects.filter(
-            server=billing_session.remote_server,
-            property="mobile_pushes_forwarded::day",
-            end_time__gte=timezone_now() - timedelta(days=7),
-        ).aggregate(total_forwarded=Sum("value", default=0))
-        mobile_data = MobilePushData(
-            mobile_users=mobile_users, mobile_pushes_forwarded=mobile_pushes["total_forwarded"]
-        )
+        mobile_data = get_mobile_push_data(billing_session.remote_server)
     else:
         assert isinstance(billing_session, RemoteRealmBillingSession)
         user_data = get_remote_realm_guest_and_non_guest_count(billing_session.remote_realm)
         date_created = billing_session.remote_realm.realm_date_created
-        mobile_users = (
-            RemotePushDeviceToken.objects.filter(remote_realm=billing_session.remote_realm)
-            .distinct("user_id", "user_uuid")
-            .count()
-        )
-        mobile_pushes = RemoteRealmCount.objects.filter(
-            remote_realm=billing_session.remote_realm,
-            property="mobile_pushes_forwarded::day",
-            end_time__gte=timezone_now() - timedelta(days=7),
-        ).aggregate(total_forwarded=Sum("value", default=0))
-        mobile_data = MobilePushData(
-            mobile_users=mobile_users, mobile_pushes_forwarded=mobile_pushes["total_forwarded"]
-        )
+        mobile_data = get_mobile_push_data(billing_session.remote_realm)
     plan_data = get_current_plan_data_for_support_view(billing_session)
     customer = billing_session.get_customer()
     if customer is not None:

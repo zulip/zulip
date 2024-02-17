@@ -575,7 +575,7 @@ def can_access_stream_user_ids(stream: Stream) -> Set[int]:
 
 def can_access_stream_history(user_profile: UserProfile, stream: Stream) -> bool:
     """Determine whether the provided user is allowed to access the
-    history of the target stream.  The stream is specified by name.
+    history of the target stream.
 
     This is used by the caller to determine whether this user can get
     historical messages before they joined for a narrowing search.

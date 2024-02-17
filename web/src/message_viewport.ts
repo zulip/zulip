@@ -38,7 +38,7 @@ export function set_last_movement_direction(value: number): void {
     last_movement_direction = value;
 }
 
-export function at_top(): boolean {
+export function at_rendered_top(): boolean {
     return scrollTop() <= 0;
 }
 
@@ -71,7 +71,11 @@ export function message_viewport_info(): MessageViewportInfo {
     };
 }
 
-export function at_bottom(): boolean {
+// Important note: These functions just look at the state of the
+// rendered message feed; messages that are not displayed due to a
+// limited render window or because they have not been fetched from
+// the server are not considered.
+export function at_rendered_bottom(): boolean {
     const bottom = scrollTop() + height();
     const full_height = $scroll_container.prop("scrollHeight");
 
@@ -82,9 +86,10 @@ export function at_bottom(): boolean {
     return bottom + 2 >= full_height;
 }
 
-// This differs from at_bottom in that it only requires the bottom message to
-// be visible, but you may be able to scroll down further.
-export function bottom_message_visible(): boolean {
+// This differs from at_rendered_bottom in that it only requires the
+// bottom message to be visible, but you may be able to scroll down
+// further to see the rest of that message.
+export function bottom_rendered_message_visible(): boolean {
     const $last_row = rows.last_visible();
     if ($last_row.length) {
         const message_bottom = $last_row[0].getBoundingClientRect().bottom;
@@ -456,7 +461,7 @@ export function keep_pointer_in_view(): void {
     const bottom_threshold = info.visible_top + (9 / 10) * info.visible_height;
 
     function message_is_far_enough_down(): boolean {
-        if (at_top()) {
+        if (at_rendered_top()) {
             return true;
         }
 
@@ -481,7 +486,7 @@ export function keep_pointer_in_view(): void {
     }
 
     function message_is_far_enough_up(): boolean {
-        return at_bottom() || $next_row.get_offset_to_window().top <= bottom_threshold;
+        return at_rendered_bottom() || $next_row.get_offset_to_window().top <= bottom_threshold;
     }
 
     function adjust(

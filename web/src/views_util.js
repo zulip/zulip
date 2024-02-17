@@ -11,7 +11,6 @@ import * as narrow_state from "./narrow_state";
 import * as narrow_title from "./narrow_title";
 import * as pm_list from "./pm_list";
 import * as resize from "./resize";
-import * as search from "./search";
 import * as stream_list from "./stream_list";
 import * as unread_ui from "./unread_ui";
 
@@ -86,7 +85,6 @@ export function show(opts) {
     narrow_title.update_narrow_title(narrow_state.filter());
     message_view_header.render_title_area();
     compose_recipient.handle_middle_pane_transition();
-    search.clear_search_form();
     opts.complete_rerender();
     compose_actions.on_show_navigation_view();
 

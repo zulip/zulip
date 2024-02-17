@@ -33,7 +33,8 @@ from zerver.actions.user_settings import do_change_user_setting
 from zerver.actions.users import do_change_can_forge_sender, do_deactivate_user
 from zerver.lib.addressee import Addressee
 from zerver.lib.exceptions import JsonableError
-from zerver.lib.message import MessageDict, get_raw_unread_data, get_recent_private_conversations
+from zerver.lib.message import get_raw_unread_data, get_recent_private_conversations
+from zerver.lib.message_cache import MessageDict
 from zerver.lib.per_request_cache import flush_per_request_caches
 from zerver.lib.streams import create_stream_if_needed
 from zerver.lib.test_classes import ZulipTestCase
@@ -1698,8 +1699,7 @@ class StreamMessagesTest(ZulipTestCase):
             self.example_user("hamlet"), "Denmark", content="whatever", topic_name="my topic"
         )
         message = most_recent_message(user_profile)
-        row = MessageDict.get_raw_db_rows([message.id])[0]
-        dct = MessageDict.build_dict_from_raw_db_row(row)
+        dct = MessageDict.ids_to_dict([message.id])[0]
         MessageDict.post_process_dicts(
             [dct],
             apply_markdown=True,
@@ -2612,6 +2612,73 @@ class InternalPrepTest(ZulipTestCase):
         # This would throw an error if the stream
         # wasn't automatically created.
         Stream.objects.get(name=stream_name, realm_id=realm.id)
+
+    def test_direct_message_to_self_and_bot_in_dm_disabled_org(self) -> None:
+        """
+        Test that a user can send a direct message to themselves and to a bot in a DM disabled organization
+        """
+        sender = self.example_user("hamlet")
+        sender.realm.private_message_policy = Realm.PRIVATE_MESSAGE_POLICY_DISABLED
+        sender.realm.save()
+
+        #  Create a non-bot user
+        recipient_user = self.example_user("othello")
+        recipient_user.realm = sender.realm
+
+        # Create a new bot user
+        bot = do_create_user(
+            email="test-bot@zulip.com",
+            password="",
+            realm=sender.realm,
+            full_name="Test Bot",
+            bot_type=UserProfile.DEFAULT_BOT,
+            bot_owner=sender,
+            acting_user=None,
+        )
+
+        # Test sending a message to self
+        result = self.api_post(
+            sender,
+            "/api/v1/messages",
+            {
+                "type": "private",
+                "to": orjson.dumps([sender.id]).decode(),
+                "content": "Test message to self",
+            },
+        )
+        self.assert_json_success(result)
+
+        msg = self.get_last_message()
+        expected = "Test message to self"
+        self.assertEqual(msg.content, expected)
+
+        # Test sending a message to non-bot user
+        result = self.api_post(
+            sender,
+            "/api/v1/messages",
+            {
+                "type": "private",
+                "to": orjson.dumps([recipient_user.id]).decode(),
+                "content": "Test message",
+            },
+        )
+        self.assert_json_error(result, "Direct messages are disabled in this organization.")
+
+        # Test sending a message to the bot
+        result = self.api_post(
+            sender,
+            "/api/v1/messages",
+            {
+                "type": "private",
+                "to": orjson.dumps([bot.id]).decode(),
+                "content": "Test message to bot",
+            },
+        )
+        self.assert_json_success(result)
+
+        msg = self.get_last_message()
+        expected = "Test message to bot"
+        self.assertEqual(msg.content, expected)
 
 
 class TestCrossRealmPMs(ZulipTestCase):

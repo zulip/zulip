@@ -4,7 +4,7 @@ const {strict: assert} = require("assert");
 
 const {mock_esm, zrequire} = require("./lib/namespace");
 const {run_test} = require("./lib/test");
-const {page_params, user_settings} = require("./lib/zpage_params");
+const {current_user, realm, user_settings} = require("./lib/zpage_params");
 
 const stream_topic_history = mock_esm("../src/stream_topic_history");
 
@@ -116,8 +116,8 @@ function test(label, f) {
         recent_senders.clear_for_testing();
         peer_data.clear_for_testing();
         people.clear_recipient_counts_for_testing();
-        page_params.is_admin = false;
-        page_params.realm_is_zephyr_mirror_realm = false;
+        current_user.is_admin = false;
+        realm.realm_is_zephyr_mirror_realm = false;
 
         f(helpers);
     });
@@ -680,7 +680,7 @@ test("highlight_with_escaping", () => {
 
 test("render_person when emails hidden", ({mock_template}) => {
     // Test render_person with regular person, under hidden email visibility case
-    page_params.custom_profile_field_types = {
+    realm.custom_profile_field_types = {
         PRONOUNS: {id: 8, name: "Pronouns"},
     };
     let rendered = false;
@@ -697,7 +697,7 @@ test("render_person when emails hidden", ({mock_template}) => {
 test("render_person", ({mock_template}) => {
     // Test render_person with regular person
     a_user.delivery_email = "a_user_delivery@zulip.org";
-    page_params.custom_profile_field_types = {
+    realm.custom_profile_field_types = {
         PRONOUNS: {id: 8, name: "Pronouns"},
     };
     let rendered = false;

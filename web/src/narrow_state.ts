@@ -186,6 +186,12 @@ export function pm_ids_string(): string | undefined {
     return user_ids_string;
 }
 
+export function pm_ids_set(): Set<number> {
+    const ids_string = pm_ids_string();
+    const pm_ids_list = ids_string ? people.user_ids_string_to_ids_array(ids_string) : [];
+    return new Set(pm_ids_list);
+}
+
 export function pm_emails_string(): string | undefined {
     if (current_filter === undefined) {
         return undefined;

@@ -6,7 +6,7 @@ const {$t} = require("./lib/i18n");
 const {mock_esm, set_global, zrequire} = require("./lib/namespace");
 const {run_test, noop} = require("./lib/test");
 const $ = require("./lib/zjquery");
-const {page_params} = require("./lib/zpage_params");
+const {realm} = require("./lib/zpage_params");
 
 set_global("navigator", {});
 
@@ -188,7 +188,7 @@ run_test("compute_placeholder_text", () => {
         message_type: "stream",
         stream_id: undefined,
         topic: "",
-        private_message_recipient: "",
+        direct_message_user_ids: [],
     };
 
     // Stream narrows
@@ -217,14 +217,14 @@ run_test("compute_placeholder_text", () => {
         message_type: "private",
         stream_id: undefined,
         topic: "",
-        private_message_recipient: "",
+        direct_message_user_ids: [],
     };
     assert.equal(
         compose_ui.compute_placeholder_text(opts),
         $t({defaultMessage: "Compose your message here"}),
     );
 
-    opts.private_message_recipient = "bob@zulip.com";
+    opts.direct_message_user_ids = [bob.user_id];
     user_status.set_status_text({
         user_id: bob.user_id,
         status_text: "out to lunch",
@@ -234,7 +234,7 @@ run_test("compute_placeholder_text", () => {
         $t({defaultMessage: "Message Bob (out to lunch)"}),
     );
 
-    opts.private_message_recipient = "alice@zulip.com";
+    opts.direct_message_user_ids = [alice.user_id];
     user_status.set_status_text({
         user_id: alice.user_id,
         status_text: "",
@@ -242,20 +242,20 @@ run_test("compute_placeholder_text", () => {
     assert.equal(compose_ui.compute_placeholder_text(opts), $t({defaultMessage: "Message Alice"}));
 
     // group direct message
-    opts.private_message_recipient = "alice@zulip.com,bob@zulip.com";
+    opts.direct_message_user_ids = [alice.user_id, bob.user_id];
     assert.equal(
         compose_ui.compute_placeholder_text(opts),
         $t({defaultMessage: "Message Alice and Bob"}),
     );
 
     alice.is_guest = true;
-    page_params.realm_enable_guest_user_indicator = true;
+    realm.realm_enable_guest_user_indicator = true;
     assert.equal(
         compose_ui.compute_placeholder_text(opts),
         $t({defaultMessage: "Message translated: Alice (guest) and Bob"}),
     );
 
-    page_params.realm_enable_guest_user_indicator = false;
+    realm.realm_enable_guest_user_indicator = false;
     assert.equal(
         compose_ui.compute_placeholder_text(opts),
         $t({defaultMessage: "Message Alice and Bob"}),

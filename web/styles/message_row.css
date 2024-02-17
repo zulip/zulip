@@ -605,13 +605,6 @@ $time_column_min_width: 42px; /* + padding */
         margin-top: 0;
     }
 
-    /* Override the default border-radius to properly align
-       the button corners with `stream_header_colorblock`. */
-    .dropdown-toggle {
-        border-radius: 1px 4px 4px 1px !important;
-    }
-
-    .dropdown-list-widget,
     .stream_header_colorblock {
         margin-bottom: 10px;
     }

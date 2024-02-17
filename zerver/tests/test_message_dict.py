@@ -6,7 +6,8 @@ from django.utils.timezone import now as timezone_now
 from zerver.lib.cache import cache_delete, to_dict_cache_key_id
 from zerver.lib.display_recipient import get_display_recipient
 from zerver.lib.markdown import version as markdown_version
-from zerver.lib.message import MessageDict, messages_for_ids, sew_messages_and_reactions
+from zerver.lib.message import messages_for_ids
+from zerver.lib.message_cache import MessageDict, sew_messages_and_reactions
 from zerver.lib.per_request_cache import flush_per_request_caches
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import make_client
@@ -86,7 +87,7 @@ class MessageDictTest(ZulipTestCase):
             msg_id: int, apply_markdown: bool, client_gravatar: bool
         ) -> Dict[str, Any]:
             msg = reload_message(msg_id)
-            unhydrated_dict = MessageDict.to_dict_uncached_helper([msg])[0]
+            unhydrated_dict = MessageDict.messages_to_encoded_cache_helper([msg])[0]
             # The next step mutates the dict in place
             # for performance reasons.
             MessageDict.post_process_dicts(
@@ -170,14 +171,12 @@ class MessageDictTest(ZulipTestCase):
         self.assertTrue(num_ids >= 600)
 
         with self.assert_database_query_count(7):
-            rows = list(MessageDict.get_raw_db_rows(ids))
-
-            objs = [MessageDict.build_dict_from_raw_db_row(row) for row in rows]
+            objs = MessageDict.ids_to_dict(ids)
             MessageDict.post_process_dicts(
                 objs, apply_markdown=False, client_gravatar=False, realm=realm
             )
 
-        self.assert_length(rows, num_ids)
+        self.assert_length(objs, num_ids)
 
     def test_applying_markdown(self) -> None:
         sender = self.example_user("othello")
@@ -199,15 +198,14 @@ class MessageDictTest(ZulipTestCase):
 
         # An important part of this test is to get the message through this exact code path,
         # because there is an ugly hack we need to cover.  So don't just say "row = message".
-        row = MessageDict.get_raw_db_rows([message.id])[0]
-        dct = MessageDict.build_dict_from_raw_db_row(row)
+        dct = MessageDict.ids_to_dict([message.id])[0]
         expected_content = "<p>hello <strong>world</strong></p>"
         self.assertEqual(dct["rendered_content"], expected_content)
         message = Message.objects.get(id=message.id)
         self.assertEqual(message.rendered_content, expected_content)
         self.assertEqual(message.rendered_content_version, markdown_version)
 
-    @mock.patch("zerver.lib.message.markdown_convert")
+    @mock.patch("zerver.lib.message_cache.render_message_markdown")
     def test_applying_markdown_invalid_format(self, convert_mock: Any) -> None:
         # pretend the converter returned an invalid message without raising an exception
         convert_mock.return_value = None
@@ -230,8 +228,7 @@ class MessageDictTest(ZulipTestCase):
 
         # An important part of this test is to get the message through this exact code path,
         # because there is an ugly hack we need to cover.  So don't just say "row = message".
-        row = MessageDict.get_raw_db_rows([message.id])[0]
-        dct = MessageDict.build_dict_from_raw_db_row(row)
+        dct = MessageDict.ids_to_dict([message.id])[0]
         error_content = (
             "<p>[Zulip note: Sorry, we could not understand the formatting of your message]</p>"
         )
@@ -264,7 +261,7 @@ class MessageDictTest(ZulipTestCase):
             return Message.objects.get(id=msg_id)
 
         def assert_topic_links(links: List[Dict[str, str]], msg: Message) -> None:
-            dct = MessageDict.to_dict_uncached_helper([msg])[0]
+            dct = MessageDict.messages_to_encoded_cache_helper([msg])[0]
             self.assertEqual(dct[TOPIC_LINKS], links)
 
         # Send messages before and after saving the realm filter from each user.
@@ -297,8 +294,7 @@ class MessageDictTest(ZulipTestCase):
         reaction = Reaction.objects.create(
             message=message, user_profile=sender, emoji_name="simple_smile"
         )
-        row = MessageDict.get_raw_db_rows([message.id])[0]
-        msg_dict = MessageDict.build_dict_from_raw_db_row(row)
+        msg_dict = MessageDict.ids_to_dict([message.id])[0]
         self.assertEqual(msg_dict["reactions"][0]["emoji_name"], reaction.emoji_name)
         self.assertEqual(msg_dict["reactions"][0]["user_id"], sender.id)
         self.assertEqual(msg_dict["reactions"][0]["user"]["id"], sender.id)

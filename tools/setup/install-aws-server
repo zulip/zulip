@@ -11,7 +11,7 @@ Installs an empty Ubuntu server in AWS with a Zulip server role.
  * server is the local part of the hostname (e.g. postgres0)
 
  * roles is a comma-separated list of Puppet profile names; these
-   will get 'zulip_ops::profile::' prepended to them, and passed
+   will get 'kandra::profile::' prepended to them, and passed
    to scripts/lib/install -- e.g. 'postgresql'
  * branch is used to override the default branch to install from.
  * username is the name of the AWS SSH key pair to allow logins as
@@ -77,7 +77,7 @@ set -x
 
 cd "$(dirname "$0")/../.."
 
-./puppet/zulip_ops/files/install-aws-cli
+./puppet/kandra/files/install-aws-cli
 AWS=/srv/zulip-aws-tools/bin/aws
 
 zulip_install_config_file="$HOME/.zulip-install-server.conf"
@@ -89,12 +89,12 @@ fi
 REPO_URL=$(crudini --get "$zulip_install_config_file" repo repo_url)
 
 for role in ${ROLES//,/ }; do
-    if ! [ -f "./puppet/zulip_ops/manifests/profile/$role.pp" ]; then
-        echo "No such role zulip_ops::profile::$role !"
+    if ! [ -f "./puppet/kandra/manifests/profile/$role.pp" ]; then
+        echo "No such role kandra::profile::$role !"
         exit 1
     fi
 done
-FULL_ROLES=$(echo "$ROLES" | perl -pe '$_=join(",",map{"zulip_ops::profile::$_"} split ",")')
+FULL_ROLES=$(echo "$ROLES" | perl -pe '$_=join(",",map{"kandra::profile::$_"} split ",")')
 
 function lookup() {
     KEY="$1"

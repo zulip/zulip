@@ -188,15 +188,18 @@
                     <div id="customer-payment-method" class="not-editable-realm-field">
                         {{ payment_method }}
                     </div>
+                    {% if charge_automatically %}
+                    <div class="user-stripe-card-update input-box billing-page-field no-validation">
+                        <button class="user-stripe-card-update-button" id="update-card-button">
+                            <span class="billing-button-text">Update card</span>
+                            <object class="loader billing-button-loader" type="image/svg+xml" data="{{ static('images/loading/loader-white.svg') }}"></object>
+                        </button>
+                    </div>
+                    {% endif %}
+                    <div class="stripe-customer-billing-portal not-editable-realm-field">
+                        <a href="{{ billing_base_url }}/customer_portal/?return_to_billing_page=true">View and update</a> billing information that will be displayed on your invoice and receipt.
+                    </div>
                 </div>
-                {% if charge_automatically %}
-                <div class="user-stripe-card-update input-box billing-page-field no-validation">
-                    <button class="user-stripe-card-update-button" id="update-card-button">
-                        <span class="billing-button-text">Update card</span>
-                        <object class="loader billing-button-loader" type="image/svg+xml" data="{{ static('images/loading/loader-white.svg') }}"></object>
-                    </button>
-                </div>
-                {% endif %}
                 <div class="input-box billing-page-field no-validation">
                     <div class="next-payment-info not-editable-realm-field">
                         {% if renewal_amount %}
@@ -264,7 +267,6 @@
                                 </div>
                                 {% endif %}
                             </div>
-                            <br />
                             <h1>${{ renewal_amount }}</h1>
                             {% if not fixed_price_plan and using_min_licenses_for_plan %}
                             <i>Minimum purchase for this plan: {{ min_licenses_for_plan }} licenses</i>
@@ -273,6 +275,14 @@
                         {% else %}
                             Your plan ends on <strong>{{ renewal_date }}</strong>, and does not renew.
                         {% endif %}
+                    </div>
+                </div>
+                <div class="input-box billing-page-field no-validation">
+                    <label class="inline-block label-title">Invoices</label>
+                    <div class="not-editable-realm-field">
+                        <a href="{{ billing_base_url }}/invoices/">
+                            View past invoices
+                        </a>
                     </div>
                 </div>
                 <div id="planchange-error" class="alert alert-danger"></div>

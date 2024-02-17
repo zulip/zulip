@@ -240,7 +240,7 @@ class DocPageTest(ZulipTestCase):
     def test_dev_environment_endpoints(self) -> None:
         self._test("/devlogin/", ["Normal users"])
         self._test("/devtools/", ["Useful development URLs"])
-        self._test("/emails/", ["manually generate most of the emails by clicking"])
+        self._test("/emails/", ["Manually generate most emails"])
 
     def test_error_endpoints(self) -> None:
         self._test("/errors/404/", ["Page not found"])
@@ -257,7 +257,7 @@ class DocPageTest(ZulipTestCase):
         self._test("/hello/", ["your mission-critical communications with Zulip"])
         self._test("/communities/", ["Open communities directory"])
         self._test("/development-community/", ["Zulip development community"])
-        self._test("/features/", ["Beautiful messaging"])
+        self._test("/features/", ["Complete team chat solution"])
         self._test("/jobs/", ["Work with us"])
         self._test("/self-hosting/", ["Self-host Zulip"])
         self._test("/security/", ["TLS encryption"])

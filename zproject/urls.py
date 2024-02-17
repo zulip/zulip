@@ -19,7 +19,13 @@ from zerver.forms import LoggingSetPasswordForm
 from zerver.lib.integrations import WEBHOOK_INTEGRATIONS
 from zerver.lib.rest import rest_path
 from zerver.lib.url_redirects import DOCUMENTATION_REDIRECTS
-from zerver.tornado.views import cleanup_event_queue, get_events, get_events_internal, notify
+from zerver.tornado.views import (
+    cleanup_event_queue,
+    get_events,
+    get_events_internal,
+    notify,
+    web_reload_clients,
+)
 from zerver.views.alert_words import add_alert_words, list_alert_words, remove_alert_words
 from zerver.views.attachments import list_by_user, remove
 from zerver.views.auth import (
@@ -726,11 +732,6 @@ v1_api_mobile_patterns = [
     path("jwt/fetch_api_key", jwt_fetch_api_key),
 ]
 
-# View for uploading messages from email mirror
-urls += [
-    path("email_mirror_message", email_mirror_message),
-]
-
 # Include URL configuration files for site-specified extra installed
 # Django apps
 for app_name in settings.EXTRA_INSTALLED_APPS:
@@ -739,13 +740,12 @@ for app_name in settings.EXTRA_INSTALLED_APPS:
         urls += [path("", include(f"{app_name}.urls"))]
         i18n_urls += import_string(f"{app_name}.urls.i18n_urlpatterns")
 
-# Tornado views
+# Used internally for communication between command-line, Django,
+# and Tornado processes
 urls += [
-    # Used internally for communication between Django and Tornado processes
-    #
-    # Since these views don't use rest_dispatch, they cannot have
-    # asynchronous Tornado behavior.
-    path("notify_tornado", notify),
+    path("api/internal/email_mirror_message", email_mirror_message),
+    path("api/internal/notify_tornado", notify),
+    path("api/internal/web_reload_clients", web_reload_clients),
     path("api/v1/events/internal", get_events_internal),
 ]
 

@@ -121,7 +121,7 @@ as a concrete example.
 
 The events will come in to `web/src/server_events_dispatch.js`.
 The `stop` and `start` operations get further handled by
-`web/src/typing_events.js`.
+`web/src/typing_events.ts`.
 
 The main goal is then to triage which events should lead to
 display changes.

@@ -19,12 +19,12 @@ import * as message_lists from "./message_lists";
 import * as message_live_update from "./message_live_update";
 import * as message_view_header from "./message_view_header";
 import * as overlays from "./overlays";
-import {page_params} from "./page_params";
 import * as resize from "./resize";
 import * as scroll_util from "./scroll_util";
 import * as search_util from "./search_util";
 import * as settings_config from "./settings_config";
 import * as settings_data from "./settings_data";
+import {current_user, realm} from "./state_data";
 import * as stream_create from "./stream_create";
 import * as stream_data from "./stream_data";
 import * as stream_edit from "./stream_edit";
@@ -89,7 +89,7 @@ function selectText(element) {
 }
 
 function should_list_all_streams() {
-    return !page_params.realm_is_zephyr_mirror_realm;
+    return !realm.realm_is_zephyr_mirror_realm;
 }
 
 export function toggle_pin_to_top_stream(sub) {
@@ -299,7 +299,7 @@ export function update_settings_for_unsubscribed(slim_sub) {
     if (!stream_data.can_toggle_subscription(sub)) {
         stream_ui_updates.update_add_subscriptions_elements(sub);
     }
-    if (page_params.is_guest) {
+    if (current_user.is_guest) {
         stream_edit.open_edit_panel_empty();
     }
 
@@ -582,7 +582,7 @@ export function setup_page(callback) {
             const toggler_elem = toggler.get();
             $("#streams_overlay_container .list-toggler-container").prepend(toggler_elem);
         }
-        if (page_params.is_guest) {
+        if (current_user.is_guest) {
             toggler.disable_tab("all-streams");
         }
 
@@ -606,23 +606,22 @@ export function setup_page(callback) {
                 settings_data.user_can_create_private_streams() ||
                 settings_data.user_can_create_public_streams() ||
                 settings_data.user_can_create_web_public_streams(),
-            can_view_all_streams: !page_params.is_guest && should_list_all_streams(),
-            max_stream_name_length: page_params.max_stream_name_length,
-            max_stream_description_length: page_params.max_stream_description_length,
-            is_owner: page_params.is_owner,
+            can_view_all_streams: !current_user.is_guest && should_list_all_streams(),
+            max_stream_name_length: realm.max_stream_name_length,
+            max_stream_description_length: realm.max_stream_description_length,
+            is_owner: current_user.is_owner,
             stream_privacy_policy_values: settings_config.stream_privacy_policy_values,
             stream_privacy_policy,
             stream_post_policy_values: settings_config.stream_post_policy_values,
             check_default_stream: false,
-            zulip_plan_is_not_limited: page_params.zulip_plan_is_not_limited,
+            zulip_plan_is_not_limited: realm.zulip_plan_is_not_limited,
             org_level_message_retention_setting:
                 stream_edit.get_display_text_for_realm_message_retention_setting(),
-            upgrade_text_for_wide_organization_logo:
-                page_params.upgrade_text_for_wide_organization_logo,
+            upgrade_text_for_wide_organization_logo: realm.upgrade_text_for_wide_organization_logo,
             is_business_type_org:
-                page_params.realm_org_type === settings_config.all_org_type_values.business.code,
+                realm.realm_org_type === settings_config.all_org_type_values.business.code,
             disable_message_retention_setting:
-                !page_params.zulip_plan_is_not_limited || !page_params.is_owner,
+                !realm.zulip_plan_is_not_limited || !current_user.is_owner,
         };
 
         const rendered = render_stream_settings_overlay(template_data);
@@ -644,7 +643,7 @@ export function setup_page(callback) {
         // "create stream" UI with the stream name prepopulated.  This
         // is only useful if the user has permission to create
         // streams, either explicitly via user_can_create_streams, or
-        // implicitly because page_params.realm_is_zephyr_mirror_realm.
+        // implicitly because realm.realm_is_zephyr_mirror_realm.
         $("#stream_filter input[type='text']").on("keypress", (e) => {
             if (!keydown_util.is_enter_event(e)) {
                 return;
@@ -654,7 +653,7 @@ export function setup_page(callback) {
                 settings_data.user_can_create_private_streams() ||
                 settings_data.user_can_create_public_streams() ||
                 settings_data.user_can_create_web_public_streams() ||
-                page_params.realm_is_zephyr_mirror_realm
+                realm.realm_is_zephyr_mirror_realm
             ) {
                 open_create_stream();
                 e.preventDefault();
@@ -701,7 +700,7 @@ function show_right_section() {
 export function change_state(section, right_side_tab) {
     // if in #streams/new form.
     if (section === "new") {
-        if (!page_params.is_guest) {
+        if (!current_user.is_guest) {
             do_open_create_stream();
             show_right_section();
         } else {
@@ -735,7 +734,7 @@ export function change_state(section, right_side_tab) {
         //    not be in sub_store).
         //
         // In all these cases we redirect the user to 'subscribed' tab.
-        if (!sub || (page_params.is_guest && !stream_data.is_subscribed(stream_id))) {
+        if (!sub || (current_user.is_guest && !stream_data.is_subscribed(stream_id))) {
             toggler.goto("subscribed");
             stream_edit.empty_right_panel();
         } else {

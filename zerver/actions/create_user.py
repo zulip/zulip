@@ -24,6 +24,7 @@ from zerver.lib.mention import silent_mention_syntax_for_user
 from zerver.lib.remote_server import maybe_enqueue_audit_log_upload
 from zerver.lib.send_email import clear_scheduled_invitation_emails
 from zerver.lib.stream_subscription import bulk_get_subscriber_peer_info
+from zerver.lib.streams import can_access_stream_history
 from zerver.lib.user_counts import realm_user_count, realm_user_count_by_role
 from zerver.lib.user_groups import get_system_user_group_for_user
 from zerver.lib.users import (
@@ -106,7 +107,7 @@ def notify_new_user(user_profile: UserProfile) -> None:
     is_first_user = user_count == 1
     if not is_first_user:
         with override_language(user_profile.realm.default_language):
-            message = _("{user} just signed up for Zulip. (total: {user_count})").format(
+            message = _("{user} joined this organization.").format(
                 user=silent_mention_syntax_for_user(user_profile), user_count=user_count
             )
 
@@ -178,9 +179,14 @@ def add_new_user_history(user_profile: UserProfile, streams: Iterable[Stream]) -
     Mark the very most recent messages as unread.
     """
 
-    # Find recipient ids for the user's streams that were passed to us.
-    # (Only look at public streams.)
-    recipient_ids = [stream.recipient_id for stream in streams if not stream.invite_only]
+    # Find recipient ids for the the user's streams, limiting to just
+    # those where we can access the streams' full history.
+    #
+    # TODO: This will do database queries in a loop if many private
+    # streams are involved.
+    recipient_ids = [
+        stream.recipient_id for stream in streams if can_access_stream_history(user_profile, stream)
+    ]
 
     # Start by finding recent messages matching those recipients.
     cutoff_date = timezone_now() - ONBOARDING_RECENT_TIMEDELTA

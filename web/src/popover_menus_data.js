@@ -14,6 +14,7 @@ import {page_params} from "./page_params";
 import * as people from "./people";
 import * as settings_data from "./settings_data";
 import * as starred_messages from "./starred_messages";
+import {current_user, realm} from "./state_data";
 import * as stream_data from "./stream_data";
 import * as sub_store from "./sub_store";
 import {num_unread_for_topic} from "./unread";
@@ -83,8 +84,7 @@ export function get_actions_popover_content_context(message_id) {
     const conversation_time_url = hash_util.by_conversation_and_time_url(message);
 
     const should_display_delete_option = message_edit.get_deletability(message) && not_spectator;
-    const should_display_read_receipts_option =
-        page_params.realm_enable_read_receipts && not_spectator;
+    const should_display_read_receipts_option = realm.realm_enable_read_receipts && not_spectator;
 
     function is_add_reaction_icon_visible() {
         const $message_row = message_lists.current.get_row(message_id);
@@ -132,7 +132,7 @@ export function get_topic_popover_content_context({stream_id, topic_name, url}) 
         topic_unmuted,
         can_move_topic,
         can_rename_topic,
-        is_realm_admin: page_params.is_admin,
+        is_realm_admin: current_user.is_admin,
         topic_is_resolved: resolved_topic.is_resolved(topic_name),
         has_starred_messages,
         has_unread_messages,
@@ -158,22 +158,22 @@ export function get_change_visibility_policy_popover_content_context(stream_id, 
 }
 
 export function get_personal_menu_content_context() {
-    const my_user_id = page_params.user_id;
+    const my_user_id = current_user.user_id;
     const invisible_mode = !user_settings.presence_enabled;
     const status_text = user_status.get_status_text(my_user_id);
     const status_emoji_info = user_status.get_status_emoji(my_user_id);
     return {
         user_id: my_user_id,
         invisible_mode,
-        user_is_guest: page_params.is_guest,
+        user_is_guest: current_user.is_guest,
         spectator_view: page_params.is_spectator,
 
         // user information
-        user_avatar: page_params.avatar_url_medium,
+        user_avatar: current_user.avatar_url_medium,
         is_active: people.is_active_user_for_popover(my_user_id),
         user_circle_class: buddy_data.get_user_circle_class(my_user_id),
         user_last_seen_time_status: buddy_data.user_last_seen_time_status(my_user_id),
-        user_full_name: page_params.full_name,
+        user_full_name: current_user.full_name,
         user_type: people.get_user_type(my_user_id),
 
         // user status
@@ -186,32 +186,32 @@ export function get_personal_menu_content_context() {
 }
 
 export function get_gear_menu_content_context() {
-    const user_has_billing_access = page_params.is_billing_admin || page_params.is_owner;
-    const is_plan_standard = page_params.realm_plan_type === 3;
-    const is_plan_plus = page_params.realm_plan_type === 10;
+    const user_has_billing_access = current_user.is_billing_admin || current_user.is_owner;
+    const is_plan_standard = realm.realm_plan_type === 3;
+    const is_plan_plus = realm.realm_plan_type === 10;
     const is_org_on_paid_plan = is_plan_standard || is_plan_plus;
     return {
-        realm_name: page_params.realm_name,
-        realm_url: new URL(page_params.realm_uri).hostname,
-        is_owner: page_params.is_owner,
-        is_admin: page_params.is_admin,
+        realm_name: realm.realm_name,
+        realm_url: new URL(realm.realm_uri).hostname,
+        is_owner: current_user.is_owner,
+        is_admin: current_user.is_admin,
         is_spectator: page_params.is_spectator,
-        is_self_hosted: page_params.realm_plan_type === 1,
+        is_self_hosted: realm.realm_plan_type === 1,
         is_development_environment: page_params.development_environment,
-        is_plan_limited: page_params.realm_plan_type === 2,
+        is_plan_limited: realm.realm_plan_type === 2,
         is_plan_standard,
-        is_plan_standard_sponsored_for_free: page_params.realm_plan_type === 4,
+        is_plan_standard_sponsored_for_free: realm.realm_plan_type === 4,
         is_plan_plus,
         is_org_on_paid_plan,
-        is_business_org: page_params.realm_org_type === 10,
-        is_education_org: page_params.realm_org_type === 30 || page_params.realm_org_type === 35,
+        is_business_org: realm.realm_org_type === 10,
+        is_education_org: realm.realm_org_type === 30 || realm.realm_org_type === 35,
         standard_plan_name: "Zulip Cloud Standard",
-        server_needs_upgrade: page_params.server_needs_upgrade,
+        server_needs_upgrade: realm.server_needs_upgrade,
         version_display_string: gear_menu_util.version_display_string(),
         apps_page_url: page_params.apps_page_url,
         can_create_multiuse_invite: settings_data.user_can_create_multiuse_invite(),
         can_invite_users_by_email: settings_data.user_can_invite_users_by_email(),
-        is_guest: page_params.is_guest,
+        is_guest: current_user.is_guest,
         login_link: page_params.development_environment ? "/devlogin/" : "/login/",
         promote_sponsoring_zulip: page_params.promote_sponsoring_zulip,
         show_billing: page_params.show_billing,

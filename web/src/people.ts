@@ -13,6 +13,7 @@ import {page_params} from "./page_params";
 import * as reload_state from "./reload_state";
 import * as settings_config from "./settings_config";
 import * as settings_data from "./settings_data";
+import {current_user, realm} from "./state_data";
 import * as timerender from "./timerender";
 import {user_settings} from "./user_settings";
 import * as util from "./util";
@@ -190,7 +191,7 @@ export function get_bot_owner_user(user: User & {is_bot: true}): User | undefine
 
 export function can_admin_user(user: User): boolean {
     return (
-        (user.is_bot && user.bot_owner_id !== null && user.bot_owner_id === page_params.user_id) ||
+        (user.is_bot && user.bot_owner_id !== null && user.bot_owner_id === current_user.user_id) ||
         is_my_user_id(user.user_id)
     );
 }
@@ -785,13 +786,13 @@ export function sender_is_guest(message: Message): boolean {
     return false;
 }
 
-export function user_is_bot(user_id: number): boolean {
-    const user = get_by_user_id(user_id);
-    return user.is_bot;
+export function is_valid_bot_user(user_id: number): boolean {
+    const user = maybe_get_user_by_id(user_id, true);
+    return user !== undefined && user.is_bot;
 }
 
 export function should_add_guest_user_indicator(user_id: number): boolean {
-    if (!page_params.realm_enable_guest_user_indicator) {
+    if (!realm.realm_enable_guest_user_indicator) {
         return false;
     }
 
@@ -804,14 +805,17 @@ export function user_can_direct_message(recipient_ids_string: string): boolean {
     // message to the target user (or group of users) represented by a
     // user ids string.
 
-    // Regardless of policy, we allow sending direct messages to bots.
+    // Regardless of policy, we allow sending direct messages to bots and to self.
     const recipient_ids = user_ids_string_to_ids_array(recipient_ids_string);
-    if (recipient_ids.length === 1 && user_is_bot(recipient_ids[0])) {
+    if (
+        recipient_ids.length === 1 &&
+        (is_valid_bot_user(recipient_ids[0]) || is_my_user_id(recipient_ids[0]))
+    ) {
         return true;
     }
 
     if (
-        page_params.realm_private_message_policy ===
+        realm.realm_private_message_policy ===
         settings_config.private_message_policy_values.disabled.code
     ) {
         return false;
@@ -978,7 +982,7 @@ export function is_active_user_for_popover(user_id: number): boolean {
 }
 
 export function is_current_user_only_owner(): boolean {
-    if (!page_params.is_owner) {
+    if (!current_user.is_owner) {
         return false;
     }
 
@@ -1438,7 +1442,7 @@ export function remove_inaccessible_user(user_id: number): void {
     active_user_dict.delete(user_id);
 
     // Create unknown user object for the inaccessible user.
-    const email = "user" + user_id + "@" + page_params.realm_bot_domain;
+    const email = "user" + user_id + "@" + realm.realm_bot_domain;
     const unknown_user = make_user(user_id, email, INACCESSIBLE_USER_NAME);
     _add_user(unknown_user);
 }
@@ -1505,7 +1509,7 @@ export function make_user(user_id: number, email: string, full_name: string): Us
 }
 
 export function add_inaccessible_user(user_id: number): User {
-    const email = "user" + user_id + "@" + page_params.realm_bot_domain;
+    const email = "user" + user_id + "@" + realm.realm_bot_domain;
     const unknown_user = make_user(user_id, email, INACCESSIBLE_USER_NAME);
     _add_user(unknown_user);
     return unknown_user;
@@ -1709,7 +1713,7 @@ export function get_custom_fields_by_type(
         return null;
     }
     const filteredProfileData: ProfileData[] = [];
-    for (const field of page_params.custom_profile_fields) {
+    for (const field of realm.custom_profile_fields) {
         if (field.type === field_type) {
             filteredProfileData.push(profile_data[field.id]);
         }

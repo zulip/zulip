@@ -200,14 +200,9 @@ from zerver.lib.event_schema import (
     check_user_status,
     check_user_topic,
 )
-from zerver.lib.events import (
-    RestartEventError,
-    apply_events,
-    fetch_initial_state_data,
-    post_process_state,
-)
+from zerver.lib.events import apply_events, fetch_initial_state_data, post_process_state
+from zerver.lib.markdown import render_message_markdown
 from zerver.lib.mention import MentionBackend, MentionData
-from zerver.lib.message import render_markdown
 from zerver.lib.muted_users import get_mute_object
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import (
@@ -251,7 +246,8 @@ from zerver.tornado.event_queue import (
     allocate_client_descriptor,
     clear_client_event_queues_for_testing,
     create_heartbeat_event,
-    send_restart_events,
+    mark_clients_to_reload,
+    send_web_reload_client_events,
 )
 from zerver.views.realm_playgrounds import access_playground_by_id
 
@@ -288,6 +284,7 @@ class BaseAction(ZulipTestCase):
         pronouns_field_type_supported: bool = True,
         linkifier_url_template: bool = True,
         user_list_incomplete: bool = False,
+        client_is_old: bool = False,
     ) -> List[Dict[str, Any]]:
         """
         Make sure we have a clean slate of client descriptors for these tests.
@@ -335,6 +332,9 @@ class BaseAction(ZulipTestCase):
             linkifier_url_template=linkifier_url_template,
             user_list_incomplete=user_list_incomplete,
         )
+
+        if client_is_old:
+            mark_clients_to_reload([client.event_queue.id])
 
         # We want even those `send_event` calls which have been hooked to
         # `transaction.on_commit` to execute in tests.
@@ -530,7 +530,7 @@ class NormalActionsTest(BaseAction):
         # Verify direct message editing - content only edit
         pm = Message.objects.order_by("-id")[0]
         content = "new content"
-        rendering_result = render_markdown(pm, content)
+        rendering_result = render_message_markdown(pm, content)
         prior_mention_user_ids: Set[int] = set()
         mention_backend = MentionBackend(self.user_profile.realm_id)
         mention_data = MentionData(
@@ -838,7 +838,7 @@ class NormalActionsTest(BaseAction):
         # Verify stream message editing - content only
         message = Message.objects.order_by("-id")[0]
         content = "new content"
-        rendering_result = render_markdown(message, content)
+        rendering_result = render_message_markdown(message, content)
         prior_mention_user_ids: Set[int] = set()
         mention_backend = MentionBackend(self.user_profile.realm_id)
         mention_data = MentionData(
@@ -905,7 +905,7 @@ class NormalActionsTest(BaseAction):
 
         # Verify special case of embedded content update
         content = "embed_content"
-        rendering_result = render_markdown(message, content)
+        rendering_result = render_message_markdown(message, content)
         events = self.verify_action(
             lambda: do_update_embedded_data(self.user_profile, message, content, rendering_result),
             state_change_expected=False,
@@ -1583,7 +1583,7 @@ class NormalActionsTest(BaseAction):
 
         check_message("events[0]", events[0])
         self.assertIn(
-            f'data-user-id="{new_user_profile.id}">test1_zulip.com</span> just signed up for Zulip',
+            f'data-user-id="{new_user_profile.id}">test1_zulip.com</span> joined this organization.',
             events[0]["message"]["content"],
         )
 
@@ -1609,7 +1609,7 @@ class NormalActionsTest(BaseAction):
 
         check_message("events[0]", events[0])
         self.assertIn(
-            f'data-user-id="{new_user_profile.id}">test1_zulip.com</span> just signed up for Zulip',
+            f'data-user-id="{new_user_profile.id}">test1_zulip.com</span> joined this organization',
             events[0]["message"]["content"],
         )
 
@@ -3456,9 +3456,23 @@ class NormalActionsTest(BaseAction):
         events = self.verify_action(lambda: do_set_zoom_token(self.user_profile, None))
         check_has_zoom_token("events[0]", events[0], value=False)
 
-    def test_restart_event(self) -> None:
-        with self.assertRaises(RestartEventError):
-            self.verify_action(lambda: send_restart_events(immediate=True))
+    def test_web_reload_client_event(self) -> None:
+        self.verify_action(
+            lambda: send_web_reload_client_events(),
+            client_is_old=False,
+            num_events=0,
+            state_change_expected=False,
+        )
+        with self.assertLogs(level="WARNING") as logs:
+            self.verify_action(
+                lambda: send_web_reload_client_events(),
+                client_is_old=True,
+                num_events=1,
+                state_change_expected=False,
+            )
+            self.assertEqual(
+                logs.output, ["WARNING:root:Got a web_reload_client event during apply_events"]
+            )
 
     def test_display_setting_event_not_sent(self) -> None:
         events = self.verify_action(

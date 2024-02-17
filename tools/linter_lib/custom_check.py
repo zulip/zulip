@@ -900,18 +900,18 @@ puppet_rules = RuleList(
             "pattern": r"(include[\t ]+|\$)zulip::(profile|base)\b",
             "exclude": {
                 "puppet/zulip/manifests/profile/",
-                "puppet/zulip_ops/manifests/",
+                "puppet/kandra/manifests/",
                 "puppet/zulip/manifests/dockervoyager.pp",
             },
             "description": "Abstraction layering violation; only profiles should reference profiles or zulip::base",
         },
         {
-            "pattern": r"(include[\t ]+|\$)zulip_ops::(profile|base)\b",
+            "pattern": r"(include[\t ]+|\$)kandra::(profile|base)\b",
             "exclude": {
                 "puppet/zulip/manifests/",
-                "puppet/zulip_ops/manifests/profile/",
+                "puppet/kandra/manifests/profile/",
             },
-            "description": "Abstraction layering violation; only profiles should reference profiles or zulip_ops::base",
+            "description": "Abstraction layering violation; only profiles should reference profiles or kandra::base",
         },
     ],
 )

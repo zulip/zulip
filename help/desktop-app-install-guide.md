@@ -1,61 +1,65 @@
 # Installing the Zulip desktop app
 
-Zulip on your macOS, Windows, or Linux desktop is even better than
-Zulip on the web, with a cleaner look, tray/dock integration, native
-notifications, and support for multiple Zulip accounts.
+The Zulip desktop app comes with native desktop notifications, support for
+multiple Zulip accounts, and a dedicated tray icon.
 
-To install the latest stable release (recommended for most users),
-find your operating system below.  If you're interested in an early
-look at the newest features, consider the [beta releases](#install-a-beta-release).
+Installing the latest stable release is recommended for most users. For an early
+look at the newest features, consider the [beta
+releases](#install-a-beta-release).
 
 ## Install the latest release
 
 {start_tabs}
 {tab|mac}
 
-#### Disk image (recommended)
+{!app-will-update-tip.md!}
+
+#### Disk image *(recommended)*
 
 1. Download [Zulip for macOS](https://zulip.com/apps/mac).
 
-1. Open the file, and drag the app into the `Applications` folder.
-
-The app will update automatically to future versions.
+1. Open the file, and drag the app into the **Applications** folder.
 
 #### Homebrew
 
 1. Run the command `brew install --cask zulip` from a terminal.
 
-1. Run Zulip from `Applications`.
+1. Run Zulip from **Applications**.
 
-The app will update automatically to future versions. Alternatively, you can
-run the command `brew upgrade zulip` to immediately upgrade.
+You can run the command `brew upgrade zulip` to immediately upgrade the app.
 
 {tab|windows}
 
-#### Web installer (recommended)
+#### Web installer *(recommended)*
+
+{!app-will-update-tip.md!}
 
 1. Download and run [Zulip for Windows](https://zulip.com/apps/windows).
 
-1. Run Zulip from the Start menu.
+1. Run Zulip from the **Start** menu.
 
-The app will update automatically to future versions.
+#### Offline installer *(for isolated networks)*
 
-#### Offline installer (for isolated networks)
+!!! warn ""
+    The app will not update automatically. You can repeat these steps to upgrade
+    to future versions.
 
-1. Download [zulip-x.x.x-x64.nsis.7z][latest] for 64-bit desktops
-   (common), or [zulip-x.x.x-ia32.nsis.7z][latest] for 32-bit (rare).
+1. Download [zulip-x.x.x-x64.msi][latest] for 64-bit desktops
+   (common), or [zulip-x.x.x-ia32.msi][latest] for 32-bit (rare).
 
-2. Copy the installer file to the machine you want to install the app
-   on, and run it there.
+1. Copy the installer file to the machine you want to install the app
+   on, and open it there.
 
-3. Run Zulip from the Start menu.
-
-The app will NOT update automatically. You can repeat these steps to upgrade
-to future versions. <!-- TODO fact check -->
+1. Run Zulip from the **Start** menu.
 
 {tab|linux}
 
-#### APT (Ubuntu or Debian 8+)
+#### APT *(Ubuntu or Debian 8+)*
+
+!!! tip ""
+    The app will be updated automatically to future versions when you do a
+    regular software update on your system, e.g., with
+    `sudo apt update && sudo apt upgrade`.
 
 1. Enter the following commands into a terminal:
 
@@ -71,22 +75,18 @@ to future versions. <!-- TODO fact check -->
 
 1. Run Zulip from your app launcher, or with `zulip` from a terminal.
 
-The app will be updated automatically to future versions when you do a
-regular software update on your system, e.g. with
-`sudo apt update && sudo apt upgrade`.
+#### AppImage *(recommended for all other distros)*
 
-#### AppImage (recommended for all other distros)
+{!app-will-update-tip.md!}
 
 1. Download [Zulip for Linux](https://zulip.com/apps/linux).
 
-2. Make the file executable, with
+1. Make the file executable, with
    `chmod a+x Zulip-x.x.x-x86_64.AppImage` from a terminal (replace
-   `x.x.x` with the actual name of the downloaded file).
+   `x.x.x` with the actual app version of the downloaded file).
 
-3. Run the file from your app launcher, or from a terminal.
-
-No installer is necessary; this file is the Zulip app. The app will update
-automatically to future versions.
+1. Run the file from your app launcher, or from a terminal. This file is the
+   Zulip app, so no installation is required.
 
 #### Snap
 

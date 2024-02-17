@@ -18,6 +18,7 @@ import * as list_widget from "./list_widget";
 import {page_params} from "./page_params";
 import * as people from "./people";
 import * as settings_data from "./settings_data";
+import {current_user, realm} from "./state_data";
 import * as ui_report from "./ui_report";
 import * as user_deactivation_ui from "./user_deactivation_ui";
 import * as user_profile from "./user_profile";
@@ -99,7 +100,7 @@ export function generate_zuliprc_content(bot) {
         "\nkey=" +
         bot.api_key +
         "\nsite=" +
-        page_params.realm_uri +
+        realm.realm_uri +
         (token === undefined ? "" : "\ntoken=" + token) +
         // Some tools would not work in files without a trailing new line.
         "\n"
@@ -114,7 +115,7 @@ export function generate_botserverrc_content(email, api_key, token) {
         "\nkey=" +
         api_key +
         "\nsite=" +
-        page_params.realm_uri +
+        realm.realm_uri +
         "\ntoken=" +
         token +
         "\n"
@@ -139,33 +140,33 @@ export const bot_creation_policy_values = {
 };
 
 export function can_create_new_bots() {
-    if (page_params.is_admin) {
+    if (current_user.is_admin) {
         return true;
     }
 
-    if (page_params.is_guest) {
+    if (current_user.is_guest) {
         return false;
     }
 
-    return page_params.realm_bot_creation_policy !== bot_creation_policy_values.admins_only.code;
+    return realm.realm_bot_creation_policy !== bot_creation_policy_values.admins_only.code;
 }
 
 export function update_bot_settings_tip($tip_container, for_org_settings) {
     if (
-        !page_params.is_admin &&
-        page_params.realm_bot_creation_policy === bot_creation_policy_values.everyone.code
+        !current_user.is_admin &&
+        realm.realm_bot_creation_policy === bot_creation_policy_values.everyone.code
     ) {
         $tip_container.hide();
         return;
     }
 
-    if (page_params.is_admin && !for_org_settings) {
+    if (current_user.is_admin && !for_org_settings) {
         $tip_container.hide();
         return;
     }
 
     const rendered_tip = render_bot_settings_tip({
-        realm_bot_creation_policy: page_params.realm_bot_creation_policy,
+        realm_bot_creation_policy: realm.realm_bot_creation_policy,
         permission_type: bot_creation_policy_values,
     });
     $tip_container.show();
@@ -193,14 +194,14 @@ export function update_bot_permissions_ui() {
     update_bot_settings_tip($("#admin-bot-settings-tip"), true);
     update_bot_settings_tip($("#personal-bot-settings-tip"), false);
     update_add_bot_button();
-    $("#id_realm_bot_creation_policy").val(page_params.realm_bot_creation_policy);
+    $("#id_realm_bot_creation_policy").val(realm.realm_bot_creation_policy);
 }
 
 export function add_a_new_bot() {
     const html_body = render_add_new_bot_form({
         bot_types: page_params.bot_types,
-        realm_embedded_bots: page_params.realm_embedded_bots,
-        realm_bot_domain: page_params.realm_bot_domain,
+        realm_embedded_bots: realm.realm_embedded_bots,
+        realm_bot_domain: realm.realm_bot_domain,
     });
 
     let create_avatar_widget;

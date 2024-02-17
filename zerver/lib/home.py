@@ -138,8 +138,6 @@ def build_page_params_for_home_page_load(
     narrow: List[NarrowTerm],
     narrow_stream: Optional[Stream],
     narrow_topic_name: Optional[str],
-    first_in_realm: bool,
-    prompt_for_invites: bool,
     needs_tutorial: bool,
 ) -> Tuple[int, Dict[str, object]]:
     """
@@ -160,7 +158,7 @@ def build_page_params_for_home_page_load(
     if user_profile is not None:
         client = RequestNotes.get_notes(request).client
         assert client is not None
-        register_ret = do_events_register(
+        state_data = do_events_register(
             user_profile,
             realm,
             client,
@@ -171,12 +169,12 @@ def build_page_params_for_home_page_load(
             narrow=narrow,
             include_streams=False,
         )
-        default_language = register_ret["user_settings"]["default_language"]
+        default_language = state_data["user_settings"]["default_language"]
     else:
         # The spectator client will be fetching the /register response
         # for spectators via the API. But we still need to set the
         # values not presence in that object.
-        register_ret = {
+        state_data = {
             "queue_id": None,
         }
         default_language = realm.default_language
@@ -208,8 +206,6 @@ def build_page_params_for_home_page_load(
         ## Misc. extra data.
         language_list=get_language_list(),
         needs_tutorial=needs_tutorial,
-        first_in_realm=first_in_realm,
-        prompt_for_invites=prompt_for_invites,
         furthest_read_time=furthest_read_time,
         bot_types=get_bot_types(user_profile),
         two_fa_enabled=two_fa_enabled,
@@ -238,13 +234,12 @@ def build_page_params_for_home_page_load(
         page_params["server_sentry_sample_rate"] = settings.SENTRY_FRONTEND_SAMPLE_RATE
         page_params["server_sentry_trace_rate"] = settings.SENTRY_FRONTEND_TRACE_RATE
 
-    for field_name in register_ret:
-        page_params[field_name] = register_ret[field_name]
+    page_params["state_data"] = state_data
 
     if narrow_stream is not None:
         # In narrow_stream context, initial pointer is just latest message
         recipient = narrow_stream.recipient
-        page_params["max_message_id"] = -1
+        state_data["max_message_id"] = -1
         max_message = (
             # Uses index: zerver_message_realm_recipient_id
             Message.objects.filter(realm_id=realm.id, recipient=recipient)
@@ -253,15 +248,15 @@ def build_page_params_for_home_page_load(
             .first()
         )
         if max_message:
-            page_params["max_message_id"] = max_message.id
+            state_data["max_message_id"] = max_message.id
         page_params["narrow_stream"] = narrow_stream.name
         if narrow_topic_name is not None:
             page_params["narrow_topic"] = narrow_topic_name
         page_params["narrow"] = [
             dict(operator=term.operator, operand=term.operand) for term in narrow
         ]
-        assert isinstance(page_params["user_settings"], dict)
-        page_params["user_settings"]["enable_desktop_notifications"] = False
+        assert isinstance(state_data["user_settings"], dict)
+        state_data["user_settings"]["enable_desktop_notifications"] = False
 
     page_params["translation_data"] = get_language_translation_data(request_language)
 
@@ -271,4 +266,4 @@ def build_page_params_for_home_page_load(
         page_params["realm_rendered_description"] = get_realm_rendered_description(realm)
         page_params["language_cookie_name"] = settings.LANGUAGE_COOKIE_NAME
 
-    return register_ret["queue_id"], page_params
+    return state_data["queue_id"], page_params

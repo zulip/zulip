@@ -11,10 +11,10 @@ import * as confirm_dialog from "./confirm_dialog";
 import {$t, $t_html} from "./i18n";
 import * as ListWidget from "./list_widget";
 import * as loading from "./loading";
-import {page_params} from "./page_params";
 import * as people from "./people";
 import * as settings_config from "./settings_config";
 import * as settings_data from "./settings_data";
+import {current_user, realm} from "./state_data";
 import * as timerender from "./timerender";
 import * as ui_report from "./ui_report";
 import * as util from "./util";
@@ -27,7 +27,7 @@ export const invite_schema = z.intersection(
         id: z.number(),
         invited_as: z.number(),
     }),
-    z.union([
+    z.discriminatedUnion("is_multiuse", [
         z.object({
             is_multiuse: z.literal(false),
             email: z.string(),
@@ -96,10 +96,10 @@ function populate_invites(invites_data: {invites: Invite[]}): void {
             if (item.expiry_date !== null) {
                 item.expiry_date_absolute_time = timerender.absolute_time(item.expiry_date * 1000);
             }
-            item.is_admin = page_params.is_admin;
+            item.is_admin = current_user.is_admin;
             item.disable_buttons =
                 item.invited_as === settings_config.user_role_values.owner.code &&
-                !page_params.is_owner;
+                !current_user.is_owner;
             item.referrer_name = people.get_by_user_id(item.invited_by_user_id).full_name;
             return render_admin_invites_list({invite: item});
         },
@@ -277,7 +277,7 @@ export function on_load_success(
         const html_body = render_settings_resend_invite_modal({email});
 
         confirm_dialog.launch({
-            html_heading: $t_html({defaultMessage: "Resend invitation"}),
+            html_heading: $t_html({defaultMessage: "Resend invitation?"}),
             html_body,
             on_click() {
                 do_resend_invite({$row, invite_id});
@@ -289,12 +289,12 @@ export function on_load_success(
 }
 
 export function update_invite_users_setting_tip(): void {
-    if (settings_data.user_can_invite_users_by_email() && !page_params.is_admin) {
+    if (settings_data.user_can_invite_users_by_email() && !current_user.is_admin) {
         $(".invite-user-settings-tip").hide();
         return;
     }
     const permission_type = settings_config.email_invite_to_realm_policy_values;
-    const current_permission = page_params.realm_invite_to_realm_policy;
+    const current_permission = realm.realm_invite_to_realm_policy;
     let tip_text;
     switch (current_permission) {
         case permission_type.by_admins_only.code: {

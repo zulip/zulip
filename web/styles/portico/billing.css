@@ -545,12 +545,17 @@ input[name="licenses"] {
     width: 150px;
 }
 
+#upgrade-page-details #upgrade-cardchange-form {
+    margin: 0;
+}
+
 #server-login-page-details #server-login-form-title .not-editable-realm-field {
     font-weight: 500;
     padding-top: 0;
 }
 
 #server-login-page-details #server-login-form-title,
+#billing-page-details .stripe-customer-billing-portal,
 #billing-page-details #legacy-server-push-notification-notice,
 #billing-page-details .next-payment-info {
     width: 450px;
@@ -581,6 +586,7 @@ input[name="licenses"] {
     margin-top: 10px;
 }
 
+#upgrade-page-details .support-link,
 #account-deactivated-success-page-details .not-editable-realm-field,
 #server-deactivate-details
     #server-deactivate-form-top-description
@@ -619,17 +625,22 @@ input[name="licenses"] {
 
 #upgrade-payment-info {
     display: grid;
-    grid-template: auto auto 1fr / 1fr auto;
+    grid-template: auto auto auto 1fr / 1fr auto;
     grid-template-areas:
         "payment-info add-card"
+        "stripe-portal stripe-portal"
         "alert-message alert-message";
     width: 450px;
     margin: auto;
-    padding-bottom: 25px;
 }
 
 #upgrade-payment-info .alert {
     grid-area: alert-message;
+}
+
+#upgrade-page-details .stripe-billing-information {
+    grid-area: stripe-portal;
+    padding-top: 2px;
 }
 
 #upgrade-page-details #upgrade-payment-menthod-wrapper {
@@ -733,4 +744,10 @@ input[name="licenses"] {
 
 .flat-discount-separator {
     border-bottom: 1px solid hsl(0deg 0% 0%);
+}
+
+#upgrade-page-details #pay-by-invoice-details {
+    width: 450px;
+    font-weight: normal;
+    padding-left: 15px;
 }

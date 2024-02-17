@@ -1,0 +1,35 @@
+{
+  "data": [
+    {
+      "api_version": "2020-08-27",
+      "created": 1000000000,
+      "data": {
+        "object": {
+          "configuration": "bpc_1OjJr5DEQaroqDjsD8LS4MNX",
+          "created": 1000000000,
+          "customer": "cus_NORMALIZED0001",
+          "flow": null,
+          "id": "bps_1OjJr6DEQaroqDjsZtwAM2Yq",
+          "livemode": false,
+          "locale": null,
+          "object": "billing_portal.session",
+          "on_behalf_of": null,
+          "return_url": "http://zulip.testserver/upgrade/?manual_license_management=false&tier=1",
+          "url": "https://billing.stripe.com/p/session/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QWVFpYmhWclkwTGVQTG5PNHdrRGpjaDg5cnlsM2s30100Tb4hCv8z"
+        }
+      },
+      "id": "evt_1OjJr6DEQaroqDjsvkep1CRl",
+      "livemode": false,
+      "object": "event",
+      "pending_webhooks": 0,
+      "request": {
+        "id": "req_NORMALIZED0001",
+        "idempotency_key": "8e08dcce-8d3e-49c8-8a1c-4bce597b5b5f"
+      },
+      "type": "billing_portal.session.created"
+    }
+  ],
+  "has_more": true,
+  "object": "list",
+  "url": "/v1/events"
+}

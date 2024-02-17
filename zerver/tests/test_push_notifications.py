@@ -829,8 +829,11 @@ class PushBouncerNotificationTest(BouncerTestCase):
             payload,
             content_type="application/json",
         )
-        self.assert_json_error(result, "Your plan doesn't allow sending push notifications.")
-        self.assertEqual(orjson.loads(result.content)["code"], "BAD_REQUEST")
+        self.assert_json_error(
+            result,
+            "Your plan doesn't allow sending push notifications. Reason provided by the server: Missing data",
+        )
+        self.assertEqual(orjson.loads(result.content)["code"], "PUSH_NOTIFICATIONS_DISALLOWED")
 
         human_counts = {
             str(UserProfile.ROLE_REALM_ADMINISTRATOR): 1,
@@ -854,8 +857,11 @@ class PushBouncerNotificationTest(BouncerTestCase):
             payload,
             content_type="application/json",
         )
-        self.assert_json_error(result, "Your plan doesn't allow sending push notifications.")
-        self.assertEqual(orjson.loads(result.content)["code"], "BAD_REQUEST")
+        self.assert_json_error(
+            result,
+            "Your plan doesn't allow sending push notifications. Reason provided by the server: Push notifications access with 10+ users requires signing up for a plan. https://zulip.com/plans/",
+        )
+        self.assertEqual(orjson.loads(result.content)["code"], "PUSH_NOTIFICATIONS_DISALLOWED")
 
         # Check that sponsored realms are allowed to send push notifications.
         remote_server.plan_type = RemoteRealm.PLAN_TYPE_COMMUNITY
@@ -2731,6 +2737,80 @@ class HandlePushNotificationTest(PushNotificationTest):
                     value=len(gcm_devices) + len(apns_devices),
                 ),
             )
+
+    @override_settings(PUSH_NOTIFICATION_BOUNCER_URL="https://push.zulip.org.example.com")
+    @responses.activate
+    def test_end_to_end_failure_due_to_no_plan(self) -> None:
+        self.add_mock_response()
+
+        self.setup_apns_tokens()
+        self.setup_gcm_tokens()
+
+        self.server.last_api_feature_level = 237
+        self.server.save()
+
+        realm = self.user_profile.realm
+        realm.push_notifications_enabled = True
+        realm.save()
+
+        message = self.get_message(
+            Recipient.PERSONAL,
+            type_id=self.personal_recipient_user.id,
+            realm_id=self.personal_recipient_user.realm_id,
+        )
+        UserMessage.objects.create(
+            user_profile=self.user_profile,
+            message=message,
+        )
+
+        missed_message = {
+            "message_id": message.id,
+            "trigger": NotificationTriggers.DIRECT_MESSAGE,
+        }
+        with mock.patch(
+            "corporate.lib.stripe.RemoteServerBillingSession.current_count_for_billed_licenses",
+            return_value=100,
+        ) as mock_current_count, self.assertLogs(
+            "zerver.lib.push_notifications", level="INFO"
+        ) as pn_logger, self.assertLogs(
+            "zilencer.views", level="INFO"
+        ):
+            handle_push_notification(self.user_profile.id, missed_message)
+
+            self.assertEqual(
+                pn_logger.output,
+                [
+                    f"INFO:zerver.lib.push_notifications:Sending push notifications to mobile clients for user {self.user_profile.id}",
+                    "WARNING:zerver.lib.push_notifications:Bouncer refused to send push notification: Your plan doesn't allow sending push notifications. Reason provided by the server: Push notifications access with 10+ users requires signing up for a plan. https://zulip.com/plans/",
+                ],
+            )
+            realm.refresh_from_db()
+            self.assertEqual(realm.push_notifications_enabled, False)
+            self.assertEqual(realm.push_notifications_enabled_end_timestamp, None)
+
+            # Now verify the flag will correctly get flipped back if the server stops
+            # rejecting our notification.
+
+            # This will put us within the allowed number of users to use push notifications
+            # for free, so the server will accept our next request.
+            mock_current_count.return_value = 5
+
+            new_message_id = self.send_personal_message(
+                self.example_user("othello"), self.user_profile
+            )
+            new_missed_message = {
+                "message_id": new_message_id,
+                "trigger": NotificationTriggers.DIRECT_MESSAGE,
+            }
+
+            handle_push_notification(self.user_profile.id, new_missed_message)
+            self.assertIn(
+                f"Sent mobile push notifications for user {self.user_profile.id}",
+                pn_logger.output[-1],
+            )
+            realm.refresh_from_db()
+            self.assertEqual(realm.push_notifications_enabled, True)
+            self.assertEqual(realm.push_notifications_enabled_end_timestamp, None)
 
     @override_settings(PUSH_NOTIFICATION_BOUNCER_URL="https://push.zulip.org.example.com")
     @responses.activate

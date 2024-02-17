@@ -304,18 +304,22 @@ test("pm_ids_string", () => {
     // direct messages) with real users.
     narrow_state.set_current_filter(undefined);
     assert.equal(narrow_state.pm_ids_string(), undefined);
+    assert.deepStrictEqual(narrow_state.pm_ids_set(), new Set());
 
     set_filter([
         ["stream", "Foo"],
         ["topic", "Bar"],
     ]);
     assert.equal(narrow_state.pm_ids_string(), undefined);
+    assert.deepStrictEqual(narrow_state.pm_ids_set(), new Set());
 
     set_filter([["dm", ""]]);
     assert.equal(narrow_state.pm_ids_string(), undefined);
+    assert.deepStrictEqual(narrow_state.pm_ids_set(), new Set());
 
     set_filter([["dm", "bogus@foo.com"]]);
     assert.equal(narrow_state.pm_ids_string(), undefined);
+    assert.deepStrictEqual(narrow_state.pm_ids_set(), new Set());
 
     const alice = {
         email: "alice@foo.com",
@@ -334,4 +338,5 @@ test("pm_ids_string", () => {
 
     set_filter([["dm", "bob@foo.com,alice@foo.com"]]);
     assert.equal(narrow_state.pm_ids_string(), "444,555");
+    assert.deepStrictEqual(narrow_state.pm_ids_set(), new Set([444, 555]));
 });

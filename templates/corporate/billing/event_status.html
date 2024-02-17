@@ -18,7 +18,7 @@
         <div class="page-content">
             <div class="main">
                 <br />
-                <div id="data" data-stripe-session-id="{{ stripe_session_id}}" data-stripe-payment-intent-id="{{ stripe_payment_intent_id }}" data-billing-base-url="{{ billing_base_url }}"></div>
+                <div id="data" data-stripe-session-id="{{ stripe_session_id}}" data-stripe-invoice-id="{{ stripe_invoice_id }}" data-billing-base-url="{{ billing_base_url }}"></div>
                 <div class="alert alert-success" id="webhook-success"></div>
                 <div class="alert alert-danger" id="webhook-error"></div>
                 <div id="webhook-loading">
@@ -32,7 +32,7 @@
                 </div>
 
                 <form id="restartsession-form">
-                    <input type="hidden" name="stripe_payment_intent_id" value="{{ stripe_payment_intent_id }}" />
+                    <input type="hidden" name="stripe_invoice_id" value="{{ stripe_invoice_id }}" />
                     <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}" />
                 </form>
                 <div class="alert alert-success" id="restartsession-success">Redirecting to Stripe Checkout</div>

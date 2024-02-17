@@ -16,11 +16,11 @@
         {{/if}}
         {{#if status_message}}
             <span class="rendered_markdown status-message">{{rendered_markdown status_message}}</span>
-            {{#if edited_status_msg}}
+            {{#if message_edit_notices_for_status_message}}
                 {{> edited_notice}}
             {{/if}}
         {{/if}}
-        {{#if edited_alongside_sender}}
+        {{#if message_edit_notices_alongside_sender}}
             {{> edited_notice}}
         {{/if}}
     {{/if}}
@@ -33,8 +33,8 @@
     {{timestr}}
 </a>
 
-{{#if msg/locally_echoed}}
-    <span class="fa fa-circle-o-notch slow-send-spinner hidden"></span>
+{{#if (and (not msg/failed_request) msg/locally_echoed)}}
+    <span class="fa fa-circle-o-notch slow-send-spinner{{#unless msg/show_slow_send_spinner }} hidden{{/unless}}"></span>
 {{/if}}
 
 {{> message_controls}}
@@ -55,7 +55,7 @@
     {{/unless}}
 {{/unless}}
 
-{{#if edited_in_left_col}}
+{{#if message_edit_notices_in_left_col}}
 {{> edited_notice}}
 {{/if}}
 

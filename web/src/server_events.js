@@ -16,6 +16,10 @@ import * as watchdog from "./watchdog";
 
 // Docs: https://zulip.readthedocs.io/en/latest/subsystems/events-system.html
 
+export let queue_id;
+let last_event_id;
+let event_queue_longpoll_timeout_seconds;
+
 let waiting_on_homeview_load = true;
 
 let events_stored_while_loading = [];
@@ -172,8 +176,8 @@ function get_events({dont_block = false} = {}) {
         watchdog.set_suspect_offline(true);
     }
     if (get_events_params.queue_id === undefined) {
-        get_events_params.queue_id = page_params.queue_id;
-        get_events_params.last_event_id = page_params.last_event_id;
+        get_events_params.queue_id = queue_id;
+        get_events_params.last_event_id = last_event_id;
     }
 
     if (get_events_xhr !== undefined) {
@@ -190,7 +194,7 @@ function get_events({dont_block = false} = {}) {
     get_events_xhr = channel.get({
         url: "/json/events",
         data: get_events_params,
-        timeout: page_params.event_queue_longpoll_timeout_seconds * 1000,
+        timeout: event_queue_longpoll_timeout_seconds * 1000,
         success(data) {
             watchdog.set_suspect_offline(false);
             try {
@@ -231,7 +235,7 @@ function get_events({dont_block = false} = {}) {
                     get_events_failures += 1;
                 }
 
-                if (get_events_failures >= 5) {
+                if (get_events_failures >= 8) {
                     show_ui_connection_error();
                 } else {
                     hide_ui_connection_error();
@@ -239,8 +243,26 @@ function get_events({dont_block = false} = {}) {
             } catch (error) {
                 blueslip.error("Failed to handle get_events error", undefined, error);
             }
-            const retry_sec = Math.min(90, Math.exp(get_events_failures / 2));
-            get_events_timeout = setTimeout(get_events, retry_sec * 1000);
+
+            // We need to respect the server's rate-limiting headers, but beyond
+            // that, we also want to avoid contributing to a thundering herd if
+            // the server is giving us 500s/502s.
+            //
+            // So we do the maximum of the retry-after header and an exponential
+            // backoff with ratio sqrt(2) and half jitter. Starts at 1-2s and ends at
+            // 45-90s after enough failures.
+            const backoff_scale = Math.min(2 ** ((get_events_failures + 1) / 2), 90);
+            const backoff_delay_secs = ((1 + Math.random()) / 2) * backoff_scale;
+            let rate_limit_delay_secs = 0;
+            if (xhr.status === 429 && xhr.responseJSON?.code === "RATE_LIMIT_HIT") {
+                // Add a bit of jitter to the required delay suggested
+                // by the server, because we may be racing with other
+                // copies of the web app.
+                rate_limit_delay_secs = xhr.responseJSON["retry-after"] + Math.random() * 0.5;
+            }
+
+            const retry_delay_secs = Math.max(backoff_delay_secs, rate_limit_delay_secs);
+            get_events_timeout = setTimeout(get_events, retry_delay_secs * 1000);
         },
     });
 }
@@ -265,7 +287,11 @@ export function home_view_loaded() {
     get_events_success([]);
 }
 
-export function initialize() {
+export function initialize(params) {
+    queue_id = params.queue_id;
+    last_event_id = params.last_event_id;
+    event_queue_longpoll_timeout_seconds = params.event_queue_longpoll_timeout_seconds;
+
     reload.add_reload_hook(cleanup_event_queue);
     watchdog.on_unsuspend(() => {
         // Immediately poll for new events on unsuspend
@@ -286,7 +312,7 @@ function cleanup_event_queue() {
     event_queue_expired = true;
     channel.del({
         url: "/json/events",
-        data: {queue_id: page_params.queue_id},
+        data: {queue_id},
         ignore_reload: true,
     });
 }

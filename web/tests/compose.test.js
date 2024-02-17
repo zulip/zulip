@@ -10,7 +10,7 @@ const {$t} = require("./lib/i18n");
 const {mock_esm, set_global, zrequire} = require("./lib/namespace");
 const {run_test, noop} = require("./lib/test");
 const $ = require("./lib/zjquery");
-const {page_params, user_settings} = require("./lib/zpage_params");
+const {current_user, page_params, realm, user_settings} = require("./lib/zpage_params");
 
 const settings_config = zrequire("settings_config");
 
@@ -121,8 +121,8 @@ function test_ui(label, f) {
 }
 
 function initialize_handlers({override}) {
-    override(page_params, "realm_available_video_chat_providers", {disabled: {id: 0}});
-    override(page_params, "realm_video_chat_provider", 0);
+    override(realm, "realm_available_video_chat_providers", {disabled: {id: 0}});
+    override(realm, "realm_video_chat_provider", 0);
     override(upload, "feature_check", noop);
     override(resize, "watch_manual_resize", noop);
     compose_setup.initialize();
@@ -231,7 +231,7 @@ test_ui("send_message", ({override, override_rewire, mock_template}) => {
         stub_state = initialize_state_stub_dict();
         compose_state.topic("");
         compose_state.set_message_type("private");
-        page_params.user_id = new_user.user_id;
+        current_user.user_id = new_user.user_id;
         override(compose_pm_pill, "get_emails", () => "alice@example.com");
 
         const server_message_id = 127;
@@ -367,7 +367,7 @@ test_ui("enter_with_preview_open", ({override, override_rewire}) => {
         show_button_spinner_called = true;
     });
 
-    page_params.user_id = new_user.user_id;
+    current_user.user_id = new_user.user_id;
 
     // Test sending a message with content.
     compose_state.set_message_type("stream");
@@ -482,8 +482,8 @@ test_ui("initialize", ({override}) => {
     // normal workflow of the function. All the tests for the on functions are
     // done in subsequent tests directly below this test.
 
-    override(page_params, "realm_available_video_chat_providers", {disabled: {id: 0}});
-    override(page_params, "realm_video_chat_provider", 0);
+    override(realm, "realm_available_video_chat_providers", {disabled: {id: 0}});
+    override(realm, "realm_video_chat_provider", 0);
 
     let resize_watch_manual_resize_checked = false;
     override(resize, "watch_manual_resize", (elem) => {
@@ -491,7 +491,7 @@ test_ui("initialize", ({override}) => {
         resize_watch_manual_resize_checked = true;
     });
 
-    page_params.max_file_upload_size_mib = 512;
+    realm.max_file_upload_size_mib = 512;
 
     let uppy_cancel_all_called = false;
     override(upload, "compose_upload_object", {
@@ -807,7 +807,7 @@ test_ui("create_message_object", ({override, override_rewire}) => {
 test_ui("DM policy disabled", ({override, override_rewire}) => {
     // Disable dms in the organisation
     override(
-        page_params,
+        realm,
         "realm_private_message_policy",
         settings_config.private_message_policy_values.disabled.code,
     );

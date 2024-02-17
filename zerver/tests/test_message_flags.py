@@ -11,7 +11,6 @@ from zerver.actions.user_topics import do_set_user_topic_visibility_policy
 from zerver.lib.fix_unreads import fix, fix_unsubscribed
 from zerver.lib.message import (
     MessageDetailsDict,
-    MessageDict,
     RawUnreadDirectMessageDict,
     RawUnreadMessagesResult,
     UnreadMessagesResult,
@@ -19,9 +18,11 @@ from zerver.lib.message import (
     aggregate_unread_data,
     apply_unread_message_event,
     bulk_access_messages,
+    bulk_access_stream_messages_query,
     format_unread_message_details,
     get_raw_unread_data,
 )
+from zerver.lib.message_cache import MessageDict
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import get_subscription, timeout_mock
 from zerver.lib.timeout import TimeoutExpiredError
@@ -1505,6 +1506,30 @@ class MessageAccessTests(ZulipTestCase):
         result = self.change_star(message_id)
         self.assert_json_success(result)
 
+    def assert_bulk_access(
+        self,
+        user: UserProfile,
+        message_ids: List[int],
+        stream: Stream,
+        bulk_access_messages_count: int,
+        bulk_access_stream_messages_query_count: int,
+    ) -> List[Message]:
+        with self.assert_database_query_count(bulk_access_messages_count):
+            messages = [
+                Message.objects.select_related("recipient").get(id=message_id)
+                for message_id in sorted(message_ids)
+            ]
+            list_result = bulk_access_messages(user, messages, stream=stream)
+        with self.assert_database_query_count(bulk_access_stream_messages_query_count):
+            message_query = (
+                Message.objects.select_related("recipient")
+                .filter(id__in=message_ids)
+                .order_by("id")
+            )
+            query_result = list(bulk_access_stream_messages_query(user, message_query, stream))
+        self.assertEqual(query_result, list_result)
+        return list_result
+
     def test_bulk_access_messages_private_stream(self) -> None:
         user = self.example_user("hamlet")
         self.login_user(user)
@@ -1526,16 +1551,12 @@ class MessageAccessTests(ZulipTestCase):
         message_two_id = self.send_stream_message(user, stream_name, "Message two")
 
         message_ids = [message_one_id, message_two_id]
-        messages = [
-            Message.objects.select_related("recipient").get(id=message_id)
-            for message_id in message_ids
-        ]
-
-        with self.assert_database_query_count(2):
-            filtered_messages = bulk_access_messages(later_subscribed_user, messages, stream=stream)
 
         # Message sent before subscribing wouldn't be accessible by later
         # subscribed user as stream has protected history
+        filtered_messages = self.assert_bulk_access(
+            later_subscribed_user, message_ids, stream, 4, 2
+        )
         self.assert_length(filtered_messages, 1)
         self.assertEqual(filtered_messages[0].id, message_two_id)
 
@@ -1547,27 +1568,44 @@ class MessageAccessTests(ZulipTestCase):
             acting_user=self.example_user("cordelia"),
         )
 
-        with self.assert_database_query_count(2):
-            filtered_messages = bulk_access_messages(later_subscribed_user, messages, stream=stream)
-
-        # Message sent before subscribing are accessible by 8user as stream
-        # don't have protected history
+        # Message sent before subscribing are accessible by user as stream
+        # now don't have protected history
+        filtered_messages = self.assert_bulk_access(
+            later_subscribed_user, message_ids, stream, 4, 2
+        )
         self.assert_length(filtered_messages, 2)
 
         # Testing messages accessibility for an unsubscribed user
         unsubscribed_user = self.example_user("ZOE")
-
-        with self.assert_database_query_count(2):
-            filtered_messages = bulk_access_messages(unsubscribed_user, messages, stream=stream)
-
+        filtered_messages = self.assert_bulk_access(unsubscribed_user, message_ids, stream, 4, 1)
         self.assert_length(filtered_messages, 0)
+
+        # Adding more message ids to the list increases the query size
+        # for bulk_access_messages but not
+        # bulk_access_stream_messages_query
+        more_message_ids = [
+            *message_ids,
+            self.send_stream_message(user, stream_name, "Message three"),
+            self.send_stream_message(user, stream_name, "Message four"),
+        ]
+        filtered_messages = self.assert_bulk_access(
+            later_subscribed_user, more_message_ids, stream, 6, 2
+        )
+        self.assert_length(filtered_messages, 4)
 
         # Verify an exception is thrown if called where the passed
         # stream not matching the messages.
+        other_stream = get_stream("Denmark", unsubscribed_user.realm)
         with self.assertRaises(AssertionError):
-            bulk_access_messages(
-                unsubscribed_user, messages, stream=get_stream("Denmark", unsubscribed_user.realm)
-            )
+            messages = [Message.objects.get(id=id) for id in message_ids]
+            bulk_access_messages(unsubscribed_user, messages, stream=other_stream)
+
+        # Verify that bulk_access_stream_messages_query is empty with a stream mismatch
+        message_query = Message.objects.select_related("recipient").filter(id__in=message_ids)
+        filtered_query = bulk_access_stream_messages_query(
+            later_subscribed_user, message_query, other_stream
+        )
+        self.assert_length(filtered_query, 0)
 
     def test_bulk_access_messages_public_stream(self) -> None:
         user = self.example_user("hamlet")
@@ -1585,20 +1623,15 @@ class MessageAccessTests(ZulipTestCase):
         message_two_id = self.send_stream_message(user, stream_name, "Message two")
 
         message_ids = [message_one_id, message_two_id]
-        messages = [
-            Message.objects.select_related("recipient").get(id=message_id)
-            for message_id in message_ids
-        ]
 
         # All public stream messages are always accessible
-        with self.assert_database_query_count(2):
-            filtered_messages = bulk_access_messages(later_subscribed_user, messages, stream=stream)
+        filtered_messages = self.assert_bulk_access(
+            later_subscribed_user, message_ids, stream, 4, 1
+        )
         self.assert_length(filtered_messages, 2)
 
         unsubscribed_user = self.example_user("ZOE")
-        with self.assert_database_query_count(2):
-            filtered_messages = bulk_access_messages(unsubscribed_user, messages, stream=stream)
-
+        filtered_messages = self.assert_bulk_access(unsubscribed_user, message_ids, stream, 4, 1)
         self.assert_length(filtered_messages, 2)
 
 

@@ -47,21 +47,20 @@ from zerver.lib.exceptions import (
     TopicWildcardMentionNotAllowedError,
     ZephyrMessageAlreadySentError,
 )
-from zerver.lib.markdown import MessageRenderingResult
+from zerver.lib.markdown import MessageRenderingResult, render_message_markdown
 from zerver.lib.markdown import version as markdown_version
 from zerver.lib.mention import MentionBackend, MentionData
 from zerver.lib.message import (
-    MessageDict,
     SendMessageRequest,
     check_user_group_mention_allowed,
     normalize_body,
-    render_markdown,
     set_visibility_policy_possible,
     stream_wildcard_mention_allowed,
     topic_wildcard_mention_allowed,
     truncate_topic,
     visibility_policy_for_send_message,
 )
+from zerver.lib.message_cache import MessageDict
 from zerver.lib.muted_users import get_muting_users
 from zerver.lib.notification_data import (
     UserMessageNotificationsData,
@@ -160,7 +159,7 @@ def render_incoming_message(
 ) -> MessageRenderingResult:
     realm_alert_words_automaton = get_alert_word_automaton(realm)
     try:
-        rendering_result = render_markdown(
+        rendering_result = render_message_markdown(
             message=message,
             content=content,
             realm=realm,
@@ -732,7 +731,7 @@ def create_user_messages(
     topic_participant_user_ids: Set[int],
 ) -> List[UserMessageLite]:
     # These properties on the Message are set via
-    # render_markdown by code in the Markdown inline patterns
+    # render_message_markdown by code in the Markdown inline patterns
     ids_with_alert_words = rendering_result.user_ids_with_alert_words
     is_stream_message = message.is_stream_message()
 
@@ -850,7 +849,6 @@ def get_active_presence_idle_user_ids(
 def do_send_messages(
     send_message_requests_maybe_none: Sequence[Optional[SendMessageRequest]],
     *,
-    email_gateway: bool = False,
     mark_as_read: Sequence[int] = [],
 ) -> List[SentMessageResult]:
     """See
@@ -1532,8 +1530,10 @@ def check_private_message_policy(
     realm: Realm, sender: UserProfile, user_profiles: Sequence[UserProfile]
 ) -> None:
     if realm.private_message_policy == Realm.PRIVATE_MESSAGE_POLICY_DISABLED:
-        if sender.is_bot or (len(user_profiles) == 1 and user_profiles[0].is_bot):
-            # We allow direct messages only between users and bots,
+        if sender.is_bot or (
+            len(user_profiles) == 1 and (user_profiles[0].is_bot or user_profiles[0] == sender)
+        ):
+            # We allow direct messages only between users and bots or to oneself,
             # to avoid breaking the tutorial as well as automated
             # notifications from system bots to users.
             return

@@ -19,11 +19,11 @@ from zerver.actions.realm_settings import do_deactivate_realm, do_reactivate_rea
 from zerver.actions.user_settings import do_change_user_setting
 from zerver.actions.users import change_user_is_active, do_deactivate_user
 from zerver.decorator import (
-    authenticate_notify,
+    authenticate_internal_api,
     authenticated_json_view,
     authenticated_rest_api_view,
     authenticated_uploads_api_view,
-    internal_notify_view,
+    internal_api_view,
     process_client,
     public_json_view,
     return_success_on_head_request,
@@ -53,7 +53,6 @@ from zerver.lib.users import get_api_key
 from zerver.lib.utils import generate_api_key, has_api_key_format
 from zerver.middleware import LogRequests, parse_client
 from zerver.models import Client, Realm, UserProfile
-from zerver.models.clients import clear_client_cache
 from zerver.models.realms import get_realm
 from zerver.models.users import get_user
 
@@ -996,7 +995,7 @@ class TestInternalNotifyView(ZulipTestCase):
 
     def internal_notify(self, is_tornado: bool, req: HttpRequest) -> HttpResponse:
         boring_view = lambda req: json_response(msg=self.BORING_RESULT)
-        return internal_notify_view(is_tornado)(boring_view)(req)
+        return internal_api_view(is_tornado)(boring_view)(req)
 
     def test_valid_internal_requests(self) -> None:
         secret = "random"
@@ -1006,7 +1005,7 @@ class TestInternalNotifyView(ZulipTestCase):
         )
 
         with self.settings(SHARED_SECRET=secret):
-            self.assertTrue(authenticate_notify(request))
+            self.assertTrue(authenticate_internal_api(request))
             self.assertEqual(
                 orjson.loads(self.internal_notify(False, request).content).get("msg"),
                 self.BORING_RESULT,
@@ -1022,7 +1021,7 @@ class TestInternalNotifyView(ZulipTestCase):
             tornado_handler=dummy_handler,
         )
         with self.settings(SHARED_SECRET=secret):
-            self.assertTrue(authenticate_notify(request))
+            self.assertTrue(authenticate_internal_api(request))
             self.assertEqual(
                 orjson.loads(self.internal_notify(True, request).content).get("msg"),
                 self.BORING_RESULT,
@@ -1055,7 +1054,7 @@ class TestInternalNotifyView(ZulipTestCase):
         )
 
         with self.settings(SHARED_SECRET="broken"):
-            self.assertFalse(authenticate_notify(request))
+            self.assertFalse(authenticate_internal_api(request))
             with self.assertRaises(AccessDeniedError) as access_denied_error:
                 self.internal_notify(True, request)
             self.assertEqual(access_denied_error.exception.http_status_code, 403)
@@ -1068,7 +1067,7 @@ class TestInternalNotifyView(ZulipTestCase):
         )
 
         with self.settings(SHARED_SECRET=secret):
-            self.assertFalse(authenticate_notify(request))
+            self.assertFalse(authenticate_internal_api(request))
             with self.assertRaises(AccessDeniedError) as context:
                 self.internal_notify(True, request)
             self.assertEqual(context.exception.http_status_code, 403)
@@ -1664,7 +1663,7 @@ class ClientTestCase(ZulipTestCase):
             return notes.client, notes.client_name
 
         self.assertEqual(Client.objects.filter(name="ZulipThingy").count(), 0)
-        with queries_captured() as queries:
+        with queries_captured(keep_cache_warm=True) as queries:
             client, client_name = request_user_agent("ZulipThingy/1.0.0")
         self.assertEqual(client.name, "ZulipThingy")
         self.assertEqual(client_name, "ZulipThingy")
@@ -1672,7 +1671,7 @@ class ClientTestCase(ZulipTestCase):
         self.assert_length(queries, 2)
 
         # Ensure our in-memory cache prevents another database hit
-        with queries_captured() as queries:
+        with queries_captured(keep_cache_warm=True) as queries:
             client, client_name = request_user_agent(
                 "ZulipThingy/1.0.0",
             )
@@ -1681,7 +1680,7 @@ class ClientTestCase(ZulipTestCase):
         self.assert_length(queries, 0)
 
         # This operates on the extracted value, so different ZulipThingy versions don't cause another DB query
-        with queries_captured() as queries:
+        with queries_captured(keep_cache_warm=True) as queries:
             client, client_name = request_user_agent(
                 "ZulipThingy/2.0.0",
             )
@@ -1691,8 +1690,7 @@ class ClientTestCase(ZulipTestCase):
 
         # If we clear the memory cache we see a database query but get
         # the same client-id back.
-        clear_client_cache()
-        with queries_captured() as queries:
+        with queries_captured(keep_cache_warm=False) as queries:
             fresh_client, client_name = request_user_agent(
                 "ZulipThingy/2.0.0",
             )
@@ -1701,7 +1699,7 @@ class ClientTestCase(ZulipTestCase):
         self.assert_length(queries, 1)
 
         # Ensure that long parsed user-agents (longer than 30 characters) work
-        with queries_captured() as queries:
+        with queries_captured(keep_cache_warm=True) as queries:
             client, client_name = request_user_agent(
                 "very-long-name-goes-here-and-somewhere-else (client@example.com)"
             )
@@ -1711,7 +1709,7 @@ class ClientTestCase(ZulipTestCase):
         self.assert_length(queries, 2)
 
         # Longer than that uses the same in-memory cache key, so no database queries
-        with queries_captured() as queries:
+        with queries_captured(keep_cache_warm=True) as queries:
             client, client_name = request_user_agent(
                 "very-long-name-goes-here-and-still-works (client@example.com)"
             )

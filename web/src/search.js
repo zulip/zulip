@@ -198,11 +198,6 @@ export function initiate_search() {
     $("#search_query").typeahead("lookup").trigger("select");
 }
 
-export function clear_search_form() {
-    set_search_bar_text("");
-    $("#search_query").trigger("blur");
-}
-
 // This is what the default searchbox text would be for this narrow,
 // NOT what might be currently displayed there. We can use this both
 // to set the initial text and to see if the user has changed it.

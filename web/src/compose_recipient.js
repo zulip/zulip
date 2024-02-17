@@ -14,9 +14,9 @@ import * as compose_validate from "./compose_validate";
 import * as dropdown_widget from "./dropdown_widget";
 import {$t} from "./i18n";
 import * as narrow_state from "./narrow_state";
-import {page_params} from "./page_params";
 import * as people from "./people";
 import * as settings_config from "./settings_config";
+import {realm} from "./state_data";
 import * as stream_bar from "./stream_bar";
 import * as stream_data from "./stream_data";
 import * as sub_store from "./sub_store";
@@ -95,6 +95,7 @@ function update_fade() {
 export function update_on_recipient_change() {
     update_fade();
     update_narrow_to_recipient_visibility();
+    check_posting_policy_for_compose_box();
 }
 
 export function get_posting_policy_error_message() {
@@ -212,7 +213,6 @@ export function on_compose_select_recipient_update() {
         stream_bar.decorate(stream_id, $stream_header_colorblock);
     }
 
-    check_posting_policy_for_compose_box();
     update_on_recipient_change();
 }
 
@@ -244,7 +244,7 @@ function get_options_for_recipient_widget() {
     };
 
     if (
-        page_params.realm_private_message_policy ===
+        realm.realm_private_message_policy ===
         settings_config.private_message_policy_values.by_anyone.code
     ) {
         options.unshift(direct_messages_option);
@@ -347,9 +347,7 @@ export function update_placeholder_text() {
         message_type: compose_state.get_message_type(),
         stream_id: compose_state.stream_id(),
         topic: compose_state.topic(),
-        // TODO: to remove a circular import, direct message recipient needs
-        // to be calculated in compose_state instead of compose_pm_pill.
-        private_message_recipient: compose_pm_pill.get_emails(),
+        direct_message_user_ids: compose_pm_pill.get_user_ids(),
     };
 
     $("textarea#compose-textarea").attr("placeholder", compose_ui.compute_placeholder_text(opts));

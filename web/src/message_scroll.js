@@ -14,7 +14,10 @@ import * as unread_ui from "./unread_ui";
 let hide_scroll_to_bottom_timer;
 export function hide_scroll_to_bottom() {
     const $show_scroll_to_bottom_button = $("#scroll-to-bottom-button-container");
-    if (message_viewport.bottom_message_visible() || message_lists.current.visibly_empty()) {
+    if (
+        message_viewport.bottom_rendered_message_visible() ||
+        message_lists.current.visibly_empty()
+    ) {
         // If last message is visible, just hide the
         // scroll to bottom button.
         $show_scroll_to_bottom_button.removeClass("show");
@@ -34,7 +37,7 @@ export function hide_scroll_to_bottom() {
 }
 
 export function show_scroll_to_bottom_button() {
-    if (message_viewport.bottom_message_visible()) {
+    if (message_viewport.bottom_rendered_message_visible()) {
         // Only show scroll to bottom button when
         // last message is not visible in the
         // current scroll position.
@@ -79,13 +82,19 @@ export function scroll_finished() {
         message_scroll_state.set_update_selection_on_next_scroll(true);
     }
 
-    if (message_viewport.at_top()) {
+    if (message_viewport.at_rendered_top()) {
+        // Subtle note: While we've only checked that we're at the
+        // very top of the render window (i.e. there may be some more
+        // cached messages to render), it's a good idea to fetch
+        // additional message history even if we're not actually at
+        // the edge of what we already have from the server.
         message_fetch.maybe_load_older_messages({
             msg_list: message_lists.current,
         });
     }
 
-    if (message_viewport.at_bottom()) {
+    if (message_viewport.at_rendered_bottom()) {
+        // See the similar message_viewport.at_rendered_top block.
         message_fetch.maybe_load_newer_messages({
             msg_list: message_lists.current,
         });

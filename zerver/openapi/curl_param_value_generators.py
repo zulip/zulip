@@ -23,6 +23,7 @@ from zerver.lib.users import get_api_key
 from zerver.models import Client, Message, UserGroup, UserPresence
 from zerver.models.realms import get_realm
 from zerver.models.users import get_user
+from zerver.openapi.openapi import Parameter
 
 GENERATOR_FUNCTIONS: Dict[str, Callable[[], Dict[str, object]]] = {}
 REGISTERED_GENERATOR_FUNCTIONS: Set[str] = set()
@@ -71,28 +72,24 @@ def assert_all_helper_functions_called() -> None:
 
 def patch_openapi_example_values(
     entry: str,
-    params: List[Dict[str, Any]],
+    parameters: List[Parameter],
     request_body: Optional[Dict[str, Any]] = None,
-) -> Tuple[List[Dict[str, object]], Optional[Dict[str, object]]]:
+) -> Tuple[List[Parameter], Optional[Dict[str, object]]]:
     if entry not in GENERATOR_FUNCTIONS:
-        return params, request_body
+        return parameters, request_body
     func = GENERATOR_FUNCTIONS[entry]
     realm_example_values: Dict[str, object] = func()
 
-    for param in params:
-        param_name = param["name"]
-        if param_name in realm_example_values:
-            if "content" in param:
-                param["content"]["application/json"]["example"] = realm_example_values[param_name]
-            else:
-                param["example"] = realm_example_values[param_name]
+    for parameter in parameters:
+        if parameter.name in realm_example_values:
+            parameter.example = realm_example_values[parameter.name]
 
-    if request_body is not None:
-        properties = request_body["content"]["multipart/form-data"]["schema"]["properties"]
+    if request_body is not None and "multipart/form-data" in (content := request_body["content"]):
+        properties = content["multipart/form-data"]["schema"]["properties"]
         for key, property in properties.items():
             if key in realm_example_values:
                 property["example"] = realm_example_values[key]
-    return params, request_body
+    return parameters, request_body
 
 
 @openapi_param_value_generator(["/fetch_api_key:post"])

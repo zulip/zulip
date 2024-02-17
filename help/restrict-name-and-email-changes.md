@@ -7,7 +7,7 @@
 By default, any user can [change their name](/help/change-your-name).
 You can instead prevent users from changing their name. This setting is
 especially useful if user names are managed via an external source, and
-synced into Zulip via the [Zulip API](/api), [LDAP][ldap-sync-data] or
+synced into Zulip via the [Zulip API](/api/), [LDAP][ldap-sync-data] or
 another method.
 
 !!! tip ""

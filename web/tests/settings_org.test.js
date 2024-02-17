@@ -7,7 +7,7 @@ const {mock_esm, zrequire} = require("./lib/namespace");
 const {run_test, noop} = require("./lib/test");
 const blueslip = require("./lib/zblueslip");
 const $ = require("./lib/zjquery");
-const {page_params} = require("./lib/zpage_params");
+const {current_user, realm} = require("./lib/zpage_params");
 
 const realm_icon = mock_esm("../src/realm_icon");
 
@@ -29,12 +29,12 @@ const dropdown_widget = zrequire("dropdown_widget");
 function test(label, f) {
     run_test(label, (helpers) => {
         $("#realm-icon-upload-widget .upload-spinner-background").css = noop;
-        page_params.is_admin = false;
-        page_params.realm_domains = [
+        current_user.is_admin = false;
+        realm.realm_domains = [
             {domain: "example.com", allow_subdomains: true},
             {domain: "example.org", allow_subdomains: false},
         ];
-        page_params.realm_authentication_methods = {};
+        realm.realm_authentication_methods = {};
         settings_org.reset();
         f(helpers);
     });
@@ -92,7 +92,7 @@ function createSaveButtons(subsection) {
 }
 
 function test_submit_settings_form(override, submit_form) {
-    Object.assign(page_params, {
+    Object.assign(realm, {
         realm_bot_creation_policy: settings_bots.bot_creation_policy_values.restricted.code,
         realm_add_custom_emoji_policy: settings_config.common_policy_values.by_admins_only.code,
         realm_waiting_period_threshold: 1,
@@ -322,12 +322,11 @@ function test_sync_realm_settings() {
         in the following order - by_admins_only, by_moderators_only, by_full_members,
         by_members. */
 
-        page_params[`realm_${property_name}`] =
-            settings_config.common_policy_values.by_members.code;
+        realm[`realm_${property_name}`] = settings_config.common_policy_values.by_members.code;
         $property_elem.val(settings_config.common_policy_values.by_members.code);
 
         for (const policy_value of Object.values(settings_config.common_policy_values)) {
-            page_params[`realm_${property_name}`] = policy_value.code;
+            realm[`realm_${property_name}`] = policy_value.code;
             settings_org.sync_realm_settings(property_name);
             assert.equal($property_elem.val(), policy_value.code);
         }
@@ -347,8 +346,8 @@ function test_sync_realm_settings() {
         $property_elem.attr("id", "id_realm_message_content_edit_limit_minutes");
         $property_dropdown_elem.attr("id", "id_realm_message_content_edit_limit_seconds");
 
-        page_params.realm_create_public_stream_policy = 1;
-        page_params.realm_message_content_edit_limit_seconds = 120;
+        realm.realm_create_public_stream_policy = 1;
+        realm.realm_message_content_edit_limit_seconds = 120;
 
         settings_org.sync_realm_settings("message_content_edit_limit_seconds");
         assert.equal($("#id_realm_message_content_edit_limit_minutes").val(), "2");
@@ -356,11 +355,11 @@ function test_sync_realm_settings() {
 
     {
         /* Test message content edit limit dropdown value sync */
-        page_params.realm_message_content_edit_limit_seconds = 120;
+        realm.realm_message_content_edit_limit_seconds = 120;
         settings_org.sync_realm_settings("message_content_edit_limit_seconds");
         assert.equal($("#id_realm_message_content_edit_limit_seconds").val(), "120");
 
-        page_params.realm_message_content_edit_limit_seconds = 130;
+        realm.realm_message_content_edit_limit_seconds = 130;
         settings_org.sync_realm_settings("message_content_edit_limit_seconds");
         assert.equal($("#id_realm_message_content_edit_limit_seconds").val(), "custom_period");
     }
@@ -371,18 +370,18 @@ function test_sync_realm_settings() {
         $property_elem.length = 1;
         $property_elem.attr("id", "id_realm_org_join_restrictions");
 
-        page_params.realm_emails_restricted_to_domains = true;
-        page_params.realm_disallow_disposable_email_addresses = false;
+        realm.realm_emails_restricted_to_domains = true;
+        realm.realm_disallow_disposable_email_addresses = false;
         settings_org.sync_realm_settings("emails_restricted_to_domains");
         assert.equal($("#id_realm_org_join_restrictions").val(), "only_selected_domain");
 
-        page_params.realm_emails_restricted_to_domains = false;
+        realm.realm_emails_restricted_to_domains = false;
 
-        page_params.realm_disallow_disposable_email_addresses = true;
+        realm.realm_disallow_disposable_email_addresses = true;
         settings_org.sync_realm_settings("emails_restricted_to_domains");
         assert.equal($("#id_realm_org_join_restrictions").val(), "no_disposable_email");
 
-        page_params.realm_disallow_disposable_email_addresses = false;
+        realm.realm_disallow_disposable_email_addresses = false;
         settings_org.sync_realm_settings("emails_restricted_to_domains");
         assert.equal($("#id_realm_org_join_restrictions").val(), "no_restriction");
     }
@@ -392,7 +391,7 @@ function test_parse_time_limit() {
     const $elem = $("#id_realm_message_content_edit_limit_minutes");
     const test_function = (value, expected_value = value) => {
         $elem.val(value);
-        page_params.realm_message_content_edit_limit_seconds =
+        realm.realm_message_content_edit_limit_seconds =
             settings_components.parse_time_limit($elem);
         assert.equal(
             settings_components.get_realm_time_limits_in_minutes(
@@ -427,14 +426,13 @@ function test_discard_changes_button(discard_changes) {
         target: ".save-discard-widget-button.discard-button",
     };
 
-    page_params.realm_allow_edit_history = true;
-    page_params.realm_edit_topic_policy =
+    realm.realm_allow_edit_history = true;
+    realm.realm_edit_topic_policy = settings_config.common_message_policy_values.by_everyone.code;
+    realm.realm_allow_message_editing = true;
+    realm.realm_message_content_edit_limit_seconds = 3600;
+    realm.realm_delete_own_message_policy =
         settings_config.common_message_policy_values.by_everyone.code;
-    page_params.realm_allow_message_editing = true;
-    page_params.realm_message_content_edit_limit_seconds = 3600;
-    page_params.realm_delete_own_message_policy =
-        settings_config.common_message_policy_values.by_everyone.code;
-    page_params.realm_message_content_delete_limit_seconds = 120;
+    realm.realm_message_content_delete_limit_seconds = 120;
 
     const $allow_edit_history = $("#id_realm_allow_edit_history").prop("checked", false);
     const $edit_topic_policy = $("#id_realm_edit_topic_policy").val(
@@ -489,7 +487,7 @@ function test_discard_changes_button(discard_changes) {
 }
 
 test("set_up", ({override, override_rewire}) => {
-    page_params.realm_available_video_chat_providers = {
+    realm.realm_available_video_chat_providers = {
         jitsi_meet: {
             id: 1,
             name: "Jitsi Meet",
@@ -634,7 +632,7 @@ test("set_up", ({override, override_rewire}) => {
 
     // TEST set_up() here, but this mostly just allows us to
     // get access to the click handlers.
-    override(page_params, "is_owner", true);
+    override(current_user, "is_owner", true);
     settings_org.set_up();
 
     test_submit_settings_form(
@@ -770,61 +768,61 @@ test("test get_sorted_options_list", () => {
 });
 
 test("misc", () => {
-    page_params.is_admin = false;
+    current_user.is_admin = false;
     $("#user-avatar-upload-widget").length = 1;
     $("#user_details_section").length = 1;
 
-    page_params.realm_name_changes_disabled = false;
-    page_params.server_name_changes_disabled = false;
+    realm.realm_name_changes_disabled = false;
+    realm.server_name_changes_disabled = false;
     settings_account.update_name_change_display();
     assert.ok(!$("#full_name").prop("disabled"));
     assert.ok(!$("#full_name_input_container").hasClass("disabled_setting_tooltip"));
 
-    page_params.realm_name_changes_disabled = true;
-    page_params.server_name_changes_disabled = false;
+    realm.realm_name_changes_disabled = true;
+    realm.server_name_changes_disabled = false;
     settings_account.update_name_change_display();
     assert.ok($("#full_name").prop("disabled"));
     assert.ok($("#full_name_input_container").hasClass("disabled_setting_tooltip"));
 
-    page_params.realm_name_changes_disabled = true;
-    page_params.server_name_changes_disabled = true;
+    realm.realm_name_changes_disabled = true;
+    realm.server_name_changes_disabled = true;
     settings_account.update_name_change_display();
     assert.ok($("#full_name").prop("disabled"));
     assert.ok($("#full_name_input_container").hasClass("disabled_setting_tooltip"));
 
-    page_params.realm_name_changes_disabled = false;
-    page_params.server_name_changes_disabled = true;
+    realm.realm_name_changes_disabled = false;
+    realm.server_name_changes_disabled = true;
     settings_account.update_name_change_display();
     assert.ok($("#full_name").prop("disabled"));
     assert.ok($("#full_name_input_container").hasClass("disabled_setting_tooltip"));
 
-    page_params.realm_email_changes_disabled = false;
+    realm.realm_email_changes_disabled = false;
     settings_account.update_email_change_display();
     assert.ok(!$("#change_email_button").prop("disabled"));
 
-    page_params.realm_email_changes_disabled = true;
+    realm.realm_email_changes_disabled = true;
     settings_account.update_email_change_display();
     assert.ok($("#change_email_button").prop("disabled"));
 
-    page_params.realm_avatar_changes_disabled = false;
-    page_params.server_avatar_changes_disabled = false;
+    realm.realm_avatar_changes_disabled = false;
+    realm.server_avatar_changes_disabled = false;
     settings_account.update_avatar_change_display();
     assert.ok(!$("#user-avatar-upload-widget .image_upload_button").hasClass("hide"));
-    page_params.realm_avatar_changes_disabled = true;
-    page_params.server_avatar_changes_disabled = false;
+    realm.realm_avatar_changes_disabled = true;
+    realm.server_avatar_changes_disabled = false;
     settings_account.update_avatar_change_display();
     assert.ok($("#user-avatar-upload-widget .image_upload_button").hasClass("hide"));
-    page_params.realm_avatar_changes_disabled = false;
-    page_params.server_avatar_changes_disabled = true;
+    realm.realm_avatar_changes_disabled = false;
+    realm.server_avatar_changes_disabled = true;
     settings_account.update_avatar_change_display();
     assert.ok($("#user-avatar-upload-widget .image_upload_button").hasClass("hide"));
-    page_params.realm_avatar_changes_disabled = true;
-    page_params.server_avatar_changes_disabled = true;
+    realm.realm_avatar_changes_disabled = true;
+    realm.server_avatar_changes_disabled = true;
     settings_account.update_avatar_change_display();
     assert.ok($("#user-avatar-upload-widget .image_upload_button").hasClass("hide"));
 
     // If organization admin, these UI elements are never disabled.
-    page_params.is_admin = true;
+    current_user.is_admin = true;
     settings_account.update_name_change_display();
     assert.ok(!$("#full_name").prop("disabled"));
     assert.ok(!$("#full_name_input_container").hasClass("disabled_setting_tooltip"));

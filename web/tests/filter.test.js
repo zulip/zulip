@@ -8,7 +8,7 @@ const {mock_esm, with_overrides, zrequire} = require("./lib/namespace");
 const {run_test} = require("./lib/test");
 const blueslip = require("./lib/zblueslip");
 const $ = require("./lib/zjquery");
-const {page_params} = require("./lib/zpage_params");
+const {page_params, realm} = require("./lib/zpage_params");
 
 const message_store = mock_esm("../src/message_store");
 
@@ -979,7 +979,7 @@ function test_mit_exceptions() {
 }
 
 test("mit_exceptions", ({override}) => {
-    override(page_params, "realm_is_zephyr_mirror_realm", true);
+    override(realm, "realm_is_zephyr_mirror_realm", true);
     test_mit_exceptions();
 });
 
@@ -1757,7 +1757,7 @@ test("navbar_helpers", () => {
         },
     ];
 
-    page_params.realm_enable_guest_user_indicator = true;
+    realm.realm_enable_guest_user_indicator = true;
 
     for (const test_case of test_cases) {
         test_helpers(test_case);
@@ -1786,7 +1786,7 @@ test("navbar_helpers", () => {
 
     // TODO: test every single one of the "ALL" redirects from the navbar behaviour table
 
-    // incomplete and weak test cases just to restore coverage of filter.js
+    // incomplete and weak test cases just to restore coverage of filter.ts
     const complex_term = [
         {operator: "stream", operand: "foo"},
         {operator: "topic", operand: "bar"},
@@ -1812,7 +1812,7 @@ test("navbar_helpers", () => {
 
     test_get_title(stream_topic_search_term_test_case);
 
-    page_params.realm_enable_guest_user_indicator = false;
+    realm.realm_enable_guest_user_indicator = false;
     const guest_user_test_cases_without_indicator = [
         {
             terms: guest_sender,

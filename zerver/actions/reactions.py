@@ -8,9 +8,9 @@ from zerver.lib.message import (
     access_message,
     set_visibility_policy_possible,
     should_change_visibility_policy,
-    update_to_dict_cache,
     visibility_policy_for_participation,
 )
+from zerver.lib.message_cache import update_message_cache
 from zerver.lib.stream_subscription import subscriber_ids_with_stream_history_access
 from zerver.lib.streams import access_stream_by_id
 from zerver.models import Message, Reaction, Recipient, Stream, UserMessage, UserProfile
@@ -41,7 +41,7 @@ def notify_reaction_update(
     }
 
     # Update the cached message since new reaction is added.
-    update_to_dict_cache([message])
+    update_message_cache([message])
 
     # Recipients for message update events, including reactions, are
     # everyone who got the original message, plus subscribers of

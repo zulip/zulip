@@ -5,9 +5,9 @@ import render_compose_banner from "../templates/compose_banner/compose_banner.hb
 import * as blueslip from "./blueslip";
 import * as compose_banner from "./compose_banner";
 import {$t} from "./i18n";
-import {page_params} from "./page_params";
 import {realm_user_settings_defaults} from "./realm_user_settings_defaults";
 import * as settings_config from "./settings_config";
+import {realm} from "./state_data";
 import * as stream_data from "./stream_data";
 import * as util from "./util";
 
@@ -37,11 +37,11 @@ export function get_sorted_options_list(option_values_object) {
 }
 
 export function get_realm_time_limits_in_minutes(property) {
-    if (page_params[property] === null) {
+    if (realm[property] === null) {
         // This represents "Anytime" case.
         return null;
     }
-    let val = (page_params[property] / 60).toFixed(1);
+    let val = (realm[property] / 60).toFixed(1);
     if (Number.parseFloat(val, 10) === Number.parseInt(val, 10)) {
         val = Number.parseInt(val, 10);
     }
@@ -79,16 +79,16 @@ export function get_property_value(property_name, for_realm_default_settings, su
     }
 
     if (property_name === "realm_org_join_restrictions") {
-        if (page_params.realm_emails_restricted_to_domains) {
+        if (realm.realm_emails_restricted_to_domains) {
             return "only_selected_domain";
         }
-        if (page_params.realm_disallow_disposable_email_addresses) {
+        if (realm.realm_disallow_disposable_email_addresses) {
             return "no_disposable_email";
         }
         return "no_restriction";
     }
 
-    return page_params[property_name];
+    return realm[property_name];
 }
 
 export function extract_property_name($elem, for_realm_default_settings) {
@@ -132,7 +132,7 @@ export function change_element_block_display_property(elem_id, show_element) {
 
 export function is_video_chat_provider_jitsi_meet() {
     const video_chat_provider_id = Number.parseInt($("#id_realm_video_chat_provider").val(), 10);
-    const jitsi_meet_id = page_params.realm_available_video_chat_providers.jitsi_meet.id;
+    const jitsi_meet_id = realm.realm_available_video_chat_providers.jitsi_meet.id;
     return video_chat_provider_id === jitsi_meet_id;
 }
 
@@ -142,7 +142,7 @@ function get_jitsi_server_url_setting_value($input_elem, for_api_data = true) {
     // This ensures the appropriate state of the save button and prevents the
     // addition of the `jitsi_server_url` in the API data.
     if (!is_video_chat_provider_jitsi_meet()) {
-        return page_params.realm_jitsi_server_url;
+        return realm.realm_jitsi_server_url;
     }
 
     const select_elem_val = $input_elem.val();
@@ -177,13 +177,13 @@ export function update_custom_value_input(property_name) {
 }
 
 export function get_time_limit_dropdown_setting_value(property_name) {
-    if (page_params[property_name] === null) {
+    if (realm[property_name] === null) {
         return "any_time";
     }
 
     const valid_limit_values = settings_config.time_limit_dropdown_values.map((x) => x.value);
-    if (valid_limit_values.includes(page_params[property_name])) {
-        return page_params[property_name].toString();
+    if (valid_limit_values.includes(realm[property_name])) {
+        return realm[property_name].toString();
     }
 
     return "custom_period";
@@ -510,6 +510,7 @@ export function check_property_changed(elem, for_realm_default_settings, sub, gr
         case "can_remove_subscribers_group":
         case "realm_create_multiuse_invite_group":
         case "can_mention_group":
+        case "realm_can_access_all_users_group":
             proposed_val = get_dropdown_list_widget_setting_value($elem);
             break;
         case "email_notifications_batching_period_seconds":

@@ -62,7 +62,6 @@ def run() -> None:
                 "hbs",
                 "html",
                 "js",
-                "lock",
                 "ts",
             ],
         },

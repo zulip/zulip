@@ -296,10 +296,6 @@ export function mark_as_unread_from_here(
     });
 }
 
-export function resume_reading() {
-    message_lists.current.resume_reading();
-}
-
 export function process_read_messages_event(message_ids) {
     /*
         This code has a lot in common with notify_server_messages_read,
@@ -439,14 +435,21 @@ export function notify_server_message_read(message, options) {
     notify_server_messages_read([message], options);
 }
 
-export function process_scrolled_to_bottom() {
+function process_scrolled_to_bottom() {
     if (!narrow_state.is_message_feed_visible()) {
         // First, verify the current message list is visible.
         return;
     }
 
     if (message_lists.current.can_mark_messages_read()) {
-        mark_current_list_as_read();
+        // Mark all the messages in this message feed as read.
+        //
+        // Important: We have not checked definitively whether there
+        // are further messages that we're waiting on the server to
+        // return that would appear below the visible part of the
+        // feed, so it would not be correct to instead ask the server
+        // to mark all messages matching this entire narrow as read.
+        notify_server_messages_read(message_lists.current.all_messages());
         return;
     }
 
@@ -459,15 +462,15 @@ export function process_scrolled_to_bottom() {
 }
 
 // If we ever materially change the algorithm for this function, we
-// may need to update notifications.received_messages as well.
+// may need to update message_notifications.received_messages as well.
 export function process_visible() {
-    if (viewport_is_visible_and_focused() && message_viewport.bottom_message_visible()) {
+    if (
+        viewport_is_visible_and_focused() &&
+        message_viewport.bottom_rendered_message_visible() &&
+        message_lists.current.view.is_fetched_end_rendered()
+    ) {
         process_scrolled_to_bottom();
     }
-}
-
-export function mark_current_list_as_read(options) {
-    notify_server_messages_read(message_lists.current.all_messages(), options);
 }
 
 export function mark_stream_as_read(stream_id) {

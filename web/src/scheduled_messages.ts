@@ -2,16 +2,23 @@ import * as channel from "./channel";
 import {$t} from "./i18n";
 import * as timerender from "./timerender";
 
-type ScheduledMessage = {
+export type ScheduledMessage = {
     scheduled_message_id: number;
-    type: string;
-    to: number[] | number;
-    topic: string;
     content: string;
     rendered_content: string;
     scheduled_delivery_timestamp: number;
     failed: boolean;
-};
+} & (
+    | {
+          type: "private";
+          to: number[];
+      }
+    | {
+          type: "stream";
+          to: number;
+          topic: string;
+      }
+);
 
 type TimeKey =
     | "today_nine_am"

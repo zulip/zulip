@@ -5,17 +5,14 @@ import render_draft_table_body from "../templates/draft_table_body.hbs";
 
 import * as browser_history from "./browser_history";
 import * as compose_actions from "./compose_actions";
-import * as compose_state from "./compose_state";
 import * as drafts from "./drafts";
 import {$t} from "./i18n";
 import * as messages_overlay_ui from "./messages_overlay_ui";
 import * as narrow from "./narrow";
-import * as narrow_state from "./narrow_state";
 import * as overlays from "./overlays";
 import * as people from "./people";
 import * as rendered_markdown from "./rendered_markdown";
 import * as stream_data from "./stream_data";
-import * as util from "./util";
 
 function restore_draft(draft_id) {
     const draft = drafts.draft_model.getDraft(draft_id);
@@ -81,78 +78,6 @@ function update_rendered_drafts(has_drafts_from_conversation, has_other_drafts) 
     }
 }
 
-function current_recipient_data() {
-    // Prioritize recipients from the compose box first. If the compose
-    // box isn't open, just return data from the current narrow.
-    if (!compose_state.composing()) {
-        const stream_name = narrow_state.stream_name();
-        return {
-            stream_name,
-            topic: narrow_state.topic(),
-            private_recipients: narrow_state.pm_emails_string(),
-        };
-    }
-
-    if (compose_state.get_message_type() === "stream") {
-        const stream_name = compose_state.stream_name();
-        return {
-            stream_name,
-            topic: compose_state.topic(),
-            private_recipients: undefined,
-        };
-    } else if (compose_state.get_message_type() === "private") {
-        return {
-            stream_name: undefined,
-            topic: undefined,
-            private_recipients: compose_state.private_message_recipient(),
-        };
-    }
-    return {
-        stream_name: undefined,
-        topic: undefined,
-        private_recipients: undefined,
-    };
-}
-
-function filter_drafts_by_compose_box_and_recipient(drafts) {
-    const {stream_name, topic, private_recipients} = current_recipient_data();
-    const stream_id = stream_name ? stream_data.get_stream_id(stream_name) : undefined;
-    const narrow_drafts_ids = [];
-    for (const [id, draft] of Object.entries(drafts)) {
-        // Match by stream and topic.
-        if (
-            stream_id &&
-            topic &&
-            draft.topic &&
-            util.same_recipient(draft, {type: "stream", stream_id, topic})
-        ) {
-            narrow_drafts_ids.push(id);
-        }
-        // Match by only stream.
-        else if (draft.type === "stream" && stream_id && !topic && draft.stream_id === stream_id) {
-            narrow_drafts_ids.push(id);
-        }
-        // Match by direct message recipient.
-        else if (
-            draft.type === "private" &&
-            private_recipients &&
-            _.isEqual(
-                draft.private_message_recipient
-                    .split(",")
-                    .map((s) => s.trim())
-                    .sort(),
-                private_recipients
-                    .split(",")
-                    .map((s) => s.trim())
-                    .sort(),
-            )
-        ) {
-            narrow_drafts_ids.push(id);
-        }
-    }
-    return _.pick(drafts, narrow_drafts_ids);
-}
-
 const keyboard_handling_context = {
     get_items_ids() {
         const draft_arrow = drafts.draft_model.get();
@@ -211,7 +136,7 @@ export function launch() {
     }
 
     function get_header_for_narrow_drafts() {
-        const {stream_name, topic, private_recipients} = current_recipient_data();
+        const {stream_name, topic, private_recipients} = drafts.current_recipient_data();
         if (private_recipients) {
             return $t(
                 {defaultMessage: "Drafts from conversation with {recipient}"},
@@ -304,7 +229,7 @@ export function launch() {
     }
 
     const all_drafts = drafts.draft_model.get();
-    const narrow_drafts = filter_drafts_by_compose_box_and_recipient(all_drafts);
+    const narrow_drafts = drafts.filter_drafts_by_compose_box_and_recipient(all_drafts);
     const other_drafts = _.pick(
         all_drafts,
         _.difference(Object.keys(all_drafts), Object.keys(narrow_drafts)),

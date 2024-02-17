@@ -13,6 +13,7 @@
   "auto_advance": true,
   "automatic_tax": {
     "enabled": false,
+    "liability": null,
     "status": null
   },
   "billing_reason": "manual",
@@ -40,9 +41,12 @@
   "ending_balance": 0,
   "footer": null,
   "from_invoice": null,
-  "hosted_invoice_url": "https://invoice.stripe.com/i/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QRDc4OVE3RUU5a0xnUE92Y1o4alc3bFVCbUowdnF3LDkzNDQ3MDY30200SQ7twrIF?s=ap",
+  "hosted_invoice_url": "https://invoice.stripe.com/i/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QV3loVGtybVZmVDJDNjV5OUNPOHBkaW1zdWpNazdPLDk4MDI4NDYz020097iTswsh?s=ap",
   "id": "in_NORMALIZED00000000000007",
-  "invoice_pdf": "https://pay.stripe.com/invoice/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QRDc4OVE3RUU5a0xnUE92Y1o4alc3bFVCbUowdnF3LDkzNDQ3MDY30200SQ7twrIF/pdf?s=ap",
+  "invoice_pdf": "https://pay.stripe.com/invoice/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QV3loVGtybVZmVDJDNjV5OUNPOHBkaW1zdWpNazdPLDk4MDI4NDYz020097iTswsh/pdf?s=ap",
+  "issuer": {
+    "type": "self"
+  },
   "last_finalization_error": null,
   "latest_revision": null,
   "lines": {

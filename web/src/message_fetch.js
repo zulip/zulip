@@ -38,6 +38,9 @@ const consts = {
     narrowed_view_forward_batch_size: 100,
     recent_view_fetch_more_batch_size: 1000,
     catch_up_batch_size: 1000,
+    // Delay in milliseconds after processing a catch-up request
+    // before sending the next one.
+    catch_up_backfill_delay: 150,
 };
 
 function process_result(data, opts) {
@@ -48,7 +51,7 @@ function process_result(data, opts) {
     const has_found_newest = opts.msg_list?.data.fetch_status.has_found_newest() ?? false;
 
     // In some rare situations, we expect to discover new unread
-    // messages not tracked in unread.js during this fetching process.
+    // messages not tracked in unread.ts during this fetching process.
     message_util.do_unread_count_updates(messages, true);
 
     // If we're loading more messages into the home view, save them to
@@ -367,15 +370,28 @@ export function load_messages(opts, attempt = 1) {
                 return;
             }
 
-            // Backoff on retries, with full jitter: up to 2s, 4s, 8s, 16s, 32s
-            let delay = Math.random() * 2 ** attempt * 2000;
-            if (attempt >= 5) {
-                delay = 30000;
-            }
             ui_report.show_error($("#connection-error"));
+
+            // We need to respect the server's rate-limiting headers, but beyond
+            // that, we also want to avoid contributing to a thundering herd if
+            // the server is giving us 500s/502s.
+            //
+            // So we do the maximum of the retry-after header and an exponential
+            // backoff with ratio 2 and half jitter. Starts at 1-2s and ends at
+            // 16-32s after 5 failures.
+            const backoff_scale = Math.min(2 ** attempt, 32);
+            const backoff_delay_secs = ((1 + Math.random()) / 2) * backoff_scale;
+            let rate_limit_delay_secs = 0;
+            if (xhr.status === 429 && xhr.responseJSON?.code === "RATE_LIMIT_HIT") {
+                // Add a bit of jitter to the required delay suggested by the
+                // server, because we may be racing with other copies of the web
+                // app.
+                rate_limit_delay_secs = xhr.responseJSON["retry-after"] + Math.random() * 0.5;
+            }
+            const delay_secs = Math.max(backoff_delay_secs, rate_limit_delay_secs);
             setTimeout(() => {
                 load_messages(opts, attempt + 1);
-            }, delay);
+            }, delay_secs * 1000);
         },
     });
 }
@@ -563,16 +579,19 @@ export function initialize(home_view_loaded) {
 
         // If we fall through here, we need to keep fetching more data, and
         // we'll call back to the function we're in.
-        const messages = data.messages;
-        const latest_id = messages.at(-1).id;
-
-        load_messages({
-            anchor: latest_id,
-            num_before: 0,
-            num_after: consts.catch_up_batch_size,
-            msg_list: message_lists.home,
-            cont: load_more,
-        });
+        //
+        // But we do it with a bit of delay, to reduce risk that we
+        // hit rate limits with these backfills.
+        const latest_id = data.messages.at(-1).id;
+        setTimeout(() => {
+            load_messages({
+                anchor: latest_id,
+                num_before: 0,
+                num_after: consts.catch_up_batch_size,
+                msg_list: message_lists.home,
+                cont: load_more,
+            });
+        }, consts.catch_up_backfill_delay);
     }
 
     let anchor;

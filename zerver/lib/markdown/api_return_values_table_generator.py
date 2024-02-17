@@ -139,7 +139,9 @@ class APIReturnValuesTablePreprocessor(Preprocessor):
                 continue
             description = return_values[return_value]["description"]
             data_type = generate_data_type(return_values[return_value])
-            check_deprecated_consistency(return_values[return_value], description)
+            check_deprecated_consistency(
+                return_values[return_value].get("deprecated", False), description
+            )
             ans.append(self.render_desc(description, spacing, data_type, return_value))
             if "properties" in return_values[return_value]:
                 ans += self.render_table(return_values[return_value]["properties"], spacing + 4)

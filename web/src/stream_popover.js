@@ -8,7 +8,6 @@ import * as blueslip from "./blueslip";
 import * as browser_history from "./browser_history";
 import * as compose_actions from "./compose_actions";
 import * as composebox_typeahead from "./composebox_typeahead";
-import {media_breakpoints_num} from "./css_variables";
 import * as dialog_widget from "./dialog_widget";
 import * as dropdown_widget from "./dropdown_widget";
 import * as hash_util from "./hash_util";
@@ -168,11 +167,9 @@ function build_stream_popover(opts) {
             });
 
             // Unsubscribe
-            $popper.on("click", ".popover_sub_unsub_button", function (e) {
-                $(this).toggleClass("unsub");
-                $(this).closest(".popover").fadeOut(500).delay(500).remove();
-
+            $popper.on("click", ".popover_sub_unsub_button", (e) => {
                 const sub = stream_popover_sub(e);
+                hide_stream_popover();
                 stream_settings_components.sub_or_unsub(sub);
                 e.preventDefault();
                 e.stopPropagation();
@@ -192,14 +189,6 @@ function build_stream_popover(opts) {
                 // fixing it up here.
                 $colorpicker.parent().find(".sp-container").removeClass("sp-buttons-disabled");
                 $(e.target).hide();
-
-                $(".streams_popover").on("click", "a.sp-cancel", () => {
-                    hide_stream_popover();
-                });
-                if ($(window).width() <= media_breakpoints_num.md) {
-                    $(".popover-inner").hide().fadeIn(300);
-                    $(".popover").addClass("colorpicker-popover");
-                }
                 e.stopPropagation();
             });
         },
@@ -565,16 +554,17 @@ export async function build_move_topic_to_stream_popover(
         }).setup();
 
         render_selected_stream();
-        $("#select_stream_widget .dropdown-toggle").prop("disabled", disable_stream_input);
+        $("#move_topic_to_stream_widget").prop("disabled", disable_stream_input);
+        if (disable_stream_input) {
+            $stream_header_colorblock.addClass("disabled");
+        }
         $("#move_topic_modal .move_messages_edit_topic").on("input", () => {
             update_submit_button_disabled_state(stream_widget_value);
         });
     }
 
     function focus_on_move_modal_render() {
-        if (!disable_stream_input && args.disable_topic_input) {
-            $("#select_stream_widget .button").trigger("focus");
-        } else {
+        if (!args.disable_topic_input) {
             ui_util.place_caret_at_end($(".move_messages_edit_topic")[0]);
         }
     }

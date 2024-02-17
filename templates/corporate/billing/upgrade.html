@@ -36,6 +36,13 @@
         </div>
         <div class="white-box">
             <div id="upgrade-page-details">
+                {% if pay_by_invoice_payments_page %}
+                <div id="pay-by-invoice-details">
+                    <a href="{{ pay_by_invoice_payments_page }}" target="_blank" rel="noopener noreferrer">An invoice</a>
+                    for $<span class="due-today-price"></span> has been sent to <b>{{email}}</b>.
+                    To complete the plan upgrade process, please pay the amount due.
+                </div>
+                {% else %}
                 <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}" />
                 <form id="autopay-form">
                     <input type="hidden" name="seat_count" value="{{ seat_count }}" />
@@ -213,6 +220,15 @@
                                 <object class="loader upgrade-button-loader" type="image/svg+xml" data="{{ static('images/loading/loader-white.svg') }}"></object>
                             </button>
                         </div>
+                        {% if not free_trial_days and payment_method %}
+                        <div class="stripe-billing-information not-editable-realm-field">
+                            {% if not manual_license_management %}
+                            <a href="{{ page_params.billing_base_url }}/customer_portal/?tier={{ page_params.tier }}">View and update</a> billing information that will be displayed on your invoice and receipt.
+                            {% else %}
+                            <a href="{{ page_params.billing_base_url }}/customer_portal/?manual_license_management=true&tier={{ page_params.tier }}">View and update</a> billing information that will be displayed on your invoice and receipt.
+                            {% endif %}
+                        </div>
+                        {% endif %}
                         <div id="upgrade-cardchange-error" class="alert alert-danger upgrade-page-error"></div>
                     </div>
                     {% endif %}
@@ -244,9 +260,14 @@
                     {% endif %}
                     <input type="hidden" name="tier" value="{{ page_params.tier }}" />
                 </form>
+                {% endif %}
                 <div class="input-box upgrade-page-field">
                     <div class="support-link not-editable-realm-field">
+                        {% if pay_by_invoice_payments_page %}
+                        If you have questions or need to make any changes, please contact <a href="mailto:sales@zulip.com">sales@zulip.com</a>.
+                        {% else %}
                         To pay by invoice or for any other questions, contact <a href="mailto:sales@zulip.com">sales@zulip.com</a>.
+                        {% endif %}
                     </div>
                 </div>
             </div>

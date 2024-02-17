@@ -29,10 +29,16 @@ from corporate.views.portico import (
     app_download_link_redirect,
     apps_view,
     communities_view,
+    customer_portal,
     hello_view,
+    invoices_page,
     landing_view,
     plans_view,
+    remote_realm_customer_portal,
+    remote_realm_invoices_page,
     remote_realm_plans_page,
+    remote_server_customer_portal,
+    remote_server_invoices_page,
     remote_server_plans_page,
     team_view,
 )
@@ -83,6 +89,8 @@ i18n_urlpatterns: Any = [
     path("jobs/", TemplateView.as_view(template_name="corporate/jobs.html")),
     # Billing
     path("billing/", billing_page, name="billing_page"),
+    path("invoices/", invoices_page, name="invoices_page"),
+    path("customer_portal/", customer_portal, name="customer_portal_page"),
     path("sponsorship/", sponsorship_page, name="sponsorship_request"),
     path("upgrade/", upgrade_page, name="upgrade_page"),
     path("support/", support_request),
@@ -280,6 +288,26 @@ urlpatterns += [
         "server/<server_uuid>/billing/event_status/",
         remote_server_event_status_page,
         name="remote_server_event_status_page",
+    ),
+    path(
+        "realm/<realm_uuid>/invoices/",
+        remote_realm_invoices_page,
+        name="remote_realm_invoices_page",
+    ),
+    path(
+        "server/<server_uuid>/invoices/",
+        remote_server_invoices_page,
+        name="remote_server_invoices_page",
+    ),
+    path(
+        "realm/<realm_uuid>/customer_portal/",
+        remote_realm_customer_portal,
+        name="remote_realm_customer_portal_page",
+    ),
+    path(
+        "server/<server_uuid>/customer_portal/",
+        remote_server_customer_portal,
+        name="remote_server_customer_portal_page",
     ),
     # Remote variants of above API endpoints.
     path("json/realm/<realm_uuid>/billing/sponsorship", remote_realm_sponsorship),

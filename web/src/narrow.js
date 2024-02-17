@@ -44,9 +44,9 @@ import * as recent_view_ui from "./recent_view_ui";
 import * as recent_view_util from "./recent_view_util";
 import * as resize from "./resize";
 import * as scheduled_messages_feed_ui from "./scheduled_messages_feed_ui";
-import * as search from "./search";
 import {web_mark_read_on_scroll_policy_values} from "./settings_config";
 import * as spectators from "./spectators";
+import {realm} from "./state_data";
 import * as stream_data from "./stream_data";
 import * as stream_list from "./stream_list";
 import * as topic_generator from "./topic_generator";
@@ -299,7 +299,7 @@ export function activate(raw_terms, opts) {
 
                 if (
                     !narrow_matches_target_message &&
-                    (narrow_exists_in_edit_history || !page_params.realm_allow_edit_history)
+                    (narrow_exists_in_edit_history || !realm.realm_allow_edit_history)
                 ) {
                     const adjusted_terms = adjusted_terms_if_moved(raw_terms, target_message);
                     if (adjusted_terms !== null) {
@@ -1063,8 +1063,6 @@ export function deactivate() {
       message_list_data structure caching system that happens to have
       message_lists.home in it.
      */
-    search.clear_search_form();
-
     const coming_from_recent_view = recent_view_util.is_visible();
     const coming_from_inbox = inbox_util.is_visible();
 
@@ -1121,7 +1119,6 @@ export function deactivate() {
 
         reset_ui_state();
         compose_recipient.handle_middle_pane_transition();
-        save_narrow();
 
         if (message_lists.current.selected_id() !== -1) {
             const preserve_pre_narrowing_screen_position =

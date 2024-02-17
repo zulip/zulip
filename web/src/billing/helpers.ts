@@ -102,6 +102,14 @@ export function create_ajax_request(
             }
             $(form_input_section).show();
             error_callback(xhr);
+
+            if (xhr.status === 401) {
+                // User session timed out, we need to login again.
+                const login_url = JSON.parse(xhr.responseText)?.login_url;
+                if (login_url !== undefined) {
+                    window.location.href = login_url;
+                }
+            }
         },
     });
 }

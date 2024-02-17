@@ -7,10 +7,11 @@
       "amount_total": null,
       "automatic_tax": {
         "enabled": false,
+        "liability": null,
         "status": null
       },
-      "billing_address_collection": null,
-      "cancel_url": "http://selfhosting.testserver/realm/bb6ee6b4-a719-4ed9-a5e2-6421d9843ef6/upgrade/?manual_license_management=false&tier=1",
+      "billing_address_collection": "required",
+      "cancel_url": "http://selfhosting.testserver/realm/6e3ae165-ac87-411f-9862-bb5bd2755052/upgrade/?manual_license_management=false&tier=1",
       "client_reference_id": null,
       "client_secret": null,
       "consent": null,
@@ -37,13 +38,13 @@
       },
       "customer_email": null,
       "expires_at": 1000000000,
-      "id": "cs_test_NORMALIZED028rdW2h5lfmpBWDmvkGn6UC8jY2yQtvZahKAfQMrt89Q2KP",
+      "id": "cs_test_NORMALIZED02YN9dw64Lan729wQlhgSGKngjlnd5DcrKAKifU9gEBHpxN5",
       "invoice": null,
       "invoice_creation": null,
       "livemode": false,
       "locale": null,
       "metadata": {
-        "remote_realm_user_id": "2",
+        "remote_realm_user_id": "12",
         "type": "card_update"
       },
       "mode": "setup",
@@ -61,7 +62,7 @@
         "enabled": false
       },
       "recovered_from": null,
-      "setup_intent": "seti_1OPIxYDEQaroqDjsuX8oXqC0",
+      "setup_intent": "seti_1OhupiDEQaroqDjszQ4EVEvY",
       "shipping": null,
       "shipping_address_collection": null,
       "shipping_options": [],
@@ -69,10 +70,10 @@
       "status": "open",
       "submit_type": null,
       "subscription": null,
-      "success_url": "http://selfhosting.testserver/realm/bb6ee6b4-a719-4ed9-a5e2-6421d9843ef6/billing/event_status?stripe_session_id={CHECKOUT_SESSION_ID}",
+      "success_url": "http://selfhosting.testserver/realm/6e3ae165-ac87-411f-9862-bb5bd2755052/billing/event_status/?stripe_session_id={CHECKOUT_SESSION_ID}",
       "total_details": null,
       "ui_mode": "hosted",
-      "url": "https://checkout.stripe.com/c/pay/cs_test_NORMALIZED028rdW2h5lfmpBWDmvkGn6UC8jY2yQtvZahKAfQMrt89Q2KP#fid1d2BpamRhQ2prcSc%2FJ1ZqcHdmYCVWZGt2JVV3aicpJ2R1bE5gfCc%2FJ3VuWnFgdnFaXVRmMU5zNkldQTY9SnNRY09XZml2UXNQJyknY3dqaFZgd3Ngdyc%2FcXdwYCknaWR8anBxUXx1YCc%2FJ3Zsa2JpYFpmamlwaGsnKSdga2RnaWBVaWRmYG1qaWFgd3YnP3F3cGB4JSUl"
+      "url": "https://checkout.stripe.com/c/pay/cs_test_NORMALIZED02YN9dw64Lan729wQlhgSGKngjlnd5DcrKAKifU9gEBHpxN5#fid1d2BpamRhQ2prcSc%2FJ1ZqcHdmYCVWZGt2JVV3aicpJ2p1cWxobHZxbGZSZGlpYHFXYGthYHcnP3F3cGApJ2R1bE5gfCc%2FJ3VuWnFgdnFaXVRmMU5zNkldQTY9SnNRY09XZml2UXNQJyknY3dqaFZgd3Ngdyc%2FcXdwYCknaWR8anBxUXx1YCc%2FJ3Zsa2JpYFpmamlwaGsnKSdga2RnaWBVaWRmYG1qaWFgd3YnP3F3cGB4JSUl"
     }
   ],
   "has_more": true,

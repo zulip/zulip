@@ -7,7 +7,7 @@ const {make_stub} = require("./lib/stub");
 const {run_test, noop} = require("./lib/test");
 const blueslip = require("./lib/zblueslip");
 const $ = require("./lib/zjquery");
-const {page_params, user_settings} = require("./lib/zpage_params");
+const {current_user, page_params, user_settings} = require("./lib/zpage_params");
 
 const alice_user_id = 5;
 
@@ -44,9 +44,12 @@ const settings_data = mock_esm("../src/settings_data");
 const spectators = mock_esm("../src/spectators", {
     login_to_access() {},
 });
-mock_esm("../src/message_lists", {
+const message_lists = mock_esm("../src/message_lists", {
     current: {
         id: 1,
+    },
+    home: {
+        id: 2,
     },
 });
 
@@ -105,7 +108,7 @@ people.add_active_user(alexus);
 
 function test(label, f) {
     run_test(label, (helpers) => {
-        page_params.user_id = alice_user_id;
+        current_user.user_id = alice_user_id;
         f(helpers);
     });
 }
@@ -417,6 +420,7 @@ test("prevent_simultaneous_requests_updating_reaction", ({override, override_rew
 function stub_reactions(message_id) {
     const $message_reactions = $.create("reactions-stub");
     const $message_row = $.create(`#message-row-1-${CSS.escape(message_id)}`);
+    message_lists.all_rendered_row_for_message_id = () => $message_row;
     $message_row.set_find_results(".message_reactions", $message_reactions);
     return $message_reactions;
 }
@@ -541,10 +545,10 @@ test("find_reaction", () => {
     assert.equal(reactions.find_reaction(message_id, local_id), $reaction);
 });
 
-test("get_reaction_section", () => {
+test("get_reaction_sections", () => {
     const $message_reactions = stub_reactions(555);
 
-    const $section = reactions.get_reaction_section(555);
+    const $section = reactions.get_reaction_sections(555);
 
     assert.equal($section, $message_reactions);
 });

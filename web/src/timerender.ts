@@ -423,8 +423,21 @@ export function get_full_time(timestamp: number): string {
     return formatISO(timestamp * 1000);
 }
 
-export function get_timestamp_for_flatpickr(timestring: string): Date {
+function get_current_time_to_hour(): Date {
+    const timestamp = new Date();
+    timestamp.setMinutes(0, 0);
+    return timestamp;
+}
+
+export function get_timestamp_for_flatpickr(timestring?: string): Date {
     let timestamp;
+
+    // timestring is undefined when first opening the picker from the
+    // compose box button.
+    if (timestring === undefined) {
+        return get_current_time_to_hour();
+    }
+
     try {
         // If there's already a valid time in the compose box,
         // we use it to initialize the flatpickr instance.
@@ -432,8 +445,7 @@ export function get_timestamp_for_flatpickr(timestring: string): Date {
     } finally {
         // Otherwise, default to showing the current time to the hour.
         if (!timestamp || !isValid(timestamp)) {
-            timestamp = new Date();
-            timestamp.setMinutes(0, 0);
+            timestamp = get_current_time_to_hour();
         }
     }
     return timestamp;

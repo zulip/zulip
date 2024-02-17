@@ -4,8 +4,9 @@ from psycopg2.sql import SQL
 
 from corporate.lib.activity import (
     fix_rows,
-    format_date_for_activity_reports,
+    format_datetime_as_date,
     format_none_as_zero,
+    format_optional_datetime,
     get_plan_data_by_remote_realm,
     get_plan_data_by_remote_server,
     get_query_data,
@@ -44,13 +45,23 @@ def get_remote_server_activity(request: HttpRequest) -> HttpResponse:
             from zilencer_remotepushdevicetoken
             group by server_id
         ),
+        remote_server_audit_log as (
+            select
+                server_id,
+                event_time as server_created
+            from zilencer_remotezulipserverauditlog
+            where
+                event_type = 10215
+            group by server_id, event_time
+        ),
         remote_realms as (
             select
                 server_id,
                 id as realm_id,
                 name as realm_name,
                 org_type as realm_type,
-                host as realm_host
+                host as realm_host,
+                realm_date_created as realm_created
             from zilencer_remoterealm
             where
                 is_system_bot_realm = False
@@ -60,6 +71,8 @@ def get_remote_server_activity(request: HttpRequest) -> HttpResponse:
         select
             rserver.id,
             realm_id,
+            server_created,
+            realm_created,
             realm_name,
             rserver.hostname,
             realm_host,
@@ -73,6 +86,7 @@ def get_remote_server_activity(request: HttpRequest) -> HttpResponse:
         left join mobile_push_forwarded_count on mobile_push_forwarded_count.server_id = rserver.id
         left join remote_push_devices on remote_push_devices.server_id = rserver.id
         left join remote_realms on remote_realms.server_id = rserver.id
+        left join remote_server_audit_log on remote_server_audit_log.server_id = rserver.id
         where not deactivated
         order by push_user_count DESC NULLS LAST
     """
@@ -81,11 +95,12 @@ def get_remote_server_activity(request: HttpRequest) -> HttpResponse:
     cols = [
         "Links",
         "IDs",
+        "Date created",
         "Realm name",
         "Realm host or server hostname",
         "Server contact email",
         "Server Zulip version",
-        "Server last audit log update",
+        "Server last audit log update (UTC)",
         "Server mobile users",
         "Server mobile pushes",
         "Realm organization type",
@@ -98,16 +113,22 @@ def get_remote_server_activity(request: HttpRequest) -> HttpResponse:
     ]
 
     # If the query or column order above changes, update the constants below
+    # Query constants:
     SERVER_AND_REALM_IDS = 0
-    SERVER_HOST = 2
-    REALM_HOST = 3
-    LAST_AUDIT_LOG_DATE = 6
-    MOBILE_USER_COUNT = 7
-    MOBILE_PUSH_COUNT = 8
-    ORG_TYPE = 9
-    ARR = 12
-    TOTAL_USER_COUNT = 14
-    GUEST_COUNT = 15
+    SERVER_CREATED = 1
+    REALM_CREATED = 2
+    SERVER_HOST = 3
+    REALM_HOST = 4
+
+    # Column constants:
+    DATE_CREATED = 2
+    LAST_AUDIT_LOG_DATE = 7
+    MOBILE_USER_COUNT = 8
+    MOBILE_PUSH_COUNT = 9
+    ORG_TYPE = 10
+    ARR = 13
+    TOTAL_USER_COUNT = 15
+    GUEST_COUNT = 16
 
     rows = get_query_data(query)
     plan_data_by_remote_server = get_plan_data_by_remote_server()
@@ -130,6 +151,14 @@ def get_remote_server_activity(request: HttpRequest) -> HttpResponse:
         else:
             ids_string = f"{server_id}"
         row.insert(SERVER_AND_REALM_IDS, ids_string)
+
+        # Set date created data
+        # For remote realm row, remove server created value;
+        # for remote server row, remove realm created value
+        if realm_id is not None:
+            row.pop(SERVER_CREATED)
+        else:
+            row.pop(REALM_CREATED)
 
         # Get server_host for support link
         # For remote realm row, remove server hostname value;
@@ -199,9 +228,11 @@ def get_remote_server_activity(request: HttpRequest) -> HttpResponse:
     # Format column data and add total row
     for i, col in enumerate(cols):
         if i == LAST_AUDIT_LOG_DATE:
-            fix_rows(rows, i, format_date_for_activity_reports)
+            fix_rows(rows, i, format_optional_datetime)
         if i in [MOBILE_USER_COUNT, MOBILE_PUSH_COUNT]:
             fix_rows(rows, i, format_none_as_zero)
+        if i == DATE_CREATED:
+            fix_rows(rows, i, format_datetime_as_date)
         if i == SERVER_AND_REALM_IDS:
             total_row.append("Total")
         elif i == MOBILE_USER_COUNT:

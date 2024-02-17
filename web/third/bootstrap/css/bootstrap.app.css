@@ -13,11 +13,6 @@ nav,
 section {
   display: block;
 }
-html {
-  font-size: 100%;
-  -webkit-text-size-adjust: 100%;
-  -ms-text-size-adjust: 100%;
-}
 a:focus {
   outline: thin dotted #333;
   outline: 5px auto -webkit-focus-ring-color;
@@ -61,10 +56,6 @@ button {
 label,
 button {
   cursor: pointer;
-}
-body {
-  margin: 0;
-  line-height: 20px;
 }
 a {
   color: #0088cc;
@@ -251,21 +242,6 @@ input:focus:invalid:focus {
   background-color: #e5e5e5;
   border-bottom: 1px solid #ffffff;
 }
-.nav .dropdown-toggle .caret {
-  border-top-color: #0088cc;
-  border-bottom-color: #0088cc;
-  margin-top: 6px;
-}
-.nav .dropdown-toggle:hover .caret,
-.nav .dropdown-toggle:focus .caret {
-  border-top-color: #005580;
-  border-bottom-color: #005580;
-}
-/* move down carets for tabs */
-.nav .active .dropdown-toggle .caret {
-  border-top-color: #fff;
-  border-bottom-color: #fff;
-}
 .nav > .dropdown.active > a:hover,
 .nav > .dropdown.active > a:focus {
   cursor: pointer;
@@ -295,10 +271,6 @@ input:focus:invalid:focus {
 }
 .dropdown {
   position: relative;
-}
-.dropdown-toggle:active,
-.open .dropdown-toggle {
-  outline: 0;
 }
 .close {
   float: right;
@@ -336,12 +308,6 @@ button.close {
   display: none;
   visibility: hidden;
 }
-@media (max-width: 767px) {
-  body {
-    padding-left: 20px;
-    padding-right: 20px;
-  }
-}
 @media (min-width: 768px) and (max-width: 979px) {
   input {
     margin-left: 0;
@@ -350,10 +316,5 @@ button.close {
 @media (min-width: 1180px) {
   input {
     margin-left: 0;
-  }
-}
-@media (max-width: 979px) {
-  body {
-    padding-top: 0;
   }
 }

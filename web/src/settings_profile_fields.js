@@ -13,9 +13,9 @@ import * as confirm_dialog from "./confirm_dialog";
 import * as dialog_widget from "./dialog_widget";
 import {$t, $t_html} from "./i18n";
 import * as loading from "./loading";
-import {page_params} from "./page_params";
 import * as people from "./people";
 import * as settings_ui from "./settings_ui";
+import {current_user, realm} from "./state_data";
 import * as ui_report from "./ui_report";
 
 const meta = {
@@ -30,7 +30,7 @@ function display_success_status() {
 }
 
 export function maybe_disable_widgets() {
-    if (page_params.is_admin) {
+    if (current_user.is_admin) {
         return;
     }
 
@@ -43,7 +43,7 @@ let display_in_profile_summary_fields_limit_reached = false;
 let order = [];
 
 export function field_type_id_to_string(type_id) {
-    for (const field_type of Object.values(page_params.custom_profile_field_types)) {
+    for (const field_type of Object.values(realm.custom_profile_field_types)) {
         if (field_type.id === type_id) {
             // Few necessary modifications in field-type-name for
             // table-list view of custom fields UI in org settings
@@ -60,7 +60,7 @@ export function field_type_id_to_string(type_id) {
 
 // Checking custom profile field type is valid for showing display on user card checkbox field.
 function is_valid_to_display_in_summary(field_type) {
-    const field_types = page_params.custom_profile_field_types;
+    const field_types = realm.custom_profile_field_types;
     if (field_type === field_types.LONG_TEXT.id || field_type === field_types.USER.id) {
         return false;
     }
@@ -163,7 +163,7 @@ function create_choice_row(container) {
 }
 
 function clear_form_data() {
-    const field_types = page_params.custom_profile_field_types;
+    const field_types = realm.custom_profile_field_types;
 
     $("#profile_field_name").val("").closest(".input-group").show();
     $("#profile_field_hint").val("").closest(".input-group").show();
@@ -183,7 +183,7 @@ function clear_form_data() {
 }
 
 function set_up_create_field_form() {
-    const field_types = page_params.custom_profile_field_types;
+    const field_types = realm.custom_profile_field_types;
 
     // Hide error on field type change.
     $("#dialog_error").hide();
@@ -206,8 +206,7 @@ function set_up_create_field_form() {
         } else {
             $field_url_pattern_elem.hide();
             const profile_field_name =
-                page_params.realm_default_external_accounts[profile_field_external_account_type]
-                    .name;
+                realm.realm_default_external_accounts[profile_field_external_account_type].name;
             $("#profile_field_name").val(profile_field_name).prop("disabled", true);
             $("#profile_field_hint").val("").prop("disabled", true);
         }
@@ -237,7 +236,7 @@ function set_up_create_field_form() {
 }
 
 function read_field_data_from_form(field_type_id, $profile_field_form, old_field_data) {
-    const field_types = page_params.custom_profile_field_types;
+    const field_types = realm.custom_profile_field_types;
 
     // Only read field data if we are creating a select field
     // or external account field.
@@ -251,8 +250,8 @@ function read_field_data_from_form(field_type_id, $profile_field_form, old_field
 
 function open_custom_profile_field_form_modal() {
     const html_body = render_add_new_custom_profile_field_form({
-        realm_default_external_accounts: page_params.realm_default_external_accounts,
-        custom_profile_field_types: page_params.custom_profile_field_types,
+        realm_default_external_accounts: realm.realm_default_external_accounts,
+        custom_profile_field_types: realm.custom_profile_field_types,
     });
 
     function create_profile_field() {
@@ -378,7 +377,7 @@ function show_modal_for_deleting_options(field, deleted_values, update_profile_f
 }
 
 function get_profile_field(id) {
-    return page_params.custom_profile_fields.find((field) => field.id === id);
+    return realm.custom_profile_fields.find((field) => field.id === id);
 }
 
 export function parse_field_choices_from_field_data(field_data) {
@@ -434,7 +433,7 @@ function set_up_select_field_edit_form($profile_field_form, field_data) {
 }
 
 function open_edit_form_modal(e) {
-    const field_types = page_params.custom_profile_field_types;
+    const field_types = realm.custom_profile_field_types;
 
     const field_id = Number.parseInt($(e.currentTarget).attr("data-profile-field-id"), 10);
     const field = get_profile_field(field_id);
@@ -459,7 +458,7 @@ function open_edit_form_modal(e) {
             is_external_account_field: field.type === field_types.EXTERNAL_ACCOUNT.id,
             valid_to_display_in_summary: is_valid_to_display_in_summary(field.type),
         },
-        realm_default_external_accounts: page_params.realm_default_external_accounts,
+        realm_default_external_accounts: realm.realm_default_external_accounts,
     });
 
     function set_initial_values_of_profile_field() {
@@ -627,7 +626,7 @@ export function populate_profile_fields(profile_fields_data) {
 }
 
 export function do_populate_profile_fields(profile_fields_data) {
-    const field_types = page_params.custom_profile_field_types;
+    const field_types = realm.custom_profile_field_types;
 
     // We should only call this internally or from tests.
     const $profile_fields_table = $("#admin_profile_fields_table").expectOne();
@@ -663,8 +662,8 @@ export function do_populate_profile_fields(profile_fields_data) {
                     display_in_profile_summary,
                     valid_to_display_in_summary: is_valid_to_display_in_summary(profile_field.type),
                 },
-                can_modify: page_params.is_admin,
-                realm_default_external_accounts: page_params.realm_default_external_accounts,
+                can_modify: current_user.is_admin,
+                realm_default_external_accounts: realm.realm_default_external_accounts,
             }),
         );
 
@@ -677,7 +676,7 @@ export function do_populate_profile_fields(profile_fields_data) {
     // Update whether we're at the limit for display_in_profile_summary.
     display_in_profile_summary_fields_limit_reached = display_in_profile_summary_fields_count >= 2;
 
-    if (page_params.is_admin) {
+    if (current_user.is_admin) {
         const field_list = $("#admin_profile_fields_table")[0];
         Sortable.create(field_list, {
             onUpdate: update_field_order,
@@ -691,11 +690,11 @@ export function do_populate_profile_fields(profile_fields_data) {
 }
 
 function set_up_select_field() {
-    const field_types = page_params.custom_profile_field_types;
+    const field_types = realm.custom_profile_field_types;
 
     create_choice_row("#profile_field_choices");
 
-    if (page_params.is_admin) {
+    if (current_user.is_admin) {
         const choice_list = $("#profile_field_choices")[0];
         Sortable.create(choice_list, {
             onUpdate() {},
@@ -743,7 +742,7 @@ export function get_external_account_link(field) {
     if (field_subtype === "custom") {
         field_url_pattern = field.field_data.url_pattern;
     } else {
-        field_url_pattern = page_params.realm_default_external_accounts[field_subtype].url_pattern;
+        field_url_pattern = realm.realm_default_external_accounts[field_subtype].url_pattern;
     }
     return field_url_pattern.replace("%(username)s", field.value);
 }
@@ -757,7 +756,7 @@ export function build_page() {
     // create loading indicators
     loading.make_indicator($("#admin_page_profile_fields_loading_indicator"));
     // Populate profile_fields table
-    do_populate_profile_fields(page_params.custom_profile_fields);
+    do_populate_profile_fields(realm.custom_profile_fields);
     meta.loaded = true;
 
     $("#admin_profile_fields_table").on("click", ".delete", delete_profile_field);

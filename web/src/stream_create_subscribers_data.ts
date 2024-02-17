@@ -1,11 +1,11 @@
-import {page_params} from "./page_params";
 import * as people from "./people";
 import type {User} from "./people";
+import {current_user} from "./state_data";
 
 let user_id_set: Set<number>;
 
 export function initialize_with_current_user(): void {
-    user_id_set = new Set([page_params.user_id]);
+    user_id_set = new Set([current_user.user_id]);
 }
 
 export function sorted_user_ids(): number[] {
@@ -33,7 +33,7 @@ export function get_potential_subscribers(): User[] {
 }
 
 export function must_be_subscribed(user_id: number): boolean {
-    return !page_params.is_admin && user_id === page_params.user_id;
+    return !current_user.is_admin && user_id === current_user.user_id;
 }
 
 export function add_user_ids(user_ids: number[]): void {

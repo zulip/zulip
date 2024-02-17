@@ -19,7 +19,8 @@ from zerver.actions.streams import do_change_stream_post_policy, do_deactivate_s
 from zerver.actions.user_groups import add_subgroups_to_user_group, check_add_user_group
 from zerver.actions.user_topics import do_set_user_topic_visibility_policy
 from zerver.actions.users import do_change_user_role
-from zerver.lib.message import MessageDict, has_message_access, messages_for_ids, truncate_topic
+from zerver.lib.message import has_message_access, messages_for_ids, truncate_topic
+from zerver.lib.message_cache import MessageDict
 from zerver.lib.test_classes import ZulipTestCase, get_topic_messages
 from zerver.lib.test_helpers import queries_captured
 from zerver.lib.topic import RESOLVED_TOPIC_PREFIX, TOPIC_NAME
@@ -258,8 +259,8 @@ class EditMessagePayloadTest(EditMessageTestCase):
 
 
 class EditMessageTest(EditMessageTestCase):
-    def test_query_count_on_to_dict_uncached(self) -> None:
-        # `to_dict_uncached` method is used by the mechanisms
+    def test_query_count_on_messages_to_encoded_cache(self) -> None:
+        # `messages_to_encoded_cache` method is used by the mechanisms
         # tested in this class. Hence, its performance is tested here.
         # Generate 2 messages
         user = self.example_user("hamlet")
@@ -287,12 +288,12 @@ class EditMessageTest(EditMessageTestCase):
         # 1 query for linkifiers
         # 1 query for display recipients
         with self.assert_database_query_count(7):
-            MessageDict.to_dict_uncached(messages)
+            MessageDict.messages_to_encoded_cache(messages)
 
         realm_id = 2  # Fetched from stream object
         # Check number of queries performed with realm_id
         with self.assert_database_query_count(3):
-            MessageDict.to_dict_uncached(messages, realm_id)
+            MessageDict.messages_to_encoded_cache(messages, realm_id)
 
     def test_save_message(self) -> None:
         """This is also tested by a client test, but here we can verify
@@ -1431,7 +1432,7 @@ class EditMessageTest(EditMessageTestCase):
         # state + 1/user with a UserTopic row for the events data)
         # beyond what is typical were there not UserTopic records to
         # update. Ideally, we'd eliminate the per-user component.
-        with self.assert_database_query_count(23):
+        with self.assert_database_query_count(26):
             check_update_message(
                 user_profile=hamlet,
                 message_id=message_id,
@@ -1528,7 +1529,7 @@ class EditMessageTest(EditMessageTestCase):
         set_topic_visibility_policy(desdemona, muted_topics, UserTopic.VisibilityPolicy.MUTED)
         set_topic_visibility_policy(cordelia, muted_topics, UserTopic.VisibilityPolicy.MUTED)
 
-        with self.assert_database_query_count(29):
+        with self.assert_database_query_count(30):
             check_update_message(
                 user_profile=desdemona,
                 message_id=message_id,
@@ -1559,7 +1560,7 @@ class EditMessageTest(EditMessageTestCase):
         set_topic_visibility_policy(desdemona, muted_topics, UserTopic.VisibilityPolicy.MUTED)
         set_topic_visibility_policy(cordelia, muted_topics, UserTopic.VisibilityPolicy.MUTED)
 
-        with self.assert_database_query_count(34):
+        with self.assert_database_query_count(35):
             check_update_message(
                 user_profile=desdemona,
                 message_id=message_id,
@@ -1592,7 +1593,7 @@ class EditMessageTest(EditMessageTestCase):
         set_topic_visibility_policy(desdemona, muted_topics, UserTopic.VisibilityPolicy.MUTED)
         set_topic_visibility_policy(cordelia, muted_topics, UserTopic.VisibilityPolicy.MUTED)
 
-        with self.assert_database_query_count(29):
+        with self.assert_database_query_count(30):
             check_update_message(
                 user_profile=desdemona,
                 message_id=message_id,
@@ -1714,7 +1715,7 @@ class EditMessageTest(EditMessageTestCase):
             users_to_be_notified_via_muted_topics_event.append(user_topic.user_profile_id)
 
         change_all_topic_name = "Topic 1 edited"
-        with self.assert_database_query_count(28):
+        with self.assert_database_query_count(31):
             check_update_message(
                 user_profile=hamlet,
                 message_id=message_id,
@@ -3783,7 +3784,7 @@ class EditMessageTest(EditMessageTestCase):
             "iago", "test move stream", "new stream", "test"
         )
 
-        with self.assert_database_query_count(56), self.assert_memcached_count(14):
+        with self.assert_database_query_count(53), self.assert_memcached_count(14):
             result = self.client_patch(
                 f"/json/messages/{msg_id}",
                 {
@@ -3808,6 +3809,47 @@ class EditMessageTest(EditMessageTestCase):
             f"This topic was moved here from #**test move stream>test** by @_**Iago|{user_profile.id}**.",
         )
         self.assert_json_success(result)
+
+    def test_move_many_messages_to_stream_and_topic(self) -> None:
+        (user_profile, old_stream, new_stream, msg_id, msg_id_later) = self.prepare_move_topics(
+            "iago", "first origin stream", "first destination stream", "first topic"
+        )
+
+        with queries_captured() as queries:
+            result = self.client_patch(
+                f"/json/messages/{msg_id}",
+                {
+                    "propagate_mode": "change_all",
+                    "send_notification_to_old_thread": "true",
+                    "stream_id": new_stream.id,
+                    "topic": "first topic",
+                },
+            )
+            self.assert_json_success(result)
+
+        # Adding more messages should not increase the number of
+        # queries
+        (user_profile, old_stream, new_stream, msg_id, msg_id_later) = self.prepare_move_topics(
+            "iago", "second origin stream", "second destination stream", "second topic"
+        )
+        for i in range(1, 5):
+            self.send_stream_message(
+                user_profile,
+                "second origin stream",
+                topic_name="second topic",
+                content=f"Extra message {i}",
+            )
+        with self.assert_database_query_count(len(queries)):
+            result = self.client_patch(
+                f"/json/messages/{msg_id}",
+                {
+                    "propagate_mode": "change_all",
+                    "send_notification_to_old_thread": "true",
+                    "stream_id": new_stream.id,
+                    "topic": "second topic",
+                },
+            )
+            self.assert_json_success(result)
 
     def test_inaccessible_msg_after_stream_change(self) -> None:
         """Simulates the case where message is moved to a stream where user is not a subscribed"""

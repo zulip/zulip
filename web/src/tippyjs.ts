@@ -520,4 +520,21 @@ export function initialize(): void {
         placement: "bottom",
         appendTo: () => document.body,
     });
+
+    delegate("body", {
+        target: "#move_topic_to_stream_widget_wrapper",
+        onShow(instance) {
+            if ($("#move_topic_to_stream_widget").prop("disabled")) {
+                instance.setContent(
+                    $t({
+                        defaultMessage:
+                            "You do not have permission to move messages to another stream in this organization.",
+                    }),
+                );
+                return undefined;
+            }
+            return false;
+        },
+        appendTo: () => document.body,
+    });
 }

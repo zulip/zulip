@@ -4,6 +4,7 @@ import $ from "jquery";
 import render_settings_deactivation_stream_modal from "../templates/confirm_dialog/confirm_deactivate_stream.hbs";
 import render_inline_decorated_stream_name from "../templates/inline_decorated_stream_name.hbs";
 import render_change_stream_info_modal from "../templates/stream_settings/change_stream_info_modal.hbs";
+import render_confirm_stream_privacy_change_modal from "../templates/stream_settings/confirm_stream_privacy_change_modal.hbs";
 import render_copy_email_address_modal from "../templates/stream_settings/copy_email_address_modal.hbs";
 import render_stream_description from "../templates/stream_settings/stream_description.hbs";
 import render_stream_settings from "../templates/stream_settings/stream_settings.hbs";
@@ -18,11 +19,11 @@ import * as dropdown_widget from "./dropdown_widget";
 import {$t, $t_html} from "./i18n";
 import * as keydown_util from "./keydown_util";
 import * as narrow_state from "./narrow_state";
-import {page_params} from "./page_params";
 import * as scroll_util from "./scroll_util";
 import * as settings_components from "./settings_components";
 import * as settings_config from "./settings_config";
 import * as settings_org from "./settings_org";
+import {current_user, realm} from "./state_data";
 import * as stream_color from "./stream_color";
 import * as stream_data from "./stream_data";
 import * as stream_edit_subscribers from "./stream_edit_subscribers";
@@ -52,7 +53,7 @@ export function setup_subscriptions_tab_hash(tab_key_value) {
 }
 
 export function get_display_text_for_realm_message_retention_setting() {
-    const realm_message_retention_days = page_params.realm_message_retention_days;
+    const realm_message_retention_days = realm.realm_message_retention_days;
     if (realm_message_retention_days === settings_config.retain_message_forever) {
         return $t({defaultMessage: "(forever)"});
     }
@@ -249,12 +250,11 @@ export function show_settings_for(node) {
         stream_privacy_policy_values: settings_config.stream_privacy_policy_values,
         stream_privacy_policy: stream_data.get_stream_privacy_policy(stream_id),
         check_default_stream: stream_data.is_default_stream_id(stream_id),
-        zulip_plan_is_not_limited: page_params.zulip_plan_is_not_limited,
-        upgrade_text_for_wide_organization_logo:
-            page_params.upgrade_text_for_wide_organization_logo,
+        zulip_plan_is_not_limited: realm.zulip_plan_is_not_limited,
+        upgrade_text_for_wide_organization_logo: realm.upgrade_text_for_wide_organization_logo,
         is_business_type_org:
-            page_params.realm_org_type === settings_config.all_org_type_values.business.code,
-        is_admin: page_params.is_admin,
+            realm.realm_org_type === settings_config.all_org_type_values.business.code,
+        is_admin: current_user.is_admin,
         org_level_message_retention_setting: get_display_text_for_realm_message_retention_setting(),
         can_access_stream_email: stream_data.can_access_stream_email(sub),
     });
@@ -304,31 +304,13 @@ function stream_notification_reset(e) {
 
     stream_settings_api.bulk_set_stream_property(
         data,
-        $(`#stream_change_property_status${CSS.escape(sub.stream_id)}`),
-    );
-}
-
-function stream_is_muted_changed(e) {
-    const sub = get_sub_for_target(e.target);
-    if (!sub) {
-        blueslip.error("stream_is_muted_changed() fails");
-        return;
-    }
-
-    stream_settings_api.set_stream_property(
-        sub,
-        {property: "is_muted", value: e.target.checked},
-        $(`#stream_change_property_status${CSS.escape(sub.stream_id)}`),
+        $(e.target).closest(".subsection-parent").find(".alert-notification"),
     );
 }
 
 function stream_setting_changed(e) {
-    if (e.target.name === "is_muted") {
-        return;
-    }
-
     const sub = get_sub_for_target(e.target);
-    const $status_element = $(`#stream_change_property_status${CSS.escape(sub.stream_id)}`);
+    const $status_element = $(e.target).closest(".subsection-parent").find(".alert-notification");
     const setting = e.target.name;
     if (!sub) {
         blueslip.error("undefined sub in stream_setting_changed()");
@@ -455,8 +437,8 @@ export function initialize() {
         const template_data = {
             stream_name: stream.name,
             stream_description: stream.description,
-            max_stream_name_length: page_params.max_stream_name_length,
-            max_stream_description_length: page_params.max_stream_description_length,
+            max_stream_name_length: realm.max_stream_name_length,
+            max_stream_description_length: realm.max_stream_description_length,
         };
         const change_stream_info_modal = render_change_stream_info_modal(template_data);
         dialog_widget.launch({
@@ -564,12 +546,6 @@ export function initialize() {
 
     $("#streams_overlay_container").on(
         "change",
-        "#sub_is_muted_setting .sub_setting_control",
-        stream_is_muted_changed,
-    );
-
-    $("#streams_overlay_container").on(
-        "change",
         ".sub_setting_checkbox .sub_setting_control",
         stream_setting_changed,
     );
@@ -630,10 +606,9 @@ export function initialize() {
 
         const stream_name_with_privacy_symbol_html = render_inline_decorated_stream_name({stream});
 
-        const is_new_stream_notification_stream =
-            stream_id === page_params.realm_notifications_stream_id;
+        const is_new_stream_notification_stream = stream_id === realm.realm_notifications_stream_id;
         const is_signup_notification_stream =
-            stream_id === page_params.realm_signup_notifications_stream_id;
+            stream_id === realm.realm_signup_notifications_stream_id;
         const is_notification_stream =
             is_new_stream_notification_stream || is_signup_notification_stream;
 
@@ -707,7 +682,23 @@ export function initialize() {
             const data = settings_org.populate_data_for_request($subsection_elem, false, sub);
 
             const url = "/json/streams/" + stream_id;
-            settings_org.save_organization_settings(data, $save_button, url);
+            if (
+                data.is_private === undefined ||
+                stream_data.get_stream_privacy_policy(stream_id) !== "invite-only"
+            ) {
+                settings_org.save_organization_settings(data, $save_button, url);
+                return;
+            }
+            dialog_widget.launch({
+                html_heading: $t_html({defaultMessage: "Confirm changing access permissions"}),
+                html_body: render_confirm_stream_privacy_change_modal,
+                id: "confirm_stream_privacy_change",
+                html_submit_button: $t_html({defaultMessage: "Confirm"}),
+                on_click() {
+                    settings_org.save_organization_settings(data, $save_button, url);
+                },
+                close_on_submit: true,
+            });
         },
     );
 
