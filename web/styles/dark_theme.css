@@ -1081,7 +1081,8 @@
 
     /* Search highlight used in both topics and rendered_markdown */
     .highlight {
-        background-color: hsl(51deg 100% 23%);
+        background-color: var(--color-background-search-highlight);
+        color: var(--color-text-search-highlight);
     }
 
     .streams_subheader {
