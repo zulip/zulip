@@ -57,7 +57,7 @@ will be contacted when it is complete and available.
 Once your remote dev instance is ready:
 
 - Connect to your server by running
-  `ssh zulipdev@<username>.zulipdev.org` on the command line
+  `ssh zulipdev@<username>.zulipdev.org` ('username' to be replaced by your actual username) on the command line
   (Terminal for macOS and Linux, Bash for Git on Windows).
 - There is no password; your account is configured to use your SSH keys.
 - Once you log in, you should see `(zulip-py3-venv) ~$`.
