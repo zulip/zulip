@@ -1,7 +1,7 @@
 import $ from "jquery";
 import {z} from "zod";
 
-import {state_data_schema, term_schema} from "./state_data";
+import {narrow_term_schema, state_data_schema} from "./state_data";
 
 const t1 = performance.now();
 
@@ -43,7 +43,7 @@ const home_params_schema = default_params_schema
             }),
         ),
         login_page: z.string(),
-        narrow: z.optional(z.array(term_schema)),
+        narrow: z.optional(z.array(narrow_term_schema)),
         narrow_stream: z.optional(z.string()),
         needs_tutorial: z.boolean(),
         promote_sponsoring_zulip: z.boolean(),

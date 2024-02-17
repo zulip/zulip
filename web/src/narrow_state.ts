@@ -4,7 +4,7 @@ import * as inbox_util from "./inbox_util";
 import {page_params} from "./page_params";
 import * as people from "./people";
 import * as recent_view_util from "./recent_view_util";
-import type {Term} from "./state_data";
+import type {NarrowTerm} from "./state_data";
 import * as stream_data from "./stream_data";
 import type {StreamSubscription} from "./sub_store";
 import * as unread from "./unread";
@@ -31,7 +31,7 @@ export function filter(): Filter | undefined {
     return current_filter;
 }
 
-export function search_terms(): Term[] {
+export function search_terms(): NarrowTerm[] {
     if (current_filter === undefined) {
         if (page_params.narrow !== undefined) {
             return new Filter(page_params.narrow).terms();
@@ -52,7 +52,7 @@ export function update_email(user_id: number, new_email: string): void {
 }
 
 /* Search terms we should send to the server. */
-export function public_search_terms(): Term[] | undefined {
+export function public_search_terms(): NarrowTerm[] | undefined {
     if (current_filter === undefined) {
         return undefined;
     }
@@ -65,7 +65,7 @@ export function search_string(): string {
 
 // Collect terms which appear only once into an object,
 // and discard those which appear more than once.
-function collect_single(terms: Term[]): Map<string, string> {
+function collect_single(terms: NarrowTerm[]): Map<string, string> {
     const seen = new Map();
     const result = new Map();
 
