@@ -198,6 +198,7 @@
     --color-background-popover: hsl(0deg 0% 100%);
     --color-background-alert-word: hsl(18deg 100% 84%);
     --color-buddy-list-highlighted-user: hsl(120deg 12.3% 71.4% / 38%);
+    --color-text-link-tag-alert-word: hsl(200deg 100% 40%);
 
     /* Compose box colors */
     --color-compose-send-button-icon-color: hsl(0deg 0% 100%);
@@ -486,8 +487,10 @@
     --color-background-tab-picker-selected-tab: hsl(0deg 0% 100% / 7%);
     --color-outline-tab-picker-tab-option: hsl(0deg 0% 100% / 12%);
     --color-background-tab-picker-tab-option-hover: hsl(0deg 0% 100% / 5%);
-    --color-background-alert-word: hsl(22deg 70% 35%);
     --color-buddy-list-highlighted-user: hsl(136deg 25% 73% / 20%);
+    --color-background-alert-word: hsl(18deg 100% 75%);
+    --color-text-alert-word: hsl(0deg 0% 15%);
+    --color-text-link-tag-alert-word: hsl(210deg 100% 25%);
 
     /* Compose box colors */
     --color-compose-send-button-focus-shadow: hsl(0deg 0% 100% / 80%);
