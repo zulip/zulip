@@ -915,6 +915,7 @@ def get_human_user_realm_uuids(
     query = RemoteRealm.objects.filter(
         server=server,
         realm_deactivated=False,
+        realm_locally_deleted=False,
         registration_deactivated=False,
         is_system_bot_realm=False,
     ).exclude(
