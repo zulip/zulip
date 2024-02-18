@@ -161,7 +161,7 @@ function user_status_post_render() {
 
     $("#clear_status_message_button").on("click", () => {
         clear_message();
-        set_selected_emoji_info();
+        set_selected_emoji_info({});
         update_button();
     });
 }
