@@ -586,6 +586,41 @@ def update_message_content(
     )
 
 
+def apply_automatic_unmute_follow_topics_policy(
+    user_profile: UserProfile,
+    target_stream: Stream,
+    target_topic_name: str,
+) -> None:
+    if (
+        user_profile.automatically_follow_topics_policy
+        == UserProfile.AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_ON_INITIATION
+    ):
+        bulk_do_set_user_topic_visibility_policy(
+            [user_profile],
+            target_stream,
+            target_topic_name,
+            visibility_policy=UserTopic.VisibilityPolicy.FOLLOWED,
+        )
+    elif (
+        user_profile.automatically_unmute_topics_in_muted_streams_policy
+        == UserProfile.AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_ON_INITIATION
+    ):
+        subscription = Subscription.objects.filter(
+            recipient=target_stream.recipient,
+            user_profile=user_profile,
+            active=True,
+            is_user_active=True,
+        ).first()
+
+        if subscription is not None and subscription.is_muted:
+            bulk_do_set_user_topic_visibility_policy(
+                [user_profile],
+                target_stream,
+                target_topic_name,
+                visibility_policy=UserTopic.VisibilityPolicy.UNMUTED,
+            )
+
+
 # This must be called already in a transaction, with a write lock on
 # the target_message.
 @transaction.atomic(savepoint=False)
@@ -1151,6 +1186,42 @@ def do_update_message(
                     target_topic_name,
                     visibility_policy=new_visibility_policy,
                 )
+
+    elif message_edit_request.is_stream_edited or message_edit_request.is_topic_edited:
+        sender = target_message.sender
+
+        target_stream = message_edit_request.target_stream
+        target_topic = message_edit_request.target_topic_name
+
+        assert target_stream.recipient_id is not None
+
+        messages_in_target_topic = messages_for_topic(
+            realm.id, target_stream.recipient_id, target_topic
+        ).exclude(id__in=[*changed_message_ids])
+
+        # All behavior in channels with protected history depends on
+        # the permissions of users who might glean information about
+        # whether the topic previously existed. So we need to look at
+        # whether this message is becoming the first message in the
+        # target topic, as seen by the user who we might change topic
+        # visibility policy for in this code path.
+        first_message_in_target_topic = bulk_access_stream_messages_query(
+            sender, messages_in_target_topic, target_stream
+        ).first()
+
+        is_target_message_first = False
+        # the target_message would be the first message in the moved topic
+        # either if the moved topic doesn't have any messages, or if the
+        # target_message is sent before the first message in the moved
+        # topic.
+        if (
+            first_message_in_target_topic is None
+            or target_message.id < first_message_in_target_topic.id
+        ):
+            is_target_message_first = True
+
+        if not sender.is_bot and sender not in users_losing_access and is_target_message_first:
+            apply_automatic_unmute_follow_topics_policy(sender, target_stream, target_topic)
 
     send_event_on_commit(user_profile.realm, event, users_to_be_notified)
 
