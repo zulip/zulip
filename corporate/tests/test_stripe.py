@@ -66,6 +66,7 @@ from corporate.lib.stripe import (
     customer_has_last_n_invoices_open,
     do_change_remote_server_plan_type,
     do_deactivate_remote_server,
+    do_reactivate_remote_server,
     downgrade_small_realms_behind_on_payments_as_needed,
     get_latest_seat_count,
     get_plan_renewal_or_end_date,
@@ -4761,7 +4762,7 @@ class BillingHelpersTest(ZulipTestCase):
         self.assertEqual(remote_realm_audit_log.extra_data, expected_extra_data)
         self.assertEqual(remote_server.plan_type, RemoteZulipServer.PLAN_TYPE_BUSINESS)
 
-    def test_deactivate_remote_server(self) -> None:
+    def test_deactivate_reactivate_remote_server(self) -> None:
         server_uuid = str(uuid.uuid4())
         remote_server = RemoteZulipServer.objects.create(
             uuid=server_uuid,
@@ -4789,6 +4790,23 @@ class BillingHelpersTest(ZulipTestCase):
                 [
                     "WARNING:corporate.stripe:Cannot deactivate remote server with ID "
                     f"{remote_server.id}, server has already been deactivated."
+                ],
+            )
+
+        do_reactivate_remote_server(remote_server)
+        remote_server.refresh_from_db()
+        self.assertFalse(remote_server.deactivated)
+        remote_realm_audit_log = RemoteZulipServerAuditLog.objects.latest("id")
+        self.assertEqual(remote_realm_audit_log.event_type, RealmAuditLog.REMOTE_SERVER_REACTIVATED)
+        self.assertEqual(remote_realm_audit_log.server, remote_server)
+
+        with self.assertLogs("corporate.stripe", "WARN") as warning_log:
+            do_reactivate_remote_server(remote_server)
+            self.assertEqual(
+                warning_log.output,
+                [
+                    "WARNING:corporate.stripe:Cannot reactivate remote server with ID "
+                    f"{remote_server.id}, server is already active."
                 ],
             )
 

@@ -4700,6 +4700,28 @@ def do_change_remote_server_plan_type(remote_server: RemoteZulipServer, plan_typ
 
 
 @transaction.atomic
+def do_reactivate_remote_server(remote_server: RemoteZulipServer) -> None:
+    """
+    Utility function for reactivating deactivated registrations.
+    """
+
+    if not remote_server.deactivated:
+        billing_logger.warning(
+            "Cannot reactivate remote server with ID %d, server is already active.",
+            remote_server.id,
+        )
+        return
+
+    remote_server.deactivated = False
+    remote_server.save(update_fields=["deactivated"])
+    RemoteZulipServerAuditLog.objects.create(
+        event_type=RealmAuditLog.REMOTE_SERVER_REACTIVATED,
+        server=remote_server,
+        event_time=timezone_now(),
+    )
+
+
+@transaction.atomic
 def do_deactivate_remote_server(
     remote_server: RemoteZulipServer, billing_session: RemoteServerBillingSession
 ) -> None:
