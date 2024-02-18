@@ -27,7 +27,7 @@ export function submit_button() {
 
 export function open_user_status_modal() {
     const user_id = people.my_current_user_id();
-    const selected_emoji_info = user_status.get_status_emoji(user_id) || {};
+    const selected_emoji_info = user_status.get_status_emoji(user_id) ?? {};
     const rendered_set_status_overlay = render_set_status_overlay({
         default_status_messages_and_emoji_info,
         selected_emoji_info,
@@ -48,7 +48,7 @@ export function open_user_status_modal() {
 
 export function submit_new_status() {
     const user_id = people.my_current_user_id();
-    let old_status_text = user_status.get_status_text(user_id) || "";
+    let old_status_text = user_status.get_status_text(user_id) ?? "";
     old_status_text = old_status_text.trim();
     const old_emoji_info = user_status.get_status_emoji(user_id) || {};
     const new_status_text = input_field().val().trim();
@@ -65,9 +65,9 @@ export function submit_new_status() {
 
     user_status.server_update_status({
         status_text: new_status_text,
-        emoji_name: selected_emoji_info.emoji_name || "",
-        emoji_code: selected_emoji_info.emoji_code || "",
-        reaction_type: selected_emoji_info.reaction_type || "",
+        emoji_name: selected_emoji_info.emoji_name ?? "",
+        emoji_code: selected_emoji_info.emoji_code ?? "",
+        reaction_type: selected_emoji_info.reaction_type ?? "",
         success() {
             dialog_widget.close();
         },
@@ -76,7 +76,7 @@ export function submit_new_status() {
 
 export function update_button() {
     const user_id = people.my_current_user_id();
-    let old_status_text = user_status.get_status_text(user_id) || "";
+    let old_status_text = user_status.get_status_text(user_id) ?? "";
     old_status_text = old_status_text.trim();
     const old_emoji_info = user_status.get_status_emoji(user_id) || {};
     const new_status_text = input_field().val().trim();
@@ -124,7 +124,7 @@ function rebuild_status_emoji_selector_ui(selected_emoji_info) {
 function user_status_post_render() {
     const user_id = people.my_current_user_id();
     const old_status_text = user_status.get_status_text(user_id);
-    const old_emoji_info = user_status.get_status_emoji(user_id) || {};
+    const old_emoji_info = user_status.get_status_emoji(user_id) ?? {};
     set_selected_emoji_info(old_emoji_info);
     const $field = input_field();
     $field.val(old_status_text);
