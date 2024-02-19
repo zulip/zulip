@@ -33,7 +33,6 @@
         "./styles/portico/billing.css"
     ],
     "billing-event-status": [
-        "./src/billing/page_params",
         "./src/bundles/portico",
         "./styles/portico/landing_page.css",
         "./src/billing/event_status",
