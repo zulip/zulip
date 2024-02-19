@@ -340,15 +340,36 @@ tr.admin td:first-child {
     grid-area: realms;
 }
 
+.user-support-container {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    grid-auto-rows: minmax(100px, auto);
+    grid-template-areas: "realm user";
+}
+
+.user-information-section {
+    grid-area: user;
+}
+
+.user-realm-information-section {
+    grid-area: realm;
+}
+
+.user-information-section,
+.user-realm-information-section,
 .remote-realms-section,
 .remote-server-section {
     border: 2px solid hsl(330deg 3% 40%);
     border-radius: 4px;
     padding: 10px;
 }
+
+.user-realm-information-section,
 .remote-server-section {
     background-color: hsl(60deg 11% 86%);
 }
+
+.user-information-section,
 .remote-realms-section {
     background-color: hsl(60deg 12% 90%);
 }
