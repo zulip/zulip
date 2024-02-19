@@ -33,28 +33,28 @@
     <div id="query-results">
         {% for user in users %}
         {% set realm = user.realm %}
-        <div class="support-query-result">
-            <span class="label">user</span>
-            <h3>{{ user.full_name }}</h3>
-            <b>Email</b>: {{ user.delivery_email }}<br />
-            <b>Date joined</b>: {{ user.date_joined|timesince }} ago<br />
-            <b>Is active</b>: {{ user.is_active }}<br />
-            <b>Role</b>: {{ user.get_role_name() }}<br />
-            <form method="POST" class="delete-user-form">
-                {{ csrf_input }}
-                <input type="hidden" name="realm_id" value="{{ realm.id }}" />
-                <input type="hidden" name="delete_user_by_id" value="{{ user.id }}" />
-                <button data-email="{{ user.delivery_email }}" data-string-id="{{ realm.string_id }}" class="delete-user-button">Delete user (danger)</button>
-            </form>
-            <hr />
-            <div>
+        <div class="support-query-result user-support-container">
+            <div class="user-information-section">
+                <span class="label">user</span>
+                <h3>{{ user.full_name }}</h3>
+                <b>Email</b>: {{ user.delivery_email }}<br />
+                <b>Date joined</b>: {{ user.date_joined|timesince }} ago<br />
+                <b>Is active</b>: {{ user.is_active }}<br />
+                <b>Role</b>: {{ user.get_role_name() }}<br />
+                <form method="POST" class="delete-user-form">
+                    {{ csrf_input }}
+                    <input type="hidden" name="realm_id" value="{{ realm.id }}" />
+                    <input type="hidden" name="delete_user_by_id" value="{{ user.id }}" />
+                    <button data-email="{{ user.delivery_email }}" data-string-id="{{ realm.string_id }}" class="delete-user-button">Delete user (danger)</button>
+                </form>
+            </div>
+            <div class="user-realm-information-section">
                 {% with %}
                     {% set format_discount = format_discount %}
                     {% set dollar_amount = dollar_amount %}
                     {% include "corporate/support/realm_details.html" %}
                 {% endwith %}
             </div>
-            <hr />
         </div>
         {% endfor %}
 
