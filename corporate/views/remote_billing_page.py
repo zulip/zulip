@@ -201,6 +201,10 @@ def remote_realm_billing_finalize_login(
 
     try:
         handle_customer_migration_from_server_to_realms(server=remote_server)
+    except JsonableError:
+        # JsonableError should be propagated up, as they are meant to convey
+        # a json error response to be returned.
+        raise
     except Exception:  # nocoverage
         billing_logger.exception(
             "%s: Failed to migrate customer from server (id: %s) to realms",

@@ -32,7 +32,11 @@ from corporate.lib.stripe import (
     do_deactivate_remote_server,
     get_push_status_for_remote_request,
 )
-from corporate.models import CustomerPlan, get_current_plan_by_customer
+from corporate.models import (
+    CustomerPlan,
+    get_current_plan_by_customer,
+    get_customer_by_remote_realm,
+)
 from zerver.decorator import require_post
 from zerver.lib.email_validation import validate_disposable
 from zerver.lib.exceptions import (
@@ -56,6 +60,7 @@ from zerver.lib.remote_server import (
 )
 from zerver.lib.request import REQ, RequestNotes, has_request_variables
 from zerver.lib.response import json_success
+from zerver.lib.send_email import FromAddress
 from zerver.lib.timestamp import timestamp_to_datetime
 from zerver.lib.typed_endpoint import JsonBodyPayload, typed_endpoint
 from zerver.lib.types import RemoteRealmDictValue
@@ -999,13 +1004,47 @@ def handle_customer_migration_from_server_to_realms(
     elif len(realm_uuids) == 1:
         # Here, we have exactly one non-system-bot realm, and some
         # sort of plan on the server; move it to the realm.
-        remote_realm = RemoteRealm.objects.get(
-            uuid=realm_uuids[0], plan_type=RemoteRealm.PLAN_TYPE_SELF_MANAGED
-        )
+        remote_realm = RemoteRealm.objects.get(uuid=realm_uuids[0], server=server)
+        remote_realm_customer = get_customer_by_remote_realm(remote_realm)
+
         # Migrate customer from server to remote realm if there is only one realm.
-        server_customer.remote_realm = remote_realm
-        server_customer.remote_server = None
-        server_customer.save(update_fields=["remote_realm", "remote_server"])
+        if remote_realm_customer is None:
+            # In this case the migration is easy, since we can just move the customer
+            # object directly.
+            server_customer.remote_realm = remote_realm
+            server_customer.remote_server = None
+            server_customer.save(update_fields=["remote_realm", "remote_server"])
+        else:
+            # If there's a Customer object for the realm already, things are harder,
+            # because it's an unusual state and there may be a plan already active
+            # for the realm, or there may have been.
+            # In the simplest case, where the realm doesn't have an active plan and the
+            # server's plan state can easily be moved, we proceed with the migrations.
+            remote_realm_plan = get_current_plan_by_customer(remote_realm_customer)
+            if (
+                remote_realm_plan is None
+                and server_plan.status != CustomerPlan.SWITCH_PLAN_TIER_AT_PLAN_END
+            ):
+                # This is a simple case where we don't have to worry about the realm already
+                # having an active plan, or the server having a next plan scheduled that we'd need
+                # to figure out how to migrate correctly as well.
+                # Any other case is too complex to handle here, and should be handled manually,
+                # especially since that should be extremely rare.
+                server_plan.customer = remote_realm_customer
+                server_plan.save(update_fields=["customer"])
+            else:
+                logger.warning(
+                    "Failed to migrate customer from server (id: %s) to realm (id: %s): RemoteRealm customer already exists "
+                    "and plans can't be migrated automatically.",
+                    server.id,
+                    remote_realm.id,
+                )
+                raise JsonableError(
+                    _(
+                        "Couldn't reconcile billing data between server and realm. Please contact {support_email}"
+                    ).format(support_email=FromAddress.SUPPORT)
+                )
+
         # TODO: Might be better to call do_change_plan_type here.
         remote_realm.plan_type = server.plan_type
         remote_realm.save(update_fields=["plan_type"])
