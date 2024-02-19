@@ -366,10 +366,7 @@ class HomeTest(ZulipTestCase):
             "warn_no_email",
         ]
         self.assertCountEqual(page_params, expected_keys)
-        expected_state_data_keys = [
-            "queue_id",
-        ]
-        self.assertCountEqual(page_params["state_data"], expected_state_data_keys)
+        self.assertIsNone(page_params["state_data"])
 
     def test_sentry_keys(self) -> None:
         def home_params() -> Dict[str, Any]:

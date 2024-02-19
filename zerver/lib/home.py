@@ -169,14 +169,13 @@ def build_page_params_for_home_page_load(
             narrow=narrow,
             include_streams=False,
         )
+        queue_id = state_data["queue_id"]
         default_language = state_data["user_settings"]["default_language"]
     else:
         # The spectator client will be fetching the /register response
-        # for spectators via the API. But we still need to set the
-        # values not presence in that object.
-        state_data = {
-            "queue_id": None,
-        }
+        # for spectators via the API.
+        state_data = None
+        queue_id = None
         default_language = realm.default_language
 
     if user_profile is None:
@@ -239,7 +238,7 @@ def build_page_params_for_home_page_load(
 
     page_params["state_data"] = state_data
 
-    if narrow_stream is not None:
+    if narrow_stream is not None and state_data is not None:
         # In narrow_stream context, initial pointer is just latest message
         recipient = narrow_stream.recipient
         state_data["max_message_id"] = -1
@@ -269,4 +268,4 @@ def build_page_params_for_home_page_load(
         page_params["realm_rendered_description"] = get_realm_rendered_description(realm)
         page_params["language_cookie_name"] = settings.LANGUAGE_COOKIE_NAME
 
-    return state_data["queue_id"], page_params
+    return queue_id, page_params
