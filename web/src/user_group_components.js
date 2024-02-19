@@ -41,7 +41,7 @@ export function setup_permissions_dropdown(group, for_group_creation) {
             placement: "bottom-start",
         },
         default_id,
-        unique_id_type: dropdown_widget.DATA_TYPES.NUMBER,
+        unique_id_type: dropdown_widget.DataTypes.NUMBER,
         on_mount_callback(dropdown) {
             $(dropdown.popper).css("min-width", "300px");
         },

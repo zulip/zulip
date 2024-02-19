@@ -86,7 +86,7 @@ export function dropdown_setup() {
         },
         default_text: $t({defaultMessage: "No user groups"}),
         default_id: user_groups.get_user_group_from_name("role:administrators").id,
-        unique_id_type: dropdown_widget.DATA_TYPES.NUMBER,
+        unique_id_type: dropdown_widget.DataTypes.NUMBER,
     });
 }
 

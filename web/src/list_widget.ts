@@ -59,7 +59,7 @@ type BaseListWidget = {
     clear_event_handlers: () => void;
 };
 
-type ListWidget<Key, Item = Key> = BaseListWidget & {
+export type ListWidget<Key, Item = Key> = BaseListWidget & {
     get_current_list: () => Item[];
     filter_and_sort: () => void;
     retain_selected_items: () => void;

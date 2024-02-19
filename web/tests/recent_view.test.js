@@ -181,7 +181,7 @@ mock_esm("../src/resize", {
     update_recent_view_filters_height: noop,
 });
 const dropdown_widget = mock_esm("../src/dropdown_widget", {
-    DATA_TYPES: {NUMBER: "number", STRING: "string"},
+    DataTypes: {NUMBER: "number", STRING: "string"},
 });
 dropdown_widget.DropdownWidget = function DropdownWidget() {
     this.setup = noop;
