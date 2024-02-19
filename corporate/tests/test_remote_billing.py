@@ -56,7 +56,10 @@ class RemoteRealmBillingTestCase(BouncerTestCase):
         # This only matters if first_time_login is True, since otherwise
         # there's no confirmation link to be clicked:
         return_without_clicking_confirmation_link: bool = False,
-        server_on_active_plan_error: bool = False,
+        # This is in order to return the response early, right after accessing the
+        # authentication url for the user. This is useful for tests who expect an
+        # an error there.
+        return_from_auth_url: bool = False,
     ) -> "TestHttpResponse":
         now = timezone_now()
 
@@ -74,8 +77,7 @@ class RemoteRealmBillingTestCase(BouncerTestCase):
         with time_machine.travel(now, tick=False):
             result = self.client_get(signed_auth_url, subdomain="selfhosting")
 
-        if server_on_active_plan_error:
-            self.assert_in_response("Plan management not available", result)
+        if return_from_auth_url:
             return result
 
         if first_time_login:
@@ -702,9 +704,10 @@ class RemoteBillingAuthenticationTest(RemoteRealmBillingTestCase):
 
         # Login to plan management.
         result = self.execute_remote_billing_authentication_flow(
-            desdemona, server_on_active_plan_error=True
+            desdemona, return_from_auth_url=True
         )
         self.assertEqual(result.status_code, 200)
+        self.assert_in_response("Plan management not available", result)
 
         # RemoteRealm objects should be created for all realms on the server.
         self.assert_length(RemoteRealm.objects.all(), 4)
@@ -720,7 +723,7 @@ class RemoteBillingAuthenticationTest(RemoteRealmBillingTestCase):
 
         # Login to plan management. Performs customer migration from server to realms.
         result = self.execute_remote_billing_authentication_flow(
-            desdemona, server_on_active_plan_error=False
+            desdemona, return_from_auth_url=False
         )
         self.assertEqual(result.status_code, 302)
 
@@ -800,9 +803,10 @@ class RemoteBillingAuthenticationTest(RemoteRealmBillingTestCase):
 
         # Login to plan management.
         result = self.execute_remote_billing_authentication_flow(
-            desdemona, server_on_active_plan_error=True
+            desdemona, return_from_auth_url=True
         )
         self.assertEqual(result.status_code, 200)
+        self.assert_in_response("Plan management not available", result)
 
         # Server plan status stayed the same.
         self.server.refresh_from_db()
@@ -826,7 +830,7 @@ class RemoteBillingAuthenticationTest(RemoteRealmBillingTestCase):
 
         # Login to plan management. Performs customer migration from server to realms.
         result = self.execute_remote_billing_authentication_flow(
-            desdemona, server_on_active_plan_error=False
+            desdemona, return_from_auth_url=False
         )
         self.assertEqual(result.status_code, 302)
 
@@ -912,9 +916,10 @@ class RemoteBillingAuthenticationTest(RemoteRealmBillingTestCase):
 
         # Login to plan management.
         result = self.execute_remote_billing_authentication_flow(
-            desdemona, server_on_active_plan_error=True
+            desdemona, return_from_auth_url=True
         )
         self.assertEqual(result.status_code, 200)
+        self.assert_in_response("Plan management not available", result)
 
         # Server plan status stayed the same.
         self.server.refresh_from_db()
@@ -938,7 +943,7 @@ class RemoteBillingAuthenticationTest(RemoteRealmBillingTestCase):
 
         # Login to plan management. Performs customer migration from server to realms.
         result = self.execute_remote_billing_authentication_flow(
-            desdemona, server_on_active_plan_error=False
+            desdemona, return_from_auth_url=False
         )
         self.assertEqual(result.status_code, 302)
 
@@ -1019,9 +1024,10 @@ class RemoteBillingAuthenticationTest(RemoteRealmBillingTestCase):
 
         # Login to plan management.
         result = self.execute_remote_billing_authentication_flow(
-            desdemona, server_on_active_plan_error=True
+            desdemona, return_from_auth_url=True
         )
         self.assertEqual(result.status_code, 200)
+        self.assert_in_response("Plan management not available", result)
 
         # Server stays on the same plan.
         server_plan = get_current_plan_by_customer(server_customer)
@@ -1038,9 +1044,10 @@ class RemoteBillingAuthenticationTest(RemoteRealmBillingTestCase):
 
         # Login to plan management.
         result = self.execute_remote_billing_authentication_flow(
-            desdemona, server_on_active_plan_error=True
+            desdemona, return_from_auth_url=True
         )
         self.assertEqual(result.status_code, 200)
+        self.assert_in_response("Plan management not available", result)
 
         # Server stays on the same plan.
         server_customer.refresh_from_db()
