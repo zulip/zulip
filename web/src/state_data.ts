@@ -59,6 +59,7 @@ export const realm_schema = z.object({
     max_icon_file_size_mib: z.number(),
     max_logo_file_size_mib: z.number(),
     realm_add_custom_emoji_policy: z.number(),
+    realm_allow_edit_history: z.boolean(),
     realm_available_video_chat_providers: z.object({
         disabled: z.object({name: z.string(), id: z.number()}),
         jitsi_meet: z.object({name: z.string(), id: z.number()}),
