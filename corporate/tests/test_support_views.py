@@ -622,13 +622,13 @@ class TestSupportEndpoint(ZulipTestCase):
         ) -> None:
             self.assert_in_success_response(
                 [
-                    '<span class="label">preregistration user</span>\n',
+                    '<span class="label">confirmation</span>\n',
                     f"<b>Email</b>: {email}",
                 ],
                 result,
             )
             if invite:
-                self.assert_in_success_response(['<span class="label">invite</span>'], result)
+                self.assert_in_success_response(["<h3>Invite</h3>"], result)
                 self.assert_in_success_response(
                     [
                         "<b>Expires in</b>: 1\xa0week, 3\xa0days",
@@ -638,7 +638,7 @@ class TestSupportEndpoint(ZulipTestCase):
                 )
                 self.assert_in_success_response([], result)
             else:
-                self.assert_not_in_success_response(['<span class="label">invite</span>'], result)
+                self.assert_not_in_success_response(["<h3>Invite</h3>"], result)
                 self.assert_in_success_response(
                     [
                         "<b>Expires in</b>: 1\xa0day",
@@ -650,8 +650,8 @@ class TestSupportEndpoint(ZulipTestCase):
         def check_realm_creation_query_result(result: "TestHttpResponse", email: str) -> None:
             self.assert_in_success_response(
                 [
-                    '<span class="label">preregistration user</span>\n',
-                    '<span class="label">realm creation</span>\n',
+                    '<span class="label">confirmation</span>\n',
+                    "<h3>Realm creation</h3>\n",
                     "<b>Link</b>: http://testserver/accounts/do_confirm/",
                     "<b>Expires in</b>: 1\xa0day",
                 ],
@@ -661,7 +661,8 @@ class TestSupportEndpoint(ZulipTestCase):
         def check_multiuse_invite_link_query_result(result: "TestHttpResponse") -> None:
             self.assert_in_success_response(
                 [
-                    '<span class="label">multiuse invite</span>\n',
+                    '<span class="label">confirmation</span>\n',
+                    "<h3>Multiuse invite</h3>\n",
                     "<b>Link</b>: http://zulip.testserver/join/",
                     "<b>Expires in</b>: 1\xa0week, 3\xa0days",
                 ],
@@ -671,7 +672,8 @@ class TestSupportEndpoint(ZulipTestCase):
         def check_realm_reactivation_link_query_result(result: "TestHttpResponse") -> None:
             self.assert_in_success_response(
                 [
-                    '<span class="label">realm reactivation</span>\n',
+                    '<span class="label">confirmation</span>\n',
+                    "<h3>Realm reactivation</h3>\n",
                     "<b>Link</b>: http://zulip.testserver/reactivate/",
                     "<b>Expires in</b>: 1\xa0day",
                 ],
