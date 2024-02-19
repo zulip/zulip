@@ -10,12 +10,7 @@ import "jquery-validation";
 // Import app JS
 import "../setup";
 import "../reload";
-import "../hotkey";
-import "../desktop_notifications";
-import "../server_events";
 import "../templates";
-import "../settings";
-import "../desktop_integration";
 import "../zulip_test";
 
 // Import styles

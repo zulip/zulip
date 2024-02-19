@@ -292,6 +292,9 @@ export function initialize(params) {
     last_event_id = params.last_event_id;
     event_queue_longpoll_timeout_seconds = params.event_queue_longpoll_timeout_seconds;
 
+    window.addEventListener("beforeunload", () => {
+        cleanup_event_queue();
+    });
     reload.add_reload_hook(cleanup_event_queue);
     watchdog.on_unsuspend(() => {
         // Immediately poll for new events on unsuspend
@@ -316,10 +319,6 @@ function cleanup_event_queue() {
         ignore_reload: true,
     });
 }
-
-window.addEventListener("beforeunload", () => {
-    cleanup_event_queue();
-});
 
 // For unit testing
 export const _get_events_success = get_events_success;
