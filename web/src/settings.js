@@ -25,25 +25,6 @@ import {user_settings} from "./user_settings";
 
 export let settings_label;
 
-$(() => {
-    $("#settings_overlay_container").on("click", (e) => {
-        if (!modals.any_active()) {
-            return;
-        }
-        if ($(e.target).closest(".micromodal").length > 0) {
-            return;
-        }
-        e.preventDefault();
-        e.stopPropagation();
-        // Whenever opening a modal(over settings overlay) in an event handler
-        // attached to a click event, make sure to stop the propagation of the
-        // event to the parent container otherwise the modal will not open. This
-        // is so because this event handler will get fired on any click in settings
-        // overlay and subsequently close any open modal.
-        modals.close_active();
-    });
-});
-
 function setup_settings_label() {
     settings_label = {
         // settings_notification
@@ -193,4 +174,21 @@ export function initialize() {
         can_create_new_bots: settings_bots.can_create_new_bots(),
     });
     $("#settings_overlay_container").append(rendered_settings_overlay);
+
+    $("#settings_overlay_container").on("click", (e) => {
+        if (!modals.any_active()) {
+            return;
+        }
+        if ($(e.target).closest(".micromodal").length > 0) {
+            return;
+        }
+        e.preventDefault();
+        e.stopPropagation();
+        // Whenever opening a modal(over settings overlay) in an event handler
+        // attached to a click event, make sure to stop the propagation of the
+        // event to the parent container otherwise the modal will not open. This
+        // is so because this event handler will get fired on any click in settings
+        // overlay and subsequently close any open modal.
+        modals.close_active();
+    });
 }
