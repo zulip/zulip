@@ -51,7 +51,7 @@ const home_params_schema = default_params_schema
         show_plans: z.boolean(),
         show_webathena: z.boolean(),
         sponsorship_pending: z.boolean(),
-        state_data: state_data_schema.optional(),
+        state_data: state_data_schema.nullable(),
         translation_data: z.record(z.string()),
     })
     // TODO/typescript: Remove .passthrough() when all consumers have been
