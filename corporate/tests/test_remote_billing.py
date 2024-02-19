@@ -839,27 +839,38 @@ class RemoteBillingAuthenticationTest(RemoteRealmBillingTestCase):
             ["zephyr.testserver", "lear.testserver"],
         )
 
-        # Check legacy CustomerPlan exists for all realms except bot realm.
-        for remote_realm in RemoteRealm.objects.filter(realm_deactivated=False):
-            if remote_realm.is_system_bot_realm:
-                self.assertIsNone(get_customer_by_remote_realm(remote_realm))
-                continue
+        # Check legacy CustomerPlan exists for the one non-deactivated "real" realm
+        # and does not for the bot realm.
 
-            self.assertEqual(remote_realm.host, "zulip.testserver")
-            customer = get_customer_by_remote_realm(remote_realm)
-            assert customer is not None
-            # Customer got transferred from server to realm.
-            self.assertEqual(customer, server_customer)
-            plan = get_current_plan_by_customer(customer)
-            assert plan is not None
-            self.assertEqual(remote_realm.plan_type, RemoteRealm.PLAN_TYPE_SELF_MANAGED_LEGACY)
-            self.assertEqual(plan.tier, CustomerPlan.TIER_SELF_HOSTED_LEGACY)
-            self.assertEqual(plan.status, CustomerPlan.SWITCH_PLAN_TIER_AT_PLAN_END)
-            self.assertEqual(plan.billing_cycle_anchor, start_date)
-            self.assertEqual(plan.end_date, end_date)
-            self.assertEqual(
-                RemoteRealmBillingSession(remote_realm).get_next_plan(plan), server_next_plan
-            )
+        # Sanity check that the setup for this test is the way we think it is.
+        self.assertEqual(RemoteRealm.objects.filter(realm_deactivated=False).count(), 2)
+        # These queries have a unique result, so we can use .get().
+        remote_realm_with_plan = RemoteRealm.objects.get(
+            realm_deactivated=False, is_system_bot_realm=False
+        )
+        system_bot_remote_realm = RemoteRealm.objects.get(
+            realm_deactivated=False, is_system_bot_realm=True
+        )
+
+        self.assertIsNone(get_customer_by_remote_realm(system_bot_remote_realm))
+
+        self.assertEqual(remote_realm_with_plan.host, "zulip.testserver")
+        customer = get_customer_by_remote_realm(remote_realm_with_plan)
+        assert customer is not None
+        # Customer got transferred from server to realm.
+        self.assertEqual(customer, server_customer)
+        plan = get_current_plan_by_customer(customer)
+        assert plan is not None
+        self.assertEqual(
+            remote_realm_with_plan.plan_type, RemoteRealm.PLAN_TYPE_SELF_MANAGED_LEGACY
+        )
+        self.assertEqual(plan.tier, CustomerPlan.TIER_SELF_HOSTED_LEGACY)
+        self.assertEqual(plan.status, CustomerPlan.SWITCH_PLAN_TIER_AT_PLAN_END)
+        self.assertEqual(plan.billing_cycle_anchor, start_date)
+        self.assertEqual(plan.end_date, end_date)
+        self.assertEqual(
+            RemoteRealmBillingSession(remote_realm_with_plan).get_next_plan(plan), server_next_plan
+        )
 
     @responses.activate
     def test_transfer_business_plan_from_server_to_realm(
@@ -936,21 +947,29 @@ class RemoteBillingAuthenticationTest(RemoteRealmBillingTestCase):
         self.assertEqual(self.server.plan_type, RemoteZulipServer.PLAN_TYPE_SELF_MANAGED)
 
         # Check business CustomerPlan exists for all realms except bot realm.
-        for remote_realm in RemoteRealm.objects.filter(realm_deactivated=False):
-            if remote_realm.is_system_bot_realm:
-                self.assertIsNone(get_customer_by_remote_realm(remote_realm))
-                continue
 
-            self.assertEqual(remote_realm.host, "zulip.testserver")
-            customer = get_customer_by_remote_realm(remote_realm)
-            assert customer is not None
-            # Customer got transferred from server to realm.
-            self.assertEqual(customer, server_customer)
-            plan = get_current_plan_by_customer(customer)
-            assert plan is not None
-            self.assertEqual(remote_realm.plan_type, RemoteRealm.PLAN_TYPE_BUSINESS)
-            self.assertEqual(plan.tier, CustomerPlan.TIER_SELF_HOSTED_BUSINESS)
-            self.assertEqual(plan.status, CustomerPlan.ACTIVE)
+        # Sanity check that the setup for this test is the way we think it is.
+        self.assertEqual(RemoteRealm.objects.filter(realm_deactivated=False).count(), 2)
+        # These queries have a unique result, so we can use .get().
+        remote_realm_with_plan = RemoteRealm.objects.get(
+            realm_deactivated=False, is_system_bot_realm=False
+        )
+        system_bot_remote_realm = RemoteRealm.objects.get(
+            realm_deactivated=False, is_system_bot_realm=True
+        )
+
+        self.assertIsNone(get_customer_by_remote_realm(system_bot_remote_realm))
+
+        self.assertEqual(remote_realm_with_plan.host, "zulip.testserver")
+        customer = get_customer_by_remote_realm(remote_realm_with_plan)
+        assert customer is not None
+        # Customer got transferred from server to realm.
+        self.assertEqual(customer, server_customer)
+        plan = get_current_plan_by_customer(customer)
+        assert plan is not None
+        self.assertEqual(remote_realm_with_plan.plan_type, RemoteRealm.PLAN_TYPE_BUSINESS)
+        self.assertEqual(plan.tier, CustomerPlan.TIER_SELF_HOSTED_BUSINESS)
+        self.assertEqual(plan.status, CustomerPlan.ACTIVE)
 
     @responses.activate
     def test_transfer_plan_from_server_to_realm_edge_cases(self) -> None:
