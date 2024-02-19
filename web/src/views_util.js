@@ -27,7 +27,7 @@ export const COMMON_DROPDOWN_WIDGET_PARAMS = {
         placement: "bottom-start",
         offset: [0, 2],
     },
-    unique_id_type: dropdown_widget.DATA_TYPES.STRING,
+    unique_id_type: dropdown_widget.DataTypes.STRING,
     hide_search_box: true,
     bold_current_selection: true,
     disable_for_spectators: true,

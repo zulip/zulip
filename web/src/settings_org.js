@@ -652,7 +652,7 @@ export function init_dropdown_widgets() {
             placement: "bottom-start",
         },
         default_id: realm.realm_new_stream_announcements_stream_id,
-        unique_id_type: dropdown_widget.DATA_TYPES.NUMBER,
+        unique_id_type: dropdown_widget.DataTypes.NUMBER,
         text_if_current_value_not_in_options: $t({defaultMessage: "Cannot view stream"}),
     });
     settings_components.set_new_stream_announcements_stream_widget(
@@ -675,7 +675,7 @@ export function init_dropdown_widgets() {
             placement: "bottom-start",
         },
         default_id: realm.realm_signup_announcements_stream_id,
-        unique_id_type: dropdown_widget.DATA_TYPES.NUMBER,
+        unique_id_type: dropdown_widget.DataTypes.NUMBER,
         text_if_current_value_not_in_options: $t({defaultMessage: "Cannot view stream"}),
     });
     settings_components.set_signup_announcements_stream_widget(signup_announcements_stream_widget);
@@ -700,7 +700,7 @@ export function init_dropdown_widgets() {
         },
         $events_container: $("#settings_overlay_container #organization-settings"),
         default_id: realm.realm_default_code_block_language,
-        unique_id_type: dropdown_widget.DATA_TYPES.STRING,
+        unique_id_type: dropdown_widget.DataTypes.STRING,
         tippy_props: {
             placement: "bottom-start",
         },
@@ -734,7 +734,7 @@ export function init_dropdown_widgets() {
             placement: "bottom-start",
         },
         default_id: realm.realm_create_multiuse_invite_group,
-        unique_id_type: dropdown_widget.DATA_TYPES.NUMBER,
+        unique_id_type: dropdown_widget.DataTypes.NUMBER,
         on_mount_callback(dropdown) {
             $(dropdown.popper).css("min-width", "300px");
         },
@@ -763,7 +763,7 @@ export function init_dropdown_widgets() {
             placement: "bottom-start",
         },
         default_id: realm.realm_can_access_all_users_group,
-        unique_id_type: dropdown_widget.DATA_TYPES.NUMBER,
+        unique_id_type: dropdown_widget.DataTypes.NUMBER,
         on_mount_callback(dropdown) {
             $(dropdown.popper).css("min-width", "300px");
         },

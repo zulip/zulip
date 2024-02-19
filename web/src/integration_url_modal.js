@@ -95,7 +95,7 @@ export function show_generate_integration_url_modal(api_key) {
                 placement: "bottom-start",
             },
             default_id: default_integration_option.unique_id,
-            unique_id_type: dropdown_widget.DATA_TYPES.STRING,
+            unique_id_type: dropdown_widget.DataTypes.STRING,
         });
         integration_input_dropdown_widget.setup();
 
@@ -130,7 +130,7 @@ export function show_generate_integration_url_modal(api_key) {
                 placement: "bottom-start",
             },
             default_id: direct_messages_option.unique_id,
-            unique_id_type: dropdown_widget.DATA_TYPES.NUMBER,
+            unique_id_type: dropdown_widget.DataTypes.NUMBER,
         });
         stream_input_dropdown_widget.setup();
 
