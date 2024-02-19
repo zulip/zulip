@@ -40,14 +40,14 @@
     </select>
     <button type="submit" class="support-submit-button">Update</button>
 </form>
-<form method="POST">
+<form method="POST" class="realm-subdomain-form">
     <b>New subdomain</b>:<br />
     {{ csrf_input }}
     <input type="hidden" name="realm_id" value="{{ realm.id }}" />
     <input type="text" name="new_subdomain" required />
     <button type="submit" class="support-submit-button">Update</button>
 </form>
-<form method="POST">
+<form method="POST" class="realm-organization-type-form">
     <b>Org type</b>:<br />
     {{ csrf_input }}
     <input type="hidden" name="realm_id" value="{{ realm.id }}" />
@@ -92,7 +92,7 @@
     <button class="approve-sponsorship-button">
         Approve full sponsorship
     </button>
-    (will email organization owners).
+    (will email organization owners)
 </form>
 {% endif %}
 

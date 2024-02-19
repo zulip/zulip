@@ -124,10 +124,9 @@ tr.admin td:first-child {
         color: hsl(0deg 0% 33%);
         border-radius: 4px;
         border: 1px solid hsl(0deg 0% 80%);
-        margin-bottom: 10px;
         cursor: pointer;
         background-color: hsl(0deg 0% 100%);
-        vertical-align: middle;
+        vertical-align: text-bottom;
         font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
 
         &:focus {
@@ -143,7 +142,7 @@ tr.admin td:first-child {
         border-radius: 4px;
         border: 1px solid hsl(0deg 0% 80%);
         color: hsl(0deg 0% 33%);
-        margin-bottom: 10px;
+        vertical-align: text-bottom;
         transition:
             border linear 0.2s,
             box-shadow linear 0.2s;
@@ -185,7 +184,7 @@ tr.admin td:first-child {
     line-height: 1.4286;
     text-align: center;
     white-space: nowrap;
-    vertical-align: middle;
+    vertical-align: text-bottom;
     cursor: pointer;
     user-select: none;
     background-image: none;
@@ -210,6 +209,19 @@ tr.admin td:first-child {
         cursor: not-allowed;
         opacity: 0.65;
     }
+}
+
+.support-search-form {
+    margin: 10px;
+}
+
+.approve-sponsorship-button {
+    vertical-align: middle;
+}
+
+.support-search-button {
+    vertical-align: middle;
+    margin: 10px;
 }
 
 .approve-sponsorship-button,
@@ -246,6 +258,10 @@ tr.admin td:first-child {
     }
 }
 
+.delete-user-form {
+    margin: 8px 0;
+}
+
 .installation-activity-header {
     text-align: center;
 }
@@ -255,75 +271,38 @@ tr.admin td:first-child {
     padding-bottom: 15px;
 }
 
-.remote-form {
-    margin-bottom: 10px;
-}
-
 .support-realm-icon {
     max-width: 25px;
     position: relative;
+    vertical-align: middle;
     top: -2px;
 }
 
-.support-realm-status-form {
-    position: relative;
-    top: 20px;
-}
-
-.support-discount-form {
-    position: relative;
-    top: -50px;
-}
-
-.support-plan-type-form {
-    position: relative;
-    top: -10px;
-}
-
-.sponsorship-pending-form {
-    position: relative;
-    top: -25px;
-}
-
-.current-plan-details {
-    position: relative;
-    top: -45px;
-}
-
-.approve-sponsorship-form {
-    position: relative;
-    top: -40px;
-}
-
-.billing-modality-form {
-    position: relative;
-    top: -30px;
-}
-
-.downgrade-plan-form {
-    position: relative;
-    top: -75px;
-}
-
-.modify-plan-method-select {
-    width: auto;
+.scrub-realm-form,
+.realm-organization-type-form,
+.realm-subdomain-form,
+.downgrade-plan-form,
+.billing-modality-form,
+.approve-sponsorship-form,
+.current-plan-details,
+.sponsorship-pending-form,
+.support-plan-type-form,
+.support-discount-form,
+.support-realm-status-form,
+.remote-form,
+.current-plan-information {
+    margin-bottom: 10px;
 }
 
 .scrub-realm-form {
-    position: relative;
-    top: -70px;
-}
-
-.support-submit-button {
-    position: relative;
-    top: -3px;
+    padding-bottom: 10px;
 }
 
 .search-query.input-xxlarge {
     width: 530px;
     padding: 4px 14px;
     margin-bottom: 0;
-    border-radius: 15px;
+    border-radius: 8px;
     border: 1px solid hsl(0deg 0% 80%);
     box-shadow: inset 0 1px 1px hsl(0deg 0% 0% / 7.5%);
     transition:
