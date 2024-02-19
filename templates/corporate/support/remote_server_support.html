@@ -33,102 +33,115 @@
 
     <div id="remote-server-query-results">
         {% for remote_server in remote_servers %}
-        <div class="support-query-result">
-            <div class="remote-server-information">
-                <span class="label">remote server</span>
-                <h3>{{ remote_server.hostname }} {{ server_analytics_link(remote_server.id ) }}</h3>
-                {% if remote_server.plan_type == SPONSORED_PLAN_TYPE %}
-                    <h4>On 100% sponsored Zulip Community plan 🎉</h4>
+        <div class="remote-support-query-result">
+            <div class="remote-server-section">
+                <div class="remote-server-information">
+                    <span class="label">remote server</span>
+                    <h3>{{ remote_server.hostname }} {{ server_analytics_link(remote_server.id ) }}</h3>
+                    {% if remote_server.plan_type == SPONSORED_PLAN_TYPE %}
+                        <h4>On 100% sponsored Zulip Community plan 🎉</h4>
+                    {% endif %}
+                    {% if remote_servers_support_data[remote_server.id].sponsorship_data.default_discount %}
+                        <h4>Has a discount 💸</h4>
+                    {% endif %}
+                    <b>Contact email</b>: {{ remote_server.contact_email }}
+                    <a title="Copy email" class="copy-button" data-copytext="{{ remote_server.contact_email }}">
+                        <i class="fa fa-copy"></i>
+                    </a>
+                    <br />
+                    <b>UUID</b>: {{ remote_server.uuid }}<br />
+                    <b>Date created</b>: {{ remote_servers_support_data[remote_server.id].date_created.strftime('%d %B %Y') }}<br />
+                    <b>Zulip version</b>: {{ remote_server.last_version }}<br />
+                    <b>Has remote realms</b>: {{ remote_realms[remote_server.id] != [] }}<br />
+                    <br />
+                    <b>Max monthly messages</b>: {{ remote_server_to_max_monthly_messages[remote_server.id] }}<br />
+                    <b>Last audit log update (UTC)</b>: {{ format_optional_datetime(remote_server.last_audit_log_update, True) }}<br />
+                    <b>Plan type</b>: {{ get_plan_type_name(remote_server.plan_type) }}<br />
+                    <b>Non-guest user count</b>: {{ remote_servers_support_data[remote_server.id].user_data.non_guest_user_count }}<br />
+                    <b>Guest user count</b>: {{ remote_servers_support_data[remote_server.id].user_data.guest_user_count }}<br />
+                    <br />
+                    <b>Total mobile user count</b>: {{ remote_servers_support_data[remote_server.id].mobile_push_data.total_mobile_users }}<br />
+                    {% if remote_realms[remote_server.id] != [] %}
+                        <b>Uncategorized mobile user count:</b> {{ remote_servers_support_data[remote_server.id].mobile_push_data.uncategorized_mobile_users }}<br />
+                    {% endif %}
+                    <b>7-day mobile pushes count</b>: {{ remote_servers_support_data[remote_server.id].mobile_push_data.mobile_pushes_forwarded }}<br />
+                    <b>Last push notification date</b>: {{ remote_servers_support_data[remote_server.id].mobile_push_data.last_mobile_push_sent }}<br />
+                </div>
+
+                {% if remote_server.plan_type != SPONSORED_PLAN_TYPE %}
+                <div>
+                    {% with %}
+                        {% set sponsorship_data = remote_servers_support_data[remote_server.id].sponsorship_data %}
+                        {% set remote_id = remote_server.id %}
+                        {% set remote_type = "remote_server_id" %}
+                        {% set format_discount = format_discount %}
+                        {% set has_fixed_price = remote_servers_support_data[remote_server.id].plan_data.has_fixed_price %}
+                        {% include 'corporate/support/sponsorship_forms_support.html' %}
+                    {% endwith %}
+                </div>
                 {% endif %}
-                {% if remote_servers_support_data[remote_server.id].sponsorship_data.default_discount %}
-                    <h4>Has a discount 💸</h4>
+
+                {% if remote_servers_support_data[remote_server.id].plan_data.current_plan %}
+                <div>
+                    {% with %}
+                        {% set plan_data = remote_servers_support_data[remote_server.id].plan_data %}
+                        {% set format_discount = format_discount %}
+                        {% set dollar_amount = dollar_amount %}
+                        {% include 'corporate/support/current_plan_details.html' %}
+                    {% endwith %}
+
+                    {% with %}
+                        {% set current_plan = remote_servers_support_data[remote_server.id].plan_data.current_plan %}
+                        {% set remote_id = remote_server.id %}
+                        {% set remote_type = "remote_server_id" %}
+                        {% include 'corporate/support/current_plan_forms_support.html' %}
+                    {% endwith %}
+                </div>
                 {% endif %}
-                <b>Contact email</b>: {{ remote_server.contact_email }}
-                <a title="Copy email" class="copy-button" data-copytext="{{ remote_server.contact_email }}">
-                    <i class="fa fa-copy"></i>
-                </a>
-                <br />
-                <b>UUID</b>: {{ remote_server.uuid }}<br />
-                <b>Date created</b>: {{ remote_servers_support_data[remote_server.id].date_created.strftime('%d %B %Y') }}<br />
-                <b>Zulip version</b>: {{ remote_server.last_version }}<br />
-                <b>Has remote realms</b>: {{ remote_realms[remote_server.id] != [] }}<br />
-                <br />
-                <b>Max monthly messages</b>: {{ remote_server_to_max_monthly_messages[remote_server.id] }}<br />
-                <b>Last audit log update (UTC)</b>: {{ format_optional_datetime(remote_server.last_audit_log_update, True) }}<br />
-                <b>Plan type</b>: {{ get_plan_type_name(remote_server.plan_type) }}<br />
-                <b>Non-guest user count</b>: {{ remote_servers_support_data[remote_server.id].user_data.non_guest_user_count }}<br />
-                <b>Guest user count</b>: {{ remote_servers_support_data[remote_server.id].user_data.guest_user_count }}<br />
-                <br />
-                <b>Total mobile user count</b>: {{ remote_servers_support_data[remote_server.id].mobile_push_data.total_mobile_users }}<br />
-                {% if remote_realms[remote_server.id] != [] %}
-                    <b>Uncategorized mobile user count:</b> {{ remote_servers_support_data[remote_server.id].mobile_push_data.uncategorized_mobile_users }}<br />
+
+                {% if remote_servers_support_data[remote_server.id].plan_data.next_plan %}
+                <div>
+                    {% with %}
+                        {% set plan_data = remote_servers_support_data[remote_server.id].plan_data %}
+                        {% set format_discount = format_discount %}
+                        {% set dollar_amount = dollar_amount %}
+                        {% set remote_id = remote_server.id %}
+                        {% set remote_type = "remote_server_id" %}
+                        {% include 'corporate/support/next_plan_details.html' %}
+                    {% endwith %}
+                </div>
+                {% else %}
+                <div>
+                    {% with %}
+                        {% set is_current_plan_billable = remote_servers_support_data[remote_server.id].plan_data.is_current_plan_billable %}
+                        {% set remote_id = remote_server.id %}
+                        {% set remote_type = "remote_server_id" %}
+                        {% include 'corporate/support/next_plan_forms_support.html' %}
+                    {% endwith %}
+                </div>
                 {% endif %}
-                <b>7-day mobile pushes count</b>: {{ remote_servers_support_data[remote_server.id].mobile_push_data.mobile_pushes_forwarded }}<br />
-                <b>Last push notification date</b>: {{ remote_servers_support_data[remote_server.id].mobile_push_data.last_mobile_push_sent }}<br />
             </div>
-
-            {% if remote_server.plan_type != SPONSORED_PLAN_TYPE %}
-                {% with %}
-                    {% set sponsorship_data = remote_servers_support_data[remote_server.id].sponsorship_data %}
-                    {% set remote_id = remote_server.id %}
-                    {% set remote_type = "remote_server_id" %}
-                    {% set format_discount = format_discount %}
-                    {% set has_fixed_price = remote_servers_support_data[remote_server.id].plan_data.has_fixed_price %}
-                    {% include 'corporate/support/sponsorship_forms_support.html' %}
-                {% endwith %}
-            {% endif %}
-
-            {% if remote_servers_support_data[remote_server.id].plan_data.current_plan %}
-            <div class="remote-server-information">
-                {% with %}
-                    {% set plan_data = remote_servers_support_data[remote_server.id].plan_data %}
-                    {% set format_discount = format_discount %}
-                    {% set dollar_amount = dollar_amount %}
-                    {% include 'corporate/support/current_plan_details.html' %}
-                {% endwith %}
+            <div class="remote-realms-section">
+                {% if remote_realms[remote_server.id] == [] %}
+                <div>
+                    <span class="label">remote realm</span>
+                    <h3>None</h3>
+                </div>
+                {% else %}
+                {% for remote_realm in remote_realms[remote_server.id] %}
+                <div>
+                    {% with %}
+                        {% set support_data = remote_realms_support_data %}
+                        {% set get_plan_type_name = get_plan_type_name %}
+                        {% set format_discount = format_discount %}
+                        {% set format_optional_datetime = format_optional_datetime %}
+                        {% set dollar_amount = dollar_amount %}
+                        {% include "corporate/support/remote_realm_details.html" %}
+                    {% endwith %}
+                </div>
+                {% endfor %}
+                {% endif %}
             </div>
-
-            {% with %}
-                {% set current_plan = remote_servers_support_data[remote_server.id].plan_data.current_plan %}
-                {% set remote_id = remote_server.id %}
-                {% set remote_type = "remote_server_id" %}
-                {% include 'corporate/support/current_plan_forms_support.html' %}
-            {% endwith %}
-            {% endif %}
-
-            {% if remote_servers_support_data[remote_server.id].plan_data.next_plan %}
-            <div class="remote-server-information">
-                {% with %}
-                    {% set plan_data = remote_servers_support_data[remote_server.id].plan_data %}
-                    {% set format_discount = format_discount %}
-                    {% set dollar_amount = dollar_amount %}
-                    {% set remote_id = remote_server.id %}
-                    {% set remote_type = "remote_server_id" %}
-                    {% include 'corporate/support/next_plan_details.html' %}
-                {% endwith %}
-            </div>
-            {% else %}
-            {% with %}
-                {% set is_current_plan_billable = remote_servers_support_data[remote_server.id].plan_data.is_current_plan_billable %}
-                {% set remote_id = remote_server.id %}
-                {% set remote_type = "remote_server_id" %}
-                {% include 'corporate/support/next_plan_forms_support.html' %}
-            {% endwith %}
-            {% endif %}
-
-            {% for remote_realm in remote_realms[remote_server.id] %}
-            <hr />
-            <div>
-                {% with %}
-                    {% set support_data = remote_realms_support_data %}
-                    {% set get_plan_type_name = get_plan_type_name %}
-                    {% set format_discount = format_discount %}
-                    {% set format_optional_datetime = format_optional_datetime %}
-                    {% set dollar_amount = dollar_amount %}
-                    {% include "corporate/support/remote_realm_details.html" %}
-                {% endwith %}
-            </div>
-            {% endfor %}
         </div>
         {% endfor %}
     </div>

@@ -108,10 +108,10 @@ tr.admin td:first-child {
     color: hsl(0deg 100% 39%);
 }
 
-.support-query-result {
-    background-color: hsl(210deg 100% 97%);
-    padding-left: 15px;
-    padding-top: 14px;
+.support-query-result,
+.remote-support-query-result {
+    background-color: hsl(60deg 12% 94%);
+    padding: 10px;
     border-radius: 7px;
     box-shadow: 0 10px 7px -6px hsl(0deg 2% 45%);
     margin-bottom: 10px;
@@ -323,4 +323,36 @@ tr.admin td:first-child {
     .search-query.input-xxlarge {
         width: 100%;
     }
+}
+
+.remote-support-query-result {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    grid-auto-rows: minmax(100px, auto);
+    grid-template-areas: "server realms";
+}
+
+.remote-server-section {
+    grid-area: server;
+}
+
+.remote-realms-section {
+    grid-area: realms;
+}
+
+.remote-realms-section,
+.remote-server-section {
+    border: 2px solid hsl(330deg 3% 40%);
+    border-radius: 4px;
+    padding: 10px;
+}
+.remote-server-section {
+    background-color: hsl(60deg 11% 86%);
+}
+.remote-realms-section {
+    background-color: hsl(60deg 12% 90%);
+}
+
+.remote-realm-container {
+    padding-bottom: 25px;
 }
