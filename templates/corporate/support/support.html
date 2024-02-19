@@ -9,8 +9,7 @@
 
 {% block content %}
 <div class="container">
-    <br />
-    <form>
+    <form class="support-search-form">
         <center>
             <input type="text" name="q" class="input-xxlarge search-query" placeholder="full names, emails, string_ids, organization URLs separated by commas" value="{{ request.GET.get('q', '') }}" autofocus />
             <button type="submit" class="support-search-button">Search</button>
