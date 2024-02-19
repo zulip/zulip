@@ -30,7 +30,7 @@
     </div>
 
     {% if remote_realm.plan_type != SPONSORED_PLAN_TYPE %}
-    <div>
+    <div class="sponsorship-container">
         {% with %}
             {% set sponsorship_data = support_data[remote_realm.id].sponsorship_data %}
             {% set remote_id = remote_realm.id %}
@@ -43,7 +43,7 @@
     {% endif %}
 
     {% if support_data[remote_realm.id].plan_data.current_plan %}
-    <div>
+    <div class="current-plan-container">
         {% with %}
             {% set plan_data = support_data[remote_realm.id].plan_data %}
             {% set format_discount = format_discount %}
@@ -61,7 +61,7 @@
     {% endif %}
 
     {% if support_data[remote_realm.id].plan_data.next_plan %}
-    <div>
+    <div class="next-plan-container">
         {% with %}
             {% set plan_data = support_data[remote_realm.id].plan_data %}
             {% set format_discount = format_discount %}
@@ -72,7 +72,7 @@
         {% endwith %}
     </div>
     {% else %}
-    <div>
+    <div class="next-plan-container">
         {% with %}
             {% set is_current_plan_billable = support_data[remote_realm.id].plan_data.is_current_plan_billable %}
             {% set remote_id = remote_realm.id %}

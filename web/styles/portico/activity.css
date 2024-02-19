@@ -266,6 +266,7 @@ tr.admin td:first-child {
     text-align: center;
 }
 
+.realm-support-information,
 .remote-server-information,
 .remote-realm-information {
     padding-bottom: 15px;
@@ -395,4 +396,27 @@ tr.admin td:first-child {
 
 .remote-realm-container {
     padding-bottom: 25px;
+}
+
+.realm-form-container,
+.next-plan-container,
+.current-plan-container,
+.sponsorship-container {
+    border: 2px solid hsl(33deg 99% 60%);
+    border-radius: 4px;
+    padding: 10px;
+    margin: 10px 0;
+}
+
+.realm-form-container,
+.sponsorship-container {
+    background-color: hsl(30deg 100% 96%);
+}
+
+.next-plan-container {
+    background-color: hsl(31deg 100% 91%);
+}
+
+.current-plan-container {
+    background-color: hsl(31deg 100% 83%);
 }
