@@ -1041,7 +1041,7 @@ button {
         hsl(197deg 100% 16%),
         hsl(166deg 45% 49%)
     );
-    height: 600px;
+    height: 450px;
 
     color: hsl(0deg 0% 100%);
 
@@ -1082,10 +1082,11 @@ button {
 
 .portico-landing.apps .hero .info .cta {
     text-shadow: 0 0 60px hsl(0deg 0% 0% / 30%);
+    text-align: center;
 }
 
 .portico-landing.apps .hero .info .flex {
-    height: 500px;
+    height: 300px;
     min-height: 0;
 }
 
@@ -2155,10 +2156,23 @@ button {
 #download-from-microsoft-store,
 #download-android-apk,
 #download-mac-arm64 {
-    display: inline-block;
+    display: block;
     color: hsl(0deg 0% 100%);
     font-size: 13px;
     padding-left: 10px;
+
+    & a {
+        color: hsl(0deg 0% 100%);
+    }
+}
+
+#download-from-microsoft-store,
+#download-mac-arm64 {
+    margin-top: 10px;
+}
+
+.download-instructions {
+    margin-top: 30px;
 }
 
 .feature-container {
@@ -2879,4 +2893,9 @@ button {
             box-shadow: 0 3px 10px hsl(0deg 0% 0% / 30%);
         }
     }
+}
+
+.apps .apps-page-link {
+    text-decoration: underline;
+    color: hsl(0deg 0% 100%);
 }

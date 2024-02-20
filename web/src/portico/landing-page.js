@@ -15,25 +15,30 @@ const apps_events = function () {
         windows: {
             alt: "Windows",
             description:
-                "Zulip for Windows is even better than Zulip on the web, with a cleaner look, tray integration, native notifications, and support for multiple Zulip accounts.",
+                "The Zulip desktop app comes with native <a class='apps-page-link' href='/help/desktop-notifications'>desktop notifications</a>, support for multiple Zulip accounts, and a dedicated tray icon.",
             download_link: "/apps/download/windows",
             show_instructions: true,
             install_guide: "/help/desktop-app-install-guide",
             app_type: "desktop",
+            download_instructions:
+                'For help or to install offline, see our <a class="apps-page-link" href="/help/desktop-app-install-guide" target="_blank" rel="noopener noreferrer">installation guide</a>.',
         },
         mac: {
             alt: "macOS",
             description:
-                "Zulip on macOS is even better than Zulip on the web, with a cleaner look, tray integration, native notifications, and support for multiple Zulip accounts.",
+                "The Zulip desktop app comes with native <a class='apps-page-link' href='/help/desktop-notifications'>desktop notifications</a>, support for multiple Zulip accounts, and a dedicated tray icon.",
             download_link: "/apps/download/mac",
             mac_arm64_link: "/apps/download/mac-arm64",
             show_instructions: true,
             install_guide: "/help/desktop-app-install-guide",
             app_type: "desktop",
+            download_instructions:
+                'For help or to install via Homebrew, see our <a class="apps-page-link" href="/help/desktop-app-install-guide" target="_blank" rel="noopener noreferrer">installation guide</a>.',
         },
         android: {
             alt: "Android",
-            description: "Zulip's native Android app makes it easy to keep up while on the go.",
+            description:
+                "Zulip's native Android app makes it easy to keep up while on the go, with fully customizable <a class='apps-page-link' href='/help/mobile-notifications'>mobile notifications</a>.",
             show_instructions: false,
             play_store_link: "https://play.google.com/store/apps/details?id=com.zulipmobile",
             download_link: "https://github.com/zulip/zulip-mobile/releases/latest",
@@ -41,7 +46,8 @@ const apps_events = function () {
         },
         ios: {
             alt: "iOS",
-            description: "Zulip's native iOS app makes it easy to keep up while on the go.",
+            description:
+                "Zulip's native iOS app makes it easy to keep up while on the go, with fully customizable <a class='apps-page-link' href='/help/mobile-notifications'>mobile notifications</a>.",
             show_instructions: false,
             app_store_link: "https://itunes.apple.com/us/app/zulip/id1203036395",
             app_type: "mobile",
@@ -49,11 +55,13 @@ const apps_events = function () {
         linux: {
             alt: "Linux",
             description:
-                "Zulip on the Linux desktop is even better than Zulip on the web, with a cleaner look, tray integration, native notifications, and support for multiple Zulip accounts.",
+                "The Zulip desktop app comes with native <a class='apps-page-link' href='/help/desktop-notifications'>desktop notifications</a>, support for multiple Zulip accounts, and a dedicated tray icon.",
             download_link: "/apps/download/linux",
             show_instructions: true,
             install_guide: "/help/desktop-app-install-guide",
             app_type: "desktop",
+            download_instructions:
+                'For help or to install via a package manager, see our <a class="apps-page-link" href="/help/desktop-app-install-guide" target="_blank" rel="noopener noreferrer">installation guide</a>.',
         },
     };
 
@@ -85,13 +93,13 @@ const apps_events = function () {
         const version_info = info[version];
 
         $(".info .platform").text(version_info.alt);
-        $(".info .description").text(version_info.description);
+        $(".info .description").html(version_info.description);
         $desktop_download_link.attr("href", version_info.download_link);
         $download_from_google_play_store.attr("href", version_info.play_store_link);
         $download_from_apple_app_store.attr("href", version_info.app_store_link);
-        $download_android_apk.attr("href", version_info.download_link);
-        $download_mac_arm64.attr("href", version_info.mac_arm64_link);
-        $download_instructions.find("a").attr("href", version_info.install_guide);
+        $download_android_apk.find("a").attr("href", version_info.download_link);
+        $download_mac_arm64.find("a").attr("href", version_info.mac_arm64_link);
+        $download_instructions.html(version_info.download_instructions);
 
         $download_instructions.toggle(version_info.show_instructions);
 
