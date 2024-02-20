@@ -206,8 +206,7 @@ export class TopicListWidget {
     build(spinner = false): void {
         const new_dom = this.build_list(spinner);
 
-        const replace_content = (html?: string): void => {
-            assert(html !== undefined);
+        const replace_content = (html: string): void => {
             this.remove();
             this.$parent_elem.append(html);
         };
