@@ -8,7 +8,8 @@ from typing import Any
 
 from django.conf import settings
 from django.db import transaction
-from django.db.models import Q, QuerySet
+from django.db.models import JSONField, Q, QuerySet
+from django.db.models.functions import Cast
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
 from django.utils.translation import gettext_lazy
@@ -69,6 +70,7 @@ from zerver.lib.types import EditHistoryEvent
 from zerver.lib.url_encoding import near_stream_message_url
 from zerver.lib.user_message import bulk_insert_all_ums
 from zerver.lib.user_topics import get_users_with_user_topic_visibility_policy
+from zerver.lib.utils import assert_is_not_none
 from zerver.lib.widget import is_widget_message
 from zerver.models import (
     ArchivedAttachment,
@@ -1405,3 +1407,44 @@ def check_update_message(
         queue_json_publish("embed_links", event_data)
 
     return updated_message_result
+
+
+@transaction.atomic
+def unmove_topic(
+    user_profile: UserProfile, stream_id: int, from_topic_name: str, to_topic_name: str
+) -> int:
+    stream = access_stream_by_id(user_profile, stream_id, require_active=True)[0]
+    recipient_id = assert_is_not_none(stream.recipient_id)
+
+    move_messages = (
+        Message.objects.filter(
+            realm_id=stream.realm_id,
+            recipient_id=recipient_id,
+            edit_history__isnull=False,
+            subject=from_topic_name,
+        )
+        .annotate(edit_history_json=Cast("edit_history", output_field=JSONField()))
+        .filter(
+            edit_history_json__0__prev_topic=to_topic_name,
+        )
+        .select_for_update()
+    )
+
+    message_count = 0
+
+    for message in move_messages:
+        message_count += do_update_message(
+            user_profile,
+            message,
+            new_stream=None,
+            topic_name=to_topic_name,
+            propagate_mode="change_one",
+            send_notification_to_old_thread=False,
+            send_notification_to_new_thread=False,
+            content=None,
+            rendering_result=None,
+            prior_mention_user_ids=set(),
+            mention_data=None,
+        ).changed_message_count
+
+    return message_count
