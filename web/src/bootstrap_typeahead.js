@@ -201,6 +201,7 @@ Typeahead.prototype = {
             // select / highlight the minimal text to be replaced
             this.$element[0].setSelectionRange(from, to_before);
             insertTextIntoField(this.$element[0], replacement);
+            this.$element.trigger("change");
         }
 
         return this.hide();
