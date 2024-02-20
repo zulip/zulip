@@ -40,6 +40,7 @@ export type MessageList = {
     get: (id: number) => Message | undefined;
     pre_narrow_offset?: number;
     can_mark_messages_read_without_setting: () => boolean;
+    rerender_view: () => void;
     resume_reading: () => void;
     data: MessageListData;
     select_id: (message_id: number, opts?: SelectIdOpts) => void;
