@@ -19,14 +19,21 @@
         "./src/billing/sponsorship",
         "./styles/portico/billing.css"
     ],
+    "billing_auth": [
+        "./src/bundles/portico",
+        "./src/portico/tippyjs",
+        "./src/billing/helpers",
+        "jquery-validation",
+        "./src/billing/remote_billing_auth",
+        "./src/billing/deactivate_server",
+        "./styles/portico/billing.css"
+    ],
     "upgrade": [
         "./src/bundles/portico",
         "./src/portico/tippyjs",
         "./src/billing/helpers",
         "./src/billing/upgrade",
         "jquery-validation",
-        "./src/billing/remote_billing_auth",
-        "./src/billing/deactivate_server",
         "./styles/portico/billing.css"
     ],
     "billing-event-status": [
