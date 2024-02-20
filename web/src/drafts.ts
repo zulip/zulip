@@ -429,7 +429,7 @@ export function current_recipient_data(): {
 }
 
 export function filter_drafts_by_compose_box_and_recipient(
-    drafts: Record<string, LocalStorageDraft>,
+    drafts = draft_model.get(),
 ): Record<string, LocalStorageDraft> {
     const {stream_name, topic, private_recipients} = current_recipient_data();
     const stream_id = stream_name ? stream_data.get_stream_id(stream_name) : undefined;
