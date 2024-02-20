@@ -2714,116 +2714,121 @@ class BillingSession(ABC):
         if plan.status is not CustomerPlan.SWITCH_PLAN_TIER_NOW:
             self.make_end_of_cycle_updates_if_needed(plan, event_time)
 
-        if plan.invoicing_status == CustomerPlan.INVOICING_STATUS_INITIAL_INVOICE_TO_BE_SENT:
-            invoiced_through_id = -1
-            licenses_base = None
-        else:
-            assert plan.invoiced_through is not None
-            licenses_base = plan.invoiced_through.licenses
-            invoiced_through_id = plan.invoiced_through.id
-
-        invoice_item_created = False
-        for ledger_entry in LicenseLedger.objects.filter(
-            plan=plan, id__gt=invoiced_through_id, event_time__lte=event_time
-        ).order_by("id"):
-            price_args: PriceArgs = {}
-            if ledger_entry.is_renewal:
-                if plan.fixed_price is not None:
-                    amount_due = get_amount_due_fixed_price_plan(
-                        plan.fixed_price, plan.billing_schedule
-                    )
-                    price_args = {"amount": amount_due}
-                else:
-                    assert plan.price_per_license is not None  # needed for mypy
-                    price_args = {
-                        "unit_amount": plan.price_per_license,
-                        "quantity": ledger_entry.licenses,
-                    }
-                description = f"{plan.name} - renewal"
-            elif licenses_base is not None and ledger_entry.licenses != licenses_base:
-                assert plan.price_per_license
-                last_ledger_entry_renewal = (
-                    LicenseLedger.objects.filter(
-                        plan=plan, is_renewal=True, event_time__lte=ledger_entry.event_time
-                    )
-                    .order_by("-id")
-                    .first()
-                )
-                assert last_ledger_entry_renewal is not None
-                last_renewal = last_ledger_entry_renewal.event_time
-                billing_period_end = start_of_next_billing_cycle(plan, ledger_entry.event_time)
-                plan_renewal_or_end_date = get_plan_renewal_or_end_date(
-                    plan, ledger_entry.event_time
-                )
-                proration_fraction = (plan_renewal_or_end_date - ledger_entry.event_time) / (
-                    billing_period_end - last_renewal
-                )
-                price_args = {
-                    "unit_amount": int(plan.price_per_license * proration_fraction + 0.5),
-                    "quantity": ledger_entry.licenses - licenses_base,
-                }
-                description = "Additional license ({} - {})".format(
-                    ledger_entry.event_time.strftime("%b %-d, %Y"),
-                    plan_renewal_or_end_date.strftime("%b %-d, %Y"),
-                )
-
-            if price_args:
-                plan.invoiced_through = ledger_entry
-                plan.invoicing_status = CustomerPlan.INVOICING_STATUS_STARTED
-                plan.save(update_fields=["invoicing_status", "invoiced_through"])
-                assert plan.customer.stripe_customer_id is not None
-                stripe.InvoiceItem.create(
-                    currency="usd",
-                    customer=plan.customer.stripe_customer_id,
-                    description=description,
-                    discountable=False,
-                    period={
-                        "start": datetime_to_timestamp(ledger_entry.event_time),
-                        "end": datetime_to_timestamp(
-                            get_plan_renewal_or_end_date(plan, ledger_entry.event_time)
-                        ),
-                    },
-                    idempotency_key=get_idempotency_key(ledger_entry),
-                    **price_args,
-                )
-                invoice_item_created = True
-            plan.invoiced_through = ledger_entry
-            plan.invoicing_status = CustomerPlan.INVOICING_STATUS_DONE
-            plan.save(update_fields=["invoicing_status", "invoiced_through"])
-            licenses_base = ledger_entry.licenses
-
-        if invoice_item_created:
-            flat_discount, flat_discounted_months = self.get_flat_discount_info(plan.customer)
-            if plan.fixed_price is None and flat_discounted_months > 0:
-                num_months = (
-                    12 if plan.billing_schedule == CustomerPlan.BILLING_SCHEDULE_ANNUAL else 1
-                )
-                flat_discounted_months = min(flat_discounted_months, num_months)
-                discount = flat_discount * flat_discounted_months
-                plan.customer.flat_discounted_months -= flat_discounted_months
-                plan.customer.save(update_fields=["flat_discounted_months"])
-                stripe.InvoiceItem.create(
-                    currency="usd",
-                    customer=plan.customer.stripe_customer_id,
-                    description=f"${cents_to_dollar_string(flat_discount)}/month new customer discount",
-                    # Negative value to apply discount.
-                    amount=(-1 * discount),
-                )
-
-            if plan.charge_automatically:
-                collection_method = "charge_automatically"
-                days_until_due = None
+        # The primary way to not create an invoice for a plan is to not have
+        # any new ledger entry. The 'self.on_paid_plan()' check adds an extra
+        # layer of defense to avoid creating any invoices for customers not on
+        # paid plan. It saves a DB query too.
+        if self.on_paid_plan():
+            if plan.invoicing_status == CustomerPlan.INVOICING_STATUS_INITIAL_INVOICE_TO_BE_SENT:
+                invoiced_through_id = -1
+                licenses_base = None
             else:
-                collection_method = "send_invoice"
-                days_until_due = DEFAULT_INVOICE_DAYS_UNTIL_DUE
-            stripe_invoice = stripe.Invoice.create(
-                auto_advance=True,
-                collection_method=collection_method,
-                customer=plan.customer.stripe_customer_id,
-                days_until_due=days_until_due,
-                statement_descriptor=plan.name,
-            )
-            stripe.Invoice.finalize_invoice(stripe_invoice)
+                assert plan.invoiced_through is not None
+                licenses_base = plan.invoiced_through.licenses
+                invoiced_through_id = plan.invoiced_through.id
+
+            invoice_item_created = False
+            for ledger_entry in LicenseLedger.objects.filter(
+                plan=plan, id__gt=invoiced_through_id, event_time__lte=event_time
+            ).order_by("id"):
+                price_args: PriceArgs = {}
+                if ledger_entry.is_renewal:
+                    if plan.fixed_price is not None:
+                        amount_due = get_amount_due_fixed_price_plan(
+                            plan.fixed_price, plan.billing_schedule
+                        )
+                        price_args = {"amount": amount_due}
+                    else:
+                        assert plan.price_per_license is not None  # needed for mypy
+                        price_args = {
+                            "unit_amount": plan.price_per_license,
+                            "quantity": ledger_entry.licenses,
+                        }
+                    description = f"{plan.name} - renewal"
+                elif licenses_base is not None and ledger_entry.licenses != licenses_base:
+                    assert plan.price_per_license
+                    last_ledger_entry_renewal = (
+                        LicenseLedger.objects.filter(
+                            plan=plan, is_renewal=True, event_time__lte=ledger_entry.event_time
+                        )
+                        .order_by("-id")
+                        .first()
+                    )
+                    assert last_ledger_entry_renewal is not None
+                    last_renewal = last_ledger_entry_renewal.event_time
+                    billing_period_end = start_of_next_billing_cycle(plan, ledger_entry.event_time)
+                    plan_renewal_or_end_date = get_plan_renewal_or_end_date(
+                        plan, ledger_entry.event_time
+                    )
+                    proration_fraction = (plan_renewal_or_end_date - ledger_entry.event_time) / (
+                        billing_period_end - last_renewal
+                    )
+                    price_args = {
+                        "unit_amount": int(plan.price_per_license * proration_fraction + 0.5),
+                        "quantity": ledger_entry.licenses - licenses_base,
+                    }
+                    description = "Additional license ({} - {})".format(
+                        ledger_entry.event_time.strftime("%b %-d, %Y"),
+                        plan_renewal_or_end_date.strftime("%b %-d, %Y"),
+                    )
+
+                if price_args:
+                    plan.invoiced_through = ledger_entry
+                    plan.invoicing_status = CustomerPlan.INVOICING_STATUS_STARTED
+                    plan.save(update_fields=["invoicing_status", "invoiced_through"])
+                    assert plan.customer.stripe_customer_id is not None
+                    stripe.InvoiceItem.create(
+                        currency="usd",
+                        customer=plan.customer.stripe_customer_id,
+                        description=description,
+                        discountable=False,
+                        period={
+                            "start": datetime_to_timestamp(ledger_entry.event_time),
+                            "end": datetime_to_timestamp(
+                                get_plan_renewal_or_end_date(plan, ledger_entry.event_time)
+                            ),
+                        },
+                        idempotency_key=get_idempotency_key(ledger_entry),
+                        **price_args,
+                    )
+                    invoice_item_created = True
+                plan.invoiced_through = ledger_entry
+                plan.invoicing_status = CustomerPlan.INVOICING_STATUS_DONE
+                plan.save(update_fields=["invoicing_status", "invoiced_through"])
+                licenses_base = ledger_entry.licenses
+
+            if invoice_item_created:
+                flat_discount, flat_discounted_months = self.get_flat_discount_info(plan.customer)
+                if plan.fixed_price is None and flat_discounted_months > 0:
+                    num_months = (
+                        12 if plan.billing_schedule == CustomerPlan.BILLING_SCHEDULE_ANNUAL else 1
+                    )
+                    flat_discounted_months = min(flat_discounted_months, num_months)
+                    discount = flat_discount * flat_discounted_months
+                    plan.customer.flat_discounted_months -= flat_discounted_months
+                    plan.customer.save(update_fields=["flat_discounted_months"])
+                    stripe.InvoiceItem.create(
+                        currency="usd",
+                        customer=plan.customer.stripe_customer_id,
+                        description=f"${cents_to_dollar_string(flat_discount)}/month new customer discount",
+                        # Negative value to apply discount.
+                        amount=(-1 * discount),
+                    )
+
+                if plan.charge_automatically:
+                    collection_method = "charge_automatically"
+                    days_until_due = None
+                else:
+                    collection_method = "send_invoice"
+                    days_until_due = DEFAULT_INVOICE_DAYS_UNTIL_DUE
+                stripe_invoice = stripe.Invoice.create(
+                    auto_advance=True,
+                    collection_method=collection_method,
+                    customer=plan.customer.stripe_customer_id,
+                    days_until_due=days_until_due,
+                    statement_descriptor=plan.name,
+                )
+                stripe.Invoice.finalize_invoice(stripe_invoice)
 
         plan.next_invoice_date = next_invoice_date(plan)
         plan.invoice_overdue_email_sent = False
