@@ -8,6 +8,7 @@ import render_message_edit_notice_tooltip from "../templates/message_edit_notice
 import render_message_inline_image_tooltip from "../templates/message_inline_image_tooltip.hbs";
 import render_narrow_tooltip from "../templates/narrow_tooltip.hbs";
 
+import * as drafts from "./drafts";
 import * as message_lists from "./message_lists";
 import * as popover_menus from "./popover_menus";
 import * as reactions from "./reactions";
@@ -41,6 +42,30 @@ const store_message_list_instances_plugin = {
         };
     },
 };
+
+// Drafts message tooltip
+function draft_tooltip(target: string, props: Partial<tippy.Props> = {}): void {
+    const {onShow, onHidden, ...otherProps} = props;
+    delegate("body", {
+        target,
+        appendTo: () => document.body,
+        onShow(instance) {
+            const $time_elem = $(instance.reference);
+            const $row = $time_elem.closest(".overlay-message-row");
+            const draft_id = $row.data("draft-id");
+            const draft = drafts.draft_model.getDraft(draft_id);
+            if (draft) {
+                const time = new Date(draft.updatedAt);
+                const formattedTimestamp = timerender.get_full_datetime_clarification(time);
+                instance.setContent(formattedTimestamp);
+            }
+        },
+        onHidden(instance) {
+            instance.destroy();
+        },
+        ...otherProps,
+    });
+}
 
 function message_list_tooltip(target: string, props: Partial<tippy.Props> = {}): void {
     const {onShow, ...other_props} = props;
@@ -119,6 +144,8 @@ export function destroy_all_message_list_tooltips(): void {
 }
 
 export function initialize(): void {
+    draft_tooltip(".drafts-list .recipient_row_date");
+
     message_list_tooltip(".tippy-narrow-tooltip", {
         delay: LONG_HOVER_DELAY,
         onCreate(instance) {
