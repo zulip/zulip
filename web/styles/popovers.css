@@ -1054,7 +1054,7 @@ ul {
             }
         }
 
-        .fa-chevron-down {
+        .zulip-icon-chevron-down {
             padding-left: 5px;
             color: hsl(0deg 0% 58%);
             font-weight: lighter;
