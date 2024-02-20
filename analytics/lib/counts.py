@@ -343,16 +343,13 @@ def do_increment_logging_stat(
     else:
         raise AssertionError("Unsupported CountStat frequency")
 
-    row, created = table._default_manager.get_or_create(
+    row, created = table._default_manager.update_or_create(
         property=stat.property,
         subgroup=subgroup,
         end_time=end_time,
-        defaults={"value": increment},
+        defaults={"value": F("value") + increment},
         **id_args,
     )
-    if not created:
-        row.value = F("value") + increment
-        row.save(update_fields=["value"])
 
 
 def do_drop_all_analytics_tables() -> None:
