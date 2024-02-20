@@ -12,6 +12,7 @@ import * as ui_util from "./ui_util";
 // converted to typescript.
 type MessageListView = {
     update_recipient_bar_background_color: () => void;
+    rerender_messages: (messages: Message[], message_content_edited?: boolean) => void;
     _render_win_start: number;
     _render_win_end: number;
     sticky_recipient_message_id: number | undefined;
