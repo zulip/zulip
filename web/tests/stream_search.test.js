@@ -64,7 +64,7 @@ function clear_search_input() {
 
 run_test("basics", ({override_rewire}) => {
     let cursor_helper;
-    const $input = $(".stream-list-filter");
+    const $input = $("#stream-list-filter");
     const $section = $(".stream_search_section");
 
     expand_sidebar();

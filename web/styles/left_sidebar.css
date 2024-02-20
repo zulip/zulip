@@ -107,20 +107,6 @@ li.show-more-topics {
     padding: 0;
     font-weight: normal;
 
-    .input-append.topic_search_section {
-        padding: 2px 0 2px calc($topic_indent - $topic_resolve_width);
-        margin-bottom: 3px;
-        margin-left: 3px;
-
-        & input {
-            width: calc(100% - 50px);
-        }
-
-        .clear_search_button {
-            margin-left: -1px;
-        }
-    }
-
     & li {
         & a:hover {
             text-decoration: none;
@@ -1364,18 +1350,39 @@ li.topic-list-item {
     }
 }
 
-.stream-list-filter {
+.stream_search_section {
+    grid-area: filter-box;
+    display: flex;
+    justify-content: stretch;
+}
+
+.search_section {
+    grid-area: filter-box;
+    display: flex;
+    justify-content: stretch;
+    align-items: center;
+    margin: 0 8px;
+    line-height: 20px;
+    letter-spacing: -0.3em;
+    font-size: 90%;
+}
+
+.search-filter-input {
+    flex: 1 0 80%;
+    /* Match the input height exactly
+        with the row height for a perfect
+        fit and better vertical alignment.
+    */
+    height: 28px;
+    /* Pad the entire clear-button area,
+        so that input text does not bleed
+        into there.
+    */
+    padding: 4px 30px 6px 4px;
     white-space: nowrap;
     text-overflow: ellipsis;
     overflow: hidden;
-}
-
-.topic-list-filter {
-    /* Input width = 100% - 30px right-margin - 6px right-padding */
-    /* To keep the right edge of input along with its borders inline with other
-       topic items we consider to subtract the space given for right margin of
-       other items, and right padding of input element.  */
-    width: calc(100% - 36px);
+    box-shadow: none !important;
 }
 
 .zero_count {

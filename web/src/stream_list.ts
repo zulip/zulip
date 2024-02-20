@@ -2,11 +2,11 @@ import $ from "jquery";
 import _ from "lodash";
 import assert from "minimalistic-assert";
 
-import render_filter_topics from "../templates/filter_topics.hbs";
 import render_stream_privacy from "../templates/stream_privacy.hbs";
 import render_stream_sidebar_row from "../templates/stream_sidebar_row.hbs";
 import render_stream_subheader from "../templates/streams_subheader.hbs";
 import render_subscribe_to_more_streams from "../templates/subscribe_to_more_streams.hbs";
+import render_sidebar_filter_input from "../templates/widgets/sidebar-filter-input.hbs";
 
 import * as blueslip from "./blueslip";
 import type {Filter} from "./filter";
@@ -200,7 +200,7 @@ class StreamSidebar {
 export const stream_sidebar = new StreamSidebar();
 
 function get_search_term(): string {
-    const $search_box = $<HTMLInputElement>(".stream-list-filter").expectOne();
+    const $search_box = $<HTMLInputElement>("#stream-list-filter").expectOne();
     const search_term = $search_box.val();
     assert(search_term !== undefined);
     return search_term.trim();
@@ -402,9 +402,15 @@ export function zoom_in_topics(options: {stream_id: number | undefined}): void {
         if (stream_id_for_elt($elt) === stream_id) {
             $elt.show();
             // Add search box for topics list.
-            $elt.children("div.bottom_left_row").append(render_filter_topics());
+            $elt.children("div.bottom_left_row").append(render_sidebar_filter_input());
+            // Add unique IDs to filter input and clear button for better targeting.
+            // This is necessary because we use a shared filter component ("sidebar-filter-input.hbs")
+            // for both streams and topics. Without unique IDs, topic-related functions might
+            // mistakenly target the first filter input (which is usually for streams).
+            $("div.bottom_left_row .search-filter-input").attr("id", "filter-topic-input");
+            $("div.bottom_left_row .clear_search_button").attr("id", "clear_search_topic_button");
             $("#filter-topic-input").trigger("focus");
-            $("#clear_search_topic_button").hide();
+            $("#clear_search_topic_button").css("visibility", "hidden");
         } else {
             $elt.hide();
         }
@@ -423,7 +429,7 @@ export function zoom_out_topics(): void {
     $("#streams_list").expectOne().removeClass("zoom-in").addClass("zoom-out");
     $("#stream_filters li.narrow-filter").show();
     // Remove search box for topics list from DOM.
-    $(".filter-topics").remove();
+    $("div.bottom_left_row .search_section").remove();
 }
 
 export function set_in_home_view(stream_id: number, in_home: boolean): void {
@@ -707,6 +713,12 @@ export function update_stream_sidebar_for_narrow(filter: Filter): JQuery | undef
 
     deselect_stream_items();
 
+    if ($("#stream-list-filter").val() !== "") {
+        $("#clear_search_stream_button").css("visibility", "visible");
+    } else {
+        $("#clear_search_stream_button").css("visibility", "hidden");
+    }
+
     const stream_id = info.stream_id;
 
     if (!stream_id) {
@@ -794,6 +806,13 @@ export function initialize({
     on_stream_click: (stream_id: number, trigger: string) => void;
 }): void {
     create_initial_sidebar_rows();
+    // Add search box for streams list.
+    $(".stream_search_section").append(render_sidebar_filter_input());
+    // Add unique IDs to filter input and clear button for better targeting.
+    // This is necessary because we use a shared filter component ("sidebar-filter-input.hbs")
+    // for both streams and topics.
+    $(".stream_search_section .search-filter-input").attr("id", "stream-list-filter");
+    $(".stream_search_section .clear_search_button").attr("id", "clear_search_stream_button");
 
     // We build the stream_list now.  It may get re-built again very shortly
     // when new messages come in, but it's fairly quick.
@@ -873,7 +892,7 @@ export function set_event_handlers({
         toggle_pm_header_icon();
     });
 
-    const $search_input = $(".stream-list-filter").expectOne();
+    const $search_input = $("#stream-list-filter").expectOne();
 
     function keydown_enter_key(): void {
         const stream_id = stream_cursor.get_key();
@@ -913,12 +932,12 @@ export function set_event_handlers({
 }
 
 export function searching(): boolean {
-    return $(".stream-list-filter").expectOne().is(":focus");
+    return $("#stream-list-filter").expectOne().is(":focus");
 }
 
 export function clear_search(e: JQuery.ClickEvent): void {
     e.stopPropagation();
-    const $filter = $(".stream-list-filter").expectOne();
+    const $filter = $("#stream-list-filter").expectOne();
     if ($filter.val() === "") {
         clear_and_hide_search();
         return;
@@ -944,7 +963,7 @@ export function initiate_search(): void {
     popovers.hide_all();
     show_search_section();
 
-    const $filter = $(".stream-list-filter").expectOne();
+    const $filter = $("#stream-list-filter").expectOne();
 
     if (
         // Check if left column is a overlay and is not visible.
@@ -960,7 +979,7 @@ export function initiate_search(): void {
 }
 
 export function clear_and_hide_search(): void {
-    const $filter = $(".stream-list-filter").expectOne();
+    const $filter = $("#stream-list-filter").expectOne();
     if ($filter.val() !== "") {
         $filter.val("");
         update_streams_for_search();

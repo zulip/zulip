@@ -375,14 +375,15 @@ test_ui("zoom_in_and_zoom_out", ({mock_template}) => {
     };
     stream_list.initialize_stream_cursor();
 
-    mock_template("filter_topics.hbs", false, () => "filter-topics-stub");
+    mock_template("widgets/sidebar-filter-input.hbs", false, () => "search-input-stub");
     let filter_topics_appended = false;
     $stream_li1.children = () => ({
         append(html) {
-            assert.equal(html, "filter-topics-stub");
+            assert.equal(html, "search-input-stub");
             filter_topics_appended = true;
         },
     });
+    $("#clear_search_topic_button").css = noop;
     stream_list.zoom_in_topics({stream_id: 42});
 
     assert.ok(!$label1.visible());
@@ -399,7 +400,8 @@ test_ui("zoom_in_and_zoom_out", ({mock_template}) => {
     };
 
     $stream_li1.length = 1;
-    $(".filter-topics").remove = () => {
+
+    $("div.bottom_left_row .search_section").remove = () => {
         filter_topics_appended = false;
     };
     stream_list.zoom_out_topics({$stream_li: $stream_li1});
@@ -422,6 +424,7 @@ test_ui("narrowing", ({mock_template}) => {
     topic_list.active_stream_id = noop;
     topic_list.get_stream_li = noop;
     $("#streams_header").outerHeight = () => 0;
+    $("#clear_search_stream_button").css = noop;
 
     assert.ok(!$("<devel-sidebar-row-stub>").hasClass("active-filter"));
 
@@ -462,7 +465,7 @@ test_ui("narrowing", ({mock_template}) => {
 test_ui("focusout_user_filter", () => {
     stream_list.set_event_handlers({narrow_on_stream_click() {}});
     const e = {};
-    const click_handler = $(".stream-list-filter").get_on_handler("focusout");
+    const click_handler = $("#stream-list-filter").get_on_handler("focusout");
     click_handler(e);
 });
 
@@ -475,7 +478,7 @@ test_ui("focus_user_filter", () => {
     const e = {
         stopPropagation() {},
     };
-    const click_handler = $(".stream-list-filter").get_on_handler("click");
+    const click_handler = $("#stream-list-filter").get_on_handler("click");
     click_handler(e);
 });
 

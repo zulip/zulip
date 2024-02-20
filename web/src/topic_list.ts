@@ -218,9 +218,9 @@ export class TopicListWidget {
         this.prior_dom = new_dom;
 
         if ($("#filter-topic-input").val() !== "") {
-            $("#clear_search_topic_button").show();
+            $("#clear_search_topic_button").css("visibility", "visible");
         } else {
-            $("#clear_search_topic_button").hide();
+            $("#clear_search_topic_button").css("visibility", "hidden");
         }
     }
 }
