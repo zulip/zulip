@@ -1329,7 +1329,7 @@ class TestDoIncrementLoggingStat(AnalyticsTestCase):
 
     def test_do_increment_logging_start_query_count(self) -> None:
         stat = LoggingCountStat("test", RealmCount, CountStat.DAY)
-        with self.assert_database_query_count(2):
+        with self.assert_database_query_count(1):
             do_increment_logging_stat(self.default_realm, stat, None, self.TIME_ZERO)
 
 

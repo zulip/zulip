@@ -2,11 +2,10 @@ import logging
 import time
 from collections import OrderedDict, defaultdict
 from datetime import datetime, timedelta
-from typing import Callable, Dict, Optional, Sequence, Tuple, Type, Union
+from typing import Callable, Dict, List, Optional, Sequence, Tuple, Type, Union
 
 from django.conf import settings
 from django.db import connection, models
-from django.db.models import F
 from psycopg2.sql import SQL, Composable, Identifier, Literal
 from typing_extensions import TypeAlias, override
 
@@ -312,27 +311,41 @@ def do_increment_logging_stat(
         return
 
     table = stat.data_collector.output_table
+    id_args: Dict[str, Union[int, None]] = {}
+    conflict_args: List[str] = []
     if table == RealmCount:
         assert isinstance(model_object_for_bucket, Realm)
-        id_args: Dict[
-            str, Optional[Union[Realm, UserProfile, Stream, "RemoteRealm", "RemoteZulipServer"]]
-        ] = {"realm": model_object_for_bucket}
+        id_args = {"realm_id": model_object_for_bucket.id}
+        conflict_args = ["realm_id"]
     elif table == UserCount:
         assert isinstance(model_object_for_bucket, UserProfile)
-        id_args = {"realm": model_object_for_bucket.realm, "user": model_object_for_bucket}
+        id_args = {
+            "realm_id": model_object_for_bucket.realm_id,
+            "user_id": model_object_for_bucket.id,
+        }
+        conflict_args = ["user_id"]
     elif table == StreamCount:
         assert isinstance(model_object_for_bucket, Stream)
-        id_args = {"realm": model_object_for_bucket.realm, "stream": model_object_for_bucket}
+        id_args = {
+            "realm_id": model_object_for_bucket.realm_id,
+            "stream_id": model_object_for_bucket.id,
+        }
+        conflict_args = ["stream_id"]
     elif table == RemoteInstallationCount:
         assert isinstance(model_object_for_bucket, RemoteZulipServer)
-        id_args = {"server": model_object_for_bucket, "remote_id": None}
+        id_args = {"server_id": model_object_for_bucket.id, "remote_id": None}
+        conflict_args = ["server_id"]
     elif table == RemoteRealmCount:
         assert isinstance(model_object_for_bucket, RemoteRealm)
         id_args = {
-            "server": model_object_for_bucket.server,
-            "remote_realm": model_object_for_bucket,
+            "server_id": model_object_for_bucket.server_id,
+            "remote_realm_id": model_object_for_bucket.id,
             "remote_id": None,
         }
+        conflict_args = [
+            "server_id",
+            "realm_id",
+        ]
     else:
         raise AssertionError("Unsupported CountStat output_table")
 
@@ -343,16 +356,45 @@ def do_increment_logging_stat(
     else:
         raise AssertionError("Unsupported CountStat frequency")
 
-    row, created = table._default_manager.get_or_create(
-        property=stat.property,
-        subgroup=subgroup,
-        end_time=end_time,
-        defaults={"value": increment},
-        **id_args,
+    is_subgroup: SQL = SQL("NULL")
+    if subgroup is not None:
+        is_subgroup = SQL("NOT NULL")
+        subgroup = str(subgroup)
+        # We're explicitly casting 'subgroup' to a string here before passing it as a parameter to cursor.execute.
+        # We do this because if 'subgroup' is a boolean type, psycopg2 will convert it to the string 'false' instead of "False".
+        # This can lead to issues when querying with Django, as it expects boolean values to be represented as "False" not 'false'.
+        # So, to ensure compatibility and avoid potential errors, we're converting 'subgroup' to a string before using it in the query.
+
+        conflict_args.append("subgroup")
+    extra_column_names = SQL(", ").join(map(Identifier, id_args.keys()))
+    values = SQL(", ").join(map(Literal, id_args.values()))
+    conflict_columns = SQL(", ").join(map(Identifier, conflict_args))
+    sql_query = SQL(
+        """
+        INSERT INTO {table_name}(property, subgroup, end_time, value, {extra_column_names})
+        VALUES (%s, %s, %s, %s, {values})
+        ON CONFLICT (property, end_time, {conflict_columns})
+        WHERE subgroup IS {is_subgroup}
+        DO UPDATE SET
+            value = {table_name}.value + EXCLUDED.value
+        """
+    ).format(
+        table_name=Identifier(table._meta.db_table),
+        extra_column_names=extra_column_names,
+        values=values,
+        conflict_columns=conflict_columns,
+        is_subgroup=is_subgroup,
     )
-    if not created:
-        row.value = F("value") + increment
-        row.save(update_fields=["value"])
+    with connection.cursor() as cursor:
+        cursor.execute(sql_query, [stat.property, subgroup, end_time, increment])
+
+    # The query Generated will look like this:
+    # INSERT INTO "analytics_realmcount"(property, subgroup, end_time, value, "realm_id")
+    #     VALUES ('test', NULL, '1988-03-14T00:00:00+00:00'::timestamptz,  -1, 5)
+    #     ON CONFLICT (property, end_time, "realm_id")
+    #     WHERE subgroup IS NULL
+    #     DO UPDATE SET
+    #         value = "analytics_realmcount".value + EXCLUDED.value;
 
 
 def do_drop_all_analytics_tables() -> None:
