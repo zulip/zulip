@@ -28,7 +28,7 @@ const rows = mock_esm("../src/rows");
 
 const compose_ui = zrequire("compose_ui");
 const upload = zrequire("upload");
-const message_lists = zrequire("message_lists");
+const message_lists = mock_esm("../src/message_lists");
 message_lists.current = {
     id: "1",
 };
@@ -718,7 +718,7 @@ test("main_file_drop_compose_mode", ({override, override_rewire}) => {
     };
     let compose_actions_start_called = false;
     let compose_actions_respond_to_message_called = false;
-    override_rewire(message_lists, "current", {
+    override(message_lists, "current", {
         selected_message() {
             return msg;
         },
@@ -736,7 +736,7 @@ test("main_file_drop_compose_mode", ({override, override_rewire}) => {
 
     // Test drop on Recent Conversations view
     compose_actions_respond_to_message_called = false;
-    override_rewire(message_lists, "current", {
+    override(message_lists, "current", {
         selected_message() {
             return undefined;
         },

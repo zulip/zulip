@@ -134,7 +134,6 @@ function test_helper({override, override_rewire, change_tab}) {
     stub(admin, "build_page");
     stub(drafts_overlay_ui, "launch");
     stub(message_viewport, "stop_auto_scrolling");
-    stub(narrow, "deactivate");
     stub(overlays, "close_for_hash_change");
     stub(settings, "launch");
     stub(settings, "build_page");
@@ -146,6 +145,9 @@ function test_helper({override, override_rewire, change_tab}) {
         override_rewire(narrow, "activate", (terms) => {
             narrow_terms = terms;
             events.push("narrow.activate");
+        });
+        override_rewire(narrow, "deactivate", () => {
+            events.push([narrow, "deactivate"]);
         });
 
         override(info_overlay, "show", (name) => {

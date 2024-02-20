@@ -28,8 +28,8 @@ const rm = zrequire("rendered_markdown");
 const people = zrequire("people");
 const user_groups = zrequire("user_groups");
 const stream_data = zrequire("stream_data");
-const rows = zrequire("rows");
-const message_store = zrequire("message_store");
+const rows = mock_esm("../src/rows");
+const message_store = mock_esm("../src/message_store");
 
 const iago = {
     email: "iago@zulip.com",
