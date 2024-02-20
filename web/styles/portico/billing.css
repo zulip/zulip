@@ -594,7 +594,8 @@ input[name="licenses"] {
 #remote-billing-confirm-email-intro .not-editable-realm-field,
 #billing-page-details .billing-frequency-message.not-editable-realm-field,
 #free-trial-top-banner .not-editable-realm-field,
-#upgrade-page-details .license-management-section .not-editable-realm-field {
+#upgrade-page-details .license-management-section .not-editable-realm-field,
+#upgrade-page-details .top-of-page-notice .not-editable-realm-field {
     padding-top: 0;
 }
 
@@ -744,10 +745,4 @@ input[name="licenses"] {
 
 .flat-discount-separator {
     border-bottom: 1px solid hsl(0deg 0% 0%);
-}
-
-#upgrade-page-details #pay-by-invoice-details {
-    width: 450px;
-    font-weight: normal;
-    padding-left: 15px;
 }

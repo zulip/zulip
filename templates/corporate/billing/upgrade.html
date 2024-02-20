@@ -37,10 +37,12 @@
         <div class="white-box">
             <div id="upgrade-page-details">
                 {% if pay_by_invoice_payments_page %}
-                <div id="pay-by-invoice-details">
-                    <a href="{{ pay_by_invoice_payments_page }}" target="_blank" rel="noopener noreferrer">An invoice</a>
-                    for $<span class="due-today-price"></span> has been sent to <b>{{email}}</b>.
-                    To complete the plan upgrade process, please pay the amount due.
+                <div class="input-box top-of-page-notice upgrade-page-field">
+                    <div class="not-editable-realm-field">
+                        <a href="{{ pay_by_invoice_payments_page }}" target="_blank" rel="noopener noreferrer">An invoice</a>
+                        for $<span class="due-today-price"></span> has been sent to <b>{{email}}</b>.
+                        To complete the plan upgrade process, please pay the amount due.
+                    </div>
                 </div>
                 {% else %}
                 <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}" />
