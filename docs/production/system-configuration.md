@@ -1,9 +1,22 @@
 ## System configuration
 
-The file `/etc/zulip/zulip.conf` is used to configure properties of
-the system and deployment; `/etc/zulip/settings.py` is used to
-[configure the application itself](settings.md). The `zulip.conf`
-sections and settings are described below.
+The file `/etc/zulip/zulip.conf` is an [INI
+format](https://en.wikipedia.org/wiki/INI_file) configuration file
+used to configure properties of the system and deployment;
+`/etc/zulip/settings.py` is used to [configure the application
+itself](settings.md). The `zulip.conf` sections and settings are
+described below. Changes to `zulip.conf` generally do not take effect
+until you run `zulip-puppet-apply` as root:
+
+```console
+# /home/zulip/deployments/current/scripts/zulip-puppet-apply
+```
+
+The `zulip-puppet-apply` command will display the configuration
+changes it will make and prompt for you to confirm you'd like to make
+those changes, before executing them (if you approve).
+
+### Truthy values
 
 When a setting refers to "set to true" or "set to false", the values
 `true` and `false` are canonical, but any of the following values will
