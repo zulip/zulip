@@ -123,6 +123,7 @@ export function initialize() {
 
             $popper.one("click", ".popover_move_message", (e) => {
                 const message_id = $(e.currentTarget).data("message-id");
+                message_lists.current.select_id(message_id);
                 const message = message_lists.current.get(message_id);
                 stream_popover.build_move_topic_to_stream_popover(
                     message.stream_id,
