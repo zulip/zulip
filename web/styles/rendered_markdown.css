@@ -716,7 +716,7 @@
         /* Having absolute positioning here ensures that the element
         doesn't scroll along with the code div in narrow windows */
         position: absolute;
-        right: 2px;
+        right: 20px;
         margin-top: -4px;
 
         /* Remove the outline when clicking on the copy-to-clipboard button */
