@@ -428,6 +428,11 @@ SOCIAL_AUTH_SAML_ENABLED_IDPS: Dict[str, Any] = {
         ## Configure entity_id and url according to information provided to you by your IdP:
         "entity_id": "https://idp.testshib.org/idp/shibboleth",
         "url": "https://idp.testshib.org/idp/profile/SAML2/Redirect/SSO",
+        ## The location of the IdP's metadata XML file. Uncomment if you enabled Zulip's
+        ## automatic renewal of SAML certificates. In the future, this may also enable other
+        ## automatic configurations.
+        ## Example: https://idp.example.org/fileadmin/metadata/metadata.xml
+        # "metadata_url": "",
         ##
         ## The part below corresponds to what's likely referred to as something like
         ## "Attribute Statements" (with Okta as your IdP) or "Attribute Mapping" (with Google Workspace).

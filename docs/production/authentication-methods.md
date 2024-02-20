@@ -578,6 +578,20 @@ it as follows:
       chmod 640 /etc/zulip/saml/zulip-private-key.key
       ```
 
+   5. (Optional) You can configure the URL of your IdP's metadata XML
+      file by filling out the `metadata_url` field for the IdP in
+      `SOCIAL_AUTH_SAML_ENABLED_IDPS`. Currently, this is used to keep the SAML
+      certificates up-to-date. This works by connecting to the server where the
+      IdP's metadata is stored and downloading the IdP's certificates. Please
+      make sure that you provide a https link for the `metadata_url` (so that
+      SSL can be used for communication) and that you can trust the server from
+      which we get the metadata XML file. Otherwise, your authentication system
+      may be compromised.
+      In order to actually use this feature, you can use the
+      `saml_configuration` command of `manage.py`. You can also run this
+      command automatically by adding `zulip::auto_saml_configuration` to your
+      list of Puppet classes as described [here](../production/deployment.html#puppet-classes).
+
 1. (Optional) If you configured the optional public and private server
    certificates above, you can enable the additional setting
    `"authnRequestsSigned": True` in `SOCIAL_AUTH_SAML_SECURITY_CONFIG`

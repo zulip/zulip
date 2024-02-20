@@ -1,0 +1,174 @@
+#!/usr/bin/env python3
+
+import argparse
+import datetime
+import io
+import logging
+import os
+import pwd
+import sys
+from typing import Any, Dict, Iterator, List, Tuple
+
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.append(BASE_DIR)
+# Enter the Zulip virtual environment.
+from scripts.lib.setup_path import setup_path
+
+setup_path()
+
+# Settings for django.conf
+os.environ["DJANGO_SETTINGS_MODULE"] = "zproject.settings"
+
+from cryptography import x509
+from cryptography.hazmat.backends import default_backend
+from django.conf import settings
+from onelogin.saml2.idp_metadata_parser import OneLogin_Saml2_IdPMetadataParser as Parser
+from onelogin.saml2.utils import OneLogin_Saml2_Utils as Utils
+
+"""A script to manage some of the SAML configuration automatically.
+
+Current status:
+Keep the signing certificates of the IdPs listed in
+settings.SOCIAL_AUTH_SAML_ENABLED_IDPS up to date.
+"""
+
+
+# The template for the path to the IdP certificate.
+idp_cert_path_template: str = "/etc/zulip/saml/idps/{}.crt"
+# The format string used for logging.
+log_format: str = "%(levelname)s:%(asctime)s saml-configuration: %(message)s"
+
+
+def is_valid(cert: x509.Certificate) -> bool:
+    """Check if the given certificate is currently valid."""
+    now: datetime.datetime = datetime.datetime.now()
+    return now >= cert.not_valid_before and now <= cert.not_valid_after
+
+
+def public_cert_open(cert_path: str, fix_permissions: bool = True) -> io.TextIOWrapper:
+    """Open/create a file for a public certificate.
+
+    If the file needs to be created, its permissions are set to
+    `-rw-r--r--` (0644). If the file already exists, the permissions
+    will only be changed if 'fix_permissions' is true (the default).
+    If the current umask value is more restrictive, it dominates the
+    new permissions.
+
+    Return an open file object. May raise an OSError, for example, if
+    the file already exists and is a directory.
+    """
+    flags: int = os.O_WRONLY | os.O_CREAT | os.O_TRUNC
+    mode: int = 0o644
+
+    if os.path.isfile(cert_path) and os.stat(cert_path).st_mode != mode:
+        if fix_permissions:
+            os.chmod(cert_path, mode)
+        else:
+            logging.warning("file '%s' does not have mode %o", mode)
+
+    # At this point, the mode of the file will stay unchanged if it
+    # already exists.
+    return os.fdopen(os.open(cert_path, flags, mode), mode="w")
+
+
+parser: argparse.ArgumentParser = argparse.ArgumentParser()
+parser.add_argument("--debug", action="store_true", help="enable debug logging")
+parser.add_argument(
+    "--fix-permissions", action="store_true", help="fix inappropriate certificate file permissions"
+)
+args: argparse.Namespace = parser.parse_args()
+
+if args.debug:
+    logging.basicConfig(format=log_format, level=logging.DEBUG)
+else:
+    logging.basicConfig(format=log_format)
+
+if pwd.getpwuid(os.getuid()).pw_name != "zulip":
+    logging.critical("This script needs to be executed as user 'zulip'")
+    sys.exit(1)
+
+# The dictionary storing the enabled IdPs (using their names as keys).
+idps: Dict[str, Any] = settings.SOCIAL_AUTH_SAML_ENABLED_IDPS
+
+for idp in idps:
+    # The list of the IdPs signing certificates.
+    certs_list: List[str] = []
+    new_cert: str
+    new_cert_object: x509.Certificate
+
+    # Check the provided settings.
+    if "metadata_url" not in idps[idp] or "entity_id" not in idps[idp]:
+        logging.error(
+            "No 'metadata_url' and/or 'entity_id' field for IdP " "'%s' in the SAML configuration",
+            idp,
+        )
+        continue
+
+    # Check whether this setting has been configured.
+    if not idps[idp]["metadata_url"]:
+        logging.warning("'metadata_url' not configured for IdP '%s'", idp)
+        continue
+
+    # Get the data from the metadata url of the IdP.
+    data: Dict[str, Any] = Parser.parse_remote(
+        idps[idp]["metadata_url"], validate_cert=True, entity_id=idps[idp]["entity_id"]
+    )
+
+    if "idp" not in data:
+        logging.error("Cannot receive metadata for IdP %s", idp)
+        logging.debug(data)
+        continue
+
+    # Some documentation:
+    # - https://github.com/onelogin/python3-saml
+    # - https://github.com/onelogin/python3-saml/blob/master/src\
+    #     /onelogin/saml2/idp_metadata_parser.py
+
+    if "x509cert" in data["idp"]:
+        # A single certificate, used for both signing and encryption.
+        certs_list.append(data["idp"]["x509cert"])
+    elif "x509certMulti" in data["idp"] and "signing" in data["idp"]["x509certMulti"]:
+        # There are multiple certificates, maybe different ones for
+        # signing and encryption.
+        certs_list.extend(data["idp"]["x509certMulti"]["signing"])
+
+    if not certs_list:
+        logging.error("Cannot find any certificates for IdP %s", idp)
+        continue
+
+    # Format the certificates properly.
+    # See https://github.com/onelogin/python3-saml/blob/master/src\
+    #   /onelogin/saml2/utils.py
+    certs: Iterator[str] = map(Utils.format_cert, certs_list)
+
+    # Map the certificates to their x509 objects in order to be able to
+    # determine the validity of the certificate.
+    # See https://cryptography.io/en/latest/x509/reference.html\
+    #   #cryptography.x509.Certificate
+    certs_objects: Iterator[Tuple[str, x509.Certificate]] = (
+        (cert, x509.load_pem_x509_certificate(cert.encode(), backend=default_backend()))
+        for cert in certs
+    )
+
+    # Check for the best certificate available:
+    #  - It is currently valid.
+    #  - It is valid for as long as possible.
+    try:
+        new_cert, new_cert_object = max(
+            ((cert, cert_object) for cert, cert_object in certs_objects if is_valid(cert_object)),
+            key=lambda t: t[1].not_valid_after,
+        )
+    except ValueError:
+        logging.error("Cannot find any valid certificate for IdP %s", idp)
+        logging.debug("", exc_info=True)
+        continue
+
+    cert_path: str = idp_cert_path_template.format(idp)
+
+    # Write the certificate to the appropriate location.
+    try:
+        with public_cert_open(cert_path, fix_permissions=args.fix_permissions) as f:
+            f.write(new_cert)
+    except OSError:
+        logging.error("Cannot write certificate for IdP %s", idp)
+        continue

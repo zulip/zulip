@@ -1,0 +1,5 @@
+MAILTO=root
+USER=zulip
+
+# Currently: update the IdP's SAML certificates daily at 13:13.
+13 13 * * *   zulip /home/zulip/deployments/current/manage.py saml_configuration --fix-permissions
