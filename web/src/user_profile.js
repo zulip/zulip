@@ -204,6 +204,8 @@ function format_user_group_list_item_html(group) {
     return render_user_group_list_item({
         group_id: group.id,
         name: group.name,
+        group_edit_url: hash_util.group_edit_url(group),
+        is_guest: current_user.is_guest,
     });
 }
 
@@ -950,6 +952,10 @@ export function initialize() {
     });
 
     $("body").on("click", "#user-profile-modal .stream_list_item", () => {
+        hide_user_profile();
+    });
+
+    $("body").on("click", "#user-profile-modal .group_list_item_link", () => {
         hide_user_profile();
     });
 
