@@ -1,4 +1,5 @@
 import $ from "jquery";
+import assert from "minimalistic-assert";
 
 import * as buddy_data from "./buddy_data";
 import * as popovers from "./popovers";
@@ -11,42 +12,53 @@ export class UserSearch {
     // details of populating the list when we change.
 
     $widget = $("#user_search_section").expectOne();
-    $input = $(".user-list-filter").expectOne();
+    $input = $<HTMLInputElement>(".user-list-filter").expectOne();
+    _reset_items: () => void;
+    _update_list: () => void;
+    _on_focus: () => void;
 
-    constructor(opts) {
+    constructor(opts: {reset_items: () => void; update_list: () => void; on_focus: () => void}) {
         this._reset_items = opts.reset_items;
         this._update_list = opts.update_list;
         this._on_focus = opts.on_focus;
 
-        $("#clear_search_people_button").on("click", () => this.clear_search());
-        $("#userlist-header").on("click", () => this.toggle_filter_displayed());
+        $("#clear_search_people_button").on("click", () => {
+            this.clear_search();
+        });
+        $("#userlist-header").on("click", () => {
+            this.toggle_filter_displayed();
+        });
 
         this.$input.on("input", () => {
             buddy_data.set_is_searching_users(this.$input.val() !== "");
             opts.update_list();
         });
-        this.$input.on("focus", (e) => this.on_focus(e));
+        this.$input.on("focus", (e) => {
+            this.on_focus(e);
+        });
     }
 
-    input_field() {
+    input_field(): JQuery {
         return this.$input;
     }
 
-    text() {
-        return this.$input.val().trim();
+    text(): string {
+        const input_val = this.$input.val();
+        assert(input_val !== undefined);
+        return input_val.trim();
     }
 
-    searching() {
+    searching(): boolean {
         return this.$input.is(":focus");
     }
 
-    empty() {
+    empty(): boolean {
         return this.text() === "";
     }
 
     // This clears search input but doesn't close
     // the search widget unless it was already empty.
-    clear_search() {
+    clear_search(): void {
         buddy_data.set_is_searching_users(false);
 
         if (this.empty()) {
@@ -60,35 +72,35 @@ export class UserSearch {
     }
 
     // This always clears and closes search.
-    clear_and_hide_search() {
+    clear_and_hide_search(): void {
         this.clear_search();
         this._update_list();
         this.close_widget();
     }
 
-    hide_widget() {
+    hide_widget(): void {
         this.$widget.addClass("notdisplayed");
         resize.resize_sidebars();
     }
 
-    show_widget() {
+    show_widget(): void {
         // Hide all the popovers.
         popovers.hide_all();
         this.$widget.removeClass("notdisplayed");
         resize.resize_sidebars();
     }
 
-    widget_shown() {
+    widget_shown(): boolean {
         return this.$widget.hasClass("notdisplayed");
     }
 
-    close_widget() {
+    close_widget(): void {
         this.$input.trigger("blur");
         this.hide_widget();
         this._reset_items();
     }
 
-    expand_column() {
+    expand_column(): void {
         const $column = this.$input.closest(".app-main [class^='column-']");
         if (!$column.hasClass("expanded")) {
             popovers.hide_all();
@@ -100,13 +112,13 @@ export class UserSearch {
         }
     }
 
-    initiate_search() {
+    initiate_search(): void {
         this.expand_column();
         this.show_widget();
         this.$input.trigger("focus");
     }
 
-    toggle_filter_displayed() {
+    toggle_filter_displayed(): void {
         if (this.widget_shown()) {
             this.initiate_search();
         } else {
@@ -114,7 +126,7 @@ export class UserSearch {
         }
     }
 
-    on_focus(e) {
+    on_focus(e: JQuery.FocusEvent): void {
         this._on_focus();
         e.stopPropagation();
     }
