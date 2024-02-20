@@ -1104,11 +1104,6 @@ div.overlay {
     outline: none;
     color: var(--color-text-default);
 
-    .fa-chevron-down {
-        position: relative;
-        top: -1px;
-    }
-
     &:disabled {
         cursor: not-allowed;
         background-color: hsl(0deg 0% 93%);
