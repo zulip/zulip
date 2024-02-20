@@ -249,7 +249,4 @@ run_test("error checking", () => {
     const ul = {opts: {attrs: []}};
 
     vdom.update(replace_content, find, ul, ul);
-
-    blueslip.expect("error", "We need keyed_nodes to render innards.");
-    vdom.render_tag(ul);
 });

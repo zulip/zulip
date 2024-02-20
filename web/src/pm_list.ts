@@ -63,8 +63,8 @@ export function _build_direct_messages_list(): vdom.Tag<PMNode> {
 function set_dom_to(new_dom: vdom.Tag<PMNode>): void {
     const $container = scroll_util.get_content_element($("#direct-messages-list"));
 
-    function replace_content(html: string | undefined): void {
-        $container.html(html!);
+    function replace_content(html: string): void {
+        $container.html(html);
     }
 
     function find(): JQuery {
