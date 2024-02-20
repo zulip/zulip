@@ -560,8 +560,8 @@
     text-align: left;
 }
 
-#recent-view-filter_widget .fa-chevron-down,
-#inbox-filter_widget .fa-chevron-down {
+#recent-view-filter_widget .zulip-icon-chevron-down,
+#inbox-filter_widget .zulip-icon-chevron-down {
     color: var(--color-icons-inbox);
     opacity: 0.4;
 }
