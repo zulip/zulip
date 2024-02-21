@@ -33,7 +33,7 @@
 </div>
 <div class="realm-support-forms">
     <div class="realm-form-container">
-        <form method="POST" class="support-realm-status-form">
+        <form method="POST" class="support-realm-status-form support-form">
             <b>Status</b>:<br />
             {{ csrf_input }}
             <input type="hidden" name="realm_id" value="{{ realm.id }}" />
@@ -43,14 +43,14 @@
             </select>
             <button type="submit" class="support-submit-button">Update</button>
         </form>
-        <form method="POST" class="realm-subdomain-form">
+        <form method="POST" class="realm-subdomain-form support-form">
             <b>New subdomain</b>:<br />
             {{ csrf_input }}
             <input type="hidden" name="realm_id" value="{{ realm.id }}" />
             <input type="text" name="new_subdomain" required />
             <button type="submit" class="support-submit-button">Update</button>
         </form>
-        <form method="POST" class="realm-organization-type-form">
+        <form method="POST" class="realm-organization-type-form support-form">
             <b>Org type</b>:<br />
             {{ csrf_input }}
             <input type="hidden" name="realm_id" value="{{ realm.id }}" />
@@ -63,7 +63,7 @@
             </select>
             <button type="submit" class="support-submit-button">Update</button>
         </form>
-        <form method="POST" class="support-plan-type-form">
+        <form method="POST" class="support-plan-type-form support-form">
             <b>Plan type</b>:<br />
             {{ csrf_input }}
             <input type="hidden" name="realm_id" value="{{ realm.id }}" />
@@ -76,7 +76,7 @@
             </select>
             <button type="submit" class="support-submit-button">Update</button>
         </form>
-        <form method="POST" class="sponsorship-pending-form">
+        <form method="POST" class="sponsorship-pending-form support-form">
             <b>Sponsorship pending</b>:<br />
             {{ csrf_input }}
             <input type="hidden" name="realm_id" value="{{ realm.id }}" />
@@ -88,7 +88,7 @@
         </form>
 
         {% if plan_data[realm.id].customer and plan_data[realm.id].customer.sponsorship_pending %}
-        <form method="POST" class="approve-sponsorship-form">
+        <form method="POST" class="approve-sponsorship-form support-form">
             {{ csrf_input }}
             <input type="hidden" name="realm_id" value="{{ realm.id }}" />
             <input type="hidden" name="approve_sponsorship" value="true" />
@@ -99,7 +99,7 @@
         </form>
         {% endif %}
 
-        <form method="POST" class="support-discount-form">
+        <form method="POST" class="support-discount-form support-form">
             <b>Discount (use 85 for nonprofits)</b>:<br />
             {{ csrf_input }}
             <input type="hidden" name="realm_id" value="{{ realm.id }}" />
@@ -114,16 +114,14 @@
     </div>
     {% if plan_data[realm.id].current_plan %}
     <div class="current-plan-container">
-        <div class="current-plan-details">
-            {% with %}
-                {% set plan_data = plan_data[realm.id] %}
-                {% set format_discount = format_discount %}
-                {% set dollar_amount = dollar_amount %}
-                {% include 'corporate/support/current_plan_details.html' %}
-            {% endwith %}
-        </div>
+        {% with %}
+            {% set plan_data = plan_data[realm.id] %}
+            {% set format_discount = format_discount %}
+            {% set dollar_amount = dollar_amount %}
+            {% include 'corporate/support/current_plan_details.html' %}
+        {% endwith %}
 
-        <form method="POST" class="billing-modality-form">
+        <form method="POST" class="billing-modality-form support-form">
             <b>Billing collection method</b><br />
             {{ csrf_input }}
             <input type="hidden" name="realm_id" value="{{ realm.id }}" />
@@ -134,7 +132,7 @@
             <button type="submit" class="support-submit-button">Update</button>
         </form>
 
-        <form method="POST" class="downgrade-plan-form">
+        <form method="POST" class="downgrade-plan-form support-form">
             <b>Modify plan</b><br />
             {{ csrf_input }}
             <input type="hidden" name="realm_id" value="{{ realm.id }}" />
@@ -150,7 +148,7 @@
     </div>
     {% endif %}
 
-    <form method="POST" class="scrub-realm-form">
+    <form method="POST" class="scrub-realm-form support-form">
         <h3>❌ Scrub realm</h3>
         {{ csrf_input }}
         <input type="hidden" name="realm_id" value="{{ realm.id }}" />
