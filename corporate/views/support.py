@@ -472,7 +472,17 @@ def get_remote_servers_for_support(
         return list(remote_servers_query.filter(contact_email__iexact=email_to_search))
 
     if hostname_to_search:
-        return list(remote_servers_query.filter(hostname__icontains=hostname_to_search))
+        remote_servers_set = set(
+            remote_servers_query.filter(hostname__icontains=hostname_to_search)
+        )
+        remote_realm_matches = (
+            RemoteRealm.objects.filter(host__icontains=hostname_to_search).exclude(
+                realm_deactivated=True
+            )
+        ).select_related("server")
+        for remote_realm in remote_realm_matches:
+            remote_servers_set.add(remote_realm.server)
+        return list(remote_servers_set)
 
     return []
 

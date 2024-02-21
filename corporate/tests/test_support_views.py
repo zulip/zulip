@@ -165,6 +165,7 @@ class TestRemoteServerSupportEndpoint(ZulipTestCase):
         ) -> None:
             self.assert_in_success_response(
                 [
+                    '<span class="label">remote server</span>',
                     f"<h3>{hostname} <a",
                     f"<b>Contact email</b>: admin@{hostname}",
                     "<b>Date created</b>:",
@@ -183,6 +184,7 @@ class TestRemoteServerSupportEndpoint(ZulipTestCase):
         ) -> None:
             self.assert_in_success_response(
                 [
+                    '<span class="label">remote realm</span>',
                     f"<h3>{name}</h3>",
                     f"<b>Remote realm host:</b> {host}<br />",
                     "<b>Date created</b>: 01 December 2023",
@@ -302,6 +304,13 @@ class TestRemoteServerSupportEndpoint(ZulipTestCase):
         server = 1
         result = self.client_get("/activity/remote/support", {"q": f"zulip-{server}.example.com"})
         check_remote_server_with_no_realms(result)
+
+        # RemoteRealm host matches appear in search results
+        result = self.client_get("/activity/remote/support", {"q": "realm-host-"})
+        for i in range(6):
+            if i > server:
+                assert_server_details_in_response(result, f"zulip-{i}.example.com")
+                assert_realm_details_in_response(result, f"realm-name-{i}", f"realm-host-{i}")
 
         server = 2
         with mock.patch("corporate.views.support.compute_max_monthly_messages", return_value=1000):
