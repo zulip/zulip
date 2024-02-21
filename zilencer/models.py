@@ -333,6 +333,11 @@ class RemoteRealmAuditLog(AbstractRealmAuditLog):
                 condition=Q(remote_realm__isnull=True),
                 name="zilencer_remoterealmauditlog_server",
             ),
+            models.Index(
+                fields=["remote_realm_id", "id"],
+                condition=Q(event_type__in=AbstractRealmAuditLog.SYNCED_BILLING_EVENTS),
+                name="zilencer_remoterealmauditlog_synced_billing_events",
+            ),
         ]
 
 
