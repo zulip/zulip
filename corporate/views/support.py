@@ -33,9 +33,9 @@ from corporate.lib.stripe import (
 from corporate.lib.support import (
     PlanData,
     SupportData,
-    get_current_plan_data_for_support_view,
     get_customer_discount_for_support_view,
     get_data_for_support_view,
+    get_plan_data_for_support_view,
     get_realm_support_url,
 )
 from corporate.models import CustomerPlan
@@ -430,7 +430,7 @@ def support(
         plan_data: Dict[int, PlanData] = {}
         for realm in all_realms:
             billing_session = RealmBillingSession(user=None, realm=realm)
-            realm_plan_data = get_current_plan_data_for_support_view(billing_session)
+            realm_plan_data = get_plan_data_for_support_view(billing_session)
             plan_data[realm.id] = realm_plan_data
         context["plan_data"] = plan_data
 
