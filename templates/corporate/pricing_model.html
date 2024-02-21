@@ -180,9 +180,15 @@
                                     Unlimited push notifications<br />until {{ customer_plan.end_date.strftime('%d %B, %Y') }}
                                 </span>
                                 {% elif not is_self_hosted_realm %}
+                                {% if rendering_page == 'self_hosting' %}
+                                <a href="https://zulip.readthedocs.io/en/stable/production/install.html" class="button get-started-button">
+                                    Install a Zulip server
+                                </a>
+                                {% else %}
                                 <a href="/self-hosting/" class="button get-started-button">
                                     Self-host Zulip
                                 </a>
+                                {% endif %}
                                 {% else %}
                                 <div class="button-placeholder"></div>
                                 {% endif %}

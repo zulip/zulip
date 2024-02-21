@@ -280,7 +280,10 @@
     </div>
 
     <div class="portico-pricing showing-self-hosted">
+        {% with %}
+        {% set rendering_page="self_hosting" %}
         {% include "corporate/pricing_model.html" %}
+        {% endwith %}
     </div>
 
 </div>
