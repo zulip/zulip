@@ -14,7 +14,7 @@ import * as vdom from "./vdom";
 let prior_dom: vdom.Tag<PMNode> | undefined;
 
 // This module manages the direct messages section in the upper
-// left corner of the app.  This was split out from stream_list.js.
+// left corner of the app.  This was split out from stream_list.ts.
 
 let private_messages_collapsed = false;
 
