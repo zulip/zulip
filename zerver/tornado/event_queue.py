@@ -549,7 +549,9 @@ def do_gc_event_queues(
 
 
 def gc_event_queues(port: int) -> None:
-    start = time.perf_counter()
+    # We cannot use perf_counter here, since we store and compare UNIX
+    # timestamps to it in the queues.
+    start = time.time()
     to_remove: Set[str] = set()
     affected_users: Set[int] = set()
     affected_realms: Set[int] = set()
@@ -571,7 +573,7 @@ def gc_event_queues(port: int) -> None:
             port,
             len(to_remove),
             len(affected_users),
-            time.perf_counter() - start,
+            time.time() - start,
             len(clients),
             handler_stats_string(),
         )
