@@ -36,7 +36,10 @@ from zilencer.models import (
     RemoteZulipServerAuditLog,
     get_remote_realm_guest_and_non_guest_count,
     get_remote_server_guest_and_non_guest_count,
+    has_stale_audit_log,
 )
+
+USER_DATA_STALE_WARNING = "Recent audit log data missing: No information for used licenses"
 
 
 class SponsorshipRequestDict(TypedDict):
@@ -198,7 +201,9 @@ def get_next_plan_data(
     return next_plan_data
 
 
-def get_plan_data_for_support_view(billing_session: BillingSession) -> PlanData:
+def get_plan_data_for_support_view(
+    billing_session: BillingSession, user_count: Optional[int] = None, stale_user_data: bool = False
+) -> PlanData:
     customer = billing_session.get_customer()
     plan = None
     if customer is not None:
@@ -216,13 +221,21 @@ def get_plan_data_for_support_view(billing_session: BillingSession) -> PlanData:
             if new_plan is not None:
                 plan_data.current_plan = new_plan  # nocoverage
             plan_data.licenses = last_ledger_entry.licenses
+        assert plan_data.current_plan is not None  # for mypy
+
+        # If we already have user count data, we use that
+        # instead of querying the database again to get
+        # the number of currently used licenses.
+        if stale_user_data:
+            plan_data.warning = USER_DATA_STALE_WARNING
+        elif user_count is None:
             try:
                 plan_data.licenses_used = billing_session.current_count_for_billed_licenses()
             except MissingDataError:  # nocoverage
-                plan_data.warning = (
-                    "Recent audit log data missing: No information for used licenses"
-                )
-        assert plan_data.current_plan is not None  # for mypy
+                plan_data.warning = USER_DATA_STALE_WARNING
+        else:  # nocoverage
+            assert user_count is not None
+            plan_data.licenses_used = user_count
 
         if plan_data.current_plan.status in (
             CustomerPlan.FREE_TRIAL,
@@ -332,6 +345,7 @@ def get_mobile_push_data(remote_entity: Union[RemoteZulipServer, RemoteRealm]) -
 def get_data_for_support_view(billing_session: BillingSession) -> SupportData:
     if isinstance(billing_session, RemoteServerBillingSession):
         user_data = get_remote_server_guest_and_non_guest_count(billing_session.remote_server.id)
+        stale_audit_log_data = has_stale_audit_log(billing_session.remote_server)
         date_created = RemoteZulipServerAuditLog.objects.get(
             event_type=RemoteZulipServerAuditLog.REMOTE_SERVER_CREATED,
             server__id=billing_session.remote_server.id,
@@ -340,9 +354,11 @@ def get_data_for_support_view(billing_session: BillingSession) -> SupportData:
     else:
         assert isinstance(billing_session, RemoteRealmBillingSession)
         user_data = get_remote_realm_guest_and_non_guest_count(billing_session.remote_realm)
+        stale_audit_log_data = has_stale_audit_log(billing_session.remote_realm.server)
         date_created = billing_session.remote_realm.realm_date_created
         mobile_data = get_mobile_push_data(billing_session.remote_realm)
-    plan_data = get_plan_data_for_support_view(billing_session)
+    user_count = user_data.guest_user_count + user_data.non_guest_user_count
+    plan_data = get_plan_data_for_support_view(billing_session, user_count, stale_audit_log_data)
     if plan_data.customer is not None:
         sponsorship_data = get_customer_sponsorship_data(plan_data.customer)
     else:
