@@ -65,7 +65,7 @@ from zilencer.models import (
     RemoteZulipServer,
     get_remote_server_by_uuid,
 )
-from zilencer.views import handle_customer_migration_from_server_to_realms
+from zilencer.views import handle_customer_migration_from_server_to_realm
 
 billing_logger = logging.getLogger("corporate.stripe")
 
@@ -200,7 +200,7 @@ def remote_realm_billing_finalize_login(
         raise AssertionError
 
     try:
-        handle_customer_migration_from_server_to_realms(server=remote_server)
+        handle_customer_migration_from_server_to_realm(server=remote_server)
     except JsonableError:
         # JsonableError should be propagated up, as they are meant to convey
         # a json error response to be returned.

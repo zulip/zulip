@@ -935,7 +935,7 @@ def get_human_user_realm_uuids(
 
 
 @transaction.atomic
-def handle_customer_migration_from_server_to_realms(
+def handle_customer_migration_from_server_to_realm(
     server: RemoteZulipServer,
 ) -> None:
     server_billing_session = RemoteServerBillingSession(server)
@@ -967,42 +967,7 @@ def handle_customer_migration_from_server_to_realms(
     event_time = timezone_now()
     remote_realm_audit_logs = []
 
-    if (
-        server_plan.tier == CustomerPlan.TIER_SELF_HOSTED_LEGACY
-        and server_plan.status == CustomerPlan.ACTIVE
-    ):
-        assert server.plan_type == RemoteZulipServer.PLAN_TYPE_SELF_MANAGED_LEGACY
-        assert server_plan.end_date is not None
-        remote_realms = RemoteRealm.objects.filter(
-            uuid__in=realm_uuids, server=server, plan_type=RemoteRealm.PLAN_TYPE_SELF_MANAGED
-        )
-
-        # Verify that all the realms are on self hosted plan.
-        assert remote_realms.count() == len(realm_uuids)
-
-        # End existing plan for server.
-        server_plan.status = CustomerPlan.ENDED
-        server_plan.save(update_fields=["status"])
-
-        server.plan_type = RemoteZulipServer.PLAN_TYPE_SELF_MANAGED
-        server.save(update_fields=["plan_type"])
-
-        # Create new legacy plan for each remote realm.
-        for remote_realm in remote_realms:
-            RemoteRealmBillingSession(remote_realm).migrate_customer_to_legacy_plan(
-                server_plan.billing_cycle_anchor, server_plan.end_date
-            )
-            remote_realm_audit_logs.append(
-                RemoteRealmAuditLog(
-                    server=server,
-                    remote_realm=remote_realm,
-                    event_type=RemoteRealmAuditLog.REMOTE_PLAN_TRANSFERRED_SERVER_TO_REALM,
-                    event_time=event_time,
-                    # No extra_data since there was no real change in any RemoteRealm attribute.
-                )
-            )
-
-    elif len(realm_uuids) == 1:
+    if len(realm_uuids) == 1:
         # Here, we have exactly one non-system-bot realm, and some
         # sort of plan on the server; move it to the realm.
         remote_realm = RemoteRealm.objects.get(uuid=realm_uuids[0], server=server)

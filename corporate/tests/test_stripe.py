@@ -91,6 +91,7 @@ from corporate.models import (
     get_current_plan_by_customer,
     get_current_plan_by_realm,
     get_customer_by_realm,
+    get_customer_by_remote_realm,
 )
 from corporate.tests.test_remote_billing import RemoteRealmBillingTestCase, RemoteServerTestCase
 from corporate.views.remote_billing_page import generate_confirmation_link_for_server_deactivation
@@ -6699,25 +6700,20 @@ class TestRemoteRealmBillingFlow(StripeTestCase, RemoteRealmBillingTestCase):
     @responses.activate
     @mock_stripe()
     def test_schedule_legacy_plan_upgrade_to_fixed_price_plan(self, *mocks: Mock) -> None:
-        self.login("hamlet")
         hamlet = self.example_user("hamlet")
 
-        remote_server = RemoteZulipServer.objects.get(hostname="demo.example.com")
-        server_billing_session = RemoteServerBillingSession(remote_server=remote_server)
+        remote_realm = RemoteRealm.objects.get(uuid=hamlet.realm.uuid)
+        remote_realm_billing_session = RemoteRealmBillingSession(remote_realm=remote_realm)
 
-        # Migrate server to legacy plan.
+        # Migrate realm to legacy plan.
         with time_machine.travel(self.now, tick=False):
             start_date = timezone_now()
             end_date = add_months(start_date, months=3)
-            server_billing_session.migrate_customer_to_legacy_plan(start_date, end_date)
+            remote_realm_billing_session.migrate_customer_to_legacy_plan(start_date, end_date)
 
         self.add_mock_response()
         with time_machine.travel(self.now, tick=False):
             send_server_data_to_push_bouncer(consider_usage_statistics=False)
-
-        # Login. Performs customer migration from server to realms.
-        self.execute_remote_billing_authentication_flow(hamlet)
-        self.remote_realm.refresh_from_db()
 
         customer = Customer.objects.get(remote_realm=self.remote_realm)
         legacy_plan = get_current_plan_by_customer(customer)
@@ -6725,7 +6721,6 @@ class TestRemoteRealmBillingFlow(StripeTestCase, RemoteRealmBillingTestCase):
         self.assertEqual(legacy_plan.tier, CustomerPlan.TIER_SELF_HOSTED_LEGACY)
         self.assertEqual(legacy_plan.next_invoice_date, end_date)
 
-        self.logout()
         self.login("iago")
 
         # Schedule a fixed-price business plan at current plan end_date.
@@ -6759,7 +6754,7 @@ class TestRemoteRealmBillingFlow(StripeTestCase, RemoteRealmBillingTestCase):
         self.logout()
         self.login("hamlet")
         self.execute_remote_billing_authentication_flow(
-            hamlet, expect_tos=False, confirm_tos=False, first_time_login=False
+            hamlet, expect_tos=False, confirm_tos=True, first_time_login=True
         )
 
         # Schedule upgrade to business plan
@@ -7050,6 +7045,14 @@ class TestRemoteRealmBillingFlow(StripeTestCase, RemoteRealmBillingTestCase):
         self.assertEqual(server_customer_plan.status, CustomerPlan.ACTIVE)
         self.assertEqual(remote_server.plan_type, RemoteZulipServer.PLAN_TYPE_SELF_MANAGED_LEGACY)
 
+        # The plan gets migrated if there's only a single human realm.
+        Realm.objects.exclude(string_id__in=["zulip", "zulipinternal"]).delete()
+
+        # First, set a sponsorship as pending.
+        # TODO: Ideally, we'd submit a proper sponsorship request.
+        server_customer.sponsorship_pending = True
+        server_customer.save()
+
         # Upload data.
         with time_machine.travel(self.now, tick=False):
             self.add_mock_response()
@@ -7059,27 +7062,42 @@ class TestRemoteRealmBillingFlow(StripeTestCase, RemoteRealmBillingTestCase):
         hamlet = self.example_user("hamlet")
         billing_base_url = self.billing_session.billing_base_url
 
-        # Login. Performs customer migration from server to realms.
+        # Login. The server has a pending sponsorship, in which case migrating
+        # can't be done, as that'd be a fairly confusing process.
+        result = self.execute_remote_billing_authentication_flow(hamlet, return_from_auth_url=True)
+
+        self.assertEqual(result.status_code, 200)
+        self.assert_in_response("Plan management not available", result)
+        # Server's plan should not have been migrated yet.
+        self.server.refresh_from_db()
+        self.assertEqual(self.server.plan_type, RemoteZulipServer.PLAN_TYPE_SELF_MANAGED_LEGACY)
+
+        # Now clear the pending sponsorship state, which will allow login
+        # and migration to proceed.
+        # TODO: Ideally, this would approve the sponsorship and then be testing
+        # the migration of the Community plan.
+        server_customer.sponsorship_pending = False
+        server_customer.save()
+
+        # Login. Performs customer migration from server to realm.
         result = self.execute_remote_billing_authentication_flow(hamlet)
+
         self.assertEqual(result.status_code, 302)
         self.assertEqual(result["Location"], f"{billing_base_url}/plans/")
 
         remote_server.refresh_from_db()
-        server_customer_plan.refresh_from_db()
-        self.assertEqual(server_customer_plan.status, CustomerPlan.ENDED)
+        remote_realm = RemoteRealm.objects.get(uuid=hamlet.realm.uuid)
+        # The customer object was moved, together with the plan, from server to realm.
+        customer = get_customer_by_remote_realm(remote_realm)
+        assert customer is not None
+        self.assertEqual(server_customer, customer)
         self.assertEqual(remote_server.plan_type, RemoteZulipServer.PLAN_TYPE_SELF_MANAGED)
+        self.assertEqual(remote_realm.plan_type, RemoteRealm.PLAN_TYPE_SELF_MANAGED_LEGACY)
 
-        remote_realms = RemoteRealm.objects.filter(
-            server=remote_server,
-            plan_type=RemoteRealm.PLAN_TYPE_SELF_MANAGED_LEGACY,
-            is_system_bot_realm=False,
-        )
-        for remote_realm in remote_realms:
-            customer = Customer.objects.get(remote_realm=remote_realm)
-            customer_plan = get_current_plan_by_customer(customer)
-            assert customer_plan is not None
-            self.assertEqual(customer_plan.tier, CustomerPlan.TIER_SELF_HOSTED_LEGACY)
-            self.assertEqual(customer_plan.status, CustomerPlan.ACTIVE)
+        customer_plan = get_current_plan_by_customer(customer)
+        assert customer_plan is not None
+        self.assertEqual(customer_plan.tier, CustomerPlan.TIER_SELF_HOSTED_LEGACY)
+        self.assertEqual(customer_plan.status, CustomerPlan.ACTIVE)
 
         # upgrade to business plan
         with time_machine.travel(self.now, tick=False):
@@ -7090,17 +7108,15 @@ class TestRemoteRealmBillingFlow(StripeTestCase, RemoteRealmBillingTestCase):
         with time_machine.travel(self.now, tick=False):
             stripe_customer = self.add_card_and_upgrade()
 
-        zulip_realm_customer = Customer.objects.get(stripe_customer_id=stripe_customer.id)
-        zulip_realm_plan = CustomerPlan.objects.get(
-            customer=zulip_realm_customer, status=CustomerPlan.ACTIVE
-        )
-        self.assertEqual(zulip_realm_plan.tier, CustomerPlan.TIER_SELF_HOSTED_BUSINESS)
+        self.assertEqual(customer, Customer.objects.get(stripe_customer_id=stripe_customer.id))
+        business_plan = CustomerPlan.objects.get(customer=customer, status=CustomerPlan.ACTIVE)
+        self.assertEqual(business_plan.tier, CustomerPlan.TIER_SELF_HOSTED_BUSINESS)
 
         realm_user_count = UserProfile.objects.filter(
             realm=hamlet.realm, is_bot=False, is_active=True
         ).count()
         licenses = max(
-            realm_user_count, self.billing_session.min_licenses_for_plan(zulip_realm_plan.tier)
+            realm_user_count, self.billing_session.min_licenses_for_plan(business_plan.tier)
         )
         with time_machine.travel(self.now + timedelta(days=1), tick=False):
             response = self.client_get(f"{billing_base_url}/billing/", subdomain="selfhosting")
@@ -7130,11 +7146,11 @@ class TestRemoteRealmBillingFlow(StripeTestCase, RemoteRealmBillingTestCase):
                     "/billing/plan",
                     {"status": CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE},
                 )
-                expected_log = f"INFO:corporate.stripe:Change plan status: Customer.id: {zulip_realm_customer.id}, CustomerPlan.id: {zulip_realm_plan.id}, status: {CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE}"
+                expected_log = f"INFO:corporate.stripe:Change plan status: Customer.id: {customer.id}, CustomerPlan.id: {business_plan.id}, status: {CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE}"
                 self.assertEqual(m.output[0], expected_log)
                 self.assert_json_success(response)
-        zulip_realm_plan.refresh_from_db()
-        self.assertEqual(zulip_realm_plan.licenses_at_next_renewal(), None)
+        business_plan.refresh_from_db()
+        self.assertEqual(business_plan.licenses_at_next_renewal(), None)
 
     @responses.activate
     @mock_stripe()
@@ -7277,14 +7293,16 @@ class TestRemoteRealmBillingFlow(StripeTestCase, RemoteRealmBillingTestCase):
     @responses.activate
     @mock_stripe()
     def test_invoice_scheduled_upgrade_realm_legacy_plan(self, *mocks: Mock) -> None:
-        remote_server = RemoteZulipServer.objects.get(hostname="demo.example.com")
-        server_billing_session = RemoteServerBillingSession(remote_server=remote_server)
+        hamlet = self.example_user("hamlet")
 
-        # Migrate server to legacy plan.
+        remote_realm = RemoteRealm.objects.get(uuid=hamlet.realm.uuid)
+        remote_realm_billing_session = RemoteRealmBillingSession(remote_realm=remote_realm)
+
+        # Migrate realm to legacy plan.
         with time_machine.travel(self.now, tick=False):
             start_date = timezone_now()
             end_date = add_months(start_date, months=3)
-            server_billing_session.migrate_customer_to_legacy_plan(start_date, end_date)
+            remote_realm_billing_session.migrate_customer_to_legacy_plan(start_date, end_date)
 
         # Upload data.
         self.add_mock_response()
@@ -7292,11 +7310,9 @@ class TestRemoteRealmBillingFlow(StripeTestCase, RemoteRealmBillingTestCase):
             send_server_data_to_push_bouncer(consider_usage_statistics=False)
 
         self.login("hamlet")
-        hamlet = self.example_user("hamlet")
 
-        # Login. Performs customer migration from server to realms.
+        # Login.
         self.execute_remote_billing_authentication_flow(hamlet)
-        remote_server.refresh_from_db()
 
         # Schedule upgrade to business plan
         with time_machine.travel(self.now, tick=False):
