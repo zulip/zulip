@@ -14,6 +14,7 @@
 * [iDrift AS company](/case-studies/idrift/)
 * [GUT contact support agency](/case-studies/gut-contact/)
 * [End Point Dev software consultancy](/case-studies/end-point/)
+* [Semsee InsurTech startup](/case-studies/semsee/)
 * [Atolio startup](/case-studies/atolio/)
 
 ### Education and research

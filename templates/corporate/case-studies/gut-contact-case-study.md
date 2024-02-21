@@ -111,4 +111,4 @@ Erik says.
 Check out our guide on [using Zulip for business](/for/business/). You can also
 learn how Zulip is being used at the [iDrift AS](/case-studies/idrift/) company,
 the [End Point Dev](/case-studies/end-point/) software consultancy, and the
-startup [Atolio](/case-studies/atolio/).
+startups [Semsee](/case-studies/semsee/) and [Atolio](/case-studies/atolio/).
