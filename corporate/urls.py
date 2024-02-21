@@ -173,6 +173,11 @@ landing_page_urls = [
         {"template_name": "corporate/case-studies/atolio-case-study.html"},
     ),
     path(
+        "case-studies/semsee/",
+        landing_view,
+        {"template_name": "corporate/case-studies/semsee-case-study.html"},
+    ),
+    path(
         "case-studies/tum/",
         landing_view,
         {"template_name": "corporate/case-studies/tum-case-study.html"},
