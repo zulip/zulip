@@ -149,6 +149,10 @@ export function rename_sub(sub: StreamSubscription, new_name: string): void {
 }
 
 export function subscribe_myself(sub: StreamSubscription): void {
+    if (sub.archived) {
+        blueslip.warn("Can't subscribe to an archived stream.");
+        return;
+    }
     const user_id = people.my_current_user_id();
     peer_data.add_subscriber(sub.stream_id, user_id);
     sub.subscribed = true;
@@ -282,12 +286,14 @@ export function slug_to_name(slug: string): string {
 }
 
 export function delete_sub(stream_id: number): void {
-    if (!stream_info.get(stream_id)) {
+    const sub = get_sub_by_id(stream_id);
+    if (sub === undefined || !stream_info.get(stream_id)) {
         blueslip.warn("Failed to archive stream " + stream_id.toString());
         return;
     }
-    sub_store.delete_sub(stream_id);
-    stream_info.delete(stream_id);
+    sub.subscribed = false;
+    sub.archived = true;
+    stream_info.set_false(stream_id, sub);
 }
 
 export function get_non_default_stream_names(): {name: string; unique_id: string}[] {
