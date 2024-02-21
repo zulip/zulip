@@ -12,7 +12,7 @@
 <div class="container">
     <form class="support-search-form">
         <center>
-            <input type="text" name="q" class="input-xxlarge search-query" placeholder="hostname or contact email" value="{{ request.GET.get('q', '') }}" autofocus />
+            <input type="text" name="q" class="input-xxlarge search-query" placeholder="hostname, UUID or contact email" value="{{ request.GET.get('q', '') }}" autofocus />
             <button type="submit" class="support-search-button">Search</button>
         </center>
     </form>

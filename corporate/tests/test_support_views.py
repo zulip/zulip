@@ -289,7 +289,7 @@ class TestRemoteServerSupportEndpoint(ZulipTestCase):
         result = self.client_get("/activity/remote/support")
         self.assert_in_success_response(
             [
-                'input type="text" name="q" class="input-xxlarge search-query" placeholder="hostname or contact email"'
+                'input type="text" name="q" class="input-xxlarge search-query" placeholder="hostname, UUID or contact email"'
             ],
             result,
         )
@@ -354,6 +354,32 @@ class TestRemoteServerSupportEndpoint(ZulipTestCase):
         assert_realm_details_in_response(result, f"realm-name-{server}", f"realm-host-{server}")
         check_no_sponsorship_request(result)
         check_legacy_plan_without_upgrade(result)
+
+        # search for UUIDs
+        remote_server = RemoteZulipServer.objects.get(hostname=f"zulip-{server}.example.com")
+        result = self.client_get("/activity/remote/support", {"q": f"{remote_server.uuid}"})
+        assert_server_details_in_response(result, f"zulip-{server}.example.com")
+        assert_realm_details_in_response(result, f"realm-name-{server}", f"realm-host-{server}")
+
+        remote_realm = RemoteRealm.objects.get(host=f"realm-host-{server}")
+        result = self.client_get("/activity/remote/support", {"q": f"{remote_realm.uuid}"})
+        assert_server_details_in_response(result, f"zulip-{server}.example.com")
+        assert_realm_details_in_response(result, f"realm-name-{server}", f"realm-host-{server}")
+
+        server = 0
+        remote_server = RemoteZulipServer.objects.get(hostname=f"zulip-{server}.example.com")
+        result = self.client_get("/activity/remote/support", {"q": f"{remote_server.uuid}"})
+        self.assert_not_in_success_response(
+            ['<span class="label">remote server</span>', '<span class="label">remote realm</span>'],
+            result,
+        )
+
+        unknown_uuid = uuid.uuid4()
+        result = self.client_get("/activity/remote/support", {"q": f"{unknown_uuid}"})
+        self.assert_not_in_success_response(
+            ['<span class="label">remote server</span>', '<span class="label">remote realm</span>'],
+            result,
+        )
 
     def test_extend_current_plan_end_date(self) -> None:
         remote_realm = RemoteRealm.objects.get(name="realm-name-5")

@@ -1,3 +1,4 @@
+import uuid
 from contextlib import suppress
 from dataclasses import dataclass
 from datetime import timedelta
@@ -464,12 +465,23 @@ def support(
 
 
 def get_remote_servers_for_support(
-    email_to_search: Optional[str], hostname_to_search: Optional[str]
+    email_to_search: Optional[str], uuid_to_search: Optional[str], hostname_to_search: Optional[str]
 ) -> List["RemoteZulipServer"]:
     remote_servers_query = RemoteZulipServer.objects.order_by("id").exclude(deactivated=True)
 
     if email_to_search:
         return list(remote_servers_query.filter(contact_email__iexact=email_to_search))
+
+    if uuid_to_search:
+        remote_servers_set = set(remote_servers_query.filter(uuid__iexact=uuid_to_search))
+        remote_realm_matches = (
+            RemoteRealm.objects.filter(uuid__iexact=uuid_to_search)
+            .exclude(realm_deactivated=True)
+            .select_related("server")
+        )
+        for remote_realm in remote_realm_matches:
+            remote_servers_set.add(remote_realm.server)
+        return list(remote_servers_set)
 
     if hostname_to_search:
         remote_servers_set = set(
@@ -602,16 +614,23 @@ def remote_servers_support(
                     context["error_message"] = error.msg
 
     email_to_search = None
+    uuid_to_search = None
     hostname_to_search = None
     if query:
         search_text = query.strip()
         if "@" in search_text:
             email_to_search = search_text
         else:
-            hostname_to_search = search_text
+            try:
+                uuid.UUID(search_text, version=4)
+                uuid_to_search = search_text
+            except ValueError:
+                hostname_to_search = search_text
 
     remote_servers = get_remote_servers_for_support(
-        email_to_search=email_to_search, hostname_to_search=hostname_to_search
+        email_to_search=email_to_search,
+        uuid_to_search=uuid_to_search,
+        hostname_to_search=hostname_to_search,
     )
     remote_server_to_max_monthly_messages: Dict[int, Union[int, str]] = dict()
     server_support_data: Dict[int, SupportData] = {}
