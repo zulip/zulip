@@ -591,7 +591,7 @@ class PushBouncerNotificationTest(BouncerTestCase):
         with mock.patch(
             "zilencer.views.send_android_push_notification", return_value=1
         ), mock.patch("zilencer.views.send_apple_push_notification", return_value=1), mock.patch(
-            "corporate.lib.stripe.RemoteServerBillingSession.current_count_for_billed_licenses",
+            "corporate.lib.stripe.RemoteRealmBillingSession.current_count_for_billed_licenses",
             return_value=10,
         ), self.assertLogs(
             "zilencer.views", level="INFO"
@@ -665,7 +665,7 @@ class PushBouncerNotificationTest(BouncerTestCase):
         ) as android_push, mock.patch(
             "zilencer.views.send_apple_push_notification", return_value=1
         ) as apple_push, mock.patch(
-            "corporate.lib.stripe.RemoteServerBillingSession.current_count_for_billed_licenses",
+            "corporate.lib.stripe.RemoteRealmBillingSession.current_count_for_billed_licenses",
             return_value=10,
         ), time_machine.travel(
             time_sent, tick=False
@@ -2233,7 +2233,7 @@ class AnalyticsBouncerTest(BouncerTestCase):
             "zilencer.views.RemoteRealmBillingSession.get_customer", return_value=None
         ) as m:
             with mock.patch(
-                "corporate.lib.stripe.RemoteServerBillingSession.current_count_for_billed_licenses",
+                "corporate.lib.stripe.RemoteRealmBillingSession.current_count_for_billed_licenses",
                 return_value=11,
             ):
                 send_server_data_to_push_bouncer(consider_usage_statistics=False)
@@ -2266,7 +2266,7 @@ class AnalyticsBouncerTest(BouncerTestCase):
                 "corporate.lib.stripe.get_current_plan_by_customer", return_value=None
             ) as m:
                 with mock.patch(
-                    "corporate.lib.stripe.RemoteServerBillingSession.current_count_for_billed_licenses",
+                    "corporate.lib.stripe.RemoteRealmBillingSession.current_count_for_billed_licenses",
                     return_value=11,
                 ):
                     send_server_data_to_push_bouncer(consider_usage_statistics=False)
@@ -2707,7 +2707,7 @@ class HandlePushNotificationTest(PushNotificationTest):
         with time_machine.travel(time_received, tick=False), mock.patch(
             "zerver.lib.push_notifications.gcm_client"
         ) as mock_gcm, self.mock_apns() as (apns_context, send_notification), mock.patch(
-            "corporate.lib.stripe.RemoteServerBillingSession.current_count_for_billed_licenses",
+            "corporate.lib.stripe.RemoteRealmBillingSession.current_count_for_billed_licenses",
             return_value=10,
         ), self.assertLogs(
             "zerver.lib.push_notifications", level="INFO"
@@ -2800,7 +2800,7 @@ class HandlePushNotificationTest(PushNotificationTest):
             "trigger": NotificationTriggers.DIRECT_MESSAGE,
         }
         with mock.patch(
-            "corporate.lib.stripe.RemoteServerBillingSession.current_count_for_billed_licenses",
+            "corporate.lib.stripe.RemoteRealmBillingSession.current_count_for_billed_licenses",
             return_value=100,
         ) as mock_current_count, self.assertLogs(
             "zerver.lib.push_notifications", level="INFO"
@@ -2871,7 +2871,7 @@ class HandlePushNotificationTest(PushNotificationTest):
         with time_machine.travel(time_received, tick=False), mock.patch(
             "zerver.lib.push_notifications.gcm_client"
         ) as mock_gcm, self.mock_apns() as (apns_context, send_notification), mock.patch(
-            "corporate.lib.stripe.RemoteServerBillingSession.current_count_for_billed_licenses",
+            "corporate.lib.stripe.RemoteRealmBillingSession.current_count_for_billed_licenses",
             return_value=10,
         ), self.assertLogs(
             "zerver.lib.push_notifications", level="INFO"
