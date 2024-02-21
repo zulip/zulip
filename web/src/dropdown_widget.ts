@@ -70,7 +70,7 @@ type DropdownWidgetOptions = {
 
 export class DropdownWidget {
     widget_name: string;
-    widget_id: string;
+    widget_selector: string;
     widget_wrapper_id: string;
     widget_value_selector: string;
     get_options: () => Option[];
@@ -98,10 +98,10 @@ export class DropdownWidget {
 
     constructor(options: DropdownWidgetOptions) {
         this.widget_name = options.widget_name;
-        this.widget_id = `#${CSS.escape(this.widget_name)}_widget`;
+        this.widget_selector = `#${CSS.escape(this.widget_name)}_widget`;
         // A widget wrapper may not exist based on the UI requirement.
-        this.widget_wrapper_id = `${this.widget_id}_wrapper`;
-        this.widget_value_selector = `${this.widget_id} .dropdown_widget_value`;
+        this.widget_wrapper_id = `${this.widget_selector}_wrapper`;
+        this.widget_value_selector = `${this.widget_selector} .dropdown_widget_value`;
         this.get_options = options.get_options;
         this.item_click_callback = options.item_click_callback;
         this.focus_target_on_hidden = options.focus_target_on_hidden ?? true;
@@ -135,10 +135,10 @@ export class DropdownWidget {
 
         this.$events_container.on(
             "keydown",
-            `${this.widget_id}, ${this.widget_wrapper_id}`,
+            `${this.widget_selector}, ${this.widget_wrapper_id}`,
             (e) => {
                 if (e.key === "Enter") {
-                    $(this.widget_id).trigger("click");
+                    $(this.widget_selector).trigger("click");
                     e.stopPropagation();
                     e.preventDefault();
                 }
@@ -149,7 +149,7 @@ export class DropdownWidget {
             this.$events_container.addClass("dropdown-widget-disabled-for-spectators");
             this.$events_container.on(
                 "click",
-                `${this.widget_id}, ${this.widget_wrapper_id}`,
+                `${this.widget_selector}, ${this.widget_wrapper_id}`,
                 (e) => {
                     e.stopPropagation();
                     e.preventDefault();
@@ -181,7 +181,7 @@ export class DropdownWidget {
         }
         this.instance = tippy.delegate(delegate_container, {
             ...default_popover_props,
-            target: this.widget_id,
+            target: this.widget_selector,
             // Custom theme defined in popovers.css
             theme: "dropdown-widget",
             arrow: false,
@@ -349,7 +349,7 @@ export class DropdownWidget {
             },
             onHidden: (instance: tippy.Instance) => {
                 if (this.focus_target_on_hidden) {
-                    $(this.widget_id).trigger("focus");
+                    $(this.widget_selector).trigger("focus");
                 }
                 this.on_hidden_callback(instance);
                 this.instance = undefined;

@@ -602,7 +602,7 @@ export function show_edit_bot_info_modal(user_id, $container) {
         function item_click_callback(event, dropdown) {
             bot_owner_dropdown_widget.render();
             // Let dialog_widget know that there was a change in value.
-            $(bot_owner_dropdown_widget.widget_id).trigger("input");
+            $(bot_owner_dropdown_widget.widget_selector).trigger("input");
             dropdown.hide();
             event.stopPropagation();
             event.preventDefault();
