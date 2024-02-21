@@ -466,20 +466,15 @@ def support(
 def get_remote_servers_for_support(
     email_to_search: Optional[str], hostname_to_search: Optional[str]
 ) -> List["RemoteZulipServer"]:
-    if not email_to_search and not hostname_to_search:
-        return []
+    remote_servers_query = RemoteZulipServer.objects.order_by("id").exclude(deactivated=True)
 
-    remote_servers_query = (
-        RemoteZulipServer.objects.order_by("id")
-        .exclude(deactivated=True)
-        .prefetch_related("remoterealm_set")
-    )
     if email_to_search:
-        remote_servers_query = remote_servers_query.filter(contact_email__iexact=email_to_search)
-    elif hostname_to_search:
-        remote_servers_query = remote_servers_query.filter(hostname__icontains=hostname_to_search)
+        return list(remote_servers_query.filter(contact_email__iexact=email_to_search))
 
-    return list(remote_servers_query)
+    if hostname_to_search:
+        return list(remote_servers_query.filter(hostname__icontains=hostname_to_search))
+
+    return []
 
 
 @require_server_admin
@@ -599,10 +594,11 @@ def remote_servers_support(
     email_to_search = None
     hostname_to_search = None
     if query:
-        if "@" in query:
-            email_to_search = query
+        search_text = query.strip()
+        if "@" in search_text:
+            email_to_search = search_text
         else:
-            hostname_to_search = query
+            hostname_to_search = search_text
 
     remote_servers = get_remote_servers_for_support(
         email_to_search=email_to_search, hostname_to_search=hostname_to_search
@@ -618,7 +614,7 @@ def remote_servers_support(
         )
         remote_realms[remote_server.id] = remote_realms_for_server
         # Get plan data for remote realms
-        for remote_realm in remote_realms[remote_server.id]:
+        for remote_realm in remote_realms_for_server:
             realm_billing_session = RemoteRealmBillingSession(remote_realm=remote_realm)
             remote_realm_data = get_data_for_support_view(realm_billing_session)
             realm_support_data[remote_realm.id] = remote_realm_data
