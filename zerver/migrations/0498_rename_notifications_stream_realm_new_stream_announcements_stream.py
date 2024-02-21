@@ -6,7 +6,7 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("zerver", "0496_alter_scheduledmessage_read_by_sender"),
+        ("zerver", "0497_resort_edit_history"),
     ]
 
     operations = [
