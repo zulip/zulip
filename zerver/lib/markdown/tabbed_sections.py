@@ -46,6 +46,8 @@ TAB_SECTION_LABELS = {
     "mac": "macOS",
     "windows": "Windows",
     "linux": "Linux",
+    "most-systems": "Most systems",
+    "linux-with-apt": "Linux with APT",
     "python": "Python",
     "js": "JavaScript",
     "curl": "curl",

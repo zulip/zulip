@@ -10,6 +10,7 @@ releases](#install-a-beta-release).
 ## Install the latest release
 
 {start_tabs}
+
 {tab|mac}
 
 {!app-will-update-tip.md!}
@@ -54,7 +55,7 @@ You can run the command `brew upgrade zulip` to immediately upgrade the app.
 
 {tab|linux}
 
-#### APT *(Ubuntu or Debian 8+)*
+#### APT *(Ubuntu or Debian)*
 
 !!! tip ""
     The app will be updated automatically to future versions when you do a
@@ -63,12 +64,14 @@ You can run the command `brew upgrade zulip` to immediately upgrade the app.
 
 1. Enter the following commands into a terminal:
 
-        sudo curl -fL -o /etc/apt/trusted.gpg.d/zulip-desktop.asc \
-            https://download.zulip.com/desktop/apt/zulip-desktop.asc
-        echo "deb https://download.zulip.com/desktop/apt stable main" | \
-            sudo tee /etc/apt/sources.list.d/zulip-desktop.list
-        sudo apt update
-        sudo apt install zulip
+    ```
+    sudo curl -fL -o /etc/apt/trusted.gpg.d/zulip-desktop.asc \
+        https://download.zulip.com/desktop/apt/zulip-desktop.asc
+    echo "deb https://download.zulip.com/desktop/apt stable main" | \
+        sudo tee /etc/apt/sources.list.d/zulip-desktop.list
+    sudo apt update
+    sudo apt install zulip
+    ```
 
     These commands set up the Zulip Desktop APT repository and its signing
     key, and then install the Zulip client.
@@ -94,7 +97,9 @@ You can run the command `brew upgrade zulip` to immediately upgrade the app.
 
 2. Execute following command to install Zulip:
 
-        sudo snap install zulip
+    ```
+    sudo snap install zulip
+    ```
 
 3. Run Zulip from your app launcher, or with `zulip` from a terminal.
 
@@ -106,12 +111,16 @@ system.
 2. Use the following command from the official
 [Flathub page](https://flathub.org/apps/org.zulip.Zulip) to install Zulip:
 
-        flatpak install flathub org.zulip.Zulip
+    ```
+    flatpak install flathub org.zulip.Zulip
+    ```
 
 3. After the installation is complete, you can run Zulip using the following
 command:
 
-        flatpak run org.zulip.Zulip
+    ```
+    flatpak run org.zulip.Zulip
+    ```
 
 {end_tabs}
 
@@ -119,26 +128,64 @@ command:
 
 Get a peek at new features before they're released!
 
-#### macOS, Windows, and most Linux distros
+{start_tabs}
 
-Start by finding the latest version marked "Pre-release" on the
-[release list page][release-list].  There may or may not be a "Pre-release"
-later than the latest release. If there is, download the appropriate Zulip
-installer or app from there, and follow the instructions for your operating
-system above.
+{tab|most-systems}
 
-#### Linux with apt (Ubuntu or Debian 8+)
+{!app-will-update-tip.md!}
 
-If installing from scratch, follow the instructions above, except in the
-command starting `echo "deb https://...` replace `stable` with `beta`.
+1. Go to the [Zulip releases][release-list] page on GitHub, and find the latest
+   version tagged with the “Pre-release” label.
 
-If you've already installed the stable version, edit `zulip-desktop.list` and
-reinstall:
-```
-sudo sed -i s/stable/beta/ /etc/apt/sources.list.d/zulip-desktop.list
-sudo apt update
-sudo apt install zulip
-```
+1. If there's a **Pre-release** that's more recent than the [latest release][latest],
+   download the appropriate Zulip beta installer or app for your system.
+
+1. To install and run Zulip, refer to the instructions for your operating
+   system in the [Install the latest release](#install-the-latest-release)
+   section above.
+
+{tab|linux-with-apt}
+
+!!! tip ""
+
+    The app will be updated automatically to future versions when you do a
+    regular software update on your system, e.g., with
+    `sudo apt update && sudo apt upgrade`.
+
+#### You don't have the Zulip app installed
+
+1. Enter the following commands into a terminal:
+
+    ```
+    sudo curl -fL -o /etc/apt/trusted.gpg.d/zulip-desktop.asc \
+        https://download.zulip.com/desktop/apt/zulip-desktop.asc
+    echo "deb https://download.zulip.com/desktop/apt beta main" | \
+        sudo tee /etc/apt/sources.list.d/zulip-desktop.list
+    sudo apt update
+    sudo apt install zulip
+    ```
+
+    These commands set up the Zulip Desktop beta APT repository and its signing
+    key, and then install the Zulip beta client.
+
+1. Run Zulip from your app launcher, or with `zulip` from a terminal.
+
+#### You already have the Zulip app installed
+
+1. Enter the following commands into a terminal:
+
+    ```
+    sudo sed -i s/stable/beta/ /etc/apt/sources.list.d/zulip-desktop.list
+    sudo apt update
+    sudo apt install zulip
+    ```
+
+    These commands set up the Zulip Desktop beta APT repository, and then
+    install the Zulip beta client.
+
+1. Run Zulip from your app launcher, or with `zulip` from a terminal.
+
+{end_tabs}
 
 [latest]: https://github.com/zulip/zulip-desktop/releases/latest
 [release-list]: https://github.com/zulip/zulip-desktop/releases
