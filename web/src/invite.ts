@@ -10,6 +10,7 @@ import render_invite_user_modal from "../templates/invite_user_modal.hbs";
 import render_invite_tips_banner from "../templates/modal_banner/invite_tips_banner.hbs";
 import render_settings_dev_env_email_access from "../templates/settings/dev_env_email_access.hbs";
 
+import * as add_streams_pill from "./add_streams_pill";
 import * as channel from "./channel";
 import * as common from "./common";
 import * as compose_banner from "./compose_banner";
@@ -23,6 +24,7 @@ import * as settings_config from "./settings_config";
 import * as settings_data from "./settings_data";
 import {current_user, realm} from "./state_data";
 import * as stream_data from "./stream_data";
+import * as stream_pill from "./stream_pill";
 import * as timerender from "./timerender";
 import * as ui_report from "./ui_report";
 import * as util from "./util";
@@ -38,7 +40,7 @@ function reset_error_messages(): void {
     }
 }
 
-function get_common_invitation_data(): {
+function get_common_invitation_data(stream_pill_widget: stream_pill.StreamPillWidget): {
     csrfmiddlewaretoken: string;
     invite_as: number;
     stream_ids: string;
@@ -62,16 +64,7 @@ function get_common_invitation_data(): {
         expires_in = Number.parseFloat(raw_expires_in);
     }
 
-    let stream_ids: number[] = [];
-    const default_stream_ids = stream_data.get_default_stream_ids();
-    if (default_stream_ids.length !== 0 && $("#invite_select_default_streams").prop("checked")) {
-        stream_ids = default_stream_ids;
-    } else {
-        $<HTMLInputElement>("#invite-stream-checkboxes input:checked").each(function () {
-            const stream_id = Number.parseInt($(this).val()!, 10);
-            stream_ids.push(stream_id);
-        });
-    }
+    const stream_ids: number[] = stream_pill.get_stream_ids(stream_pill_widget);
 
     assert(csrf_token !== undefined);
     const data = {
@@ -95,13 +88,13 @@ function beforeSend(): void {
     $("#invite-user-modal .dialog_submit_button").prop("disabled", true);
 }
 
-function submit_invitation_form(): void {
+function submit_invitation_form(stream_pill_widget: stream_pill.StreamPillWidget): void {
     const $expires_in = $<HTMLSelectElement & {type: "select-one"}>(
         "select:not([multiple])#expires_in",
     );
     const $invite_status = $("#dialog_error");
     const $invitee_emails = $<HTMLTextAreaElement>("textarea#invitee_emails");
-    const data = get_common_invitation_data();
+    const data = get_common_invitation_data(stream_pill_widget);
     data.invitee_emails = $invitee_emails.val()!;
 
     void channel.post({
@@ -185,9 +178,9 @@ function submit_invitation_form(): void {
     });
 }
 
-function generate_multiuse_invite(): void {
+function generate_multiuse_invite(stream_pill_widget: stream_pill.StreamPillWidget): void {
     const $invite_status = $("#dialog_error");
-    const data = get_common_invitation_data();
+    const data = get_common_invitation_data(stream_pill_widget);
     void channel.post({
         url: "/json/invites/multiuse",
         data,
@@ -285,11 +278,9 @@ function set_custom_time_inputs_visibility(): void {
 function set_streams_to_join_list_visibility(): void {
     const default_streams_selected = $("#invite_select_default_streams").prop("checked");
     if (default_streams_selected) {
-        $("#streams_to_add .invite-stream-controls").hide();
-        $("#invite-stream-checkboxes").hide();
+        $(".add_streams_container").hide();
     } else {
-        $("#streams_to_add .invite-stream-controls").show();
-        $("#invite-stream-checkboxes").show();
+        $(".add_streams_container").show();
     }
 }
 
@@ -309,6 +300,8 @@ function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void
     e.stopPropagation();
     e.preventDefault();
 
+    let stream_pill_widget: stream_pill.StreamPillWidget;
+
     const time_unit_choices = ["minutes", "hours", "days", "weeks"];
     const html_body = render_invite_user_modal({
         is_admin: current_user.is_admin,
@@ -317,7 +310,6 @@ function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void
         invite_as_options: settings_config.user_role_values,
         expires_in_options: settings_config.expires_in_values,
         time_choices: time_unit_choices,
-        streams: get_invite_streams(),
         notifications_stream: stream_data.get_notifications_stream(),
         show_select_default_streams_option: stream_data.get_default_stream_ids().length !== 0,
         user_has_email_set: !settings_data.user_email_not_configured(),
@@ -415,15 +407,6 @@ function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void
             $("#custom_expires_on").text(valid_to(get_expiration_time_in_minutes()));
         });
 
-        $("#invite_check_all_button").on("click", () => {
-            $("#invite-stream-checkboxes input[type=checkbox]").prop("checked", true);
-            toggle_invite_submit_button();
-        });
-
-        $("#invite_uncheck_all_button").on("click", () => {
-            $("#invite-stream-checkboxes input[type=checkbox]").prop("checked", false);
-        });
-
         $("#invite_select_default_streams").on("change", () => {
             set_streams_to_join_list_visibility();
         });
@@ -451,14 +434,20 @@ function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void
         };
 
         $("#invite-user-form .setup-tips-container").html(render_invite_tips_banner(context));
+
+        const $pill_container = $(".stream_picker");
+        stream_pill_widget = add_streams_pill.create({
+            $pill_container,
+            get_invite_streams,
+        });
     }
 
     function invite_users(): void {
         const is_generate_invite_link = $("#generate_multiuse_invite_radio").prop("checked");
         if (is_generate_invite_link) {
-            generate_multiuse_invite();
+            generate_multiuse_invite(stream_pill_widget);
         } else {
-            submit_invitation_form();
+            submit_invitation_form(stream_pill_widget);
         }
     }
 
