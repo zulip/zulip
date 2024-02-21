@@ -1111,10 +1111,6 @@ li.topic-list-item {
 
     .zulip-icon.zulip-icon-bot {
         font-size: 90%; /* Reduce the bulkiness of this icon */
-        /* TODO: Eliminate this top and bottom padding once
-           line-heights have been better established in the
-           DM rows. */
-        padding: 3px 0;
     }
 
     .unread_count {
