@@ -4988,10 +4988,19 @@ def get_push_status_for_remote_request(
     # installation.
     customer = None
     current_plan = None
+    realm_billing_session: Optional[BillingSession] = None
+    server_billing_session: Optional[RemoteServerBillingSession] = None
 
     if remote_realm is not None:
-        billing_session: BillingSession = RemoteRealmBillingSession(remote_realm)
-        customer = billing_session.get_customer()
+        realm_billing_session = RemoteRealmBillingSession(remote_realm)
+        if realm_billing_session.is_sponsored():
+            return PushNotificationsEnabledStatus(
+                can_push=True,
+                expected_end_timestamp=None,
+                message="Community plan",
+            )
+
+        customer = realm_billing_session.get_customer()
         if customer is not None:
             current_plan = get_current_plan_by_customer(customer)
 
@@ -4999,22 +5008,28 @@ def get_push_status_for_remote_request(
     # takes precedence, but look for a current plan on the server if
     # there is a customer with only inactive/expired plans on the Realm.
     if customer is None or current_plan is None:
-        billing_session = RemoteServerBillingSession(remote_server)
-        customer = billing_session.get_customer()
+        server_billing_session = RemoteServerBillingSession(remote_server)
+        if server_billing_session.is_sponsored():
+            return PushNotificationsEnabledStatus(
+                can_push=True,
+                expected_end_timestamp=None,
+                message="Community plan",
+            )
+
+        customer = server_billing_session.get_customer()
         if customer is not None:
             current_plan = get_current_plan_by_customer(customer)
 
-    if billing_session.is_sponsored():
-        return PushNotificationsEnabledStatus(
-            can_push=True,
-            expected_end_timestamp=None,
-            message="Community plan",
-        )
+    if realm_billing_session is not None:
+        user_count_billing_session: BillingSession = realm_billing_session
+    else:
+        assert server_billing_session is not None
+        user_count_billing_session = server_billing_session
 
     user_count: Optional[int] = None
     if current_plan is None:
         try:
-            user_count = billing_session.current_count_for_billed_licenses()
+            user_count = user_count_billing_session.current_count_for_billed_licenses()
         except MissingDataError:
             return PushNotificationsEnabledStatus(
                 can_push=False,
@@ -5047,7 +5062,7 @@ def get_push_status_for_remote_request(
         )
 
     try:
-        user_count = billing_session.current_count_for_billed_licenses()
+        user_count = user_count_billing_session.current_count_for_billed_licenses()
     except MissingDataError:
         user_count = None
 
@@ -5062,8 +5077,10 @@ def get_push_status_for_remote_request(
             message="Expiring plan few users",
         )
 
+    # TODO: Move get_next_billing_cycle to be plan.get_next_billing_cycle
+    # to avoid this somewhat evil use of a possibly non-matching billing session.
     expected_end_timestamp = datetime_to_timestamp(
-        billing_session.get_next_billing_cycle(current_plan)
+        user_count_billing_session.get_next_billing_cycle(current_plan)
     )
     return PushNotificationsEnabledStatus(
         can_push=True,

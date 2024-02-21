@@ -1580,7 +1580,7 @@ class TestLoggingCountStats(AnalyticsTestCase):
         with time_machine.travel(now, tick=False), mock.patch(
             "zilencer.views.send_android_push_notification", return_value=1
         ), mock.patch("zilencer.views.send_apple_push_notification", return_value=1), mock.patch(
-            "corporate.lib.stripe.RemoteServerBillingSession.current_count_for_billed_licenses",
+            "corporate.lib.stripe.RemoteRealmBillingSession.current_count_for_billed_licenses",
             return_value=10,
         ), self.assertLogs(
             "zilencer.views", level="INFO"
