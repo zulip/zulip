@@ -345,7 +345,7 @@ run_test("find_li w/bad key", ({override}) => {
         force_render: true,
     });
 
-    assert.deepEqual($undefined_li, []);
+    assert.deepEqual($undefined_li, undefined);
 });
 
 run_test("scrolling", ({override, mock_template}) => {

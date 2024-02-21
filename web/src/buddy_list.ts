@@ -1,4 +1,5 @@
 import $ from "jquery";
+import assert from "minimalistic-assert";
 import tippy from "tippy.js";
 
 import render_section_header from "../templates/buddy_list/section_header.hbs";
@@ -10,6 +11,7 @@ import render_presence_rows from "../templates/presence_rows.hbs";
 
 import * as blueslip from "./blueslip";
 import * as buddy_data from "./buddy_data";
+import type {BuddyUserInfo} from "./buddy_data";
 import {media_breakpoints_num} from "./css_variables";
 import * as hash_util from "./hash_util";
 import {$t} from "./i18n";
@@ -20,19 +22,23 @@ import * as peer_data from "./peer_data";
 import * as people from "./people";
 import * as scroll_util from "./scroll_util";
 import * as stream_data from "./stream_data";
+import type {StreamSubscription} from "./sub_store";
 import {INTERACTIVE_HOVER_DELAY} from "./tippyjs";
 import {user_settings} from "./user_settings";
 
-function get_formatted_sub_count(sub_count) {
+function get_formatted_sub_count(sub_count: number): string {
     if (sub_count < 1000) {
-        return sub_count;
+        return sub_count.toString();
     }
     return new Intl.NumberFormat(user_settings.default_language, {notation: "compact"}).format(
         sub_count,
     );
 }
 
-function total_subscriber_count(current_sub, pm_ids_set) {
+function total_subscriber_count(
+    current_sub: StreamSubscription | undefined,
+    pm_ids_set: Set<number>,
+): number {
     // Includes inactive users who might not show up in the buddy list.
     if (current_sub) {
         return peer_data.get_subscriber_count(current_sub.stream_id, false);
@@ -48,14 +54,26 @@ function total_subscriber_count(current_sub, pm_ids_set) {
     return 0;
 }
 
-function should_hide_headers(current_sub, pm_ids_set) {
+function should_hide_headers(
+    current_sub: StreamSubscription | undefined,
+    pm_ids_set: Set<number>,
+): boolean {
     // If we aren't in a stream/DM view, then there's never "other"
     // users, so we don't show section headers and only show one
     // untitled section.
     return !current_sub && !pm_ids_set.size;
 }
 
-function get_render_data() {
+type BuddyListRenderData = {
+    current_sub: StreamSubscription | undefined;
+    pm_ids_set: Set<number>;
+    subscriber_count: number;
+    other_users_count: number;
+    total_user_count: number;
+    hide_headers: boolean;
+};
+
+function get_render_data(): BuddyListRenderData {
     const current_sub = narrow_state.stream_sub();
     const pm_ids_set = narrow_state.pm_ids_set();
 
@@ -80,37 +98,38 @@ class BuddyListConf {
     scroll_container_selector = "#buddy_list_wrapper";
     item_selector = "li.user_sidebar_entry";
     padding_selector = "#buddy_list_wrapper_padding";
+    compare_function = buddy_data.compare_function;
 
-    items_to_html(opts) {
+    items_to_html(opts: {items: BuddyUserInfo[]}): string {
         const html = render_presence_rows({presence_rows: opts.items});
         return html;
     }
 
-    item_to_html(opts) {
+    item_to_html(opts: {item: BuddyUserInfo}): string {
         const html = render_presence_row(opts.item);
         return html;
     }
 
-    get_li_from_user_id(opts) {
+    get_li_from_user_id(opts: {user_id: number}): JQuery {
         const user_id = opts.user_id;
         const $buddy_list_container = $("#buddy_list_wrapper");
         return $buddy_list_container.find(
-            `${this.item_selector}[data-user-id='${CSS.escape(user_id)}']`,
+            `${this.item_selector}[data-user-id='${CSS.escape(user_id.toString())}']`,
         );
     }
 
-    get_user_id_from_li(opts) {
-        return Number.parseInt(opts.$li.expectOne().attr("data-user-id"), 10);
+    get_user_id_from_li(opts: {$li: JQuery}): number {
+        const user_id = opts.$li.expectOne().attr("data-user-id");
+        assert(user_id !== undefined);
+        return Number.parseInt(user_id, 10);
     }
 
-    get_data_from_user_ids(user_ids) {
+    get_data_from_user_ids(user_ids: number[]): BuddyUserInfo[] {
         const data = buddy_data.get_items_for_users(user_ids);
         return data;
     }
 
-    compare_function = buddy_data.compare_function;
-
-    height_to_fill() {
+    height_to_fill(): number {
         // Because the buddy list gets sized dynamically, we err on the side
         // of using the height of the entire viewport for deciding
         // how much content to render.  Even on tall monitors this should
@@ -122,17 +141,23 @@ class BuddyListConf {
 }
 
 export class BuddyList extends BuddyListConf {
-    all_user_ids = [];
-    users_matching_view_ids = [];
-    other_user_ids = [];
+    all_user_ids: number[] = [];
+    users_matching_view_ids: number[] = [];
+    other_user_ids: number[] = [];
     users_matching_view_is_collapsed = false;
     other_users_is_collapsed = false;
+    render_count = 0;
+    render_data = get_render_data();
+    // This is a bit of a hack to make sure we at least have
+    // an empty list to start, before we get the initial payload.
+    $users_matching_view_container = $(this.matching_view_list_selector);
+    $other_users_container = $(this.other_user_list_selector);
 
-    initialize_tooltips() {
+    initialize_tooltips(): void {
         $("#right-sidebar").on("mouseenter", ".buddy-list-heading", (e) => {
             e.stopPropagation();
             const $elem = $(e.currentTarget);
-            let placement = "left";
+            let placement: "left" | "auto" = "left";
             if (window.innerWidth < media_breakpoints_num.md) {
                 // On small devices display tooltips based on available space.
                 // This will default to "bottom" placement for this tooltip.
@@ -200,7 +225,7 @@ export class BuddyList extends BuddyListConf {
         });
     }
 
-    populate(opts) {
+    populate(opts: {all_user_ids: number[]}): void {
         this.render_count = 0;
         this.$users_matching_view_container.empty();
         this.users_matching_view_ids = [];
@@ -228,7 +253,7 @@ export class BuddyList extends BuddyListConf {
         }
     }
 
-    update_empty_list_placeholders() {
+    update_empty_list_placeholders(): void {
         const {subscriber_count, other_users_count} = this.render_data;
         const has_inactive_users_matching_view =
             subscriber_count > this.users_matching_view_ids.length;
@@ -276,7 +301,7 @@ export class BuddyList extends BuddyListConf {
         }
     }
 
-    render_section_headers() {
+    render_section_headers(): void {
         const {current_sub, subscriber_count, other_users_count, total_user_count, hide_headers} =
             this.render_data;
         $("#buddy-list-users-matching-view-container .buddy-list-subsection-header").empty();
@@ -323,7 +348,7 @@ export class BuddyList extends BuddyListConf {
         );
     }
 
-    toggle_users_matching_view_section() {
+    toggle_users_matching_view_section(): void {
         this.users_matching_view_is_collapsed = !this.users_matching_view_is_collapsed;
         $("#buddy-list-users-matching-view-container").toggleClass(
             "collapsed",
@@ -343,7 +368,7 @@ export class BuddyList extends BuddyListConf {
         this.fill_screen_with_content();
     }
 
-    toggle_other_users_section() {
+    toggle_other_users_section(): void {
         this.other_users_is_collapsed = !this.other_users_is_collapsed;
         $("#buddy-list-other-users-container").toggleClass(
             "collapsed",
@@ -363,7 +388,7 @@ export class BuddyList extends BuddyListConf {
         this.fill_screen_with_content();
     }
 
-    render_more(opts) {
+    render_more(opts: {chunk_size: number}): void {
         const chunk_size = opts.chunk_size;
 
         const begin = this.render_count;
@@ -427,7 +452,7 @@ export class BuddyList extends BuddyListConf {
         this.update_padding();
     }
 
-    render_view_user_list_links() {
+    render_view_user_list_links(): void {
         const {current_sub, subscriber_count, other_users_count} = this.render_data;
         const has_inactive_users_matching_view =
             subscriber_count > this.users_matching_view_ids.length;
@@ -456,7 +481,7 @@ export class BuddyList extends BuddyListConf {
     }
 
     // From `type List<Key>`, where the key is a user_id.
-    first_key() {
+    first_key(): number | undefined {
         if (this.users_matching_view_ids.length) {
             return this.users_matching_view_ids[0];
         }
@@ -467,7 +492,7 @@ export class BuddyList extends BuddyListConf {
     }
 
     // From `type List<Key>`, where the key is a user_id.
-    prev_key(key) {
+    prev_key(key: number): number | undefined {
         let i = this.users_matching_view_ids.indexOf(key);
         // This would be the middle of the list of users matching view,
         // moving to a prev user matching the view.
@@ -503,7 +528,7 @@ export class BuddyList extends BuddyListConf {
     }
 
     // From `type List<Key>`, where the key is a user_id.
-    next_key(key) {
+    next_key(key: number): number | undefined {
         let i = this.users_matching_view_ids.indexOf(key);
         // Moving from users matching the view to the list of other users,
         // if they exist, otherwise do nothing.
@@ -538,7 +563,7 @@ export class BuddyList extends BuddyListConf {
         return undefined;
     }
 
-    maybe_remove_user_id(opts) {
+    maybe_remove_user_id(opts: {user_id: number}): void {
         let pos = this.users_matching_view_ids.indexOf(opts.user_id);
         if (pos >= 0) {
             this.users_matching_view_ids.splice(pos, 1);
@@ -562,7 +587,7 @@ export class BuddyList extends BuddyListConf {
         }
     }
 
-    find_position(opts) {
+    find_position(opts: {user_id: number; user_id_list: number[]}): number {
         const user_id = opts.user_id;
         let i;
 
@@ -582,7 +607,7 @@ export class BuddyList extends BuddyListConf {
         return user_id_list.length;
     }
 
-    force_render(opts) {
+    force_render(opts: {pos: number}): void {
         const pos = opts.pos;
 
         // Try to render a bit optimistically here.
@@ -602,7 +627,7 @@ export class BuddyList extends BuddyListConf {
         });
     }
 
-    find_li(opts) {
+    find_li(opts: {key: number; force_render?: boolean}): JQuery | undefined {
         const user_id = opts.key;
 
         // Try direct DOM lookup first for speed.
@@ -639,7 +664,12 @@ export class BuddyList extends BuddyListConf {
         return $li;
     }
 
-    insert_new_html(opts) {
+    insert_new_html(opts: {
+        new_user_id: number | undefined;
+        html: string;
+        new_pos_in_all_users: number;
+        is_subscribed_user: boolean;
+    }): void {
         const user_id_following_insertion = opts.new_user_id;
         const html = opts.html;
         const new_pos_in_all_users = opts.new_pos_in_all_users;
@@ -669,7 +699,7 @@ export class BuddyList extends BuddyListConf {
         }
     }
 
-    insert_or_move(opts) {
+    insert_or_move(opts: {user_id: number; item: BuddyUserInfo}): void {
         const user_id = opts.user_id;
         const item = opts.item;
 
@@ -712,7 +742,7 @@ export class BuddyList extends BuddyListConf {
         });
     }
 
-    fill_screen_with_content() {
+    fill_screen_with_content(): void {
         let height = this.height_to_fill();
 
         const elem = scroll_util
@@ -724,6 +754,7 @@ export class BuddyList extends BuddyListConf {
 
         while (this.render_count < this.all_user_ids.length) {
             const padding_height = $(this.padding_selector).height();
+            assert(padding_height !== undefined);
             const bottom_offset = elem.scrollHeight - elem.scrollTop - padding_height;
 
             if (bottom_offset > height) {
@@ -739,12 +770,7 @@ export class BuddyList extends BuddyListConf {
         this.render_section_headers();
     }
 
-    // This is a bit of a hack to make sure we at least have
-    // an empty list to start, before we get the initial payload.
-    $users_matching_view_container = $(this.matching_view_list_selector);
-    $other_users_container = $(this.other_user_list_selector);
-
-    start_scroll_handler() {
+    start_scroll_handler(): void {
         // We have our caller explicitly call this to make
         // sure everything's in place.
         const $scroll_container = scroll_util.get_scroll_element($(this.scroll_container_selector));
@@ -754,7 +780,7 @@ export class BuddyList extends BuddyListConf {
         });
     }
 
-    update_padding() {
+    update_padding(): void {
         padded_widget.update_padding({
             shown_rows: this.render_count,
             total_rows: this.all_user_ids.length,

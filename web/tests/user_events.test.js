@@ -27,9 +27,6 @@ mock_esm("../src/activity_ui", {
 mock_esm("../src/compose_state", {
     update_email() {},
 });
-mock_esm("../src/narrow_state", {
-    update_email() {},
-});
 mock_esm("../src/pm_list", {
     update_private_messages() {},
 });
