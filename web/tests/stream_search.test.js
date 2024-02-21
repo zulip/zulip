@@ -7,7 +7,7 @@ const {run_test, noop} = require("./lib/test");
 const $ = require("./lib/zjquery");
 
 // This tests the stream searching functionality which currently
-// lives in stream_list.js.
+// lives in stream_list.ts.
 
 mock_esm("../src/resize", {
     resize_page_components: noop,

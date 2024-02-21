@@ -162,9 +162,9 @@ test_ui("create_sidebar_row", ({override_rewire, mock_template}) => {
 
     assert.ok(topics_closed);
     const expected_elems = [
-        $pinned_subheader.html(), // separator
+        $pinned_subheader, // separator
         $devel_sidebar, // pinned
-        $active_subheader.html(), // separator
+        $active_subheader, // separator
         $social_sidebar, // not pinned
     ];
 
@@ -507,14 +507,14 @@ test_ui("sort_streams", ({override_rewire, mock_template}) => {
     const $active_subheader = $("<active-subheader-stub>");
     const $inactive_subheader = $("<inactive-subheader-stub>");
     const expected_elems = [
-        $pinned_subheader.html(),
+        $pinned_subheader,
         $("<devel-sidebar-row-stub>"),
         $("<Rome-sidebar-row-stub>"),
         $("<test-sidebar-row-stub>"),
-        $active_subheader.html(),
+        $active_subheader,
         $("<announce-sidebar-row-stub>"),
         $("<Denmark-sidebar-row-stub>"),
-        $inactive_subheader.html(),
+        $inactive_subheader,
         $("<cars-sidebar-row-stub>"),
     ];
 
@@ -594,10 +594,10 @@ test_ui("separators_only_pinned_and_dormant", ({override_rewire, mock_template})
     const $pinned_subheader = $("<pinned-subheader-stub>");
     const $inactive_subheader = $("<inactive-subheader-stub>");
     const expected_elems = [
-        $pinned_subheader.html(), // pinned
+        $pinned_subheader, // pinned
         $("<devel-sidebar-row-stub>"),
         $("<Rome-sidebar-row-stub>"),
-        $inactive_subheader.html(), // dormant
+        $inactive_subheader, // dormant
         $("<Denmark-sidebar-row-stub>"),
     ];
 

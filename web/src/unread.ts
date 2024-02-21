@@ -50,7 +50,7 @@ const unread_messages = new Set<number>();
 // for how we can refresh it efficiently.
 export const unread_mention_topics = new Map();
 
-type StreamCountInfo = {
+export type StreamCountInfo = {
     unmuted_count: number;
     muted_count: number;
     followed_count: number;
