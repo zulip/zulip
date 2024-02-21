@@ -195,15 +195,15 @@ def update_messages_for_topic_edit(
         "edit_history": Cast(
             Func(
                 Cast(
+                    Value(orjson.dumps([edit_history_event]).decode()),
+                    JSONField(),
+                ),
+                Cast(
                     Func(
                         F("edit_history"),
                         Value("[]"),
                         function="COALESCE",
                     ),
-                    JSONField(),
-                ),
-                Cast(
-                    Value(orjson.dumps([edit_history_event]).decode()),
                     JSONField(),
                 ),
                 function="",
