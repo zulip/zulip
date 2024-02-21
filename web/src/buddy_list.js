@@ -555,8 +555,10 @@ export class BuddyList extends BuddyListConf {
         if (pos < this.render_count) {
             this.render_count -= 1;
             const $li = this.find_li({key: opts.user_id});
-            $li.remove();
-            this.update_padding();
+            if ($li !== undefined) {
+                $li.remove();
+                this.update_padding();
+            }
         }
     }
 
@@ -623,9 +625,7 @@ export class BuddyList extends BuddyListConf {
         const pos = this.all_user_ids.indexOf(user_id);
 
         if (pos < 0) {
-            // TODO: See ListCursor.get_row() for why this is
-            //       a bit janky now.
-            return [];
+            return undefined;
         }
 
         this.force_render({
@@ -662,8 +662,10 @@ export class BuddyList extends BuddyListConf {
         if (new_pos_in_all_users < this.render_count) {
             this.render_count += 1;
             const $li = this.find_li({key: user_id_following_insertion});
-            $li.before(html);
-            this.update_padding();
+            if ($li !== undefined) {
+                $li.before(html);
+                this.update_padding();
+            }
         }
     }
 
