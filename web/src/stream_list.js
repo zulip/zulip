@@ -769,7 +769,7 @@ export function initialize({on_stream_click}) {
 
     // We build the stream_list now.  It may get re-built again very shortly
     // when new messages come in, but it's fairly quick.
-    build_stream_list();
+    build_stream_list(false);
     update_subscribe_to_more_streams_link();
     initialize_stream_cursor();
     set_event_handlers({on_stream_click});
