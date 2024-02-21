@@ -59,6 +59,12 @@ class SponsorshipData:
 
 
 @dataclass
+class NextPlanData:
+    plan: Union["CustomerPlan", "CustomerPlanOffer", None] = None
+    estimated_revenue: Optional[int] = None
+
+
+@dataclass
 class PlanData:
     customer: Optional["Customer"] = None
     current_plan: Optional["CustomerPlan"] = None
@@ -153,7 +159,46 @@ def get_annual_invoice_count(billing_schedule: int) -> int:
         return 1
 
 
-def get_current_plan_data_for_support_view(billing_session: BillingSession) -> PlanData:
+def get_next_plan_data(
+    billing_session: BillingSession,
+    customer: Customer,
+    current_plan: Optional[CustomerPlan] = None,
+) -> NextPlanData:
+    plan_offer: Optional[CustomerPlanOffer] = None
+
+    # A customer can have a CustomerPlanOffer with or without a current plan.
+    if customer.required_plan_tier:
+        plan_offer = get_configured_fixed_price_plan_offer(customer, customer.required_plan_tier)
+
+    if plan_offer is not None:
+        next_plan_data = NextPlanData(plan=plan_offer)
+    elif current_plan is not None:
+        next_plan_data = NextPlanData(plan=billing_session.get_next_plan(current_plan))
+    else:
+        next_plan_data = NextPlanData()
+
+    if next_plan_data.plan is not None:
+        if next_plan_data.plan.fixed_price is not None:
+            next_plan_data.estimated_revenue = next_plan_data.plan.fixed_price
+            return next_plan_data
+
+        if current_plan is not None:
+            licenses_at_next_renewal = current_plan.licenses_at_next_renewal()
+            if licenses_at_next_renewal is not None:
+                assert type(next_plan_data.plan) is CustomerPlan
+                assert next_plan_data.plan.price_per_license is not None
+                invoice_count = get_annual_invoice_count(next_plan_data.plan.billing_schedule)
+                next_plan_data.estimated_revenue = (
+                    next_plan_data.plan.price_per_license * licenses_at_next_renewal * invoice_count
+                )
+            else:
+                next_plan_data.estimated_revenue = 0  # nocoverage
+            return next_plan_data
+
+    return next_plan_data
+
+
+def get_plan_data_for_support_view(billing_session: BillingSession) -> PlanData:
     customer = billing_session.get_customer()
     plan = None
     if customer is not None:
@@ -162,14 +207,6 @@ def get_current_plan_data_for_support_view(billing_session: BillingSession) -> P
         customer=customer,
         current_plan=plan,
     )
-
-    # A customer with or without a current plan can have a fixed_price next plan configured.
-    if customer and customer.required_plan_tier:
-        plan_data.next_plan = get_configured_fixed_price_plan_offer(
-            customer, customer.required_plan_tier
-        )
-        if plan_data.next_plan:
-            plan_data.estimated_next_plan_revenue = plan_data.next_plan.fixed_price
 
     if plan is not None:
         new_plan, last_ledger_entry = billing_session.make_end_of_cycle_updates_if_needed(
@@ -186,24 +223,6 @@ def get_current_plan_data_for_support_view(billing_session: BillingSession) -> P
                     "Recent audit log data missing: No information for used licenses"
                 )
         assert plan_data.current_plan is not None  # for mypy
-
-        if plan_data.next_plan is None:
-            plan_data.next_plan = billing_session.get_next_plan(plan_data.current_plan)
-
-        if plan_data.next_plan is not None:
-            if plan_data.next_plan.fixed_price is not None:  # nocoverage
-                plan_data.estimated_next_plan_revenue = plan_data.next_plan.fixed_price
-            elif plan_data.current_plan.licenses_at_next_renewal() is not None:
-                next_plan_licenses = plan_data.current_plan.licenses_at_next_renewal()
-                assert next_plan_licenses is not None
-                assert type(plan_data.next_plan) is CustomerPlan
-                assert plan_data.next_plan.price_per_license is not None
-                invoice_count = get_annual_invoice_count(plan_data.next_plan.billing_schedule)
-                plan_data.estimated_next_plan_revenue = (
-                    plan_data.next_plan.price_per_license * next_plan_licenses * invoice_count
-                )
-            else:
-                plan_data.estimated_next_plan_revenue = 0  # nocoverage
 
         if plan_data.current_plan.status in (
             CustomerPlan.FREE_TRIAL,
@@ -233,6 +252,12 @@ def get_current_plan_data_for_support_view(billing_session: BillingSession) -> P
             )
         else:
             plan_data.annual_recurring_revenue = 0  # nocoverage
+
+    # Check for a non-active/scheduled CustomerPlan or CustomerPlanOffer
+    if customer is not None:
+        next_plan_data = get_next_plan_data(billing_session, customer, plan_data.current_plan)
+        plan_data.next_plan = next_plan_data.plan
+        plan_data.estimated_next_plan_revenue = next_plan_data.estimated_revenue
 
     return plan_data
 
@@ -317,10 +342,9 @@ def get_data_for_support_view(billing_session: BillingSession) -> SupportData:
         user_data = get_remote_realm_guest_and_non_guest_count(billing_session.remote_realm)
         date_created = billing_session.remote_realm.realm_date_created
         mobile_data = get_mobile_push_data(billing_session.remote_realm)
-    plan_data = get_current_plan_data_for_support_view(billing_session)
-    customer = billing_session.get_customer()
-    if customer is not None:
-        sponsorship_data = get_customer_sponsorship_data(customer)
+    plan_data = get_plan_data_for_support_view(billing_session)
+    if plan_data.customer is not None:
+        sponsorship_data = get_customer_sponsorship_data(plan_data.customer)
     else:
         sponsorship_data = SponsorshipData()
 
