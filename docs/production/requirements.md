@@ -119,7 +119,7 @@ access to incoming port 22 for SSH access for remote access.
 
 [ssrf]: https://owasp.org/www-community/attacks/Server_Side_Request_Forgery
 [smokescreen-proxy]: deployment.md#customizing-the-outgoing-http-proxy
-[reverse-proxy]: deployment.md#putting-the-zulip-application-behind-a-reverse-proxy
+[reverse-proxy]: reverse-proxies.md
 
 ## Credentials needed
 

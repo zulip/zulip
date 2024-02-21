@@ -4,18 +4,13 @@ import tippy from "tippy.js";
 import render_personal_menu from "../templates/personal_menu.hbs";
 
 import * as narrow from "./narrow";
-import {page_params} from "./page_params";
 import * as people from "./people";
 import * as popover_menus from "./popover_menus";
 import * as popover_menus_data from "./popover_menus_data";
 import * as popovers from "./popovers";
+import {current_user} from "./state_data";
 import {parse_html} from "./ui_util";
-import * as user_profile from "./user_profile";
 import * as user_status from "./user_status";
-
-function elem_to_user_id($elem) {
-    return Number.parseInt($elem.attr("data-user-id"), 10);
-}
 
 export function initialize() {
     popover_menus.register_popover_menu("#personal-menu", {
@@ -47,7 +42,7 @@ export function initialize() {
 
             $popper.one("click", ".personal-menu-clear-status", (e) => {
                 e.preventDefault();
-                const me = page_params.user_id;
+                const me = current_user.user_id;
                 user_status.server_update_status({
                     user_id: me,
                     status_text: "",
@@ -59,16 +54,8 @@ export function initialize() {
                 });
             });
 
-            $popper.one("click", ".personal-menu-actions .view_full_user_profile", (e) => {
-                const user_id = elem_to_user_id($(e.target).closest(".personal-menu-actions"));
-                const user = people.get_by_user_id(user_id);
-                popovers.hide_all();
-                user_profile.show_user_profile(user);
-                e.preventDefault();
-            });
-
             $popper.one("click", ".narrow-self-direct-message", (e) => {
-                const user_id = page_params.user_id;
+                const user_id = current_user.user_id;
                 const email = people.get_by_user_id(user_id).email;
                 narrow.by("dm", email, {trigger: "personal menu"});
                 popovers.hide_all();
@@ -76,7 +63,7 @@ export function initialize() {
             });
 
             $popper.one("click", ".narrow-messages-sent", (e) => {
-                const user_id = page_params.user_id;
+                const user_id = current_user.user_id;
                 const email = people.get_by_user_id(user_id).email;
                 narrow.by("sender", email, {trigger: "personal menu"});
                 popovers.hide_all();

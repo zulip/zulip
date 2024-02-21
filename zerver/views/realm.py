@@ -14,9 +14,9 @@ from zerver.actions.realm_settings import (
     do_deactivate_realm,
     do_reactivate_realm,
     do_set_realm_authentication_methods,
-    do_set_realm_notifications_stream,
+    do_set_realm_new_stream_announcements_stream,
     do_set_realm_property,
-    do_set_realm_signup_notifications_stream,
+    do_set_realm_signup_announcements_stream,
     do_set_realm_user_default_setting,
     parse_and_set_setting_value_if_required,
     validate_authentication_methods_dict_from_api,
@@ -110,8 +110,8 @@ def update_realm(
     ),
     # Note: push_notifications_enabled and push_notifications_enabled_end_timestamp
     # are not offered here as it is maintained by the server, not via the API.
-    notifications_stream_id: Optional[int] = REQ(json_validator=check_int, default=None),
-    signup_notifications_stream_id: Optional[int] = REQ(json_validator=check_int, default=None),
+    new_stream_announcements_stream_id: Optional[int] = REQ(json_validator=check_int, default=None),
+    signup_announcements_stream_id: Optional[int] = REQ(json_validator=check_int, default=None),
     message_retention_days_raw: Optional[Union[int, str]] = REQ(
         "message_retention_days", json_validator=check_string_or_int, default=None
     ),
@@ -389,38 +389,41 @@ def update_realm(
         do_set_realm_authentication_methods(realm, authentication_methods, acting_user=user_profile)
         data["authentication_methods"] = authentication_methods
 
-    # Realm.notifications_stream and Realm.signup_notifications_stream are not boolean,
+    # Realm.new_stream_announcements_stream and Realm.signup_announcements_stream are not boolean,
     # str or integer field, and thus doesn't fit into the do_set_realm_property framework.
-    if notifications_stream_id is not None and (
-        realm.notifications_stream is None
-        or (realm.notifications_stream.id != notifications_stream_id)
+    if new_stream_announcements_stream_id is not None and (
+        realm.new_stream_announcements_stream is None
+        or (realm.new_stream_announcements_stream.id != new_stream_announcements_stream_id)
     ):
-        new_notifications_stream = None
-        if notifications_stream_id >= 0:
-            (new_notifications_stream, sub) = access_stream_by_id(
-                user_profile, notifications_stream_id, allow_realm_admin=True
+        new_stream_announcements_stream_new = None
+        if new_stream_announcements_stream_id >= 0:
+            (new_stream_announcements_stream_new, sub) = access_stream_by_id(
+                user_profile, new_stream_announcements_stream_id, allow_realm_admin=True
             )
-        do_set_realm_notifications_stream(
-            realm, new_notifications_stream, notifications_stream_id, acting_user=user_profile
-        )
-        data["notifications_stream_id"] = notifications_stream_id
-
-    if signup_notifications_stream_id is not None and (
-        realm.signup_notifications_stream is None
-        or realm.signup_notifications_stream.id != signup_notifications_stream_id
-    ):
-        new_signup_notifications_stream = None
-        if signup_notifications_stream_id >= 0:
-            (new_signup_notifications_stream, sub) = access_stream_by_id(
-                user_profile, signup_notifications_stream_id, allow_realm_admin=True
-            )
-        do_set_realm_signup_notifications_stream(
+        do_set_realm_new_stream_announcements_stream(
             realm,
-            new_signup_notifications_stream,
-            signup_notifications_stream_id,
+            new_stream_announcements_stream_new,
+            new_stream_announcements_stream_id,
             acting_user=user_profile,
         )
-        data["signup_notifications_stream_id"] = signup_notifications_stream_id
+        data["new_stream_announcements_stream_id"] = new_stream_announcements_stream_id
+
+    if signup_announcements_stream_id is not None and (
+        realm.signup_announcements_stream is None
+        or realm.signup_announcements_stream.id != signup_announcements_stream_id
+    ):
+        new_signup_announcements_stream = None
+        if signup_announcements_stream_id >= 0:
+            (new_signup_announcements_stream, sub) = access_stream_by_id(
+                user_profile, signup_announcements_stream_id, allow_realm_admin=True
+            )
+        do_set_realm_signup_announcements_stream(
+            realm,
+            new_signup_announcements_stream,
+            signup_announcements_stream_id,
+            acting_user=user_profile,
+        )
+        data["signup_announcements_stream_id"] = signup_announcements_stream_id
 
     if string_id is not None:
         if not user_profile.is_realm_owner:

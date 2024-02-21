@@ -17,12 +17,12 @@ import {$t, $t_html} from "./i18n";
 import * as ListWidget from "./list_widget";
 import * as loading from "./loading";
 import * as overlays from "./overlays";
-import {page_params} from "./page_params";
 import * as people from "./people";
 import * as scroll_util from "./scroll_util";
 import * as settings_components from "./settings_components";
 import * as settings_data from "./settings_data";
 import * as settings_org from "./settings_org";
+import {current_user, realm} from "./state_data";
 import * as stream_ui_updates from "./stream_ui_updates";
 import * as ui_report from "./ui_report";
 import * as user_group_components from "./user_group_components";
@@ -79,7 +79,7 @@ function update_add_members_elements(group) {
     // We are only concerned with the Members tab for editing groups.
     const $add_members_container = $(".edit_members_for_user_group .add_members_container");
 
-    if (page_params.is_guest || page_params.realm_is_zephyr_mirror_realm) {
+    if (current_user.is_guest || realm.realm_is_zephyr_mirror_realm) {
         // For guest users, we just hide the add_members feature.
         $add_members_container.hide();
         return;
@@ -91,13 +91,13 @@ function update_add_members_elements(group) {
     const $button_element = $add_members_container.find('button[name="add_member"]').expectOne();
 
     if (settings_data.can_edit_user_group(group.id)) {
-        $input_element.prop("disabled", false);
+        $input_element.prop("contenteditable", true);
         $button_element.prop("disabled", false);
         $button_element.css("pointer-events", "");
         $add_members_container[0]._tippy?.destroy();
         $add_members_container.removeClass("add_members_disabled");
     } else {
-        $input_element.prop("disabled", true);
+        $input_element.prop("contenteditable", false);
         $button_element.prop("disabled", true);
         $add_members_container.addClass("add_members_disabled");
 
@@ -290,8 +290,6 @@ export function show_settings_for(group) {
     $edit_container.show();
     show_membership_settings(group);
     user_group_components.setup_permissions_dropdown(group, false);
-
-    $edit_container.find("button").prop("disabled", !settings_data.can_edit_user_group(group.id));
 }
 
 export function setup_group_settings(group) {
@@ -433,8 +431,8 @@ export function reset_active_group_id() {
 }
 
 // Ideally this should be included in page params.
-// Like we have page_params.max_stream_name_length` and
-// `page_params.max_stream_description_length` for streams.
+// Like we have realm.max_stream_name_length` and
+// `realm.max_stream_description_length` for streams.
 export const max_user_group_name_length = 100;
 
 export function set_up_click_handlers() {

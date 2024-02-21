@@ -9,8 +9,8 @@
 import * as Sentry from "@sentry/browser";
 import $ from "jquery";
 
+import {page_params} from "./base_page_params";
 import {BlueslipError, display_stacktrace} from "./blueslip_stacktrace";
-import {page_params} from "./page_params";
 
 if (Error.stackTraceLimit !== undefined) {
     Error.stackTraceLimit = 100000;

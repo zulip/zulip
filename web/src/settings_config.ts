@@ -1,8 +1,9 @@
 import Handlebars from "handlebars/runtime";
 
+import {page_params} from "./base_page_params";
 import {$t, $t_html} from "./i18n";
-import {page_params} from "./page_params";
 import type {RealmDefaultSettings} from "./realm_user_settings_defaults";
+import {realm} from "./state_data";
 import type {StreamSpecificNotificationSettings} from "./sub_store";
 import {StreamPostPolicy} from "./sub_store";
 import type {
@@ -805,7 +806,7 @@ export function get_notifications_table_row_data(
             is_mobile_checkbox: false,
         };
         if (column === "mobile") {
-            checkbox.is_disabled = !page_params.realm_push_notifications_enabled;
+            checkbox.is_disabled = !realm.realm_push_notifications_enabled;
             checkbox.is_mobile_checkbox = true;
         }
         return checkbox;
@@ -857,8 +858,8 @@ export const all_notifications = (settings_object: Settings): AllNotifications =
         other_email_settings,
     },
     show_push_notifications_tooltip: {
-        push_notifications: !page_params.realm_push_notifications_enabled,
-        enable_online_push_notifications: !page_params.realm_push_notifications_enabled,
+        push_notifications: !realm.realm_push_notifications_enabled,
+        enable_online_push_notifications: !realm.realm_push_notifications_enabled,
     },
 });
 

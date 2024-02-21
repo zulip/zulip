@@ -1050,6 +1050,25 @@ input.new-organization-button {
     margin-bottom: 25px !important;
 }
 
+#skip-navigation {
+    background-color: hsl(170deg 47% 33%);
+    color: hsl(0deg 0% 100%);
+    border-radius: 4px;
+    display: inline-block;
+    font-weight: 600;
+    left: 330px;
+    outline: none;
+    padding: 5px 12px;
+    position: absolute;
+    top: -1000px;
+    z-index: 100;
+}
+
+#skip-navigation:focus-visible {
+    text-underline-offset: 2px;
+    top: 25px;
+}
+
 @media (width <= 800px) {
     .app.help {
         .markdown {
@@ -1122,6 +1141,14 @@ input.new-organization-button {
         &:not(.show) a.highlighted {
             background-color: transparent;
         }
+    }
+
+    #skip-navigation {
+        left: 80px;
+    }
+
+    #skip-navigation:focus-visible {
+        top: 30px;
     }
 }
 
@@ -1213,6 +1240,14 @@ input.new-organization-button {
     .header-main {
         max-width: 100vw;
         padding: 0 10px;
+    }
+
+    #skip-navigation {
+        left: 60px;
+    }
+
+    #skip-navigation:focus-visible {
+        top: 10px;
     }
 }
 

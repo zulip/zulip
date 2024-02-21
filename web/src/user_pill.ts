@@ -1,9 +1,9 @@
 import * as blueslip from "./blueslip";
 import type {InputPillConfig, InputPillContainer, InputPillItem} from "./input_pill";
 import * as input_pill from "./input_pill";
-import {page_params} from "./page_params";
 import type {User} from "./people";
 import * as people from "./people";
+import {realm} from "./state_data";
 import * as user_status from "./user_status";
 
 // This will be used for pills for things like composing
@@ -25,7 +25,7 @@ export function create_item_from_email(
     const user = people.get_by_email(email);
 
     if (!user) {
-        if (page_params.realm_is_zephyr_mirror_realm) {
+        if (realm.realm_is_zephyr_mirror_realm) {
             const existing_emails = current_items.map((item) => item.email);
 
             if (existing_emails.includes(email)) {

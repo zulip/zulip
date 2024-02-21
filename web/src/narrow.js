@@ -46,6 +46,7 @@ import * as resize from "./resize";
 import * as scheduled_messages_feed_ui from "./scheduled_messages_feed_ui";
 import {web_mark_read_on_scroll_policy_values} from "./settings_config";
 import * as spectators from "./spectators";
+import {realm} from "./state_data";
 import * as stream_data from "./stream_data";
 import * as stream_list from "./stream_list";
 import * as topic_generator from "./topic_generator";
@@ -298,7 +299,7 @@ export function activate(raw_terms, opts) {
 
                 if (
                     !narrow_matches_target_message &&
-                    (narrow_exists_in_edit_history || !page_params.realm_allow_edit_history)
+                    (narrow_exists_in_edit_history || !realm.realm_allow_edit_history)
                 ) {
                     const adjusted_terms = adjusted_terms_if_moved(raw_terms, target_message);
                     if (adjusted_terms !== null) {

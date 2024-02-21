@@ -12,6 +12,7 @@ import * as ui_util from "./ui_util";
 // converted to typescript.
 type MessageListView = {
     update_recipient_bar_background_color: () => void;
+    rerender_messages: (messages: Message[], message_content_edited?: boolean) => void;
     _render_win_start: number;
     _render_win_end: number;
     sticky_recipient_message_id: number | undefined;
@@ -40,6 +41,7 @@ export type MessageList = {
     get: (id: number) => Message | undefined;
     pre_narrow_offset?: number;
     can_mark_messages_read_without_setting: () => boolean;
+    rerender_view: () => void;
     resume_reading: () => void;
     data: MessageListData;
     select_id: (message_id: number, opts?: SelectIdOpts) => void;

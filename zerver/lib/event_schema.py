@@ -918,7 +918,7 @@ def check_realm_update(
 
     assert "extra_data" not in event
 
-    if prop in ["notifications_stream_id", "signup_notifications_stream_id", "org_type"]:
+    if prop in ["new_stream_announcements_stream_id", "signup_announcements_stream_id", "org_type"]:
         assert isinstance(value, int)
         return
 
@@ -1253,10 +1253,17 @@ restart_event = event_dict_type(
         ("zulip_merge_base", str),
         ("zulip_feature_level", int),
         ("server_generation", int),
-        ("immediate", bool),
     ]
 )
 check_restart_event = make_checker(restart_event)
+
+web_reload_client_event = event_dict_type(
+    required_keys=[
+        ("type", Equals("web_reload_client")),
+        ("immediate", bool),
+    ]
+)
+check_web_reload_client_event = make_checker(web_reload_client_event)
 
 scheduled_message_fields = DictType(
     required_keys=[

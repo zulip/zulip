@@ -5,7 +5,7 @@ const {strict: assert} = require("assert");
 const {mock_esm, zrequire} = require("./lib/namespace");
 const {run_test, noop} = require("./lib/test");
 const blueslip = require("./lib/zblueslip");
-const {page_params} = require("./lib/zpage_params");
+const {current_user} = require("./lib/zpage_params");
 
 const channel = mock_esm("../src/channel");
 const reload = mock_esm("../src/reload");
@@ -18,6 +18,7 @@ const sent_messages = mock_esm("../src/sent_messages", {
     }),
     start_send: noop,
 });
+const server_events = mock_esm("../src/server_events");
 
 const people = zrequire("people");
 const transmit = zrequire("transmit");
@@ -149,8 +150,8 @@ run_test("reply_message_stream", ({override}) => {
         send_message_args = data;
     });
 
-    page_params.user_id = 44;
-    page_params.queue_id = 66;
+    current_user.user_id = 44;
+    server_events.queue_id = 66;
     sent_messages.get_new_local_id = () => "99";
 
     transmit.reply_message({
@@ -190,8 +191,8 @@ run_test("reply_message_private", ({override}) => {
         send_message_args = data;
     });
 
-    page_params.user_id = 155;
-    page_params.queue_id = 177;
+    current_user.user_id = 155;
+    server_events.queue_id = 177;
     sent_messages.get_new_local_id = () => "199";
 
     transmit.reply_message({

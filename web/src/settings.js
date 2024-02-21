@@ -19,29 +19,11 @@ import * as settings_panel_menu from "./settings_panel_menu";
 import * as settings_preferences from "./settings_preferences";
 import * as settings_sections from "./settings_sections";
 import * as settings_toggle from "./settings_toggle";
+import {current_user, realm} from "./state_data";
 import * as timerender from "./timerender";
 import {user_settings} from "./user_settings";
 
 export let settings_label;
-
-$(() => {
-    $("#settings_overlay_container").on("click", (e) => {
-        if (!modals.any_active()) {
-            return;
-        }
-        if ($(e.target).closest(".micromodal").length > 0) {
-            return;
-        }
-        e.preventDefault();
-        e.stopPropagation();
-        // Whenever opening a modal(over settings overlay) in an event handler
-        // attached to a click event, make sure to stop the propagation of the
-        // event to the parent container otherwise the modal will not open. This
-        // is so because this event handler will get fired on any click in settings
-        // overlay and subsequently close any open modal.
-        modals.close_active();
-    });
-});
 
 function setup_settings_label() {
     settings_label = {
@@ -66,7 +48,7 @@ function setup_settings_label() {
 }
 
 function get_parsed_date_of_joining() {
-    const user_date_joined = people.get_by_user_id(page_params.user_id, false).date_joined;
+    const user_date_joined = people.get_by_user_id(current_user.user_id, false).date_joined;
     return timerender.get_localized_date_or_time_for_format(
         parseISO(user_date_joined),
         "dayofyear_year",
@@ -77,15 +59,15 @@ function user_can_change_password() {
     if (settings_data.user_email_not_configured()) {
         return false;
     }
-    return page_params.realm_email_auth_enabled;
+    return realm.realm_email_auth_enabled;
 }
 
 export function update_lock_icon_in_sidebar() {
-    if (page_params.is_owner) {
+    if (current_user.is_owner) {
         $(".org-settings-list .locked").hide();
         return;
     }
-    if (page_params.is_admin) {
+    if (current_user.is_admin) {
         $(".org-settings-list .locked").hide();
         $(".org-settings-list li[data-section='auth-methods'] .locked").show();
         return;
@@ -108,7 +90,9 @@ export function build_page() {
     const rendered_settings_tab = render_settings_tab({
         full_name: people.my_full_name(),
         date_joined_text: get_parsed_date_of_joining(),
+        current_user,
         page_params,
+        realm,
         enable_sound_select:
             user_settings.enable_sounds || user_settings.enable_stream_audible_notifications,
         zuliprc: "zuliprc",
@@ -138,10 +122,10 @@ export function build_page() {
         user_can_change_name: settings_data.user_can_change_name(),
         user_can_change_avatar: settings_data.user_can_change_avatar(),
         user_can_change_email: settings_data.user_can_change_email(),
-        user_role_text: people.get_user_type(page_params.user_id),
+        user_role_text: people.get_user_type(current_user.user_id),
         default_language_name: settings_preferences.user_default_language_name,
         default_language: user_settings.default_language,
-        realm_push_notifications_enabled: page_params.realm_push_notifications_enabled,
+        realm_push_notifications_enabled: realm.realm_push_notifications_enabled,
         settings_object: user_settings,
         send_read_receipts_tooltip: $t({
             defaultMessage: "Read receipts are currently disabled in this organization.",
@@ -182,12 +166,29 @@ export function launch(section) {
 
 export function initialize() {
     const rendered_settings_overlay = render_settings_overlay({
-        is_owner: page_params.is_owner,
-        is_admin: page_params.is_admin,
-        is_guest: page_params.is_guest,
-        show_uploaded_files_section: page_params.max_file_upload_size_mib > 0,
+        is_owner: current_user.is_owner,
+        is_admin: current_user.is_admin,
+        is_guest: current_user.is_guest,
+        show_uploaded_files_section: realm.max_file_upload_size_mib > 0,
         show_emoji_settings_lock: !settings_data.user_can_add_custom_emoji(),
         can_create_new_bots: settings_bots.can_create_new_bots(),
     });
     $("#settings_overlay_container").append(rendered_settings_overlay);
+
+    $("#settings_overlay_container").on("click", (e) => {
+        if (!modals.any_active()) {
+            return;
+        }
+        if ($(e.target).closest(".micromodal").length > 0) {
+            return;
+        }
+        e.preventDefault();
+        e.stopPropagation();
+        // Whenever opening a modal(over settings overlay) in an event handler
+        // attached to a click event, make sure to stop the propagation of the
+        // event to the parent container otherwise the modal will not open. This
+        // is so because this event handler will get fired on any click in settings
+        // overlay and subsequently close any open modal.
+        modals.close_active();
+    });
 }

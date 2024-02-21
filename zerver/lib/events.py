@@ -1,6 +1,7 @@
 # See https://zulip.readthedocs.io/en/latest/subsystems/events-system.html for
 # high-level documentation on how this system works.
 import copy
+import logging
 import time
 from typing import Any, Callable, Collection, Dict, Iterable, Mapping, Optional, Sequence, Set
 
@@ -89,12 +90,6 @@ from zerver.models.realms import get_realm_domains
 from zerver.models.streams import get_default_stream_groups
 from zerver.tornado.django_api import get_user_events, request_event_queue
 from zproject.backends import email_auth_enabled, password_auth_enabled
-
-
-class RestartEventError(Exception):
-    """
-    Special error for handling restart events in apply_events.
-    """
 
 
 def add_realm_logo_fields(state: Dict[str, Any], realm: Realm) -> None:
@@ -367,17 +362,17 @@ def fetch_initial_state_data(
             else server_default_jitsi_server_url
         )
 
-        if realm.notifications_stream and not realm.notifications_stream.deactivated:
-            notifications_stream = realm.notifications_stream
-            state["realm_notifications_stream_id"] = notifications_stream.id
+        new_stream_announcements_stream = realm.get_new_stream_announcements_stream()
+        if new_stream_announcements_stream:
+            state["realm_new_stream_announcements_stream_id"] = new_stream_announcements_stream.id
         else:
-            state["realm_notifications_stream_id"] = -1
+            state["realm_new_stream_announcements_stream_id"] = -1
 
-        signup_notifications_stream = realm.get_signup_notifications_stream()
-        if signup_notifications_stream:
-            state["realm_signup_notifications_stream_id"] = signup_notifications_stream.id
+        signup_announcements_stream = realm.get_signup_announcements_stream()
+        if signup_announcements_stream:
+            state["realm_signup_announcements_stream_id"] = signup_announcements_stream.id
         else:
-            state["realm_signup_notifications_stream_id"] = -1
+            state["realm_signup_announcements_stream_id"] = -1
 
         state["max_stream_name_length"] = Stream.MAX_NAME_LENGTH
         state["max_stream_description_length"] = Stream.MAX_DESCRIPTION_LENGTH
@@ -711,8 +706,6 @@ def apply_events(
     user_list_incomplete: bool,
 ) -> None:
     for event in events:
-        if event["type"] == "restart":
-            raise RestartEventError
         if fetch_event_types is not None and event["type"] not in fetch_event_types:
             # TODO: continuing here is not, most precisely, correct.
             # In theory, an event of one type, e.g. `realm_user`,
@@ -1522,6 +1515,14 @@ def apply_event(
             state["user_topics"].append({x: event[x] for x in fields})
     elif event["type"] == "has_zoom_token":
         state["has_zoom_token"] = event["value"]
+    elif event["type"] == "web_reload_client":
+        # This is an unlikely race, where the queue was created with a
+        # previous Tornado process, which restarted, and subsequently
+        # was told by restart-server to tell its old clients to
+        # reload.  We warn, since we do not expect this race to be
+        # possible, but the worst expected outcome is that the client
+        # retains the old JS instead of reloading.
+        logging.warning("Got a web_reload_client event during apply_events")
     else:
         raise AssertionError("Unexpected event type {}".format(event["type"]))
 
@@ -1599,68 +1600,57 @@ def do_events_register(
 
     legacy_narrow = [[nt.operator, nt.operand] for nt in narrow]
 
-    while True:
-        # Note that we pass event_types, not fetch_event_types here, since
-        # that's what controls which future events are sent.
-        queue_id = request_event_queue(
-            user_profile,
-            user_client,
-            apply_markdown,
-            client_gravatar,
-            slim_presence,
-            queue_lifespan_secs,
-            event_types,
-            all_public_streams,
-            narrow=legacy_narrow,
-            bulk_message_deletion=bulk_message_deletion,
-            stream_typing_notifications=stream_typing_notifications,
-            user_settings_object=user_settings_object,
-            pronouns_field_type_supported=pronouns_field_type_supported,
-            linkifier_url_template=linkifier_url_template,
-            user_list_incomplete=user_list_incomplete,
-        )
+    # Note that we pass event_types, not fetch_event_types here, since
+    # that's what controls which future events are sent.
+    queue_id = request_event_queue(
+        user_profile,
+        user_client,
+        apply_markdown,
+        client_gravatar,
+        slim_presence,
+        queue_lifespan_secs,
+        event_types,
+        all_public_streams,
+        narrow=legacy_narrow,
+        bulk_message_deletion=bulk_message_deletion,
+        stream_typing_notifications=stream_typing_notifications,
+        user_settings_object=user_settings_object,
+        pronouns_field_type_supported=pronouns_field_type_supported,
+        linkifier_url_template=linkifier_url_template,
+        user_list_incomplete=user_list_incomplete,
+    )
 
-        if queue_id is None:
-            raise JsonableError(_("Could not allocate event queue"))
+    if queue_id is None:
+        raise JsonableError(_("Could not allocate event queue"))
 
-        ret = fetch_initial_state_data(
-            user_profile,
-            event_types=event_types_set,
-            queue_id=queue_id,
-            client_gravatar=client_gravatar,
-            user_avatar_url_field_optional=user_avatar_url_field_optional,
-            user_settings_object=user_settings_object,
-            slim_presence=slim_presence,
-            include_subscribers=include_subscribers,
-            include_streams=include_streams,
-            pronouns_field_type_supported=pronouns_field_type_supported,
-            linkifier_url_template=linkifier_url_template,
-            user_list_incomplete=user_list_incomplete,
-        )
+    ret = fetch_initial_state_data(
+        user_profile,
+        event_types=event_types_set,
+        queue_id=queue_id,
+        client_gravatar=client_gravatar,
+        user_avatar_url_field_optional=user_avatar_url_field_optional,
+        user_settings_object=user_settings_object,
+        slim_presence=slim_presence,
+        include_subscribers=include_subscribers,
+        include_streams=include_streams,
+        pronouns_field_type_supported=pronouns_field_type_supported,
+        linkifier_url_template=linkifier_url_template,
+        user_list_incomplete=user_list_incomplete,
+    )
 
-        # Apply events that came in while we were fetching initial data
-        events = get_user_events(user_profile, queue_id, -1)
-        try:
-            apply_events(
-                user_profile,
-                state=ret,
-                events=events,
-                fetch_event_types=fetch_event_types,
-                client_gravatar=client_gravatar,
-                slim_presence=slim_presence,
-                include_subscribers=include_subscribers,
-                linkifier_url_template=linkifier_url_template,
-                user_list_incomplete=user_list_incomplete,
-            )
-        except RestartEventError:
-            # This represents a rare race condition, where Tornado
-            # restarted (and sent `restart` events) while we were waiting
-            # for fetch_initial_state_data to return. To avoid the client
-            # needing to reload shortly after loading, we recursively call
-            # do_events_register here.
-            continue
-        else:
-            break
+    # Apply events that came in while we were fetching initial data
+    events = get_user_events(user_profile, queue_id, -1)
+    apply_events(
+        user_profile,
+        state=ret,
+        events=events,
+        fetch_event_types=fetch_event_types,
+        client_gravatar=client_gravatar,
+        slim_presence=slim_presence,
+        include_subscribers=include_subscribers,
+        linkifier_url_template=linkifier_url_template,
+        user_list_incomplete=user_list_incomplete,
+    )
 
     post_process_state(user_profile, ret, notification_settings_null)
 

@@ -60,7 +60,8 @@
 
     /************************* MODAL DARK THEME *******************/
     .user_profile_manage_own_edit_button,
-    .user_profile_manage_others_edit_button {
+    .user_profile_manage_others_edit_button,
+    .user_profile_manage_own_copy_link_button {
         color: hsl(200deg 100% 50%);
         cursor: pointer;
 
@@ -376,6 +377,10 @@
         .sp-picker-container {
             border-left: solid 1px hsl(210deg 36% 4%);
         }
+    }
+
+    .stream_header_colorblock.disabled {
+        filter: brightness(50%);
     }
 
     /* this one is because in the app we have blue and in dark-theme it should be white. */

@@ -8,7 +8,11 @@ import * as message_store from "./message_store";
 import * as narrow from "./narrow";
 import * as stream_data from "./stream_data";
 
-if (window.electron_bridge !== undefined) {
+export function initialize() {
+    if (window.electron_bridge === undefined) {
+        return;
+    }
+
     window.electron_bridge.on_event("logout", () => {
         $("#logout_form").trigger("submit");
     });
@@ -64,12 +68,6 @@ if (window.electron_bridge !== undefined) {
             error,
         });
     });
-}
-
-export function initialize() {
-    if (window.electron_bridge === undefined) {
-        return;
-    }
 
     $(document).on("click", "#open-self-hosted-billing", (event) => {
         event.preventDefault();

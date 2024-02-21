@@ -2,7 +2,7 @@ from typing import Any, Dict, List
 from unittest import mock
 
 from zerver.actions.submessage import do_add_submessage
-from zerver.lib.message import MessageDict
+from zerver.lib.message_cache import MessageDict
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.models import Message, SubMessage
 
@@ -65,7 +65,7 @@ class TestBasics(ZulipTestCase):
         rows.sort(key=lambda r: r["id"])
         self.assertEqual(rows, expected_data)
 
-        msg_rows = MessageDict.get_raw_db_rows([message_id])
+        msg_rows = MessageDict.ids_to_dict([message_id])
         rows = msg_rows[0]["submessages"]
         rows.sort(key=lambda r: r["id"])
         self.assertEqual(rows, expected_data)

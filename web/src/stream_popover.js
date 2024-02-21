@@ -555,6 +555,9 @@ export async function build_move_topic_to_stream_popover(
 
         render_selected_stream();
         $("#move_topic_to_stream_widget").prop("disabled", disable_stream_input);
+        if (disable_stream_input) {
+            $stream_header_colorblock.addClass("disabled");
+        }
         $("#move_topic_modal .move_messages_edit_topic").on("input", () => {
             update_submit_button_disabled_state(stream_widget_value);
         });

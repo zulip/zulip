@@ -5,19 +5,18 @@ import {all_messages_data} from "./all_messages_data";
 import * as blueslip from "./blueslip";
 import * as compose_notifications from "./compose_notifications";
 import * as compose_ui from "./compose_ui";
-import * as drafts from "./drafts";
 import * as local_message from "./local_message";
 import * as markdown from "./markdown";
 import * as message_lists from "./message_lists";
 import * as message_live_update from "./message_live_update";
 import * as message_store from "./message_store";
 import * as narrow_state from "./narrow_state";
-import {page_params} from "./page_params";
 import * as people from "./people";
 import * as pm_list from "./pm_list";
 import * as recent_view_data from "./recent_view_data";
 import * as rows from "./rows";
 import * as sent_messages from "./sent_messages";
+import {current_user} from "./state_data";
 import * as stream_data from "./stream_data";
 import * as stream_list from "./stream_list";
 import * as stream_topic_history from "./stream_topic_history";
@@ -80,9 +79,6 @@ function resend_message(message, $row, {on_send_message_success, send_message}) 
         return;
     }
 
-    // Always re-set queue_id if we've gotten a new one
-    // since the time when the message object was initially created
-    message.queue_id = page_params.queue_id;
     message.resend = true;
 
     function on_success(data) {
@@ -188,7 +184,7 @@ export function insert_local_message(message_request, local_id_float, insert_new
     message.content_type = "text/html";
     message.sender_email = people.my_current_email();
     message.sender_full_name = people.my_full_name();
-    message.avatar_url = page_params.avatar_url;
+    message.avatar_url = current_user.avatar_url;
     message.timestamp = Date.now() / 1000;
     message.local_id = local_id_float.toString();
     message.locally_echoed = true;
@@ -245,14 +241,6 @@ export function try_deliver_locally(message_request, insert_new_messages) {
         // This can happen for legit reasons.
         return undefined;
     }
-
-    // Save a locally echoed message in drafts, so it cannot be
-    // lost. It will be cleared if the message is sent successfully.
-    // We ask the drafts system to not notify the user or update the
-    // draft count, since that would be quite distracting in the very
-    // common case that the message sends normally.
-    const draft_id = drafts.update_draft({no_notify: true, update_count: false});
-    message_request.draft_id = draft_id;
 
     // Now that we've committed to delivering the message locally, we
     // shrink the compose-box if it is in the full-screen state. This
@@ -363,11 +351,6 @@ export function reify_message_id(local_id, server_id) {
 
     message.id = server_id;
     message.locally_echoed = false;
-
-    if (message.draft_id) {
-        // Delete the draft if message was locally echoed
-        drafts.draft_model.deleteDraft(message.draft_id);
-    }
 
     const opts = {old_id: Number.parseFloat(local_id), new_id: server_id};
 

@@ -1,4 +1,4 @@
-{!cloud-standard-only.md!}
+{!cloud-paid-plans-only.md!}
 
 You can customize the logo users see in the top left corner
 of the Zulip app. For best results:

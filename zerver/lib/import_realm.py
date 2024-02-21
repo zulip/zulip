@@ -906,10 +906,10 @@ def import_uploads(
 # have to import the dependencies first.)
 #
 # * Client [no deps]
-# * Realm [-notifications_stream,-group_permissions]
+# * Realm [-announcements_streams,-group_permissions]
 # * UserGroup
 # * Stream [only depends on realm]
-# * Realm's notifications_stream and group_permissions
+# * Realm's announcements_streams and group_permissions
 # * UserProfile, in order by ID to avoid bot loop issues
 # * Now can do all realm_tables
 # * Huddle
@@ -951,10 +951,12 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
     # We don't import the Stream and UserGroup models yet, since
     # they depend on Realm, which isn't imported yet.
     # But we need the Stream and UserGroup model IDs for
-    # notifications_stream and group permissions, respectively
+    # announcements streams and group permissions, respectively
     update_model_ids(Stream, data, "stream")
-    re_map_foreign_keys(data, "zerver_realm", "notifications_stream", related_table="stream")
-    re_map_foreign_keys(data, "zerver_realm", "signup_notifications_stream", related_table="stream")
+    re_map_foreign_keys(
+        data, "zerver_realm", "new_stream_announcements_stream", related_table="stream"
+    )
+    re_map_foreign_keys(data, "zerver_realm", "signup_announcements_stream", related_table="stream")
     if "zerver_usergroup" in data:
         update_model_ids(UserGroup, data, "usergroup")
         for setting_name in Realm.REALM_PERMISSION_GROUP_SETTINGS:

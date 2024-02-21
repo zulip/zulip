@@ -11,6 +11,8 @@ import * as message_store from "./message_store";
 import type {Message} from "./message_store";
 import {page_params} from "./page_params";
 import * as people from "./people";
+import {realm} from "./state_data";
+import type {NarrowTerm} from "./state_data";
 import * as stream_data from "./stream_data";
 import type {StreamSubscription} from "./sub_store";
 import * as unread from "./unread";
@@ -176,7 +178,7 @@ function message_matches_search_term(message: Message, operator: string, operand
             }
 
             operand = operand.toLowerCase();
-            if (page_params.realm_is_zephyr_mirror_realm) {
+            if (realm.realm_is_zephyr_mirror_realm) {
                 return zephyr_stream_name_match(message, operand);
             }
 
@@ -192,7 +194,7 @@ function message_matches_search_term(message: Message, operator: string, operand
             }
 
             operand = operand.toLowerCase();
-            if (page_params.realm_is_zephyr_mirror_realm) {
+            if (realm.realm_is_zephyr_mirror_realm) {
                 return zephyr_topic_name_match(message, operand);
             }
             return message.topic.toLowerCase() === operand;
@@ -233,20 +235,14 @@ function message_matches_search_term(message: Message, operator: string, operand
     return true; // unknown operators return true (effectively ignored)
 }
 
-export type Term = {
-    negated?: boolean;
-    operator: string;
-    operand: string;
-};
-
 export class Filter {
-    _terms: Term[];
+    _terms: NarrowTerm[];
     _sub?: StreamSubscription;
     _sorted_term_types?: string[] = undefined;
     _predicate?: (message: Message) => boolean;
     _can_mark_messages_read?: boolean;
 
-    constructor(terms: Term[]) {
+    constructor(terms: NarrowTerm[]) {
         this._terms = this.fix_terms(terms);
         if (this.has_operator("stream")) {
             this._sub = stream_data.get_sub_by_name(this.operands("stream")[0]);
@@ -276,7 +272,7 @@ export class Filter {
         return operator;
     }
 
-    static canonicalize_term({negated = false, operator, operand}: Term): Term {
+    static canonicalize_term({negated = false, operator, operand}: NarrowTerm): NarrowTerm {
         // Make negated explicitly default to false for both clarity and
         // simplifying deepEqual checks in the tests.
         operator = Filter.canonicalize_operator(operator);
@@ -357,8 +353,8 @@ export class Filter {
     }
 
     // Parse a string into a list of terms (see below).
-    static parse(str: string): Term[] {
-        const terms: Term[] = [];
+    static parse(str: string): NarrowTerm[] {
+        const terms: NarrowTerm[] = [];
         let search_term: string[] = [];
         let negated;
         let operator;
@@ -434,7 +430,7 @@ export class Filter {
    These are not keys in a JavaScript object, because we
    might need to support multiple terms of the same type.
 */
-    static unparse(search_terms: Term[]): string {
+    static unparse(search_terms: NarrowTerm[]): string {
         const term_strings = search_terms.map((term) => {
             if (term.operator === "search") {
                 // Search terms are the catch-all case.
@@ -451,7 +447,7 @@ export class Filter {
         return term_strings.join(" ");
     }
 
-    static term_type(term: Term): string {
+    static term_type(term: NarrowTerm): string {
         const operator = term.operator;
         const operand = term.operand;
         const negated = term.negated;
@@ -556,7 +552,7 @@ export class Filter {
     }
 
     // Convert a list of terms to a human-readable description.
-    static parts_for_describe(terms: Term[]): Part[] {
+    static parts_for_describe(terms: NarrowTerm[]): Part[] {
         const parts: Part[] = [];
 
         if (terms.length === 0) {
@@ -565,7 +561,7 @@ export class Filter {
         }
 
         if (terms.length >= 2) {
-            const is = (term: Term, expected: string): boolean =>
+            const is = (term: NarrowTerm, expected: string): boolean =>
                 term.operator === expected && !term.negated;
 
             if (is(terms[0], "stream") && is(terms[1], "topic")) {
@@ -628,13 +624,13 @@ export class Filter {
         return [...parts, ...more_parts];
     }
 
-    static search_description_as_html(terms: Term[]): string {
+    static search_description_as_html(terms: NarrowTerm[]): string {
         return render_search_description({
             parts: Filter.parts_for_describe(terms),
         });
     }
 
-    static is_spectator_compatible(terms: Term[]): boolean {
+    static is_spectator_compatible(terms: NarrowTerm[]): boolean {
         for (const term of terms) {
             if (term.operand === undefined) {
                 return false;
@@ -653,11 +649,11 @@ export class Filter {
         return this._predicate;
     }
 
-    terms(): Term[] {
+    terms(): NarrowTerm[] {
         return this._terms;
     }
 
-    public_terms(): Term[] {
+    public_terms(): NarrowTerm[] {
         const safe_to_return = this._terms.filter(
             // Filter out the embedded narrow (if any).
             (term) =>
@@ -1085,13 +1081,13 @@ export class Filter {
         return true;
     }
 
-    fix_terms(terms: Term[]): Term[] {
+    fix_terms(terms: NarrowTerm[]): NarrowTerm[] {
         terms = this._canonicalize_terms(terms);
         terms = this._fix_redundant_is_private(terms);
         return terms;
     }
 
-    _fix_redundant_is_private(terms: Term[]): Term[] {
+    _fix_redundant_is_private(terms: NarrowTerm[]): NarrowTerm[] {
         if (!terms.some((term) => Filter.term_type(term) === "dm")) {
             return terms;
         }
@@ -1099,11 +1095,11 @@ export class Filter {
         return terms.filter((term) => Filter.term_type(term) !== "is-dm");
     }
 
-    _canonicalize_terms(terms_mixed_case: Term[]): Term[] {
-        return terms_mixed_case.map((term: Term) => Filter.canonicalize_term(term));
+    _canonicalize_terms(terms_mixed_case: NarrowTerm[]): NarrowTerm[] {
+        return terms_mixed_case.map((term: NarrowTerm) => Filter.canonicalize_term(term));
     }
 
-    filter_with_new_params(params: Term): Filter {
+    filter_with_new_params(params: NarrowTerm): Filter {
         const terms = this._terms.map((term) => {
             const new_term = {...term};
             if (new_term.operator === params.operator && !new_term.negated) {

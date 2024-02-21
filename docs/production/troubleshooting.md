@@ -315,3 +315,31 @@ As a measure to mitigate the potential impact of any future memory
 leak bugs in one of the Zulip daemons, Zulip service automatically
 restarts itself every Sunday early morning. See
 `/etc/cron.d/restart-zulip` for the precise configuration.
+
+## Troubleshooting the Zulip installer
+
+:::{important}
+
+The Zulip installer is designed to be idempotent: if the script fails, once
+you've corrected the cause of the failure, you can just rerun the script.
+
+:::
+
+The install script automatically logs a transcript to
+`/var/log/zulip/install.log`. In case of failure, you might find the
+log handy for resolving the issue. Please include a copy of this log
+file in any bug reports.
+
+If you get an error after `scripts/setup/install` completes, check the bottom of
+`/var/log/zulip/errors.log` for a traceback, and consult [the rest of this
+page](#troubleshooting-and-monitoring) for advice on how to debug or get help.
+
+### The `zulip` user's password.
+
+By default, the `zulip` user doesn't
+have a password, and is intended to be accessed by `su zulip` from the
+`root` user (or via SSH keys or a password, if you want to set those
+up, but that's up to you as the system administrator). Most people
+who are prompted for a password when running `su zulip` turn out to
+already have switched to the `zulip` user earlier in their session,
+and can just skip that step.

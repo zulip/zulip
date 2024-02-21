@@ -931,7 +931,7 @@ class LoginTest(ZulipTestCase):
         # seem to be any O(N) behavior.  Some of the cache hits are related
         # to sending messages, such as getting the welcome bot, looking up
         # the alert words for a realm, etc.
-        with self.assert_database_query_count(105), self.assert_memcached_count(18):
+        with self.assert_database_query_count(104), self.assert_memcached_count(18):
             with self.captureOnCommitCallbacks(execute=True):
                 self.register(self.nonreg_email("test"), "test")
 
@@ -2850,8 +2850,8 @@ class UserSignUpTest(ZulipTestCase):
     def test_signup_to_realm_on_manual_license_plan(self) -> None:
         realm = get_realm("zulip")
         denmark_stream = get_stream("Denmark", realm)
-        realm.signup_notifications_stream = denmark_stream
-        realm.save(update_fields=["signup_notifications_stream"])
+        realm.signup_announcements_stream = denmark_stream
+        realm.save(update_fields=["signup_announcements_stream"])
 
         _, ledger = self.subscribe_realm_to_monthly_plan_on_manual_license_management(realm, 5, 5)
 

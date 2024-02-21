@@ -19,6 +19,7 @@ from typing import (
     Dict,
     Iterable,
     List,
+    Literal,
     Mapping,
     MutableMapping,
     Optional,
@@ -39,7 +40,7 @@ from typing_extensions import override
 
 from version import API_FEATURE_LEVEL, ZULIP_MERGE_BASE, ZULIP_VERSION
 from zerver.lib.exceptions import JsonableError
-from zerver.lib.message import MessageDict
+from zerver.lib.message_cache import MessageDict
 from zerver.lib.narrow import build_narrow_predicate
 from zerver.lib.narrow_helpers import narrow_dataclasses_from_tuples
 from zerver.lib.notification_data import UserMessageNotificationsData
@@ -359,9 +360,8 @@ class EventQueue:
         event["id"] = self.next_event_id
         self.next_event_id += 1
         full_event_type = compute_full_event_type(event)
-        if full_event_type == "restart" or (
-            full_event_type.startswith("flags/")
-            and not full_event_type.startswith("flags/remove/read")
+        if full_event_type.startswith("flags/") and not full_event_type.startswith(
+            "flags/remove/read"
         ):
             # virtual_events are an optimization that allows certain
             # simple events, such as update_message_flags events that
@@ -384,13 +384,10 @@ class EventQueue:
             # Update the virtual event with the values from the event
             virtual_event = self.virtual_events[full_event_type]
             virtual_event["id"] = event["id"]
+            virtual_event["messages"] += event["messages"]
             if "timestamp" in event:
                 virtual_event["timestamp"] = event["timestamp"]
 
-            if full_event_type == "restart":
-                virtual_event["server_generation"] = event["server_generation"]
-            elif full_event_type.startswith("flags/"):
-                virtual_event["messages"] += event["messages"]
         else:
             self.queue.append(event)
 
@@ -447,6 +444,11 @@ def prune_internal_data(events: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     return events
 
 
+# Queue-ids which still need to be sent a web_reload_client event.
+# This is treated as an ordered set, which is sorted by realm-id when
+# loaded from disk.
+web_reload_clients: Dict[str, Literal[True]] = {}
+
 # maps queue ids to client descriptors
 clients: Dict[str, ClientDescriptor] = {}
 # maps user id to list of client descriptors
@@ -465,6 +467,7 @@ gc_hooks: List[Callable[[int, ClientDescriptor, bool], None]] = []
 def clear_client_event_queues_for_testing() -> None:
     assert settings.TEST_SUITE
     clients.clear()
+    web_reload_clients.clear()
     user_clients.clear()
     realm_clients_all_streams.clear()
     gc_hooks.clear()
@@ -534,6 +537,8 @@ def do_gc_event_queues(
         filter_client_dict(realm_clients_all_streams, realm_id)
 
     for id in to_remove:
+        if id in web_reload_clients:
+            del web_reload_clients[id]
         for cb in gc_hooks:
             cb(
                 clients[id].user_profile_id,
@@ -544,6 +549,8 @@ def do_gc_event_queues(
 
 
 def gc_event_queues(port: int) -> None:
+    # We cannot use perf_counter here, since we store and compare UNIX
+    # timestamps to it in the queues.
     start = time.time()
     to_remove: Set[str] = set()
     affected_users: Set[int] = set()
@@ -584,7 +591,7 @@ def persistent_queue_filename(port: int, last: bool = False) -> str:
 
 
 def dump_event_queues(port: int) -> None:
-    start = time.time()
+    start = time.perf_counter()
 
     with open(persistent_queue_filename(port), "wb") as stored_queues:
         stored_queues.write(
@@ -593,13 +600,16 @@ def dump_event_queues(port: int) -> None:
 
     if len(clients) > 0 or settings.PRODUCTION:
         logging.info(
-            "Tornado %d dumped %d event queues in %.3fs", port, len(clients), time.time() - start
+            "Tornado %d dumped %d event queues in %.3fs",
+            port,
+            len(clients),
+            time.perf_counter() - start,
         )
 
 
 def load_event_queues(port: int) -> None:
     global clients
-    start = time.time()
+    start = time.perf_counter()
 
     try:
         with open(persistent_queue_filename(port), "rb") as stored_queues:
@@ -616,6 +626,8 @@ def load_event_queues(port: int) -> None:
                 "Tornado %d could not deserialize event queues", port, stack_info=True
             )
 
+    mark_clients_to_reload(clients.keys())
+
     for client in clients.values():
         # Put code for migrations due to event queue data format changes here
 
@@ -623,11 +635,14 @@ def load_event_queues(port: int) -> None:
 
     if len(clients) > 0 or settings.PRODUCTION:
         logging.info(
-            "Tornado %d loaded %d event queues in %.3fs", port, len(clients), time.time() - start
+            "Tornado %d loaded %d event queues in %.3fs",
+            port,
+            len(clients),
+            time.perf_counter() - start,
         )
 
 
-def send_restart_events(immediate: bool = False) -> None:
+def send_restart_events() -> None:
     event: Dict[str, Any] = dict(
         type="restart",
         zulip_version=ZULIP_VERSION,
@@ -635,14 +650,43 @@ def send_restart_events(immediate: bool = False) -> None:
         zulip_feature_level=API_FEATURE_LEVEL,
         server_generation=settings.SERVER_GENERATION,
     )
-    if immediate:
-        event["immediate"] = True
     for client in clients.values():
         if client.accepts_event(event):
             client.add_event(event)
 
 
-async def setup_event_queue(server: tornado.httpserver.HTTPServer, port: int) -> None:
+def mark_clients_to_reload(queue_ids: Iterable[str]) -> None:
+    # Build web_reload_clients, which is a sorted-by-realm-id list of
+    # website client queue-ids which were were loaded from old Tornado
+    # instances.  We use an (ordered) dict to make removing one be
+    # O(1), as well as pulling an ordered N of them to be O(N).  We
+    # sort by realm_id so that restarts are rolling by realm.
+    for qid in sorted(
+        (qid for qid in queue_ids if clients[qid].accepts_event({"type": "web_reload_client"})),
+        key=lambda qid: clients[qid].realm_id,
+    ):
+        web_reload_clients[qid] = True
+
+
+def send_web_reload_client_events(immediate: bool = False, count: Optional[int] = None) -> int:
+    event: Dict[str, Any] = dict(
+        type="web_reload_client",
+        immediate=immediate,
+    )
+    if count is None:
+        count = len(web_reload_clients)
+    queue_ids = list(web_reload_clients.keys())[:count]
+    for qid in queue_ids:
+        del web_reload_clients[qid]
+        client = clients[qid]
+        if client.accepts_event(event):
+            client.add_event(event)
+    return len(queue_ids)
+
+
+async def setup_event_queue(
+    server: tornado.httpserver.HTTPServer, port: int, send_reloads: bool = True
+) -> None:
     if not settings.TEST_SUITE:
         load_event_queues(port)
         autoreload.add_reload_hook(lambda: dump_event_queues(port))
@@ -654,7 +698,9 @@ async def setup_event_queue(server: tornado.httpserver.HTTPServer, port: int) ->
     pc = tornado.ioloop.PeriodicCallback(lambda: gc_event_queues(port), EVENT_QUEUE_GC_FREQ_MSECS)
     pc.start()
 
-    send_restart_events(immediate=settings.DEVELOPMENT)
+    send_restart_events()
+    if send_reloads:
+        send_web_reload_client_events(immediate=settings.DEVELOPMENT)
 
 
 def fetch_events(
@@ -1524,7 +1570,7 @@ def reformat_legacy_send_message_event(
 def process_notification(notice: Mapping[str, Any]) -> None:
     event: Mapping[str, Any] = notice["event"]
     users: Union[List[int], List[Mapping[str, Any]]] = notice["users"]
-    start_time = time.time()
+    start_time = time.perf_counter()
 
     if event["type"] == "message":
         if len(users) > 0 and isinstance(users[0], dict) and "stream_push_notify" in users[0]:
@@ -1573,7 +1619,7 @@ def process_notification(notice: Mapping[str, Any]) -> None:
         "Tornado: Event %s for %s users took %sms",
         event["type"],
         len(users),
-        int(1000 * (time.time() - start_time)),
+        int(1000 * (time.perf_counter() - start_time)),
     )
 
 

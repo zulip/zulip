@@ -32,6 +32,7 @@ from zproject.backends import (
 from zproject.config import get_config
 
 DEFAULT_PAGE_PARAMS: Mapping[str, Any] = {
+    "page_type": "default",
     "development_environment": settings.DEVELOPMENT,
 }
 
@@ -165,6 +166,7 @@ def zulip_default_context(request: HttpRequest) -> Dict[str, Any]:
         f'<a href="mailto:{escape(support_email)}">{escape(support_email)}</a>'
     )
 
+    # Sync this with default_params_schema in base_page_params.ts.
     default_page_params: Dict[str, Any] = {
         **DEFAULT_PAGE_PARAMS,
         "server_sentry_dsn": settings.SENTRY_FRONTEND_DSN,

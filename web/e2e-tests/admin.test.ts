@@ -4,7 +4,7 @@ import type {Page} from "puppeteer";
 
 import * as common from "./lib/common";
 
-async function submit_notifications_stream_settings(page: Page): Promise<void> {
+async function submit_announcements_stream_settings(page: Page): Promise<void> {
     await page.waitForSelector('#org-notifications .save-button[data-status="unsaved"]', {
         visible: true,
     });
@@ -29,8 +29,8 @@ async function submit_notifications_stream_settings(page: Page): Promise<void> {
     await page.waitForSelector("#org-notifications .save-button", {hidden: true});
 }
 
-async function test_change_new_stream_notifications_setting(page: Page): Promise<void> {
-    await page.click("#realm_notifications_stream_id_widget.dropdown-widget-button");
+async function test_change_new_stream_announcements_stream(page: Page): Promise<void> {
+    await page.click("#realm_new_stream_announcements_stream_id_widget.dropdown-widget-button");
     await page.waitForSelector(".dropdown-list-container", {
         visible: true,
     });
@@ -44,20 +44,20 @@ async function test_change_new_stream_notifications_setting(page: Page): Promise
     assert.ok(rome_in_dropdown);
     await rome_in_dropdown.click();
 
-    await submit_notifications_stream_settings(page);
+    await submit_announcements_stream_settings(page);
 }
 
-async function test_change_signup_notifications_stream(page: Page): Promise<void> {
+async function test_change_signup_announcements_stream(page: Page): Promise<void> {
     console.log('Changing signup notifications stream to Verona by filtering with "verona"');
 
-    await page.click("#realm_signup_notifications_stream_id_widget");
+    await page.click("#realm_signup_announcements_stream_id_widget");
     await page.waitForSelector(".dropdown-list-search-input", {visible: true});
 
     await page.type(".dropdown-list-search-input", "verona");
     await page.waitForSelector(".dropdown-list .list-item", {visible: true});
     await page.keyboard.press("ArrowDown");
     await page.keyboard.press("Enter");
-    await submit_notifications_stream_settings(page);
+    await submit_announcements_stream_settings(page);
 }
 
 async function test_permissions_change_save_worked(page: Page): Promise<void> {
@@ -263,8 +263,8 @@ async function admin_test(page: Page): Promise<void> {
     await common.log_in(page);
 
     await common.manage_organization(page);
-    await test_change_new_stream_notifications_setting(page);
-    await test_change_signup_notifications_stream(page);
+    await test_change_new_stream_announcements_stream(page);
+    await test_change_signup_announcements_stream(page);
 
     await test_organization_permissions(page);
     // Currently, Firefox (with puppeteer) does not support file upload:

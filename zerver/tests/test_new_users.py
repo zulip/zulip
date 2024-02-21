@@ -290,8 +290,8 @@ class TestNotifyNewUser(ZulipTestCase):
             message.content,
         )
 
-        realm.signup_notifications_stream = None
-        realm.save(update_fields=["signup_notifications_stream"])
+        realm.signup_announcements_stream = None
+        realm.save(update_fields=["signup_announcements_stream"])
         new_user.refresh_from_db()
         notify_new_user(new_user)
         self.assertEqual(self.get_message_count(), message_count + 1)
@@ -321,7 +321,7 @@ class TestNotifyNewUser(ZulipTestCase):
 
             message = self.get_last_message()
             actual_stream = Stream.objects.get(id=message.recipient.type_id)
-            self.assertEqual(actual_stream, realm.signup_notifications_stream)
+            self.assertEqual(actual_stream, realm.signup_announcements_stream)
             self.assertIn(
                 f"@_**new user {user_no}|{new_user.id}** joined this organization.",
                 message.content,

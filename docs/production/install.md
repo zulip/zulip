@@ -1,31 +1,43 @@
 # Install a Zulip server
 
-## Before you begin
+You can choose from several convenient options for hosting Zulip:
 
-To install a Zulip server, you'll need an Ubuntu or Debian system that satisfies
-[the installation requirements](requirements.md). Alternatively,
-you can use a preconfigured
-[DigitalOcean droplet](https://marketplace.digitalocean.com/apps/zulip?refcode=3ee45da8ee26), or
-Zulip's
-[experimental Docker image](deployment.md#zulip-in-docker).
+- Follow these instructions to **install a self-hosted Zulip server on a system
+  of your choice**.
+- Use a preconfigured
+  [DigitalOcean droplet](https://marketplace.digitalocean.com/apps/zulip?refcode=3ee45da8ee26)
+- Use Zulip's [experimental Docker image](deployment.md#zulip-in-docker).
+- Use [Zulip Cloud](https://zulip.com/plans/) hosting. Read our [guide to choosing between Zulip Cloud and
+  self-hosting](https://zulip.com/help/getting-your-organization-started-with-zulip#choosing-between-zulip-cloud-and-self-hosting).
 
-### Should I follow this installation guide?
+To **import data** from [Slack][slack-import], [Mattermost][mattermost-import], [Rocket.Chat][rocketchat-import], [Gitter][gitter-import], [Zulip Cloud][zulip-cloud-import], or [another Zulip
+server][zulip-server-import], follow the linked instructions.
 
-- If you would like to try out Zulip, you can start by [checking it out in the
-  Zulip development community](https://zulip.com/try-zulip/), or [create a test
-  Zulip Cloud organization](https://zulip.com/new/).
+You can **try out Zulip** before setting up your own server by [checking
+it out](https://zulip.com/try-zulip/) in the Zulip development community, or
+[creating a free test organization](https://zulip.com/new/) on Zulip Cloud.
 
-- If you are deciding between self-hosting Zulip and signing up for [Zulip
-  Cloud](https://zulip.com/plans/), our [self-hosting
-  overview](https://zulip.com/self-hosting/) and [guide to choosing between
-  Zulip Cloud and
-  self-hosting](https://zulip.com/help/getting-your-organization-started-with-zulip#choosing-between-zulip-cloud-and-self-hosting)
-  are great places to start.
+:::{note}
+These instructions are for self-hosting Zulip. To
+[contribute](../contributing/contributing.md) to the project, set up the
+[development environment](../development/overview.md).
+:::
 
-- If you're developing for Zulip, you should follow the instructions
-  to install Zulip's [development environment](../development/overview.md).
+## Installation process overview
 
-If you'd like to install a self-hosted Zulip server, this guide is for you!
+0. [Set up a base server](#step-0-set-up-a-base-server)
+1. [Download the latest release](#step-1-download-the-latest-release)
+1. [Install Zulip](#step-2-install-zulip)
+1. [Create a Zulip organization, and log in](#step-3-create-a-zulip-organization-and-log-in)
+
+That's it! Once installation is complete, you can
+[configure](settings.md) Zulip to suit your needs.
+
+## Step 0: Set up a base server
+
+Provision and log in to a fresh Ubuntu or Debian system in your preferred
+hosting environment that satisfies the [installation
+requirements](requirements.md) for your expected usage level.
 
 ## Step 1: Download the latest release
 
@@ -39,16 +51,13 @@ curl -fLO https://download.zulip.com/server/zulip-server-latest.tar.gz
 tar -xf zulip-server-latest.tar.gz
 ```
 
-- If you'd like to verify the download, we
-  [publish the sha256sums of our release tarballs](https://download.zulip.com/server/SHA256SUMS.txt).
-- You can also
-  [install a pre-release version of Zulip](deployment.md#installing-zulip-from-git)
-  using code from our [repository on GitHub](https://github.com/zulip/zulip/).
+To verify the download, see [the sha256sums of our release
+tarballs](https://download.zulip.com/server/SHA256SUMS.txt).
 
 ## Step 2: Install Zulip
 
-To set up Zulip with the most common configuration, you can run the
-installer as follows:
+To set up Zulip with the most common configuration, run the installer as
+follows:
 
 ```bash
 sudo -s  # If not already root
@@ -56,68 +65,73 @@ sudo -s  # If not already root
     --email=YOUR_EMAIL --hostname=YOUR_HOSTNAME
 ```
 
-This takes a few minutes to run, as it installs Zulip's dependencies.
-For more on what the installer does, [see details below](#details-what-the-installer-does).
-
-If the script gives an error, consult [Troubleshooting](#troubleshooting) below.
+This takes a few minutes to run, as it installs Zulip's dependencies. It is
+designed to be idempotent: if the script fails, once you've corrected the cause
+of the failure, you can just rerun the script. For more information, see
+[installer details](deployment.md#zulip-installer-details) and
+[troubleshooting](troubleshooting.md#troubleshooting-the-zulip-installer).
 
 #### Installer options
 
-- `--email=you@example.com`: The email address for the person or team who
-  maintains the Zulip installation. Note that this is a public-facing email
-  address; it may appear on 404 pages, is used as the sender's address for many
-  automated emails, and is advertised as a support address. An email address
-  like support@example.com is totally reasonable, as is admin@example.com. Do
-  not put a display name; e.g. "support@example.com", not "Zulip Support
-  <support@example.com>". This becomes `ZULIP_ADMINISTRATOR`
-  ([docs][doc-settings]) in the Zulip settings.
+- `--email=it-team@example.com`: The email address for the **person or team who
+  maintains the Zulip installation**. Zulip users on your server will see this
+  as the contact email in automated emails, on help pages, on error pages, etc.
+  You can later configure a display name for your contact email with the
+  `ZULIP_ADMINISTRATOR` [setting][doc-settings].
 
-- `--hostname=zulip.example.com`: The user-accessible domain name for
-  this Zulip server, i.e., what users will type in their web browser.
-  This becomes `EXTERNAL_HOST` ([docs][doc-settings]) in the Zulip
-  settings.
+- `--hostname=zulip.example.com`: The user-accessible domain name for this Zulip
+  server, i.e., what users will type in their web browser. This becomes
+  `EXTERNAL_HOST` in the Zulip [settings][doc-settings].
+
+- `--certbot`: With this option, the Zulip installer automatically obtains an
+  SSL certificate for the server [using Certbot][doc-certbot], and configures a
+  cron job to renew the certificate automatically. If you prefer to acquire an
+  SSL certificate another way, it's easy to [provide it to
+  Zulip][doc-ssl-manual].
 
 - `--self-signed-cert`: With this option, the Zulip installer
   generates a self-signed SSL certificate for the server. This isn't
   suitable for production use, but may be convenient for testing.
 
-- `--certbot`: With this option, the Zulip installer automatically
-  obtains an SSL certificate for the server [using
-  Certbot][doc-certbot], and configures a cron job to renew the
-  certificate automatically. If you'd prefer to acquire an SSL
-  certificate yourself in any other way, it's easy to [provide it to
-  Zulip][doc-ssl-manual].
-
-You can see the more advanced installer options in our [deployment options][doc-deployment-options]
+For advanced installer options, see our [deployment options][doc-deployment-options]
 documentation.
+
+:::{important}
+
+If you are importing data, stop here and return to the import instructions for
+[Slack][slack-import], [Mattermost][mattermost-import],
+[Rocket.Chat][rocketchat-import], [Gitter][gitter-import], [Zulip
+Cloud][zulip-cloud-import], [a server backup][zulip-backups], or [another Zulip
+server][zulip-server-import].
+
+:::
 
 [doc-settings]: settings.md
 [doc-certbot]: ssl-certificates.md#certbot-recommended
 [doc-ssl-manual]: ssl-certificates.md#manual-install
 [doc-deployment-options]: deployment.md#advanced-installer-options
+[zulip-backups]: export-and-import.md#backups
+[slack-import]: https://zulip.com/help/import-from-slack
+[mattermost-import]: https://zulip.com/help/import-from-mattermost
+[rocketchat-import]: https://zulip.com/help/import-from-rocketchat
+[gitter-import]: https://zulip.com/help/import-from-gitter
+[zulip-cloud-import]: export-and-import.md#import-into-a-new-zulip-server
+[zulip-server-import]: export-and-import.md#import-into-a-new-zulip-server
 
 ## Step 3: Create a Zulip organization, and log in
 
-On success, the install script prints a link. If you're [restoring a
-backup][zulip-backups] or importing your data from [Slack][slack-import],
-or another Zulip server, you should stop here
-and return to the import instructions.
+When the installation process is complete, the install script prints a secure
+one-time-use organization creation link. Open this link in your browser, and
+follow the prompts to set up your organization and your own user account. Your
+Zulip organization is ready to use!
 
-[slack-import]: https://zulip.com/help/import-from-slack
-[zulip-backups]: export-and-import.md#backups
+:::{note}
+You can generate a new organization creation link by running `manage.py
+generate_realm_creation_link` on the server. See also our guide on running
+[multiple organizations on the same server](multiple-organizations.md).
+:::
 
-Otherwise, open the link in a browser. Follow the prompts to set up
-your organization, and your own user account as an administrator.
-Then, log in!
-
-The link is a secure one-time-use link. If you need another
-later, you can generate a new one by running
-`manage.py generate_realm_creation_link` on the server. See also our
-doc on running [multiple organizations on the same
-server](multiple-organizations.md) if that's what you're planning to
-do.
-
-## Step 4: Configure and use
+## Getting started with Zulip
 
 To really see Zulip in action, you'll need to get the people you work
 together with using it with you.
@@ -141,54 +155,3 @@ Learning more:
   server.
 
 [realm-admin-docs]: https://zulip.com/help/getting-your-organization-started-with-zulip
-
-## Details: What the installer does
-
-The install script does several things:
-
-- Creates the `zulip` user, which the various Zulip servers will run as.
-- Creates `/home/zulip/deployments/`, which the Zulip code for this
-  deployment (and future deployments when you upgrade) goes into. At the
-  very end of the install process, the script moves the Zulip code tree
-  it's running from (which you unpacked from a tarball above) to a
-  directory there, and makes `/home/zulip/deployments/current` as a
-  symbolic link to it.
-- Installs Zulip's various dependencies.
-- Configures the various third-party services Zulip uses, including
-  PostgreSQL, RabbitMQ, Memcached and Redis.
-- Initializes Zulip's database.
-
-If you'd like to deploy Zulip with these services on different
-machines, check out our [deployment options documentation](deployment.md).
-
-## Troubleshooting
-
-**Install script.**
-The Zulip install script is designed to be idempotent. This means
-that if it fails, then once you've corrected the cause of the failure,
-you can just rerun the script.
-
-The install script automatically logs a transcript to
-`/var/log/zulip/install.log`. In case of failure, you might find the
-log handy for resolving the issue. Please include a copy of this log
-file in any bug reports.
-
-**The `zulip` user's password.**
-By default, the `zulip` user doesn't
-have a password, and is intended to be accessed by `su zulip` from the
-`root` user (or via SSH keys or a password, if you want to set those
-up, but that's up to you as the system administrator). Most people
-who are prompted for a password when running `su zulip` turn out to
-already have switched to the `zulip` user earlier in their session,
-and can just skip that step.
-
-**After the install script.**
-If you get an error after `scripts/setup/install` completes, check
-the bottom of `/var/log/zulip/errors.log` for a traceback, and consult
-the [troubleshooting section](troubleshooting.md) for advice on
-how to debug.
-
-**Still having trouble?**
-Please see the [troubleshooting and monitoring
-guide](../production/troubleshooting.md) for additional advice and ways to get
-help.

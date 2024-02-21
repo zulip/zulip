@@ -101,6 +101,10 @@ def format_optional_datetime(date: Optional[datetime], display_none: bool = Fals
         return ""
 
 
+def format_datetime_as_date(date: datetime) -> str:
+    return date.strftime("%Y-%m-%d")
+
+
 def format_none_as_zero(value: Optional[int]) -> int:
     if value:
         return value

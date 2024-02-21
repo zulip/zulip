@@ -32,7 +32,7 @@ Also you can use optional keys to configure the script and change default values
 -d HOST             Destination Zulip host for email uploading. Address must contain type of
                     HTTP protocol, e.g. "https://example.com". Default value: "https://127.0.0.1".
 
--u URL             Destination relative for email uploading. Default value: "/email_mirror_message".
+-u URL             Destination relative for email uploading. Default value: "/api/internal/email_mirror_message".
 
 -n                  Disable checking ssl certificate. This option is used for
                     self-signed certificates. Default value: False.
@@ -76,7 +76,7 @@ parser.add_argument(
     "-u",
     "--dst-url",
     dest="url",
-    default="/email_mirror_message",
+    default="/api/internal/email_mirror_message",
     help="Destination relative URL for uploading email from email mirror.",
 )
 

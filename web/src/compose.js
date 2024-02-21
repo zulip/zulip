@@ -20,12 +20,12 @@ import * as loading from "./loading";
 import * as markdown from "./markdown";
 import * as message_events from "./message_events";
 import * as onboarding_steps from "./onboarding_steps";
-import {page_params} from "./page_params";
 import * as people from "./people";
 import * as rendered_markdown from "./rendered_markdown";
 import * as scheduled_messages from "./scheduled_messages";
 import * as sent_messages from "./sent_messages";
 import * as server_events from "./server_events";
+import {current_user} from "./state_data";
 import * as transmit from "./transmit";
 import {user_settings} from "./user_settings";
 import * as util from "./util";
@@ -89,8 +89,8 @@ export function create_message_object() {
     const message = {
         type: compose_state.get_message_type(),
         content: compose_state.message_content(),
-        sender_id: page_params.user_id,
-        queue_id: page_params.queue_id,
+        sender_id: current_user.user_id,
+        queue_id: server_events.queue_id,
         stream_id: undefined,
     };
     message.topic = "";
@@ -144,13 +144,11 @@ export function clear_compose_box() {
 
 export function send_message_success(request, data) {
     if (!request.locally_echoed) {
-        if ($("textarea#compose-textarea").data("draft-id")) {
-            drafts.draft_model.deleteDraft($("textarea#compose-textarea").data("draft-id"));
-        }
         clear_compose_box();
     }
 
     echo.reify_message_id(request.local_id, data.id);
+    drafts.draft_model.deleteDraft(request.draft_id);
 
     if (request.type === "stream") {
         if (data.automatic_new_visibility_policy) {
@@ -178,6 +176,10 @@ export function send_message(request = create_message_object()) {
     } else {
         request.to = JSON.stringify([request.to]);
     }
+
+    // Silently save / update a draft to ensure the message is not lost in case send fails.
+    // We delete the draft on successful send.
+    request.draft_id = drafts.update_draft({no_notify: true, update_count: false});
 
     let local_id;
     let locally_echoed;
@@ -332,7 +334,7 @@ export function render_and_show_preview($preview_spinner, $preview_content_box, 
             // Handle previews of /me messages
             rendered_preview_html =
                 "<p><strong>" +
-                _.escape(page_params.full_name) +
+                _.escape(current_user.full_name) +
                 "</strong>" +
                 rendered_content.slice("<p>/me".length);
         } else {

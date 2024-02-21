@@ -13,11 +13,6 @@ nav,
 section {
   display: block;
 }
-html {
-  font-size: 100%;
-  -webkit-text-size-adjust: 100%;
-  -ms-text-size-adjust: 100%;
-}
 a:focus {
   outline: thin dotted #333;
   outline: 5px auto -webkit-focus-ring-color;
@@ -61,10 +56,6 @@ button {
 label,
 button {
   cursor: pointer;
-}
-body {
-  margin: 0;
-  line-height: 20px;
 }
 a {
   color: #0088cc;
@@ -124,44 +115,11 @@ ol ol,
 ol ul {
   margin-bottom: 0;
 }
-li {
-  line-height: 20px;
-}
 hr {
   margin: 20px 0;
   border: 0;
   border-top: 1px solid #eeeeee;
   border-bottom: 1px solid #ffffff;
-}
-q:before,
-q:after {
-  content: "";
-}
-pre {
-  padding: 0 3px 2px;
-  font-family: Monaco, Menlo, Consolas, "Courier New", monospace;
-  font-size: 12px;
-  color: #333333;
-  -webkit-border-radius: 3px;
-  -moz-border-radius: 3px;
-  border-radius: 3px;
-}
-pre {
-  display: block;
-  padding: 9.5px;
-  margin: 0 0 10px;
-  font-size: 13px;
-  line-height: 20px;
-  word-break: break-all;
-  word-wrap: break-word;
-  white-space: pre;
-  white-space: pre-wrap;
-  background-color: #f5f5f5;
-  border: 1px solid #ccc;
-  border: 1px solid rgba(0, 0, 0, 0.15);
-  -webkit-border-radius: 4px;
-  -moz-border-radius: 4px;
-  border-radius: 4px;
 }
 form {
   margin: 0 0 20px;
@@ -317,12 +275,6 @@ button.close {
   display: none;
   visibility: hidden;
 }
-@media (max-width: 767px) {
-  body {
-    padding-left: 20px;
-    padding-right: 20px;
-  }
-}
 @media (min-width: 768px) and (max-width: 979px) {
   input {
     margin-left: 0;
@@ -331,10 +283,5 @@ button.close {
 @media (min-width: 1180px) {
   input {
     margin-left: 0;
-  }
-}
-@media (max-width: 979px) {
-  body {
-    padding-top: 0;
   }
 }

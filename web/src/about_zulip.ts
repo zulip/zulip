@@ -6,7 +6,7 @@ import render_about_zulip from "../templates/about_zulip.hbs";
 import * as browser_history from "./browser_history";
 import {show_copied_confirmation} from "./copied_tooltip";
 import * as overlays from "./overlays";
-import {page_params} from "./page_params";
+import {realm} from "./state_data";
 
 export function launch(): void {
     overlays.open_overlay({
@@ -30,11 +30,9 @@ export function launch(): void {
 
 export function initialize(): void {
     const rendered_about_zulip = render_about_zulip({
-        zulip_version: page_params.zulip_version,
-        zulip_merge_base: page_params.zulip_merge_base,
-        is_fork:
-            page_params.zulip_merge_base &&
-            page_params.zulip_merge_base !== page_params.zulip_version,
+        zulip_version: realm.zulip_version,
+        zulip_merge_base: realm.zulip_merge_base,
+        is_fork: realm.zulip_merge_base && realm.zulip_merge_base !== realm.zulip_version,
     });
     $("#about-zulip-modal-container").append(rendered_about_zulip);
 }

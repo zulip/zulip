@@ -20,6 +20,21 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 9.0
 
+**Feature level 241**
+
+* [`POST /register`](/api/register-queue), [`POST /events`](/api/get-events),
+  `PATCH /realm`: Renamed the realm settings `notifications_stream` and
+  `signup_notifications_stream` to `new_stream_announcements_stream` and
+  `signup_announcements_stream`, respectively.
+
+**Feature level 240**
+
+* [`GET /events`](/api/get-events): The `restart` event no longer contains an
+  optional `immediate` flag.
+* [`GET /events`](/api/get-events): A new `web_reload_client` event has been
+  added; it is used to signal to website-based clients that they should reload
+  their code.  This was previously implied by the `restart` event.
+
 Feature levels 238-239 are reserved for future use in 8.x maintenance
 releases.
 

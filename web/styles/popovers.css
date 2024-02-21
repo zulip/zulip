@@ -574,6 +574,18 @@ ul {
         font-size: 18px;
     }
 
+    .user_profile_manage_own_copy_link_button {
+        width: 20px;
+        height: 15px;
+        text-align: center;
+        font-size: 15px;
+    }
+
+    #user_profile_manage_own_copy_link {
+        height: 25px;
+        margin-right: 8px;
+    }
+
     #user_profile_manage_own_edit_link {
         height: 25px;
     }
@@ -979,7 +991,7 @@ ul {
     }
 }
 
-.user-card-status-text {
+.user-card-status-area {
     opacity: 0.8;
 
     .status-emoji {
@@ -1042,7 +1054,7 @@ ul {
             }
         }
 
-        .fa-chevron-down {
+        .zulip-icon-chevron-down {
             padding-left: 5px;
             color: hsl(0deg 0% 58%);
             font-weight: lighter;

@@ -7,7 +7,7 @@ const {make_stub} = require("./lib/stub");
 const {run_test} = require("./lib/test");
 const blueslip = require("./lib/zblueslip");
 const $ = require("./lib/zjquery");
-const {page_params} = require("./lib/zpage_params");
+const {current_user} = require("./lib/zpage_params");
 
 // These unit tests for web/src/message_list.js emphasize the model-ish
 // aspects of the MessageList class.  We have to stub out a few functions
@@ -245,7 +245,7 @@ run_test("last_sent_by_me", () => {
     ];
 
     list.append(items);
-    page_params.user_id = 3;
+    current_user.user_id = 3;
     // Look for the last message where user_id == 3 (our ID)
     assert.equal(list.get_last_message_sent_by_me().id, 2);
 });

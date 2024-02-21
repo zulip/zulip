@@ -141,7 +141,7 @@ class ActivityTest(ZulipTestCase):
         user_profile.is_staff = True
         user_profile.save(update_fields=["is_staff"])
 
-        with self.assert_database_query_count(11):
+        with self.assert_database_query_count(12):
             result = self.client_get("/activity")
             self.assertEqual(result.status_code, 200)
 
@@ -169,6 +169,11 @@ class ActivityTest(ZulipTestCase):
             hostname="demo.example.com",
             contact_email="email@example.com",
         )
+        RemoteZulipServerAuditLog.objects.create(
+            event_type=RemoteZulipServerAuditLog.REMOTE_SERVER_CREATED,
+            server=server,
+            event_time=server.last_updated,
+        )
         extra_data = {
             RemoteRealmAuditLog.ROLE_COUNT: {
                 RemoteRealmAuditLog.ROLE_COUNT_HUMANS: {
@@ -187,20 +192,20 @@ class ActivityTest(ZulipTestCase):
             event_time=timezone_now() - timedelta(days=1),
             extra_data=extra_data,
         )
-        with self.assert_database_query_count(9):
+        with self.assert_database_query_count(10):
             result = self.client_get("/activity/remote")
             self.assertEqual(result.status_code, 200)
 
-        with self.assert_database_query_count(4):
+        with self.assert_database_query_count(5):
             result = self.client_get("/activity/integrations")
             self.assertEqual(result.status_code, 200)
 
-        with self.assert_database_query_count(6):
+        with self.assert_database_query_count(7):
             result = self.client_get("/realm_activity/zulip/")
             self.assertEqual(result.status_code, 200)
 
         iago = self.example_user("iago")
-        with self.assert_database_query_count(5):
+        with self.assert_database_query_count(6):
             result = self.client_get(f"/user_activity/{iago.id}/")
             self.assertEqual(result.status_code, 200)
 

@@ -1,11 +1,11 @@
-import {page_params} from "./page_params";
 import * as people from "./people";
 import type {User} from "./people";
+import {current_user} from "./state_data";
 
 let user_id_set: Set<number>;
 
 export function initialize_with_current_user(): void {
-    user_id_set = new Set([page_params.user_id]);
+    user_id_set = new Set([current_user.user_id]);
 }
 
 export function sorted_user_ids(): number[] {

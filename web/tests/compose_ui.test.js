@@ -6,7 +6,7 @@ const {$t} = require("./lib/i18n");
 const {mock_esm, set_global, zrequire} = require("./lib/namespace");
 const {run_test, noop} = require("./lib/test");
 const $ = require("./lib/zjquery");
-const {page_params} = require("./lib/zpage_params");
+const {realm} = require("./lib/zpage_params");
 
 set_global("navigator", {});
 
@@ -249,13 +249,13 @@ run_test("compute_placeholder_text", () => {
     );
 
     alice.is_guest = true;
-    page_params.realm_enable_guest_user_indicator = true;
+    realm.realm_enable_guest_user_indicator = true;
     assert.equal(
         compose_ui.compute_placeholder_text(opts),
         $t({defaultMessage: "Message translated: Alice (guest) and Bob"}),
     );
 
-    page_params.realm_enable_guest_user_indicator = false;
+    realm.realm_enable_guest_user_indicator = false;
     assert.equal(
         compose_ui.compute_placeholder_text(opts),
         $t({defaultMessage: "Message Alice and Bob"}),

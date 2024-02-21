@@ -916,17 +916,18 @@ def authenticated_json_view(
     return _wrapped_view_func
 
 
-# These views are used by the main Django server to notify the Tornado server
-# of events.  We protect them from the outside world by checking a shared
-# secret, and also the originating IP (for now).
+# These views are used for communication from Django to Tornado, or
+# from command-line tools into Django.  We protect them from the
+# outside world by checking a shared secret, and also the originating
+# IP (for now).
 @has_request_variables
-def authenticate_notify(request: HttpRequest, secret: str = REQ("secret")) -> bool:
+def authenticate_internal_api(request: HttpRequest, secret: str = REQ("secret")) -> bool:
     return is_local_addr(request.META["REMOTE_ADDR"]) and constant_time_compare(
         secret, settings.SHARED_SECRET
     )
 
 
-def internal_notify_view(
+def internal_api_view(
     is_tornado_view: bool,
 ) -> Callable[
     [Callable[Concatenate[HttpRequest, ParamT], HttpResponse]],
@@ -945,7 +946,7 @@ def internal_notify_view(
         def _wrapped_func_arguments(
             request: HttpRequest, /, *args: ParamT.args, **kwargs: ParamT.kwargs
         ) -> HttpResponse:
-            if not authenticate_notify(request):
+            if not authenticate_internal_api(request):
                 raise AccessDeniedError
             request_notes = RequestNotes.get_notes(request)
             is_tornado_request = request_notes.tornado_handler_id is not None

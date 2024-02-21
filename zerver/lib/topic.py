@@ -1,14 +1,16 @@
 from datetime import datetime
-from typing import Any, Dict, List, Optional, Set, Tuple
+from typing import Any, Callable, Dict, List, Optional, Set, Tuple
 
 import orjson
 from django.db import connection
-from django.db.models import Q, QuerySet, Subquery
+from django.db.models import F, Func, JSONField, Q, QuerySet, Subquery, TextField, Value
+from django.db.models.functions import Cast
 from sqlalchemy.sql import ColumnElement, column, func, literal
 from sqlalchemy.types import Boolean, Text
 
 from zerver.lib.request import REQ
 from zerver.lib.types import EditHistoryEvent
+from zerver.lib.utils import assert_is_not_none
 from zerver.models import Message, Reaction, Stream, UserMessage, UserProfile
 
 # Only use these constants for events.
@@ -152,56 +154,83 @@ def update_messages_for_topic_edit(
     old_stream: Stream,
     edit_history_event: EditHistoryEvent,
     last_edit_time: datetime,
-) -> List[Message]:
-    propagate_query = Q(
-        recipient_id=old_stream.recipient_id,
+) -> Tuple[QuerySet[Message], Callable[[], QuerySet[Message]]]:
+    # Uses index: zerver_message_realm_recipient_upper_subject
+    messages = Message.objects.filter(
+        realm_id=old_stream.realm_id,
+        recipient_id=assert_is_not_none(old_stream.recipient_id),
         subject__iexact=orig_topic_name,
     )
     if propagate_mode == "change_all":
-        propagate_query = propagate_query & ~Q(id=edited_message.id)
+        messages = messages.exclude(id=edited_message.id)
     if propagate_mode == "change_later":
-        propagate_query = propagate_query & Q(id__gt=edited_message.id)
-
-    # Uses index: zerver_message_realm_recipient_upper_subject
-    messages = Message.objects.filter(propagate_query, realm_id=old_stream.realm_id).select_related(
-        *Message.DEFAULT_SELECT_RELATED
-    )
-
-    update_fields = ["edit_history", "last_edit_time"]
+        messages = messages.filter(id__gt=edited_message.id)
 
     if new_stream is not None:
         # If we're moving the messages between streams, only move
         # messages that the acting user can access, so that one cannot
         # gain access to messages through moving them.
-        from zerver.lib.message import bulk_access_messages
+        from zerver.lib.message import bulk_access_stream_messages_query
 
-        messages_list = bulk_access_messages(acting_user, messages, stream=old_stream)
+        messages = bulk_access_stream_messages_query(acting_user, messages, old_stream)
     else:
         # For single-message edits or topic moves within a stream, we
         # allow moving history the user may not have access in order
         # to keep topics together.
-        messages_list = list(messages)
+        pass
 
-    # The cached ORM objects are not changed by the upcoming
-    # messages.update(), and the remote cache update (done by the
-    # caller) requires the new value, so we manually update the
-    # objects in addition to sending a bulk query to the database.
+    update_fields: Dict[str, object] = {
+        "last_edit_time": last_edit_time,
+        # We cast the `edit_history` column to jsonb (defaulting NULL
+        # to `[]`), apply the `||` array concatenation operator to it,
+        # and cast the result back to text.  See #26496 for making
+        # this column itself jsonb, which is a complicated migration.
+        #
+        # This equates to:
+        #    "edit_history" = (
+        #      (COALESCE("zerver_message"."edit_history", '[]'))::jsonb
+        #      ||
+        #      ( '[{ ..json event.. }]' )::jsonb
+        #     )::text
+        "edit_history": Cast(
+            Func(
+                Cast(
+                    Value(orjson.dumps([edit_history_event]).decode()),
+                    JSONField(),
+                ),
+                Cast(
+                    Func(
+                        F("edit_history"),
+                        Value("[]"),
+                        function="COALESCE",
+                    ),
+                    JSONField(),
+                ),
+                function="",
+                arg_joiner=" || ",
+            ),
+            TextField(),
+        ),
+    }
     if new_stream is not None:
-        update_fields.append("recipient")
-        for m in messages_list:
-            assert new_stream.recipient is not None
-            m.recipient = new_stream.recipient
+        update_fields["recipient"] = new_stream.recipient
     if topic_name is not None:
-        update_fields.append("subject")
-        for m in messages_list:
-            m.set_topic_name(topic_name)
+        update_fields["subject"] = topic_name
 
-    for message in messages_list:
-        update_edit_history(message, last_edit_time, edit_history_event)
+    # The update will cause the 'messages' query to no longer match
+    # any rows; we capture the set of matching ids first, do the
+    # update, and then return a fresh collection -- so we know their
+    # metadata has been updated for the UPDATE command, and the caller
+    # can update the remote cache with that.
+    message_ids = [edited_message.id, *messages.values_list("id", flat=True)]
 
-    Message.objects.bulk_update(messages_list, update_fields, batch_size=100)
+    def propagate() -> QuerySet[Message]:
+        messages.update(**update_fields)
+        return Message.objects.filter(id__in=message_ids).select_related(
+            *Message.DEFAULT_SELECT_RELATED
+        )
 
-    return messages_list
+    return messages, propagate
 
 
 def generate_topic_history_from_db_rows(rows: List[Tuple[str, int]]) -> List[Dict[str, Any]]:

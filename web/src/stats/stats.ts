@@ -300,7 +300,7 @@ function get_thirty_days_messages_sent(data: DataByUserType<number[]>): void {
     $("#id_thirty_days_messages_sent").closest("summary-stats").show();
 }
 
-function set_storage_space_used_statistic(upload_space_used: number): void {
+function set_storage_space_used_statistic(upload_space_used: number | null): void {
     let space_used = "N/A";
     if (upload_space_used !== null) {
         space_used = bytes_to_size(upload_space_used, true);
@@ -310,7 +310,7 @@ function set_storage_space_used_statistic(upload_space_used: number): void {
     $("#id_storage_space_used").closest("summary-stats").show();
 }
 
-function set_guest_users_statistic(guest_users: number): void {
+function set_guest_users_statistic(guest_users: number | null): void {
     let guest_users_string = "N/A";
     if (guest_users !== null) {
         guest_users_string = guest_users.toLocaleString();

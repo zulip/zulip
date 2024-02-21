@@ -339,10 +339,10 @@ class Command(BaseCommand):
                 enable_spectator_access=True,
             )
             RealmDomain.objects.create(realm=zulip_realm, domain="zulip.com")
-            assert zulip_realm.notifications_stream is not None
-            zulip_realm.notifications_stream.name = "Verona"
-            zulip_realm.notifications_stream.description = "A city in Italy"
-            zulip_realm.notifications_stream.save(update_fields=["name", "description"])
+            assert zulip_realm.new_stream_announcements_stream is not None
+            zulip_realm.new_stream_announcements_stream.name = "Verona"
+            zulip_realm.new_stream_announcements_stream.description = "A city in Italy"
+            zulip_realm.new_stream_announcements_stream.save(update_fields=["name", "description"])
 
             realm_user_default = RealmUserDefault.objects.get(realm=zulip_realm)
             realm_user_default.enter_sends = True
@@ -1027,9 +1027,9 @@ class Command(BaseCommand):
                     }
 
                 bulk_create_streams(zulip_realm, zulip_stream_dict)
-                # Now that we've created the notifications stream, configure it properly.
-                zulip_realm.notifications_stream = get_stream("announce", zulip_realm)
-                zulip_realm.save(update_fields=["notifications_stream"])
+                # Now that we've created the new_stream_announcements_stream, configure it properly.
+                zulip_realm.new_stream_announcements_stream = get_stream("announce", zulip_realm)
+                zulip_realm.save(update_fields=["new_stream_announcements_stream"])
 
                 # Add a few default streams
                 for default_stream_name in ["design", "devel", "social", "support"]:

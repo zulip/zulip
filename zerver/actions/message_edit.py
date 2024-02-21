@@ -5,7 +5,7 @@ from typing import AbstractSet, Any, Dict, Iterable, List, Optional, Set, Tuple
 
 from django.conf import settings
 from django.db import transaction
-from django.db.models import Q
+from django.db.models import Q, QuerySet
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
 from django.utils.translation import gettext_lazy
@@ -33,14 +33,14 @@ from zerver.lib.markdown import version as markdown_version
 from zerver.lib.mention import MentionBackend, MentionData, silent_mention_syntax_for_user
 from zerver.lib.message import (
     access_message,
-    bulk_access_messages,
+    bulk_access_stream_messages_query,
     check_user_group_mention_allowed,
     normalize_body,
     stream_wildcard_mention_allowed,
     topic_wildcard_mention_allowed,
     truncate_topic,
-    update_to_dict_cache,
 )
+from zerver.lib.message_cache import update_message_cache
 from zerver.lib.queue import queue_json_publish
 from zerver.lib.stream_subscription import get_active_subscriptions_for_stream_id
 from zerver.lib.stream_topic import StreamTopicTarget
@@ -144,7 +144,7 @@ def maybe_send_resolve_topic_notifications(
     stream: Stream,
     old_topic_name: str,
     new_topic_name: str,
-    changed_messages: List[Message],
+    changed_messages: QuerySet[Message],
 ) -> Optional[int]:
     """Returns resolved_topic_message_id if resolve topic notifications were in fact sent."""
     # Note that topics will have already been stripped in check_update_message.
@@ -177,9 +177,11 @@ def maybe_send_resolve_topic_notifications(
     # Compute the users who either sent or reacted to messages that
     # were moved via the "resolve topic' action. Only those users
     # should be eligible for this message being managed as unread.
-    affected_participant_ids = {message.sender_id for message in changed_messages} | set(
-        Reaction.objects.filter(message__in=changed_messages).values_list(
-            "user_profile_id", flat=True
+    affected_participant_ids = set(
+        changed_messages.values_list("sender_id", flat=True).union(
+            Reaction.objects.filter(message__in=changed_messages).values_list(
+                "user_profile_id", flat=True
+            )
         )
     )
     sender = get_system_bot(settings.NOTIFICATION_BOT, user_profile.realm_id)
@@ -351,7 +353,7 @@ def do_update_embedded_data(
 
     message.save(update_fields=["content", "rendered_content"])
 
-    event["message_ids"] = update_to_dict_cache(changed_messages)
+    event["message_ids"] = update_message_cache(changed_messages)
 
     def user_info(um: UserMessage) -> Dict[str, Any]:
         return {
@@ -427,8 +429,6 @@ def do_update_message(
         "user_id": user_profile.id,
         "timestamp": event["edit_timestamp"],
     }
-
-    changed_messages = [target_message]
 
     realm = user_profile.realm
 
@@ -597,7 +597,7 @@ def do_update_message(
         ]
         losing_access_user_ids = [sub.user_profile_id for sub in subs_losing_access]
 
-        ums = ums.exclude(
+        unmodified_user_messages = ums.exclude(
             user_profile_id__in=[sub.user_profile_id for sub in subs_losing_usermessages]
         )
 
@@ -610,6 +610,11 @@ def do_update_message(
             gaining_usermessage_user_ids += [
                 user_id for user_id in new_stream_user_ids if user_id not in old_stream_user_ids
             ]
+    else:
+        # If we're not moving the topic to another stream, we don't
+        # modify the original set of UserMessage objects queried.
+        unmodified_user_messages = ums
+        gaining_usermessage_user_ids = []
 
     # We save the full topic name so that checks that require comparison
     # between the original topic and the topic name passed into this function
@@ -645,6 +650,12 @@ def do_update_message(
             realm.id, target_stream.recipient_id, target_topic_name
         ).exists()
 
+    changed_messages = Message.objects.filter(id=target_message.id)
+    changed_message_ids = [target_message.id]
+    changed_messages_count = 1
+    save_changes_for_propagation_mode = lambda: Message.objects.filter(
+        id=target_message.id
+    ).select_related(*Message.DEFAULT_SELECT_RELATED)
     if propagate_mode in ["change_later", "change_all"]:
         assert topic_name is not None or new_stream is not None
         assert stream_being_edited is not None
@@ -661,7 +672,7 @@ def do_update_message(
             topic_only_edit_history_event["prev_stream"] = edit_history_event["prev_stream"]
             topic_only_edit_history_event["stream"] = edit_history_event["stream"]
 
-        messages_list = update_messages_for_topic_edit(
+        later_messages, save_changes_for_propagation_mode = update_messages_for_topic_edit(
             acting_user=user_profile,
             edited_message=target_message,
             propagate_mode=propagate_mode,
@@ -672,12 +683,12 @@ def do_update_message(
             edit_history_event=topic_only_edit_history_event,
             last_edit_time=timestamp,
         )
-        changed_messages += messages_list
+        changed_messages |= later_messages
+        changed_message_ids = list(changed_messages.values_list("id", flat=True))
+        changed_messages_count = len(changed_message_ids)
 
         if new_stream is not None:
             assert stream_being_edited is not None
-            changed_message_ids = [msg.id for msg in changed_messages]
-
             if gaining_usermessage_user_ids:
                 ums_to_create = []
                 for message_id in changed_message_ids:
@@ -702,7 +713,7 @@ def do_update_message(
             # very expensive, since it's N guest users x M messages.
             UserMessage.objects.filter(
                 user_profile_id__in=[sub.user_profile_id for sub in subs_losing_usermessages],
-                message_id__in=changed_message_ids,
+                message_id__in=changed_messages,
             ).delete()
 
             delete_event: DeleteMessagesEvent = {
@@ -717,29 +728,37 @@ def do_update_message(
             # Reset the Attachment.is_*_public caches for all messages
             # moved to another stream with different access permissions.
             if new_stream.invite_only != stream_being_edited.invite_only:
-                Attachment.objects.filter(messages__in=changed_message_ids).update(
+                Attachment.objects.filter(messages__in=changed_messages.values("id")).update(
                     is_realm_public=None,
                 )
-                ArchivedAttachment.objects.filter(messages__in=changed_message_ids).update(
+                ArchivedAttachment.objects.filter(
+                    messages__in=changed_messages.values("id")
+                ).update(
                     is_realm_public=None,
                 )
 
             if new_stream.is_web_public != stream_being_edited.is_web_public:
-                Attachment.objects.filter(messages__in=changed_message_ids).update(
+                Attachment.objects.filter(messages__in=changed_messages.values("id")).update(
                     is_web_public=None,
                 )
-                ArchivedAttachment.objects.filter(messages__in=changed_message_ids).update(
+                ArchivedAttachment.objects.filter(
+                    messages__in=changed_messages.values("id")
+                ).update(
                     is_web_public=None,
                 )
 
     # This does message.save(update_fields=[...])
     save_message_for_edit_use_case(message=target_message)
 
+    # This updates any later messages, if any.  It returns the
+    # freshly-fetched-from-the-database changed messages.
+    changed_messages = save_changes_for_propagation_mode()
+
     realm_id: Optional[int] = None
     if stream_being_edited is not None:
         realm_id = stream_being_edited.realm_id
 
-    event["message_ids"] = update_to_dict_cache(changed_messages, realm_id)
+    event["message_ids"] = update_message_cache(changed_messages, realm_id)
 
     def user_info(um: UserMessage) -> Dict[str, Any]:
         return {
@@ -760,7 +779,7 @@ def do_update_message(
     # in the organization (too expansive, and also not what we do for
     # newly sent messages anyway) and having magical live-updates
     # where possible.
-    users_to_be_notified = list(map(user_info, ums))
+    users_to_be_notified = list(map(user_info, unmodified_user_messages))
     if stream_being_edited is not None and stream_being_edited.is_history_public_to_subscribers():
         subscriptions = get_active_subscriptions_for_stream_id(
             stream_id, include_deactivated_users=False
@@ -773,7 +792,7 @@ def do_update_message(
         # user both has a UserMessage row and is a current
         # Subscriber
         subscriptions = subscriptions.exclude(
-            user_profile_id__in=[um.user_profile_id for um in ums]
+            user_profile_id__in=[um.user_profile_id for um in unmodified_user_messages]
         )
 
         if new_stream is not None:
@@ -822,27 +841,23 @@ def do_update_message(
             # full-topic move.
             #
             # For security model reasons, we don't want to allow a
-            # user to take any action that would leak information
-            # about older messages they cannot access (E.g. the only
-            # remaining messages are in a stream without shared
-            # history). The bulk_access_messages call below addresses
+            # user to take any action (e.g. post a message about
+            # having not moved the whole topic) that would leak
+            # information about older messages they cannot access
+            # (e.g. there were earlier inaccessible messages in the
+            # topic, in a stream without shared history). The
+            # bulk_access_stream_messages_query call below addresses
             # that concern.
-            #
-            # bulk_access_messages is inefficient for this task, since
-            # we just want to do the exists() version of this
-            # query. But it's nice to reuse code, and this bulk
-            # operation is likely cheaper than a `GET /messages`
-            # unless the topic has thousands of messages of history.
             assert stream_being_edited.recipient_id is not None
             unmoved_messages = messages_for_topic(
                 realm.id,
                 stream_being_edited.recipient_id,
                 orig_topic_name,
             )
-            visible_unmoved_messages = bulk_access_messages(
-                user_profile, unmoved_messages, stream=stream_being_edited
+            visible_unmoved_messages = bulk_access_stream_messages_query(
+                user_profile, unmoved_messages, stream_being_edited
             )
-            moved_all_visible_messages = len(visible_unmoved_messages) == 0
+            moved_all_visible_messages = not visible_unmoved_messages.exists()
 
     # Migrate 'topic with visibility_policy' configuration in the following
     # circumstances:
@@ -991,7 +1006,7 @@ def do_update_message(
     send_event(user_profile.realm, event, users_to_be_notified)
 
     resolved_topic_message_id = None
-    if topic_name is not None and content is None and len(changed_messages) > 0:
+    if topic_name is not None and content is None:
         # When stream is changed and topic is marked as resolved or unresolved
         # in the same API request, resolved or unresolved notification should
         # be sent to "new_stream".
@@ -1009,14 +1024,8 @@ def do_update_message(
             changed_messages=changed_messages,
         )
 
-    if (
-        len(changed_messages) > 0
-        and (new_stream is not None or topic_name is not None)
-        and stream_being_edited is not None
-    ):
+    if (new_stream is not None or topic_name is not None) and stream_being_edited is not None:
         # Notify users that the topic was moved.
-        changed_messages_count = len(changed_messages)
-
         old_thread_notification_string = None
         if send_notification_to_old_thread:
             if moved_all_visible_messages:
@@ -1056,31 +1065,20 @@ def do_update_message(
 
             new_topic_name = topic_name if topic_name is not None else orig_topic_name
 
-            changed_message_ids = [changed_message.id for changed_message in changed_messages]
-
             # We calculate whether the user moved the entire topic
             # using that user's own permissions, which is important to
             # avoid leaking information about whether there are
             # messages in the destination topic's deeper history that
             # the acting user does not have permission to access.
-            #
-            # TODO: These queries are quite inefficient, in that we're
-            # fetching full copies of all the messages in the
-            # destination topic to answer the question of whether the
-            # current user has access to at least one such message.
-            #
-            # The main strength of the current implementation is that
-            # it reuses existing logic, which is good for keeping it
-            # correct as we maintain the codebase.
             preexisting_topic_messages = messages_for_topic(
                 realm.id, stream_for_new_topic.recipient_id, new_topic_name
             ).exclude(id__in=[*changed_message_ids, resolved_topic_message_id])
 
-            visible_preexisting_messages = bulk_access_messages(
-                user_profile, preexisting_topic_messages, stream=stream_for_new_topic
+            visible_preexisting_messages = bulk_access_stream_messages_query(
+                user_profile, preexisting_topic_messages, stream_for_new_topic
             )
 
-            no_visible_preexisting_messages = len(visible_preexisting_messages) == 0
+            no_visible_preexisting_messages = not visible_preexisting_messages.exists()
 
             if no_visible_preexisting_messages and moved_all_visible_messages:
                 new_thread_notification_string = gettext_lazy(
@@ -1108,7 +1106,7 @@ def do_update_message(
             changed_messages_count,
         )
 
-    return len(changed_messages)
+    return changed_messages_count
 
 
 def check_time_limit_for_change_all_propagate_mode(

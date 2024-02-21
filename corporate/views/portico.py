@@ -278,7 +278,9 @@ def team_view(request: HttpRequest) -> HttpResponse:
         request,
         "corporate/team.html",
         context={
+            # Sync this with team_params_schema in base_page_params.ts.
             "page_params": {
+                "page_type": "team",
                 "contributors": data["contributors"],
             },
             "date": data["date"],

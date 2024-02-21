@@ -10,7 +10,7 @@ const {$t} = require("./lib/i18n");
 const {mock_esm, set_global, zrequire} = require("./lib/namespace");
 const {run_test, noop} = require("./lib/test");
 const $ = require("./lib/zjquery");
-const {page_params, user_settings} = require("./lib/zpage_params");
+const {current_user, page_params, realm, user_settings} = require("./lib/zpage_params");
 
 const settings_config = zrequire("settings_config");
 
@@ -57,6 +57,7 @@ const compose_recipient = zrequire("compose_recipient");
 const compose_state = zrequire("compose_state");
 const compose = zrequire("compose");
 const compose_setup = zrequire("compose_setup");
+const drafts = zrequire("drafts");
 const echo = zrequire("echo");
 const people = zrequire("people");
 const stream_data = zrequire("stream_data");
@@ -121,8 +122,8 @@ function test_ui(label, f) {
 }
 
 function initialize_handlers({override}) {
-    override(page_params, "realm_available_video_chat_providers", {disabled: {id: 0}});
-    override(page_params, "realm_video_chat_provider", 0);
+    override(realm, "realm_available_video_chat_providers", {disabled: {id: 0}});
+    override(realm, "realm_video_chat_provider", 0);
     override(upload, "feature_check", noop);
     override(resize, "watch_manual_resize", noop);
     compose_setup.initialize();
@@ -131,15 +132,23 @@ function initialize_handlers({override}) {
 test_ui("send_message_success", ({override, override_rewire}) => {
     mock_banners();
 
+    let draft_deleted;
+    let reify_message_id_checked;
     function reset() {
         $("textarea#compose-textarea").val("foobarfoobar");
         $("textarea#compose-textarea").trigger("blur");
         $(".compose-submit-button .loader").show();
+        draft_deleted = false;
+        reify_message_id_checked = false;
     }
 
     reset();
 
-    let reify_message_id_checked;
+    const draft_model = drafts.draft_model;
+    override(draft_model, "deleteDraft", (draft_id) => {
+        assert.equal(draft_id, 100);
+        draft_deleted = true;
+    });
     override_rewire(echo, "reify_message_id", (local_id, message_id) => {
         assert.equal(local_id, "1001");
         assert.equal(message_id, 12);
@@ -167,6 +176,7 @@ test_ui("send_message_success", ({override, override_rewire}) => {
     let request = {
         locally_echoed: false,
         local_id: "1001",
+        draft_id: 100,
         type: "stream",
         stream_id: 1,
         topic: "test",
@@ -178,10 +188,10 @@ test_ui("send_message_success", ({override, override_rewire}) => {
     assert.ok($("textarea#compose-textarea").is_focused());
     assert.ok(!$(".compose-submit-button .loader").visible());
     assert.ok(reify_message_id_checked);
+    assert.ok(draft_deleted);
 
     reset();
 
-    reify_message_id_checked = false;
     override(compose_notifications, "get_muted_narrow", (message) => {
         assert.equal(message.type, "stream");
         assert.equal(message.stream_id, 2);
@@ -191,6 +201,7 @@ test_ui("send_message_success", ({override, override_rewire}) => {
     request = {
         locally_echoed: false,
         local_id: "1001",
+        draft_id: 100,
         type: "stream",
         stream_id: 2,
         topic: "test",
@@ -202,6 +213,7 @@ test_ui("send_message_success", ({override, override_rewire}) => {
     assert.ok($("textarea#compose-textarea").is_focused());
     assert.ok(!$(".compose-submit-button .loader").visible());
     assert.ok(reify_message_id_checked);
+    assert.ok(draft_deleted);
 });
 
 test_ui("send_message", ({override, override_rewire, mock_template}) => {
@@ -231,13 +243,14 @@ test_ui("send_message", ({override, override_rewire, mock_template}) => {
         stub_state = initialize_state_stub_dict();
         compose_state.topic("");
         compose_state.set_message_type("private");
-        page_params.user_id = new_user.user_id;
+        current_user.user_id = new_user.user_id;
         override(compose_pm_pill, "get_emails", () => "alice@example.com");
 
         const server_message_id = 127;
         override(markdown, "render", noop);
         override(markdown, "get_topic_links", noop);
 
+        override_rewire(drafts, "update_draft", () => 100);
         override_rewire(echo, "try_deliver_locally", (message_request) => {
             const local_id_float = 123.04;
             return echo.insert_local_message(message_request, local_id_float, (messages) =>
@@ -258,6 +271,7 @@ test_ui("send_message", ({override, override_rewire, mock_template}) => {
                 reply_to: "alice@example.com",
                 private_message_recipient: "alice@example.com",
                 to_user_ids: "31",
+                draft_id: 100,
                 local_id: "123.04",
                 locally_echoed: true,
             };
@@ -367,7 +381,7 @@ test_ui("enter_with_preview_open", ({override, override_rewire}) => {
         show_button_spinner_called = true;
     });
 
-    page_params.user_id = new_user.user_id;
+    current_user.user_id = new_user.user_id;
 
     // Test sending a message with content.
     compose_state.set_message_type("stream");
@@ -482,8 +496,8 @@ test_ui("initialize", ({override}) => {
     // normal workflow of the function. All the tests for the on functions are
     // done in subsequent tests directly below this test.
 
-    override(page_params, "realm_available_video_chat_providers", {disabled: {id: 0}});
-    override(page_params, "realm_video_chat_provider", 0);
+    override(realm, "realm_available_video_chat_providers", {disabled: {id: 0}});
+    override(realm, "realm_video_chat_provider", 0);
 
     let resize_watch_manual_resize_checked = false;
     override(resize, "watch_manual_resize", (elem) => {
@@ -491,7 +505,7 @@ test_ui("initialize", ({override}) => {
         resize_watch_manual_resize_checked = true;
     });
 
-    page_params.max_file_upload_size_mib = 512;
+    realm.max_file_upload_size_mib = 512;
 
     let uppy_cancel_all_called = false;
     override(upload, "compose_upload_object", {
@@ -807,7 +821,7 @@ test_ui("create_message_object", ({override, override_rewire}) => {
 test_ui("DM policy disabled", ({override, override_rewire}) => {
     // Disable dms in the organisation
     override(
-        page_params,
+        realm,
         "realm_private_message_policy",
         settings_config.private_message_policy_values.disabled.code,
     );

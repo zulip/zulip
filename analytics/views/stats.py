@@ -80,7 +80,9 @@ def render_stats(
         translation.get_language_from_path(request.path_info),
     )
 
+    # Sync this with stats_params_schema in base_page_params.ts.
     page_params = dict(
+        page_type="stats",
         data_url_suffix=data_url_suffix,
         upload_space_used=space_used,
         guest_users=guest_users,

@@ -4,7 +4,7 @@ const {strict: assert} = require("assert");
 
 const {mock_esm, zrequire} = require("./lib/namespace");
 const {run_test} = require("./lib/test");
-const {page_params, user_settings} = require("./lib/zpage_params");
+const {current_user, realm, user_settings} = require("./lib/zpage_params");
 
 const stream_topic_history = mock_esm("../src/stream_topic_history");
 
@@ -20,7 +20,6 @@ const compose_state = zrequire("compose_state");
 const emoji = zrequire("emoji");
 const pygments_data = zrequire("pygments_data");
 const util = zrequire("util");
-const actual_pygments_data = {...pygments_data};
 const ct = zrequire("composebox_typeahead");
 const th = zrequire("typeahead_helper");
 
@@ -116,8 +115,8 @@ function test(label, f) {
         recent_senders.clear_for_testing();
         peer_data.clear_for_testing();
         people.clear_recipient_counts_for_testing();
-        page_params.is_admin = false;
-        page_params.realm_is_zephyr_mirror_realm = false;
+        current_user.is_admin = false;
+        realm.realm_is_zephyr_mirror_realm = false;
 
         f(helpers);
     });
@@ -272,16 +271,14 @@ test("sort_streams", ({override}) => {
     assert.deepEqual(test_streams[5].name, "Mew"); // Unsubscribed and no match
 });
 
-test("sort_languages", () => {
-    Object.assign(pygments_data, {
-        langs: {
-            python: {priority: 26},
-            javascript: {priority: 27},
-            php: {priority: 16},
-            pascal: {priority: 15},
-            perl: {priority: 3},
-            css: {priority: 21},
-        },
+test("sort_languages", ({override_rewire}) => {
+    override_rewire(pygments_data, "langs", {
+        python: {priority: 26},
+        javascript: {priority: 27},
+        php: {priority: 16},
+        pascal: {priority: 15},
+        perl: {priority: 3},
+        css: {priority: 21},
     });
 
     let test_langs = ["pascal", "perl", "php", "python", "javascript"];
@@ -296,14 +293,15 @@ test("sort_languages", () => {
     test_langs = th.sort_languages(test_langs, "p");
 
     assert.deepEqual(test_langs, ["php", "python", "pascal", "perl", "javascript"]);
+});
 
+test("sort_languages on actual data", () => {
     // Some final tests on the actual pygments data to check ordering.
     //
     // We may eventually want to use human-readable names like
     // "JavaScript" with several machine-readable aliases for what the
     // user typed, which might help provide a better user experience.
-    Object.assign(pygments_data, actual_pygments_data);
-    test_langs = ["j", "java", "javascript", "js"];
+    let test_langs = ["j", "java", "javascript", "js"];
 
     // Sort according to priority only.
     test_langs = th.sort_languages(test_langs, "jav");
@@ -680,7 +678,7 @@ test("highlight_with_escaping", () => {
 
 test("render_person when emails hidden", ({mock_template}) => {
     // Test render_person with regular person, under hidden email visibility case
-    page_params.custom_profile_field_types = {
+    realm.custom_profile_field_types = {
         PRONOUNS: {id: 8, name: "Pronouns"},
     };
     let rendered = false;
@@ -697,7 +695,7 @@ test("render_person when emails hidden", ({mock_template}) => {
 test("render_person", ({mock_template}) => {
     // Test render_person with regular person
     a_user.delivery_email = "a_user_delivery@zulip.org";
-    page_params.custom_profile_field_types = {
+    realm.custom_profile_field_types = {
         PRONOUNS: {id: 8, name: "Pronouns"},
     };
     let rendered = false;
@@ -849,8 +847,8 @@ test("compare_language", () => {
     assert.equal(th.compare_language("abap", "amdgpu"), util.strcmp("abap", "amdgpu"));
 
     // Test with languages that aren't in the generated pygments data.
-    assert.equal(actual_pygments_data.langs.custom_a, undefined);
-    assert.equal(actual_pygments_data.langs.custom_b, undefined);
+    assert.equal(pygments_data.langs.custom_a, undefined);
+    assert.equal(pygments_data.langs.custom_b, undefined);
     // Since custom_a has no popularity score, it gets sorted behind python.
     assert.equal(th.compare_language("custom_a", "python"), 1);
     assert.equal(th.compare_language("python", "custom_a"), -1);
