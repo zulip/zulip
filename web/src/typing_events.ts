@@ -50,7 +50,10 @@ function get_users_typing_for_narrow(): number[] {
     if (narrow_state.narrowed_by_topic_reply()) {
         const current_stream_id = narrow_state.stream_id();
         const current_topic = narrow_state.topic();
-        assert(current_stream_id !== undefined);
+        if (current_stream_id === undefined) {
+            // narrowed to a stream which doesn't exist.
+            return [];
+        }
         assert(current_topic !== undefined);
         return typing_data.get_topic_typists(current_stream_id, current_topic);
     }
