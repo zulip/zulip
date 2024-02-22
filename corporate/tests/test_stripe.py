@@ -92,6 +92,7 @@ from corporate.models import (
     get_current_plan_by_realm,
     get_customer_by_realm,
     get_customer_by_remote_realm,
+    is_legacy_customer,
 )
 from corporate.tests.test_remote_billing import RemoteRealmBillingTestCase, RemoteServerTestCase
 from corporate.views.remote_billing_page import generate_confirmation_link_for_server_deactivation
@@ -633,7 +634,18 @@ class StripeTestCase(ZulipTestCase):
             return upgrade_json_response
 
         is_self_hosted_billing = not isinstance(self.billing_session, RealmBillingSession)
-        if invoice or not talk_to_stripe or is_free_trial_offer_enabled(is_self_hosted_billing):
+        customer = self.billing_session.get_customer()
+        assert customer is not None
+        if (
+            invoice
+            or not talk_to_stripe
+            or (
+                is_free_trial_offer_enabled(is_self_hosted_billing)
+                and
+                # Free trial is not applicable for legacy customers.
+                not is_legacy_customer(customer)
+            )
+        ):
             # Upgrade already happened for free trial, invoice realms or schedule
             # upgrade for legacy remote servers.
             return upgrade_json_response
@@ -7728,6 +7740,97 @@ class TestRemoteServerBillingFlow(StripeTestCase, RemoteServerTestCase):
                     m.output[1],
                     f"INFO:corporate.stripe:Change plan status: Customer.id: {customer.id}, CustomerPlan.id: {customer_plan.id}, status: {CustomerPlan.ACTIVE}",
                 )
+
+    @responses.activate
+    @mock_stripe()
+    def test_free_trial_not_available_for_active_legacy_customer(self, *mocks: Mock) -> None:
+        with self.settings(SELF_HOSTING_FREE_TRIAL_DAYS=30):
+            self.login("hamlet")
+            hamlet = self.example_user("hamlet")
+
+            self.add_mock_response()
+
+            with time_machine.travel(self.now, tick=False):
+                send_server_data_to_push_bouncer(consider_usage_statistics=False)
+                # Test that free trial is not available for customers with active legacy plan.
+                end_date = add_months(self.now, months=3)
+                self.billing_session.migrate_customer_to_legacy_plan(self.now, end_date)
+
+            result = self.execute_remote_billing_authentication_flow(
+                hamlet.delivery_email, hamlet.full_name
+            )
+            self.assertEqual(result.status_code, 302)
+            self.assertEqual(result["Location"], f"{self.billing_session.billing_base_url}/plans/")
+            with time_machine.travel(self.now, tick=False):
+                response = self.client_get(
+                    f"{self.billing_session.billing_base_url}/plans/", subdomain="selfhosting"
+                )
+                self.assert_not_in_success_response(["free trial"], response)
+
+            with time_machine.travel(self.now, tick=False):
+                result = self.client_get(
+                    f"{self.billing_session.billing_base_url}/upgrade/?tier={CustomerPlan.TIER_SELF_HOSTED_BASIC}",
+                    subdomain="selfhosting",
+                )
+                self.assert_not_in_success_response(["free trial"], response)
+
+            with time_machine.travel(self.now, tick=False):
+                self.add_card_and_upgrade(
+                    tier=CustomerPlan.TIER_SELF_HOSTED_BASIC, schedule="monthly"
+                )
+
+            with time_machine.travel(self.now + timedelta(days=1), tick=False):
+                response = self.client_get(
+                    f"{self.billing_session.billing_base_url}/billing/", subdomain="selfhosting"
+                )
+                self.assert_not_in_success_response(["(free trial)"], response)
+
+    @responses.activate
+    @mock_stripe()
+    def test_free_trial_not_available_for_ended_legacy_customer(self, *mocks: Mock) -> None:
+        with self.settings(SELF_HOSTING_FREE_TRIAL_DAYS=30):
+            self.login("hamlet")
+            hamlet = self.example_user("hamlet")
+
+            self.add_mock_response()
+
+            with time_machine.travel(self.now, tick=False):
+                send_server_data_to_push_bouncer(consider_usage_statistics=False)
+                # Test that free trial is not available for customers with active legacy plan.
+                end_date = add_months(self.now, months=3)
+                self.billing_session.migrate_customer_to_legacy_plan(self.now, end_date)
+                CustomerPlan.objects.filter(customer__remote_server=self.remote_server).update(
+                    status=CustomerPlan.ENDED
+                )
+
+            result = self.execute_remote_billing_authentication_flow(
+                hamlet.delivery_email, hamlet.full_name
+            )
+            self.assertEqual(result.status_code, 302)
+            self.assertEqual(result["Location"], f"{self.billing_session.billing_base_url}/plans/")
+            with time_machine.travel(self.now, tick=False):
+                response = self.client_get(
+                    f"{self.billing_session.billing_base_url}/plans/", subdomain="selfhosting"
+                )
+                self.assert_not_in_success_response(["free trial"], response)
+
+            with time_machine.travel(self.now, tick=False):
+                result = self.client_get(
+                    f"{self.billing_session.billing_base_url}/upgrade/?tier={CustomerPlan.TIER_SELF_HOSTED_BASIC}",
+                    subdomain="selfhosting",
+                )
+                self.assert_not_in_success_response(["free trial"], response)
+
+            with time_machine.travel(self.now, tick=False):
+                self.add_card_and_upgrade(
+                    tier=CustomerPlan.TIER_SELF_HOSTED_BASIC, schedule="monthly"
+                )
+
+            with time_machine.travel(self.now + timedelta(days=1), tick=False):
+                response = self.client_get(
+                    f"{self.billing_session.billing_base_url}/billing/", subdomain="selfhosting"
+                )
+                self.assert_not_in_success_response(["(free trial)"], response)
 
     @responses.activate
     @mock_stripe()

@@ -51,6 +51,7 @@ from corporate.models import (
     get_customer_by_realm,
     get_customer_by_remote_realm,
     get_customer_by_remote_server,
+    is_legacy_customer,
 )
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.logging_util import log_to_file
@@ -1847,10 +1848,11 @@ class BillingSession(ABC):
             if fixed_price_plan_offer is not None:
                 free_trial = False
 
+            if is_legacy_customer(customer):
+                # Free trial is not available for legacy customers.
+                free_trial = False
+
         remote_server_legacy_plan = self.get_remote_server_legacy_plan(customer)
-        if remote_server_legacy_plan is not None:
-            # Free trial is not available for legacy customers.
-            free_trial = False
         should_schedule_upgrade_for_legacy_remote_server = (
             remote_server_legacy_plan is not None
             and upgrade_request.remote_server_plan_start_date == "billing_cycle_end_date"
@@ -2420,6 +2422,9 @@ class BillingSession(ABC):
         is_self_hosted_billing = not isinstance(self, RealmBillingSession)
         if fixed_price is None and remote_server_legacy_plan_end_date is None:
             free_trial_days = get_free_trial_days(is_self_hosted_billing, tier)
+            if customer is not None and is_legacy_customer(customer):
+                # Free trial is not available for legacy customers.
+                free_trial_days = None
             if free_trial_days is not None:
                 _, _, free_trial_end, _ = compute_plan_parameters(
                     tier,

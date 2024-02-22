@@ -473,6 +473,12 @@ def get_current_plan_by_customer(customer: Customer) -> Optional[CustomerPlan]:
     ).first()
 
 
+def is_legacy_customer(customer: Customer) -> bool:
+    return CustomerPlan.objects.filter(
+        customer=customer, tier=CustomerPlan.TIER_SELF_HOSTED_LEGACY
+    ).exists()
+
+
 def get_current_plan_by_realm(realm: Realm) -> Optional[CustomerPlan]:
     customer = get_customer_by_realm(realm)
     if customer is None:
