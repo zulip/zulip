@@ -433,7 +433,7 @@ function reset_data() {
     const include_per_topic_max_msg_id = true;
     const unread_stream_message = unread.get_unread_topics(include_per_topic_max_msg_id);
     const unread_stream_msg_count = unread_stream_message.stream_unread_messages;
-    const unread_streams_dict = unread_stream_message.stream_count;
+    const unread_streams_dict = unread_stream_message.topic_counts;
 
     let has_dms_post_filter = false;
     if (unread_dms_count) {
@@ -983,7 +983,7 @@ export function update() {
 
     const include_per_topic_max_msg_id = true;
     const unread_stream_message = unread.get_unread_topics(include_per_topic_max_msg_id);
-    const unread_streams_dict = unread_stream_message.stream_count;
+    const unread_streams_dict = unread_stream_message.topic_counts;
 
     let has_dms_post_filter = false;
     const dm_keys_to_insert = [];

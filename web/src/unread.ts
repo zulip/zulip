@@ -177,10 +177,25 @@ class UnreadDirectMessageCounter {
 }
 const unread_direct_message_counter = new UnreadDirectMessageCounter();
 
-type UnreadTopicCounts = {
+type UnreadStreamCounts = {
     stream_unread_messages: number;
     followed_topic_unread_messages: number;
-    stream_count: Map<number, number>;
+    stream_count: Map<number, StreamCountInfo>;
+};
+
+type UnreadTopicCounts = {
+    stream_unread_messages: number;
+    // stream_id -> topic_name -> topic counts
+    topic_counts: Map<
+        number,
+        Map<
+            string,
+            {
+                topic_count: number;
+                latest_msg_id: number;
+            }
+        >
+    >;
 };
 
 class UnreadTopicCounter {
@@ -238,13 +253,9 @@ class UnreadTopicCounter {
         this.reverse_lookup.delete(message_id);
     }
 
-    get_counts(
-        include_per_topic_count = false,
-        include_per_topic_latest_msg_id = false,
-    ): UnreadTopicCounts {
+    get_counts_per_topic(include_per_topic_latest_msg_id = false): UnreadTopicCounts {
         let stream_unread_messages = 0;
-        let followed_topic_unread_messages = 0;
-        const stream_counts_by_id = new Map(); // hash by stream_id -> count
+        const topic_counts_by_stream_id = new Map(); // hash by stream_id -> count
         for (const [stream_id, per_stream_bucketer] of this.bucketer) {
             // We track unread counts for streams that may be currently
             // unsubscribed.  Since users may re-subscribe, we don't
@@ -255,41 +266,52 @@ class UnreadTopicCounter {
                 continue;
             }
 
-            if (include_per_topic_count) {
-                const topic_unread = new Map();
-                let stream_count = 0;
-                for (const [topic, msgs] of per_stream_bucketer) {
-                    const topic_count = msgs.size;
-                    if (include_per_topic_latest_msg_id) {
-                        const latest_msg_id = Math.max(...msgs);
-                        topic_unread.set(topic, {
-                            topic_count,
-                            latest_msg_id,
-                        });
-                    } else {
-                        topic_unread.set(topic, topic_count);
-                    }
-                    stream_count += topic_count;
+            const topic_unread = new Map();
+            let stream_count = 0;
+            for (const [topic, msgs] of per_stream_bucketer) {
+                const topic_count = msgs.size;
+                if (include_per_topic_latest_msg_id) {
+                    const latest_msg_id = Math.max(...msgs);
+                    topic_unread.set(topic, {
+                        topic_count,
+                        latest_msg_id,
+                    });
+                } else {
+                    topic_unread.set(topic, topic_count);
                 }
-
-                // Note: The format of res.stream_count is completely
-                // different from the else clause; with objects
-                // containing data for individual topics rather than
-                // just muted/unmuted totals, and all muted
-                // streams/topics included so that the inbox view can
-                // easily show/hide topics when its filters are
-                // adjusted.  This should be refactored before the
-                // TypeScript migration for this file.
-                stream_counts_by_id.set(stream_id, topic_unread);
-                stream_unread_messages += stream_count;
-            } else {
-                // get_stream_count_info calculates both the number of
-                // unmuted unread as well as the number of muted
-                // unreads.
-                stream_counts_by_id.set(stream_id, this.get_stream_count_info(stream_id));
-                stream_unread_messages += stream_counts_by_id.get(stream_id).unmuted_count;
-                followed_topic_unread_messages += stream_counts_by_id.get(stream_id).followed_count;
+                stream_count += topic_count;
             }
+
+            topic_counts_by_stream_id.set(stream_id, topic_unread);
+            stream_unread_messages += stream_count;
+        }
+
+        return {
+            stream_unread_messages,
+            topic_counts: topic_counts_by_stream_id,
+        };
+    }
+
+    get_counts(): UnreadStreamCounts {
+        let stream_unread_messages = 0;
+        let followed_topic_unread_messages = 0;
+        const stream_counts_by_id = new Map(); // hash by stream_id -> count
+        for (const stream_id of this.bucketer.keys()) {
+            // We track unread counts for streams that may be currently
+            // unsubscribed.  Since users may re-subscribe, we don't
+            // completely throw away the data.  But we do ignore it here,
+            // so that callers have a view of the **current** world.
+            const sub = sub_store.get(stream_id);
+            if (!sub || !stream_data.is_subscribed(stream_id)) {
+                continue;
+            }
+
+            // get_stream_count_info calculates both the number of
+            // unmuted unread as well as the number of muted
+            // unreads.
+            stream_counts_by_id.set(stream_id, this.get_stream_count_info(stream_id));
+            stream_unread_messages += stream_counts_by_id.get(stream_id).unmuted_count;
+            followed_topic_unread_messages += stream_counts_by_id.get(stream_id).followed_count;
         }
 
         return {
@@ -823,11 +845,7 @@ export function get_unread_pm(include_per_bucket_latest_msg_id = false): DirectM
 }
 
 export function get_unread_topics(include_per_topic_latest_msg_id = false): UnreadTopicCounts {
-    const include_per_topic_count = true;
-    return unread_topic_counter.get_counts(
-        include_per_topic_count,
-        include_per_topic_latest_msg_id,
-    );
+    return unread_topic_counter.get_counts_per_topic(include_per_topic_latest_msg_id);
 }
 
 export type FullUnreadCountsData = {
@@ -837,7 +855,7 @@ export type FullUnreadCountsData = {
     stream_unread_messages: number;
     followed_topic_unread_messages_count: number;
     followed_topic_unread_messages_with_mention_count: number;
-    stream_count: Map<number, number>;
+    stream_count: Map<number, StreamCountInfo>;
     streams_with_mentions: number[];
     streams_with_unmuted_mentions: number[];
     pm_count: Map<string, number>;
