@@ -113,8 +113,11 @@ export function initialize() {
                 !$elt.closest(".no-auto-hide-left-sidebar-overlay").length
             ) {
                 const $left_column = $(".app-main .column-left");
+                const $popover = $(".tippy-box");
                 const click_outside_left_sidebar = !$elt.closest($left_column).length;
-                if (click_outside_left_sidebar) {
+                const click_outside_popover = !$elt.closest($popover).length;
+
+                if (click_outside_left_sidebar && click_outside_popover) {
                     hide_streamlist_sidebar();
                 }
             }
