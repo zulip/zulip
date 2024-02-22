@@ -20,6 +20,7 @@ sanity_check.check_venv(__file__)
 
 import aiohttp
 from aiohttp import hdrs, web
+from aiohttp.http_exceptions import BadStatusLine
 from returns.curry import partial
 
 from tools.lib.test_script import add_provision_check_override_param, assert_provisioning_status_ok
@@ -305,6 +306,27 @@ def print_listeners() -> None:
         print(f"   {port}: {label}")
     print()
 
+
+def https_log_filter(record: logging.LogRecord) -> bool:
+    # aiohttp emits an exception with a traceback when receiving an
+    # https request (https://github.com/aio-libs/aiohttp/issues/8065).
+    # Abbreviate it to a one-line message.
+    if (
+        record.exc_info is not None
+        and isinstance(error := record.exc_info[1], BadStatusLine)
+        and error.message.startswith(
+            (
+                "Invalid method encountered:\n\n  b'\\x16",
+                'Invalid method encountered:\n\n  b"\\x16',
+            )
+        )
+    ):
+        record.msg = "Rejected https request (this development server only supports http)"
+        record.exc_info = None
+    return True
+
+
+logging.getLogger("aiohttp.server").addFilter(https_log_filter)
 
 runner: web.AppRunner
 children: List["subprocess.Popen[bytes]"] = []
