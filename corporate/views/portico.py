@@ -21,7 +21,12 @@ from corporate.lib.stripe import (
     get_configured_fixed_price_plan_offer,
     get_free_trial_days,
 )
-from corporate.models import CustomerPlan, get_current_plan_by_customer, get_customer_by_realm
+from corporate.models import (
+    CustomerPlan,
+    get_current_plan_by_customer,
+    get_customer_by_realm,
+    is_legacy_customer,
+)
 from zerver.context_processors import get_realm_from_request, latest_info_context
 from zerver.decorator import add_google_analytics, zulip_login_required
 from zerver.lib.github import (
@@ -168,9 +173,6 @@ def remote_realm_plans_page(
         if context.customer_plan is None:
             context.on_free_tier = not context.is_sponsored
         else:
-            if context.customer_plan.tier == CustomerPlan.TIER_SELF_HOSTED_LEGACY:
-                # Free trial is disabled for legacy customers.
-                context.free_trial_days = None
             context.on_free_tier = (
                 context.customer_plan.tier
                 in (
@@ -190,6 +192,10 @@ def remote_realm_plans_page(
                     billing_cycle_anchor=context.customer_plan.end_date,
                     status=CustomerPlan.NEVER_STARTED,
                 )
+
+        if is_legacy_customer(customer):
+            # Free trial is disabled for legacy customers.
+            context.free_trial_days = None
 
     context.is_new_customer = (
         not context.on_free_tier and context.customer_plan is None and not context.is_sponsored
@@ -234,9 +240,6 @@ def remote_server_plans_page(
         if context.customer_plan is None:
             context.on_free_tier = not context.is_sponsored
         else:
-            if context.customer_plan.tier == CustomerPlan.TIER_SELF_HOSTED_LEGACY:
-                # Free trial is disabled for legacy customers.
-                context.free_trial_days = None
             context.on_free_tier = context.customer_plan.tier in (
                 CustomerPlan.TIER_SELF_HOSTED_LEGACY,
                 CustomerPlan.TIER_SELF_HOSTED_BASE,
@@ -252,6 +255,10 @@ def remote_server_plans_page(
                     billing_cycle_anchor=context.customer_plan.end_date,
                     status=CustomerPlan.NEVER_STARTED,
                 )
+
+        if is_legacy_customer(customer):
+            # Free trial is disabled for legacy customers.
+            context.free_trial_days = None
 
     context.is_new_customer = (
         not context.on_free_tier and context.customer_plan is None and not context.is_sponsored
