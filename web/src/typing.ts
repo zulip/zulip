@@ -119,7 +119,11 @@ export function get_recipient(): Recipient | null {
     }
     if (message_type === "stream") {
         const stream_name = compose_state.stream_name();
-        const stream_id = stream_data.get_stream_id(stream_name)!;
+        const stream_id = stream_data.get_stream_id(stream_name);
+        if (stream_id === undefined) {
+            // compose box with no stream selected.
+            return null;
+        }
         const topic = compose_state.topic();
         return {
             message_type: "stream",
