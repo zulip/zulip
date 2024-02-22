@@ -599,6 +599,23 @@
             height: 55px;
         }
     }
+
+    @media (width <= 405px) {
+        /* For very tiny views, we get rid of the luxury
+           of any horizontal padding that's left. */
+        .comparison-table-feature,
+        .cloud-cell,
+        .self-hosted-cell {
+            padding-left: 0;
+            padding-right: 0;
+        }
+
+        /* Keep the comparison-table features from
+           colliding with the left screen edge, though. */
+        .comparison-table-feature {
+            padding-left: 2px;
+        }
+    }
 }
 
 @media (width <= 500px) {
