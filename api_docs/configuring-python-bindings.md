@@ -5,14 +5,22 @@ easily, called the [Python bindings](https://pypi.python.org/pypi/zulip/).
 One of the most notable use cases for these bindings are bots developed
 using Zulip's [bot framework](/api/writing-bots).
 
-In order to use them, you need to configure them with your API key and other
-settings. There are two ways to achieve that:
+In order to use them, you need to configure them with your identity
+(account, API key, and Zulip server URL). There are a few ways to
+achieve that:
 
- - With a file called `zuliprc` passed as an argument via the `--config-file`
-   option.
- - With
-   [environment variables](https://en.wikipedia.org/wiki/Environment_variable)
-   set up in your host machine.
+- Using a `zuliprc` file, referenced via the `--config-file` option or
+  the `config_file` option to the `zulip.Client` constructor
+  (recommended for bots).
+- Using a `zuliprc` file in your home directory at `~/.zuliprc`
+  (recommended for your own API key).
+- Using the [environment
+  variables](https://en.wikipedia.org/wiki/Environment_variable)
+  documented below.
+- Using the `--api-key`, `--email`, and `--site` variables as command
+  line parameters.
+- Using the `api_key`, `email`, and `site` parameters to the
+  `zulip.Client` constructor.
 
 ## Download a `zuliprc` file
 
@@ -24,12 +32,6 @@ settings. There are two ways to achieve that:
 
 1. Click the **download** (<i class="fa fa-download"></i>) icon on the profile
    card of the desired bot to download the bot's `zuliprc` file.
-
-!!! tip ""
-
-    If you save or move a `zuliprc` file to your home directory as `~/.zuliprc`,
-    the Python API bindings will automatically read it in (you won't have to
-    pass the `--config-file` option).
 
 !!! warn ""
 
@@ -47,11 +49,9 @@ settings. There are two ways to achieve that:
 
 1. Click **Download zuliprc** to download your `zuliprc` file.
 
-!!! tip ""
-
-    If you save or move a `zuliprc` file to your home directory as `~/.zuliprc`,
-    the Python API bindings will automatically read it in (you won't have to
-    pass the `--config-file` option).
+1. (optional) If you'd like your credentials to be used by default
+   when using the Zulip API on your computer, move the `zuliprc` file
+   to `~/.zuliprc` in your home directory.
 
 !!! warn ""
 
