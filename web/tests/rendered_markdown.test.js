@@ -419,8 +419,8 @@ run_test("timestamp", ({mock_template}) => {
     rm.update_elements($content);
 
     // Final asserts
-    assert.equal($timestamp.html(), '<i class="fa fa-clock-o"></i>\nThu, Jan 1, 1970, 12:00 AM\n');
-    assert.equal($timestamp_invalid.text(), "never-been-set");
+    assert.equal($timestamp.html(), '<img src="/static/images/help/clock.png" alt="Clock Icon" style="width: 14px; height: 14px; margin-bottom: 1.8px; margin-right: 1px;">\nThu, Jan 1, 1970, 12:00 AM\n');
+    assert.equal($timestamp_invalid.text(), "never-been-set");    
 });
 
 run_test("timestamp-twenty-four-hour-time", ({mock_template, override}) => {
@@ -438,11 +438,11 @@ run_test("timestamp-twenty-four-hour-time", ({mock_template, override}) => {
     // We will temporarily change the 24h setting for this test.
     override(user_settings, "twenty_four_hour_time", true);
     rm.update_elements($content);
-    assert.equal($timestamp.html(), '<i class="fa fa-clock-o"></i>\nWed, Jul 15, 2020, 20:40\n');
+    assert.equal($timestamp.html(), '<img src="/static/images/help/clock.png" alt="Clock Icon" style="width: 14px; height: 14px; margin-bottom: 1.8px; margin-right: 1px;">\nWed, Jul 15, 2020, 20:40\n');
 
     override(user_settings, "twenty_four_hour_time", false);
     rm.update_elements($content);
-    assert.equal($timestamp.html(), '<i class="fa fa-clock-o"></i>\nWed, Jul 15, 2020, 8:40 PM\n');
+    assert.equal($timestamp.html(), '<img src="/static/images/help/clock.png" alt="Clock Icon" style="width: 14px; height: 14px; margin-bottom: 1.8px; margin-right: 1px;">\nWed, Jul 15, 2020, 8:40 PM\n');
 });
 
 run_test("timestamp-error", () => {
