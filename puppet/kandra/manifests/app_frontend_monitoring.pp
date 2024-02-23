@@ -1,6 +1,7 @@
 # @summary Prometheus monitoring of a Django frontend and RabbitMQ server.
 #
 class kandra::app_frontend_monitoring {
+  include kandra::prometheus::memcached
   include kandra::prometheus::rabbitmq
   include kandra::prometheus::uwsgi
   include kandra::prometheus::process
