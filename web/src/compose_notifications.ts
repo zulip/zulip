@@ -132,7 +132,7 @@ export function get_local_notify_mix_reason(message: Message): string | undefine
         current_filter.can_apply_locally() &&
         !current_filter.predicate()(message)
     ) {
-        return $t({defaultMessage: "Sent! Your message is outside your current narrow."});
+        return $t({defaultMessage: "Sent! Your message is outside your current view."});
     }
 
     return undefined;
@@ -192,7 +192,7 @@ export function notify_local_mixes(messages: Message[], need_user_to_scroll: boo
         }
 
         const link_text = $t(
-            {defaultMessage: "Narrow to {message_recipient}"},
+            {defaultMessage: "Go to {message_recipient}"},
             {message_recipient: get_message_header(message)},
         );
 
