@@ -269,7 +269,14 @@ tr.admin td:first-child {
 .realm-support-information,
 .remote-server-information,
 .remote-realm-information {
-    padding-bottom: 15px;
+    margin-bottom: 10px;
+}
+
+.support-section-header {
+    font-size: 1.2em;
+    font-weight: bold;
+    line-height: 20px;
+    margin: 0 0 8px;
 }
 
 .support-realm-icon {

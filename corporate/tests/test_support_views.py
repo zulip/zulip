@@ -243,11 +243,11 @@ class TestRemoteServerSupportEndpoint(ZulipTestCase):
         def check_legacy_plan_with_upgrade(result: "TestHttpResponse") -> None:
             self.assert_in_success_response(
                 [
-                    "<h4>📅 Current plan information:</h4>",
+                    "📅 Current plan information:",
                     "<b>Plan name</b>: Free (legacy plan)<br />",
                     "<b>Status</b>: New plan scheduled<br />",
                     "<b>End date</b>: 01 February 2050<br />",
-                    "<h4>⏱️ Next plan information:</h4>",
+                    "⏱️ Next plan information:",
                     "<b>Plan name</b>: Zulip Basic<br />",
                     "<b>Status</b>: Never started<br />",
                     "<b>Start date</b>: 01 February 2050<br />",
@@ -262,7 +262,7 @@ class TestRemoteServerSupportEndpoint(ZulipTestCase):
         def check_legacy_plan_without_upgrade(result: "TestHttpResponse") -> None:
             self.assert_in_success_response(
                 [
-                    "<h4>📅 Current plan information:</h4>",
+                    "📅 Current plan information:",
                     "<b>Plan name</b>: Free (legacy plan)<br />",
                     "<b>Status</b>: Active<br />",
                     "<b>End date</b>: 01 February 2050<br />",
@@ -271,7 +271,7 @@ class TestRemoteServerSupportEndpoint(ZulipTestCase):
             )
             self.assert_not_in_success_response(
                 [
-                    "<h4>⏱️ Next plan information:</h4>",
+                    "⏱️ Next plan information:",
                 ],
                 result,
             )
