@@ -11,9 +11,11 @@ from django.utils.timezone import now as timezone_now
 
 from corporate.lib.stripe import (
     BillingSession,
+    PushNotificationsEnabledStatus,
     RemoteRealmBillingSession,
     RemoteServerBillingSession,
     get_configured_fixed_price_plan_offer,
+    get_push_status_for_remote_request,
     start_of_next_billing_cycle,
 )
 from corporate.models import (
@@ -86,6 +88,7 @@ class PlanData:
 @dataclass
 class MobilePushData:
     total_mobile_users: int
+    push_notification_status: PushNotificationsEnabledStatus
     uncategorized_mobile_users: Optional[int] = None
     mobile_pushes_forwarded: Optional[int] = None
     last_mobile_push_sent: str = ""
@@ -304,8 +307,12 @@ def get_mobile_push_data(remote_entity: Union[RemoteZulipServer, RemoteRealm]) -
             ).strftime("%Y-%m-%d")
         else:
             push_forwarded_interval_start = "None"
+        push_notification_status = get_push_status_for_remote_request(
+            remote_server=remote_entity, remote_realm=None
+        )
         return MobilePushData(
             total_mobile_users=total_users,
+            push_notification_status=push_notification_status,
             uncategorized_mobile_users=uncategorized_users,
             mobile_pushes_forwarded=mobile_pushes["total_forwarded"],
             last_mobile_push_sent=push_forwarded_interval_start,
@@ -334,8 +341,12 @@ def get_mobile_push_data(remote_entity: Union[RemoteZulipServer, RemoteRealm]) -
             ).strftime("%Y-%m-%d")
         else:
             push_forwarded_interval_start = "None"
+        push_notification_status = get_push_status_for_remote_request(
+            remote_entity.server, remote_entity
+        )
         return MobilePushData(
             total_mobile_users=mobile_users,
+            push_notification_status=push_notification_status,
             uncategorized_mobile_users=None,
             mobile_pushes_forwarded=mobile_pushes["total_forwarded"],
             last_mobile_push_sent=push_forwarded_interval_start,

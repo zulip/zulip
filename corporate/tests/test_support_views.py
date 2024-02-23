@@ -174,6 +174,7 @@ class TestRemoteServerSupportEndpoint(ZulipTestCase):
                     "<b>Plan type</b>: Free<br />",
                     "<b>Non-guest user count</b>: 0<br />",
                     "<b>Guest user count</b>: 0<br />",
+                    "📶 Push notification status:",
                 ],
                 html_response,
             )
@@ -190,6 +191,7 @@ class TestRemoteServerSupportEndpoint(ZulipTestCase):
                     "<b>Date created</b>: 01 December 2023",
                     "<b>Org type</b>: Unspecified<br />",
                     "<b>Has remote realms</b>: True<br />",
+                    "📶 Push notification status:",
                 ],
                 html_response,
             )
