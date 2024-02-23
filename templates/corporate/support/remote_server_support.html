@@ -68,6 +68,11 @@
                     <b>Last push notification date</b>: {{ remote_servers_support_data[remote_server.id].mobile_push_data.last_mobile_push_sent }}<br />
                 </div>
 
+                {% with %}
+                    {% set status = remote_servers_support_data[remote_server.id].mobile_push_data.push_notification_status %}
+                    {% include 'corporate/support/push_status_details.html' %}
+                {% endwith %}
+
                 {% if remote_server.plan_type != SPONSORED_PLAN_TYPE %}
                 <div class="remote-support-sponsorship-container">
                     {% with %}
