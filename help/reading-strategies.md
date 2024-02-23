@@ -64,7 +64,7 @@ You can see all your direct messages in one place.
    scroll using your mouse, the arrow keys, <kbd>End</kbd>, or page up/down.
 
 1. You can click on a conversation in the left sidebar or a message recipient
-   bar to narrow to messages from that conversation.
+   bar to view that conversation.
 
 !!! keyboard_tip ""
 
@@ -94,7 +94,7 @@ on.
   scroll using your mouse, the arrow keys, <kbd>End</kbd>, or page up/down.
 
 1. You can click on a topic in the left sidebar or a message recipient bar to
-   narrow to messages from that topic.
+   view that topic.
 
 {end_tabs}
 

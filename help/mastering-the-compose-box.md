@@ -4,7 +4,7 @@
 
 When composing a message, Zulip lets you view a different
 [conversation](/help/recent-conversations) from the one you are composing to.
-For example, you can start a new topic without changing your narrow, send a
+For example, you can start a new topic without changing your view, send a
 direct message about the topic you're viewing, or look up a related discussion.
 
 In this context, the parts of the message view that are outside of the
@@ -43,8 +43,8 @@ will be sent.
 
 ### Go to conversation
 
-Zulip lets you narrow the message view to the
-[conversation](/help/recent-conversations) you're currently composing to.
+Zulip lets you jump to the [conversation](/help/recent-conversations) you're
+currently composing to.
 
 {start_tabs}
 

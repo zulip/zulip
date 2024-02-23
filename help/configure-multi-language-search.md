@@ -1,10 +1,11 @@
 # Configure multi-language search
 
 Zulip supports [full-text search](/help/search-for-messages), which can be
-combined arbitrarily with Zulip's full suite of narrowing operators. By default,
-Zulip search only supports English text, using [PostgreSQL's built-in full-text
-search feature](https://www.postgresql.org/docs/current/textsearch.html), with a
-custom set of English stop words to improve the quality of the search results.
+combined arbitrarily with Zulip's full suite of [search
+filters](/help/search-for-messages#search-filters). By default, Zulip search
+only supports English text, using [PostgreSQL's built-in full-text search
+feature](https://www.postgresql.org/docs/current/textsearch.html), with a custom
+set of English stop words to improve the quality of the search results.
 
 Self-hosted Zulip organizations can instead set up an experimental
 [PGroonga](https://pgroonga.github.io/) integration that provides full-text
