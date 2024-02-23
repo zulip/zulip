@@ -8,7 +8,7 @@ from typing import List, Tuple
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import models
-from django.db.models import Max, Q, UniqueConstraint
+from django.db.models import Max, Q, QuerySet, UniqueConstraint
 from django.utils.timezone import now as timezone_now
 from typing_extensions import override
 
@@ -87,6 +87,12 @@ class RemoteZulipServer(models.Model):
 
     def format_requester_for_logs(self) -> str:
         return "zulip-server:" + str(self.uuid)
+
+    def get_remote_server_billing_users(self) -> QuerySet["RemoteServerBillingUser"]:
+        return RemoteServerBillingUser.objects.filter(
+            remote_server=self,
+            is_active=True,
+        )
 
 
 class RemotePushDeviceToken(AbstractPushDeviceToken):
@@ -175,6 +181,12 @@ class RemoteRealm(models.Model):
     @override
     def __str__(self) -> str:
         return f"{self.host} {str(self.uuid)[0:12]}"
+
+    def get_remote_realm_billing_users(self) -> QuerySet["RemoteRealmBillingUser"]:
+        return RemoteRealmBillingUser.objects.filter(
+            remote_realm=self,
+            is_active=True,
+        )
 
 
 class AbstractRemoteRealmBillingUser(models.Model):

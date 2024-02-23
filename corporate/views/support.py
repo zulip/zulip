@@ -661,6 +661,20 @@ def remote_servers_support(
                 "Recent analytics data missing"
             )
 
+    def get_remote_server_billing_user_emails_as_string(remote_server: RemoteZulipServer) -> str:
+        return ", ".join(
+            remote_server.get_remote_server_billing_users()
+            .order_by("email")
+            .values_list("email", flat=True)
+        )
+
+    def get_remote_realm_billing_user_emails_as_string(remote_realm: RemoteRealm) -> str:
+        return ", ".join(
+            remote_realm.get_remote_realm_billing_users()
+            .order_by("email")
+            .values_list("email", flat=True)
+        )
+
     context["remote_servers"] = remote_servers
     context["remote_servers_support_data"] = server_support_data
     context["remote_server_to_max_monthly_messages"] = remote_server_to_max_monthly_messages
@@ -673,6 +687,10 @@ def remote_servers_support(
     context["dollar_amount"] = cents_to_dollar_string
     context["server_analytics_link"] = remote_installation_stats_link
     context["REMOTE_PLAN_TIERS"] = get_remote_plan_tier_options()
+    context["get_remote_server_billing_user_emails"] = (
+        get_remote_server_billing_user_emails_as_string
+    )
+    context["get_remote_realm_billing_user_emails"] = get_remote_realm_billing_user_emails_as_string
     context["SPONSORED_PLAN_TYPE"] = RemoteZulipServer.PLAN_TYPE_COMMUNITY
 
     return render(

@@ -631,6 +631,7 @@ html_rules: List["Rule"] = [
             "templates/corporate/support/realm_details.html",
             "templates/corporate/support/remote_server_support.html",
             "templates/corporate/support/support.html",
+            "templates/corporate/support/remote_realm_details.html",
         },
         "description": "`title` value should be translatable.",
     },
