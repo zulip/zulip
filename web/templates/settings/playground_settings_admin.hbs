@@ -3,27 +3,26 @@
         <p>
             {{#tr}}
                 Code playgrounds are interactive in-browser development environments,
-                such as <z-link-repl>replit</z-link-repl>, that are designed to make
+                that are designed to make
                 it convenient to edit and debug code. Zulip <z-link-code-blocks>code blocks</z-link-code-blocks>
                 that are tagged with a programming language will have a button visible on
                 hover that allows users to open the code block on the code playground site.
-                {{#*inline "z-link-repl"}}<a href="https://replit.com/" target="_blank" rel="noopener noreferrer">{{> @partial-block}}</a>{{/inline}}
                 {{#*inline "z-link-code-blocks"}}<a href="/help/code-blocks" target="_blank" rel="noopener noreferrer">{{> @partial-block}}</a>{{/inline}}
             {{/tr}}
         </p>
         <p>
-            {{t "For example, to configure a code playground for code blocks tagged as Python,
+            {{t "For example, to configure a code playground for code blocks tagged as Rust,
               you can set:" }}
         </p>
         <ul>
             <li>
-                {{t "Language" }}: <span class="rendered_markdown"><code>Python</code></span>
+                {{t "Language" }}: <span class="rendered_markdown"><code>Rust</code></span>
             </li>
             <li>
-                {{t "Name" }}: <span class="rendered_markdown"><code>Python3 playground</code></span>
+                {{t "Name" }}: <span class="rendered_markdown"><code>Rust playground</code></span>
             </li>
             <li>
-                {{t "URL template" }}: <span class="rendered_markdown"><code>https://replit.com/languages/python3/?code={code}</code></span>
+                {{t "URL template" }}: <span class="rendered_markdown"><code>https://play.rust-lang.org/?code={code}</code></span>
             </li>
         </ul>
         <p>
@@ -45,15 +44,15 @@
                     <div class="alert" id="admin-playground-status"></div>
                     <div class="input-group">
                         <label for="playground_pygments_language"> {{t "Language" }}</label>
-                        <input type="text" id="playground_pygments_language" class="settings_text_input" name="pygments_language" autocomplete="off" placeholder="Python" />
+                        <input type="text" id="playground_pygments_language" class="settings_text_input" name="pygments_language" autocomplete="off" placeholder="Rust" />
                     </div>
                     <div class="input-group">
                         <label for="playground_name"> {{t "Name" }}</label>
-                        <input type="text" id="playground_name" class="settings_text_input" name="playground_name" autocomplete="off" placeholder="Python3 playground" />
+                        <input type="text" id="playground_name" class="settings_text_input" name="playground_name" autocomplete="off" placeholder="Rust playground" />
                     </div>
                     <div class="input-group">
                         <label for="playground_url_template"> {{t "URL template" }}</label>
-                        <input type="text" id="playground_url_template" class="settings_text_input" name="url_template" placeholder="https://replit.com/languages/python3/?code={code}" />
+                        <input type="text" id="playground_url_template" class="settings_text_input" name="url_template" placeholder="https://play.rust-lang.org/?code={code}" />
                     </div>
                     <button type="submit" id="submit_playground_button" class="button rounded sea-green">
                         {{t 'Add code playground' }}
