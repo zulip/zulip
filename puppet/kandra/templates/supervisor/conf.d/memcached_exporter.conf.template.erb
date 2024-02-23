@@ -1,0 +1,12 @@
+[program:memcached_exporter]
+# We record the hash of the script so that we can update this file
+# with it, which will make `supervisorctl reread && supervisorctl
+# update` restart this job.
+command=<%= @bin %>
+process_name=memcached_exporter_<%= @exporter_hash %>
+priority=10
+autostart=true
+autorestart=true
+user=zulip
+redirect_stderr=true
+stdout_logfile=/var/log/zulip/memcached_exporter.log
