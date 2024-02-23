@@ -6,8 +6,9 @@ and use the convenient [**keyboard shortcuts reference**](#keyboard-shortcuts-re
 in the Zulip app to add more to your repertoire as needed.
 
 * [The basics](#the-basics)
+* [Search](#search)
+* [Scrolling](#scrolling)
 * [Navigation](#navigation)
-* [Narrowing](#narrowing)
 * [Composing messages](#composing-messages)
 * [Message actions](#message-actions)
 * [Drafts](#drafts)
@@ -51,13 +52,15 @@ in the Zulip app to add more to your repertoire as needed.
   until you are in the [home view](/help/configure-home-view).
 
 [disable-escape]: /help/configure-home-view#configure-whether-esc-navigates-to-the-home-view
-## Navigation
+## Search
 
 * **Search messages**: <kbd>/</kbd> or <kbd>Ctrl</kbd> + <kbd>K</kbd>
 
 * **Filter streams**: <kbd>Q</kbd>
 
 * **Search people**: <kbd>W</kbd>
+
+## Scrolling
 
 * **Last message**: <kbd>End</kbd> or <kbd>Shift</kbd> + <kbd>G</kbd> —
   Also marks all messages in the current view as read.
@@ -73,32 +76,32 @@ in the Zulip app to add more to your repertoire as needed.
 * **Scroll down**: <kbd>PgDn</kbd>, <kbd>Shift</kbd> + <kbd>J</kbd>, or
   <kbd>Spacebar</kbd>
 
+## Navigation
+
 * **Go back through viewing history**: <kbd data-mac-key="⌘">Alt</kbd> +
   <kbd class="arrow-key">←</kbd>
 
 * **Go forward through viewing history**: <kbd data-mac-key="⌘">Alt</kbd> +
   <kbd class="arrow-key">→</kbd>
 
-## Narrowing
+* **Go to next unread topic**: <kbd>N</kbd>
 
-* **Narrow to next unread topic**: <kbd>N</kbd>
+* **Go to next unread direct message**: <kbd>P</kbd>
 
-* **Narrow to next unread direct message**: <kbd>P</kbd>
+* **Go to topic or DM conversation**: <kbd>S</kbd>
 
-* **Narrow to topic or DM conversation**: <kbd>S</kbd>
+* **Go to stream from topic view**: <kbd>S</kbd>
 
-* **Narrow to stream from topic view**: <kbd>S</kbd>
-
-* **Narrow to all direct messages**: <kbd>Shift</kbd> + <kbd>P</kbd>
+* **Go to all direct messages**: <kbd>Shift</kbd> + <kbd>P</kbd>
 
 * **Zoom to message in conversation context**: <kbd>Z</kbd> — This view does not mark messages as read.
 
-* **Cycle between stream narrows**: <kbd>Shift</kbd> + <kbd>A</kbd>
+* **Cycle between stream views**: <kbd>Shift</kbd> + <kbd>A</kbd>
   (previous) and <kbd>Shift</kbd> + <kbd>D</kbd> (next)
 
-* **Narrow to All messages**: <kbd>A</kbd> — Shows all unmuted messages.
+* **Go to All messages**: <kbd>A</kbd> — Shows all unmuted messages.
 
-* **Narrow to current compose box recipient**: <kbd>Ctrl</kbd> + <kbd>.</kbd>
+* **Go to the conversation you are composing to**: <kbd>Ctrl</kbd> + <kbd>.</kbd>
 
 ## Composing messages
 
