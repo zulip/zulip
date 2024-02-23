@@ -9,7 +9,7 @@ for catching up on messages sent while you were away.
 {!go-to-recent-conversations.md!}
 
 1. The filters at the top help you quickly find relevant conversations.
-   For example, select **Participated** to narrow to the conversations you
+   For example, select **Participated** to filter to the conversations you
    have sent messages to.
 
 {end_tabs}
