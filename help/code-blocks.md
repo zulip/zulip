@@ -110,8 +110,8 @@ blocks without any syntax highlighting (E.g. to paste an error message).
 
 ## Code playgrounds
 
-Code playgrounds are interactive in-browser development environments, such as
-[replit](https://replit.com), that are designed to make it convenient to edit
+Code playgrounds are interactive in-browser development environments
+that are designed to make it convenient to edit
 and debug code. Code playgrounds can be configured for any programming language.
 Zulip code blocks that are tagged with the language will have a button visible
 on hover that allows you to open the code block in the code playground site.
@@ -124,22 +124,19 @@ on hover that allows you to open the code block in the code playground site.
 
 {settings_tab|playground-settings}
 
-1. Under **Add a new code playground**, enter a **Name**, **Language** and **URL
-prefix**.
+1. Under **Add a new code playground**, enter a **Language**, **Name**, and
+**URL template**.
 
 1. Click **Add code playground**.
 
 {end_tabs}
 
-For example, to configure code playgrounds for languages like Python or
-JavaScript, you could specify the language and URL templates as:
+For example, to configure code a playground for Rust, you could specify the
+language and URL template as `Rust` and `https://play.rust-lang.org/?code={code}`.
 
-* `Python` and `https://replit.com/languages/python3/code={code}`
-* `JavaScript` and `https://replit.com/languages/javascript/code={code}`
-
-When a code block is labeled as Python or JavaScript (either explicitly or by
-organization default), users would get a on-hover option to open the code block
-in the specified code playground.
+When a code block is labeled as `rust` (either explicitly or by organization
+default), users would get an on-hover option to open the code block in the
+specified code playground.
 
 !!! tip ""
 
