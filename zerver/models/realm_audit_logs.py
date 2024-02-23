@@ -144,6 +144,7 @@ class AbstractRealmAuditLog(models.Model):
     REMOTE_REALM_VALUE_UPDATED = 20001
     REMOTE_PLAN_TRANSFERRED_SERVER_TO_REALM = 20002
     REMOTE_REALM_LOCALLY_DELETED = 20003
+    REMOTE_REALM_LOCALLY_DELETED_RESTORED = 20004
 
     event_type = models.PositiveSmallIntegerField()
 

@@ -830,10 +830,6 @@ def update_remote_realm_data_for_server(
     # Update RemoteRealm entries, for which the corresponding realm's info has changed
     # (for the attributes that make sense to sync like this).
     for remote_realm in already_registered_remote_realms:
-        # TODO: We'll also want to check if .realm_locally_deleted is True, and if so,
-        # toggle it off,
-        # since the server is now sending us data for this realm again.
-
         modified = False
         realm = uuid_to_realm_dict[str(remote_realm.uuid)]
         for remote_realm_attr, realm_dict_key in [
@@ -868,6 +864,20 @@ def update_remote_realm_data_for_server(
             )
             modified = True
 
+        if remote_realm.realm_locally_deleted and remote_realm.uuid in uuids:
+            remote_realm.realm_locally_deleted = False
+            remote_realm_audit_logs.append(
+                RemoteRealmAuditLog(
+                    server=server,
+                    remote_id=None,
+                    remote_realm=remote_realm,
+                    realm_id=uuid_to_realm_dict[str(remote_realm.uuid)].id,
+                    event_type=RemoteRealmAuditLog.REMOTE_REALM_LOCALLY_DELETED_RESTORED,
+                    event_time=now,
+                )
+            )
+            modified = True
+
         if modified:
             remote_realms_to_update.append(remote_realm)
 
@@ -880,6 +890,7 @@ def update_remote_realm_data_for_server(
             "authentication_methods",
             "org_type",
             "is_system_bot_realm",
+            "realm_locally_deleted",
         ],
     )
     RemoteRealmAuditLog.objects.bulk_create(remote_realm_audit_logs)
