@@ -76,7 +76,12 @@ from zerver.models.realms import get_org_type_display_name, get_realm
 from zerver.models.users import get_user_profile_by_id
 from zerver.views.invite import get_invitee_emails_set
 from zilencer.lib.remote_counts import MissingDataError, compute_max_monthly_messages
-from zilencer.models import RemoteRealm, RemoteZulipServer
+from zilencer.models import (
+    RemoteRealm,
+    RemoteRealmBillingUser,
+    RemoteServerBillingUser,
+    RemoteZulipServer,
+)
 
 
 class SupportRequestForm(forms.Form):
@@ -470,7 +475,18 @@ def get_remote_servers_for_support(
     remote_servers_query = RemoteZulipServer.objects.order_by("id").exclude(deactivated=True)
 
     if email_to_search:
-        return list(remote_servers_query.filter(contact_email__iexact=email_to_search))
+        remote_servers_set = set(remote_servers_query.filter(contact_email__iexact=email_to_search))
+        remote_server_billing_users = RemoteServerBillingUser.objects.filter(
+            email__iexact=email_to_search
+        ).select_related("remote_server")
+        for server_billing_user in remote_server_billing_users:
+            remote_servers_set.add(server_billing_user.remote_server)
+        remote_realm_billing_users = RemoteRealmBillingUser.objects.filter(
+            email__iexact=email_to_search
+        ).select_related("remote_realm__server")
+        for realm_billing_user in remote_realm_billing_users:
+            remote_servers_set.add(realm_billing_user.remote_realm.server)
+        return list(remote_servers_set)
 
     if uuid_to_search:
         remote_servers_set = set(remote_servers_query.filter(uuid__iexact=uuid_to_search))
