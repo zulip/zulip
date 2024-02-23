@@ -127,7 +127,7 @@ function populate_invites(invites_data: {invites: Invite[]}): void {
             ...ListWidget.generic_sort_functions("alphabetic", ["ref"]),
             ...ListWidget.generic_sort_functions("numeric", [
                 "invited",
-                "expires_at",
+                "expiry_date",
                 "invited_as",
             ]),
         },
