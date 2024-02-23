@@ -306,6 +306,12 @@ Override the maximum size that an item in memcached can store. This defaults to
 1m; adjusting it should only be necessary if your Zulip server has organizations
 which have more than 20k users.
 
+#### `size_reporting`
+
+Set to a true value to enable object size reporting in memcached. This incurs a
+small overhead for every store or delete operation, but allows a
+memcached_exporter to report precise item size distribution.
+
 ### `[loadbalancer]`
 
 #### `ips`
