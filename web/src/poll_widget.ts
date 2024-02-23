@@ -18,12 +18,10 @@ import * as people from "./people";
 
 type Event = {sender_id: number; data: InboundData};
 
-type ExtraData =
-    | {
-          question?: string | undefined;
-          options?: never[] | undefined;
-      }
-    | undefined;
+export type ExtraData = {
+    question?: string;
+    options?: string[];
+};
 
 declare global {
     // eslint-disable-next-line @typescript-eslint/consistent-type-definitions
