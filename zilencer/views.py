@@ -831,7 +831,7 @@ def update_remote_realm_data_for_server(
     # (for the attributes that make sense to sync like this).
     for remote_realm in already_registered_remote_realms:
         # TODO: We'll also want to check if .realm_locally_deleted is True, and if so,
-        # toggle it off (and potentially restore registration_deactivated=True too),
+        # toggle it off,
         # since the server is now sending us data for this realm again.
 
         modified = False
@@ -909,7 +909,7 @@ def update_remote_realm_data_for_server(
 
     RemoteRealm.objects.bulk_update(
         remote_realms_to_update,
-        ["realm_locally_deleted", "registration_deactivated"],
+        ["realm_locally_deleted"],
     )
     RemoteRealmAuditLog.objects.bulk_create(remote_realm_audit_logs)
 
