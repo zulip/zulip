@@ -27,6 +27,7 @@ from analytics.lib.counts import CountStat, LoggingCountStat
 from analytics.models import InstallationCount, RealmCount
 from corporate.models import CustomerPlan
 from version import ZULIP_VERSION
+from zerver.actions.create_realm import do_create_realm
 from zerver.actions.message_delete import do_delete_messages
 from zerver.actions.message_flags import do_mark_stream_messages_as_read, do_update_message_flags
 from zerver.actions.realm_settings import (
@@ -2509,10 +2510,10 @@ class AnalyticsBouncerTest(BouncerTestCase):
         realm_info = get_realms_info_for_push_bouncer()
 
         # Hard-delete a realm to test the non existent realm uuid case.
-        realm = get_realm("zephyr")
-        assert realm is not None
-        deleted_realm_uuid = realm.uuid
-        realm.delete()
+        zephyr_realm = get_realm("zephyr")
+        assert zephyr_realm is not None
+        deleted_realm_uuid = zephyr_realm.uuid
+        zephyr_realm.delete()
 
         # This mock causes us to still send data to the bouncer as if the realm existed,
         # causing the bouncer to include its corresponding info in the response. Through
@@ -2555,6 +2556,22 @@ class AnalyticsBouncerTest(BouncerTestCase):
 
         audit_log = RemoteRealmAuditLog.objects.latest("id")
         self.assertEqual(audit_log.event_type, RemoteRealmAuditLog.REMOTE_REALM_LOCALLY_DELETED)
+        self.assertEqual(audit_log.remote_realm, remote_realm_for_deleted_realm)
+
+        # Restore the deleted realm to verify that the bouncer correctly handles that
+        # by togglin off .realm_locally_deleted.
+        restored_zephyr_realm = do_create_realm("zephyr", "Zephyr")
+        restored_zephyr_realm.uuid = deleted_realm_uuid
+        restored_zephyr_realm.save()
+
+        send_server_data_to_push_bouncer(consider_usage_statistics=False)
+        remote_realm_for_deleted_realm.refresh_from_db()
+        self.assertEqual(remote_realm_for_deleted_realm.realm_locally_deleted, False)
+
+        audit_log = RemoteRealmAuditLog.objects.latest("id")
+        self.assertEqual(
+            audit_log.event_type, RemoteRealmAuditLog.REMOTE_REALM_LOCALLY_DELETED_RESTORED
+        )
         self.assertEqual(audit_log.remote_realm, remote_realm_for_deleted_realm)
 
 
