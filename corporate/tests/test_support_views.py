@@ -40,6 +40,8 @@ import uuid
 from zilencer.models import (
     RemoteRealm,
     RemoteRealmAuditLog,
+    RemoteRealmBillingUser,
+    RemoteServerBillingUser,
     RemoteZulipServer,
     RemoteZulipServerAuditLog,
 )
@@ -159,6 +161,15 @@ class TestRemoteServerSupportEndpoint(ZulipTestCase):
         # without upgrade scheduled
         add_legacy_plan(name="realm-name-5", upgrade=False)
 
+        # Add billing users
+        remote_realm = RemoteRealm.objects.get(name="realm-name-3")
+        RemoteRealmBillingUser.objects.create(
+            remote_realm=remote_realm, email="realm-admin@example.com", user_uuid=uuid.uuid4()
+        )
+        RemoteServerBillingUser.objects.create(
+            remote_server=remote_realm.server, email="server-admin@example.com"
+        )
+
     def test_search(self) -> None:
         def assert_server_details_in_response(
             html_response: "TestHttpResponse", hostname: str
@@ -168,6 +179,7 @@ class TestRemoteServerSupportEndpoint(ZulipTestCase):
                     '<span class="label">remote server</span>',
                     f"<h3>{hostname} <a",
                     f"<b>Contact email</b>: admin@{hostname}",
+                    "<b>Billing users</b>:",
                     "<b>Date created</b>:",
                     "<b>UUID</b>:",
                     "<b>Zulip version</b>:",
@@ -278,6 +290,15 @@ class TestRemoteServerSupportEndpoint(ZulipTestCase):
                 result,
             )
 
+        def check_for_billing_users_emails(result: "TestHttpResponse") -> None:
+            self.assert_in_success_response(
+                [
+                    "<b>Billing users</b>: realm-admin@example.com",
+                    "<b>Billing users</b>: server-admin@example.com",
+                ],
+                result,
+            )
+
         self.login("cordelia")
 
         result = self.client_get("/activity/remote/support")
@@ -342,6 +363,18 @@ class TestRemoteServerSupportEndpoint(ZulipTestCase):
         assert_server_details_in_response(result, f"zulip-{server}.example.com")
         assert_realm_details_in_response(result, f"realm-name-{server}", f"realm-host-{server}")
         check_sponsorship_request_with_website(result)
+        check_for_billing_users_emails(result)
+
+        # Check search with billing user emails
+        result = self.client_get("/activity/remote/support", {"q": "realm-admin@example.com"})
+        assert_server_details_in_response(result, f"zulip-{server}.example.com")
+        assert_realm_details_in_response(result, f"realm-name-{server}", f"realm-host-{server}")
+        check_for_billing_users_emails(result)
+
+        result = self.client_get("/activity/remote/support", {"q": "server-admin@example.com"})
+        assert_server_details_in_response(result, f"zulip-{server}.example.com")
+        assert_realm_details_in_response(result, f"realm-name-{server}", f"realm-host-{server}")
+        check_for_billing_users_emails(result)
 
         server = 4
         result = self.client_get("/activity/remote/support", {"q": f"zulip-{server}.example.com"})
