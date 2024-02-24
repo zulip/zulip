@@ -36,7 +36,7 @@ export function get_name() {
 class StreamSubscriptionError {
     report_no_subs_to_stream() {
         $("#stream_subscription_error").text(
-            $t({defaultMessage: "You cannot create a stream with no subscribers!"}),
+            $t({defaultMessage: "You cannot create a stream with no subscribers."}),
         );
         $("#stream_subscription_error").show();
     }
@@ -60,7 +60,7 @@ const stream_subscription_error = new StreamSubscriptionError();
 class StreamNameError {
     report_already_exists() {
         $("#stream_name_error").text(
-            $t({defaultMessage: "A stream with this name already exists"}),
+            $t({defaultMessage: "A stream with this name already exists."}),
         );
         $("#stream_name_error").show();
     }
@@ -70,7 +70,7 @@ class StreamNameError {
     }
 
     report_empty_stream() {
-        $("#stream_name_error").text($t({defaultMessage: "A stream needs to have a name"}));
+        $("#stream_name_error").text($t({defaultMessage: "Choose a name for the new stream."}));
         $("#stream_name_error").show();
     }
 

@@ -108,13 +108,13 @@ async function test_streams_with_empty_names_cannot_be_created(page: Page): Prom
     await page.waitForSelector("form#stream_creation_form", {visible: true});
     await common.fill_form(page, "form#stream_creation_form", {stream_name: "  "});
     await page.click("form#stream_creation_form button.finalize_create_stream");
-    assert.strictEqual(await stream_name_error(page), "A stream needs to have a name");
+    assert.strictEqual(await stream_name_error(page), "Choose a name for the new stream.");
 }
 
 async function test_streams_with_duplicate_names_cannot_be_created(page: Page): Promise<void> {
     await common.fill_form(page, "form#stream_creation_form", {stream_name: "Puppeteer"});
     await page.click("form#stream_creation_form button.finalize_create_stream");
-    assert.strictEqual(await stream_name_error(page), "A stream with this name already exists");
+    assert.strictEqual(await stream_name_error(page), "A stream with this name already exists.");
 
     const cancel_button_selector = "form#stream_creation_form button.button.white";
     await page.click(cancel_button_selector);
