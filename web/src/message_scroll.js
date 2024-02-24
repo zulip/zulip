@@ -133,8 +133,12 @@ export function initialize() {
     $(document).on(
         "scroll",
         _.throttle(() => {
+            if (message_lists.current === undefined) {
+                return;
+            }
+
             unread_ops.process_visible();
-            message_lists.current?.view.update_sticky_recipient_headers();
+            message_lists.current.view.update_sticky_recipient_headers();
             scroll_finish();
         }, 50),
     );
