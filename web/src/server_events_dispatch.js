@@ -545,7 +545,10 @@ export function dispatch_normal_event(event) {
                     break;
                 case "delete":
                     for (const stream of event.streams) {
+                        stream_data.remove_default_stream(stream.stream_id);
+                        settings_streams.update_default_streams_table();
                         const was_subscribed = sub_store.get(stream.stream_id).subscribed;
+                        stream_data.delete_sub(stream.stream_id);
                         const is_narrowed_to_stream = narrow_state.is_for_stream_id(
                             stream.stream_id,
                         );
@@ -562,8 +565,6 @@ export function dispatch_normal_event(event) {
                                 compose_recipient.on_compose_select_recipient_update();
                             }
                         }
-                        settings_streams.update_default_streams_table();
-                        stream_data.remove_default_stream(stream.stream_id);
                         if (realm.realm_new_stream_announcements_stream_id === stream.stream_id) {
                             realm.realm_new_stream_announcements_stream_id = -1;
                             settings_org.sync_realm_settings("new_stream_announcements_stream_id");
