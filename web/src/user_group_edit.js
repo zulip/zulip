@@ -555,7 +555,7 @@ export function update_group(group_id) {
     }
 }
 
-export function change_state(section, right_side_tab) {
+export function change_state(section, left_side_tab, right_side_tab) {
     if (section === "new") {
         do_open_create_user_group();
         redraw_user_group_list();
@@ -573,11 +573,22 @@ export function change_state(section, right_side_tab) {
         const group_id = Number.parseInt(section, 10);
         const group = user_groups.get_user_group_from_id(group_id);
         show_right_section();
-        // We show the list of user groups in the left panel
-        // based on the tab that is active. It is `your-groups`
-        // tab by default.
-        redraw_user_group_list();
         select_tab = right_side_tab;
+
+        if (left_side_tab === undefined) {
+            left_side_tab = "all-groups";
+            if (user_groups.is_direct_member_of(current_user.user_id, group_id)) {
+                left_side_tab = "your-groups";
+            }
+        }
+
+        // Callback to .goto() will update browser_history unless a
+        // group is being edited. We are always editing a group here
+        // so its safe to call
+        if (left_side_tab !== group_list_toggler.value()) {
+            set_active_group_id(group.id);
+            group_list_toggler.goto(left_side_tab);
+        }
         switch_to_group_row(group);
         return;
     }
@@ -954,7 +965,7 @@ export function initialize() {
     );
 }
 
-export function launch(section, right_side_tab) {
+export function launch(section, left_side_tab, right_side_tab) {
     setup_page(() => {
         overlays.open_overlay({
             name: "group_subscriptions",
@@ -963,7 +974,7 @@ export function launch(section, right_side_tab) {
                 browser_history.exit_overlay();
             },
         });
-        change_state(section, right_side_tab);
+        change_state(section, left_side_tab, right_side_tab);
     });
     if (!get_active_data().id) {
         if (section === "new") {
