@@ -18,16 +18,18 @@
                         <i class="zulip-icon zulip-icon-bot" aria-hidden="true"></i>
                     {{/if}}
                     <span class="user-profile-name">{{> user_full_name name=full_name}}</span>
-                    <a id="user_profile_manage_own_copy_link" class="copy-link-to-user-profile" tabindex="0" data-user-id="{{user_id}}">
-                        <i class="fa fa-link tippy-zulip-tooltip user-profile-manage-own-copy-link-button" data-tippy-content="{{t 'Copy link to profile' }}" aria-hidden="true"></i>
+                    <a class="copy-link-to-user-profile user-profile-manage-own-copy-link-button" tabindex="0" data-user-id="{{user_id}}">
+                        <i class="zulip-icon zulip-icon-link tippy-zulip-tooltip " data-tippy-content="{{t 'Copy link to profile' }}" aria-hidden="true"></i>
                     </a>
                     {{#if is_me}}
-                        <a id="user_profile_manage_own_edit_link" href="/#settings/profile">
-                            <i class="fa fa-edit tippy-zulip-tooltip user-profile-manage-own-edit-button" data-tippy-content="{{t 'Edit profile' }}" aria-hidden="true"></i>
+                        <a class="user-profile-manage-own-edit-button" href="/#settings/profile">
+                            <i class="zulip-icon zulip-icon-edit tippy-zulip-tooltip" data-tippy-content="{{t 'Edit profile' }}" aria-hidden="true"></i>
                         </a>
                     {{/if}}
                     {{#if can_manage_profile}}
-                        <i class="fa fa-edit tippy-zulip-tooltip user-profile-manage-others-edit-button" data-tippy-content="{{t 'Manage user' }}" aria-hidden="true"></i>
+                        <div class="user-profile-manage-others-edit-button">
+                            <i class="zulip-icon zulip-icon-edit tippy-zulip-tooltip" data-tippy-content="{{t 'Manage user' }}" aria-hidden="true"></i>
+                        </div>
                     {{/if}}
                 </h1>
                 <button class="modal__close" aria-label="{{t 'Close modal' }}" data-micromodal-close></button>
