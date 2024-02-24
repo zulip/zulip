@@ -4,7 +4,7 @@
 
 ## Insert LaTeX formatting
 
-Zulip's compose box has a smart **LaTeX** (<i class="zulip-icon
+Zulip's compose box has a smart **Math (LaTeX)** (<i class="zulip-icon
 zulip-icon-math"></i>) button, which inserts contextually appropriate LaTeX
 formatting:
 
@@ -22,12 +22,12 @@ formatting:
 
 1. _(optional)_ Select the text you want to format.
 
-1. Click the **LaTeX** (<i class="zulip-icon zulip-icon-math"></i>) icon at the
+1. Click the **Math (LaTeX)** (<i class="zulip-icon zulip-icon-math"></i>) icon at the
    bottom of the compose box to insert LaTeX formatting.
 
 !!! tip ""
 
-    You can also use the **LaTeX** (<i class="zulip-icon zulip-icon-math"></i>)
+    You can also use the **Math (LaTeX)** (<i class="zulip-icon zulip-icon-math"></i>)
     icon to remove existing LaTeX formatting from the selected text.
 
 {tab|via-markdown}
