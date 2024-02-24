@@ -282,7 +282,7 @@ export function initialize_kitchen_sink_stuff() {
     });
 
     $(document).on("message_selected.zulip", (event) => {
-        if (message_lists.current !== undefined && message_lists.current !== event.msg_list) {
+        if (message_lists.current === undefined || message_lists.current !== event.msg_list) {
             return;
         }
 
