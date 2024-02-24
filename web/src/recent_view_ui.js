@@ -112,7 +112,9 @@ export function is_in_focus() {
         !sidebar_ui.any_sidebar_expanded_as_overlay() &&
         !overlays.any_active() &&
         !modals.any_active() &&
-        !$(".home-page-input").is(":focus")
+        !document.activeElement.classList.contains("signup_button") &&
+        !document.activeElement.classList.contains("login_button") &&
+        !document.activeElement.classList.contains(".home-page-input")
     );
 }
 

@@ -444,12 +444,13 @@ body.has-overlay-scrollbar {
                 --color-navbar-spectator-low-attention-brand-button-background
             );
 
-            &:hover {
+            &:hover,
+            &:focus {
                 color: var(
                     --color-navbar-spectator-low-attention-brand-button-text
                 );
                 background-color: var(
-                    --color-navbar-spectator-low-attention-brand-button-background-hover
+                    --color-navbar-spectator-medium-attention-brand-button-background-hover
                 );
             }
 
@@ -471,7 +472,8 @@ body.has-overlay-scrollbar {
                 --color-navbar-spectator-medium-attention-brand-button-background
             );
 
-            &:hover {
+            &:hover,
+            &:focus {
                 color: var(
                     --color-navbar-spectator-medium-attention-brand-button-text
                 );
