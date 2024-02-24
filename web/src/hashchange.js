@@ -278,7 +278,7 @@ function do_hashchange_overlay(old_hash) {
         if (base === "streams") {
             // e.g. #streams/29/social/subscribers
             const right_side_tab = hash_parser.get_current_nth_hash_section(3);
-            stream_settings_ui.change_state(section, right_side_tab);
+            stream_settings_ui.change_state(section, undefined, right_side_tab);
             return;
         }
 
@@ -346,7 +346,17 @@ function do_hashchange_overlay(old_hash) {
     if (base === "streams") {
         // e.g. #streams/29/social/subscribers
         const right_side_tab = hash_parser.get_current_nth_hash_section(3);
-        stream_settings_ui.launch(section, right_side_tab);
+
+        if (is_somebody_else_profile_open()) {
+            stream_settings_ui.launch(section, "all-streams", right_side_tab);
+            return;
+        }
+
+        // We pass left_side_tab as undefined in change_state to
+        // select the tab based on user's subscriptions. "Subscribed" is
+        // selected if user is subscribed to the stream being edited.
+        // Otherwise "All streams" is selected.
+        stream_settings_ui.launch(section, undefined, right_side_tab);
         return;
     }
 
