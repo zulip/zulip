@@ -27,6 +27,7 @@ from analytics.lib.counts import CountStat, LoggingCountStat
 from analytics.models import InstallationCount, RealmCount
 from corporate.models import CustomerPlan
 from version import ZULIP_VERSION
+from zerver.actions.create_user import do_create_user
 from zerver.actions.message_delete import do_delete_messages
 from zerver.actions.message_flags import do_mark_stream_messages_as_read, do_update_message_flags
 from zerver.actions.realm_settings import (
@@ -3463,11 +3464,29 @@ class HandlePushNotificationTest(PushNotificationTest):
     ) -> None:
         othello = self.example_user("othello")
         cordelia = self.example_user("cordelia")
-        large_user_group = check_add_user_group(
-            get_realm("zulip"),
-            "large_user_group",
+        zulip_realm = get_realm("zulip")
+
+        # user groups having less than 12 members are small user groups.
+        small_user_group = check_add_user_group(
+            zulip_realm,
+            "small_user_group",
             [self.user_profile, othello, cordelia],
             acting_user=None,
+        )
+
+        large_user_group_members: List[UserProfile] = []
+        for count in range(12):
+            member = do_create_user(
+                f"email {count}",
+                f"password {count}",
+                zulip_realm,
+                f"dummy name {count}",
+                acting_user=None,
+            )
+            large_user_group_members.append(member)
+        large_user_group_members = list(UserProfile.objects.filter(realm=zulip_realm, is_bot=False))
+        large_user_group = check_add_user_group(
+            zulip_realm, "large_user_group", large_user_group_members, acting_user=None
         )
 
         # Personal mention in a stream message should soft reactivate the user
@@ -3564,8 +3583,24 @@ class HandlePushNotificationTest(PushNotificationTest):
         self.soft_deactivate_main_user()
         self.expect_to_stay_long_term_idle(self.user_profile, send_stream_wildcard_mention)
 
-        # Group mention should NOT soft reactivate the user
-        def send_group_mention() -> None:
+        # Small group mention (size < 12) should soft reactivate the user
+        def send_small_group_mention() -> None:
+            mention = "@*small_user_group*"
+            stream_mentioned_message_id = self.send_stream_message(othello, "Denmark", mention)
+            handle_push_notification(
+                self.user_profile.id,
+                {
+                    "message_id": stream_mentioned_message_id,
+                    "trigger": NotificationTriggers.MENTION,
+                    "mentioned_user_group_id": small_user_group.id,
+                },
+            )
+
+        self.soft_deactivate_main_user()
+        self.expect_soft_reactivation(self.user_profile, send_small_group_mention)
+
+        # Large group mention (size >= 12) should NOT soft reactivate the user
+        def send_large_group_mention() -> None:
             mention = "@*large_user_group*"
             stream_mentioned_message_id = self.send_stream_message(othello, "Denmark", mention)
             handle_push_notification(
@@ -3578,7 +3613,7 @@ class HandlePushNotificationTest(PushNotificationTest):
             )
 
         self.soft_deactivate_main_user()
-        self.expect_to_stay_long_term_idle(self.user_profile, send_group_mention)
+        self.expect_to_stay_long_term_idle(self.user_profile, send_large_group_mention)
 
     @mock.patch("zerver.lib.push_notifications.logger.info")
     @mock.patch("zerver.lib.push_notifications.push_notifications_configured", return_value=True)

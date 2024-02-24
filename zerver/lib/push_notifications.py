@@ -27,7 +27,7 @@ import lxml.html
 import orjson
 from django.conf import settings
 from django.db import IntegrityError, transaction
-from django.db.models import F, Q
+from django.db.models import Count, F, Q
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
 from django.utils.translation import override as override_language
@@ -1355,17 +1355,25 @@ def handle_push_notification(user_profile_id: int, missed_message: Dict[str, Any
         trigger = NotificationTriggers.DIRECT_MESSAGE  # nocoverage
 
     mentioned_user_group_name = None
+    mentioned_user_group_members_count = None
     # mentioned_user_group_id will be None if the user is personally mentioned
     # regardless whether they are a member of the mentioned user group in the
     # message or not.
     mentioned_user_group_id = missed_message.get("mentioned_user_group_id")
 
     if mentioned_user_group_id is not None:
-        user_group = UserGroup.objects.get(id=mentioned_user_group_id, realm=user_profile.realm)
+        user_group = (
+            UserGroup.objects.filter(id=mentioned_user_group_id, realm=user_profile.realm)
+            .annotate(direct_members_count=Count("direct_members"))
+            .first()
+        )
         mentioned_user_group_name = user_group.name
+        mentioned_user_group_members_count = user_group.direct_members_count
 
     # Soft reactivate if pushing to a long_term_idle user that is personally mentioned
-    soft_reactivate_if_personal_notification(user_profile, {trigger}, mentioned_user_group_name)
+    soft_reactivate_if_personal_notification(
+        user_profile, {trigger}, mentioned_user_group_members_count
+    )
 
     if message.is_stream_message():
         # This will almost always be True. The corner case where you
