@@ -780,12 +780,12 @@ def ensure_devices_set_remote_realm(
 def update_remote_realm_data_for_server(
     server: RemoteZulipServer, server_realms_info: List[RealmDataForAnalytics]
 ) -> None:
-    uuids = [realm.uuid for realm in server_realms_info]
+    reported_uuids = [realm.uuid for realm in server_realms_info]
     all_registered_remote_realms_for_server = list(RemoteRealm.objects.filter(server=server))
     already_registered_remote_realms = [
         remote_realm
         for remote_realm in all_registered_remote_realms_for_server
-        if remote_realm.uuid in uuids
+        if remote_realm.uuid in reported_uuids
     ]
     # RemoteRealm registrations that we have for this server, but aren't
     # present in the data sent to us. We assume this to mean the server
@@ -793,7 +793,7 @@ def update_remote_realm_data_for_server(
     remote_realms_missing_from_server_data = [
         remote_realm
         for remote_realm in all_registered_remote_realms_for_server
-        if remote_realm.uuid not in uuids
+        if remote_realm.uuid not in reported_uuids
     ]
 
     already_registered_uuids = {
@@ -864,7 +864,7 @@ def update_remote_realm_data_for_server(
             )
             modified = True
 
-        if remote_realm.realm_locally_deleted and remote_realm.uuid in uuids:
+        if remote_realm.realm_locally_deleted and remote_realm.uuid in reported_uuids:
             remote_realm.realm_locally_deleted = False
             remote_realm_audit_logs.append(
                 RemoteRealmAuditLog(
