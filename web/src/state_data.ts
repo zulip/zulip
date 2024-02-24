@@ -21,6 +21,32 @@ export const narrow_term_schema = z.object({
 export type NarrowTerm = z.output<typeof narrow_term_schema>;
 // Sync this with zerver.lib.events.do_events_register.
 
+const hotspot_location_schema = z.object({
+    element: z.string(),
+    offset_x: z.number(),
+    offset_y: z.number(),
+    popover: z.optional(z.string()),
+});
+
+const hotspot_schema = z.object({
+    delay: z.number(),
+    description: z.string(),
+    has_trigger: z.boolean(),
+    location: z.optional(hotspot_location_schema),
+    name: z.string(),
+    title: z.string(),
+    type: z.literal("hotspot"),
+});
+
+const one_time_notice_schema = z.object({
+    name: z.string(),
+    type: z.literal("one_time_notice"),
+});
+
+const onboarding_steps_schema = z.union([one_time_notice_schema, hotspot_schema]);
+
+export type OnboardingSteps = z.output<typeof onboarding_steps_schema>;
+
 export const current_user_schema = z.object({
     avatar_source: z.string(),
     delivery_email: z.string(),
@@ -29,6 +55,7 @@ export const current_user_schema = z.object({
     is_guest: z.boolean(),
     is_moderator: z.boolean(),
     is_owner: z.boolean(),
+    onboarding_steps: z.array(onboarding_steps_schema),
     user_id: z.number(),
 });
 // Sync this with zerver.lib.events.do_events_register.
