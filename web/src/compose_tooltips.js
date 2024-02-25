@@ -57,7 +57,7 @@ export function initialize() {
                 return;
             }
             // Use new_stream_message_button_tooltip_template when the
-            // conversation_type is equal to "non-stream" and also as a default fallback.
+            // conversation_type is equal to "non-specific" and also as a default fallback.
             instance.setContent(
                 parse_html($("#new_stream_message_button_tooltip_template").html()),
             );
