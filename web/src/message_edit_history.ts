@@ -247,7 +247,6 @@ export function initialize(): void {
 
         if (realm.realm_allow_edit_history) {
             fetch_and_render_message_history(message);
-            $("#message-history-cancel").trigger("focus");
         }
     });
 }
