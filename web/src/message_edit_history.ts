@@ -170,6 +170,7 @@ export function fetch_and_render_message_history(message: Message): void {
                 assert(message.type === "stream");
                 prev_stream_item.new_stream = sub_store.maybe_get_stream_name(message.stream_id);
             }
+            show_history();
             $("#message-history").attr("data-message-id", message.id);
             $("#message-history").html(
                 render_message_edit_history({
@@ -194,24 +195,23 @@ export function fetch_and_render_message_history(message: Message): void {
     });
 }
 
-export function show_history(message: Message): void {
-    const rendered_message_history = render_message_history_modal();
+export function show_history(): void {
+    if (!$("#message-history").length) {
+        const rendered_message_history = render_message_history_modal();
 
-    dialog_widget.launch({
-        html_heading: $t_html({defaultMessage: "Message edit history"}),
-        html_body: rendered_message_history,
-        html_submit_button: $t_html({defaultMessage: "Close"}),
-        id: "message-edit-history",
-        on_click() {
-            /* do nothing */
-        },
-        close_on_submit: true,
-        focus_submit_on_open: true,
-        single_footer_button: true,
-        post_render() {
-            fetch_and_render_message_history(message);
-        },
-    });
+        dialog_widget.launch({
+            html_heading: $t_html({defaultMessage: "Message edit history"}),
+            html_body: rendered_message_history,
+            html_submit_button: $t_html({defaultMessage: "Close"}),
+            id: "message-edit-history",
+            on_click() {
+                /* do nothing */
+            },
+            close_on_submit: true,
+            focus_submit_on_open: true,
+            single_footer_button: true,
+        });
+    }
 }
 
 export function initialize(): void {
@@ -246,7 +246,7 @@ export function initialize(): void {
         }
 
         if (realm.realm_allow_edit_history) {
-            show_history(message);
+            fetch_and_render_message_history(message);
             $("#message-history-cancel").trigger("focus");
         }
     });
