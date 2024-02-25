@@ -17,6 +17,7 @@ from zerver.lib.management import ZulipBaseCommand
 from zerver.lib.soft_deactivation import reactivate_user_if_soft_deactivated
 from zerver.lib.upload import save_attachment_contents
 from zerver.models import Attachment, Message, Recipient, Stream, UserProfile
+from zerver.models.recipients import get_or_create_huddle
 from zerver.models.users import get_user_by_delivery_email
 
 
@@ -89,6 +90,12 @@ This is most often used for legal compliance.
             metavar="<email>",
             help="Limit to messages received by users with any of these emails (may be specified more than once).  This is a superset of --sender, since senders receive every message they send.",
         )
+        users.add_argument(
+            "--dm",
+            action="append",
+            metavar="<email>",
+            help="Limit to messages in a DM between all of the users provided.  This option must be given two or more times.",
+        )
 
     @override
     def handle(self, *args: Any, **options: Any) -> None:
@@ -104,6 +111,7 @@ This is most often used for legal compliance.
             and not options["after"]
             and not options["sender"]
             and not options["recipient"]
+            and not options["dm"]
         ):
             raise CommandError("One or more limits are required!")
 
@@ -153,6 +161,18 @@ This is most often used for legal compliance.
                 or_,
                 [Q(sender__delivery_email__iexact=e) for e in options["sender"]],
             )
+        elif options["dm"]:
+            if len(options["dm"]) == 1:
+                raise CommandError("Must pass two or more --dm arguments, not just one")
+            user_profiles = [get_user_by_delivery_email(e, realm) for e in options["dm"]]
+            if len(user_profiles) == 2:
+                user_a, user_b = user_profiles
+                limits &= Q(recipient=user_a.recipient, sender=user_b) | Q(
+                    recipient=user_b.recipient, sender=user_a
+                )
+            else:
+                huddle = get_or_create_huddle([user.id for user in user_profiles])
+                limits &= Q(recipient=huddle.recipient)
 
         attachments_written: Set[str] = set()
         messages_query = Message.objects.filter(limits, realm=realm).order_by("date_sent")
