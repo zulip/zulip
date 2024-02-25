@@ -238,12 +238,16 @@ export function initialize() {
         delay: LONG_HOVER_DELAY,
         onShow(instance) {
             const $elem = $(instance.reference);
+            if ($elem.hasClass("no-tooltip")) {
+                return false;
+            }
             const current_visibility_policy_str = $elem.attr("data-tippy-content");
             instance.setContent(
                 parse_html(
                     render_change_visibility_policy_button_tooltip({current_visibility_policy_str}),
                 ),
             );
+            return true;
         },
         onHidden(instance) {
             instance.destroy();
