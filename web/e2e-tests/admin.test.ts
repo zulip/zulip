@@ -151,8 +151,10 @@ async function test_organization_permissions(page: Page): Promise<void> {
     // See https://chat.zulip.org/#narrow/stream/43-automated-testing/topic/main.20failing/near/1733342
     console.log("Skipping", test_changing_create_streams_and_invite_to_stream_policies);
 
-    await test_set_new_user_threshold_to_three_days(page);
-    await test_set_new_user_threshold_to_N_days(page);
+    // Test temporarily disabled 2024-02-25 due to nondeterminsitic failures.
+    // See https://chat.zulip.org/#narrow/stream/43-automated-testing/topic/main.20failing/near/1743361
+    console.log("Skipping", test_set_new_user_threshold_to_three_days);
+    console.log("Skipping", test_set_new_user_threshold_to_N_days);
 }
 
 async function test_add_emoji(page: Page): Promise<void> {
