@@ -283,6 +283,14 @@ export function initialize() {
 
     message_list_tooltip(".view_user_card_tooltip", {
         delay: LONG_HOVER_DELAY,
+        onShow(instance) {
+            const is_bot = $(instance.reference).data("is-bot");
+            if (is_bot) {
+                instance.setContent(parse_html($("#view-bot-card-tooltip-template").html()));
+            } else {
+                instance.setContent(parse_html($("#view-user-card-tooltip-template").html()));
+            }
+        },
         onHidden(instance) {
             instance.destroy();
         },
