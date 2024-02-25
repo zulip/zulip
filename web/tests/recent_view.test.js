@@ -88,7 +88,7 @@ const ListWidget = mock_esm("../src/list_widget", {
 
 mock_esm("../src/compose_closed_ui", {
     set_standard_text_for_reply_button: noop,
-    update_buttons_for_non_stream_views: noop,
+    update_buttons_for_non_specific_views: noop,
 });
 mock_esm("../src/hash_util", {
     by_stream_url: test_url,

@@ -145,9 +145,9 @@ export function update_buttons_for_stream_views() {
     update_buttons(text_stream);
 }
 
-export function update_buttons_for_non_stream_views() {
+export function update_buttons_for_non_specific_views() {
     const text_stream = $t({defaultMessage: "Start new conversation"});
-    $("#new_conversation_button").attr("data-conversation-type", "non-stream");
+    $("#new_conversation_button").attr("data-conversation-type", "non-specific");
     update_buttons(text_stream);
 }
 
