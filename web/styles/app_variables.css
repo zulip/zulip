@@ -270,6 +270,7 @@
     --color-message-action-visible: hsl(216deg 43% 20% / 50%);
     --color-message-action-interactive: hsl(216deg 43% 20% / 100%);
     --color-message-star-action: hsl(41deg 100% 47% / 100%);
+    --color-left-sidebar-follow-icon-hover: hsl(0deg 0% 0%);
     /* The gray on the filter icons is the same as
        what's set on ul.filters, but with 70% opacity. */
     --color-left-sidebar-navigation-icon: hsl(0deg 0% 20% / 70%);
@@ -572,6 +573,7 @@
     --color-icon-bot: hsl(180deg 5% 50% / 100%);
     --color-message-action-visible: hsl(217deg 41% 90% / 50%);
     --color-message-action-interactive: hsl(217deg 41% 90% / 100%);
+    --color-left-sidebar-follow-icon-hover: hsl(0deg 0% 100%);
     --color-left-sidebar-navigation-icon: hsl(0deg 0% 100% / 56%);
     --color-vdots-hint: hsl(0deg 0% 100% / 30%);
     --color-vdots-visible: hsl(236deg 33% 80%);
