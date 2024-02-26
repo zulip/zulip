@@ -85,15 +85,34 @@ to help.
   your name as the topic. Bonus: tell us about your first impressions of
   Zulip, and anything that felt confusing/broken or interesting/helpful as you
   started using the product.
+
 - Read [What makes a great Zulip contributor](#what-makes-a-great-zulip-contributor).
-- [Install the development environment](https://zulip.readthedocs.io/en/latest/development/overview.html),
-  getting help in
-  [#provision help](https://chat.zulip.org/#narrow/stream/21-provision-help)
-  if you run into any troubles.
-- Familiarize yourself with [using the development environment](https://zulip.readthedocs.io/en/latest/development/using.html).
-- Go through the [new application feature
-  tutorial](https://zulip.readthedocs.io/en/latest/tutorials/new-feature-tutorial.html) to get familiar with
-  how the Zulip codebase is organized and how to find code in it.
+
+- Set up the development environment for the Zulip codebase you want
+  to work on, and start getting familiar with the code.
+
+  - For the server and web app:
+
+    - [Install the development environment](https://zulip.readthedocs.io/en/latest/development/overview.html),
+      getting help in
+      [#provision help](https://chat.zulip.org/#narrow/stream/21-provision-help)
+      if you run into any troubles.
+    - Familiarize yourself with [using the development environment](https://zulip.readthedocs.io/en/latest/development/using.html).
+    - Go through the [new application feature
+      tutorial](https://zulip.readthedocs.io/en/latest/tutorials/new-feature-tutorial.html) to get familiar with
+      how the Zulip codebase is organized and how to find code in it.
+
+  - For the upcoming Flutter-based mobile app:
+    - Set up a development environment following the instructions in
+      [the project README](https://github.com/zulip/zulip-flutter).
+    - Start reading recent commits to see the code we're writing.
+      Use either a [graphical Git viewer][] like `gitk`, or `git log -p`
+      with [the "secret" to reading its output][git-log-secret].
+    - Pick some of the code that appears in those Git commits and
+      that looks interesting. Use your IDE to visit that code
+      and to navigate to related code, reading to see how it works
+      and how the codebase is organized.
+
 - Read the [Zulip guide to
   Git](https://zulip.readthedocs.io/en/latest/git/index.html) if you
   are unfamiliar with Git or Zulip's rebase-based Git workflow,
@@ -102,6 +121,9 @@ to help.
   into any troubles. Even Git experts should read the [Zulip-specific
   Git tools
   page](https://zulip.readthedocs.io/en/latest/git/zulip-tools.html).
+
+[graphical Git viewer]: https://zulip.readthedocs.io/en/latest/git/setup.html#get-a-graphical-client
+[git-log-secret]: https://github.com/zulip/zulip-mobile/blob/main/docs/howto/git.md#git-log-secret
 
 ### Where to look for an issue
 
