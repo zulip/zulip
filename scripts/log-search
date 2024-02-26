@@ -76,7 +76,7 @@ def parser() -> argparse.ArgumentParser:
     filtering = parser.add_argument_group("Filtering")
     filtering.add_argument(
         "filter_terms",
-        help="IP address, hostname, user-id, HTTP method, path, or status code to search for; multiple are AND'ed together",
+        help="IP address, hostname, user-id, HTTP method, path, datetime prefix, or status code to search for; multiple are AND'ed together",
         nargs="+",
     )
     filtering.add_argument(
@@ -189,6 +189,7 @@ class FilterType(Enum):
     METHOD = auto()
     PATH = auto()
     STATUS = auto()
+    DATETIME = auto()
 
 
 class FilterFunc(Protocol):
@@ -272,12 +273,18 @@ def parse_logfile_names(args: argparse.Namespace) -> List[str]:
     return logfile_names
 
 
-month_name_to_no_lookup = {v: f"{k:02d}" for k, v in enumerate(calendar.month_abbr)}
+month_no_to_name_lookup = {f"{k:02d}": v for k, v in enumerate(calendar.month_abbr)}
+month_name_to_no_lookup = {v: k for k, v in month_no_to_name_lookup.items()}
 
 
 def convert_from_nginx_date(date: str) -> str:
     day_of_month, month_abbr, year = date.split("/")
     return f"{year}-{month_name_to_no_lookup[month_abbr]}-{day_of_month}"
+
+
+def convert_to_nginx_date(date: str) -> str:
+    year, month_no, day_of_month = date.split("-")
+    return f"{day_of_month}/{month_no_to_name_lookup[month_no]}/{year}"
 
 
 def parse_filters(
@@ -321,6 +328,16 @@ def parse_filters(
         elif re.match(r"DELETE|GET|HEAD|OPTIONS|PATCH|POST|PUT", filter_term):
             filter_func = lambda m, t=filter_term: m["method"].upper() == t
             filter_type = FilterType.METHOD
+        elif re.match(r"(2\d\d\d-\d\d-\d\d)( \d(\d(:(\d(\d(:(\d\d?)?)?)?)?)?)?)?", filter_term):
+            if args.nginx:
+                datetime_parts = filter_term.split(" ")
+                filter_term = ":".join(
+                    [convert_to_nginx_date(datetime_parts[0]), *datetime_parts[1:]]
+                )
+                filter_func = lambda m, t=filter_term: f"{m['date']}:{m['time']}".startswith(t)
+            else:
+                filter_func = lambda m, t=filter_term: f"{m['date']} {m['time']}".startswith(t)
+            filter_type = FilterType.DATETIME
         elif re.match(r"[a-z0-9]([a-z0-9-]*[a-z0-9])?$", filter_term.lower()):
             filter_term = filter_term.lower()
             if args.nginx:
