@@ -30,3 +30,21 @@ def lockfile(filename: str, shared: bool = False) -> Iterator[None]:
     with open(filename, "w") as lock:
         with flock(lock, shared=shared):
             yield
+
+
+@contextmanager
+def lockfile_nonblocking(filename: str) -> Iterator[bool]:  # nocoverage
+    """Lock a file using flock(2) for the duration of a 'with' statement.
+
+    Doesn't block, yields False immediately if the lock can't be acquired."""
+    with open(filename) as f:
+        lock_acquired = False
+        try:
+            fcntl.flock(f, fcntl.LOCK_EX | fcntl.LOCK_NB)
+            lock_acquired = True
+            yield lock_acquired
+        except BlockingIOError:
+            yield False
+        finally:
+            if lock_acquired:
+                fcntl.flock(f, fcntl.LOCK_UN)
