@@ -700,17 +700,6 @@ export function check_overflow_text(): number {
                 remaining_length,
             }),
         );
-        compose_banner.show_error_message(
-            $t(
-                {
-                    defaultMessage:
-                        "Message length shouldn't be greater than {max_length} characters.",
-                },
-                {max_length},
-            ),
-            compose_banner.CLASSNAMES.message_too_long,
-            $("#compose_banners"),
-        );
 
         set_message_too_long(true);
     } else if (text.length > 0.9 * max_length) {
