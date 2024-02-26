@@ -24,7 +24,7 @@ from requests.models import PreparedRequest
 from typing_extensions import override
 
 from analytics.lib.counts import CountStat, LoggingCountStat
-from analytics.models import InstallationCount, RealmCount
+from analytics.models import InstallationCount, RealmCount, UserCount
 from corporate.models import CustomerPlan
 from version import ZULIP_VERSION
 from zerver.actions.create_realm import do_create_realm
@@ -1481,17 +1481,35 @@ class AnalyticsBouncerTest(BouncerTestCase):
             )
 
         # Create some rows we'll send to remote server
-        realm_stat = LoggingCountStat("invites_sent::day", RealmCount, CountStat.DAY)
-        RealmCount.objects.create(
-            realm=user.realm, property=realm_stat.property, end_time=end_time, value=5
+        # LoggingCountStat that should be included;
+        # i.e. not in LOGGING_COUNT_STAT_PROPERTIES_NOT_SENT_TO_BOUNCER
+        messages_read_logging_stat = LoggingCountStat(
+            "messages_read::hour", UserCount, CountStat.HOUR
         )
-        InstallationCount.objects.create(
-            property=realm_stat.property,
+        RealmCount.objects.create(
+            realm=user.realm,
+            property=messages_read_logging_stat.property,
             end_time=end_time,
             value=5,
-            # We set a subgroup here to work around:
-            # https://github.com/zulip/zulip/issues/12362
-            subgroup="test_subgroup",
+        )
+        InstallationCount.objects.create(
+            property=messages_read_logging_stat.property,
+            end_time=end_time,
+            value=5,
+        )
+        # LoggingCountStat that should not be included;
+        # i.e. in LOGGING_COUNT_STAT_PROPERTIES_NOT_SENT_TO_BOUNCER
+        invites_sent_logging_stat = LoggingCountStat("invites_sent::day", RealmCount, CountStat.DAY)
+        RealmCount.objects.create(
+            realm=user.realm,
+            property=invites_sent_logging_stat.property,
+            end_time=end_time,
+            value=5,
+        )
+        InstallationCount.objects.create(
+            property=invites_sent_logging_stat.property,
+            end_time=end_time,
+            value=5,
         )
         # Event type in SYNCED_BILLING_EVENTS -- should be included
         RealmAuditLog.objects.create(
@@ -1513,8 +1531,8 @@ class AnalyticsBouncerTest(BouncerTestCase):
             event_time=end_time,
             extra_data=orjson.dumps({"foo": "bar"}).decode(),
         )
-        self.assertEqual(RealmCount.objects.count(), 1)
-        self.assertEqual(InstallationCount.objects.count(), 1)
+        self.assertEqual(RealmCount.objects.count(), 2)
+        self.assertEqual(InstallationCount.objects.count(), 2)
         self.assertEqual(RealmAuditLog.objects.filter(id__gt=audit_log_max_id).count(), 2)
 
         with self.settings(SUBMIT_USAGE_STATISTICS=False):
@@ -1689,13 +1707,13 @@ class AnalyticsBouncerTest(BouncerTestCase):
         # Test only having new RealmCount rows
         RealmCount.objects.create(
             realm=user.realm,
-            property=realm_stat.property,
+            property=messages_read_logging_stat.property,
             end_time=end_time + timedelta(days=1),
             value=6,
         )
         RealmCount.objects.create(
             realm=user.realm,
-            property=realm_stat.property,
+            property=messages_read_logging_stat.property,
             end_time=end_time + timedelta(days=2),
             value=9,
         )
@@ -1704,7 +1722,9 @@ class AnalyticsBouncerTest(BouncerTestCase):
 
         # Test only having new InstallationCount rows
         InstallationCount.objects.create(
-            property=realm_stat.property, end_time=end_time + timedelta(days=1), value=6
+            property=messages_read_logging_stat.property,
+            end_time=end_time + timedelta(days=1),
+            value=6,
         )
         send_server_data_to_push_bouncer()
         check_counts(8, 8, 3, 2, 7)
@@ -1823,12 +1843,17 @@ class AnalyticsBouncerTest(BouncerTestCase):
         end_time = self.TIME_ZERO
 
         # Create some rows we'll send to remote server
-        realm_stat = LoggingCountStat("invites_sent::day", RealmCount, CountStat.DAY)
+        messages_read_logging_stat = LoggingCountStat(
+            "messages_read::hour", UserCount, CountStat.HOUR
+        )
         realm_count = RealmCount.objects.create(
-            realm=user.realm, property=realm_stat.property, end_time=end_time, value=5
+            realm=user.realm,
+            property=messages_read_logging_stat.property,
+            end_time=end_time,
+            value=5,
         )
         installation_count = InstallationCount.objects.create(
-            property=realm_stat.property,
+            property=messages_read_logging_stat.property,
             end_time=end_time,
             value=5,
         )
@@ -1920,12 +1945,14 @@ class AnalyticsBouncerTest(BouncerTestCase):
         # set as it should.
         RealmCount.objects.create(
             realm=user.realm,
-            property=realm_stat.property,
+            property=messages_read_logging_stat.property,
             end_time=end_time + timedelta(days=1),
             value=6,
         )
         InstallationCount.objects.create(
-            property=realm_stat.property, end_time=end_time + timedelta(days=1), value=6
+            property=messages_read_logging_stat.property,
+            end_time=end_time + timedelta(days=1),
+            value=6,
         )
         RealmAuditLog.objects.create(
             realm=user.realm,
