@@ -86,6 +86,8 @@ elif vendor == "ubuntu" and os_version == "21.10":  # impish
     POSTGRESQL_VERSION = "13"
 elif vendor == "ubuntu" and os_version == "22.04":  # jammy
     POSTGRESQL_VERSION = "14"
+elif vendor == "ubuntu" and os_version == "24.04":  # noble
+    POSTGRESQL_VERSION = "16"
 elif vendor == "neon" and os_version == "20.04":  # KDE Neon
     POSTGRESQL_VERSION = "12"
 elif vendor == "fedora" and os_version == "38":
@@ -126,11 +128,8 @@ UBUNTU_COMMON_APT_DEPENDENCIES = [
     "default-jre-headless",  # Required by vnu-jar
     # Puppeteer dependencies from here
     "fonts-freefont-ttf",
-    "gconf-service",
-    "libappindicator1",
     "libatk-bridge2.0-0",
     "libgbm1",
-    "libgconf-2-4",
     "libgtk-3-0",
     "libx11-xcb1",
     "libxcb-dri3-0",
@@ -160,7 +159,7 @@ COMMON_YUM_DEPENDENCIES = [
 
 BUILD_GROONGA_FROM_SOURCE = False
 BUILD_PGROONGA_FROM_SOURCE = False
-if (vendor == "debian" and os_version in []) or (vendor == "ubuntu" and os_version in []):
+if (vendor == "debian" and os_version in []) or (vendor == "ubuntu" and os_version in ["24.04"]):
     # For platforms without a PGroonga release, we need to build it
     # from source.
     BUILD_PGROONGA_FROM_SOURCE = True
@@ -176,14 +175,6 @@ if (vendor == "debian" and os_version in []) or (vendor == "ubuntu" and os_versi
     ]
 elif "debian" in os_families():
     DEBIAN_DEPENDENCIES = UBUNTU_COMMON_APT_DEPENDENCIES
-    # The below condition is required since libappindicator is
-    # not available for Debian 11. "libgroonga1" is an
-    # additional dependency for postgresql-13-pgdg-pgroonga.
-    #
-    # See https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=895037
-    if vendor == "debian":
-        DEBIAN_DEPENDENCIES.remove("libappindicator1")
-        DEBIAN_DEPENDENCIES.append("libgroonga0")
 
     # If we are on an aarch64 processor, ninja will be built from source,
     # so cmake is required
