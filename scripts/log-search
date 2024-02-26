@@ -103,6 +103,12 @@ def parser() -> argparse.ArgumentParser:
     filtering.add_argument(
         "--no-other", "-O", help="Exclude paths not explicitly included", action="store_true"
     )
+    filtering.add_argument(
+        "--client",
+        "--user-agent",
+        "-C",
+        help="Only include requests whose client/user-agent contains this string",
+    )
 
     output = parser.add_argument_group("Output")
     output.add_argument("--full-line", "-F", help="Show full matching line", action="store_true")
@@ -331,6 +337,10 @@ def parse_filters(
         filter_types.add(filter_type)
         filter_funcs.append(filter_func)
         filter_terms.append(filter_term)
+
+    if args.client:
+        filter_funcs.append(lambda m, t=args.client: t in m["user_agent"])
+        filter_terms.append(args.client)
 
     # Push back the modified raw strings, so we can use them for fast substring searches
     args.filter_terms = filter_terms
