@@ -8,7 +8,7 @@ import os
 import re
 import signal
 import sys
-from datetime import datetime, timedelta
+from datetime import date, datetime, timedelta, timezone
 from enum import Enum, auto
 from typing import List, Match, Optional, Set, TextIO, Tuple
 
@@ -247,6 +247,28 @@ def parse_logfile_names(args: argparse.Namespace) -> List[str]:
         base_path = "/var/log/nginx/access.log"
     else:
         base_path = "/var/log/zulip/server.log"
+
+    for term in args.filter_terms:
+        date_term = re.match(r"2\d\d\d-\d\d-\d\d", term)
+        if not date_term:
+            continue
+        # They're limiting to a specific day; find the right logfile
+        # which is going to have any matches
+        rotations = int(
+            (datetime.now(tz=timezone.utc).date() - date.fromisoformat(date_term[0]))
+            / timedelta(days=1)
+        )
+        access_log_retention_days = int(
+            get_config(get_config_file(), "application_server", "access_log_retention_days", "14")
+        )
+        if rotations > access_log_retention_days:
+            raise RuntimeError(f"Date is too old (more than {access_log_retention_days} days ago)")
+        if rotations == 0:
+            return [base_path]
+        if rotations == 1:
+            return [f"{base_path}.1"]
+        else:
+            return [f"{base_path}.{rotations}.gz"]
 
     logfile_names = [base_path]
     if args.all_logs:
