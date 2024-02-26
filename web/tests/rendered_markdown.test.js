@@ -6,7 +6,7 @@ const {mock_cjs, mock_esm, zrequire} = require("./lib/namespace");
 const {run_test, noop} = require("./lib/test");
 const blueslip = require("./lib/zblueslip");
 const $ = require("./lib/zjquery");
-const {page_params, user_settings} = require("./lib/zpage_params");
+const {realm, user_settings} = require("./lib/zpage_params");
 
 let clipboard_args;
 class Clipboard {
@@ -28,8 +28,8 @@ const rm = zrequire("rendered_markdown");
 const people = zrequire("people");
 const user_groups = zrequire("user_groups");
 const stream_data = zrequire("stream_data");
-const rows = zrequire("rows");
-const message_store = zrequire("message_store");
+const rows = mock_esm("../src/rows");
+const message_store = mock_esm("../src/message_store");
 
 const iago = {
     email: "iago@zulip.com",
@@ -162,11 +162,11 @@ run_test("misc_helpers", () => {
     rm.set_name_in_mention_element($elem, "Aaron, but silent");
     assert.equal($elem.text(), "Aaron, but silent");
 
-    page_params.realm_enable_guest_user_indicator = true;
+    realm.realm_enable_guest_user_indicator = true;
     rm.set_name_in_mention_element($elem, "Polonius", polonius.user_id);
     assert.equal($elem.text(), "translated: Polonius (guest)");
 
-    page_params.realm_enable_guest_user_indicator = false;
+    realm.realm_enable_guest_user_indicator = false;
     rm.set_name_in_mention_element($elem, "Polonius", polonius.user_id);
     assert.equal($elem.text(), "Polonius");
 });
@@ -200,7 +200,7 @@ run_test("user-mention", () => {
     $polonius.set_find_results(".highlight", false);
     $polonius.attr("data-user-id", polonius.user_id);
     $content.set_find_results(".user-mention", $array([$iago, $cordelia, $polonius]));
-    page_params.realm_enable_guest_user_indicator = true;
+    realm.realm_enable_guest_user_indicator = true;
     // Initial asserts
     assert.ok(!$iago.hasClass("user-mention-me"));
     assert.equal($iago.text(), "never-been-set");
@@ -227,7 +227,7 @@ run_test("user-mention without guest indicator", () => {
     $polonius.attr("data-user-id", polonius.user_id);
     $content.set_find_results(".user-mention", $array([$polonius]));
 
-    page_params.realm_enable_guest_user_indicator = false;
+    realm.realm_enable_guest_user_indicator = false;
     rm.update_elements($content);
     assert.equal($polonius.text(), `@${polonius.full_name}`);
 });
@@ -419,8 +419,11 @@ run_test("timestamp", ({mock_template}) => {
     rm.update_elements($content);
 
     // Final asserts
-    assert.equal($timestamp.html(), '<img src="/static/images/help/clock.png" alt="Clock Icon" style="width: 14px; height: 14px; margin-bottom: 1.8px; margin-right: 1px;">\nThu, Jan 1, 1970, 12:00 AM\n');
-    assert.equal($timestamp_invalid.text(), "never-been-set");    
+    assert.equal(
+        $timestamp.html(),
+        '<img src="/static/images/help/clock.png" alt="{{_ "Clock Icon"}}" class="clock-icon"><img src="/static/images/help/clock.png" alt="{{_ "Clock Icon"}}" class="clock-icon">\nThu, Jan 1, 1970, 12:00 AM\n',
+    );
+    assert.equal($timestamp_invalid.text(), "never-been-set");
 });
 
 run_test("timestamp-twenty-four-hour-time", ({mock_template, override}) => {
@@ -438,11 +441,17 @@ run_test("timestamp-twenty-four-hour-time", ({mock_template, override}) => {
     // We will temporarily change the 24h setting for this test.
     override(user_settings, "twenty_four_hour_time", true);
     rm.update_elements($content);
-    assert.equal($timestamp.html(), '<img src="/static/images/help/clock.png" alt="Clock Icon" style="width: 14px; height: 14px; margin-bottom: 1.8px; margin-right: 1px;">\nWed, Jul 15, 2020, 20:40\n');
+    assert.equal(
+        $timestamp.html(),
+        '<img src="/static/images/help/clock.png" alt="{{_ "Clock Icon"}}" class="clock-icon"><img src="/static/images/help/clock.png" alt="{{_ "Clock Icon"}}" class="clock-icon">\nWed, Jul 15, 2020, 20:40\n',
+    );
 
     override(user_settings, "twenty_four_hour_time", false);
     rm.update_elements($content);
-    assert.equal($timestamp.html(), '<img src="/static/images/help/clock.png" alt="Clock Icon" style="width: 14px; height: 14px; margin-bottom: 1.8px; margin-right: 1px;">\nWed, Jul 15, 2020, 8:40 PM\n');
+    assert.equal(
+        $timestamp.html(),
+        '<img src="/static/images/help/clock.png" alt="{{_ "Clock Icon"}}" class="clock-icon"><img src="/static/images/help/clock.png" alt="{{_ "Clock Icon"}}" class="clock-icon">\nWed, Jul 15, 2020, 8:40 PM\n',
+    );
 });
 
 run_test("timestamp-error", () => {
