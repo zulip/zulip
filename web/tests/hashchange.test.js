@@ -146,9 +146,6 @@ function test_helper({override, override_rewire, change_tab}) {
             narrow_terms = terms;
             events.push("narrow.activate");
         });
-        override_rewire(narrow, "deactivate", () => {
-            events.push([narrow, "deactivate"]);
-        });
 
         override(info_overlay, "show", (name) => {
             events.push("info: " + name);
@@ -201,7 +198,7 @@ run_test("hash_interactions", ({override, override_rewire}) => {
     helper.assert_events([
         [overlays, "close_for_hash_change"],
         [message_viewport, "stop_auto_scrolling"],
-        [narrow, "deactivate"],
+        "narrow.activate",
     ]);
 
     helper.clear_events();
@@ -209,7 +206,7 @@ run_test("hash_interactions", ({override, override_rewire}) => {
     helper.assert_events([
         [overlays, "close_for_hash_change"],
         [message_viewport, "stop_auto_scrolling"],
-        [narrow, "deactivate"],
+        "narrow.activate",
     ]);
 
     // Test old "#recent_topics" hash redirects to "#recent".
