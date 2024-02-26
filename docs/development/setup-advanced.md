@@ -19,7 +19,7 @@ One can install the Zulip development environment directly on a Linux
 host by following these instructions. Currently supported platforms
 are:
 
-- Ubuntu 20.04, 22.04
+- Ubuntu 20.04, 22.04, 24.04
 - Debian 11, 12
 - CentOS 7 (beta)
 - Fedora 38 (beta)
