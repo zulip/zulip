@@ -63,6 +63,10 @@ Files: tools/check-thirdparty
 Copyright: 2020 Kandra Labs, Inc.
 License: GPL-2.0+
 
+Files: static/images/help/clock.png
+Copyright: Google, Inc.
+License: Apache-2.0
+
 Files: web/images/icons/close.svg
 Copyright: 2013-2017 Cole Bemis (https://feathericons.com)
 License: Expat
