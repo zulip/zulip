@@ -41,9 +41,9 @@ needs doing:
 
 - Bug squashing and feature development on our Python/Django
   [backend](https://github.com/zulip/zulip), web
-  [frontend](https://github.com/zulip/zulip), React Native
-  [mobile app](https://github.com/zulip/zulip-mobile), or Electron
-  [desktop app](https://github.com/zulip/zulip-desktop).
+  [frontend](https://github.com/zulip/zulip),
+  Flutter [mobile app](https://github.com/zulip/zulip-flutter) in beta,
+  or Electron [desktop app](https://github.com/zulip/zulip-desktop).
 - Building out our
   [Python API and bots](https://github.com/zulip/python-zulip-api) framework.
 - [Writing an integration](https://zulip.com/api/integrations-overview).
@@ -117,7 +117,10 @@ use the "good first issue" label to tag issues that are especially approachable
 for new contributors.
 
 - [Server and web app](https://github.com/zulip/zulip/issues?q=is%3Aopen+is%3Aissue+label%3A%22help+wanted%22)
-- [Mobile apps](https://github.com/zulip/zulip-mobile/issues?q=is%3Aopen+is%3Aissue+label%3A%22help+wanted%22)
+- Mobile apps: no "help wanted" label, but see the
+  [project board](https://github.com/orgs/zulip/projects/5/views/4)
+  for the upcoming Flutter-based app. Look for issues up through the
+  "Launch" milestone, and that aren't already assigned.
 - [Desktop app](https://github.com/zulip/zulip-desktop/issues?q=is%3Aopen+is%3Aissue+label%3A%22help+wanted%22)
 - [Terminal app](https://github.com/zulip/zulip-terminal/issues?q=is%3Aopen+is%3Aissue+label%3A"help+wanted")
 - [Python API bindings and bots](https://github.com/zulip/python-zulip-api/issues?q=is%3Aopen+is%3Aissue+label%3A%22help+wanted%22)
@@ -192,7 +195,7 @@ issue you're interested in.
 #### In other Zulip repositories
 
 There is no bot for other Zulip repositories
-([`zulip/zulip-mobile`](https://github.com/zulip/zulip-mobile/), etc.). If
+([`zulip/zulip-flutter`](https://github.com/zulip/zulip-flutter/), etc.). If
 you are interested in claiming an issue in one of these repositories, simply
 post a comment on the issue thread saying that you'd like to work on it. There
 is no need to @-mention the issue creator in your comment.
@@ -383,7 +386,7 @@ Here are some ways you can help others find Zulip:
 
 - Star us on GitHub. There are four main repositories:
   [server/web](https://github.com/zulip/zulip),
-  [mobile](https://github.com/zulip/zulip-mobile),
+  [Flutter mobile](https://github.com/zulip/zulip-flutter),
   [desktop](https://github.com/zulip/zulip-desktop), and
   [Python API](https://github.com/zulip/python-zulip-api).
 
