@@ -16,7 +16,7 @@ import * as keydown_util from "./keydown_util";
 import type {Message} from "./message_store";
 import * as people from "./people";
 
-type Event = {sender_id: number; data: InboundData};
+export type Event = {sender_id: number; data: InboundData};
 
 export type ExtraData = {
     question?: string;
