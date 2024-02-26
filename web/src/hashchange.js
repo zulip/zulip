@@ -55,7 +55,13 @@ function maybe_hide_inbox() {
 }
 
 function show_all_message_view() {
-    narrow.deactivate();
+    // Don't export this function outside of this module since
+    // `change_hash` is false here which means it is should only
+    // be called after hash is updated in the URL.
+    narrow.activate([{operator: "in", operand: "home"}], {
+        trigger: "hashchange",
+        change_hash: false,
+    });
 }
 
 export function set_hash_to_home_view() {
