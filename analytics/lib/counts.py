@@ -797,6 +797,7 @@ def get_count_stats(realm: Optional[Realm] = None) -> Dict[str, CountStat]:
         # In RealmCount, 'active_users_audit:is_bot:day' should be the partial
         # sum sequence of 'active_users_log:is_bot:day', for any realm that
         # started after the latter stat was introduced.
+        # Included in LOGGING_COUNT_STAT_PROPERTIES_NOT_SENT_TO_BOUNCER.
         LoggingCountStat("active_users_log:is_bot:day", RealmCount, CountStat.DAY),
         # Another sanity check on 'active_users_audit:is_bot:day'. Is only an
         # approximation, e.g. if a user is deactivated between the end of the
@@ -843,13 +844,15 @@ def get_count_stats(realm: Optional[Realm] = None) -> Dict[str, CountStat]:
             "minutes_active::day", DataCollector(UserCount, do_pull_minutes_active), CountStat.DAY
         ),
         # Tracks the number of push notifications requested by the server.
+        # Included in LOGGING_COUNT_STAT_PROPERTIES_NOT_SENT_TO_BOUNCER.
         LoggingCountStat(
             "mobile_pushes_sent::day",
             RealmCount,
             CountStat.DAY,
         ),
         # Rate limiting stats
-        # Used to limit the number of invitation emails sent by a realm
+        # Used to limit the number of invitation emails sent by a realm.
+        # Included in LOGGING_COUNT_STAT_PROPERTIES_NOT_SENT_TO_BOUNCER.
         LoggingCountStat("invites_sent::day", RealmCount, CountStat.DAY),
         # Dependent stats
         # Must come after their dependencies.
@@ -888,6 +891,19 @@ def get_count_stats(realm: Optional[Realm] = None) -> Dict[str, CountStat]:
 BOUNCER_ONLY_REMOTE_COUNT_STAT_PROPERTIES = [
     "mobile_pushes_received::day",
     "mobile_pushes_forwarded::day",
+]
+
+# LoggingCountStats with a daily duration and that are directly stored on
+# the RealmCount table (instead of via aggregation in process_count_stat),
+# can be in a state, after the hourly cron job to update analytics counts,
+# where the logged value will be live-updated later (as the end time for
+# the stat is still in the future). As these logging counts are designed
+# to be used on the self-hosted installation for either debugging or rate
+# limiting, sending these incomplete counts to the bouncer has low value.
+LOGGING_COUNT_STAT_PROPERTIES_NOT_SENT_TO_BOUNCER = [
+    "invites_sent::day",
+    "mobile_pushes_sent::day",
+    "active_users_log:is_bot:day",
 ]
 
 # To avoid refactoring for now COUNT_STATS can be used as before
