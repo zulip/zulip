@@ -1974,17 +1974,29 @@ def internal_send_stream_message_by_name(
     return sent_message_result.message_id
 
 
-def internal_send_huddle_message(
-    realm: Realm, sender: UserProfile, emails: List[str], content: str
-) -> Optional[int]:
+def internal_prep_huddle_message(
+    realm: Realm,
+    sender: UserProfile,
+    content: str,
+    emails: List[str],
+) -> Optional[SendMessageRequest]:
     addressee = Addressee.for_private(emails, realm)
-    message = _internal_prep_message(
+
+    return _internal_prep_message(
         realm=realm,
         sender=sender,
         addressee=addressee,
         content=content,
     )
+
+
+def internal_send_huddle_message(
+    realm: Realm, sender: UserProfile, emails: List[str], content: str
+) -> Optional[int]:
+    message = internal_prep_huddle_message(realm, sender, content, emails)
+
     if message is None:
         return None
+
     sent_message_result = do_send_messages([message])[0]
     return sent_message_result.message_id
