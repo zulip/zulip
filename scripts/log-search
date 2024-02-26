@@ -76,7 +76,7 @@ def parser() -> argparse.ArgumentParser:
     filtering = parser.add_argument_group("Filtering")
     filtering.add_argument(
         "filter_terms",
-        help="IP address, hostname, user-id, path, or status code to search for; multiple are AND'ed together",
+        help="IP address, hostname, user-id, HTTP method, path, or status code to search for; multiple are AND'ed together",
         nargs="+",
     )
     filtering.add_argument(
@@ -334,7 +334,7 @@ def parse_filters(
             args.all_lines = True
         else:
             raise RuntimeError(
-                f"Can't parse {filter_term} as an IP, hostname, user-id, path, or status code."
+                f"Can't parse {filter_term} as an IP, hostname, user-id, HTTP method, path, or status code."
             )
         if filter_type in filter_types:
             parser().error("Supplied the same time of value more than once, which cannot match!")
