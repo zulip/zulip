@@ -87,7 +87,7 @@ database queries inside the Tornado code paths, since those blocking
 requests carry a very high performance penalty for a single-threaded,
 asynchronous server system. (In principle, we could do non-blocking
 requests to those services, but the Django-based database libraries we
-use in most of our codebase using don't support that, and in any case,
+use in most of our codebase don't support that, and in any case,
 our architecture doesn't require Tornado to do that).
 
 The parts that are activated relatively rarely (e.g. when people type or
