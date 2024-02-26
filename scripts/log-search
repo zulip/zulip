@@ -272,6 +272,14 @@ def parse_logfile_names(args: argparse.Namespace) -> List[str]:
     return logfile_names
 
 
+month_name_to_no_lookup = {v: f"{k:02d}" for k, v in enumerate(calendar.month_abbr)}
+
+
+def convert_from_nginx_date(date: str) -> str:
+    day_of_month, month_abbr, year = date.split("/")
+    return f"{year}-{month_name_to_no_lookup[month_abbr]}-{day_of_month}"
+
+
 def parse_filters(
     args: argparse.Namespace,
 ) -> Tuple[Set[FilterType], List[FilterFunc]]:
@@ -385,7 +393,6 @@ def passes_filters(
 
 
 last_match_end: Optional[datetime] = None
-month_lookup = {v: f"{k:02d}" for k, v in enumerate(calendar.month_abbr)}
 
 
 def print_line(
@@ -401,8 +408,7 @@ def print_line(
         return
 
     if args.nginx:
-        day_of_month, month_abbr, year = match["date"].split("/")
-        date = f"{year}-{month_lookup[month_abbr]}-{day_of_month}"
+        date = convert_from_nginx_date(match["date"])
     else:
         date = match["date"]
     if args.all_logs or args.log_files is not None and args.log_files > 1:
