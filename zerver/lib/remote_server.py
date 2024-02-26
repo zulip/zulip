@@ -9,6 +9,7 @@ from django.db.models import QuerySet
 from django.utils.translation import gettext as _
 from pydantic import UUID4, BaseModel, ConfigDict, Field, Json, field_validator
 
+from analytics.lib.counts import LOGGING_COUNT_STAT_PROPERTIES_NOT_SENT_TO_BOUNCER
 from analytics.models import InstallationCount, RealmCount
 from version import API_FEATURE_LEVEL, ZULIP_VERSION
 from zerver.actions.realm_settings import (
@@ -364,8 +365,10 @@ def send_server_data_to_push_bouncer(consider_usage_statistics: bool = True) -> 
         # uploading such statistics enabled.
         installation_count_query = InstallationCount.objects.filter(
             id__gt=last_acked_installation_count_id
+        ).exclude(property__in=LOGGING_COUNT_STAT_PROPERTIES_NOT_SENT_TO_BOUNCER)
+        realm_count_query = RealmCount.objects.filter(id__gt=last_acked_realm_count_id).exclude(
+            property__in=LOGGING_COUNT_STAT_PROPERTIES_NOT_SENT_TO_BOUNCER
         )
-        realm_count_query = RealmCount.objects.filter(id__gt=last_acked_realm_count_id)
     else:
         installation_count_query = InstallationCount.objects.none()
         realm_count_query = RealmCount.objects.none()
