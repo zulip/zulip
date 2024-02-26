@@ -284,6 +284,10 @@ def parse_filters(
     filter_funcs = []
     filter_terms = []
 
+    if args.events and not args.nginx:
+        logging.warning("Adding --nginx -- /events requests do not appear in Django logs.")
+        args.nginx = True
+
     for filter_term in args.filter_terms:
         if re.match(r"[1-5][0-9][0-9]$", filter_term):
             filter_func = lambda m, t=filter_term: m["code"] == t
