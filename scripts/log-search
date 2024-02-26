@@ -98,7 +98,7 @@ def parser() -> argparse.ArgumentParser:
     )
     filtering.add_argument("--presence", "-p", help="Include presence paths", action="store_true")
     filtering.add_argument(
-        "--report", "-r", help="Include timing report paths", action="store_true"
+        "--report", "-r", help="Include Sentry reporting paths", action="store_true"
     )
     filtering.add_argument(
         "--no-other", "-O", help="Exclude paths not explicitly included", action="store_true"
@@ -364,7 +364,7 @@ def passes_filters(
         return args.messages
     elif path in ("/api/v1/users/me/presence", "/json/users/me/presence"):
         return args.presence
-    elif path.startswith(("/api/v1/report/", "/json/report/")) or path == "/error_tracing":
+    elif path == "/error_tracing":
         return args.report
     else:
         return not args.no_other
