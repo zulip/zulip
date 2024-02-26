@@ -54,6 +54,12 @@ jobs:
             os: bookworm
             include_documentation_tests: false
             include_frontend_tests: false
+          # Ubuntu 24.04 ships with Python 3.12.2.
+          - docker_image: zulip/ci:noble
+            name: Ubuntu 24.04 (Python 3.12, backend)
+            os: noble
+            include_documentation_tests: false
+            include_frontend_tests: false
 
     runs-on: ubuntu-latest
     name: ${{ matrix.name }}

@@ -28,6 +28,11 @@ if [[ ! -e /usr/share/doc/groonga-apt-source/copyright ]]; then
             read -r release
         } <<<"$os_info"
 
+        if [ "$distribution" = ubuntu ] && [ "$release" = noble ]; then
+            # PGroonga binaries are not yet provided for Ubuntu 24.04.
+            exit
+        fi
+
         if [ "$distribution" = debian ] && [ "$release" = bookworm ]; then
             # As of Debian 12, the Groonga repository depends on the
             # Apache Arrow repository.

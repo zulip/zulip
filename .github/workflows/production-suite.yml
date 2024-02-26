@@ -145,6 +145,11 @@ jobs:
             os: jammy
             extra-args: ""
 
+          - docker_image: zulip/ci:noble
+            name: Ubuntu 24.04 production install
+            os: noble
+            extra-args: ""
+
           - docker_image: zulip/ci:bullseye
             name: Debian 11 production install with custom db name and user
             os: bullseye
