@@ -98,6 +98,7 @@ else:
         "./manage.py",
         "runtornado",
         "--autoreload",
+        "--immediate-reloads",
     ]
 
 manage_args = [f"--settings={settings_module}"]
