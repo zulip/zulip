@@ -89,7 +89,7 @@ notifications.
 
 ## Zulip empowers teams to work flexibly anytime, from anywhere, without interruptions.
 
-With team chat that is designed for both synchronous and asynchronous
+With organized team chat that is designed for both synchronous and asynchronous
 communication, everyone can be included in decision-making without being online
 at the same time. Team members can focus when they need to, and contribute to
 discussions asynchronously without interrupting their flow.

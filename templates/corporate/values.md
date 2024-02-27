@@ -49,11 +49,12 @@ contributing to Zulip than in their 4-year formal computer science education.
 
 ## Building a sustainable business aligned with our values
 
-Guiding the Zulip community in developing a world-class team chat product with
-apps for every major desktop and mobile platform requires leadership from a
-talented, dedicated team. We believe that the only sustainable model is for our
-core team to be compensated fairly for their time. We have thus **founded a
-company (Kandra Labs) to steward and financially support Zulip’s development**.
+Guiding the Zulip community in developing a world-class organized team chat
+product with apps for every major desktop and mobile platform requires
+leadership from a talented, dedicated team. We believe that the only sustainable
+model is for our core team to be compensated fairly for their time. We have thus
+**founded a company (Kandra Labs) to steward and financially support Zulip’s
+development**.
 
 We are **growing our business sustainably**, without venture capital funding.
 VCs are incentivized to push companies to gamble for explosive growth. Often,
