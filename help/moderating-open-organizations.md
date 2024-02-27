@@ -15,6 +15,16 @@ problematic behavior:
   [create bots](/help/restrict-bot-creation), [send direct
   messages](/help/restrict-direct-messages), or
   [add custom emoji](/help/custom-emoji#change-who-can-add-custom-emoji).
+* Restrict who can [move messages to another
+  stream](/help/restrict-moving-messages#configure-who-can-move-messages-to-another-stream),
+  and set a [time
+  limit](/help/restrict-moving-messages#set-a-time-limit-for-editing-topics) for
+  editing topics.
+* Restrict who can
+  [edit](/help/restrict-message-editing-and-deletion#configure-message-editing-permissions)
+  and
+  [delete](/help/restrict-message-editing-and-deletion#configure-message-deletion-permissions)
+  their own messages, and set time limits on message editing and deletion.
 * Link to a code of conduct in your
   [organization description](/help/create-your-organization-profile)
   (displayed on the registration page).
