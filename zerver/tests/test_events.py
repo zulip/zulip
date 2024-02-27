@@ -248,6 +248,7 @@ from zerver.tornado.event_queue import (
     clear_client_event_queues_for_testing,
     create_heartbeat_event,
     mark_clients_to_reload,
+    send_restart_events,
     send_web_reload_client_events,
 )
 from zerver.views.realm_playgrounds import access_playground_by_id
@@ -3477,6 +3478,13 @@ class NormalActionsTest(BaseAction):
 
         events = self.verify_action(lambda: do_set_zoom_token(self.user_profile, None))
         check_has_zoom_token("events[0]", events[0], value=False)
+
+    def test_restart_event(self) -> None:
+        self.verify_action(
+            lambda: send_restart_events(),
+            num_events=1,
+            state_change_expected=False,
+        )
 
     def test_web_reload_client_event(self) -> None:
         self.verify_action(
