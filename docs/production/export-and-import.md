@@ -7,42 +7,51 @@ service (or back):
 
 - The [Backup](#backups) tool is designed for exact restoration of a
   Zulip server's state, for disaster recovery, testing with production
-  data, or hardware migration. This tool has a few limitations:
+  data, and hardware migrations.
+
+  We highly recommend this tool in situations where it is applicable,
+  because it is fast, robust, and minimizes disruption for your
+  users. This tool has a few limitations:
 
   - Backups must be restored on a server running the same Zulip
     version (most precisely, one where `manage.py showmigrations` has
-    the same output).
+    identical output).
   - Backups must be restored on a server running the same PostgreSQL
     version. To install Zulip with the same version of PostgreSQL that
     the backup was taken on, pass the desired version with [the
     `--postgresql-version` argument][installer-options] when
-    installing.
+    installing. Note that PostgreSQL is easy to [upgrade
+    independently][postgres-upgrade] from the rest of your Zulip
+    installation.
   - Backups aren't useful for migrating organizations between
     self-hosting and Zulip Cloud (which may require renumbering all
     the users/messages/etc.).
 
-  We highly recommend this tool in situations where it is applicable,
-  because it is highly optimized and highly stable, since the hard
-  work is done by the built-in backup feature of PostgreSQL. We also
-  document [backup details](#backup-details) for users managing
-  backups manually.
+  We also document [backup details](#backup-details) for users
+  managing backups manually.
 
-- The logical [Data export](#data-export) tool is designed for
+- The [logical data export](#data-export) tool is designed for
   migrating data between Zulip Cloud and other Zulip servers, as well
-  as various auditing purposes. The logical export tool produces a
-  `.tar.gz` archive with most of the Zulip database data encoded in
-  JSON files–a format shared by our [data
-  import](#import-into-a-new-zulip-server) tools for third-party
-  services like
-  [Slack](https://zulip.com/help/import-from-slack).
+  as various auditing purposes.
 
-  Like the backup tool, logical data exports must be imported on a
-  Zulip server running the same version. However, logical data
-  exports can be imported on Zulip servers running a different
-  PostgreSQL version or hosting a different set of Zulip
-  organizations. We recommend this tool in cases where the backup
-  tool isn't applicable, including situations where an easily
-  machine-parsable export format is desired.
+  We recommend this tool in cases where the backup tool isn't
+  applicable, including situations where an easily machine-parsable
+  export format is desired. This tool has a few limitations and
+  caveats:
+
+  - Like the backup tool, logical data exports must be imported on a
+    Zulip server running the same Zulip version. However, logical data
+    exports can be imported on Zulip servers running a different
+    PostgreSQL version or hosting a different set of Zulip
+    organizations.
+  - Transferring an organization via the data export tool results in
+    significant user-facing disruption, such as logging all users out of
+    their accounts and requiring them to reset their passwords.
+
+  The logical export tool produces a `.tar.gz` archive with most of
+  the Zulip database data encoded in JSON files–a format shared by our
+  [data import](#import-into-a-new-zulip-server) tools for third-party
+  services like [Slack](https://zulip.com/help/import-from-slack).
 
 - [Compliance exports](#compliance-exports) allow a server
   administrator to export messages matching a search query.
@@ -60,6 +69,7 @@ service (or back):
   as part of a high availability environment.
 
 [installer-options]: deployment.md#advanced-installer-options
+[postgres-upgrade]: upgrade.md#upgrading-postgresql
 
 ## Backups
 
@@ -235,9 +245,9 @@ To restore from a manual backup, the process is basically the reverse of the abo
 This restoration process can also be used to migrate a Zulip
 installation from one server to another.
 
-We recommend running a disaster recovery after setting up your backups to
-confirm that your backups are working. You may also want to monitor
-that they are up to date using the Nagios plugin at:
+We recommend running a disaster recovery test after setting up your
+backups to confirm that your backups are working. You may also want to
+monitor that they are up to date using the Nagios plugin at:
 `puppet/zulip/files/nagios_plugins/zulip_postgresql_backups/check_postgresql_backup`.
 
 ## Data export
@@ -245,24 +255,37 @@ that they are up to date using the Nagios plugin at:
 Zulip's powerful data export tool is designed to handle migration of a
 Zulip organization between different Zulip installations; as a result,
 these exports contain all non-transient data for a Zulip organization,
-with the exception of passwords and API keys.
+with the exception of secrets, like passwords and API keys.
 
-We recommend using the [backup tool](#backups) if your primary goal is
-backups.
+We recommend instead using the [backup tool](#backups) in all
+scenarios where it is applicable, because this data export process has
+a few downsides in comparison:
 
-### Upgrade if exporting for import into Zulip Cloud
+- All users will have their passwords randomized and be logged out of
+  their accounts, both on web and mobile clients.
+- All bots and integrations will need to be updated with new API keys.
+- Users, streams, and messages are usually renumbered, which will
+  break most links from external programs referencing these objects.
 
-If you are exporting data from a self-hosted version of Zulip for purposes of
-importing into Zulip Cloud, you should first [upgrade your server to the
+### Consider upgrading
+
+We recommend [upgrading your Zulip server](../production/upgrade.md)
+to the latest release [maintenance
+release](../overview/release-lifecycle.md), or at least the latest
+maintenance release for your major Zulip version.
+
+**For Zulip Cloud imports**: If you are exporting data from a
+self-hosted version of Zulip for purposes of importing into Zulip
+Cloud, you should first [upgrade your server to the
 `zulip-cloud-current` branch][upgrade-zulip-from-git]:
 
 ```bash
 /home/zulip/deployments/current/scripts/upgrade-zulip-from-git zulip-cloud-current
 ```
 
-It is not sufficient to be on the latest stable release, as zulip.com runs
-pre-release versions of Zulip that are often several months of development ahead
-of the latest release.
+It is not sufficient to be on the latest stable release, because Zulip
+Cloud runs pre-release versions of Zulip that are often several months
+of development ahead of the latest release.
 
 ### Preventing changes during the export
 
@@ -303,10 +326,10 @@ cd /home/zulip/deployments/current
 (The `-r` option lets you specify the organization to export; `''` is
 the default organization hosted at the Zulip server's root domain.)
 
-This will generate a tarred archive with a name like
-`/tmp/zulip-export-zcmpxfm6.tar.gz`. The archive contains several
-JSON files (containing the Zulip organization's data) as well as an
-archive of all the organization's uploaded files.
+This will generate a compressed archive with a name like
+`/tmp/zulip-export-zcmpxfm6.tar.gz`. The archive contains several JSON
+files (containing the Zulip organization's data) as well as an archive
+of all the organization's uploaded files.
 
 ## Import into a new Zulip server
 
@@ -336,44 +359,34 @@ archive of all the organization's uploaded files.
      budget extra RAM for running the data import tool.
 
 2. If your new Zulip server is meant to fully replace a previous Zulip
-   server, you may want to copy some settings from `/etc/zulip` to your
-   new server to reuse the server-level configuration and secret keys
-   from your old server. There are a few important details to understand
-   about doing so:
+   server, copying `/etc/zulip/settings.py` and
+   `/etc/zulip/zulip.conf` is safe and recommended, to avoid
+   unnecessarily repeating configuration work.
 
-   - Copying `/etc/zulip/settings.py` and `/etc/zulip/zulip.conf` is
-     safe and recommended. Care is required when copying secrets from
-     `/etc/zulip/zulip-secrets.conf` (details below).
-   - If you copy `zulip_org_id` and `zulip_org_key` (the credentials
-     for the [mobile push notifications
-     service](mobile-push-notifications.md)), you should
-     be very careful to make sure the no users had their IDs
-     renumbered during the import process (this can be checked using
-     `manage.py shell` with some care). The push notifications
-     service has a mapping of which `user_id` values are associated
-     with which devices for a given Zulip server (represented by the
-     `zulip_org_id` registration). This means that if any `user_id`
-     values were renumbered during the import and you don't register a
-     new `zulip_org_id`, push notifications meant for the user who now
-     has ID 15 may be sent to devices registered by the user who had
-     user ID 15 before the data export (yikes!). The solution is
-     simply to not copy these settings and re-register your server for
-     mobile push notifications if any users had their IDs renumbered
-     during the logical export/import process.
-   - If you copy the `rabbitmq_password` secret from
-     `zulip-secrets.conf`, you'll need to run
-     `scripts/setup/configure-rabbitmq` as root to update your local RabbitMQ
-     installation to use the password in your Zulip secrets file.
-   - You will likely want to copy `camo_key` (required to avoid
-     breaking certain links) and any settings you added related to
-     authentication and email delivery so that those work on your new
-     server.
-   - Copying `avatar_salt` is not recommended, due to similar issues
-     to the mobile push notifications service. Zulip will
+   Copying `/etc/zulip/zulip-secrets.conf` is also safe and
+   recommended, with the following important exceptions and notes:
+
+   - Copying `avatar_salt` is not recommended. Zulip will
      automatically rewrite avatars at URLs appropriate for the new
      user IDs, and using the same avatar salt (and same server URL)
-     post import could result in issues with browsers caching the
-     avatar image improperly for users whose ID was renumbered.
+     post import could result in issues with browsers caching and
+     displaying avatar images improperly for users whose ID was
+     renumbered.
+   - Copying `zulip_org_id` and `zulip_org_key` is recommended to
+     avoid disconnecting your Zulip server from its registration with
+     the [Mobile Push Notifications Service][mobile-push].
+   - If you copy the `rabbitmq_password` secret from
+     `zulip-secrets.conf`, you'll need to run
+     `scripts/setup/configure-rabbitmq` as root to update your local
+     RabbitMQ installation to use the password in your Zulip secrets
+     file.
+   - Copying `camo_key` is required to avoid breaking links from Zulip
+     messages to externally hosted images.
+   - If your Zulip server is on an old Zulip Server release that
+     predates Zulip 5.0, and you use the [Mobile Push Notifications
+     Service][mobile-push], you should upgrade before you do the
+     export/import process if at all possible, and [ask for support][contact-support] if
+     it is not.
 
 3. Log in to a shell on your Zulip server as the `zulip` user. Run the
    following commands, replacing the filename with the path to your data
@@ -390,6 +403,7 @@ cd /home/zulip/deployments/current
 This could take several minutes to run depending on how much data you're
 importing.
 
+[contact-support]: https://zulip.com/help/contact-support
 [upgrade-zulip-from-git]: upgrade.md#upgrading-from-a-git-repository
 
 #### Import options
@@ -538,3 +552,4 @@ the Nagios plugin installed into
 
 [wal]: https://www.postgresql.org/docs/current/wal-intro.html
 [archive-timeout]: https://www.postgresql.org/docs/current/runtime-config-wal.html#GUC-ARCHIVE-TIMEOUT
+[mobile-push]: ../production/mobile-push-notifications.md
