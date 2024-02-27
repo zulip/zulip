@@ -14,7 +14,8 @@ edit the question.
 
 1. Make sure the compose box is empty.
 
-1. Click the **Add poll** icon at the bottom of the compose box.
+1. Click the **Add poll** (<i class="zulip-icon zulip-icon-poll"></i>) icon at
+   the bottom of the compose box.
 
 1. Fill out poll information as desired, and click **Add poll** to insert poll
    formatting.
