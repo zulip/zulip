@@ -53,13 +53,15 @@
     th {
         vertical-align: bottom;
         padding: 8px;
-        max-width: fit-content;
     }
 
     td {
         border-top: 1px solid hsl(0deg 0% 87%);
         white-space: nowrap;
         padding: 2px 8px;
+        max-width: 320px;
+        overflow: hidden;
+        text-overflow: ellipsis;
     }
 
     tbody > tr:nth-child(odd) > td {
