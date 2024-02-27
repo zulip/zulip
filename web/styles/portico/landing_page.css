@@ -1668,6 +1668,16 @@ button {
     top: 6px;
 }
 
+#for-education-free-price-box {
+    .bottom {
+        height: 240px;
+
+        .text-content {
+            margin-top: 52px;
+        }
+    }
+}
+
 .plans_faq_questions {
     background: transparent;
     padding: 20px 0;
