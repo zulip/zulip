@@ -136,12 +136,12 @@ class MemcachedCollector(Collector):
 
         yield counter_value(
             "read_bytes_total",
-            "Total number of items stored during the life of this instance.",
+            "Total number of bytes read by this server from network.",
             value=stats["bytes_read"],
         )
         yield counter_value(
             "written_bytes_total",
-            "Total number of items stored during the life of this instance.",
+            "Total number of bytes sent by this server to network.",
             value=stats["bytes_written"],
         )
 
