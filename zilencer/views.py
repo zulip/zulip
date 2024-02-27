@@ -38,7 +38,7 @@ from corporate.models import (
     get_customer_by_remote_realm,
 )
 from zerver.decorator import require_post
-from zerver.lib.email_validation import validate_disposable
+from zerver.lib.email_validation import validate_is_not_disposable
 from zerver.lib.exceptions import (
     ErrorCode,
     JsonableError,
@@ -143,7 +143,7 @@ def register_remote_server(
 
     # We don't want to allow disposable domains for contact_email either
     try:
-        validate_disposable(contact_email)
+        validate_is_not_disposable(contact_email)
     except DisposableEmailError:
         raise JsonableError(_("Please use your real email address."))
 
