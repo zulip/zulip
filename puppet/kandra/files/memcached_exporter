@@ -194,6 +194,19 @@ class MemcachedCollector(Collector):
                 value=stats["store_no_memory"],
             )
 
+        raw_stats = client.stats("settings")
+        settings_stats = next(iter(raw_stats.values()))
+        yield counter_value(
+            "max_connections",
+            "Maximum number of clients allowed.",
+            value=settings_stats["maxconns"],
+        )
+        yield counter_value(
+            "max_item_size_bytes",
+            "Maximum item size.",
+            value=settings_stats["item_size_max"],
+        )
+
         raw_stats = client.stats("slabs")
         slab_stats = next(iter(raw_stats.values()))
         yield counter_value(
