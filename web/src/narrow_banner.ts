@@ -330,18 +330,10 @@ function pick_empty_narrow_banner(): NarrowBannerData {
                             defaultMessage:
                                 "You have not sent any direct messages to yourself yet!",
                         }),
-                        html: $t_html(
-                            {
-                                defaultMessage:
-                                    "Why not <z-link>start a conversation with yourself</z-link>?",
-                            },
-                            {
-                                "z-link": (content_html) =>
-                                    `<a href="#" class="empty_feed_compose_private">${content_html.join(
-                                        "",
-                                    )}</a>`,
-                            },
-                        ),
+                        html: $t_html({
+                            defaultMessage:
+                                "Use this space for personal notes, or to test out Zulip features.",
+                        }),
                     };
                 }
                 return {
