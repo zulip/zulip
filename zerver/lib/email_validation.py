@@ -1,3 +1,4 @@
+from email.errors import HeaderParseError
 from email.headerregistry import Address
 from typing import Callable, Dict, Optional, Set, Tuple
 
@@ -18,7 +19,12 @@ from zerver.models.users import get_users_by_delivery_email, is_cross_realm_bot_
 
 
 def validate_is_not_disposable(email: str) -> None:
-    if is_disposable_domain(Address(addr_spec=email).domain):
+    try:
+        domain = Address(addr_spec=email).domain
+    except (HeaderParseError, ValueError):
+        raise DisposableEmailError
+
+    if is_disposable_domain(domain):
         raise DisposableEmailError
 
 
