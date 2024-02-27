@@ -665,7 +665,6 @@ class SponsorshipRequestSessionSpecificContext(TypedDict):
 
 class UpgradePageContext(TypedDict):
     customer_name: str
-    default_invoice_days_until_due: int
     discount_percent: Optional[str]
     email: str
     exempt_from_license_number_check: bool
@@ -2445,7 +2444,6 @@ class BillingSession(ABC):
         flat_discount, flat_discounted_months = self.get_flat_discount_info(customer)
         context: UpgradePageContext = {
             "customer_name": customer_specific_context["customer_name"],
-            "default_invoice_days_until_due": DEFAULT_INVOICE_DAYS_UNTIL_DUE,
             "discount_percent": format_discount_percentage(percent_off),
             "email": customer_specific_context["email"],
             "exempt_from_license_number_check": exempt_from_license_number_check,
