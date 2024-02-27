@@ -2,6 +2,9 @@
 # /tools/update-locked-requirements to update requirements/dev.txt
 # and requirements/prod.txt.
 # See requirements/README.md for more detail.
+
+-r pip.in
+
 # Django itself
 Django[argon2]==4.2.*
 

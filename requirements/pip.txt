@@ -13,9 +13,8 @@ wheel==0.42.0 \
     # via -r requirements/pip.in
 
 # The following packages are considered to be unsafe in a requirements file:
-pip==20.3.4 \
-    --hash=sha256:217ae5161a0e08c0fb873858806e3478c9775caffce5168b50ec885e358c199d \
-    --hash=sha256:6773934e5f5fc3eaa8c5a44949b5b924fc122daa0a8aa9f80c835b4ca2a543fc
+https://github.com/andersk/pip/archive/6642149c44297200f44dfe215b1cb7954d47ed77.zip#egg=pip==20.3.4+git \
+    --hash=sha256:4dfbc892b80b32091921c7cead7c4aff06c726e520633ac89bc463137e0fd27d
     # via -r requirements/pip.in
 setuptools==69.1.1 \
     --hash=sha256:02fa291a0471b3a18b2b2481ed902af520c69e8ae0919c13da936542754b4c56 \
