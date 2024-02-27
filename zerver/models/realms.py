@@ -268,7 +268,7 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
 
     # Who in the organization is allowed to move messages between streams.
     move_messages_between_streams_policy = models.PositiveSmallIntegerField(
-        default=POLICY_ADMINS_ONLY
+        default=POLICY_MEMBERS_ONLY
     )
 
     user_group_edit_policy = models.PositiveSmallIntegerField(default=POLICY_MEMBERS_ONLY)
