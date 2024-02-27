@@ -1,6 +1,5 @@
 import logging
 import re
-from email.errors import HeaderParseError
 from email.headerregistry import Address
 from typing import Any, Dict, List, Optional, Tuple
 
@@ -26,10 +25,11 @@ from zerver.actions.user_settings import do_change_password
 from zerver.lib.email_validation import (
     email_allowed_for_realm,
     email_reserved_for_system_bots_error,
+    validate_is_not_disposable,
 )
 from zerver.lib.exceptions import JsonableError, RateLimitedError
 from zerver.lib.i18n import get_language_list
-from zerver.lib.name_restrictions import is_disposable_domain, is_reserved_subdomain
+from zerver.lib.name_restrictions import is_reserved_subdomain
 from zerver.lib.rate_limiter import RateLimitedObject, rate_limit_request_by_ip
 from zerver.lib.send_email import FromAddress, send_email
 from zerver.lib.soft_deactivation import queue_soft_reactivation
@@ -126,11 +126,8 @@ def email_not_system_bot(email: str) -> None:
 
 def email_is_not_disposable(email: str) -> None:
     try:
-        domain = Address(addr_spec=email).domain
-    except (HeaderParseError, ValueError):
-        raise ValidationError(_("Please use your real email address."))
-
-    if is_disposable_domain(domain):
+        validate_is_not_disposable(email)
+    except DisposableEmailError:
         raise ValidationError(_("Please use your real email address."))
 
 
