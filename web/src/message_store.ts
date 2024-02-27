@@ -85,6 +85,7 @@ export type MessageWithBooleans = (
     stream_wildcard_mentioned: boolean;
     topic_wildcard_mentioned: boolean;
     collapsed: boolean;
+    condensed?: boolean;
     alerted: boolean;
 };
 
