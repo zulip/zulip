@@ -1063,18 +1063,29 @@ class DeferredWorker(QueueProcessingWorker):
             batch_size = 100
             offset = 0
             while True:
-                messages = Message.objects.filter(
-                    # Uses index: zerver_message_realm_recipient_id
-                    realm_id=stream.realm_id,
-                    recipient_id=event["stream_recipient_id"],
-                ).order_by("id")[offset : offset + batch_size]
-
                 with transaction.atomic(savepoint=False):
+                    # Note that this algorithm is susceptible to
+                    # leaving some messages unread if messages were to
+                    # be moved out of the stream while it was running,
+                    # causing the "offset" to potentially skip ahead,
+                    # over messages which have not been handled.
+                    # Since it is currently only run after a stream is
+                    # deactivated, this is not _currently_ possible.
+                    messages = (
+                        Message.objects.filter(
+                            # Uses index: zerver_message_realm_recipient_id
+                            realm_id=stream.realm_id,
+                            recipient_id=event["stream_recipient_id"],
+                        )
+                        .order_by("id")[offset : offset + batch_size]
+                        .values_list("id", flat=True)
+                    )
+                    message_count = messages.count()
                     UserMessage.select_for_update_query().filter(message__in=messages).extra(
                         where=[UserMessage.where_unread()]
                     ).update(flags=F("flags").bitor(UserMessage.flags.read))
-                offset += len(messages)
-                if len(messages) < batch_size:
+                offset += message_count
+                if message_count < batch_size:
                     break
             logger.info(
                 "Marked %s messages as read for all users, stream_recipient_id %s",
