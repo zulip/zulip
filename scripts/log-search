@@ -199,13 +199,13 @@ class FilterFunc(Protocol):
 def main() -> None:
     args = parser().parse_args()
 
-    (filter_types, filter_funcs) = parse_filters(args)
+    (filter_types, filter_funcs, substr_terms) = parse_filters(args)
     logfile_names = parse_logfile_names(args)
     if args.timeline and args.nginx:
         print("! nginx logs not suggested for timeline, due to imprecision", file=sys.stderr)
 
     use_color = sys.stdout.isatty()
-    lowered_terms = [term.lower() for term in args.filter_terms]
+    lowered_terms = [term.lower() for term in substr_terms]
     try:
         for logfile_name in reversed(logfile_names):
             with maybe_gzip(logfile_name) as logfile:
@@ -289,7 +289,7 @@ def convert_to_nginx_date(date: str) -> str:
 
 def parse_filters(
     args: argparse.Namespace,
-) -> Tuple[Set[FilterType], List[FilterFunc]]:
+) -> Tuple[Set[FilterType], List[FilterFunc], List[str]]:
     # The heuristics below are not intended to be precise -- they
     # certainly count things as "IPv4" or "IPv6" addresses that are
     # invalid.  However, we expect the input here to already be
@@ -371,10 +371,7 @@ def parse_filters(
         filter_funcs.append(lambda m, t=args.client: t in m["user_agent"])
         filter_terms.append(args.client)
 
-    # Push back the modified raw strings, so we can use them for fast substring searches
-    args.filter_terms = filter_terms
-
-    return (filter_types, filter_funcs)
+    return (filter_types, filter_funcs, filter_terms)
 
 
 def passes_filters(
