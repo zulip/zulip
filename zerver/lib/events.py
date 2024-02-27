@@ -1531,6 +1531,9 @@ def apply_event(
         # possible, but the worst expected outcome is that the client
         # retains the old JS instead of reloading.
         logging.warning("Got a web_reload_client event during apply_events")
+    elif event["type"] == "restart":
+        # The Tornado process restarted.  This has no effect; we ignore it.
+        pass
     else:
         raise AssertionError("Unexpected event type {}".format(event["type"]))
 
