@@ -5075,7 +5075,7 @@ msgstr "請選擇其一： 'stream' or 'stream_id'."
 #: zerver/lib/streams.py:432 zerver/lib/streams.py:500
 #: zerver/views/streams.py:393 zerver/views/user_topics.py:102
 msgid "Invalid stream ID"
-msgstr ""
+msgstr "頻道ID不正確"
 
 #: zerver/lib/streams.py:475
 #, python-brace-format
