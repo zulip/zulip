@@ -1,4 +1,5 @@
 import $ from "jquery";
+import _ from "lodash";
 import assert from "minimalistic-assert";
 
 import * as hash_util from "./hash_util";
@@ -6,6 +7,7 @@ import * as message_lists from "./message_lists";
 import type {MessageList} from "./message_lists";
 import * as narrow_banner from "./narrow_banner";
 import * as narrow_state from "./narrow_state";
+import * as people from "./people";
 
 function show_history_limit_notice(): void {
     $(".top-messages-logo").hide();
@@ -54,7 +56,11 @@ export function update_top_of_narrow_notices(msg_list: MessageList): void {
             !filter.is_in_home() &&
             !filter.contains_only_private_messages() &&
             !filter.includes_full_stream_history() &&
-            !filter.is_personal_filter()
+            !filter.is_personal_filter() &&
+            !(
+                _.isEqual(filter._sorted_term_types, ["sender", "has-reaction"]) &&
+                filter.operands("sender")[0] === people.my_current_email()
+            )
         ) {
             show_end_of_results_notice();
         }

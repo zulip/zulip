@@ -98,6 +98,16 @@
                     <span class="unread_count"></span>
                 </a>
             </li>
+            <li class="tippy-views-tooltip top_left_my_reactions top_left_row hidden-for-spectators" data-tooltip-template-id="my-reactions-tooltip-template">
+                <a class="left-sidebar-navigation-label-container" href="#narrow/has/reaction/sender/me">
+                    <span class="filter-icon">
+                        <i class="zulip-icon zulip-icon-smile" aria-hidden="true"></i>
+                    </span>
+                    {{~!-- squash whitespace --~}}
+                    <span class="left-sidebar-navigation-label">{{t 'Reactions' }}</span>
+                    <span class="unread_count"></span>
+                </a>
+            </li>
             <li class="top_left_starred_messages top_left_row hidden-for-spectators">
                 <a class="left-sidebar-navigation-label-container" href="#narrow/is/starred">
                     <span class="filter-icon">

@@ -145,6 +145,8 @@ function message_matches_search_term(message: Message, operator: string, operand
                     return message_parser.message_has_link(message);
                 case "attachment":
                     return message_parser.message_has_attachment(message);
+                case "reaction":
+                    return message_parser.message_has_reaction(message);
                 default:
                     return false; // has:something_else returns false
             }
@@ -618,6 +620,8 @@ export class Filter {
                     "links",
                     "attachment",
                     "attachments",
+                    "reaction",
+                    "reactions",
                 ];
                 if (!valid_has_operands.includes(operand)) {
                     return {
@@ -849,6 +853,12 @@ export class Filter {
         if (_.isEqual(term_types, ["sender"])) {
             return true;
         }
+        if (
+            _.isEqual(term_types, ["sender", "has-reaction"]) &&
+            this.operands("sender")[0] === people.my_current_email()
+        ) {
+            return true;
+        }
         return false;
     }
 
@@ -863,6 +873,12 @@ export class Filter {
         const term_types = this.sorted_term_types();
 
         // this comes first because it has 3 term_types but is not a "complex filter"
+        if (
+            _.isEqual(term_types, ["sender", "search", "has-reaction"]) &&
+            this.operands("sender")[0] === people.my_current_email()
+        ) {
+            return "/#narrow/has/reaction/sender/me";
+        }
         if (_.isEqual(term_types, ["channel", "topic", "search"])) {
             // if channel does not exist, redirect to home view
             if (!this._sub) {
@@ -928,6 +944,15 @@ export class Filter {
         const term_types = this.sorted_term_types();
         let icon;
         let zulip_icon;
+
+        if (
+            _.isEqual(term_types, ["sender", "has-reaction"]) &&
+            this.operands("sender")[0] === people.my_current_email()
+        ) {
+            zulip_icon = "smile";
+            return {...context, zulip_icon};
+        }
+
         switch (term_types[0]) {
             case "in-home":
             case "in-all":
@@ -1053,6 +1078,12 @@ export class Filter {
                     return $t({defaultMessage: "Unread messages"});
             }
         }
+        if (
+            _.isEqual(term_types, ["sender", "has-reaction"]) &&
+            this.operands("sender")[0] === people.my_current_email()
+        ) {
+            return $t({defaultMessage: "Reactions"});
+        }
         /* istanbul ignore next */
         return undefined;
     }
@@ -1072,6 +1103,17 @@ export class Filter {
                     }),
                     link: "/help/star-a-message#view-your-starred-messages",
                 };
+        }
+        if (
+            _.isEqual(term_types, ["sender", "has-reaction"]) &&
+            this.operands("sender")[0] === people.my_current_email()
+        ) {
+            return {
+                description: $t({
+                    defaultMessage: "Emoji reactions to your messages.",
+                }),
+                link: "/help/emoji-reactions",
+            };
         }
         return undefined;
     }

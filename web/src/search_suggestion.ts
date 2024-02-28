@@ -635,6 +635,11 @@ function get_has_filter_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Sugg
             description_html: "messages that contain attachments",
             incompatible_patterns: [{operator: "has", operand: "attachment"}],
         },
+        {
+            search_string: "has:reaction",
+            description_html: "messages that contain reactions",
+            incompatible_patterns: [{operator: "has", operand: "reaction"}],
+        },
     ];
     return get_special_filter_suggestions(last, terms, suggestions);
 }

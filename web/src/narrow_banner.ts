@@ -1,4 +1,5 @@
 import $ from "jquery";
+import _ from "lodash";
 import assert from "minimalistic-assert";
 
 import {$t, $t_html} from "./i18n";
@@ -97,6 +98,7 @@ function pick_empty_narrow_banner(): NarrowBannerData {
     }
 
     const first_term = current_filter.terms()[0]!;
+    const current_terms_types = current_filter.sorted_term_types();
     const first_operator = first_term.operator;
     const first_operand = first_term.operand;
     const num_terms = current_filter.terms().length;
@@ -158,6 +160,26 @@ function pick_empty_narrow_banner(): NarrowBannerData {
         // A stream > topic that doesn't exist yet.
         if (num_terms === 2 && streams.length === 1 && topics.length === 1) {
             return default_banner;
+        }
+
+        if (
+            _.isEqual(current_terms_types, ["sender", "has-reaction"]) &&
+            current_filter.operands("sender")[0] === people.my_current_email()
+        ) {
+            return {
+                title: $t({defaultMessage: "None of your messages have emoji reactions yet."}),
+                html: $t_html(
+                    {
+                        defaultMessage: "Learn more about emoji reactions <z-link>here</z-link>.",
+                    },
+                    {
+                        "z-link": (content_html) =>
+                            `<a target="_blank" rel="noopener noreferrer" href="/help/emoji-reactions">${content_html.join(
+                                "",
+                            )}</a>`,
+                    },
+                ),
+            };
         }
 
         // For other multi-operator narrows, we just use the default banner
