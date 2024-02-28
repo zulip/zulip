@@ -93,6 +93,7 @@ from zerver.views.push_notifications import (
     remove_android_reg_id,
     remove_apns_device_token,
     self_hosting_auth_json_endpoint,
+    self_hosting_auth_not_configured,
     self_hosting_auth_redirect_endpoint,
     send_test_push_notification_api,
 )
@@ -827,6 +828,10 @@ urls += [
         "self-hosted-billing/",
         self_hosting_auth_redirect_endpoint,
         name="self_hosting_auth_redirect_endpoint",
+    ),
+    path(
+        "self-hosted-billing/not-configured/",
+        self_hosting_auth_not_configured,
     ),
     rest_path(
         "json/self-hosted-billing",

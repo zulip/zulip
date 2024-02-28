@@ -182,12 +182,41 @@ class SelfHostedBillingEndpointBasicTest(RemoteRealmBillingTestCase):
         self_hosted_billing_json_url = "/json/self-hosted-billing"
 
         with self.settings(PUSH_NOTIFICATION_BOUNCER_URL=None):
-            result = self.client_get(self_hosted_billing_url)
-            self.assertEqual(result.status_code, 404)
-            self.assert_in_response("Page not found (404)", result)
+            with self.settings(CORPORATE_ENABLED=True):
+                result = self.client_get(self_hosted_billing_url)
+                self.assertEqual(result.status_code, 404)
+                self.assert_in_response("Page not found (404)", result)
 
-            result = self.client_get(self_hosted_billing_json_url)
-            self.assert_json_error(result, "Server doesn't use the push notification service", 404)
+            with self.settings(CORPORATE_ENABLED=False):
+                result = self.client_get(self_hosted_billing_url)
+                self.assertEqual(result.status_code, 302)
+                redirect_url = result["Location"]
+                self.assertEqual(redirect_url, "/self-hosted-billing/not-configured/")
+
+                with self.assertLogs("django.request"):
+                    result = self.client_get(redirect_url)
+                    self.assert_in_response(
+                        "This server is not configured to use push notifications.", result
+                    )
+
+            with self.settings(CORPORATE_ENABLED=True):
+                result = self.client_get(self_hosted_billing_json_url)
+                self.assert_json_error(
+                    result, "Server doesn't use the push notification service", 404
+                )
+
+            with self.settings(CORPORATE_ENABLED=False):
+                result = self.client_get(self_hosted_billing_json_url)
+                self.assert_json_success(result)
+
+                redirect_url = result.json()["billing_access_url"]
+                self.assertEqual(redirect_url, "/self-hosted-billing/not-configured/")
+
+                with self.assertLogs("django.request"):
+                    result = self.client_get(redirect_url)
+                    self.assert_in_response(
+                        "This server is not configured to use push notifications.", result
+                    )
 
         with mock.patch(
             "zerver.views.push_notifications.send_to_push_bouncer",
@@ -223,6 +252,26 @@ class SelfHostedBillingEndpointBasicTest(RemoteRealmBillingTestCase):
 
 @override_settings(PUSH_NOTIFICATION_BOUNCER_URL="https://push.zulip.org.example.com")
 class RemoteBillingAuthenticationTest(RemoteRealmBillingTestCase):
+    def test_self_hosted_config_error_page(self) -> None:
+        with self.settings(
+            CORPORATE_ENABLED=False, PUSH_NOTIFICATION_BOUNCER_URL=None
+        ), self.assertLogs("django.request"):
+            result = self.client_get("/self-hosted-billing/not-configured/")
+            self.assertEqual(result.status_code, 500)
+            self.assert_in_response(
+                "This server is not configured to use push notifications.", result
+            )
+
+        # The page doesn't make sense if PUSH_NOTIFICATION_BOUNCER_URL is configured.
+        with self.settings(CORPORATE_ENABLED=False):
+            result = self.client_get("/self-hosted-billing/not-configured/")
+            self.assertEqual(result.status_code, 404)
+
+        # Also doesn't make sense on zulipchat.com (where CORPORATE_ENABLED is True).
+        with self.settings(CORPORATE_ENABLED=True, PUSH_NOTIFICATION_BOUNCER_URL=None):
+            result = self.client_get("/self-hosted-billing/not-configured/")
+            self.assertEqual(result.status_code, 404)
+
     @responses.activate
     def test_remote_billing_authentication_flow(self) -> None:
         self.login("desdemona")
