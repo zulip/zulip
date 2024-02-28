@@ -272,6 +272,9 @@
                             <i>Minimum purchase for this plan: {{ min_licenses_for_plan }} licenses</i>
                             {% endif %}
                             {% endif %}
+                        {% elif fixed_price_plan %}
+                            This is a fixed-price plan. Your plan ends on <strong>{{ renewal_date }}</strong>.
+                            You will be contacted by Zulip Sales a couple of months before <strong>{{renewal_date}}</strong> to discuss plan renewal.
                         {% else %}
                             Your plan ends on <strong>{{ renewal_date }}</strong>, and does not renew.
                         {% endif %}

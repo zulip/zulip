@@ -2164,6 +2164,8 @@ class BillingSession(ABC):
         last_ledger_entry: LicenseLedger,
     ) -> int:
         if plan.fixed_price is not None:
+            if plan.end_date == self.get_next_billing_cycle(plan):
+                return 0
             return get_amount_due_fixed_price_plan(plan.fixed_price, plan.billing_schedule)
         if last_ledger_entry.licenses_at_next_renewal is None:
             return 0  # nocoverage
