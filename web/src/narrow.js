@@ -423,9 +423,10 @@ export function activate(raw_terms, opts) {
 
         const excludes_muted_topics = filter.excludes_muted_topics();
 
-        let msg_list = message_lists.home;
+        let msg_list;
         if (filter.is_in_home()) {
             has_visited_all_messages = true;
+            msg_list = message_lists.home;
         } else {
             let msg_data = new MessageListData({
                 filter,
@@ -457,6 +458,7 @@ export function activate(raw_terms, opts) {
                 data: msg_data,
             });
         }
+        assert(msg_list !== undefined);
 
         narrow_state.set_has_shown_message_list_view();
         // Show the new set of messages. It is important to set message_lists.current to
@@ -467,17 +469,16 @@ export function activate(raw_terms, opts) {
 
         message_lists.update_current_message_list(msg_list);
 
-        let select_immediately = true;
+        let select_immediately;
+        let select_opts;
         let then_select_offset;
-        let select_opts = {
-            empty_ok: false,
-            force_rerender: true,
-        };
         if (filter.is_in_home()) {
+            select_immediately = true;
             select_opts = {
                 empty_ok: true,
                 force_rerender: false,
             };
+
             if (unread.messages_read_in_narrow) {
                 // We read some unread messages in a narrow. Instead of going back to
                 // where we were before the narrow, go to our first unread message (or
@@ -506,11 +507,15 @@ export function activate(raw_terms, opts) {
             // the currently displayed center panel to All messages.
             message_viewport.maybe_scroll_to_selected();
         } else {
+            select_immediately = id_info.local_select_id !== undefined;
+            select_opts = {
+                empty_ok: false,
+                force_rerender: true,
+            };
+
             if (id_info.target_id === id_info.final_select_id) {
                 then_select_offset = opts.then_select_offset;
             }
-
-            select_immediately = id_info.local_select_id !== undefined;
 
             {
                 let anchor;
@@ -543,7 +548,7 @@ export function activate(raw_terms, opts) {
                                 id_info,
                                 select_offset: then_select_offset,
                                 msg_list: message_lists.current,
-                                ...select_opts,
+                                select_opts,
                             });
                         }
                     },
@@ -551,6 +556,8 @@ export function activate(raw_terms, opts) {
                 });
             }
         }
+        assert(select_opts !== undefined);
+        assert(select_immediately !== undefined);
 
         // Important: We need to consider opening the compose box
         // before calling render_message_list_with_selected_message, so that the logic in
@@ -564,7 +571,7 @@ export function activate(raw_terms, opts) {
                 id_info,
                 select_offset: then_select_offset,
                 msg_list: message_lists.current,
-                ...select_opts,
+                select_opts,
             });
         }
 
@@ -818,8 +825,7 @@ export function render_message_list_with_selected_message(opts) {
     message_lists.current.select_id(msg_id, {
         then_scroll,
         use_closest: true,
-        force_rerender: opts.force_rerender,
-        empty_ok: opts.empty_ok,
+        ...opts.select_opts,
     });
 
     if (preserve_pre_narrowing_screen_position) {
