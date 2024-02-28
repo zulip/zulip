@@ -9,9 +9,9 @@ import $ from "jquery";
 
 import render_login_to_access_modal from "../templates/login_to_access.hbs";
 
+import {page_params} from "./base_page_params";
 import * as browser_history from "./browser_history";
 import * as modals from "./modals";
-import {page_params} from "./page_params";
 import {realm} from "./state_data";
 
 export function current_hash_as_next(): string {
