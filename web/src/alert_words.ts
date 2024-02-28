@@ -9,6 +9,7 @@ let my_alert_words: string[] = [];
 
 export function set_words(words: string[]): void {
     my_alert_words = words;
+    my_alert_words.sort((a, b) => b.length - a.length);
 }
 
 export function get_word_list(): {word: string}[] {
@@ -87,5 +88,5 @@ export function notifies(message: Message): boolean {
 }
 
 export const initialize = (params: {alert_words: string[]}): void => {
-    my_alert_words = params.alert_words;
+    set_words(params.alert_words);
 };

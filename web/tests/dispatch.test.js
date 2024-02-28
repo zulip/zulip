@@ -151,7 +151,7 @@ run_test("alert_words", ({override}) => {
     const event = event_fixtures.alert_words;
     dispatch(event);
 
-    assert.deepEqual(alert_words.get_word_list(), [{word: "fire"}, {word: "lunch"}]);
+    assert.deepEqual(alert_words.get_word_list(), [{word: "lunch"}, {word: "fire"}]);
     assert.ok(alert_words.has_alert_word("fire"));
     assert.ok(alert_words.has_alert_word("lunch"));
 });
