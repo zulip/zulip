@@ -50,14 +50,12 @@ export function submit_new_status() {
     const user_id = people.my_current_user_id();
     let old_status_text = user_status.get_status_text(user_id) ?? "";
     old_status_text = old_status_text.trim();
-    const old_emoji_info = user_status.get_status_emoji(user_id) || {};
+    const old_emoji_info = user_status.get_status_emoji(user_id);
     const new_status_text = input_field().val().toString().trim();
 
     if (
         old_status_text === new_status_text &&
-        old_emoji_info.emoji_name === selected_emoji_info.emoji_name &&
-        old_emoji_info.reaction_type === selected_emoji_info.reaction_type &&
-        old_emoji_info.emoji_code === selected_emoji_info.emoji_code
+        !emoji_status_fields_changed(selected_emoji_info, old_emoji_info)
     ) {
         dialog_widget.close();
         return;
@@ -78,15 +76,13 @@ export function update_button() {
     const user_id = people.my_current_user_id();
     let old_status_text = user_status.get_status_text(user_id) ?? "";
     old_status_text = old_status_text.trim();
-    const old_emoji_info = user_status.get_status_emoji(user_id) || {};
+    const old_emoji_info = user_status.get_status_emoji(user_id);
     const new_status_text = input_field().val().toString().trim();
     const $button = submit_button();
 
     if (
         old_status_text === new_status_text &&
-        old_emoji_info.emoji_name === selected_emoji_info.emoji_name &&
-        old_emoji_info.reaction_type === selected_emoji_info.reaction_type &&
-        old_emoji_info.emoji_code === selected_emoji_info.emoji_code
+        !emoji_status_fields_changed(selected_emoji_info, old_emoji_info)
     ) {
         $button.prop("disabled", true);
     } else {
@@ -110,6 +106,21 @@ export function clear_message() {
 
 export function user_status_picker_open() {
     return $("#set-user-status-modal").length !== 0;
+}
+
+function emoji_status_fields_changed(selected_emoji_info, old_emoji_info) {
+    if (old_emoji_info === undefined && Object.keys(selected_emoji_info).length === 0) {
+        return false;
+    } else if (
+        old_emoji_info !== undefined &&
+        old_emoji_info.emoji_name === selected_emoji_info.emoji_name &&
+        old_emoji_info.reaction_type === selected_emoji_info.reaction_type &&
+        old_emoji_info.emoji_code === selected_emoji_info.emoji_code
+    ) {
+        return false;
+    }
+
+    return true;
 }
 
 function rebuild_status_emoji_selector_ui(selected_emoji_info) {
