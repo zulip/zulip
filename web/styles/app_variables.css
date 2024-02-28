@@ -282,12 +282,12 @@
     --color-tab-picker-icon: hsl(200deg 100% 40%);
 
     /* Reaction container colors */
-    --color-message-reaction-border: hsl(0deg 0% 0% / 12%);
-    --color-message-reaction-border-reacted: hsl(0deg 0% 0% / 40%);
+    --color-message-reaction-border: hsl(0deg 0% 0% / 10%);
+    --color-message-reaction-border-reacted: hsl(0deg 0% 0% / 45%);
     --color-message-reaction-background: hsl(0deg 0% 100%);
     --color-message-reaction-background-reacted: hsl(0deg 0% 100%);
     --color-message-reaction-background-hover: hsl(210deg 30% 96%);
-    --color-message-reaction-shadow-inner: hsl(210deg 50% 50% / 15%);
+    --color-message-reaction-shadow-inner: hsl(210deg 50% 50% / 8%);
     --color-message-reaction-text: hsl(210deg 20% 25% / 100%);
     --color-message-reaction-text-reacted: hsl(210deg 20% 20% / 100%);
     --color-message-reaction-button-text: hsl(210deg 20% 20% / 60%);
@@ -583,7 +583,7 @@
 
     /* Reaction container colors */
     --color-message-reaction-border: hsl(0deg 0% 100% / 15%);
-    --color-message-reaction-border-reacted: hsl(0deg 0% 100% / 50%);
+    --color-message-reaction-border-reacted: hsl(0deg 0% 100% / 70%);
     --color-message-reaction-background: hsl(0deg 0% 0% / 30%);
     --color-message-reaction-background-reacted: hsl(0deg 0% 0% / 80%);
     --color-message-reaction-background-hover: hsl(0deg 0% 100% / 10%);

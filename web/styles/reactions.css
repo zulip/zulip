@@ -4,7 +4,9 @@
 
     .message_reaction {
         display: flex;
-        padding: 1px 4px 1px 3px;
+        /* Set a pixel and half padding to maintain
+           pill height adjacent own reactions. */
+        padding: 1.5px 4px 1.5px 3px;
         box-sizing: border-box;
         min-width: 44px;
         cursor: pointer;
@@ -22,6 +24,13 @@
             color: var(--color-message-reaction-text-reacted);
             background-color: var(--color-message-reaction-background-reacted);
             border-color: var(--color-message-reaction-border-reacted);
+            /* Make this border thicker by half a pixel,
+               to make own reactions more prominent. */
+            border-width: 1.5px;
+            /* Reduce the padding top and bottom by half
+               a pixel accordingly, to maintain the same
+               pill height. */
+            padding: 1px 4px 1px 3px;
             font-weight: var(--font-weight-message-reaction);
             box-shadow: none;
         }
@@ -37,7 +46,9 @@
         + .reaction_button {
             visibility: hidden;
             pointer-events: none;
-            padding: 4px 6px;
+            /* Set top/bottom padding to accommodate borders
+               and padding around reaction pills. */
+            padding: 4.5px 6px;
             height: 13px;
             border-radius: 21px;
             color: var(--color-message-reaction-button-text);
