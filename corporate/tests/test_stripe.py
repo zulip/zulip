@@ -6702,8 +6702,8 @@ class TestRemoteRealmBillingFlow(StripeTestCase, RemoteRealmBillingTestCase):
             "Annual",
             "March 2, 2013",
             "This is a fixed-price plan",
-            "Your plan will automatically renew on",
-            f"${annual_fixed_price:,.2f}",
+            "Your plan ends on <strong>March 2, 2013</strong>",
+            "You will be contacted by Zulip Sales",
             "Visa ending in 4242",
             "Update card",
         ]:
@@ -8397,8 +8397,8 @@ class TestRemoteServerBillingFlow(StripeTestCase, RemoteServerTestCase):
             "Annual",
             "March 2, 2013",
             "This is a fixed-price plan",
-            "Your plan will automatically renew on",
-            f"${annual_fixed_price:,.2f}",
+            "Your plan ends on <strong>March 2, 2013</strong>",
+            "You will be contacted by Zulip Sales",
             "Visa ending in 4242",
             "Update card",
         ]:
