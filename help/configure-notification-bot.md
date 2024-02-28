@@ -69,6 +69,26 @@ these messages is "signups".
 
 {end_tabs}
 
+### Zulip update announcements
+
+Zulip announces new features and important product and design changes
+via automated notifications sent to the "Zulip updates" topic in a
+configurable stream.
+
+You can configure where the Zulip notification bot sends these updates,
+or disable the Zulip update messages entirely.
+
+{start_tabs}
+
+{settings_tab|organization-settings}
+
+1. Under **Automated messages and emails**, configure **Zulip update
+   announcements**.
+
+{!save-changes.md!}
+
+{end_tabs}
+
 ## Related articles
 
 * [Organization language for automated messages and invitation emails][org-lang]
