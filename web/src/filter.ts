@@ -133,6 +133,8 @@ function message_matches_search_term(message: Message, operator: string, operand
                     return message_parser.message_has_link(message);
                 case "attachment":
                     return message_parser.message_has_attachment(message);
+                case "reaction":
+                    return message_parser.message_has_reaction(message);
                 default:
                     return false; // has:something_else returns false
             }
@@ -597,6 +599,8 @@ export class Filter {
                     "links",
                     "attachment",
                     "attachments",
+                    "reaction",
+                    "reactions",
                 ];
                 if (!valid_has_operands.includes(operand)) {
                     return {
