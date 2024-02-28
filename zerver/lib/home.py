@@ -16,7 +16,6 @@ from zerver.lib.i18n import (
     get_language_translation_data,
 )
 from zerver.lib.narrow_helpers import NarrowTerm
-from zerver.lib.push_notifications import uses_notification_bouncer
 from zerver.lib.realm_description import get_realm_rendered_description
 from zerver.lib.request import RequestNotes
 from zerver.models import Message, Realm, Stream, UserProfile
@@ -82,8 +81,13 @@ def get_billing_info(user_profile: Optional[UserProfile]) -> BillingInfo:
     show_billing = False
     show_plans = False
     sponsorship_pending = False
+
+    # We want to always show the remote billing option as long as the user is authorized,
+    # except on zulipchat.com where it's not applicable.
     show_remote_billing = (
-        user_profile is not None and user_profile.has_billing_access and uses_notification_bouncer()
+        (not settings.CORPORATE_ENABLED)
+        and user_profile is not None
+        and user_profile.has_billing_access
     )
 
     # This query runs on home page load, so we want to avoid
