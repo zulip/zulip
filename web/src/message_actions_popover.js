@@ -24,7 +24,7 @@ import * as unread_ops from "./unread_ops";
 let message_actions_popover_keyboard_toggle = false;
 
 function get_action_menu_menu_items() {
-    const $current_actions_popover_elem = $("[data-tippy-root] .actions_popover");
+    const $current_actions_popover_elem = $("[data-tippy-root] #message-actions-menu-dropdown");
     if (!$current_actions_popover_elem) {
         blueslip.error("Trying to get menu items when action popover is closed.");
         return undefined;
@@ -71,6 +71,7 @@ export function toggle_message_actions_menu(message) {
 
 export function initialize() {
     popover_menus.register_popover_menu(".actions_hover .message-actions-menu-button", {
+        theme: "popover-menu",
         // 320px is our minimum supported width for mobile. We will allow the value to flex
         // to a max of 350px but we shouldn't make the popover wider than this.
         maxWidth: "min(max(320px, 100vw), 350px)",
