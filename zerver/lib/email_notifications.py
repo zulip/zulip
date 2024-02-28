@@ -29,6 +29,7 @@ from zerver.lib.queue import queue_json_publish
 from zerver.lib.send_email import FromAddress, send_future_email
 from zerver.lib.soft_deactivation import soft_reactivate_if_personal_notification
 from zerver.lib.tex import change_katex_to_raw_latex
+from zerver.lib.timezone import canonicalize_timezone
 from zerver.lib.topic import get_topic_resolution_and_bare_name
 from zerver.lib.url_encoding import (
     huddle_narrow_url,
@@ -686,7 +687,9 @@ def get_onboarding_email_schedule(user: UserProfile) -> Dict[str, timedelta]:
     user_tz = user.timezone
     if user_tz == "":
         user_tz = "UTC"
-    signup_day = user.date_joined.astimezone(zoneinfo.ZoneInfo(user_tz)).isoweekday()
+    signup_day = user.date_joined.astimezone(
+        zoneinfo.ZoneInfo(canonicalize_timezone(user_tz))
+    ).isoweekday()
 
     # General rules for scheduling welcome emails flow:
     # -Do not send emails on Saturday or Sunday
