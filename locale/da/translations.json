@@ -1547,7 +1547,7 @@
   "deactivated": "",
   "deprecated": "",
   "direct messages with yourself": "",
-  "direct messages with {recipient}": "",
+  "direct messages with {recipient}": "direkte beskeder med {recipient}",
   "does not apply to administrators": "",
   "does not apply to moderators and administrators": "",
   "group direct messages with {recipient}": "private gruppebeskeder med {recipient}",
