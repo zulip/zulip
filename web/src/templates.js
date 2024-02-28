@@ -127,3 +127,14 @@ Handlebars.registerHelper("tooltip_hotkey_hints", (...hotkeys) => {
     const result = `<span class="tooltip-hotkey-hints">${hotkey_hints}</span>`;
     return new Handlebars.SafeString(result);
 });
+
+Handlebars.registerHelper("popover_hotkey_hints", (...hotkeys) => {
+    hotkeys.pop(); // Handlebars options
+    let hotkey_hints = "";
+    common.adjust_mac_hotkeys(hotkeys);
+    for (const hotkey of hotkeys) {
+        hotkey_hints += `<span class="popover-menu-hotkey-hint">${hotkey}</span>`;
+    }
+    const result = `<span class="popover-menu-hotkey-hints">${hotkey_hints}</span>`;
+    return new Handlebars.SafeString(result);
+});

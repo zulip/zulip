@@ -8,7 +8,7 @@
                     <a data-message-id="{{message_id}}" class="respond_button popover-menu-link" tabindex="0">
                         <i class="popover-menu-icon fa fa-reply" aria-hidden="true"></i>
                         {{t "Quote and reply" }}
-                        <span class="hotkey-hint">(>)</span>
+                        {{popover_hotkey_hints ">"}}
                     </a>
                 </li>
             </ul>
@@ -22,7 +22,7 @@
                     <a data-message-id="{{message_id}}" class="popover_edit_message popover-menu-link" tabindex="0">
                         <i class="popover-menu-icon zulip-icon zulip-icon-edit" aria-hidden="true"></i>
                         {{editability_menu_item}}
-                        <span class="hotkey-hint">(e)</span>
+                        {{popover_hotkey_hints "E"}}
                     </a>
                 </li>
                 {{/if}}
@@ -31,7 +31,7 @@
                     <a data-message-id="{{message_id}}" class="popover_move_message popover-menu-link" tabindex="0">
                         <i class="popover-menu-icon zulip-icon zulip-icon-move-alt" aria-hidden="true"></i>
                         {{move_message_menu_item}}
-                        <span class="hotkey-hint">(m)</span>
+                        {{popover_hotkey_hints "M"}}
                     </a>
                 </li>
                 {{/if}}
@@ -53,7 +53,7 @@
                     <a data-message-id="{{message_id}}" class="reaction_button popover-menu-link" tabindex="0">
                         <i class="popover-menu-icon zulip-icon zulip-icon-smile" aria-hidden="true"></i>
                         {{t "Add emoji reaction" }}
-                        <span class="hotkey-hint">(:)</span>
+                        {{popover_hotkey_hints ":"}}
                     </a>
                 </li>
             </ul>
@@ -67,7 +67,7 @@
                     <a data-message-id="{{message_id}}" class="mark_as_unread popover-menu-link" tabindex="0">
                         <span class="unread_count">1</span>
                         {{t "Mark as unread from here" }}
-                        <span class="hotkey-hint">(U)</span>
+                        {{popover_hotkey_hints "Shift" "U"}}
                     </a>
                 </li>
                 {{/if}}
@@ -84,7 +84,7 @@
                     <a data-message-id="{{message_id}}" class="popover_toggle_collapse popover-menu-link" tabindex="0">
                         <i class="popover-menu-icon fa fa-minus" aria-hidden="true"></i>
                         {{t "Collapse message" }}
-                        <span class="hotkey-hint">(–)</span>
+                        {{popover_hotkey_hints "-"}}
                     </a>
                 </li>
                 {{/if}}
@@ -93,7 +93,7 @@
                     <a data-message-id="{{message_id}}" class="popover_toggle_collapse popover-menu-link" tabindex="0">
                         <i class="popover-menu-icon fa fa-plus" aria-hidden="true"></i>
                         {{t "Expand message" }}
-                        <span class="hotkey-hint">(–)</span>
+                        {{popover_hotkey_hints "-"}}
                     </a>
                 </li>
                 {{/if}}
@@ -107,7 +107,7 @@
                     <a data-message-id="{{message_id}}" class="popover_view_source popover-menu-link" tabindex="0">
                         <i class="popover-menu-icon fa fa-file-code-o" aria-hidden="true"></i>
                         {{view_source_menu_item}}
-                        <span class="hotkey-hint">(e)</span>
+                        {{popover_hotkey_hints "E"}}
                     </a>
                 </li>
                 {{/if}}
@@ -116,7 +116,7 @@
                     <a data-message-id="{{message_id}}" class="view_read_receipts popover-menu-link" tabindex="0">
                         <i class="popover-menu-icon zulip-icon zulip-icon-readreceipts" aria-hidden="true"></i>
                         {{t "View read receipts" }}
-                        <span class="hotkey-hint">(V)</span>
+                        {{popover_hotkey_hints "Shift" "V"}}
                     </a>
                 </li>
                 {{/if}}
