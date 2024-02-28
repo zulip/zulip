@@ -140,7 +140,7 @@ def check_long_string(var_name: str, val: object) -> str:
 def check_timezone(var_name: str, val: object) -> str:
     s = check_string(var_name, val)
     try:
-        zoneinfo.ZoneInfo(s)
+        zoneinfo.ZoneInfo(canonicalize_timezone(s))
     except (ValueError, zoneinfo.ZoneInfoNotFoundError):
         raise ValidationError(
             _("{var_name} is not a recognized time zone").format(var_name=var_name)
@@ -603,11 +603,12 @@ def to_decimal(var_name: str, s: str) -> Decimal:
 
 def to_timezone_or_empty(var_name: str, s: str) -> str:
     try:
+        s = canonicalize_timezone(s)
         zoneinfo.ZoneInfo(s)
     except (ValueError, zoneinfo.ZoneInfoNotFoundError):
         return ""
     else:
-        return canonicalize_timezone(s)
+        return s
 
 
 def to_converted_or_fallback(

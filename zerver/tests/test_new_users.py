@@ -13,6 +13,7 @@ from zerver.actions.create_user import notify_new_user
 from zerver.actions.user_settings import do_change_user_setting
 from zerver.lib.initial_password import initial_password
 from zerver.lib.test_classes import ZulipTestCase
+from zerver.lib.timezone import canonicalize_timezone
 from zerver.models import Message, Realm, Recipient, Stream, UserProfile
 from zerver.models.realms import get_realm
 from zerver.signals import JUST_CREATED_THRESHOLD, get_device_browser, get_device_os
@@ -53,7 +54,7 @@ class SendLoginEmailTest(ZulipTestCase):
             firefox_windows = (
                 "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:47.0) Gecko/20100101 Firefox/47.0"
             )
-            user_tz = zoneinfo.ZoneInfo(user.timezone)
+            user_tz = zoneinfo.ZoneInfo(canonicalize_timezone(user.timezone))
             mock_time = datetime(year=2018, month=1, day=1, tzinfo=timezone.utc)
             reference_time = mock_time.astimezone(user_tz).strftime("%A, %B %d, %Y at %I:%M %p %Z")
             with time_machine.travel(mock_time, tick=False):
