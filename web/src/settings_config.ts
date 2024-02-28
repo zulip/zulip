@@ -1,5 +1,7 @@
 import Handlebars from "handlebars/runtime";
 
+import render_setting_enter_sends_label from "../templates/settings/setting_enter_sends_label.hbs";
+
 import {page_params} from "./base_page_params";
 import {$t, $t_html} from "./i18n";
 import type {RealmDefaultSettings} from "./realm_user_settings_defaults";
@@ -543,6 +545,8 @@ export const preferences_settings_labels = {
     high_contrast_mode: $t({defaultMessage: "High contrast mode"}),
     starred_message_counts: $t({defaultMessage: "Show counts for starred messages"}),
     twenty_four_hour_time: $t({defaultMessage: "Time format"}),
+    realm_enter_sends: new Handlebars.SafeString(render_setting_enter_sends_label()),
+
     translate_emoticons: new Handlebars.SafeString(
         $t_html({
             defaultMessage: "Convert emoticons before sending (<code>:)</code> becomes 😃)",

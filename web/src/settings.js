@@ -6,6 +6,7 @@ import render_settings_overlay from "../templates/settings_overlay.hbs";
 import render_settings_tab from "../templates/settings_tab.hbs";
 
 import * as browser_history from "./browser_history";
+import * as common from "./common";
 import * as flatpickr from "./flatpickr";
 import {$t} from "./i18n";
 import * as modals from "./modals";
@@ -143,6 +144,7 @@ export function build_page() {
 
     settings_bots.update_bot_settings_tip($("#personal-bot-settings-tip"), false);
     $(".settings-box").html(rendered_settings_tab);
+    common.adjust_mac_kbd_tags(".realm_enter_sends_kbd kbd");
 }
 
 export function open_settings_overlay() {

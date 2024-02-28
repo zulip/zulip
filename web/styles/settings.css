@@ -532,6 +532,16 @@ input[type="checkbox"] {
     }
 }
 
+/* Override default kbd styles for the settings page to ensure visual consistency */
+.realm_enter_sends_kbd kbd {
+    opacity: 0.9;
+    font-size: 11px;
+    position: relative;
+    bottom: 1px;
+    margin: 0 2px;
+    color: hsl(0deg 0% 50%);
+}
+
 .remove-attachment {
     margin-right: 5px !important;
     font-size: 1.1em !important;

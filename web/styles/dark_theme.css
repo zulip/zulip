@@ -104,6 +104,17 @@
         }
     }
 
+    .realm_enter_sends_kbd {
+        color: hsl(0deg 0% 80%);
+
+        & kbd {
+            background-color: hsl(211deg 29% 14%);
+            border-color: hsl(211deg 29% 14%);
+            text-shadow: none;
+            color: hsl(236deg 33% 90%);
+        }
+    }
+
     .modal__btn:disabled,
     .disabled-message-send-controls button {
         opacity: 1;

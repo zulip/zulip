@@ -28,6 +28,12 @@
                 {{> dropdown_options_widget option_values=color_scheme_values}}
             </select>
         </div>
+
+        {{> settings_checkbox
+          setting_name="enter_sends"
+          is_checked=settings_object.enter_sends
+          label=settings_label.realm_enter_sends
+          prefix="realm_"}}
     </div>
 
     <div class="emoji-preferences {{#if for_realm_settings}}settings-subsection-parent{{else}}subsection-parent{{/if}}">
