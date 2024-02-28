@@ -526,6 +526,19 @@ run_test("show_empty_narrow_message", ({mock_template}) => {
         $(".empty_feed_notice_main").html(),
         empty_narrow_html("translated: This channel does not exist or is private."),
     );
+
+    set_filter([
+        ["has", "reaction"],
+        ["sender", "me"],
+    ]);
+    narrow_banner.show_empty_narrow_message();
+    assert.equal(
+        $(".empty_feed_notice_main").html(),
+        empty_narrow_html(
+            "translated: None of your messages have emoji reactions yet.",
+            'translated HTML: Learn more about emoji reactions <a target="_blank" rel="noopener noreferrer" href="/help/emoji-reactions">here</a>.',
+        ),
+    );
 });
 
 run_test("show_empty_narrow_message_with_search", ({mock_template}) => {

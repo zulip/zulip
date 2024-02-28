@@ -95,7 +95,12 @@ test("basic_get_suggestions_for_spectator", () => {
 
     const query = "";
     const suggestions = get_suggestions(query);
-    assert.deepEqual(suggestions.strings, ["has:link", "has:image", "has:attachment"]);
+    assert.deepEqual(suggestions.strings, [
+        "has:link",
+        "has:image",
+        "has:attachment",
+        "has:reaction",
+    ]);
     page_params.is_spectator = false;
 });
 
@@ -432,6 +437,7 @@ test("empty_query_suggestions", () => {
         "has:link",
         "has:image",
         "has:attachment",
+        "has:reaction",
     ];
 
     assert.deepEqual(suggestions.strings, expected);
@@ -462,7 +468,7 @@ test("has_suggestions", ({override, mock_template}) => {
     override(narrow_state, "stream_name", noop);
 
     let suggestions = get_suggestions(query);
-    let expected = ["h", "has:link", "has:image", "has:attachment"];
+    let expected = ["h", "has:link", "has:image", "has:attachment", "has:reaction"];
     assert.deepEqual(suggestions.strings, expected);
 
     function describe(q) {
@@ -475,7 +481,7 @@ test("has_suggestions", ({override, mock_template}) => {
 
     query = "-h";
     suggestions = get_suggestions(query);
-    expected = ["-h", "-has:link", "-has:image", "-has:attachment"];
+    expected = ["-h", "-has:link", "-has:image", "-has:attachment", "-has:reaction"];
     assert.deepEqual(suggestions.strings, expected);
     assert.equal(describe("-has:link"), "Exclude messages that contain links");
     assert.equal(describe("-has:image"), "Exclude messages that contain images");
@@ -485,7 +491,7 @@ test("has_suggestions", ({override, mock_template}) => {
 
     query = "has:";
     suggestions = get_suggestions(query);
-    expected = ["has:link", "has:image", "has:attachment"];
+    expected = ["has:link", "has:image", "has:attachment", "has:reaction"];
     assert.deepEqual(suggestions.strings, expected);
 
     query = "has:im";

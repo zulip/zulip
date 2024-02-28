@@ -96,6 +96,7 @@ Zulip offers the following filters based on the location of the message.
 * `has:attachment`: Search messages that contain an [uploaded
   file](/help/share-and-upload-files).
 * `has:image`: Search messages that contain uploaded or linked images or videos.
+* `has:reaction`: Search messages with [emoji reactions](/help/emoji-reactions).
 
 !!! tip ""
 

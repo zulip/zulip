@@ -420,6 +420,10 @@ function assert_not_mark_read_with_has_operands(additional_terms_to_test) {
     has_link_term = [{operator: "has", operand: "attachment"}];
     filter = new Filter([...additional_terms_to_test, ...has_link_term]);
     assert.ok(!filter.can_mark_messages_read());
+
+    has_link_term = [{operator: "has", operand: "reaction"}];
+    filter = new Filter([...additional_terms_to_test, ...has_link_term]);
+    assert.ok(!filter.can_mark_messages_read());
 }
 function assert_not_mark_read_with_is_operands(additional_terms_to_test) {
     additional_terms_to_test = additional_terms_to_test || [];
@@ -752,6 +756,10 @@ test("canonicalization", () => {
     term = Filter.canonicalize_term({operator: "has", operand: "links"});
     assert.equal(term.operator, "has");
     assert.equal(term.operand, "link");
+
+    term = Filter.canonicalize_term({operator: "has", operand: "reactions"});
+    assert.equal(term.operator, "has");
+    assert.equal(term.operand, "reaction");
 });
 
 test("predicate_basics", ({override}) => {
@@ -975,6 +983,30 @@ test("predicate_basics", ({override}) => {
         content: "<p>Testing</p>",
     };
 
+    const clean_reactions_message = {
+        clean_reactions: new Map(
+            Object.entries({
+                "unicode_emoji,1f3b1": {
+                    class: "message_reaction reacted",
+                    count: 2,
+                    emoji_alt_code: false,
+                    emoji_code: "1f3b1",
+                    emoji_name: "8ball",
+                    is_realm_emoji: false,
+                    label: "translated: You (click to remove) and Bob van Roberts reacted with :8ball:",
+                    local_id: "unicode_emoji,1f3b1",
+                    reaction_type: "unicode_emoji",
+                    user_ids: [alice.user_id],
+                    vote_text: "translated: You, Bob van Roberts",
+                },
+            }),
+        ),
+    };
+
+    const non_reaction_msg = {
+        clean_reactions: new Map(),
+    };
+
     predicate = get_predicate([["has", "non_valid_operand"]]);
     assert.ok(!predicate(img_msg));
     assert.ok(!predicate(non_img_attachment_msg));
@@ -1017,6 +1049,10 @@ test("predicate_basics", ({override}) => {
     assert.ok(!has_image(link_msg));
     set_find_results_for_msg_content(no_has_filter_matching_msg, ".message_inline_image", false);
     assert.ok(!has_image(no_has_filter_matching_msg));
+
+    const has_reaction = get_predicate([["has", "reaction"]]);
+    assert.ok(has_reaction(clean_reactions_message));
+    assert.ok(!has_reaction(non_reaction_msg));
 });
 
 test("negated_predicates", () => {
@@ -1688,6 +1724,10 @@ test("navbar_helpers", () => {
         {operator: "channel", operand: "foo"},
         {operator: "topic", operand: "bar"},
     ];
+    const has_reaction_sender_me = [
+        {operator: "has", operand: "reaction"},
+        {operator: "sender", operand: "me"},
+    ];
     // foo channel exists
     const channel_term = [{operator: "channel", operand: "foo"}];
     make_private_sub("psub", "22");
@@ -1871,6 +1911,15 @@ test("navbar_helpers", () => {
                 "sally@doesnotexist.com",
             ]),
             redirect_url_with_search: "/#narrow/dm/undefined",
+        },
+        {
+            terms: has_reaction_sender_me,
+            is_common_narrow: true,
+            zulip_icon: "smile",
+            title: "translated: Reactions",
+            redirect_url_with_search: "/#narrow/has/reaction/sender/me",
+            description: "translated: Emoji reactions to your messages.",
+            link: "/help/emoji-reactions",
         },
         {
             terms: is_alerted,
