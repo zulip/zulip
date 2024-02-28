@@ -4,6 +4,7 @@ from typing import Optional
 from django.conf import settings
 from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
+from django.urls import reverse
 from django.utils.translation import gettext as _
 
 from zerver.decorator import human_users_only, zulip_login_required
@@ -33,6 +34,7 @@ from zerver.lib.response import json_success
 from zerver.lib.typed_endpoint import typed_endpoint
 from zerver.lib.validator import check_string
 from zerver.models import PushDeviceToken, UserProfile
+from zerver.views.errors import config_error
 
 
 def check_app_id(var_name: str, val: object) -> str:
@@ -123,7 +125,11 @@ def self_hosting_auth_view_common(
     request: HttpRequest, user_profile: UserProfile, next_page: Optional[str] = None
 ) -> str:
     if not uses_notification_bouncer():
-        raise ResourceNotFoundError(_("Server doesn't use the push notification service"))
+        if settings.CORPORATE_ENABLED:
+            # This endpoint makes no sense on zulipchat.com, so just 404.
+            raise ResourceNotFoundError(_("Server doesn't use the push notification service"))
+        else:
+            return reverse(self_hosting_auth_not_configured)
 
     if not user_profile.has_billing_access:  # nocoverage
         # We may want to replace this with an html error page at some point,
@@ -210,3 +216,12 @@ def self_hosting_auth_json_endpoint(
     redirect_url = self_hosting_auth_view_common(request, user_profile, next_page)
 
     return json_success(request, data={"billing_access_url": redirect_url})
+
+
+def self_hosting_auth_not_configured(request: HttpRequest) -> HttpResponse:
+    if settings.CORPORATE_ENABLED or uses_notification_bouncer():
+        # This error page should only be available if the config error
+        # is actually real.
+        return render(request, "404.html", status=404)
+
+    return config_error(request, "remote_billing_bouncer_not_configured")
