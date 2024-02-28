@@ -6985,7 +6985,7 @@ class TestRemoteRealmBillingFlow(StripeTestCase, RemoteRealmBillingTestCase):
         self.assertEqual(self.email_envelope_from(message), settings.NOREPLY_EMAIL_ADDRESS)
         self.assertIn("Zulip sponsorship request <noreply-", self.email_display_from(message))
         self.assertIn(
-            "Support URL: http://zulip.testserver/activity/remote/support?q=demo.example.com",
+            f"Support URL: http://zulip.testserver/activity/remote/support?q={remote_realm.uuid!s}",
             message.body,
         )
         self.assertIn("Website: https://infinispan.org", message.body)
@@ -7596,7 +7596,7 @@ class TestRemoteServerBillingFlow(StripeTestCase, RemoteServerTestCase):
         self.assertEqual(self.email_envelope_from(message), settings.NOREPLY_EMAIL_ADDRESS)
         self.assertIn("Zulip sponsorship request <noreply-", self.email_display_from(message))
         self.assertIn(
-            "Support URL: http://zulip.testserver/activity/remote/support?q=demo.example.com",
+            f"Support URL: http://zulip.testserver/activity/remote/support?q={self.remote_server.uuid!s}",
             message.body,
         )
         self.assertIn("Website: https://infinispan.org", message.body)

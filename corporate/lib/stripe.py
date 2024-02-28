@@ -3781,7 +3781,7 @@ class RemoteRealmBillingSession(BillingSession):
 
     @override
     def support_url(self) -> str:  # nocoverage
-        return build_support_url("remote_servers_support", self.remote_realm.server.hostname)
+        return build_support_url("remote_servers_support", str(self.remote_realm.uuid))
 
     @override
     def get_customer(self) -> Optional[Customer]:
@@ -4212,7 +4212,7 @@ class RemoteServerBillingSession(BillingSession):
 
     @override
     def support_url(self) -> str:  # nocoverage
-        return build_support_url("remote_servers_support", self.remote_server.hostname)
+        return build_support_url("remote_servers_support", str(self.remote_server.uuid))
 
     @override
     def get_customer(self) -> Optional[Customer]:
