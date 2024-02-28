@@ -51,7 +51,7 @@ export function submit_new_status() {
     let old_status_text = user_status.get_status_text(user_id) ?? "";
     old_status_text = old_status_text.trim();
     const old_emoji_info = user_status.get_status_emoji(user_id) || {};
-    const new_status_text = input_field().val().trim();
+    const new_status_text = input_field().val().toString().trim();
 
     if (
         old_status_text === new_status_text &&
@@ -79,7 +79,7 @@ export function update_button() {
     let old_status_text = user_status.get_status_text(user_id) ?? "";
     old_status_text = old_status_text.trim();
     const old_emoji_info = user_status.get_status_emoji(user_id) || {};
-    const new_status_text = input_field().val().trim();
+    const new_status_text = input_field().val().toString().trim();
     const $button = submit_button();
 
     if (
