@@ -2241,7 +2241,6 @@ class BillingSession(ABC):
             else:
                 price_per_license = format_money(plan.price_per_license)
 
-        # TODO: Do this calculation in `invoice_plan` too.
         pre_discount_renewal_cents = renewal_cents
         flat_discount, flat_discounted_months = self.get_flat_discount_info(plan.customer)
         if plan.fixed_price is None and flat_discounted_months > 0:
