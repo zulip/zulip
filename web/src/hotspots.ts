@@ -1,5 +1,6 @@
 import $ from "jquery";
 import _ from "lodash";
+import assert from "minimalistic-assert";
 
 import whale_image from "../images/hotspots/whale.svg";
 import render_hotspot_icon from "../templates/hotspot_icon.hbs";
@@ -10,6 +11,7 @@ import * as message_viewport from "./message_viewport";
 import * as onboarding_steps from "./onboarding_steps";
 import * as overlays from "./overlays";
 import {current_user} from "./state_data";
+import type {Hotspot, HotspotLocation, Placement, RawHotspot} from "./state_data";
 
 // popover orientations
 const TOP = "top";
@@ -21,7 +23,7 @@ const VIEWPORT_CENTER = "viewport_center";
 
 // popover orientation can optionally be fixed here to override the
 // defaults calculated by compute_placement.
-const HOTSPOT_LOCATIONS = new Map([
+const HOTSPOT_LOCATIONS = new Map<string, HotspotLocation>([
     [
         "intro_streams",
         {
@@ -57,27 +59,37 @@ const HOTSPOT_LOCATIONS = new Map([
     ],
 ]);
 
-const meta = {
+const meta: {
+    opened_hotspot_name: null | string;
+} = {
     opened_hotspot_name: null,
 };
 
-function compute_placement($elt, popover_height, popover_width, prefer_vertical_positioning) {
-    const client_rect = $elt.get(0).getBoundingClientRect();
+function compute_placement(
+    $elt: JQuery,
+    popover_height: number,
+    popover_width: number,
+    prefer_vertical_positioning: boolean,
+): Placement {
+    const client_rect = $elt.get(0)!.getBoundingClientRect();
     const distance_from_top = client_rect.top;
     const distance_from_bottom = message_viewport.height() - client_rect.bottom;
     const distance_from_left = client_rect.left;
     const distance_from_right = message_viewport.width() - client_rect.right;
 
+    const element_width = $elt.width()!;
+    const element_height = $elt.height()!;
+
     const elt_will_fit_horizontally =
-        distance_from_left + $elt.width() / 2 > popover_width / 2 &&
-        distance_from_right + $elt.width() / 2 > popover_width / 2;
+        distance_from_left + element_width / 2 > popover_width / 2 &&
+        distance_from_right + element_width / 2 > popover_width / 2;
 
     const elt_will_fit_vertically =
-        distance_from_bottom + $elt.height() / 2 > popover_height / 2 &&
-        distance_from_top + $elt.height() / 2 > popover_height / 2;
+        distance_from_bottom + element_height / 2 > popover_height / 2 &&
+        distance_from_top + element_height / 2 > popover_height / 2;
 
     // default to placing the popover in the center of the screen
-    let placement = "viewport_center";
+    let placement: Placement = "viewport_center";
 
     // prioritize left/right over top/bottom
     if (distance_from_top > popover_height && elt_will_fit_horizontally) {
@@ -103,11 +115,11 @@ function compute_placement($elt, popover_height, popover_width, prefer_vertical_
     return placement;
 }
 
-export function post_hotspot_as_read(hotspot_name) {
+export function post_hotspot_as_read(hotspot_name: string): void {
     onboarding_steps.post_onboarding_step_as_read(hotspot_name);
 }
 
-function place_icon(hotspot) {
+function place_icon(hotspot: Hotspot): boolean {
     const $element = $(hotspot.location.element);
     const $icon = $(`#hotspot_${CSS.escape(hotspot.name)}_icon`);
 
@@ -122,10 +134,10 @@ function place_icon(hotspot) {
     }
 
     const offset = {
-        top: $element.outerHeight() * hotspot.location.offset_y,
-        left: $element.outerWidth() * hotspot.location.offset_x,
+        top: $element.outerHeight()! * hotspot.location.offset_y,
+        left: $element.outerWidth()! * hotspot.location.offset_x,
     };
-    const client_rect = $element.get(0).getBoundingClientRect();
+    const client_rect = $element.get(0)!.getBoundingClientRect();
     const placement = {
         top: client_rect.top + offset.top,
         left: client_rect.left + offset.left,
@@ -135,25 +147,22 @@ function place_icon(hotspot) {
     return true;
 }
 
-function place_popover(hotspot) {
-    if (!hotspot.location.element) {
-        return;
-    }
-
+function place_popover(hotspot: Hotspot): void {
     const popover_width = $(
         `#hotspot_${CSS.escape(hotspot.name)}_overlay .hotspot-popover`,
-    ).outerWidth();
+    ).outerWidth()!;
     const popover_height = $(
         `#hotspot_${CSS.escape(hotspot.name)}_overlay .hotspot-popover`,
-    ).outerHeight();
-    const el_width = $(hotspot.location.element).outerWidth();
-    const el_height = $(hotspot.location.element).outerHeight();
+    ).outerHeight()!;
+    const el_width = $(hotspot.location.element).outerWidth()!;
+    const el_height = $(hotspot.location.element).outerHeight()!;
+
     const arrow_offset = 20;
 
     let popover_offset;
     let arrow_placement;
     const orientation =
-        hotspot.location.popover ||
+        hotspot.location.popover ??
         compute_placement($(hotspot.location.element), popover_height, popover_width, false);
 
     switch (orientation) {
@@ -207,7 +216,7 @@ function place_popover(hotspot) {
 
         default:
             blueslip.error("Invalid popover placement value for hotspot", {name: hotspot.name});
-            break;
+            return;
     }
 
     // position arrow
@@ -225,7 +234,7 @@ function place_popover(hotspot) {
             transform: "translate(-50%, -50%)",
         };
     } else {
-        const client_rect = $(hotspot.location.element).get(0).getBoundingClientRect();
+        const client_rect = $(hotspot.location.element).get(0)!.getBoundingClientRect();
         popover_placement = {
             top: client_rect.top + popover_offset.top,
             left: client_rect.left + popover_offset.left,
@@ -236,7 +245,7 @@ function place_popover(hotspot) {
     $(`#hotspot_${CSS.escape(hotspot.name)}_overlay .hotspot-popover`).css(popover_placement);
 }
 
-function insert_hotspot_into_DOM(hotspot) {
+function insert_hotspot_into_DOM(hotspot: Hotspot): void {
     const hotspot_overlay_HTML = render_hotspot_overlay({
         name: hotspot.name,
         title: hotspot.title,
@@ -272,15 +281,15 @@ function insert_hotspot_into_DOM(hotspot) {
     }, hotspot.delay * 1000);
 }
 
-export function is_open() {
+export function is_open(): boolean {
     return meta.opened_hotspot_name !== null;
 }
 
-function is_hotspot_displayed(hotspot_name) {
+function is_hotspot_displayed(hotspot_name: string): number {
     return $(`#hotspot_${hotspot_name}_overlay`).length;
 }
 
-export function close_hotspot_icon(elem) {
+export function close_hotspot_icon(elem: JQuery): void {
     $(elem).animate(
         {opacity: 0},
         {
@@ -292,7 +301,7 @@ export function close_hotspot_icon(elem) {
     );
 }
 
-function close_read_hotspots(new_hotspots) {
+function close_read_hotspots(new_hotspots: RawHotspot[]): void {
     const unwanted_hotspots = _.difference(
         [...HOTSPOT_LOCATIONS.keys()],
         new_hotspots.map((hotspot) => hotspot.name),
@@ -304,14 +313,17 @@ function close_read_hotspots(new_hotspots) {
     }
 }
 
-export function open_popover_if_hotspot_exist(hotspot_name, bind_element = null) {
+export function open_popover_if_hotspot_exist(
+    hotspot_name: string,
+    bind_element: HTMLElement,
+): void {
     const overlay_name = "hotspot_" + hotspot_name + "_overlay";
 
     if (is_hotspot_displayed(hotspot_name)) {
         overlays.open_overlay({
             name: overlay_name,
             $overlay: $(`#${CSS.escape(overlay_name)}`),
-            on_close: function () {
+            on_close: function (this: HTMLElement) {
                 // close popover
                 $(this).css({display: "block"});
                 $(this).animate(
@@ -325,17 +337,22 @@ export function open_popover_if_hotspot_exist(hotspot_name, bind_element = null)
     }
 }
 
-export function load_new(new_hotspots) {
+export function load_new(new_hotspots: RawHotspot[]): void {
     close_read_hotspots(new_hotspots);
+
+    let hotspot_with_location: Hotspot;
     for (const hotspot of new_hotspots) {
-        hotspot.location = HOTSPOT_LOCATIONS.get(hotspot.name);
-        if (!is_hotspot_displayed(hotspot.name) && hotspot.location) {
-            insert_hotspot_into_DOM(hotspot);
+        hotspot_with_location = {
+            ...hotspot,
+            location: HOTSPOT_LOCATIONS.get(hotspot.name)!,
+        };
+        if (!is_hotspot_displayed(hotspot.name)) {
+            insert_hotspot_into_DOM(hotspot_with_location);
         }
     }
 }
 
-export function initialize() {
+export function initialize(): void {
     load_new(onboarding_steps.filter_new_hotspots(current_user.onboarding_steps));
 
     // open
@@ -344,10 +361,12 @@ export function initialize() {
         close_hotspot_icon(this);
 
         // show popover
-        const [, hotspot_name] = /^hotspot_(.*)_icon$/.exec(
-            $(e.target).closest(".hotspot-icon").attr("id"),
+        const match_array = /^hotspot_(.*)_icon$/.exec(
+            $(e.target).closest(".hotspot-icon").attr("id")!,
         );
 
+        assert(match_array !== null);
+        const [, hotspot_name] = match_array;
         open_popover_if_hotspot_exist(hotspot_name, this);
 
         meta.opened_hotspot_name = hotspot_name;
@@ -360,9 +379,11 @@ export function initialize() {
         e.preventDefault();
         e.stopPropagation();
 
-        const overlay_name = $(this).closest(".hotspot.overlay").attr("id");
+        const overlay_name = $(this).closest(".hotspot.overlay").attr("id")!;
 
-        const [, hotspot_name] = /^hotspot_(.*)_overlay$/.exec(overlay_name);
+        const match_array = /^hotspot_(.*)_overlay$/.exec(overlay_name);
+        assert(match_array !== null);
+        const [, hotspot_name] = match_array;
 
         // Comment below to disable marking hotspots as read in production
         post_hotspot_as_read(hotspot_name);
