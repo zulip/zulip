@@ -5,27 +5,29 @@ import render_status_emoji_selector from "../templates/status_emoji_selector.hbs
 
 import * as dialog_widget from "./dialog_widget";
 import * as emoji from "./emoji";
+import type {EmojiRenderingDetails} from "./emoji";
 import {$t, $t_html} from "./i18n";
 import * as keydown_util from "./keydown_util";
 import * as people from "./people";
 import * as user_status from "./user_status";
+import type {UserStatusEmojiInfo} from "./user_status";
 
-let selected_emoji_info = {};
-let default_status_messages_and_emoji_info;
+let selected_emoji_info: Partial<UserStatusEmojiInfo> = {};
+let default_status_messages_and_emoji_info: {status_text: string; emoji: EmojiRenderingDetails}[];
 
-export function set_selected_emoji_info(emoji_info) {
+export function set_selected_emoji_info(emoji_info: Partial<UserStatusEmojiInfo>): void {
     selected_emoji_info = {...emoji_info};
     rebuild_status_emoji_selector_ui(selected_emoji_info);
 }
-export function input_field() {
+export function input_field(): JQuery {
     return $("#set-user-status-modal input.user-status");
 }
 
-export function submit_button() {
+export function submit_button(): JQuery {
     return $("#set-user-status-modal .dialog_submit_button");
 }
 
-export function open_user_status_modal() {
+export function open_user_status_modal(): void {
     const user_id = people.my_current_user_id();
     const selected_emoji_info = user_status.get_status_emoji(user_id) ?? {};
     const rendered_set_status_overlay = render_set_status_overlay({
@@ -46,12 +48,12 @@ export function open_user_status_modal() {
     });
 }
 
-export function submit_new_status() {
+export function submit_new_status(): void {
     const user_id = people.my_current_user_id();
     let old_status_text = user_status.get_status_text(user_id) ?? "";
     old_status_text = old_status_text.trim();
     const old_emoji_info = user_status.get_status_emoji(user_id);
-    const new_status_text = input_field().val().toString().trim();
+    const new_status_text = input_field().val()?.toString().trim() ?? "";
 
     if (
         old_status_text === new_status_text &&
@@ -72,12 +74,12 @@ export function submit_new_status() {
     });
 }
 
-export function update_button() {
+export function update_button(): void {
     const user_id = people.my_current_user_id();
     let old_status_text = user_status.get_status_text(user_id) ?? "";
     old_status_text = old_status_text.trim();
     const old_emoji_info = user_status.get_status_emoji(user_id);
-    const new_status_text = input_field().val().toString().trim();
+    const new_status_text = input_field().val()?.toString().trim() ?? "";
     const $button = submit_button();
 
     if (
@@ -90,7 +92,7 @@ export function update_button() {
     }
 }
 
-export function toggle_clear_message_button() {
+export function toggle_clear_message_button(): void {
     if (input_field().val() !== "" || selected_emoji_info.emoji_name) {
         $("#clear_status_message_button").prop("disabled", false);
     } else {
@@ -98,17 +100,20 @@ export function toggle_clear_message_button() {
     }
 }
 
-export function clear_message() {
+export function clear_message(): void {
     const $field = input_field();
     $field.val("");
     $("#clear_status_message_button").prop("disabled", true);
 }
 
-export function user_status_picker_open() {
+export function user_status_picker_open(): boolean {
     return $("#set-user-status-modal").length !== 0;
 }
 
-function emoji_status_fields_changed(selected_emoji_info, old_emoji_info) {
+function emoji_status_fields_changed(
+    selected_emoji_info: Partial<UserStatusEmojiInfo>,
+    old_emoji_info?: UserStatusEmojiInfo,
+): boolean {
     if (old_emoji_info === undefined && Object.keys(selected_emoji_info).length === 0) {
         return false;
     } else if (
@@ -123,7 +128,7 @@ function emoji_status_fields_changed(selected_emoji_info, old_emoji_info) {
     return true;
 }
 
-function rebuild_status_emoji_selector_ui(selected_emoji_info) {
+function rebuild_status_emoji_selector_ui(selected_emoji_info: Partial<UserStatusEmojiInfo>): void {
     let selected_emoji = null;
     if (selected_emoji_info && Object.keys(selected_emoji_info).length) {
         selected_emoji = selected_emoji_info;
@@ -132,9 +137,9 @@ function rebuild_status_emoji_selector_ui(selected_emoji_info) {
     $("#set-user-status-modal .status-emoji-wrapper").html(rendered_status_emoji_selector);
 }
 
-function user_status_post_render() {
+function user_status_post_render(): void {
     const user_id = people.my_current_user_id();
-    const old_status_text = user_status.get_status_text(user_id);
+    const old_status_text = user_status.get_status_text(user_id) ?? "";
     const old_emoji_info = user_status.get_status_emoji(user_id) ?? {};
     set_selected_emoji_info(old_emoji_info);
     const $field = input_field();
@@ -149,9 +154,10 @@ function user_status_post_render() {
         const user_status_value = $(event.currentTarget).text().trim();
         $("input.user-status").val(user_status_value);
 
-        const emoji_info = default_status_messages_and_emoji_info.find(
-            (status) => status.status_text === user_status_value,
-        ).emoji;
+        const emoji_info =
+            default_status_messages_and_emoji_info.find(
+                (status) => status.status_text === user_status_value,
+            )?.emoji ?? {};
         set_selected_emoji_info(emoji_info);
         toggle_clear_message_button();
         update_button();
@@ -177,7 +183,7 @@ function user_status_post_render() {
     });
 }
 
-export function initialize() {
+export function initialize(): void {
     default_status_messages_and_emoji_info = [
         {
             status_text: $t({defaultMessage: "Busy"}),
