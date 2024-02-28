@@ -27,6 +27,8 @@
         {% endif %}
         <br />
         <b>Date created</b>: {{ support_data[remote_realm.id].date_created.strftime('%d %B %Y') }}<br />
+        <b>UUID</b>: {{ remote_realm.uuid }}<br />
+        <br />
         <b>Org type</b>: {{ get_org_type_display_name(remote_realm.org_type) }}<br />
         <b>Plan type</b>: {{ get_plan_type_name(remote_realm.plan_type) }}<br />
         <b>Non-guest user count</b>: {{ support_data[remote_realm.id].user_data.non_guest_user_count }}<br />
