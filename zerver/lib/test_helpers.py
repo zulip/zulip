@@ -528,6 +528,9 @@ def write_instrumentation_reports(full_suite: bool, include_webhooks: bool) -> N
             # TODO: This endpoint and the rest of its system are a work in progress,
             # we are not testing it yet.
             "self-hosted-billing/",
+            # This endpoint only returns 500 and 404 codes, so it doesn't get picked up
+            # by find_pattern above and therefore needs to be exempt.
+            "self-hosted-billing/not-configured/",
             *(webhook.url for webhook in WEBHOOK_INTEGRATIONS if not include_webhooks),
         }
 
