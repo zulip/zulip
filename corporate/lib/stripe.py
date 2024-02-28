@@ -2275,7 +2275,7 @@ class BillingSession(ABC):
             "licenses_at_next_renewal": licenses_at_next_renewal,
             "seat_count": seat_count,
             "renewal_date": renewal_date,
-            "renewal_amount": cents_to_dollar_string(renewal_cents),
+            "renewal_amount": cents_to_dollar_string(renewal_cents) if renewal_cents != 0 else None,
             "payment_method": payment_method,
             "charge_automatically": charge_automatically,
             "stripe_email": stripe_email,
