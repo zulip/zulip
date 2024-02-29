@@ -311,14 +311,13 @@ export function process_read_messages_event(message_ids) {
     if (message_ids.length === 0) {
         return;
     }
+    if (message_lists.current?.narrowed) {
+        // I'm not sure this entirely makes sense for all server
+        // notifications.
+        unread.set_messages_read_in_narrow(true);
+    }
 
     for (const message_id of message_ids) {
-        if (message_lists.current?.narrowed) {
-            // I'm not sure this entirely makes sense for all server
-            // notifications.
-            unread.set_messages_read_in_narrow(true);
-        }
-
         unread.mark_as_read(message_id);
 
         const message = message_store.get(message_id);
@@ -421,11 +420,11 @@ export function notify_server_messages_read(messages, options = {}) {
 
     message_flags.send_read(messages);
 
-    for (const message of messages) {
-        if (message_lists.current?.narrowed) {
-            unread.set_messages_read_in_narrow(true);
-        }
+    if (message_lists.current?.narrowed) {
+        unread.set_messages_read_in_narrow(true);
+    }
 
+    for (const message of messages) {
         unread.mark_as_read(message.id);
         process_newly_read_message(message, options);
     }
