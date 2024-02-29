@@ -1790,6 +1790,7 @@ def do_events_register(
         pronouns_field_type_supported=pronouns_field_type_supported,
         linkifier_url_template=linkifier_url_template,
         user_list_incomplete=user_list_incomplete,
+        archived_streams=archived_streams,
     )
 
     if queue_id is None:

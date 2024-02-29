@@ -206,6 +206,10 @@ def get_events_backend(
         Json[bool],
         ApiParamConfig(documentation_status=DocumentationStatus.INTENTIONALLY_UNDOCUMENTED),
     ] = False,
+    archived_streams: Annotated[
+        Json[bool],
+        ApiParamConfig(documentation_status=DocumentationStatus.INTENTIONALLY_UNDOCUMENTED),
+    ] = False,
 ) -> HttpResponse:
     if narrow is None:
         narrow = []
@@ -243,6 +247,7 @@ def get_events_backend(
             pronouns_field_type_supported=pronouns_field_type_supported,
             linkifier_url_template=linkifier_url_template,
             user_list_incomplete=user_list_incomplete,
+            archived_streams=archived_streams,
         )
 
     result = in_tornado_thread(fetch_events)(
