@@ -7,7 +7,7 @@
    section is collapsed) in the left sidebar.
 
 1. Browse your mentions. You can click on a message recipient bar to go
-   to the [conversation](/help/recent-conversations) where you were mentioned.
+   to the [conversation](/help/reading-conversations) where you were mentioned.
 
 !!! tip ""
 

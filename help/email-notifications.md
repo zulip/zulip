@@ -33,12 +33,10 @@ helps in a few ways:
   the email would go out.
 * Edits made by the sender soon after sending a message will be
   reflected in the email.
-* Multiple messages in the same Zulip [conversation](/help/recent-conversations)
+* Multiple messages in the same Zulip [conversation](/help/reading-conversations)
   are combined into a single email. (Different conversations will always be in
   separate emails, so that you can [respond directly from your
-  email][reply-from-email]).
-
-[reply-from-email]: /help/using-zulip-via-email
+  email](/help/using-zulip-via-email)).
 
 To configure the delay for message notification emails:
 
