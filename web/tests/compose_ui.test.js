@@ -105,7 +105,7 @@ run_test("insert_syntax_and_focus", ({override}) => {
     $("textarea#compose-textarea")[0] = "compose-textarea";
     // Since we are using a third party library, we just
     // need to ensure it is being called with the right params.
-    override(text_field_edit, "insert", (elt, syntax) => {
+    override(text_field_edit, "insertTextIntoField", (elt, syntax) => {
         assert.equal(elt, "compose-textarea");
         assert.equal(syntax, ":octopus: ");
     });
@@ -116,7 +116,7 @@ run_test("smart_insert", ({override}) => {
     let $textbox = make_textbox("abc");
     $textbox.caret(4);
     function override_with_expected_syntax(expected_syntax) {
-        override(text_field_edit, "insert", (elt, syntax) => {
+        override(text_field_edit, "insertTextIntoField", (elt, syntax) => {
             assert.equal(elt, "textarea");
             assert.equal(syntax, expected_syntax);
         });
@@ -159,7 +159,7 @@ run_test("smart_insert", ({override}) => {
 run_test("replace_syntax", ({override}) => {
     const $textbox = make_textbox("aBca$$");
     $textbox.caret(2);
-    override(text_field_edit, "replace", (elt, old_syntax, new_syntax) => {
+    override(text_field_edit, "replaceFieldText", (elt, old_syntax, new_syntax) => {
         assert.equal(elt, "textarea");
         assert.equal(old_syntax, "a");
         assert.equal(new_syntax(), "A");
@@ -168,7 +168,7 @@ run_test("replace_syntax", ({override}) => {
     compose_ui.replace_syntax("a", "A", $textbox);
     assert.equal(prev_caret, $textbox.caret());
 
-    override(text_field_edit, "replace", (elt, old_syntax, new_syntax) => {
+    override(text_field_edit, "replaceFieldText", (elt, old_syntax, new_syntax) => {
         assert.equal(elt, "textarea");
         assert.equal(old_syntax, "Bca");
         assert.equal(new_syntax(), "$$\\pi$$");
@@ -327,7 +327,7 @@ run_test("quote_and_reply", ({override, override_rewire}) => {
     };
     $("textarea#compose-textarea")[0] = "compose-textarea";
     $("textarea#compose-textarea").attr("id", "compose-textarea");
-    override(text_field_edit, "insert", (elt, syntax) => {
+    override(text_field_edit, "insertTextIntoField", (elt, syntax) => {
         assert.equal(elt, "compose-textarea");
         assert.equal(syntax, "\n\ntranslated: [Quoting…]\n\n");
     });
@@ -351,7 +351,7 @@ run_test("quote_and_reply", ({override, override_rewire}) => {
     }
 
     function override_with_quote_text(quote_text) {
-        override(text_field_edit, "replace", (elt, old_syntax, new_syntax) => {
+        override(text_field_edit, "replaceFieldText", (elt, old_syntax, new_syntax) => {
             assert.equal(elt, "compose-textarea");
             assert.equal(old_syntax, "translated: [Quoting…]");
             assert.equal(
@@ -376,7 +376,7 @@ run_test("quote_and_reply", ({override, override_rewire}) => {
 
     // If the caret is initially positioned at 0, it should not
     // add newlines before the quoted message.
-    override(text_field_edit, "insert", (elt, syntax) => {
+    override(text_field_edit, "insertTextIntoField", (elt, syntax) => {
         assert.equal(elt, "compose-textarea");
         assert.equal(syntax, "translated: [Quoting…]\n\n");
     });
@@ -429,7 +429,7 @@ run_test("quote_and_reply", ({override, override_rewire}) => {
 
     // When there is already 1 newline before and after the caret,
     // only 1 newline is added before and after the quoted message.
-    override(text_field_edit, "insert", (elt, syntax) => {
+    override(text_field_edit, "insertTextIntoField", (elt, syntax) => {
         assert.equal(elt, "compose-textarea");
         assert.equal(syntax, "\ntranslated: [Quoting…]\n");
     });
@@ -446,7 +446,7 @@ run_test("quote_and_reply", ({override, override_rewire}) => {
 
     // When there are many (>=2) newlines before and after the caret,
     // no newline is added before or after the quoted message.
-    override(text_field_edit, "insert", (elt, syntax) => {
+    override(text_field_edit, "insertTextIntoField", (elt, syntax) => {
         assert.equal(elt, "compose-textarea");
         assert.equal(syntax, "translated: [Quoting…]");
     });
@@ -545,12 +545,12 @@ function get_textarea_state() {
 }
 
 run_test("format_text - bold and italic", ({override}) => {
-    override(text_field_edit, "set", (_field, text) => {
+    override(text_field_edit, "setFieldText", (_field, text) => {
         $textarea.val = () => text;
     });
     override(
         text_field_edit,
-        "wrapSelection",
+        "wrapFieldSelection",
         (_field, syntax_start, syntax_end = syntax_start) => {
             const new_val =
                 $textarea.val().slice(0, $textarea.range().start) +
@@ -635,7 +635,7 @@ run_test("format_text - bold and italic", ({override}) => {
 });
 
 run_test("format_text - bulleted and numbered lists", ({override}) => {
-    override(text_field_edit, "set", (_field, text) => {
+    override(text_field_edit, "setFieldText", (_field, text) => {
         $textarea.val = () => text;
     });
 
@@ -687,10 +687,10 @@ run_test("format_text - bulleted and numbered lists", ({override}) => {
 });
 
 run_test("format_text - strikethrough", ({override}) => {
-    override(text_field_edit, "set", (_field, text) => {
+    override(text_field_edit, "setFieldText", (_field, text) => {
         $textarea.val = () => text;
     });
-    override(text_field_edit, "wrapSelection", (_field, syntax_start, syntax_end) => {
+    override(text_field_edit, "wrapFieldSelection", (_field, syntax_start, syntax_end) => {
         const new_val =
             $textarea.val().slice(0, $textarea.range().start) +
             syntax_start +
@@ -734,10 +734,10 @@ run_test("format_text - strikethrough", ({override}) => {
 });
 
 run_test("format_text - latex", ({override}) => {
-    override(text_field_edit, "set", (_field, text) => {
+    override(text_field_edit, "setFieldText", (_field, text) => {
         $textarea.val = () => text;
     });
-    override(text_field_edit, "wrapSelection", (_field, syntax_start, syntax_end) => {
+    override(text_field_edit, "wrapFieldSelection", (_field, syntax_start, syntax_end) => {
         const new_val =
             $textarea.val().slice(0, $textarea.range().start) +
             syntax_start +
@@ -800,10 +800,10 @@ run_test("format_text - latex", ({override}) => {
 });
 
 run_test("format_text - code", ({override}) => {
-    override(text_field_edit, "set", (_field, text) => {
+    override(text_field_edit, "setFieldText", (_field, text) => {
         $textarea.val = () => text;
     });
-    override(text_field_edit, "wrapSelection", (_field, syntax_start, syntax_end) => {
+    override(text_field_edit, "wrapFieldSelection", (_field, syntax_start, syntax_end) => {
         const new_val =
             $textarea.val().slice(0, $textarea.range().start) +
             syntax_start +
@@ -866,10 +866,10 @@ run_test("format_text - code", ({override}) => {
 });
 
 run_test("format_text - quote", ({override}) => {
-    override(text_field_edit, "set", (_field, text) => {
+    override(text_field_edit, "setFieldText", (_field, text) => {
         $textarea.val = () => text;
     });
-    override(text_field_edit, "wrapSelection", (_field, syntax_start, syntax_end) => {
+    override(text_field_edit, "wrapFieldSelection", (_field, syntax_start, syntax_end) => {
         const new_val =
             $textarea.val().slice(0, $textarea.range().start) +
             syntax_start +
@@ -925,10 +925,10 @@ run_test("format_text - quote", ({override}) => {
 });
 
 run_test("format_text - spoiler", ({override}) => {
-    override(text_field_edit, "set", (_field, text) => {
+    override(text_field_edit, "setFieldText", (_field, text) => {
         $textarea.val = () => text;
     });
-    override(text_field_edit, "wrapSelection", (_field, syntax_start, syntax_end) => {
+    override(text_field_edit, "wrapFieldSelection", (_field, syntax_start, syntax_end) => {
         const new_val =
             $textarea.val().slice(0, $textarea.range().start) +
             syntax_start +
@@ -992,10 +992,10 @@ run_test("format_text - spoiler", ({override}) => {
 });
 
 run_test("format_text - link", ({override}) => {
-    override(text_field_edit, "set", (_field, text) => {
+    override(text_field_edit, "setFieldText", (_field, text) => {
         $textarea.val = () => text;
     });
-    override(text_field_edit, "wrapSelection", (_field, syntax_start, syntax_end) => {
+    override(text_field_edit, "wrapFieldSelection", (_field, syntax_start, syntax_end) => {
         const new_val =
             $textarea.val().slice(0, $textarea.range().start) +
             syntax_start +

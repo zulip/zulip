@@ -132,7 +132,7 @@
  *   to move focus there without the typeahead closing.
  * ============================================================ */
 
-import {insert} from "text-field-edit";
+import {insertTextIntoField} from "text-field-edit";
 import {get_string_diff} from "../../src/util";
 
 !function($){
@@ -199,7 +199,7 @@ import {get_string_diff} from "../../src/util";
         const replacement = after_text.substring(from, to_after);
         // select / highlight the minimal text to be replaced
         this.$element[0].setSelectionRange(from, to_before);
-        insert(this.$element[0], replacement);
+        insertTextIntoField(this.$element[0], replacement);
       }
 
       return this.hide()
