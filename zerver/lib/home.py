@@ -157,7 +157,7 @@ def build_page_params_for_home_page_load(
         "user_settings_object": True,
         "linkifier_url_template": True,
         "user_list_incomplete": True,
-        "archived_streams": False,
+        "archived_streams": True,
     }
 
     if user_profile is not None:
