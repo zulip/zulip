@@ -27,11 +27,16 @@ function returns_time(secs) {
 }
 
 run_test("basics", ({override, override_rewire}) => {
-    assert.equal(typing_status.state, null);
+    assert.equal(typing_status.composing_state, null);
 
     // invalid conversation basically does nothing
     let worker = {};
-    typing_status.update(worker, null, TYPING_STARTED_WAIT_PERIOD, TYPING_STOPPED_WAIT_PERIOD);
+    typing_status.update_composing_status(
+        worker,
+        null,
+        TYPING_STARTED_WAIT_PERIOD,
+        TYPING_STOPPED_WAIT_PERIOD,
+    );
 
     // Start setting up more testing state.
     const events = {};
@@ -49,12 +54,12 @@ run_test("basics", ({override, override_rewire}) => {
     set_global("setTimeout", set_timeout);
     set_global("clearTimeout", clear_timeout);
 
-    function notify_server_start(recipient) {
+    function notify_server_composing_start(recipient) {
         assert.deepStrictEqual(recipient, {message_type: "direct", ids: [1, 2]});
         events.started = true;
     }
 
-    function notify_server_stop(recipient) {
+    function notify_server_composing_stop(recipient) {
         assert.deepStrictEqual(recipient, {message_type: "direct", ids: [1, 2]});
         events.stopped = true;
     }
@@ -68,7 +73,7 @@ run_test("basics", ({override, override_rewire}) => {
 
     function call_handler(new_recipient) {
         clear_events();
-        typing_status.update(
+        typing_status.update_composing_status(
             worker,
             new_recipient,
             TYPING_STARTED_WAIT_PERIOD,
@@ -78,13 +83,13 @@ run_test("basics", ({override, override_rewire}) => {
 
     worker = {
         get_current_time: returns_time(5),
-        notify_server_start,
-        notify_server_stop,
+        notify_server_composing_start,
+        notify_server_composing_stop,
     };
 
     // Start talking to users having ids - 1, 2.
     call_handler({message_type: "direct", ids: [1, 2]});
-    assert.deepEqual(typing_status.state, {
+    assert.deepEqual(typing_status.composing_state, {
         next_send_start_time: make_time(5 + 10),
         idle_timer: "idle_timer_stub",
         current_recipient: {message_type: "direct", ids: [1, 2]},
@@ -100,7 +105,7 @@ run_test("basics", ({override, override_rewire}) => {
     // type again 3 seconds later
     worker.get_current_time = returns_time(8);
     call_handler({message_type: "direct", ids: [1, 2]});
-    assert.deepEqual(typing_status.state, {
+    assert.deepEqual(typing_status.composing_state, {
         next_send_start_time: make_time(5 + 10),
         idle_timer: "idle_timer_stub",
         current_recipient: {message_type: "direct", ids: [1, 2]},
@@ -117,7 +122,7 @@ run_test("basics", ({override, override_rewire}) => {
     // again
     worker.get_current_time = returns_time(18);
     call_handler({message_type: "direct", ids: [1, 2]});
-    assert.deepEqual(typing_status.state, {
+    assert.deepEqual(typing_status.composing_state, {
         next_send_start_time: make_time(18 + 10),
         idle_timer: "idle_timer_stub",
         current_recipient: {message_type: "direct", ids: [1, 2]},
@@ -133,7 +138,7 @@ run_test("basics", ({override, override_rewire}) => {
     const callback = events.idle_callback;
     clear_events();
     callback();
-    assert.deepEqual(typing_status.state, null);
+    assert.deepEqual(typing_status.composing_state, null);
     assert.deepEqual(events, {
         idle_callback: undefined,
         started: false,
@@ -143,7 +148,7 @@ run_test("basics", ({override, override_rewire}) => {
 
     // Call stop with nothing going on.
     call_handler(null);
-    assert.deepEqual(typing_status.state, null);
+    assert.deepEqual(typing_status.composing_state, null);
     assert.deepEqual(events, {
         idle_callback: undefined,
         started: false,
@@ -154,7 +159,7 @@ run_test("basics", ({override, override_rewire}) => {
     // Start talking to users again.
     worker.get_current_time = returns_time(50);
     call_handler({message_type: "direct", ids: [1, 2]});
-    assert.deepEqual(typing_status.state, {
+    assert.deepEqual(typing_status.composing_state, {
         next_send_start_time: make_time(50 + 10),
         idle_timer: "idle_timer_stub",
         current_recipient: {message_type: "direct", ids: [1, 2]},
@@ -169,7 +174,7 @@ run_test("basics", ({override, override_rewire}) => {
 
     // Explicitly stop users.
     call_handler(null);
-    assert.deepEqual(typing_status.state, null);
+    assert.deepEqual(typing_status.composing_state, null);
     assert.deepEqual(events, {
         idle_callback: undefined,
         started: false,
@@ -180,7 +185,7 @@ run_test("basics", ({override, override_rewire}) => {
     // Start talking to users again.
     worker.get_current_time = returns_time(80);
     call_handler({message_type: "direct", ids: [1, 2]});
-    assert.deepEqual(typing_status.state, {
+    assert.deepEqual(typing_status.composing_state, {
         next_send_start_time: make_time(80 + 10),
         idle_timer: "idle_timer_stub",
         current_recipient: {message_type: "direct", ids: [1, 2]},
@@ -195,7 +200,7 @@ run_test("basics", ({override, override_rewire}) => {
 
     // Switch to an invalid conversation.
     call_handler(null);
-    assert.deepEqual(typing_status.state, null);
+    assert.deepEqual(typing_status.composing_state, null);
     assert.deepEqual(events, {
         idle_callback: undefined,
         started: false,
@@ -205,7 +210,7 @@ run_test("basics", ({override, override_rewire}) => {
 
     // Switch to another invalid conversation.
     call_handler(null);
-    assert.deepEqual(typing_status.state, null);
+    assert.deepEqual(typing_status.composing_state, null);
     assert.deepEqual(events, {
         idle_callback: undefined,
         started: false,
@@ -216,7 +221,7 @@ run_test("basics", ({override, override_rewire}) => {
     // Start talking to users again.
     worker.get_current_time = returns_time(170);
     call_handler({message_type: "direct", ids: [1, 2]});
-    assert.deepEqual(typing_status.state, {
+    assert.deepEqual(typing_status.composing_state, {
         next_send_start_time: make_time(170 + 10),
         idle_timer: "idle_timer_stub",
         current_recipient: {message_type: "direct", ids: [1, 2]},
@@ -232,13 +237,13 @@ run_test("basics", ({override, override_rewire}) => {
     // Switch to new users now.
     worker.get_current_time = returns_time(171);
 
-    worker.notify_server_start = (recipient) => {
+    worker.notify_server_composing_start = (recipient) => {
         assert.deepStrictEqual(recipient, {message_type: "direct", ids: [3, 4]});
         events.started = true;
     };
 
     call_handler({message_type: "direct", ids: [3, 4]});
-    assert.deepEqual(typing_status.state, {
+    assert.deepEqual(typing_status.composing_state, {
         next_send_start_time: make_time(171 + 10),
         idle_timer: "idle_timer_stub",
         current_recipient: {message_type: "direct", ids: [3, 4]},
@@ -252,17 +257,17 @@ run_test("basics", ({override, override_rewire}) => {
     assert.ok(events.idle_callback);
 
     // test that we correctly detect if worker.get_recipient
-    // and typing_status.state.current_recipient are the same
+    // and typing_status.composing_state.current_recipient are the same
 
     override(compose_pm_pill, "get_user_ids_string", () => "1,2,3");
     override(compose_state, "get_message_type", () => "private");
-    typing_status.state.current_recipient = typing.get_recipient();
+    typing_status.composing_state.current_recipient = typing.get_recipient();
 
     const call_count = {
-        maybe_ping_server: 0,
-        actually_ping_server: 0,
-        start_or_extend_idle_timer: 0,
-        stop_last_notification: 0,
+        maybe_ping_server_for_composing: 0,
+        actually_ping_server_for_composing: 0,
+        start_or_extend_idle_timer_for_composing: 0,
+        stop_last_notification_for_composing: 0,
     };
 
     // stub functions to see how may time they are called
@@ -273,58 +278,58 @@ run_test("basics", ({override, override_rewire}) => {
     }
 
     // User ids of people in compose narrow doesn't change and is same as state.current_recipient
-    // so counts of function should increase except stop_last_notification
-    typing_status.update(
+    // so counts of function should increase except stop_last_notification_for_composing
+    typing_status.update_composing_status(
         worker,
         typing.get_recipient(),
         TYPING_STARTED_WAIT_PERIOD,
         TYPING_STOPPED_WAIT_PERIOD,
     );
-    assert.deepEqual(call_count.maybe_ping_server, 1);
-    assert.deepEqual(call_count.start_or_extend_idle_timer, 1);
-    assert.deepEqual(call_count.stop_last_notification, 0);
+    assert.deepEqual(call_count.maybe_ping_server_for_composing, 1);
+    assert.deepEqual(call_count.start_or_extend_idle_timer_for_composing, 1);
+    assert.deepEqual(call_count.stop_last_notification_for_composing, 0);
 
-    typing_status.update(
+    typing_status.update_composing_status(
         worker,
         typing.get_recipient(),
         TYPING_STARTED_WAIT_PERIOD,
         TYPING_STOPPED_WAIT_PERIOD,
     );
-    assert.deepEqual(call_count.maybe_ping_server, 2);
-    assert.deepEqual(call_count.start_or_extend_idle_timer, 2);
-    assert.deepEqual(call_count.stop_last_notification, 0);
+    assert.deepEqual(call_count.maybe_ping_server_for_composing, 2);
+    assert.deepEqual(call_count.start_or_extend_idle_timer_for_composing, 2);
+    assert.deepEqual(call_count.stop_last_notification_for_composing, 0);
 
     // change in recipient and new_recipient should make us
-    // call typing_status.stop_last_notification
+    // call typing_status.stop_last_notification_for_composing
     override(compose_pm_pill, "get_user_ids_string", () => "2,3,4");
-    typing_status.update(
+    typing_status.update_composing_status(
         worker,
         typing.get_recipient(),
         TYPING_STARTED_WAIT_PERIOD,
         TYPING_STOPPED_WAIT_PERIOD,
     );
-    assert.deepEqual(call_count.maybe_ping_server, 2);
-    assert.deepEqual(call_count.start_or_extend_idle_timer, 3);
-    assert.deepEqual(call_count.stop_last_notification, 1);
+    assert.deepEqual(call_count.maybe_ping_server_for_composing, 2);
+    assert.deepEqual(call_count.start_or_extend_idle_timer_for_composing, 3);
+    assert.deepEqual(call_count.stop_last_notification_for_composing, 1);
 
     // Stream messages
     override(compose_state, "get_message_type", () => "stream");
     override(compose_state, "stream_name", () => "Verona");
     override(stream_data, "get_stream_id", () => "2");
     override(compose_state, "topic", () => "test topic");
-    typing_status.update(
+    typing_status.update_composing_status(
         worker,
         typing.get_recipient(),
         TYPING_STARTED_WAIT_PERIOD,
         TYPING_STOPPED_WAIT_PERIOD,
     );
-    assert.deepEqual(call_count.maybe_ping_server, 2);
-    assert.deepEqual(call_count.start_or_extend_idle_timer, 4);
-    assert.deepEqual(call_count.stop_last_notification, 2);
+    assert.deepEqual(call_count.maybe_ping_server_for_composing, 2);
+    assert.deepEqual(call_count.start_or_extend_idle_timer_for_composing, 4);
+    assert.deepEqual(call_count.stop_last_notification_for_composing, 2);
 });
 
 run_test("stream_messages", ({override_rewire}) => {
-    override_rewire(typing_status, "state", null);
+    override_rewire(typing_status, "composing_state", null);
 
     let worker = {};
     const events = {};
@@ -342,12 +347,12 @@ run_test("stream_messages", ({override_rewire}) => {
     set_global("setTimeout", set_timeout);
     set_global("clearTimeout", clear_timeout);
 
-    function notify_server_start(recipient) {
+    function notify_server_composing_start(recipient) {
         assert.deepStrictEqual(recipient, {message_type: "stream", stream_id: 3, topic: "test"});
         events.started = true;
     }
 
-    function notify_server_stop(recipient) {
+    function notify_server_composing_stop(recipient) {
         assert.deepStrictEqual(recipient, {message_type: "stream", stream_id: 3, topic: "test"});
         events.stopped = true;
     }
@@ -361,7 +366,7 @@ run_test("stream_messages", ({override_rewire}) => {
 
     function call_handler(new_recipient) {
         clear_events();
-        typing_status.update(
+        typing_status.update_composing_status(
             worker,
             new_recipient,
             TYPING_STARTED_WAIT_PERIOD,
@@ -371,13 +376,13 @@ run_test("stream_messages", ({override_rewire}) => {
 
     worker = {
         get_current_time: returns_time(5),
-        notify_server_start,
-        notify_server_stop,
+        notify_server_composing_start,
+        notify_server_composing_stop,
     };
 
     // Start typing stream message
     call_handler({message_type: "stream", stream_id: 3, topic: "test"});
-    assert.deepEqual(typing_status.state, {
+    assert.deepEqual(typing_status.composing_state, {
         next_send_start_time: make_time(5 + 10),
         idle_timer: "idle_timer_stub",
         current_recipient: {message_type: "stream", stream_id: 3, topic: "test"},
@@ -393,7 +398,7 @@ run_test("stream_messages", ({override_rewire}) => {
     // type again 3 seconds later. Covers 'same_stream_and_topic' codepath.
     worker.get_current_time = returns_time(8);
     call_handler({message_type: "stream", stream_id: 3, topic: "test"});
-    assert.deepEqual(typing_status.state, {
+    assert.deepEqual(typing_status.composing_state, {
         next_send_start_time: make_time(5 + 10),
         idle_timer: "idle_timer_stub",
         current_recipient: {message_type: "stream", stream_id: 3, topic: "test"},
@@ -408,7 +413,7 @@ run_test("stream_messages", ({override_rewire}) => {
 
     // Explicitly stop.
     call_handler(null);
-    assert.deepEqual(typing_status.state, null);
+    assert.deepEqual(typing_status.composing_state, null);
     assert.deepEqual(events, {
         idle_callback: undefined,
         started: false,
