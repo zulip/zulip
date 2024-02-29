@@ -25,6 +25,7 @@ from typing_extensions import override
 
 from analytics.lib.counts import CountStat, LoggingCountStat
 from analytics.models import InstallationCount, RealmCount, UserCount
+from corporate.lib.stripe import RemoteRealmBillingSession
 from corporate.models import CustomerPlan
 from version import ZULIP_VERSION
 from zerver.actions.create_realm import do_create_realm
@@ -2566,7 +2567,9 @@ class AnalyticsBouncerTest(BouncerTestCase):
 
         # Now we want to test the other side of this - bouncer's handling
         # of a deleted realm.
-        with self.assertLogs(logger, level="WARNING") as analytics_logger:
+        with self.assertLogs(logger, level="WARNING") as analytics_logger, mock.patch(
+            "zilencer.views.RemoteRealmBillingSession.on_paid_plan", return_value=True
+        ):
             # This time the logger shouldn't get triggered - because the bouncer doesn't
             # include .realm_locally_deleted realms in its response.
             # Note: This is hacky, because until Python 3.10 we don't have access to
@@ -2584,6 +2587,22 @@ class AnalyticsBouncerTest(BouncerTestCase):
         audit_log = RemoteRealmAuditLog.objects.latest("id")
         self.assertEqual(audit_log.event_type, RemoteRealmAuditLog.REMOTE_REALM_LOCALLY_DELETED)
         self.assertEqual(audit_log.remote_realm, remote_realm_for_deleted_realm)
+
+        from django.core.mail import outbox
+
+        email = outbox[-1]
+        self.assert_length(email.to, 1)
+        self.assertEqual(email.to[0], "sales@zulip.com")
+
+        billing_session = RemoteRealmBillingSession(remote_realm=remote_realm_for_deleted_realm)
+        self.assertIn(
+            f"Support URL: {billing_session.support_url()}",
+            email.body,
+        )
+        self.assertEqual(
+            f"{billing_session.billing_entity_display_name} on paid plan marked as locally deleted",
+            email.subject,
+        )
 
         # Restore the deleted realm to verify that the bouncer correctly handles that
         # by togglin off .realm_locally_deleted.
