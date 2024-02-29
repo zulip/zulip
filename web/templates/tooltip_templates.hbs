@@ -154,6 +154,22 @@
     {{t "Message actions" }}
     {{tooltip_hotkey_hints "I"}}
 </template>
+<template id="dismiss-failed-send-button-tooltip-template">
+    <div>
+        <div>{{t "Dismiss failed message" }}</div>
+        <div class="italic tooltip-inner-content">
+            {{t "This content remains saved in your drafts." }}
+        </div>
+    </div>
+</template>
+<template id="slow-send-spinner-tooltip-template">
+    <div>
+        <div>{{t "Sending…" }}</div>
+        <div class="italic">
+            {{t "This message will remain saved in your drafts until it is successfully sent." }}
+        </div>
+    </div>
+</template>
 <template id="star-message-tooltip-template">
     <div class="starred-status">{{t "Star this message" }}</div>
     {{tooltip_hotkey_hints "Ctrl" "S"}}
