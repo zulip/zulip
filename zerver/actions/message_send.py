@@ -865,7 +865,7 @@ def do_send_messages(
 
     # Save the message receipts in the database
     user_message_flags: Dict[int, Dict[int, List[str]]] = defaultdict(dict)
-    with transaction.atomic():
+    with transaction.atomic(savepoint=False):
         Message.objects.bulk_create(send_request.message for send_request in send_message_requests)
 
         # Claim attachments in message
