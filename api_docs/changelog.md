@@ -473,7 +473,7 @@ No changes; feature level used for Zulip 8.0 release.
 
 * [`GET /messages`](/api/get-messages),
   [`GET /messages/matches_narrow`](/api/check-messages-match-narrow),
-  [`POST /message/flags/narrow`](/api/update-message-flags-for-narrow),
+  [`POST /messages/flags/narrow`](/api/update-message-flags-for-narrow),
   [`POST /register`](/api/register-queue):
   For [search/narrow filters](/api/construct-narrow) with the `id`
   operator, added support for encoding the message ID operand as either
@@ -609,7 +609,7 @@ No changes; feature level used for Zulip 7.0 release.
 
 * [`GET /messages`](/api/get-messages),
   [`GET /messages/matches_narrow`](/api/check-messages-match-narrow),
-  [`POST /message/flags/narrow`](/api/update-message-flags-for-narrow),
+  [`POST /messages/flags/narrow`](/api/update-message-flags-for-narrow),
   [`POST /register`](/api/register-queue):
   Added support for three [search/narrow filters](/api/construct-narrow)
   related to direct messages: `is:dm`, `dm` and `dm-including`.
