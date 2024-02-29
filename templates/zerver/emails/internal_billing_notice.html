@@ -1,7 +1,12 @@
 {% extends "zerver/emails/email_base_default.html" %}
 
 {% block content %}
+
+{% if notice_reason == "fixed_price_plan_ends_soon" %}
 <p>Reminder to re-evaluate the pricing and configure a new fixed-price plan accordingly.</p>
+{% elif notice_reason == "invoice_overdue" %}
+<b>Last data upload</b>: {{ last_audit_log_update }}
+{% endif %}
 
 <br /><br />
 

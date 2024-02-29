@@ -1,3 +1,0 @@
-Reminder to re-evaluate the pricing and configure a new fixed-price plan accordingly.
-
-Support URL: {{ support_url }}

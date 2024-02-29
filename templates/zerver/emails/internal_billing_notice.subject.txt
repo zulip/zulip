@@ -1,0 +1,5 @@
+{% if notice_reason == "fixed_price_plan_ends_soon" %}
+Fixed-price plan for {{billing_entity}} ends on {{end_date}}
+{% elif notice_reason == "invoice_overdue" %}
+Invoice overdue due to stale data
+{% endif %}

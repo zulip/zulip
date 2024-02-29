@@ -1,0 +1,7 @@
+{% if notice_reason == "fixed_price_plan_ends_soon" %}
+Reminder to re-evaluate the pricing and configure a new fixed-price plan accordingly.
+{% elif notice_reason == "invoice_overdue" %}
+Last data upload: {{ last_audit_log_update }}
+{% endif %}
+
+Support URL: {{ support_url }}

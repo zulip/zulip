@@ -4859,9 +4859,10 @@ def invoice_plans_as_needed(event_time: Optional[datetime] = None) -> None:
                     "billing_entity": billing_session.billing_entity_display_name,
                     "end_date": plan.end_date.strftime("%Y-%m-%d"),
                     "support_url": billing_session.support_url(),
+                    "notice_reason": "fixed_price_plan_ends_soon",
                 }
                 send_email(
-                    "zerver/emails/reminder_to_review_plan",
+                    "zerver/emails/internal_billing_notice",
                     to_emails=[BILLING_SUPPORT_EMAIL],
                     from_address=FromAddress.tokenized_no_reply_address(),
                     context=context,
@@ -4881,9 +4882,10 @@ def invoice_plans_as_needed(event_time: Optional[datetime] = None) -> None:
                     context = {
                         "support_url": billing_session.support_url(),
                         "last_audit_log_update": last_audit_log_update_string,
+                        "notice_reason": "invoice_overdue",
                     }
                     send_email(
-                        "zerver/emails/invoice_overdue",
+                        "zerver/emails/internal_billing_notice",
                         to_emails=[BILLING_SUPPORT_EMAIL],
                         from_address=FromAddress.tokenized_no_reply_address(),
                         context=context,
