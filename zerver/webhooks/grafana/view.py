@@ -5,6 +5,7 @@ from zerver.lib.response import json_success
 from zerver.lib.typed_endpoint import JsonBodyPayload, typed_endpoint
 from zerver.lib.validator import (
     WildValue,
+    check_anything,
     check_float,
     check_int,
     check_none_or,
@@ -21,20 +22,23 @@ ALERT_STATUS_TEMPLATE = "{alert_icon} **{alert_state}**\n\n"
 
 OLD_MESSAGE_TEMPLATE = "{alert_status}[{rule_name}]({rule_url})\n\n{alert_message}{eval_matches}"
 
-NEW_TOPIC_TEMPLATE = "[{alert_status}:{alert_count}]"
+NEW_TOPIC_TEMPLATE = "[{alertname}]"
 
-ALERT_HEADER_TEMPLATE = """\n---
-**Alert {count}**"""
+START_TIME_TEMPLATE = "This alert was fired at <time:{start_time}>."
 
-START_TIME_TEMPLATE = "\n\nThis alert was fired at <time:{start_time}>.\n"
+END_TIME_TEMPLATE = "\n\nThis alert was resolved at <time:{end_time}>."
 
-END_TIME_TEMPLATE = "\nThis alert was resolved at <time:{end_time}>.\n\n"
+MESSAGE_LABELS_TEMPLATE = "\n\nLabels:\n{label_information}\n"
 
-MESSAGE_LABELS_TEMPLATE = "Labels:\n{label_information}\n"
+MESSAGE_VALUES_TEMPLATE = "Values:\n{value_information}\n"
 
-MESSAGE_ANNOTATIONS_TEMPLATE = "Annotations:\n{annotation_information}\n"
+MESSAGE_ANNOTATIONS_TEMPLATE = "Annotations:\n{annotation_information}"
 
-TRUNCATED_ALERTS_TEMPLATE = "{count} alert(s) truncated.\n"
+MESSAGE_GENERATOR_TEMPLATE = "\n[Generator]({generator_url})"
+
+MESSAGE_SILENCE_TEMPLATE = "\n[Silence]({silence_url})"
+
+MESSAGE_IMAGE_TEMPLATE = "\n[Image]({image_url})"
 
 LEGACY_EVENT_TYPES = ["ok", "pending", "alerting", "paused"]
 
@@ -53,24 +57,26 @@ def api_grafana_webhook(
 ) -> HttpResponse:
     # Grafana alerting system.
     if "alerts" in payload:
-        status = payload["status"].tame(check_string_in(["firing", "resolved"]))
-        alert_count = len(payload["alerts"])
-
-        topic_name = NEW_TOPIC_TEMPLATE.format(alert_status=status.upper(), alert_count=alert_count)
-
-        if status == "firing":
-            body = ALERT_STATUS_TEMPLATE.format(alert_icon=":alert:", alert_state=status.upper())
-        else:
-            body = ALERT_STATUS_TEMPLATE.format(alert_icon=":checkbox:", alert_state=status.upper())
-
-        if payload["message"]:
-            body += payload["message"].tame(check_string) + "\n"
-
         for index, alert in enumerate(payload["alerts"], 1):
-            body += ALERT_HEADER_TEMPLATE.format(count=index)
+            status = alert["status"].tame(check_string_in(["firing", "resolved"]))
+            if status == "firing":
+                body = ALERT_STATUS_TEMPLATE.format(
+                    alert_icon=":alert:", alert_state=status.upper()
+                )
+            else:
+                body = ALERT_STATUS_TEMPLATE.format(
+                    alert_icon=":checkbox:", alert_state=status.upper()
+                )
 
             if "alertname" in alert["labels"] and alert["labels"]["alertname"]:
-                body += ": " + alert["labels"]["alertname"].tame(check_string) + "."
+                alertname = alert["labels"]["alertname"].tame(check_string)
+                topic_name = NEW_TOPIC_TEMPLATE.format(alertname=alertname)
+                body += "**" + alertname + "**\n\n"
+            else:
+                # if no alertname, fallback to the alert fingerprint
+                topic_name = NEW_TOPIC_TEMPLATE.format(
+                    alertname=alert["fingerprint"].tame(check_string)
+                )
 
             body += START_TIME_TEMPLATE.format(start_time=alert["startsAt"].tame(check_string))
 
@@ -84,6 +90,12 @@ def api_grafana_webhook(
                     label_information += "- " + key + ": " + value.tame(check_string) + "\n"
                 body += MESSAGE_LABELS_TEMPLATE.format(label_information=label_information)
 
+            if alert["values"]:
+                value_information = ""
+                for key, value in alert["values"].items():
+                    value_information += "- " + key + ": " + str(value.tame(check_anything)) + "\n"
+                body += MESSAGE_VALUES_TEMPLATE.format(value_information=value_information)
+
             if alert["annotations"]:
                 annotation_information = ""
                 for key, value in alert["annotations"].items():
@@ -92,12 +104,24 @@ def api_grafana_webhook(
                     annotation_information=annotation_information
                 )
 
-        if payload["truncatedAlerts"]:
-            body += TRUNCATED_ALERTS_TEMPLATE.format(
-                count=payload["truncatedAlerts"].tame(check_int)
-            )
+            if alert["generatorURL"]:
+                body += MESSAGE_GENERATOR_TEMPLATE.format(
+                    generator_url=alert["generatorURL"].tame(check_string)
+                )
 
-        check_send_webhook_message(request, user_profile, topic_name, body, status)
+            if alert["silenceURL"]:
+                body += MESSAGE_SILENCE_TEMPLATE.format(
+                    silence_url=alert["silenceURL"].tame(check_string)
+                )
+
+            if alert.get("imageURL"):
+                body += MESSAGE_IMAGE_TEMPLATE.format(
+                    image_url=alert["imageURL"].tame(check_string)
+                )
+
+            body += "\n"
+
+            check_send_webhook_message(request, user_profile, topic_name, body, status)
 
         return json_success(request)
 
