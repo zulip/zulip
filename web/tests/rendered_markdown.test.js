@@ -421,7 +421,7 @@ run_test("timestamp", ({mock_template}) => {
     // Final asserts
     assert.equal(
         $timestamp.html(),
-        '<img src="/static/images/help/clock.png" alt="{{_ "Clock Icon"}}" class="clock-icon"><img src="/static/images/help/clock.png" alt="{{_ "Clock Icon"}}" class="clock-icon">\nThu, Jan 1, 1970, 12:00 AM\n',
+        '<img src="/web/images/icons/clock.png" class="clock-icon">\nThu, Jan 1, 1970, 12:00 AM\n',
     );
     assert.equal($timestamp_invalid.text(), "never-been-set");
 });
@@ -443,14 +443,14 @@ run_test("timestamp-twenty-four-hour-time", ({mock_template, override}) => {
     rm.update_elements($content);
     assert.equal(
         $timestamp.html(),
-        '<img src="/static/images/help/clock.png" alt="{{_ "Clock Icon"}}" class="clock-icon"><img src="/static/images/help/clock.png" alt="{{_ "Clock Icon"}}" class="clock-icon">\nWed, Jul 15, 2020, 20:40\n',
+        '<img src="/web/images/icons/clock.png" class="clock-icon">\nWed, Jul 15, 2020, 20:40\n',
     );
 
     override(user_settings, "twenty_four_hour_time", false);
     rm.update_elements($content);
     assert.equal(
         $timestamp.html(),
-        '<img src="/static/images/help/clock.png" alt="{{_ "Clock Icon"}}" class="clock-icon"><img src="/static/images/help/clock.png" alt="{{_ "Clock Icon"}}" class="clock-icon">\nWed, Jul 15, 2020, 8:40 PM\n',
+        '<img src="/web/images/icons/clock.png" class="clock-icon">\nWed, Jul 15, 2020, 8:40 PM\n',
     );
 });
 

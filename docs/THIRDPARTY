@@ -63,7 +63,7 @@ Files: tools/check-thirdparty
 Copyright: 2020 Kandra Labs, Inc.
 License: GPL-2.0+
 
-Files: static/images/help/clock.png
+Files: web/images/icons/clock.svg
 Copyright: Google, Inc.
 License: Apache-2.0
 
