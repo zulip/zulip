@@ -322,6 +322,16 @@ function within_single_element(html_fragment) {
     );
 }
 
+export function is_white_space_pre(paste_html) {
+    const html_fragment = new DOMParser()
+        .parseFromString(paste_html, "text/html")
+        .querySelector("body");
+    return (
+        within_single_element(html_fragment) &&
+        html_fragment.firstElementChild.style.whiteSpace === "pre"
+    );
+}
+
 export function paste_handler_converter(paste_html) {
     const copied_html_fragment = new DOMParser()
         .parseFromString(paste_html, "text/html")
@@ -563,7 +573,7 @@ export function paste_handler(event) {
     if (clipboardData.getData) {
         const $textarea = $(event.currentTarget);
         const paste_text = clipboardData.getData("text");
-        const paste_html = clipboardData.getData("text/html");
+        let paste_html = clipboardData.getData("text/html");
         // Trim the paste_text to accommodate sloppy copying
         const trimmed_paste_text = paste_text.trim();
 
@@ -589,6 +599,12 @@ export function paste_handler(event) {
         ) {
             event.preventDefault();
             event.stopPropagation();
+            if (is_white_space_pre(paste_html)) {
+                // Copied content styled with `white-space: pre` is pasted as is
+                // but formatted as code. We need this for content copied from
+                // VS Code like sources.
+                paste_html = "<pre><code>" + paste_text + "</code></pre>";
+            }
             const text = paste_handler_converter(paste_html);
             compose_ui.insert_and_scroll_into_view(text, $textarea);
         }
