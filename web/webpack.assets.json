@@ -81,6 +81,7 @@
         "./src/bundles/hello",
         "./src/portico/landing-page",
         "./src/portico/header",
+        "./src/portico/live-chat",
         "./styles/portico/hello.css",
         "./styles/portico/navbar.css",
         "./styles/portico/footer.css",
