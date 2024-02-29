@@ -17,7 +17,7 @@ const template = fs.readFileSync(
 const dom = new JSDOM(template, {pretendToBeVisual: true});
 const document = dom.window.document;
 
-zrequire("../src/analytics/support");
+zrequire("../src/support/support");
 
 run_test("scrub_realm", () => {
     $.get_initialize_function()();
