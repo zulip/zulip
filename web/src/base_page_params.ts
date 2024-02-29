@@ -9,6 +9,7 @@ const t1 = performance.now();
 const default_params_schema = z.object({
     page_type: z.literal("default"),
     development_environment: z.boolean(),
+    google_analytics_id: z.optional(z.string()),
     realm_sentry_key: z.optional(z.string()),
     request_language: z.string(),
     server_sentry_dsn: z.nullable(z.string()),
