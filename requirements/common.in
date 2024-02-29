@@ -91,7 +91,7 @@ redis
 tornado
 
 # Fast JSON parser
-orjson<3.9.11  # https://github.com/ijl/orjson/issues/452
+orjson
 
 # Needed for iOS push notifications
 https://github.com/zulip/aioapns/archive/2d69284481d328bd3e4168c631d75a38268eddb9.zip#egg=aioapns==3.1+git  # https://github.com/Fatal1ty/aioapns/pull/52
@@ -160,7 +160,7 @@ requests[security]
 requests-oauthlib
 
 # For OpenAPI schema validation.
-openapi-core>=0.19.0a1  # https://github.com/python-openapi/openapi-core/pull/646, https://github.com/python-openapi/openapi-core/pull/697, https://github.com/python-openapi/openapi-core/pull/701, https://github.com/python-openapi/openapi-core/pull/713, https://github.com/python-openapi/openapi-core/pull/725
+openapi-core
 importlib-resources ; python_version < "3.9"
 
 # For reporting errors to sentry.io
