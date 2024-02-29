@@ -3,7 +3,7 @@
         "./third/bootstrap/css/bootstrap.portico.css",
         "./src/bundles/common",
         "sorttable",
-        "./src/analytics/activity",
+        "./src/activity/activity",
         "./styles/portico/activity.css"
     ],
     "billing": [
@@ -111,9 +111,9 @@
         "./third/bootstrap/css/bootstrap.portico.css",
         "./src/bundles/common",
         "sorttable",
-        "./src/analytics/activity",
+        "./src/activity/activity",
         "./styles/portico/activity.css",
-        "./src/analytics/support"
+        "./src/support/support"
     ],
     "desktop-login": ["./src/bundles/portico", "./src/portico/desktop-login"],
     "desktop-redirect": ["./src/bundles/portico", "./src/portico/desktop-redirect"],
