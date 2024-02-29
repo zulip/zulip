@@ -1,5 +1,6 @@
 import isUrl from "is-url";
 import $ from "jquery";
+import _ from "lodash";
 import TurndownService from "turndown";
 
 import * as compose_ui from "./compose_ui";
@@ -322,6 +323,16 @@ function within_single_element(html_fragment) {
     );
 }
 
+export function is_white_space_pre(paste_html) {
+    const html_fragment = new DOMParser()
+        .parseFromString(paste_html, "text/html")
+        .querySelector("body");
+    return (
+        within_single_element(html_fragment) &&
+        html_fragment.firstElementChild.style.whiteSpace === "pre"
+    );
+}
+
 export function paste_handler_converter(paste_html) {
     const copied_html_fragment = new DOMParser()
         .parseFromString(paste_html, "text/html")
@@ -549,6 +560,16 @@ function is_safe_url_paste_target($textarea) {
     return true;
 }
 
+export function maybe_transform_html(html, text) {
+    if (is_white_space_pre(html)) {
+        // Copied content styled with `white-space: pre` is pasted as is
+        // but formatted as code. We need this for content copied from
+        // VS Code like sources.
+        return "<pre><code>" + _.escape(text) + "</code></pre>";
+    }
+    return html;
+}
+
 export function paste_handler(event) {
     const clipboardData = event.originalEvent.clipboardData;
     if (!clipboardData) {
@@ -563,7 +584,7 @@ export function paste_handler(event) {
     if (clipboardData.getData) {
         const $textarea = $(event.currentTarget);
         const paste_text = clipboardData.getData("text");
-        const paste_html = clipboardData.getData("text/html");
+        let paste_html = clipboardData.getData("text/html");
         // Trim the paste_text to accommodate sloppy copying
         const trimmed_paste_text = paste_text.trim();
 
@@ -589,6 +610,7 @@ export function paste_handler(event) {
         ) {
             event.preventDefault();
             event.stopPropagation();
+            paste_html = maybe_transform_html(paste_html, paste_text);
             const text = paste_handler_converter(paste_html);
             compose_ui.insert_and_scroll_into_view(text, $textarea);
         }
