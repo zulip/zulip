@@ -146,8 +146,8 @@ export function get_message_recipient_header($message_row: JQuery): JQuery {
     return $message_row.parent(".recipient_row").find(".message_header").expectOne();
 }
 
-export function recipient_from_group(message_group: string): Message | undefined {
-    const message_id = id($(message_group).children(".message_row").first().expectOne());
+export function recipient_from_group($message_group: JQuery): Message | undefined {
+    const message_id = id($message_group.children(".message_row").first().expectOne());
     return message_store.get(message_id);
 }
 
