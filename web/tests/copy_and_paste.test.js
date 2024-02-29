@@ -8,6 +8,20 @@ const {page_params} = require("./lib/zpage_params");
 
 const copy_and_paste = zrequire("copy_and_paste");
 
+run_test("maybe_transform_html", () => {
+    // Copied HTML from VS Code
+    let paste_html = `<div style="color: #cccccc;background-color: #1f1f1f;font-family: 'Droid Sans Mono', 'monospace', monospace;font-weight: normal;font-size: 14px;line-height: 19px;white-space: pre;"><div><span style="color: #c586c0;">if</span><span style="color: #cccccc;"> (</span><span style="color: #9cdcfe;">$preview_src</span><span style="color: #cccccc;">.</span><span style="color: #dcdcaa;">endsWith</span><span style="color: #cccccc;">(</span><span style="color: #ce9178;">"&amp;size=full"</span><span style="color: #cccccc;">))</span></div></div>`;
+    let paste_text = `if ($preview_src.endsWith("&size=full"))`;
+    const escaped_paste_text = "if ($preview_src.endsWith(&quot;&amp;size=full&quot;))";
+    const expected_output = "<pre><code>" + escaped_paste_text + "</code></pre>";
+    assert.equal(copy_and_paste.maybe_transform_html(paste_html, paste_text), expected_output);
+
+    // Untransformed HTML
+    paste_html = "<div><div>Hello</div><div>World!</div></div>";
+    paste_text = "Hello\nWorld!";
+    assert.equal(copy_and_paste.maybe_transform_html(paste_html, paste_text), paste_html);
+});
+
 run_test("paste_handler_converter", () => {
     page_params.development_environment = true;
 
@@ -117,14 +131,6 @@ run_test("paste_handler_converter", () => {
     input =
         '<div class="ace-line gutter-author-d-iz88z86z86za0dz67zz78zz78zz74zz68zjz80zz71z9iz90za3z66zs0z65zz65zq8z75zlaz81zcz66zj6g2mz78zz76zmz66z22z75zfcz69zz66z ace-ltr focused-line" dir="auto" id="editor-3-ace-line-41"><span>Test list:</span></div><div class="ace-line gutter-author-d-iz88z86z86za0dz67zz78zz78zz74zz68zjz80zz71z9iz90za3z66zs0z65zz65zq8z75zlaz81zcz66zj6g2mz78zz76zmz66z22z75zfcz69zz66z line-list-type-bullet ace-ltr" dir="auto" id="editor-3-ace-line-42"><ul class="listtype-bullet listindent1 list-bullet1"><li><span class="ace-line-pocket-zws" data-faketext="" data-contentcollector-ignore-space-at="end"></span><span class="ace-line-pocket" data-faketext="" contenteditable="false"></span><span class="ace-line-pocket-zws" data-faketext="" data-contentcollector-ignore-space-at="start"></span><span>Item 1</span></li></ul></div><div class="ace-line gutter-author-d-iz88z86z86za0dz67zz78zz78zz74zz68zjz80zz71z9iz90za3z66zs0z65zz65zq8z75zlaz81zcz66zj6g2mz78zz76zmz66z22z75zfcz69zz66z line-list-type-bullet ace-ltr" dir="auto" id="editor-3-ace-line-43"><ul class="listtype-bullet listindent1 list-bullet1"><li><span class="ace-line-pocket-zws" data-faketext="" data-contentcollector-ignore-space-at="end"></span><span class="ace-line-pocket" data-faketext="" contenteditable="false"></span><span class="ace-line-pocket-zws" data-faketext="" data-contentcollector-ignore-space-at="start"></span><span>Item 2</span></li></ul></div>';
     assert.equal(copy_and_paste.paste_handler_converter(input), "Test list:\n* Item 1\n* Item 2");
-
-    // Pasting code from VS Code / Gmail
-    input =
-        '<meta http-equiv="content-type" content="text/html; charset=utf-8"><div style="color: #ffffff;background-color: #002451;font-family: Consolas, &quot;Courier New&quot;, monospace;font-weight: normal;font-size: 14px;line-height: 19px;white-space: pre;"><div><span style="color: #ebbbff;">const</span><span style="color: #ffffff;"> </span><span style="color: #ff9da4;">compose_ui</span><span style="color: #ffffff;"> </span><span style="color: #99ffff;">=</span><span style="color: #ffffff;"> </span><span style="color: #bbdaff;">mock_esm</span><span style="color: #ffffff;">(</span><span style="color: #d1f1a9;">"../src/compose_ui"</span><span style="color: #ffffff;">);</span></div><div><span style="color: #bbdaff;">set_global</span><span style="color: #ffffff;">(</span><span style="color: #d1f1a9;">"document"</span><span style="color: #ffffff;">, </span><span style="color: #ff9da4;">document</span><span style="color: #ffffff;">);</span></div></div>';
-    assert.equal(
-        copy_and_paste.paste_handler_converter(input),
-        'const compose_ui = mock_esm("../src/compose_ui");\n\nset_global("document", document);',
-    );
 
     // Pasting from Google Sheets (remove <style> elements completely)
     input =
