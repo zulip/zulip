@@ -6,6 +6,8 @@
 <p>Reminder to re-evaluate the pricing and configure a new fixed-price plan accordingly.</p>
 {% elif notice_reason == "invoice_overdue" %}
 <b>Last data upload</b>: {{ last_audit_log_update }}
+{% elif notice_reason == "locally_deleted_realm_on_paid_plan" %}
+<p>Investigate the reason for {{billing_entity}} on paid plan marked as locally deleted.</p>
 {% endif %}
 
 <br /><br />

@@ -27,6 +27,7 @@ from analytics.lib.counts import (
     do_increment_logging_stat,
 )
 from corporate.lib.stripe import (
+    BILLING_SUPPORT_EMAIL,
     RemoteRealmBillingSession,
     RemoteServerBillingSession,
     do_deactivate_remote_server,
@@ -52,6 +53,7 @@ from zerver.lib.push_notifications import (
     send_apple_push_notification,
     send_test_push_notification_directly_to_devices,
 )
+from zerver.lib.queue import queue_json_publish
 from zerver.lib.remote_server import (
     InstallationCountDataForAnalytics,
     RealmAuditLogDataForAnalytics,
@@ -897,6 +899,7 @@ def update_remote_realm_data_for_server(
 
     remote_realms_to_update = []
     remote_realm_audit_logs = []
+    new_locally_deleted_remote_realms_on_paid_plan_contexts = []
     for remote_realm in remote_realms_missing_from_server_data:
         if not remote_realm.realm_locally_deleted:
             # Otherwise we already knew about this, so nothing to do.
@@ -918,11 +921,29 @@ def update_remote_realm_data_for_server(
             )
             remote_realms_to_update.append(remote_realm)
 
+            billing_session = RemoteRealmBillingSession(remote_realm=remote_realm)
+            if billing_session.on_paid_plan():
+                context = {
+                    "billing_entity": billing_session.billing_entity_display_name,
+                    "support_url": billing_session.support_url(),
+                    "notice_reason": "locally_deleted_realm_on_paid_plan",
+                }
+                new_locally_deleted_remote_realms_on_paid_plan_contexts.append(context)
+
     RemoteRealm.objects.bulk_update(
         remote_realms_to_update,
         ["realm_locally_deleted"],
     )
     RemoteRealmAuditLog.objects.bulk_create(remote_realm_audit_logs)
+
+    email_dict: Dict[str, Any] = {
+        "template_prefix": "zerver/emails/internal_billing_notice",
+        "to_emails": [BILLING_SUPPORT_EMAIL],
+        "from_address": FromAddress.tokenized_no_reply_address(),
+    }
+    for context in new_locally_deleted_remote_realms_on_paid_plan_contexts:
+        email_dict["context"] = context
+        queue_json_publish("email_senders", email_dict)
 
 
 def get_human_user_realm_uuids(

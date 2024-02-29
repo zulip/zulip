@@ -2,6 +2,8 @@
 Reminder to re-evaluate the pricing and configure a new fixed-price plan accordingly.
 {% elif notice_reason == "invoice_overdue" %}
 Last data upload: {{ last_audit_log_update }}
+{% elif notice_reason == "locally_deleted_realm_on_paid_plan" %}
+Investigate the reason for {{billing_entity}} on paid plan marked as locally deleted.
 {% endif %}
 
 Support URL: {{ support_url }}
