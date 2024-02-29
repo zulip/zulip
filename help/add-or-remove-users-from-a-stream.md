@@ -127,11 +127,7 @@ subscribe the user.
 
 1. Click the **Unsubscribe** button in that row.
 
-!!! tip ""
-
-    You can also hover over a stream in the left sidebar, click on the
-    **ellipsis** (<i class="zulip-icon zulip-icon-more-vertical"></i>), and
-    select **Stream settings** to access the **Subscribers** tab.
+{!stream-menu-subscribers-tab-tip.md!}
 
 {end_tabs}
 
@@ -163,3 +159,4 @@ This method is useful if you need to remove one user from multiple streams.
 * [Set default streams for new users](/help/set-default-streams-for-new-users)
 * [Roles and permissions](/help/roles-and-permissions)
 * [Mention a user or group](/help/mention-a-user-or-group)
+* [View stream subscribers](/help/view-stream-subscribers)
