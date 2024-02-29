@@ -53,9 +53,11 @@ logging.Formatter.converter = time.gmtime
 logging.basicConfig(format="%(asctime)s reload-clients: %(message)s", level=logging.INFO)
 
 first = True
+server_total = 0
 for port in get_tornado_ports(config_file):
     logging.info("Starting to send client reload events to Tornado port %d", port)
     try:
+        shard_total = 0
         complete = False
         # Rather than make a sustained one request per second, we batch
         # into 5-second chunks of 5 times the client_reload_rate
@@ -72,8 +74,14 @@ for port in get_tornado_ports(config_file):
                 timeout=5,
             )
             resp.raise_for_status()
+            shard_total += resp.json()["sent_events"]
             complete = resp.json()["complete"]
+        logging.info("Sent %d reload events to Tornado port %d", shard_total, port)
+        server_total += shard_total
     except requests.exceptions.HTTPError:
         # Failures in one shard likely won't affect other shards --
         # give up on this shard, and try the next one,
         logging.exception("Failed to send web_reload_clients request to Tornado port %d", port)
+
+if len(get_tornado_ports(config_file)) > 1:
+    logging.info("Sent total of %d reload events, across all Tornado instances", server_total)
