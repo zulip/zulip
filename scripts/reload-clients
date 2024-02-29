@@ -52,6 +52,7 @@ c.mount("http://", HTTPAdapter(max_retries=retry))
 logging.Formatter.converter = time.gmtime
 logging.basicConfig(format="%(asctime)s reload-clients: %(message)s", level=logging.INFO)
 
+first = True
 for port in get_tornado_ports(config_file):
     logging.info("Starting to send client reload events to Tornado port %d", port)
     try:
@@ -60,6 +61,10 @@ for port in get_tornado_ports(config_file):
         # into 5-second chunks of 5 times the client_reload_rate
         SECONDS_PER_BATCH = 5
         while not complete:
+            if not first:
+                time.sleep(SECONDS_PER_BATCH)
+            first = False
+
             logging.info("Sending reload events to %d clients", reload_rate * SECONDS_PER_BATCH)
             resp = c.post(
                 f"http://127.0.0.1:{port}/api/internal/web_reload_clients",
@@ -68,7 +73,6 @@ for port in get_tornado_ports(config_file):
             )
             resp.raise_for_status()
             complete = resp.json()["complete"]
-            time.sleep(SECONDS_PER_BATCH)
     except requests.exceptions.HTTPError:
         # Failures in one shard likely won't affect other shards --
         # give up on this shard, and try the next one,
