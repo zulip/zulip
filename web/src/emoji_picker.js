@@ -11,6 +11,7 @@ import * as blueslip from "./blueslip";
 import * as compose_ui from "./compose_ui";
 import * as emoji from "./emoji";
 import * as keydown_util from "./keydown_util";
+import * as message_lists from "./message_lists";
 import * as message_store from "./message_store";
 import {page_params} from "./page_params";
 import * as popover_menus from "./popover_menus";
@@ -286,7 +287,7 @@ function toggle_reaction(emoji_name, event) {
         return;
     }
 
-    const message_id = current_message_id;
+    const message_id = message_lists.current.selected_id();
     const message = message_store.get(message_id);
     if (!message) {
         blueslip.error("reactions: Bad message id", {message_id});
@@ -324,6 +325,10 @@ function reset_emoji_showcase() {
 function update_emoji_showcase($focused_emoji) {
     // Don't use jQuery's data() function here. It has the side-effect
     // of converting emoji names like :100:, :1234: etc to number.
+
+    // Tabindex of simplebar-content-wrapper is being set to -1 to avoid
+    // focus on it while navigating through tab.
+    $(".emoji-popover .simplebar-content-wrapper").attr("tabindex", "-1");
     const focused_emoji_name = $focused_emoji.attr("data-emoji-name");
     const canonical_name = emoji.get_canonical_name(focused_emoji_name);
 
@@ -422,6 +427,10 @@ function change_focus_to_filter() {
     }
     reset_emoji_showcase();
 }
+function change_focus_to_clear_button() {
+    const $popover = $(emoji_popover_instance.popper);
+    $popover.find("#emoji_search_clear").trigger("focus");
+}
 
 export function navigate(event_name, e) {
     if (
@@ -449,6 +458,11 @@ export function navigate(event_name, e) {
 
     const $selected_emoji = get_rendered_emoji(current_section, current_index);
     const is_filter_focused = $(".emoji-popover-filter").is(":focus");
+    if (event_name === "tab" && !is_filter_focused) {
+        $selected_emoji.trigger("focus");
+        update_emoji_showcase($selected_emoji);
+        return true;
+    }
     // special cases
     if (is_filter_focused) {
         // Move down into emoji map.
@@ -459,11 +473,6 @@ export function navigate(event_name, e) {
             if (current_section === 0 && current_index < 6) {
                 scroll_util.get_scroll_element($emoji_map).scrollTop(0);
             }
-            update_emoji_showcase($selected_emoji);
-            return true;
-        }
-        if (event_name === "tab") {
-            $selected_emoji.trigger("focus");
             update_emoji_showcase($selected_emoji);
             return true;
         }
@@ -493,6 +502,8 @@ export function navigate(event_name, e) {
 
     switch (event_name) {
         case "tab":
+            change_focus_to_clear_button();
+            return true;
         case "shift_tab":
             change_focus_to_filter();
             return true;
@@ -592,6 +603,33 @@ function register_popover_events($popover) {
 
     $(".emoji-popover-filter").on("input", filter_emojis);
     $(".emoji-popover-filter").on("keydown", process_enter_while_filtering);
+    $(".emoji-popover-filter").on("keydown", () => {
+        const $search_input = $("#emoji-search-query");
+        const $clear_button = $("#emoji_search_clear");
+        $(document).on("input", "#emoji-search-query", () => {
+            if ($search_input.val() === "") {
+                $clear_button.css("display", "none");
+            } else {
+                $clear_button.css("display", "block");
+            }
+        });
+
+        $(document).on("click", "#emoji_search_clear", async (e) => {
+            e.stopPropagation();
+            $("#emoji-search-query").val("");
+            show_emoji_catalog();
+            $clear_button.css("display", "none");
+        });
+        $(document).on("keydown", "#emoji_search_clear", async (e) => {
+            e.stopPropagation();
+            const id = e.key || e.which || 0;
+            if (id === 13) {
+                $("#emoji-search-query").val("");
+                show_emoji_catalog();
+                $clear_button.css("display", "none");
+            }
+        });
+    });
     $(".emoji-popover").on("keypress", process_keypress);
     $(".emoji-popover").on("keydown", (e) => {
         // Because of cross-browser issues we need to handle Backspace
@@ -623,6 +661,9 @@ function get_default_emoji_popover_options() {
             ],
         },
         onCreate(instance) {
+            if (current_message_id) {
+                message_lists.current.select_id(current_message_id);
+            }
             emoji_popover_instance = instance;
             const $popover = $(instance.popper);
             $popover.addClass("emoji-popover-root");
@@ -815,10 +856,10 @@ function register_click_handlers() {
         );
     });
 
-    $("body").on("click", "#set-user-status-modal #selected_emoji .status-emoji-wrapper", (e) => {
+    $("body").on("click", "#set-user-status-modal #selected_emoji", (e) => {
         e.preventDefault();
         e.stopPropagation();
-        toggle_emoji_popover(e.currentTarget, undefined, {placement: "bottom"});
+        toggle_emoji_popover(e.target, undefined, {placement: "bottom"});
         if (is_open()) {
             // Because the emoji picker gets drawn on top of the user
             // status modal, we need this hack to make clicking outside
@@ -830,12 +871,6 @@ function register_click_handlers() {
             );
         }
     });
-
-    $("body").on(
-        "keydown",
-        "#set-user-status-modal #selected_emoji .status-emoji-wrapper",
-        ui_util.convert_enter_to_click,
-    );
 }
 
 export function initialize() {
