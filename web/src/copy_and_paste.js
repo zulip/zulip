@@ -314,14 +314,19 @@ function image_to_zulip_markdown(_content, node) {
     return src ? "[" + title + "](" + src + ")" : node.getAttribute("alt") || "";
 }
 
+function within_single_element(html_fragment) {
+    return (
+        html_fragment.childNodes.length === 1 &&
+        html_fragment.firstElementChild &&
+        html_fragment.firstElementChild.innerHTML
+    );
+}
+
 export function paste_handler_converter(paste_html) {
     const copied_html_fragment = new DOMParser()
         .parseFromString(paste_html, "text/html")
         .querySelector("body");
-    const copied_within_single_element =
-        copied_html_fragment.childNodes.length === 1 &&
-        copied_html_fragment.firstElementChild &&
-        copied_html_fragment.firstElementChild.innerHTML;
+    const copied_within_single_element = within_single_element(copied_html_fragment);
     const outer_elements_to_retain = ["PRE", "UL", "OL", "A", "CODE"];
     // If the entire selection copied is within a single HTML element (like an
     // `h1`), we don't want to retain its styling, except when it is needed to
