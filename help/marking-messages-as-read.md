@@ -9,11 +9,21 @@ configure whether messages are marked as read automatically when you scroll.
 
 ## Configure whether messages are automatically marked as read
 
-You may want to configure whether or not the Zulip app will automatically
-mark messages as read. For example, it can be useful to set the mobile app to
-never mark messages as read if you often want to follow up on messages when you
-are at your computer. You will still be able to
-[manually](#mark-all-messages-as-read) mark messages as read.
+You can choose how messages are automatically marked as read in the Zulip web
+and mobile apps. You can configure the mobile app differently from the
+web/desktop app.
+
+- **Always**: Messages are marked as read whenever you scroll through them in
+  the app. You may be used to this from other chat applications.
+- **Never**: Messages are marked as read only
+  [manually](#mark-all-messages-as-read). For example, if you often need to
+  follow up on messages at your computer after reading them in the mobile app,
+  you can choose this option for the mobile app.
+- **Only in conversation views**: In Zulip, a **conversation** is a [direct
+  message](/help/direct-messages) thread (one-on-one or with a group), or a
+  [topic in a stream](/help/streams-and-topics). This option makes it convenient
+  to preview new messages in a stream, or skim [All
+  messages](/help/all-messages), and later read each topic in detail.
 
 {start_tabs}
 
