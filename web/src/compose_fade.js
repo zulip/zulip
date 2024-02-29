@@ -68,7 +68,7 @@ function fade_messages() {
 
     // Update the visible messages first, before the compose box opens
     for (i = 0; i < visible_groups.length; i += 1) {
-        $first_row = rows.first_message_in_group(visible_groups[i]);
+        $first_row = rows.first_message_in_group($(visible_groups[i]));
         first_message = message_lists.current.get(rows.id($first_row));
         should_fade_group = compose_fade_helper.should_fade_message(first_message);
 
