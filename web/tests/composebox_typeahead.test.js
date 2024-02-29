@@ -849,7 +849,7 @@ test("initialize", ({override, override_rewire, mock_template}) => {
 
         function matcher(query, person) {
             query = typeahead.clean_query_lowercase(query);
-            return ct.query_matches_person(query, person);
+            return typeahead_helper.query_matches_person(query, person);
         }
 
         let query;

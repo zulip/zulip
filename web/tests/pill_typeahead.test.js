@@ -15,6 +15,7 @@ const peer_data = zrequire("peer_data");
 const people = zrequire("people");
 const stream_data = zrequire("stream_data");
 const user_groups = zrequire("user_groups");
+const typeahead_helper = zrequire("typeahead_helper");
 
 // set global test variables.
 let sort_recipients_called = false;
@@ -23,23 +24,23 @@ const $fake_rendered_person = $.create("fake-rendered-person");
 const $fake_rendered_stream = $.create("fake-rendered-stream");
 const $fake_rendered_group = $.create("fake-rendered-group");
 
-mock_esm("../src/typeahead_helper", {
-    render_person() {
+function override_typeahead_helper(override_rewire) {
+    override_rewire(typeahead_helper, "render_person", () => {
         return $fake_rendered_person;
-    },
-    render_user_group() {
+    });
+    override_rewire(typeahead_helper, "render_user_group", () => {
         return $fake_rendered_group;
-    },
-    render_stream() {
+    });
+    override_rewire(typeahead_helper, "render_stream", () => {
         return $fake_rendered_stream;
-    },
-    sort_streams() {
+    });
+    override_rewire(typeahead_helper, "sort_streams", () => {
         sort_streams_called = true;
-    },
-    sort_recipients() {
+    });
+    override_rewire(typeahead_helper, "sort_recipients", () => {
         sort_recipients_called = true;
-    },
-});
+    });
+}
 
 const jill = {
     email: "jill@zulip.com",
@@ -105,7 +106,8 @@ for (const sub of subs) {
     stream_data.add_sub(sub);
 }
 
-run_test("set_up", ({mock_template}) => {
+run_test("set_up", ({mock_template, override_rewire}) => {
+    override_typeahead_helper(override_rewire);
     mock_template("input_pill.hbs", true, (data, html) => {
         assert.equal(typeof data.display_value, "string");
         assert.equal(typeof data.has_image, "boolean");

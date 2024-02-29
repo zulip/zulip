@@ -88,24 +88,12 @@ function get_language_matcher(query) {
     };
 }
 
-export function query_matches_person(query, person) {
-    return (
-        typeahead.query_matches_string(query, person.full_name, " ") ||
-        (Boolean(person.delivery_email) &&
-            typeahead.query_matches_string(query, people.get_visible_email(person), " "))
-    );
-}
-
-export function query_matches_name(query, user_group_or_stream) {
-    return typeahead.query_matches_string(query, user_group_or_stream.name, " ");
-}
-
 function get_stream_or_user_group_matcher(query) {
     // Case-insensitive.
     query = typeahead.clean_query_lowercase(query);
 
     return function (user_group_or_stream) {
-        return query_matches_name(query, user_group_or_stream);
+        return typeahead_helper.query_matches_name(query, user_group_or_stream);
     };
 }
 
@@ -515,7 +503,7 @@ export function get_person_suggestions(query, opts) {
             persons = [...persons, ...broadcast_mentions()];
         }
 
-        return persons.filter((item) => query_matches_person(query, item));
+        return persons.filter((item) => typeahead_helper.query_matches_person(query, item));
     }
 
     let groups;
@@ -536,7 +524,9 @@ export function get_person_suggestions(query, opts) {
         groups = user_groups.get_realm_user_groups();
     }
 
-    const filtered_groups = groups.filter((item) => query_matches_name(query, item));
+    const filtered_groups = groups.filter((item) =>
+        typeahead_helper.query_matches_name(query, item),
+    );
 
     /*
         Let's say you're on a big realm and type

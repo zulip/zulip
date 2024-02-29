@@ -613,3 +613,15 @@ export function sort_streams(matches: StreamSubscription[], query: string): Stre
 
     return [...name_results.matches, ...desc_results.matches, ...desc_results.rest];
 }
+
+export function query_matches_person(query: string, person: User): boolean {
+    return (
+        typeahead.query_matches_string(query, person.full_name, " ") ||
+        (Boolean(person.delivery_email) &&
+            typeahead.query_matches_string(query, people.get_visible_email(person), " "))
+    );
+}
+
+export function query_matches_name(query: string, user_group_or_stream: UserGroup): boolean {
+    return typeahead.query_matches_string(query, user_group_or_stream.name, " ");
+}

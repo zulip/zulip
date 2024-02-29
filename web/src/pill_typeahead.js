@@ -1,5 +1,4 @@
 import * as blueslip from "./blueslip";
-import * as composebox_typeahead from "./composebox_typeahead";
 import * as people from "./people";
 import * as stream_pill from "./stream_pill";
 import * as typeahead_helper from "./typeahead_helper";
@@ -9,14 +8,14 @@ import * as user_pill from "./user_pill";
 
 function person_matcher(query, item) {
     if (people.is_known_user(item)) {
-        return composebox_typeahead.query_matches_person(query, item);
+        return typeahead_helper.query_matches_person(query, item);
     }
     return false;
 }
 
 function group_matcher(query, item) {
     if (user_groups.is_user_group(item)) {
-        return composebox_typeahead.query_matches_name(query, item);
+        return typeahead_helper.query_matches_name(query, item);
     }
     return false;
 }
