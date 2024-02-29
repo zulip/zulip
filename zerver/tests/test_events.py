@@ -287,6 +287,7 @@ class BaseAction(ZulipTestCase):
         linkifier_url_template: bool = True,
         user_list_incomplete: bool = False,
         client_is_old: bool = False,
+        archived_streams: bool = False,
     ) -> List[Dict[str, Any]]:
         """
         Make sure we have a clean slate of client descriptors for these tests.
@@ -333,6 +334,7 @@ class BaseAction(ZulipTestCase):
             pronouns_field_type_supported=pronouns_field_type_supported,
             linkifier_url_template=linkifier_url_template,
             user_list_incomplete=user_list_incomplete,
+            archived_streams=archived_streams,
         )
 
         if client_is_old:
@@ -396,6 +398,7 @@ class BaseAction(ZulipTestCase):
             pronouns_field_type_supported=pronouns_field_type_supported,
             linkifier_url_template=linkifier_url_template,
             user_list_incomplete=user_list_incomplete,
+            archived_streams=archived_streams,
         )
         post_process_state(self.user_profile, normal_state, notification_settings_null)
         self.match_states(hybrid_state, normal_state, events)
@@ -3178,6 +3181,23 @@ class NormalActionsTest(BaseAction):
             events = self.verify_action(action, include_streams=include_streams)
             check_stream_delete("events[0]", events[0])
             self.assertIsNone(events[0]["streams"][0]["stream_weekly_traffic"])
+
+    def test_admin_deactivate_unsubscribed_stream(self) -> None:
+        self.set_up_db_for_testing_user_access()
+        stream = self.make_stream("test_stream")
+        iago = self.example_user("iago")
+        realm = iago.realm
+        self.user_profile = self.example_user("iago")
+
+        self.subscribe(iago, stream.name)
+        self.assertCountEqual(self.users_subscribed_to_stream(stream.name, realm), [iago])
+
+        self.unsubscribe(iago, stream.name)
+        self.assertCountEqual(self.users_subscribed_to_stream(stream.name, realm), [])
+
+        action = lambda: do_deactivate_stream(stream, acting_user=iago)
+        events = self.verify_action(action, num_events=1, archived_streams=True)
+        check_stream_delete("events[0]", events[0])
 
     def test_user_losing_access_on_deactivating_stream(self) -> None:
         self.set_up_db_for_testing_user_access()
