@@ -345,13 +345,11 @@ import {get_string_diff} from "../../src/util";
         },
 
         render(final_items, matching_items) {
-            const that = this;
-
             const $items = $(final_items).map((_index, item) => {
-                const $i = $(that.options.item).data("typeahead-value", item);
-                const $item_html = $i.find("a").html(that.highlighter(item));
+                const $i = $(this.options.item).data("typeahead-value", item);
+                const $item_html = $i.find("a").html(this.highlighter(item));
 
-                const option_label_html = that.option_label(matching_items, item);
+                const option_label_html = this.option_label(matching_items, item);
 
                 if (option_label_html) {
                     $item_html.append(option_label_html).addClass("typeahead-option-label");
@@ -588,15 +586,14 @@ import {get_string_diff} from "../../src/util";
             ) {
                 return;
             }
-            const that = this;
             setTimeout(() => {
-                if (!that.$container.is(":hover")) {
-                    that.hide();
-                } else if (that.shown) {
+                if (!this.$container.is(":hover")) {
+                    this.hide();
+                } else if (this.shown) {
                     // refocus the input if the user clicked on the typeahead
                     // so that clicking elsewhere registers as a blur and hides
                     // the typeahead.
-                    that.$element.trigger("focus");
+                    this.$element.trigger("focus");
                 }
             }, 150);
         },
