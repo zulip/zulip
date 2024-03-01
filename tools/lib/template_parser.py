@@ -674,7 +674,7 @@ def get_html_tag(text: str, i: int) -> str:
     quote_count = 0
     end = i + 1
     unclosed_end = 0
-    while end < len(text) and (text[end] != ">" or quote_count % 2 != 0 and text[end] != "<"):
+    while end < len(text) and (text[end] != ">" or (quote_count % 2 != 0 and text[end] != "<")):
         if text[end] == '"':
             quote_count += 1
         if not unclosed_end and text[end] == "<":

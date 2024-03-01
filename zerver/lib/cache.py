@@ -651,9 +651,8 @@ def flush_stream(
 
     stream = instance
 
-    if (
-        update_fields is None
-        or "name" in update_fields
+    if update_fields is None or (
+        "name" in update_fields
         and UserProfile.objects.filter(
             Q(default_sending_stream=stream) | Q(default_events_register_stream=stream)
         ).exists()

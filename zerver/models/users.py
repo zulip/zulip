@@ -1047,9 +1047,9 @@ def active_non_guest_user_ids(realm_id: int) -> List[int]:
 
 def bot_owner_user_ids(user_profile: UserProfile) -> Set[int]:
     is_private_bot = (
-        user_profile.default_sending_stream
-        and user_profile.default_sending_stream.invite_only
-        or user_profile.default_events_register_stream
+        user_profile.default_sending_stream and user_profile.default_sending_stream.invite_only
+    ) or (
+        user_profile.default_events_register_stream
         and user_profile.default_events_register_stream.invite_only
     )
     assert user_profile.bot_owner_id is not None
