@@ -34,7 +34,7 @@
                       maxlength="100"
                       data-min-length="{{password_min_length}}"
                       data-min-guesses="{{password_min_guesses}}" autofocus required />
-                    <i class="fa fa-eye-slash password_visibility_toggle" role="button"></i>
+                    <i class="fa fa-eye-slash password_visibility_toggle" role="button" tabindex="0"></i>
                     {% if form.new_password1.errors %}
                         {% for error in form.new_password1.errors %}
                         <div class="alert alert-error">{{ error }}</div>
@@ -53,7 +53,7 @@
                     <input id="id_new_password2" class="required" type="password" name="new_password2" autocomplete="off"
                       value="{% if form.new_password2.value() %}{{ form.new_password2.value() }}{% endif %}"
                       maxlength="100" required />
-                    <i class="fa fa-eye-slash password_visibility_toggle" role="button"></i>
+                    <i class="fa fa-eye-slash password_visibility_toggle" role="button" tabindex="0"></i>
                     {% if form.new_password2.errors %}
                         {% for error in form.new_password2.errors %}
                         <div class="alert alert-error">{{ error }}</div>

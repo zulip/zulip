@@ -136,7 +136,7 @@ Form is validated both client-side using jquery-validation (see signup.js) and s
                 <div class="input-box password-div">
                     <input id="ldap-password" class="required" type="password" name="password" autocomplete="off" required />
                     <label for="ldap-password" class="inline-block">{{ _('Password') }}</label>
-                    <i class="fa fa-eye-slash password_visibility_toggle" role="button"></i>
+                    <i class="fa fa-eye-slash password_visibility_toggle" role="button" tabindex="0"></i>
                     <span class="help-inline">
                         {{ _('Enter your LDAP/Active Directory password.') }}
                     </span>
@@ -149,7 +149,7 @@ Form is validated both client-side using jquery-validation (see signup.js) and s
                       data-min-length="{{password_min_length}}"
                       data-min-guesses="{{password_min_guesses}}" required />
                     <label for="id_password" class="inline-block">{{ _('Password') }}</label>
-                    <i class="fa fa-eye-slash password_visibility_toggle" role="button"></i>
+                    <i class="fa fa-eye-slash password_visibility_toggle" role="button" tabindex="0"></i>
                     {% if full_name %}
                     <span class="help-inline">
                         {{ _('This is used for mobile applications and other tools that require a password.') }}
