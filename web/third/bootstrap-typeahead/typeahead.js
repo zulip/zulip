@@ -323,8 +323,6 @@ import {get_string_diff} from "../../src/util";
         },
 
         process(items) {
-            const that = this;
-
             const matching_items = $.grep(items, (item) => this.matcher(item));
 
             const final_items = this.sorter(matching_items);
@@ -365,7 +363,7 @@ import {get_string_diff} from "../../src/util";
         render(final_items, matching_items) {
             const that = this;
 
-            const items = $(final_items).map((index, item) => {
+            const items = $(final_items).map((_index, item) => {
                 const i = $(that.options.item).data("typeahead-value", item);
                 const item_html = i.find("a").html(that.highlighter(item));
 
@@ -382,7 +380,7 @@ import {get_string_diff} from "../../src/util";
             return this;
         },
 
-        next(event) {
+        next() {
             const active = this.$menu.find(".active").removeClass("active");
             let next = active.next();
 
@@ -397,7 +395,7 @@ import {get_string_diff} from "../../src/util";
             }
         },
 
-        prev(event) {
+        prev() {
             const active = this.$menu.find(".active").removeClass("active");
             let prev = active.prev();
 
@@ -609,7 +607,7 @@ import {get_string_diff} from "../../src/util";
             }, 150);
         },
 
-        element_click(e) {
+        element_click() {
             // update / hide the typeahead menu if the user clicks anywhere
             // inside the typing area, to avoid misplaced typeahead insertion.
             this.lookup();
