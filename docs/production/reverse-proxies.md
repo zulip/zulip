@@ -127,10 +127,6 @@ that your Zulip server sits at `https://10.10.10.10:443`; see
    `ssl_certificate_key` and `proxy_pass` with the appropriate values
    for your deployment.
 
-[nginx-proxy-longpolling-config]: https://github.com/zulip/zulip/blob/main/puppet/zulip/files/nginx/zulip-include-common/proxy_longpolling
-[standalone.pp]: https://github.com/zulip/zulip/blob/main/puppet/zulip/manifests/profile/standalone.pp
-[zulipchat-puppet]: https://github.com/zulip/zulip/tree/main/puppet/kandra/manifests
-
 ### Apache2 configuration
 
 Below is a working example of a full Apache2 configuration. It assumes
@@ -275,3 +271,5 @@ things you need to be careful about when configuring it:
    unexpectedly (e.g. pointing to a DNS name that you haven't configured
    with multiple IPs for your Zulip machine; sometimes this happens with
    IPv6 configuration).
+
+[nginx-proxy-longpolling-config]: https://github.com/zulip/zulip/blob/main/puppet/zulip/files/nginx/zulip-include-common/proxy_longpolling
