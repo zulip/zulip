@@ -554,20 +554,8 @@ def get_system_user_group_for_user(user_profile: UserProfile) -> UserGroup:
 
 
 def get_server_supported_permission_settings() -> ServerSupportedPermissionSettings:
-    realm_permission_group_settings: Dict[str, GroupPermissionSetting] = {}
-    for permission_name, permission_config in Realm.REALM_PERMISSION_GROUP_SETTINGS.items():
-        realm_permission_group_settings[permission_name] = permission_config
-
-    stream_permission_group_settings: Dict[str, GroupPermissionSetting] = {}
-    for permission_name, permission_config in Stream.stream_permission_group_settings.items():
-        stream_permission_group_settings[permission_name] = permission_config
-
-    group_permission_settings: Dict[str, GroupPermissionSetting] = {}
-    for permission_name, permission_config in UserGroup.GROUP_PERMISSION_SETTINGS.items():
-        group_permission_settings[permission_name] = permission_config
-
     return ServerSupportedPermissionSettings(
-        realm=realm_permission_group_settings,
-        stream=stream_permission_group_settings,
-        group=group_permission_settings,
+        realm=Realm.REALM_PERMISSION_GROUP_SETTINGS,
+        stream=Stream.stream_permission_group_settings,
+        group=UserGroup.GROUP_PERMISSION_SETTINGS,
     )
