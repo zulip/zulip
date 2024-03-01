@@ -108,11 +108,6 @@ class BinaryDict<T> {
         this.trues.delete(k);
         this.falses.set(k, v);
     }
-
-    delete(k: number): void {
-        this.trues.delete(k);
-        this.falses.delete(k);
-    }
 }
 
 // The stream_info variable maps stream ids to stream properties objects
