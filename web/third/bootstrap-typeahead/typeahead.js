@@ -164,12 +164,14 @@ import {get_string_diff} from "../../src/util";
         this.mouse_moved_since_typeahead = false;
         this.dropup = this.options.dropup;
         this.fixed = this.options.fixed || false;
-        this.automated = this.options.automated || this.automated;
-        this.trigger_selection = this.options.trigger_selection || this.trigger_selection;
+        this.automated = this.options.automated || (() => false);
+        this.trigger_selection = this.options.trigger_selection || (() => false);
         this.on_move = this.options.on_move;
         this.on_escape = this.options.on_escape;
-        this.header = this.options.header || this.header;
-        this.option_label = this.options.option_label || this.option_label;
+        // return a string to show in typeahead header or false.
+        this.header = this.options.header || (() => false);
+        // return a string to show in typeahead items or false.
+        this.option_label = this.options.option_label || (() => false);
 
         if (this.fixed) {
             this.$container.css("position", "fixed");
@@ -220,24 +222,6 @@ import {get_string_diff} from "../../src/util";
 
         updater(item) {
             return item;
-        },
-
-        automated() {
-            return false;
-        },
-
-        trigger_selection() {
-            return false;
-        },
-
-        header() {
-            // return a string to show in typeahead header or false.
-            return false;
-        },
-
-        option_label(matching_items, item) {
-            // return a string to show in typeahead items or false.
-            return false;
         },
 
         show() {
