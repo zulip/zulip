@@ -837,8 +837,6 @@ def get_realm_config() -> Config:
         id_source=("_user_subscription", "recipient"),
     )
 
-    #
-
     stream_config = Config(
         table="zerver_stream",
         model=Stream,
@@ -861,8 +859,6 @@ def get_realm_config() -> Config:
         normal_parent=stream_recipient_config,
         include_rows="recipient_id__in",
     )
-
-    #
 
     Config(
         custom_tables=[
