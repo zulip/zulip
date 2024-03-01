@@ -152,26 +152,26 @@ import {get_string_diff} from "../../src/util";
     const Typeahead = function (element, options) {
         this.$element = $(element);
         this.options = $.extend({}, $.fn.typeahead.defaults, options);
-        this.matcher = this.options.matcher || this.matcher;
-        this.sorter = this.options.sorter || this.sorter;
+        this.matcher = this.options.matcher ?? this.matcher;
+        this.sorter = this.options.sorter ?? this.sorter;
         this.highlighter = this.options.highlighter;
-        this.updater = this.options.updater || this.updater;
-        this.$container = $(this.options.container).appendTo(this.options.parentElement || "body");
+        this.updater = this.options.updater ?? this.updater;
+        this.$container = $(this.options.container).appendTo(this.options.parentElement ?? "body");
         this.$menu = $(this.options.menu).appendTo(this.$container);
         this.$header = $(this.options.header_html).appendTo(this.$container);
         this.source = this.options.source;
         this.shown = false;
         this.mouse_moved_since_typeahead = false;
         this.dropup = this.options.dropup;
-        this.fixed = this.options.fixed || false;
-        this.automated = this.options.automated || (() => false);
-        this.trigger_selection = this.options.trigger_selection || (() => false);
+        this.fixed = this.options.fixed ?? false;
+        this.automated = this.options.automated ?? (() => false);
+        this.trigger_selection = this.options.trigger_selection ?? (() => false);
         this.on_move = this.options.on_move;
         this.on_escape = this.options.on_escape;
         // return a string to show in typeahead header or false.
-        this.header = this.options.header || (() => false);
+        this.header = this.options.header ?? (() => false);
         // return a string to show in typeahead items or false.
-        this.option_label = this.options.option_label || (() => false);
+        this.option_label = this.options.option_label ?? (() => false);
 
         if (this.fixed) {
             this.$container.css("position", "fixed");
