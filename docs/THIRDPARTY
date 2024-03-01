@@ -272,7 +272,7 @@ Files: web/third/bootstrap/css/bootstrap-btn.css
 Copyright: 2011-2014 Twitter, Inc.
 License: Expat
 
-Files: web/third/bootstrap-typeahead/*
+Files: web/src/bootstrap_typeahead.js
 Copyright: 2012 Twitter, Inc.
 License: Apache-2.0
 Comment: Bootstrap typeahead.  The software has been modified.
