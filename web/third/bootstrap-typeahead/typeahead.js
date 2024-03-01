@@ -460,6 +460,9 @@ import {get_string_diff} from "../../src/util";
                     if (!this.options.tabIsEnter) {
                         return;
                     }
+                    e.preventDefault();
+                    break;
+
                 case 13: // enter
                 case 27: // escape
                     e.preventDefault();
@@ -521,6 +524,12 @@ import {get_string_diff} from "../../src/util";
                     if (!this.options.tabIsEnter) {
                         return;
                     }
+                    if (!this.shown) {
+                        return;
+                    }
+                    this.select(e);
+                    break;
+
                 case 13: // enter
                     if (!this.shown) {
                         return;
@@ -538,14 +547,15 @@ import {get_string_diff} from "../../src/util";
                     }
                     break;
 
-                // to stop typeahead from showing up momentarily
-                // when shift + tabbing to the topic field
-                case 16: // shift
-                    if (e.currentTarget.id === "stream_message_recipient_topic") {
+                default:
+                    // to stop typeahead from showing up momentarily
+                    // when shift (keycode 16) + tabbing to the topic field
+                    if (
+                        pseudo_keycode === 16 &&
+                        e.currentTarget.id === "stream_message_recipient_topic"
+                    ) {
                         return;
                     }
-
-                default:
                     var hideOnEmpty = false;
                     // backspace
                     if (
