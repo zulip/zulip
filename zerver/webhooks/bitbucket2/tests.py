@@ -25,12 +25,12 @@ class Bitbucket2HookTests(WebhookTestCase):
 
     def test_bitbucket2_on_push_commits_multiple_committers(self) -> None:
         commit_info = "* first commit ([84b96adc644](https://bitbucket.org/kolaszek/repository-name/commits/84b96adc644a30fd6465b3d196369d880762afed))\n"
-        expected_message = f"""Tomasz [pushed](https://bitbucket.org/kolaszek/repository-name/branch/master) 3 commits to branch master. Commits by Ben (2) and Tomasz (1).\n\n{commit_info*2}* first commit ([84b96adc644](https://bitbucket.org/kolaszek/repository-name/commits/84b96adc644a30fd6465b3d196369d880762afed))"""
+        expected_message = f"""Tomasz [pushed](https://bitbucket.org/kolaszek/repository-name/branch/master) 3 commits to branch master. Commits by Ben (2) and Tomasz (1).\n\n{commit_info * 2}* first commit ([84b96adc644](https://bitbucket.org/kolaszek/repository-name/commits/84b96adc644a30fd6465b3d196369d880762afed))"""
         self.check_webhook("push_multiple_committers", TOPIC_BRANCH_EVENTS, expected_message)
 
     def test_bitbucket2_on_push_commits_multiple_committers_with_others(self) -> None:
         commit_info = "* first commit ([84b96adc644](https://bitbucket.org/kolaszek/repository-name/commits/84b96adc644a30fd6465b3d196369d880762afed))\n"
-        expected_message = f"""Tomasz [pushed](https://bitbucket.org/kolaszek/repository-name/branch/master) 10 commits to branch master. Commits by Tomasz (4), James (3), Brendon (2) and others (1).\n\n{commit_info*9}* first commit ([84b96adc644](https://bitbucket.org/kolaszek/repository-name/commits/84b96adc644a30fd6465b3d196369d880762afed))"""
+        expected_message = f"""Tomasz [pushed](https://bitbucket.org/kolaszek/repository-name/branch/master) 10 commits to branch master. Commits by Tomasz (4), James (3), Brendon (2) and others (1).\n\n{commit_info * 9}* first commit ([84b96adc644](https://bitbucket.org/kolaszek/repository-name/commits/84b96adc644a30fd6465b3d196369d880762afed))"""
         self.check_webhook(
             "push_multiple_committers_with_others", TOPIC_BRANCH_EVENTS, expected_message
         )
@@ -38,7 +38,7 @@ class Bitbucket2HookTests(WebhookTestCase):
     def test_bitbucket2_on_push_commits_multiple_committers_filtered_by_branches(self) -> None:
         self.url = self.build_webhook_url(branches="master,development")
         commit_info = "* first commit ([84b96adc644](https://bitbucket.org/kolaszek/repository-name/commits/84b96adc644a30fd6465b3d196369d880762afed))\n"
-        expected_message = f"""Tomasz [pushed](https://bitbucket.org/kolaszek/repository-name/branch/master) 3 commits to branch master. Commits by Ben (2) and Tomasz (1).\n\n{commit_info*2}* first commit ([84b96adc644](https://bitbucket.org/kolaszek/repository-name/commits/84b96adc644a30fd6465b3d196369d880762afed))"""
+        expected_message = f"""Tomasz [pushed](https://bitbucket.org/kolaszek/repository-name/branch/master) 3 commits to branch master. Commits by Ben (2) and Tomasz (1).\n\n{commit_info * 2}* first commit ([84b96adc644](https://bitbucket.org/kolaszek/repository-name/commits/84b96adc644a30fd6465b3d196369d880762afed))"""
         self.check_webhook("push_multiple_committers", TOPIC_BRANCH_EVENTS, expected_message)
 
     def test_bitbucket2_on_push_commits_multiple_committers_with_others_filtered_by_branches(
@@ -46,7 +46,7 @@ class Bitbucket2HookTests(WebhookTestCase):
     ) -> None:
         self.url = self.build_webhook_url(branches="master,development")
         commit_info = "* first commit ([84b96adc644](https://bitbucket.org/kolaszek/repository-name/commits/84b96adc644a30fd6465b3d196369d880762afed))\n"
-        expected_message = f"""Tomasz [pushed](https://bitbucket.org/kolaszek/repository-name/branch/master) 10 commits to branch master. Commits by Tomasz (4), James (3), Brendon (2) and others (1).\n\n{commit_info*9}* first commit ([84b96adc644](https://bitbucket.org/kolaszek/repository-name/commits/84b96adc644a30fd6465b3d196369d880762afed))"""
+        expected_message = f"""Tomasz [pushed](https://bitbucket.org/kolaszek/repository-name/branch/master) 10 commits to branch master. Commits by Tomasz (4), James (3), Brendon (2) and others (1).\n\n{commit_info * 9}* first commit ([84b96adc644](https://bitbucket.org/kolaszek/repository-name/commits/84b96adc644a30fd6465b3d196369d880762afed))"""
         self.check_webhook(
             "push_multiple_committers_with_others", TOPIC_BRANCH_EVENTS, expected_message
         )
