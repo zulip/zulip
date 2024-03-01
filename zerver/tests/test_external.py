@@ -196,7 +196,7 @@ class RateLimitTests(ZulipTestCase):
         user = self.example_user("cordelia")
         RateLimitedUser(user).clear_history()
 
-        emails = ["new-email-{n}@zulip.com" for n in range(1, 8)]
+        emails = [f"new-email-{n}@zulip.com" for n in range(1, 8)]
         self.do_test_hit_ratelimits(
             lambda: self.api_patch(user, "/api/v1/settings", {"email": emails.pop()}),
         )
