@@ -447,7 +447,7 @@ def print_line(
         date = convert_from_nginx_date(match["date"])
     else:
         date = match["date"]
-    if args.all_logs or args.log_files is not None and args.log_files > 1:
+    if args.all_logs or (args.log_files is not None and args.log_files > 1):
         ts = date + " " + match["time"]
     else:
         ts = match["time"]
@@ -511,7 +511,7 @@ def print_line(
                 print(f"------------ {gap_ms:>5}ms gap ------------")
             else:
                 print(f"!!!!!!!!!! {abs(gap_ms):>5}ms overlap !!!!!!!!!!")
-        if args.all_logs or args.log_files is not None and args.log_files > 1:
+        if args.all_logs or (args.log_files is not None and args.log_files > 1):
             print(logline_start.isoformat(" ", timespec="milliseconds") + " (start)")
         else:
             print(logline_start.time().isoformat(timespec="milliseconds") + " (start)")
