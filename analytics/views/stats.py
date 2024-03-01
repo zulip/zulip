@@ -485,9 +485,7 @@ def sort_by_totals(value_arrays: Dict[str, List[int]]) -> List[str]:
 def sort_client_labels(data: Dict[str, Dict[str, List[int]]]) -> List[str]:
     realm_order = sort_by_totals(data["everyone"])
     user_order = sort_by_totals(data["user"])
-    label_sort_values: Dict[str, float] = {}
-    for i, label in enumerate(realm_order):
-        label_sort_values[label] = i
+    label_sort_values: Dict[str, float] = {label: i for i, label in enumerate(realm_order)}
     for i, label in enumerate(user_order):
         label_sort_values[label] = min(i - 0.1, label_sort_values.get(label, i))
     return [label for label, sort_value in sorted(label_sort_values.items(), key=lambda x: x[1])]
