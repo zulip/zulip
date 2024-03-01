@@ -1,8 +1,16 @@
 <div class="search_list_item">
-    <span>{{{ description_html }}}</span>
-    {{#if is_person}}
-    <span class="pill-container pill-container-btn">
-        {{> input_pill user_pill_context}}
-    </span>
-    {{/if}}
+    {{~#each suggestion_parts ~}}
+        <span>{{~#if (not @first)~}}, {{/if~}}{{{ this.description_html }}}</span>
+        {{#if this.is_person}}
+        {{#each this.user_pill_context}}
+            {{#if this.display_value }}
+            <span class="pill-container pill-container-btn">
+                {{> input_pill this}}
+            </span>
+            {{else}}
+            <span>{{this.display_string}}</span>{{~#if (not @first)~}}<span>,</span>{{/if~}}
+            {{/if}}
+        {{/each}}
+        {{/if}}
+    {{~/each~}}
 </div>
