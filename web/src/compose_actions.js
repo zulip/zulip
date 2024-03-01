@@ -261,7 +261,8 @@ export function start(msg_type, opts) {
     if (
         !opts.content &&
         opts.draft_id === undefined &&
-        compose_state.message_content().length === 0
+        compose_state.message_content().length === 0 &&
+        !opts.keep_composebox_empty
     ) {
         const possible_last_draft = drafts.get_last_draft_based_on_compose_state();
         if (possible_last_draft !== undefined) {
