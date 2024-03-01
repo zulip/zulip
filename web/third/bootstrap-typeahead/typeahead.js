@@ -207,9 +207,11 @@ import {get_string_diff} from "../../src/util";
 
         set_value() {
             const val = this.$menu.find(".active").data("typeahead-value");
-            this.$element.is("[contenteditable]")
-                ? this.$element.html(val)
-                : this.$element.val(val);
+            if (this.$element.is("[contenteditable]")) {
+                this.$element.html(val);
+            } else {
+                this.$element.val(val);
+            }
 
             if (this.on_move) {
                 this.on_move();
