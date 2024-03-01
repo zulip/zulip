@@ -138,7 +138,7 @@ import {get_string_diff} from "../../src/util";
 
 !(function ($) {
     function get_pseudo_keycode(e) {
-        const isComposing = (event.originalEvent && event.originalEvent.isComposing) || false;
+        const isComposing = (e.originalEvent && e.originalEvent.isComposing) || false;
         /* We treat IME compose enter keypresses as a separate -13 key. */
         if (e.keyCode === 13 && isComposing) {
             return -13;
