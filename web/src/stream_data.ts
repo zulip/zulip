@@ -568,6 +568,10 @@ export function can_unsubscribe_others(sub: StreamSubscription): boolean {
 }
 
 export function can_post_messages_in_stream(stream: StreamSubscription): boolean {
+    if (stream.is_archived) {
+        return false;
+    }
+
     if (page_params.is_spectator) {
         return false;
     }
