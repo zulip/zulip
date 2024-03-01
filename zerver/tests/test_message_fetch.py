@@ -3370,7 +3370,7 @@ class GetOldMessagesTest(ZulipTestCase):
                 post_params = {
                     **other_params,
                     param: type,
-                    **{other_param: 0 for other_param in int_params[:idx] + int_params[idx + 1 :]},
+                    **dict.fromkeys(int_params[:idx] + int_params[idx + 1 :], 0),
                 }
                 result = self.client_get("/json/messages", post_params)
                 self.assert_json_error(result, f"Bad value for '{param}': {type}")
