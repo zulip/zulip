@@ -596,7 +596,8 @@
     }
 
     #draft_overlay,
-    #scheduled_messages_overlay_container {
+    #scheduled_messages_overlay_container,
+    #message-edit-history-overlay-container {
         .flex.overlay-content > div {
             box-shadow: 0 0 30px hsl(213deg 31% 0%);
             background-color: var(--color-background);
@@ -833,7 +834,7 @@
         border-color: hsl(217deg 64% 59% / 70%);
     }
 
-    #message-edit-history {
+    #message-edit-history-overlay-container {
         .message_edit_history_content {
             .highlight_text_inserted {
                 color: hsl(122deg 100% 81%);

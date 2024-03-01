@@ -755,6 +755,10 @@ export function process_hotkey(e, hotkey) {
                 scheduled_messages_overlay_ui.handle_keyboard_events(event_name);
                 return true;
             }
+            if (overlays.message_edit_history_open()) {
+                message_edit_history.handle_keyboard_events(event_name);
+                return true;
+            }
     }
 
     if (hotkey.message_view_only && overlays.any_active()) {
@@ -1161,8 +1165,8 @@ export function process_hotkey(e, hotkey) {
         }
         case "view_edit_history": {
             if (realm.realm_allow_edit_history) {
-                message_edit_history.show_history(msg);
-                $("#message-history-cancel").trigger("focus");
+                message_edit_history.fetch_and_render_message_history(msg);
+                $("#message-history-overlay .exit-sign").trigger("focus");
                 return true;
             }
             return false;
