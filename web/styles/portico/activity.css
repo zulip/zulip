@@ -260,6 +260,18 @@ tr.admin td:first-child {
     }
 }
 
+.remote-support-query-result.remote-server-deactivated {
+    background-color: hsl(2deg 64% 58%);
+
+    .remote-server-section {
+        background-color: hsl(22deg 100% 92%);
+    }
+
+    .remote-realms-section {
+        background-color: hsl(23deg 100% 95%);
+    }
+}
+
 .delete-user-form {
     margin: 8px 0;
 }
@@ -288,6 +300,7 @@ tr.admin td:first-child {
     top: -2px;
 }
 
+.remote-sponsorship-details,
 .support-form,
 .remote-form,
 .next-plan-information,

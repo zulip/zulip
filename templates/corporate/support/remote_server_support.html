@@ -33,10 +33,15 @@
 
     <div id="remote-server-query-results">
         {% for remote_server in remote_servers %}
-        <div class="remote-support-query-result">
+        {% if remote_server.deactivated %}
+        {% set remote_server_query_result_class = "remote-support-query-result remote-server-deactivated" %}
+        {% else %}
+        {% set remote_server_query_result_class = "remote-support-query-result" %}
+        {% endif %}
+        <div class="{{ remote_server_query_result_class }}">
             <div class="remote-server-section">
                 <div class="remote-server-information">
-                    <span class="label">remote server</span>
+                    <span class="label">remote server{% if remote_server.deactivated %}: deactivated{% endif %}</span>
                     <h3>{{ remote_server.hostname }} {{ server_analytics_link(remote_server.id ) }}</h3>
                     {% if remote_server.plan_type == SPONSORED_PLAN_TYPE %}
                         <p class="support-section-header">On 100% sponsored Zulip Community plan 🎉</p>
@@ -81,7 +86,15 @@
                     {% include 'corporate/support/push_status_details.html' %}
                 {% endwith %}
 
-                {% if remote_server.plan_type != SPONSORED_PLAN_TYPE %}
+                {% if remote_server.deactivated %}
+                <div class="remote-support-sponsorship-container">
+                    {% with %}
+                        {% set sponsorship_data = remote_servers_support_data[remote_server.id].sponsorship_data %}
+                        {% set format_discount = format_discount %}
+                        {% include 'corporate/support/sponsorship_details.html' %}
+                    {% endwith %}
+                </div>
+                {% elif remote_server.plan_type != SPONSORED_PLAN_TYPE %}
                 <div class="remote-support-sponsorship-container">
                     {% with %}
                         {% set sponsorship_data = remote_servers_support_data[remote_server.id].sponsorship_data %}
@@ -123,7 +136,7 @@
                         {% include 'corporate/support/next_plan_details.html' %}
                     {% endwith %}
                 </div>
-                {% else %}
+                {% elif not remote_server.deactivated %}
                 <div class="next-plan-container">
                     {% with %}
                         {% set is_current_plan_billable = remote_servers_support_data[remote_server.id].plan_data.is_current_plan_billable %}
@@ -144,6 +157,7 @@
                 {% for remote_realm in remote_realms[remote_server.id] %}
                 <div>
                     {% with %}
+                        {% set remote_server_deactivated = remote_server.deactivated %}
                         {% set support_data = remote_realms_support_data %}
                         {% set get_plan_type_name = get_plan_type_name %}
                         {% set format_discount = format_discount %}
