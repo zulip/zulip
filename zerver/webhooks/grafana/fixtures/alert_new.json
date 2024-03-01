@@ -18,10 +18,7 @@
         "silenceURL": "https://zuliptestingwh2.grafana.net/alerting/silence/new?alertmanager=grafana&matcher=alertname%3DTestAlert&matcher=instance%3DGrafana",
         "dashboardURL": "",
         "panelURL": "",
-        "values": {
-          "foo": 10
-        },
-        "imageURL": "https://grafana.com/assets/img/blog/mixed_styles.png"
+        "valueString": "[ metric='foo' labels={instance=bar} value=10 ]"
       }
     ],
     "groupLabels": {},

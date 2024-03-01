@@ -152,13 +152,12 @@ Labels:
 - instance: Grafana
 
 Values:
-- foo: 10
+[ metric='foo' labels={instance=bar} value=10 ]
 
 Annotations:
 - summary: Notification test
 
 [Silence](https://zuliptestingwh2.grafana.net/alerting/silence/new?alertmanager=grafana&matcher=alertname%3DTestAlert&matcher=instance%3DGrafana)
-[Image](https://grafana.com/assets/img/blog/mixed_styles.png)
 """.strip()
 
         self.check_webhook(
@@ -168,19 +167,66 @@ Annotations:
             content_type="application/x-www-form-urlencoded",
         )
 
-    def test_alert_new_no_labels(self) -> None:
-        expected_topic_name = "[57c6d9296de2ad39]"  # fingerprint
+    def test_alert_new_values(self) -> None:
+        expected_topic_name = "[Memory (copy)]"  # fingerprint
         expected_message = """
-:checkbox: **RESOLVED**
+:alert: **FIRING**
 
-This alert was fired at <time:2022-08-31T05:54:04.52289368Z>.
+**Memory (copy)**
 
-This alert was resolved at <time:2022-08-31T10:30:00.52288431Z>.
+This alert was fired at <time:2024-03-01T02:09:00Z>.
 
+Labels:
+- alertname: Memory (copy)
+- debug: true
+- grafana_folder: device
+
+Values:
+- A: 2473545728
+- B: 0
+- C: 1
+- minute: 9
+
+Annotations:
+- summary: High memory usage
+
+[Generator](https://play.grafana.org/alerting/grafana/dd2f0260-3cfc-4c65-a4c4-f3f632c551f4/view?orgId=1)
+[Silence](https://play.grafana.org/alerting/silence/new?alertmanager=grafana\u0026matcher=alertname%3DMemory+%28copy%29\u0026matcher=debug%3Dtrue\u0026matcher=grafana_folder%3Ddevice\u0026orgId=1)
 """.strip()
 
         self.check_webhook(
-            "alert_new_no_labels",
+            "alert_new_values",
+            expected_topic_name,
+            expected_message,
+            content_type="application/x-www-form-urlencoded",
+        )
+
+    def test_alert_new_no_alertname(self) -> None:
+        expected_topic_name = "[e6349a25f5ef0e9e]"  # fingerprint
+        expected_message = """
+:alert: **FIRING**
+
+This alert was fired at <time:2024-03-01T02:09:00Z>.
+
+Labels:
+- debug: true
+- grafana_folder: device
+
+Values:
+- A: 2473545728
+- B: 0
+- C: 1
+- minute: 9
+
+Annotations:
+- summary: High memory usage
+
+[Generator](https://play.grafana.org/alerting/grafana/dd2f0260-3cfc-4c65-a4c4-f3f632c551f4/view?orgId=1)
+[Silence](https://play.grafana.org/alerting/silence/new?alertmanager=grafana\u0026matcher=alertname%3DMemory+%28copy%29\u0026matcher=debug%3Dtrue\u0026matcher=grafana_folder%3Ddevice\u0026orgId=1)
+""".strip()
+
+        self.check_webhook(
+            "alert_new_no_alertname",
             expected_topic_name,
             expected_message,
             content_type="application/x-www-form-urlencoded",
@@ -202,8 +248,7 @@ Labels:
 - zone: us-1
 
 Values:
-- B: 44.23943737541908
-- C: 1
+[ metric='' labels={} value=14151.331895396988 ]
 
 Annotations:
 - description: The system has high memory usage
@@ -226,8 +271,7 @@ Labels:
 - zone: eu-1
 
 Values:
-- B: 44.23943737541908
-- C: 1
+[ metric='' labels={} value=47043.702386305304 ]
 
 Annotations:
 - description: The system has high CPU usage

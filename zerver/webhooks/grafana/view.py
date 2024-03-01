@@ -90,11 +90,18 @@ def api_grafana_webhook(
                     label_information += "- " + key + ": " + value.tame(check_string) + "\n"
                 body += MESSAGE_LABELS_TEMPLATE.format(label_information=label_information)
 
-            if alert["values"]:
+            if alert.get("values"):
                 value_information = ""
                 for key, value in alert["values"].items():
                     value_information += "- " + key + ": " + str(value.tame(check_anything)) + "\n"
                 body += MESSAGE_VALUES_TEMPLATE.format(value_information=value_information)
+            elif alert.get("valueString"):
+                body += (
+                    MESSAGE_VALUES_TEMPLATE.format(
+                        value_information=alert["valueString"].tame(check_string)
+                    )
+                    + "\n"
+                )
 
             if alert["annotations"]:
                 annotation_information = ""
