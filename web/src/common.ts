@@ -162,4 +162,11 @@ export function setup_password_visibility_toggle(
         e.stopPropagation();
         toggle_password_visibility(password_field_id, password_selector, tippy_tooltips);
     });
+    $(password_selector).on("keyup", (e) => {
+        if (e.key === "Enter") {
+            e.preventDefault();
+            e.stopPropagation();
+            toggle_password_visibility(password_field_id, password_selector, tippy_tooltips);
+        }
+    });
 }
