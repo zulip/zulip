@@ -350,7 +350,7 @@ import {get_string_diff} from "../../src/util";
             let item;
 
             while ((item = items.shift())) {
-                if (!item.toLowerCase().indexOf(this.query.toLowerCase())) {
+                if (item.toLowerCase().startsWith(this.query.toLowerCase())) {
                     beginswith.push(item);
                 } else if (item.includes(this.query)) {
                     caseSensitive.push(item);
