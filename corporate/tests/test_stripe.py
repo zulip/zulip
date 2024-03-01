@@ -3023,8 +3023,9 @@ class StripeTest(StripeTestCase):
 
                 plan.refresh_from_db()
                 self.assertEqual(plan.status, CustomerPlan.ENDED)
+                self.assertIsNone(plan.next_invoice_date)
 
-                plan = CustomerPlan.objects.get(
+                new_plan = CustomerPlan.objects.get(
                     customer=customer,
                     automanage_licenses=True,
                     price_per_license=8000,
@@ -3032,19 +3033,19 @@ class StripeTest(StripeTestCase):
                     discount=None,
                     billing_cycle_anchor=self.now,
                     billing_schedule=CustomerPlan.BILLING_SCHEDULE_ANNUAL,
-                    invoiced_through=None,
                     next_invoice_date=free_trial_end_date,
                     tier=CustomerPlan.TIER_CLOUD_STANDARD,
                     status=CustomerPlan.FREE_TRIAL,
                     charge_automatically=True,
                 )
-                LicenseLedger.objects.get(
-                    plan=plan,
+                ledger_entry = LicenseLedger.objects.get(
+                    plan=new_plan,
                     is_renewal=True,
                     event_time=self.now,
                     licenses=self.seat_count,
                     licenses_at_next_renewal=self.seat_count,
                 )
+                self.assertEqual(new_plan.invoiced_through, ledger_entry)
 
                 realm_audit_log = RealmAuditLog.objects.filter(
                     event_type=RealmAuditLog.CUSTOMER_SWITCHED_FROM_MONTHLY_TO_ANNUAL_PLAN
@@ -3077,8 +3078,9 @@ class StripeTest(StripeTestCase):
                 self.assert_json_success(result)
                 plan.refresh_from_db()
                 self.assertEqual(plan.status, CustomerPlan.ENDED)
+                self.assertIsNone(plan.next_invoice_date)
 
-                plan = CustomerPlan.objects.get(
+                new_plan = CustomerPlan.objects.get(
                     customer=customer,
                     automanage_licenses=True,
                     price_per_license=800,
@@ -3086,19 +3088,19 @@ class StripeTest(StripeTestCase):
                     discount=None,
                     billing_cycle_anchor=self.now,
                     billing_schedule=CustomerPlan.BILLING_SCHEDULE_MONTHLY,
-                    invoiced_through=None,
                     next_invoice_date=free_trial_end_date,
                     tier=CustomerPlan.TIER_CLOUD_STANDARD,
                     status=CustomerPlan.FREE_TRIAL,
                     charge_automatically=True,
                 )
-                LicenseLedger.objects.get(
-                    plan=plan,
+                ledger_entry = LicenseLedger.objects.get(
+                    plan=new_plan,
                     is_renewal=True,
                     event_time=self.now,
                     licenses=self.seat_count,
                     licenses_at_next_renewal=self.seat_count,
                 )
+                self.assertEqual(new_plan.invoiced_through, ledger_entry)
 
                 realm_audit_log = RealmAuditLog.objects.filter(
                     event_type=RealmAuditLog.CUSTOMER_SWITCHED_FROM_ANNUAL_TO_MONTHLY_PLAN
