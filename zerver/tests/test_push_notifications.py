@@ -2987,7 +2987,7 @@ class HandlePushNotificationTest(PushNotificationTest):
                 )
             self.assertIn(
                 "INFO:zerver.lib.push_notifications:Deleting push tokens based on response from bouncer: "
-                f"Android: [], Apple: {sorted([token for _, _ , token in apns_devices])}",
+                f"Android: [], Apple: {sorted([token for _, _, token in apns_devices])}",
                 pn_logger.output,
             )
             self.assertEqual(
