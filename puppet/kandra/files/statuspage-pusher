@@ -22,7 +22,7 @@ def fetch_metric(metric_id: str, query: str) -> float:
     conn.close()
     data = json.loads(raw_bytes)
     if data["status"] != "success":
-        raise Exception("Failed to request {metric_id}: {raw_bytes.decode()}")
+        raise Exception(f"Failed to request {metric_id}: {raw_bytes.decode()}")
     return float(data["data"]["result"][0]["value"][1])
 
 

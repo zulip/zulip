@@ -65,7 +65,7 @@ print(f"Most likely version: {likely[0]}")
 diff = difflib.unified_diff(
     templ[likely[0]].splitlines(keepends=True),
     current_contents.splitlines(keepends=True),
-    fromfile="zulip-server-{version}/zproject/prod_settings_template.py",
+    fromfile=f"zulip-server-{version}/zproject/prod_settings_template.py",
     tofile=current_path,
 )
 
