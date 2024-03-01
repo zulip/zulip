@@ -554,16 +554,6 @@ import {get_string_diff} from "../../src/util";
                     ) {
                         return;
                     }
-                    var hideOnEmpty = false;
-                    // backspace
-                    if (
-                        e.keyCode === 8 &&
-                        this.options.helpOnEmptyStrings && // Support for inputs to set the hideOnEmpty option explicitly to false
-                        // to display typeahead after hitting backspace to clear the input.
-                        (typeof this.options.hideOnEmpty === undefined || this.options.hideOnEmpty)
-                    ) {
-                        hideOnEmpty = true;
-                    }
                     if (this.options.openInputFieldOnKeyUp !== null && !this.shown) {
                         // If the typeahead isn't shown yet, the `lookup` call will open it.
                         // Here we make a callback to the input field before we open the
@@ -571,7 +561,17 @@ import {get_string_diff} from "../../src/util";
                         // the search bar).
                         this.options.openInputFieldOnKeyUp();
                     }
-                    this.lookup(hideOnEmpty);
+                    // backspace
+                    if (
+                        e.keyCode === 8 &&
+                        this.options.helpOnEmptyStrings && // Support for inputs to set the hideOnEmpty option explicitly to false
+                        // to display typeahead after hitting backspace to clear the input.
+                        (typeof this.options.hideOnEmpty === undefined || this.options.hideOnEmpty)
+                    ) {
+                        this.lookup(true);
+                    } else {
+                        this.lookup(false);
+                    }
             }
 
             this.maybeStopAdvance(e);
