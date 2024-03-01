@@ -1903,7 +1903,8 @@ class BillingSession(ABC):
             raise BillingError("Customer is already on monthly fixed plan.")
 
         plan.status = CustomerPlan.ENDED
-        plan.save(update_fields=["status"])
+        plan.next_invoice_date = None
+        plan.save(update_fields=["status", "next_invoice_date"])
 
         discount_for_current_plan = plan.discount
         _, _, _, price_per_license = compute_plan_parameters(
@@ -1924,17 +1925,18 @@ class BillingSession(ABC):
             tier=plan.tier,
             status=CustomerPlan.FREE_TRIAL,
             next_invoice_date=next_billing_cycle,
-            invoiced_through=None,
-            invoicing_status=CustomerPlan.INVOICING_STATUS_INITIAL_INVOICE_TO_BE_SENT,
         )
 
-        LicenseLedger.objects.create(
+        ledger_entry = LicenseLedger.objects.create(
             plan=new_plan,
             is_renewal=True,
             event_time=plan.billing_cycle_anchor,
             licenses=licenses_at_next_renewal,
             licenses_at_next_renewal=licenses_at_next_renewal,
         )
+
+        new_plan.invoiced_through = ledger_entry
+        new_plan.save(update_fields=["invoiced_through"])
 
         if schedule == CustomerPlan.BILLING_SCHEDULE_ANNUAL:
             self.write_to_audit_log(
