@@ -551,7 +551,7 @@ do not match the types declared in the implementation of {function.__name__}.\n"
                     # the respective sets so that they can be dealt
                     # with later.  In either case remove the variable
                     # from `json_params`.
-                    if vtype == str:
+                    if vtype is str:
                         json_params.pop(vname, None)
                         continue
                     else:
