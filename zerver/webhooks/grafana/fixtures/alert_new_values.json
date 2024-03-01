@@ -25,7 +25,8 @@
 				"C": 1,
 				"minute": 9
 			},
-			"valueString": "[ var='A' labels={instance=node_exporter:9100, job=node} value=2.473545728e+09 ], [ var='B' labels={instance=node_exporter:9100, job=node} value=0 ], [ var='C' labels={} value=1 ], [ var='minute' labels={} value=9 ]"
+			"valueString": "[ var='A' labels={instance=node_exporter:9100, job=node} value=2.473545728e+09 ], [ var='B' labels={instance=node_exporter:9100, job=node} value=0 ], [ var='C' labels={} value=1 ], [ var='minute' labels={} value=9 ]",
+	    "imageURL": "https://grafana.com/assets/img/blog/mixed_styles.png"
 		}
 	],
 	"groupLabels": {

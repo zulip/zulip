@@ -192,6 +192,7 @@ Annotations:
 
 [Generator](https://play.grafana.org/alerting/grafana/dd2f0260-3cfc-4c65-a4c4-f3f632c551f4/view?orgId=1)
 [Silence](https://play.grafana.org/alerting/silence/new?alertmanager=grafana\u0026matcher=alertname%3DMemory+%28copy%29\u0026matcher=debug%3Dtrue\u0026matcher=grafana_folder%3Ddevice\u0026orgId=1)
+[Image](https://grafana.com/assets/img/blog/mixed_styles.png)
 """.strip()
 
         self.check_webhook(
@@ -223,6 +224,7 @@ Annotations:
 
 [Generator](https://play.grafana.org/alerting/grafana/dd2f0260-3cfc-4c65-a4c4-f3f632c551f4/view?orgId=1)
 [Silence](https://play.grafana.org/alerting/silence/new?alertmanager=grafana\u0026matcher=alertname%3DMemory+%28copy%29\u0026matcher=debug%3Dtrue\u0026matcher=grafana_folder%3Ddevice\u0026orgId=1)
+[Image](https://grafana.com/assets/img/blog/mixed_styles.png)
 """.strip()
 
         self.check_webhook(
