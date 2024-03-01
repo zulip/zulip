@@ -120,6 +120,7 @@ select = [
     "I", # import sorting
     "INT", # gettext
     "ISC", # string concatenation
+    "LOG", # logging
     "N", # naming
     "PERF", # performance
     "PGH", # pygrep-hooks
@@ -130,8 +131,11 @@ select = [
     "RSE", # raise
     "RUF", # Ruff
     "S", # security
+    "SLOT", # __slots__
     "SIM", # simplify
     "T10", # debugger
+    "TCH", # type-checking
+    "TID", # tidy imports
     "UP", # upgrade
     "W", # style warnings
     "YTT", # sys.version
@@ -185,6 +189,9 @@ ignore = [
     "SIM114", # Combine `if` branches using logical `or` operator
     "SIM117", # Use a single `with` statement with multiple contexts instead of nested `with` statements
     "SIM401", # Use `d.get(key, default)` instead of an `if` block
+    "TCH001", # Move application import into a type-checking block
+    "TCH002", # Move third-party import into a type-checking block
+    "TCH003", # Move standard library import into a type-checking block
 ]
 
 [tool.ruff.lint.flake8-gettext]
