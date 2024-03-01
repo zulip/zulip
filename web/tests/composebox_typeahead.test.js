@@ -900,6 +900,7 @@ test("initialize", ({override, override_rewire, mock_template}) => {
                 query,
                 current_stream_id: compose_state.stream_id(),
                 current_topic: compose_state.topic(),
+                groups: [],
             });
         }
 

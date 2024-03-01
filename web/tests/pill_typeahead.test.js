@@ -36,6 +36,7 @@ function override_typeahead_helper(override_rewire) {
     });
     override_rewire(typeahead_helper, "sort_streams", () => {
         sort_streams_called = true;
+        return [];
     });
     override_rewire(typeahead_helper, "sort_recipients", () => {
         sort_recipients_called = true;
@@ -46,21 +47,25 @@ const jill = {
     email: "jill@zulip.com",
     user_id: 10,
     full_name: "Jill Hill",
+    type: "user",
 };
 const mark = {
     email: "mark@zulip.com",
     user_id: 20,
     full_name: "Marky Mark",
+    type: "user",
 };
 const fred = {
     email: "fred@zulip.com",
     user_id: 30,
     full_name: "Fred Flintstone",
+    type: "user",
 };
 const me = {
     email: "me@example.com",
     user_id: 40,
     full_name: "me",
+    type: "user",
 };
 
 const persons = [jill, mark, fred, me];
@@ -73,12 +78,14 @@ const admins = {
     description: "foo",
     id: 1,
     members: [jill.user_id, mark.user_id],
+    type: "user_group",
 };
 const testers = {
     name: "Testers",
     description: "bar",
     id: 2,
     members: [mark.user_id, fred.user_id, me.user_id],
+    type: "user_group",
 };
 
 const groups = [admins, testers];
@@ -91,6 +98,7 @@ const denmark = {
     name: "Denmark",
     subscribed: true,
     render_subscribers: true,
+    type: "stream",
 };
 peer_data.set_subscribers(denmark.stream_id, [me.user_id, mark.user_id]);
 
@@ -98,6 +106,7 @@ const sweden = {
     stream_id: 2,
     name: "Sweden",
     subscribed: false,
+    type: "stream",
 };
 peer_data.set_subscribers(sweden.stream_id, [mark.user_id, jill.user_id]);
 
@@ -226,7 +235,7 @@ run_test("set_up", ({mock_template, override_rewire}) => {
         (function test_sorter() {
             if (opts.stream) {
                 sort_streams_called = false;
-                config.sorter.call(fake_stream_this);
+                config.sorter.call(fake_stream_this, []);
                 assert.ok(sort_streams_called);
             }
             if (opts.user_group) {

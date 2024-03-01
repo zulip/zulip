@@ -1,5 +1,6 @@
 import Handlebars from "handlebars/runtime";
 import _ from "lodash";
+import assert from "minimalistic-assert";
 
 import * as typeahead from "../shared/src/typeahead";
 import render_typeahead_list_item from "../templates/typeahead_list_item.hbs";
@@ -8,6 +9,7 @@ import * as buddy_data from "./buddy_data";
 import * as compose_state from "./compose_state";
 import * as people from "./people";
 import type {PseudoMentionUser, User} from "./people";
+import type {UserGroupRecipient, UserRecipient} from "./pill_typeahead";
 import * as pm_conversations from "./pm_conversations";
 import * as pygments_data from "./pygments_data";
 import * as recent_senders from "./recent_senders";
@@ -284,10 +286,10 @@ export function compare_people_for_relevance(
 }
 
 export function sort_people_for_relevance(
-    objs: UserOrMention[],
-    current_stream_id: number,
-    current_topic: string,
-): UserOrMention[] {
+    objs: UserRecipient[],
+    current_stream_id?: number,
+    current_topic?: string,
+): UserRecipient[] {
     // If sorting for recipientbox typeahead and not viewing a stream / topic, then current_stream = ""
     let current_stream = null;
     if (current_stream_id) {
@@ -298,6 +300,8 @@ export function sort_people_for_relevance(
             compare_people_for_relevance(person_a, person_b, compare_by_pms),
         );
     } else {
+        assert(current_stream_id !== undefined);
+        assert(current_topic !== undefined);
         objs.sort((person_a, person_b) =>
             compare_people_for_relevance(
                 person_a,
@@ -407,17 +411,17 @@ export function sort_recipients({
     query,
     current_stream_id,
     current_topic,
-    groups = [],
+    groups,
     max_num_items = 20,
 }: {
-    users: UserOrMention[];
+    users: UserRecipient[];
     query: string;
-    current_stream_id: number;
-    current_topic: string;
-    groups: UserGroup[];
-    max_num_items: number;
-}): (UserOrMention | UserGroup)[] {
-    function sort_relevance(items: UserOrMention[]): UserOrMention[] {
+    current_stream_id?: number;
+    current_topic?: string;
+    groups: UserGroupRecipient[];
+    max_num_items?: number;
+}): (UserRecipient | UserGroupRecipient)[] {
+    function sort_relevance(items: UserRecipient[]): UserRecipient[] {
         return sort_people_for_relevance(items, current_stream_id, current_topic);
     }
 
@@ -449,25 +453,28 @@ export function sort_recipients({
     ];
     const groups_okay_matches = [...groups_results.word_boundary_matches];
 
-    const best_users = (): UserOrMention[] => [
+    const best_users = (): UserRecipient[] => [
         ...sort_relevance(users_name_good_matches),
         ...sort_relevance(users_name_okay_matches),
     ];
-    const best_groups = (): UserGroup[] => [...groups_good_matches, ...groups_okay_matches];
-    const ok_users = (): UserOrMention[] => [
+    const best_groups = (): UserGroupRecipient[] => [
+        ...groups_good_matches,
+        ...groups_okay_matches,
+    ];
+    const ok_users = (): UserRecipient[] => [
         ...sort_relevance(email_good_matches),
         ...sort_relevance(email_okay_matches),
     ];
-    const worst_users = (): UserOrMention[] => sort_relevance(email_results.no_matches);
-    const worst_groups = (): UserGroup[] => groups_results.no_matches;
+    const worst_users = (): UserRecipient[] => sort_relevance(email_results.no_matches);
+    const worst_groups = (): UserGroupRecipient[] => groups_results.no_matches;
 
     const getters: (
         | {
-              getter: () => UserOrMention[];
+              getter: () => UserRecipient[];
               type: "users";
           }
         | {
-              getter: () => UserGroup[];
+              getter: () => UserGroupRecipient[];
               type: "groups";
           }
     )[] = [
@@ -495,10 +502,10 @@ export function sort_recipients({
 
     // We suggest only the first matching stream wildcard mention,
     // irrespective of how many equivalent stream wildcard mentions match.
-    const recipients: (UserOrMention | UserGroup)[] = [];
+    const recipients: (UserRecipient | UserGroupRecipient)[] = [];
     let stream_wildcard_mention_included = false;
 
-    function add_user_recipients(items: UserOrMention[]): void {
+    function add_user_recipients(items: UserRecipient[]): void {
         for (const item of items) {
             const topic_wildcard_mention = item.email === "topic";
             if (!item.is_broadcast || topic_wildcard_mention || !stream_wildcard_mention_included) {
@@ -510,7 +517,7 @@ export function sort_recipients({
         }
     }
 
-    function add_group_recipients(items: UserGroup[]): void {
+    function add_group_recipients(items: UserGroupRecipient[]): void {
         for (const item of items) {
             recipients.push(item);
         }
