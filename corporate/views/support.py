@@ -3,6 +3,7 @@ from contextlib import suppress
 from dataclasses import dataclass
 from datetime import timedelta
 from decimal import Decimal
+from operator import attrgetter
 from typing import Any, Dict, Iterable, List, Optional, Union
 from urllib.parse import urlencode, urlsplit
 
@@ -472,7 +473,7 @@ def support(
 def get_remote_servers_for_support(
     email_to_search: Optional[str], uuid_to_search: Optional[str], hostname_to_search: Optional[str]
 ) -> List["RemoteZulipServer"]:
-    remote_servers_query = RemoteZulipServer.objects.order_by("id").exclude(deactivated=True)
+    remote_servers_query = RemoteZulipServer.objects.order_by("id")
 
     if email_to_search:
         remote_servers_set = set(remote_servers_query.filter(contact_email__iexact=email_to_search))
@@ -486,7 +487,7 @@ def get_remote_servers_for_support(
         ).select_related("remote_realm__server")
         for realm_billing_user in remote_realm_billing_users:
             remote_servers_set.add(realm_billing_user.remote_realm.server)
-        return list(remote_servers_set)
+        return sorted(remote_servers_set, key=attrgetter("deactivated"))
 
     if uuid_to_search:
         remote_servers_set = set(remote_servers_query.filter(uuid__iexact=uuid_to_search))
@@ -497,7 +498,7 @@ def get_remote_servers_for_support(
         )
         for remote_realm in remote_realm_matches:
             remote_servers_set.add(remote_realm.server)
-        return list(remote_servers_set)
+        return sorted(remote_servers_set, key=attrgetter("deactivated"))
 
     if hostname_to_search:
         remote_servers_set = set(
@@ -510,7 +511,7 @@ def get_remote_servers_for_support(
         ).select_related("server")
         for remote_realm in remote_realm_matches:
             remote_servers_set.add(remote_realm.server)
-        return list(remote_servers_set)
+        return sorted(remote_servers_set, key=attrgetter("deactivated"))
 
     return []
 

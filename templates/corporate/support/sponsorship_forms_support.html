@@ -63,20 +63,8 @@
 </form>
 
 {% if sponsorship_data.sponsorship_pending %}
-<div class="">
-    <p class="support-section-header">Sponsorship request information:</p>
-    {% if sponsorship_data.latest_sponsorship_request %}
-    <ul>
-        <li><b>Organization type</b>: {{ sponsorship_data.latest_sponsorship_request.org_type }}</li>
-        <li><b>Organization website</b>: {{ sponsorship_data.latest_sponsorship_request.org_website }}</li>
-        <li><b>Organization description</b>: {{ sponsorship_data.latest_sponsorship_request.org_description }}</li>
-        <li><b>Estimated total users</b>: {{ sponsorship_data.latest_sponsorship_request.total_users }}</li>
-        <li><b>Paid staff</b>: {{ sponsorship_data.latest_sponsorship_request.paid_users }}</li>
-        <li><b>Description of paid staff</b>: {{ sponsorship_data.latest_sponsorship_request.paid_users_description }}</li>
-        <li><b>Requested plan</b>: {{ sponsorship_data.latest_sponsorship_request.requested_plan }}</li>
-    </ul>
-    {% else %}
-    <b>No sponsorship requests have been submitted.</b><br /><br />
-    {% endif %}
-</div>
+    {% with %}
+        {% set latest_sponsorship_request = sponsorship_data.latest_sponsorship_request %}
+        {% include 'corporate/support/sponsorship_request_details.html' %}
+    {% endwith %}
 {% endif %}
