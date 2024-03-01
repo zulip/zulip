@@ -212,6 +212,9 @@ directory if you want to customize. A good example of doing this is
 in the [kandra Puppet configuration][zulipchat-puppet] that we use
 as part of managing chat.zulip.org and zulip.com.
 
+[standalone.pp]: https://github.com/zulip/zulip/blob/main/puppet/zulip/manifests/profile/standalone.pp
+[zulipchat-puppet]: https://github.com/zulip/zulip/tree/main/puppet/kandra/manifests
+
 ### Using Zulip with Amazon RDS as the database
 
 You can use DBaaS services like Amazon RDS for the Zulip database.
