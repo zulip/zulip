@@ -349,32 +349,32 @@ import {get_string_diff} from "../../src/util";
         render(final_items, matching_items) {
             const that = this;
 
-            const items = $(final_items).map((_index, item) => {
-                const i = $(that.options.item).data("typeahead-value", item);
-                const item_html = i.find("a").html(that.highlighter(item));
+            const $items = $(final_items).map((_index, item) => {
+                const $i = $(that.options.item).data("typeahead-value", item);
+                const $item_html = $i.find("a").html(that.highlighter(item));
 
                 const option_label_html = that.option_label(matching_items, item);
 
                 if (option_label_html) {
-                    item_html.append(option_label_html).addClass("typeahead-option-label");
+                    $item_html.append(option_label_html).addClass("typeahead-option-label");
                 }
-                return i[0];
+                return $i[0];
             });
 
-            items.first().addClass("active");
-            this.$menu.html(items);
+            $items.first().addClass("active");
+            this.$menu.html($items);
             return this;
         },
 
         next() {
-            const active = this.$menu.find(".active").removeClass("active");
-            let next = active.next();
+            const $active = this.$menu.find(".active").removeClass("active");
+            let $next = $active.next();
 
-            if (!next.length) {
-                next = $(this.$menu.find("li")[0]);
+            if (!$next.length) {
+                $next = $(this.$menu.find("li")[0]);
             }
 
-            next.addClass("active");
+            $next.addClass("active");
 
             if (this.options.naturalSearch) {
                 this.set_value();
@@ -382,14 +382,14 @@ import {get_string_diff} from "../../src/util";
         },
 
         prev() {
-            const active = this.$menu.find(".active").removeClass("active");
-            let prev = active.prev();
+            const $active = this.$menu.find(".active").removeClass("active");
+            let $prev = $active.prev();
 
-            if (!prev.length) {
-                prev = this.$menu.find("li").last();
+            if (!$prev.length) {
+                $prev = this.$menu.find("li").last();
             }
 
-            prev.addClass("active");
+            $prev.addClass("active");
 
             if (this.options.naturalSearch) {
                 this.set_value();
