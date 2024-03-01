@@ -186,6 +186,7 @@ export function initialize() {
         compose_actions.start({
             message_type: "stream",
             trigger: "clear topic button",
+            keep_composebox_empty: true,
         });
     });
 
@@ -193,6 +194,7 @@ export function initialize() {
         compose_actions.start({
             message_type: "private",
             trigger: "new direct message",
+            keep_composebox_empty: true,
         });
     });
 }

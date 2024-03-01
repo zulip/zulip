@@ -1001,6 +1001,7 @@ export function process_hotkey(e, hotkey) {
                 compose_actions.start({
                     message_type: "stream",
                     trigger: "compose_hotkey",
+                    keep_composebox_empty: true,
                 });
             }
             return true;
@@ -1009,6 +1010,7 @@ export function process_hotkey(e, hotkey) {
                 compose_actions.start({
                     message_type: "private",
                     trigger: "compose_hotkey",
+                    keep_composebox_empty: true,
                 });
             }
             return true;

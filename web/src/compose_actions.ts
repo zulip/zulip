@@ -40,6 +40,7 @@ type ComposeActionsStartOpts = {
     draft_id?: string;
     skip_scrolling_selected_message?: boolean;
     is_reply?: boolean;
+    keep_composebox_empty?: boolean;
 };
 
 // An iteration on `ComposeActionsStartOpts` that enforces that
@@ -308,7 +309,8 @@ export function start(raw_opts: ComposeActionsStartOpts): void {
         compose_state.can_restore_drafts() &&
         !opts.content &&
         opts.draft_id === undefined &&
-        compose_state.message_content().length === 0
+        compose_state.message_content().length === 0 &&
+        !opts.keep_composebox_empty
     ) {
         const possible_last_draft = drafts.get_last_draft_based_on_compose_state();
         if (possible_last_draft !== undefined) {
