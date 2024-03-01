@@ -340,7 +340,7 @@ import {get_string_diff} from "../../src/util";
         },
 
         matcher(item) {
-            return ~item.toLowerCase().indexOf(this.query.toLowerCase());
+            return item.toLowerCase().includes(this.query.toLowerCase());
         },
 
         sorter(items) {
@@ -352,7 +352,7 @@ import {get_string_diff} from "../../src/util";
             while ((item = items.shift())) {
                 if (!item.toLowerCase().indexOf(this.query.toLowerCase())) {
                     beginswith.push(item);
-                } else if (~item.indexOf(this.query)) {
+                } else if (item.includes(this.query)) {
                     caseSensitive.push(item);
                 } else {
                     caseInsensitive.push(item);
@@ -513,7 +513,7 @@ import {get_string_diff} from "../../src/util";
                 e.preventDefault();
                 this.select(e);
             }
-            this.suppressKeyPressRepeat = !~$.inArray(pseudo_keycode, [40, 38, 9, 13, 27]);
+            this.suppressKeyPressRepeat = ![40, 38, 9, 13, 27].includes(pseudo_keycode);
             this.move(e);
         },
 
