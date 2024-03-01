@@ -284,8 +284,6 @@ import {get_string_diff} from "../../src/util";
         },
 
         lookup(hideOnEmpty) {
-            let items;
-
             this.query = this.$element.is("[contenteditable]")
                 ? this.$element.text()
                 : this.$element.val();
@@ -297,7 +295,7 @@ import {get_string_diff} from "../../src/util";
                 return this.shown ? this.hide() : this;
             }
 
-            items =
+            const items =
                 typeof this.source === "function"
                     ? this.source(this.query, this.process.bind(this))
                     : this.source;
