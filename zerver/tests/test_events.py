@@ -3345,7 +3345,7 @@ class NormalActionsTest(BaseAction):
             base = "/user_uploads/"
             self.assertEqual(base, url[: len(base)])
 
-        events = self.verify_action(lambda: do_upload(), num_events=1, state_change_expected=False)
+        events = self.verify_action(do_upload, num_events=1, state_change_expected=False)
 
         check_attachment_add("events[0]", events[0])
         self.assertEqual(events[0]["upload_space_used"], 6)
@@ -3481,21 +3481,21 @@ class NormalActionsTest(BaseAction):
 
     def test_restart_event(self) -> None:
         self.verify_action(
-            lambda: send_restart_events(),
+            send_restart_events,
             num_events=1,
             state_change_expected=False,
         )
 
     def test_web_reload_client_event(self) -> None:
         self.verify_action(
-            lambda: send_web_reload_client_events(),
+            send_web_reload_client_events,
             client_is_old=False,
             num_events=0,
             state_change_expected=False,
         )
         with self.assertLogs(level="WARNING") as logs:
             self.verify_action(
-                lambda: send_web_reload_client_events(),
+                send_web_reload_client_events,
                 client_is_old=True,
                 num_events=1,
                 state_change_expected=False,

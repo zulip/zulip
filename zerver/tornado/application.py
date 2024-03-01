@@ -9,7 +9,7 @@ from zerver.tornado.handlers import AsyncDjangoHandler
 
 def setup_tornado_rabbitmq(queue_client: TornadoQueueClient) -> None:  # nocoverage
     # When tornado is shut down, disconnect cleanly from RabbitMQ
-    autoreload.add_reload_hook(lambda: queue_client.close())
+    autoreload.add_reload_hook(queue_client.close)
 
 
 def create_tornado_application(*, autoreload: bool = False) -> tornado.web.Application:

@@ -34,7 +34,7 @@ class TimeoutTestCase(ZulipTestCase):
 
     def test_timeout_raises(self) -> None:
         try:
-            timeout(1, lambda: self.something_exceptional())
+            timeout(1, self.something_exceptional)
             raise AssertionError("Failed to raise an exception")
         except ValueError as exc:
             tb = traceback.format_tb(exc.__traceback__)

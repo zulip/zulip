@@ -156,7 +156,7 @@ IGNORED_PHRASES = [
 
 # Sort regexes in descending order of their lengths. As a result, the
 # longer phrases will be ignored first.
-IGNORED_PHRASES.sort(key=lambda regex: len(regex), reverse=True)
+IGNORED_PHRASES.sort(key=len, reverse=True)
 
 # Compile regexes to improve performance. This also extracts the
 # text using BeautifulSoup and then removes extra whitespaces from

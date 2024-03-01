@@ -73,7 +73,7 @@ class UserGroupRaceConditionTestCase(ZulipTransactionTestCase):
         with transaction.atomic():
             for group in self.created_user_groups:
                 group.delete()
-            transaction.on_commit(lambda: self.created_user_groups.clear())
+            transaction.on_commit(self.created_user_groups.clear)
 
         super().tearDown()
 

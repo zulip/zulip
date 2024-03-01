@@ -683,7 +683,7 @@ class MissedMessageWorker(QueueProcessingWorker):
     def start(self) -> None:
         with self.cv:
             self.stopping = False
-        self.worker_thread = threading.Thread(target=lambda: self.work())
+        self.worker_thread = threading.Thread(target=self.work)
         self.worker_thread.start()
         super().start()
 
