@@ -1971,9 +1971,7 @@ class ZulipTestCase(ZulipTestCaseMixin, TestCase):
         # Some code might call process_notification using keyword arguments,
         # so mypy doesn't allow assigning lst.append to process_notification
         # So explicitly change parameter name to 'notice' to work around this problem
-        with mock.patch(
-            "zerver.tornado.event_queue.process_notification", lambda notice: lst.append(notice)
-        ):
+        with mock.patch("zerver.tornado.event_queue.process_notification", lst.append):
             # Some `send_event` calls need to be executed only after the current transaction
             # commits (using `on_commit` hooks). Because the transaction in Django tests never
             # commits (rather, gets rolled back after the test completes), such events would

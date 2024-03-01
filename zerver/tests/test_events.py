@@ -3322,7 +3322,7 @@ class NormalActionsTest(BaseAction):
             base = "/user_uploads/"
             self.assertEqual(base, url[: len(base)])
 
-        events = self.verify_action(lambda: do_upload(), num_events=1, state_change_expected=False)
+        events = self.verify_action(do_upload, num_events=1, state_change_expected=False)
 
         check_attachment_add("events[0]", events[0])
         self.assertEqual(events[0]["upload_space_used"], 6)

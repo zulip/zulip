@@ -389,7 +389,7 @@ def main() -> None:
         if not options.no_cov_cleanup:
             import atexit
 
-            atexit.register(lambda: cov.erase())  # Ensure the data file gets cleaned up at the end.
+            atexit.register(cov.erase)  # Ensure the data file gets cleaned up at the end.
         cov.start()
     if options.profile:
         import cProfile
