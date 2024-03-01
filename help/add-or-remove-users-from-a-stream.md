@@ -129,15 +129,7 @@ subscribe the user.
 
 {!stream-menu-subscribers-tab-tip.md!}
 
-{end_tabs}
-
-## Alternate method to remove users from a stream
-
-This method is useful if you need to remove one user from multiple streams.
-
-{start_tabs}
-
-{tab|desktop-web}
+{tab|via-right-sidebar}
 
 {!right-sidebar-view-profile.md!}
 
@@ -147,6 +139,10 @@ This method is useful if you need to remove one user from multiple streams.
    to remove the user from.
 
 1. Click the **Unsubscribe** button in that row.
+
+!!! tip ""
+
+    This method is useful if you need to remove one user from multiple streams.
 
 {end_tabs}
 
