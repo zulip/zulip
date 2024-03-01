@@ -135,7 +135,7 @@
 import $ from "jquery";
 import {insertTextIntoField} from "text-field-edit";
 
-import {get_string_diff} from "../../src/util";
+import {get_string_diff} from "./util";
 
 function get_pseudo_keycode(event) {
     const isComposing = (event.originalEvent && event.originalEvent.isComposing) || false;
