@@ -256,7 +256,7 @@ def normalize_fixture_data(
     for i, timestamp_field in enumerate(tested_timestamp_fields):
         # Don't use (..) notation, since the matched timestamp can easily appear in other fields
         pattern_translations[f'"{timestamp_field}": 1[5-9][0-9]{{8}}(?![0-9-])'] = (
-            f'"{timestamp_field}": 1{i+1:02}%07d'
+            f'"{timestamp_field}": 1{i + 1:02}%07d'
         )
 
     normalized_values: Dict[str, Dict[str, str]] = {pattern: {} for pattern in pattern_translations}

@@ -49,7 +49,7 @@ def parser() -> argparse.ArgumentParser:
         "-n",
         help="Number of log files to search",
         choices=range(1, access_log_retention_days + 2),
-        metavar=f"[1-{access_log_retention_days+1}]",
+        metavar=f"[1-{access_log_retention_days + 1}]",
         type=int,
     )
     log_selection_options.add_argument(
@@ -447,7 +447,7 @@ def print_line(
             gap_ms = int((logline_start - last_match_end) / timedelta(milliseconds=1))
             if gap_ms > 5000:
                 print()
-                print(f"========== {int(gap_ms/1000):>4} second gap ==========")
+                print(f"========== {int(gap_ms / 1000):>4} second gap ==========")
                 print()
             elif gap_ms > 1000:
                 print(f"============ {gap_ms:>5}ms gap ============")
