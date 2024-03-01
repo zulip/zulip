@@ -105,6 +105,11 @@ export function update_lock_icon_in_sidebar() {
 export function build_page() {
     setup_settings_label();
 
+    const disabled_notification_settings = {
+        message_content_in_email_notifications:
+            !page_params.realm_message_content_allowed_in_email_notifications,
+    };
+
     const rendered_settings_tab = render_settings_tab({
         full_name: people.my_full_name(),
         date_joined_text: get_parsed_date_of_joining(),
@@ -116,6 +121,7 @@ export function build_page() {
         timezones: timezones.timezones,
         can_create_new_bots: settings_bots.can_create_new_bots(),
         settings_label,
+        disabled_notification_settings,
         demote_inactive_streams_values: settings_config.demote_inactive_streams_values,
         web_mark_read_on_scroll_policy_values:
             settings_config.web_mark_read_on_scroll_policy_values,

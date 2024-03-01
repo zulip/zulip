@@ -221,9 +221,9 @@ export function close_if_open(modal_id: string): void {
     }
 
     const $micromodal = $(".micromodal.modal--open");
-    const active_modal_id = CSS.escape(`${CSS.escape($micromodal.attr("id") ?? "")}`);
-    if (active_modal_id === `${CSS.escape(modal_id)}`) {
-        Micromodal.close(`${CSS.escape($micromodal.attr("id") ?? "")}`);
+    const active_modal_id = CSS.escape(CSS.escape($micromodal.attr("id") ?? ""));
+    if (active_modal_id === CSS.escape(modal_id)) {
+        Micromodal.close(CSS.escape($micromodal.attr("id") ?? ""));
     } else {
         blueslip.info(
             `${active_modal_id} is the currently active modal and ${modal_id} is already closed.`,
@@ -238,7 +238,7 @@ export function close_active(): void {
     }
 
     const $micromodal = $(".micromodal.modal--open");
-    Micromodal.close(`${CSS.escape($micromodal.attr("id") ?? "")}`);
+    Micromodal.close(CSS.escape($micromodal.attr("id") ?? ""));
 }
 
 export function close_active_if_any(): void {

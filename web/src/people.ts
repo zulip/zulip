@@ -380,7 +380,7 @@ export function emails_to_full_names_string(emails: string[]): string {
 }
 
 export function get_user_time(user_id: number): string | undefined {
-    const user_timezone = get_by_user_id(user_id)!.timezone;
+    const user_timezone = get_by_user_id(user_id).timezone;
     if (user_timezone) {
         try {
             return new Date().toLocaleTimeString(user_settings.default_language, {
@@ -869,7 +869,7 @@ export function sender_info_for_recent_view_row(sender_ids: number[]): SenderInf
     const senders_info = [];
     for (const id of sender_ids) {
         // TODO: Better handling for optional values w/o the assertion.
-        const person = get_by_user_id(id)!;
+        const person = get_by_user_id(id);
         const sender: SenderInfo = {
             ...person,
             avatar_url_small: small_avatar_url_for_person(person),

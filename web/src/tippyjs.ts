@@ -434,6 +434,24 @@ export function initialize(): void {
     });
 
     delegate("body", {
+        target: "#user_message_content_in_email_notifications_label",
+        onShow(instance) {
+            if ($("#user_message_content_in_email_notifications").prop("disabled")) {
+                instance.setContent(
+                    $t({
+                        defaultMessage:
+                            "Including message content in message notification emails is not allowed in this organization.",
+                    }),
+                );
+                return undefined;
+            }
+            instance.destroy();
+            return false;
+        },
+        appendTo: () => document.body,
+    });
+
+    delegate("body", {
         target: ".views-tooltip-target",
         onShow(instance) {
             if ($("#toggle-top-left-navigation-area-icon").hasClass("fa-caret-down")) {
