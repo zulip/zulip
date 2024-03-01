@@ -41,7 +41,7 @@ def notify_reaction_update(
     }
 
     # Update the cached message since new reaction is added.
-    update_message_cache([message])
+    update_message_cache(Message.objects.filter(id=message.id))
 
     # Recipients for message update events, including reactions, are
     # everyone who got the original message, plus subscribers of

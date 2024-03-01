@@ -1,10 +1,12 @@
 import copy
 import zlib
+from dataclasses import asdict, dataclass
 from datetime import datetime
 from email.headerregistry import Address
-from typing import Any, Collection, Dict, List, Optional, TypedDict
+from typing import Any, Dict, Iterator, List, Optional, Tuple
 
 import orjson
+from django.db.models import Prefetch, QuerySet
 
 from zerver.lib.avatar import get_avatar_field, get_avatar_for_inaccessible_user
 from zerver.lib.cache import cache_set_many, cache_with_key, to_dict_cache_key, to_dict_cache_key_id
@@ -19,51 +21,6 @@ from zerver.models import Message, Reaction, Realm, Recipient, Stream, SubMessag
 from zerver.models.realms import get_fake_email_domain
 
 
-class RawReactionRow(TypedDict):
-    emoji_code: str
-    emoji_name: str
-    message_id: int
-    reaction_type: str
-    user_profile__email: str
-    user_profile__full_name: str
-    user_profile_id: int
-
-
-def sew_messages_and_reactions(
-    messages: List[Dict[str, Any]], reactions: List[Dict[str, Any]]
-) -> List[Dict[str, Any]]:
-    """Given a iterable of messages and reactions stitch reactions
-    into messages.
-    """
-    # Add all messages with empty reaction item
-    for message in messages:
-        message["reactions"] = []
-
-    # Convert list of messages into dictionary to make reaction stitching easy
-    converted_messages = {message["id"]: message for message in messages}
-
-    for reaction in reactions:
-        converted_messages[reaction["message_id"]]["reactions"].append(reaction)
-
-    return list(converted_messages.values())
-
-
-def sew_messages_and_submessages(
-    messages: List[Dict[str, Any]], submessages: List[Dict[str, Any]]
-) -> None:
-    # This is super similar to sew_messages_and_reactions.
-    for message in messages:
-        message["submessages"] = []
-
-    message_dict = {message["id"]: message for message in messages}
-
-    for submessage in submessages:
-        message_id = submessage["message_id"]
-        if message_id in message_dict:
-            message = message_dict[message_id]
-            message["submessages"].append(submessage)
-
-
 def extract_message_dict(message_bytes: bytes) -> Dict[str, Any]:
     return orjson.loads(zlib.decompress(message_bytes))
 
@@ -74,23 +31,31 @@ def stringify_message_dict(message_dict: Dict[str, Any]) -> bytes:
 
 @cache_with_key(to_dict_cache_key, timeout=3600 * 24)
 def message_to_encoded_cache(message: Message, realm_id: Optional[int] = None) -> bytes:
-    return MessageDict.messages_to_encoded_cache([message], realm_id)[message.id]
+    (message_id, encoded) = next(
+        MessageDict.messages_to_encoded_cache(Message.objects.filter(id=message.id), realm_id)
+    )
+    return encoded
 
 
 def update_message_cache(
-    changed_messages: Collection[Message], realm_id: Optional[int] = None
+    changed_messages: QuerySet[Message], realm_id: Optional[int] = None, batch_size: int = 200
 ) -> List[int]:
     """Updates the message as stored in the to_dict cache (for serving
     messages)."""
     items_for_remote_cache = {}
     message_ids = []
-    changed_messages_to_dict = MessageDict.messages_to_encoded_cache(changed_messages, realm_id)
-    for msg_id, msg in changed_messages_to_dict.items():
+    for msg_id, msg_bytes in MessageDict.messages_to_encoded_cache(
+        changed_messages, realm_id, batch_size
+    ):
         message_ids.append(msg_id)
         key = to_dict_cache_key_id(msg_id)
-        items_for_remote_cache[key] = (msg,)
+        items_for_remote_cache[key] = (msg_bytes,)
+        if len(items_for_remote_cache) >= batch_size:
+            cache_set_many(items_for_remote_cache)
+            items_for_remote_cache = {}
 
-    cache_set_many(items_for_remote_cache)
+    if items_for_remote_cache:
+        cache_set_many(items_for_remote_cache)
     return message_ids
 
 
@@ -105,27 +70,29 @@ def save_message_rendered_content(message: Message, content: str) -> str:
     return rendered_content
 
 
+@dataclass
+class SubmessageDict:
+    id: int
+    sender_id: int
+    message_id: int
+    content: str
+    msg_type: str
+
+
+@dataclass
 class ReactionDict:
-    @staticmethod
-    def build_dict_from_raw_db_row(row: RawReactionRow) -> Dict[str, Any]:
-        return {
-            "emoji_name": row["emoji_name"],
-            "emoji_code": row["emoji_code"],
-            "reaction_type": row["reaction_type"],
-            # TODO: We plan to remove this redundant user dictionary once
-            # clients are updated to support accessing use user_id.  See
-            # https://github.com/zulip/zulip/pull/14711 for details.
-            #
-            # When we do that, we can likely update the `.values()` query to
-            # not fetch the extra user_profile__* fields from the database
-            # as a small performance optimization.
-            "user": {
-                "email": row["user_profile__email"],
-                "id": row["user_profile_id"],
-                "full_name": row["user_profile__full_name"],
-            },
-            "user_id": row["user_profile_id"],
-        }
+    emoji_name: str
+    emoji_code: str
+    reaction_type: str
+    user_id: int
+    # TODO: We plan to remove this redundant user dictionary once
+    # clients are updated to support accessing use user_id.  See
+    # https://github.com/zulip/zulip/pull/14711 for details.
+    #
+    # When we do that, we can likely update the `.values()` query to
+    # not fetch the extra user_profile__* fields from the database
+    # as a small performance optimization.
+    user: Dict[str, Any]
 
 
 class MessageDict:
@@ -261,70 +228,55 @@ class MessageDict:
         return obj
 
     @staticmethod
-    def sew_submessages_and_reactions_to_msgs(
-        messages: List[Dict[str, Any]]
-    ) -> List[Dict[str, Any]]:
-        msg_ids = [msg["id"] for msg in messages]
-        submessages = SubMessage.get_raw_db_rows(msg_ids)
-        sew_messages_and_submessages(messages, submessages)
-
-        reactions = Reaction.get_raw_db_rows(msg_ids)
-        return sew_messages_and_reactions(messages, reactions)
-
-    @staticmethod
     def messages_to_encoded_cache(
-        messages: Collection[Message], realm_id: Optional[int] = None
-    ) -> Dict[int, bytes]:
-        messages_dict = MessageDict.messages_to_encoded_cache_helper(messages, realm_id)
-        encoded_messages = {msg["id"]: stringify_message_dict(msg) for msg in messages_dict}
-        return encoded_messages
+        messages: QuerySet[Message], realm_id: Optional[int] = None, batch_size: int = 1000
+    ) -> Iterator[Tuple[int, bytes]]:
+        for message_dict in MessageDict.messages_to_dicts(
+            messages, realm_id=realm_id, batch_size=batch_size
+        ):
+            yield message_dict["id"], stringify_message_dict(message_dict)
 
     @staticmethod
-    def messages_to_encoded_cache_helper(
-        messages: Collection[Message], realm_id: Optional[int] = None
-    ) -> List[Dict[str, Any]]:
-        # Near duplicate of the build_message_dict + get_raw_db_rows
-        # code path that accepts already fetched Message objects
-        # rather than message IDs.
-
+    def messages_to_dicts(
+        messages: QuerySet[Message],
+        *,
+        batch_size: int = 1000,
+        realm_id: Optional[int] = None,
+        use_sender_realm: bool = False,
+    ) -> Iterator[Dict[str, Any]]:
         def get_rendering_realm_id(message: Message) -> int:
             # realm_id can differ among users, currently only possible
             # with cross realm bots.
             if realm_id is not None:
                 return realm_id
+            if use_sender_realm:
+                return message.sender.realm_id
             if message.recipient.type == Recipient.STREAM:
                 return Stream.objects.get(id=message.recipient.type_id).realm_id
             return message.realm_id
 
-        message_rows = [
-            {
-                "id": message.id,
-                DB_TOPIC_NAME: message.topic_name(),
-                "date_sent": message.date_sent,
-                "last_edit_time": message.last_edit_time,
-                "edit_history": message.edit_history,
-                "content": message.content,
-                "rendered_content": message.rendered_content,
-                "rendered_content_version": message.rendered_content_version,
-                "recipient_id": message.recipient.id,
-                "recipient__type": message.recipient.type,
-                "recipient__type_id": message.recipient.type_id,
-                "rendering_realm_id": get_rendering_realm_id(message),
-                "sender_id": message.sender.id,
-                "sending_client__name": message.sending_client.name,
-                "sender__realm_id": message.sender.realm_id,
-            }
-            for message in messages
+        submessage_fields = ["id", "message", "sender", "msg_type", "content"]
+        submessage_prefetch = Prefetch(
+            "submessage_set",
+            queryset=SubMessage.objects.only(*submessage_fields).order_by("message", "id"),
+        )
+        reaction_fields = [
+            "message",
+            "emoji_name",
+            "emoji_code",
+            "reaction_type",
+            "user_profile__email",
+            "user_profile__id",
+            "user_profile__full_name",
         ]
+        reaction_prefetch = Prefetch(
+            "reaction_set",
+            queryset=Reaction.objects.select_related("user_profile")
+            .only(*reaction_fields)
+            .order_by("message", "id"),
+        )
 
-        MessageDict.sew_submessages_and_reactions_to_msgs(message_rows)
-        return [MessageDict.build_dict_from_raw_db_row(row) for row in message_rows]
-
-    @staticmethod
-    def ids_to_dict(needed_ids: List[int]) -> List[Dict[str, Any]]:
-        # This is a special purpose function optimized for
-        # callers like get_messages_backend().
-        fields = [
+        messages = messages.select_related("recipient", "sender", "sending_client").only(
             "id",
             DB_TOPIC_NAME,
             "date_sent",
@@ -336,39 +288,65 @@ class MessageDict:
             "recipient_id",
             "recipient__type",
             "recipient__type_id",
+            "realm_id",
             "sender_id",
             "sending_client__name",
             "sender__realm_id",
-        ]
-        # Uses index: zerver_message_pkey
-        messages = Message.objects.filter(id__in=needed_ids).values(*fields)
-        MessageDict.sew_submessages_and_reactions_to_msgs(messages)
-        return [MessageDict.build_dict_from_raw_db_row(row) for row in messages]
+        )
+
+        for message in messages.prefetch_related(submessage_prefetch, reaction_prefetch).iterator(
+            chunk_size=batch_size
+        ):
+            submessages = [
+                SubmessageDict(
+                    id=submessage.id,
+                    sender_id=submessage.sender_id,
+                    message_id=submessage.message_id,
+                    content=submessage.content,
+                    msg_type=submessage.msg_type,
+                )
+                for submessage in message.submessage_set.all()
+            ]
+            reactions = [
+                ReactionDict(
+                    emoji_name=reaction.emoji_name,
+                    emoji_code=reaction.emoji_code,
+                    reaction_type=reaction.reaction_type,
+                    user_id=reaction.user_profile.id,
+                    user={
+                        "id": reaction.user_profile.id,
+                        "full_name": reaction.user_profile.full_name,
+                        "email": reaction.user_profile.email,
+                    },
+                )
+                for reaction in message.reaction_set.all()
+            ]
+            yield MessageDict.build_message_dict(
+                message_id=message.id,
+                last_edit_time=message.last_edit_time,
+                edit_history_json=message.edit_history,
+                content=message.content,
+                topic_name=message.topic_name(),
+                date_sent=message.date_sent,
+                rendered_content=message.rendered_content,
+                rendered_content_version=message.rendered_content_version,
+                sender_id=message.sender.id,
+                sender_realm_id=message.sender.realm_id,
+                sending_client_name=message.sending_client.name,
+                rendering_realm_id=get_rendering_realm_id(message),
+                recipient_id=message.recipient.id,
+                recipient_type=message.recipient.type,
+                recipient_type_id=message.recipient.type_id,
+                reactions=reactions,
+                submessages=submessages,
+            )
 
     @staticmethod
-    def build_dict_from_raw_db_row(row: Dict[str, Any]) -> Dict[str, Any]:
-        """
-        row is a row from a .values() call, and it needs to have
-        all the relevant fields populated
-        """
-        return MessageDict.build_message_dict(
-            message_id=row["id"],
-            last_edit_time=row["last_edit_time"],
-            edit_history_json=row["edit_history"],
-            content=row["content"],
-            topic_name=row[DB_TOPIC_NAME],
-            date_sent=row["date_sent"],
-            rendered_content=row["rendered_content"],
-            rendered_content_version=row["rendered_content_version"],
-            sender_id=row["sender_id"],
-            sender_realm_id=row["sender__realm_id"],
-            sending_client_name=row["sending_client__name"],
-            rendering_realm_id=row.get("rendering_realm_id", row["sender__realm_id"]),
-            recipient_id=row["recipient_id"],
-            recipient_type=row["recipient__type"],
-            recipient_type_id=row["recipient__type_id"],
-            reactions=row["reactions"],
-            submessages=row["submessages"],
+    def ids_to_dict(needed_ids: List[int], batch_size: int = 1000) -> Iterator[Dict[str, Any]]:
+        return MessageDict.messages_to_dicts(
+            Message.objects.filter(id__in=needed_ids),
+            use_sender_realm=True,
+            batch_size=batch_size,
         )
 
     @staticmethod
@@ -388,8 +366,8 @@ class MessageDict:
         recipient_id: int,
         recipient_type: int,
         recipient_type_id: int,
-        reactions: List[RawReactionRow],
-        submessages: List[Dict[str, Any]],
+        reactions: List[ReactionDict],
+        submessages: List[SubmessageDict],
     ) -> Dict[str, Any]:
         obj = dict(
             id=message_id,
@@ -448,10 +426,8 @@ class MessageDict:
         else:
             obj["is_me_message"] = False
 
-        obj["reactions"] = [
-            ReactionDict.build_dict_from_raw_db_row(reaction) for reaction in reactions
-        ]
-        obj["submessages"] = submessages
+        obj["reactions"] = [asdict(reaction) for reaction in reactions]
+        obj["submessages"] = [asdict(submessage) for submessage in submessages]
         return obj
 
     @staticmethod

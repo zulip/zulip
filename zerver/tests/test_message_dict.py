@@ -7,7 +7,7 @@ from zerver.lib.cache import cache_delete, to_dict_cache_key_id
 from zerver.lib.display_recipient import get_display_recipient
 from zerver.lib.markdown import version as markdown_version
 from zerver.lib.message import messages_for_ids
-from zerver.lib.message_cache import MessageDict, sew_messages_and_reactions
+from zerver.lib.message_cache import MessageDict
 from zerver.lib.per_request_cache import flush_per_request_caches
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import make_client
@@ -86,8 +86,8 @@ class MessageDictTest(ZulipTestCase):
         def get_fetch_payload(
             msg_id: int, apply_markdown: bool, client_gravatar: bool
         ) -> Dict[str, Any]:
-            msg = reload_message(msg_id)
-            unhydrated_dict = MessageDict.messages_to_encoded_cache_helper([msg])[0]
+            reload_message(msg_id)
+            unhydrated_dict = next(MessageDict.messages_to_dicts(Message.objects.filter(id=msg_id)))
             # The next step mutates the dict in place
             # for performance reasons.
             MessageDict.post_process_dicts(
@@ -171,7 +171,19 @@ class MessageDictTest(ZulipTestCase):
         self.assertTrue(num_ids >= 600)
 
         with self.assert_database_query_count(7):
-            objs = MessageDict.ids_to_dict(ids)
+            objs = list(MessageDict.ids_to_dict(ids[0:100]))
+            MessageDict.post_process_dicts(
+                objs, apply_markdown=False, client_gravatar=False, realm=realm
+            )
+
+        with self.assert_database_query_count(11):
+            objs = list(MessageDict.ids_to_dict(ids, batch_size=200))
+            MessageDict.post_process_dicts(
+                objs, apply_markdown=False, client_gravatar=False, realm=realm
+            )
+
+        with self.assert_database_query_count(7):
+            objs = list(MessageDict.ids_to_dict(ids))
             MessageDict.post_process_dicts(
                 objs, apply_markdown=False, client_gravatar=False, realm=realm
             )
@@ -198,7 +210,7 @@ class MessageDictTest(ZulipTestCase):
 
         # An important part of this test is to get the message through this exact code path,
         # because there is an ugly hack we need to cover.  So don't just say "row = message".
-        dct = MessageDict.ids_to_dict([message.id])[0]
+        dct = next(MessageDict.ids_to_dict([message.id]))
         expected_content = "<p>hello <strong>world</strong></p>"
         self.assertEqual(dct["rendered_content"], expected_content)
         message = Message.objects.get(id=message.id)
@@ -228,7 +240,7 @@ class MessageDictTest(ZulipTestCase):
 
         # An important part of this test is to get the message through this exact code path,
         # because there is an ugly hack we need to cover.  So don't just say "row = message".
-        dct = MessageDict.ids_to_dict([message.id])[0]
+        dct = next(MessageDict.ids_to_dict([message.id]))
         error_content = (
             "<p>[Zulip note: Sorry, we could not understand the formatting of your message]</p>"
         )
@@ -261,7 +273,7 @@ class MessageDictTest(ZulipTestCase):
             return Message.objects.get(id=msg_id)
 
         def assert_topic_links(links: List[Dict[str, str]], msg: Message) -> None:
-            dct = MessageDict.messages_to_encoded_cache_helper([msg])[0]
+            dct = next(MessageDict.messages_to_dicts(Message.objects.filter(id=msg.id)))
             self.assertEqual(dct[TOPIC_LINKS], links)
 
         # Send messages before and after saving the realm filter from each user.
@@ -294,7 +306,7 @@ class MessageDictTest(ZulipTestCase):
         reaction = Reaction.objects.create(
             message=message, user_profile=sender, emoji_name="simple_smile"
         )
-        msg_dict = MessageDict.ids_to_dict([message.id])[0]
+        msg_dict = next(MessageDict.ids_to_dict([message.id]))
         self.assertEqual(msg_dict["reactions"][0]["emoji_name"], reaction.emoji_name)
         self.assertEqual(msg_dict["reactions"][0]["user_id"], sender.id)
         self.assertEqual(msg_dict["reactions"][0]["user"]["id"], sender.id)
@@ -648,43 +660,3 @@ class TestMessageForIdsDisplayRecipientFetching(ZulipTestCase):
             messages[4]["display_recipient"], [hamlet, cordelia, othello, iago]
         )
         self._verify_display_recipient(messages[5]["display_recipient"], [cordelia, othello])
-
-
-class SewMessageAndReactionTest(ZulipTestCase):
-    def test_sew_messages_and_reaction(self) -> None:
-        sender = self.example_user("othello")
-        receiver = self.example_user("hamlet")
-        realm = get_realm("zulip")
-        pm_recipient = Recipient.objects.get(type_id=receiver.id, type=Recipient.PERSONAL)
-        stream_name = "Çiğdem"
-        stream = self.make_stream(stream_name)
-        stream_recipient = Recipient.objects.get(type_id=stream.id, type=Recipient.STREAM)
-        sending_client = make_client(name="test suite")
-
-        needed_ids = []
-        for i in range(5):
-            for recipient in [pm_recipient, stream_recipient]:
-                message = Message(
-                    sender=sender,
-                    recipient=recipient,
-                    realm=realm,
-                    content=f"whatever {i}",
-                    date_sent=timezone_now(),
-                    sending_client=sending_client,
-                    last_edit_time=timezone_now(),
-                    edit_history="[]",
-                )
-                message.set_topic_name("whatever")
-                message.save()
-                needed_ids.append(message.id)
-                reaction = Reaction(user_profile=sender, message=message, emoji_name="simple_smile")
-                reaction.save()
-
-        messages = Message.objects.filter(id__in=needed_ids).values(*["id", "content"])
-        reactions = Reaction.get_raw_db_rows(needed_ids)
-        tied_data = sew_messages_and_reactions(messages, reactions)
-        for data in tied_data:
-            self.assert_length(data["reactions"], 1)
-            self.assertEqual(data["reactions"][0]["emoji_name"], "simple_smile")
-            self.assertTrue(data["id"])
-            self.assertTrue(data["content"])

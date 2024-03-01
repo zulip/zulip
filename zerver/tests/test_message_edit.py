@@ -277,23 +277,24 @@ class EditMessageTest(EditMessageTestCase):
         message_ids.append(
             self.send_stream_message(self.notification_bot(realm), stream_name, "Message three")
         )
-        messages = [
-            Message.objects.select_related(*Message.DEFAULT_SELECT_RELATED).get(id=message_id)
-            for message_id in message_ids
-        ]
 
         # Check number of queries performed
+        # 1 query to fetch message data
         # 1 query for realm_id per message = 3
         # 1 query each for reactions & submessage for all messages = 2
         # 1 query for linkifiers
         # 1 query for display recipients
-        with self.assert_database_query_count(7):
-            MessageDict.messages_to_encoded_cache(messages)
+        with self.assert_database_query_count(8):
+            messages = Message.objects.filter(id__in=message_ids)
+            result = MessageDict.messages_to_encoded_cache(messages)
+            self.assertEqual(sorted(r[0] for r in result), message_ids)
 
         realm_id = 2  # Fetched from stream object
         # Check number of queries performed with realm_id
-        with self.assert_database_query_count(3):
-            MessageDict.messages_to_encoded_cache(messages, realm_id)
+        with self.assert_database_query_count(4):
+            messages = Message.objects.filter(id__in=message_ids)
+            result = MessageDict.messages_to_encoded_cache(messages, realm_id)
+            self.assertEqual(sorted(r[0] for r in result), message_ids)
 
     def test_save_message(self) -> None:
         """This is also tested by a client test, but here we can verify
@@ -3784,7 +3785,7 @@ class EditMessageTest(EditMessageTestCase):
             "iago", "test move stream", "new stream", "test"
         )
 
-        with self.assert_database_query_count(53), self.assert_memcached_count(14):
+        with self.assert_database_query_count(55), self.assert_memcached_count(14):
             result = self.client_patch(
                 f"/json/messages/{msg_id}",
                 {

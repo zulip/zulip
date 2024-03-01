@@ -3510,6 +3510,7 @@ class GetOldMessagesTest(ZulipTestCase):
         m = self.get_last_message()
         m.rendered_content = m.rendered_content_version = None
         m.content = "test content"
+        m.save()
         wide_dict = MessageDict.wide_dict(m)
         final_dict = MessageDict.finalize_payload(
             wide_dict,

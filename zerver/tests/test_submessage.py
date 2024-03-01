@@ -65,8 +65,8 @@ class TestBasics(ZulipTestCase):
         rows.sort(key=lambda r: r["id"])
         self.assertEqual(rows, expected_data)
 
-        msg_rows = MessageDict.ids_to_dict([message_id])
-        rows = msg_rows[0]["submessages"]
+        msg_row = next(MessageDict.ids_to_dict([message_id]))
+        rows = msg_row["submessages"]
         rows.sort(key=lambda r: r["id"])
         self.assertEqual(rows, expected_data)
 

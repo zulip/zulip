@@ -338,7 +338,6 @@ def do_update_embedded_data(
         "message_id": message.id,
         "rendering_only": True,
     }
-    changed_messages = [message]
     rendered_content: Optional[str] = None
 
     ums = UserMessage.objects.filter(message=message.id)
@@ -353,7 +352,7 @@ def do_update_embedded_data(
 
     message.save(update_fields=["content", "rendered_content"])
 
-    event["message_ids"] = update_message_cache(changed_messages)
+    event["message_ids"] = update_message_cache(Message.objects.filter(id=message.id))
 
     def user_info(um: UserMessage) -> Dict[str, Any]:
         return {
