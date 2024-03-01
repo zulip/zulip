@@ -318,7 +318,7 @@ if __name__ == "__main__":
     if args.subdomain:
         subdomain = args.subdomain.lower()
     elif args.production:
-        subdomain = "{username}-prod"
+        subdomain = f"{username}-prod"
     else:
         subdomain = username
 
