@@ -18,22 +18,27 @@ export function set_focused_recipient(msg_type) {
 
     // Construct focused_recipient as a mocked up element which has all the
     // fields of a message used by util.same_recipient()
-    const focused_recipient = {
-        type: msg_type,
-    };
-
-    if (focused_recipient.type === "stream") {
+    let focused_recipient;
+    if (msg_type === "stream") {
         const stream_id = compose_state.stream_id();
-        focused_recipient.topic = compose_state.topic();
+        const topic = compose_state.topic();
         if (stream_id) {
-            focused_recipient.stream_id = stream_id;
+            focused_recipient = {
+                type: msg_type,
+                stream_id,
+                topic,
+            };
         }
-    } else {
+    } else if (msg_type === "private") {
         // Normalize the recipient list so it matches the one used when
         // adding the message (see message_helper.process_new_message()).
         const reply_to = util.normalize_recipients(compose_state.private_message_recipient());
-        focused_recipient.reply_to = reply_to;
-        focused_recipient.to_user_ids = people.reply_to_to_user_ids_string(reply_to);
+        const to_user_ids = people.reply_to_to_user_ids_string(reply_to);
+        focused_recipient = {
+            type: msg_type,
+            reply_to,
+            to_user_ids,
+        };
     }
 
     compose_fade_helper.set_focused_recipient(focused_recipient);
