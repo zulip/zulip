@@ -142,18 +142,18 @@ run_test("adjust_mac_kbd_tags mac", ({override}) => {
     }
 });
 
-run_test("adjust_mac_tooltip_keys non-mac", ({override}) => {
+run_test("adjust_mac_hotkey_hints non-mac", ({override}) => {
     override(navigator, "platform", "Windows");
 
-    // The adjust_mac_tooltip_keys has a really simple guard
+    // The adjust_mac_hotkey_hints has a really simple guard
     // at the top, and we just test the early-return behavior
     // by trying to pass it garbage.
-    common.adjust_mac_tooltip_keys("not-an-array");
+    common.adjust_mac_hotkey_hints("not-an-array");
 });
 
-// Test default values of adjust_mac_tooltip_keys
+// Test default values of adjust_mac_hotkey_hints
 // Expected values
-run_test("adjust_mac_tooltip_keys mac expected", ({override}) => {
+run_test("adjust_mac_hotkey_hints mac expected", ({override}) => {
     const keys_to_test_mac = new Map([
         [["Backspace"], ["Delete"]],
         [["Enter"], ["Return"]],
@@ -170,7 +170,7 @@ run_test("adjust_mac_tooltip_keys mac expected", ({override}) => {
 
     for (const [old_key, mac_key] of keys_to_test_mac) {
         const test_item = {};
-        common.adjust_mac_tooltip_keys(old_key);
+        common.adjust_mac_hotkey_hints(old_key);
 
         test_item.mac_key = mac_key;
         test_item.adjusted_key = old_key;
@@ -182,9 +182,9 @@ run_test("adjust_mac_tooltip_keys mac expected", ({override}) => {
     }
 });
 
-// Test non-default values of adjust_mac_tooltip_keys
+// Test non-default values of adjust_mac_hotkey_hints
 // Random values
-run_test("adjust_mac_tooltip_keys mac random", ({override}) => {
+run_test("adjust_mac_hotkey_hints mac random", ({override}) => {
     const keys_to_test_mac = new Map([
         [
             ["Ctrl", "["],
@@ -207,7 +207,7 @@ run_test("adjust_mac_tooltip_keys mac random", ({override}) => {
 
     for (const [old_key, mac_key] of keys_to_test_mac) {
         const test_item = {};
-        common.adjust_mac_tooltip_keys(old_key);
+        common.adjust_mac_hotkey_hints(old_key);
 
         test_item.mac_key = mac_key;
         test_item.adjusted_key = old_key;
