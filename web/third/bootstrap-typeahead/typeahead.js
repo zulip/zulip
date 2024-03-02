@@ -559,17 +559,7 @@ import {get_string_diff} from "../../src/util";
                         // the search bar).
                         this.options.openInputFieldOnKeyUp();
                     }
-                    // backspace
-                    if (
-                        e.keyCode === 8 &&
-                        this.options.helpOnEmptyStrings && // Support for inputs to set the hideOnEmpty option explicitly to false
-                        // to display typeahead after hitting backspace to clear the input.
-                        (typeof this.options.hideOnEmpty === undefined || this.options.hideOnEmpty)
-                    ) {
-                        this.lookup(true);
-                    } else {
-                        this.lookup(false);
-                    }
+                    this.lookup(false);
             }
 
             this.maybeStopAdvance(e);
