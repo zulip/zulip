@@ -236,7 +236,7 @@ function do_hashchange_overlay(old_hash) {
     }
 
     const coming_from_overlay = hash_parser.is_overlay_hash(old_hash);
-    if (section === "display-settings") {
+    if (section === "preferences") {
         // Since display-settings was deprecated and replaced with preferences
         // #settings/display-settings is being redirected to #settings/preferences.
         section = "preferences";

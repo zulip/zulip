@@ -2114,7 +2114,7 @@ No changes; feature level used for Zulip 3.0 release.
   `create_stream_policy`, `digest_emails_enabled`, `digest_weekday`,
   `user_group_edit_policy`, and `avatar_changes_disabled` organization settings.
 * Added `fluid_layout_width`, `desktop_icon_count_display`, and
-  `demote_inactive_streams` display settings.
+  `demote_inactive_streams` preferences.
 * `enable_stream_sounds` was renamed to
   `enable_stream_audible_notifications`.
 * [`POST /users/me/subscriptions/properties`](/api/update-subscription-settings):
