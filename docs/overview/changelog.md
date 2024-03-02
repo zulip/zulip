@@ -173,7 +173,7 @@ _Released 2023-12-15_
   support an upcoming mobile feature. Realms now have a UUID sent to
   the push notifications service to simplify migrating via
   export/import into a different server.
-- Display settings was renamed to Preferences.
+- preferences was renamed to Preferences.
 - "Default view" was renamed to "home view".
 - The manage streams UI has a cleaner design for changing
   subscriptions, can now directly manage default streams, and has
@@ -1589,7 +1589,7 @@ _Released 2021-05-13_
 - "Recent topics" is no longer beta, no longer an overlay, supports
   composing messages, and is now the default view. The previous
   default view, "All messages", is still available, and the default
-  view can now be configured via "Display settings".
+  view can now be configured via "preferences".
 - Completed API documentation for Zulip's real-time events system. It
   is now possible to write a decent Zulip client with minimal
   interaction with the Zulip server development team.
@@ -3551,7 +3551,7 @@ _Released 2016-08-25_
   Zulip.
 - Added support for using Ubuntu 16.04 in production.
 - Added a powerful and complete realm import/export tool.
-- Added nice UI for selecting a default language to display settings.
+- Added nice UI for selecting a default language to preferences.
 - Added UI for searching streams in left sidebar with hotkeys.
 - Added Semaphore, Bitbucket, and HelloWorld (example) integrations.
 - Added new webhook-based integration for Trello.

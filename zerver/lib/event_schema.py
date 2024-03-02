@@ -1518,9 +1518,9 @@ typing_stop_event = event_dict_type(
 )
 check_typing_stop = make_checker(typing_stop_event)
 
-update_display_settings_event = event_dict_type(
+update_preferences_event = event_dict_type(
     required_keys=[
-        ("type", Equals("update_display_settings")),
+        ("type", Equals("update_preferences")),
         ("setting_name", str),
         ("setting", value_type),
         ("user", str),
@@ -1529,7 +1529,7 @@ update_display_settings_event = event_dict_type(
         ("language_name", str),
     ],
 )
-_check_update_display_settings = make_checker(update_display_settings_event)
+_check_update_preferences = make_checker(update_preferences_event)
 
 user_settings_update_event = event_dict_type(
     required_keys=[
@@ -1546,7 +1546,7 @@ user_settings_update_event = event_dict_type(
 _check_user_settings_update = make_checker(user_settings_update_event)
 
 
-def check_update_display_settings(
+def check_update_preferences(
     var_name: str,
     event: Dict[str, object],
 ) -> None:
@@ -1555,7 +1555,7 @@ def check_update_display_settings(
     is more specifically typed according to the
     UserProfile.property_types dictionary.
     """
-    _check_update_display_settings(var_name, event)
+    _check_update_preferences(var_name, event)
     setting_name = event["setting_name"]
     setting = event["setting"]
 

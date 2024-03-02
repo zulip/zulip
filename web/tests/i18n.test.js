@@ -89,7 +89,7 @@ run_test("tr_tag", ({mock_template}) => {
     const args = {
         botserverrc: "botserverrc",
         date_joined_text: "Mar 21, 2022",
-        display_settings: {
+        preferences: {
             settings: {},
         },
         notification_settings: {},

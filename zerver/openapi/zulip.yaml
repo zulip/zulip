@@ -251,7 +251,7 @@ paths:
                             - type: object
                               description: |
                                 Event sent to clients that have requested the
-                                `update_display_settings` event type and did not include
+                                `update_preferences` event type and did not include
                                 `user_settings_object` in their `client_capabilities` when
                                 registering the event queue.
 
@@ -266,7 +266,7 @@ paths:
                                   allOf:
                                     - $ref: "#/components/schemas/EventTypeSchema"
                                     - enum:
-                                        - update_display_settings
+                                        - update_preferences
                                 user:
                                   type: string
                                   description: |
@@ -291,7 +291,7 @@ paths:
                               additionalProperties: false
                               example:
                                 {
-                                  "type": "update_display_settings",
+                                  "type": "update_preferences",
                                   "user": "iago@zulip.com",
                                   "setting_name": "high_contrast_mode",
                                   "setting": false,
@@ -347,7 +347,7 @@ paths:
                                 have changed.
 
                                 **Changes**: New in Zulip 5.0 (feature level 89), replacing the
-                                previous `update_display_settings` and `update_global_notifications`
+                                previous `update_preferences` and `update_global_notifications`
                                 event types, which are still present for backwards compatibility reasons.
                               properties:
                                 id:
@@ -11917,14 +11917,14 @@ paths:
 
                     - `user_settings_object`: Boolean for whether the client supports the modern
                       `user_settings` event type. If false, the server will additionally send the
-                      legacy `update_global_notifications` and `update_display_settings` event
+                      legacy `update_global_notifications` and `update_preferences` event
                       types.
                       <br />
                       **Changes**: New in Zulip 5.0 (feature level 89). This capability is for
                       backwards-compatibility; it will be removed in a future server release.
                       Because the feature level 89 API changes were merged together, clients can
                       safely make a request with this client capability and also request all three
-                      event types (`user_settings`, `update_display_settings`,
+                      event types (`user_settings`, `update_preferences`,
                       `update_global_notifications`), and get exactly one copy of settings data on
                       any server version. Clients can then use the `zulip_feature_level` in the
                       `/register` response or the presence/absence of a `user_settings` key to
@@ -13744,7 +13744,7 @@ paths:
                         deprecated: true
                         type: integer
                         description: |
-                          Present if `update_display_settings` is present in `fetch_event_types`
+                          Present if `update_preferences` is present in `fetch_event_types`
                           and only for clients that did not include `user_settings_object` in
                           their [`client_capabilities`][capabilities] when registering the event queue.
 
@@ -13762,7 +13762,7 @@ paths:
                         deprecated: true
                         type: string
                         description: |
-                          Present if `update_display_settings` is present in `fetch_event_types`
+                          Present if `update_preferences` is present in `fetch_event_types`
                           and only for clients that did not include `user_settings_object` in
                           their [`client_capabilities`][capabilities] when registering the event queue.
 
@@ -13780,7 +13780,7 @@ paths:
                         deprecated: true
                         type: integer
                         description: |
-                          Present if `update_display_settings` is present in `fetch_event_types`
+                          Present if `update_preferences` is present in `fetch_event_types`
                           and only for clients that did not include `user_settings_object` in
                           their [`client_capabilities`][capabilities] when registering the event queue.
 
@@ -13798,7 +13798,7 @@ paths:
                         deprecated: true
                         type: boolean
                         description: |
-                          Present if `update_display_settings` is present in `fetch_event_types`
+                          Present if `update_preferences` is present in `fetch_event_types`
                           and only for clients that did not include `user_settings_object` in
                           their [`client_capabilities`][capabilities] when registering the event queue.
 
@@ -13817,7 +13817,7 @@ paths:
                         deprecated: true
                         type: string
                         description: |
-                          Present if `update_display_settings` is present in `fetch_event_types`
+                          Present if `update_preferences` is present in `fetch_event_types`
                           and only for clients that did not include `user_settings_object` in
                           their [`client_capabilities`][capabilities] when registering the event queue.
 
@@ -13835,7 +13835,7 @@ paths:
                         deprecated: true
                         type: boolean
                         description: |
-                          Present if `update_display_settings` is present in `fetch_event_types`
+                          Present if `update_preferences` is present in `fetch_event_types`
                           and only for clients that did not include `user_settings_object` in
                           their [`client_capabilities`][capabilities] when registering the event queue.
 
@@ -13856,7 +13856,7 @@ paths:
                         deprecated: true
                         type: boolean
                         description: |
-                          Present if `update_display_settings` is present in `fetch_event_types`
+                          Present if `update_preferences` is present in `fetch_event_types`
                           and only for clients that did not include `user_settings_object` in
                           their [`client_capabilities`][capabilities] when registering the event queue.
 
@@ -13874,7 +13874,7 @@ paths:
                         deprecated: true
                         type: string
                         description: |
-                          Present if `update_display_settings` is present in `fetch_event_types`
+                          Present if `update_preferences` is present in `fetch_event_types`
                           and only for clients that did not include `user_settings_object` in
                           their [`client_capabilities`][capabilities] when registering the event queue.
 
@@ -13898,7 +13898,7 @@ paths:
                         deprecated: true
                         type: boolean
                         description: |
-                          Present if `update_display_settings` is present in `fetch_event_types`
+                          Present if `update_preferences` is present in `fetch_event_types`
                           and only for clients that did not include `user_settings_object` in
                           their [`client_capabilities`][capabilities] when registering the event queue.
 
@@ -13916,7 +13916,7 @@ paths:
                         deprecated: true
                         type: boolean
                         description: |
-                          Present if `update_display_settings` is present in `fetch_event_types`
+                          Present if `update_preferences` is present in `fetch_event_types`
                           and only for clients that did not include `user_settings_object` in
                           their [`client_capabilities`][capabilities] when registering the event queue.
 
@@ -13936,7 +13936,7 @@ paths:
                         deprecated: true
                         type: boolean
                         description: |
-                          Present if `update_display_settings` is present in `fetch_event_types`
+                          Present if `update_preferences` is present in `fetch_event_types`
                           and only for clients that did not include `user_settings_object` in
                           their [`client_capabilities`][capabilities] when registering the event queue.
 
@@ -13955,7 +13955,7 @@ paths:
                         deprecated: true
                         type: string
                         description: |
-                          Present if `update_display_settings` is present in `fetch_event_types`
+                          Present if `update_preferences` is present in `fetch_event_types`
                           and only for clients that did not include `user_settings_object` in
                           their [`client_capabilities`][capabilities] when registering the event queue.
 
@@ -13974,7 +13974,7 @@ paths:
                         deprecated: true
                         type: boolean
                         description: |
-                          Present if `update_display_settings` is present in `fetch_event_types`
+                          Present if `update_preferences` is present in `fetch_event_types`
                           and only for clients that did not include `user_settings_object` in
                           their [`client_capabilities`][capabilities] when registering the event queue.
 
@@ -13993,7 +13993,7 @@ paths:
                         deprecated: true
                         type: boolean
                         description: |
-                          Present if `update_display_settings` is present in `fetch_event_types`
+                          Present if `update_preferences` is present in `fetch_event_types`
                           and only for clients that did not include `user_settings_object` in
                           their [`client_capabilities`][capabilities] when registering the event queue.
 
@@ -14012,7 +14012,7 @@ paths:
                         deprecated: true
                         type: boolean
                         description: |
-                          Present if `update_display_settings` is present in `fetch_event_types`
+                          Present if `update_preferences` is present in `fetch_event_types`
                           and only for clients that did not include `user_settings_object` in
                           their [`client_capabilities`][capabilities] when registering the event queue.
 
@@ -14025,14 +14025,14 @@ paths:
 
                           Prior to Zulip 5.0 (feature level 84), this field was present
                           in response if `realm_user` was present in `fetch_event_types`, not
-                          `update_display_settings`.
+                          `update_preferences`.
 
                           [capabilities]: /api/register-queue#parameter-client_capabilities
                           [set-enter-send]: /help/mastering-the-compose-box#toggle-between-ctrl-enter-and-enter-to-send-a-message
                       emojiset_choices:
                         deprecated: true
                         description: |
-                          Present if `update_display_settings` is present in `fetch_event_types`
+                          Present if `update_preferences` is present in `fetch_event_types`
                           and only for clients that did not include `user_settings_object` in
                           their [`client_capabilities`][capabilities] when registering the event queue.
 
