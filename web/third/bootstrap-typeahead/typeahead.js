@@ -198,7 +198,7 @@ import {get_string_diff} from "../../src/util";
                     this.$element.val(),
                     after_text,
                 );
-                const replacement = after_text.substring(from, to_after);
+                const replacement = after_text.slice(from, to_after);
                 // select / highlight the minimal text to be replaced
                 this.$element[0].setSelectionRange(from, to_before);
                 insertTextIntoField(this.$element[0], replacement);
