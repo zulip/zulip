@@ -36,7 +36,7 @@ const draft_schema = z.intersection(
         content: z.string(),
         updatedAt: z.number(),
     }),
-    z.union([
+    z.discriminatedUnion("type", [
         z.object({
             type: z.literal("stream"),
             topic: z.string(),
@@ -61,7 +61,7 @@ const possibly_buggy_draft_schema = z.intersection(
         content: z.string(),
         updatedAt: z.number(),
     }),
-    z.union([
+    z.discriminatedUnion("type", [
         z.object({
             type: z.literal("stream"),
             topic: z.string().optional(),

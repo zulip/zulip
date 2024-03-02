@@ -43,7 +43,10 @@ const one_time_notice_schema = z.object({
     type: z.literal("one_time_notice"),
 });
 
-const onboarding_step_schema = z.union([one_time_notice_schema, hotspot_schema]);
+const onboarding_step_schema = z.discriminatedUnion("type", [
+    one_time_notice_schema,
+    hotspot_schema,
+]);
 
 export type OnboardingStep = z.output<typeof onboarding_step_schema>;
 
