@@ -85,7 +85,7 @@ export function adjust_mac_kbd_tags(kbd_elem_class: string): void {
 
 // We convert the hotkey hints used in the tooltips to mac equivalent
 // key combinations, when we detect that the user is using a mac-style keyboard.
-export function adjust_mac_tooltip_keys(hotkeys: string[]): void {
+export function adjust_mac_hotkeys(hotkeys: string[]): void {
     if (!has_mac_keyboard()) {
         return;
     }

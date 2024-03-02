@@ -120,7 +120,7 @@ Handlebars.registerHelper("numberFormat", (number) => number.toLocaleString());
 Handlebars.registerHelper("tooltip_hotkey_hints", (...hotkeys) => {
     hotkeys.pop(); // Handlebars options
     let hotkey_hints = "";
-    common.adjust_mac_tooltip_keys(hotkeys);
+    common.adjust_mac_hotkeys(hotkeys);
     for (const hotkey of hotkeys) {
         hotkey_hints += `<span class="tooltip-hotkey-hint">${hotkey}</span>`;
     }
