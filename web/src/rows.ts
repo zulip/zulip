@@ -112,7 +112,7 @@ export function local_echo_id($message_row: JQuery): string | undefined {
     return message_id;
 }
 
-export function get_message_id(elem: string): number | undefined {
+export function get_message_id(elem: HTMLElement): number | undefined {
     // Gets the message_id for elem, where elem is a DOM
     // element inside a message.  This is typically used
     // in click handlers for things like the reaction button.
