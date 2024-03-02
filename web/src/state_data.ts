@@ -43,9 +43,9 @@ const one_time_notice_schema = z.object({
     type: z.literal("one_time_notice"),
 });
 
-const onboarding_steps_schema = z.union([one_time_notice_schema, hotspot_schema]);
+const onboarding_step_schema = z.union([one_time_notice_schema, hotspot_schema]);
 
-export type OnboardingSteps = z.output<typeof onboarding_steps_schema>;
+export type OnboardingStep = z.output<typeof onboarding_step_schema>;
 
 export const current_user_schema = z.object({
     avatar_source: z.string(),
@@ -55,7 +55,7 @@ export const current_user_schema = z.object({
     is_guest: z.boolean(),
     is_moderator: z.boolean(),
     is_owner: z.boolean(),
-    onboarding_steps: z.array(onboarding_steps_schema),
+    onboarding_steps: z.array(onboarding_step_schema),
     user_id: z.number(),
 });
 // Sync this with zerver.lib.events.do_events_register.

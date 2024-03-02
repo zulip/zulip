@@ -1,7 +1,7 @@
 import * as blueslip from "./blueslip";
 import * as channel from "./channel";
 import {current_user} from "./state_data";
-import type {OnboardingSteps} from "./state_data";
+import type {OnboardingStep} from "./state_data";
 
 export const ONE_TIME_NOTICES_TO_DISPLAY = new Set<string>();
 
@@ -21,11 +21,11 @@ export function post_onboarding_step_as_read(onboarding_step_name: string): void
     });
 }
 
-export function filter_new_hotspots(onboarding_steps: OnboardingSteps[]): OnboardingSteps[] {
+export function filter_new_hotspots(onboarding_steps: OnboardingStep[]): OnboardingStep[] {
     return onboarding_steps.filter((onboarding_step) => onboarding_step.type === "hotspot");
 }
 
-export function update_notice_to_display(onboarding_steps: OnboardingSteps[]): void {
+export function update_notice_to_display(onboarding_steps: OnboardingStep[]): void {
     ONE_TIME_NOTICES_TO_DISPLAY.clear();
 
     for (const onboarding_step of onboarding_steps) {
