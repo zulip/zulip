@@ -19,8 +19,8 @@ export function set_selected_emoji_info(emoji_info: Partial<UserStatusEmojiInfo>
     selected_emoji_info = {...emoji_info};
     rebuild_status_emoji_selector_ui(selected_emoji_info);
 }
-export function input_field(): JQuery {
-    return $("#set-user-status-modal input.user-status");
+export function input_field(): JQuery<HTMLInputElement> {
+    return $<HTMLInputElement>("#set-user-status-modal input.user-status");
 }
 
 export function submit_button(): JQuery {
@@ -53,7 +53,7 @@ export function submit_new_status(): void {
     let old_status_text = user_status.get_status_text(user_id) ?? "";
     old_status_text = old_status_text.trim();
     const old_emoji_info = user_status.get_status_emoji(user_id);
-    const new_status_text = input_field().val()?.toString().trim() ?? "";
+    const new_status_text = input_field().val()?.trim() ?? "";
 
     if (
         old_status_text === new_status_text &&
@@ -79,7 +79,7 @@ export function update_button(): void {
     let old_status_text = user_status.get_status_text(user_id) ?? "";
     old_status_text = old_status_text.trim();
     const old_emoji_info = user_status.get_status_emoji(user_id);
-    const new_status_text = input_field().val()?.toString().trim() ?? "";
+    const new_status_text = input_field().val()?.trim() ?? "";
     const $button = submit_button();
 
     if (
