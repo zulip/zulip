@@ -137,13 +137,13 @@ import {insertTextIntoField} from "text-field-edit";
 import {get_string_diff} from "../../src/util";
 
 !(function ($) {
-    function get_pseudo_keycode(e) {
-        const isComposing = (e.originalEvent && e.originalEvent.isComposing) || false;
+    function get_pseudo_keycode(event) {
+        const isComposing = (event.originalEvent && event.originalEvent.isComposing) || false;
         /* We treat IME compose enter keypresses as a separate -13 key. */
-        if (e.keyCode === 13 && isComposing) {
+        if (event.keyCode === 13 && isComposing) {
             return -13;
         }
-        return e.keyCode;
+        return event.keyCode;
     }
 
     /* TYPEAHEAD PUBLIC CLASS DEFINITION
