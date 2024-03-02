@@ -232,11 +232,9 @@ export function initialize(): void {
         e.preventDefault();
 
         const message_id = rows.id($(e.currentTarget).closest(".message_row"));
-        assert(message_id !== undefined);
         assert(message_lists.current !== undefined);
         const $row = message_lists.current.get_row(message_id);
         const row_id = rows.id($row);
-        assert(row_id !== undefined);
         const message = message_lists.current.get(row_id);
         assert(message !== undefined);
 

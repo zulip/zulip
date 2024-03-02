@@ -75,7 +75,6 @@ function get_message_for_message_content($content: JQuery): Message | undefined 
         return undefined;
     }
     const message_id = rows.id($message_row);
-    assert(message_id !== undefined);
     return message_store.get(message_id);
 }
 

@@ -118,7 +118,6 @@ export function register_click_handlers(): void {
         const $elt = $(e.currentTarget);
         const $row = $elt.closest(".message_row");
         const message_id = rows.id($row);
-        assert(message_id !== undefined);
 
         assert(message_lists.current !== undefined);
         const message = message_lists.current.get(message_id);
