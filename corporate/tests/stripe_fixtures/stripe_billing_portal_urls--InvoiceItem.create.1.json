@@ -1,5 +1,5 @@
 {
-  "amount": 48000,
+  "amount": 984000,
   "currency": "usd",
   "customer": "cus_NORMALIZED0001",
   "date": 1000000000,
@@ -38,7 +38,7 @@
     "unit_amount_decimal": "8000"
   },
   "proration": false,
-  "quantity": 6,
+  "quantity": 123,
   "subscription": null,
   "tax_rates": [],
   "test_clock": null,

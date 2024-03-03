@@ -41,9 +41,9 @@
   "ending_balance": 0,
   "footer": null,
   "from_invoice": null,
-  "hosted_invoice_url": "https://invoice.stripe.com/i/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QV3loUTdmYWJ1aFYwWjkzOVVYMTNvUjFvWkhBTVUyLDk4MDI4NDYx0200lTkXzpnU?s=ap",
+  "hosted_invoice_url": "https://invoice.stripe.com/i/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QZm9OUGgxRWlVNTJya1JtbmpyQllDbHZnWGdhNXBRLDEwMDA2NTgxNQ0200mB38Vqek?s=ap",
   "id": "in_NORMALIZED00000000000006",
-  "invoice_pdf": "https://pay.stripe.com/invoice/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QV3loUTdmYWJ1aFYwWjkzOVVYMTNvUjFvWkhBTVUyLDk4MDI4NDYx0200lTkXzpnU/pdf?s=ap",
+  "invoice_pdf": "https://pay.stripe.com/invoice/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QZm9OUGgxRWlVNTJya1JtbmpyQllDbHZnWGdhNXBRLDEwMDA2NTgxNQ0200mB38Vqek/pdf?s=ap",
   "issuer": {
     "type": "self"
   },
@@ -60,6 +60,7 @@
         "discountable": false,
         "discounts": [],
         "id": "il_NORMALIZED00000000000006",
+        "invoice": "in_NORMALIZED00000000000006",
         "invoice_item": "ii_NORMALIZED00000000000006",
         "livemode": false,
         "metadata": {},

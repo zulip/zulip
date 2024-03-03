@@ -43,9 +43,9 @@
       "ending_balance": 0,
       "footer": null,
       "from_invoice": null,
-      "hosted_invoice_url": "https://invoice.stripe.com/i/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QV3loczJFWmx4OWJ0MW5BcmlydkN6dFBYV2FHMm5ULDk4MDI4NDcy0200B9fMwtdg?s=ap",
+      "hosted_invoice_url": "https://invoice.stripe.com/i/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QZm9OdkdvQXVlU0FPOVBUS2JwOGhjWHB6c2hzRXZrLDEwMDA2NTgyNg0200YRZ2P7hm?s=ap",
       "id": "in_NORMALIZED00000000000008",
-      "invoice_pdf": "https://pay.stripe.com/invoice/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QV3loczJFWmx4OWJ0MW5BcmlydkN6dFBYV2FHMm5ULDk4MDI4NDcy0200B9fMwtdg/pdf?s=ap",
+      "invoice_pdf": "https://pay.stripe.com/invoice/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QZm9OdkdvQXVlU0FPOVBUS2JwOGhjWHB6c2hzRXZrLDEwMDA2NTgyNg0200YRZ2P7hm/pdf?s=ap",
       "issuer": {
         "type": "self"
       },
@@ -62,6 +62,7 @@
             "discountable": false,
             "discounts": [],
             "id": "il_NORMALIZED00000000000008",
+            "invoice": "in_NORMALIZED00000000000008",
             "invoice_item": "ii_NORMALIZED00000000000008",
             "livemode": false,
             "metadata": {},
@@ -205,9 +206,9 @@
       "ending_balance": 0,
       "footer": null,
       "from_invoice": null,
-      "hosted_invoice_url": "https://invoice.stripe.com/i/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QV3loVGtybVZmVDJDNjV5OUNPOHBkaW1zdWpNazdPLDk4MDI4NDcy0200niMBECU0?s=ap",
+      "hosted_invoice_url": "https://invoice.stripe.com/i/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QZm9OVGNCVHJObmI1RERIb1YyM1pYbUV2TDk3ZGFlLDEwMDA2NTgyNg02006W13DpvT?s=ap",
       "id": "in_NORMALIZED00000000000007",
-      "invoice_pdf": "https://pay.stripe.com/invoice/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QV3loVGtybVZmVDJDNjV5OUNPOHBkaW1zdWpNazdPLDk4MDI4NDcy0200niMBECU0/pdf?s=ap",
+      "invoice_pdf": "https://pay.stripe.com/invoice/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QZm9OVGNCVHJObmI1RERIb1YyM1pYbUV2TDk3ZGFlLDEwMDA2NTgyNg02006W13DpvT/pdf?s=ap",
       "issuer": {
         "type": "self"
       },
@@ -224,6 +225,7 @@
             "discountable": false,
             "discounts": [],
             "id": "il_NORMALIZED00000000000007",
+            "invoice": "in_NORMALIZED00000000000007",
             "invoice_item": "ii_NORMALIZED00000000000007",
             "livemode": false,
             "metadata": {},

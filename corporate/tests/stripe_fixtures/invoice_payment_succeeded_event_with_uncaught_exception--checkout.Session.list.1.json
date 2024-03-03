@@ -16,7 +16,7 @@
       "client_secret": null,
       "consent": null,
       "consent_collection": null,
-      "created": 1010000001,
+      "created": 1010000009,
       "currency": null,
       "currency_conversion": null,
       "custom_fields": [],
@@ -38,7 +38,7 @@
       },
       "customer_email": null,
       "expires_at": 1000000000,
-      "id": "cs_test_NORMALIZED02fE5NMQ4AvWmQEXQir4oNaRnaKzUCW8Bxgzj1raxvfD4qKG",
+      "id": "cs_test_NORMALIZED028fBAeuged7nAlPqwzWhkNUUVinnLXxeOgRS9WtuLJYjy6A",
       "invoice": null,
       "invoice_creation": null,
       "livemode": false,
@@ -53,7 +53,11 @@
       "payment_link": null,
       "payment_method_collection": "always",
       "payment_method_configuration_details": null,
-      "payment_method_options": {},
+      "payment_method_options": {
+        "card": {
+          "request_three_d_secure": "automatic"
+        }
+      },
       "payment_method_types": [
         "card"
       ],
@@ -62,7 +66,7 @@
         "enabled": false
       },
       "recovered_from": null,
-      "setup_intent": "seti_1OhukhDEQaroqDjsDlSjhcp0",
+      "setup_intent": "seti_1OqSl3DEQaroqDjsq8b5NCel",
       "shipping": null,
       "shipping_address_collection": null,
       "shipping_options": [],
@@ -73,7 +77,7 @@
       "success_url": "http://zulip.testserver/billing/event_status/?stripe_session_id={CHECKOUT_SESSION_ID}",
       "total_details": null,
       "ui_mode": "hosted",
-      "url": "https://checkout.stripe.com/c/pay/cs_test_NORMALIZED02fE5NMQ4AvWmQEXQir4oNaRnaKzUCW8Bxgzj1raxvfD4qKG#fid1d2BpamRhQ2prcSc%2FJ1ZqcHdmYCVWZGt2JVV3aicpJ2R1bE5gfCc%2FJ3VuWnFgdnFaXVRmMU5zNkldQTY9SnNRY09XZml2UXNQJyknY3dqaFZgd3Ngdyc%2FcXdwYCknaWR8anBxUXx1YCc%2FJ3Zsa2JpYFpmamlwaGsnKSdga2RnaWBVaWRmYG1qaWFgd3YnP3F3cGB4JSUl"
+      "url": "https://checkout.stripe.com/c/pay/cs_test_NORMALIZED028fBAeuged7nAlPqwzWhkNUUVinnLXxeOgRS9WtuLJYjy6A#fid1d2BpamRhQ2prcSc%2FJ1ZqcHdmYCVWZGt2JVV3aicpJ2R1bE5gfCc%2FJ3VuWnFgdnFaXVRmMU5zNkldQTY9SnNRY09XZml2UXNQJyknY3dqaFZgd3Ngdyc%2FcXdwYCknaWR8anBxUXx1YCc%2FJ3Zsa2JpYFpmamlwaGsnKSdga2RnaWBVaWRmYG1qaWFgd3YnP3F3cGB4JSUl"
     }
   ],
   "has_more": true,

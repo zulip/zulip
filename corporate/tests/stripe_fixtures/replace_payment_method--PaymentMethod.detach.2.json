@@ -20,7 +20,8 @@
       "cvc_check": "pass"
     },
     "country": "US",
-    "exp_month": 2,
+    "display_brand": "visa",
+    "exp_month": 3,
     "exp_year": 2025,
     "fingerprint": "NORMALIZED000001",
     "funding": "credit",
@@ -39,7 +40,7 @@
   },
   "created": 1000000000,
   "customer": null,
-  "id": "pm_1OhuktDEQaroqDjsB7Ha2QWT",
+  "id": "pm_1OqSlEDEQaroqDjsppYrr8OV",
   "livemode": false,
   "metadata": {},
   "object": "payment_method",

@@ -51,7 +51,7 @@
       },
       "paid": true,
       "payment_intent": "pi_NORMALIZED00000000000002",
-      "payment_method": "pm_1OhusfDEQaroqDjsBZazbR99",
+      "payment_method": "pm_1OqSu1DEQaroqDjsmoCTRlki",
       "payment_method_details": {
         "card": {
           "amount_authorized": 36000,
@@ -62,7 +62,7 @@
             "cvc_check": "pass"
           },
           "country": "US",
-          "exp_month": 2,
+          "exp_month": 3,
           "exp_year": 2025,
           "extended_authorization": {
             "status": "disabled"
@@ -94,7 +94,7 @@
       "radar_options": {},
       "receipt_email": "hamlet@zulip.com",
       "receipt_number": null,
-      "receipt_url": "https://pay.stripe.com/receipts/invoices/CAcaFwoVYWNjdF8xN3ZUa3dERVFhcm9xRGpzKNLnmK4GMgawzbFwPYM6LBZZOoP4rbFzhhF18-7YC5SYZeENpbBT57aiah9zmY91YgEoHkUGMWPXEzAd?s=ap",
+      "receipt_url": "https://pay.stripe.com/receipts/invoices/CAcaFwoVYWNjdF8xN3ZUa3dERVFhcm9xRGpzKO2Ula8GMgbtfXVX1aE6LBbIlCRvYBim_bJ3eAAP6uESaSC4r9XAvSc4h-osIDZTrJ2OUMFi78qgxAda?s=ap",
       "refunded": false,
       "refunds": {
         "data": [],
@@ -164,7 +164,7 @@
       },
       "paid": true,
       "payment_intent": "pi_NORMALIZED00000000000001",
-      "payment_method": "pm_1OhusUDEQaroqDjshMg71tMy",
+      "payment_method": "pm_1OqStqDEQaroqDjs6pAvfeVl",
       "payment_method_details": {
         "card": {
           "amount_authorized": 7200,
@@ -175,7 +175,7 @@
             "cvc_check": "pass"
           },
           "country": "US",
-          "exp_month": 2,
+          "exp_month": 3,
           "exp_year": 2025,
           "extended_authorization": {
             "status": "disabled"
@@ -207,7 +207,7 @@
       "radar_options": {},
       "receipt_email": "hamlet@zulip.com",
       "receipt_number": null,
-      "receipt_url": "https://pay.stripe.com/receipts/invoices/CAcaFwoVYWNjdF8xN3ZUa3dERVFhcm9xRGpzKNLnmK4GMgZOw9ITYdQ6LBYqT_OTq9sggStFhgXDKsockZu22dNUILWJUjKspT9VgIVSPIP2nlhx45dl?s=ap",
+      "receipt_url": "https://pay.stripe.com/receipts/invoices/CAcaFwoVYWNjdF8xN3ZUa3dERVFhcm9xRGpzKO2Ula8GMgbjxhDSSQI6LBYLEj7Ps1awfBoOqg0H35xKSEo7AdL3zmjLwiKhsOneaYzLY_LyPuQ91Igj?s=ap",
       "refunded": false,
       "refunds": {
         "data": [],
