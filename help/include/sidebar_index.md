@@ -119,6 +119,7 @@
 * [Status and availability](/help/status-and-availability)
 * [User cards](/help/user-cards)
 * [View someone's profile](/help/view-someones-profile)
+* [Link to a profile](/help/link-to-profile)
 * [Direct messages](/help/direct-messages)
 * [User groups](/help/user-groups)
 
