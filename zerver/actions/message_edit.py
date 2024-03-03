@@ -174,6 +174,11 @@ def maybe_send_resolve_topic_notifications(
         # not a bug with the "resolve topics" feature.
         return None
 
+    if (topic_resolved and new_topic_name[2:] != old_topic_name) or (
+        topic_unresolved and old_topic_name[2:] != new_topic_name
+    ):
+        return None
+
     # Compute the users who either sent or reacted to messages that
     # were moved via the "resolve topic' action. Only those users
     # should be eligible for this message being managed as unread.
