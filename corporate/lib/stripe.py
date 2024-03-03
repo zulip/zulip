@@ -1745,7 +1745,16 @@ class BillingSession(ABC):
                 customer=customer, next_invoice_date=next_invoice_date, **plan_params
             )
 
+            self.write_to_audit_log(
+                event_type=AuditLogEventType.CUSTOMER_PLAN_CREATED,
+                event_time=event_time,
+                extra_data=plan_params,
+            )
+
             if plan.status < CustomerPlan.LIVE_STATUS_THRESHOLD:
+                # Tier and usage limit change will happen when plan becomes live.
+                self.do_change_plan_type(tier=plan_tier)
+
                 # LicenseLedger entries are way for us to charge customer and track their license usage.
                 # So, we should only create these entries for live plans.
                 ledger_entry = LicenseLedger.objects.create(
@@ -1777,12 +1786,6 @@ class BillingSession(ABC):
                     # Creates due today invoice for additional licenses.
                     self.invoice_plan(plan, event_time)
 
-            self.write_to_audit_log(
-                event_type=AuditLogEventType.CUSTOMER_PLAN_CREATED,
-                event_time=event_time,
-                extra_data=plan_params,
-            )
-
         if not stripe_invoice_paid and not (
             free_trial or should_schedule_upgrade_for_legacy_remote_server
         ):
@@ -1796,9 +1799,6 @@ class BillingSession(ABC):
                 billing_schedule=billing_schedule,
                 charge_automatically=False,
             )
-        if plan.status < CustomerPlan.LIVE_STATUS_THRESHOLD:
-            # Tier and usage limit change will happen when plan becomes live.
-            self.do_change_plan_type(tier=plan_tier)
 
     def do_upgrade(self, upgrade_request: UpgradeRequest) -> Dict[str, Any]:
         customer = self.get_customer()
