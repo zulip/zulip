@@ -174,6 +174,17 @@ class RemoteRealmBillingTestCase(BouncerTestCase):
 class SelfHostedBillingEndpointBasicTest(RemoteRealmBillingTestCase):
     @responses.activate
     def test_self_hosted_billing_endpoints(self) -> None:
+        # An ordinary user doesn't have access to these endpoints.
+        self.login("hamlet")
+        for url in [
+            "/self-hosted-billing/",
+            "/json/self-hosted-billing",
+            "/self-hosted-billing/not-configured/",
+        ]:
+            result = self.client_get(url)
+            self.assert_json_error(result, "Must be an organization owner")
+
+        # Login as an organization owner to gain access.
         self.login("desdemona")
 
         self.add_mock_response()
@@ -253,6 +264,8 @@ class SelfHostedBillingEndpointBasicTest(RemoteRealmBillingTestCase):
 @override_settings(PUSH_NOTIFICATION_BOUNCER_URL="https://push.zulip.org.example.com")
 class RemoteBillingAuthenticationTest(RemoteRealmBillingTestCase):
     def test_self_hosted_config_error_page(self) -> None:
+        self.login("desdemona")
+
         with self.settings(
             CORPORATE_ENABLED=False, PUSH_NOTIFICATION_BOUNCER_URL=None
         ), self.assertLogs("django.request"):
