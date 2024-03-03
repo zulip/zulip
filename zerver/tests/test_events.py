@@ -1398,6 +1398,19 @@ class NormalActionsTest(BaseAction):
         events = self.verify_action(lambda: do_remove_realm_custom_profile_field(realm, field))
         check_custom_profile_fields("events[0]", events[0])
 
+        # Test event when the rendered_name and rendered_hint are None (for older fields).
+        field.rendered_name = None
+        field.rendered_hint = None
+        field.save()
+        events = self.verify_action(
+            lambda: try_add_realm_custom_profile_field(
+                realm=realm, name="Zodiac Sign", field_type=CustomProfileField.LONG_TEXT
+            )
+        )
+        check_custom_profile_fields("events[0]", events[0])
+
+        self.assertNotIn("rendered_name", events[0]["fields"][1])
+
     def test_pronouns_type_support_in_custom_profile_fields_events(self) -> None:
         realm = self.user_profile.realm
         field = CustomProfileField.objects.get(realm=realm, name="Pronouns")

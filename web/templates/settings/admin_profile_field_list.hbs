@@ -5,10 +5,18 @@
         <i class="fa fa-ellipsis-v" aria-hidden="true"></i>
         <i class="fa fa-ellipsis-v" aria-hidden="true"></i>
         {{/if}}
+        {{#if rendered_name}}
+        <span class="profile_field_name rendered_markdown">{{rendered_markdown rendered_name}}</span>
+        {{else}}
         <span class="profile_field_name">{{name}}</span>
+        {{/if}}
     </td>
     <td>
+        {{#if rendered_hint}}
+        <span class="profile_field_hint rendered_markdown">{{rendered_markdown rendered_hint}}</span>
+        {{else}}
         <span class="profile_field_hint">{{hint}}</span>
+        {{/if}}
     </td>
     <td>
         <span class="profile_field_type">{{type}}</span>

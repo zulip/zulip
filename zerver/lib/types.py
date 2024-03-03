@@ -19,8 +19,10 @@ ProfileDataElementValue: TypeAlias = Union[str, List[int]]
 class ProfileDataElementBase(TypedDict, total=False):
     id: int
     name: str
+    rendered_name: Optional[str]
     type: int
     hint: str
+    rendered_hint: Optional[str]
     display_in_profile_summary: bool
     required: bool
     field_data: str
