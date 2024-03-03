@@ -282,6 +282,7 @@ export function get_custom_profile_field_data(user, field, field_types) {
     }
     profile_field.id = field.id;
     profile_field.name = field.name;
+    profile_field.rendered_name = field.rendered_name !== "" ? field.rendered_name : undefined;
     profile_field.is_user_field = false;
     profile_field.is_link = field_type === field_types.URL.id;
     profile_field.is_external_account = field_type === field_types.EXTERNAL_ACCOUNT.id;

@@ -1,10 +1,18 @@
 <div class="custom_user_field" name="{{ field.name }}" data-field-id="{{ field.id }}">
     <span class="custom-user-field-label-wrapper {{#if field.required}}required-field-wrapper{{/if}}">
-        <label class="inline-block" for="{{ field.name }}" class="title">{{ field.name }}</label>
+        {{#if field.rendered_name}}
+            <label class="inline-block rendered_markdown" for="{{ field.name }}" class="title rendered_markdown">{{rendered_markdown field.rendered_name }}</label>
+        {{else}}
+            <label class="inline-block" for="{{ field.name }}" class="title">{{ field.name }}</label>
+        {{/if}}
         <span class="required-symbol {{#unless is_empty_required_field}}hidden{{/unless}}"> *</span>
     </span>
     <div class="alert-notification custom-field-status"></div>
-    <div class="settings-profile-field-user-hint">{{ field.hint }}</div>
+    {{#if field.rendered_hint}}
+        <div class="field_hint rendered_markdown">{{rendered_markdown field.rendered_hint }}</div>
+    {{else}}
+        <div class="settings-profile-field-user-hint">{{ field.hint }}</div>
+    {{/if}}
     <div class="settings-profile-user-field {{#if is_empty_required_field}}empty-required-field{{/if}}">
         {{#if is_long_text_field}}
         <textarea maxlength="500" class="custom_user_field_value settings_textarea">{{ field_value.value }}</textarea>

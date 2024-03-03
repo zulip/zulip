@@ -174,6 +174,8 @@ custom_profile_field_type = DictType(
     ],
     optional_keys=[
         ("display_in_profile_summary", bool),
+        ("rendered_name", str),
+        ("rendered_hint", str),
     ],
 )
 

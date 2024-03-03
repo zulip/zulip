@@ -20,6 +20,11 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 9.0
 
+**Feature level 257**
+
+* [`POST /register`](/api/register-queue): Added new fields `rendered_name`
+  and `rendered_hint` to `realm_default_external_accounts`.
+
 **Feature level 256**
 
 * [`GET /events`](/api/get-events): Stream update events with a new

@@ -1854,32 +1854,40 @@ paths:
                                       {
                                         "id": 1,
                                         "name": "Phone number",
+                                        "rendered_name": "<p>Phone number</p>",
                                         "type": 1,
                                         "hint": "",
+                                        "rendered_hint": "",
                                         "field_data": "",
                                         "order": 1,
                                       },
                                       {
                                         "id": 2,
                                         "name": "Biography",
+                                        "rendered_name": "<p>Biography</p>",
                                         "type": 2,
                                         "hint": "What are you known for?",
+                                        "rendered_hint": "<p>What are you known for?</p>",
                                         "field_data": "",
                                         "order": 2,
                                       },
                                       {
                                         "id": 3,
                                         "name": "Favorite food",
+                                        "rendered_name": "<p>Favorite food</p>",
                                         "type": 1,
                                         "hint": "Or drink, if you'd prefer",
+                                        "rendered_hint": "<p>Or drink, if you'd prefer</p>",
                                         "field_data": "",
                                         "order": 3,
                                       },
                                       {
                                         "id": 4,
                                         "name": "Favorite editor",
+                                        "rendered_name": "<p>Favorite editor</p>",
                                         "type": 3,
                                         "hint": "",
+                                        "rendered_hint": "",
                                         "field_data": '{"0":{"text":"Vim","order":"1"},"1":{"text":"Emacs","order":"2"}}',
                                         "order": 4,
                                         "display_in_profile_summary": true,
@@ -1887,16 +1895,20 @@ paths:
                                       {
                                         "id": 5,
                                         "name": "Birthday",
+                                        "rendered_name": "<p>Birthday</p>",
                                         "type": 4,
                                         "hint": "",
+                                        "rendered_hint": "",
                                         "field_data": "",
                                         "order": 5,
                                       },
                                       {
                                         "id": 6,
                                         "name": "Favorite website",
+                                        "rendered_name": "<p>Favorite website</p>",
                                         "type": 5,
                                         "hint": "Or your personal blog's URL",
+                                        "rendered_hint": "<p>Or your personal blog's URL</p>",
                                         "field_data": "",
                                         "order": 6,
                                         "display_in_profile_summary": true,
@@ -1904,16 +1916,20 @@ paths:
                                       {
                                         "id": 7,
                                         "name": "Mentor",
+                                        "rendered_name": "<p>Mentor</p>",
                                         "type": 6,
                                         "hint": "",
+                                        "rendered_hint": "",
                                         "field_data": "",
                                         "order": 7,
                                       },
                                       {
                                         "id": 8,
                                         "name": "GitHub",
+                                        "rendered_name": "<p>GitHub</p>",
                                         "type": 7,
                                         "hint": "Enter your GitHub username",
+                                        "rendered_hint": "<p>Enter your GitHub username</p>",
                                         "field_data": '{"subtype":"github"}',
                                         "order": 8,
                                         "required": true,
@@ -10307,32 +10323,40 @@ paths:
                             {
                               "id": 1,
                               "name": "Phone number",
+                              "rendered_name": "<p>Phone number</p>",
                               "type": 1,
                               "hint": "",
+                              "rendered_hint": "",
                               "field_data": "",
                               "order": 1,
                             },
                             {
                               "id": 2,
                               "name": "Biography",
+                              "rendered_name": "<p>Biography</p>",
                               "type": 2,
                               "hint": "What are you known for?",
+                              "rendered_hint": "<p>What are you known for?</p>",
                               "field_data": "",
                               "order": 2,
                             },
                             {
                               "id": 3,
                               "name": "Favorite food",
+                              "rendered_name": "<p>Favorite food</p>",
                               "type": 1,
                               "hint": "Or drink, if you'd prefer",
+                              "rendered_hint": "<p>Or drink, if you'd prefer</p>",
                               "field_data": "",
                               "order": 3,
                             },
                             {
                               "id": 4,
                               "name": "Favorite editor",
+                              "rendered_name": "<p>Favorite editor</p>",
                               "type": 3,
                               "hint": "",
+                              "rendered_hint": "",
                               "field_data": '{"0":{"text":"Vim","order":"1"},"1":{"text":"Emacs","order":"2"}}',
                               "order": 4,
                               "display_in_profile_summary": true,
@@ -10340,16 +10364,20 @@ paths:
                             {
                               "id": 5,
                               "name": "Birthday",
+                              "rendered_name": "<p>Birthday</p>",
                               "type": 4,
                               "hint": "",
+                              "rendered_hint": "",
                               "field_data": "",
                               "order": 5,
                             },
                             {
                               "id": 6,
                               "name": "Favorite website",
+                              "rendered_name": "<p>Favorite website</p>",
                               "type": 5,
                               "hint": "Or your personal blog's URL",
+                              "rendered_hint": "<p>Or your personal blog's URL</p>",
                               "field_data": "",
                               "order": 6,
                               "display_in_profile_summary": true,
@@ -10357,16 +10385,20 @@ paths:
                             {
                               "id": 7,
                               "name": "Mentor",
+                              "rendered_name": "<p>Mentor</p>",
                               "type": 6,
                               "hint": "",
+                              "rendered_hint": "",
                               "field_data": "",
                               "order": 7,
                             },
                             {
                               "id": 8,
                               "name": "GitHub",
+                              "rendered_name": "<p>GitHub</p>",
                               "type": 7,
                               "hint": "Enter your GitHub username",
+                              "rendered_hint": "<p>Enter your GitHub username</p>",
                               "field_data": '{"subtype":"github"}',
                               "order": 8,
                               "required": true,
@@ -10374,8 +10406,10 @@ paths:
                             {
                               "id": 9,
                               "name": "Pronouns",
+                              "rendered_name": "<p>Pronouns</p>",
                               "type": 8,
                               "hint": "What pronouns should people use to refer to you?",
+                              "rendered_hint": "<p>What pronouns should people use to refer to you?</p>",
                               "order": 9,
                             },
                           ],
@@ -15469,6 +15503,13 @@ paths:
                               type: string
                               description: |
                                 The name of the external account provider
+                            rendered_name:
+                              type: string
+                              description: |
+                                The markdown rendered name of the external account
+                                provider
+
+                                **Changes**: New in Zulip 9.0 (feature level 257).
                             text:
                               type: string
                               description: |
@@ -15480,6 +15521,15 @@ paths:
                                 custom profile field in user-facing
                                 settings UI for configuring custom
                                 profile fields for this account.
+                            rendered_hint:
+                              type: string
+                              description: |
+                                The markdown rendered help text to be
+                                displayed for the custom profile field in
+                                user-facing settings UI for configuring
+                                custom profile fields for this account.
+
+                                **Changes**: New in Zulip 9.0 (feature level 257).
                             url_pattern:
                               type: string
                               description: |
@@ -19553,11 +19603,26 @@ components:
           type: string
           description: |
             The name of the custom profile field.
+        rendered_name:
+          type: string
+          description: |
+            The markdown rendered name of the custom profile field.
+
+            **Changes**: New in Zulip 9.0 (feature level 257).
+          nullable: true
         hint:
           type: string
           description: |
             The help text to be displayed for the custom profile field in user-facing
             settings UI for configuring custom profile fields.
+        rendered_hint:
+          type: string
+          description: |
+            The markdown rendered help text to be displayed for the custom profile
+            field in user-facing settings UI for configuring custom profile fields.
+
+            **Changes**: New in Zulip 9.0 (feature level 257).
+          nullable: true
         field_data:
           type: string
           description: |

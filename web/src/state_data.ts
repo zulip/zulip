@@ -74,6 +74,8 @@ export const custom_profile_field_schema = z.object({
     id: z.number(),
     name: z.string(),
     order: z.number(),
+    rendered_hint: z.optional(z.string()),
+    rendered_name: z.optional(z.string()),
     required: z.boolean(),
     type: z.number(),
 });

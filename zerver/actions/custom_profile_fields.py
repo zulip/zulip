@@ -6,6 +6,7 @@ from django.utils.translation import gettext as _
 
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.external_accounts import DEFAULT_EXTERNAL_ACCOUNTS
+from zerver.lib.markdown import markdown_convert
 from zerver.lib.streams import render_stream_description
 from zerver.lib.types import ProfileDataElementUpdateDict, ProfileFieldData
 from zerver.lib.users import get_user_ids_who_can_access_user
@@ -21,6 +22,10 @@ def notify_realm_custom_profile_fields(realm: Realm) -> None:
     send_event(realm, event, active_user_ids(realm.id))
 
 
+def render_custom_profile_fields(field: str, realm: Realm) -> str:
+    return markdown_convert(field, message_realm=realm, no_previews=True).rendered_content
+
+
 def try_add_realm_default_custom_profile_field(
     realm: Realm,
     field_subtype: str,
@@ -28,11 +33,15 @@ def try_add_realm_default_custom_profile_field(
     required: bool = False,
 ) -> CustomProfileField:
     field_data = DEFAULT_EXTERNAL_ACCOUNTS[field_subtype]
+    rendered_name = render_custom_profile_fields(str(field_data.name), realm)
+    rendered_hint = render_custom_profile_fields(field_data.hint, realm)
     custom_profile_field = CustomProfileField(
         realm=realm,
         name=str(field_data.name),
+        rendered_name=rendered_name,
         field_type=CustomProfileField.EXTERNAL_ACCOUNT,
         hint=field_data.hint,
+        rendered_hint=rendered_hint,
         field_data=orjson.dumps(dict(subtype=field_subtype)).decode(),
         display_in_profile_summary=display_in_profile_summary,
         required=required,
@@ -56,11 +65,13 @@ def try_add_realm_custom_profile_field(
     custom_profile_field = CustomProfileField(
         realm=realm,
         name=name,
+        rendered_name=render_custom_profile_fields(name, realm),
         field_type=field_type,
         display_in_profile_summary=display_in_profile_summary,
         required=required,
     )
     custom_profile_field.hint = hint
+    custom_profile_field.rendered_hint = render_custom_profile_fields(hint, realm)
     if custom_profile_field.field_type in (
         CustomProfileField.SELECT,
         CustomProfileField.EXTERNAL_ACCOUNT,
@@ -109,8 +120,10 @@ def try_update_realm_custom_profile_field(
 ) -> None:
     if name is not None:
         field.name = name
+        field.rendered_name = render_custom_profile_fields(name, realm)
     if hint is not None:
         field.hint = hint
+        field.rendered_hint = render_custom_profile_fields(hint, realm)
     if required is not None:
         field.required = required
     if display_in_profile_summary is not None:
