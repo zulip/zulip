@@ -43,9 +43,9 @@
       "ending_balance": 0,
       "footer": null,
       "from_invoice": null,
-      "hosted_invoice_url": "https://invoice.stripe.com/i/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QV3lrbllJUVF1cE5aZHM4aDRzQUNXQkh6VE0zbHJYLDk4MDI4NjMx0200yK6yF06t?s=ap",
+      "hosted_invoice_url": "https://invoice.stripe.com/i/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QZm9QVWxzNEpLT1NwQnljeUFyUDlZcURoQVQySlU2LDEwMDA2NTk4MA0200MWq67ZiA?s=ap",
       "id": "in_NORMALIZED00000000000003",
-      "invoice_pdf": "https://pay.stripe.com/invoice/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QV3lrbllJUVF1cE5aZHM4aDRzQUNXQkh6VE0zbHJYLDk4MDI4NjMx0200yK6yF06t/pdf?s=ap",
+      "invoice_pdf": "https://pay.stripe.com/invoice/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QZm9QVWxzNEpLT1NwQnljeUFyUDlZcURoQVQySlU2LDEwMDA2NTk4MA0200MWq67ZiA/pdf?s=ap",
       "issuer": {
         "type": "self"
       },
@@ -62,6 +62,7 @@
             "discountable": false,
             "discounts": [],
             "id": "il_NORMALIZED00000000000004",
+            "invoice": "in_NORMALIZED00000000000003",
             "invoice_item": "ii_NORMALIZED00000000000004",
             "livemode": false,
             "metadata": {},
@@ -112,7 +113,7 @@
       "livemode": false,
       "metadata": {},
       "next_payment_attempt": null,
-      "number": "NORMALI-0003",
+      "number": "NORMALI-0004",
       "object": "invoice",
       "on_behalf_of": null,
       "paid": false,
@@ -160,7 +161,7 @@
       "total_excluding_tax": 960000,
       "total_tax_amounts": [],
       "transfer_data": null,
-      "webhooks_delivered_at": null
+      "webhooks_delivered_at": 1000000000
     },
     {
       "account_country": "US",
@@ -205,9 +206,9 @@
       "ending_balance": 0,
       "footer": null,
       "from_invoice": null,
-      "hosted_invoice_url": "https://invoice.stripe.com/i/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QV3lrSU0yQzRLeE1qdWNKZDdZbXpJYXFicXQ1QU9yLDk4MDI4NjMx0200pllsRuA2?s=ap",
+      "hosted_invoice_url": "https://invoice.stripe.com/i/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QZm9Qa1hZcFZtOVFGVnl2VUVPVHdkMVNmYlIxR1hZLDEwMDA2NTk4MA0200GydVuqNB?s=ap",
       "id": "in_NORMALIZED00000000000002",
-      "invoice_pdf": "https://pay.stripe.com/invoice/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QV3lrSU0yQzRLeE1qdWNKZDdZbXpJYXFicXQ1QU9yLDk4MDI4NjMx0200pllsRuA2/pdf?s=ap",
+      "invoice_pdf": "https://pay.stripe.com/invoice/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QZm9Qa1hZcFZtOVFGVnl2VUVPVHdkMVNmYlIxR1hZLDEwMDA2NTk4MA0200GydVuqNB/pdf?s=ap",
       "issuer": {
         "type": "self"
       },
@@ -224,6 +225,7 @@
             "discountable": false,
             "discounts": [],
             "id": "il_NORMALIZED00000000000002",
+            "invoice": "in_NORMALIZED00000000000002",
             "invoice_item": "ii_NORMALIZED00000000000002",
             "livemode": false,
             "metadata": {},
@@ -274,6 +276,7 @@
             "discountable": false,
             "discounts": [],
             "id": "il_NORMALIZED00000000000003",
+            "invoice": "in_NORMALIZED00000000000002",
             "invoice_item": "ii_NORMALIZED00000000000003",
             "livemode": false,
             "metadata": {},
@@ -324,7 +327,7 @@
       "livemode": false,
       "metadata": {},
       "next_payment_attempt": null,
-      "number": "NORMALI-0002",
+      "number": "NORMALI-0003",
       "object": "invoice",
       "on_behalf_of": null,
       "paid": false,
@@ -386,7 +389,7 @@
       "application_fee_amount": null,
       "attempt_count": 0,
       "attempted": false,
-      "auto_advance": true,
+      "auto_advance": false,
       "automatic_tax": {
         "enabled": false,
         "liability": null,
@@ -417,9 +420,9 @@
       "ending_balance": 0,
       "footer": null,
       "from_invoice": null,
-      "hosted_invoice_url": "https://invoice.stripe.com/i/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QV3lrVjRqSUFWVXBLVjlEQ0R5Y3NkZXlaTE10NllILDk4MDI4NjMx0200LIsSUK7M?s=ap",
+      "hosted_invoice_url": "https://invoice.stripe.com/i/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QZm9Qa3ZqdmVYNnI5WjVVTGNjQzlmZXIybU5XSFVyLDEwMDA2NTk4MA02005gAh2bRu?s=ap",
       "id": "in_NORMALIZED00000000000001",
-      "invoice_pdf": "https://pay.stripe.com/invoice/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QV3lrVjRqSUFWVXBLVjlEQ0R5Y3NkZXlaTE10NllILDk4MDI4NjMx0200LIsSUK7M/pdf?s=ap",
+      "invoice_pdf": "https://pay.stripe.com/invoice/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QZm9Qa3ZqdmVYNnI5WjVVTGNjQzlmZXIybU5XSFVyLDEwMDA2NTk4MA02005gAh2bRu/pdf?s=ap",
       "issuer": {
         "type": "self"
       },
@@ -436,6 +439,7 @@
             "discountable": false,
             "discounts": [],
             "id": "il_NORMALIZED00000000000001",
+            "invoice": "in_NORMALIZED00000000000001",
             "invoice_item": "ii_NORMALIZED00000000000001",
             "livemode": false,
             "metadata": {},
@@ -486,17 +490,18 @@
       "livemode": false,
       "metadata": {
         "billing_schedule": "1",
+        "license_management": "manual",
         "licenses": "100",
         "plan_tier": "1",
         "user_id": "10"
       },
       "next_payment_attempt": null,
-      "number": "NORMALI-0001",
+      "number": "NORMALI-0002",
       "object": "invoice",
       "on_behalf_of": null,
-      "paid": false,
-      "paid_out_of_band": false,
-      "payment_intent": "pi_NORMALIZED00000000000001",
+      "paid": true,
+      "paid_out_of_band": true,
+      "payment_intent": null,
       "payment_settings": {
         "default_mandate": null,
         "payment_method_options": null,
@@ -519,11 +524,11 @@
       "shipping_details": null,
       "starting_balance": 0,
       "statement_descriptor": "Zulip Cloud Standard",
-      "status": "open",
+      "status": "paid",
       "status_transitions": {
         "finalized_at": 1000000000,
         "marked_uncollectible_at": null,
-        "paid_at": null,
+        "paid_at": 1000000000,
         "voided_at": null
       },
       "subscription": null,

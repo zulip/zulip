@@ -11,7 +11,7 @@
         "status": null
       },
       "billing_address_collection": "required",
-      "cancel_url": "http://selfhosting.testserver/realm/6e3ae165-ac87-411f-9862-bb5bd2755052/upgrade/?manual_license_management=false&tier=1",
+      "cancel_url": "http://selfhosting.testserver/realm/332b5af0-59bf-4285-8447-23fb3a302c86/upgrade/?manual_license_management=false&tier=1",
       "client_reference_id": null,
       "client_secret": null,
       "consent": null,
@@ -38,13 +38,13 @@
       },
       "customer_email": null,
       "expires_at": 1000000000,
-      "id": "cs_test_NORMALIZED02sBbt08VvTQBh5mYxzSae0hkRcNsQvbEXWaHtjWx9iBm4Ul",
+      "id": "cs_test_NORMALIZED022KnIGz5EWP2VElIilSJwmk2Cnkk0zsDZUKGGcG5ZA33WEn",
       "invoice": null,
       "invoice_creation": null,
       "livemode": false,
       "locale": null,
       "metadata": {
-        "remote_realm_user_id": "5",
+        "remote_realm_user_id": "4",
         "type": "card_update"
       },
       "mode": "setup",
@@ -53,7 +53,11 @@
       "payment_link": null,
       "payment_method_collection": "always",
       "payment_method_configuration_details": null,
-      "payment_method_options": {},
+      "payment_method_options": {
+        "card": {
+          "request_three_d_secure": "automatic"
+        }
+      },
       "payment_method_types": [
         "card"
       ],
@@ -62,7 +66,7 @@
         "enabled": false
       },
       "recovered_from": null,
-      "setup_intent": "seti_1OhuodDEQaroqDjsPduuIl4X",
+      "setup_intent": "seti_1OqSovDEQaroqDjstKL2DHxj",
       "shipping": null,
       "shipping_address_collection": null,
       "shipping_options": [],
@@ -70,10 +74,10 @@
       "status": "open",
       "submit_type": null,
       "subscription": null,
-      "success_url": "http://selfhosting.testserver/realm/6e3ae165-ac87-411f-9862-bb5bd2755052/billing/event_status/?stripe_session_id={CHECKOUT_SESSION_ID}",
+      "success_url": "http://selfhosting.testserver/realm/332b5af0-59bf-4285-8447-23fb3a302c86/billing/event_status/?stripe_session_id={CHECKOUT_SESSION_ID}",
       "total_details": null,
       "ui_mode": "hosted",
-      "url": "https://checkout.stripe.com/c/pay/cs_test_NORMALIZED02sBbt08VvTQBh5mYxzSae0hkRcNsQvbEXWaHtjWx9iBm4Ul#fid1d2BpamRhQ2prcSc%2FJ1ZqcHdmYCVWZGt2JVV3aicpJ2R1bE5gfCc%2FJ3VuWnFgdnFaXVRmMU5zNkldQTY9SnNRY09XZml2UXNQJyknY3dqaFZgd3Ngdyc%2FcXdwYCknaWR8anBxUXx1YCc%2FJ3Zsa2JpYFpmamlwaGsnKSdga2RnaWBVaWRmYG1qaWFgd3YnP3F3cGB4JSUl"
+      "url": "https://checkout.stripe.com/c/pay/cs_test_NORMALIZED022KnIGz5EWP2VElIilSJwmk2Cnkk0zsDZUKGGcG5ZA33WEn#fid1d2BpamRhQ2prcSc%2FJ1ZqcHdmYCVWZGt2JVV3aicpJ2R1bE5gfCc%2FJ3VuWnFgdnFaXVRmMU5zNkldQTY9SnNRY09XZml2UXNQJyknY3dqaFZgd3Ngdyc%2FcXdwYCknaWR8anBxUXx1YCc%2FJ3Zsa2JpYFpmamlwaGsnKSdga2RnaWBVaWRmYG1qaWFgd3YnP3F3cGB4JSUl"
     }
   ],
   "has_more": true,

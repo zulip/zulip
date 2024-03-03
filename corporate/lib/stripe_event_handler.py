@@ -142,13 +142,22 @@ def handle_invoice_paid_event(stripe_invoice: stripe.Invoice, invoice: Invoice) 
             remote_server_legacy_plan=remote_server_legacy_plan,
             stripe_invoice_paid=True,
         )
-    elif stripe_invoice.collection_method == "charge_automatically":
+    else:
         metadata = stripe_invoice.metadata
-        assert metadata is not None
+        # Only process upgrade required if metadata has the required keys.
+        # This is a safeguard to avoid processing custom invoices.
+        if (
+            metadata is None
+            or metadata.get("billing_schedule") is None
+            or metadata.get("plan_tier") is None
+        ):  # nocoverage
+            return
+
         billing_session = get_billing_session_for_stripe_webhook(customer, metadata.get("user_id"))
         remote_server_legacy_plan = billing_session.get_remote_server_legacy_plan(customer)
         billing_schedule = int(metadata["billing_schedule"])
         plan_tier = int(metadata["plan_tier"])
+        charge_automatically = stripe_invoice.collection_method != "send_invoice"
         if configured_fixed_price_plan and customer.required_plan_tier == plan_tier:
             assert customer.required_plan_tier is not None
             billing_session.process_initial_upgrade(
@@ -158,7 +167,7 @@ def handle_invoice_paid_event(stripe_invoice: stripe.Invoice, invoice: Invoice) 
                 licenses=0,
                 automanage_licenses=True,
                 billing_schedule=billing_schedule,
-                charge_automatically=True,
+                charge_automatically=charge_automatically,
                 free_trial=False,
                 remote_server_legacy_plan=remote_server_legacy_plan,
                 stripe_invoice_paid=True,
@@ -169,7 +178,7 @@ def handle_invoice_paid_event(stripe_invoice: stripe.Invoice, invoice: Invoice) 
                 int(metadata["licenses"]),
                 metadata["license_management"] == "automatic",
                 billing_schedule=billing_schedule,
-                charge_automatically=True,
+                charge_automatically=charge_automatically,
                 free_trial=False,
                 remote_server_legacy_plan=remote_server_legacy_plan,
                 stripe_invoice_paid=True,

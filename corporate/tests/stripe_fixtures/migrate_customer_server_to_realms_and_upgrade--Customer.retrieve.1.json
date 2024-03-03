@@ -6,7 +6,7 @@
   "default_currency": null,
   "default_source": null,
   "delinquent": false,
-  "description": "zulip.testserver 6e3ae165-ac8",
+  "description": "zulip.testserver 332b5af0-59b",
   "discount": null,
   "email": "hamlet@zulip.com",
   "id": "cus_NORMALIZED0001",
@@ -35,7 +35,8 @@
           "cvc_check": "pass"
         },
         "country": "US",
-        "exp_month": 2,
+        "display_brand": "visa",
+        "exp_month": 3,
         "exp_year": 2025,
         "fingerprint": "NORMALIZED000001",
         "funding": "credit",
@@ -54,7 +55,7 @@
       },
       "created": 1000000000,
       "customer": "cus_NORMALIZED0001",
-      "id": "pm_1OhuonDEQaroqDjsdbOWRnZu",
+      "id": "pm_1OqSp5DEQaroqDjsPB3UW83V",
       "livemode": false,
       "metadata": {},
       "object": "payment_method",
@@ -66,7 +67,7 @@
   "livemode": false,
   "metadata": {
     "remote_realm_host": "zulip.testserver",
-    "remote_realm_uuid": "6e3ae165-ac87-411f-9862-bb5bd2755052"
+    "remote_realm_uuid": "332b5af0-59bf-4285-8447-23fb3a302c86"
   },
   "name": null,
   "next_invoice_sequence": 1,

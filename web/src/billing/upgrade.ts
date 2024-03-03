@@ -2,6 +2,7 @@ import $ from "jquery";
 import {z} from "zod";
 
 import {localstorage} from "../localstorage";
+import * as portico_modals from "../portico/portico_modals";
 
 import * as helpers from "./helpers";
 import type {Prices} from "./helpers";
@@ -129,8 +130,19 @@ function restore_manual_license_count(): void {
 export const initialize = (): void => {
     restore_manual_license_count();
 
-    $("#org-upgrade-button").on("click", (e) => {
+    $("#org-upgrade-button, #confirm-send-invoice-modal .dialog_submit_button").on("click", (e) => {
         e.preventDefault();
+
+        if (page_params.setup_payment_by_invoice) {
+            if ($(e.currentTarget).parents("#confirm-send-invoice-modal").length === 0) {
+                // Open confirm send invoice model if not open.
+                portico_modals.open("confirm-send-invoice-modal");
+                return;
+            }
+
+            // Close modal so that we can show errors on the send invoice button.
+            portico_modals.close_active();
+        }
 
         // Clear the error box in case this is a repeat request.
         const $error_box = $("#autopay-error");
@@ -145,6 +157,11 @@ export const initialize = (): void => {
             [],
             "POST",
             (response) => {
+                if (page_params.setup_payment_by_invoice && !page_params.free_trial_days) {
+                    window.location.replace(`${page_params.billing_base_url}/upgrade/`);
+                    return;
+                }
+
                 const response_data = upgrade_response_schema.parse(response);
                 if (response_data.stripe_invoice_id) {
                     window.location.replace(
@@ -197,6 +214,13 @@ export const initialize = (): void => {
     });
 
     $("#upgrade-add-card-button").on("click", (e) => {
+        e.preventDefault();
+        if (e.currentTarget.classList.contains("update-billing-information-button")) {
+            const redirect_url = `${page_params.billing_base_url}/customer_portal/?manual_license_management=true&tier=${page_params.tier}&setup_payment_by_invoice=true`;
+            window.open(redirect_url, "_blank");
+            return;
+        }
+
         $("#upgrade-add-card-button #upgrade-add-card-button-text").hide();
         $("#upgrade-add-card-button .loader").show();
         helpers.create_ajax_request(
@@ -213,7 +237,6 @@ export const initialize = (): void => {
                 $("#upgrade-add-card-button #upgrade-add-card-button-text").show();
             },
         );
-        e.preventDefault();
     });
 };
 

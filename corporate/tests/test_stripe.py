@@ -323,6 +323,7 @@ MOCKED_STRIPE_FUNCTION_NAMES = [
         "Invoice.list",
         "Invoice.pay",
         "Invoice.refresh",
+        "Invoice.retrieve",
         "Invoice.upcoming",
         "Invoice.void_invoice",
         "InvoiceItem.create",
@@ -635,15 +636,11 @@ class StripeTestCase(ZulipTestCase):
         is_self_hosted_billing = not isinstance(self.billing_session, RealmBillingSession)
         customer = self.billing_session.get_customer()
         assert customer is not None
-        if (
-            invoice
-            or not talk_to_stripe
-            or (
-                is_free_trial_offer_enabled(is_self_hosted_billing)
-                and
-                # Free trial is not applicable for legacy customers.
-                not is_legacy_customer(customer)
-            )
+        if not talk_to_stripe or (
+            is_free_trial_offer_enabled(is_self_hosted_billing)
+            and
+            # Free trial is not applicable for legacy customers.
+            not is_legacy_customer(customer)
         ):
             # Upgrade already happened for free trial, invoice realms or schedule
             # upgrade for legacy remote servers.
@@ -664,6 +661,10 @@ class StripeTestCase(ZulipTestCase):
             last_sent_invoice.stripe_invoice_id,
             {"status": "sent"},
         )
+
+        if invoice:
+            # Mark the invoice as paid via stripe with the `invoice.paid` event.
+            stripe.Invoice.pay(last_sent_invoice.stripe_invoice_id, paid_out_of_band=True)
 
         # Upgrade the organization.
         self.send_stripe_webhook_events(last_event)
@@ -813,7 +814,7 @@ class StripeTest(StripeTestCase):
         self.assertEqual(response.status_code, 302)
         self.assertTrue(response["Location"].startswith("https://billing.stripe.com"))
 
-        self.upgrade()
+        self.upgrade(invoice=True)
 
         response = self.client_get("/customer_portal/?return_to_billing_page=true")
         self.assertEqual(response.status_code, 302)
@@ -994,12 +995,6 @@ class StripeTest(StripeTestCase):
             assert_is_not_none(Customer.objects.get(realm=user.realm).stripe_customer_id)
         )
         self.assertFalse(stripe_customer_has_credit_card_as_default_payment_method(stripe_customer))
-        # It can take a second for Stripe to attach the source to the customer, and in
-        # particular it may not be attached at the time stripe_get_customer is called above,
-        # causing test flakes.
-        # So commenting the next line out, but leaving it here so future readers know what
-        # is supposed to happen here
-        # self.assertEqual(stripe_customer.default_source.type, 'ach_credit_transfer')
 
         # Check Charges in Stripe
         self.assertFalse(stripe.Charge.list(customer=stripe_customer.id))
@@ -1011,10 +1006,10 @@ class StripeTest(StripeTestCase):
             "amount_due": 8000 * 123,
             "amount_paid": 0,
             "attempt_count": 0,
-            "auto_advance": True,
+            "auto_advance": False,
             "collection_method": "send_invoice",
             "statement_descriptor": "Zulip Cloud Standard",
-            "status": "open",
+            "status": "paid",
             "total": 8000 * 123,
         }
         for key, value in invoice_params.items():
@@ -1493,6 +1488,7 @@ class StripeTest(StripeTestCase):
         initial_upgrade_request = InitialUpgradeRequest(
             manual_license_management=False,
             tier=CustomerPlan.TIER_CLOUD_STANDARD,
+            billing_modality="charge_automatically",
         )
         billing_session = RealmBillingSession(hamlet)
         _, context_when_upgrade_page_is_rendered = billing_session.get_initial_upgrade_context(
@@ -1542,11 +1538,13 @@ class StripeTest(StripeTestCase):
     def test_upgrade_race_condition_during_card_upgrade(self, *mocks: Mock) -> None:
         hamlet = self.example_user("hamlet")
         othello = self.example_user("othello")
+        self.login_user(othello)
+        othello_upgrade_page_response = self.client_get("/upgrade/")
 
         self.login_user(hamlet)
-        hamlet_upgrade_page_response = self.client_get("/upgrade/")
         self.add_card_to_customer_for_upgrade()
         [stripe_event_before_upgrade] = iter(stripe.Event.list(limit=1))
+        hamlet_upgrade_page_response = self.client_get("/upgrade/")
         self.client_billing_post(
             "/billing/upgrade",
             {
@@ -1566,8 +1564,21 @@ class StripeTest(StripeTestCase):
         [hamlet_invoice] = iter(stripe.Invoice.list(customer=customer.stripe_customer_id))
 
         self.login_user(othello)
-        # Othello completed the upgrade while we were waiting on success payment event for Hamlet.
-        self.upgrade()
+        with self.settings(CLOUD_FREE_TRIAL_DAYS=60):
+            # Othello completed the upgrade while we were waiting on success payment event for Hamlet.
+            # NOTE: Used free trial to avoid creating any stripe invoice events.
+            self.client_billing_post(
+                "/billing/upgrade",
+                {
+                    "billing_modality": "charge_automatically",
+                    "schedule": "annual",
+                    "signed_seat_count": self.get_signed_seat_count_from_response(
+                        othello_upgrade_page_response
+                    ),
+                    "salt": self.get_salt_from_response(othello_upgrade_page_response),
+                    "license_management": "automatic",
+                },
+            )
 
         with self.assertLogs("corporate.stripe", "WARNING"):
             self.send_stripe_webhook_events(stripe_event_before_upgrade)
@@ -4033,6 +4044,30 @@ class StripeTest(StripeTestCase):
             self.assertEqual(row.email_expected_to_be_sent, email_found)
 
     @mock_stripe()
+    def test_upgrade_pay_by_invoice(self, *mock: Mock) -> None:
+        hamlet = self.example_user("hamlet")
+        self.login_user(hamlet)
+        response = self.client_get("/upgrade/?setup_payment_by_invoice=true")
+        self.assert_in_success_response(["pay by card", "Send invoice"], response)
+
+        # Send invoice
+        response = self.client_billing_post(
+            "/billing/upgrade",
+            {
+                "billing_modality": "send_invoice",
+                "schedule": "annual",
+                "signed_seat_count": self.get_signed_seat_count_from_response(response),
+                "salt": self.get_salt_from_response(response),
+                "license_management": "manual",
+                "licenses": 40,
+            },
+        )
+        self.assert_json_success(response)
+
+        response = self.client_get("/upgrade/?setup_payment_by_invoice=true")
+        self.assert_in_success_response(["An invoice", "has been sent"], response)
+
+    @mock_stripe()
     def test_change_plan_tier_from_standard_to_plus(self, *mock: Mock) -> None:
         iago = self.example_user("iago")
         realm = iago.realm
@@ -5172,6 +5207,7 @@ class InvoiceTest(StripeTestCase):
         plan.fixed_price = 100
         plan.price_per_license = 0
         plan.save(update_fields=["fixed_price", "price_per_license"])
+        user.realm.refresh_from_db()
         billing_session = RealmBillingSession(realm=user.realm)
         billing_session.invoice_plan(plan, self.next_year)
         stripe_customer_id = plan.customer.stripe_customer_id
@@ -5746,6 +5782,10 @@ class TestSupportBillingHelpers(StripeTestCase):
         billing_session = RealmBillingSession(
             user=support_admin, realm=user.realm, support_session=True
         )
+
+        # Send renewal invoice.
+        invoice_plans_as_needed(self.now + timedelta(days=367))
+
         support_request = SupportViewRequest(
             support_type=SupportType.modify_plan,
             plan_modification="downgrade_now_void_open_invoices",

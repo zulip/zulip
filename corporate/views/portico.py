@@ -410,6 +410,7 @@ def customer_portal(
     return_to_billing_page: Json[bool] = False,
     manual_license_management: Json[bool] = False,
     tier: Optional[Json[int]] = None,
+    setup_payment_by_invoice: Json[bool] = False,
 ) -> HttpResponseRedirect:
     user = request.user
     assert user.is_authenticated
@@ -419,7 +420,7 @@ def customer_portal(
 
     billing_session = RealmBillingSession(user=user, realm=user.realm)
     review_billing_information_url = billing_session.get_stripe_customer_portal_url(
-        return_to_billing_page, manual_license_management, tier
+        return_to_billing_page, manual_license_management, tier, setup_payment_by_invoice
     )
     return HttpResponseRedirect(review_billing_information_url)
 
@@ -433,9 +434,10 @@ def remote_realm_customer_portal(
     return_to_billing_page: Json[bool] = False,
     manual_license_management: Json[bool] = False,
     tier: Optional[Json[int]] = None,
+    setup_payment_by_invoice: Json[bool] = False,
 ) -> HttpResponseRedirect:
     review_billing_information_url = billing_session.get_stripe_customer_portal_url(
-        return_to_billing_page, manual_license_management, tier
+        return_to_billing_page, manual_license_management, tier, setup_payment_by_invoice
     )
     return HttpResponseRedirect(review_billing_information_url)
 
@@ -449,8 +451,9 @@ def remote_server_customer_portal(
     return_to_billing_page: Json[bool] = False,
     manual_license_management: Json[bool] = False,
     tier: Optional[Json[int]] = None,
+    setup_payment_by_invoice: Json[bool] = False,
 ) -> HttpResponseRedirect:
     review_billing_information_url = billing_session.get_stripe_customer_portal_url(
-        return_to_billing_page, manual_license_management, tier
+        return_to_billing_page, manual_license_management, tier, setup_payment_by_invoice
     )
     return HttpResponseRedirect(review_billing_information_url)

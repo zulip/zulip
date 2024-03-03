@@ -19,7 +19,7 @@
   "billing_reason": "manual",
   "charge": null,
   "collection_method": "charge_automatically",
-  "created": 1010000009,
+  "created": 1010000008,
   "currency": "usd",
   "custom_fields": null,
   "customer": "cus_NORMALIZED0001",
@@ -41,9 +41,9 @@
   "ending_balance": 0,
   "footer": null,
   "from_invoice": null,
-  "hosted_invoice_url": "https://invoice.stripe.com/i/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QV3lrUWdVczVuV1lNcjNaMmpmeGNsU1l4U2k0d3hJLDk4MDI4NjQw0200zmM3ixIR?s=ap",
+  "hosted_invoice_url": "https://invoice.stripe.com/i/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QZm9Ra0E4amgyT0pCZmg2ZmNLYjFCc2I5dENmcGliLDEwMDA2NTk5MA0200hMfQYMAH?s=ap",
   "id": "in_NORMALIZED00000000000001",
-  "invoice_pdf": "https://pay.stripe.com/invoice/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QV3lrUWdVczVuV1lNcjNaMmpmeGNsU1l4U2k0d3hJLDk4MDI4NjQw0200zmM3ixIR/pdf?s=ap",
+  "invoice_pdf": "https://pay.stripe.com/invoice/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QZm9Ra0E4amgyT0pCZmg2ZmNLYjFCc2I5dENmcGliLDEwMDA2NTk5MA0200hMfQYMAH/pdf?s=ap",
   "issuer": {
     "type": "self"
   },
@@ -60,6 +60,7 @@
         "discountable": false,
         "discounts": [],
         "id": "il_NORMALIZED00000000000002",
+        "invoice": "in_NORMALIZED00000000000001",
         "invoice_item": "ii_NORMALIZED00000000000002",
         "livemode": false,
         "metadata": {},
@@ -164,5 +165,5 @@
   "total_excluding_tax": 48000,
   "total_tax_amounts": [],
   "transfer_data": null,
-  "webhooks_delivered_at": null
+  "webhooks_delivered_at": 1000000000
 }

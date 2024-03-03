@@ -97,7 +97,7 @@ BILLING_SUPPORT_EMAIL = "sales@zulip.com"
 
 MIN_INVOICED_LICENSES = 30
 MAX_INVOICED_LICENSES = 1000
-DEFAULT_INVOICE_DAYS_UNTIL_DUE = 30
+DEFAULT_INVOICE_DAYS_UNTIL_DUE = 15
 
 VALID_BILLING_MODALITY_VALUES = ["send_invoice", "charge_automatically"]
 VALID_BILLING_SCHEDULE_VALUES = ["annual", "monthly"]
@@ -206,7 +206,9 @@ def validate_licenses(
 ) -> None:
     min_licenses = max(seat_count, min_licenses_for_plan)
     max_licenses = None
-    if not charge_automatically:
+    # max / min license check for invoiced plans is disabled in production right now.
+    # Logic and tests are kept in case we decide to enable it in future.
+    if settings.TEST_SUITE and not charge_automatically:
         min_licenses = max(seat_count, MIN_INVOICED_LICENSES)
         max_licenses = MAX_INVOICED_LICENSES
 
@@ -556,6 +558,7 @@ class UpgradeRequest:
 class InitialUpgradeRequest:
     manual_license_management: bool
     tier: int
+    billing_modality: str
     success_message: str = ""
 
 
@@ -639,6 +642,8 @@ class UpgradePageParams(TypedDict):
     flat_discount: int
     flat_discounted_months: int
     fixed_price: Optional[int]
+    setup_payment_by_invoice: bool
+    free_trial_days: Optional[int]
 
 
 class UpgradePageSessionTypeSpecificContext(TypedDict):
@@ -668,7 +673,6 @@ class UpgradePageContext(TypedDict):
     discount_percent: Optional[str]
     email: str
     exempt_from_license_number_check: bool
-    free_trial_days: Optional[int]
     free_trial_end_date: Optional[str]
     is_demo_organization: bool
     manual_license_management: bool
@@ -686,6 +690,7 @@ class UpgradePageContext(TypedDict):
     success_message: str
     is_sponsorship_pending: bool
     sponsorship_plan_name: str
+    scheduled_upgrade_invoice_amount_due: Optional[str]
 
 
 class SponsorshipRequestForm(forms.Form):
@@ -797,8 +802,14 @@ class BillingSession(ABC):
         return_to_billing_page: bool,
         manual_license_management: bool,
         tier: Optional[int] = None,
+        setup_payment_by_invoice: bool = False,
     ) -> str:
         customer = self.get_customer()
+        if setup_payment_by_invoice and (
+            customer is None or customer.stripe_customer_id is None
+        ):  # nocoverage
+            customer = self.create_stripe_customer()
+
         assert customer is not None and customer.stripe_customer_id is not None
 
         if return_to_billing_page:
@@ -809,6 +820,7 @@ class BillingSession(ABC):
             params = {
                 "manual_license_management": str(manual_license_management).lower(),
                 "tier": str(tier),
+                "setup_payment_by_invoice": str(setup_payment_by_invoice).lower(),
             }
             return_url = f"{base_return_url}?{urlencode(params)}"
 
@@ -878,7 +890,10 @@ class BillingSession(ABC):
             days_until_due = None
         else:
             collection_method = "send_invoice"
-            days_until_due = DEFAULT_INVOICE_DAYS_UNTIL_DUE
+            # days_until_due is required for `send_invoice` collection method. Since this is an invoice
+            # for upgrade, the due date is irrelevant since customer will upgrade once they pay the invoice
+            # regardless of the due date. Using `1` shows `Due today / tomorrow` which seems nice.
+            days_until_due = 1
 
         metadata = {
             "plan_tier": plan_tier,
@@ -1098,16 +1113,20 @@ class BillingSession(ABC):
         # NOTE: This charges users immediately.
         customer = self.get_customer()
         assert customer is not None and customer.stripe_customer_id is not None
+        charge_automatically = metadata["billing_modality"] == "charge_automatically"
         # Ensure customers have a default payment method set.
         stripe_customer = stripe_get_customer(customer.stripe_customer_id)
-        if not stripe_customer_has_credit_card_as_default_payment_method(stripe_customer):
+        if charge_automatically and not stripe_customer_has_credit_card_as_default_payment_method(
+            stripe_customer
+        ):
             raise BillingError(
                 "no payment method",
                 "Please add a credit card before upgrading.",
             )
 
-        assert stripe_customer.invoice_settings is not None
-        assert stripe_customer.invoice_settings.default_payment_method is not None
+        if charge_automatically:
+            assert stripe_customer.invoice_settings is not None
+            assert stripe_customer.invoice_settings.default_payment_method is not None
         stripe_invoice = None
         try:
             stripe_invoice = self.generate_invoice_for_upgrade(
@@ -1117,7 +1136,7 @@ class BillingSession(ABC):
                 metadata["licenses"],
                 metadata["plan_tier"],
                 metadata["billing_schedule"],
-                charge_automatically=True,
+                charge_automatically=charge_automatically,
                 license_management=metadata["license_management"],
             )
             assert stripe_invoice.id is not None
@@ -1126,10 +1145,11 @@ class BillingSession(ABC):
                 customer=customer,
                 status=Invoice.SENT,
             )
-            # Stripe takes its sweet hour to charge customers after creating an invoice.
-            # Since we want to charge customers immediately, we charge them manually.
-            # Then poll for the status of the invoice to see if the payment succeeded.
-            stripe_invoice = stripe.Invoice.pay(stripe_invoice.id)
+            if charge_automatically:
+                # Stripe takes its sweet hour to charge customers after creating an invoice.
+                # Since we want to charge customers immediately, we charge them manually.
+                # Then poll for the status of the invoice to see if the payment succeeded.
+                stripe_invoice = stripe.Invoice.pay(stripe_invoice.id)
         except Exception as e:
             if stripe_invoice is not None:
                 assert stripe_invoice.id is not None
@@ -1528,7 +1548,7 @@ class BillingSession(ABC):
             f"No current plan for {self.billing_entity_display_name}."
         )  # nocoverage
 
-    def generate_stripe_invoice_and_charge_immediately(
+    def generate_stripe_invoice(
         self,
         plan_tier: int,
         seat_count: int,
@@ -1813,7 +1833,6 @@ class BillingSession(ABC):
         if billing_modality == "charge_automatically" and license_management == "automatic":
             licenses = seat_count
         if billing_modality == "send_invoice":
-            schedule = "annual"
             license_management = "manual"
 
         exempt_from_license_number_check = (
@@ -1857,11 +1876,7 @@ class BillingSession(ABC):
             and upgrade_request.remote_server_plan_start_date == "billing_cycle_end_date"
         )
         # Directly upgrade free trial orgs or invoice payment orgs to standard plan.
-        if (
-            should_schedule_upgrade_for_legacy_remote_server
-            or free_trial
-            or not charge_automatically
-        ):
+        if should_schedule_upgrade_for_legacy_remote_server or free_trial:
             self.process_initial_upgrade(
                 upgrade_request.tier,
                 licenses,
@@ -1874,7 +1889,7 @@ class BillingSession(ABC):
             )
             data["organization_upgrade_successful"] = True
         else:
-            stripe_invoice_id = self.generate_stripe_invoice_and_charge_immediately(
+            stripe_invoice_id = self.generate_stripe_invoice(
                 upgrade_request.tier,
                 seat_count,
                 licenses,
@@ -2398,6 +2413,7 @@ class BillingSession(ABC):
 
         fixed_price = None
         pay_by_invoice_payments_page = None
+        scheduled_upgrade_invoice_amount_due = None
         if customer is not None:
             fixed_price_plan_offer = get_configured_fixed_price_plan_offer(customer, tier)
             if fixed_price_plan_offer:
@@ -2407,6 +2423,19 @@ class BillingSession(ABC):
                 if fixed_price_plan_offer.sent_invoice_id is not None:
                     invoice = stripe.Invoice.retrieve(fixed_price_plan_offer.sent_invoice_id)
                     pay_by_invoice_payments_page = invoice.hosted_invoice_url
+            else:
+                # NOTE: Only use `last_send_invoice` to display invoice due information and not to verify payment.
+                last_send_invoice = (
+                    Invoice.objects.filter(customer=customer, status=Invoice.SENT)
+                    .order_by("id")
+                    .last()
+                )
+
+                if last_send_invoice is not None:
+                    invoice = stripe.Invoice.retrieve(last_send_invoice.stripe_invoice_id)
+                    if invoice is not None:
+                        scheduled_upgrade_invoice_amount_due = format_money(invoice.amount_due)
+                        pay_by_invoice_payments_page = f"{self.billing_base_url}/invoices"
 
         percent_off = Decimal(0)
         if customer is not None:
@@ -2416,6 +2445,12 @@ class BillingSession(ABC):
 
         customer_specific_context = self.get_upgrade_page_session_type_specific_context()
         min_licenses_for_plan = self.min_licenses_for_plan(tier)
+
+        setup_payment_by_invoice = initial_upgrade_request.billing_modality == "send_invoice"
+        # Regardless of value passed, invoice payments always have manual license management.
+        if setup_payment_by_invoice:
+            initial_upgrade_request.manual_license_management = True
+
         seat_count = self.current_count_for_billed_licenses()
         using_min_licenses_for_plan = min_licenses_for_plan > seat_count
         if using_min_licenses_for_plan:
@@ -2450,7 +2485,6 @@ class BillingSession(ABC):
             "discount_percent": format_discount_percentage(percent_off),
             "email": customer_specific_context["email"],
             "exempt_from_license_number_check": exempt_from_license_number_check,
-            "free_trial_days": free_trial_days,
             "free_trial_end_date": free_trial_end_date,
             "is_demo_organization": customer_specific_context["is_demo_organization"],
             "remote_server_legacy_plan_end_date": remote_server_legacy_plan_end_date,
@@ -2472,6 +2506,8 @@ class BillingSession(ABC):
                 "flat_discount": flat_discount,
                 "flat_discounted_months": flat_discounted_months,
                 "fixed_price": fixed_price,
+                "setup_payment_by_invoice": setup_payment_by_invoice,
+                "free_trial_days": free_trial_days,
             },
             "using_min_licenses_for_plan": using_min_licenses_for_plan,
             "min_licenses_for_plan": min_licenses_for_plan,
@@ -2487,6 +2523,7 @@ class BillingSession(ABC):
             "sponsorship_plan_name": self.get_sponsorship_plan_name(
                 customer, is_self_hosted_billing
             ),
+            "scheduled_upgrade_invoice_amount_due": scheduled_upgrade_invoice_amount_due,
         }
 
         return None, context
