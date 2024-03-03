@@ -124,19 +124,19 @@ def send_test_push_notification_api(
 def self_hosting_auth_view_common(
     request: HttpRequest, user_profile: UserProfile, next_page: Optional[str] = None
 ) -> str:
+    if not user_profile.has_billing_access:
+        # We may want to replace this with an html error page at some point,
+        # but this endpoint shouldn't be accessible via the UI to an unauthorized
+        # user_profile - and they need to directly enter the URL in their browser. So a json
+        # error may be sufficient.
+        raise OrganizationOwnerRequiredError
+
     if not uses_notification_bouncer():
         if settings.CORPORATE_ENABLED:
             # This endpoint makes no sense on zulipchat.com, so just 404.
             raise ResourceNotFoundError(_("Server doesn't use the push notification service"))
         else:
             return reverse(self_hosting_auth_not_configured)
-
-    if not user_profile.has_billing_access:  # nocoverage
-        # We may want to replace this with an html error page at some point,
-        # but this endpoint shouldn't be accessible via the UI to an unauthorized
-        # user_profile - and they need to directly enter the URL in their browser. So a json
-        # error may be sufficient.
-        raise OrganizationOwnerRequiredError
 
     realm_info = get_realms_info_for_push_bouncer(user_profile.realm_id)[0]
 
@@ -218,7 +218,17 @@ def self_hosting_auth_json_endpoint(
     return json_success(request, data={"billing_access_url": redirect_url})
 
 
+@zulip_login_required
 def self_hosting_auth_not_configured(request: HttpRequest) -> HttpResponse:
+    # Use the same access model as the main endpoints for consistency
+    # and to not have to worry about this endpoint leaking some kind of
+    # sensitive configuration information in the future.
+    user = request.user
+    assert user.is_authenticated
+    assert isinstance(user, UserProfile)
+    if not user.has_billing_access:
+        raise OrganizationOwnerRequiredError
+
     if settings.CORPORATE_ENABLED or uses_notification_bouncer():
         # This error page should only be available if the config error
         # is actually real.
