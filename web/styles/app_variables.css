@@ -195,6 +195,8 @@
     --color-background-popover-menu: hsl(0deg 0% 100%);
     --color-border-popover-menu-separator: hsl(0deg 0% 0% / 10%);
     --color-hotkey-hint: hsl(227deg 78% 59%);
+    --color-popover-hotkey-hint: hsl(0deg 0% 40%);
+    --color-border-popover-hotkey-hint: hsl(0deg 0% 40% / 50%);
     --color-background-hover-popover-menu: hsl(220deg 12% 5% / 5%);
     --color-background-active-popover-menu: hsl(220deg 12% 5% / 7%);
     --color-border-popover-menu: hsl(0deg 0% 0% / 40%);
@@ -493,6 +495,8 @@
     --color-background-popover-menu: hsl(0deg 0% 17%);
     --color-border-popover-menu-separator: hsl(0deg 0% 0% / 40%);
     --color-hotkey-hint: hsl(225deg 100% 84%);
+    --color-popover-hotkey-hint: hsl(0deg 0% 65%);
+    --color-border-popover-hotkey-hint: hsl(0deg 0% 65% / 50%);
     --color-background-hover-popover-menu: hsl(220deg 12% 95% / 5%);
     --color-background-active-popover-menu: hsl(220deg 12% 95% / 7%);
     --color-border-popover-menu: hsl(0deg 0% 0%);
