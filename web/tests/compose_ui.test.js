@@ -544,10 +544,15 @@ function get_textarea_state() {
     return before_text + selected_text + after_text;
 }
 
-run_test("format_text - bold and italic", ({override}) => {
-    override(text_field_edit, "setFieldText", (_field, text) => {
-        $textarea.val = () => text;
-    });
+run_test("format_text - bold and italic", ({override, override_rewire}) => {
+    override_rewire(
+        compose_ui,
+        "insert_and_scroll_into_view",
+        (content, _textarea, replace_all) => {
+            assert.ok(replace_all);
+            $textarea.val = () => content;
+        },
+    );
     override(
         text_field_edit,
         "wrapFieldSelection",
@@ -634,10 +639,15 @@ run_test("format_text - bold and italic", ({override}) => {
     assert.equal(get_textarea_state(), "before <**abc**> after");
 });
 
-run_test("format_text - bulleted and numbered lists", ({override}) => {
-    override(text_field_edit, "setFieldText", (_field, text) => {
-        $textarea.val = () => text;
-    });
+run_test("format_text - bulleted and numbered lists", ({override_rewire}) => {
+    override_rewire(
+        compose_ui,
+        "insert_and_scroll_into_view",
+        (content, _textarea, replace_all) => {
+            assert.ok(replace_all);
+            $textarea.val = () => content;
+        },
+    );
 
     // Toggling on bulleted list
     init_textarea_state("<first_item\nsecond_item>");
@@ -686,10 +696,15 @@ run_test("format_text - bulleted and numbered lists", ({override}) => {
     assert.equal(get_textarea_state(), "<first_item\nsecond_item>");
 });
 
-run_test("format_text - strikethrough", ({override}) => {
-    override(text_field_edit, "setFieldText", (_field, text) => {
-        $textarea.val = () => text;
-    });
+run_test("format_text - strikethrough", ({override, override_rewire}) => {
+    override_rewire(
+        compose_ui,
+        "insert_and_scroll_into_view",
+        (content, _textarea, replace_all) => {
+            assert.ok(replace_all);
+            $textarea.val = () => content;
+        },
+    );
     override(text_field_edit, "wrapFieldSelection", (_field, syntax_start, syntax_end) => {
         const new_val =
             $textarea.val().slice(0, $textarea.range().start) +
@@ -733,10 +748,15 @@ run_test("format_text - strikethrough", ({override}) => {
     assert.equal(get_textarea_state(), "before <abc> after");
 });
 
-run_test("format_text - latex", ({override}) => {
-    override(text_field_edit, "setFieldText", (_field, text) => {
-        $textarea.val = () => text;
-    });
+run_test("format_text - latex", ({override, override_rewire}) => {
+    override_rewire(
+        compose_ui,
+        "insert_and_scroll_into_view",
+        (content, _textarea, replace_all) => {
+            assert.ok(replace_all);
+            $textarea.val = () => content;
+        },
+    );
     override(text_field_edit, "wrapFieldSelection", (_field, syntax_start, syntax_end) => {
         const new_val =
             $textarea.val().slice(0, $textarea.range().start) +
@@ -799,10 +819,15 @@ run_test("format_text - latex", ({override}) => {
     assert.equal(get_textarea_state(), "Before\n<abc\ndef>\nAfter");
 });
 
-run_test("format_text - code", ({override}) => {
-    override(text_field_edit, "setFieldText", (_field, text) => {
-        $textarea.val = () => text;
-    });
+run_test("format_text - code", ({override, override_rewire}) => {
+    override_rewire(
+        compose_ui,
+        "insert_and_scroll_into_view",
+        (content, _textarea, replace_all) => {
+            assert.ok(replace_all);
+            $textarea.val = () => content;
+        },
+    );
     override(text_field_edit, "wrapFieldSelection", (_field, syntax_start, syntax_end) => {
         const new_val =
             $textarea.val().slice(0, $textarea.range().start) +
@@ -865,10 +890,15 @@ run_test("format_text - code", ({override}) => {
     assert.equal(get_textarea_state(), "before\n<abc\ndef>\nafter");
 });
 
-run_test("format_text - quote", ({override}) => {
-    override(text_field_edit, "setFieldText", (_field, text) => {
-        $textarea.val = () => text;
-    });
+run_test("format_text - quote", ({override, override_rewire}) => {
+    override_rewire(
+        compose_ui,
+        "insert_and_scroll_into_view",
+        (content, _textarea, replace_all) => {
+            assert.ok(replace_all);
+            $textarea.val = () => content;
+        },
+    );
     override(text_field_edit, "wrapFieldSelection", (_field, syntax_start, syntax_end) => {
         const new_val =
             $textarea.val().slice(0, $textarea.range().start) +
@@ -924,10 +954,15 @@ run_test("format_text - quote", ({override}) => {
     assert.equal(get_textarea_state(), "before\n<abc\ndef>\nafter");
 });
 
-run_test("format_text - spoiler", ({override}) => {
-    override(text_field_edit, "setFieldText", (_field, text) => {
-        $textarea.val = () => text;
-    });
+run_test("format_text - spoiler", ({override, override_rewire}) => {
+    override_rewire(
+        compose_ui,
+        "insert_and_scroll_into_view",
+        (content, _textarea, replace_all) => {
+            assert.ok(replace_all);
+            $textarea.val = () => content;
+        },
+    );
     override(text_field_edit, "wrapFieldSelection", (_field, syntax_start, syntax_end) => {
         const new_val =
             $textarea.val().slice(0, $textarea.range().start) +
@@ -991,10 +1026,15 @@ run_test("format_text - spoiler", ({override}) => {
     assert.equal(get_textarea_state(), "before\n<abc>\nafter");
 });
 
-run_test("format_text - link", ({override}) => {
-    override(text_field_edit, "setFieldText", (_field, text) => {
-        $textarea.val = () => text;
-    });
+run_test("format_text - link", ({override, override_rewire}) => {
+    override_rewire(
+        compose_ui,
+        "insert_and_scroll_into_view",
+        (content, _textarea, replace_all) => {
+            assert.ok(replace_all);
+            $textarea.val = () => content;
+        },
+    );
     override(text_field_edit, "wrapFieldSelection", (_field, syntax_start, syntax_end) => {
         const new_val =
             $textarea.val().slice(0, $textarea.range().start) +
