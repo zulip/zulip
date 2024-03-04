@@ -521,6 +521,14 @@ INTERNAL_BOT_DOMAIN = "zulip.com"
 CAMO_KEY = get_secret("camo_key") if CAMO_URI != "" else None
 
 ########################################################################
+# KATEX SERVER SETTINGS
+########################################################################
+
+KATEX_SERVER = get_config("application_server", "katex_server", False)
+KATEX_SERVER_PORT = get_config("application_server", "katex_server_port", "9700")
+
+
+########################################################################
 # STATIC CONTENT AND MINIFICATION SETTINGS
 ########################################################################
 

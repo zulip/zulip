@@ -46,7 +46,7 @@ def build_for_dev_server(host: str, port: str, minify: bool, disable_host_check:
     webpack_args = ["../node_modules/.bin/webpack-cli", "serve"]
     webpack_args += [
         # webpack-cli has a bug where it ignores --watch-poll with
-        # multi-config, and we don't need the katex-cli part anyway.
+        # multi-config, and we don't need the katex part anyway.
         "--config-name=frontend",
         f"--host={host}",
         f"--port={port}",

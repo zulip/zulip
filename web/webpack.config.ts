@@ -255,10 +255,17 @@ export default (
         name: "server",
         target: "node",
         entry: {
+            katex_server: "babel-loader!./server/katex_server.ts",
             "katex-cli": "shebang-loader!katex/cli",
         },
         output: {
             path: path.resolve(__dirname, "../static/webpack-bundles"),
+        },
+        resolve: {
+            alias: {
+                // koa-body uses formidable 2.x, which suffers from https://github.com/node-formidable/formidable/issues/337
+                hexoid: "hexoid/dist/index.js",
+            },
         },
     };
 
