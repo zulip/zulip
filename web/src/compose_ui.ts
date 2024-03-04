@@ -68,9 +68,15 @@ export function autosize_textarea($textarea: JQuery<HTMLTextAreaElement>): void 
 export function insert_and_scroll_into_view(
     content: string,
     $textarea: JQuery<HTMLTextAreaElement>,
+    replace_all = false,
 ): void {
-    insertTextIntoField($textarea[0], content);
-    // Blurring and refocusing ensures the cursor / selection is in view.
+    if (replace_all) {
+        setFieldText($textarea[0], content);
+    } else {
+        insertTextIntoField($textarea[0], content);
+    }
+    // Blurring and refocusing ensures the cursor / selection is in view
+    // in chromium browsers.
     $textarea.trigger("blur");
     $textarea.trigger("focus");
     autosize_textarea($textarea);
