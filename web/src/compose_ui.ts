@@ -569,7 +569,7 @@ export function format_text(
             after_lines = "\n" + after_lines;
         }
         text = before_lines + selected_lines + after_lines;
-        setFieldText(field, text);
+        insert_and_scroll_into_view(text, $textarea, true);
         // If no text was selected, that is, marking was added to the line with the
         // cursor, nothing will be selected and the cursor will remain as it was.
         if (selected_text === "") {
@@ -601,7 +601,7 @@ export function format_text(
                 text.slice(range.start, range.end) +
                 linebreak_end +
                 text.slice(range.end + syntax_end.length);
-            setFieldText(field, text);
+            insert_and_scroll_into_view(text, $textarea, true);
             field.setSelectionRange(
                 range.start - syntax_start.length,
                 range.end - syntax_start.length,
@@ -615,7 +615,7 @@ export function format_text(
                 text.slice(range.start + syntax_start.length, range.end - syntax_end.length) +
                 linebreak_end +
                 text.slice(range.end);
-            setFieldText(field, text);
+            insert_and_scroll_into_view(text, $textarea, true);
             field.setSelectionRange(
                 range.start,
                 range.end - syntax_start.length - syntax_end.length,
@@ -644,7 +644,7 @@ export function format_text(
             if (text.startsWith("\n")) {
                 text = text.slice(1);
             }
-            setFieldText(field, text);
+            insert_and_scroll_into_view(text, $textarea, true);
             field.setSelectionRange(
                 range.start,
                 range.end - spoiler_syntax_start.length - spoiler_syntax_end.length,
@@ -664,7 +664,7 @@ export function format_text(
             if (text.startsWith("\n")) {
                 text = text.slice(1);
             }
-            setFieldText(field, text);
+            insert_and_scroll_into_view(text, $textarea, true);
             field.setSelectionRange(
                 range.start,
                 range.end - spoiler_syntax_start_without_break.length - spoiler_syntax_end.length,
@@ -678,7 +678,7 @@ export function format_text(
                 text.slice(0, range.start - spoiler_syntax_start_without_break.length) +
                 selected_text +
                 text.slice(range.end + spoiler_syntax_end.length);
-            setFieldText(field, text);
+            insert_and_scroll_into_view(text, $textarea, true);
             field.setSelectionRange(
                 range.start - spoiler_syntax_start_without_break.length,
                 range.end - spoiler_syntax_start_without_break.length,
@@ -692,7 +692,7 @@ export function format_text(
                 text.slice(0, range.start - spoiler_syntax_start.length) +
                 selected_text +
                 text.slice(range.end + spoiler_syntax_end.length);
-            setFieldText(field, text);
+            insert_and_scroll_into_view(text, $textarea, true);
             field.setSelectionRange(
                 range.start - spoiler_syntax_start.length,
                 range.end - spoiler_syntax_start.length,
@@ -722,7 +722,7 @@ export function format_text(
                 ) +
                 selected_text +
                 text.slice(range.end + spoiler_syntax_end.length);
-            setFieldText(field, text);
+            insert_and_scroll_into_view(text, $textarea, true);
             field.setSelectionRange(
                 new_selection_start,
                 range.end - spoiler_syntax_start_without_break.length,
@@ -746,7 +746,7 @@ export function format_text(
                 text.slice(0, range.start - spoiler_syntax_start_without_break.length) +
                 text.slice(new_range_start, new_range_end) +
                 text.slice(new_range_end + spoiler_syntax_end.length);
-            setFieldText(field, text);
+            insert_and_scroll_into_view(text, $textarea, true);
             field.setSelectionRange(
                 new_range_start - spoiler_syntax_start_without_break.length - (header ? 0 : 1),
                 new_range_end - spoiler_syntax_start_without_break.length - (header ? 0 : 1),
@@ -813,7 +813,7 @@ export function format_text(
                 space_between_description_and_url(description, url) +
                 url +
                 text.slice(range.end + 1);
-            setFieldText(field, text);
+            insert_and_scroll_into_view(text, $textarea, true);
             field.setSelectionRange(
                 range.start - 3 + space_between_description_and_url(description, url).length,
                 range.start -
@@ -846,7 +846,7 @@ export function format_text(
                 space_between_description_and_url(selected_text, url) +
                 url +
                 text.slice(text.indexOf(")", range.end) + 1);
-            setFieldText(field, text);
+            insert_and_scroll_into_view(text, $textarea, true);
             field.setSelectionRange(range.start - 1, range.end - 1);
             return;
         }
@@ -870,7 +870,7 @@ export function format_text(
                 space_between_description_and_url(description, url) +
                 url +
                 text.slice(range.end);
-            setFieldText(field, text);
+            insert_and_scroll_into_view(text, $textarea, true);
             field.setSelectionRange(
                 range.start,
                 range.start +
@@ -940,7 +940,7 @@ export function format_text(
                     text.slice(0, range.start - italic_syntax.length) +
                     text.slice(range.start, range.end) +
                     text.slice(range.end + italic_syntax.length);
-                setFieldText(field, text);
+                insert_and_scroll_into_view(text, $textarea, true);
                 field.setSelectionRange(
                     range.start - italic_syntax.length,
                     range.end - italic_syntax.length,
@@ -976,7 +976,7 @@ export function format_text(
                         range.end - italic_syntax.length,
                     ) +
                     text.slice(range.end);
-                setFieldText(field, text);
+                insert_and_scroll_into_view(text, $textarea, true);
                 field.setSelectionRange(range.start, range.end - italic_syntax.length * 2);
                 break;
             }
