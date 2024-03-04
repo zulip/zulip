@@ -1,6 +1,7 @@
 import $ from "jquery";
 import _ from "lodash";
 
+import render_stream_creation_confirmation_banner from "../templates/modal_banner/stream_creation_confirmation_banner.hbs";
 import render_browse_streams_list from "../templates/stream_settings/browse_streams_list.hbs";
 import render_browse_streams_list_item from "../templates/stream_settings/browse_streams_list_item.hbs";
 import render_stream_settings from "../templates/stream_settings/stream_settings.hbs";
@@ -9,6 +10,7 @@ import render_stream_settings_overlay from "../templates/stream_settings/stream_
 import * as blueslip from "./blueslip";
 import * as browser_history from "./browser_history";
 import * as components from "./components";
+import * as compose_banner from "./compose_banner";
 import * as compose_recipient from "./compose_recipient";
 import * as compose_state from "./compose_state";
 import * as hash_parser from "./hash_parser";
@@ -231,6 +233,15 @@ export function add_sub_to_table(sub) {
         // ID isn't known yet.  These are appended to the top of the
         // list, so they are more visible.
         stream_ui_updates.row_for_stream_id(sub.stream_id).trigger("click");
+        const context = {
+            banner_type: compose_banner.SUCCESS,
+            classname: "stream_creation_confirmation",
+            stream_name: sub.name,
+            stream_url: hash_util.by_stream_url(sub.stream_id),
+        };
+        $("#stream_settings .stream-creation-confirmation-banner").html(
+            render_stream_creation_confirmation_banner(context),
+        );
         stream_create.reset_created_stream();
     }
     update_empty_left_panel_message();
