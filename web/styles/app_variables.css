@@ -200,7 +200,6 @@
     --color-background-unread-counter-dot: var(
         --color-background-unread-counter
     );
-    --color-background-unread-counter-popover-menu: var(--color-icon-purple);
     --color-border-unread-counter: var(--color-background-unread-counter);
     --color-border-unread-counter-popover-menu: inherit;
     --color-background-tab-picker-container: hsl(0deg 0% 0% / 7%);
@@ -504,7 +503,6 @@
         hsl(0deg 0% 11%)
     );
     --color-background-unread-counter-dot: hsl(105deg 2% 50% / 90%);
-    --color-background-unread-counter-popover-menu: hsl(105deg 2% 50% / 50%);
     --color-border-unread-counter: hsl(105deg 2% 50%);
     --color-border-unread-counter-popover-menu: var(
         --color-border-unread-counter

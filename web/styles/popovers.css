@@ -350,35 +350,6 @@ ul {
     }
 }
 
-#message-actions-menu-dropdown {
-    .mark_as_unread {
-        .unread_count {
-            /* The icon for this menu item is in the form of an unread count from
-               the left sidebar. We reuse much of the shared styling,
-               but need to override some of the defaults set in app_components.css. */
-            display: inline-block;
-            float: unset;
-            padding: 0;
-            width: 16px;
-            height: 16px;
-            line-height: 16px;
-            font-size: 12px;
-            font-weight: 600;
-            border-radius: 4px;
-            color: hsl(0deg 0% 100%);
-            text-align: center;
-            background-color: var(
-                --color-background-unread-counter-popover-menu
-            );
-            /* Override random undesired bootstrap style */
-            text-shadow: none;
-            /* Not center aligned but looks better. */
-            position: relative;
-            top: -1px;
-        }
-    }
-}
-
 /* Important note: The user info popover user-sidebar-popover-root
    class is applied to user info popovers ONLY when they are opened
    from the right sidebar; otherwise, it will have the
