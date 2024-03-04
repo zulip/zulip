@@ -57,9 +57,6 @@
                             {{else if (eq visibility_policy all_visibility_policies.MUTED)}}
                                 <i class="zulip-icon zulip-icon-mute-new recipient_bar_icon" data-tippy-content="{{t 'You have muted this topic'}}"
                                   role="button" aria-haspopup="true" aria-label="{{t 'You have muted this topic' }}"></i>
-                            {{else}}
-                                <i class="zulip-icon zulip-icon-inherit recipient_bar_icon" data-tippy-content="{{t 'You will get default notifications for this topic'}}"
-                                  role="button" aria-haspopup="true" aria-label="{{t 'You will get default notifications for this topic' }}"></i>
                             {{/if}}
                         </span>
                     {{/if}}
