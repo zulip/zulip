@@ -151,7 +151,7 @@ scheduled_instructions = """
 """
 
 recent_instructions = """
-1. Click on <i class="fa fa-clock-o"></i> **Recent conversations** in the left
+1. Click on <i class="fa fa-history"></i> **Recent conversations** in the left
    sidebar, or use the <kbd>T</kbd> keyboard shortcut..
 """
 
