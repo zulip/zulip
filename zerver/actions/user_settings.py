@@ -109,7 +109,7 @@ def send_delivery_email_update_events(
 
 @transaction.atomic(savepoint=False)
 def do_change_user_delivery_email(user_profile: UserProfile, new_email: str) -> None:
-    delete_user_profile_caches([user_profile], user_profile.realm)
+    delete_user_profile_caches([user_profile], user_profile.realm_id)
 
     user_profile.delivery_email = new_email
     if user_profile.email_address_is_realm_public():

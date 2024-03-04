@@ -122,7 +122,7 @@ def compute_jabber_user_fullname(email: str) -> str:
 def get_user_profile_delivery_email_cache_key(
     realm: Realm, email: str, email_to_fullname: Callable[[str], str]
 ) -> str:
-    return user_profile_delivery_email_cache_key(email, realm)
+    return user_profile_delivery_email_cache_key(email, realm.id)
 
 
 @cache_with_key(
