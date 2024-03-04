@@ -190,6 +190,18 @@ more than 3.5GiB of RAM, 4 on hosts with less.
 Number of days of access logs to keep, for both nginx and the application.
 Defaults to 14 days.
 
+#### `katex_server`
+
+Set to a true value to run a separate service for [rendering math with
+LaTeX](https://zulip.com/help/latex). This is not necessary except on servers
+with users who send several math blocks in a single message; it will address
+issues with such messages occasionally failing to send, at cost of a small
+amount of increased memory usage.
+
+#### `katex_server_port`
+
+Set to the port number for the KaTeX server, if enabled; defaults to port 9700.
+
 ### `[postfix]`
 
 #### `mailname`

@@ -177,6 +177,9 @@ class zulip::app_frontend_base {
     include zulip::smokescreen
   }
 
+  $katex_server = zulipconf('application_server', 'katex_server', false)
+  $katex_server_port = zulipconf('application_server', 'katex_server_port', '9700')
+
   if $proxy_host != '' and $proxy_port != '' {
     $proxy = "http://${proxy_host}:${proxy_port}"
   } else {
