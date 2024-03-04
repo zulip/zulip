@@ -19,7 +19,7 @@ from zerver.lib.cache import (
     get_remote_cache_requests,
     get_remote_cache_time,
     user_profile_by_api_key_cache_key,
-    user_profile_cache_key,
+    user_profile_cache_key_id,
 )
 from zerver.lib.safe_session_cached_db import SessionStore
 from zerver.lib.sessions import session_engine
@@ -33,7 +33,7 @@ def user_cache_items(
 ) -> None:
     for api_key in get_all_api_keys(user_profile):
         items_for_remote_cache[user_profile_by_api_key_cache_key(api_key)] = (user_profile,)
-    items_for_remote_cache[user_profile_cache_key(user_profile.email, user_profile.realm)] = (
+    items_for_remote_cache[user_profile_cache_key_id(user_profile.email, user_profile.realm_id)] = (
         user_profile,
     )
     # We have other user_profile caches, but none of them are on the
