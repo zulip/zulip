@@ -1454,7 +1454,7 @@ ul.popover-menu-outer-list {
     padding-left: 5px;
 
     > .popover-menu-hotkey-hint {
-        color: var(--color-hotkey-hint);
+        color: var(--color-popover-hotkey-hint);
         text-align: center;
         font-size: 14px;
         font-style: normal;
@@ -1462,7 +1462,7 @@ ul.popover-menu-outer-list {
         line-height: 14px;
         padding: 2px 4px;
         border-radius: 3px;
-        border: 1px solid var(--color-hotkey-hint);
+        border: 1px solid var(--color-border-popover-hotkey-hint);
     }
 }
 
