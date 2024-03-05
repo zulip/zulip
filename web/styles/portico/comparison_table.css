@@ -624,6 +624,12 @@
     }
 }
 
+@media (width <= 460px) {
+    .zulip-plans-comparison .comparison-tab-all {
+        display: none;
+    }
+}
+
 @media (width <= 356px) {
     .zulip-plans-comparison
         .comparison-table
