@@ -2261,7 +2261,7 @@ class BillingSession(ABC):
             if charge_automatically:
                 payment_method = payment_method_string(stripe_customer)
             else:
-                payment_method = "Billed by invoice"
+                payment_method = "Invoice"
         elif settings.DEVELOPMENT:  # nocoverage
             # Allow access to billing page in development environment without a stripe_customer_id.
             payment_method = "Payment method not populated"

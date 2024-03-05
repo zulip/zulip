@@ -965,7 +965,7 @@ class StripeTest(StripeTestCase):
         self.assert_not_in_success_response(
             [
                 "Number of licenses for current billing period",
-                "Your next invoice is due on",
+                "You will receive an invoice for",
             ],
             response,
         )
@@ -1093,7 +1093,7 @@ class StripeTest(StripeTestCase):
             str(123),
             "Number of licenses for current billing period",
             f"licenses ({self.seat_count} in use)",
-            "Your next invoice is due on",
+            "You will receive an invoice for",
             "January 2, 2013",
             "$9,840.00",  # 9840 = 80 * 123
         ]:
@@ -1419,10 +1419,10 @@ class StripeTest(StripeTestCase):
                 str(self.seat_count),
                 "Number of licenses for next billing period",
                 f"{self.seat_count} in use",
-                "Your next invoice is due on",
+                "You will receive an invoice for",
                 "March 2, 2012",
                 f"{80 * 123:,.2f}",
-                "Billed by invoice",
+                "Invoice",
             ]:
                 self.assert_in_response(substring, response)
 
