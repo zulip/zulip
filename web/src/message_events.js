@@ -532,7 +532,6 @@ export function update_messages(events) {
     // propagated edits to be updated (since the topic edits can have
     // changed the correct grouping of messages).
     if (any_topic_edited || any_stream_changed) {
-        message_lists.home.update_muting_and_rerender();
         // However, we don't need to rerender message_list if
         // we just changed the narrow earlier in this function.
         //
@@ -542,7 +541,7 @@ export function update_messages(events) {
         // edit.  Doing so could save significant work, since most
         // topic edits will not match the current topic narrow in
         // large organizations.
-        if (!changed_narrow && message_lists.current?.narrowed) {
+        if (!changed_narrow) {
             message_lists.current.update_muting_and_rerender();
         }
     } else {
