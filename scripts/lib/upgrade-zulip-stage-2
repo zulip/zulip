@@ -28,7 +28,6 @@ from scripts.lib.zulip_tools import (
     DEPLOYMENTS_DIR,
     assert_running_as_root,
     get_config,
-    get_config_bool,
     get_config_file,
     get_zulip_pwent,
     listening_publicly,
@@ -221,12 +220,12 @@ if not (args.skip_restart or args.skip_puppet):
     # We need to temporarily hold pgroonga, if installed -- upgrading
     # it without running the appropriate upgrade SQL can cause
     # PostgreSQL to crash
-    if get_config_bool(config_file, "machine", "pgroonga"):
+    if get_config(config_file, "machine", "pgroonga", False):
         subprocess.check_call(["apt-mark", "hold", "postgresql-*-pgdg-pgroonga"])
     logging.info("Upgrading system packages...")
     subprocess.check_call(["apt-get", "update"])
     subprocess.check_call(["apt-get", "-y", "--with-new-pkgs", "upgrade"])
-    if get_config_bool(config_file, "machine", "pgroonga"):
+    if get_config(config_file, "machine", "pgroonga", False):
         subprocess.check_call(["apt-mark", "unhold", "postgresql-*-pgdg-pgroonga"])
 
 # To bootstrap zulip-puppet-apply, we need to install the system yaml

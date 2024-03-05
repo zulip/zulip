@@ -54,7 +54,7 @@ from urllib.parse import urlencode, urljoin, urlsplit
 from urllib.request import Request, urlopen
 
 sys.path.append(os.path.join(os.path.dirname(__file__), "..", ".."))
-from scripts.lib.zulip_tools import get_config_bool, get_config_file
+from scripts.lib.zulip_tools import get_config, get_config_file
 
 parser = argparse.ArgumentParser()
 
@@ -133,7 +133,7 @@ def send_email_mirror(
 
     if not urlsplit(host).scheme:
         config_file = get_config_file()
-        http_only = get_config_bool(config_file, "application_server", "http_only", False)
+        http_only = get_config(config_file, "application_server", "http_only", False)
         scheme = "http://" if http_only else "https://"
         host = scheme + host
 
