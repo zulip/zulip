@@ -588,7 +588,7 @@ def get_config(
     config_file: configparser.RawConfigParser,
     section: str,
     key: str,
-    default_value: None,
+    default_value: None = None,
 ) -> Optional[str]: ...
 @overload
 def get_config(
