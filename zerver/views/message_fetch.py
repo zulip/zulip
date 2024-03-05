@@ -78,6 +78,20 @@ def get_search_fields(
     }
 
 
+def clean_narrow_for_web_public_api(narrow: OptionalNarrowListT) -> OptionalNarrowListT:
+    if narrow is None:
+        return None
+
+    # Remove {'operator': 'in', 'operand': 'home', 'negated': False} from narrow.
+    # This is to allow spectators to access all messages. The narrow should still pass
+    # is_web_public_narrow check after this change.
+    return [
+        term
+        for term in narrow
+        if not (term["operator"] == "in" and term["operand"] == "home" and not term["negated"])
+    ]
+
+
 @has_request_variables
 def get_messages_backend(
     request: HttpRequest,
@@ -117,6 +131,7 @@ def get_messages_backend(
         # non-web-public stream messages) via this path.
         if not realm.allow_web_public_streams_access():
             raise MissingAuthenticationError
+        narrow = clean_narrow_for_web_public_api(narrow)
         if not is_web_public_narrow(narrow):
             raise MissingAuthenticationError
         assert narrow is not None
