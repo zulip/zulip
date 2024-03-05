@@ -2,6 +2,8 @@
     <p>
         {{#if (eq zulip_view "inbox")}}
             {{#tr}}The <b>inbox</b> view provides an overview of your conversations with unread messages.{{/tr}}
+        {{else if (eq zulip_view "recent_conversations")}}
+            {{#tr}}The <b>recent conversations</b> view provides an overview of all the ongoing conversations.{{/tr}}
         {{/if}}
         {{#tr}}
             In Zulip, a conversation is either a <z-link-direct-message>direct message</z-link-direct-message>
@@ -22,6 +24,11 @@
                     {{#tr}}
                         Click <z-icon-inbox></z-icon-inbox> <b>Inbox</b> in the left sidebar.
                         {{#*inline "z-icon-inbox"}}<i class="zulip-icon zulip-icon-inbox" aria-hidden="true"></i>{{/inline}}
+                    {{/tr}}
+                {{else if (eq zulip_view "recent_conversations")}}
+                    {{#tr}}
+                        Click <z-icon-clock></z-icon-clock> <b>Recent conversations</b> in the left sidebar.
+                        {{#*inline "z-icon-clock"}}<i class="zulip-icon zulip-icon-clock" aria-hidden="true"></i>{{/inline}}
                     {{/tr}}
                 {{/if}}
             </li>
