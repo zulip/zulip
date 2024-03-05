@@ -234,4 +234,9 @@ def self_hosting_auth_not_configured(request: HttpRequest) -> HttpResponse:
         # is actually real.
         return render(request, "404.html", status=404)
 
-    return config_error(request, "remote_billing_bouncer_not_configured")
+    return config_error(
+        request,
+        "remote_billing_bouncer_not_configured",
+        go_back_to_url="/",
+        go_back_to_url_name="the app",
+    )
