@@ -313,12 +313,7 @@ def next_invoice_date(plan: CustomerPlan) -> Optional[datetime]:
     if plan.status == CustomerPlan.ENDED:
         return None
     assert plan.next_invoice_date is not None  # for mypy
-    months_per_period = {
-        CustomerPlan.BILLING_SCHEDULE_ANNUAL: 12,
-        CustomerPlan.BILLING_SCHEDULE_MONTHLY: 1,
-    }[plan.billing_schedule]
-    if plan.automanage_licenses:
-        months_per_period = 1
+    months_per_period = 1
     periods = 1
     dt = plan.billing_cycle_anchor
     while dt <= plan.next_invoice_date:
@@ -1657,7 +1652,6 @@ class BillingSession(ABC):
             price_per_license,
         ) = compute_plan_parameters(
             plan_tier,
-            automanage_licenses,
             billing_schedule,
             discount_for_plan,
             free_trial,
@@ -1923,7 +1917,6 @@ class BillingSession(ABC):
         discount_for_current_plan = plan.discount
         _, _, _, price_per_license = compute_plan_parameters(
             tier=plan.tier,
-            automanage_licenses=plan.automanage_licenses,
             billing_schedule=schedule,
             discount=discount_for_current_plan,
         )
@@ -2065,7 +2058,6 @@ class BillingSession(ABC):
                 discount_for_current_plan = plan.discount
                 _, _, _, price_per_license = compute_plan_parameters(
                     tier=plan.tier,
-                    automanage_licenses=plan.automanage_licenses,
                     billing_schedule=CustomerPlan.BILLING_SCHEDULE_ANNUAL,
                     discount=discount_for_current_plan,
                 )
@@ -2114,7 +2106,6 @@ class BillingSession(ABC):
                 discount_for_current_plan = plan.discount
                 _, _, _, price_per_license = compute_plan_parameters(
                     tier=plan.tier,
-                    automanage_licenses=plan.automanage_licenses,
                     billing_schedule=CustomerPlan.BILLING_SCHEDULE_MONTHLY,
                     discount=discount_for_current_plan,
                 )
@@ -2465,7 +2456,6 @@ class BillingSession(ABC):
             if free_trial_days is not None:
                 _, _, free_trial_end, _ = compute_plan_parameters(
                     tier,
-                    False,
                     CustomerPlan.BILLING_SCHEDULE_ANNUAL,
                     None,
                     True,
@@ -4708,7 +4698,6 @@ def get_price_per_license(
 
 def compute_plan_parameters(
     tier: int,
-    automanage_licenses: bool,
     billing_schedule: int,
     discount: Optional[Decimal],
     free_trial: bool = False,
@@ -4731,9 +4720,9 @@ def compute_plan_parameters(
 
     price_per_license = get_price_per_license(tier, billing_schedule, discount)
 
-    next_invoice_date = period_end
-    if automanage_licenses:
-        next_invoice_date = add_months(billing_cycle_anchor, 1)
+    # `next_invoice_date` is the date when we check if there are any invoices that need to be generated.
+    # It is always the next month regardless of the billing schedule / billing modality.
+    next_invoice_date = add_months(billing_cycle_anchor, 1)
     if free_trial:
         period_end = billing_cycle_anchor + timedelta(
             days=assert_is_not_none(get_free_trial_days(is_self_hosted_billing, tier))
