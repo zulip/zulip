@@ -20,7 +20,7 @@ follows:
 
 1. Decide whether to share usage statistics with the Zulip team.
 
-   By default, Zulip installations using the Mobile Push Notifications
+   By default, Zulip installations using the Mobile Push Notification
    Service submit additional usage statistics that help Zulip's
    maintainers allocate resources towards supporting self-hosted
    installations ([details](#uploading-usage-statistics)). You can
@@ -56,6 +56,10 @@ follows:
    support](https://zulip.com/help/contact-support) with the output of this
    command.
 
+1. Organizations with more than 10 users must upgrade their
+   [plan](https://zulip.com/plans/) in order to access the Mobile Push
+   Notification Service. See [plan management](#plan-management) for details.
+
 1. If you or your users have already set up the Zulip mobile app, you'll each
    need to log out of the mobile app, and log back in again in order to start
    getting push notifications.
@@ -64,7 +68,16 @@ Congratulations! You've successfully set up the service. You can now test mobile
 push notifications by following [these
 instructions](https://zulip.com/help/mobile-notifications#testing-mobile-notifications).
 
-## Plan management for a Zulip organization
+## Plan management
+
+To access the Mobile Push Notification Service, organizations with more than 10
+users must upgrade to a paid [plan](https://zulip.com/plans/#self-hosted), or
+the free Community plan (if
+[eligible](https://zulip.com/help/self-hosted-billing#free-community-plan)).
+While upgrading your Zulip server to version 8.0+ makes it more convenient to
+manage your plan, the same plans are offered for all Zulip versions.
+
+### Plan management for a Zulip organization
 
 On a self-hosted Zulip server running Zulip 8.0+, [organization
 owners](https://zulip.com/help/roles-and-permissions) and billing administrators
@@ -91,7 +104,7 @@ option:
 [management-commands]: ../production/management-commands.md
 [accessing-string-id]: https://zulip.readthedocs.io/en/stable/production/management-commands.html#accessing-an-organization-s-string-id
 
-## Plan management for an entire Zulip server
+### Plan management for an entire Zulip server
 
 Servers running Zulip releases older than Zulip 8.0 can start the plan
 management log in process at
