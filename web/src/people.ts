@@ -1234,17 +1234,11 @@ export function filter_people_by_search_terms(
     // Loop through users and populate filtered_users only
     // if they include search_terms
     for (const user of users) {
-        const person = get_by_email(user.email);
-        // Get person object (and ignore errors)
-        if (!person?.full_name) {
-            continue;
-        }
-
         // Return user emails that include search terms
         const match = matchers.some((matcher) => matcher(user));
 
         if (match) {
-            filtered_users.set(person.user_id, true);
+            filtered_users.set(user.user_id, true);
         }
     }
 
