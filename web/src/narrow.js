@@ -499,7 +499,6 @@ export function activate(raw_terms, opts) {
             message_lists.current.resume_reading();
             // Reset the collapsed status of messages rows.
             condense.condense_and_collapse(message_lists.current.view.$list.find(".message_row"));
-            message_edit.handle_narrow_deactivated();
             widgetize.set_widgets_for_list();
             message_feed_top_notices.update_top_of_narrow_notices(msg_list);
 
