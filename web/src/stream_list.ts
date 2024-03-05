@@ -9,6 +9,7 @@ import render_stream_subheader from "../templates/streams_subheader.hbs";
 import render_subscribe_to_more_streams from "../templates/subscribe_to_more_streams.hbs";
 
 import * as blueslip from "./blueslip";
+import * as browser_history from "./browser_history";
 import type {Filter} from "./filter";
 import * as hash_util from "./hash_util";
 import {$t} from "./i18n";
@@ -23,12 +24,14 @@ import * as settings_data from "./settings_data";
 import * as sidebar_ui from "./sidebar_ui";
 import * as stream_data from "./stream_data";
 import * as stream_list_sort from "./stream_list_sort";
+import * as stream_topic_history from "./stream_topic_history";
 import * as sub_store from "./sub_store";
 import type {StreamSubscription} from "./sub_store";
 import * as topic_list from "./topic_list";
 import * as ui_util from "./ui_util";
 import * as unread from "./unread";
 import type {FullUnreadCountsData, StreamCountInfo} from "./unread";
+import * as user_topics from "./user_topics";
 
 let pending_stream_list_rerender = false;
 let zoomed_in = false;
@@ -833,6 +836,30 @@ export function set_event_handlers({
 
         e.preventDefault();
         e.stopPropagation();
+    });
+
+    // Go to the top topic of a stream when clicking on the name of a stream,
+    // in the left sidebar view
+    $("#stream_filters").on("click", "li .subscription_block .stream-name", (e) => {
+        if (e.metaKey || e.ctrlKey) {
+            return;
+        }
+        const stream_id = stream_id_for_elt($(e.target).parents("li"));
+        if (stream_id) {
+            const topics = stream_topic_history.get_recent_topic_names(stream_id);
+            const top_unmuted_topic = topics.find(
+                (topic) => !user_topics.is_topic_muted(stream_id, topic),
+            );
+            if (top_unmuted_topic) {
+                browser_history.go_to_location(
+                    hash_util.by_stream_topic_url(stream_id, top_unmuted_topic),
+                );
+            }
+            popovers.hide_all();
+            clear_and_hide_search();
+            e.preventDefault();
+            e.stopPropagation();
+        }
     });
 
     $("#clear_search_stream_button").on("click", clear_search);

@@ -26,6 +26,17 @@ async function expect_home(page: Page): Promise<void> {
     ]);
 }
 
+async function expect_verona_stream_top_topic(page: Page): Promise<void> {
+    const message_list_id = await common.get_current_msg_list_id(page, true);
+    await page.waitForSelector(`.message-list[data-message-list-id='${message_list_id}']`, {
+        visible: true,
+    });
+    await common.check_messages_sent(page, message_list_id, [
+        ["Verona > test", ["verona test a", "verona test b", "verona test d"]],
+    ]);
+    assert.strictEqual(await page.title(), "#Verona > test - Zulip Dev - Zulip");
+}
+
 async function expect_verona_stream(page: Page): Promise<void> {
     const message_list_id = await common.get_current_msg_list_id(page, true);
     await page.waitForSelector(`.message-list[data-message-list-id='${message_list_id}']`, {
@@ -313,6 +324,9 @@ async function test_narrow_by_clicking_the_left_sidebar(page: Page): Promise<voi
     await page.click((await get_stream_li(page, "Verona")) + " a");
     await expect_verona_stream(page);
 
+    await page.click((await get_stream_li(page, "Verona")) + " .stream-name");
+    await expect_verona_stream_top_topic(page);
+
     await page.click("#left-sidebar-navigation-list .top_left_all_messages a");
     await expect_home(page);
 
@@ -410,7 +424,7 @@ async function test_stream_search_filters_stream_list(page: Page): Promise<void>
     await page.waitForSelector(await get_stream_li(page, "Denmark"), {hidden: true});
     await page.waitForSelector(await get_stream_li(page, "Venice"), {hidden: true});
     await page.click(await get_stream_li(page, "Verona"));
-    await expect_verona_stream(page);
+    await expect_verona_stream_top_topic(page);
     assert.strictEqual(
         await common.get_text_from_selector(page, ".stream-list-filter"),
         "",
