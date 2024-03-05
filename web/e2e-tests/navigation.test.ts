@@ -7,7 +7,9 @@ import * as common from "./lib/common";
 async function navigate_using_left_sidebar(page: Page, click_target: string): Promise<void> {
     console.log("Visiting #" + click_target);
     // await page.click(`#left-sidebar span.stream-name`);
-    await page.click('#left-sidebar .subscription_block .stream-markers-and-controls .interleaved-icon');
+    await page.click(
+        "#left-sidebar .subscription_block .stream-markers-and-controls .interleaved-icon",
+    );
     await page.waitForSelector(`#message_feed_container`, {visible: true});
 }
 
