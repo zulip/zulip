@@ -33,6 +33,7 @@ IGNORED_PHRASES = [
     r"Markdown",
     r"OTP",
     r"Pivotal",
+    r"Recent conversations",
     r"DM",
     r"DMs",
     r"Slack",
