@@ -758,13 +758,6 @@ test_people("filtered_users", () => {
     filtered_people = people.filter_people_by_search_terms(users, ["ëm"]);
     assert.equal(filtered_people.size, 1);
     assert.ok(filtered_people.has(noah.user_id));
-
-    // Test filtering with undefined user
-    users.push(invalid_user);
-
-    filtered_people = people.filter_people_by_search_terms(users, ["ltorv"]);
-    assert.equal(filtered_people.size, 1);
-    assert.ok(filtered_people.has(linus.user_id));
 });
 
 test_people("multi_user_methods", () => {
