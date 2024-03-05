@@ -311,7 +311,7 @@ elif (
         PASSWORD=get_secret("postgres_password"),
         HOST="localhost",
     )
-POSTGRESQL_MISSING_DICTIONARIES = bool(get_config("postgresql", "missing_dictionaries", None))
+POSTGRESQL_MISSING_DICTIONARIES = get_config("postgresql", "missing_dictionaries", False)
 
 DEFAULT_AUTO_FIELD = "django.db.models.AutoField"
 
