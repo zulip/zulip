@@ -299,6 +299,7 @@ export function add_reaction(event: ReactionEvent): void {
         const reaction_counts_and_user_ids = get_reaction_counts_and_user_ids(message);
         reaction_counts_and_user_ids.push({
             user_ids: [user_id],
+            count: 1,
         });
         const should_display_reactors = check_should_display_reactors(reaction_counts_and_user_ids);
         clean_reaction_object = make_clean_reaction({
@@ -641,7 +642,7 @@ export function update_user_fields(
 }
 
 type ReactionUserIdAndCount = {
-    count?: number;
+    count: number;
     user_ids: number[];
 };
 
