@@ -32,7 +32,6 @@ from sqlalchemy.sql import (
     and_,
     column,
     func,
-    join,
     literal,
     literal_column,
     not_,
@@ -967,15 +966,51 @@ def get_base_query_for_search(
         # usermessage is more selective, and the query planner
         # can't know about that cross-table correlation.
         .where(column("user_profile_id", Integer) == literal(user_profile.id))
-        .select_from(
-            join(
-                table("zerver_usermessage"),
-                table("zerver_message"),
-                literal_column("zerver_usermessage.message_id", Integer)
-                == literal_column("zerver_message.id", Integer),
+        .select_from(table("zerver_usermessage"))
+        .join(
+            table("zerver_message"),
+            literal_column("zerver_usermessage.message_id", Integer)
+            == literal_column("zerver_message.id", Integer),
+        )
+        .join(
+            table("zerver_recipient"),
+            literal_column("zerver_message.recipient_id", Integer)
+            == literal_column("zerver_recipient.id", Integer),
+        )
+        .where(
+            or_(
+                # Include direct messages.
+                literal_column("zerver_recipient.type_id", Integer) != Recipient.STREAM,
+                # Include messages where the recipient is a public stream and
+                # the user can access public streams.
+                select()
+                .select_from(table("zerver_stream"))
+                .where(
+                    literal_column("zerver_stream.recipient_id", Integer)
+                    == literal_column("zerver_recipient.id", Integer)
+                )
+                .where(
+                    not_(literal_column("zerver_stream.invite_only", Boolean)),
+                    not_(literal_column("zerver_stream.is_in_zephyr_realm", Boolean)),
+                    user_profile.can_access_public_streams(),
+                )
+                .exists(),
+                # Include messages where the user has an active subscription to
+                # the stream.
+                select()
+                .select_from(table("zerver_subscription"))
+                .where(
+                    literal_column("zerver_subscription.user_profile_id", Integer)
+                    == user_profile.id,
+                    literal_column("zerver_subscription.recipient_id", Integer)
+                    == literal_column("zerver_recipient.id", Integer),
+                    literal_column("zerver_subscription.active", Boolean),
+                )
+                .exists(),
             )
         )
     )
+
     inner_msg_id_col = column("message_id", Integer)
     return (query, inner_msg_id_col)
 
