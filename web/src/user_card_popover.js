@@ -264,7 +264,8 @@ function get_user_card_popover_data(
 
     const args = {
         invisible_mode,
-        can_send_private_message: is_active && !is_me,
+        can_send_private_message:
+            is_active && !is_me && people.user_can_direct_message(user.user_id.toString()),
         display_profile_fields,
         has_message_context,
         is_active,

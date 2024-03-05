@@ -5,6 +5,7 @@ import _ from "lodash";
 
 import render_inline_decorated_stream_name from "../templates/inline_decorated_stream_name.hbs";
 
+import {all_messages_data} from "./all_messages_data";
 import * as compose_banner from "./compose_banner";
 import * as compose_fade from "./compose_fade";
 import * as compose_pm_pill from "./compose_pm_pill";
@@ -15,11 +16,13 @@ import * as dropdown_widget from "./dropdown_widget";
 import {$t} from "./i18n";
 import * as narrow_state from "./narrow_state";
 import * as people from "./people";
+import * as settings_config from "./settings_config";
 import {realm} from "./state_data";
 import * as stream_bar from "./stream_bar";
 import * as stream_data from "./stream_data";
 import * as sub_store from "./sub_store";
 import * as ui_util from "./ui_util";
+import {get_user_group_from_id} from "./user_groups";
 import * as util from "./util";
 
 function composing_to_current_topic_narrow() {
@@ -101,8 +104,35 @@ export function get_posting_policy_error_message() {
     if (compose_state.selected_recipient_id === "direct") {
         const recipients = compose_pm_pill.get_user_ids_string();
         if (!people.user_can_direct_message(recipients)) {
+            const {name} = get_user_group_from_id(realm.realm_direct_message_permission_group);
+            if (name === "role:nobody") {
+                return $t({
+                    defaultMessage:
+                        "You are not allowed to send direct messages in this organization.",
+                });
+            }
+            const {display_name} = settings_config.system_user_groups_list.find(
+                (group) => group.name === name,
+            );
+            return $t(
+                {
+                    defaultMessage:
+                        "{allowed_user_group} must be in every direct message conversation.",
+                },
+                {allowed_user_group: display_name.replace(" and ", " or ")},
+            );
+        }
+
+        const previous_messages_exist = all_messages_data
+            .all_messages()
+            .find((message) => message.is_private && message.to_user_ids === recipients);
+        if (
+            !previous_messages_exist &&
+            !people.user_can_initiate_direct_message_thread(recipients)
+        ) {
             return $t({
-                defaultMessage: "You are not allowed to send direct messages in this organization.",
+                defaultMessage:
+                    "You are not allowed to start direct message conversations in this organization.",
             });
         }
         return "";
@@ -235,14 +265,23 @@ function item_click_callback(event, dropdown) {
 
 function get_options_for_recipient_widget() {
     const options = stream_data.get_options_for_dropdown_widget();
-
+    const recipients = compose_pm_pill.get_user_ids_string();
     const direct_messages_option = {
         is_direct_message: true,
         unique_id: compose_state.DIRECT_MESSAGE_ID,
         name: $t({defaultMessage: "Direct message"}),
     };
-
-    options.unshift(direct_messages_option);
+    const previous_messages_exist = all_messages_data
+        .all_messages()
+        .find((message) => message.is_private && message.to_user_ids === recipients);
+    if (
+        (previous_messages_exist || people.user_can_initiate_direct_message_thread(recipients)) &&
+        people.user_can_direct_message(recipients)
+    ) {
+        options.unshift(direct_messages_option);
+    } else {
+        options.push(direct_messages_option);
+    }
     return options;
 }
 

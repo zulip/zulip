@@ -8,6 +8,7 @@ import * as compose_recipient from "./compose_recipient";
 import * as compose_state from "./compose_state";
 import * as compose_validate from "./compose_validate";
 import {$t} from "./i18n";
+import * as narrow_banner from "./narrow_banner";
 import * as narrow_state from "./narrow_state";
 import * as popover_menus from "./popover_menus";
 import {EXTRA_LONG_HOVER_DELAY, INSTANT_HOVER_DELAY, LONG_HOVER_DELAY} from "./tippyjs";
@@ -179,6 +180,22 @@ export function initialize() {
         content: () =>
             compose_recipient.get_posting_policy_error_message() ||
             compose_validate.get_disabled_send_tooltip(),
+        appendTo: () => document.body,
+        onHidden(instance) {
+            instance.destroy();
+        },
+    });
+
+    delegate("body", {
+        target: ".compose-reply-button-wrapper",
+        maxWidth: 350,
+        onShow(instance) {
+            if ($(".compose_reply_button").attr("disabled") === "disabled") {
+                instance.setContent(narrow_banner.pick_empty_narrow_banner().title);
+                return undefined;
+            }
+            return false;
+        },
         appendTo: () => document.body,
         onHidden(instance) {
             instance.destroy();

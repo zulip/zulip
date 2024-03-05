@@ -69,6 +69,12 @@
             text-overflow: ellipsis;
         }
 
+        .compose_reply_button_wrapper {
+            display: flex;
+            justify-content: flex-end;
+            flex-grow: 1;
+        }
+
         #new_conversation_button {
             /* Remove the  `padding` to prevent margin from affecting parent height. */
             padding: 0 10px;

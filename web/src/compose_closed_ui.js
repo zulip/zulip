@@ -1,5 +1,6 @@
 import $ from "jquery";
 
+import {all_messages_data} from "./all_messages_data";
 import * as compose_actions from "./compose_actions";
 import {$t} from "./i18n";
 import * as message_lists from "./message_lists";
@@ -125,9 +126,15 @@ function update_buttons(text_stream, is_direct_message_narrow, disable_reply) {
 export function update_buttons_for_private() {
     const text_stream = $t({defaultMessage: "Start new conversation"});
     const is_direct_message_narrow = true;
+    const user_ids_string = narrow_state.pm_ids_string();
+    const previous_messages_exist = all_messages_data
+        .all_messages()
+        .find((message) => message.is_private && message.to_user_ids === user_ids_string);
     if (
-        !narrow_state.pm_ids_string() ||
-        people.user_can_direct_message(narrow_state.pm_ids_string())
+        !user_ids_string ||
+        ((previous_messages_exist ||
+            people.user_can_initiate_direct_message_thread(user_ids_string)) &&
+            people.user_can_direct_message(user_ids_string))
     ) {
         $("#new_conversation_button").attr("data-conversation-type", "direct");
         update_buttons(text_stream, is_direct_message_narrow);

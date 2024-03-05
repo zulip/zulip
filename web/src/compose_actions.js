@@ -3,6 +3,7 @@
 import autosize from "autosize";
 import $ from "jquery";
 
+import {all_messages_data} from "./all_messages_data";
 import * as blueslip from "./blueslip";
 import * as compose_banner from "./compose_banner";
 import * as compose_fade from "./compose_fade";
@@ -16,11 +17,11 @@ import * as message_lists from "./message_lists";
 import * as message_viewport from "./message_viewport";
 import * as narrow_state from "./narrow_state";
 import {page_params} from "./page_params";
+import * as people from "./people";
 import * as popovers from "./popovers";
 import * as reload_state from "./reload_state";
 import * as resize from "./resize";
 import * as spectators from "./spectators";
-import {realm} from "./state_data";
 import * as stream_bar from "./stream_bar";
 import * as stream_data from "./stream_data";
 
@@ -446,8 +447,28 @@ export function on_narrow(opts) {
             }
             return;
         }
-        // Do not open compose box if organization has disabled sending
-        // direct messages and recipient is not a bot.
+        // Do not open compose box if sender is not allowed to send direct message.
+        const recipient_ids_string = opts.private_message_recipient
+            .split(",")
+            .map((email) => people.get_by_email(email)?.user_id)
+            .join(",");
+
+        const previous_messages_exist = all_messages_data
+            .all_messages()
+            .find((message) => message.is_private && message.to_user_ids === recipient_ids_string);
+
+        if (
+            (!previous_messages_exist &&
+                !people.user_can_initiate_direct_message_thread(recipient_ids_string)) ||
+            !people.user_can_direct_message(recipient_ids_string)
+        ) {
+            // If we are navigating between direct message conversation,
+            // we want the compose box to close for non-bot users.
+            if (compose_state.composing()) {
+                cancel();
+            }
+            return;
+        }
 
         // Open the compose box, passing the option to skip attempting
         // an animated adjustment to scroll position, which is useless

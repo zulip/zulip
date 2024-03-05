@@ -4258,6 +4258,29 @@ paths:
                                       description: |
                                         The day of the week when the organization will send
                                         its weekly digest email to inactive users.
+                                    direct_message_initiator_group:
+                                      type: integer
+                                      description: |
+                                        The ID of the [user group](/api/get-user-groups) whose members are
+                                        allowed to initiate direct message thread.
+
+                                        Previously, access to send direct messages was controlled by the
+                                        private_message_policy realm setting, which supported values of
+                                        1 (enabled) and 2 (disabled).
+
+                                        **Changes**: New in Zulip 8.0 (feature level 244).
+                                    direct_message_permission_group:
+                                      type: integer
+                                      description: |
+                                        The ID of the [user group](/api/get-user-groups) of which at least one
+                                        member must be included as sender or recipient in all personal and
+                                        group direct messages.
+
+                                        Previously, access to send direct messages was controlled by the
+                                        private_message_policy realm setting, which supported values of
+                                        1 (enabled) and 2 (disabled).
+
+                                        **Changes**: New in Zulip 8.0 (feature level 244).
                                     disallow_disposable_email_addresses:
                                       type: boolean
                                       description: |
@@ -14485,6 +14508,29 @@ paths:
                           - 2 = Nobody
 
                           **Changes**: New in Zulip 3.0 (feature level 1).
+                      realm_direct_message_initiator_group:
+                        type: integer
+                        description: |
+                          The ID of the [user group](/api/get-user-groups) whose members are
+                          allowed to initiate direct message thread.
+
+                          Previously, access to send direct messages was controlled by the
+                          private_message_policy realm setting, which supported values of
+                          1 (enabled) and 2 (disabled).
+
+                          **Changes**: New in Zulip 8.0 (feature level 244).
+                      realm_direct_message_permission_group:
+                        type: integer
+                        description: |
+                          The ID of the [user group](/api/get-user-groups) of which at least one
+                          member must be included as sender or recipient in all personal and
+                          group direct messages.
+
+                          Previously, access to send direct messages was controlled by the
+                          private_message_policy realm setting, which supported values of
+                          1 (enabled) and 2 (disabled).
+
+                          **Changes**: New in Zulip 8.0 (feature level 244).
                       realm_user_group_edit_policy:
                         type: integer
                         description: |

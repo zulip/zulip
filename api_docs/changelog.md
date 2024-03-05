@@ -20,6 +20,16 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 9.0
 
+**Feature level 244**
+
+* `PATCH /realm`, [`POST /register`](/api/register-queue),
+  [`GET /events`](/api/get-events): Added two new realm settings,
+  `direct_message_initiator_group`, which is the ID of the user group
+  whose members can initiate direct message thread, and
+  `direct_message_permission_group`, which is the ID of the user group
+  of which at least one member must be included as sender or recipient
+  in all personal and group direct messages.
+
 **Feature level 243**
 
 * [`POST /register`](/api/register-queue), [`GET

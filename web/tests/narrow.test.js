@@ -16,10 +16,10 @@ const stream_data = zrequire("stream_data");
 const {Filter} = zrequire("../src/filter");
 const narrow = zrequire("narrow");
 const narrow_title = zrequire("narrow_title");
-const settings_config = zrequire("settings_config");
 const recent_view_util = zrequire("recent_view_util");
 const inbox_util = zrequire("inbox_util");
 const message_lists = zrequire("message_lists");
+const user_groups = zrequire("user_groups");
 
 mock_esm("../src/compose_banner", {
     clear_search_view_banner() {},
@@ -74,6 +74,23 @@ const bot = {
     full_name: "Example Bot",
     is_bot: true,
 };
+
+const nobody = {
+    name: "role:nobody",
+    id: 1,
+    members: new Set([]),
+    is_system_group: true,
+    direct_subgroup_ids: new Set([]),
+};
+const everyone = {
+    name: "role:everyone",
+    id: 2,
+    members: new Set([5]),
+    is_system_group: true,
+    direct_subgroup_ids: new Set([]),
+};
+
+user_groups.initialize({realm_user_groups: [nobody, everyone]});
 
 run_test("empty_narrow_html", ({mock_template}) => {
     mock_template("empty_feed_notice.hbs", true, (_data, html) => html);
@@ -295,21 +312,8 @@ run_test("show_empty_narrow_message", ({mock_template}) => {
         ),
     );
 
-    // organization has disabled sending direct messages
-    realm.realm_private_message_policy =
-        settings_config.private_message_policy_values.disabled.code;
-    set_filter([["is", "dm"]]);
-    narrow_banner.show_empty_narrow_message();
-    assert.equal(
-        $(".empty_feed_notice_main").html(),
-        empty_narrow_html(
-            "translated: You are not allowed to send direct messages in this organization.",
-        ),
-    );
-
-    // sending direct messages enabled
-    realm.realm_private_message_policy =
-        settings_config.private_message_policy_values.by_anyone.code;
+    realm.realm_direct_message_permission_group = everyone.id;
+    realm.realm_direct_message_initiator_group = everyone.id;
     set_filter([["is", "dm"]]);
     narrow_banner.show_empty_narrow_message();
     assert.equal(
@@ -335,8 +339,7 @@ run_test("show_empty_narrow_message", ({mock_template}) => {
     );
 
     // organization has disabled sending direct messages
-    realm.realm_private_message_policy =
-        settings_config.private_message_policy_values.disabled.code;
+    realm.realm_direct_message_permission_group = nobody.id;
 
     // prioritize information about invalid user(s) in narrow/search
     set_filter([["dm", ["Yo"]]]);
@@ -388,8 +391,7 @@ run_test("show_empty_narrow_message", ({mock_template}) => {
     );
 
     // sending direct messages enabled
-    realm.realm_private_message_policy =
-        settings_config.private_message_policy_values.by_anyone.code;
+    realm.realm_direct_message_permission_group = everyone.id;
     set_filter([["dm", "alice@example.com"]]);
     narrow_banner.show_empty_narrow_message();
     assert.equal(
@@ -423,8 +425,7 @@ run_test("show_empty_narrow_message", ({mock_template}) => {
     );
 
     // organization has disabled sending direct messages
-    realm.realm_private_message_policy =
-        settings_config.private_message_policy_values.disabled.code;
+    realm.realm_direct_message_permission_group = nobody.id;
 
     // prioritize information about invalid user in narrow/search
     set_filter([["dm-including", ["Yo"]]]);
@@ -453,8 +454,8 @@ run_test("show_empty_narrow_message", ({mock_template}) => {
     );
 
     // sending direct messages enabled
-    realm.realm_private_message_policy =
-        settings_config.private_message_policy_values.by_anyone.code;
+    realm.realm_direct_message_permission_group = everyone.id;
+    realm.realm_direct_message_permission_group = everyone.id;
     set_filter([["dm-including", "alice@example.com"]]);
     narrow_banner.show_empty_narrow_message();
     assert.equal(

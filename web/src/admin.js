@@ -21,6 +21,7 @@ import * as settings_sections from "./settings_sections";
 import * as settings_toggle from "./settings_toggle";
 import * as settings_users from "./settings_users";
 import {current_user, realm} from "./state_data";
+import {get_user_group_from_name} from "./user_groups";
 
 const admin_settings_label = {
     // Organization profile
@@ -137,6 +138,8 @@ export function build_page() {
         language_list,
         realm_default_language_name: get_language_name(realm.realm_default_language),
         realm_default_language_code: realm.realm_default_language,
+        realm_direct_message_initiator_group_id: realm.realm_direct_message_initiator_group,
+        realm_direct_message_permission_group_id: realm.realm_direct_message_permission_group,
         realm_waiting_period_threshold: realm.realm_waiting_period_threshold,
         realm_new_stream_announcements_stream_id: realm.realm_new_stream_announcements_stream_id,
         realm_signup_announcements_stream_id: realm.realm_signup_announcements_stream_id,
@@ -265,6 +268,13 @@ export function build_page() {
         };
 
         tippy($("#realm_can_access_all_users_group_widget_container")[0], opts);
+    }
+
+    if (
+        options.realm_direct_message_permission_group_id ===
+        get_user_group_from_name("role:nobody").id
+    ) {
+        $("#realm_direct_message_initiator_group_widget").prop("disabled", true);
     }
 }
 
