@@ -6,7 +6,7 @@ from django.db import connection, transaction
 from django.http import HttpRequest, HttpResponse
 from django.utils.html import escape as escape_html
 from django.utils.translation import gettext as _
-from sqlalchemy.sql import and_, column, join, literal, literal_column, select, table
+from sqlalchemy.sql import column
 from sqlalchemy.types import Integer, Text
 
 from zerver.context_processors import get_valid_realm_from_request
@@ -16,6 +16,7 @@ from zerver.lib.narrow import (
     OptionalNarrowListT,
     add_narrow_conditions,
     fetch_messages,
+    get_base_query_for_search,
     is_spectator_compatible,
     is_web_public_narrow,
     narrow_parameter,
@@ -292,25 +293,11 @@ def messages_in_narrow_backend(
     msg_ids = [message_id for message_id in msg_ids if message_id >= first_visible_message_id]
     # This query is limited to messages the user has access to because they
     # actually received them, as reflected in `zerver_usermessage`.
-    query = (
-        select(column("message_id", Integer))
-        .where(
-            and_(
-                column("user_profile_id", Integer) == literal(user_profile.id),
-                column("message_id", Integer).in_(msg_ids),
-            )
-        )
-        .select_from(
-            join(
-                table("zerver_usermessage"),
-                table("zerver_message"),
-                literal_column("zerver_usermessage.message_id", Integer)
-                == literal_column("zerver_message.id", Integer),
-            )
-        )
+    query, inner_msg_id_col = get_base_query_for_search(
+        user_profile.realm_id, user_profile, need_message=True, need_user_message=True
     )
+    query = query.where(column("message_id", Integer).in_(msg_ids))
 
-    inner_msg_id_col = column("message_id", Integer)
     query, is_search = add_narrow_conditions(
         user_profile=user_profile,
         inner_msg_id_col=inner_msg_id_col,
