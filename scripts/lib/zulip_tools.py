@@ -600,7 +600,7 @@ def get_config_bool(
     if config_file.has_option(section, key):
         val = config_file.get(section, key)
         # This list is parallel to puppet/zulip/lib/puppet/functions/zulipconf.rb
-        return val in ["1", "y", "t", "true", "yes", "enable", "enabled"]
+        return val.lower() in ["1", "y", "t", "true", "yes", "enable", "enabled"]
     return default_value
 
 
