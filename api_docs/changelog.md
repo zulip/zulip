@@ -20,6 +20,19 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 9.0
 
+**Feature level 243**
+
+* [`GET /events`](/api/get-events), [`POST /register`](/api/register-queue),
+  [`GET /user_groups`](/api/get-user-groups): Renamed group setting
+  `can_mention_group` field to `can_mention_groups`, which now passes
+  list of group IDs instead of a single group ID.
+* [`POST /user_groups/create`](/api/create-user-group): Renamed `can_mention_group`
+  parameter to `can_mention_groups` and the setting can now be set to multiple
+  groups during user group creation.
+* [`PATCH /user_groups/{user_group_id}`](/api/update-user-group): Renamed
+  `can_mention_group` parameter to `can_mention_groups` and the setting can
+  now be updated to set it to multiple groups.
+
 **Feature level 242**
 
 * [`POST /register`](/api/register-queue), [`POST /events`](/api/get-events),

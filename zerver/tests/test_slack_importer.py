@@ -1360,7 +1360,6 @@ class SlackImporter(ZulipTestCase):
                 RealmAuditLog.USER_GROUP_DIRECT_USER_MEMBERSHIP_ADDED,
                 RealmAuditLog.USER_GROUP_DIRECT_SUBGROUP_MEMBERSHIP_ADDED,
                 RealmAuditLog.USER_GROUP_DIRECT_SUPERGROUP_MEMBERSHIP_ADDED,
-                RealmAuditLog.USER_GROUP_GROUP_BASED_SETTING_CHANGED,
             },
         )
 

@@ -2421,13 +2421,14 @@ class EditMessageTest(EditMessageTestCase):
         shiva = self.example_user("shiva")
         cordelia = self.example_user("cordelia")
         othello = self.example_user("othello")
+        prospero = self.example_user("prospero")
         self.subscribe(iago, "test_stream")
         self.subscribe(shiva, "test_stream")
         self.subscribe(othello, "test_stream")
         self.subscribe(cordelia, "test_stream")
 
         leadership = check_add_user_group(othello.realm, "leadership", [othello], acting_user=None)
-        support = check_add_user_group(othello.realm, "support", [othello], acting_user=None)
+        support = check_add_user_group(othello.realm, "support", [prospero], acting_user=None)
 
         moderators_system_group = UserGroup.objects.get(
             realm=iago.realm, name=SystemGroups.MODERATORS, is_system_group=True
@@ -2444,8 +2445,7 @@ class EditMessageTest(EditMessageTestCase):
         )
         self.assert_json_success(result)
 
-        leadership.can_mention_group = moderators_system_group
-        leadership.save()
+        leadership.can_mention_groups.set({moderators_system_group, support})
 
         msg_id = self.send_stream_message(cordelia, "test_stream", "Test message")
         content = "Edited test message @*leadership*"
@@ -2457,7 +2457,7 @@ class EditMessageTest(EditMessageTestCase):
         )
         self.assert_json_error(
             result,
-            f"You are not allowed to mention user group '{leadership.name}'. You must be a member of '{moderators_system_group.name}' to mention this group.",
+            f"You are not allowed to mention user group '{leadership.name}'.",
         )
 
         # The restriction does not apply on silent mention.
@@ -2494,8 +2494,7 @@ class EditMessageTest(EditMessageTestCase):
 
         test = check_add_user_group(shiva.realm, "test", [shiva], acting_user=None)
         add_subgroups_to_user_group(leadership, [test], acting_user=None)
-        support.can_mention_group = leadership
-        support.save()
+        support.can_mention_groups.set({leadership})
 
         content = "Test mentioning user group @*support*"
         result = self.client_patch(
@@ -2506,7 +2505,7 @@ class EditMessageTest(EditMessageTestCase):
         )
         self.assert_json_error(
             result,
-            f"You are not allowed to mention user group '{support.name}'. You must be a member of '{leadership.name}' to mention this group.",
+            f"You are not allowed to mention user group '{support.name}'.",
         )
 
         msg_id = self.send_stream_message(othello, "test_stream", "Test message")
@@ -2541,7 +2540,7 @@ class EditMessageTest(EditMessageTestCase):
         )
         self.assert_json_error(
             result,
-            f"You are not allowed to mention user group '{support.name}'. You must be a member of '{leadership.name}' to mention this group.",
+            f"You are not allowed to mention user group '{support.name}'.",
         )
 
         msg_id = self.send_stream_message(othello, "test_stream", "Test message")
@@ -2554,7 +2553,7 @@ class EditMessageTest(EditMessageTestCase):
         )
         self.assert_json_error(
             result,
-            f"You are not allowed to mention user group '{leadership.name}'. You must be a member of '{moderators_system_group.name}' to mention this group.",
+            f"You are not allowed to mention user group '{leadership.name}'.",
         )
 
         msg_id = self.send_stream_message(shiva, "test_stream", "Test message")

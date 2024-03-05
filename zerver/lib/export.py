@@ -165,6 +165,7 @@ ALL_ZULIP_TABLES = {
     "zerver_useractivityinterval",
     "zerver_usergroup",
     "zerver_usergroupmembership",
+    "zerver_usergroup_can_mention_groups",
     "zerver_usermessage",
     "zerver_userpresence",
     "zerver_userprofile",
@@ -773,7 +774,7 @@ def get_realm_config() -> Config:
         model=UserGroup,
         normal_parent=realm_config,
         include_rows="realm_id__in",
-        exclude=["direct_members", "direct_subgroups"],
+        exclude=["direct_members", "direct_subgroups", "can_mention_groups"],
     )
 
     Config(
@@ -789,6 +790,14 @@ def get_realm_config() -> Config:
         normal_parent=user_groups_config,
         include_rows="supergroup_id__in",
     )
+
+    for setting_name in UserGroup.GROUP_PERMISSION_SETTINGS:
+        Config(
+            table="zerver_usergroup_" + setting_name,
+            model=getattr(UserGroup, setting_name).through,
+            normal_parent=user_groups_config,
+            include_rows="from_usergroup_id__in",
+        )
 
     Config(
         custom_tables=[

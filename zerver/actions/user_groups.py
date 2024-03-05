@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Dict, List, Mapping, Optional, Sequence, TypedDict, Union
+from typing import Dict, List, Mapping, Optional, Sequence, Set, TypedDict, Union
 
 import django.db.utils
 from django.db import transaction
@@ -38,21 +38,21 @@ def create_user_group_in_database(
     *,
     acting_user: Optional[UserProfile],
     description: str = "",
-    group_settings_map: Mapping[str, UserGroup] = {},
+    group_settings_map: Mapping[str, List[UserGroup]] = {},
     is_system_group: bool = False,
 ) -> UserGroup:
     user_group = UserGroup(
         name=name, realm=realm, description=description, is_system_group=is_system_group
     )
 
-    for setting_name, setting_value in group_settings_map.items():
-        setattr(user_group, setting_name, setting_value)
-
     system_groups_name_dict = get_role_based_system_groups_dict(realm)
-    user_group = set_defaults_for_group_settings(
-        user_group, group_settings_map, system_groups_name_dict
-    )
     user_group.save()
+
+    for setting_name, setting_value in group_settings_map.items():
+        current_setting_value = getattr(user_group, setting_name)
+        current_setting_value.set(setting_value)
+
+    set_defaults_for_group_settings([user_group], group_settings_map, system_groups_name_dict)
 
     UserGroupMembership.objects.bulk_create(
         UserGroupMembership(user_profile=member, user_group=user_group) for member in members
@@ -66,18 +66,6 @@ def create_user_group_in_database(
             event_type=RealmAuditLog.USER_GROUP_CREATED,
             event_time=creation_time,
             modified_user_group=user_group,
-        ),
-        RealmAuditLog(
-            realm=realm,
-            acting_user=acting_user,
-            event_type=RealmAuditLog.USER_GROUP_GROUP_BASED_SETTING_CHANGED,
-            event_time=creation_time,
-            modified_user_group=user_group,
-            extra_data={
-                RealmAuditLog.OLD_VALUE: None,
-                RealmAuditLog.NEW_VALUE: user_group.can_mention_group.id,
-                "property": "can_mention_group",
-            },
         ),
     ] + [
         RealmAuditLog(
@@ -180,7 +168,9 @@ def do_send_create_user_group_event(
             id=user_group.id,
             is_system_group=user_group.is_system_group,
             direct_subgroup_ids=[direct_subgroup.id for direct_subgroup in direct_subgroups],
-            can_mention_group=user_group.can_mention_group_id,
+            can_mention_groups=[
+                can_mention_group.id for can_mention_group in user_group.can_mention_groups.all()
+            ],
         ),
     )
     send_event(user_group.realm, event, active_user_ids(user_group.realm_id))
@@ -191,7 +181,7 @@ def check_add_user_group(
     name: str,
     initial_members: List[UserProfile],
     description: str = "",
-    group_settings_map: Mapping[str, UserGroup] = {},
+    group_settings_map: Mapping[str, List[UserGroup]] = {},
     *,
     acting_user: Optional[UserProfile],
 ) -> UserGroup:
@@ -211,7 +201,7 @@ def check_add_user_group(
 
 
 def do_send_user_group_update_event(
-    user_group: UserGroup, data: Dict[str, Union[str, int]]
+    user_group: UserGroup, data: Dict[str, Union[str, List[int]]]
 ) -> None:
     event = dict(type="user_group", op="update", group_id=user_group.id, data=data)
     send_event(user_group.realm, event, active_user_ids(user_group.realm_id))
@@ -433,13 +423,13 @@ def check_delete_user_group(user_group: UserGroup, *, acting_user: UserProfile) 
 def do_change_user_group_permission_setting(
     user_group: UserGroup,
     setting_name: str,
-    setting_value_group: UserGroup,
+    new_setting_group_ids: Set[int],
     *,
     acting_user: Optional[UserProfile],
 ) -> None:
-    old_value = getattr(user_group, setting_name)
-    setattr(user_group, setting_name, setting_value_group)
-    user_group.save()
+    setting_value = getattr(user_group, setting_name)
+    old_group_ids = {group.id for group in setting_value.all()}
+    setting_value.set(new_setting_group_ids)
     RealmAuditLog.objects.create(
         realm=user_group.realm,
         acting_user=acting_user,
@@ -447,11 +437,13 @@ def do_change_user_group_permission_setting(
         event_time=timezone_now(),
         modified_user_group=user_group,
         extra_data={
-            RealmAuditLog.OLD_VALUE: old_value.id,
-            RealmAuditLog.NEW_VALUE: setting_value_group.id,
+            RealmAuditLog.OLD_VALUE: sorted(old_group_ids),
+            RealmAuditLog.NEW_VALUE: sorted(new_setting_group_ids),
             "property": setting_name,
         },
     )
 
-    event_data_dict: Dict[str, Union[str, int]] = {setting_name: setting_value_group.id}
+    event_data_dict: Dict[str, Union[str, List[int]]] = {
+        setting_name: sorted(new_setting_group_ids)
+    }
     do_send_user_group_update_event(user_group, event_data_dict)

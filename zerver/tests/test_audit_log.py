@@ -1143,28 +1143,6 @@ class TestRealmAuditLog(ZulipTestCase):
             self.assertEqual(supergroup_id, expected_supergroup_id)
             self.assertEqual(subgroup_id, expected_subgroup_id)
 
-        audit_log_entries = sorted(
-            RealmAuditLog.objects.filter(
-                realm=realm,
-                event_type=RealmAuditLog.USER_GROUP_GROUP_BASED_SETTING_CHANGED,
-                event_time__gte=now,
-                acting_user=None,
-            ).values_list("modified_user_group_id", "extra_data")
-        )
-        nobody_group = UserGroup.objects.get(name=SystemGroups.NOBODY, realm=realm)
-        for (user_group_id, extra_data), expected_user_group_id in zip(
-            audit_log_entries, logged_system_group_ids
-        ):
-            self.assertEqual(user_group_id, expected_user_group_id)
-            self.assertDictEqual(
-                extra_data,
-                {
-                    RealmAuditLog.OLD_VALUE: None,
-                    RealmAuditLog.NEW_VALUE: nobody_group.id,
-                    "property": "can_mention_group",
-                },
-            )
-
     def test_user_group_creation(self) -> None:
         hamlet = self.example_user("hamlet")
         cordelia = self.example_user("cordelia")
@@ -1178,7 +1156,7 @@ class TestRealmAuditLog(ZulipTestCase):
             [hamlet, cordelia],
             acting_user=hamlet,
             description="lorem",
-            group_settings_map={"can_mention_group": public_group},
+            group_settings_map={"can_mention_groups": [public_group]},
         )
 
         audit_log_entries = RealmAuditLog.objects.filter(
@@ -1200,24 +1178,6 @@ class TestRealmAuditLog(ZulipTestCase):
         self.assert_length(audit_log_entries, 2)
         self.assertEqual(audit_log_entries[0].modified_user, hamlet)
         self.assertEqual(audit_log_entries[1].modified_user, cordelia)
-
-        audit_log_entries = RealmAuditLog.objects.filter(
-            acting_user=hamlet,
-            realm=hamlet.realm,
-            event_time__gte=now,
-            event_type=RealmAuditLog.USER_GROUP_GROUP_BASED_SETTING_CHANGED,
-        )
-        self.assert_length(audit_log_entries, len(UserGroup.GROUP_PERMISSION_SETTINGS))
-        self.assertListEqual(
-            [audit_log.extra_data for audit_log in audit_log_entries],
-            [
-                {
-                    RealmAuditLog.OLD_VALUE: None,
-                    RealmAuditLog.NEW_VALUE: public_group.id,
-                    "property": "can_mention_group",
-                }
-            ],
-        )
 
     def test_change_user_group_memberships(self) -> None:
         hamlet = self.example_user("hamlet")
@@ -1351,13 +1311,14 @@ class TestRealmAuditLog(ZulipTestCase):
             },
         )
 
-        old_group = user_group.can_mention_group
+        old_group_ids = [group.id for group in user_group.can_mention_groups.all()]
         new_group = UserGroup.objects.get(
             name=SystemGroups.EVERYONE_ON_INTERNET, realm=user_group.realm
         )
-        self.assertNotEqual(old_group.id, new_group.id)
+        self.assertNotIn(new_group.id, old_group_ids)
+        expected_new_value = [*old_group_ids, new_group.id]
         do_change_user_group_permission_setting(
-            user_group, "can_mention_group", new_group, acting_user=None
+            user_group, "can_mention_groups", set(expected_new_value), acting_user=None
         )
         audit_log_entries = RealmAuditLog.objects.filter(
             event_type=RealmAuditLog.USER_GROUP_GROUP_BASED_SETTING_CHANGED,
@@ -1368,8 +1329,8 @@ class TestRealmAuditLog(ZulipTestCase):
         self.assertDictEqual(
             audit_log_entries[0].extra_data,
             {
-                RealmAuditLog.OLD_VALUE: old_group.id,
-                RealmAuditLog.NEW_VALUE: new_group.id,
-                "property": "can_mention_group",
+                RealmAuditLog.OLD_VALUE: sorted(old_group_ids),
+                RealmAuditLog.NEW_VALUE: sorted(expected_new_value),
+                "property": "can_mention_groups",
             },
         )

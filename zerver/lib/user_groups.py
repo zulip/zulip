@@ -30,7 +30,7 @@ class UserGroupDict(TypedDict):
     members: List[int]
     direct_subgroup_ids: List[int]
     is_system_group: bool
-    can_mention_group: int
+    can_mention_groups: List[int]
 
 
 @dataclass
@@ -228,6 +228,80 @@ def access_user_group_for_setting(
     return user_group
 
 
+def access_user_groups_for_setting(
+    user_group_ids: List[int],
+    user_profile: UserProfile,
+    *,
+    setting_name: str,
+    permission_configuration: GroupPermissionSetting,
+) -> List[UserGroup]:
+    realm = user_profile.realm
+    user_groups = list(UserGroup.objects.filter(id__in=user_group_ids, realm=realm))
+    found_group_ids = [group.id for group in user_groups]
+
+    for group_id in user_group_ids:
+        if group_id not in found_group_ids:
+            raise JsonableError(_("Invalid user group ID: {group_id}").format(group_id=group_id))
+
+    for user_group in user_groups:
+        if permission_configuration.require_system_group and not user_group.is_system_group:
+            raise JsonableError(
+                _("'{setting_name}' must be a system user group.").format(setting_name=setting_name)
+            )
+
+        if (
+            not permission_configuration.allow_internet_group
+            and user_group.name == SystemGroups.EVERYONE_ON_INTERNET
+        ):
+            raise JsonableError(
+                _("'{setting_name}' setting cannot be set to 'role:internet' group.").format(
+                    setting_name=setting_name
+                )
+            )
+
+        if (
+            not permission_configuration.allow_owners_group
+            and user_group.name == SystemGroups.OWNERS
+        ):
+            raise JsonableError(
+                _("'{setting_name}' setting cannot be set to 'role:owners' group.").format(
+                    setting_name=setting_name
+                )
+            )
+
+        if (
+            not permission_configuration.allow_nobody_group
+            and user_group.name == SystemGroups.NOBODY
+        ):
+            raise JsonableError(
+                _("'{setting_name}' setting cannot be set to 'role:nobody' group.").format(
+                    setting_name=setting_name
+                )
+            )
+
+        if (
+            not permission_configuration.allow_everyone_group
+            and user_group.name == SystemGroups.EVERYONE
+        ):
+            raise JsonableError(
+                _("'{setting_name}' setting cannot be set to 'role:everyone' group.").format(
+                    setting_name=setting_name
+                )
+            )
+
+        if (
+            permission_configuration.allowed_system_groups
+            and user_group.name not in permission_configuration.allowed_system_groups
+        ):
+            raise JsonableError(
+                _("'{setting_name}' setting cannot be set to '{group_name}' group.").format(
+                    setting_name=setting_name, group_name=user_group.name
+                )
+            )
+
+    return user_groups
+
+
 def check_user_group_name(group_name: str) -> str:
     if group_name.strip() == "":
         raise JsonableError(_("User group name can't be empty!"))
@@ -254,7 +328,7 @@ def user_groups_in_realm_serialized(realm: Realm) -> List[UserGroupDict]:
     Django's ORM doesn't properly support the left join between
     UserGroup and UserGroupMembership that we need.
     """
-    realm_groups = UserGroup.objects.filter(realm=realm)
+    realm_groups = UserGroup.objects.filter(realm=realm).prefetch_related("can_mention_groups")
     group_dicts: Dict[int, UserGroupDict] = {}
     for user_group in realm_groups:
         group_dicts[user_group.id] = dict(
@@ -264,7 +338,9 @@ def user_groups_in_realm_serialized(realm: Realm) -> List[UserGroupDict]:
             members=[],
             direct_subgroup_ids=[],
             is_system_group=user_group.is_system_group,
-            can_mention_group=user_group.can_mention_group_id,
+            can_mention_groups=[
+                can_mention_group.id for can_mention_group in user_group.can_mention_groups.all()
+            ],
         )
 
     membership = UserGroupMembership.objects.filter(user_group__realm=realm).values_list(
@@ -282,6 +358,7 @@ def user_groups_in_realm_serialized(realm: Realm) -> List[UserGroupDict]:
     for group_dict in group_dicts.values():
         group_dict["members"] = sorted(group_dict["members"])
         group_dict["direct_subgroup_ids"] = sorted(group_dict["direct_subgroup_ids"])
+        group_dict["can_mention_groups"] = sorted(group_dict["can_mention_groups"])
 
     return sorted(group_dicts.values(), key=lambda group_dict: group_dict["id"])
 
@@ -350,6 +427,20 @@ def is_user_in_group(
     return get_recursive_group_members(user_group=user_group).filter(id=user.id).exists()
 
 
+def is_user_in_any_group(
+    user_groups: List[UserGroup], user: UserProfile, *, direct_member_only: bool = False
+) -> bool:
+    if direct_member_only:
+        return UserGroupMembership.objects.filter(
+            user_group__in=user_groups, user_profile=user
+        ).exists()
+
+    user_group_ids = [group.id for group in user_groups]
+    recursive_subgroups = get_recursive_subgroups_for_groups(user_group_ids, user.realm)
+
+    return UserProfile.objects.filter(id=user.id, direct_groups__in=recursive_subgroups).exists()
+
+
 def get_user_group_member_ids(
     user_group: UserGroup, *, direct_member_only: bool = False
 ) -> List[int]:
@@ -396,25 +487,32 @@ def get_role_based_system_groups_dict(realm: Realm) -> Dict[str, UserGroup]:
 
 
 def set_defaults_for_group_settings(
-    user_group: UserGroup,
-    group_settings_map: Mapping[str, UserGroup],
+    user_groups: List[UserGroup],
+    group_settings_map: Mapping[str, List[UserGroup]],
     system_groups_name_dict: Dict[str, UserGroup],
-) -> UserGroup:
+) -> None:
     for setting_name, permission_config in UserGroup.GROUP_PERMISSION_SETTINGS.items():
         if setting_name in group_settings_map:
             # We skip the settings for which a value is passed
             # in user group creation API request.
             continue
 
-        if user_group.is_system_group and permission_config.default_for_system_groups is not None:
-            default_group_name = permission_config.default_for_system_groups
-        else:
-            default_group_name = permission_config.default_group_name
+        GroupSettingRelationship = UserGroup.can_mention_groups.through
+        group_setting_relation_objects = []
+        for group in user_groups:
+            if group.is_system_group and permission_config.default_for_system_groups is not None:
+                default_group_name = permission_config.default_for_system_groups
+            else:
+                default_group_name = permission_config.default_group_name
 
-        default_group = system_groups_name_dict[default_group_name]
-        setattr(user_group, setting_name, default_group)
+            default_group = system_groups_name_dict[default_group_name]
+            group_setting_relation_objects.append(
+                GroupSettingRelationship(
+                    from_usergroup_id=group.id, to_usergroup_id=default_group.id
+                )
+            )
 
-    return user_group
+        GroupSettingRelationship.objects.bulk_create(group_setting_relation_objects)
 
 
 @transaction.atomic(savepoint=False)
@@ -428,7 +526,6 @@ def create_system_user_groups_for_realm(realm: Realm) -> Dict[int, UserGroup]:
     # This value will be used to set the temporary initial value for different
     # settings since we can only set them to the correct values after the groups
     # are created.
-    initial_group_setting_value = -1
 
     for role in UserGroup.SYSTEM_USER_GROUP_ROLE_MAP:
         user_group_params = UserGroup.SYSTEM_USER_GROUP_ROLE_MAP[role]
@@ -437,7 +534,6 @@ def create_system_user_groups_for_realm(realm: Realm) -> Dict[int, UserGroup]:
             description=user_group_params["description"],
             realm=realm,
             is_system_group=True,
-            can_mention_group_id=initial_group_setting_value,
         )
         role_system_groups_dict[role] = user_group
 
@@ -446,21 +542,18 @@ def create_system_user_groups_for_realm(realm: Realm) -> Dict[int, UserGroup]:
         description="Members of this organization, not including new accounts and guests",
         realm=realm,
         is_system_group=True,
-        can_mention_group_id=initial_group_setting_value,
     )
     everyone_on_internet_system_group = UserGroup(
         name=SystemGroups.EVERYONE_ON_INTERNET,
         description="Everyone on the Internet",
         realm=realm,
         is_system_group=True,
-        can_mention_group_id=initial_group_setting_value,
     )
     nobody_system_group = UserGroup(
         name=SystemGroups.NOBODY,
         description="Nobody",
         realm=realm,
         is_system_group=True,
-        can_mention_group_id=initial_group_setting_value,
     )
     # Order of this list here is important to create correct GroupGroupMembership objects
     # Note that because we do not create user memberships here, no audit log entries for
@@ -489,26 +582,8 @@ def create_system_user_groups_for_realm(realm: Realm) -> Dict[int, UserGroup]:
         for user_group in system_user_groups_list
     ]
 
-    groups_with_updated_settings = []
     system_groups_name_dict = get_role_based_system_groups_dict(realm)
-    for group in system_user_groups_list:
-        user_group = set_defaults_for_group_settings(group, {}, system_groups_name_dict)
-        groups_with_updated_settings.append(group)
-        realmauditlog_objects.append(
-            RealmAuditLog(
-                realm=realm,
-                acting_user=None,
-                event_type=RealmAuditLog.USER_GROUP_GROUP_BASED_SETTING_CHANGED,
-                event_time=creation_time,
-                modified_user_group=user_group,
-                extra_data={
-                    RealmAuditLog.OLD_VALUE: None,
-                    RealmAuditLog.NEW_VALUE: user_group.can_mention_group.id,
-                    "property": "can_mention_group",
-                },
-            )
-        )
-    UserGroup.objects.bulk_update(groups_with_updated_settings, ["can_mention_group"])
+    set_defaults_for_group_settings(system_user_groups_list, {}, system_groups_name_dict)
 
     subgroup_objects: List[GroupGroupMembership] = []
     # "Nobody" system group is not a subgroup of any user group, since it is already empty.

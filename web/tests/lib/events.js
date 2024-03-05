@@ -836,7 +836,7 @@ exports.fixtures = {
             members: [1],
             is_system_group: false,
             direct_subgroup_ids: [2],
-            can_mention_group: 11,
+            can_mention_groups: [11],
         },
     },
 

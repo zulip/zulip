@@ -17,7 +17,7 @@ class SystemGroups:
     NOBODY = "role:nobody"
 
 
-class UserGroup(models.Model):  # type: ignore[django-manager-missing] # django-stubs cannot resolve the custom CTEManager yet https://github.com/typeddjango/django-stubs/issues/1023
+class UserGroup(models.Model):
     MAX_NAME_LENGTH = 100
     INVALID_NAME_PREFIXES = ["@", "role:", "user:", "stream:", "channel:"]
 
@@ -37,7 +37,7 @@ class UserGroup(models.Model):  # type: ignore[django-manager-missing] # django-
     description = models.TextField(default="")
     is_system_group = models.BooleanField(default=False)
 
-    can_mention_group = models.ForeignKey("self", on_delete=models.RESTRICT)
+    can_mention_groups = models.ManyToManyField("self", symmetrical=False)
 
     # We do not have "Full members" and "Everyone on the internet"
     # group here since there isn't a separate role value for full
@@ -66,7 +66,7 @@ class UserGroup(models.Model):  # type: ignore[django-manager-missing] # django-
     }
 
     GROUP_PERMISSION_SETTINGS = {
-        "can_mention_group": GroupPermissionSetting(
+        "can_mention_groups": GroupPermissionSetting(
             require_system_group=False,
             allow_internet_group=False,
             allow_owners_group=False,
@@ -74,7 +74,7 @@ class UserGroup(models.Model):  # type: ignore[django-manager-missing] # django-
             allow_everyone_group=True,
             default_group_name=SystemGroups.EVERYONE,
             default_for_system_groups=SystemGroups.NOBODY,
-            id_field_name="can_mention_group_id",
+            id_field_name="can_mention_group_ids",
         ),
     }
 
