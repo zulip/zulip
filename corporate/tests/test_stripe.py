@@ -1039,7 +1039,7 @@ class StripeTest(StripeTestCase):
             billing_cycle_anchor=self.now,
             billing_schedule=CustomerPlan.BILLING_SCHEDULE_ANNUAL,
             invoiced_through=LicenseLedger.objects.first(),
-            next_invoice_date=self.next_year,
+            next_invoice_date=self.next_month,
             tier=CustomerPlan.TIER_CLOUD_STANDARD,
             status=CustomerPlan.ACTIVE,
         )
@@ -1438,7 +1438,7 @@ class StripeTest(StripeTestCase):
             customer_plan.refresh_from_db()
             realm.refresh_from_db()
             self.assertEqual(customer_plan.status, CustomerPlan.ACTIVE)
-            self.assertEqual(customer_plan.next_invoice_date, add_months(free_trial_end_date, 12))
+            self.assertEqual(customer_plan.next_invoice_date, add_months(free_trial_end_date, 1))
             self.assertEqual(realm.plan_type, Realm.PLAN_TYPE_STANDARD)
             [invoice] = iter(stripe.Invoice.list(customer=stripe_customer.id))
             invoice_params = {
@@ -2719,7 +2719,7 @@ class StripeTest(StripeTestCase):
 
         annual_plan.refresh_from_db()
         self.assertEqual(annual_plan.invoiced_through, annual_ledger_entries[0])
-        self.assertEqual(annual_plan.next_invoice_date, add_months(self.next_month, 12))
+        self.assertEqual(annual_plan.next_invoice_date, add_months(self.next_month, 1))
         self.assertEqual(annual_plan.invoicing_status, CustomerPlan.INVOICING_STATUS_DONE)
 
         assert customer.stripe_customer_id
@@ -2743,7 +2743,8 @@ class StripeTest(StripeTestCase):
 
         with patch("corporate.lib.stripe.BillingSession.invoice_plan") as m:
             invoice_plans_as_needed(add_months(self.now, 2))
-            m.assert_not_called()
+            # Even annual plans get invoiced monthly for additional licenses.
+            m.assert_called_once()
 
         invoice_plans_as_needed(add_months(self.now, 13))
 
@@ -4542,46 +4543,42 @@ class BillingHelpersTest(ZulipTestCase):
             (
                 (
                     CustomerPlan.TIER_CLOUD_STANDARD,
-                    True,
                     CustomerPlan.BILLING_SCHEDULE_ANNUAL,
                     None,
                 ),
                 (anchor, month_later, year_later, 8000),
             ),
             (
-                (CustomerPlan.TIER_CLOUD_STANDARD, True, CustomerPlan.BILLING_SCHEDULE_ANNUAL, 85),
+                (CustomerPlan.TIER_CLOUD_STANDARD, CustomerPlan.BILLING_SCHEDULE_ANNUAL, 85),
                 (anchor, month_later, year_later, 1200),
             ),
             (
                 (
                     CustomerPlan.TIER_CLOUD_STANDARD,
-                    True,
                     CustomerPlan.BILLING_SCHEDULE_MONTHLY,
                     None,
                 ),
                 (anchor, month_later, month_later, 800),
             ),
             (
-                (CustomerPlan.TIER_CLOUD_STANDARD, True, CustomerPlan.BILLING_SCHEDULE_MONTHLY, 85),
+                (CustomerPlan.TIER_CLOUD_STANDARD, CustomerPlan.BILLING_SCHEDULE_MONTHLY, 85),
                 (anchor, month_later, month_later, 120),
             ),
             (
                 (
                     CustomerPlan.TIER_CLOUD_STANDARD,
-                    False,
                     CustomerPlan.BILLING_SCHEDULE_ANNUAL,
                     None,
                 ),
-                (anchor, year_later, year_later, 8000),
+                (anchor, month_later, year_later, 8000),
             ),
             (
-                (CustomerPlan.TIER_CLOUD_STANDARD, False, CustomerPlan.BILLING_SCHEDULE_ANNUAL, 85),
-                (anchor, year_later, year_later, 1200),
+                (CustomerPlan.TIER_CLOUD_STANDARD, CustomerPlan.BILLING_SCHEDULE_ANNUAL, 85),
+                (anchor, month_later, year_later, 1200),
             ),
             (
                 (
                     CustomerPlan.TIER_CLOUD_STANDARD,
-                    False,
                     CustomerPlan.BILLING_SCHEDULE_MONTHLY,
                     None,
                 ),
@@ -4590,7 +4587,6 @@ class BillingHelpersTest(ZulipTestCase):
             (
                 (
                     CustomerPlan.TIER_CLOUD_STANDARD,
-                    False,
                     CustomerPlan.BILLING_SCHEDULE_MONTHLY,
                     85,
                 ),
@@ -4600,7 +4596,6 @@ class BillingHelpersTest(ZulipTestCase):
             (
                 (
                     CustomerPlan.TIER_CLOUD_STANDARD,
-                    False,
                     CustomerPlan.BILLING_SCHEDULE_MONTHLY,
                     87.25,
                 ),
@@ -4610,7 +4605,6 @@ class BillingHelpersTest(ZulipTestCase):
             (
                 (
                     CustomerPlan.TIER_CLOUD_STANDARD,
-                    False,
                     CustomerPlan.BILLING_SCHEDULE_MONTHLY,
                     87.15,
                 ),
@@ -4618,10 +4612,9 @@ class BillingHelpersTest(ZulipTestCase):
             ),
         ]
         with time_machine.travel(anchor, tick=False):
-            for (tier, automanage_licenses, billing_schedule, discount), output in test_cases:
+            for (tier, billing_schedule, discount), output in test_cases:
                 output_ = compute_plan_parameters(
                     tier,
-                    automanage_licenses,
                     billing_schedule,
                     None if discount is None else Decimal(discount),
                 )
