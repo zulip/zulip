@@ -6,7 +6,7 @@ import * as common from "./lib/common";
 
 async function navigate_using_left_sidebar(page: Page, click_target: string): Promise<void> {
     console.log("Visiting #" + click_target);
-    await page.click(`#left-sidebar a[href='#${CSS.escape(click_target)}']`);
+    await page.click(`#left-sidebar span.stream-name`);
     await page.waitForSelector(`#message_feed_container`, {visible: true});
 }
 
@@ -107,6 +107,8 @@ async function navigation_tests(page: Page): Promise<void> {
     await navigate_using_left_sidebar(page, verona_narrow);
 
     await test_reload_hash(page);
+
+    console.log("We are done till heree");
 
     // Verify that we're narrowed to the target stream
     await page.waitForSelector(

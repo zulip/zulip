@@ -972,6 +972,21 @@ li.top_left_scheduled_messages {
            definition. */
         height: auto;
     }
+
+    .interleaved-icon {
+        display: none;
+    }
+}
+
+.bottom_left_row:hover .stream-markers-and-controls {
+    .interleaved-icon {
+        display: flex;
+        color: var(--color-left-sidebar-navigation-icon);
+
+        &:hover {
+            color: var(--color-text-message-header);
+        }
+    }
 }
 
 .bottom_left_row .sidebar-menu-icon {

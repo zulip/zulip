@@ -825,7 +825,7 @@ export function set_event_handlers({
 }: {
     on_stream_click: (stream_id: number, trigger: string) => void;
 }): void {
-    $("#stream_filters").on("click", "li .subscription_block", (e) => {
+    $("#stream_filters").on("click", "li .subscription_block a", (e) => {
         if (e.metaKey || e.ctrlKey) {
             return;
         }

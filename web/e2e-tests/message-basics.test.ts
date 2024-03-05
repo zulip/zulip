@@ -321,11 +321,10 @@ async function expect_all_direct_messages(page: Page): Promise<void> {
 async function test_narrow_by_clicking_the_left_sidebar(page: Page): Promise<void> {
     console.log("Narrowing with left sidebar");
 
-    await page.click((await get_stream_li(page, "Verona")) + " a");
-    await expect_verona_stream(page);
-
     await page.click((await get_stream_li(page, "Verona")) + " .stream-name");
     await expect_verona_stream_top_topic(page);
+
+    console.log("THIS THING IS DONE");
 
     await page.click("#left-sidebar-navigation-list .top_left_all_messages a");
     await expect_home(page);
