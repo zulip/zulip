@@ -182,14 +182,6 @@
     height: 370px;
     user-select: none;
 
-    &.bottom .arrow {
-        border-bottom-color: hsl(0deg 0% 93%);
-    }
-
-    &.top .arrow {
-        border-top-color: hsl(0deg 0% 93%);
-    }
-
     .emoji-popover {
         width: 250px;
 
