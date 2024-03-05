@@ -1,0 +1,38 @@
+<div id="introduce-zulip-view-modal">
+    <p>
+        {{#if (eq zulip_view "inbox")}}
+            {{#tr}}The <b>inbox</b> view provides an overview of your conversations with unread messages.{{/tr}}
+        {{/if}}
+        {{#tr}}
+            In Zulip, a conversation is either a <z-link-direct-message>direct message</z-link-direct-message>
+            thread, or a <z-link-stream-topic>topic in a stream</z-link-stream-topic>.
+            {{#*inline "z-link-direct-message"}}<a href="/help/direct-messages" target="_blank" rel="noopener noreferrer">{{> @partial-block }}</a>{{/inline}}
+            {{#*inline "z-link-stream-topic"}}<a href="/help/streams-and-topics" target="_blank" rel="noopener noreferrer">{{> @partial-block }}</a>{{/inline}}
+        {{/tr}}
+        {{#if (eq zulip_view "inbox")}}
+            {{t 'The colored bars indicate which stream the conversation is in.' }}
+        {{/if}}
+    </p>
+    <p>
+        {{t 'Click on a conversation to view it. To return here, you can:'}}
+        <ul>
+            <li>{{#tr}}Use the <b>back</b> button in your browser or desktop app.{{/tr}}</li>
+            <li>
+                {{#if (eq zulip_view "inbox")}}
+                    {{#tr}}
+                        Click <z-icon-inbox></z-icon-inbox> <b>Inbox</b> in the left sidebar.
+                        {{#*inline "z-icon-inbox"}}<i class="zulip-icon zulip-icon-inbox" aria-hidden="true"></i>{{/inline}}
+                    {{/tr}}
+                {{/if}}
+            </li>
+            {{#if current_home_view_and_escape_navigation_enabled}}
+                <li>
+                    {{#tr}}
+                        Use <z-button>Esc</z-button> to go to your home view.
+                        {{#*inline "z-button"}}<span class="keyboard-button">{{@partial-block}}</span>{{/inline}}
+                    {{/tr}}
+                </li>
+            {{/if}}
+        </ul>
+    </p>
+</div>

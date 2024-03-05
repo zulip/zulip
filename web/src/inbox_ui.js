@@ -4,19 +4,23 @@ import _ from "lodash";
 import render_inbox_row from "../templates/inbox_view/inbox_row.hbs";
 import render_inbox_stream_container from "../templates/inbox_view/inbox_stream_container.hbs";
 import render_inbox_view from "../templates/inbox_view/inbox_view.hbs";
+import render_introduce_zulip_view_modal from "../templates/introduce_zulip_view_modal.hbs";
 import render_user_with_status_icon from "../templates/user_with_status_icon.hbs";
 
 import * as buddy_data from "./buddy_data";
 import * as compose_closed_ui from "./compose_closed_ui";
 import * as compose_state from "./compose_state";
+import * as dialog_widget from "./dialog_widget";
 import * as dropdown_widget from "./dropdown_widget";
 import * as hash_util from "./hash_util";
+import {$t_html} from "./i18n";
 import {is_visible, set_visible} from "./inbox_util";
 import * as keydown_util from "./keydown_util";
 import * as left_sidebar_navigation_area from "./left_sidebar_navigation_area";
 import {localstorage} from "./localstorage";
 import * as message_store from "./message_store";
 import * as modals from "./modals";
+import * as onboarding_steps from "./onboarding_steps";
 import * as overlays from "./overlays";
 import * as people from "./people";
 import * as popovers from "./popovers";
@@ -26,6 +30,7 @@ import * as stream_data from "./stream_data";
 import * as sub_store from "./sub_store";
 import * as unread from "./unread";
 import * as unread_ops from "./unread_ops";
+import {user_settings} from "./user_settings";
 import * as user_status from "./user_status";
 import * as user_topics from "./user_topics";
 import * as user_topics_ui from "./user_topics_ui";
@@ -92,6 +97,24 @@ export function show() {
         set_visible,
         complete_rerender,
     });
+
+    if (onboarding_steps.ONE_TIME_NOTICES_TO_DISPLAY.has("intro_inbox_view_modal")) {
+        const html_body = render_introduce_zulip_view_modal({
+            zulip_view: "inbox",
+            current_home_view_and_escape_navigation_enabled:
+                user_settings.web_home_view === "inbox" &&
+                user_settings.web_escape_navigates_to_home_view,
+        });
+        dialog_widget.launch({
+            html_heading: $t_html({defaultMessage: "Welcome to your <b>inbox</b>!"}),
+            html_body,
+            html_submit_button: $t_html({defaultMessage: "Continue"}),
+            on_click() {},
+            single_footer_button: true,
+            focus_submit_on_open: true,
+        });
+        onboarding_steps.post_onboarding_step_as_read("intro_inbox_view_modal");
+    }
 }
 
 export function hide() {
