@@ -108,7 +108,7 @@ async function navigation_tests(page: Page): Promise<void> {
 
     await test_reload_hash(page);
 
-    console.log("We are done till heree");
+    console.log("We are done till here");
 
     // Verify that we're narrowed to the target stream
     await page.waitForSelector(
