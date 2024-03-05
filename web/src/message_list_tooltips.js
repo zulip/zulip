@@ -35,12 +35,28 @@ const store_message_list_instances_plugin = {
     },
 };
 
-function message_list_tooltip(target, props) {
+function message_list_tooltip(target, props = {}) {
+    const {onShow, ...other_props} = props;
     delegate("body", {
         target,
         appendTo: () => document.body,
         plugins: [store_message_list_instances_plugin],
-        ...props,
+        onShow(instance) {
+            if (message_lists.current === undefined) {
+                // Since tooltips is called with a delay, it is possible that the
+                // message feed is not visible when the tooltip is shown.
+                return false;
+            }
+
+            if (onShow !== undefined && onShow(instance) === false) {
+                // Only return false if `onShow` returns false. We don't want to hide
+                // tooltip if `onShow` returns `undefined`.
+                return false;
+            }
+
+            return true;
+        },
+        ...other_props,
     });
 }
 
