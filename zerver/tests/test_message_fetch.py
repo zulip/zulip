@@ -4328,12 +4328,10 @@ class GetOldMessagesTest(ZulipTestCase):
         self.assertNotIn(f"AND message_id = {LARGER_THAN_MAX_MESSAGE_ID}", sql)
         self.assertIn("ORDER BY message_id ASC", sql)
 
-        cond = (
-            f"WHERE user_profile_id = {user_profile.id} AND message_id >= {first_unread_message_id}"
-        )
-        self.assertIn(cond, sql)
-        cond = f"WHERE user_profile_id = {user_profile.id} AND message_id <= {first_unread_message_id - 1}"
-        self.assertIn(cond, sql)
+        self.assertIn(f"\nWHERE user_profile_id = {user_profile.id} ", sql)
+        self.assertIn(f" AND message_id >= {first_unread_message_id} ", sql)
+        self.assertIn(f"\nWHERE user_profile_id = {user_profile.id} ", sql)
+        self.assertIn(f" AND message_id <= {first_unread_message_id - 1} ", sql)
         self.assertIn("UNION", sql)
 
     def test_visible_messages_use_first_unread_anchor_with_some_unread_messages(self) -> None:
@@ -4377,10 +4375,10 @@ class GetOldMessagesTest(ZulipTestCase):
         sql = queries[0].sql
         self.assertNotIn(f"AND message_id = {LARGER_THAN_MAX_MESSAGE_ID}", sql)
         self.assertIn("ORDER BY message_id ASC", sql)
-        cond = f"WHERE user_profile_id = {user_profile.id} AND message_id <= {first_unread_message_id - 1}"
-        self.assertIn(cond, sql)
-        cond = f"WHERE user_profile_id = {user_profile.id} AND message_id >= {first_visible_message_id}"
-        self.assertIn(cond, sql)
+        self.assertIn(f"\nWHERE user_profile_id = {user_profile.id} ", sql)
+        self.assertIn(f" AND message_id <= {first_unread_message_id - 1} ", sql)
+        self.assertIn(f"\nWHERE user_profile_id = {user_profile.id} ", sql)
+        self.assertIn(f" AND message_id >= {first_visible_message_id} ", sql)
 
     def test_use_first_unread_anchor_with_no_unread_messages(self) -> None:
         user_profile = self.example_user("hamlet")
@@ -4613,8 +4611,12 @@ AND NOT (recipient_id = %(recipient_id_4)s AND upper(subject) = upper(%(param_3)
         sql_template = """\
 SELECT anon_1.message_id, anon_1.flags \n\
 FROM (SELECT message_id, flags \n\
-FROM zerver_usermessage JOIN zerver_message ON zerver_usermessage.message_id = zerver_message.id \n\
-WHERE user_profile_id = {hamlet_id} AND message_id = 0) AS anon_1 ORDER BY message_id ASC\
+FROM zerver_usermessage JOIN zerver_message ON zerver_usermessage.message_id = zerver_message.id JOIN zerver_recipient ON zerver_message.recipient_id = zerver_recipient.id \n\
+WHERE user_profile_id = {hamlet_id} AND (zerver_recipient.type_id != 2 OR (EXISTS (SELECT  \n\
+FROM zerver_stream \n\
+WHERE zerver_stream.recipient_id = zerver_recipient.id AND NOT zerver_stream.invite_only AND NOT zerver_stream.is_in_zephyr_realm)) OR (EXISTS (SELECT  \n\
+FROM zerver_subscription \n\
+WHERE zerver_subscription.user_profile_id = {hamlet_id} AND zerver_subscription.recipient_id = zerver_recipient.id AND zerver_subscription.active))) AND message_id = 0) AS anon_1 ORDER BY message_id ASC\
 """
         sql = sql_template.format(**query_ids)
         self.common_check_get_messages_query({"anchor": 0, "num_before": 0, "num_after": 0}, sql)
@@ -4622,8 +4624,12 @@ WHERE user_profile_id = {hamlet_id} AND message_id = 0) AS anon_1 ORDER BY messa
         sql_template = """\
 SELECT anon_1.message_id, anon_1.flags \n\
 FROM (SELECT message_id, flags \n\
-FROM zerver_usermessage JOIN zerver_message ON zerver_usermessage.message_id = zerver_message.id \n\
-WHERE user_profile_id = {hamlet_id} AND message_id = 0) AS anon_1 ORDER BY message_id ASC\
+FROM zerver_usermessage JOIN zerver_message ON zerver_usermessage.message_id = zerver_message.id JOIN zerver_recipient ON zerver_message.recipient_id = zerver_recipient.id \n\
+WHERE user_profile_id = {hamlet_id} AND (zerver_recipient.type_id != 2 OR (EXISTS (SELECT  \n\
+FROM zerver_stream \n\
+WHERE zerver_stream.recipient_id = zerver_recipient.id AND NOT zerver_stream.invite_only AND NOT zerver_stream.is_in_zephyr_realm)) OR (EXISTS (SELECT  \n\
+FROM zerver_subscription \n\
+WHERE zerver_subscription.user_profile_id = {hamlet_id} AND zerver_subscription.recipient_id = zerver_recipient.id AND zerver_subscription.active))) AND message_id = 0) AS anon_1 ORDER BY message_id ASC\
 """
         sql = sql_template.format(**query_ids)
         self.common_check_get_messages_query({"anchor": 0, "num_before": 1, "num_after": 0}, sql)
@@ -4631,8 +4637,12 @@ WHERE user_profile_id = {hamlet_id} AND message_id = 0) AS anon_1 ORDER BY messa
         sql_template = """\
 SELECT anon_1.message_id, anon_1.flags \n\
 FROM (SELECT message_id, flags \n\
-FROM zerver_usermessage JOIN zerver_message ON zerver_usermessage.message_id = zerver_message.id \n\
-WHERE user_profile_id = {hamlet_id} ORDER BY message_id ASC \n\
+FROM zerver_usermessage JOIN zerver_message ON zerver_usermessage.message_id = zerver_message.id JOIN zerver_recipient ON zerver_message.recipient_id = zerver_recipient.id \n\
+WHERE user_profile_id = {hamlet_id} AND (zerver_recipient.type_id != 2 OR (EXISTS (SELECT  \n\
+FROM zerver_stream \n\
+WHERE zerver_stream.recipient_id = zerver_recipient.id AND NOT zerver_stream.invite_only AND NOT zerver_stream.is_in_zephyr_realm)) OR (EXISTS (SELECT  \n\
+FROM zerver_subscription \n\
+WHERE zerver_subscription.user_profile_id = {hamlet_id} AND zerver_subscription.recipient_id = zerver_recipient.id AND zerver_subscription.active))) ORDER BY message_id ASC \n\
  LIMIT 2) AS anon_1 ORDER BY message_id ASC\
 """
         sql = sql_template.format(**query_ids)
@@ -4641,8 +4651,12 @@ WHERE user_profile_id = {hamlet_id} ORDER BY message_id ASC \n\
         sql_template = """\
 SELECT anon_1.message_id, anon_1.flags \n\
 FROM (SELECT message_id, flags \n\
-FROM zerver_usermessage JOIN zerver_message ON zerver_usermessage.message_id = zerver_message.id \n\
-WHERE user_profile_id = {hamlet_id} ORDER BY message_id ASC \n\
+FROM zerver_usermessage JOIN zerver_message ON zerver_usermessage.message_id = zerver_message.id JOIN zerver_recipient ON zerver_message.recipient_id = zerver_recipient.id \n\
+WHERE user_profile_id = {hamlet_id} AND (zerver_recipient.type_id != 2 OR (EXISTS (SELECT  \n\
+FROM zerver_stream \n\
+WHERE zerver_stream.recipient_id = zerver_recipient.id AND NOT zerver_stream.invite_only AND NOT zerver_stream.is_in_zephyr_realm)) OR (EXISTS (SELECT  \n\
+FROM zerver_subscription \n\
+WHERE zerver_subscription.user_profile_id = {hamlet_id} AND zerver_subscription.recipient_id = zerver_recipient.id AND zerver_subscription.active))) ORDER BY message_id ASC \n\
  LIMIT 11) AS anon_1 ORDER BY message_id ASC\
 """
         sql = sql_template.format(**query_ids)
@@ -4651,8 +4665,12 @@ WHERE user_profile_id = {hamlet_id} ORDER BY message_id ASC \n\
         sql_template = """\
 SELECT anon_1.message_id, anon_1.flags \n\
 FROM (SELECT message_id, flags \n\
-FROM zerver_usermessage JOIN zerver_message ON zerver_usermessage.message_id = zerver_message.id \n\
-WHERE user_profile_id = {hamlet_id} AND message_id <= 100 ORDER BY message_id DESC \n\
+FROM zerver_usermessage JOIN zerver_message ON zerver_usermessage.message_id = zerver_message.id JOIN zerver_recipient ON zerver_message.recipient_id = zerver_recipient.id \n\
+WHERE user_profile_id = {hamlet_id} AND (zerver_recipient.type_id != 2 OR (EXISTS (SELECT  \n\
+FROM zerver_stream \n\
+WHERE zerver_stream.recipient_id = zerver_recipient.id AND NOT zerver_stream.invite_only AND NOT zerver_stream.is_in_zephyr_realm)) OR (EXISTS (SELECT  \n\
+FROM zerver_subscription \n\
+WHERE zerver_subscription.user_profile_id = {hamlet_id} AND zerver_subscription.recipient_id = zerver_recipient.id AND zerver_subscription.active))) AND message_id <= 100 ORDER BY message_id DESC \n\
  LIMIT 11) AS anon_1 ORDER BY message_id ASC\
 """
         sql = sql_template.format(**query_ids)
@@ -4661,11 +4679,19 @@ WHERE user_profile_id = {hamlet_id} AND message_id <= 100 ORDER BY message_id DE
         sql_template = """\
 SELECT anon_1.message_id, anon_1.flags \n\
 FROM ((SELECT message_id, flags \n\
-FROM zerver_usermessage JOIN zerver_message ON zerver_usermessage.message_id = zerver_message.id \n\
-WHERE user_profile_id = {hamlet_id} AND message_id <= 99 ORDER BY message_id DESC \n\
+FROM zerver_usermessage JOIN zerver_message ON zerver_usermessage.message_id = zerver_message.id JOIN zerver_recipient ON zerver_message.recipient_id = zerver_recipient.id \n\
+WHERE user_profile_id = {hamlet_id} AND (zerver_recipient.type_id != 2 OR (EXISTS (SELECT  \n\
+FROM zerver_stream \n\
+WHERE zerver_stream.recipient_id = zerver_recipient.id AND NOT zerver_stream.invite_only AND NOT zerver_stream.is_in_zephyr_realm)) OR (EXISTS (SELECT  \n\
+FROM zerver_subscription \n\
+WHERE zerver_subscription.user_profile_id = {hamlet_id} AND zerver_subscription.recipient_id = zerver_recipient.id AND zerver_subscription.active))) AND message_id <= 99 ORDER BY message_id DESC \n\
  LIMIT 10) UNION ALL (SELECT message_id, flags \n\
-FROM zerver_usermessage JOIN zerver_message ON zerver_usermessage.message_id = zerver_message.id \n\
-WHERE user_profile_id = {hamlet_id} AND message_id >= 100 ORDER BY message_id ASC \n\
+FROM zerver_usermessage JOIN zerver_message ON zerver_usermessage.message_id = zerver_message.id JOIN zerver_recipient ON zerver_message.recipient_id = zerver_recipient.id \n\
+WHERE user_profile_id = {hamlet_id} AND (zerver_recipient.type_id != 2 OR (EXISTS (SELECT  \n\
+FROM zerver_stream \n\
+WHERE zerver_stream.recipient_id = zerver_recipient.id AND NOT zerver_stream.invite_only AND NOT zerver_stream.is_in_zephyr_realm)) OR (EXISTS (SELECT  \n\
+FROM zerver_subscription \n\
+WHERE zerver_subscription.user_profile_id = {hamlet_id} AND zerver_subscription.recipient_id = zerver_recipient.id AND zerver_subscription.active))) AND message_id >= 100 ORDER BY message_id ASC \n\
  LIMIT 11)) AS anon_1 ORDER BY message_id ASC\
 """
         sql = sql_template.format(**query_ids)
@@ -4678,7 +4704,16 @@ WHERE user_profile_id = {hamlet_id} AND message_id >= 100 ORDER BY message_id AS
         hamlet_email = self.example_user("hamlet").email
         othello_email = self.example_user("othello").email
 
-        sql_template = "SELECT anon_1.message_id, anon_1.flags \nFROM (SELECT message_id, flags \nFROM zerver_usermessage JOIN zerver_message ON zerver_usermessage.message_id = zerver_message.id \nWHERE user_profile_id = {hamlet_id} AND (flags & 2048) != 0 AND realm_id = {realm_id} AND (sender_id = {othello_id} AND recipient_id = {hamlet_recipient} OR sender_id = {hamlet_id} AND recipient_id = {othello_recipient}) AND message_id = 0) AS anon_1 ORDER BY message_id ASC"
+        sql_template = """\
+SELECT anon_1.message_id, anon_1.flags \n\
+FROM (SELECT message_id, flags \n\
+FROM zerver_usermessage JOIN zerver_message ON zerver_usermessage.message_id = zerver_message.id JOIN zerver_recipient ON zerver_message.recipient_id = zerver_recipient.id \n\
+WHERE user_profile_id = {hamlet_id} AND (zerver_recipient.type_id != 2 OR (EXISTS (SELECT  \n\
+FROM zerver_stream \n\
+WHERE zerver_stream.recipient_id = zerver_recipient.id AND NOT zerver_stream.invite_only AND NOT zerver_stream.is_in_zephyr_realm)) OR (EXISTS (SELECT  \n\
+FROM zerver_subscription \n\
+WHERE zerver_subscription.user_profile_id = {hamlet_id} AND zerver_subscription.recipient_id = zerver_recipient.id AND zerver_subscription.active))) AND (flags & 2048) != 0 AND realm_id = {realm_id} AND (sender_id = {othello_id} AND recipient_id = {hamlet_recipient} OR sender_id = {hamlet_id} AND recipient_id = {othello_recipient}) AND message_id = 0) AS anon_1 ORDER BY message_id ASC\
+"""
         sql = sql_template.format(**query_ids)
         self.common_check_get_messages_query(
             {
@@ -4690,7 +4725,16 @@ WHERE user_profile_id = {hamlet_id} AND message_id >= 100 ORDER BY message_id AS
             sql,
         )
 
-        sql_template = "SELECT anon_1.message_id, anon_1.flags \nFROM (SELECT message_id, flags \nFROM zerver_usermessage JOIN zerver_message ON zerver_usermessage.message_id = zerver_message.id \nWHERE user_profile_id = {hamlet_id} AND (flags & 2048) != 0 AND realm_id = {realm_id} AND (sender_id = {othello_id} AND recipient_id = {hamlet_recipient} OR sender_id = {hamlet_id} AND recipient_id = {othello_recipient}) AND message_id = 0) AS anon_1 ORDER BY message_id ASC"
+        sql_template = """\
+SELECT anon_1.message_id, anon_1.flags \n\
+FROM (SELECT message_id, flags \n\
+FROM zerver_usermessage JOIN zerver_message ON zerver_usermessage.message_id = zerver_message.id JOIN zerver_recipient ON zerver_message.recipient_id = zerver_recipient.id \n\
+WHERE user_profile_id = {hamlet_id} AND (zerver_recipient.type_id != 2 OR (EXISTS (SELECT  \n\
+FROM zerver_stream \n\
+WHERE zerver_stream.recipient_id = zerver_recipient.id AND NOT zerver_stream.invite_only AND NOT zerver_stream.is_in_zephyr_realm)) OR (EXISTS (SELECT  \n\
+FROM zerver_subscription \n\
+WHERE zerver_subscription.user_profile_id = {hamlet_id} AND zerver_subscription.recipient_id = zerver_recipient.id AND zerver_subscription.active))) AND (flags & 2048) != 0 AND realm_id = {realm_id} AND (sender_id = {othello_id} AND recipient_id = {hamlet_recipient} OR sender_id = {hamlet_id} AND recipient_id = {othello_recipient}) AND message_id = 0) AS anon_1 ORDER BY message_id ASC\
+"""
         sql = sql_template.format(**query_ids)
         self.common_check_get_messages_query(
             {
@@ -4702,7 +4746,17 @@ WHERE user_profile_id = {hamlet_id} AND message_id >= 100 ORDER BY message_id AS
             sql,
         )
 
-        sql_template = "SELECT anon_1.message_id, anon_1.flags \nFROM (SELECT message_id, flags \nFROM zerver_usermessage JOIN zerver_message ON zerver_usermessage.message_id = zerver_message.id \nWHERE user_profile_id = {hamlet_id} AND (flags & 2048) != 0 AND realm_id = {realm_id} AND (sender_id = {othello_id} AND recipient_id = {hamlet_recipient} OR sender_id = {hamlet_id} AND recipient_id = {othello_recipient}) ORDER BY message_id ASC \n LIMIT 10) AS anon_1 ORDER BY message_id ASC"
+        sql_template = """\
+SELECT anon_1.message_id, anon_1.flags \n\
+FROM (SELECT message_id, flags \n\
+FROM zerver_usermessage JOIN zerver_message ON zerver_usermessage.message_id = zerver_message.id JOIN zerver_recipient ON zerver_message.recipient_id = zerver_recipient.id \n\
+WHERE user_profile_id = {hamlet_id} AND (zerver_recipient.type_id != 2 OR (EXISTS (SELECT  \n\
+FROM zerver_stream \n\
+WHERE zerver_stream.recipient_id = zerver_recipient.id AND NOT zerver_stream.invite_only AND NOT zerver_stream.is_in_zephyr_realm)) OR (EXISTS (SELECT  \n\
+FROM zerver_subscription \n\
+WHERE zerver_subscription.user_profile_id = {hamlet_id} AND zerver_subscription.recipient_id = zerver_recipient.id AND zerver_subscription.active))) AND (flags & 2048) != 0 AND realm_id = {realm_id} AND (sender_id = {othello_id} AND recipient_id = {hamlet_recipient} OR sender_id = {hamlet_id} AND recipient_id = {othello_recipient}) ORDER BY message_id ASC \n\
+ LIMIT 10) AS anon_1 ORDER BY message_id ASC\
+"""
         sql = sql_template.format(**query_ids)
         self.common_check_get_messages_query(
             {
@@ -4714,13 +4768,33 @@ WHERE user_profile_id = {hamlet_id} AND message_id >= 100 ORDER BY message_id AS
             sql,
         )
 
-        sql_template = "SELECT anon_1.message_id, anon_1.flags \nFROM (SELECT message_id, flags \nFROM zerver_usermessage JOIN zerver_message ON zerver_usermessage.message_id = zerver_message.id \nWHERE user_profile_id = {hamlet_id} AND (flags & 2) != 0 ORDER BY message_id ASC \n LIMIT 10) AS anon_1 ORDER BY message_id ASC"
+        sql_template = """\
+SELECT anon_1.message_id, anon_1.flags \n\
+FROM (SELECT message_id, flags \n\
+FROM zerver_usermessage JOIN zerver_message ON zerver_usermessage.message_id = zerver_message.id JOIN zerver_recipient ON zerver_message.recipient_id = zerver_recipient.id \n\
+WHERE user_profile_id = {hamlet_id} AND (zerver_recipient.type_id != 2 OR (EXISTS (SELECT  \n\
+FROM zerver_stream \n\
+WHERE zerver_stream.recipient_id = zerver_recipient.id AND NOT zerver_stream.invite_only AND NOT zerver_stream.is_in_zephyr_realm)) OR (EXISTS (SELECT  \n\
+FROM zerver_subscription \n\
+WHERE zerver_subscription.user_profile_id = {hamlet_id} AND zerver_subscription.recipient_id = zerver_recipient.id AND zerver_subscription.active))) AND (flags & 2) != 0 ORDER BY message_id ASC \n\
+ LIMIT 10) AS anon_1 ORDER BY message_id ASC\
+"""
         sql = sql_template.format(**query_ids)
         self.common_check_get_messages_query(
             {"anchor": 0, "num_before": 0, "num_after": 9, "narrow": '[["is", "starred"]]'}, sql
         )
 
-        sql_template = "SELECT anon_1.message_id, anon_1.flags \nFROM (SELECT message_id, flags \nFROM zerver_usermessage JOIN zerver_message ON zerver_usermessage.message_id = zerver_message.id \nWHERE user_profile_id = {hamlet_id} AND sender_id = {othello_id} ORDER BY message_id ASC \n LIMIT 10) AS anon_1 ORDER BY message_id ASC"
+        sql_template = """\
+SELECT anon_1.message_id, anon_1.flags \n\
+FROM (SELECT message_id, flags \n\
+FROM zerver_usermessage JOIN zerver_message ON zerver_usermessage.message_id = zerver_message.id JOIN zerver_recipient ON zerver_message.recipient_id = zerver_recipient.id \n\
+WHERE user_profile_id = {hamlet_id} AND (zerver_recipient.type_id != 2 OR (EXISTS (SELECT  \n\
+FROM zerver_stream \n\
+WHERE zerver_stream.recipient_id = zerver_recipient.id AND NOT zerver_stream.invite_only AND NOT zerver_stream.is_in_zephyr_realm)) OR (EXISTS (SELECT  \n\
+FROM zerver_subscription \n\
+WHERE zerver_subscription.user_profile_id = {hamlet_id} AND zerver_subscription.recipient_id = zerver_recipient.id AND zerver_subscription.active))) AND sender_id = {othello_id} ORDER BY message_id ASC \n\
+ LIMIT 10) AS anon_1 ORDER BY message_id ASC\
+"""
         sql = sql_template.format(**query_ids)
         self.common_check_get_messages_query(
             {
@@ -4732,21 +4806,43 @@ WHERE user_profile_id = {hamlet_id} AND message_id >= 100 ORDER BY message_id AS
             sql,
         )
 
-        sql_template = "SELECT anon_1.message_id \nFROM (SELECT id AS message_id \nFROM zerver_message \nWHERE realm_id = 2 AND recipient_id = {scotland_recipient} ORDER BY zerver_message.id ASC \n LIMIT 10) AS anon_1 ORDER BY message_id ASC"
+        sql_template = """\
+SELECT anon_1.message_id \n\
+FROM (SELECT id AS message_id \n\
+FROM zerver_message \n\
+WHERE realm_id = 2 AND recipient_id = {scotland_recipient} ORDER BY zerver_message.id ASC \n\
+ LIMIT 10) AS anon_1 ORDER BY message_id ASC\
+"""
         sql = sql_template.format(**query_ids)
         self.common_check_get_messages_query(
             {"anchor": 0, "num_before": 0, "num_after": 9, "narrow": '[["channel", "Scotland"]]'},
             sql,
         )
 
-        sql_template = "SELECT anon_1.message_id \nFROM (SELECT id AS message_id \nFROM zerver_message \nWHERE realm_id = 2 AND recipient_id IN ({public_channels_recipients}) ORDER BY zerver_message.id ASC \n LIMIT 10) AS anon_1 ORDER BY message_id ASC"
+        sql_template = """\
+SELECT anon_1.message_id \n\
+FROM (SELECT id AS message_id \n\
+FROM zerver_message \n\
+WHERE realm_id = 2 AND recipient_id IN ({public_channels_recipients}) ORDER BY zerver_message.id ASC \n\
+ LIMIT 10) AS anon_1 ORDER BY message_id ASC\
+"""
         sql = sql_template.format(**query_ids)
         self.common_check_get_messages_query(
             {"anchor": 0, "num_before": 0, "num_after": 9, "narrow": '[["channels", "public"]]'},
             sql,
         )
 
-        sql_template = "SELECT anon_1.message_id, anon_1.flags \nFROM (SELECT message_id, flags \nFROM zerver_usermessage JOIN zerver_message ON zerver_usermessage.message_id = zerver_message.id \nWHERE user_profile_id = {hamlet_id} AND (recipient_id NOT IN ({public_channels_recipients})) ORDER BY message_id ASC \n LIMIT 10) AS anon_1 ORDER BY message_id ASC"
+        sql_template = """\
+SELECT anon_1.message_id, anon_1.flags \n\
+FROM (SELECT message_id, flags \n\
+FROM zerver_usermessage JOIN zerver_message ON zerver_usermessage.message_id = zerver_message.id JOIN zerver_recipient ON zerver_message.recipient_id = zerver_recipient.id \n\
+WHERE user_profile_id = {hamlet_id} AND (zerver_recipient.type_id != 2 OR (EXISTS (SELECT  \n\
+FROM zerver_stream \n\
+WHERE zerver_stream.recipient_id = zerver_recipient.id AND NOT zerver_stream.invite_only AND NOT zerver_stream.is_in_zephyr_realm)) OR (EXISTS (SELECT  \n\
+FROM zerver_subscription \n\
+WHERE zerver_subscription.user_profile_id = {hamlet_id} AND zerver_subscription.recipient_id = zerver_recipient.id AND zerver_subscription.active))) AND (recipient_id NOT IN ({public_channels_recipients})) ORDER BY message_id ASC \n\
+ LIMIT 10) AS anon_1 ORDER BY message_id ASC\
+"""
         sql = sql_template.format(**query_ids)
         self.common_check_get_messages_query(
             {
@@ -4758,13 +4854,29 @@ WHERE user_profile_id = {hamlet_id} AND message_id >= 100 ORDER BY message_id AS
             sql,
         )
 
-        sql_template = "SELECT anon_1.message_id, anon_1.flags \nFROM (SELECT message_id, flags \nFROM zerver_usermessage JOIN zerver_message ON zerver_usermessage.message_id = zerver_message.id \nWHERE user_profile_id = {hamlet_id} AND upper(subject) = upper('blah') ORDER BY message_id ASC \n LIMIT 10) AS anon_1 ORDER BY message_id ASC"
+        sql_template = """\
+SELECT anon_1.message_id, anon_1.flags \n\
+FROM (SELECT message_id, flags \n\
+FROM zerver_usermessage JOIN zerver_message ON zerver_usermessage.message_id = zerver_message.id JOIN zerver_recipient ON zerver_message.recipient_id = zerver_recipient.id \n\
+WHERE user_profile_id = {hamlet_id} AND (zerver_recipient.type_id != 2 OR (EXISTS (SELECT  \n\
+FROM zerver_stream \n\
+WHERE zerver_stream.recipient_id = zerver_recipient.id AND NOT zerver_stream.invite_only AND NOT zerver_stream.is_in_zephyr_realm)) OR (EXISTS (SELECT  \n\
+FROM zerver_subscription \n\
+WHERE zerver_subscription.user_profile_id = {hamlet_id} AND zerver_subscription.recipient_id = zerver_recipient.id AND zerver_subscription.active))) AND upper(subject) = upper('blah') ORDER BY message_id ASC \n\
+ LIMIT 10) AS anon_1 ORDER BY message_id ASC\
+"""
         sql = sql_template.format(**query_ids)
         self.common_check_get_messages_query(
             {"anchor": 0, "num_before": 0, "num_after": 9, "narrow": '[["topic", "blah"]]'}, sql
         )
 
-        sql_template = "SELECT anon_1.message_id \nFROM (SELECT id AS message_id \nFROM zerver_message \nWHERE realm_id = 2 AND recipient_id = {scotland_recipient} AND upper(subject) = upper('blah') ORDER BY zerver_message.id ASC \n LIMIT 10) AS anon_1 ORDER BY message_id ASC"
+        sql_template = """\
+SELECT anon_1.message_id \n\
+FROM (SELECT id AS message_id \n\
+FROM zerver_message \n\
+WHERE realm_id = 2 AND recipient_id = {scotland_recipient} AND upper(subject) = upper('blah') ORDER BY zerver_message.id ASC \n\
+ LIMIT 10) AS anon_1 ORDER BY message_id ASC\
+"""
         sql = sql_template.format(**query_ids)
         self.common_check_get_messages_query(
             {
@@ -4777,7 +4889,17 @@ WHERE user_profile_id = {hamlet_id} AND message_id >= 100 ORDER BY message_id AS
         )
 
         # Narrow to direct messages with yourself
-        sql_template = "SELECT anon_1.message_id, anon_1.flags \nFROM (SELECT message_id, flags \nFROM zerver_usermessage JOIN zerver_message ON zerver_usermessage.message_id = zerver_message.id \nWHERE user_profile_id = {hamlet_id} AND (flags & 2048) != 0 AND realm_id = {realm_id} AND sender_id = {hamlet_id} AND recipient_id = {hamlet_recipient} ORDER BY message_id ASC \n LIMIT 10) AS anon_1 ORDER BY message_id ASC"
+        sql_template = """\
+SELECT anon_1.message_id, anon_1.flags \n\
+FROM (SELECT message_id, flags \n\
+FROM zerver_usermessage JOIN zerver_message ON zerver_usermessage.message_id = zerver_message.id JOIN zerver_recipient ON zerver_message.recipient_id = zerver_recipient.id \n\
+WHERE user_profile_id = {hamlet_id} AND (zerver_recipient.type_id != 2 OR (EXISTS (SELECT  \n\
+FROM zerver_stream \n\
+WHERE zerver_stream.recipient_id = zerver_recipient.id AND NOT zerver_stream.invite_only AND NOT zerver_stream.is_in_zephyr_realm)) OR (EXISTS (SELECT  \n\
+FROM zerver_subscription \n\
+WHERE zerver_subscription.user_profile_id = {hamlet_id} AND zerver_subscription.recipient_id = zerver_recipient.id AND zerver_subscription.active))) AND (flags & 2048) != 0 AND realm_id = {realm_id} AND sender_id = {hamlet_id} AND recipient_id = {hamlet_recipient} ORDER BY message_id ASC \n\
+ LIMIT 10) AS anon_1 ORDER BY message_id ASC\
+"""
         sql = sql_template.format(**query_ids)
         self.common_check_get_messages_query(
             {
@@ -4789,7 +4911,17 @@ WHERE user_profile_id = {hamlet_id} AND message_id >= 100 ORDER BY message_id AS
             sql,
         )
 
-        sql_template = "SELECT anon_1.message_id, anon_1.flags \nFROM (SELECT message_id, flags \nFROM zerver_usermessage JOIN zerver_message ON zerver_usermessage.message_id = zerver_message.id \nWHERE user_profile_id = {hamlet_id} AND recipient_id = {scotland_recipient} AND (flags & 2) != 0 ORDER BY message_id ASC \n LIMIT 10) AS anon_1 ORDER BY message_id ASC"
+        sql_template = """\
+SELECT anon_1.message_id, anon_1.flags \n\
+FROM (SELECT message_id, flags \n\
+FROM zerver_usermessage JOIN zerver_message ON zerver_usermessage.message_id = zerver_message.id JOIN zerver_recipient ON zerver_message.recipient_id = zerver_recipient.id \n\
+WHERE user_profile_id = {hamlet_id} AND (zerver_recipient.type_id != 2 OR (EXISTS (SELECT  \n\
+FROM zerver_stream \n\
+WHERE zerver_stream.recipient_id = zerver_recipient.id AND NOT zerver_stream.invite_only AND NOT zerver_stream.is_in_zephyr_realm)) OR (EXISTS (SELECT  \n\
+FROM zerver_subscription \n\
+WHERE zerver_subscription.user_profile_id = {hamlet_id} AND zerver_subscription.recipient_id = zerver_recipient.id AND zerver_subscription.active))) AND recipient_id = {scotland_recipient} AND (flags & 2) != 0 ORDER BY message_id ASC \n\
+ LIMIT 10) AS anon_1 ORDER BY message_id ASC\
+"""
         sql = sql_template.format(**query_ids)
         self.common_check_get_messages_query(
             {
@@ -4812,8 +4944,12 @@ FROM unnest(string_to_array(ts_headline('zulip.english_us_search', rendered_cont
  LIMIT ALL OFFSET 1)) AS content_matches, array((SELECT ARRAY[sum(length(anon_5) - 11) OVER (ROWS BETWEEN UNBOUNDED PRECEDING AND 1 PRECEDING) + 11, strpos(anon_5, '</ts-match>') - 1] AS anon_4 \n\
 FROM unnest(string_to_array(ts_headline('zulip.english_us_search', escape_html(subject), plainto_tsquery('zulip.english_us_search', 'jumping'), 'HighlightAll = TRUE, StartSel = <ts-match>, StopSel = </ts-match>'), '<ts-match>')) AS anon_5\n\
  LIMIT ALL OFFSET 1)) AS topic_matches \n\
-FROM zerver_usermessage JOIN zerver_message ON zerver_usermessage.message_id = zerver_message.id \n\
-WHERE user_profile_id = {hamlet_id} AND (search_tsvector @@ plainto_tsquery('zulip.english_us_search', 'jumping')) ORDER BY message_id ASC \n\
+FROM zerver_usermessage JOIN zerver_message ON zerver_usermessage.message_id = zerver_message.id JOIN zerver_recipient ON zerver_message.recipient_id = zerver_recipient.id \n\
+WHERE user_profile_id = {hamlet_id} AND (zerver_recipient.type_id != 2 OR (EXISTS (SELECT  \n\
+FROM zerver_stream \n\
+WHERE zerver_stream.recipient_id = zerver_recipient.id AND NOT zerver_stream.invite_only AND NOT zerver_stream.is_in_zephyr_realm)) OR (EXISTS (SELECT  \n\
+FROM zerver_subscription \n\
+WHERE zerver_subscription.user_profile_id = {hamlet_id} AND zerver_subscription.recipient_id = zerver_recipient.id AND zerver_subscription.active))) AND (search_tsvector @@ plainto_tsquery('zulip.english_us_search', 'jumping')) ORDER BY message_id ASC \n\
  LIMIT 10) AS anon_1 ORDER BY message_id ASC\
 """
         sql = sql_template.format(**query_ids)
@@ -4850,8 +4986,12 @@ FROM unnest(string_to_array(ts_headline('zulip.english_us_search', rendered_cont
  LIMIT ALL OFFSET 1)) AS content_matches, array((SELECT ARRAY[sum(length(anon_5) - 11) OVER (ROWS BETWEEN UNBOUNDED PRECEDING AND 1 PRECEDING) + 11, strpos(anon_5, '</ts-match>') - 1] AS anon_4 \n\
 FROM unnest(string_to_array(ts_headline('zulip.english_us_search', escape_html(subject), plainto_tsquery('zulip.english_us_search', '"jumping" quickly'), 'HighlightAll = TRUE, StartSel = <ts-match>, StopSel = </ts-match>'), '<ts-match>')) AS anon_5\n\
  LIMIT ALL OFFSET 1)) AS topic_matches \n\
-FROM zerver_usermessage JOIN zerver_message ON zerver_usermessage.message_id = zerver_message.id \n\
-WHERE user_profile_id = {hamlet_id} AND (content ILIKE '%jumping%' OR subject ILIKE '%jumping%') AND (search_tsvector @@ plainto_tsquery('zulip.english_us_search', '"jumping" quickly')) ORDER BY message_id ASC \n\
+FROM zerver_usermessage JOIN zerver_message ON zerver_usermessage.message_id = zerver_message.id JOIN zerver_recipient ON zerver_message.recipient_id = zerver_recipient.id \n\
+WHERE user_profile_id = {hamlet_id} AND (zerver_recipient.type_id != 2 OR (EXISTS (SELECT  \n\
+FROM zerver_stream \n\
+WHERE zerver_stream.recipient_id = zerver_recipient.id AND NOT zerver_stream.invite_only AND NOT zerver_stream.is_in_zephyr_realm)) OR (EXISTS (SELECT  \n\
+FROM zerver_subscription \n\
+WHERE zerver_subscription.user_profile_id = {hamlet_id} AND zerver_subscription.recipient_id = zerver_recipient.id AND zerver_subscription.active))) AND (content ILIKE '%jumping%' OR subject ILIKE '%jumping%') AND (search_tsvector @@ plainto_tsquery('zulip.english_us_search', '"jumping" quickly')) ORDER BY message_id ASC \n\
  LIMIT 10) AS anon_1 ORDER BY message_id ASC\
 """
         sql = sql_template.format(**query_ids)
