@@ -324,10 +324,10 @@ export function initialize() {
         on_hidden_callback,
     }).setup();
 
-    // `keyup` isn't relevant for streams since it registers as a change only
+    // `input` isn't relevant for streams since it registers as a change only
     // when an item in the dropdown is selected.
     $("#stream_message_recipient_topic,#private_message_recipient").on(
-        "keyup",
+        "input",
         update_on_recipient_change,
     );
     // changes for the stream dropdown are handled in on_compose_select_recipient_update
