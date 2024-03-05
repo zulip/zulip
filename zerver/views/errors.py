@@ -1,12 +1,22 @@
+from typing import Optional
+
 from django.conf import settings
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import render
 
 
-def config_error(request: HttpRequest, error_name: str) -> HttpResponse:
+def config_error(
+    request: HttpRequest,
+    error_name: str,
+    *,
+    go_back_to_url: Optional[str] = None,
+    go_back_to_url_name: Optional[str] = None,
+) -> HttpResponse:
     assert "/" not in error_name
     context = {
         "error_name": error_name,
+        "go_back_to_url": go_back_to_url or "/login/",
+        "go_back_to_url_name": go_back_to_url_name or "the login page",
     }
     if settings.DEVELOPMENT:
         context["auth_settings_path"] = "zproject/dev-secrets.conf"
