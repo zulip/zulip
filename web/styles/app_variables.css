@@ -426,6 +426,17 @@
     /* Don't define light theme colors for modal here
        since the modal is also used on billing pages and
        this file is not imported on billing pages. */
+
+    /* Emoji-picker colors */
+    --color-background-emoji-picker-popover: hsl(0deg 0% 93%);
+    --color-background-emoji-picker-popover-tab-item-active: hsl(
+        0deg 0% 100% / 20%
+    );
+    --color-background-emoji-picker-emoji-focus: hsl(0deg 0% 93%);
+    --color-box-shadow-emoji-picker-emoji-focus: transparent;
+    --color-background-emoji-picker-emoji-reacted: hsl(195deg 50% 95%);
+    --color-border-emoji-picker-emoji-reacted: hsl(195deg 52% 79%);
+    --color-background-emoji-picker-emoji-reacted-focus: hsl(195deg 55% 88%);
 }
 
 %dark-theme {
@@ -704,6 +715,17 @@
     --color-exit-button-border: hsl(0deg 0% 0% / 60%);
     --color-exit-button-background: hsl(211deg 29% 14%);
     --color-exit-button-background-interactive: hsl(211deg 29% 17%);
+
+    /* Emoji-picker colors */
+    --color-background-emoji-picker-popover: hsl(0deg 0% 0% / 20%);
+    --color-background-emoji-picker-popover-tab-item-active: hsl(
+        0deg 0% 0% / 50%
+    );
+    --color-background-emoji-picker-emoji-focus: hsl(212deg 28% 8% / 75%);
+    --color-box-shadow-emoji-picker-emoji-focus: hsl(0deg 0% 98%);
+    --color-background-emoji-picker-emoji-reacted: hsl(0deg 0% 0% / 50%);
+    --color-border-emoji-picker-emoji-reacted: hsl(0deg 0% 0% / 90%);
+    --color-background-emoji-picker-emoji-reacted-focus: hsl(0deg 0% 20% / 70%);
 }
 
 @media screen {
