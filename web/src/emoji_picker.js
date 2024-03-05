@@ -293,7 +293,7 @@ function toggle_reaction(emoji_name, event) {
         return;
     }
 
-    reactions.toggle_emoji_reaction(message_id, emoji_name, event);
+    reactions.toggle_emoji_reaction(message, emoji_name, event);
 
     if (!event.shiftKey) {
         hide_emoji_popover();

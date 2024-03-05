@@ -75,7 +75,7 @@ function create_reaction(
 }
 
 function update_ui_and_send_reaction_ajax(
-    message_id: number,
+    message: Message,
     rendering_details: EmojiRenderingDetails,
 ): void {
     if (page_params.is_spectator) {
@@ -85,19 +85,15 @@ function update_ui_and_send_reaction_ajax(
         return;
     }
 
-    const message = get_message(message_id);
-    if (message === undefined) {
-        return;
-    }
     const local_id = get_local_reaction_id(rendering_details);
     const has_reacted = current_user_has_reacted_to_emoji(message, local_id);
     const operation = has_reacted ? "remove" : "add";
-    const reaction = create_reaction(message_id, rendering_details);
+    const reaction = create_reaction(message.id, rendering_details);
 
     // To avoid duplicate requests to the server, we construct a
     // unique request ID combining the message ID and the local ID,
     // which identifies just which emoji to use.
-    const reaction_request_id = [message_id, local_id].join(",");
+    const reaction_request_id = [message.id, local_id].join(",");
     if (waiting_for_server_request_ids.has(reaction_request_id)) {
         return;
     }
@@ -109,7 +105,7 @@ function update_ui_and_send_reaction_ajax(
     }
 
     const args = {
-        url: "/json/messages/" + message_id + "/reactions",
+        url: "/json/messages/" + message.id + "/reactions",
         data: rendering_details,
         success() {
             waiting_for_server_request_ids.delete(reaction_request_id);
@@ -138,7 +134,7 @@ function update_ui_and_send_reaction_ajax(
     }
 }
 
-export function toggle_emoji_reaction(message_id: number, emoji_name: string): void {
+export function toggle_emoji_reaction(message: Message, emoji_name: string): void {
     // This codepath doesn't support toggling a deactivated realm emoji.
     // Since a user can interact with a deactivated realm emoji only by
     // clicking on a reaction and that is handled by `process_reaction_click()`
@@ -146,7 +142,7 @@ export function toggle_emoji_reaction(message_id: number, emoji_name: string): v
     // user interacting with a deactivated realm emoji like emoji picker.
 
     const rendering_details = emoji.get_emoji_details_by_name(emoji_name);
-    update_ui_and_send_reaction_ajax(message_id, rendering_details);
+    update_ui_and_send_reaction_ajax(message, rendering_details);
 }
 
 export function process_reaction_click(message_id: number, local_id: string): void {
@@ -170,7 +166,7 @@ export function process_reaction_click(message_id: number, local_id: string): vo
         emoji_code: clean_reaction_object.emoji_code,
     };
 
-    update_ui_and_send_reaction_ajax(message_id, rendering_details);
+    update_ui_and_send_reaction_ajax(message, rendering_details);
 }
 
 function generate_title(emoji_name: string, user_ids: number[]): string {
