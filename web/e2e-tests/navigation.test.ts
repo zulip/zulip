@@ -8,7 +8,7 @@ async function navigate_using_left_sidebar(page: Page, click_target: string): Pr
     console.log("Visiting #" + click_target);
     // await page.click(`#left-sidebar span.stream-name`);
     await page.click(
-        "#left-sidebar .subscription_block .stream-markers-and-controls .interleaved-icon",
+        "#left-sidebar .subscription_block .stream-markers-and-controls a[href='#${CSS.escape(click_target)}']",
     );
     await page.waitForSelector(`#message_feed_container`, {visible: true});
 }
