@@ -19,7 +19,6 @@ from sqlalchemy.sql import (
     column,
     false,
     func,
-    join,
     literal,
     literal_column,
     not_,
@@ -58,6 +57,7 @@ from zerver.lib.topic_sqlalchemy import (
     topic_match_sa,
 )
 from zerver.lib.types import Validator
+from zerver.lib.user_groups import get_recursive_membership_groups
 from zerver.lib.user_topics import exclude_stream_and_topic_mutes
 from zerver.lib.validator import (
     check_bool,
@@ -1078,6 +1078,14 @@ def get_base_query_for_search(
         return (query, inner_msg_id_col)
 
     assert user_profile is not None
+    user_recursive_group_ids = []
+    # We ignore group membership for guests; see the TODO comment in
+    # has_channel_content_access_helper.
+    if not user_profile.is_guest:
+        user_recursive_group_ids = sorted(
+            get_recursive_membership_groups(user_profile).values_list("id", flat=True)
+        )
+
     query = (
         select(column("message_id", Integer))
         # We don't limit by realm_id despite the join to
@@ -1085,15 +1093,65 @@ def get_base_query_for_search(
         # usermessage is more selective, and the query planner
         # can't know about that cross-table correlation.
         .where(column("user_profile_id", Integer) == literal(user_profile.id))
-        .select_from(
-            join(
-                table("zerver_usermessage"),
-                table("zerver_message"),
-                literal_column("zerver_usermessage.message_id", Integer)
-                == literal_column("zerver_message.id", Integer),
+        .select_from(table("zerver_usermessage"))
+        .join(
+            table("zerver_message"),
+            literal_column("zerver_usermessage.message_id", Integer)
+            == literal_column("zerver_message.id", Integer),
+        )
+        .join(
+            table("zerver_recipient"),
+            literal_column("zerver_message.recipient_id", Integer)
+            == literal_column("zerver_recipient.id", Integer),
+        )
+        # Mirror the restrictions in bulk_access_stream_messages_query, in order
+        # to prevent leftover UserMessage rows from granting access to messages
+        # the user was previously allowed to access but no longer is.
+        .where(
+            or_(
+                # Include direct messages.
+                literal_column("zerver_recipient.type_id", Integer) != Recipient.STREAM,
+                # Include messages where the recipient is a public stream and
+                # the user can access public streams, or the user is a non-guest
+                # belonging to a group granting access to the stream.
+                select()
+                .select_from(table("zerver_stream"))
+                .where(
+                    literal_column("zerver_stream.recipient_id", Integer)
+                    == literal_column("zerver_recipient.id", Integer)
+                )
+                .where(
+                    or_(
+                        and_(
+                            not_(literal_column("zerver_stream.invite_only", Boolean)),
+                            not_(literal_column("zerver_stream.is_in_zephyr_realm", Boolean)),
+                            user_profile.can_access_public_streams(),
+                        ),
+                        literal_column("zerver_stream.can_subscribe_group_id").in_(
+                            user_recursive_group_ids
+                        ),
+                        literal_column("zerver_stream.can_add_subscribers_group_id").in_(
+                            user_recursive_group_ids
+                        ),
+                    )
+                )
+                .exists(),
+                # Include messages where the user has an active subscription to
+                # the stream.
+                select()
+                .select_from(table("zerver_subscription"))
+                .where(
+                    literal_column("zerver_subscription.user_profile_id", Integer)
+                    == user_profile.id,
+                    literal_column("zerver_subscription.recipient_id", Integer)
+                    == literal_column("zerver_recipient.id", Integer),
+                    literal_column("zerver_subscription.active", Boolean),
+                )
+                .exists(),
             )
         )
     )
+
     inner_msg_id_col = column("message_id", Integer)
     return (query, inner_msg_id_col)
 

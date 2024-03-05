@@ -502,6 +502,8 @@ def has_channel_content_access_helper(
 
     Does not consider the implicit permissions associated with web-public
     or public channels; callers are responsible for that.
+
+    This logic is mirrored in zerver.lib.narrow.get_base_query_for_search.
     """
     if is_subscribed is None:
         assert stream.recipient_id is not None
@@ -729,6 +731,7 @@ def bulk_access_stream_messages_query(
     QuerySet if the user has access to no messages (for instance, for
     a private stream which the user is not subscribed to).
 
+    This logic is mirrored in zerver.lib.narrow.get_base_query_for_search.
     """
 
     assert stream.recipient_id is not None
