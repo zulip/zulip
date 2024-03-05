@@ -349,7 +349,7 @@ def messages_in_narrow_backend(
     # This query is limited to messages the user has access to because they
     # actually received them, as reflected in `zerver_usermessage`.
     query, inner_msg_id_col = get_base_query_for_search(
-        user_profile.realm_id, user_profile, need_message=True, need_user_message=True
+        user_profile.realm_id, user_profile, need_user_message=True
     )
     query = query.where(column("message_id", Integer).in_(msg_ids))
 

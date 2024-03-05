@@ -1035,11 +1035,10 @@ def exclude_muting_conditions(
 
 
 def get_base_query_for_search(
-    realm_id: int, user_profile: UserProfile | None, need_message: bool, need_user_message: bool
+    realm_id: int, user_profile: UserProfile | None, need_user_message: bool
 ) -> tuple[Select, ColumnElement[Integer]]:
     # Handle the simple case where user_message isn't involved first.
     if not need_user_message:
-        assert need_message
         query = (
             select(column("id", Integer).label("message_id"))
             .select_from(table("zerver_message"))
@@ -1050,30 +1049,21 @@ def get_base_query_for_search(
         return (query, inner_msg_id_col)
 
     assert user_profile is not None
-    if need_message:
-        query = (
-            select(column("message_id", Integer))
-            # We don't limit by realm_id despite the join to
-            # zerver_messages, since the user_profile_id limit in
-            # usermessage is more selective, and the query planner
-            # can't know about that cross-table correlation.
-            .where(column("user_profile_id", Integer) == literal(user_profile.id))
-            .select_from(
-                join(
-                    table("zerver_usermessage"),
-                    table("zerver_message"),
-                    literal_column("zerver_usermessage.message_id", Integer)
-                    == literal_column("zerver_message.id", Integer),
-                )
-            )
-        )
-        inner_msg_id_col = column("message_id", Integer)
-        return (query, inner_msg_id_col)
-
     query = (
         select(column("message_id", Integer))
+        # We don't limit by realm_id despite the join to
+        # zerver_messages, since the user_profile_id limit in
+        # usermessage is more selective, and the query planner
+        # can't know about that cross-table correlation.
         .where(column("user_profile_id", Integer) == literal(user_profile.id))
-        .select_from(table("zerver_usermessage"))
+        .select_from(
+            join(
+                table("zerver_usermessage"),
+                table("zerver_message"),
+                literal_column("zerver_usermessage.message_id", Integer)
+                == literal_column("zerver_message.id", Integer),
+            )
+        )
     )
     inner_msg_id_col = column("message_id", Integer)
     return (query, inner_msg_id_col)
@@ -1131,17 +1121,9 @@ def find_first_unread_anchor(
     # flag for the user.
     need_user_message = True
 
-    # Because we will need to call exclude_muting_conditions, unless
-    # the user hasn't muted anything, we will need to include Message
-    # in our query.  It may be worth eventually adding an optimization
-    # for the case of a user who hasn't muted anything to avoid the
-    # join in that case, but it's low priority.
-    need_message = True
-
     query, inner_msg_id_col = get_base_query_for_search(
         realm_id=user_profile.realm_id,
         user_profile=user_profile,
-        need_message=need_message,
         need_user_message=need_user_message,
     )
     query = query.add_columns(column("flags", Integer))
@@ -1413,15 +1395,8 @@ def fetch_messages(
         #
         # Note that is_web_public_query=True goes here, since
         # include_history is semantically correct for is_web_public_query.
-        need_message = True
         need_user_message = False
-    elif narrow is None:
-        # We need to limit to messages the user has received, but we don't actually
-        # need any fields from Message
-        need_message = False
-        need_user_message = True
     else:
-        need_message = True
         need_user_message = True
 
     # get_base_query_for_search and ok_to_include_history are responsible for ensuring
@@ -1430,7 +1405,6 @@ def fetch_messages(
     query, inner_msg_id_col = get_base_query_for_search(
         realm_id=realm.id,
         user_profile=user_profile,
-        need_message=need_message,
         need_user_message=need_user_message,
     )
     if need_user_message:
