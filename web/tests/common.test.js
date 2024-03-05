@@ -232,7 +232,7 @@ run_test("show password", () => {
 
     const key_ev = {
         key: "Enter",
-        preventDefault: noop,
+        preventDefault() {},
         stopPropagation() {},
     };
 
@@ -241,7 +241,7 @@ run_test("show password", () => {
 
     const click_handler = $(password_selector).get_on_handler("click");
 
-    const key_handler = $(password_selector).get_on_handler("keyup");
+    const key_handler = $(password_selector).get_on_handler("keydown");
 
     click_handler(click_ev);
     check_assertion("text", "fa-eye", "fa-eye-slash");
