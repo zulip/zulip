@@ -3944,27 +3944,64 @@ recipient_id = %(recipient_id_3)s AND upper(subject) = upper(%(param_2)s))\
     def test_get_messages_queries(self) -> None:
         query_ids = self.get_query_ids()
 
-        sql_template = "SELECT anon_1.message_id, anon_1.flags \nFROM (SELECT message_id, flags \nFROM zerver_usermessage \nWHERE user_profile_id = {hamlet_id} AND message_id = 0) AS anon_1 ORDER BY message_id ASC"
+        sql_template = """\
+SELECT anon_1.message_id, anon_1.flags \n\
+FROM (SELECT message_id, flags \n\
+FROM zerver_usermessage JOIN zerver_message ON zerver_usermessage.message_id = zerver_message.id \n\
+WHERE user_profile_id = {hamlet_id} AND message_id = 0) AS anon_1 ORDER BY message_id ASC\
+"""
         sql = sql_template.format(**query_ids)
         self.common_check_get_messages_query({"anchor": 0, "num_before": 0, "num_after": 0}, sql)
 
-        sql_template = "SELECT anon_1.message_id, anon_1.flags \nFROM (SELECT message_id, flags \nFROM zerver_usermessage \nWHERE user_profile_id = {hamlet_id} AND message_id = 0) AS anon_1 ORDER BY message_id ASC"
+        sql_template = """\
+SELECT anon_1.message_id, anon_1.flags \n\
+FROM (SELECT message_id, flags \n\
+FROM zerver_usermessage JOIN zerver_message ON zerver_usermessage.message_id = zerver_message.id \n\
+WHERE user_profile_id = {hamlet_id} AND message_id = 0) AS anon_1 ORDER BY message_id ASC\
+"""
         sql = sql_template.format(**query_ids)
         self.common_check_get_messages_query({"anchor": 0, "num_before": 1, "num_after": 0}, sql)
 
-        sql_template = "SELECT anon_1.message_id, anon_1.flags \nFROM (SELECT message_id, flags \nFROM zerver_usermessage \nWHERE user_profile_id = {hamlet_id} ORDER BY message_id ASC \n LIMIT 2) AS anon_1 ORDER BY message_id ASC"
+        sql_template = """\
+SELECT anon_1.message_id, anon_1.flags \n\
+FROM (SELECT message_id, flags \n\
+FROM zerver_usermessage JOIN zerver_message ON zerver_usermessage.message_id = zerver_message.id \n\
+WHERE user_profile_id = {hamlet_id} ORDER BY message_id ASC \n\
+ LIMIT 2) AS anon_1 ORDER BY message_id ASC\
+"""
         sql = sql_template.format(**query_ids)
         self.common_check_get_messages_query({"anchor": 0, "num_before": 0, "num_after": 1}, sql)
 
-        sql_template = "SELECT anon_1.message_id, anon_1.flags \nFROM (SELECT message_id, flags \nFROM zerver_usermessage \nWHERE user_profile_id = {hamlet_id} ORDER BY message_id ASC \n LIMIT 11) AS anon_1 ORDER BY message_id ASC"
+        sql_template = """\
+SELECT anon_1.message_id, anon_1.flags \n\
+FROM (SELECT message_id, flags \n\
+FROM zerver_usermessage JOIN zerver_message ON zerver_usermessage.message_id = zerver_message.id \n\
+WHERE user_profile_id = {hamlet_id} ORDER BY message_id ASC \n\
+ LIMIT 11) AS anon_1 ORDER BY message_id ASC\
+"""
         sql = sql_template.format(**query_ids)
         self.common_check_get_messages_query({"anchor": 0, "num_before": 0, "num_after": 10}, sql)
 
-        sql_template = "SELECT anon_1.message_id, anon_1.flags \nFROM (SELECT message_id, flags \nFROM zerver_usermessage \nWHERE user_profile_id = {hamlet_id} AND message_id <= 100 ORDER BY message_id DESC \n LIMIT 11) AS anon_1 ORDER BY message_id ASC"
+        sql_template = """\
+SELECT anon_1.message_id, anon_1.flags \n\
+FROM (SELECT message_id, flags \n\
+FROM zerver_usermessage JOIN zerver_message ON zerver_usermessage.message_id = zerver_message.id \n\
+WHERE user_profile_id = {hamlet_id} AND message_id <= 100 ORDER BY message_id DESC \n\
+ LIMIT 11) AS anon_1 ORDER BY message_id ASC\
+"""
         sql = sql_template.format(**query_ids)
         self.common_check_get_messages_query({"anchor": 100, "num_before": 10, "num_after": 0}, sql)
 
-        sql_template = "SELECT anon_1.message_id, anon_1.flags \nFROM ((SELECT message_id, flags \nFROM zerver_usermessage \nWHERE user_profile_id = {hamlet_id} AND message_id <= 99 ORDER BY message_id DESC \n LIMIT 10) UNION ALL (SELECT message_id, flags \nFROM zerver_usermessage \nWHERE user_profile_id = {hamlet_id} AND message_id >= 100 ORDER BY message_id ASC \n LIMIT 11)) AS anon_1 ORDER BY message_id ASC"
+        sql_template = """\
+SELECT anon_1.message_id, anon_1.flags \n\
+FROM ((SELECT message_id, flags \n\
+FROM zerver_usermessage JOIN zerver_message ON zerver_usermessage.message_id = zerver_message.id \n\
+WHERE user_profile_id = {hamlet_id} AND message_id <= 99 ORDER BY message_id DESC \n\
+ LIMIT 10) UNION ALL (SELECT message_id, flags \n\
+FROM zerver_usermessage JOIN zerver_message ON zerver_usermessage.message_id = zerver_message.id \n\
+WHERE user_profile_id = {hamlet_id} AND message_id >= 100 ORDER BY message_id ASC \n\
+ LIMIT 11)) AS anon_1 ORDER BY message_id ASC\
+"""
         sql = sql_template.format(**query_ids)
         self.common_check_get_messages_query(
             {"anchor": 100, "num_before": 10, "num_after": 10}, sql
