@@ -28,6 +28,8 @@ export type User = {
     delivery_email: string | null;
     email: string;
     full_name: string;
+    // used for caching result of remove_diacritics.
+    name_with_diacritics_removed?: string;
     date_joined: string;
     is_active: boolean;
     is_owner: boolean;
@@ -1196,9 +1198,12 @@ export function build_termlet_matcher(termlet: string): (user: User) => boolean 
 
     return function (user: User): boolean {
         let full_name = user.full_name;
+        // Only ignore diacritics if the query is plain ascii
         if (is_ascii) {
-            // Only ignore diacritics if the query is plain ascii
-            full_name = typeahead.remove_diacritics(full_name);
+            if (user.name_with_diacritics_removed === undefined) {
+                user.name_with_diacritics_removed = typeahead.remove_diacritics(full_name);
+            }
+            full_name = user.name_with_diacritics_removed;
         }
         const names = full_name.toLowerCase().split(" ");
 
@@ -1639,6 +1644,7 @@ export function set_full_name(person_obj: User, new_full_name: string): void {
     track_duplicate_full_name(new_full_name, person_obj.user_id);
     people_by_name_dict.set(new_full_name, person_obj);
     person_obj.full_name = new_full_name;
+    person_obj.name_with_diacritics_removed = undefined;
 }
 
 export function set_custom_profile_field_data(
