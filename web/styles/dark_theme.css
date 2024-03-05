@@ -520,31 +520,6 @@
         border-color: hsl(0deg 0% 0% / 60%);
     }
 
-    .emoji-picker-popover .emoji-showcase-container,
-    .emoji-picker-popover .emoji-popover .emoji-popover-category-tabs,
-    .emoji-picker-popover .emoji-popover .emoji-popover-top {
-        background-color: hsl(0deg 0% 0% / 20%);
-    }
-
-    .emoji-picker-popover
-        .emoji-popover
-        .emoji-popover-category-tabs
-        .emoji-popover-tab-item.active {
-        background-color: hsl(0deg 0% 0% / 50%);
-    }
-
-    .emoji-popover-emoji {
-        &:focus {
-            background-color: hsl(212deg 28% 8% / 75%);
-            box-shadow: 0 0 1px hsl(0deg 0% 98%);
-        }
-
-        &.reacted {
-            background-color: hsl(0deg 0% 0% / 50%);
-            border-color: hsl(0deg 0% 0% / 90%);
-        }
-    }
-
     .new-style .tab-switcher .ind-tab.selected,
     div.message_content thead,
     .table-striped thead th {
