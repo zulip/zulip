@@ -963,7 +963,7 @@ def get_base_query_for_search(
     assert user_profile is not None
     if need_message:
         query = (
-            select(column("message_id", Integer), column("flags", Integer))
+            select(column("message_id", Integer))
             # We don't limit by realm_id despite the join to
             # zerver_messages, since the user_profile_id limit in
             # usermessage is more selective, and the query planner
@@ -982,7 +982,7 @@ def get_base_query_for_search(
         return (query, inner_msg_id_col)
 
     query = (
-        select(column("message_id", Integer), column("flags", Integer))
+        select(column("message_id", Integer))
         .where(column("user_profile_id", Integer) == literal(user_profile.id))
         .select_from(table("zerver_usermessage"))
     )
@@ -1053,6 +1053,7 @@ def find_first_unread_anchor(
         need_message=need_message,
         need_user_message=need_user_message,
     )
+    query = query.add_columns(column("flags", Integer))
 
     query, is_search = add_narrow_conditions(
         user_profile=user_profile,
@@ -1328,6 +1329,8 @@ def fetch_messages(
         need_message=need_message,
         need_user_message=need_user_message,
     )
+    if need_user_message:
+        query = query.add_columns(column("flags", Integer))
 
     query, is_search = add_narrow_conditions(
         user_profile=user_profile,
