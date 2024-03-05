@@ -579,27 +579,35 @@ function make_clean_reaction({
         emoji_details.reaction_type === "realm_emoji" ||
         emoji_details.reaction_type === "zulip_extra_emoji";
 
-    const count = user_ids.length;
-    const label = generate_title(emoji_name, user_ids);
-
-    const reaction_class = user_ids.includes(current_user.user_id)
-        ? "message_reaction reacted"
-        : "message_reaction";
-
-    // The vote_text field set here is used directly in the Handlebars
-    // template for rendering (or rerendering!) a message.
-    const vote_text = get_vote_text(user_ids, should_display_reactors);
-
     return {
         local_id,
         user_ids,
         ...emoji_details,
         emoji_alt_code,
         is_realm_emoji,
-        class: reaction_class,
-        count,
-        label,
-        vote_text,
+        ...build_reaction_data(user_ids, emoji_name, should_display_reactors),
+    };
+}
+
+function build_reaction_data(
+    user_ids: number[],
+    emoji_name: string,
+    should_display_reactors: boolean,
+): {
+    count: number;
+    label: string;
+    class: string;
+    vote_text: string;
+} {
+    return {
+        count: user_ids.length,
+        label: generate_title(emoji_name, user_ids),
+        class: user_ids.includes(current_user.user_id)
+            ? "message_reaction reacted"
+            : "message_reaction",
+        // The vote_text field set here is used directly in the Handlebars
+        // template for rendering (or rerendering!) a message.
+        vote_text: get_vote_text(user_ids, should_display_reactors),
     };
 }
 
@@ -611,30 +619,14 @@ export function update_user_fields(
     // who reacted on a message might have changed, including due to
     // upvote/downvotes on ANY reaction in the message, because those
     // can change the correct value of should_display_reactors to use.
-    clean_reaction_object.count = clean_reaction_object.user_ids.length;
-    clean_reaction_object.label = generate_title(
-        clean_reaction_object.emoji_name,
-        clean_reaction_object.user_ids,
-    );
-
-    if (clean_reaction_object.user_ids.includes(current_user.user_id)) {
-        clean_reaction_object.class = "message_reaction reacted";
-    } else {
-        clean_reaction_object.class = "message_reaction";
-    }
-
-    clean_reaction_object.count = clean_reaction_object.user_ids.length;
-    clean_reaction_object.label = generate_title(
-        clean_reaction_object.emoji_name,
-        clean_reaction_object.user_ids,
-    );
-
-    // The vote_text field set here is used directly in the Handlebars
-    // template for rendering (or rerendering!) a message.
-    clean_reaction_object.vote_text = get_vote_text(
-        clean_reaction_object.user_ids,
-        should_display_reactors,
-    );
+    Object.assign(clean_reaction_object, {
+        ...clean_reaction_object,
+        ...build_reaction_data(
+            clean_reaction_object.user_ids,
+            clean_reaction_object.emoji_name,
+            should_display_reactors,
+        ),
+    });
 }
 
 type ReactionUserIdAndCount = {

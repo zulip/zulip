@@ -1177,6 +1177,22 @@ test("remove_reaction_from_view (last person)", () => {
     assert.ok(removed);
 });
 
+test("bogus_event", ({override}) => {
+    // We don't expect errors when we process events with
+    // bad message ids.
+    override(message_store, "get", noop);
+
+    const bogus_event = {
+        message_id: 55,
+        reaction_type: "realm_emoji",
+        emoji_name: "realm_emoji",
+        emoji_code: "991",
+        user_id: 99,
+    };
+    reactions.add_reaction(bogus_event);
+    reactions.remove_reaction(bogus_event);
+});
+
 test("remove spurious user", ({override}) => {
     // get coverage for removing non-user (it should just
     // silently fail)
