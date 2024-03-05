@@ -11,7 +11,7 @@ import * as util from "./util";
 
 export let _old_width = $(window).width();
 
-export function handler() {
+export function handler(): void {
     const new_width = $(window).width();
 
     const mobile = util.is_mobile();
