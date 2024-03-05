@@ -18,7 +18,7 @@ from scripts.lib.zulip_tools import (
     ENDC,
     OKGREEN,
     WARNING,
-    get_config_bool,
+    get_config,
     get_config_file,
     get_tornado_ports,
     has_application_server,
@@ -185,7 +185,7 @@ if has_application_server():
     if (
         action == "restart"
         and not args.less_graceful
-        and get_config_bool(config_file, "application_server", "rolling_restart")
+        and get_config(config_file, "application_server", "rolling_restart", False)
         and os.path.exists("/home/zulip/deployments/uwsgi-control")
     ):
         # See if it's currently running
