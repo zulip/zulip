@@ -1,7 +1,15 @@
 import $ from "jquery";
+import assert from "minimalistic-assert";
+import type {
+    Placement,
+    Instance as PopoverInstance,
+    Props as PopoverProps,
+    ReferenceElement,
+} from "tippy.js";
 
 import emoji_codes from "../../static/generated/emoji/emoji_codes.json";
 import * as typeahead from "../shared/src/typeahead";
+import type {Emoji} from "../shared/src/typeahead";
 import render_emoji_popover from "../templates/popovers/emoji/emoji_popover.hbs";
 import render_emoji_popover_emoji_map from "../templates/popovers/emoji/emoji_popover_emoji_map.hbs";
 import render_emoji_popover_search_results from "../templates/popovers/emoji/emoji_popover_search_results.hbs";
@@ -23,12 +31,23 @@ import {user_settings} from "./user_settings";
 import * as user_status_ui from "./user_status_ui";
 import * as util from "./util";
 
+type EmojiCategory = {
+    name: string;
+    icon: string;
+    emojis: Emoji[];
+};
+
+type SectionHeadOffset = {
+    position_y: number;
+    section: string;
+};
+
 // The functionalities for reacting to a message with an emoji
 // and composing a message with an emoji share a single widget,
 // implemented as the emoji_popover.
-export let complete_emoji_catalog = [];
+export let complete_emoji_catalog: EmojiCategory[] = [];
 
-let emoji_popover_instance = null;
+let emoji_popover_instance: PopoverInstance | null = null;
 let emoji_catalog_last_coordinates = {
     section: 0,
     index: 0,
@@ -36,10 +55,10 @@ let emoji_catalog_last_coordinates = {
 let current_section = 0;
 let current_index = 0;
 let search_is_active = false;
-const search_results = [];
-let section_head_offsets = [];
-let edit_message_id = null;
-let current_message_id = null;
+const search_results: Emoji[] = [];
+let section_head_offsets: SectionHeadOffset[] = [];
+let edit_message_id: number | null = null;
+let current_message_id: number | null = null;
 
 const EMOJI_CATEGORIES = [
     {name: "Popular", icon: "fa-star-o"},
@@ -55,14 +74,14 @@ const EMOJI_CATEGORIES = [
     {name: "Custom", icon: "fa-cog"},
 ];
 
-function get_total_sections() {
+function get_total_sections(): number {
     if (search_is_active) {
         return 1;
     }
     return complete_emoji_catalog.length;
 }
 
-function get_max_index(section) {
+function get_max_index(section: number): number | undefined {
     if (search_is_active) {
         return search_results.length;
     } else if (section >= 0 && section < get_total_sections()) {
@@ -71,7 +90,7 @@ function get_max_index(section) {
     return undefined;
 }
 
-function get_emoji_id(section, index) {
+function get_emoji_id(section: number, index: number): string {
     let type = "emoji_picker_emoji";
     if (search_is_active) {
         type = "emoji_search_result";
@@ -80,7 +99,7 @@ function get_emoji_id(section, index) {
     return emoji_id;
 }
 
-function get_emoji_coordinates(emoji_id) {
+function get_emoji_coordinates(emoji_id: string): {section: number; index: number} {
     // Emoji id is of the following form:
     //    <emoji_type>_<section_number>_<index>.
     // See `get_emoji_id()`.
@@ -91,7 +110,7 @@ function get_emoji_coordinates(emoji_id) {
     };
 }
 
-function show_search_results() {
+function show_search_results(): void {
     $(".emoji-popover-emoji-map").hide();
     $(".emoji-popover-category-tabs").hide();
     $(".emoji-search-results-container").show();
@@ -104,7 +123,7 @@ function show_search_results() {
     search_is_active = true;
 }
 
-function show_emoji_catalog() {
+function show_emoji_catalog(): void {
     reset_emoji_showcase();
     $(".emoji-popover-emoji-map").show();
     $(".emoji-popover-category-tabs").show();
@@ -114,7 +133,7 @@ function show_emoji_catalog() {
     search_is_active = false;
 }
 
-export function rebuild_catalog() {
+export function rebuild_catalog(): void {
     const realm_emojis = emoji.active_realm_emojis;
 
     const catalog = new Map();
@@ -131,7 +150,7 @@ export function rebuild_catalog() {
             const name = emoji.get_emoji_name(codepoint);
             if (name !== undefined) {
                 const emoji_dict = emoji.emojis_by_name.get(name);
-                if (emoji_dict !== undefined && emoji_dict.is_realm_emoji !== true) {
+                if (emoji_dict !== undefined && !emoji_dict.is_realm_emoji) {
                     emojis.push(emoji_dict);
                 }
             }
@@ -159,8 +178,8 @@ export function rebuild_catalog() {
     }));
 }
 
-const generate_emoji_picker_content = function (id) {
-    let emojis_used = [];
+const generate_emoji_picker_content = function (id: number): string {
+    let emojis_used: string[] = [];
 
     if (id) {
         emojis_used = reactions.get_emojis_used_by_user_for_message_id(id);
@@ -176,21 +195,21 @@ const generate_emoji_picker_content = function (id) {
     });
 };
 
-function refill_section_head_offsets($popover) {
+function refill_section_head_offsets($popover: JQuery): void {
     section_head_offsets = [];
     $popover.find(".emoji-popover-subheading").each(function () {
         section_head_offsets.push({
-            section: $(this).attr("data-section"),
+            section: $(this).attr("data-section") ?? "",
             position_y: $(this).position().top,
         });
     });
 }
 
-export function is_open() {
+export function is_open(): boolean {
     return Boolean(emoji_popover_instance);
 }
 
-export function hide_emoji_popover() {
+export function hide_emoji_popover(): void {
     if (!is_open()) {
         return;
     }
@@ -201,13 +220,15 @@ export function hide_emoji_popover() {
         // handler that opens the "user status modal" emoji picker.
         $(".app, .header, .modal__overlay, #set-user-status-modal").css("pointer-events", "all");
     }
-    $(emoji_popover_instance.reference).removeClass("active-emoji-picker-reference");
-    $(emoji_popover_instance.reference).parent().removeClass("active-emoji-picker-reference");
-    emoji_popover_instance.destroy();
-    emoji_popover_instance = null;
+    if (emoji_popover_instance) {
+        $(emoji_popover_instance.reference).removeClass("active-emoji-picker-reference");
+        $(emoji_popover_instance.reference).parent().removeClass("active-emoji-picker-reference");
+        emoji_popover_instance.destroy();
+        emoji_popover_instance = null;
+    }
 }
 
-function get_rendered_emoji(section, index) {
+function get_rendered_emoji(section: number, index: number): JQuery | undefined {
     const emoji_id = get_emoji_id(section, index);
     const $emoji = $(`.emoji-popover-emoji[data-emoji-id='${CSS.escape(emoji_id)}']`);
     if ($emoji.length > 0) {
@@ -216,7 +237,7 @@ function get_rendered_emoji(section, index) {
     return undefined;
 }
 
-export function is_emoji_present_in_text(text, emoji_dict) {
+export function is_emoji_present_in_text(text: string, emoji_dict: Emoji): boolean {
     // fetching emoji details to ensure emoji_code and reaction_type are present
     const emoji_info = emoji.get_emoji_details_by_name(emoji_dict.name);
     if (emoji_info.reaction_type === "unicode_emoji") {
@@ -229,9 +250,10 @@ export function is_emoji_present_in_text(text, emoji_dict) {
     return false;
 }
 
-function filter_emojis() {
-    const $elt = $(".emoji-popover-filter").expectOne();
-    const query = $elt.val().trim().toLowerCase();
+function filter_emojis(): void {
+    const $elt = $<HTMLInputElement>(".emoji-popover-filter").expectOne();
+    const eltValue = $elt.val();
+    const query = eltValue?.trim().toLowerCase() ?? "";
     const message_id = $(".emoji-search-results-container").data("message-id");
     const search_results_visible = $(".emoji-search-results-container").is(":visible");
     if (query !== "") {
@@ -243,6 +265,7 @@ function filter_emojis() {
             if (category.name === "Popular") {
                 continue;
             }
+
             const emojis = category.emojis;
             for (const emoji_dict of emojis) {
                 for (const alias of emoji_dict.aliases) {
@@ -260,7 +283,6 @@ function filter_emojis() {
                 }
             }
         }
-
         const sorted_search_results = typeahead.sort_emojis(search_results, query);
         const rendered_search_results = render_emoji_popover_search_results({
             search_results: sorted_search_results,
@@ -277,7 +299,10 @@ function filter_emojis() {
     }
 }
 
-function toggle_reaction(emoji_name, event) {
+function toggle_reaction(
+    emoji_name: string,
+    event: JQuery.ClickEvent<HTMLElement, undefined>,
+): void {
     // The emoji picker for setting user status
     // doesn't have a concept of toggling.
     // TODO: Ideally we never even get here in
@@ -287,44 +312,48 @@ function toggle_reaction(emoji_name, event) {
     }
 
     const message_id = current_message_id;
-    const message = message_store.get(message_id);
-    if (!message) {
-        blueslip.error("reactions: Bad message id", {message_id});
-        return;
+    if (message_id) {
+        const message = message_store.get(message_id);
+        if (!message) {
+            blueslip.error("reactions: Bad message id", {message_id});
+            return;
+        }
+
+        reactions.toggle_emoji_reaction(message, emoji_name);
+
+        if (!event.shiftKey) {
+            hide_emoji_popover();
+        }
+
+        $(event.target).closest(".reaction").toggleClass("reacted");
     }
-
-    reactions.toggle_emoji_reaction(message, emoji_name, event);
-
-    if (!event.shiftKey) {
-        hide_emoji_popover();
-    }
-
-    $(event.target).closest(".reaction").toggleClass("reacted");
 }
 
-function process_enter_while_filtering(e) {
+function process_enter_while_filtering(e: JQuery.KeyboardEventBase): void {
     if (keydown_util.is_enter_event(e)) {
         e.preventDefault();
         e.stopPropagation();
         const $first_emoji = get_rendered_emoji(0, 0);
         if ($first_emoji) {
-            handle_emoji_clicked($first_emoji, e);
+            // eslint-disable-next-line new-cap
+            const clickEvent: JQuery.ClickEvent = $.Event("click");
+            handle_emoji_clicked($first_emoji, clickEvent);
         }
     }
 }
 
-function round_off_to_previous_multiple(number_to_round, multiple) {
+function round_off_to_previous_multiple(number_to_round: number, multiple: number): number {
     return number_to_round - (number_to_round % multiple);
 }
 
-function reset_emoji_showcase() {
+function reset_emoji_showcase(): void {
     $(".emoji-showcase-container").empty();
 }
 
-function update_emoji_showcase($focused_emoji) {
+function update_emoji_showcase($focused_emoji: JQuery): void {
     // Don't use jQuery's data() function here. It has the side-effect
     // of converting emoji names like :100:, :1234: etc to number.
-    const focused_emoji_name = $focused_emoji.attr("data-emoji-name");
+    const focused_emoji_name = $focused_emoji.attr("data-emoji-name") ?? "";
     const canonical_name = emoji.get_canonical_name(focused_emoji_name);
 
     if (!canonical_name) {
@@ -345,7 +374,12 @@ function update_emoji_showcase($focused_emoji) {
     $(".emoji-showcase-container").html(rendered_showcase);
 }
 
-function maybe_change_focused_emoji($emoji_map, next_section, next_index, preserve_scroll) {
+function maybe_change_focused_emoji(
+    $emoji_map: JQuery,
+    next_section: number,
+    next_index: number,
+    preserve_scroll?: boolean,
+): boolean {
     const $next_emoji = get_rendered_emoji(next_section, next_index);
     if ($next_emoji) {
         current_section = next_section;
@@ -354,9 +388,11 @@ function maybe_change_focused_emoji($emoji_map, next_section, next_index, preser
             $next_emoji.trigger("focus");
         } else {
             const start = scroll_util.get_scroll_element($emoji_map).scrollTop();
-            $next_emoji.trigger("focus");
-            if (scroll_util.get_scroll_element($emoji_map).scrollTop() !== start) {
-                scroll_util.get_scroll_element($emoji_map).scrollTop(start);
+            if (start) {
+                $next_emoji.trigger("focus");
+                if (scroll_util.get_scroll_element($emoji_map).scrollTop() !== start) {
+                    scroll_util.get_scroll_element($emoji_map).scrollTop(start);
+                }
             }
         }
         update_emoji_showcase($next_emoji);
@@ -365,7 +401,7 @@ function maybe_change_focused_emoji($emoji_map, next_section, next_index, preser
     return false;
 }
 
-function maybe_change_active_section(next_section) {
+function maybe_change_active_section(next_section: number): void {
     const $emoji_map = $(".emoji-popover-emoji-map");
 
     if (next_section >= 0 && next_section < get_total_sections()) {
@@ -379,27 +415,31 @@ function maybe_change_active_section(next_section) {
     }
 }
 
-function get_next_emoji_coordinates(move_by) {
+function get_next_emoji_coordinates(move_by: number): {section: number; index: number} {
     let next_section = current_section;
     let next_index = current_index + move_by;
     let max_len;
     if (next_index < 0) {
         next_section = next_section - 1;
         if (next_section >= 0) {
-            next_index = get_max_index(next_section) - 1;
+            const max_index = get_max_index(next_section);
+            assert(max_index);
+            next_index = max_index - 1;
             if (move_by === -6) {
                 max_len = get_max_index(next_section);
+                assert(max_len);
                 const prev_multiple = round_off_to_previous_multiple(max_len, 6);
                 next_index = prev_multiple + current_index;
                 next_index = next_index >= max_len ? prev_multiple + current_index - 6 : next_index;
             }
         }
-    } else if (next_index >= get_max_index(next_section)) {
+    } else if (next_index >= (get_max_index(next_section) ?? 1)) {
         next_section = next_section + 1;
         if (next_section < get_total_sections()) {
             next_index = 0;
             if (move_by === 6) {
                 max_len = get_max_index(next_index);
+                assert(max_len);
                 next_index = current_index % 6;
                 next_index = next_index >= max_len ? max_len - 1 : next_index;
             }
@@ -412,8 +452,8 @@ function get_next_emoji_coordinates(move_by) {
     };
 }
 
-function change_focus_to_filter() {
-    const $popover = $(emoji_popover_instance.popper);
+function change_focus_to_filter(): void {
+    const $popover = $(emoji_popover_instance!.popper);
     $popover.find(".emoji-popover-filter").trigger("focus");
     // If search is active reset current selected emoji to first emoji.
     if (search_is_active) {
@@ -423,24 +463,26 @@ function change_focus_to_filter() {
     reset_emoji_showcase();
 }
 
-export function navigate(event_name, e) {
+export function navigate(event_name: string, e?: JQuery.KeyboardEventBase): boolean {
     if (
         event_name === "toggle_reactions_popover" &&
         is_open() &&
-        (search_is_active === false || search_results.length === 0)
+        (!search_is_active || search_results.length === 0)
     ) {
         hide_emoji_popover();
         return true;
     }
 
     // If search is active and results are empty then return immediately.
-    if (search_is_active === true && search_results.length === 0) {
+    if (search_is_active && search_results.length === 0) {
         // We don't want to prevent default for keys like Backspace and space.
         return false;
     }
 
     if (event_name === "enter") {
-        handle_emoji_clicked($(e.target), e);
+        // eslint-disable-next-line new-cap
+        const clickEvent: JQuery.ClickEvent = $.Event("click");
+        handle_emoji_clicked($(e?.target), clickEvent);
         return true;
     }
 
@@ -452,19 +494,19 @@ export function navigate(event_name, e) {
     // special cases
     if (is_filter_focused) {
         // Move down into emoji map.
-        const filter_text = $(".emoji-popover-filter").val();
-        const is_cursor_at_end = $(".emoji-popover-filter").caret() === filter_text.length;
+        const filter_text = $<HTMLInputElement>(".emoji-popover-filter").val();
+        const is_cursor_at_end = $(".emoji-popover-filter").caret() === filter_text?.length;
         if (event_name === "down_arrow" || (is_cursor_at_end && event_name === "right_arrow")) {
-            $selected_emoji.trigger("focus");
+            $selected_emoji?.trigger("focus");
             if (current_section === 0 && current_index < 6) {
                 scroll_util.get_scroll_element($emoji_map).scrollTop(0);
             }
-            update_emoji_showcase($selected_emoji);
+            update_emoji_showcase($selected_emoji!);
             return true;
         }
         if (event_name === "tab") {
-            $selected_emoji.trigger("focus");
-            update_emoji_showcase($selected_emoji);
+            $selected_emoji?.trigger("focus");
+            update_emoji_showcase($selected_emoji!);
             return true;
         }
         return false;
@@ -516,7 +558,7 @@ export function navigate(event_name, e) {
     }
 }
 
-function process_keypress(e) {
+function process_keypress(e: JQuery.KeyboardEventBase): void {
     const is_filter_focused = $(".emoji-popover-filter").is(":focus");
     const pressed_key = e.which;
     if (
@@ -529,13 +571,13 @@ function process_keypress(e) {
         e.preventDefault();
         e.stopPropagation();
 
-        const $emoji_filter = $(".emoji-popover-filter");
+        const $emoji_filter = $<HTMLInputElement>(".emoji-popover-filter");
         const old_query = $emoji_filter.val();
         let new_query = "";
 
         if (pressed_key === 8) {
             // Handles Backspace.
-            new_query = old_query.slice(0, -1);
+            new_query = old_query?.slice(0, -1) ?? "";
         } else {
             // Handles any printable character.
             const key_str = String.fromCodePoint(e.which);
@@ -548,10 +590,10 @@ function process_keypress(e) {
     }
 }
 
-export function emoji_select_tab($elt) {
-    const scrolltop = $elt.scrollTop();
+export function emoji_select_tab($elt: JQuery): void {
+    const scrolltop = $elt.scrollTop() ?? 0;
     const scrollheight = $elt.prop("scrollHeight");
-    const elt_height = $elt.height();
+    const elt_height = $elt.height() ?? 0;
     let currently_selected = "";
     for (const o of section_head_offsets) {
         if (scrolltop + elt_height / 2 >= o.position_y) {
@@ -561,7 +603,7 @@ export function emoji_select_tab($elt) {
     // Handles the corner case of the last category being
     // smaller than half of the emoji picker height.
     if (elt_height + scrolltop === scrollheight) {
-        currently_selected = section_head_offsets.at(-1).section;
+        currently_selected = section_head_offsets.at(-1)?.section ?? "";
     }
     // Handles the corner case of the scrolling back to top.
     if (scrolltop === 0) {
@@ -583,7 +625,7 @@ export function emoji_select_tab($elt) {
     }
 }
 
-function register_popover_events($popover) {
+function register_popover_events($popover: JQuery): void {
     const $emoji_map = $popover.find(".emoji-popover-emoji-map");
 
     scroll_util.get_scroll_element($emoji_map).on("scroll", () => {
@@ -604,7 +646,21 @@ function register_popover_events($popover) {
     });
 }
 
-function get_default_emoji_popover_options() {
+function get_default_emoji_popover_options(): {
+    placement: Placement;
+    popperOptions: {
+        modifiers: {
+            name: string;
+            options: {
+                fallbackPlacements: string[];
+            };
+        }[];
+    };
+    onCreate: (instance: PopoverInstance) => void;
+    onShow: (instance: PopoverInstance) => void;
+    onMount: (instance: PopoverInstance) => void;
+    onHidden: () => void;
+} {
     return {
         placement: "top",
         popperOptions: {
@@ -622,24 +678,24 @@ function get_default_emoji_popover_options() {
                 },
             ],
         },
-        onCreate(instance) {
+        onCreate(instance: PopoverInstance) {
             emoji_popover_instance = instance;
             const $popover = $(instance.popper);
             $popover.addClass("emoji-popover-root");
             instance.setContent(
-                ui_util.parse_html(generate_emoji_picker_content(current_message_id)),
+                ui_util.parse_html(generate_emoji_picker_content(current_message_id ?? 0)),
             );
             emoji_catalog_last_coordinates = {
                 section: 0,
                 index: 0,
             };
         },
-        onShow(instance) {
+        onShow(instance: PopoverInstance) {
             const $reference = $(instance.reference);
             $reference.addClass("active-emoji-picker-reference");
             $reference.parent().addClass("active-emoji-picker-reference");
         },
-        onMount(instance) {
+        onMount(instance: PopoverInstance) {
             const $popover = $(instance.popper);
             // Render the emojis after simplebar has been initialized which
             // saves us ~30% time rendering them.
@@ -666,7 +722,11 @@ function get_default_emoji_popover_options() {
     };
 }
 
-export function toggle_emoji_popover(target, id, additional_popover_options) {
+export function toggle_emoji_popover(
+    target: ReferenceElement,
+    id?: number,
+    additional_popover_options: Partial<PopoverProps> = {},
+): void {
     if (id) {
         current_message_id = id;
     }
@@ -683,7 +743,10 @@ export function toggle_emoji_popover(target, id, additional_popover_options) {
     );
 }
 
-function handle_reaction_emoji_clicked(emoji_name, event) {
+function handle_reaction_emoji_clicked(
+    emoji_name: string,
+    event: JQuery.ClickEvent<HTMLElement, undefined>,
+): void {
     // When an emoji is clicked in the popover,
     // if the user has reacted to this message with this emoji
     // the reaction is removed
@@ -691,7 +754,7 @@ function handle_reaction_emoji_clicked(emoji_name, event) {
     toggle_reaction(emoji_name, event);
 }
 
-function handle_status_emoji_clicked(emoji_name) {
+function handle_status_emoji_clicked(emoji_name: string): void {
     hide_emoji_popover();
     let emoji_info = {
         emoji_name,
@@ -705,25 +768,28 @@ function handle_status_emoji_clicked(emoji_name) {
     user_status_ui.toggle_clear_message_button();
 }
 
-function handle_composition_emoji_clicked(emoji_name) {
+function handle_composition_emoji_clicked(emoji_name: string): void {
     hide_emoji_popover();
     const emoji_text = ":" + emoji_name + ":";
     // The following check will return false if emoji was not selected in
     // message edit form.
     if (edit_message_id !== null) {
-        const $edit_message_textarea = $(
-            `#edit_form_${CSS.escape(edit_message_id)} .message_edit_content`,
+        const $edit_message_textarea: JQuery<HTMLTextAreaElement> = $(
+            `#edit_form_${CSS.escape(String(edit_message_id))} .message_edit_content`,
         );
         // Assign null to edit_message_id so that the selection of emoji in new
         // message composition form works correctly.
         edit_message_id = null;
-        compose_ui.insert_syntax_and_focus(emoji_text, $edit_message_textarea);
+        compose_ui.insert_syntax_and_focus(emoji_text, $edit_message_textarea, undefined, 0);
     } else {
-        compose_ui.insert_syntax_and_focus(emoji_text);
+        compose_ui.insert_syntax_and_focus(emoji_text, undefined, undefined, 0);
     }
 }
 
-function handle_emoji_clicked($emoji, event) {
+function handle_emoji_clicked(
+    $emoji: JQuery,
+    event: JQuery.ClickEvent<HTMLElement, undefined>,
+): void {
     const emoji_name = $emoji.attr("data-emoji-name");
     const emoji_destination = $emoji
         .closest(".emoji-picker-popover")
@@ -731,21 +797,21 @@ function handle_emoji_clicked($emoji, event) {
 
     switch (emoji_destination) {
         case "reaction": {
-            handle_reaction_emoji_clicked(emoji_name, event);
+            handle_reaction_emoji_clicked(emoji_name ?? "", event);
             break;
         }
         case "status": {
-            handle_status_emoji_clicked(emoji_name);
+            handle_status_emoji_clicked(emoji_name ?? "");
             break;
         }
         case "composition": {
-            handle_composition_emoji_clicked(emoji_name);
+            handle_composition_emoji_clicked(emoji_name ?? "");
             break;
         }
     }
 }
 
-function register_click_handlers() {
+function register_click_handlers(): void {
     $("body").on("click", ".emoji-popover-emoji", (e) => {
         e.preventDefault();
         e.stopPropagation();
@@ -757,7 +823,10 @@ function register_click_handlers() {
         e.stopPropagation();
 
         const compose_click_target = compose_ui.get_compose_click_target(e);
-        if ($(compose_click_target).parents(".message_edit_form").length === 1) {
+        if (
+            $(compose_click_target).parents(".message_edit_form").length === 1 &&
+            compose_click_target instanceof HTMLElement
+        ) {
             // Store message id in global variable edit_message_id so that
             // its value can be further used to correctly find the message textarea element.
             edit_message_id = rows.get_message_id(compose_click_target);
@@ -838,7 +907,7 @@ function register_click_handlers() {
     );
 }
 
-export function initialize() {
+export function initialize(): void {
     rebuild_catalog();
     register_click_handlers();
 }

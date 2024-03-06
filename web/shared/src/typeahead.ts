@@ -30,20 +30,28 @@ export const popular_emojis = [
 
 const unicode_marks = /\p{M}/gu;
 
-type Emoji =
+export type Emoji =
     | {
+          name: string;
+          aliases: string[];
           emoji_name: string;
           reaction_type: "realm_emoji" | "zulip_extra_emoji";
           is_realm_emoji: true;
+          has_reacted: boolean;
+          display_name?: string;
       }
     | UnicodeEmoji;
 
 // emoji_code is only available for unicode emojis.
 type UnicodeEmoji = {
+    name: string;
+    aliases: string[];
     emoji_name: string;
-    emoji_code: string;
     reaction_type: "unicode_emoji";
     is_realm_emoji: false;
+    has_reacted: boolean;
+    display_name?: string;
+    emoji_code: string;
 };
 
 export function remove_diacritics(s: string): string {
