@@ -1,51 +1,122 @@
 import $ from "jquery";
 import _ from "lodash";
+import assert from "minimalistic-assert";
 
 import * as compose_fade_helper from "./compose_fade_helper";
 import * as compose_state from "./compose_state";
 import * as message_lists from "./message_lists";
+import type {Message} from "./message_store";
 import * as message_viewport from "./message_viewport";
 import * as people from "./people";
 import * as rows from "./rows";
+import type {TopicLink} from "./types";
 import * as util from "./util";
+
+type AllVisibilityPolicies = {
+    INHERIT: 0;
+    MUTED: 1;
+    UNMUTED: 2;
+    FOLLOWED: 3;
+};
+
+// TODO/TypeScript: Move this to message_list_view.js when it's migrated to TypeScript.
+type MessageContainer = {
+    background_color: string;
+    date_divider_html?: string;
+    edited_alongside_sender: boolean;
+    edited_in_left_col: boolean;
+    edited_status_msg: boolean;
+    include_recipient: boolean;
+    include_sender: boolean;
+    is_hidden: boolean;
+    mention_classname: string | null;
+    message_edited_notices_alongside_sender: boolean;
+    message_edited_notices_for_status_message: boolean;
+    message_edit_notices_in_left_col: boolean;
+    msg: Message;
+    sender_is_bot: boolean;
+    sender_is_guest: boolean;
+    should_add_guest_indicator_for_sender: boolean;
+    small_avatar_url: string;
+    status_message: boolean;
+    stream_url?: string;
+    subscribed?: boolean;
+    timestr: string;
+    topic_url?: string;
+    unsubscribed?: boolean;
+    want_date_divider: boolean;
+};
+
+// TODO/TypeScript: Move this to message_list_view.js when it's migrated to TypeScript.
+type MessageGroup = {
+    all_visibility_policies: AllVisibilityPolicies;
+    always_visible_topic_edit: boolean;
+    date: string;
+    date_unchanged: boolean;
+    display_recipient: string;
+    invite_only: boolean;
+    is_private?: boolean;
+    is_stream: boolean;
+    is_subscribed: boolean;
+    is_web_public: boolean;
+    match_topic?: string;
+    message_containers: MessageContainer[];
+    message_group_id: string;
+    on_hover_topic_edit: boolean;
+    recipient_bar_color: string;
+    stream_id: number;
+    stream_privacy_icon_color: string;
+    stream_url: string;
+    topic: string;
+    topic_is_resolved: boolean;
+    topic_links: TopicLink[];
+    topic_url: string;
+    user_can_resolve_topic: boolean;
+    visibility_policy: number;
+};
 
 let normal_display = false;
 
-export function set_focused_recipient(msg_type) {
+export function set_focused_recipient(msg_type?: "private" | "stream"): void {
     if (msg_type === undefined) {
         compose_fade_helper.clear_focused_recipient();
     }
 
     // Construct focused_recipient as a mocked up element which has all the
     // fields of a message used by util.same_recipient()
-    const focused_recipient = {
-        type: msg_type,
-    };
-
-    if (focused_recipient.type === "stream") {
+    let focused_recipient;
+    if (msg_type === "stream") {
         const stream_id = compose_state.stream_id();
-        focused_recipient.topic = compose_state.topic();
+        const topic = compose_state.topic();
         if (stream_id) {
-            focused_recipient.stream_id = stream_id;
+            focused_recipient = {
+                type: msg_type,
+                stream_id,
+                topic,
+            };
         }
-    } else {
+    } else if (msg_type === "private") {
         // Normalize the recipient list so it matches the one used when
         // adding the message (see message_helper.process_new_message()).
         const reply_to = util.normalize_recipients(compose_state.private_message_recipient());
-        focused_recipient.reply_to = reply_to;
-        focused_recipient.to_user_ids = people.reply_to_to_user_ids_string(reply_to);
+        const to_user_ids = people.reply_to_to_user_ids_string(reply_to);
+        focused_recipient = {
+            type: msg_type,
+            reply_to,
+            to_user_ids,
+        };
     }
 
     compose_fade_helper.set_focused_recipient(focused_recipient);
 }
 
-function display_messages_normally() {
+function display_messages_normally(): void {
     message_lists.current?.view.$list.find(".recipient_row").removeClass("message-fade");
 
     normal_display = true;
 }
 
-function change_fade_state($elt, should_fade_group) {
+function change_fade_state($elt: JQuery, should_fade_group: boolean): void {
     if (should_fade_group) {
         $elt.addClass("message-fade");
     } else {
@@ -53,7 +124,7 @@ function change_fade_state($elt, should_fade_group) {
     }
 }
 
-function fade_messages() {
+function fade_messages(): void {
     if (message_lists.current === undefined) {
         return;
     }
@@ -68,8 +139,9 @@ function fade_messages() {
 
     // Update the visible messages first, before the compose box opens
     for (i = 0; i < visible_groups.length; i += 1) {
-        $first_row = rows.first_message_in_group(visible_groups[i]);
+        $first_row = rows.first_message_in_group($(visible_groups[i]));
         first_message = message_lists.current.get(rows.id($first_row));
+        assert(first_message !== undefined);
         should_fade_group = compose_fade_helper.should_fade_message(first_message);
 
         change_fade_state($(visible_groups[i]), should_fade_group);
@@ -93,7 +165,7 @@ function fade_messages() {
             for (i = 0; i < $all_groups.length; i += 1) {
                 const $group_elt = $($all_groups[i]);
                 should_fade_group = compose_fade_helper.should_fade_message(
-                    rows.recipient_from_group($group_elt),
+                    rows.recipient_from_group($group_elt)!,
                 );
                 change_fade_state($group_elt, should_fade_group);
             }
@@ -104,7 +176,7 @@ function fade_messages() {
     );
 }
 
-function do_update_all() {
+function do_update_all(): void {
     if (compose_fade_helper.want_normal_display()) {
         if (!normal_display) {
             display_messages_normally();
@@ -117,17 +189,17 @@ function do_update_all() {
 // This gets called on keyup events, hence the throttling.
 export const update_all = _.debounce(do_update_all, 50);
 
-export function start_compose(msg_type) {
+export function start_compose(msg_type?: "private" | "stream"): void {
     set_focused_recipient(msg_type);
     do_update_all();
 }
 
-export function clear_compose() {
+export function clear_compose(): void {
     compose_fade_helper.clear_focused_recipient();
     display_messages_normally();
 }
 
-export function update_message_list() {
+export function update_message_list(): void {
     if (compose_fade_helper.want_normal_display()) {
         display_messages_normally();
     } else {
@@ -135,7 +207,10 @@ export function update_message_list() {
     }
 }
 
-export function update_rendered_message_groups(message_groups, get_element) {
+export function update_rendered_message_groups(
+    message_groups: MessageGroup[],
+    get_element: (message_group: MessageGroup) => JQuery,
+): void {
     if (compose_fade_helper.want_normal_display()) {
         return;
     }

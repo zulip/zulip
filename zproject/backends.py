@@ -129,8 +129,23 @@ from zproject.settings_types import OIDCIdPConfigDict
 redis_client = get_redis_client()
 
 
-def all_implemented_backend_names() -> List[str]:
-    return list(AUTH_BACKEND_NAME_MAP.keys())
+def all_default_backend_names() -> List[str]:
+    if not settings.BILLING_ENABLED or settings.DEVELOPMENT:
+        # If billing isn't enabled, it's a self-hosted server
+        # and has access to all authentication backends.
+        #
+        # In DEVELOPMENT, we have BILLING_ENABLED=True, but
+        # nonetheless we want to enable all backends by default
+        # for convenience - we shouldn't add additional steps to the
+        # process of setting up a backend for testing.
+        return list(AUTH_BACKEND_NAME_MAP.keys())
+
+    # By default, only enable backends that are available without requiring a plan.
+    return [
+        name
+        for name, backend in AUTH_BACKEND_NAME_MAP.items()
+        if backend.available_for_cloud_plans is None
+    ]
 
 
 # This first batch of methods is used by other code in Zulip to check
@@ -427,6 +442,11 @@ class ZulipAuthMixin:
 
     name = "undefined"
     _logger: Optional[logging.Logger] = None
+
+    # Describes which plans gives access to this authentication method on zulipchat.com.
+    # None means the backend is available regardless of the plan.
+    # Otherwise, it should be a list of Realm.plan_type values that give access to the backend.
+    available_for_cloud_plans: Optional[List[int]] = None
 
     @property
     def logger(self) -> logging.Logger:
@@ -1546,7 +1566,7 @@ def sync_user_profile_custom_fields(
 
 
 @external_auth_method
-class ZulipRemoteUserBackend(RemoteUserBackend, ExternalAuthMethod):
+class ZulipRemoteUserBackend(ZulipAuthMixin, RemoteUserBackend, ExternalAuthMethod):
     """Authentication backend that reads the Apache REMOTE_USER variable.
     Used primarily in enterprise environments with an SSO solution
     that has an Apache REMOTE_USER integration.  For manual testing, see
@@ -2150,6 +2170,12 @@ class AzureADAuthBackend(SocialAuthMixin, AzureADOAuth2):
     auth_backend_name = "AzureAD"
     display_icon = staticfiles_storage.url("images/authentication_backends/azuread-icon.png")
 
+    available_for_cloud_plans = [
+        Realm.PLAN_TYPE_STANDARD,
+        Realm.PLAN_TYPE_STANDARD_FREE,
+        Realm.PLAN_TYPE_PLUS,
+    ]
+
 
 @external_auth_method
 class GitLabAuthBackend(SocialAuthMixin, GitLabOAuth2):
@@ -2551,6 +2577,8 @@ class SAMLAuthBackend(SocialAuthMixin, SAMLAuth):
     # their organization want to use in Zulip.  So don't unnecessarily
     # provide a registration flow prompt for them to set their name.
     full_name_validated = True
+
+    available_for_cloud_plans = [Realm.PLAN_TYPE_PLUS]
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         if settings.SAML_REQUIRE_LIMIT_TO_SUBDOMAINS:

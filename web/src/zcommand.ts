@@ -1,4 +1,5 @@
 import $ from "jquery";
+import {z} from "zod";
 
 import * as channel from "./channel";
 import * as compose_banner from "./compose_banner";
@@ -26,14 +27,18 @@ What in the heck is a zcommand?
 
 */
 
-export function send(opts) {
+const data_schema = z.object({
+    msg: z.string(),
+});
+
+export function send(opts: {command: string; on_success?: (data: unknown) => void}): void {
     const command = opts.command;
     const on_success = opts.on_success;
     const data = {
         command,
     };
 
-    channel.post({
+    void channel.post({
         url: "/json/zcommand",
         data,
         success(data) {
@@ -47,7 +52,7 @@ export function send(opts) {
     });
 }
 
-export function tell_user(msg) {
+export function tell_user(msg: string): void {
     // This is a bit hacky, but we don't have a super easy API now
     // for just telling users stuff.
     compose_banner.show_error_message(
@@ -57,17 +62,18 @@ export function tell_user(msg) {
     );
 }
 
-export function switch_to_light_theme() {
+export function switch_to_light_theme(): void {
     send({
         command: "/day",
         on_success(data) {
+            const clean_data = data_schema.parse(data);
             requestAnimationFrame(() => {
                 dark_theme.disable();
                 message_lists.update_recipient_bar_background_color();
             });
             feedback_widget.show({
                 populate($container) {
-                    const rendered_msg = markdown.parse_non_message(data.msg);
+                    const rendered_msg = markdown.parse_non_message(clean_data.msg);
                     $container.html(rendered_msg);
                 },
                 on_undo() {
@@ -82,17 +88,18 @@ export function switch_to_light_theme() {
     });
 }
 
-export function switch_to_dark_theme() {
+export function switch_to_dark_theme(): void {
     send({
         command: "/night",
         on_success(data) {
+            const clean_data = data_schema.parse(data);
             requestAnimationFrame(() => {
                 dark_theme.enable();
                 message_lists.update_recipient_bar_background_color();
             });
             feedback_widget.show({
                 populate($container) {
-                    const rendered_msg = markdown.parse_non_message(data.msg);
+                    const rendered_msg = markdown.parse_non_message(clean_data.msg);
                     $container.html(rendered_msg);
                 },
                 on_undo() {
@@ -107,7 +114,7 @@ export function switch_to_dark_theme() {
     });
 }
 
-export function process(message_content) {
+export function process(message_content: string): boolean {
     const content = message_content.trim();
 
     if (content === "/ping") {
@@ -117,7 +124,7 @@ export function process(message_content) {
             command: content,
             on_success() {
                 const end_time = new Date();
-                let diff = end_time - start_time;
+                let diff = end_time.getTime() - start_time.getTime();
                 diff = Math.round(diff);
                 const msg = "ping time: " + diff + "ms";
                 tell_user(msg);

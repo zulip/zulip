@@ -274,6 +274,15 @@ export function show_settings_for(node) {
     settings_org.set_message_retention_setting_dropdown(sub);
     stream_ui_updates.enable_or_disable_permission_settings_in_edit_panel(sub);
     setup_dropdown(sub, slim_sub);
+
+    $("#streams_overlay_container").on(
+        "click",
+        ".stream-creation-confirmation-banner .main-view-banner-close-button",
+        (e) => {
+            e.preventDefault();
+            $(e.target).parent().remove();
+        },
+    );
 }
 
 export function setup_stream_settings(node) {

@@ -323,7 +323,7 @@ test("sending", ({override, override_rewire}) => {
     {
         const stub = make_stub();
         channel.del = stub.f;
-        reactions.toggle_emoji_reaction(message.id, emoji_name);
+        reactions.toggle_emoji_reaction(message, emoji_name);
         assert.equal(stub.num_calls, 1);
         const args = stub.get_args("args").args;
         assert.equal(args.url, "/json/messages/1001/reactions");
@@ -345,7 +345,7 @@ test("sending", ({override, override_rewire}) => {
     {
         const stub = make_stub();
         channel.post = stub.f;
-        reactions.toggle_emoji_reaction(message.id, emoji_name);
+        reactions.toggle_emoji_reaction(message, emoji_name);
         assert.equal(stub.num_calls, 1);
         const args = stub.get_args("args").args;
         assert.equal(args.url, "/json/messages/1001/reactions");
@@ -379,7 +379,7 @@ test("sending", ({override, override_rewire}) => {
     {
         const stub = make_stub();
         channel.post = stub.f;
-        reactions.toggle_emoji_reaction(message.id, emoji_name);
+        reactions.toggle_emoji_reaction(message, emoji_name);
         assert.equal(stub.num_calls, 1);
         const args = stub.get_args("args").args;
         assert.equal(args.url, "/json/messages/1001/reactions");
@@ -393,26 +393,22 @@ test("sending", ({override, override_rewire}) => {
     }
 
     emoji_name = "unknown-emoji"; // Test sending an emoji unknown to frontend.
-    assert.throws(() => reactions.toggle_emoji_reaction(message.id, emoji_name), {
+    assert.throws(() => reactions.toggle_emoji_reaction(message, emoji_name), {
         name: "Error",
         message: "Bad emoji name: unknown-emoji",
     });
 });
 
-test("prevent_simultaneous_requests_updating_reaction", ({override, override_rewire}) => {
+test("prevent_simultaneous_requests_updating_reaction", ({override_rewire}) => {
     const message = {...sample_message};
-    override(message_store, "get", (message_id) => {
-        assert.equal(message_id, message.id);
-        return message;
-    });
     override_rewire(reactions, "add_reaction", noop);
     const stub = make_stub();
     channel.post = stub.f;
 
     // Verify that two requests to add the same reaction in a row only
     // result in a single request to the server.
-    reactions.toggle_emoji_reaction(message.id, "cow");
-    reactions.toggle_emoji_reaction(message.id, "cow");
+    reactions.toggle_emoji_reaction(message, "cow");
+    reactions.toggle_emoji_reaction(message, "cow");
 
     assert.equal(stub.num_calls, 1);
 });
@@ -441,7 +437,7 @@ test("get_vote_text (more than 3 reactions)", () => {
     user_settings.display_emoji_reaction_users = true;
     assert.equal(
         "translated: You, Bob van Roberts, Cali",
-        reactions.get_vote_text({user_ids}, message),
+        reactions.get_vote_text(user_ids, message),
     );
 });
 
@@ -455,7 +451,7 @@ test("get_vote_text (3 reactions)", () => {
     user_settings.display_emoji_reaction_users = true;
     assert.equal(
         "translated: You, Bob van Roberts, Cali",
-        reactions.get_vote_text({user_ids}, message),
+        reactions.get_vote_text(user_ids, message),
     );
 });
 
@@ -1181,10 +1177,10 @@ test("remove_reaction_from_view (last person)", () => {
     assert.ok(removed);
 });
 
-test("error_handling", ({override, override_rewire}) => {
+test("bogus_event", ({override}) => {
+    // We don't expect errors when we process events with
+    // bad message ids.
     override(message_store, "get", noop);
-
-    blueslip.expect("error", "reactions: Bad message id");
 
     const bogus_event = {
         message_id: 55,
@@ -1193,9 +1189,6 @@ test("error_handling", ({override, override_rewire}) => {
         emoji_code: "991",
         user_id: 99,
     };
-    override_rewire(reactions, "current_user_has_reacted_to_emoji", () => true);
-    reactions.toggle_emoji_reaction(55, bogus_event.emoji_name);
-
     reactions.add_reaction(bogus_event);
     reactions.remove_reaction(bogus_event);
 });

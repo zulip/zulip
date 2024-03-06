@@ -20,6 +20,17 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 9.0
 
+**Feature level 243**
+
+* [`POST /register`](/api/register-queue), [`GET
+  /events`](/api/get-events): Changed the format of
+  `realm_authentication_methods` and `authentication_methods`,
+  respectively, to use a dictionary rather than a boolean as the value
+  for each authentication method. The new dictionaries are more
+  extensively and contain fields indicating whether the backend is
+  unavailable to the current realm due to Zulip Cloud plan
+  restrictions or any other reason.
+
 **Feature level 242**
 
 * [`POST /register`](/api/register-queue), [`POST /events`](/api/get-events),

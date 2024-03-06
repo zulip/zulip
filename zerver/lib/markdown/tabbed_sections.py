@@ -77,6 +77,7 @@ TAB_SECTION_LABELS = {
     "via-recent-conversations": "Via recent conversations",
     "via-inbox-view": "Via inbox view",
     "via-left-sidebar": "Via left sidebar",
+    "via-right-sidebar": "Via right sidebar",
     "instructions-for-all-platforms": "Instructions for all platforms",
     "public-streams": "Public streams",
     "private-streams": "Private streams",

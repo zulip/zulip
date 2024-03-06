@@ -1,5 +1,6 @@
 import $ from "jquery";
 
+import type {Filter} from "./filter";
 import {localstorage} from "./localstorage";
 import {page_params} from "./page_params";
 import * as resize from "./resize";
@@ -17,7 +18,7 @@ const STATES = {
     CONDENSED: "condensed",
 };
 
-function restore_views_state() {
+function restore_views_state(): void {
     if (page_params.is_spectator) {
         // Spectators should always see the expanded view.
         return;
@@ -30,16 +31,16 @@ function restore_views_state() {
     }
 }
 
-function save_state(state) {
+function save_state(state: string): void {
     ls.set(ls_key, state);
 }
 
-export function update_starred_count(count) {
+export function update_starred_count(count: number): void {
     const $starred_li = $(".top_left_starred_messages");
     ui_util.update_unread_count_in_dom($starred_li, count);
 }
 
-export function update_scheduled_messages_row() {
+export function update_scheduled_messages_row(): void {
     const $scheduled_li = $(".top_left_scheduled_messages");
     const count = scheduled_messages.get_count();
     if (count > 0) {
@@ -50,7 +51,10 @@ export function update_scheduled_messages_row() {
     ui_util.update_unread_count_in_dom($scheduled_li, count);
 }
 
-export function update_dom_with_unread_counts(counts, skip_animations) {
+export function update_dom_with_unread_counts(
+    counts: unread.FullUnreadCountsData,
+    skip_animations: boolean,
+): void {
     // Note that direct message counts are handled in pm_list.ts.
 
     // mentioned/home views have simple integer counts
@@ -72,11 +76,11 @@ export function update_dom_with_unread_counts(counts, skip_animations) {
 // TODO: Rewrite how we handle activation of narrows when doing the redesign.
 // We don't want to adjust class for all the buttons when switching narrows.
 
-function remove($elem) {
+function remove($elem: JQuery): void {
     $elem.removeClass("active-filter active-sub-filter");
 }
 
-function deselect_top_left_corner_items() {
+function deselect_top_left_corner_items(): void {
     remove($(".top_left_all_messages"));
     remove($(".top_left_starred_messages"));
     remove($(".top_left_mentions"));
@@ -84,12 +88,12 @@ function deselect_top_left_corner_items() {
     remove($(".top_left_inbox"));
 }
 
-export function handle_narrow_activated(filter) {
+export function handle_narrow_activated(filter: Filter): void {
     deselect_top_left_corner_items();
 
-    let ops;
-    let filter_name;
-    let $filter_li;
+    let ops: string[];
+    let filter_name: string;
+    let $filter_li: JQuery;
 
     // TODO: handle confused filters like "in:all stream:foo"
     ops = filter.operands("in");
@@ -112,7 +116,7 @@ export function handle_narrow_activated(filter) {
     }
 }
 
-function toggle_condensed_navigation_area() {
+function toggle_condensed_navigation_area(): void {
     const $views_label_container = $("#views-label-container");
     const $views_label_icon = $("#toggle-top-left-navigation-area-icon");
     if ($views_label_container.hasClass("showing-expanded-navigation")) {
@@ -133,27 +137,27 @@ function toggle_condensed_navigation_area() {
     resize.resize_stream_filters_container();
 }
 
-export function animate_mention_changes($li, new_mention_count) {
+export function animate_mention_changes($li: JQuery, new_mention_count: number): void {
     if (new_mention_count > last_mention_count) {
         do_new_messages_animation($li);
     }
     last_mention_count = new_mention_count;
 }
 
-function do_new_messages_animation($li) {
+function do_new_messages_animation($li: JQuery): void {
     $li.addClass("new_messages");
-    function mid_animation() {
+    function mid_animation(): void {
         $li.removeClass("new_messages");
         $li.addClass("new_messages_fadeout");
     }
-    function end_animation() {
+    function end_animation(): void {
         $li.removeClass("new_messages_fadeout");
     }
     setTimeout(mid_animation, 3000);
     setTimeout(end_animation, 6000);
 }
 
-export function highlight_inbox_view() {
+export function highlight_inbox_view(): void {
     deselect_top_left_corner_items();
 
     $(".top_left_inbox").addClass("active-filter");
@@ -162,7 +166,7 @@ export function highlight_inbox_view() {
     }, 0);
 }
 
-export function highlight_recent_view() {
+export function highlight_recent_view(): void {
     deselect_top_left_corner_items();
 
     $(".top_left_recent_view").addClass("active-filter");
@@ -171,7 +175,7 @@ export function highlight_recent_view() {
     }, 0);
 }
 
-export function highlight_all_messages_view() {
+export function highlight_all_messages_view(): void {
     deselect_top_left_corner_items();
 
     $(".top_left_all_messages").addClass("active-filter");
@@ -180,7 +184,7 @@ export function highlight_all_messages_view() {
     }, 0);
 }
 
-function handle_home_view_order(home_view) {
+function handle_home_view_order(home_view: string): void {
     // Remove class and tabindex from current home view
     const $current_home_view = $(".selected-home-view");
     $current_home_view.removeClass("selected-home-view");
@@ -207,7 +211,7 @@ function handle_home_view_order(home_view) {
     update_dom_with_unread_counts(res, true);
 }
 
-export function handle_home_view_changed(new_home_view) {
+export function handle_home_view_changed(new_home_view: string): void {
     const $recent_view_sidebar_menu_icon = $(".recent-view-sidebar-menu-icon");
     const $all_messages_sidebar_menu_icon = $(".all-messages-sidebar-menu-icon");
     if (new_home_view === settings_config.web_home_view_values.all_messages.code) {
@@ -224,7 +228,7 @@ export function handle_home_view_changed(new_home_view) {
     handle_home_view_order(new_home_view);
 }
 
-export function initialize() {
+export function initialize(): void {
     update_scheduled_messages_row();
     restore_views_state();
 

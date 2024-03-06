@@ -992,6 +992,17 @@ input.new-organization-button {
     }
 }
 
+#config_error_page {
+    .pitch {
+        text-align: center;
+        width: 100%;
+    }
+
+    .white-box {
+        max-width: 600px;
+    }
+}
+
 .error_page {
     min-height: calc(100vh - 290px);
     height: 100%;

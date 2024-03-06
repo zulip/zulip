@@ -185,13 +185,13 @@ function add_to_visible<T>(
     top_of_feed: number,
     bottom_of_feed: number,
     require_fully_visible: boolean,
-    row_to_id: ($row: HTMLElement) => T,
+    row_to_output: ($row: HTMLElement) => T,
 ): void {
     for (const row of $candidates) {
         const row_rect = row.getBoundingClientRect();
         // Mark very tall messages as read once we've gotten past them
         if (in_viewport_or_tall(row_rect, top_of_feed, bottom_of_feed, require_fully_visible)) {
-            visible.push(row_to_id(row));
+            visible.push(row_to_output(row));
         } else {
             break;
         }

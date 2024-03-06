@@ -10,6 +10,7 @@ from django.utils.translation import gettext as _
 
 from version import API_FEATURE_LEVEL, ZULIP_MERGE_BASE, ZULIP_VERSION
 from zerver.actions.default_streams import default_stream_groups_to_dicts_sorted
+from zerver.actions.realm_settings import get_realm_authentication_methods_for_page_params_api
 from zerver.actions.users import get_owned_bot_dicts
 from zerver.lib import emoji
 from zerver.lib.alert_words import user_alert_words
@@ -270,7 +271,11 @@ def fetch_initial_state_data(
         # these manual entries are for those realm settings that don't
         # fit into that framework.
         realm_authentication_methods_dict = realm.authentication_methods_dict()
-        state["realm_authentication_methods"] = realm_authentication_methods_dict
+        state["realm_authentication_methods"] = (
+            get_realm_authentication_methods_for_page_params_api(
+                realm, realm_authentication_methods_dict
+            )
+        )
 
         # We pretend these features are disabled because anonymous
         # users can't access them.  In the future, we may want to move
@@ -1198,8 +1203,10 @@ def apply_event(
                 # update the state for whether password authentication
                 # is enabled on this server.
                 if key == "authentication_methods":
-                    state["realm_password_auth_enabled"] = value["Email"] or value["LDAP"]
-                    state["realm_email_auth_enabled"] = value["Email"]
+                    state["realm_password_auth_enabled"] = (
+                        value["Email"]["enabled"] or value["LDAP"]["enabled"]
+                    )
+                    state["realm_email_auth_enabled"] = value["Email"]["enabled"]
         elif event["op"] == "deactivated":
             # The realm has just been deactivated.  If our request had
             # arrived a moment later, we'd have rendered the

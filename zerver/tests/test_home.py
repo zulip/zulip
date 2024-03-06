@@ -369,6 +369,128 @@ class HomeTest(ZulipTestCase):
         self.assertCountEqual(page_params, expected_keys)
         self.assertIsNone(page_params["state_data"])
 
+    def test_realm_authentication_methods(self) -> None:
+        realm = get_realm("zulip")
+        self.login("desdemona")
+
+        with self.settings(
+            AUTHENTICATION_BACKENDS=(
+                "zproject.backends.EmailAuthBackend",
+                "zproject.backends.SAMLAuthBackend",
+                "zproject.backends.AzureADAuthBackend",
+            )
+        ):
+            result = self._get_home_page()
+            state_data = self._get_page_params(result)["state_data"]
+
+            self.assertEqual(
+                state_data["realm_authentication_methods"],
+                {
+                    "Email": {"enabled": True, "available": True},
+                    "AzureAD": {
+                        "enabled": True,
+                        "available": False,
+                        "unavailable_reason": "You need to upgrade to the Zulip Cloud Standard plan to use this authentication method.",
+                    },
+                    "SAML": {
+                        "enabled": True,
+                        "available": False,
+                        "unavailable_reason": "You need to upgrade to the Zulip Cloud Plus plan to use this authentication method.",
+                    },
+                },
+            )
+
+            # Now try with BILLING_ENABLED=False. This simulates a self-hosted deployment
+            # instead of Zulip Cloud. In this case, all authentication methods should be available.
+            with self.settings(BILLING_ENABLED=False):
+                result = self._get_home_page()
+                state_data = self._get_page_params(result)["state_data"]
+
+                self.assertEqual(
+                    state_data["realm_authentication_methods"],
+                    {
+                        "Email": {"enabled": True, "available": True},
+                        "AzureAD": {
+                            "enabled": True,
+                            "available": True,
+                        },
+                        "SAML": {
+                            "enabled": True,
+                            "available": True,
+                        },
+                    },
+                )
+
+        with self.settings(
+            AUTHENTICATION_BACKENDS=(
+                "zproject.backends.EmailAuthBackend",
+                "zproject.backends.SAMLAuthBackend",
+            )
+        ):
+            result = self._get_home_page()
+            state_data = self._get_page_params(result)["state_data"]
+
+            self.assertEqual(
+                state_data["realm_authentication_methods"],
+                {
+                    "Email": {"enabled": True, "available": True},
+                    "SAML": {
+                        "enabled": True,
+                        "available": False,
+                        "unavailable_reason": "You need to upgrade to the Zulip Cloud Plus plan to use this authentication method.",
+                    },
+                },
+            )
+
+        # Changing the plan_type to Standard grants access to AzureAD, but not SAML:
+        do_change_realm_plan_type(realm, Realm.PLAN_TYPE_STANDARD, acting_user=None)
+
+        with self.settings(
+            AUTHENTICATION_BACKENDS=(
+                "zproject.backends.EmailAuthBackend",
+                "zproject.backends.SAMLAuthBackend",
+                "zproject.backends.AzureADAuthBackend",
+            )
+        ):
+            result = self._get_home_page()
+            state_data = self._get_page_params(result)["state_data"]
+
+            self.assertEqual(
+                state_data["realm_authentication_methods"],
+                {
+                    "Email": {"enabled": True, "available": True},
+                    "AzureAD": {
+                        "enabled": True,
+                        "available": True,
+                    },
+                    "SAML": {
+                        "enabled": True,
+                        "available": False,
+                        "unavailable_reason": "You need to upgrade to the Zulip Cloud Plus plan to use this authentication method.",
+                    },
+                },
+            )
+
+            # Now upgrade to Plus and verify that both SAML and AzureAD are available.
+            do_change_realm_plan_type(realm, Realm.PLAN_TYPE_PLUS, acting_user=None)
+            result = self._get_home_page()
+            state_data = self._get_page_params(result)["state_data"]
+
+            self.assertEqual(
+                state_data["realm_authentication_methods"],
+                {
+                    "Email": {"enabled": True, "available": True},
+                    "AzureAD": {
+                        "enabled": True,
+                        "available": True,
+                    },
+                    "SAML": {
+                        "enabled": True,
+                        "available": True,
+                    },
+                },
+            )
+
     def test_sentry_keys(self) -> None:
         def home_params() -> Dict[str, Any]:
             result = self._get_home_page()
@@ -851,7 +973,7 @@ class HomeTest(ZulipTestCase):
         self.assertFalse(billing_info.show_billing)
         self.assertFalse(billing_info.show_plans)
         self.assertFalse(billing_info.sponsorship_pending)
-        self.assertTrue(billing_info.show_remote_billing)
+        self.assertFalse(billing_info.show_remote_billing)
 
         # realm owner, with inactive CustomerPlan and realm plan_type SELF_HOSTED -> show only billing link
         customer = Customer.objects.create(realm=get_realm("zulip"), stripe_customer_id="cus_id")
@@ -868,7 +990,7 @@ class HomeTest(ZulipTestCase):
         self.assertTrue(billing_info.show_billing)
         self.assertFalse(billing_info.show_plans)
         self.assertFalse(billing_info.sponsorship_pending)
-        self.assertTrue(billing_info.show_remote_billing)
+        self.assertFalse(billing_info.show_remote_billing)
 
         # realm owner, with inactive CustomerPlan and realm plan_type LIMITED -> show billing link and plans
         do_change_realm_plan_type(user.realm, Realm.PLAN_TYPE_LIMITED, acting_user=None)
@@ -877,7 +999,7 @@ class HomeTest(ZulipTestCase):
         self.assertTrue(billing_info.show_billing)
         self.assertTrue(billing_info.show_plans)
         self.assertFalse(billing_info.sponsorship_pending)
-        self.assertTrue(billing_info.show_remote_billing)
+        self.assertFalse(billing_info.show_remote_billing)
 
         # Always false without CORPORATE_ENABLED
         with self.settings(CORPORATE_ENABLED=False):
@@ -907,6 +1029,12 @@ class HomeTest(ZulipTestCase):
         self.assertFalse(billing_info.sponsorship_pending)
         self.assertFalse(billing_info.show_remote_billing)
 
+        # Self-hosted servers show remote billing, but not for a user without
+        # billing access permission.
+        with self.settings(CORPORATE_ENABLED=False):
+            billing_info = get_billing_info(user)
+        self.assertFalse(billing_info.show_remote_billing)
+
         # billing admin, with CustomerPlan and realm plan_type STANDARD -> show only billing link
         user.role = UserProfile.ROLE_MEMBER
         user.is_billing_admin = True
@@ -917,6 +1045,11 @@ class HomeTest(ZulipTestCase):
         self.assertTrue(billing_info.show_billing)
         self.assertFalse(billing_info.show_plans)
         self.assertFalse(billing_info.sponsorship_pending)
+        self.assertFalse(billing_info.show_remote_billing)
+
+        # Self-hosted servers show remote billing for billing admins.
+        with self.settings(CORPORATE_ENABLED=False):
+            billing_info = get_billing_info(user)
         self.assertTrue(billing_info.show_remote_billing)
 
         # billing admin, with CustomerPlan and realm plan_type PLUS -> show only billing link
@@ -927,7 +1060,7 @@ class HomeTest(ZulipTestCase):
         self.assertTrue(billing_info.show_billing)
         self.assertFalse(billing_info.show_plans)
         self.assertFalse(billing_info.sponsorship_pending)
-        self.assertTrue(billing_info.show_remote_billing)
+        self.assertFalse(billing_info.show_remote_billing)
 
         # member, with CustomerPlan and realm plan_type STANDARD -> neither billing link or plans
         do_change_realm_plan_type(user.realm, Realm.PLAN_TYPE_STANDARD, acting_user=None)
@@ -961,7 +1094,7 @@ class HomeTest(ZulipTestCase):
         self.assertFalse(billing_info.show_billing)
         self.assertFalse(billing_info.show_plans)
         self.assertFalse(billing_info.sponsorship_pending)
-        self.assertTrue(billing_info.show_remote_billing)
+        self.assertFalse(billing_info.show_remote_billing)
 
         # billing admin, with sponsorship pending and realm plan_type SELF_HOSTED -> show only sponsorship pending link
         customer.sponsorship_pending = True
@@ -971,7 +1104,7 @@ class HomeTest(ZulipTestCase):
         self.assertFalse(billing_info.show_billing)
         self.assertFalse(billing_info.show_plans)
         self.assertTrue(billing_info.sponsorship_pending)
-        self.assertTrue(billing_info.show_remote_billing)
+        self.assertFalse(billing_info.show_remote_billing)
 
         # billing admin, no customer object and realm plan_type SELF_HOSTED -> no links
         customer.delete()
@@ -980,13 +1113,14 @@ class HomeTest(ZulipTestCase):
         self.assertFalse(billing_info.show_billing)
         self.assertFalse(billing_info.show_plans)
         self.assertFalse(billing_info.sponsorship_pending)
-        self.assertTrue(billing_info.show_remote_billing)
+        self.assertFalse(billing_info.show_remote_billing)
 
         # If the server doesn't have the push bouncer configured,
-        # don't show remote billing.
-        with self.settings(PUSH_NOTIFICATION_BOUNCER_URL=None):
+        # remote billing should be shown anyway, as the billing endpoint
+        # is supposed show a useful error page.
+        with self.settings(PUSH_NOTIFICATION_BOUNCER_URL=None, CORPORATE_ENABLED=False):
             billing_info = get_billing_info(user)
-        self.assertFalse(billing_info.show_remote_billing)
+        self.assertTrue(billing_info.show_remote_billing)
 
     def test_promote_sponsoring_zulip_in_realm(self) -> None:
         realm = get_realm("zulip")

@@ -50,6 +50,7 @@ import * as scheduled_messages_ui from "./scheduled_messages_ui";
 import * as scroll_bar from "./scroll_bar";
 import * as settings_account from "./settings_account";
 import * as settings_bots from "./settings_bots";
+import * as settings_components from "./settings_components";
 import * as settings_config from "./settings_config";
 import * as settings_emoji from "./settings_emoji";
 import * as settings_exports from "./settings_exports";
@@ -307,7 +308,7 @@ export function dispatch_normal_event(event) {
                             }
                             if (event.data.authentication_methods !== undefined) {
                                 settings_org.populate_auth_methods(
-                                    event.data.authentication_methods,
+                                    settings_components.realm_authentication_methods_to_boolean_dict(),
                                 );
                             }
                             break;

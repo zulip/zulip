@@ -40,12 +40,9 @@ function uncondense_row($row) {
     show_condense_link($row);
 }
 
-export function uncollapse($row) {
-    assert(message_lists.current !== undefined);
-
+export function uncollapse(message) {
     // Uncollapse a message, restoring the condensed message "Show more" or
     // "Show less" button if necessary.
-    const message = message_lists.current.get(rows.id($row));
     message.collapsed = false;
     message_flags.save_uncollapsed(message);
 
@@ -70,18 +67,15 @@ export function uncollapse($row) {
         }
     };
 
-    // We also need to collapse this message in the home view
-    const $home_row = message_lists.home.get_row(rows.id($row));
-
-    process_row($row);
-    process_row($home_row);
+    for (const list of message_lists.all_rendered_message_lists()) {
+        const $rendered_row = list.get_row(message.id);
+        if ($rendered_row.length !== 0) {
+            process_row($rendered_row);
+        }
+    }
 }
 
-export function collapse($row) {
-    assert(message_lists.current !== undefined);
-    // Collapse a message, hiding the condensed message [More] or
-    // [Show less] link if necessary.
-    const message = message_lists.current.get(rows.id($row));
+export function collapse(message) {
     message.collapsed = true;
 
     if (message.locally_echoed) {
@@ -99,11 +93,12 @@ export function collapse($row) {
         show_more_link($row);
     };
 
-    // We also need to collapse this message in the home view
-    const $home_row = message_lists.home.get_row(rows.id($row));
-
-    process_row($row);
-    process_row($home_row);
+    for (const list of message_lists.all_rendered_message_lists()) {
+        const $rendered_row = list.get_row(message.id);
+        if ($rendered_row.length !== 0) {
+            process_row($rendered_row);
+        }
+    }
 }
 
 export function toggle_collapse(message) {
@@ -138,7 +133,7 @@ export function toggle_collapse(message) {
             show_message_expander($row);
             $row.find(".message_condenser").hide();
         }
-        uncollapse($row);
+        uncollapse(message);
     } else {
         if (is_condensed) {
             message.condensed = false;
@@ -146,7 +141,7 @@ export function toggle_collapse(message) {
             hide_message_expander($row);
             $row.find(".message_condenser").show();
         } else {
-            collapse($row);
+            collapse(message);
         }
     }
 }
@@ -275,7 +270,7 @@ export function initialize() {
         const $content = $row.find(".message_content");
         if (message.collapsed) {
             // Uncollapse.
-            uncollapse($row);
+            uncollapse(message);
         } else if ($content.hasClass("condensed")) {
             // Uncondense (show the full long message).
             message.condensed = false;

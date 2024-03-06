@@ -66,19 +66,19 @@ export function get_recipient_label(message) {
 function update_reply_button_state(disable = false) {
     $(".compose_reply_button").attr("disabled", disable);
     if (disable) {
-        $("#compose_buttons .compose_reply_button").attr(
+        $("#compose_buttons .compose-reply-button-wrapper").attr(
             "data-tooltip-template-id",
             "compose_reply_button_disabled_tooltip_template",
         );
         return;
     }
     if (narrow_state.is_message_feed_visible()) {
-        $("#compose_buttons .compose_reply_button").attr(
+        $("#compose_buttons .compose-reply-button-wrapper").attr(
             "data-tooltip-template-id",
             "compose_reply_message_button_tooltip_template",
         );
     } else {
-        $("#compose_buttons .compose_reply_button").attr(
+        $("#compose_buttons .compose-reply-button-wrapper").attr(
             "data-tooltip-template-id",
             "compose_reply_selected_topic_button_tooltip_template",
         );
@@ -129,38 +129,25 @@ export function update_buttons_for_private() {
         !narrow_state.pm_ids_string() ||
         people.user_can_direct_message(narrow_state.pm_ids_string())
     ) {
-        $("#new_conversation_button").attr(
-            "data-tooltip-template-id",
-            "new_direct_message_button_tooltip_template",
-        );
+        $("#new_conversation_button").attr("data-conversation-type", "direct");
         update_buttons(text_stream, is_direct_message_narrow);
         return;
     }
     // disable the [Message X] button when in a private narrow
     // if the user cannot dm the current recipient
     const disable_reply = true;
-    $("#compose_buttons .compose_reply_button").attr(
-        "data-tooltip-template-id",
-        "disable_reply_compose_reply_button_tooltip_template",
-    );
     update_buttons(text_stream, is_direct_message_narrow, disable_reply);
 }
 
 export function update_buttons_for_stream_views() {
     const text_stream = $t({defaultMessage: "Start new conversation"});
-    $("#new_conversation_button").attr(
-        "data-tooltip-template-id",
-        "new_topic_message_button_tooltip_template",
-    );
+    $("#new_conversation_button").attr("data-conversation-type", "stream");
     update_buttons(text_stream);
 }
 
-export function update_buttons_for_non_stream_views() {
+export function update_buttons_for_non_specific_views() {
     const text_stream = $t({defaultMessage: "Start new conversation"});
-    $("#new_conversation_button").attr(
-        "data-tooltip-template-id",
-        "new_stream_message_button_tooltip_template",
-    );
+    $("#new_conversation_button").attr("data-conversation-type", "non-specific");
     update_buttons(text_stream);
 }
 

@@ -88,7 +88,22 @@ export function get_property_value(property_name, for_realm_default_settings, su
         return "no_restriction";
     }
 
+    if (property_name === "realm_authentication_methods") {
+        return realm_authentication_methods_to_boolean_dict();
+    }
+
     return realm[property_name];
+}
+
+export function realm_authentication_methods_to_boolean_dict() {
+    const auth_method_to_bool = {};
+    for (const [auth_method_name, auth_method_info] of Object.entries(
+        realm.realm_authentication_methods,
+    )) {
+        auth_method_to_bool[auth_method_name] = auth_method_info.enabled;
+    }
+
+    return auth_method_to_bool;
 }
 
 export function extract_property_name($elem, for_realm_default_settings) {

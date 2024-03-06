@@ -1072,7 +1072,7 @@ function handle_post_view_change(msg_list) {
     } else if (filter.is_conversation_view() || filter.includes_full_stream_history()) {
         compose_closed_ui.update_buttons_for_stream_views();
     } else {
-        compose_closed_ui.update_buttons_for_non_stream_views();
+        compose_closed_ui.update_buttons_for_non_specific_views();
     }
     compose_closed_ui.update_reply_recipient_label();
 

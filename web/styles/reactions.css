@@ -182,14 +182,6 @@
     height: 370px;
     user-select: none;
 
-    &.bottom .arrow {
-        border-bottom-color: hsl(0deg 0% 93%);
-    }
-
-    &.top .arrow {
-        border-top-color: hsl(0deg 0% 93%);
-    }
-
     .emoji-popover {
         width: 250px;
 
@@ -199,7 +191,7 @@
             padding: 8px 10px;
             margin-bottom: 0;
 
-            background-color: hsl(0deg 0% 93%);
+            background-color: var(--color-background-emoji-picker-popover);
 
             border-radius: 3px 3px 0 0;
 
@@ -222,7 +214,7 @@
         .emoji-popover-category-tabs {
             /* Flex needed here to work around #7511 (90% zoom issues in firefox) */
             display: flex;
-            background-color: hsl(0deg 0% 93%);
+            background-color: var(--color-background-emoji-picker-popover);
             width: 100%;
             box-sizing: border-box;
             overflow: hidden;
@@ -239,7 +231,9 @@
                 flex-grow: 1;
 
                 &.active {
-                    background-color: hsl(0deg 0% 100% / 20%);
+                    background-color: var(
+                        --color-background-emoji-picker-popover-tab-item-active
+                    );
                 }
             }
         }
@@ -252,16 +246,6 @@
             display: block;
             width: 247px;
             padding-left: 3px;
-        }
-
-        .emoji-search-results-container {
-            height: 283px;
-
-            .emoji-popover-results-heading {
-                font-weight: 600;
-                padding: 5px 3px 3px 5px;
-                font-size: 17px;
-            }
         }
 
         .emoji-popover-emoji-map {
@@ -283,17 +267,27 @@
             width: 25px;
 
             &:focus {
-                background-color: hsl(0deg 0% 93%);
+                background-color: var(
+                    --color-background-emoji-picker-emoji-focus
+                );
+                /* Only dark mode takes a box shadow on
+                   the emoji-picker's focused emoji. */
+                box-shadow: 0 0 1px
+                    var(--color-box-shadow-emoji-picker-emoji-focus);
                 outline: none;
             }
 
             &.reacted {
-                background-color: hsl(195deg 50% 95%);
-                border-color: hsl(195deg 52% 79%);
+                background-color: var(
+                    --color-background-emoji-picker-emoji-reacted
+                );
+                border-color: var(--color-border-emoji-picker-emoji-reacted);
             }
 
             &.reacted:focus {
-                background-color: hsl(195deg 55% 88%);
+                background-color: var(
+                    --color-background-emoji-picker-emoji-reacted-focus
+                );
             }
 
             &.hide {
@@ -304,11 +298,21 @@
                 top: 6px;
             }
         }
+
+        .emoji-search-results-container {
+            height: 283px;
+
+            .emoji-popover-results-heading {
+                font-weight: 600;
+                padding: 5px 3px 3px 5px;
+                font-size: 17px;
+            }
+        }
     }
 
     .emoji-showcase-container {
         position: relative;
-        background-color: hsl(0deg 0% 93%);
+        background-color: var(--color-background-emoji-picker-popover);
         min-height: 44px;
         width: 250px;
         border-radius: 0 0 3px 3px;

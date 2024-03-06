@@ -30,6 +30,7 @@ from zerver.actions.realm_settings import (
     do_reactivate_realm,
     do_scrub_realm,
     do_send_realm_reactivation_email,
+    do_set_realm_authentication_methods,
     do_set_realm_property,
     do_set_realm_user_default_setting,
 )
@@ -851,6 +852,44 @@ class RealmTest(ZulipTestCase):
             self.assertEqual(get_realm("onpremise").message_visibility_limit, None)
             self.assertEqual(get_realm("onpremise").upload_quota_gb, None)
 
+    def test_initial_auth_methods(self) -> None:
+        with self.settings(
+            BILLING_ENABLED=True,
+            DEVELOPMENT=False,
+            AUTHENTICATION_BACKENDS=(
+                "zproject.backends.EmailAuthBackend",
+                "zproject.backends.AzureADAuthBackend",
+                "zproject.backends.SAMLAuthBackend",
+            ),
+        ):
+            # Test a Cloud-like realm creation.
+            # Only the auth backends available on the free plan should be enabled.
+            realm = do_create_realm("hosted", "hosted")
+            self.assertEqual(realm.plan_type, Realm.PLAN_TYPE_LIMITED)
+
+            self.assertEqual(
+                realm.authentication_methods_dict(),
+                {
+                    "Email": True,
+                    "AzureAD": False,
+                    "SAML": False,
+                },
+            )
+
+            # Now make sure that a self-hosted server creates realms with all auth methods enabled.
+            with self.settings(BILLING_ENABLED=False):
+                realm = do_create_realm("onpremise", "onpremise")
+                self.assertEqual(realm.plan_type, Realm.PLAN_TYPE_SELF_HOSTED)
+
+                self.assertEqual(
+                    realm.authentication_methods_dict(),
+                    {
+                        "Email": True,
+                        "AzureAD": True,
+                        "SAML": True,
+                    },
+                )
+
     def test_change_org_type(self) -> None:
         realm = get_realm("zulip")
         iago = self.example_user("iago")
@@ -943,6 +982,38 @@ class RealmTest(ZulipTestCase):
         self.assertEqual(realm.max_invites, settings.INVITES_DEFAULT_REALM_DAILY_MAX)
         self.assertEqual(realm.message_visibility_limit, None)
         self.assertEqual(realm.upload_quota_gb, None)
+
+    @override_settings(
+        BILLING_ENABLED=True,
+        AUTHENTICATION_BACKENDS=(
+            "zproject.backends.EmailAuthBackend",
+            "zproject.backends.AzureADAuthBackend",
+            "zproject.backends.SAMLAuthBackend",
+        ),
+    )
+    def test_realm_authentication_methods_after_downgrade(self) -> None:
+        realm = get_realm("zulip")
+        iago = self.example_user("iago")
+
+        do_change_realm_plan_type(realm, Realm.PLAN_TYPE_STANDARD, acting_user=iago)
+        self.assertEqual(realm.plan_type, Realm.PLAN_TYPE_STANDARD)
+
+        do_set_realm_authentication_methods(
+            realm, {"Email": True, "AzureAD": True, "SAML": True}, acting_user=None
+        )
+
+        do_change_realm_plan_type(realm, Realm.PLAN_TYPE_LIMITED, acting_user=iago)
+        realm.refresh_from_db()
+        self.assertEqual(realm.plan_type, Realm.PLAN_TYPE_LIMITED)
+
+        self.assertEqual(
+            realm.authentication_methods_dict(),
+            {
+                "Email": True,
+                "AzureAD": False,
+                "SAML": False,
+            },
+        )
 
     def test_message_retention_days(self) -> None:
         self.login("iago")

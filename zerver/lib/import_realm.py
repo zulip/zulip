@@ -81,6 +81,7 @@ from zerver.models.groups import SystemGroups
 from zerver.models.realms import get_realm
 from zerver.models.recipients import get_huddle_hash
 from zerver.models.users import get_system_bot, get_user_profile_by_id
+from zproject.backends import AUTH_BACKEND_NAME_MAP
 
 realm_tables = [
     ("zerver_realmauthenticationmethod", RealmAuthenticationMethod, "realmauthenticationmethod"),
@@ -897,6 +898,24 @@ def import_uploads(
                     future.result()
 
 
+def disable_restricted_authentication_methods(data: TableData) -> None:
+    """
+    Should run only with settings.BILLING_ENABLED. Ensures that we only
+    enable authentication methods that are available without needing a plan.
+    If the organization upgrades to a paid plan, or gets a sponsorship,
+    they can enable the restricted authentication methods in their settings.
+    """
+    realm_authentication_methods = data["zerver_realmauthenticationmethod"]
+    non_restricted_methods = []
+    for auth_method in realm_authentication_methods:
+        if AUTH_BACKEND_NAME_MAP[auth_method["name"]].available_for_cloud_plans is None:
+            non_restricted_methods.append(auth_method)
+        else:
+            logging.warning("Dropped restricted authentication method: %s", auth_method["name"])
+
+    data["zerver_realmauthenticationmethod"] = non_restricted_methods
+
+
 # Importing data suffers from a difficult ordering problem because of
 # models that reference each other circularly.  Here is a correct order.
 #
@@ -1078,6 +1097,10 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
 
     re_map_foreign_keys(data, "zerver_defaultstream", "stream", related_table="stream")
     re_map_foreign_keys(data, "zerver_realmemoji", "author", related_table="user_profile")
+
+    if settings.BILLING_ENABLED:
+        disable_restricted_authentication_methods(data)
+
     for table, model, related_table in realm_tables:
         re_map_foreign_keys(data, table, "realm", related_table="realm")
         update_model_ids(model, data, related_table)

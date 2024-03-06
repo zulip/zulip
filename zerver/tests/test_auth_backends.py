@@ -7200,6 +7200,48 @@ class TestAdminSetBackends(ZulipTestCase):
                 "Invalid authentication method: NoSuchBackend. Valid methods are: ['Dev', 'Email']",
             )
 
+        with self.settings(
+            AUTHENTICATION_BACKENDS=(
+                "zproject.backends.EmailAuthBackend",
+                "zproject.backends.DevAuthBackend",
+                "zproject.backends.AzureADAuthBackend",
+            ),
+        ):
+            realm = get_realm("zulip")
+            self.assertEqual(
+                realm.authentication_methods_dict(), {"Dev": True, "Email": True, "AzureAD": True}
+            )
+
+            # AzureAD is not available without a Standard plan, but we start off with it enabled.
+            # Disabling the backend should work.
+            result = self.client_patch(
+                "/json/realm",
+                {
+                    "authentication_methods": orjson.dumps(
+                        # Github is not a supported authentication backend right now.
+                        {"Email": True, "Dev": True, "AzureAD": False}
+                    ).decode()
+                },
+            )
+            self.assert_json_success(result)
+            self.assertEqual(
+                realm.authentication_methods_dict(), {"Dev": True, "Email": True, "AzureAD": False}
+            )
+
+            # However, due to the lack of the necessary plan, enabling will fail.
+            result = self.client_patch(
+                "/json/realm",
+                {
+                    "authentication_methods": orjson.dumps(
+                        # Github is not a supported authentication backend right now.
+                        {"Email": True, "Dev": True, "AzureAD": True}
+                    ).decode()
+                },
+            )
+            self.assert_json_error(
+                result, "Authentication method AzureAD is not available on your current plan."
+            )
+
 
 class EmailValidatorTestCase(ZulipTestCase):
     def test_valid_email(self) -> None:
