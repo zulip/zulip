@@ -552,7 +552,7 @@ def do_update_message(
         orig_topic_name = target_message.topic_name()
         event["propagate_mode"] = propagate_mode
 
-    users_losing_access = []
+    users_losing_access = UserProfile.objects.none()
     user_ids_gaining_usermessages: List[int] = []
     if new_stream is not None:
         assert content is None
@@ -584,31 +584,25 @@ def do_update_message(
                 recipient__type=Recipient.STREAM,
                 recipient__type_id=stream_id,
             ).values_list("user_profile_id")
-        )
+        ).only("id")
+
         new_stream_current_users = UserProfile.objects.filter(
             id__in=get_active_subscriptions_for_stream_id(
                 new_stream.id, include_deactivated_users=True
             ).values_list("user_profile_id")
-        )
+        ).only("id")
 
-        new_stream_current_user_id_set = {user.id for user in new_stream_current_users}
+        users_losing_usermessages = old_stream_all_users.difference(new_stream_current_users)
+        if new_stream.is_public():
+            # Only guest users are losing access, if it's moving to a public stream
+            users_losing_access = old_stream_all_users.filter(
+                role=UserProfile.ROLE_GUEST
+            ).difference(new_stream_current_users)
+        else:
+            # If it's moving to a private stream, all non-subscribed users are losing access
+            users_losing_access = users_losing_usermessages
 
-        # Get users who aren't subscribed to the new_stream.
-        users_losing_usermessages = [
-            user for user in old_stream_all_users if user.id not in new_stream_current_user_id_set
-        ]
-        # Users who can longer access the message without some action
-        # from administrators.
-        users_losing_access = [
-            user
-            for user in users_losing_usermessages
-            if user.is_guest or not new_stream.is_public()
-        ]
-        losing_access_user_ids = [user.id for user in users_losing_access]
-
-        unmodified_user_messages = ums.exclude(
-            user_profile_id__in=[user.id for user in users_losing_usermessages]
-        )
+        unmodified_user_messages = ums.exclude(user_profile__in=users_losing_usermessages)
 
         if not new_stream.is_history_public_to_subscribers():
             # We need to guarantee that every currently-subscribed
@@ -725,8 +719,8 @@ def do_update_message(
         # longer have access to these messages.  Note: This could be
         # very expensive, since it's N guest users x M messages.
         UserMessage.objects.filter(
-            user_profile_id__in=[user.id for user in users_losing_usermessages],
-            message_id__in=changed_messages,
+            user_profile__in=users_losing_usermessages,
+            message__in=changed_messages,
         ).delete()
 
         delete_event: DeleteMessagesEvent = {
@@ -736,7 +730,7 @@ def do_update_message(
             "stream_id": stream_being_edited.id,
             "topic": orig_topic_name,
         }
-        send_event(user_profile.realm, delete_event, losing_access_user_ids)
+        send_event(user_profile.realm, delete_event, [user.id for user in users_losing_access])
 
         # Reset the Attachment.is_*_public caches for all messages
         # moved to another stream with different access permissions.
@@ -805,13 +799,8 @@ def do_update_message(
         )
 
         if new_stream is not None:
-            subscriptions = subscriptions.exclude(user_profile_id__in=losing_access_user_ids)
+            subscriptions = subscriptions.exclude(user_profile__in=users_losing_access)
 
-        # All users that are subscribed to the stream must be
-        # notified when a message is edited
-        subscriber_ids = set(subscriptions.values_list("user_profile_id", flat=True))
-
-        if new_stream is not None:
             # TODO: Guest users don't see the new moved topic
             # unless breadcrumb message for new stream is
             # enabled. Excluding these users from receiving this
@@ -823,16 +812,18 @@ def do_update_message(
             # Don't send this event to guest subs who are not
             # subscribers of the old stream but are subscribed to
             # the new stream; clients will be confused.
-            old_stream_unsubbed_guests = [
-                user
-                for user in new_stream_current_users
-                if user.is_guest and user.id not in subscriber_ids
-            ]
+            old_stream_current_users = UserProfile.objects.filter(
+                id__in=get_active_subscriptions_for_stream_id(
+                    stream_being_edited.id, include_deactivated_users=True
+                ).values_list("user_profile_id", flat=True)
+            ).only("id")
             subscriptions = subscriptions.exclude(
-                user_profile_id__in=[user.id for user in old_stream_unsubbed_guests]
+                user_profile__in=new_stream_current_users.filter(
+                    role=UserProfile.ROLE_GUEST
+                ).difference(old_stream_current_users)
             )
-            subscriber_ids = set(subscriptions.values_list("user_profile_id", flat=True))
 
+        subscriber_ids = set(subscriptions.values_list("user_profile_id", flat=True))
         users_to_be_notified += map(subscriber_info, sorted(subscriber_ids))
 
     # UserTopic updates and the content of notifications depend on
@@ -885,10 +876,11 @@ def do_update_message(
         stream_inaccessible_to_user_profiles: List[UserProfile] = []
         orig_topic_user_profile_to_visibility_policy: Dict[UserProfile, int] = {}
         target_topic_user_profile_to_visibility_policy: Dict[UserProfile, int] = {}
+        user_ids_losing_access = {user.id for user in users_losing_access}
         for user_topic in get_users_with_user_topic_visibility_policy(
             stream_being_edited.id, orig_topic_name
         ):
-            if new_stream is not None and user_topic.user_profile_id in losing_access_user_ids:
+            if new_stream is not None and user_topic.user_profile_id in user_ids_losing_access:
                 stream_inaccessible_to_user_profiles.append(user_topic.user_profile)
             else:
                 orig_topic_user_profile_to_visibility_policy[user_topic.user_profile] = (
@@ -946,10 +938,9 @@ def do_update_message(
             visibility_policy=UserTopic.VisibilityPolicy.INHERIT,
         )
 
-        # If the messages are being moved to a stream the user
-        # can access. We move the user topic records for such
-        # users, but removing the old topic visibility_policy
-        # and then creating a new one.
+        # If the messages are being moved to a stream the user _can_
+        # access, we move the user topic records, by removing the old
+        # topic visibility_policy and creating a new one.
         #
         # Algorithm used for the 'merge userTopic states' case:
         # Using the 'user_profiles_for_visibility_policy_pair' dictionary,
