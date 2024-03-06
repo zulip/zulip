@@ -26,7 +26,7 @@ export type UserSettings = (StreamNotificationSettings &
     FollowedTopicNotificationSettings) & {
     color_scheme: number;
     default_language: string;
-    web_home_view: string;
+    web_home_view: "inbox" | "recent_topics" | "all_messages";
     desktop_icon_count_display: number;
     demote_inactive_streams: number;
     dense_mode: boolean;
