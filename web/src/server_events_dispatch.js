@@ -175,7 +175,6 @@ export function dispatch_normal_event(event) {
         case "web_reload_client": {
             const reload_options = {
                 save_pointer: true,
-                save_narrow: true,
                 save_compose: true,
                 message_html: "The application has been updated; reloading!",
             };

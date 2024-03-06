@@ -218,7 +218,6 @@ function get_events({dont_block = false} = {}) {
                     reload.initiate({
                         immediate: true,
                         save_pointer: false,
-                        save_narrow: true,
                         save_compose: true,
                     });
                     return;

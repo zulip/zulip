@@ -26,7 +26,7 @@ function call_reload_hooks() {
     }
 }
 
-function preserve_state(send_after_reload, save_pointer, save_narrow, save_compose) {
+function preserve_state(send_after_reload, save_pointer, save_compose) {
     if (!localstorage.supported()) {
         // If local storage is not supported by the browser, we can't
         // save the browser's position across reloads (since there's
@@ -75,28 +75,26 @@ function preserve_state(send_after_reload, save_pointer, save_narrow, save_compo
         }
     }
 
-    if (save_narrow) {
-        if (message_lists.current === message_lists.home) {
-            const $row = message_lists.home.selected_row();
-            if ($row.length > 0) {
-                url += "+offset=" + $row.get_offset_to_window().top;
-            }
-        } else if (message_lists.current !== undefined) {
-            url += "+offset=" + message_lists.home.pre_narrow_offset;
-
-            // narrow_state.filter() is not undefined, so this is the current
-            // narrowed message list.
-            const narrow_pointer = message_lists.current.selected_id();
-            if (narrow_pointer !== -1) {
-                url += "+narrow_pointer=" + narrow_pointer;
-            }
-            const $narrow_row = message_lists.current.selected_row();
-            if ($narrow_row.length > 0) {
-                url += "+narrow_offset=" + $narrow_row.get_offset_to_window().top;
-            }
-        } else {
-            url += "+offset=" + message_lists.home.pre_narrow_offset;
+    if (message_lists.current === message_lists.home) {
+        const $row = message_lists.home.selected_row();
+        if ($row.length > 0) {
+            url += "+offset=" + $row.get_offset_to_window().top;
         }
+    } else if (message_lists.current !== undefined) {
+        url += "+offset=" + message_lists.home.pre_narrow_offset;
+
+        // narrow_state.filter() is not undefined, so this is the current
+        // narrowed message list.
+        const narrow_pointer = message_lists.current.selected_id();
+        if (narrow_pointer !== -1) {
+            url += "+narrow_pointer=" + narrow_pointer;
+        }
+        const $narrow_row = message_lists.current.selected_row();
+        if ($narrow_row.length > 0) {
+            url += "+narrow_offset=" + $narrow_row.get_offset_to_window().top;
+        }
+    } else {
+        url += "+offset=" + message_lists.home.pre_narrow_offset;
     }
 
     url += hash_util.build_reload_url();
@@ -148,19 +146,17 @@ function delete_stale_tokens(ls) {
     );
 }
 
-function do_reload_app(send_after_reload, save_pointer, save_narrow, save_compose, message_html) {
+function do_reload_app(send_after_reload, save_pointer, save_compose, message_html) {
     if (reload_state.is_in_progress()) {
         blueslip.log("do_reload_app: Doing nothing since reload_in_progress");
         return;
     }
 
     // TODO: we should completely disable the UI here
-    if (save_pointer || save_narrow || save_compose) {
-        try {
-            preserve_state(send_after_reload, save_pointer, save_narrow, save_compose);
-        } catch (error) {
-            blueslip.error("Failed to preserve state", undefined, error);
-        }
+    try {
+        preserve_state(send_after_reload, save_pointer, save_compose);
+    } catch (error) {
+        blueslip.error("Failed to preserve state", undefined, error);
     }
 
     // TODO: We need a better API for showing messages.
@@ -204,13 +200,12 @@ function do_reload_app(send_after_reload, save_pointer, save_narrow, save_compos
 export function initiate({
     immediate = false,
     save_pointer = true,
-    save_narrow = true,
     save_compose = true,
     send_after_reload = false,
     message_html = "Reloading ...",
 }) {
     if (immediate) {
-        do_reload_app(send_after_reload, save_pointer, save_narrow, save_compose, message_html);
+        do_reload_app(send_after_reload, save_pointer, save_compose, message_html);
     }
 
     if (reload_state.is_pending() || reload_state.is_in_progress()) {
@@ -247,7 +242,7 @@ export function initiate({
     let compose_started_handler;
 
     function reload_from_idle() {
-        do_reload_app(false, save_pointer, save_narrow, save_compose, message_html);
+        do_reload_app(false, save_pointer, save_compose, message_html);
     }
 
     // Make sure we always do a reload eventually after
@@ -302,7 +297,6 @@ reload_state.set_csrf_failed_handler(() => {
     initiate({
         immediate: true,
         save_pointer: true,
-        save_narrow: true,
         save_compose: true,
     });
 });
