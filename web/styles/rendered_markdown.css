@@ -716,21 +716,25 @@
         /* Having absolute positioning here ensures that the element
         doesn't scroll along with the code div in narrow windows */
         position: absolute;
-        right: 20px;
-        margin-top: -4px;
-
+        right: 2px;
         /* Remove the outline when clicking on the copy-to-clipboard button */
         &:focus {
             outline: none;
         }
     }
 
+    .code-buttons-container {
+        position: absolute;
+        right: 20px;
+        margin-top: -25px;
+    }
+
     .code_external_link {
         visibility: hidden;
         position: absolute;
-        right: 23px;
-        margin-top: -3px;
+        right: 26px;
         font-size: 17px;
+        margin-top: -16px;
         /* The default icon and on-hover colors are inherited from <a> tag.
         so we set our own to match the copy-to-clipbord icon */
         color: hsl(0deg 0% 47%);

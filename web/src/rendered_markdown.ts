@@ -3,9 +3,8 @@ import {isValid, parseISO} from "date-fns";
 import $ from "jquery";
 import assert from "minimalistic-assert";
 
-import copy_code_button from "../templates/copy_code_button.hbs";
+import code_buttons_container from "../templates/code_buttons_container.hbs";
 import render_markdown_timestamp from "../templates/markdown_timestamp.hbs";
-import view_code_in_playground from "../templates/view_code_in_playground.hbs";
 
 import * as blueslip from "./blueslip";
 import {show_copied_confirmation} from "./copied_tooltip";
@@ -280,6 +279,20 @@ export const update_elements = ($content: JQuery): void => {
         const $codehilite = $(this);
         const $pre = $codehilite.find("pre");
         const fenced_code_lang = $codehilite.data("code-language");
+
+        const showViewInPlaygroundButton =
+            fenced_code_lang !== undefined
+                ? realm_playground.get_playground_info_for_languages(fenced_code_lang) !== undefined
+                : false;
+
+        const templateData = {
+            showViewInPlaygroundButton,
+        };
+
+        const $buttonContainer = $(code_buttons_container(templateData));
+        $pre.prepend($buttonContainer);
+        const $copy_button = $buttonContainer.find(".copy_codeblock");
+
         if (fenced_code_lang !== undefined) {
             const playground_info =
                 realm_playground.get_playground_info_for_languages(fenced_code_lang);
@@ -289,8 +302,7 @@ export const update_elements = ($content: JQuery): void => {
                 // there are multiple playgrounds, we display a
                 // popover listing the options.
                 let title = $t({defaultMessage: "View in playground"});
-                const $view_in_playground_button = $(view_code_in_playground());
-                $pre.prepend($view_in_playground_button);
+                const $view_in_playground_button = $buttonContainer.find(".code_external_link");
                 if (playground_info.length === 1) {
                     title = $t(
                         {defaultMessage: "View in {playground_name}"},
@@ -303,9 +315,7 @@ export const update_elements = ($content: JQuery): void => {
                 $view_in_playground_button.attr("aria-label", title);
             }
         }
-        const $copy_button = $(copy_code_button());
-        $pre.prepend($copy_button);
-        const clipboard = new ClipboardJS($copy_button[0], {
+        const clipboard = new ClipboardJS($buttonContainer[0], {
             text(copy_element) {
                 return $(copy_element).siblings("code").text();
             },
