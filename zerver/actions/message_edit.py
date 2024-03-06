@@ -569,7 +569,6 @@ def do_update_message(
             ).select_related("user_profile")
         )
 
-        old_stream_user_ids = {user.user_profile_id for user in subs_to_old_stream}
         new_stream_user_ids = {user.user_profile_id for user in subs_to_new_stream}
 
         # Get users who aren't subscribed to the new_stream.
@@ -589,15 +588,21 @@ def do_update_message(
             user_profile_id__in=[sub.user_profile_id for sub in subs_losing_usermessages]
         )
 
-        gaining_usermessage_user_ids = []
+        gaining_usermessage_user_ids: List[int] = []
         if not new_stream.is_history_public_to_subscribers():
-            # For private streams, with history not public to subscribers,
-            # We find out users who are not present in the msgs' old stream
-            # and create new UserMessage for these users so that they can
-            # access this message.
-            gaining_usermessage_user_ids += [
-                user_id for user_id in new_stream_user_ids if user_id not in old_stream_user_ids
-            ]
+            # We need to guarantee that every currently-subscribed
+            # user of the new stream has a UserMessage row, since
+            # being a member when the message is moved is always
+            # enough to have access.  We cannot reduce that set by
+            # removing either active or all subscribers from the old
+            # stream, since neither set guarantees that the user was
+            # subscribed when these messages were sent -- in fact, it
+            # may not be consistent across the messages.
+            #
+            # There may be current users of the new stream who already
+            # have a usermessage row -- we handle this via `ON
+            # CONFLICT DO NOTHING` during insert.
+            gaining_usermessage_user_ids = list(new_stream_user_ids)
     else:
         # If we're not moving the topic to another stream, we don't
         # modify the original set of UserMessage objects queried.
