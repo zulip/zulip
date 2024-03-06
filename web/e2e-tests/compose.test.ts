@@ -35,6 +35,7 @@ async function test_send_messages(page: Page): Promise<void> {
         {recipient: "cordelia@zulip.com", content: "Compose direct message reply test"},
     ]);
 
+    await page.click("#left-sidebar-navigation-list .top_left_all_messages");
     assert.equal((await page.$$(".message-list .message_row")).length, initial_msgs_count + 2);
 }
 

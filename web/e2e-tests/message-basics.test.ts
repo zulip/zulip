@@ -539,6 +539,7 @@ async function message_basic_tests(page: Page): Promise<void> {
         {recipient: "cordelia@zulip.com", content: "direct message e"},
     ]);
 
+    await page.click("#left-sidebar-navigation-list .top_left_all_messages");
     await expect_home(page);
 
     await test_navigations_from_home(page);
