@@ -150,14 +150,12 @@ export function initialize() {
             $popper.one("click", ".popover_toggle_collapse", (e) => {
                 const message_id = $(e.currentTarget).data("message-id");
                 assert(message_lists.current !== undefined);
-                const $row = message_lists.current.get_row(message_id);
-                const message = message_lists.current.get(rows.id($row));
-                if ($row) {
-                    if (message.collapsed) {
-                        condense.uncollapse($row);
-                    } else {
-                        condense.collapse($row);
-                    }
+                const message = message_lists.current.get(message_id);
+                assert(message !== undefined);
+                if (message.collapsed) {
+                    condense.uncollapse(message);
+                } else {
+                    condense.collapse(message);
                 }
                 e.preventDefault();
                 e.stopPropagation();
