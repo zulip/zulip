@@ -587,7 +587,7 @@ Typeahead.prototype = {
     element_click() {
         // update / hide the typeahead menu if the user clicks anywhere
         // inside the typing area, to avoid misplaced typeahead insertion.
-        this.lookup();
+        this.lookup(false);
     },
 
     click(e) {
