@@ -784,7 +784,6 @@ run_test("web_reload_client", ({override}) => {
     dispatch(event);
     assert.equal(stub.num_calls, 1);
     const args = stub.get_args("options");
-    assert.equal(args.options.save_pointer, true);
     assert.equal(args.options.immediate, true);
 });
 

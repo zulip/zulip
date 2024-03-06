@@ -221,7 +221,6 @@ function get_events({dont_block = false} = {}) {
                     event_queue_expired = true;
                     reload.initiate({
                         immediate: true,
-                        save_pointer: false,
                         save_compose: true,
                     });
                     return;
