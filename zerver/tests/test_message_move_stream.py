@@ -16,6 +16,22 @@ from zerver.models.streams import get_stream
 
 
 class MessageMoveStreamTest(ZulipTestCase):
+    def assert_has_usermessage(self, user_profile_id: int, message_id: int) -> None:
+        self.assertEqual(
+            UserMessage.objects.filter(
+                user_profile_id=user_profile_id, message_id=message_id
+            ).exists(),
+            True,
+        )
+
+    def assert_lacks_usermessage(self, user_profile_id: int, message_id: int) -> None:
+        self.assertEqual(
+            UserMessage.objects.filter(
+                user_profile_id=user_profile_id, message_id=message_id
+            ).exists(),
+            False,
+        )
+
     def prepare_move_topics(
         self,
         user_email: str,
@@ -1488,20 +1504,8 @@ class MessageMoveStreamTest(ZulipTestCase):
         self.assert_length(get_topic_messages(admin_user, old_stream, "test"), 2)
         self.assert_length(get_topic_messages(admin_user, new_stream, "test"), 0)
 
-        self.assertEqual(
-            UserMessage.objects.filter(
-                user_profile_id=user_losing_access.id,
-                message_id=msg_id,
-            ).count(),
-            1,
-        )
-        self.assertEqual(
-            UserMessage.objects.filter(
-                user_profile_id=user_gaining_access.id,
-                message_id=msg_id,
-            ).count(),
-            0,
-        )
+        self.assert_has_usermessage(user_losing_access.id, msg_id)
+        self.assert_lacks_usermessage(user_gaining_access.id, msg_id)
 
         result = self.client_patch(
             f"/json/messages/{msg_id}",
@@ -1520,22 +1524,13 @@ class MessageMoveStreamTest(ZulipTestCase):
             self.assert_length(get_topic_messages(admin_user, old_stream, "test"), 0)
             self.assert_length(get_topic_messages(admin_user, new_stream, "test"), 3)
 
-        self.assertEqual(
-            UserMessage.objects.filter(
-                user_profile_id=user_losing_access.id,
-                message_id=msg_id,
-            ).count(),
-            0,
-        )
+        self.assert_lacks_usermessage(user_losing_access.id, msg_id)
         # When the history is shared, UserMessage is not created for the user but the user
         # can see the message.
-        self.assertEqual(
-            UserMessage.objects.filter(
-                user_profile_id=user_gaining_access.id,
-                message_id=msg_id,
-            ).count(),
-            1 if user_messages_created else 0,
-        )
+        if user_messages_created:
+            self.assert_has_usermessage(user_gaining_access.id, msg_id)
+        else:
+            self.assert_lacks_usermessage(user_gaining_access.id, msg_id)
 
     def test_move_message_from_public_to_private_stream_not_shared_history(self) -> None:
         self.parameterized_test_move_message_involving_private_stream(
@@ -1594,3 +1589,72 @@ class MessageMoveStreamTest(ZulipTestCase):
             return user_profile.can_move_messages_between_streams()
 
         self.check_has_permission_policies("move_messages_between_streams_policy", validation_func)
+
+    def test_move_message_from_private_to_private_with_old_member(self) -> None:
+        admin_user = self.example_user("iago")
+        user_losing_access = self.example_user("cordelia")
+
+        self.login("iago")
+        old_stream = self.make_stream("test move stream", invite_only=True)
+        new_stream = self.make_stream("new stream", invite_only=True)
+
+        self.subscribe(admin_user, old_stream.name)
+        self.subscribe(user_losing_access, old_stream.name)
+
+        self.subscribe(admin_user, new_stream.name)
+
+        msg_id = self.send_stream_message(
+            admin_user, old_stream.name, topic_name="test", content="First"
+        )
+
+        self.assert_has_usermessage(user_losing_access.id, msg_id)
+        self.assertEqual(
+            has_message_access(
+                user_losing_access,
+                Message.objects.get(id=msg_id),
+                has_user_message=True,
+                stream=old_stream,
+                is_subscribed=True,
+            ),
+            True,
+        )
+
+        # Unsubscribe the user_losing_access; they will keep their
+        # UserMessage row, but lose access to the message; their
+        # Subscription row remains, but is inactive.
+        self.unsubscribe(user_losing_access, old_stream.name)
+        self.assert_has_usermessage(user_losing_access.id, msg_id)
+        self.assertEqual(
+            has_message_access(
+                user_losing_access,
+                Message.objects.get(id=msg_id),
+                has_user_message=True,
+                stream=old_stream,
+                is_subscribed=False,
+            ),
+            False,
+        )
+
+        result = self.client_patch(
+            f"/json/messages/{msg_id}",
+            {
+                "stream_id": new_stream.id,
+                "propagate_mode": "change_all",
+            },
+        )
+        self.assert_json_success(result)
+
+        # They should no longer have a UserMessage row, so we preserve
+        # the invariant that users without subscriptions never have
+        # UserMessage rows -- and definitely do not have access.
+        self.assert_lacks_usermessage(user_losing_access.id, msg_id)
+        self.assertEqual(
+            has_message_access(
+                user_losing_access,
+                Message.objects.get(id=msg_id),
+                has_user_message=True,
+                stream=new_stream,
+                is_subscribed=False,
+            ),
+            False,
+        )
