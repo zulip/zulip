@@ -169,7 +169,6 @@ const Typeahead = function (element, options) {
     this.fixed = this.options.fixed ?? false;
     this.automated = this.options.automated ?? (() => false);
     this.trigger_selection = this.options.trigger_selection ?? (() => false);
-    this.on_move = this.options.on_move;
     this.on_escape = this.options.on_escape;
     // return a string to show in typeahead header or false.
     this.header_html = this.options.header_html ?? (() => false);
@@ -213,10 +212,6 @@ Typeahead.prototype = {
             this.$element.text(val);
         } else {
             this.$element.val(val);
-        }
-
-        if (this.on_move) {
-            this.on_move();
         }
     },
 
