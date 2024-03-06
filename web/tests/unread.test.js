@@ -562,6 +562,15 @@ test("mentions", () => {
         unread: true,
     };
 
+    const private_not_mention_me_message = {
+        id: 20,
+        type: "private",
+        display_recipient: [{id: anybody.user_id}],
+        mentioned: false,
+        mentioned_me_directly: false,
+        unread: true,
+    };
+
     unread.process_loaded_messages([
         already_read_message,
         mention_me_message,
@@ -587,6 +596,35 @@ test("mentions", () => {
         private_mention_me_message.id,
     ]);
     test_notifiable_count(counts.home_unread_messages, 4);
+    assert.equal(unread.message_has_mention(private_mention_me_message.id), true);
+    assert.equal(unread.message_has_mention(muted_direct_mention_message.id), false);
+    assert.equal(unread.message_has_mention(private_not_mention_me_message.id), false);
+    assert.equal(unread.message_has_mention(mention_all_message.id), false);
+    assert.equal(unread.message_has_mention(mention_me_message.id), false);
+
+    assert.equal(unread.dms_has_mention(private_mention_me_message.id), true);
+    assert.equal(unread.dms_has_mention(muted_direct_mention_message.id), false);
+    assert.equal(unread.dms_has_mention(private_not_mention_me_message.id), false);
+    assert.equal(
+        unread.dms_has_mention([mention_all_message.id, muted_direct_mention_message.id]),
+        false,
+    );
+    assert.equal(
+        unread.dms_has_mention([
+            mention_me_message.id,
+            muted_direct_mention_message.id,
+            private_mention_me_message,
+        ]),
+        false,
+    );
+    assert.equal(
+        unread.dms_has_mention([
+            mention_me_message.id,
+            muted_direct_mention_message.id,
+            private_not_mention_me_message,
+        ]),
+        false,
+    );
 
     unread.mark_as_read(mention_me_message.id);
     unread.mark_as_read(mention_all_message.id);
