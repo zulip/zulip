@@ -1460,6 +1460,7 @@ class MessageMoveStreamTest(ZulipTestCase):
         history_public_to_subscribers: bool,
         user_messages_created: bool,
         to_invite_only: bool = True,
+        propagate_mode: str = "change_all",
     ) -> None:
         admin_user = self.example_user("iago")
         user_losing_access = self.example_user("cordelia")
@@ -1484,6 +1485,9 @@ class MessageMoveStreamTest(ZulipTestCase):
         )
         self.send_stream_message(admin_user, old_stream.name, topic_name="test", content="Second")
 
+        self.assert_length(get_topic_messages(admin_user, old_stream, "test"), 2)
+        self.assert_length(get_topic_messages(admin_user, new_stream, "test"), 0)
+
         self.assertEqual(
             UserMessage.objects.filter(
                 user_profile_id=user_losing_access.id,
@@ -1503,16 +1507,18 @@ class MessageMoveStreamTest(ZulipTestCase):
             f"/json/messages/{msg_id}",
             {
                 "stream_id": new_stream.id,
-                "propagate_mode": "change_all",
+                "propagate_mode": propagate_mode,
             },
         )
         self.assert_json_success(result)
 
-        messages = get_topic_messages(admin_user, old_stream, "test")
-        self.assert_length(messages, 0)
-
-        messages = get_topic_messages(admin_user, new_stream, "test")
-        self.assert_length(messages, 3)
+        # We gain one more message than we moved because of a notification-bot message.
+        if propagate_mode == "change_one":
+            self.assert_length(get_topic_messages(admin_user, old_stream, "test"), 1)
+            self.assert_length(get_topic_messages(admin_user, new_stream, "test"), 2)
+        else:
+            self.assert_length(get_topic_messages(admin_user, old_stream, "test"), 0)
+            self.assert_length(get_topic_messages(admin_user, new_stream, "test"), 3)
 
         self.assertEqual(
             UserMessage.objects.filter(
@@ -1543,6 +1549,22 @@ class MessageMoveStreamTest(ZulipTestCase):
             from_invite_only=False,
             history_public_to_subscribers=True,
             user_messages_created=False,
+        )
+
+    def test_move_one_message_from_public_to_private_stream_not_shared_history(self) -> None:
+        self.parameterized_test_move_message_involving_private_stream(
+            from_invite_only=False,
+            history_public_to_subscribers=False,
+            user_messages_created=True,
+            propagate_mode="change_one",
+        )
+
+    def test_move_one_message_from_public_to_private_stream_shared_history(self) -> None:
+        self.parameterized_test_move_message_involving_private_stream(
+            from_invite_only=False,
+            history_public_to_subscribers=True,
+            user_messages_created=False,
+            propagate_mode="change_one",
         )
 
     def test_move_message_from_private_to_private_stream_not_shared_history(self) -> None:
