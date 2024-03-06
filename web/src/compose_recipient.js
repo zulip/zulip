@@ -332,6 +332,20 @@ export function initialize() {
         update_on_recipient_change();
         compose_state.set_recipient_edited_manually(true);
     });
+
+    // enforce character limit when pasting long texts
+    $("#private_message_recipient").on("input paste", () => {
+        const currentText = $("#private_message_recipient").text();
+        if (currentText.length > realm.max_topic_length) {
+            $("#private_message_recipient").text(currentText.slice(0, realm.max_topic_length));
+        }
+    });
+    // enforce character limit on character input
+    $("#private_message_recipient").on("keypress", (e) => {
+        if ($("#private_message_recipient").text().length === realm.max_topic_length) {
+            e.preventDefault();
+        }
+    });
 }
 
 export function update_placeholder_text() {
