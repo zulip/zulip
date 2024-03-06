@@ -469,10 +469,6 @@ export function redraw_left_panel(left_panel_params = get_left_panel_params()) {
             .get_content_element($("#streams_overlay_container .streams-list"))
             .append(widgets.get(stream_id));
     }
-
-    if ($(".stream-row.active").hasClass("notdisplayed")) {
-        stream_edit.empty_right_panel();
-    }
     update_empty_left_panel_message();
 
     // return this for test convenience
@@ -509,6 +505,9 @@ export function switch_stream_tab(tab_name) {
     }
 
     redraw_left_panel();
+    if ($(".stream-row.active").hasClass("notdisplayed")) {
+        stream_edit.empty_right_panel();
+    }
     stream_edit.setup_subscriptions_tab_hash(tab_name);
 }
 
