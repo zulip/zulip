@@ -37,7 +37,7 @@ def lockfile_nonblocking(filename: str) -> Iterator[bool]:  # nocoverage
     """Lock a file using flock(2) for the duration of a 'with' statement.
 
     Doesn't block, yields False immediately if the lock can't be acquired."""
-    with open(filename) as f:
+    with open(filename, "w") as f:
         lock_acquired = False
         try:
             fcntl.flock(f, fcntl.LOCK_EX | fcntl.LOCK_NB)
