@@ -21,7 +21,6 @@ export const INFO = "info";
 
 const MESSAGE_SENT_CLASSNAMES = {
     sent_scroll_to_view: "sent_scroll_to_view",
-    narrow_to_recipient: "narrow_to_recipient",
     message_scheduled_success_compose_banner: "message_scheduled_success_compose_banner",
     automatic_new_visibility_policy: "automatic_new_visibility_policy",
 };
@@ -87,8 +86,24 @@ export function update_or_append_banner(
     }
 }
 
-export function clear_message_sent_banners(include_unmute_banner = true): void {
+export function clear_message_sent_banners(
+    include_unmute_banner = true,
+    skip_automatic_new_visibility_policy_banner = false,
+): void {
     for (const classname of Object.values(MESSAGE_SENT_CLASSNAMES)) {
+        if (
+            skip_automatic_new_visibility_policy_banner &&
+            classname === MESSAGE_SENT_CLASSNAMES.automatic_new_visibility_policy
+        ) {
+            // Handles the case where this banner shouldn't be cleared in the
+            // race condition where the response from `POST /messages` for a
+            // not locally echoed message (composed from a different view) wins
+            // over the event received for the same.
+            // Otherwise, the response will lead to this banner, and the event
+            // will narrow the sender to the new conversation, leading to this
+            // banner being visible for a fraction of seconds.
+            continue;
+        }
         $(`#compose_banners .${CSS.escape(classname)}`).remove();
     }
     if (include_unmute_banner) {

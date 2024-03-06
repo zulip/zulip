@@ -56,14 +56,10 @@ function maybe_add_narrowed_messages(messages, msg_list, callback, attempt = 1) 
             }
 
             let new_messages = [];
-            const elsewhere_messages = [];
-
             for (const elem of messages) {
                 if (Object.hasOwn(data.messages, elem.id)) {
                     util.set_match_data(elem, data.messages[elem.id]);
                     new_messages.push(elem);
-                } else {
-                    elsewhere_messages.push(elem);
                 }
             }
 
@@ -81,7 +77,6 @@ function maybe_add_narrowed_messages(messages, msg_list, callback, attempt = 1) 
 
             callback(new_messages, msg_list);
             unread_ops.process_visible();
-            compose_notifications.notify_messages_outside_current_search(elsewhere_messages);
         },
         error(xhr) {
             if (!narrow_state.is_message_feed_visible() || msg_list !== message_lists.current) {
@@ -155,7 +150,11 @@ export function insert_new_messages(messages, sent_by_this_client) {
     // were sent by this client; notifications.notify_local_mixes
     // will filter out any not sent by us.
     if (sent_by_this_client) {
-        compose_notifications.notify_local_mixes(messages, need_user_to_scroll);
+        compose_notifications.notify_local_mixes(messages, need_user_to_scroll, {
+            narrow_to_recipient(message_id) {
+                narrow.by_topic(message_id, {trigger: "outside_current_view"});
+            },
+        });
     }
 
     if (any_untracked_unread_messages) {
