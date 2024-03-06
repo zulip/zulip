@@ -39,6 +39,7 @@ def bulk_insert_ums(ums: List[UserMessageLite]) -> None:
         INSERT into
             zerver_usermessage (user_profile_id, message_id, flags)
         VALUES %s
+        ON CONFLICT DO NOTHING
     """
     )
 

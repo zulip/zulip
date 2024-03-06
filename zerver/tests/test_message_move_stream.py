@@ -1658,3 +1658,179 @@ class MessageMoveStreamTest(ZulipTestCase):
             ),
             False,
         )
+
+    def test_move_message_to_private_hidden_history_with_old_member(self) -> None:
+        admin_user = self.example_user("iago")
+        user = self.example_user("cordelia")
+
+        self.login("iago")
+        old_stream = self.make_stream("test move stream", invite_only=True)
+        new_stream = self.make_stream(
+            "new stream", invite_only=True, history_public_to_subscribers=False
+        )
+
+        self.subscribe(admin_user, old_stream.name)
+        self.subscribe(user, old_stream.name)
+
+        self.subscribe(admin_user, new_stream.name)
+        self.subscribe(user, new_stream.name)
+
+        # Cordelia is subscribed to both streams when this first
+        # message is sent
+        first_msg_id = self.send_stream_message(
+            admin_user, old_stream.name, topic_name="test", content="First"
+        )
+
+        self.assert_has_usermessage(user.id, first_msg_id)
+        self.assertEqual(
+            has_message_access(
+                user,
+                Message.objects.get(id=first_msg_id),
+                has_user_message=True,
+                stream=old_stream,
+                is_subscribed=True,
+            ),
+            True,
+        )
+
+        # Unsubscribe the user; they will keep their UserMessage row,
+        # but lose access to the message; their Subscription row
+        # remains, but is inactive.
+        self.unsubscribe(user, old_stream.name)
+        self.assert_has_usermessage(user.id, first_msg_id)
+        self.assertEqual(
+            has_message_access(
+                user,
+                Message.objects.get(id=first_msg_id),
+                has_user_message=True,
+                stream=old_stream,
+                is_subscribed=False,
+            ),
+            False,
+        )
+
+        # The user is no longer subscribed, so does not have a
+        # UserMessage row, or access
+        second_msg_id = self.send_stream_message(
+            admin_user, old_stream.name, topic_name="test", content="Second"
+        )
+        self.assert_lacks_usermessage(user.id, second_msg_id)
+        self.assertEqual(
+            has_message_access(
+                user,
+                Message.objects.get(id=second_msg_id),
+                has_user_message=False,
+                stream=old_stream,
+                is_subscribed=False,
+            ),
+            False,
+        )
+
+        # Move both messages
+        result = self.client_patch(
+            f"/json/messages/{first_msg_id}",
+            {
+                "stream_id": new_stream.id,
+                "propagate_mode": "change_all",
+            },
+        )
+        self.assert_json_success(result)
+
+        # They should have a UserMessage row for both messages, and
+        # now have access to both -- being in the stream when the
+        # message is moved in is always sufficient to grant access.
+        self.assert_has_usermessage(user.id, first_msg_id)
+        self.assert_has_usermessage(user.id, second_msg_id)
+        self.assertEqual(
+            has_message_access(
+                user,
+                Message.objects.get(id=first_msg_id),
+                has_user_message=True,
+                stream=new_stream,
+                is_subscribed=True,
+            ),
+            True,
+        )
+        self.assertEqual(
+            has_message_access(
+                user,
+                Message.objects.get(id=second_msg_id),
+                has_user_message=True,
+                stream=new_stream,
+                is_subscribed=True,
+            ),
+            True,
+        )
+
+    def test_move_message_to_private_hidden_history_with_new_member(self) -> None:
+        admin_user = self.example_user("iago")
+        user = self.example_user("cordelia")
+
+        self.login("iago")
+        old_stream = self.make_stream(
+            "test move stream", invite_only=True, history_public_to_subscribers=False
+        )
+        new_stream = self.make_stream(
+            "new stream", invite_only=True, history_public_to_subscribers=False
+        )
+
+        self.subscribe(admin_user, old_stream.name)
+        self.subscribe(admin_user, new_stream.name)
+
+        # Cordelia is subscribed to neither stream when this message is sent
+        msg_id = self.send_stream_message(
+            admin_user, old_stream.name, topic_name="test", content="First"
+        )
+        self.assert_lacks_usermessage(user.id, msg_id)
+        self.assertEqual(
+            has_message_access(
+                user,
+                Message.objects.get(id=msg_id),
+                has_user_message=False,
+                stream=old_stream,
+                is_subscribed=False,
+            ),
+            False,
+        )
+
+        # Subscribe to both streams.  Because the streams do not have
+        # shared history, Cordelia does not get a UserMessage row, or
+        # access.
+        self.subscribe(user, old_stream.name)
+        self.subscribe(user, new_stream.name)
+        self.assert_lacks_usermessage(user.id, msg_id)
+        self.assertEqual(
+            has_message_access(
+                user,
+                Message.objects.get(id=msg_id),
+                has_user_message=False,
+                stream=old_stream,
+                is_subscribed=False,
+            ),
+            False,
+        )
+
+        # Move the message to the other private-history stream
+        result = self.client_patch(
+            f"/json/messages/{msg_id}",
+            {
+                "stream_id": new_stream.id,
+                "propagate_mode": "change_all",
+            },
+        )
+        self.assert_json_success(result)
+
+        # They should now have a UserMessage row, and now have access
+        # -- being in the stream when the message is moved in is
+        # always sufficient to grant access.
+        self.assert_has_usermessage(user.id, msg_id)
+        self.assertEqual(
+            has_message_access(
+                user,
+                Message.objects.get(id=msg_id),
+                has_user_message=True,
+                stream=new_stream,
+                is_subscribed=True,
+            ),
+            True,
+        )
