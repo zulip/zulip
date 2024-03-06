@@ -693,6 +693,8 @@ export function dispatch_normal_event(event) {
 
             const user_display_settings = [
                 "color_scheme",
+                "web_font_size_px",
+                "web_line_height_percent",
                 "default_language",
                 "web_home_view",
                 "demote_inactive_streams",

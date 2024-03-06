@@ -20,6 +20,16 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 9.0
 
+**Feature level 245**
+
+* [`PATCH
+  /realm/user_settings_defaults`](/api/update-realm-user-settings-defaults)
+  [`POST /register`](/api/register-queue), [`GET
+  /events`](/api/get-events), [`PATCH
+  /settings`](/api/update-settings): Added new `web_font_size_px` and
+  `web_line_height_percent` settings to allow users to control the
+  styling of the web application.
+
 **Feature level 244**
 
 * [`POST /register`](/api/register-queue), [`GET /events`](/api/get-events),

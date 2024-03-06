@@ -193,16 +193,20 @@ export function set_up(settings_panel) {
 
     // Common handler for sending requests to the server when an input
     // element is changed.
-    $container.on("change", "input[type=checkbox], select", function (e) {
-        const $input_elem = $(e.currentTarget);
-        const setting = $input_elem.attr("name");
-        const data = {};
-        data[setting] = settings_components.get_input_element_value(this);
-        const $status_element = $input_elem
-            .closest(".subsection-parent")
-            .find(".alert-notification");
-        change_display_setting(data, $status_element);
-    });
+    $container.on(
+        "change",
+        "input[type=checkbox], .information-density-settings input[type=text], select",
+        function (e) {
+            const $input_elem = $(e.currentTarget);
+            const setting = $input_elem.attr("name");
+            const data = {};
+            data[setting] = settings_components.get_input_element_value(this);
+            const $status_element = $input_elem
+                .closest(".subsection-parent")
+                .find(".alert-notification");
+            change_display_setting(data, $status_element);
+        },
+    );
 
     $container.find(".setting_emojiset_choice").on("click", function () {
         const data = {emojiset: $(this).val()};

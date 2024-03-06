@@ -133,9 +133,12 @@ export type DisplaySettings = {
     settings: {
         user_display_settings: string[];
     };
+    render_group?: boolean;
     render_only: {
-        high_contrast_mode: boolean;
-        dense_mode: boolean;
+        high_contrast_mode?: boolean;
+        dense_mode?: boolean;
+        web_font_size_px?: boolean;
+        web_line_height_percent?: boolean;
     };
 };
 
@@ -152,6 +155,18 @@ export const get_all_preferences = (): DisplaySettings => ({
     render_only: {
         high_contrast_mode: page_params.development_environment,
         dense_mode: page_params.development_environment,
+    },
+});
+
+/* istanbul ignore next */
+export const get_information_density_preferences = (): DisplaySettings => ({
+    render_group: page_params.development_environment,
+    render_only: {
+        web_font_size_px: page_params.development_environment,
+        web_line_height_percent: page_params.development_environment,
+    },
+    settings: {
+        user_display_settings: ["web_font_size_px", "web_line_height_percent"],
     },
 });
 
@@ -555,6 +570,8 @@ export const preferences_settings_labels = {
         }),
     ),
     web_escape_navigates_to_home_view: $t({defaultMessage: "Escape key navigates to home view"}),
+    web_font_size_px: $t({defaultMessage: "Message-area font size (px)"}),
+    web_line_height_percent: $t({defaultMessage: "Message-area line height (%)"}),
     default_language_settings_label: $t({defaultMessage: "Language"}),
 };
 

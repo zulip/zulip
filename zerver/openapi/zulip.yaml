@@ -10549,6 +10549,25 @@ paths:
                     - 2
                     - 3
                   example: 1
+                web_font_size_px:
+                  description: |
+                    User-configured primary `font-size` for the web application, in pixels.
+
+                    **Changes**: New in Zulip 9.0 (feature level 245). Previously, font size was
+                    only adjustable via browser zoom. Note that this setting was not fully
+                    implemented at this feature level.
+                  type: integer
+                  example: 14
+                web_line_height_percent:
+                  description: |
+                    User-configured primary `line-height` for the web application, in percent, so a
+                    value of 120 represents a `line-height` of 1.2.
+
+                    **Changes**: New in Zulip 9.0 (feature level 245). Previously, line height was
+                    not user-configurable. Note that this setting was not fully implemented at this
+                    feature level.
+                  type: integer
+                  example: 122
                 color_scheme:
                   description: |
                     Controls which [color theme](/help/dark-theme) to use.
@@ -10952,6 +10971,10 @@ paths:
               high_contrast_mode:
                 contentType: application/json
               web_mark_read_on_scroll_policy:
+                contentType: application/json
+              web_font_size_px:
+                contentType: application/json
+              web_line_height_percent:
                 contentType: application/json
               color_scheme:
                 contentType: application/json
@@ -12991,6 +13014,25 @@ paths:
                             description: |
                               This setting is reserved for use to control variations in Zulip's design
                               to help visually impaired users.
+                          web_font_size_px:
+                            description: |
+                              User-configured primary `font-size` for the web application, in pixels.
+
+                              **Changes**: New in Zulip 9.0 (feature level 245). Previously, font size was
+                              only adjustable via browser zoom. Note that this setting was not fully
+                              implemented at this feature level.
+                            type: integer
+                            example: 14
+                          web_line_height_percent:
+                            description: |
+                              User-configured primary `line-height` for the web application, in percent, so a
+                              value of 120 represents a `line-height` of 1.2.
+
+                              **Changes**: New in Zulip 9.0 (feature level 245). Previously, line height was
+                              not user-configurable. Note that this setting was not fully implemented at this
+                              feature level.
+                            type: integer
+                            example: 122
                           color_scheme:
                             type: integer
                             description: |
@@ -15263,6 +15305,25 @@ paths:
                             description: |
                               This setting is reserved for use to control variations in Zulip's design
                               to help visually impaired users.
+                          web_font_size_px:
+                            description: |
+                              User-configured primary `font-size` for the web application, in pixels.
+
+                              **Changes**: New in Zulip 9.0 (feature level 245). Previously, font size was
+                              only adjustable via browser zoom. Note that this setting was not fully
+                              implemented at this feature level.
+                            type: integer
+                            example: 14
+                          web_line_height_percent:
+                            description: |
+                              User-configured primary `line-height` for the web application, in percent, so a
+                              value of 120 represents a `line-height` of 1.2.
+
+                              **Changes**: New in Zulip 9.0 (feature level 245). Previously, line height was
+                              not user-configurable. Note that this setting was not fully implemented at this
+                              feature level.
+                            type: integer
+                            example: 122
                           color_scheme:
                             type: integer
                             description: |
@@ -16337,6 +16398,25 @@ paths:
                     the `PATCH /settings/display` endpoint.
                   type: boolean
                   example: true
+                web_font_size_px:
+                  description: |
+                    User-configured primary `font-size` for the web application, in pixels.
+
+                    **Changes**: New in Zulip 9.0 (feature level 245). Previously, font size was
+                    only adjustable via browser zoom. Note that this setting was not fully
+                    implemented at this feature level.
+                  type: integer
+                  example: 14
+                web_line_height_percent:
+                  description: |
+                    User-configured primary `line-height` for the web application, in percent, so a
+                    value of 120 represents a `line-height` of 1.2.
+
+                    **Changes**: New in Zulip 9.0 (feature level 245). Previously, line height was
+                    not user-configurable. Note that this setting was not fully implemented at this
+                    feature level.
+                  type: integer
+                  example: 122
                 color_scheme:
                   description: |
                     Controls which [color theme](/help/dark-theme) to use.
@@ -16858,6 +16938,10 @@ paths:
               fluid_layout_width:
                 contentType: application/json
               high_contrast_mode:
+                contentType: application/json
+              web_font_size_px:
+                contentType: application/json
+              web_line_height_percent:
                 contentType: application/json
               color_scheme:
                 contentType: application/json

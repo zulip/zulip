@@ -1579,6 +1579,8 @@ class RealmAPITest(ZulipTestCase):
     def do_test_realm_default_setting_update_api(self, name: str) -> None:
         bool_tests: List[bool] = [False, True]
         test_values: Dict[str, Any] = dict(
+            web_font_size_px=[UserProfile.WEB_FONT_SIZE_PX_LEGACY],
+            web_line_height_percent=[UserProfile.WEB_LINE_HEIGHT_PERCENT_LEGACY],
             color_scheme=UserProfile.COLOR_SCHEME_CHOICES,
             web_home_view=["recent_topics", "inbox", "all_messages"],
             emojiset=[emojiset["key"] for emojiset in RealmUserDefault.emojiset_choices()],

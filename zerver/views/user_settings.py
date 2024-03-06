@@ -213,6 +213,8 @@ def json_change_settings(
     color_scheme: Optional[int] = REQ(
         json_validator=check_int_in(UserProfile.COLOR_SCHEME_CHOICES), default=None
     ),
+    web_font_size_px: Optional[int] = REQ(json_validator=check_int, default=None),
+    web_line_height_percent: Optional[int] = REQ(json_validator=check_int, default=None),
     translate_emoticons: Optional[bool] = REQ(json_validator=check_bool, default=None),
     display_emoji_reaction_users: Optional[bool] = REQ(json_validator=check_bool, default=None),
     default_language: Optional[str] = REQ(default=None),

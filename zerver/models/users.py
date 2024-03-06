@@ -78,6 +78,15 @@ class UserBaseSettings(models.Model):
     COLOR_SCHEME_CHOICES = [COLOR_SCHEME_AUTOMATIC, COLOR_SCHEME_NIGHT, COLOR_SCHEME_LIGHT]
     color_scheme = models.PositiveSmallIntegerField(default=COLOR_SCHEME_AUTOMATIC)
 
+    # Information density is established through
+    # adjustments to the font size and line height.
+    WEB_FONT_SIZE_PX_LEGACY = 14
+    WEB_LINE_HEIGHT_PERCENT_LEGACY = 122
+    web_font_size_px = models.PositiveSmallIntegerField(default=WEB_FONT_SIZE_PX_LEGACY)
+    web_line_height_percent = models.PositiveSmallIntegerField(
+        default=WEB_LINE_HEIGHT_PERCENT_LEGACY
+    )
+
     # UI setting controlling Zulip's behavior of demoting in the sort
     # order and graying out streams with no recent traffic.  The
     # default behavior, automatic, enables this behavior once a user
@@ -314,6 +323,8 @@ class UserBaseSettings(models.Model):
         web_mark_read_on_scroll_policy=int,
         user_list_style=int,
         web_stream_unreads_count_display_policy=int,
+        web_font_size_px=int,
+        web_line_height_percent=int,
     )
 
     modern_notification_settings: Dict[str, Any] = dict(

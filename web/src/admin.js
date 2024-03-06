@@ -190,6 +190,7 @@ export function build_page() {
         web_home_view_values: settings_config.web_home_view_values,
         settings_object: realm_user_settings_defaults,
         display_settings: settings_config.get_all_preferences(),
+        information_density_settings: settings_config.get_information_density_preferences(),
         settings_label: settings_config.realm_user_settings_defaults_labels,
         desktop_icon_count_display_values: settings_config.desktop_icon_count_display_values,
         enable_sound_select:

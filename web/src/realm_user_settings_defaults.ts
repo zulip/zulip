@@ -1,5 +1,7 @@
 export type RealmDefaultSettings = {
     color_scheme: number;
+    web_font_size_px: number;
+    web_line_height_percent: number;
     default_language: string;
     web_home_view: string;
     desktop_icon_count_display: number;
