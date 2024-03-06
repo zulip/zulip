@@ -146,6 +146,22 @@
                     {% endwith %}
                 </div>
                 {% endif %}
+
+                {% if remote_server.deactivated %}
+                <form method="POST" class="reactivate-remote-server-form">
+                    {{ csrf_input }}
+                    <input type="hidden" name="remote_server_id" value="{{ remote_server.id }}" />
+                    <input type="hidden" name="remote_server_status" value="active" />
+                    <button class="reactivate-remote-server-button"><b>Reactivate</b>: {{ remote_server.hostname }}</button>
+                </form>
+                {% else %}
+                <form method="POST" class="deactivate-remote-server-form">
+                    {{ csrf_input }}
+                    <input type="hidden" name="remote_server_id" value="{{ remote_server.id }}" />
+                    <input type="hidden" name="remote_server_status" value="deactivated" />
+                    <button class="deactivate-remote-server-button"><b>Deactivate</b>: {{ remote_server.hostname }}</button>
+                </form>
+                {% endif %}
             </div>
             <div class="remote-realms-section">
                 {% if remote_realms[remote_server.id] == [] %}

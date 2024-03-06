@@ -573,6 +573,70 @@ class TestRemoteServerSupportEndpoint(ZulipTestCase):
         self.assertEqual(plan.tier, CustomerPlan.TIER_SELF_HOSTED_LEGACY)
         self.assertEqual(next_plan.tier, CustomerPlan.TIER_SELF_HOSTED_BASIC)
 
+    def test_support_deactivate_remote_server(self) -> None:
+        iago = self.example_user("iago")
+        self.login_user(iago)
+
+        # A remote server cannot be deactivated when an upgrade is scheduled.
+        remote_server_with_upgrade = RemoteZulipServer.objects.get(hostname="zulip-4.example.com")
+        self.assertFalse(remote_server_with_upgrade.deactivated)
+        result = self.client_post(
+            "/activity/remote/support",
+            {
+                "remote_server_id": f"{remote_server_with_upgrade.id}",
+                "remote_server_status": "deactivated",
+            },
+        )
+        self.assert_in_success_response(
+            [
+                f"Cannot deactivate remote server ({remote_server_with_upgrade.hostname}) that has active or scheduled plans."
+            ],
+            result,
+        )
+        remote_server_with_upgrade.refresh_from_db()
+        self.assertFalse(remote_server_with_upgrade.deactivated)
+
+        remote_server_no_upgrade = RemoteZulipServer.objects.get(hostname="zulip-5.example.com")
+        self.assertFalse(remote_server_no_upgrade.deactivated)
+        result = self.client_post(
+            "/activity/remote/support",
+            {
+                "remote_server_id": f"{remote_server_no_upgrade.id}",
+                "remote_server_status": "deactivated",
+            },
+        )
+        self.assert_in_success_response(
+            [f"Remote server ({remote_server_no_upgrade.hostname}) deactivated."], result
+        )
+        remote_server_no_upgrade.refresh_from_db()
+        self.assertTrue(remote_server_no_upgrade.deactivated)
+        audit_log = RemoteZulipServerAuditLog.objects.filter(
+            event_type=RemoteZulipServerAuditLog.REMOTE_SERVER_DEACTIVATED
+        ).last()
+        assert audit_log is not None
+        self.assertEqual(audit_log.server, remote_server_no_upgrade)
+
+    def test_support_reactivate_remote_server(self) -> None:
+        iago = self.example_user("iago")
+        self.login_user(iago)
+
+        remote_server = RemoteZulipServer.objects.get(hostname="zulip-0.example.com")
+        self.assertTrue(remote_server.deactivated)
+        result = self.client_post(
+            "/activity/remote/support",
+            {"remote_server_id": f"{remote_server.id}", "remote_server_status": "active"},
+        )
+        self.assert_in_success_response(
+            [f"Remote server ({remote_server.hostname}) reactivated."], result
+        )
+        remote_server.refresh_from_db()
+        self.assertFalse(remote_server.deactivated)
+        audit_log = RemoteZulipServerAuditLog.objects.filter(
+            event_type=RemoteZulipServerAuditLog.REMOTE_SERVER_REACTIVATED
+        ).last()
+        assert audit_log is not None
+        self.assertEqual(audit_log.server, remote_server)
+
 
 class TestSupportEndpoint(ZulipTestCase):
     def create_customer_and_plan(self, realm: Realm, monthly: bool = False) -> Customer:
