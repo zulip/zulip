@@ -155,7 +155,11 @@ export function insert_new_messages(messages, sent_by_this_client) {
     // were sent by this client; notifications.notify_local_mixes
     // will filter out any not sent by us.
     if (sent_by_this_client) {
-        compose_notifications.notify_local_mixes(messages, need_user_to_scroll);
+        compose_notifications.notify_local_mixes(messages, need_user_to_scroll, {
+            narrow_to_recipient(message_id) {
+                narrow.by_topic(message_id, {trigger: "outside_current_view"});
+            },
+        });
     }
 
     if (any_untracked_unread_messages) {
