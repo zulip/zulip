@@ -40,9 +40,7 @@ function preserve_state(send_after_reload, save_pointer, save_narrow, save_compo
         return;
     }
 
-    if (!message_lists.home) {
-        // If we haven't yet initialized the message_lists module,
-        // we can't preserve state across reloads.
+    if (!$("#app-loading").hasClass("loaded")) {
         blueslip.log("Can't preserve state; message_lists not yet initialized.");
         return;
     }
