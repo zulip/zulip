@@ -3,11 +3,13 @@ import assert from "minimalistic-assert";
 import tippy, {delegate} from "tippy.js";
 
 import render_buddy_list_title_tooltip from "../templates/buddy_list/title_tooltip.hbs";
+import render_org_logo_tooltip from "../templates/org_logo_tooltip.hbs";
 import render_tooltip_templates from "../templates/tooltip_templates.hbs";
 
 import {$t} from "./i18n";
 import * as people from "./people";
 import * as popovers from "./popovers";
+import * as settings_config from "./settings_config";
 import * as ui_util from "./ui_util";
 import {user_settings} from "./user_settings";
 
@@ -572,6 +574,22 @@ export function initialize(): void {
             const total_user_count = people.get_active_human_count();
             instance.setContent(
                 ui_util.parse_html(render_buddy_list_title_tooltip({total_user_count})),
+            );
+        },
+    });
+
+    delegate("body", {
+        target: "#realm-logo",
+        placement: "right",
+        appendTo: () => document.body,
+        onShow(instance) {
+            const escape_navigates_to_home_view = user_settings.web_escape_navigates_to_home_view;
+            const home_view =
+                settings_config.web_home_view_values[user_settings.web_home_view].description;
+            instance.setContent(
+                ui_util.parse_html(
+                    render_org_logo_tooltip({home_view, escape_navigates_to_home_view}),
+                ),
             );
         },
     });
