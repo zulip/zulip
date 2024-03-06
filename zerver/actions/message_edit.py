@@ -534,6 +534,7 @@ def do_update_message(
         event["propagate_mode"] = propagate_mode
 
     losing_access_user_ids: List[int] = []
+    user_ids_gaining_usermessages: List[int] = []
     if new_stream is not None:
         assert content is None
         assert target_message.is_stream_message()
@@ -588,7 +589,6 @@ def do_update_message(
             user_profile_id__in=[sub.user_profile_id for sub in subs_losing_usermessages]
         )
 
-        gaining_usermessage_user_ids: List[int] = []
         if not new_stream.is_history_public_to_subscribers():
             # We need to guarantee that every currently-subscribed
             # user of the new stream has a UserMessage row, since
@@ -602,12 +602,11 @@ def do_update_message(
             # There may be current users of the new stream who already
             # have a usermessage row -- we handle this via `ON
             # CONFLICT DO NOTHING` during insert.
-            gaining_usermessage_user_ids = list(new_stream_user_ids)
+            user_ids_gaining_usermessages = list(new_stream_user_ids)
     else:
         # If we're not moving the topic to another stream, we don't
         # modify the original set of UserMessage objects queried.
         unmodified_user_messages = ums
-        gaining_usermessage_user_ids = []
 
     # We save the full topic name so that checks that require comparison
     # between the original topic and the topic name passed into this function
@@ -682,10 +681,10 @@ def do_update_message(
 
     if new_stream is not None:
         assert stream_being_edited is not None
-        if gaining_usermessage_user_ids:
+        if user_ids_gaining_usermessages:
             ums_to_create = []
             for message_id in changed_message_ids:
-                for user_profile_id in gaining_usermessage_user_ids:
+                for user_profile_id in user_ids_gaining_usermessages:
                     # The fact that the user didn't have a UserMessage originally means we can infer that the user
                     # was not mentioned in the original message (even if mention syntax was present, it would not
                     # take effect for a user who was not subscribed). If we were editing the message's content, we
