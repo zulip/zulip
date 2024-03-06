@@ -1155,6 +1155,10 @@ class MessageMoveStreamTest(ZulipTestCase):
             "iago", "test move stream", "new stream", "test"
         )
 
+        # Iago is set up, above, to be sub'd to both streams
+        iago = self.example_user("iago")
+
+        # These are only sub'd to the old (public) stream
         guest_user = self.example_user("polonius")
         non_guest_user = self.example_user("hamlet")
         self.subscribe(guest_user, old_stream.name)
@@ -1164,29 +1168,34 @@ class MessageMoveStreamTest(ZulipTestCase):
             user_profile, old_stream.name, topic_name="test", content="fourth"
         )
 
-        self.assertEqual(
-            has_message_access(
-                guest_user, Message.objects.get(id=msg_id_to_test_acesss), has_user_message=False
-            ),
-            True,
-        )
-        self.assertEqual(
-            has_message_access(
-                guest_user,
-                Message.objects.get(id=msg_id_to_test_acesss),
-                has_user_message=False,
-                stream=old_stream,
-            ),
-            True,
-        )
-        self.assertEqual(
-            has_message_access(
-                non_guest_user,
-                Message.objects.get(id=msg_id_to_test_acesss),
-                has_user_message=False,
-            ),
-            True,
-        )
+        def check_user_access(
+            user: UserProfile,
+            *,
+            has_user_message: bool,
+            has_access: bool,
+            stream: Optional[Stream] = None,
+            is_subscribed: Optional[bool] = None,
+        ) -> None:
+            self.assertEqual(
+                UserMessage.objects.filter(
+                    message_id=msg_id_to_test_acesss, user_profile_id=user.id
+                ).exists(),
+                has_user_message,
+            )
+            self.assertEqual(
+                has_message_access(
+                    user,
+                    Message.objects.get(id=msg_id_to_test_acesss),
+                    has_user_message=has_user_message,
+                    stream=stream,
+                    is_subscribed=is_subscribed,
+                ),
+                has_access,
+            )
+
+        check_user_access(iago, has_user_message=True, has_access=True)
+        check_user_access(guest_user, has_user_message=True, has_access=True, stream=old_stream)
+        check_user_access(non_guest_user, has_user_message=True, has_access=True)
 
         result = self.client_patch(
             f"/json/messages/{msg_id}",
@@ -1198,69 +1207,26 @@ class MessageMoveStreamTest(ZulipTestCase):
         )
         self.assert_json_success(result)
 
-        self.assertEqual(
-            has_message_access(
-                guest_user,
-                Message.objects.get(id=msg_id_to_test_acesss),
-                has_user_message=False,
-            ),
-            False,
-        )
-        self.assertEqual(
-            has_message_access(
-                non_guest_user,
-                Message.objects.get(id=msg_id_to_test_acesss),
-                has_user_message=False,
-            ),
-            True,
-        )
-        self.assertEqual(
-            # If the guest user were subscribed to the new stream,
-            # they'd have access; has_message_access does not validate
-            # the is_subscribed parameter.
-            has_message_access(
-                guest_user,
-                Message.objects.get(id=msg_id_to_test_acesss),
-                has_user_message=False,
-                stream=new_stream,
-                is_subscribed=True,
-            ),
-            True,
-        )
+        check_user_access(iago, has_user_message=True, has_access=True)
+        check_user_access(guest_user, has_user_message=False, has_access=False)
+        check_user_access(non_guest_user, has_user_message=False, has_access=True)
 
-        self.assertEqual(
-            has_message_access(
-                guest_user,
-                Message.objects.get(id=msg_id_to_test_acesss),
-                has_user_message=False,
-                stream=new_stream,
-            ),
-            False,
+        # If the guest user were subscribed to the new stream,
+        # they'd have access; has_message_access does not validate
+        # the is_subscribed parameter.
+        check_user_access(
+            guest_user,
+            has_user_message=False,
+            has_access=True,
+            is_subscribed=True,
+            stream=new_stream,
         )
+        check_user_access(guest_user, has_user_message=False, has_access=False, stream=new_stream)
         with self.assertRaises(AssertionError):
             # Raises assertion if you pass an invalid stream.
-            has_message_access(
-                guest_user,
-                Message.objects.get(id=msg_id_to_test_acesss),
-                has_user_message=False,
-                stream=old_stream,
+            check_user_access(
+                guest_user, has_user_message=False, has_access=False, stream=old_stream
             )
-
-        self.assertEqual(
-            UserMessage.objects.filter(
-                user_profile_id=non_guest_user.id,
-                message_id=msg_id_to_test_acesss,
-            ).count(),
-            0,
-        )
-        self.assertEqual(
-            has_message_access(
-                self.example_user("iago"),
-                Message.objects.get(id=msg_id_to_test_acesss),
-                has_user_message=False,
-            ),
-            True,
-        )
 
     def test_no_notify_move_message_to_stream(self) -> None:
         (user_profile, old_stream, new_stream, msg_id, msg_id_lt) = self.prepare_move_topics(
