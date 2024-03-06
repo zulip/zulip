@@ -668,65 +668,61 @@ def do_update_message(
         changed_message_ids = list(changed_messages.values_list("id", flat=True))
         changed_messages_count = len(changed_message_ids)
 
-        if new_stream is not None:
-            assert stream_being_edited is not None
-            if gaining_usermessage_user_ids:
-                ums_to_create = []
-                for message_id in changed_message_ids:
-                    for user_profile_id in gaining_usermessage_user_ids:
-                        # The fact that the user didn't have a UserMessage originally means we can infer that the user
-                        # was not mentioned in the original message (even if mention syntax was present, it would not
-                        # take effect for a user who was not subscribed). If we were editing the message's content, we
-                        # would rerender the message and then use the new stream's data to determine whether this is
-                        # a mention of a subscriber; but as we are not doing so, we choose to preserve the "was this
-                        # mention syntax an actual mention" decision made during the original rendering for implementation
-                        # simplicity. As a result, the only flag to consider applying here is read.
-                        um = UserMessageLite(
-                            user_profile_id=user_profile_id,
-                            message_id=message_id,
-                            flags=UserMessage.flags.read,
-                        )
-                        ums_to_create.append(um)
-                bulk_insert_ums(ums_to_create)
+    if new_stream is not None:
+        assert stream_being_edited is not None
+        if gaining_usermessage_user_ids:
+            ums_to_create = []
+            for message_id in changed_message_ids:
+                for user_profile_id in gaining_usermessage_user_ids:
+                    # The fact that the user didn't have a UserMessage originally means we can infer that the user
+                    # was not mentioned in the original message (even if mention syntax was present, it would not
+                    # take effect for a user who was not subscribed). If we were editing the message's content, we
+                    # would rerender the message and then use the new stream's data to determine whether this is
+                    # a mention of a subscriber; but as we are not doing so, we choose to preserve the "was this
+                    # mention syntax an actual mention" decision made during the original rendering for implementation
+                    # simplicity. As a result, the only flag to consider applying here is read.
+                    um = UserMessageLite(
+                        user_profile_id=user_profile_id,
+                        message_id=message_id,
+                        flags=UserMessage.flags.read,
+                    )
+                    ums_to_create.append(um)
+            bulk_insert_ums(ums_to_create)
 
-            # Delete UserMessage objects for users who will no
-            # longer have access to these messages.  Note: This could be
-            # very expensive, since it's N guest users x M messages.
-            UserMessage.objects.filter(
-                user_profile_id__in=[sub.user_profile_id for sub in subs_losing_usermessages],
-                message_id__in=changed_messages,
-            ).delete()
+        # Delete UserMessage objects for users who will no
+        # longer have access to these messages.  Note: This could be
+        # very expensive, since it's N guest users x M messages.
+        UserMessage.objects.filter(
+            user_profile_id__in=[sub.user_profile_id for sub in subs_losing_usermessages],
+            message_id__in=changed_messages,
+        ).delete()
 
-            delete_event: DeleteMessagesEvent = {
-                "type": "delete_message",
-                "message_ids": changed_message_ids,
-                "message_type": "stream",
-                "stream_id": stream_being_edited.id,
-                "topic": orig_topic_name,
-            }
-            send_event(user_profile.realm, delete_event, losing_access_user_ids)
+        delete_event: DeleteMessagesEvent = {
+            "type": "delete_message",
+            "message_ids": changed_message_ids,
+            "message_type": "stream",
+            "stream_id": stream_being_edited.id,
+            "topic": orig_topic_name,
+        }
+        send_event(user_profile.realm, delete_event, losing_access_user_ids)
 
-            # Reset the Attachment.is_*_public caches for all messages
-            # moved to another stream with different access permissions.
-            if new_stream.invite_only != stream_being_edited.invite_only:
-                Attachment.objects.filter(messages__in=changed_messages.values("id")).update(
-                    is_realm_public=None,
-                )
-                ArchivedAttachment.objects.filter(
-                    messages__in=changed_messages.values("id")
-                ).update(
-                    is_realm_public=None,
-                )
+        # Reset the Attachment.is_*_public caches for all messages
+        # moved to another stream with different access permissions.
+        if new_stream.invite_only != stream_being_edited.invite_only:
+            Attachment.objects.filter(messages__in=changed_messages.values("id")).update(
+                is_realm_public=None,
+            )
+            ArchivedAttachment.objects.filter(messages__in=changed_messages.values("id")).update(
+                is_realm_public=None,
+            )
 
-            if new_stream.is_web_public != stream_being_edited.is_web_public:
-                Attachment.objects.filter(messages__in=changed_messages.values("id")).update(
-                    is_web_public=None,
-                )
-                ArchivedAttachment.objects.filter(
-                    messages__in=changed_messages.values("id")
-                ).update(
-                    is_web_public=None,
-                )
+        if new_stream.is_web_public != stream_being_edited.is_web_public:
+            Attachment.objects.filter(messages__in=changed_messages.values("id")).update(
+                is_web_public=None,
+            )
+            ArchivedAttachment.objects.filter(messages__in=changed_messages.values("id")).update(
+                is_web_public=None,
+            )
 
     # This does message.save(update_fields=[...])
     save_message_for_edit_use_case(message=target_message)
