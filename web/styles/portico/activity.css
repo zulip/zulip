@@ -171,6 +171,8 @@ tr.admin td:first-child {
     }
 }
 
+.reactivate-remote-server-button,
+.deactivate-remote-server-button,
 .delete-next-fixed-price-plan-button,
 .approve-sponsorship-button,
 .support-search-button,
@@ -243,6 +245,7 @@ tr.admin td:first-child {
     }
 }
 
+.deactivate-remote-server-button,
 .delete-next-fixed-price-plan-button,
 .delete-user-button,
 .scrub-realm-button {
@@ -258,6 +261,30 @@ tr.admin td:first-child {
         background-color: hsl(2deg 65% 50%);
         border: 1px solid hsl(2deg 65% 41%);
     }
+}
+
+.reactivate-remote-server-button {
+    color: hsl(0deg 0% 100%);
+    background-color: hsl(35deg 70% 56%);
+    border: 1px solid hsl(35deg 70% 50%);
+    border-radius: 2px;
+
+    &:hover,
+    &:focus,
+    &:active {
+        color: hsl(0deg 0% 100%);
+        background-color: hsl(35deg 82% 40%);
+        border: 1px solid hsl(35deg 82% 30%);
+    }
+}
+
+.reactivate-remote-server-button,
+.deactivate-remote-server-button {
+    font-size: 15px;
+    line-height: 1.8;
+    max-width: 550px;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .remote-support-query-result.remote-server-deactivated {
@@ -280,6 +307,8 @@ tr.admin td:first-child {
     text-align: center;
 }
 
+.reactivate-remote-server-form,
+.deactivate-remote-server-form,
 .realm-support-information,
 .remote-server-information,
 .remote-realm-information {

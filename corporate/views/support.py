@@ -26,10 +26,13 @@ from corporate.lib.stripe import (
     RealmBillingSession,
     RemoteRealmBillingSession,
     RemoteServerBillingSession,
+    ServerDeactivateWithExistingPlanError,
     SupportRequestError,
     SupportType,
     SupportViewRequest,
     cents_to_dollar_string,
+    do_deactivate_remote_server,
+    do_reactivate_remote_server,
     format_discount_percentage,
 )
 from corporate.lib.support import (
@@ -534,6 +537,9 @@ def remote_servers_support(
         default=None, str_validator=check_string_in(VALID_MODIFY_PLAN_METHODS)
     ),
     delete_fixed_price_next_plan: bool = REQ(default=False, json_validator=check_bool),
+    remote_server_status: Optional[str] = REQ(
+        default=None, str_validator=check_string_in(VALID_STATUS_VALUES)
+    ),
 ) -> HttpResponse:
     context: Dict[str, Any] = {}
 
@@ -608,6 +614,28 @@ def remote_servers_support(
             support_view_request = SupportViewRequest(
                 support_type=SupportType.delete_fixed_price_next_plan,
             )
+        elif remote_server_status:
+            assert remote_server is not None
+            remote_server_status_billing_session = RemoteServerBillingSession(
+                support_staff=acting_user, remote_server=remote_server
+            )
+            if remote_server_status == "active":
+                do_reactivate_remote_server(remote_server)
+                context["success_message"] = (
+                    f"Remote server ({remote_server.hostname}) reactivated."
+                )
+            else:
+                assert remote_server_status == "deactivated"
+                try:
+                    do_deactivate_remote_server(remote_server, remote_server_status_billing_session)
+                    context["success_message"] = (
+                        f"Remote server ({remote_server.hostname}) deactivated."
+                    )
+                except ServerDeactivateWithExistingPlanError:
+                    context["error_message"] = (
+                        f"Cannot deactivate remote server ({remote_server.hostname}) that has active or scheduled plans."
+                    )
+
         if support_view_request is not None:
             if remote_realm_support_request:
                 try:
