@@ -72,7 +72,9 @@ from zerver.models import (
     Attachment,
     Message,
     Reaction,
+    Recipient,
     Stream,
+    Subscription,
     UserMessage,
     UserProfile,
     UserTopic,
@@ -553,8 +555,13 @@ def do_update_message(
         # though the messages were deleted, and we should send a
         # delete_message event to them instead.
 
-        subs_to_old_stream = get_active_subscriptions_for_stream_id(
-            stream_id, include_deactivated_users=True
+        # We select _all_ current subscriptions, not just active ones,
+        # for the current stream, since there may be users who were
+        # previously subscribed when the message was sent, but are no
+        # longer, who should also lose their UserMessage rows.
+        subs_to_old_stream = Subscription.objects.filter(
+            recipient__type=Recipient.STREAM,
+            recipient__type_id=stream_id,
         ).select_related("user_profile")
         subs_to_new_stream = list(
             get_active_subscriptions_for_stream_id(
