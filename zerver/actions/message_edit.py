@@ -533,7 +533,7 @@ def do_update_message(
         orig_topic_name = target_message.topic_name()
         event["propagate_mode"] = propagate_mode
 
-    losing_access_user_ids: List[int] = []
+    users_losing_access = []
     user_ids_gaining_usermessages: List[int] = []
     if new_stream is not None:
         assert content is None
@@ -560,33 +560,35 @@ def do_update_message(
         # for the current stream, since there may be users who were
         # previously subscribed when the message was sent, but are no
         # longer, who should also lose their UserMessage rows.
-        subs_to_old_stream = Subscription.objects.filter(
-            recipient__type=Recipient.STREAM,
-            recipient__type_id=stream_id,
-        ).select_related("user_profile")
-        subs_to_new_stream = list(
-            get_active_subscriptions_for_stream_id(
+        old_stream_all_users = UserProfile.objects.filter(
+            id__in=Subscription.objects.filter(
+                recipient__type=Recipient.STREAM,
+                recipient__type_id=stream_id,
+            ).values_list("user_profile_id")
+        )
+        new_stream_current_users = UserProfile.objects.filter(
+            id__in=get_active_subscriptions_for_stream_id(
                 new_stream.id, include_deactivated_users=True
-            ).select_related("user_profile")
+            ).values_list("user_profile_id")
         )
 
-        new_stream_user_ids = {user.user_profile_id for user in subs_to_new_stream}
+        new_stream_current_user_id_set = {user.id for user in new_stream_current_users}
 
         # Get users who aren't subscribed to the new_stream.
-        subs_losing_usermessages = [
-            sub for sub in subs_to_old_stream if sub.user_profile_id not in new_stream_user_ids
+        users_losing_usermessages = [
+            user for user in old_stream_all_users if user.id not in new_stream_current_user_id_set
         ]
         # Users who can longer access the message without some action
         # from administrators.
-        subs_losing_access = [
-            sub
-            for sub in subs_losing_usermessages
-            if sub.user_profile.is_guest or not new_stream.is_public()
+        users_losing_access = [
+            user
+            for user in users_losing_usermessages
+            if user.is_guest or not new_stream.is_public()
         ]
-        losing_access_user_ids = [sub.user_profile_id for sub in subs_losing_access]
+        losing_access_user_ids = [user.id for user in users_losing_access]
 
         unmodified_user_messages = ums.exclude(
-            user_profile_id__in=[sub.user_profile_id for sub in subs_losing_usermessages]
+            user_profile_id__in=[user.id for user in users_losing_usermessages]
         )
 
         if not new_stream.is_history_public_to_subscribers():
@@ -602,7 +604,9 @@ def do_update_message(
             # There may be current users of the new stream who already
             # have a usermessage row -- we handle this via `ON
             # CONFLICT DO NOTHING` during insert.
-            user_ids_gaining_usermessages = list(new_stream_user_ids)
+            user_ids_gaining_usermessages = list(
+                new_stream_current_users.values_list("id", flat=True)
+            )
     else:
         # If we're not moving the topic to another stream, we don't
         # modify the original set of UserMessage objects queried.
@@ -702,7 +706,7 @@ def do_update_message(
         # longer have access to these messages.  Note: This could be
         # very expensive, since it's N guest users x M messages.
         UserMessage.objects.filter(
-            user_profile_id__in=[sub.user_profile_id for sub in subs_losing_usermessages],
+            user_profile_id__in=[user.id for user in users_losing_usermessages],
             message_id__in=changed_messages,
         ).delete()
 
@@ -801,12 +805,12 @@ def do_update_message(
             # subscribers of the old stream but are subscribed to
             # the new stream; clients will be confused.
             old_stream_unsubbed_guests = [
-                sub
-                for sub in subs_to_new_stream
-                if sub.user_profile.is_guest and sub.user_profile_id not in subscriber_ids
+                user
+                for user in new_stream_current_users
+                if user.is_guest and user.id not in subscriber_ids
             ]
             subscriptions = subscriptions.exclude(
-                user_profile_id__in=[sub.user_profile_id for sub in old_stream_unsubbed_guests]
+                user_profile_id__in=[user.id for user in old_stream_unsubbed_guests]
             )
             subscriber_ids = set(subscriptions.values_list("user_profile_id", flat=True))
 
