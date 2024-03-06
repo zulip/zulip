@@ -3713,6 +3713,8 @@ class RealmPropertyActionTest(BaseAction):
     def do_set_realm_user_default_setting_test(self, name: str) -> None:
         bool_tests: List[bool] = [True, False, True]
         test_values: Dict[str, Any] = dict(
+            web_font_size_px=[UserProfile.WEB_FONT_SIZE_PX_LEGACY],
+            web_line_height_percent=[UserProfile.WEB_LINE_HEIGHT_PERCENT_LEGACY],
             color_scheme=UserProfile.COLOR_SCHEME_CHOICES,
             web_home_view=["recent_topics", "inbox", "all_messages"],
             emojiset=[emojiset["key"] for emojiset in RealmUserDefault.emojiset_choices()],
@@ -3854,6 +3856,8 @@ class UserDisplayActionTest(BaseAction):
             web_mark_read_on_scroll_policy=[2, 3, 1],
             user_list_style=[1, 2, 3],
             web_stream_unreads_count_display_policy=[1, 2, 3],
+            web_font_size_px=[12, 16, 18],
+            web_line_height_percent=[105, 120, 160],
             color_scheme=[2, 3, 1],
             email_address_visibility=[5, 4, 1, 2, 3],
         )
