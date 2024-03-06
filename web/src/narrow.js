@@ -59,7 +59,7 @@ import * as util from "./util";
 
 const LARGER_THAN_MAX_MESSAGE_ID = 10000000000000000;
 
-export function reset_ui_state() {
+export function reset_ui_state(opts) {
     // Resets the state of various visual UI elements that are
     // a function of the current narrow.
     narrow_banner.hide_empty_narrow_message();
@@ -70,7 +70,11 @@ export function reset_ui_state() {
     compose_state.allow_draft_restoring();
     // Most users aren't going to send a bunch of a out-of-narrow messages
     // and expect to visit a list of narrows, so let's get these out of the way.
-    compose_banner.clear_message_sent_banners();
+    let skip_automatic_new_visibility_policy_banner = false;
+    if (opts && opts.trigger === "outside_current_view") {
+        skip_automatic_new_visibility_policy_banner = true;
+    }
+    compose_banner.clear_message_sent_banners(true, skip_automatic_new_visibility_policy_banner);
 }
 
 export function changehash(newhash, trigger) {
@@ -485,7 +489,7 @@ export function activate(raw_terms, opts) {
         // this point. This is important to prevent calling such functions
         // more than once in the event that we call narrow.activate
         // recursively.
-        reset_ui_state();
+        reset_ui_state(opts);
 
         if (coming_from_recent_view) {
             recent_view_ui.hide();

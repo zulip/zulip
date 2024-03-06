@@ -44,7 +44,7 @@ async function test_narrow_to_starred_messages(page: Page): Promise<void> {
 async function stars_test(page: Page): Promise<void> {
     await common.log_in(page);
     await page.click("#left-sidebar-navigation-list .top_left_all_messages");
-    const message_list_id = await common.get_current_msg_list_id(page, true);
+    let message_list_id = await common.get_current_msg_list_id(page, true);
     await page.waitForSelector(
         `.message-list[data-message-list-id='${message_list_id}'] .message_row`,
         {visible: true},
@@ -60,6 +60,8 @@ async function stars_test(page: Page): Promise<void> {
     assert.strictEqual(await stars_count(page), 0, "Unexpected already starred message(s).");
 
     await toggle_test_star_message(page);
+    await page.click("#left-sidebar-navigation-list .top_left_all_messages");
+    message_list_id = await common.get_current_msg_list_id(page, true);
     await page.waitForSelector(
         `.message-list[data-message-list-id='${message_list_id}'] .zulip-icon-star-filled`,
         {visible: true},
