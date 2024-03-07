@@ -592,6 +592,11 @@ export function show_edit_bot_info_modal(user_id, $container) {
                 hide_button_spinner($submit_btn);
                 original_values = get_current_values($("#bot-edit-form"));
                 toggle_submit_button($("#edit-user-form"));
+                ui_report.success(
+                    $t_html({defaultMessage: "Saved"}),
+                    $("#user-profile-modal .save-success"),
+                    1200,
+                );
                 $cancel_btn.prop("disabled", false);
             },
             error(xhr) {
@@ -868,6 +873,11 @@ export function show_edit_user_info_modal(user_id, $container) {
                 hide_button_spinner($submit_btn);
                 original_values = get_current_values($("#edit-user-form"));
                 toggle_submit_button($("#edit-user-form"));
+                ui_report.success(
+                    $t_html({defaultMessage: "Saved"}),
+                    $("#user-profile-modal .save-success"),
+                    1200,
+                );
                 $cancel_btn.prop("disabled", false);
             },
             error(xhr) {
