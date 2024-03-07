@@ -435,7 +435,7 @@ Typeahead.prototype = {
         const pseudo_keycode = get_pseudo_keycode(e);
         if (
             (this.options.stopAdvance || (pseudo_keycode !== 9 && pseudo_keycode !== 13)) &&
-            $.inArray(e.keyCode, this.options.advanceKeyCodes)
+            !this.options.advanceKeyCodes.includes(e.keyCode)
         ) {
             e.stopPropagation();
         }
