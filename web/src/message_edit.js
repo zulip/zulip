@@ -1375,7 +1375,7 @@ export function with_first_message_id(stream_id, topic_name, success_cb, error_c
         url: "/json/messages",
         data,
         success(data) {
-            const message_id = data.messages[0].id;
+            const message_id = data.messages[0]?.id;
             success_cb(message_id);
         },
         error: error_cb,
