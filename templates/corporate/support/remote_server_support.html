@@ -41,7 +41,7 @@
         <div class="{{ remote_server_query_result_class }}">
             <div class="remote-server-section">
                 <div class="remote-server-information">
-                    <span class="label">remote server{% if remote_server.deactivated %}: deactivated{% endif %}</span>
+                    <span class="remote-label">Remote server{% if remote_server.deactivated %}: deactivated{% endif %}</span>
                     <h3>{{ remote_server.hostname }} {{ server_analytics_link(remote_server.id ) }}</h3>
                     {% if remote_server.plan_type == SPONSORED_PLAN_TYPE %}
                         <p class="support-section-header">On 100% sponsored Zulip Community plan 🎉</p>
@@ -166,7 +166,7 @@
             <div class="remote-realms-section">
                 {% if remote_realms[remote_server.id] == [] %}
                 <div>
-                    <span class="label">remote realm</span>
+                    <span class="remote-label">Remote realm</span>
                     <h3>None</h3>
                 </div>
                 {% else %}

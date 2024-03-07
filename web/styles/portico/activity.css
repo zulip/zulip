@@ -159,15 +159,22 @@ tr.admin td:first-child {
         }
     }
 
-    .label {
-        padding: 2px 4px;
-        font-size: 11.844px;
+    .cloud-label,
+    .remote-label {
+        padding: 2px 8px;
+        font-size: 0.9em;
         font-weight: bold;
-        line-height: 14px;
         color: hsl(0deg 0% 100%);
         text-shadow: 0 -1px 0 hsla(0deg 0% 0% / 25%);
-        background-color: hsl(0deg 0% 60%);
         border-radius: 3px;
+    }
+
+    .cloud-label {
+        background-color: hsl(280deg 100% 40%);
+    }
+
+    .remote-label {
+        background-color: hsl(186deg 76% 36%);
     }
 }
 
