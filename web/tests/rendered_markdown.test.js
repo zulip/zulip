@@ -536,10 +536,16 @@ function test_code_playground(mock_template, viewing_code) {
 
     $hilite.data("code-language", "javascript");
 
+    const $code_buttons_container = $.create("code_buttons_container", {
+        children: ["copy-code-stub", "view-code-stub"],
+    });
     const $copy_code_button = $.create("copy_code_button", {children: ["copy-code-stub"]});
     const $view_code_in_playground = $.create("view_code_in_playground");
 
-    // The code playground code prepends a few buttons
+    $code_buttons_container.set_find_results(".copy_codeblock", $copy_code_button);
+    $code_buttons_container.set_find_results(".code_external_link", $view_code_in_playground);
+
+    // The code playground code prepends a button container
     // to the <pre> section of a highlighted piece of code.
     // The args to prepend should be jQuery objects (or in
     // our case "fake" zjquery objects).
@@ -549,15 +555,15 @@ function test_code_playground(mock_template, viewing_code) {
         prepends.push(arg);
     };
 
-    mock_template("copy_code_button.hbs", false, (data) => {
-        assert.equal(data, undefined);
-        return {to_$: () => $copy_code_button};
-    });
-
     if (viewing_code) {
-        mock_template("view_code_in_playground.hbs", false, (data) => {
-            assert.equal(data, undefined);
-            return {to_$: () => $view_code_in_playground};
+        mock_template("code_buttons_container.hbs", true, (data) => {
+            assert.equal(data.show_playground_button, true);
+            return {to_$: () => $code_buttons_container};
+        });
+    } else {
+        mock_template("code_buttons_container.hbs", true, (data) => {
+            assert.equal(data.show_playground_button, false);
+            return {to_$: () => $code_buttons_container};
         });
     }
 
@@ -565,6 +571,7 @@ function test_code_playground(mock_template, viewing_code) {
 
     return {
         prepends,
+        $button_container: $code_buttons_container,
         $copy_code: $copy_code_button,
         $view_code: $view_code_in_playground,
     };
@@ -578,8 +585,8 @@ run_test("code playground none", ({override, mock_template}) => {
 
     override(copied_tooltip, "show_copied_confirmation", noop);
 
-    const {prepends, $copy_code, $view_code} = test_code_playground(mock_template, false);
-    assert.deepEqual(prepends, [$copy_code]);
+    const {prepends, $button_container, $view_code} = test_code_playground(mock_template, false);
+    assert.deepEqual(prepends, [$button_container]);
     assert_clipboard_setup();
 
     assert.equal($view_code.attr("data-tippy-content"), undefined);
@@ -594,8 +601,8 @@ run_test("code playground single", ({override, mock_template}) => {
 
     override(copied_tooltip, "show_copied_confirmation", noop);
 
-    const {prepends, $copy_code, $view_code} = test_code_playground(mock_template, true);
-    assert.deepEqual(prepends, [$view_code, $copy_code]);
+    const {prepends, $button_container, $view_code} = test_code_playground(mock_template, true);
+    assert.deepEqual(prepends, [$button_container]);
     assert_clipboard_setup();
 
     assert.equal(
@@ -614,8 +621,8 @@ run_test("code playground multiple", ({override, mock_template}) => {
 
     override(copied_tooltip, "show_copied_confirmation", noop);
 
-    const {prepends, $copy_code, $view_code} = test_code_playground(mock_template, true);
-    assert.deepEqual(prepends, [$view_code, $copy_code]);
+    const {prepends, $button_container, $view_code} = test_code_playground(mock_template, true);
+    assert.deepEqual(prepends, [$button_container]);
     assert_clipboard_setup();
 
     assert.equal($view_code.attr("data-tippy-content"), "translated: View in playground");

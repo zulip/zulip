@@ -3,9 +3,8 @@ import {isValid, parseISO} from "date-fns";
 import $ from "jquery";
 import assert from "minimalistic-assert";
 
-import copy_code_button from "../templates/copy_code_button.hbs";
+import code_buttons_container from "../templates/code_buttons_container.hbs";
 import render_markdown_timestamp from "../templates/markdown_timestamp.hbs";
-import view_code_in_playground from "../templates/view_code_in_playground.hbs";
 
 import * as blueslip from "./blueslip";
 import {show_copied_confirmation} from "./copied_tooltip";
@@ -280,37 +279,42 @@ export const update_elements = ($content: JQuery): void => {
         const $codehilite = $(this);
         const $pre = $codehilite.find("pre");
         const fenced_code_lang = $codehilite.data("code-language");
+        let playground_info;
         if (fenced_code_lang !== undefined) {
-            const playground_info =
-                realm_playground.get_playground_info_for_languages(fenced_code_lang);
-            if (playground_info !== undefined) {
-                // If a playground is configured for this language,
-                // offer to view the code in that playground.  When
-                // there are multiple playgrounds, we display a
-                // popover listing the options.
-                let title = $t({defaultMessage: "View in playground"});
-                const $view_in_playground_button = $(view_code_in_playground());
-                $pre.prepend($view_in_playground_button);
-                if (playground_info.length === 1) {
-                    title = $t(
-                        {defaultMessage: "View in {playground_name}"},
-                        {playground_name: playground_info[0].name},
-                    );
-                } else {
-                    $view_in_playground_button.attr("aria-haspopup", "true");
-                }
-                $view_in_playground_button.attr("data-tippy-content", title);
-                $view_in_playground_button.attr("aria-label", title);
-            }
+            playground_info = realm_playground.get_playground_info_for_languages(fenced_code_lang);
         }
-        const $copy_button = $(copy_code_button());
-        $pre.prepend($copy_button);
-        const clipboard = new ClipboardJS($copy_button[0], {
+        const show_playground_button =
+            fenced_code_lang !== undefined && playground_info !== undefined;
+
+        const $buttonContainer = $(code_buttons_container({show_playground_button}));
+        $pre.prepend($buttonContainer);
+
+        if (show_playground_button) {
+            // If a playground is configured for this language,
+            // offer to view the code in that playground.  When
+            // there are multiple playgrounds, we display a
+            // popover listing the options.
+            let title = $t({defaultMessage: "View in playground"});
+            const $view_in_playground_button = $buttonContainer.find(".code_external_link");
+            if (playground_info && playground_info.length === 1) {
+                title = $t(
+                    {defaultMessage: "View in {playground_name}"},
+                    {playground_name: playground_info[0].name},
+                );
+            } else {
+                $view_in_playground_button.attr("aria-haspopup", "true");
+            }
+            $view_in_playground_button.attr("data-tippy-content", title);
+            $view_in_playground_button.attr("aria-label", title);
+        }
+
+        const clipboard = new ClipboardJS($buttonContainer[0], {
             text(copy_element) {
                 return $(copy_element).siblings("code").text();
             },
         });
         clipboard.on("success", () => {
+            const $copy_button = $buttonContainer.find(".copy_codeblock");
             show_copied_confirmation($copy_button[0]);
         });
         $codehilite.addClass("zulip-code-block");
