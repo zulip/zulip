@@ -299,6 +299,7 @@ tr.admin td:first-child {
     }
 }
 
+.delete-next-fixed-price-plan-form,
 .delete-user-form {
     margin: 8px 0;
 }
