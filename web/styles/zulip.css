@@ -798,6 +798,14 @@ strong {
             color: hsl(0deg 0% 20%);
             white-space: nowrap;
 
+            /* hidden text just to maintain line height for a blank option */
+            strong:empty {
+                &::after {
+                    content: ".";
+                    visibility: hidden;
+                }
+            }
+
             &:hover {
                 text-decoration: none;
             }

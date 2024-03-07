@@ -677,13 +677,15 @@ export function get_candidates(query) {
     const syntax_token = current_token.slice(0, 3);
     if (this.options.completions.syntax && (syntax_token === "```" || syntax_token === "~~~")) {
         // Only autocomplete if user starts typing a language after ```
-        if (current_token.length === 3) {
+        // unless the fence was added via the code formatting button.
+        if (current_token.length === 3 && !compose_ui.code_formatting_button_triggered) {
             return false;
         }
 
         // If the only input is a space, don't autocomplete
         current_token = current_token.slice(3);
         if (current_token === " ") {
+            compose_ui.set_code_formatting_button_triggered(false);
             return false;
         }
 
@@ -693,7 +695,13 @@ export function get_candidates(query) {
         }
         this.completing = "syntax";
         this.token = current_token;
-        return realm_playground.get_pygments_typeahead_list_for_composebox();
+        // If the code formatting button was triggered, we want to show a blank option
+        // to improve the discoverability of the possibility of specifying a language.
+        const language_list = compose_ui.code_formatting_button_triggered
+            ? ["", ...realm_playground.get_pygments_typeahead_list_for_composebox()]
+            : realm_playground.get_pygments_typeahead_list_for_composebox();
+        compose_ui.set_code_formatting_button_triggered(false);
+        return language_list;
     }
 
     // Only start the emoji autocompleter if : is directly after one

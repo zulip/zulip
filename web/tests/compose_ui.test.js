@@ -508,6 +508,7 @@ $textarea.get = () => ({
             length: end - start,
         });
     },
+    click() {},
 });
 
 // The argument `text_representation` is a string representing the text
@@ -859,17 +860,17 @@ run_test("format_text - code", ({override, override_rewire}) => {
     compose_ui.format_text($textarea, "code");
     assert.equal(
         get_textarea_state(),
-        "Before\nBefore \n```\n<this should\nbe code>\n```\n After\nAfter",
+        "Before\nBefore \n```|\nthis should\nbe code\n```\n After\nAfter",
     );
 
     init_textarea_state("<abc\ndef>");
     compose_ui.format_text($textarea, "code");
-    assert.equal(get_textarea_state(), "```\n<abc\ndef>\n```");
+    assert.equal(get_textarea_state(), "```|\nabc\ndef\n```");
 
     // Code, no selection
     init_textarea_state("|");
     compose_ui.format_text($textarea, "code");
-    assert.equal(get_textarea_state(), "```\n|\n```");
+    assert.equal(get_textarea_state(), "```|\n\n```");
 
     // Undo code selected text, syntax not selected
     init_textarea_state("before `<abc>` after");
