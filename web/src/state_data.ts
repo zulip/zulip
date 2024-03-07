@@ -121,6 +121,8 @@ export const realm_schema = z.object({
     realm_create_public_stream_policy: z.number(),
     realm_create_web_public_stream_policy: z.number(),
     realm_delete_own_message_policy: z.number(),
+    realm_presence_disabled: z.boolean(),
+    server_presence_ping_interval_seconds: z.number(),
     realm_description: z.string(),
     realm_domains: z.array(
         z.object({
