@@ -2762,10 +2762,10 @@ class BillingSession(ABC):
             self.make_end_of_cycle_updates_if_needed(plan, event_time)
 
         # The primary way to not create an invoice for a plan is to not have
-        # any new ledger entry. The 'self.on_paid_plan()' check adds an extra
+        # any new ledger entry. The 'plan.is_paid()' check adds an extra
         # layer of defense to avoid creating any invoices for customers not on
         # paid plan. It saves a DB query too.
-        if self.on_paid_plan():
+        if plan.is_paid():
             if plan.invoicing_status == CustomerPlan.INVOICING_STATUS_INITIAL_INVOICE_TO_BE_SENT:
                 invoiced_through_id = -1
                 licenses_base = None
