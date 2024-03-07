@@ -176,7 +176,7 @@ class TestRemoteServerSupportEndpoint(ZulipTestCase):
         ) -> None:
             self.assert_in_success_response(
                 [
-                    '<span class="label">remote server</span>',
+                    '<span class="remote-label">Remote server</span>',
                     f"<h3>{hostname} <a",
                     f"<b>Contact email</b>: admin@{hostname}",
                     "<b>Billing users</b>:",
@@ -196,7 +196,7 @@ class TestRemoteServerSupportEndpoint(ZulipTestCase):
         ) -> None:
             self.assert_in_success_response(
                 [
-                    '<span class="label">remote realm</span>',
+                    '<span class="remote-label">Remote realm</span>',
                     f"<h3>{name}</h3>",
                     f"<b>Remote realm host:</b> {host}<br />",
                     "<b>Date created</b>: 01 December 2023",
@@ -214,7 +214,7 @@ class TestRemoteServerSupportEndpoint(ZulipTestCase):
             )
             self.assert_in_success_response(
                 [
-                    '<span class="label">remote server: deactivated</span>',
+                    '<span class="remote-label">Remote server: deactivated</span>',
                     f"<h3>{hostname} <a",
                     f"<b>Contact email</b>: admin@{hostname}",
                     "<b>Billing users</b>:",
@@ -428,7 +428,10 @@ class TestRemoteServerSupportEndpoint(ZulipTestCase):
         unknown_uuid = uuid.uuid4()
         result = self.client_get("/activity/remote/support", {"q": f"{unknown_uuid}"})
         self.assert_not_in_success_response(
-            ['<span class="label">remote server</span>', '<span class="label">remote realm</span>'],
+            [
+                '<span class="remote-label">Remote server</span>',
+                '<span class="remote-label">Remote realm</span>',
+            ],
             result,
         )
 
@@ -680,7 +683,7 @@ class TestSupportEndpoint(ZulipTestCase):
         ) -> None:
             self.assert_in_success_response(
                 [
-                    '<span class="label">user</span>\n',
+                    '<span class="cloud-label">Cloud user</span>\n',
                     f"<h3>{full_name}</h3>",
                     f"<b>Email</b>: {email}",
                     "<b>Is active</b>: True<br />",
@@ -786,7 +789,7 @@ class TestSupportEndpoint(ZulipTestCase):
         ) -> None:
             self.assert_in_success_response(
                 [
-                    '<span class="label">confirmation</span>\n',
+                    '<span class="cloud-label">Cloud confirmation</span>\n',
                     f"<b>Email</b>: {email}",
                 ],
                 result,
@@ -814,7 +817,7 @@ class TestSupportEndpoint(ZulipTestCase):
         def check_realm_creation_query_result(result: "TestHttpResponse", email: str) -> None:
             self.assert_in_success_response(
                 [
-                    '<span class="label">confirmation</span>\n',
+                    '<span class="cloud-label">Cloud confirmation</span>\n',
                     "<h3>Realm creation</h3>\n",
                     "<b>Link</b>: http://testserver/accounts/do_confirm/",
                     "<b>Expires in</b>: 1\xa0day",
@@ -825,7 +828,7 @@ class TestSupportEndpoint(ZulipTestCase):
         def check_multiuse_invite_link_query_result(result: "TestHttpResponse") -> None:
             self.assert_in_success_response(
                 [
-                    '<span class="label">confirmation</span>\n',
+                    '<span class="cloud-label">Cloud confirmation</span>\n',
                     "<h3>Multiuse invite</h3>\n",
                     "<b>Link</b>: http://zulip.testserver/join/",
                     "<b>Expires in</b>: 1\xa0week, 3\xa0days",
@@ -836,7 +839,7 @@ class TestSupportEndpoint(ZulipTestCase):
         def check_realm_reactivation_link_query_result(result: "TestHttpResponse") -> None:
             self.assert_in_success_response(
                 [
-                    '<span class="label">confirmation</span>\n',
+                    '<span class="cloud-label">Cloud confirmation</span>\n',
                     "<h3>Realm reactivation</h3>\n",
                     "<b>Link</b>: http://zulip.testserver/reactivate/",
                     "<b>Expires in</b>: 1\xa0day",
