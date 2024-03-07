@@ -8,7 +8,9 @@
             <li><b>Estimated total users</b>: {{ latest_sponsorship_request.total_users }}</li>
             <li><b>Paid staff</b>: {{ latest_sponsorship_request.paid_users }}</li>
             <li><b>Description of paid staff</b>: {{ latest_sponsorship_request.paid_users_description }}</li>
+            {% if latest_sponsorship_request.requested_plan != "" %}
             <li><b>Requested plan</b>: {{ latest_sponsorship_request.requested_plan }}</li>
+            {% endif %}
         </ul>
     {% else %}
         <b>No sponsorship requests have been submitted.</b>

@@ -85,13 +85,13 @@
             {{ csrf_input }}
             <input type="hidden" name="realm_id" value="{{ realm.id }}" />
             <select name="sponsorship_pending">
-                <option value="true" {% if plan_data[realm.id].customer and plan_data[realm.id].customer.sponsorship_pending %}selected{% endif %}>Yes</option>
-                <option value="false" {% if not plan_data[realm.id].customer or not plan_data[realm.id].customer.sponsorship_pending %}selected{% endif %}>No</option>
+                <option value="true" {% if realm_support_data[realm.id].sponsorship_data.sponsorship_pending %}selected{% endif %}>Yes</option>
+                <option value="false" {% if not realm_support_data[realm.id].sponsorship_data.sponsorship_pending %}selected{% endif %}>No</option>
             </select>
             <button type="submit" class="support-submit-button">Update</button>
         </form>
 
-        {% if plan_data[realm.id].customer and plan_data[realm.id].customer.sponsorship_pending %}
+        {% if realm_support_data[realm.id].sponsorship_data.sponsorship_pending %}
         <form method="POST" class="approve-sponsorship-form support-form">
             {{ csrf_input }}
             <input type="hidden" name="realm_id" value="{{ realm.id }}" />
@@ -107,19 +107,26 @@
             <b>Discount (use 85 for nonprofits)</b>:<br />
             {{ csrf_input }}
             <input type="hidden" name="realm_id" value="{{ realm.id }}" />
-            {% if plan_data[realm.id].current_plan and plan_data[realm.id].current_plan.fixed_price %}
-            <input type="number" name="discount" value="{{ format_discount(get_discount(plan_data[realm.id].customer)) }}" step="0.01" min="0" max="99.99" disabled />
+            {% if realm_support_data[realm.id].plan_data.current_plan and realm_support_data[realm.id].plan_data.current_plan.fixed_price %}
+            <input type="number" name="discount" value="{{ format_discount(realm_support_data[realm.id].sponsorship_data.default_discount) }}" step="0.01" min="0" max="99.99" disabled />
             <button type="submit" class="support-submit-button" disabled>Update</button>
             {% else %}
-            <input type="number" name="discount" value="{{ format_discount(get_discount(plan_data[realm.id].customer)) }}" step="0.01" min="0" max="99.99" required />
+            <input type="number" name="discount" value="{{ format_discount(realm_support_data[realm.id].sponsorship_data.default_discount) }}" step="0.01" min="0" max="99.99" required />
             <button type="submit" class="support-submit-button">Update</button>
             {% endif %}
         </form>
+
+        {% if realm_support_data[realm.id].sponsorship_data.sponsorship_pending %}
+            {% with %}
+                {% set latest_sponsorship_request = realm_support_data[realm.id].sponsorship_data.latest_sponsorship_request %}
+                {% include 'corporate/support/sponsorship_request_details.html' %}
+            {% endwith %}
+        {% endif %}
     </div>
-    {% if plan_data[realm.id].current_plan %}
+    {% if realm_support_data[realm.id].plan_data.current_plan %}
     <div class="current-plan-container">
         {% with %}
-            {% set plan_data = plan_data[realm.id] %}
+            {% set plan_data = realm_support_data[realm.id].plan_data %}
             {% set format_discount = format_discount %}
             {% set dollar_amount = dollar_amount %}
             {% include 'corporate/support/current_plan_details.html' %}
@@ -130,8 +137,8 @@
             {{ csrf_input }}
             <input type="hidden" name="realm_id" value="{{ realm.id }}" />
             <select name="billing_modality" class="billing-modality-select" required>
-                <option value="charge_automatically" {% if plan_data[realm.id].current_plan.charge_automatically %}selected{% endif %}>Charge automatically</option>
-                <option value="send_invoice" {% if not plan_data[realm.id].current_plan.charge_automatically %}selected{% endif %}>Pay by invoice</option>
+                <option value="charge_automatically" {% if realm_support_data[realm.id].plan_data.current_plan.charge_automatically %}selected{% endif %}>Charge automatically</option>
+                <option value="send_invoice" {% if not realm_support_data[realm.id].plan_data.current_plan.charge_automatically %}selected{% endif %}>Pay by invoice</option>
             </select>
             <button type="submit" class="support-submit-button">Update</button>
         </form>
