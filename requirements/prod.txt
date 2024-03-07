@@ -160,7 +160,7 @@ backoff==2.2.1 \
     --hash=sha256:03f829f5bb1923180821643f8753b0502c3b682293992485b0eef2807afa5cba \
     --hash=sha256:63579f9a0628e06278f7e47b7d7d5b6ce20dc65c5e96a6f3ca99a6adca0396e8
     # via -r requirements/common.in
-https://github.com/andersk/zoneinfo/archive/f9687abaea8453be1c8d0e21544bd557d65af933.zip#egg=backports.zoneinfo==0.2.1+git ; python_version < "3.9" \
+https://github.com/zulip/zoneinfo/archive/f9687abaea8453be1c8d0e21544bd557d65af933.zip#egg=backports.zoneinfo==0.2.1+git ; python_version < "3.9" \
     --hash=sha256:23938590401ee45d88f37a5caa538b410ffa827169965a0bcf387da13b695450
     # via
     #   -r requirements/common.in
@@ -2409,7 +2409,7 @@ zxcvbn==4.4.28 \
     # via -r requirements/common.in
 
 # The following packages are considered to be unsafe in a requirements file:
-https://github.com/andersk/pip/archive/6642149c44297200f44dfe215b1cb7954d47ed77.zip#egg=pip==20.3.4+git \
+https://github.com/zulip/pip/archive/6642149c44297200f44dfe215b1cb7954d47ed77.zip#egg=pip==20.3.4+git \
     --hash=sha256:4dfbc892b80b32091921c7cead7c4aff06c726e520633ac89bc463137e0fd27d
     # via
     #   -r requirements/pip.in
