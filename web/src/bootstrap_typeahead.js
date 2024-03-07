@@ -573,7 +573,10 @@ Typeahead.prototype = {
             return;
         }
         setTimeout(() => {
-            if (!this.$container.is(":hover")) {
+            if (!this.$container.is(":hover") && !this.$element.is(":focus")) {
+                // We do not hide the typeahead in case it is being hovered over,
+                // or if the focus is immediately back in the input field (likely
+                // when using compose formatting buttons).
                 this.hide();
             } else if (this.shown) {
                 // refocus the input if the user clicked on the typeahead
