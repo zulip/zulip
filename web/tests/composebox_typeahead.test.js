@@ -16,6 +16,7 @@ const compose_ui = mock_esm("../src/compose_ui", {
         autosize_called = true;
     },
     cursor_inside_code_block: () => false,
+    set_code_formatting_button_triggered: noop,
 });
 const compose_validate = mock_esm("../src/compose_validate", {
     validate_message_length: () => true,
