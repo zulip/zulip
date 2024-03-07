@@ -2793,7 +2793,7 @@ class BillingSession(ABC):
                         }
                     description = f"{plan.name} - renewal"
                 elif licenses_base is not None and ledger_entry.licenses != licenses_base:
-                    assert plan.price_per_license
+                    assert plan.price_per_license is not None
                     last_ledger_entry_renewal = (
                         LicenseLedger.objects.filter(
                             plan=plan, is_renewal=True, event_time__lte=ledger_entry.event_time
