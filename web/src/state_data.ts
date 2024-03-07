@@ -121,8 +121,6 @@ export const realm_schema = z.object({
     realm_create_public_stream_policy: z.number(),
     realm_create_web_public_stream_policy: z.number(),
     realm_delete_own_message_policy: z.number(),
-    realm_presence_disabled: z.boolean(),
-    server_presence_ping_interval_seconds: z.number(),
     realm_description: z.string(),
     realm_domains: z.array(
         z.object({
@@ -150,6 +148,7 @@ export const realm_schema = z.object({
     realm_night_logo_url: z.string(),
     realm_org_type: z.number(),
     realm_plan_type: z.number(),
+    realm_presence_disabled: z.boolean(),
     realm_private_message_policy: z.number(),
     realm_push_notifications_enabled: z.boolean(),
     realm_upload_quota_mib: z.nullable(z.number()),
@@ -162,6 +161,7 @@ export const realm_schema = z.object({
     server_name_changes_disabled: z.boolean(),
     server_needs_upgrade: z.boolean(),
     server_presence_offline_threshold_seconds: z.number(),
+    server_presence_ping_interval_seconds: z.number(),
     server_supported_permission_settings: z.object({
         realm: z.record(group_permission_setting_schema),
         stream: z.record(group_permission_setting_schema),
