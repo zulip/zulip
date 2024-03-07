@@ -173,15 +173,6 @@ If you have any trouble setting up a code playground, please [contact
 us](/help/contact-support) with details on what you're trying to do, and we'll
 be happy to help you out.
 
-## Other Playgrounds
-Below is the list of other playground URL templates that can be used for some commonly used languages.
-
-* For Java: `https://pythontutor.com/java.html#code={code}` or `https://cscircles.cemc.uwaterloo.ca/java_visualize/#code={code}`
-* For JavaScript: `https://pythontutor.com/javascript.html#code={code}`
-* For Python: `https://pythontutor.com/python-compiler.html#code={code}`
-* For C: `https://pythontutor.com/c.html#code={code}`
-* For C++: `https://pythontutor.com/cpp.html#code={code}`
-
 ## Related articles
 
 * [Message formatting](/help/format-your-message-using-markdown)
