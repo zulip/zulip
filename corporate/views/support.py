@@ -204,24 +204,41 @@ def get_confirmations(
 
 
 @dataclass
-class PlanTierOption:
+class SupportSelectOption:
     name: str
     value: int
 
 
-def get_remote_plan_tier_options() -> List[PlanTierOption]:
+def get_remote_plan_tier_options() -> List[SupportSelectOption]:
     remote_plan_tiers = [
-        PlanTierOption("None", 0),
-        PlanTierOption(
+        SupportSelectOption("None", 0),
+        SupportSelectOption(
             CustomerPlan.name_from_tier(CustomerPlan.TIER_SELF_HOSTED_BASIC),
             CustomerPlan.TIER_SELF_HOSTED_BASIC,
         ),
-        PlanTierOption(
+        SupportSelectOption(
             CustomerPlan.name_from_tier(CustomerPlan.TIER_SELF_HOSTED_BUSINESS),
             CustomerPlan.TIER_SELF_HOSTED_BUSINESS,
         ),
     ]
     return remote_plan_tiers
+
+
+def get_realm_plan_type_options() -> List[SupportSelectOption]:
+    plan_types = [
+        SupportSelectOption(
+            get_plan_type_string(Realm.PLAN_TYPE_SELF_HOSTED), Realm.PLAN_TYPE_SELF_HOSTED
+        ),
+        SupportSelectOption(get_plan_type_string(Realm.PLAN_TYPE_LIMITED), Realm.PLAN_TYPE_LIMITED),
+        SupportSelectOption(
+            get_plan_type_string(Realm.PLAN_TYPE_STANDARD), Realm.PLAN_TYPE_STANDARD
+        ),
+        SupportSelectOption(
+            get_plan_type_string(Realm.PLAN_TYPE_STANDARD_FREE), Realm.PLAN_TYPE_STANDARD_FREE
+        ),
+        SupportSelectOption(get_plan_type_string(Realm.PLAN_TYPE_PLUS), Realm.PLAN_TYPE_PLUS),
+    ]
+    return plan_types
 
 
 VALID_MODIFY_PLAN_METHODS = [
@@ -461,12 +478,12 @@ def support(
     context["get_realm_owner_emails_as_string"] = get_realm_owner_emails_as_string
     context["get_realm_admin_emails_as_string"] = get_realm_admin_emails_as_string
     context["get_discount"] = get_customer_discount_for_support_view
-    context["get_org_type_display_name"] = get_org_type_display_name
     context["format_discount"] = format_discount_percentage
     context["dollar_amount"] = cents_to_dollar_string
     context["realm_icon_url"] = realm_icon_url
     context["Confirmation"] = Confirmation
-    context["sorted_realm_types"] = sorted(
+    context["REALM_PLAN_TYPES"] = get_realm_plan_type_options()
+    context["ORGANIZATION_TYPES"] = sorted(
         Realm.ORG_TYPES.values(), key=lambda d: d["display_order"]
     )
 

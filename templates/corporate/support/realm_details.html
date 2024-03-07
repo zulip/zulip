@@ -55,10 +55,12 @@
             {{ csrf_input }}
             <input type="hidden" name="realm_id" value="{{ realm.id }}" />
             <select name="org_type" id="org_type">
-                {% for realm_type in sorted_realm_types %}
-                    <option value="{{ realm_type.id }}" {% if realm.org_type == realm_type.id %}selected{% endif %}>
-                        {{ _(realm_type.name) }}
-                    </option>
+                {% for organization_type in ORGANIZATION_TYPES %}
+                    {% if realm.org_type == organization_type.id %}
+                        <option value="{{ organization_type.id }}" selected>{{ organization_type.name }}</option>
+                    {% else %}
+                        <option value="{{ organization_type.id }}">{{ organization_type.name }}</option>
+                    {% endif %}
                 {% endfor %}
             </select>
             <button type="submit" class="support-submit-button">Update</button>
@@ -68,11 +70,13 @@
             {{ csrf_input }}
             <input type="hidden" name="realm_id" value="{{ realm.id }}" />
             <select name="plan_type">
-                <option value="1" {% if realm.plan_type == 1 %}selected{% endif %}>Self-hosted</option>
-                <option value="2" {% if realm.plan_type == 2 %}selected{% endif %}>Limited</option>
-                <option value="3" {% if realm.plan_type == 3 %}selected{% endif %}>Standard</option>
-                <option value="4" {% if realm.plan_type == 4 %}selected{% endif %}>Standard Free</option>
-                <option value="10" {% if realm.plan_type == 10 %}selected{% endif %}>Plus</option>
+                {% for plan_type in REALM_PLAN_TYPES %}
+                    {% if realm.plan_type == plan_type.value %}
+                        <option value="{{ plan_type.value }}" selected>{{ plan_type.name }}</option>
+                    {% else %}
+                        <option value="{{ plan_type.value }}">{{ plan_type.name }}</option>
+                    {% endif %}
+                {% endfor %}
             </select>
             <button type="submit" class="support-submit-button">Update</button>
         </form>
