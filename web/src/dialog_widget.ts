@@ -130,6 +130,11 @@ export function get_current_values($inputs: JQuery): Record<string, unknown> {
                 current_values[property_name] = this.files[0];
             } else if (property_name === "edit_bot_owner") {
                 current_values[property_name] = $(this).find(".dropdown_widget_value").text();
+            } else if ($(this).hasClass("pill-container")) {
+                // Notably, this just concatenates the pill labels;
+                // good enough for checking if something has changed,
+                // but not appropriate for many other potential uses.
+                current_values[property_name] = $(this).find(".pill-value").text();
             } else {
                 current_values[property_name] = $(this).val();
             }
