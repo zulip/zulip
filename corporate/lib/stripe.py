@@ -1987,7 +1987,11 @@ class BillingSession(ABC):
     def make_end_of_cycle_updates_if_needed(
         self, plan: CustomerPlan, event_time: datetime
     ) -> Tuple[Optional[CustomerPlan], Optional[LicenseLedger]]:
-        last_ledger_entry = LicenseLedger.objects.filter(plan=plan).order_by("-id").first()
+        last_ledger_entry = (
+            LicenseLedger.objects.filter(plan=plan, event_time__lte=event_time)
+            .order_by("-id")
+            .first()
+        )
         next_billing_cycle = self.get_next_billing_cycle(plan)
         event_in_next_billing_cycle = next_billing_cycle <= event_time
 
@@ -4852,8 +4856,9 @@ def invoice_plans_as_needed(event_time: Optional[datetime] = None) -> None:
             remote_server = plan.customer.remote_server
             billing_session = RemoteServerBillingSession(remote_server=remote_server)
 
+        assert plan.next_invoice_date is not None  # for mypy
+
         if remote_server:
-            assert plan.next_invoice_date is not None
             if (
                 plan.fixed_price is not None
                 and not plan.reminder_to_review_plan_email_sent
@@ -4900,7 +4905,7 @@ def invoice_plans_as_needed(event_time: Optional[datetime] = None) -> None:
                     plan.save(update_fields=["invoice_overdue_email_sent"])
                 continue
 
-        billing_session.invoice_plan(plan, event_time)
+        billing_session.invoice_plan(plan, plan.next_invoice_date)
 
 
 def is_realm_on_free_trial(realm: Realm) -> bool:

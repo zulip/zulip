@@ -1290,6 +1290,9 @@ class StripeTest(StripeTestCase):
                 .first(),
                 (19, 19),
             )
+            # Fast forward next_invoice_date to 10 months from the free_trial_end_date
+            plan.next_invoice_date = add_months(free_trial_end_date, 10)
+            plan.save(update_fields=["next_invoice_date"])
             invoice_plans_as_needed(add_months(free_trial_end_date, 10))
             [invoice0, invoice1] = iter(stripe.Invoice.list(customer=stripe_customer.id))
             invoice_params = {
@@ -1310,6 +1313,9 @@ class StripeTest(StripeTestCase):
                 },
             }
 
+            # Fast forward next_invoice_date to one year from the free_trial_end_date
+            plan.next_invoice_date = add_months(free_trial_end_date, 12)
+            plan.save(update_fields=["next_invoice_date"])
             invoice_plans_as_needed(add_months(free_trial_end_date, 12))
             [invoice0, invoice1, invoice2] = iter(stripe.Invoice.list(customer=stripe_customer.id))
 
@@ -2604,6 +2610,10 @@ class StripeTest(StripeTestCase):
         }
         for key, value in monthly_plan_invoice_item_params.items():
             self.assertEqual(monthly_plan_invoice_item[key], value)
+
+        # Fast forward next_invoice_date to one year from the day we switched to annual plan.
+        annual_plan.next_invoice_date = add_months(self.now, 13)
+        annual_plan.save(update_fields=["next_invoice_date"])
         invoice_plans_as_needed(add_months(self.now, 13))
 
         [invoice0, invoice1, invoice2, invoice3, invoice4] = iter(
@@ -2990,6 +3000,9 @@ class StripeTest(StripeTestCase):
         assert plan is not None
         self.assertIsNotNone(plan.next_invoice_date)
         self.assertEqual(plan.status, CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE)
+        # Fast forward the next_invoice_date to next year.
+        plan.next_invoice_date = self.next_year
+        plan.save(update_fields=["next_invoice_date"])
         invoice_plans_as_needed(self.next_year)
         plan = CustomerPlan.objects.first()
         assert plan is not None
@@ -3366,6 +3379,9 @@ class StripeTest(StripeTestCase):
             context.exception.error_description, "subscribing with existing subscription"
         )
 
+        # Fast forward the next_invoice_date to next year.
+        new_plan.next_invoice_date = self.next_year
+        new_plan.save(update_fields=["next_invoice_date"])
         invoice_plans_as_needed(self.next_year)
 
         with time_machine.travel(self.next_year, tick=False):
@@ -5482,6 +5498,9 @@ class TestSupportBillingHelpers(StripeTestCase):
         self.assertEqual(plan.discount, 50)
         customer.refresh_from_db()
         self.assertEqual(customer.default_discount, 50)
+        # Fast forward the next_invoice_date to next year.
+        plan.next_invoice_date = self.next_year
+        plan.save(update_fields=["next_invoice_date"])
         invoice_plans_as_needed(self.next_year + timedelta(days=10))
         stripe_customer_id = customer.stripe_customer_id
         assert stripe_customer_id is not None
