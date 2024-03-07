@@ -102,6 +102,24 @@ export function close(on_hidden_callback?: () => void): void {
     modals.close("dialog_widget_modal", {on_hidden: on_hidden_callback});
 }
 
+export function get_current_values($inputs: JQuery): Record<string, unknown> {
+    const current_values: Record<string, unknown> = {};
+    $inputs.each(function () {
+        const property_name = $(this).attr("name")!;
+        if (property_name) {
+            if ($(this).is("input[type='file']") && $(this).prop("files")?.length) {
+                // If the input is a file input and a file has been selected, set value to file object
+                current_values[property_name] = $(this).prop("files")[0];
+            } else if (property_name === "edit_bot_owner") {
+                current_values[property_name] = $(this).find(".dropdown_widget_value").text();
+            } else {
+                current_values[property_name] = $(this).val();
+            }
+        }
+    });
+    return current_values;
+}
+
 export function launch(conf: DialogWidgetConfig): void {
     // Mandatory fields:
     // * html_heading
@@ -150,24 +168,6 @@ export function launch(conf: DialogWidgetConfig): void {
     }
 
     const $submit_button = $dialog.find(".dialog_submit_button");
-
-    function get_current_values($inputs: JQuery): Record<string, unknown> {
-        const current_values: Record<string, unknown> = {};
-        $inputs.each(function () {
-            const property_name = $(this).attr("name")!;
-            if (property_name) {
-                if ($(this).is("input[type='file']") && $(this).prop("files")?.length) {
-                    // If the input is a file input and a file has been selected, set value to file object
-                    current_values[property_name] = $(this).prop("files")[0];
-                } else if (property_name === "edit_bot_owner") {
-                    current_values[property_name] = $(this).find(".dropdown_widget_value").text();
-                } else {
-                    current_values[property_name] = $(this).val();
-                }
-            }
-        });
-        return current_values;
-    }
 
     if (conf.update_submit_disabled_state_on_change) {
         const $inputs = $dialog.find(".modal__content").find("input,select,textarea,button");
