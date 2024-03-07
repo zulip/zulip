@@ -585,7 +585,7 @@ export function format_text(
         }
     };
 
-    const format = (syntax_start: string, syntax_end = syntax_start): void => {
+    const format = (syntax_start: string, syntax_end = syntax_start): boolean => {
         let linebreak_start = "";
         let linebreak_end = "";
         if (syntax_start.startsWith("\n")) {
@@ -606,7 +606,7 @@ export function format_text(
                 range.start - syntax_start.length,
                 range.end - syntax_start.length,
             );
-            return;
+            return false;
         } else if (is_inner_text_formatted(syntax_start, syntax_end)) {
             // Remove syntax inside the selection, if present.
             text =
@@ -620,11 +620,12 @@ export function format_text(
                 range.start,
                 range.end - syntax_start.length - syntax_end.length,
             );
-            return;
+            return false;
         }
 
         // Otherwise, we don't have syntax within or around, so we add it.
         wrapFieldSelection(field, syntax_start, syntax_end);
+        return true;
     };
 
     const format_spoiler = (): void => {
