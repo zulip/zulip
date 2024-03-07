@@ -128,8 +128,8 @@ export function extract_property_name($elem, for_realm_default_settings) {
     return /^id_(.*)$/.exec($elem.attr("id").replaceAll("-", "_"))[1];
 }
 
-export function get_subsection_property_elements(subsection) {
-    return [...$(subsection).find(".prop-element")];
+export function get_subsection_property_elements($subsection) {
+    return [...$subsection.find(".prop-element")];
 }
 
 export function set_property_dropdown_value(property_name) {
