@@ -156,7 +156,9 @@ export function initialize_custom_date_type_fields(element_id) {
     $(element_id)
         .find(".custom_user_field .remove_date")
         .on("click", function () {
-            $(this).parent().find(".custom_user_field_value").val("");
+            const $custom_user_field = $(this).parent().find(".custom_user_field_value");
+            $custom_user_field.val("");
+            $custom_user_field.trigger("input");
         });
 }
 
