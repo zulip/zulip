@@ -40,8 +40,10 @@ export type User = {
     avatar_url?: string | null;
     avatar_version: number;
     profile_data: Record<number, ProfileData>;
-    is_missing_server_data?: boolean; // used for fake user objects.
-    is_inaccessible_user?: boolean; // used for inaccessible user objects.
+    // used for fake user objects.
+    is_missing_server_data?: boolean;
+    // used for inaccessible user objects.
+    is_inaccessible_user?: boolean;
 } & (
     | {
           is_bot: false;
