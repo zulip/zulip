@@ -219,16 +219,27 @@ tr.admin td:first-child {
     margin: 10px;
 }
 
-.approve-sponsorship-button {
-    vertical-align: middle;
-}
-
 .support-search-button {
     vertical-align: middle;
     margin: 10px;
 }
 
-.approve-sponsorship-button,
+.approve-sponsorship-button {
+    vertical-align: middle;
+    color: hsl(123deg 46% 34%);
+    background-color: hsl(114deg 25% 85%);
+    border: 1px solid hsl(123deg 46% 34%);
+    border-radius: 2px;
+
+    &:hover,
+    &:focus,
+    &:active {
+        color: hsl(123deg 50% 30%);
+        background-color: hsl(114deg 28% 82%);
+        border: 1px solid hsl(123deg 50% 30%);
+    }
+}
+
 .support-search-button,
 .support-submit-button {
     color: hsl(0deg 0% 20%);
