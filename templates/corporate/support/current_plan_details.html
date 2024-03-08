@@ -2,8 +2,7 @@
     <p class="support-section-header">📅 Current plan information:</p>
     {% if plan_data.warning %}
     <div class="current-plan-data-missing">
-        {{ plan_data.warning }}
-        <br />
+        <b>{{ plan_data.warning }}</b><br />
     </div>
     {% endif %}
     <b>Plan name</b>: {{ plan_data.current_plan.name }}<br />

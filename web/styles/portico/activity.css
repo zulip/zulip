@@ -104,7 +104,6 @@ tr.admin td:first-child {
     color: hsl(120deg 100% 33%);
 }
 
-.current-plan-data-missing,
 .bad {
     font-weight: bold;
     color: hsl(0deg 100% 39%);
@@ -175,6 +174,15 @@ tr.admin td:first-child {
 
     .remote-label {
         background-color: hsl(186deg 76% 36%);
+    }
+
+    .current-audit-log {
+        color: hsl(123deg 46% 34%);
+    }
+
+    .current-plan-data-missing,
+    .stale-audit-log {
+        color: hsl(2deg 64% 53%);
     }
 }
 
