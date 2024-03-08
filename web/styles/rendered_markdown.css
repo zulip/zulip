@@ -679,8 +679,7 @@
         display: block;
         border-radius: 4px;
 
-        &:hover .copy_codeblock,
-        &:hover .code_external_link {
+        &:hover .code-buttons-container {
             visibility: visible;
         }
     }
@@ -710,14 +709,52 @@
         border-radius: 3px;
     }
 
-    /* Style copy-to-clipboard button inside code blocks */
-    .copy_codeblock {
-        visibility: hidden;
+    /* Container for buttons inside code blocks. */
+    .code-buttons-container {
+        /* Break white-space treatment inherited from <pre> */
+        white-space: collapse;
+        /* Present buttons in a flexbox layout. */
+        display: flex;
+        align-items: center;
+        gap: 3px;
         /* Having absolute positioning here ensures that the element
         doesn't scroll along with the code div in narrow windows */
         position: absolute;
-        right: 20px;
-        margin-top: -4px;
+        top: 2px;
+        right: 0;
+        padding: 0 4px;
+        /* Invisible unless <pre> is hovered. */
+        visibility: hidden;
+
+        #clipboard_image {
+            /* Zero out legacy negative margins */
+            margin: 0;
+        }
+    }
+
+    /* Style copy-to-clipboard button inside code blocks */
+    .copy_codeblock {
+        display: flex;
+        align-content: center;
+        /* Push back on legacy styles from .copy_button_base,
+           which are not necessary in the flex setting established
+           on the .code-buttons-container. */
+        height: auto;
+        width: auto;
+        background-clip: unset;
+        /* Don't let the default button color appear
+           behind the icon. Regrettably, !important
+           is necessary for a thorny selector-specificity
+           issue in dark mode. */
+        background-color: transparent !important;
+        /* Square off the box around the copy-to-clipboard icon. */
+        padding: 0 2px 0 4px;
+
+        &:hover {
+            /* Regrettably, !important is necessary for a thorny
+               selector-specificity issue in dark mode. */
+            background-color: transparent !important;
+        }
 
         /* Remove the outline when clicking on the copy-to-clipboard button */
         &:focus {
@@ -726,17 +763,23 @@
     }
 
     .code_external_link {
-        visibility: hidden;
-        position: absolute;
-        right: 23px;
-        margin-top: -3px;
-        font-size: 17px;
+        /* Match the apparent size of the playground icon
+           to the copy-to-clipboard icon. */
+        font-size: 16px;
+        /* Center the icon vertically in the link container. */
+        display: flex;
+        align-content: center;
+        /* The font-icon footprint still requires 2px of
+           top padding to get better alignment with the
+           copy-to-clipboard icon. */
+        padding-top: 2px;
         /* The default icon and on-hover colors are inherited from <a> tag.
         so we set our own to match the copy-to-clipbord icon */
         color: hsl(0deg 0% 47%);
 
         &:hover {
             color: hsl(200deg 100% 40%);
+            text-decoration: none;
         }
     }
 }
@@ -819,6 +862,12 @@
     display: block !important;
     border: none !important;
     background: none !important;
+
+    /* Set a relative positioning context to more precisely
+       position .code-buttons-container. This eliminates
+       problems with positioning shifts associated with
+       code blocks in spoilers, too. */
+    position: relative;
 
     & pre {
         color: var(--color-markdown-pre-text);
