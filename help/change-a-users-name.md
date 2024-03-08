@@ -16,7 +16,7 @@ Organization administrators can always change any user's name.
 
 {!manage-this-user.md!}
 
-1. Under **Full name**, enter a new name.
+1. Under **Name**, enter a new name.
 
 {!save-changes.md!}
 
