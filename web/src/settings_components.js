@@ -221,6 +221,22 @@ export function set_time_limit_setting(property_name) {
     );
 }
 
+function check_valid_number_input(input_value, keep_number_as_float = false) {
+    // This check is important to make sure that inputs like "24a" are
+    // considered invalid and this function returns NaN for such inputs.
+    // Number.parseInt and Number.parseFloat will convert strings like
+    // "24a" to 24.
+    if (Number.isNaN(Number(input_value))) {
+        return Number.NaN;
+    }
+
+    if (keep_number_as_float) {
+        return Number.parseFloat(Number.parseFloat(input_value).toFixed(1));
+    }
+
+    return Number.parseInt(input_value, 10);
+}
+
 function get_message_retention_setting_value($input_elem, for_api_data = true) {
     const select_elem_val = $input_elem.val();
     if (select_elem_val === "unlimited") {
@@ -237,11 +253,14 @@ function get_message_retention_setting_value($input_elem, for_api_data = true) {
         return JSON.stringify("realm_default");
     }
 
-    const $custom_input = $input_elem.parent().find(".message-retention-setting-custom-input");
-    if ($custom_input.val().length === 0) {
+    const custom_input_val = $input_elem
+        .parent()
+        .find(".message-retention-setting-custom-input")
+        .val();
+    if (custom_input_val.length === 0) {
         return settings_config.retain_message_forever;
     }
-    return Number.parseInt(Number($custom_input.val()), 10);
+    return check_valid_number_input(custom_input_val);
 }
 
 export function sort_object_by_key(obj) {
@@ -483,7 +502,8 @@ export function get_auth_method_list_data() {
 }
 
 export function parse_time_limit($elem) {
-    return Math.floor(Number.parseFloat(Number($elem.val())).toFixed(1) * 60);
+    const time_limit_in_minutes = check_valid_number_input($elem.val(), true);
+    return Math.floor(time_limit_in_minutes * 60);
 }
 
 function get_time_limit_setting_value($input_elem, for_api_data = true) {
@@ -515,7 +535,7 @@ function get_time_limit_setting_value($input_elem, for_api_data = true) {
     if ($input_elem.attr("id") === "id_realm_waiting_period_threshold") {
         // For realm waiting period threshold setting, the custom input element contains
         // number of days.
-        return Number.parseInt(Number($custom_input_elem.val()), 10);
+        return check_valid_number_input($custom_input_elem.val());
     }
 
     return parse_time_limit($custom_input_elem);
@@ -671,7 +691,7 @@ function should_disable_save_button_for_time_limit_settings(time_limit_settings)
     for (const setting_elem of time_limit_settings) {
         const $dropdown_elem = $(setting_elem).find("select");
         const $custom_input_elem = $(setting_elem).find(".time-limit-custom-input");
-        const custom_input_elem_val = Number.parseInt(Number($custom_input_elem.val()), 10);
+        const custom_input_elem_val = check_valid_number_input($custom_input_elem.val());
 
         const for_realm_default_settings =
             $dropdown_elem.closest(".settings-section.show").attr("id") ===
