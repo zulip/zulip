@@ -431,6 +431,8 @@ privacy](/accounts/go/?next=%23settings%2Faccount-and-privacy) settings.
 
 ### Nevada Resident Rights
 
+As noted above, we do not sell Personal Data.
+
 If you are a resident of Nevada, you have the right to opt-out of the
 sale of certain Personal Data to third parties who intend to license
 or sell that Personal Data. You can exercise this right by contacting
