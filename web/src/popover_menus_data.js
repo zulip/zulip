@@ -14,6 +14,7 @@ import * as message_lists from "./message_lists";
 import * as muted_users from "./muted_users";
 import {page_params} from "./page_params";
 import * as people from "./people";
+import * as settings_config from "./settings_config";
 import * as settings_data from "./settings_data";
 import * as starred_messages from "./starred_messages";
 import {current_user, realm} from "./state_data";
@@ -185,6 +186,10 @@ export function get_personal_menu_content_context() {
         status_text,
         status_emoji_info,
         user_time: people.get_user_time(my_user_id),
+
+        // user color scheme
+        user_color_scheme: user_settings.color_scheme,
+        color_scheme_values: settings_config.color_scheme_values,
     };
 }
 
