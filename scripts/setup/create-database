@@ -15,7 +15,7 @@ DATABASE_NAME=$(crudini --get /etc/zulip/zulip.conf postgresql database_name 2>/
 DATABASE_USER=$(crudini --get /etc/zulip/zulip.conf postgresql database_user 2>/dev/null || echo zulip)
 
 if [ "$(su "$POSTGRES_USER" -c "cd / && psql -v ON_ERROR_STOP=1 -Atc \"SELECT 1 FROM pg_database WHERE datname='$DATABASE_NAME';\"")" = "1" ]; then
-    records="$(su "$POSTGRES_USER" -c "cd / && psql -v ON_ERROR_STOP=1 -Atc 'SELECT COUNT(*) FROM $DATABASE_NAME.zerver_message;' $DATABASE_USER")"
+    records="$(su "$POSTGRES_USER" -c "cd / && psql -v ON_ERROR_STOP=1 -Atc 'SELECT COUNT(*) FROM $DATABASE_NAME.zerver_message;' $DATABASE_USER" || echo 0)"
     if [ "$records" -gt 200 ]; then
         set +x
         echo "WARNING: This will delete your Zulip database which currently contains $records messages."
