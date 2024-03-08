@@ -98,6 +98,7 @@ class MobilePushData:
 @dataclass
 class RemoteSupportData:
     date_created: datetime
+    has_stale_audit_log: bool
     plan_data: PlanData
     sponsorship_data: SponsorshipData
     user_data: RemoteCustomerUserCount
@@ -376,6 +377,7 @@ def get_data_for_remote_support_view(billing_session: BillingSession) -> RemoteS
 
     return RemoteSupportData(
         date_created=date_created,
+        has_stale_audit_log=stale_audit_log_data,
         plan_data=plan_data,
         sponsorship_data=sponsorship_data,
         user_data=user_data,
