@@ -2918,7 +2918,7 @@ class StripeTest(StripeTestCase):
         for key, value in monthly_plan_invoice_item_params.items():
             self.assertEqual(invoice_item0[key], value)
 
-        with time_machine.travel(self.now, tick=False):
+        with time_machine.travel(self.next_year, tick=False):
             response = self.client_get("/billing/")
         self.assert_not_in_success_response(
             ["Your plan will switch to annual billing on February 2, 2012"], response
@@ -3368,7 +3368,8 @@ class StripeTest(StripeTestCase):
 
         invoice_plans_as_needed(self.next_year)
 
-        response = self.client_get("/billing/")
+        with time_machine.travel(self.next_year, tick=False):
+            response = self.client_get("/billing/")
         self.assertEqual(response.status_code, 302)
         self.assertEqual("/plans/", response["Location"])
 
@@ -4901,9 +4902,10 @@ class LicenseLedgerTest(StripeTestCase):
         billing_session.update_license_ledger_if_needed(self.now)
         self.assertFalse(LicenseLedger.objects.exists())
         # Test plan not automanaged
-        self.local_upgrade(
-            self.seat_count + 1, False, CustomerPlan.BILLING_SCHEDULE_ANNUAL, True, False
-        )
+        with time_machine.travel(self.now, tick=False):
+            self.local_upgrade(
+                self.seat_count + 1, False, CustomerPlan.BILLING_SCHEDULE_ANNUAL, True, False
+            )
         plan = CustomerPlan.objects.get()
         self.assertEqual(LicenseLedger.objects.count(), 1)
         self.assertEqual(plan.licenses(), self.seat_count + 1)
@@ -6011,7 +6013,7 @@ class TestRemoteRealmBillingFlow(StripeTestCase, RemoteRealmBillingTestCase):
         assert latest_ledger is not None
         self.assertEqual(latest_ledger.licenses, min_licenses + 10)
 
-        with time_machine.travel(self.now + timedelta(days=1), tick=False):
+        with time_machine.travel(self.now + timedelta(days=3), tick=False):
             response = self.client_get(
                 f"{self.billing_session.billing_base_url}/billing/", subdomain="selfhosting"
             )
@@ -6160,7 +6162,7 @@ class TestRemoteRealmBillingFlow(StripeTestCase, RemoteRealmBillingTestCase):
             assert latest_ledger is not None
             self.assertEqual(latest_ledger.licenses, min_licenses + 10)
 
-            with time_machine.travel(self.now + timedelta(days=1), tick=False):
+            with time_machine.travel(self.now + timedelta(days=3), tick=False):
                 response = self.client_get(
                     f"{self.billing_session.billing_base_url}/billing/", subdomain="selfhosting"
                 )
@@ -6280,7 +6282,7 @@ class TestRemoteRealmBillingFlow(StripeTestCase, RemoteRealmBillingTestCase):
         assert latest_ledger is not None
         self.assertEqual(latest_ledger.licenses, min_licenses + 10)
 
-        with time_machine.travel(self.now + timedelta(days=1), tick=False):
+        with time_machine.travel(self.now + timedelta(days=3), tick=False):
             response = self.client_get(
                 f"{self.billing_session.billing_base_url}/billing/", subdomain="selfhosting"
             )
@@ -7939,7 +7941,7 @@ class TestRemoteServerBillingFlow(StripeTestCase, RemoteServerTestCase):
             assert latest_ledger is not None
             self.assertEqual(latest_ledger.licenses, 28)
 
-            with time_machine.travel(self.now + timedelta(days=1), tick=False):
+            with time_machine.travel(self.now + timedelta(days=3), tick=False):
                 response = self.client_get(
                     f"{self.billing_session.billing_base_url}/billing/", subdomain="selfhosting"
                 )
@@ -8059,7 +8061,7 @@ class TestRemoteServerBillingFlow(StripeTestCase, RemoteServerTestCase):
         assert latest_ledger is not None
         self.assertEqual(latest_ledger.licenses, 28)
 
-        with time_machine.travel(self.now + timedelta(days=1), tick=False):
+        with time_machine.travel(self.now + timedelta(days=3), tick=False):
             response = self.client_get(
                 f"{self.billing_session.billing_base_url}/billing/", subdomain="selfhosting"
             )
