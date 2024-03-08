@@ -725,6 +725,24 @@
         padding: 0 4px;
         /* Invisible unless <pre> is hovered. */
         visibility: hidden;
+        z-index: 0;
+
+        &::after {
+            content: " ";
+            position: absolute;
+            height: 100%;
+            width: 100%;
+            z-index: -1;
+            /* Blur the background behind the button container */
+            backdrop-filter: blur(5px);
+            /* Use a radial gradient to avoid obvious hard edges
+               to the blur. */
+            mask-image: radial-gradient(
+                farthest-corner,
+                hsl(0deg 0% 0% / 100%),
+                hsl(0deg 0% 0% / 50%)
+            );
+        }
 
         #clipboard_image {
             /* Zero out legacy negative margins */
