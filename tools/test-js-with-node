@@ -207,7 +207,7 @@ EXEMPT_FILES = make_set(
         "web/src/settings_emoji.ts",
         "web/src/settings_exports.ts",
         "web/src/settings_invites.ts",
-        "web/src/settings_linkifiers.js",
+        "web/src/settings_linkifiers.ts",
         "web/src/settings_muted_users.ts",
         "web/src/settings_notifications.js",
         "web/src/settings_org.js",
