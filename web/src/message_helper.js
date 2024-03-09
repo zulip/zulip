@@ -3,6 +3,7 @@ import * as message_store from "./message_store";
 import * as message_user_ids from "./message_user_ids";
 import * as people from "./people";
 import * as pm_conversations from "./pm_conversations";
+import * as reactions from "./reactions";
 import * as recent_senders from "./recent_senders";
 import * as stream_topic_history from "./stream_topic_history";
 import * as user_status from "./user_status";
@@ -23,8 +24,16 @@ export function process_new_message(message) {
         return cached_msg;
     }
 
+    if (!message.reactions) {
+        message.reactions = [];
+    }
+
     message_store.set_message_booleans(message);
     message.sent_by_me = people.is_current_user(message.sender_email);
+
+    // Cleaning message_reactions during initial message processing
+    // to avoid message_reactions being undefined during rendering
+    message.message_reactions = reactions.get_message_reactions(message);
 
     people.extract_people_from_message(message);
     people.maybe_incr_recipient_count(message);
@@ -74,9 +83,7 @@ export function process_new_message(message) {
     }
 
     alert_words.process_message(message);
-    if (!message.reactions) {
-        message.reactions = [];
-    }
+
     message_store.update_message_cache(message);
     return message;
 }
