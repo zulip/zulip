@@ -11,6 +11,7 @@ import * as channel from "./channel.ts";
 import * as dialog_widget from "./dialog_widget.ts";
 import {$t, $t_html} from "./i18n.ts";
 import * as ListWidget from "./list_widget.ts";
+import * as settings_ui from "./settings_ui.ts";
 import * as ui_report from "./ui_report.ts";
 
 export let loaded = false;
@@ -28,7 +29,12 @@ export let rerender_alert_words_ui = (): void => {
         name: "alert-words-list",
         get_item: ListWidget.default_get_item,
         modifier_html(alert_word) {
-            return render_alert_word_settings_item({alert_word});
+            const follow_topic_containing_alert_word =
+                alert_words.get_follow_topic_containing_alert_word_policy(alert_word.word);
+            return render_alert_word_settings_item({
+                word: alert_word.word,
+                follow_topic_containing_alert_word,
+            });
         },
         $parent_container: $("#alert-word-settings"),
         $simplebar_container: $("#alert-word-settings .progressive-table-wrapper"),
@@ -82,7 +88,15 @@ function add_alert_word(): void {
         return;
     }
 
-    const words_to_be_added = [alert_word];
+    const follow_topic_containing_alert_word = $("#follow_topic_containing_alert_word").is(
+        ":checked",
+    );
+    const words_to_be_added = [
+        {
+            word: alert_word,
+            automatically_follow_topics: follow_topic_containing_alert_word,
+        },
+    ];
 
     const data = {alert_words: JSON.stringify(words_to_be_added)};
     dialog_widget.submit_api_request(channel.post, "/json/users/me/alert_words", data);
@@ -100,6 +114,30 @@ function remove_alert_word(alert_word: string): void {
             open_alert_word_status_banner(alert_word, true);
         },
     });
+}
+
+function toggle_follow_topic_containing_alert_word(e: JQuery.ClickEvent): void {
+    const alert_word = $(e.currentTarget).attr("data-word");
+    const follow_topic_containing_alert_word = $(
+        `#follow_topic_containing_alert_word_for_${alert_word}`,
+    ).is(":checked");
+
+    const words_to_be_updated = [
+        {
+            word: alert_word,
+            automatically_follow_topics: follow_topic_containing_alert_word,
+        },
+    ];
+
+    const data = {alert_words: JSON.stringify(words_to_be_updated)};
+    const $alert_word_status = $("#alert-word-status").expectOne();
+
+    settings_ui.do_settings_change(
+        channel.post,
+        "/json/users/me/alert_words",
+        data,
+        $alert_word_status,
+    );
 }
 
 export function show_add_alert_word_modal(): void {
@@ -145,6 +183,18 @@ export function set_up_alert_words(): void {
         const word = $(event.currentTarget).parents("tr").find(".value").text().trim();
         remove_alert_word(word);
     });
+
+    $("#alert-word-settings").on("click", ".close-alert-word-status", (event) => {
+        event.preventDefault();
+        const $alert = $(event.currentTarget).parents(".alert");
+        $alert.hide();
+    });
+
+    $("#alert-words-table").on(
+        "click",
+        ".follow_topic_containing_alert_word",
+        toggle_follow_topic_containing_alert_word,
+    );
 }
 
 export function reset(): void {

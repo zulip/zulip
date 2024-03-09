@@ -20,7 +20,7 @@ from zerver.actions.saved_snippets import do_get_saved_snippets
 from zerver.actions.user_settings import do_change_user_setting
 from zerver.actions.users import get_owned_bot_dicts
 from zerver.lib import emoji
-from zerver.lib.alert_words import user_alert_words
+from zerver.lib.alert_words import get_alert_words_list_for_event, user_alert_words
 from zerver.lib.avatar import avatar_url
 from zerver.lib.bot_config import load_bot_config_template
 from zerver.lib.channel_folders import (
@@ -269,7 +269,11 @@ def fetch_initial_state_data(
             )
 
     if want("alert_words"):
-        state["alert_words"] = [] if user_profile is None else user_alert_words(user_profile)
+        state["alert_words"] = (
+            []
+            if user_profile is None
+            else get_alert_words_list_for_event(user_alert_words(user_profile))
+        )
 
     if want("custom_profile_fields"):
         if user_profile is None:
