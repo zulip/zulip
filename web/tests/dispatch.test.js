@@ -137,6 +137,8 @@ function dispatch(ev) {
 people.init();
 people.add_active_user(test_user);
 
+// process_new_messages calls get_message_reactions, so we need to stub it.
+reactions.get_message_reactions = (message) => message.reactions;
 message_helper.process_new_message(test_message);
 
 const realm_emoji = {};
