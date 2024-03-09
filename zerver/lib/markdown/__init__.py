@@ -2084,6 +2084,7 @@ class AlertWordNotificationProcessor(markdown.preprocessors.Preprocessor):
                     if self.check_valid_start_position(
                         content, end_index - len(original_value)
                     ) and self.check_valid_end_position(content, end_index + 1):
+                        self.zmd.zulip_rendering_result.alert_words.add(original_value)
                         self.zmd.zulip_rendering_result.user_ids_with_alert_words.update(user_ids)
         return lines
 
