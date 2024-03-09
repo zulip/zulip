@@ -1465,10 +1465,6 @@ $option_title_width: 180px;
     .custom_user_field {
         padding-bottom: 20px;
 
-        .field_hint {
-            color: hsl(0deg 0% 67%);
-        }
-
         & textarea {
             height: 80px;
         }
@@ -1504,6 +1500,13 @@ $option_title_width: 180px;
     #show_my_user_profile_modal i {
         padding-left: 2px;
         vertical-align: middle;
+    }
+
+    .custom_user_field,
+    .user-name-section {
+        .field_hint {
+            color: hsl(0deg 0% 67%);
+        }
     }
 }
 
