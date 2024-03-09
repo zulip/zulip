@@ -160,6 +160,13 @@ export const realm_schema = z.object({
     realm_invite_to_stream_policy: z.number(),
     realm_is_zephyr_mirror_realm: z.boolean(),
     realm_jitsi_server_url: z.nullable(z.string()),
+    realm_linkifiers: z.array(
+        z.object({
+            pattern: z.string(),
+            url_template: z.string(),
+            id: z.number(),
+        }),
+    ),
     realm_logo_source: z.string(),
     realm_logo_url: z.string(),
     realm_mandatory_topics: z.boolean(),
