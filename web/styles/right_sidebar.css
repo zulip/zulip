@@ -214,6 +214,7 @@ $user_status_emoji_width: 24px;
 
 .my_user_status {
     opacity: 0.5;
+    white-space: nowrap;
 }
 
 .selectable_sidebar_block {

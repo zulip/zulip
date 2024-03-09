@@ -143,6 +143,7 @@ function bot_info(bot_user_id) {
     info.full_name = bot_user.full_name;
     info.bot_owner_id = owner_id;
     info.user_role_text = people.get_user_type(bot_user_id);
+    info.img_src = people.small_avatar_url_for_person(bot_user);
 
     // Convert bot type id to string for viewing to the users.
     info.bot_type = settings_data.bot_type_id_to_string(bot_user.bot_type);
@@ -161,6 +162,10 @@ function bot_info(bot_user_id) {
 
     // It's always safe to show the real email addresses for bot users
     info.display_email = bot_user.email;
+
+    if (owner_id) {
+        info.owner_img_src = people.small_avatar_url_for_person(people.get_by_user_id(owner_id));
+    }
 
     return info;
 }
@@ -188,6 +193,7 @@ function human_info(person) {
     info.is_current_user = people.is_my_user_id(person.user_id);
     info.cannot_deactivate = info.is_current_user || (person.is_owner && !current_user.is_owner);
     info.display_email = person.delivery_email;
+    info.img_src = people.small_avatar_url_for_person(person);
 
     if (info.is_active) {
         // TODO: We might just want to show this
