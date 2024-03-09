@@ -5,6 +5,7 @@ import orjson
 import time_machine
 from django.utils.timezone import now as timezone_now
 
+from zerver.actions.alert_words import do_add_alert_words
 from zerver.actions.reactions import check_add_reaction
 from zerver.actions.user_settings import do_change_user_setting
 from zerver.actions.user_topics import do_set_user_topic_visibility_policy
@@ -837,6 +838,38 @@ class AutomaticallyFollowTopicsTests(ZulipTestCase):
             UserTopic.VisibilityPolicy.FOLLOWED
         )
         self.assertEqual(user_ids, {hamlet.id})
+
+    def test_automatically_follow_topic_containing_alert_word(self) -> None:
+        hamlet = self.example_user("hamlet")
+        aaron = self.example_user("aaron")
+        stream = get_stream("Verona", hamlet.realm)
+
+        do_add_alert_words(aaron, [("zulip", True), ("tulip", False)])
+
+        content = "zulip is a chat service"
+        self.send_stream_message(hamlet, stream.name, content, "Test I")
+
+        content = "tulip is a flower"
+        self.send_stream_message(hamlet, stream.name, content, "Test II")
+
+        stream_topic_target_followed = StreamTopicTarget(
+            stream_id=stream.id,
+            topic_name="Test I",
+        )
+        stream_topic_target_default = StreamTopicTarget(
+            stream_id=stream.id,
+            topic_name="Test II",
+        )
+
+        user_ids = stream_topic_target_followed.user_ids_with_visibility_policy(
+            UserTopic.VisibilityPolicy.FOLLOWED
+        )
+        self.assertEqual(user_ids, {aaron.id})
+
+        user_ids = stream_topic_target_default.user_ids_with_visibility_policy(
+            UserTopic.VisibilityPolicy.FOLLOWED
+        )
+        self.assertEqual(user_ids, set())
 
     def test_automatically_follow_topic_on_participation_send_message(self) -> None:
         hamlet = self.example_user("hamlet")

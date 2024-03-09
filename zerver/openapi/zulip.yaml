@@ -237,15 +237,24 @@ paths:
                                 alert_words:
                                   type: array
                                   description: |
-                                    An array of strings, where each string is an alert word (or phrase)
-                                    configured by the user.
+                                    An array of arrays, where each array consist of an alert word (or phrase)
+                                    configured by the user, and the policy to follow topic containing the
+                                    alert word if the policy is set for at least one alert word.
+
+                                    Else, an array of alert words.
                                   items:
-                                    type: string
+                                    oneOf:
+                                      - type: string
+                                      - type: array
+                                        items:
+                                          oneOf:
+                                            - type: string
+                                            - type: boolean
                               additionalProperties: false
                               example:
                                 {
                                   "type": "alert_words",
-                                  "alert_words": ["alert_word"],
+                                  "alert_words": [["alert_word", true]],
                                   "id": 0,
                                 }
                             - type: object
@@ -8702,15 +8711,27 @@ paths:
                       alert_words:
                         type: array
                         description: |
-                          An array of strings, where each string is an alert word (or phrase)
-                          configured by the user.
+                          An array of arrays, where each array consist of an alert word (or phrase)
+                          configured by the user, and the policy to follow topic containing the
+                          alert word if the policy is set true for at least on alert word.
+
+                          Else it is an array of strings of alert words.
                         items:
-                          type: string
+                          oneOf:
+                            - type: string
+                            - type: array
+                              items:
+                                oneOf:
+                                  - type: string
+                                  - type: boolean
+                              minItems: 2
+                              maxItems: 2
                     example:
                       {
                         "result": "success",
                         "msg": "",
-                        "alert_words": ["natural", "illustrious"],
+                        "alert_words":
+                          [["natural", true], ["illustrious", false]],
                       }
     post:
       operationId: add-alert-words
@@ -8730,14 +8751,24 @@ paths:
                 alert_words:
                   description: |
                     An array of strings to be added to the user's set of configured
-                    alert words. Strings already present in the user's set of alert words
-                    already are ignored.
+                    alert words with follow topic containing alert word policy set
+                    to false, or an array of arrays with elements of alert word
+                    present already in the user's set of alert words, and a boolean
+                    representing follow topic containing alert word policy.
 
                     Alert words are case insensitive.
                   type: array
                   items:
-                    type: string
-                  example: ["foo", "bar"]
+                    oneOf:
+                      - type: string
+                      - type: array
+                        items:
+                          oneOf:
+                            - type: string
+                            - type: boolean
+                        minItems: 2
+                        maxItems: 2
+                  example: ["foo", ["bar", true]]
               required:
                 - alert_words
             encoding:
@@ -8759,15 +8790,27 @@ paths:
                       alert_words:
                         type: array
                         description: |
-                          An array of strings, where each string is an alert word (or phrase)
-                          configured by the user.
+                          An array of arrays, where each array consist of an alert word (or phrase)
+                          configured by the user, and the policy to follow topic containing the
+                          alert word if the policy is set true for at least on alert word.
+
+                          Else it is an array of strings of alert words.
                         items:
-                          type: string
+                          oneOf:
+                            - type: string
+                            - type: array
+                              items:
+                                oneOf:
+                                  - type: string
+                                  - type: boolean
+                              minItems: 2
+                              maxItems: 2
                     example:
                       {
                         "result": "success",
                         "msg": "",
-                        "alert_words": ["foo", "bar", "natural", "illustrious"],
+                        "alert_words":
+                          [["natural", true], ["illustrious", false]],
                       }
         "400":
           description: Bad request.
@@ -8832,15 +8875,28 @@ paths:
                       alert_words:
                         type: array
                         description: |
-                          An array of strings, where each string is an alert word (or phrase)
-                          configured by the user.
+                          An array of arrays, where each array consist of an alert word (or phrase)
+                          configured by the user, and the policy to follow topic containing the
+                          alert word.
                         items:
-                          type: string
+                          type: array
+                          items:
+                            oneOf:
+                              - type: string
+                              - type: boolean
+                            minItems: 2
+                            maxItems: 2
                     example:
                       {
                         "result": "success",
                         "msg": "",
-                        "alert_words": ["bar", "natural", "illustrious"],
+                        "alert_words":
+                          [
+                            ["foo", true],
+                            ["bar", false],
+                            ["natural", true],
+                            ["illustrious", false],
+                          ],
                       }
   /users/me/status:
     post:
@@ -12053,9 +12109,20 @@ paths:
                           Present if `alert_words` is present in `fetch_event_types`.
 
                           An array of strings, each an [alert word](/help/dm-mention-alert-notifications#alert-words)
-                          that the current user has configured.
+                          that the current user has configured if no `follow_topic_containing_alert_word` set to true.
+
+                          Else, an array of arrays with the first element the alert word, and second being the
+                          follow_topic_containing_alert_word.
                         items:
-                          type: string
+                          oneOf:
+                            - type: string
+                            - type: array
+                              items:
+                                oneOf:
+                                  - type: string
+                                  - type: boolean
+                              minItems: 2
+                              maxItems: 2
                       custom_profile_fields:
                         type: array
                         description: |

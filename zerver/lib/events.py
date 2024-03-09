@@ -13,7 +13,7 @@ from zerver.actions.default_streams import default_stream_groups_to_dicts_sorted
 from zerver.actions.realm_settings import get_realm_authentication_methods_for_page_params_api
 from zerver.actions.users import get_owned_bot_dicts
 from zerver.lib import emoji
-from zerver.lib.alert_words import user_alert_words
+from zerver.lib.alert_words import get_alert_words_list_for_event, user_alert_words
 from zerver.lib.avatar import avatar_url
 from zerver.lib.bot_config import load_bot_config_template
 from zerver.lib.compatibility import is_outdated_server
@@ -158,7 +158,11 @@ def fetch_initial_state_data(
     state["zulip_merge_base"] = ZULIP_MERGE_BASE
 
     if want("alert_words"):
-        state["alert_words"] = [] if user_profile is None else user_alert_words(user_profile)
+        state["alert_words"] = (
+            []
+            if user_profile is None
+            else get_alert_words_list_for_event(user_alert_words(user_profile))
+        )
 
     if want("custom_profile_fields"):
         if user_profile is None:

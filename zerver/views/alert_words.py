@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Tuple, Union
 
 from django.http import HttpRequest, HttpResponse
 from pydantic import Json, StringConstraints
@@ -15,9 +15,22 @@ def list_alert_words(request: HttpRequest, user_profile: UserProfile) -> HttpRes
     return json_success(request, data={"alert_words": user_alert_words(user_profile)})
 
 
-def clean_alert_words(alert_words: List[str]) -> List[str]:
-    alert_words = [w.strip() for w in alert_words]
-    return [w for w in alert_words if w != ""]
+def clean_alert_words(
+    alert_words: List[Union[str, Tuple[str, bool]]],
+) -> List[Union[str, Tuple[str, bool]]]:
+    cleaned_alert_words: List[Union[str, Tuple[str, bool]]] = []
+
+    for word in alert_words:
+        if isinstance(word, str):
+            assert isinstance(word, str)
+            if word.strip() != "":
+                cleaned_alert_words.append(word.strip())
+        else:
+            assert isinstance(word, tuple)
+            if word[0].strip() != "":
+                cleaned_alert_words.append((word[0].strip(), word[1]))
+
+    return cleaned_alert_words
 
 
 @typed_endpoint
@@ -25,7 +38,14 @@ def add_alert_words(
     request: HttpRequest,
     user_profile: UserProfile,
     *,
-    alert_words: Json[List[Annotated[str, StringConstraints(max_length=100)]]],
+    alert_words: Json[
+        List[
+            Union[
+                Annotated[str, StringConstraints(max_length=100)],
+                Tuple[Annotated[str, StringConstraints(max_length=100)], bool],
+            ]
+        ]
+    ],
 ) -> HttpResponse:
     do_add_alert_words(user_profile, clean_alert_words(alert_words))
     return json_success(request, data={"alert_words": user_alert_words(user_profile)})
