@@ -3,12 +3,15 @@
     height: var(--header-height);
 
     .navbar-search {
-        margin: 5.5px 0;
+        margin: 3.5px 0;
         border-radius: 5px;
         position: absolute;
+        overflow: hidden;
     }
 
     .search_icon {
+        grid-area: search-icon;
+        align-self: center;
         text-decoration: none;
         padding: 0 7px;
         font-size: 17px;
@@ -29,6 +32,7 @@
     }
 
     .search_close_button {
+        grid-area: search-close;
         width: 28px;
         height: 100%;
         background: none;
@@ -61,6 +65,15 @@
         font-size: 10px;
     }
 
+    .search-input-and-pills {
+        grid-area: search-pills;
+        display: flex;
+        padding: 3px 0;
+        flex-wrap: wrap;
+        gap: 2px 2px;
+        align-self: center;
+    }
+
     .navbar-search:not(.expanded) {
         right: 0;
 
@@ -75,9 +88,7 @@
         .search-input {
             border-radius: 5px;
             color: var(--color-text-search);
-
             box-shadow: none;
-            cursor: pointer;
         }
 
         &:hover {
@@ -112,6 +123,10 @@
         box-shadow:
             0 4px 20px var(--color-search-shadow-wide),
             0 1px 5px var(--color-search-shadow-tight);
+
+        .search-input {
+            cursor: text;
+        }
 
         @media (width < $md_min) {
             /* 3px chosen so that the cursor clicks the search button
@@ -169,9 +184,6 @@
         border-radius: 0;
         font-family: "Source Sans 3 VF", sans-serif;
         font-weight: 400;
-        height: var(--search-box-height);
-        /* override bootstrap min-height for input[type="text"] */
-        min-height: var(--search-box-height);
         background: transparent;
         text-overflow: ellipsis;
         overflow: hidden;
@@ -190,36 +202,31 @@
     }
 
     #searchbox-input-container {
-        display: flex;
-        align-items: center;
+        display: grid;
         /* The next two styles override .input-append style from app_components.js */
         letter-spacing: normal;
         font-size: 100%;
-        height: var(--search-box-height);
-        /* Override styles for .pill-container that aren't relevant for search. */
-        flex-wrap: nowrap;
-        padding: 0;
+        /* Override style for .pill-container that isn't relevant for search. */
         border: none;
+        grid-template:
+            "search-icon search-pills search-close" var(--search-box-height)
+            ". search-pills ." auto / auto minmax(0, 1fr) auto;
+        align-items: start;
+        cursor: pointer;
 
-        .user-pill-container {
-            padding: 2px;
-            height: 22px;
-            min-width: fit-content;
+        /* Override styles for .pill-container that aren't relevant for search. */
+        .pill {
+            margin: 0;
+            min-width: unset;
+        }
 
-            > .pill-label {
-                min-width: fit-content;
-                white-space: nowrap;
-                width: fit-content;
-            }
+        &:not(.focused) {
+            max-height: var(--search-box-height);
+            overflow: hidden;
 
-            .pill {
-                height: 22px;
-                margin: 2px;
-            }
-
-            .pill-image {
-                width: 22px;
-                height: 22px;
+            .search-input-and-pills {
+                flex-wrap: nowrap;
+                overflow: hidden;
             }
         }
     }

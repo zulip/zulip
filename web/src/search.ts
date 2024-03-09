@@ -68,6 +68,14 @@ export function initialize({on_narrow_search}: {on_narrow_search: OnNarrowSearch
     const $searchbox_form = $("#searchbox_form");
     const $pill_container = $("#searchbox-input-container.pill-container");
 
+    $(".search-input-and-pills").on("focusin", () => {
+        $("#searchbox-input-container").toggleClass("focused", true);
+    });
+
+    $(".search-input-and-pills").on("focusout", () => {
+        $("#searchbox-input-container").toggleClass("focused", false);
+    });
+
     search_pill_widget = search_pill.create_pills($pill_container);
     search_pill_widget.onPillCreate(() => {
         $search_query_box.trigger("focus");
@@ -202,7 +210,7 @@ export function initialize({on_narrow_search}: {on_narrow_search: OnNarrowSearch
     // when an option is selected and we're closing search).
     // Instead we explicitly initiate search on click and on specific keyboard
     // shortcuts.
-    $search_query_box.on("click", (): void => {
+    $("#searchbox-input-container").on("click", (): void => {
         if ($("#searchbox .navbar-search.expanded").length === 0) {
             initiate_search();
         }
