@@ -80,7 +80,7 @@ def get_user_activity_summary(records: Collection[UserActivity]) -> UserActivity
             heard_from = max(visit, heard_from)
 
         if ("send_message" in query) or re.search("/api/.*/external/.*", query):
-            messages += 1
+            messages += record.count
             if last_sent is None:
                 last_sent = visit
             else:
