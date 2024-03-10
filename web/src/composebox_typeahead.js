@@ -1153,7 +1153,7 @@ export function initialize_compose_typeahead(selector) {
         completions,
         automated: compose_automated_selection,
         trigger_selection: compose_trigger_selection,
-        header: get_header_html,
+        header_html: get_header_html,
     });
 }
 
@@ -1186,7 +1186,7 @@ export function initialize({on_enter_send}) {
             }
             return false;
         },
-        header: render_topic_typeahead_hint,
+        header_html: render_topic_typeahead_hint,
     });
 
     $("#private_message_recipient").typeahead({
