@@ -191,10 +191,10 @@ Typeahead.prototype = {
     select(e) {
         const val = this.$menu.find(".active").data("typeahead-value");
         if (this.$element.is("[contenteditable]")) {
-            this.$element.html(this.updater(val, e)).trigger("change");
-            // Empty textContent after the change event handler
+            this.$element.text(this.updater(val, e)).trigger("change");
+            // Empty text after the change event handler
             // converts the input text to html elements.
-            this.$element.html("");
+            this.$element.text("");
         } else {
             const after_text = this.updater(val, e);
             const [from, to_before, to_after] = get_string_diff(this.$element.val(), after_text);
