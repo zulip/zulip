@@ -149,6 +149,9 @@ function get_pseudo_keycode(event) {
 /* TYPEAHEAD PUBLIC CLASS DEFINITION
  * ================================= */
 
+const header_element_html =
+    '<p class="typeahead-header"><span id="typeahead-header-text"></span></p>';
+
 const Typeahead = function (element, options) {
     this.$element = $(element);
     this.options = $.extend({}, $.fn.typeahead.defaults, options);
@@ -158,7 +161,7 @@ const Typeahead = function (element, options) {
     this.updater = this.options.updater ?? this.updater;
     this.$container = $(this.options.container).appendTo(this.options.parentElement ?? "body");
     this.$menu = $(this.options.menu).appendTo(this.$container);
-    this.$header = $(this.options.header_html).appendTo(this.$container);
+    this.$header = $(header_element_html).appendTo(this.$container);
     this.source = this.options.source;
     this.shown = false;
     this.mouse_moved_since_typeahead = false;
@@ -644,7 +647,6 @@ $.fn.typeahead.defaults = {
     source: [],
     items: 8,
     container: '<div class="typeahead dropdown-menu"></div>',
-    header_html: '<p class="typeahead-header"><span id="typeahead-header-text"></span></p>',
     menu: '<ul class="typeahead-menu"></ul>',
     item: "<li><a></a></li>",
     minLength: 1,
