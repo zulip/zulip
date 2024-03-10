@@ -359,7 +359,7 @@ Typeahead.prototype = {
         });
 
         $items.first().addClass("active");
-        this.$menu.html($items);
+        this.$menu.empty().append($items);
         return this;
     },
 
