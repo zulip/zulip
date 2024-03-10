@@ -63,6 +63,7 @@ export const realm_default_settings_schema = z.object({
     web_navigate_to_sent_message: z.boolean(),
     web_stream_unreads_count_display_policy: z.number(),
     wildcard_mentions_notify: z.boolean(),
+    web_left_sidebar_unreads_count_summary: z.boolean(),
 });
 export type RealmDefaultSettings = z.infer<typeof realm_default_settings_schema>;
 

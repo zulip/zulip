@@ -8,6 +8,7 @@ import * as people from "./people";
 import * as resize from "./resize";
 import * as scheduled_messages from "./scheduled_messages";
 import * as settings_config from "./settings_config";
+import * as sidebar_ui from "./sidebar_ui";
 import * as ui_util from "./ui_util";
 import * as unread from "./unread";
 
@@ -232,6 +233,7 @@ function handle_home_view_order(home_view: string): void {
         $inbox_rows.find("a").attr("tabindex", 0);
     }
     update_dom_with_unread_counts(res, true);
+    sidebar_ui.update_left_sidebar_unread_counts_visibility();
 }
 
 export function handle_home_view_changed(new_home_view: string): void {

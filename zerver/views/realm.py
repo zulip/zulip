@@ -554,6 +554,7 @@ def update_realm_user_settings_defaults(
         ]
     ]
     | None = None,
+    web_left_sidebar_unreads_count_summary: Json[bool] | None = None,
     fluid_layout_width: Json[bool] | None = None,
     high_contrast_mode: Json[bool] | None = None,
     color_scheme: Json[Annotated[int, check_int_in_validator(UserProfile.COLOR_SCHEME_CHOICES)]]

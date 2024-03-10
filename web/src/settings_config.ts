@@ -578,6 +578,9 @@ export const preferences_settings_labels = {
     web_navigate_to_sent_message: $t({
         defaultMessage: "Automatically go to conversation where you sent a message",
     }),
+    web_left_sidebar_unreads_count_summary: $t({
+        defaultMessage: "Show unread count summaries in the left sidebar",
+    }),
 };
 
 export const notification_settings_labels = {

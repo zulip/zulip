@@ -265,6 +265,7 @@ def json_change_settings(
         check_int_in_validator(UserProfile.WEB_STREAM_UNREADS_COUNT_DISPLAY_POLICY_CHOICES),
     ]
     | None = None,
+    web_left_sidebar_unreads_count_summary: Json[bool] | None = None,
     timezone: Annotated[str, timezone_validator()] | None = None,
     email_notifications_batching_period_seconds: Json[int] | None = None,
     enable_drafts_synchronization: Json[bool] | None = None,

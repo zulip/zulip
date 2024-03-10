@@ -7,6 +7,17 @@
                 <span class="popover-menu-label">{{t "Mark all messages as read" }}</span>
             </a>
         </li>
+        <li role="none" class="link-item popover-menu-list-item">
+            <a role="menuitem" id="toggle_display_home_view_message_count" class="popover-menu-link" tabindex="0">
+                {{#if home_view_message_count}}
+                <i class="popover-menu-icon zulip-icon zulip-icon-hide" aria-hidden="true"></i>
+                <span class="popover-menu-label">{{t "Hide unread counter" }}</span>
+                {{else}}
+                <i class="popover-menu-icon fa fa-eye" aria-hidden="true"></i>
+                <span class="popover-menu-label">{{t "Show unread counter" }}</span>
+                {{/if}}
+            </a>
+        </li>
         {{else}}
         <li role="none" class="link-item popover-menu-list-item">
             <a role="menuitem" class="set-home-view popover-menu-link" data-view-code="{{view_code}}" tabindex="0">
