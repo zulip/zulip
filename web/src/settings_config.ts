@@ -555,6 +555,9 @@ export const preferences_settings_labels = {
         }),
     ),
     web_escape_navigates_to_home_view: $t({defaultMessage: "Escape key navigates to home view"}),
+    web_left_sidebar_unreads_count_summary: $t({
+        defaultMessage: "Show unread count summaries in the left sidebar",
+    }),
     default_language_settings_label: $t({defaultMessage: "Language"}),
 };
 

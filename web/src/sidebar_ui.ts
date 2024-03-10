@@ -53,6 +53,25 @@ export function update_invite_user_option(): void {
     }
 }
 
+export function update_left_sidebar_unread_counts_visibility(): void {
+    const $home_view = $(".selected-home-view");
+    const $topics_header = $("#topics_header");
+    const $streams_header = $("#streams_header");
+    const $direct_message_header = $("#private_messages_section_header");
+
+    if (!user_settings.web_left_sidebar_unreads_count_summary) {
+        $home_view.addClass("hide_unread_counts");
+        $topics_header.addClass("hide_unread_counts");
+        $streams_header.addClass("hide_unread_counts");
+        $direct_message_header.addClass("hide_unread_counts");
+    } else {
+        $home_view.removeClass("hide_unread_counts");
+        $topics_header.removeClass("hide_unread_counts");
+        $streams_header.removeClass("hide_unread_counts");
+        $direct_message_header.removeClass("hide_unread_counts");
+    }
+}
+
 export function hide_all(): void {
     hide_streamlist_sidebar();
     hide_userlist_sidebar();
@@ -150,7 +169,7 @@ export function initialize_left_sidebar(): void {
             user_settings.web_home_view === settings_config.web_home_view_values.all_messages.code,
         is_recent_view_home_view:
             user_settings.web_home_view === settings_config.web_home_view_values.recent_topics.code,
-        hide_unread_counts: settings_data.should_mask_unread_count(false),
+        hide_unread_count_total: !user_settings.web_left_sidebar_unreads_count_summary,
     });
 
     $("#left-sidebar-container").html(rendered_sidebar);

@@ -19,6 +19,13 @@ clients should check the `zulip_feature_level` field, present in the
 format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 9.0
+**Feature level 243**
+
+* [`POST /register`](/api/register-queue), [`PATCH /settings`](/api/update-settings),
+  [`PATCH /realm/user_settings_defaults`](/api/update-realm-user-settings-defaults):
+  Added new `web_left_sidebar_unreads_count_summary` display setting, which allows
+  users to selectively show or hide unread message counters in the left sidebar,
+  providing a customizable and distraction-free interface.
 
 **Feature level 243**
 

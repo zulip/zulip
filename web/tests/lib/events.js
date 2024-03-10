@@ -1053,6 +1053,13 @@ exports.fixtures = {
         value: "recent_topics",
     },
 
+    user_settings__web_left_sidebar_unreads_count_summary: {
+        type: "user_settings",
+        op: "update",
+        property: "web_left_sidebar_unreads_count_summary",
+        value: true,
+    },
+
     user_settings__web_mark_read_on_scroll_policy: {
         type: "user_settings",
         op: "update",

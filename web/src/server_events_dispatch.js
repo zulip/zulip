@@ -707,6 +707,7 @@ export function dispatch_normal_event(event) {
                 "display_emoji_reaction_users",
                 "user_list_style",
                 "web_stream_unreads_count_display_policy",
+                "web_left_sidebar_unreads_count_summary",
                 "starred_message_counts",
                 "send_stream_typing_notifications",
                 "send_private_typing_notifications",
@@ -756,6 +757,9 @@ export function dispatch_normal_event(event) {
             }
             if (event.property === "web_stream_unreads_count_display_policy") {
                 stream_list.update_dom_unread_counts_visibility();
+            }
+            if (event.property === "web_left_sidebar_unreads_count_summary") {
+                sidebar_ui.update_left_sidebar_unread_counts_visibility();
             }
             if (event.property === "user_list_style") {
                 settings_preferences.report_user_list_style_change(

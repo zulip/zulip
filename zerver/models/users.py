@@ -144,6 +144,8 @@ class UserBaseSettings(models.Model):
         default=WEB_STREAM_UNREADS_COUNT_DISPLAY_POLICY_UNMUTED_STREAMS
     )
 
+    web_left_sidebar_unreads_count_summary = models.BooleanField(default=False)
+
     ### Notifications settings. ###
 
     email_notifications_batching_period_seconds = models.IntegerField(default=120)
@@ -314,6 +316,7 @@ class UserBaseSettings(models.Model):
         web_mark_read_on_scroll_policy=int,
         user_list_style=int,
         web_stream_unreads_count_display_policy=int,
+        web_left_sidebar_unreads_count_summary=bool,
     )
 
     modern_notification_settings: Dict[str, Any] = dict(
