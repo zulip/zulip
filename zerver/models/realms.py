@@ -510,10 +510,9 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
         BOT_CREATION_ADMINS_ONLY,
     ]
 
-    # See upload_quota_bytes; don't interpret upload_quota_gb directly.
     UPLOAD_QUOTA_LIMITED = 5
     UPLOAD_QUOTA_STANDARD = 50
-    upload_quota_gb = models.IntegerField(null=True)
+    custom_upload_quota_gb = models.IntegerField(null=True)
 
     VIDEO_CHAT_PROVIDERS = {
         "disabled": {
@@ -829,6 +828,27 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
     @max_invites.setter
     def max_invites(self, value: Optional[int]) -> None:
         self._max_invites = value
+
+    @property
+    def upload_quota_gb(self) -> Optional[int]:
+        # See upload_quota_bytes; don't interpret upload_quota_gb directly.
+
+        if self.custom_upload_quota_gb is not None:
+            return self.custom_upload_quota_gb
+
+        plan_type = self.plan_type
+        if plan_type == Realm.PLAN_TYPE_PLUS:
+            return Realm.UPLOAD_QUOTA_STANDARD
+        elif plan_type == Realm.PLAN_TYPE_STANDARD:
+            return Realm.UPLOAD_QUOTA_STANDARD
+        elif plan_type == Realm.PLAN_TYPE_SELF_HOSTED:
+            return None
+        elif plan_type == Realm.PLAN_TYPE_STANDARD_FREE:
+            return Realm.UPLOAD_QUOTA_STANDARD
+        elif plan_type == Realm.PLAN_TYPE_LIMITED:
+            return Realm.UPLOAD_QUOTA_LIMITED
+        else:
+            raise AssertionError("Invalid plan type")
 
     def upload_quota_bytes(self) -> Optional[int]:
         if self.upload_quota_gb is None:
