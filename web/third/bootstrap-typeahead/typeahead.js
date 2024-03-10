@@ -207,7 +207,7 @@ Typeahead.prototype = {
     set_value() {
         const val = this.$menu.find(".active").data("typeahead-value");
         if (this.$element.is("[contenteditable]")) {
-            this.$element.html(val);
+            this.$element.text(val);
         } else {
             this.$element.val(val);
         }
