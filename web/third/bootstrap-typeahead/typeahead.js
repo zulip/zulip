@@ -44,10 +44,10 @@
  * 3. Header text:
  *
  *   This adds support for showing a custom header text like: "You are now
- *   completing a user mention". Provide the function `this.header` that
+ *   completing a user mention". Provide the function `this.header_html` that
  *   returns a string containing the header text, or false.
  *
- *   Our custom changes include all mentions of this.header, some CSS changes
+ *   Our custom changes include all mentions of this.header_html, some CSS changes
  *   in compose.css and splitting $container out of $menu so we can insert
  *   additional HTML before $menu.
  *
@@ -172,7 +172,7 @@ const Typeahead = function (element, options) {
     this.on_move = this.options.on_move;
     this.on_escape = this.options.on_escape;
     // return a string to show in typeahead header or false.
-    this.header = this.options.header ?? (() => false);
+    this.header_html = this.options.header_html ?? (() => false);
     // return a string to show in typeahead items or false.
     this.option_label = this.options.option_label ?? (() => false);
 
@@ -225,9 +225,9 @@ Typeahead.prototype = {
     },
 
     show() {
-        const header_text = this.header();
-        if (header_text) {
-            this.$header.find("span#typeahead-header-text").html(header_text);
+        const header_text_html = this.header_html();
+        if (header_text_html) {
+            this.$header.find("span#typeahead-header-text").html(header_text_html);
             this.$header.show();
         } else {
             this.$header.hide();
