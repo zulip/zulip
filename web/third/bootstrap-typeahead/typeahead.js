@@ -133,11 +133,10 @@
  * ============================================================ */
 
 import {insertTextIntoField} from "text-field-edit";
+
 import {get_string_diff} from "../../src/util";
 
 !function($){
-
-  "use strict"; // jshint ;_;
 
   function get_pseudo_keycode(e) {
       const isComposing = (event.originalEvent && event.originalEvent.isComposing) || false;
@@ -151,7 +150,7 @@ import {get_string_diff} from "../../src/util";
  /* TYPEAHEAD PUBLIC CLASS DEFINITION
   * ================================= */
 
-  var Typeahead = function (element, options) {
+  const Typeahead = function (element, options) {
     this.$element = $(element)
     this.options = $.extend({}, $.fn.typeahead.defaults, options)
     this.matcher = this.options.matcher || this.matcher
@@ -186,8 +185,8 @@ import {get_string_diff} from "../../src/util";
 
     constructor: Typeahead
 
-  , select: function (e) {
-      var val = this.$menu.find('.active').data('typeahead-value')
+  , select (e) {
+      const val = this.$menu.find('.active').data('typeahead-value')
       if (this.$element.is("[contenteditable]")) {
         this.$element.html(this.updater(val, e)).trigger("change");
         // Empty textContent after the change event handler
@@ -205,8 +204,8 @@ import {get_string_diff} from "../../src/util";
       return this.hide()
     }
 
-  , set_value: function () {
-      var val = this.$menu.find('.active').data('typeahead-value')
+  , set_value () {
+      const val = this.$menu.find('.active').data('typeahead-value')
       this.$element.is("[contenteditable]") ? this.$element.html(val) : this.$element.val(val);
 
       if (this.on_move) {
@@ -214,30 +213,30 @@ import {get_string_diff} from "../../src/util";
       }
     }
 
-  , updater: function (item) {
+  , updater (item) {
       return item
     }
 
-  , automated: function() {
+  , automated() {
     return false;
   }
 
-  , trigger_selection: function() {
+  , trigger_selection() {
     return false;
   }
 
-  , header: function() {
+  , header() {
     // return a string to show in typeahead header or false.
     return false;
   }
 
-  , option_label: function (matching_items, item) {
+  , option_label (matching_items, item) {
     // return a string to show in typeahead items or false.
     return false
   }
 
-  , show: function () {
-      var header_text = this.header();
+  , show () {
+      const header_text = this.header();
       if (header_text) {
         this.$header.find('span#typeahead-header-text').html(header_text);
         this.$header.show();
@@ -248,7 +247,7 @@ import {get_string_diff} from "../../src/util";
     // If a parent element was specified, we shouldn't manually
     // position the element, since it's already in the right place.
     if (!this.options.parentElement) {
-      var pos;
+      let pos;
 
         if (this.fixed) {
           // Relative to screen instead of to page
@@ -264,7 +263,7 @@ import {get_string_diff} from "../../src/util";
         // Zulip patch: Workaround for iOS safari problems
         pos.top = this.$element.get_offset_to_window().top;
 
-        var top_pos = pos.top + pos.height
+        let top_pos = pos.top + pos.height
         if (this.dropup) {
           top_pos = pos.top - this.$container.outerHeight()
         }
@@ -286,7 +285,7 @@ import {get_string_diff} from "../../src/util";
       return this
     }
 
-  , hide: function () {
+  , hide () {
       this.$container.hide()
       this.shown = false
       if (this.options.closeInputFieldOnHide !== null) {
@@ -295,25 +294,23 @@ import {get_string_diff} from "../../src/util";
       return this
     }
 
-  , lookup: function (hideOnEmpty) {
-      var items
+  , lookup (hideOnEmpty) {
+      let items
 
       this.query = this.$element.is("[contenteditable]") ? this.$element.text() :  this.$element.val();
 
-      if (!this.options.helpOnEmptyStrings || hideOnEmpty) {
-        if (!this.query || this.query.length < this.options.minLength) {
+      if ((!this.options.helpOnEmptyStrings || hideOnEmpty) && (!this.query || this.query.length < this.options.minLength)) {
           return this.shown ? this.hide() : this
         }
-      }
 
       items = typeof this.source === "function" ? this.source(this.query, this.process.bind(this)) : this.source
 
-      if (!items && this.shown) this.hide();
+      if (!items && this.shown) {this.hide();}
       return items ? this.process(items) : this
     }
 
-  , process: function (items) {
-      var that = this
+  , process (items) {
+      const that = this
 
       const matching_items = $.grep(items, (item) => this.matcher(item));
 
@@ -329,27 +326,27 @@ import {get_string_diff} from "../../src/util";
       return this.render(final_items.slice(0, this.options.items), matching_items).show();
     }
 
-  , matcher: function (item) {
+  , matcher (item) {
       return ~item.toLowerCase().indexOf(this.query.toLowerCase())
     }
 
-  , sorter: function (items) {
-      var beginswith = []
-        , caseSensitive = []
-        , caseInsensitive = []
-        , item
+  , sorter (items) {
+      const beginswith = []
+        ; const caseSensitive = []
+        ; const caseInsensitive = []
+        ; let item
 
       while (item = items.shift()) {
-        if (!item.toLowerCase().indexOf(this.query.toLowerCase())) beginswith.push(item)
-        else if (~item.indexOf(this.query)) caseSensitive.push(item)
-        else caseInsensitive.push(item)
+        if (!item.toLowerCase().indexOf(this.query.toLowerCase())) {beginswith.push(item)}
+        else if (~item.indexOf(this.query)) {caseSensitive.push(item)}
+        else {caseInsensitive.push(item)}
       }
 
-      return beginswith.concat(caseSensitive, caseInsensitive)
+      return [...beginswith, ...caseSensitive, ...caseInsensitive]
     }
 
-  , render: function (final_items, matching_items) {
-      var that = this
+  , render (final_items, matching_items) {
+      const that = this
 
       const items = $(final_items).map((index, item) => {
         const i = $(that.options.item).data('typeahead-value', item)
@@ -368,9 +365,9 @@ import {get_string_diff} from "../../src/util";
       return this
     }
 
-  , next: function (event) {
-      var active = this.$menu.find('.active').removeClass('active')
-        , next = active.next()
+  , next (event) {
+      const active = this.$menu.find('.active').removeClass('active')
+        ; let next = active.next()
 
       if (!next.length) {
         next = $(this.$menu.find('li')[0])
@@ -383,9 +380,9 @@ import {get_string_diff} from "../../src/util";
       }
     }
 
-  , prev: function (event) {
-      var active = this.$menu.find('.active').removeClass('active')
-        , prev = active.prev()
+  , prev (event) {
+      const active = this.$menu.find('.active').removeClass('active')
+        ; let prev = active.prev()
 
       if (!prev.length) {
         prev = this.$menu.find('li').last()
@@ -398,7 +395,7 @@ import {get_string_diff} from "../../src/util";
       }
     }
 
-  , listen: function () {
+  , listen () {
       this.$element
         .on('blur',     this.blur.bind(this))
         .on('keypress', this.keypress.bind(this))
@@ -417,17 +414,17 @@ import {get_string_diff} from "../../src/util";
       $(window).on('resize', this.resizeHandler.bind(this));
     }
 
-  , unlisten: function () {
+  , unlisten () {
       this.$container.remove();
-      var events = ["blur", "keydown", "keyup", "keypress", "mousemove"];
-      for (var i=0; i<events.length; i++) {
-        this.$element.off(events[i]);
+      const events = ["blur", "keydown", "keyup", "keypress", "mousemove"];
+      for (const event_ of events) {
+        this.$element.off(event_);
       }
       this.$element.removeData("typeahead");
     }
 
-  , eventSupported: function(eventName) {
-      var isSupported = eventName in this.$element
+  , eventSupported(eventName) {
+      let isSupported = eventName in this.$element
       if (!isSupported) {
         this.$element.setAttribute(eventName, 'return;')
         isSupported = typeof this.$element[eventName] === 'function'
@@ -435,7 +432,7 @@ import {get_string_diff} from "../../src/util";
       return isSupported
     }
 
-  , resizeHandler: function() {
+  , resizeHandler() {
       if(this.shown) {
         this.show();
       }
@@ -449,13 +446,13 @@ import {get_string_diff} from "../../src/util";
     }
   }
 
-  , move: function (e) {
-      if (!this.shown) return
+  , move (e) {
+      if (!this.shown) {return}
       const pseudo_keycode = get_pseudo_keycode(e);
 
       switch(pseudo_keycode) {
         case 9: // tab
-          if (!this.options.tabIsEnter) return
+          if (!this.options.tabIsEnter) {return}
         case 13: // enter
         case 27: // escape
           e.preventDefault()
@@ -475,7 +472,7 @@ import {get_string_diff} from "../../src/util";
       this.maybeStopAdvance(e);
     }
 
-  , mousemove: function(e) {
+  , mousemove(e) {
       if (!this.mouse_moved_since_typeahead) {
         /* Undo cursor disabling in mouseenter handler. */
         $(e.currentTarget).find('a').css('cursor', '');
@@ -484,10 +481,10 @@ import {get_string_diff} from "../../src/util";
       }
     }
 
-  , keydown: function (e) {
+  , keydown (e) {
     const pseudo_keycode = get_pseudo_keycode(e);
     if (this.trigger_selection(e)) {
-      if (!this.shown) return;
+      if (!this.shown) {return;}
       e.preventDefault();
       this.select(e);
     }
@@ -495,7 +492,7 @@ import {get_string_diff} from "../../src/util";
       this.move(e)
     }
 
-  , keypress: function (e) {
+  , keypress (e) {
     if (!this.suppressKeyPressRepeat) {
       this.move(e);
       return;
@@ -503,7 +500,7 @@ import {get_string_diff} from "../../src/util";
     this.maybeStopAdvance(e);
   }
 
-  , keyup: function (e) {
+  , keyup (e) {
       const pseudo_keycode = get_pseudo_keycode(e);
 
       switch(pseudo_keycode) {
@@ -512,14 +509,14 @@ import {get_string_diff} from "../../src/util";
           break
 
         case 9: // tab
-          if (!this.options.tabIsEnter) return
+          if (!this.options.tabIsEnter) {return}
         case 13: // enter
-          if (!this.shown) return
+          if (!this.shown) {return}
           this.select(e)
           break
 
         case 27: // escape
-          if (!this.shown) return
+          if (!this.shown) {return}
           this.hide()
           if (this.on_escape) {
             this.on_escape();
@@ -536,13 +533,11 @@ import {get_string_diff} from "../../src/util";
         default:
           var hideOnEmpty = false
           // backspace
-          if (e.keyCode === 8 && this.options.helpOnEmptyStrings) {
-            // Support for inputs to set the hideOnEmpty option explicitly to false
+          if (e.keyCode === 8 && this.options.helpOnEmptyStrings && // Support for inputs to set the hideOnEmpty option explicitly to false
             // to display typeahead after hitting backspace to clear the input.
-            if (typeof(this.options.hideOnEmpty) === undefined || this.options.hideOnEmpty) {
+            (typeof(this.options.hideOnEmpty) === undefined || this.options.hideOnEmpty)) {
               hideOnEmpty = true;
             }
-          }
           if (this.options.openInputFieldOnKeyUp !== null && !this.shown) {
             // If the typeahead isn't shown yet, the `lookup` call will open it.
             // Here we make a callback to the input field before we open the
@@ -558,32 +553,32 @@ import {get_string_diff} from "../../src/util";
       e.preventDefault()
   }
 
-  , blur: function (e) {
+  , blur (e) {
       // Blurs that move focus to elsewhere within the parent element shouldn't
       // hide the typeahead.
       if (this.options.parentElement && $(e.relatedTarget).parents(this.options.parentElement).length > 0) {
         return;
       }
-      var that = this
-      setTimeout(function () {
+      const that = this
+      setTimeout(() => {
         if (!that.$container.is(':hover')) {
           that.hide();
         } else if (that.shown) {
           // refocus the input if the user clicked on the typeahead
           // so that clicking elsewhere registers as a blur and hides
           // the typeahead.
-          that.$element.focus();
+          that.$element.trigger("focus");
         }
       }, 150)
     }
 
-  , element_click: function (e) {
+  , element_click (e) {
     // update / hide the typeahead menu if the user clicks anywhere
     // inside the typing area, to avoid misplaced typeahead insertion.
     this.lookup()
   }
 
-  , click: function (e) {
+  , click (e) {
       e.stopPropagation()
       e.preventDefault()
       // The original bootstrap code expected `mouseenter` to be called
@@ -597,7 +592,7 @@ import {get_string_diff} from "../../src/util";
       this.select(e)
     }
 
-  , mouseenter: function (e) {
+  , mouseenter (e) {
       if (!this.mouse_moved_since_typeahead) {
         // Prevent the annoying interaction where your mouse happens
         // to be in the space where typeahead will open.  (This would
@@ -622,11 +617,11 @@ import {get_string_diff} from "../../src/util";
 
   $.fn.typeahead = function (option) {
     return this.each(function () {
-      var $this = $(this)
-        , data = $this.data('typeahead')
-        , options = typeof option == 'object' && option
-      if (!data) $this.data('typeahead', (data = new Typeahead(this, options)))
-      if (typeof option == 'string') data[option]()
+      const $this = $(this)
+        ; let data = $this.data('typeahead')
+        ; const options = typeof option === 'object' && option
+      if (!data) {$this.data('typeahead', (data = new Typeahead(this, options)))}
+      if (typeof option === 'string') {data[option]()}
     })
   }
 
