@@ -977,6 +977,17 @@ class RealmTest(ZulipTestCase):
         self.assertEqual(realm.upload_quota_gb, Realm.UPLOAD_QUOTA_STANDARD)
         self.assertEqual(realm.can_access_all_users_group_id, everyone_system_group.id)
 
+        # Test that custom_upload_quota_gb overrides the default upload_quota_gb
+        # implied by a plan and makes .upload_quota_gb be unaffacted by plan changes.
+        realm.custom_upload_quota_gb = 100
+        realm.save(update_fields=["custom_upload_quota_gb"])
+        do_change_realm_plan_type(realm, Realm.PLAN_TYPE_PLUS, acting_user=iago)
+        self.assertEqual(realm.plan_type, Realm.PLAN_TYPE_PLUS)
+        self.assertEqual(realm.upload_quota_gb, 100)
+
+        realm.custom_upload_quota_gb = None
+        realm.save(update_fields=["custom_upload_quota_gb"])
+
         do_change_realm_plan_type(realm, Realm.PLAN_TYPE_SELF_HOSTED, acting_user=iago)
         self.assertEqual(realm.plan_type, Realm.PLAN_TYPE_SELF_HOSTED)
         self.assertEqual(realm.max_invites, settings.INVITES_DEFAULT_REALM_DAILY_MAX)
