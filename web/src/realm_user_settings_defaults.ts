@@ -50,6 +50,7 @@ export type RealmDefaultSettings = {
     web_mark_read_on_scroll_policy: number;
     web_stream_unreads_count_display_policy: number;
     wildcard_mentions_notify: boolean;
+    web_left_sidebar_unreads_count_summary: boolean;
 };
 
 export let realm_user_settings_defaults: RealmDefaultSettings;

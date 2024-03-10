@@ -155,6 +155,12 @@
             </select>
         </div>
 
+        {{> settings_checkbox
+          setting_name="web_left_sidebar_unreads_count_summary"
+          is_checked=settings_object.web_left_sidebar_unreads_count_summary
+          label=settings_label.web_left_sidebar_unreads_count_summary
+          prefix=prefix}}
+
         {{#if information_density_settings.render_group}}
         <div class="information-density-settings">
             <div class="title">{{t "Information density settings"}}</div>
