@@ -159,7 +159,7 @@ function build_page() {
         items: 5,
         fixed: true,
         helpOnEmptyStrings: true,
-        highlighter: (item) => render_typeahead_item({primary: language_labels.get(item)}),
+        highlighter_html: (item) => render_typeahead_item({primary: language_labels.get(item)}),
         matcher(item) {
             const q = this.query.trim().toLowerCase();
             return item.toLowerCase().startsWith(q);

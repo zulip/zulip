@@ -67,7 +67,7 @@ export function initialize({on_narrow_search}) {
         items: search_suggestion.max_num_of_search_results,
         helpOnEmptyStrings: true,
         naturalSearch: true,
-        highlighter(item) {
+        highlighter_html(item) {
             const obj = search_map.get(item);
             return render_search_list_item(obj);
         },
