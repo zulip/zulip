@@ -813,7 +813,7 @@ export function get_candidates(query) {
     return false;
 }
 
-export function content_highlighter(item) {
+export function content_highlighter_html(item) {
     switch (this.completing) {
         case "emoji":
             return typeahead_helper.render_emoji(item);
@@ -1077,7 +1077,7 @@ export function initialize_topic_edit_typeahead(form_field, stream_name, dropup)
     const options = {
         fixed: true,
         dropup,
-        highlighter(item) {
+        highlighter_html(item) {
             return typeahead_helper.render_typeahead_item({primary: item});
         },
         sorter(items) {
@@ -1141,7 +1141,7 @@ export function initialize_compose_typeahead(selector) {
         // O(n) behavior in the number of users in the organization
         // inside the typeahead library.
         source: get_sorted_filtered_items,
-        highlighter: content_highlighter,
+        highlighter_html: content_highlighter_html,
         matcher() {
             return true;
         },
@@ -1170,7 +1170,7 @@ export function initialize({on_enter_send}) {
         },
         items: 3,
         fixed: true,
-        highlighter(item) {
+        highlighter_html(item) {
             return typeahead_helper.render_typeahead_item({primary: item});
         },
         sorter(items) {
@@ -1194,7 +1194,7 @@ export function initialize({on_enter_send}) {
         items: max_num_items,
         dropup: true,
         fixed: true,
-        highlighter(item) {
+        highlighter_html(item) {
             return typeahead_helper.render_person_or_user_group(item);
         },
         matcher() {

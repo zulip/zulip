@@ -157,7 +157,7 @@ const Typeahead = function (element, options) {
     this.options = $.extend({}, $.fn.typeahead.defaults, options);
     this.matcher = this.options.matcher ?? this.matcher;
     this.sorter = this.options.sorter ?? this.sorter;
-    this.highlighter = this.options.highlighter;
+    this.highlighter_html = this.options.highlighter_html;
     this.updater = this.options.updater ?? this.updater;
     this.$container = $(this.options.container).appendTo(this.options.parentElement ?? "body");
     this.$menu = $(this.options.menu).appendTo(this.$container);
@@ -347,7 +347,8 @@ Typeahead.prototype = {
     render(final_items, matching_items) {
         const $items = $(final_items).map((_index, item) => {
             const $i = $(this.options.item).data("typeahead-value", item);
-            const $item_html = $i.find("a").html(this.highlighter(item));
+            const item_html = this.highlighter_html(item);
+            const $item_html = $i.find("a").html(item_html);
 
             const option_label_html = this.option_label(matching_items, item);
 

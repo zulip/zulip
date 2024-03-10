@@ -768,20 +768,20 @@ test("initialize", ({override, override_rewire, mock_template}) => {
         let expected_value = sweden_topics_to_show;
         assert.deepEqual(actual_value, expected_value);
 
-        // options.highlighter()
+        // options.highlighter_html()
         options.query = "Kro";
-        actual_value = options.highlighter("kronor");
+        actual_value = options.highlighter_html("kronor");
         expected_value = "<strong>kronor</strong>";
         assert.equal(actual_value, expected_value);
 
         // Highlighted content should be escaped.
         options.query = "<";
-        actual_value = options.highlighter("<&>");
+        actual_value = options.highlighter_html("<&>");
         expected_value = "<strong>&lt;&amp;&gt;</strong>";
         assert.equal(actual_value, expected_value);
 
         options.query = "even m";
-        actual_value = options.highlighter("even more ice");
+        actual_value = options.highlighter_html("even more ice");
         expected_value = "<strong>even more ice</strong>";
         assert.equal(actual_value, expected_value);
 
@@ -998,12 +998,12 @@ test("initialize", ({override, override_rewire, mock_template}) => {
         assert.ok(caret_called);
 
         othello.delivery_email = "othello@zulip.com";
-        // options.highlighter()
+        // options.highlighter_html()
         //
         // Again, here we only verify that the highlighter has been set to
-        // content_highlighter.
+        // content_highlighter_html.
         fake_this = {completing: "mention", token: "othello"};
-        actual_value = options.highlighter.call(fake_this, othello);
+        actual_value = options.highlighter_html.call(fake_this, othello);
         expected_value =
             `    <span class="user_circle_empty user_circle"></span>\n` +
             `    <img class="typeahead-image" src="http://zulip.zulipdev.com/avatar/${othello.user_id}?s&#x3D;50" />\n` +
@@ -1014,7 +1014,7 @@ test("initialize", ({override, override_rewire, mock_template}) => {
         othello.delivery_email = null;
 
         fake_this = {completing: "mention", token: "hamletcharacters"};
-        actual_value = options.highlighter.call(fake_this, hamletcharacters);
+        actual_value = options.highlighter_html.call(fake_this, hamletcharacters);
         expected_value =
             '    <i class="typeahead-image icon fa fa-group no-presence-circle" aria-hidden="true"></i>\n<strong>hamletcharacters</strong>&nbsp;&nbsp;\n<small class="autocomplete_secondary">Characters of Hamlet</small>\n';
         assert.equal(actual_value, expected_value);
@@ -1539,7 +1539,7 @@ test("tokenizing", () => {
     assert.equal(ct.tokenize_compose_str("foo #streams@foo"), "#streams@foo");
 });
 
-test("content_highlighter", ({override_rewire}) => {
+test("content_highlighter_html", ({override_rewire}) => {
     let fake_this = {completing: "emoji"};
     const emoji = {emoji_name: "person shrugging", emoji_url: "¯\\_(ツ)_/¯"};
     let th_render_typeahead_item_called = false;
@@ -1547,7 +1547,7 @@ test("content_highlighter", ({override_rewire}) => {
         assert.deepEqual(item, emoji);
         th_render_typeahead_item_called = true;
     });
-    ct.content_highlighter.call(fake_this, emoji);
+    ct.content_highlighter_html.call(fake_this, emoji);
 
     fake_this = {completing: "mention"};
     let th_render_person_called = false;
@@ -1555,14 +1555,14 @@ test("content_highlighter", ({override_rewire}) => {
         assert.deepEqual(person, othello);
         th_render_person_called = true;
     });
-    ct.content_highlighter.call(fake_this, othello);
+    ct.content_highlighter_html.call(fake_this, othello);
 
     let th_render_user_group_called = false;
     override_rewire(typeahead_helper, "render_user_group", (user_group) => {
         assert.deepEqual(user_group, backend);
         th_render_user_group_called = true;
     });
-    ct.content_highlighter.call(fake_this, backend);
+    ct.content_highlighter_html.call(fake_this, backend);
 
     // We don't have any fancy rendering for slash commands yet.
     fake_this = {completing: "slash"};
@@ -1576,7 +1576,7 @@ test("content_highlighter", ({override_rewire}) => {
         });
         th_render_slash_command_called = true;
     });
-    ct.content_highlighter.call(fake_this, me_slash);
+    ct.content_highlighter_html.call(fake_this, me_slash);
 
     fake_this = {completing: "stream"};
     let th_render_stream_called = false;
@@ -1584,7 +1584,7 @@ test("content_highlighter", ({override_rewire}) => {
         assert.deepEqual(stream, denmark_stream);
         th_render_stream_called = true;
     });
-    ct.content_highlighter.call(fake_this, denmark_stream);
+    ct.content_highlighter_html.call(fake_this, denmark_stream);
 
     fake_this = {completing: "syntax"};
     th_render_typeahead_item_called = false;
@@ -1592,10 +1592,10 @@ test("content_highlighter", ({override_rewire}) => {
         assert.deepEqual(item, {primary: "py"});
         th_render_typeahead_item_called = true;
     });
-    ct.content_highlighter.call(fake_this, "py");
+    ct.content_highlighter_html.call(fake_this, "py");
 
     fake_this = {completing: "something-else"};
-    assert.ok(!ct.content_highlighter.call(fake_this));
+    assert.ok(!ct.content_highlighter_html.call(fake_this));
 
     // Verify that all stub functions have been called.
     assert.ok(th_render_typeahead_item_called);
