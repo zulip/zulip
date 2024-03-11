@@ -342,6 +342,7 @@ function get_typeahead_result(query, current_stream_id, current_topic) {
         query,
         current_stream_id,
         current_topic,
+        groups: [],
     });
     return result.map((person) => person.email);
 }
@@ -453,6 +454,7 @@ test("sort_recipients all mention", () => {
         query: "a",
         current_stream_id: linux_sub.stream_id,
         current_topic: "Linux topic",
+        groups: [],
     });
 
     assertSameEmails(results, [all_obj, a_bot, a_user, b_user_1, b_user_2, b_user_3, b_bot, zman]);
@@ -514,6 +516,7 @@ test("sort_recipients dup bots", () => {
         query: "b",
         current_stream_id: undefined,
         current_topic: "",
+        groups: [],
     });
     const recipients_email = recipients.map((person) => person.email);
     const expected = [
@@ -541,6 +544,7 @@ test("sort_recipients dup alls", () => {
         query: "a",
         current_stream_id: linux_sub.stream_id,
         current_topic: "Linux topic",
+        groups: [],
     });
 
     const expected = [all_obj, a_user];
@@ -557,6 +561,7 @@ test("sort_recipients dup alls direct message", () => {
     const recipients = th.sort_recipients({
         users: test_objs,
         query: "a",
+        groups: [],
     });
 
     const expected = [a_user, all_obj];
@@ -571,6 +576,7 @@ test("sort_recipients subscribers", () => {
         query: "b",
         current_stream_id: dev_sub.stream_id,
         current_topic: "Dev topic",
+        groups: [],
     });
     const recipients_email = recipients.map((person) => person.email);
     const expected = ["b_user_2@zulip.net", "b_user_1@zulip.net"];
@@ -586,6 +592,7 @@ test("sort_recipients pm partners", () => {
         query: "b",
         current_stream_id: linux_sub.stream_id,
         current_topic: "Linux topic",
+        groups: [],
     });
     const recipients_email = recipients.map((person) => person.email);
     const expected = ["b_user_3@zulip.net", "b_user_2@zulip.net"];

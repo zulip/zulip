@@ -15,6 +15,7 @@ const peer_data = zrequire("peer_data");
 const people = zrequire("people");
 const stream_data = zrequire("stream_data");
 const user_groups = zrequire("user_groups");
+const typeahead_helper = zrequire("typeahead_helper");
 
 // set global test variables.
 let sort_recipients_called = false;
@@ -23,43 +24,48 @@ const $fake_rendered_person = $.create("fake-rendered-person");
 const $fake_rendered_stream = $.create("fake-rendered-stream");
 const $fake_rendered_group = $.create("fake-rendered-group");
 
-mock_esm("../src/typeahead_helper", {
-    render_person() {
+function override_typeahead_helper(override_rewire) {
+    override_rewire(typeahead_helper, "render_person", () => {
         return $fake_rendered_person;
-    },
-    render_user_group() {
+    });
+    override_rewire(typeahead_helper, "render_user_group", () => {
         return $fake_rendered_group;
-    },
-    render_stream() {
+    });
+    override_rewire(typeahead_helper, "render_stream", () => {
         return $fake_rendered_stream;
-    },
-    sort_streams() {
+    });
+    override_rewire(typeahead_helper, "sort_streams", () => {
         sort_streams_called = true;
-    },
-    sort_recipients() {
+        return [];
+    });
+    override_rewire(typeahead_helper, "sort_recipients", () => {
         sort_recipients_called = true;
-    },
-});
+    });
+}
 
 const jill = {
     email: "jill@zulip.com",
     user_id: 10,
     full_name: "Jill Hill",
+    type: "user",
 };
 const mark = {
     email: "mark@zulip.com",
     user_id: 20,
     full_name: "Marky Mark",
+    type: "user",
 };
 const fred = {
     email: "fred@zulip.com",
     user_id: 30,
     full_name: "Fred Flintstone",
+    type: "user",
 };
 const me = {
     email: "me@example.com",
     user_id: 40,
     full_name: "me",
+    type: "user",
 };
 
 const persons = [jill, mark, fred, me];
@@ -72,12 +78,14 @@ const admins = {
     description: "foo",
     id: 1,
     members: [jill.user_id, mark.user_id],
+    type: "user_group",
 };
 const testers = {
     name: "Testers",
     description: "bar",
     id: 2,
     members: [mark.user_id, fred.user_id, me.user_id],
+    type: "user_group",
 };
 
 const groups = [admins, testers];
@@ -90,6 +98,7 @@ const denmark = {
     name: "Denmark",
     subscribed: true,
     render_subscribers: true,
+    type: "stream",
 };
 peer_data.set_subscribers(denmark.stream_id, [me.user_id, mark.user_id]);
 
@@ -97,6 +106,7 @@ const sweden = {
     stream_id: 2,
     name: "Sweden",
     subscribed: false,
+    type: "stream",
 };
 peer_data.set_subscribers(sweden.stream_id, [mark.user_id, jill.user_id]);
 
@@ -105,7 +115,8 @@ for (const sub of subs) {
     stream_data.add_sub(sub);
 }
 
-run_test("set_up", ({mock_template}) => {
+run_test("set_up", ({mock_template, override_rewire}) => {
+    override_typeahead_helper(override_rewire);
     mock_template("input_pill.hbs", true, (data, html) => {
         assert.equal(typeof data.display_value, "string");
         assert.equal(typeof data.has_image, "boolean");
@@ -224,7 +235,7 @@ run_test("set_up", ({mock_template}) => {
         (function test_sorter() {
             if (opts.stream) {
                 sort_streams_called = false;
-                config.sorter.call(fake_stream_this);
+                config.sorter.call(fake_stream_this, []);
                 assert.ok(sort_streams_called);
             }
             if (opts.user_group) {
