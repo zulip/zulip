@@ -394,7 +394,10 @@ def registration_helper(
             # so they can be directly registered without having to go through
             # this interstitial.
             form = RegistrationForm(
-                {"full_name": ldap_full_name}, initial=initial_data, realm_creation=realm_creation
+                {"full_name": ldap_full_name},
+                initial=initial_data,
+                realm_creation=realm_creation,
+                realm=realm,
             )
             request.session["authenticated_full_name"] = ldap_full_name
             name_validated = True
@@ -407,6 +410,7 @@ def registration_helper(
             form = RegistrationForm(
                 initial={"full_name": hesiod_name if "@" not in hesiod_name else ""},
                 realm_creation=realm_creation,
+                realm=realm,
             )
             name_validated = True
         elif prereg_user is not None and prereg_user.full_name:
@@ -417,21 +421,26 @@ def registration_helper(
                     {"full_name": prereg_user.full_name},
                     initial=initial_data,
                     realm_creation=realm_creation,
+                    realm=realm,
                 )
             else:
                 initial_data["full_name"] = prereg_user.full_name
                 form = RegistrationForm(
                     initial=initial_data,
                     realm_creation=realm_creation,
+                    realm=realm,
                 )
         elif form_full_name is not None:
             initial_data["full_name"] = form_full_name
             form = RegistrationForm(
                 initial=initial_data,
                 realm_creation=realm_creation,
+                realm=realm,
             )
         else:
-            form = RegistrationForm(initial=initial_data, realm_creation=realm_creation)
+            form = RegistrationForm(
+                initial=initial_data, realm_creation=realm_creation, realm=realm
+            )
     else:
         postdata = request.POST.copy()
         if name_changes_disabled(realm):
@@ -443,7 +452,7 @@ def registration_helper(
                 name_validated = True
             except KeyError:
                 pass
-        form = RegistrationForm(postdata, realm_creation=realm_creation)
+        form = RegistrationForm(postdata, realm_creation=realm_creation, realm=realm)
 
     if not (password_auth_enabled(realm) and password_required):
         form["password"].field.required = False

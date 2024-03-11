@@ -167,6 +167,7 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
 
     mandatory_topics = models.BooleanField(default=False)
 
+    require_unique_names = models.BooleanField(default=False)
     name_changes_disabled = models.BooleanField(default=False)
     email_changes_disabled = models.BooleanField(default=False)
     avatar_changes_disabled = models.BooleanField(default=False)
@@ -627,6 +628,7 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
         name_changes_disabled=bool,
         private_message_policy=int,
         push_notifications_enabled=bool,
+        require_unique_names=bool,
         send_welcome_emails=bool,
         user_group_edit_policy=int,
         video_chat_provider=int,
@@ -962,6 +964,13 @@ def get_realm(string_id: str) -> Realm:
 
 def get_realm_by_id(realm_id: int) -> Realm:
     return Realm.objects.get(id=realm_id)
+
+
+def require_unique_names(realm: Optional[Realm]) -> bool:
+    if realm is None:
+        # realm is None when a new realm is being created.
+        return False
+    return realm.require_unique_names
 
 
 def name_changes_disabled(realm: Optional[Realm]) -> bool:

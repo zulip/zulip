@@ -4540,6 +4540,17 @@ paths:
                                         - 2 = Nobody
 
                                         **Changes**: New in Zulip 3.0 (feature level 1).
+                                    require_unique_names:
+                                      type: boolean
+                                      description: |
+                                        Indicates whether the organization is configured to require users to have
+                                        unique full names. If true, the server will reject attempts to create a
+                                        new user, or change the name of an existing user, where doing so would
+                                        lead to two users whose names are identical modulo case and unicode
+                                        normalization.
+
+                                        **Changes**: New in Zulip 9.0 (feature level 246). Previously, the Zulip
+                                        server could not be configured to enforce unique names.
                                     send_welcome_emails:
                                       type: boolean
                                       description: |
@@ -14640,6 +14651,17 @@ paths:
                           Present if `realm` is present in `fetch_event_types`.
 
                           The name of the organization, used in login pages etc.
+                      realm_require_unique_names:
+                        type: boolean
+                        description: |
+                          Indicates whether the organization is configured to require users
+                          to have unique full names. If true, the server will reject attempts
+                          to create a new user, or change the name of an existing user, where
+                          doing so would lead to two users whose names are identical modulo
+                          case and unicode normalization.
+
+                          **Changes**: New in Zulip 9.0 (feature level 246). Previously, the Zulip
+                          server could not be configured to enforce unique names.
                       realm_name_changes_disabled:
                         type: boolean
                         description: |

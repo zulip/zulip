@@ -239,6 +239,7 @@ export function dispatch_normal_event(event) {
                 org_type: noop,
                 private_message_policy: compose_recipient.check_posting_policy_for_compose_box,
                 push_notifications_enabled: noop,
+                require_unique_names: noop,
                 send_welcome_emails: noop,
                 message_content_allowed_in_email_notifications: noop,
                 enable_spectator_access: noop,

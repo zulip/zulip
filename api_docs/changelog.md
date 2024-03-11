@@ -20,6 +20,12 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 9.0
 
+**Feature level 246**
+
+* [`POST /register`](/api/register-queue), [`POST
+  /events`](/api/get-events): Added new `require_unique_names` setting
+  controlling whether users names can duplicate others.
+
 **Feature level 245**
 
 * [`PATCH

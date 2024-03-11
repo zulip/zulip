@@ -262,6 +262,12 @@
             </div>
             <div class="inline-block organization-permissions-parent">
                 {{> settings_checkbox
+                  setting_name="realm_require_unique_names"
+                  prefix="id_"
+                  is_checked=realm_require_unique_names
+                  label=admin_settings_label.realm_require_unique_names}}
+
+                {{> settings_checkbox
                   setting_name="realm_name_changes_disabled"
                   prefix="id_"
                   is_checked=realm_name_changes_disabled

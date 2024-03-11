@@ -2421,6 +2421,25 @@ class UserSignUpTest(ZulipTestCase):
         # Verify that the user is asked for name and password
         self.assert_in_success_response(["id_password", "id_full_name"], result)
 
+    def test_signup_with_existing_name(self) -> None:
+        """
+        Check if signing up with an existing name when organization
+        has set "Require Unique Names"is handled properly.
+        """
+
+        iago = self.example_user("iago")
+        email = "newguy@zulip.com"
+        password = "newpassword"
+
+        do_set_realm_property(iago.realm, "require_unique_names", True, acting_user=None)
+        result = self.verify_signup(email=email, password=password, full_name="IaGo")
+        assert not isinstance(result, UserProfile)
+        self.assert_in_success_response(["Unique names required in this organization."], result)
+
+        do_set_realm_property(iago.realm, "require_unique_names", False, acting_user=None)
+        result = self.verify_signup(email=email, password=password, full_name="IaGo")
+        assert isinstance(result, UserProfile)
+
     def test_signup_without_password(self) -> None:
         """
         Check if signing up without a password works properly when
