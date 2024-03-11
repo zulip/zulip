@@ -245,7 +245,6 @@ export function initialize(): void {
     delegate("body", {
         target: [
             "#streams_header .streams-tooltip-target",
-            "#user_filter_icon",
             "#scroll-to-bottom-button-clickable-area",
             ".spectator_narrow_login_button",
             "#stream-specific-notify-table .unmute_stream",
