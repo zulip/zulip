@@ -13,11 +13,13 @@ import * as unread_ui from "./unread_ui";
 
 let hide_scroll_to_bottom_timer;
 export function hide_scroll_to_bottom() {
+    const $show_scroll_to_bottom_button = $("#scroll-to-bottom-button-container");
     if (message_lists.current === undefined) {
+        // Scroll to bottom button is not for non-message views.
+        $show_scroll_to_bottom_button.removeClass("show");
         return;
     }
 
-    const $show_scroll_to_bottom_button = $("#scroll-to-bottom-button-container");
     if (
         message_viewport.bottom_rendered_message_visible() ||
         message_lists.current.visibly_empty()
