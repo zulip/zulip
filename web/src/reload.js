@@ -69,8 +69,6 @@ function preserve_state(send_after_reload, save_compose) {
     }
 
     if (message_lists.current !== undefined) {
-        // narrow_state.filter() is not undefined, so this is the current
-        // narrowed message list.
         const narrow_pointer = message_lists.current.selected_id();
         if (narrow_pointer !== -1) {
             url += "+narrow_pointer=" + narrow_pointer;

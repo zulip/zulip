@@ -92,7 +92,7 @@ function pick_empty_narrow_banner(): NarrowBannerData {
 
     const current_filter = narrow_state.filter();
 
-    if (current_filter === undefined) {
+    if (current_filter === undefined || current_filter.is_in_home()) {
         return default_banner;
     }
 

@@ -196,7 +196,7 @@ function test_fetch_success(opts) {
     process_results.verify();
 }
 
-function initial_fetch_step(home_view_loaded) {
+function initial_fetch_step(finished_initial_fetch) {
     const self = {};
 
     let fetch;
@@ -207,7 +207,7 @@ function initial_fetch_step(home_view_loaded) {
             expected_opts_data: initialize_data.initial_fetch.req,
         });
 
-        message_fetch.initialize(home_view_loaded);
+        message_fetch.initialize(finished_initial_fetch);
     };
 
     self.finish = () => {
@@ -281,11 +281,11 @@ run_test("initialize", () => {
         old_unreads_missing: false,
     };
 
-    function home_view_loaded() {
+    function finished_initial_fetch() {
         home_loaded = true;
     }
 
-    const step1 = initial_fetch_step(home_view_loaded);
+    const step1 = initial_fetch_step(finished_initial_fetch);
 
     step1.prep();
 
