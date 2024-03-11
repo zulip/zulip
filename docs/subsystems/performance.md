@@ -73,9 +73,10 @@ to thoughtfully implement the data fetch code path for every feature.
 Furthermore, a snappy user interface is one of Zulip's design goals, and
 so we care about the performance of any user-facing code path, even
 though many of them are not material to scalability of the server.
-But only with regard to the requests detailed below, is it worth considering
-optimizations which save a few milliseconds that would be invisible to the end user,
-if they carry any cost in code readability.
+But when an optimization only saves a few milliseconds that would be
+invisible to the end user, and carries any cost in code readability,
+the optimization is worth considering only if it applies to
+the major endpoints listed below.
 
 In Zulip's documentation, our general rule is to primarily write facts
 that are likely to remain true for a long time. While the numbers
