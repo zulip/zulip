@@ -812,7 +812,7 @@ test("initialize", ({override, override_rewire, mock_template}) => {
         // Suggest the query if this query doesn't match any existing topic.
         options.query = "non-existing-topic";
         actual_value = options.sorter([]);
-        expected_value = ["non-existing-topic"];
+        expected_value = [];
         assert.deepEqual(actual_value, expected_value);
 
         topic_typeahead_called = true;

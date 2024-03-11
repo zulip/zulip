@@ -1175,7 +1175,7 @@ export function initialize({on_enter_send}) {
         },
         sorter(items) {
             const sorted = typeahead_helper.sorter(this.query, items, (x) => x);
-            if (!sorted.includes(this.query)) {
+            if (sorted.length > 0 && !sorted.includes(this.query)) {
                 sorted.unshift(this.query);
             }
             return sorted;

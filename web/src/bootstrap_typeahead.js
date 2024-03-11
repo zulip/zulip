@@ -513,13 +513,20 @@ Typeahead.prototype = {
                 break;
 
             case 9: // tab
-                if (!this.options.tabIsEnter) {
+                // If the typeahead is not shown or tabIsEnter option is not set, do nothing and return
+                if (!this.options.tabIsEnter || !this.shown) {
                     return;
                 }
-                if (!this.shown) {
-                    return;
-                }
+
                 this.select(e);
+
+                if (e.currentTarget.id === "stream_message_recipient_topic") {
+                    // Move the cursor to the end of the topic
+                    const topic_length = this.$element.val().length;
+                    this.$element[0].selectionStart = topic_length;
+                    this.$element[0].selectionEnd = topic_length;
+                }
+
                 break;
 
             case 13: // enter
