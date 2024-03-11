@@ -822,7 +822,7 @@ export function populate_data_for_request(subsection, for_realm_default_settings
         const $input_elem = $(input_elem);
         if (
             settings_components.check_property_changed(
-                $input_elem,
+                input_elem,
                 for_realm_default_settings,
                 sub,
                 group,
