@@ -40,14 +40,6 @@ async function create_stream_message_draft(page: Page): Promise<void> {
         content: "Test stream message.",
     });
     await page.type("#stream_message_recipient_topic", "tests", {delay: 100});
-
-    // Ideally, we don't need to click on the typeahead to create a draft with this topic but
-    // the typeahead seems bugged and remains open in the next compose session even after it
-    // is being closed via clicking on #compose_close.
-    const entry = await page.waitForSelector('.typeahead[style*="display: block"] .active a', {
-        visible: true,
-    });
-    await entry!.click();
     await page.click("#compose_close");
 }
 
