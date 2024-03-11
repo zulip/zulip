@@ -3,7 +3,7 @@ import _ from "lodash";
 
 import render_dialog_widget from "../templates/dialog_widget.hbs";
 
-import type {AjaxRequestHandler} from "./channel";
+import type {AjaxRequestHandler, PatchRequestData} from "./channel";
 import {$t_html} from "./i18n";
 import * as loading from "./loading";
 import * as modals from "./modals";
@@ -229,7 +229,7 @@ export function launch(conf: DialogWidgetConfig): void {
 export function submit_api_request(
     request_method: AjaxRequestHandler,
     url: string,
-    data: Parameters<AjaxRequestHandler>[0]["data"] = {},
+    data: Omit<Parameters<AjaxRequestHandler>[0]["data"], "undefined"> | PatchRequestData = {},
     {
         failure_msg_html = $t_html({defaultMessage: "Failed"}),
         success_continuation,

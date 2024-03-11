@@ -156,7 +156,7 @@ export function set_up(): void {
             html_heading: $t_html({defaultMessage: "Delete data export?"}),
             html_body,
             on_click() {
-                dialog_widget.submit_api_request(channel.del, url);
+                dialog_widget.submit_api_request(channel.del, url, {});
             },
             loading_spinner: true,
         });

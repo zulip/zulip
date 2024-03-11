@@ -21,7 +21,7 @@ type AjaxRequestHandlerOptions = Omit<JQuery.AjaxSettings, "success"> & {
     error?: JQuery.Ajax.ErrorCallback<unknown>;
 };
 
-type PatchRequestData =
+export type PatchRequestData =
     | {processData: false; data: FormData}
     | {processData?: true; data: Record<string, unknown>};
 
