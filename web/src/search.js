@@ -60,6 +60,14 @@ export function initialize({on_narrow_search}) {
     const $searchbox_form = $("#searchbox_form");
     const $pill_container = $("#searchbox-input-container.pill-container");
 
+    $(".search-input-and-pills").on("focusin", () => {
+        $("#searchbox-input-container").toggleClass("focused", true);
+    });
+
+    $(".search-input-and-pills").on("focusout", () => {
+        $("#searchbox-input-container").toggleClass("focused", false);
+    });
+
     search_pill_widget = search_pill.create_pills($pill_container);
     search_pill_widget.onPillCreate(() => {
         $search_query_box.trigger("focus");

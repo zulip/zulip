@@ -3,12 +3,15 @@
     height: var(--header-height);
 
     .navbar-search {
-        margin: 5.5px 0;
+        margin: 3.5px 0;
         border-radius: 5px;
         position: absolute;
+        overflow: hidden;
     }
 
     .search_icon {
+        grid-area: search-icon;
+        align-self: center;
         text-decoration: none;
         padding: 0 7px;
         font-size: 17px;
@@ -29,6 +32,7 @@
     }
 
     .search_close_button {
+        grid-area: search-close;
         width: 28px;
         height: 100%;
         background: none;
@@ -59,6 +63,15 @@
 
     .zulip-icon-close {
         font-size: 13px;
+    }
+
+    .search-input-and-pills {
+        grid-area: search-pills;
+        display: flex;
+        padding: 3px 0;
+        flex-wrap: wrap;
+        gap: 2px 2px;
+        align-self: center;
     }
 
     .navbar-search:not(.expanded) {
@@ -161,9 +174,6 @@
         border-radius: 0;
         font-family: "Source Sans 3 VF", sans-serif;
         font-weight: 400;
-        height: var(--search-box-height);
-        /* override bootstrap min-height for input[type="text"] */
-        min-height: var(--search-box-height);
         background: transparent;
         text-overflow: ellipsis;
         overflow: hidden;
@@ -182,15 +192,30 @@
     }
 
     #searchbox-input-container {
-        display: flex;
-        align-items: center;
+        display: grid;
         /* override .input-append style from app_components.js */
         letter-spacing: normal;
-        height: var(--search-box-height);
         /* Override .pill-container */
-        flex-wrap: nowrap;
-        padding: 0;
         border: none;
+        grid-template:
+            "search-icon search-pills search-close" var(--search-box-height)
+            ". search-pills ." auto / auto minmax(0, 1fr) auto;
+        align-items: start;
+
+        /* Override .pill-container */
+        .pill {
+            margin: 0;
+        }
+
+        &:not(.focused) {
+            max-height: var(--search-box-height);
+            overflow: hidden;
+
+            .search-input-and-pills {
+                flex-wrap: nowrap;
+                overflow: hidden;
+            }
+        }
     }
 
     @media (width >= $md_min) {
