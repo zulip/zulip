@@ -49,10 +49,6 @@ export function has_recipient_viewed_topic_resolved_banner(): boolean {
     return recipient_viewed_topic_resolved_banner;
 }
 
-export function recipient_has_topics(): boolean {
-    return message_type !== "stream";
-}
-
 export function composing(): boolean {
     // This is very similar to get_message_type(), but it returns
     // a boolean.
