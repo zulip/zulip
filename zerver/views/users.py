@@ -490,7 +490,7 @@ def add_bot_backend(
     if bot_type != UserProfile.INCOMING_WEBHOOK_BOT:
         service_name = service_name or short_name
     short_name += "-bot"
-    full_name = check_full_name(full_name_raw)
+    full_name = check_full_name(full_name_raw, user_profile.realm)
     try:
         email = Address(username=short_name, domain=user_profile.realm.get_bot_domain()).addr_spec
     except InvalidFakeEmailDomainError:
@@ -695,7 +695,7 @@ def create_user_backend(
     if not user_profile.can_create_users:
         raise JsonableError(_("User not authorized to create users"))
 
-    full_name = check_full_name(full_name_raw)
+    full_name = check_full_name(full_name_raw, user_profile.realm)
     form = CreateUserForm({"full_name": full_name, "email": email})
     if not form.is_valid():
         raise JsonableError(_("Bad name or username"))

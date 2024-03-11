@@ -20,6 +20,11 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 9.0
 
+**Feature level 246**
+* [`POST /register`](/api/register-queue), [`POST /events`](/api/get-events):
+  Added new boolean fields `realm_require_unique_names` and `require_unique_names`
+  respectively as a part of setting to enforce unique full names in realm.
+
 **Feature level 245**
 
 * [`PATCH

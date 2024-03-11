@@ -38,7 +38,7 @@ from zerver.models import (
     UserProfile,
 )
 from zerver.models.groups import SystemGroups
-from zerver.models.realms import get_fake_email_domain
+from zerver.models.realms import get_fake_email_domain, require_unique_names
 from zerver.models.users import (
     active_non_guest_user_ids,
     active_user_ids,
@@ -50,7 +50,7 @@ from zerver.models.users import (
 )
 
 
-def check_full_name(full_name_raw: str) -> str:
+def check_full_name(full_name_raw: str, realm: Optional[Realm]) -> str:
     full_name = full_name_raw.strip()
     if len(full_name) > UserProfile.MAX_NAME_LENGTH:
         raise JsonableError(_("Name too long!"))
@@ -65,6 +65,21 @@ def check_full_name(full_name_raw: str) -> str:
     # ban them.
     if re.search(r"\|\d+$", full_name_raw):
         raise JsonableError(_("Invalid format!"))
+
+    if require_unique_names(realm):
+        normalized_user_full_name = unicodedata.normalize("NFKC", full_name)
+        realm_users_names = (
+            UserProfile.objects.filter(realm=realm)
+            .exclude(full_name=full_name)
+            .values_list("full_name", flat=True)
+        )
+        normalized_realm_users_names = [
+            unicodedata.normalize("NFKC", full_name).lower() for full_name in realm_users_names
+        ]
+
+        if normalized_user_full_name.lower() in normalized_realm_users_names:
+            raise JsonableError(_("User name already exists!"))
+
     return full_name
 
 
