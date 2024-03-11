@@ -140,8 +140,8 @@ js_rules = RuleList(
         },
         {"pattern": r"\+.*\$t\(.+\)", "description": "Do not concatenate i18n strings"},
         {
-            "pattern": "[.]html[(]",
-            "exclude_pattern": r"""\.html\(("|'|render_|html|message\.content|util\.clean_user_content_links|rendered_|$|\)|error_html|widget_elem|\$error|\$\("<p>"\))""",
+            "pattern": r"\.(append|html)\(",
+            "exclude_pattern": r"""\.(append|html)\(("|'|render_|html|message\.content|util\.clean_user_content_links|rendered_|$|\)|error_html|widget_elem|\$error|\$\("<p>"\))""",
             "exclude": {
                 "web/src/portico",
                 "web/src/lightbox.js",
@@ -149,7 +149,8 @@ js_rules = RuleList(
                 "web/src/dialog_widget.ts",
                 "web/tests/",
             },
-            "description": "Setting HTML content with jQuery .html() can lead to XSS security bugs.  Consider .text() or using rendered_foo as a variable name if content comes from Handlebars and thus is already sanitized.",
+            "description": "Setting HTML content with jQuery .append() or .html() can lead to XSS security bugs.  Consider .text() or using rendered_foo as a variable name if content comes from Handlebars and thus is already sanitized.",
+            "bad_lines": ['$("#id").append(text)', '$("#id").html(text)'],
         },
         {
             "pattern": "[\"']json/",
