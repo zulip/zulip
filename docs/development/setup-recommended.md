@@ -93,7 +93,6 @@ Now you are ready for [Step 2: Get Zulip code](#step-2-get-zulip-code).
 ##### 1. Install Vagrant, Docker, and Git
 
 ```console
-christie@ubuntu-desktop:~
 $ sudo apt install vagrant docker.io git
 ```
 
@@ -136,20 +135,20 @@ installation method described here. We require version 0.67.6+ of WSL 2.
 
 1. Launch the Ubuntu shell as an administrator and run the following command:
 
-   ```bash
-   sudo apt update && sudo apt upgrade
+   ```console
+   $ sudo apt update && sudo apt upgrade
    ```
 
 1. Install dependencies with the following command:
 
-   ```bash
-   sudo apt install rabbitmq-server memcached redis-server postgresql
+   ```console
+   $ sudo apt install rabbitmq-server memcached redis-server postgresql
    ```
 
 1. Open `/etc/rabbitmq/rabbitmq-env.conf` using e.g.:
 
-   ```bash
-   sudo nano /etc/rabbitmq/rabbitmq-env.conf
+   ```console
+   $ sudo nano /etc/rabbitmq/rabbitmq-env.conf
    ```
 
    Confirm the following lines are at the end of your file, and add
@@ -163,10 +162,10 @@ installation method described here. We require version 0.67.6+ of WSL 2.
 
 1. Run the command below to make sure you are inside the WSL disk and not
    in a Windows mounted disk. You will run into permission issues if you
-   run `provision` from `zulip` in a Windows mounted disk.
+   run `./tools/provision` from `zulip` in a Windows mounted disk.
 
-   ```bash
-   cd ~  # or cd /home/USERNAME
+   ```console
+   $ cd ~  # or cd /home/USERNAME
    ```
 
 1. [Create your fork](../git/cloning.md#step-1a-create-your-fork) of
@@ -179,23 +178,23 @@ installation method described here. We require version 0.67.6+ of WSL 2.
 
 1. Clone and connect to the Zulip upstream repository:
 
-   ```bash
-   git clone --config pull.rebase git@github.com:YOURUSERNAME/zulip.git ~/zulip
-   cd zulip
-   git remote add -f upstream https://github.com/zulip/zulip.git
+   ```console
+   $ git clone --config pull.rebase git@github.com:YOURUSERNAME/zulip.git ~/zulip
+   $ cd zulip
+   $ git remote add -f upstream https://github.com/zulip/zulip.git
    ```
 
 1. Run the following to install the Zulip development environment and
    start it. (If Windows Firewall creates popups to block services,
    simply click **Allow access**.)
 
-   ```bash
-   # Install/update the Zulip development environment
-   ./tools/provision
-   # Enter the Zulip Python environment
-   source /srv/zulip-py3-venv/bin/activate
-   # Start the development server
-   ./tools/run-dev
+   ```console
+   $ # Install/update the Zulip development environment
+   $ ./tools/provision
+   $ # Enter the Zulip Python environment
+   $ source /srv/zulip-py3-venv/bin/activate
+   $ # Start the development server
+   $ ./tools/run-dev
    ```
 
 1. If you are facing problems or you see error messages after running `./tools/run-dev`,
@@ -206,8 +205,8 @@ installation method described here. We require version 0.67.6+ of WSL 2.
    recommended for editing files when developing with WSL. When you
    have it installed, you can run:
 
-   ```bash
-   code .
+   ```console
+   $ code .
    ```
 
    to open VS Code connected to your WSL environment.
@@ -232,10 +231,10 @@ WSL 2 can be uninstalled by following [Microsoft's documentation][uninstall-wsl]
    [clone your fork of the Zulip repository](../git/cloning.md#step-1b-clone-to-your-machine) and
    [connect the Zulip upstream repository](../git/cloning.md#step-1c-connect-your-fork-to-zulip-upstream):
 
-```bash
-git clone --config pull.rebase git@github.com:YOURUSERNAME/zulip.git
-cd zulip
-git remote add -f upstream https://github.com/zulip/zulip.git
+```console
+$ git clone --config pull.rebase git@github.com:YOURUSERNAME/zulip.git
+$ cd zulip
+$ git remote add -f upstream https://github.com/zulip/zulip.git
 ```
 
 This will create a `zulip` directory and download the Zulip code into it.
@@ -263,15 +262,15 @@ environment](#step-3-start-the-development-environment).
 Change into the zulip directory and tell Vagrant to start the Zulip
 development environment with `vagrant up`:
 
-```bash
-# On Windows:
-cd zulip
-vagrant plugin install vagrant-vbguest
-vagrant up --provider=virtualbox
+```console
+$ # On Windows:
+$ cd zulip
+$ vagrant plugin install vagrant-vbguest
+$ vagrant up --provider=virtualbox
 
-# On macOS or Linux:
-cd zulip
-vagrant up --provider=docker
+$ # On macOS or Linux:
+$ cd zulip
+$ vagrant up --provider=docker
 ```
 
 :::{warning}
@@ -436,9 +435,9 @@ was:
 
 If this error starts happening unexpectedly, then just run:
 
-```bash
-vagrant halt
-vagrant up
+```console
+$ vagrant halt
+$ vagrant up
 ```
 
 to reboot the guest. After this, you can do `vagrant provision` and
@@ -467,8 +466,8 @@ When running `vagrant up` or `provision`, if you see the following error:
 It means that your local apt repository has been corrupted, which can
 usually be resolved by executing the command:
 
-```bash
-apt-get -f install
+```console
+$ apt-get -f install
 ```
 
 #### ssh connection closed by remote host
@@ -531,11 +530,9 @@ then print out the custom settings for this virtual machine with
 `vboxmanage getextradata YOURVMNAME enumerate`:
 
 ```console
-christie@win10 ~/zulip
 $ vboxmanage list vms
 "zulip_default_1462498139595_55484" {5a65199d-8afa-4265-b2f6-6b1f162f157d}
 
-christie@win10 ~/zulip
 $ vboxmanage getextradata zulip_default_1462498139595_55484 enumerate
 Key: VBoxInternal2/SharedFoldersEnableSymlinksCreate/srv_zulip, Value: 1
 Key: supported, Value: false
@@ -549,8 +546,8 @@ If `vboxmanage enumerate` prints nothing, or shows a value of 0 for
 VBoxInternal2/SharedFoldersEnableSymlinksCreate/srv_zulip, then enable
 symbolic links by running this command in Terminal/Git BASH/Cygwin:
 
-```bash
-vboxmanage setextradata YOURVMNAME VBoxInternal2/SharedFoldersEnableSymlinksCreate/srv_zulip 1
+```console
+$ vboxmanage setextradata YOURVMNAME VBoxInternal2/SharedFoldersEnableSymlinksCreate/srv_zulip 1
 ```
 
 The virtual machine needs to be shut down when you run this command.
@@ -564,7 +561,6 @@ Virtualbox as the virtualization provider. You can fix this by
 explicitly passing the virtualbox provider to `vagrant up`:
 
 ```console
-christie@win10 ~/zulip
 $ vagrant up --provide=virtualbox
 ```
 
@@ -645,7 +641,7 @@ Once you've provisioned successfully, you'll get output like this:
 
 ```console
 Zulip development environment setup succeeded!
-(zulip-py3-venv) vagrant@vagrant-base-trusty-amd64:~/zulip$
+(zulip-py3-venv) vagrant@vagrant:/srv/zulip$
 ```
 
 If the `(zulip-py3-venv)` part is missing, this is because your
@@ -714,8 +710,8 @@ the VirtualBox Guest Additions for Linux on Windows hosts. You can
 check the running version of VirtualBox Guest Additions with this
 command:
 
-```bash
-vagrant ssh -- 'sudo modinfo -F version vboxsf'
+```console
+$ vagrant ssh -- 'sudo modinfo -F version vboxsf'
 ```
 
 The bug has not been fixed upstream as of this writing, but you may be
@@ -729,10 +725,10 @@ VBOXADD_VERSION 5.2.44
 
 Then run these commands (yes, reload is needed twice):
 
-```bash
-vagrant plugin install vagrant-vbguest
-vagrant reload
-vagrant reload --provision
+```console
+$ vagrant plugin install vagrant-vbguest
+$ vagrant reload
+$ vagrant reload --provision
 ```
 
 ### Specifying an Ubuntu mirror
@@ -755,8 +751,8 @@ If you need to use a proxy server to access the Internet, you will
 need to specify the proxy settings before running `vagrant up`.
 First, install the Vagrant plugin `vagrant-proxyconf`:
 
-```bash
-vagrant plugin install vagrant-proxyconf
+```console
+$ vagrant plugin install vagrant-proxyconf
 ```
 
 Then create `~/.zulip-vagrant-config` and add the following lines to

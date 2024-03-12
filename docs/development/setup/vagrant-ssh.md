@@ -1,8 +1,7 @@
-Once `vagrant up` has completed, connect to the development
-environment with `vagrant ssh`:
+Once `vagrant up` has completed, connect to the development environment
+with `vagrant ssh`:
 
 ```console
-christie@win10 ~/zulip
 $ vagrant ssh
 ```
 
@@ -22,8 +21,7 @@ provisioning failed and you should look at the
 Next, start the Zulip server:
 
 ```console
-(zulip-py3-venv) vagrant@vagrant:/srv/zulip
-$ ./tools/run-dev
+(zulip-py3-venv) vagrant@vagrant:/srv/zulip$ ./tools/run-dev
 ```
 
 You will see something like:

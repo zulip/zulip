@@ -4,10 +4,8 @@ connect to the virtual machine with `vagrant ssh` and re-start the
 Zulip server:
 
 ```console
-christie@win10 ~/zulip
 $ vagrant up
 $ vagrant ssh
 
-(zulip-py3-venv) vagrant@vagrant:/srv/zulip
-$ ./tools/run-dev
+(zulip-py3-venv) vagrant@vagrant:/srv/zulip$ ./tools/run-dev
 ```

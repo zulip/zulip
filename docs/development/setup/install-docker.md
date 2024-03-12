@@ -1,10 +1,9 @@
 ##### 2. Add yourself to the `docker` group:
 
 ```console
-christie@ubuntu-desktop:~
 $ sudo adduser $USER docker
-Adding user `christie' to group `docker' ...
-Adding user christie to group docker
+Adding user `YOURUSERNAME' to group `docker' ...
+Adding user YOURUSERNAME to group docker
 Done.
 ```
 
@@ -12,9 +11,8 @@ You will need to reboot for this change to take effect. If it worked,
 you will see `docker` in your list of groups:
 
 ```console
-christie@ubuntu-desktop:~
 $ groups | grep docker
-christie adm cdrom sudo dip plugdev lpadmin sambashare docker
+YOURUSERNAME adm cdrom sudo dip plugdev lpadmin sambashare docker
 ```
 
 ##### 3. Make sure the Docker daemon is running:
@@ -36,8 +34,8 @@ If the service is not running, you'll see `Active: inactive (dead)` on
 the second line, and will need to enable and start the Docker service
 using the following:
 
-```bash
-sudo systemctl unmask docker
-sudo systemctl enable docker
-sudo systemctl start docker
+```console
+$ sudo systemctl unmask docker
+$ sudo systemctl enable docker
+$ sudo systemctl start docker
 ```

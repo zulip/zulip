@@ -6,8 +6,8 @@ does the following:
 - configures this virtual machine/container for use with Zulip,
 - creates a shared directory mapping your clone of the Zulip code inside the
   virtual machine/container at `~/zulip`
-- runs the `tools/provision` script inside the virtual machine/container, which
-  downloads all required dependencies, sets up the python environment for
+- runs the `./tools/provision` script inside the virtual machine/container, which
+  downloads all required dependencies, sets up the Python environment for
   the Zulip development server, and initializes a default test
   database. We call this process "provisioning", and it is documented
   in some detail in our [dependencies documentation](/subsystems/dependencies.md).
