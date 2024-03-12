@@ -971,6 +971,18 @@ export function process_hotkey(e, hotkey) {
         case "all_messages":
             browser_history.go_to_location("#all_messages");
             return true;
+        case "toggle_topic_visibility_policy":
+            if (recent_view_ui.is_in_focus()) {
+                const recent_msg = recent_view_ui.get_focused_row_message();
+                if (recent_msg !== undefined && recent_msg.type === "stream") {
+                    user_topics_ui.toggle_topic_visibility_policy(recent_msg);
+                    return true;
+                }
+                return false;
+            }
+            if (inbox_ui.is_in_focus()) {
+                return inbox_ui.toggle_topic_visibility_policy();
+            }
     }
 
     // Shortcuts that are useful with an empty message feed, like opening compose.
