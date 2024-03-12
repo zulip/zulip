@@ -97,48 +97,8 @@ christie@ubuntu-desktop:~
 $ sudo apt install vagrant docker.io git
 ```
 
-##### 2. Add yourself to the `docker` group:
+```{include} setup/install-docker.md
 
-```console
-christie@ubuntu-desktop:~
-$ sudo adduser $USER docker
-Adding user `christie' to group `docker' ...
-Adding user christie to group docker
-Done.
-```
-
-You will need to reboot for this change to take effect. If it worked,
-you will see `docker` in your list of groups:
-
-```console
-christie@ubuntu-desktop:~
-$ groups | grep docker
-christie adm cdrom sudo dip plugdev lpadmin sambashare docker
-```
-
-##### 3. Make sure the Docker daemon is running:
-
-If you had previously installed and removed an older version of
-Docker, an [Ubuntu
-bug](https://bugs.launchpad.net/ubuntu/+source/docker.io/+bug/1844894)
-may prevent Docker from being automatically enabled and started after
-installation. You can check using the following:
-
-```console
-$ systemctl status docker
-● docker.service - Docker Application Container Engine
-   Loaded: loaded (/lib/systemd/system/docker.service; enabled; vendor preset: enabled)
-   Active: active (running) since Mon 2019-07-15 23:20:46 IST; 18min ago
-```
-
-If the service is not running, you'll see `Active: inactive (dead)` on
-the second line, and will need to enable and start the Docker service
-using the following:
-
-```bash
-sudo systemctl unmask docker
-sudo systemctl enable docker
-sudo systemctl start docker
 ```
 
 Now you are ready for [Step 2: Get Zulip code](#step-2-get-zulip-code).
@@ -324,102 +284,16 @@ for better system performance while developing, but you may need to revert to `o
 whenever you need to re-provision.
 :::
 
-The first time you run this command it will take some time because Vagrant
-does the following:
+```{include} setup/vagrant-up.md
 
-- downloads the base Ubuntu 20.04 virtual machine image (for macOS and Windows)
-  or container (for Linux)
-- configures this virtual machine/container for use with Zulip,
-- creates a shared directory mapping your clone of the Zulip code inside the
-  virtual machine/container at `~/zulip`
-- runs the `tools/provision` script inside the virtual machine/container, which
-  downloads all required dependencies, sets up the python environment for
-  the Zulip development server, and initializes a default test
-  database. We call this process "provisioning", and it is documented
-  in some detail in our [dependencies documentation](../subsystems/dependencies.md).
-
-You will need an active internet connection during the entire
-process. (See [Specifying a proxy](#specifying-a-proxy) if you need a
-proxy to access the internet.) `vagrant up` can fail while
-provisioning if your Internet connection is unreliable. To retry, you
-can use `vagrant provision` (`vagrant up` will just boot the guest
-without provisioning after the first time). Other common issues are
-documented in the
-[Troubleshooting and common errors](#troubleshooting-and-common-errors)
-section. If that doesn't help, please visit
-[#provision help](https://chat.zulip.org/#narrow/stream/21-provision-help)
-in the [Zulip development community server](https://zulip.com/development-community/) for
-real-time help.
+```
 
 On Windows, you will see the message
 `The system cannot find the path specified.` several times. This is
 normal and is not a problem.
 
-Once `vagrant up` has completed, connect to the development
-environment with `vagrant ssh`:
+```{include} setup/vagrant-ssh.md
 
-```console
-christie@win10 ~/zulip
-$ vagrant ssh
-```
-
-You should see output that starts like this:
-
-```console
-Welcome to Ubuntu 20.04.4 LTS (GNU/Linux 5.4.0-107-generic x86_64)
-```
-
-Congrats, you're now inside the Zulip development environment!
-
-You can confirm this by looking at the command prompt, which starts
-with `(zulip-py3-venv)vagrant@`. If it just starts with `vagrant@`, your
-provisioning failed and you should look at the
-[troubleshooting section](#troubleshooting-and-common-errors).
-
-Next, start the Zulip server:
-
-```console
-(zulip-py3-venv) vagrant@vagrant:/srv/zulip
-$ ./tools/run-dev
-```
-
-You will see something like:
-
-```console
-Starting Zulip on:
-
-        http://localhost:9991/
-
-Internal ports:
-   9991: Development server proxy (connect here)
-   9992: Django
-   9993: Tornado
-   9994: webpack
-
-Tornado server (re)started on port 9993
-
-2023-12-15 20:57:14.206 INFO [process_queue] 13 queue worker threads were launched
-frontend:
-  frontend (webpack 5.89.0) compiled successfully in 8054 ms
-```
-
-Now the Zulip server should be running and accessible. Verify this by
-navigating to <http://localhost:9991/devlogin> in the browser on your main machine.
-
-You should see something like this:
-
-![Image of Zulip devlogin](../images/zulip-devlogin.png)
-
-The Zulip server will continue to run and send output to the terminal window.
-When you navigate to Zulip in your browser, check your terminal and you
-should see something like:
-
-```console
-2016-05-04 18:21:57,547 INFO     127.0.0.1       GET     302 582ms (+start: 417ms) / (unauth@zulip via ?)
-[04/May/2016 18:21:57]"GET / HTTP/1.0" 302 0
-2016-05-04 18:21:57,568 INFO     127.0.0.1       GET     301   4ms /login (unauth@zulip via ?)
-[04/May/2016 18:21:57]"GET /login HTTP/1.0" 301 0
-2016-05-04 18:21:57,819 INFO     127.0.0.1       GET     200 209ms (db: 7ms/2q) /login/ (unauth@zulip via ?)
 ```
 
 Now you're ready for [Step 4: Developing](#step-4-developing).
@@ -465,98 +339,26 @@ guide][rtd-git-guide].
 
 #### Maintaining the development environment
 
-If after rebasing onto a new version of the Zulip server, you receive
-new errors while starting the Zulip server or running tests, this is
-probably not because Zulip's `main` branch is broken. Instead, this
-is likely because we've recently merged changes to the development
-environment provisioning process that you need to apply to your
-development environment. To update your environment, you'll need to
-re-provision your Vagrant machine using `vagrant provision` (this just
-runs `tools/provision` from your Zulip checkout inside the Vagrant
-guest); this should complete in about a minute.
+```{include} setup/vagrant-update.md
 
-After provisioning, you'll want to
-[(re)start the Zulip development server](#step-3-start-the-development-environment).
-
-If you run into any trouble, [#provision
-help](https://chat.zulip.org/#narrow/stream/21-provision-help) in the
-[Zulip development community
-server](https://zulip.com/development-community/) is a great place to ask for
-help.
+```
 
 #### Rebuilding the development environment
 
-If you ever want to recreate your development environment again from
-scratch (e.g. to test a change you've made to the provisioning
-process, or because you think something is broken), you can do so
-using `vagrant destroy` and then `vagrant up`. This will usually be
-much faster than the original `vagrant up` since the base image is
-already cached on your machine (it takes about 5 minutes to run with a
-fast Internet connection).
+```{include} setup/vagrant-rebuild.md
 
-Any additional programs (e.g. Zsh, emacs, etc.) or configuration that
-you may have installed in the development environment will be lost
-when you recreate it. To address this, you can create a script called
-`tools/custom_provision` in your Zulip Git checkout; and place any
-extra setup commands there. Vagrant will run `tools/custom_provision`
-every time you run `vagrant provision` (or create a Vagrant guest via
-`vagrant up`).
+```
 
 #### Shutting down the development environment for use later
 
-To shut down but preserve the development environment so you can use
-it again later use `vagrant halt` or `vagrant suspend`.
+```{include} setup/vagrant-halt.md
 
-You can do this from the same Terminal/Git BASH window that is running
-run-dev by pressing ^C to halt the server and then typing `exit`. Or you
-can halt Vagrant from another Terminal/Git BASH window.
-
-From the window where run-dev is running:
-
-```console
-2016-05-04 18:33:13,330 INFO     127.0.0.1       GET     200  92ms /register/ (unauth@zulip via ?)
-^C
-KeyboardInterrupt
-(zulip-py3-venv) vagrant@vagrant:/srv/zulip$ exit
-logout
-Connection to 127.0.0.1 closed.
-christie@win10 ~/zulip
 ```
-
-Now you can suspend the development environment:
-
-```console
-christie@win10 ~/zulip
-$ vagrant suspend
-==> default: Saving VM state and suspending execution...
-```
-
-If `vagrant suspend` doesn't work, try `vagrant halt`:
-
-```console
-christie@win10 ~/zulip
-$ vagrant halt
-==> default: Attempting graceful shutdown of VM...
-```
-
-Check out the Vagrant documentation to learn more about
-[suspend](https://www.vagrantup.com/docs/cli/suspend.html) and
-[halt](https://www.vagrantup.com/docs/cli/halt.html).
 
 #### Resuming the development environment
 
-When you're ready to work on Zulip again, run `vagrant up` (no need to
-pass the `--provider` option required above). You will also need to
-connect to the virtual machine with `vagrant ssh` and re-start the
-Zulip server:
+```{include} setup/vagrant-resume.md
 
-```console
-christie@win10 ~/zulip
-$ vagrant up
-$ vagrant ssh
-
-(zulip-py3-venv) vagrant@vagrant:/srv/zulip
-$ ./tools/run-dev
 ```
 
 ### Next steps
