@@ -28,6 +28,7 @@ import * as unread from "./unread";
 import * as unread_ops from "./unread_ops";
 import * as user_status from "./user_status";
 import * as user_topics from "./user_topics";
+import * as user_topics_ui from "./user_topics_ui";
 import * as util from "./util";
 import * as views_util from "./views_util";
 
@@ -739,6 +740,21 @@ export function get_focused_row_message() {
     }
 
     return {message};
+}
+
+export function toggle_topic_visibility_policy() {
+    const inbox_message = get_focused_row_message();
+    if (inbox_message.message !== undefined) {
+        user_topics_ui.toggle_topic_visibility_policy(inbox_message.message);
+        if (inbox_message.message.type === "stream") {
+            // means mute/unmute action is taken
+            const $elt = $(".inbox-header"); // Select the element with class "inbox-header"
+            const $focusElement = $elt.find(get_focus_class_for_header()).first();
+            focus_clicked_list_element($focusElement);
+            return true;
+        }
+    }
+    return false;
 }
 
 function is_row_a_header($row) {
