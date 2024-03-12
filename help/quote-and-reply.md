@@ -19,12 +19,12 @@ to avoid unnecessarily mentioning someone twice.
 
 {tab|desktop-web}
 
+1. *(optional)* To quote only part of a message, select the part that you want
+   to quote.
+
 {!message-actions-menu.md!}
 
 1. Click **Quote and reply**.
-
-1. *(optional)* Delete any parts of the quoted message that are not
-   relevant to your reply.
 
 1. Send your message.
 
@@ -52,12 +52,12 @@ to avoid unnecessarily mentioning someone twice.
 
 {tab|desktop-web}
 
+1. *(optional)* To quote only part of a message, select the part that you want
+   to quote.
+
 {!message-actions-menu.md!}
 
 1. Click **Quote and reply**.
-
-1. *(optional)* Delete any parts of the quoted message that you don't want to
-   forward.
 
 1. Select the desired destination stream or **Direct message** from the dropdown
    in the top left of the compose box.
