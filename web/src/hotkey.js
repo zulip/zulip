@@ -973,7 +973,7 @@ export function process_hotkey(e, hotkey) {
             browser_history.go_to_location("#inbox");
             return true;
         case "global_feed":
-            browser_history.go_to_location("#all_messages");
+            browser_history.go_to_location("#global_feed");
             return true;
         case "toggle_topic_visibility_policy":
             if (recent_view_ui.is_in_focus()) {

@@ -100,7 +100,7 @@ function show_home_view() {
             recent_view_ui.show();
             break;
         }
-        case "all_messages": {
+        case "global_feed": {
             // Hides inbox/recent views internally if open.
             show_all_message_view();
             break;
@@ -130,7 +130,6 @@ function do_hashchange_normal(from_reload) {
     // Even if the URL bar says #%41%42%43%44, the value here will
     // be #ABCD.
     const hash = window.location.hash.split("/");
-
     switch (hash[0]) {
         case "#narrow": {
             let terms;
@@ -198,8 +197,15 @@ function do_hashchange_normal(from_reload) {
             maybe_hide_recent_view();
             inbox_ui.show();
             break;
-        case "#all_messages":
+        case "#global_feed":
             show_all_message_view();
+            break;
+        case "#all_messages":
+            // Since "#all_messages" was deprecated and replaced by
+            // "#global_feed" current URL hash is replaced by
+            // "#global_feed" after showing the view.
+            show_all_message_view();
+            window.location.replace("#global_feed");
             break;
         case "#keyboard-shortcuts":
         case "#message-formatting":

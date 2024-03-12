@@ -23,7 +23,7 @@ const $ = require("./lib/zjquery");
 
 // Since all the tests here are based on narrow starting with all_messages.
 // We set our default narrow to all messages here.
-window.location.hash = "#all_messages";
+window.location.hash = "#global_feed";
 
 set_global("navigator", {
     platform: "",

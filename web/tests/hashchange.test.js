@@ -189,7 +189,7 @@ run_test("hash_interactions", ({override, override_rewire}) => {
         [message_viewport, "stop_auto_scrolling"],
     ]);
 
-    window.location.hash = "#all_messages";
+    window.location.hash = "#global_feed";
     hide_all_called = false;
 
     helper.clear_events();
