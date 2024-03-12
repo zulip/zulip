@@ -14,13 +14,12 @@ KeyboardInterrupt
 (zulip-py3-venv) vagrant@vagrant:/srv/zulip$ exit
 logout
 Connection to 127.0.0.1 closed.
-christie@win10 ~/zulip
+$
 ```
 
 Now you can suspend the development environment:
 
 ```console
-christie@win10 ~/zulip
 $ vagrant suspend
 ==> default: Saving VM state and suspending execution...
 ```
@@ -28,7 +27,6 @@ $ vagrant suspend
 If `vagrant suspend` doesn't work, try `vagrant halt`:
 
 ```console
-christie@win10 ~/zulip
 $ vagrant halt
 ==> default: Attempting graceful shutdown of VM...
 ```
