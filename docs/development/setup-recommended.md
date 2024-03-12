@@ -69,7 +69,7 @@ Follow our [Git guide][set-up-git] in order to install Git, set up a
 GitHub account, create an SSH key to access code on GitHub
 efficiently, etc. Be sure to create an SSH key and add it to your
 GitHub account using
-[these instructions](https://help.github.com/en/articles/generating-an-ssh-key).
+[these instructions](https://docs.github.com/en/authentication/connecting-to-github-with-ssh).
 
 ### Step 1: Install prerequisites
 
@@ -120,7 +120,7 @@ docker distribution, you can follow
 
 Zulip's development environment is most easily set up on Windows using
 the Windows Subsystem for Linux ([WSL
-2](https://docs.microsoft.com/en-us/windows/wsl/wsl2-about))
+2](https://learn.microsoft.com/en-us/windows/wsl/compare-versions))
 installation method described here. We require version 0.67.6+ of WSL 2.
 
 1. Enable virtualization through your BIOS settings. This sequence
@@ -130,7 +130,7 @@ installation method described here. We require version 0.67.6+ of WSL 2.
 1. [Install WSL 2](https://docs.microsoft.com/en-us/windows/wsl/setup/environment).
 
 1. It is required to enable `systemd` for WSL 2 to manage the database, cache and other services.
-   To configure it, please follow [this instruction](https://learn.microsoft.com/en-us/windows/wsl/wsl-config#systemd-support).
+   To configure it, please follow [these instructions](https://learn.microsoft.com/en-us/windows/wsl/wsl-config#systemd-support).
    Then, you will need to restart WSL 2 before continuing.
 
 1. Launch the Ubuntu shell as an administrator and run the following command:
