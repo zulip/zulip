@@ -23,6 +23,9 @@ in the Zulip app to add more to your repertoire as needed.
   stream.
 
 * **New direct message**: <kbd>X</kbd>
+  * **Paste formatted text**: <kbd>Ctrl/Cmd + V</kbd> — Paste text with formatting.
+  * **Paste as plain text**: <kbd>Ctrl+Shift+V</kbd> (or <kbd>Command-Option-Shift-V</kbd> on a Mac) — Paste text without formatting.
+
 
 * **Cancel compose and save draft**: <kbd>Esc</kbd> or <kbd>Ctrl</kbd> +
   <kbd>[</kbd> — Close the compose box and save the unsent message as a
