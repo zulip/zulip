@@ -345,7 +345,7 @@ class ChangeSettingsTest(ZulipTestCase):
     def do_test_change_user_setting(self, setting_name: str) -> None:
         test_changes: Dict[str, Any] = dict(
             default_language="de",
-            web_home_view="all_messages",
+            web_home_view="global_feed",
             emojiset="google",
             timezone="America/Denver",
             demote_inactive_streams=2,

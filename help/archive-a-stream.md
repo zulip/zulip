@@ -4,7 +4,7 @@
 
 Archiving a stream will immediately unsubscribe all users from the stream,
 remove the stream from search and other typeaheads, and remove the stream's
-messages from **All messages**.
+messages from **Global feed**.
 
 Archiving a stream does not delete a stream's messages. Users will still be
 able to find any given message by searching for it. However, links to

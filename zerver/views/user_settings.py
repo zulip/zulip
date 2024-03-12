@@ -155,7 +155,7 @@ def confirm_email_change(request: HttpRequest, confirmation_key: str) -> HttpRes
 
 
 emojiset_choices = {emojiset["key"] for emojiset in UserProfile.emojiset_choices()}
-web_home_view_options = ["recent_topics", "inbox", "all_messages"]
+web_home_view_options = ["recent_topics", "inbox", "global_feed"]
 
 
 def check_settings_values(

@@ -172,7 +172,7 @@ const keypress_mappings = {
     83: {name: "toggle_stream_subscription", message_view_only: true}, // 'S'
     85: {name: "mark_unread", message_view_only: true}, // 'U'
     86: {name: "view_selected_stream", message_view_only: false}, // 'V'
-    97: {name: "all_messages", message_view_only: true}, // 'a'
+    97: {name: "global_feed", message_view_only: true}, // 'a'
     99: {name: "compose", message_view_only: true}, // 'c'
     100: {name: "open_drafts", message_view_only: true}, // 'd'
     101: {name: "edit_message", message_view_only: true}, // 'e'
@@ -972,7 +972,7 @@ export function process_hotkey(e, hotkey) {
         case "open_inbox":
             browser_history.go_to_location("#inbox");
             return true;
-        case "all_messages":
+        case "global_feed":
             browser_history.go_to_location("#all_messages");
             return true;
         case "toggle_topic_visibility_policy":
