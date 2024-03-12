@@ -154,6 +154,7 @@ export function update_stream_privacy(slim_sub, values) {
     stream_ui_updates.update_settings_button_for_sub(sub);
     stream_ui_updates.update_add_subscriptions_elements(sub);
     stream_ui_updates.enable_or_disable_subscribers_tab(sub);
+    stream_ui_updates.update_regular_sub_settings(sub);
     stream_list.redraw_stream_privacy(sub);
 
     const active_data = stream_settings_components.get_active_data();
