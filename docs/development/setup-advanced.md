@@ -66,7 +66,7 @@ ignoring the parts about `vagrant` (since you're not using it).
 ## Installing using Vagrant with VirtualBox on Windows 10
 
 :::{note}
-We recommend using [WSL 2 for Windows development](setup-recommended.md#windows-10-or-11)
+We recommend using [WSL 2 for Windows development](setup-recommended.md)
 because it is easier to set up and provides a substantially better experience.
 :::
 
