@@ -272,7 +272,7 @@ class_renames = {
     "zulip::rabbit": "zulip::profile::rabbitmq",
     "zulip::voyager": "zulip::profile::standalone",
 }
-classes = re.split(r"\s*,\s*", get_config(config_file, "machine", "puppet_classes"))
+classes = re.split(r"\s*,\s*", get_config(config_file, "machine", "puppet_classes", ""))
 new_classes = [class_renames.get(c, c) for c in classes if c != "zulip::base"]
 if classes != new_classes:
     if args.skip_restart:
