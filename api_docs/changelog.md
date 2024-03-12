@@ -204,9 +204,12 @@ No changes; feature level used for Zulip 8.0 release.
 **Feature level 224**
 
 * [`GET /events`](/api/get-events), [`GET /messages`](/api/get-messages),
-  [`GET /messages/{message_id}`](/api/get-message): The `wildcard_mentioned`
-  flag was deprecated, replaced with `stream_wildcard_mentioned` and
-  `topic_wildcard_mentioned`, but it is still available for backwards compatibility.
+  [`GET /messages/{message_id}`](/api/get-message): Of the [available
+  message flags](/api/update-message-flags#available-flags) that a user
+  may have for a message, the `wildcard_mentioned` flag was
+  deprecated in favor of the `stream_wildcard_mentioned` and
+  `topic_wildcard_mentioned` flags, but it is still available for
+  backwards compatibility.
 
 **Feature level 223**
 
