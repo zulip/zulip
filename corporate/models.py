@@ -476,7 +476,7 @@ class CustomerPlan(AbstractCustomerPlan):
     def is_free_trial(self) -> bool:
         return self.status == CustomerPlan.FREE_TRIAL
 
-    def is_paid(self) -> bool:
+    def is_a_paid_plan(self) -> bool:
         return self.tier in self.PAID_PLAN_TIERS
 
 
