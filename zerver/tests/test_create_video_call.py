@@ -78,6 +78,7 @@ class TestVideoCall(ZulipTestCase):
                     "host_video": True,
                     "participant_video": True,
                 },
+                "default_password": True,
             },
         )
         self.assertEqual(
@@ -113,6 +114,7 @@ class TestVideoCall(ZulipTestCase):
                     "host_video": False,
                     "participant_video": False,
                 },
+                "default_password": True,
             },
         )
         self.assertEqual(
