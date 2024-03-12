@@ -71,7 +71,7 @@ export function show_generate_integration_url_modal(api_key) {
             const params = new URLSearchParams({api_key});
             if (stream_id !== -1) {
                 params.set("stream", stream_id);
-                if (topic_name !== "") {
+                if (topic_name !== "" && $override_topic.prop("checked")) {
                     params.set("topic", topic_name);
                 }
             }
