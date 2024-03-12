@@ -1253,7 +1253,7 @@ class UserProfileTest(ZulipTestCase):
         hamlet = self.example_user("hamlet")
 
         do_change_user_setting(cordelia, "default_language", "de", acting_user=None)
-        do_change_user_setting(cordelia, "web_home_view", "all_messages", acting_user=None)
+        do_change_user_setting(cordelia, "web_home_view", "global_feed", acting_user=None)
         do_change_user_setting(cordelia, "emojiset", "twitter", acting_user=None)
         do_change_user_setting(cordelia, "timezone", "America/Phoenix", acting_user=None)
         do_change_user_setting(

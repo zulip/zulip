@@ -27,7 +27,7 @@ function get_message_view_header_context(filter) {
     }
     if (filter === undefined) {
         return {
-            title: $t({defaultMessage: "All messages"}),
+            title: $t({defaultMessage: "Global feed"}),
             zulip_icon: "all-messages",
         };
     }

@@ -1606,7 +1606,7 @@ test("navbar_helpers", () => {
             terms: in_home,
             is_common_narrow: true,
             icon: "home",
-            title: "translated: All messages",
+            title: "translated: Global feed",
             redirect_url_with_search: "#",
         },
         {

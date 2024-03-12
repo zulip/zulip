@@ -789,7 +789,7 @@ run_test("narrow_compute_title", () => {
 
     inbox_util.set_visible(false);
     filter = new Filter([{operator: "in", operand: "home"}]);
-    assert.equal(narrow_title.compute_narrow_title(filter), "translated: All messages");
+    assert.equal(narrow_title.compute_narrow_title(filter), "translated: Global feed");
 
     // Search & uncommon narrows
     filter = new Filter([{operator: "search", operand: "potato"}]);

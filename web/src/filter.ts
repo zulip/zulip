@@ -1000,7 +1000,7 @@ export class Filter {
         if (term_types.length === 1) {
             switch (term_types[0]) {
                 case "in-home":
-                    return $t({defaultMessage: "All messages"});
+                    return $t({defaultMessage: "Global feed"});
                 case "in-all":
                     return $t({defaultMessage: "All messages including muted streams"});
                 case "streams-public":

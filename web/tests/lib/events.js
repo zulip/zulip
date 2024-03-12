@@ -1038,7 +1038,7 @@ exports.fixtures = {
         type: "user_settings",
         op: "update",
         property: "web_home_view",
-        value: "all_messages",
+        value: "global_feed",
     },
 
     user_settings__web_home_view_inbox: {

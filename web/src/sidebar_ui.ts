@@ -153,7 +153,7 @@ export function initialize_left_sidebar(): void {
         is_inbox_home_view:
             user_settings.web_home_view === settings_config.web_home_view_values.inbox.code,
         is_all_messages_home_view:
-            user_settings.web_home_view === settings_config.web_home_view_values.all_messages.code,
+            user_settings.web_home_view === settings_config.web_home_view_values.global_feed.code,
         is_recent_view_home_view:
             user_settings.web_home_view === settings_config.web_home_view_values.recent_topics.code,
         hide_unread_counts: settings_data.should_mask_unread_count(false),

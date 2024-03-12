@@ -197,7 +197,7 @@ function handle_home_view_order(home_view: string): void {
     const res = unread.get_counts();
 
     // Add the class and tabindex to the matching home view
-    if (home_view === settings_config.web_home_view_values.all_messages.code) {
+    if (home_view === settings_config.web_home_view_values.global_feed.code) {
         $all_messages_rows.addClass("selected-home-view");
         $all_messages_rows.find("a").attr("tabindex", 0);
     } else if (home_view === settings_config.web_home_view_values.recent_topics.code) {
@@ -214,7 +214,7 @@ function handle_home_view_order(home_view: string): void {
 export function handle_home_view_changed(new_home_view: string): void {
     const $recent_view_sidebar_menu_icon = $(".recent-view-sidebar-menu-icon");
     const $all_messages_sidebar_menu_icon = $(".all-messages-sidebar-menu-icon");
-    if (new_home_view === settings_config.web_home_view_values.all_messages.code) {
+    if (new_home_view === settings_config.web_home_view_values.global_feed.code) {
         $recent_view_sidebar_menu_icon.removeClass("hide");
         $all_messages_sidebar_menu_icon.addClass("hide");
     } else if (new_home_view === settings_config.web_home_view_values.recent_topics.code) {

@@ -27,7 +27,7 @@ preference settings, including the following:
     * [Home view](/help/configure-home-view)
       ([Inbox](/help/inbox) vs.
       [Recent conversations](/help/recent-conversations) vs.
-      [All messages](/help/reading-strategies#all-messages))
+      [Global feed](/help/reading-strategies#global-feed))
 
 * Notification settings:
     * What types of messages [trigger notifications][default-notifications]
