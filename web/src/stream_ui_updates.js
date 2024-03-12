@@ -215,9 +215,13 @@ export function update_regular_sub_settings(sub) {
     const $settings = $(`.subscription_settings[data-stream-id='${CSS.escape(sub.stream_id)}']`);
     if (sub.subscribed) {
         $settings.find(".personal").addClass("in");
-        $settings.find(".stream-email-box").show();
     } else {
         $settings.find(".personal").removeClass("in");
+    }
+
+    if (stream_data.can_access_stream_email(sub)) {
+        $settings.find(".stream-email-box").show();
+    } else {
         $settings.find(".stream-email-box").hide();
     }
 }
