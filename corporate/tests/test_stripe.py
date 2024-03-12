@@ -64,7 +64,6 @@ from corporate.lib.stripe import (
     compute_plan_parameters,
     customer_has_credit_card_as_default_payment_method,
     customer_has_last_n_invoices_open,
-    do_change_remote_server_plan_type,
     do_deactivate_remote_server,
     do_reactivate_remote_server,
     downgrade_small_realms_behind_on_payments_as_needed,
@@ -4769,30 +4768,6 @@ class BillingHelpersTest(ZulipTestCase):
         plan.status = CustomerPlan.FREE_TRIAL
         plan.save(update_fields=["status"])
         self.assertTrue(is_realm_on_free_trial(realm))
-
-    def test_change_remote_server_plan_type(self) -> None:
-        server_uuid = str(uuid.uuid4())
-        remote_server = RemoteZulipServer.objects.create(
-            uuid=server_uuid,
-            api_key="magic_secret_api_key",
-            hostname="demo.example.com",
-            contact_email="email@example.com",
-        )
-        self.assertEqual(remote_server.plan_type, RemoteZulipServer.PLAN_TYPE_SELF_MANAGED)
-
-        do_change_remote_server_plan_type(remote_server, RemoteZulipServer.PLAN_TYPE_BUSINESS)
-
-        remote_server = RemoteZulipServer.objects.get(uuid=server_uuid)
-        remote_realm_audit_log = RemoteZulipServerAuditLog.objects.filter(
-            event_type=RealmAuditLog.REMOTE_SERVER_PLAN_TYPE_CHANGED
-        ).last()
-        assert remote_realm_audit_log is not None
-        expected_extra_data = {
-            "old_value": RemoteZulipServer.PLAN_TYPE_SELF_MANAGED,
-            "new_value": RemoteZulipServer.PLAN_TYPE_BUSINESS,
-        }
-        self.assertEqual(remote_realm_audit_log.extra_data, expected_extra_data)
-        self.assertEqual(remote_server.plan_type, RemoteZulipServer.PLAN_TYPE_BUSINESS)
 
     def test_deactivate_reactivate_remote_server(self) -> None:
         server_uuid = str(uuid.uuid4())

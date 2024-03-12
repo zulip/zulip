@@ -4747,19 +4747,6 @@ def ensure_customer_does_not_have_active_plan(customer: Customer) -> None:
 
 
 @transaction.atomic
-def do_change_remote_server_plan_type(remote_server: RemoteZulipServer, plan_type: int) -> None:
-    old_value = remote_server.plan_type
-    remote_server.plan_type = plan_type
-    remote_server.save(update_fields=["plan_type"])
-    RemoteZulipServerAuditLog.objects.create(
-        event_type=RealmAuditLog.REMOTE_SERVER_PLAN_TYPE_CHANGED,
-        server=remote_server,
-        event_time=timezone_now(),
-        extra_data={"old_value": old_value, "new_value": plan_type},
-    )
-
-
-@transaction.atomic
 def do_reactivate_remote_server(remote_server: RemoteZulipServer) -> None:
     """
     Utility function for reactivating deactivated registrations.
