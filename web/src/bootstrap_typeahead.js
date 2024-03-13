@@ -152,9 +152,27 @@ function get_pseudo_keycode(event) {
 const header_element_html =
     '<p class="typeahead-header"><span id="typeahead-header-text"></span></p>';
 
+const defaults = {
+    source: [],
+    items: 8,
+    container: '<div class="typeahead dropdown-menu"></div>',
+    menu: '<ul class="typeahead-menu"></ul>',
+    item: "<li><a></a></li>",
+    minLength: 1,
+    stopAdvance: false,
+    dropup: false,
+    advanceKeyCodes: [],
+    openInputFieldOnKeyUp: null,
+    closeInputFieldOnHide: null,
+    tabIsEnter: true,
+};
+
 const Typeahead = function (element, options) {
     this.$element = $(element);
-    this.options = $.extend({}, $.fn.typeahead.defaults, options);
+    this.options = {
+        ...defaults,
+        ...options,
+    };
     this.matcher = this.options.matcher ?? this.matcher;
     this.sorter = this.options.sorter ?? this.sorter;
     this.highlighter_html = this.options.highlighter_html;
@@ -633,33 +651,11 @@ Typeahead.prototype = {
 /* TYPEAHEAD PLUGIN DEFINITION
  * =========================== */
 
-$.fn.typeahead = function (option) {
-    return this.each(function () {
-        const $this = $(this);
-        let data = $this.data("typeahead");
-        const options = typeof option === "object" && option;
-        if (!data) {
-            $this.data("typeahead", (data = new Typeahead(this, options)));
-        }
-        if (typeof option === "string") {
-            data[option]();
-        }
-    });
-};
+export function create($element, options) {
+    $element.data("typeahead", new Typeahead($element, options));
+}
 
-$.fn.typeahead.defaults = {
-    source: [],
-    items: 8,
-    container: '<div class="typeahead dropdown-menu"></div>',
-    menu: '<ul class="typeahead-menu"></ul>',
-    item: "<li><a></a></li>",
-    minLength: 1,
-    stopAdvance: false,
-    dropup: false,
-    advanceKeyCodes: [],
-    openInputFieldOnKeyUp: null,
-    closeInputFieldOnHide: null,
-    tabIsEnter: true,
-};
-
-$.fn.typeahead.Constructor = Typeahead;
+export function lookup($element) {
+    const typeahead = $element.data("typeahead");
+    typeahead.lookup();
+}

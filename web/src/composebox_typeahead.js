@@ -4,6 +4,7 @@ import _ from "lodash";
 import * as typeahead from "../shared/src/typeahead";
 import render_topic_typeahead_hint from "../templates/topic_typeahead_hint.hbs";
 
+import * as bootstrap_typeahead from "./bootstrap_typeahead";
 import * as bulleted_numbered_list_util from "./bulleted_numbered_list_util";
 import * as compose_pm_pill from "./compose_pm_pill";
 import * as compose_state from "./compose_state";
@@ -1093,7 +1094,7 @@ export function initialize_topic_edit_typeahead(form_field, stream_name, dropup)
         },
         items: 5,
     };
-    form_field.typeahead(options);
+    bootstrap_typeahead.create(form_field, options);
 }
 
 function get_header_html() {
@@ -1131,8 +1132,7 @@ export function initialize_compose_typeahead(selector) {
         topic: true,
         timestamp: true,
     };
-
-    $(selector).typeahead({
+    bootstrap_typeahead.create($(selector), {
         items: max_num_items,
         dropup: true,
         fixed: true,
@@ -1164,7 +1164,7 @@ export function initialize({on_enter_send}) {
     $("form#send_message_form").on("keydown", (e) => handle_keydown(e, {on_enter_send}));
     $("form#send_message_form").on("keyup", handle_keyup);
 
-    $("input#stream_message_recipient_topic").typeahead({
+    bootstrap_typeahead.create($("input#stream_message_recipient_topic"), {
         source() {
             return topics_seen_for(compose_state.stream_id());
         },
@@ -1189,7 +1189,7 @@ export function initialize({on_enter_send}) {
         header_html: render_topic_typeahead_hint,
     });
 
-    $("#private_message_recipient").typeahead({
+    bootstrap_typeahead.create($("#private_message_recipient"), {
         source: get_pm_people,
         items: max_num_items,
         dropup: true,
