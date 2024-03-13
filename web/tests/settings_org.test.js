@@ -18,6 +18,7 @@ mock_esm("../src/loading", {
     make_indicator: noop,
     destroy_indicator: noop,
 });
+mock_esm("../src/scroll_util", {scroll_element_into_container: noop});
 
 const settings_config = zrequire("settings_config");
 const settings_bots = zrequire("settings_bots");
