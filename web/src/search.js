@@ -2,6 +2,7 @@ import $ from "jquery";
 
 import render_search_list_item from "../templates/search_list_item.hbs";
 
+import * as bootstrap_typeahead from "./bootstrap_typeahead";
 import {Filter} from "./filter";
 import * as keydown_util from "./keydown_util";
 import * as narrow_state from "./narrow_state";
@@ -56,7 +57,7 @@ export function initialize({on_narrow_search}) {
     // just represents the key of the hash, so it's redundant.)
     let search_map = new Map();
 
-    $search_query_box.typeahead({
+    bootstrap_typeahead.create($search_query_box, {
         source(query) {
             const suggestions = search_suggestion.get_suggestions(query);
             // Update our global search_map hash
@@ -195,7 +196,8 @@ export function initiate_search() {
     // Open the typeahead after opening the search bar, so that we don't
     // get a weird visual jump where the typeahead results are narrow
     // before the search bar expands and then wider it expands.
-    $("#search_query").typeahead("lookup").trigger("select");
+    bootstrap_typeahead.lookup($("#search_query"));
+    $("#search_query").trigger("select");
 }
 
 // This is what the default searchbox text would be for this narrow,
