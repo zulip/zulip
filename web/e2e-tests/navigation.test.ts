@@ -6,6 +6,7 @@ import * as common from "./lib/common";
 
 async function navigate_using_left_sidebar(page: Page, click_target: string): Promise<void> {
     console.log("Visiting #" + click_target);
+    await page.hover(`[data-stream-id="3"] .bottom_left_row `);
     await page.click(`#left-sidebar a[href='#${CSS.escape(click_target)}']`);
     await page.waitForSelector(`#message_feed_container`, {visible: true});
 }
