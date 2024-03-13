@@ -411,7 +411,7 @@ export function broadcast_mentions() {
     if (compose_state.get_message_type() === "private") {
         wildcard_mention_array = ["all", "everyone"];
     } else if (compose_validate.stream_wildcard_mention_allowed()) {
-        wildcard_mention_array = ["all", "everyone", "stream", "topic"];
+        wildcard_mention_array = ["all", "everyone", "stream", "channel", "topic"];
     } else if (compose_validate.topic_wildcard_mention_allowed()) {
         wildcard_mention_array = ["topic"];
     }

@@ -602,7 +602,7 @@ test("sort broadcast mentions for stream message type", () => {
 
     assert.deepEqual(
         results.map((r) => r.email),
-        ["all", "everyone", "stream", "topic"],
+        ["all", "everyone", "stream", "channel", "topic"],
     );
 
     // Reverse the list to test actual sorting
@@ -616,7 +616,7 @@ test("sort broadcast mentions for stream message type", () => {
 
     assert.deepEqual(
         results2.map((r) => r.email),
-        ["all", "everyone", "stream", "topic", a_user.email, zman.email],
+        ["all", "everyone", "stream", "channel", "topic", a_user.email, zman.email],
     );
 });
 

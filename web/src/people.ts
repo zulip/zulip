@@ -1373,7 +1373,7 @@ export function get_mention_syntax(full_name: string, user_id?: number, silent =
 }
 
 function full_name_matches_wildcard_mention(full_name: string): boolean {
-    return ["all", "everyone", "stream", "topic"].includes(full_name);
+    return ["all", "everyone", "stream", "channel", "topic"].includes(full_name);
 }
 
 export function _add_user(person: User): void {
