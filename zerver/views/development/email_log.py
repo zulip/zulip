@@ -14,8 +14,8 @@ from zerver.actions.realm_settings import do_send_realm_reactivation_email
 from zerver.actions.user_settings import do_change_user_delivery_email
 from zerver.actions.users import change_user_is_active
 from zerver.lib.email_notifications import enqueue_welcome_emails, send_account_registered_email
-from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
+from zerver.lib.typed_endpoint import typed_endpoint
 from zerver.models import Realm
 from zerver.models.realms import get_realm
 from zerver.models.streams import get_realm_stream
@@ -26,10 +26,8 @@ from zproject.email_backends import get_forward_address, set_forward_address
 ZULIP_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../../")
 
 
-@has_request_variables
-def email_page(
-    request: HttpRequest, forward_address: Optional[str] = REQ(default=None)
-) -> HttpResponse:
+@typed_endpoint
+def email_page(request: HttpRequest, *, forward_address: Optional[str] = None) -> HttpResponse:
     if request.method == "POST":
         assert forward_address is not None
         set_forward_address(forward_address)
