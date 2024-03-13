@@ -4,7 +4,7 @@ import json
 import os
 import subprocess
 import sys
-from typing import NoReturn
+from typing import NoReturn, Optional
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
@@ -14,7 +14,7 @@ os.chdir(os.path.join(os.path.dirname(__file__), "../web"))
 from version import ZULIP_VERSION
 
 
-def build_for_prod_or_puppeteer(quiet: bool) -> NoReturn:
+def build_for_prod_or_puppeteer(quiet: bool, config_name: Optional[str] = None) -> NoReturn:
     """Builds for production, writing the output to disk"""
 
     with open("/proc/meminfo") as meminfo:
@@ -27,6 +27,8 @@ def build_for_prod_or_puppeteer(quiet: bool) -> NoReturn:
     ]
     if quiet:
         webpack_args += ["--stats=errors-only"]
+    if config_name is not None:
+        webpack_args += [f"--config-name={config_name}"]
 
     # Silence warnings from "browserslist" about using old data; those
     # warnings are only useful for development
@@ -151,6 +153,7 @@ parser.add_argument(
 parser.add_argument(
     "--disable-host-check", action="store_true", help="Disable host check for webpack-dev-server"
 )
+parser.add_argument("--config-name", help="Limit production building to only one config-name")
 
 args = parser.parse_args()
 if "PUPPETEER_TESTS" in os.environ:
@@ -160,4 +163,4 @@ elif args.test:
 elif args.watch:
     build_for_dev_server(args.host, args.port, args.minify, args.disable_host_check)
 else:
-    build_for_prod_or_puppeteer(args.quiet)
+    build_for_prod_or_puppeteer(args.quiet, args.config_name)
