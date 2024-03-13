@@ -791,7 +791,7 @@ class TestMessageNotificationEmails(ZulipTestCase):
         othello = self.example_user("othello")
 
         stream_wildcard_mentioned_in_followed_topic_message_id = self.send_stream_message(
-            othello, "Denmark", "@**stream**"
+            othello, "Denmark", "@**all**"
         )
         topic_wildcard_mentioned_in_followed_topic_message_id = self.send_stream_message(
             othello, "Denmark", "@**topic**"
@@ -810,7 +810,7 @@ class TestMessageNotificationEmails(ZulipTestCase):
         )
 
         expected_email_include = [
-            "Othello, the Moor of Venice: > @**stream** > @**topic** -- ",
+            "Othello, the Moor of Venice: > @**all** > @**topic** -- ",
             "You are receiving this because all topic participants were mentioned in #Denmark > test.",
         ]
 
