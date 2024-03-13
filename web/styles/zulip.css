@@ -2456,7 +2456,7 @@ select.invite-as {
 
             .right-sidebar {
                 box-shadow: 0 -2px 3px 0 hsl(0deg 0% 0% / 10%);
-                border-left: 1px solid hsl(0deg 0% 87%);
+                border-left: 1px solid var(--color-border-sidebar);
                 padding-right: 15px;
                 padding-left: 15px;
                 height: 100%;
@@ -2499,7 +2499,7 @@ select.invite-as {
             .left-sidebar {
                 background-color: var(--color-background);
                 box-shadow: 0 2px 3px 0 hsl(0deg 0% 0% / 10%);
-                border-right: 1px solid hsl(0deg 0% 87%);
+                border-right: 1px solid var(--color-border-sidebar);
                 height: 100%;
                 padding-left: 10px;
                 width: var(--left-sidebar-width);
