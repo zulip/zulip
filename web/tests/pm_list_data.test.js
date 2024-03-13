@@ -5,7 +5,10 @@ const {strict: assert} = require("assert");
 const {mock_esm, zrequire} = require("./lib/namespace");
 const {run_test} = require("./lib/test");
 
-const unread = mock_esm("../src/unread");
+const unread = mock_esm("../src/unread", {
+    get_msg_ids_for_user_ids_string: () => false,
+    dms_has_mention: () => false,
+});
 
 mock_esm("../src/user_status", {
     get_status_emoji: () => ({
@@ -109,6 +112,7 @@ test("get_conversations", ({override}) => {
             status_emoji_info: {
                 emoji_code: "20",
             },
+            dms_contain_unread_mention: false,
         },
         {
             recipients: "Alice, Bob",
@@ -121,6 +125,7 @@ test("get_conversations", ({override}) => {
             is_group: true,
             is_bot: false,
             status_emoji_info: undefined,
+            dms_contain_unread_mention: false,
         },
     ];
 
@@ -160,6 +165,7 @@ test("get_conversations bot", ({override}) => {
             user_circle_class: "user_circle_empty",
             is_group: false,
             is_bot: true,
+            dms_contain_unread_mention: false,
         },
         {
             recipients: "Alice, Bob",
@@ -172,6 +178,7 @@ test("get_conversations bot", ({override}) => {
             status_emoji_info: undefined,
             is_group: true,
             is_bot: false,
+            dms_contain_unread_mention: false,
         },
     ];
 

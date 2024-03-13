@@ -974,6 +974,26 @@ li.top_left_scheduled_messages {
     }
 }
 
+.dm-markers-and-controls {
+    grid-area: markers-and-controls;
+    display: flex;
+    /* Present a uniform space between icons */
+    gap: 5px;
+    align-items: center;
+
+    .unread_mention_info {
+        /* Unset margin in favor of flex gap. */
+        margin: 0;
+    }
+
+    .unread_count {
+        /* Height is set here by the flexbox; this
+           decouples .unread_count from the app-wide
+           definition. */
+        height: 15px;
+    }
+}
+
 .bottom_left_row .sidebar-menu-icon {
     grid-area: ending-anchor-element;
 }

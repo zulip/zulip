@@ -13,8 +13,17 @@
             <span class="conversation-partners-list">{{recipients}}</span>
             {{> status_emoji status_emoji_info}}
         </a>
-        <span class="unread_count {{#if is_zero}}zero_count{{/if}}">
-            {{unread}}
-        </span>
+        <div class="dm-markers-and-controls">
+            {{#if dms_contain_unread_mention}}
+                <span class="unread_mention_info">
+                    @
+                </span>
+            {{else if is_followed}}
+                <i class="zulip-icon zulip-icon-follow" aria-hidden="true"></i>
+            {{/if}}
+            <span class="unread_count {{#if is_zero}}zero_count{{/if}}">
+                {{unread}}
+            </span>
+        </div>
     </div>
 </li>
