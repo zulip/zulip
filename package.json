@@ -69,6 +69,7 @@
     "postcss-prefixwrap": "^1.24.0",
     "postcss-preset-env": "^9.0.0",
     "postcss-simple-vars": "^7.0.0",
+    "prom-client": "^15.1.0",
     "regenerator-runtime": "^0.14.0",
     "shebang-loader": "^0.0.1",
     "simplebar": "^6.2.0",
