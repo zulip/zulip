@@ -67,8 +67,8 @@ function format_as_suggestion(terms) {
     };
 }
 
-function compare_by_huddle(huddle) {
-    huddle = huddle.slice(0, -1).map((person) => {
+function compare_by_huddle(huddle_emails) {
+    huddle_emails = huddle_emails.slice(0, -1).map((person) => {
         person = people.get_by_email(person);
         return person && person.user_id;
     });
@@ -81,8 +81,8 @@ function compare_by_huddle(huddle) {
     }
 
     return function (person1, person2) {
-        const huddle1 = people.concat_huddle(huddle, person1.user_id);
-        const huddle2 = people.concat_huddle(huddle, person2.user_id);
+        const huddle1 = people.concat_huddle(huddle_emails, person1.user_id);
+        const huddle2 = people.concat_huddle(huddle_emails, person2.user_id);
 
         // If not in the dict, assign an arbitrarily high index
         const score1 = huddle_dict.get(huddle1) || huddles.length + 1;
