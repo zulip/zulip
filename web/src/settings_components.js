@@ -6,6 +6,7 @@ import * as blueslip from "./blueslip";
 import * as compose_banner from "./compose_banner";
 import {$t} from "./i18n";
 import {realm_user_settings_defaults} from "./realm_user_settings_defaults";
+import * as scroll_util from "./scroll_util";
 import * as settings_config from "./settings_config";
 import {realm} from "./state_data";
 import * as stream_data from "./stream_data";
@@ -404,6 +405,12 @@ export function change_save_button_state($element, state) {
     $textEl.text(button_text);
     $saveBtn.attr("data-status", data_status);
     if (state === "unsaved") {
+        // Ensure the save button is visible when the state is "unsaved",
+        // so the user does not miss saving their changes.
+        scroll_util.scroll_element_into_container(
+            $element.parent(".subsection-header"),
+            $("#settings_content"),
+        );
         enable_or_disable_save_button($element.closest(".settings-subsection-parent"));
     }
     show_hide_element($element, is_show, 800);
