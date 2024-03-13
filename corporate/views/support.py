@@ -26,18 +26,20 @@ from corporate.lib.stripe import (
     RealmBillingSession,
     RemoteRealmBillingSession,
     RemoteServerBillingSession,
+    ServerDeactivateWithExistingPlanError,
     SupportRequestError,
     SupportType,
     SupportViewRequest,
     cents_to_dollar_string,
+    do_deactivate_remote_server,
+    do_reactivate_remote_server,
     format_discount_percentage,
 )
 from corporate.lib.support import (
-    PlanData,
-    SupportData,
-    get_customer_discount_for_support_view,
-    get_data_for_support_view,
-    get_plan_data_for_support_view,
+    CloudSupportData,
+    RemoteSupportData,
+    get_data_for_cloud_support_view,
+    get_data_for_remote_support_view,
     get_realm_support_url,
 )
 from corporate.models import CustomerPlan
@@ -201,24 +203,41 @@ def get_confirmations(
 
 
 @dataclass
-class PlanTierOption:
+class SupportSelectOption:
     name: str
     value: int
 
 
-def get_remote_plan_tier_options() -> List[PlanTierOption]:
+def get_remote_plan_tier_options() -> List[SupportSelectOption]:
     remote_plan_tiers = [
-        PlanTierOption("None", 0),
-        PlanTierOption(
+        SupportSelectOption("None", 0),
+        SupportSelectOption(
             CustomerPlan.name_from_tier(CustomerPlan.TIER_SELF_HOSTED_BASIC),
             CustomerPlan.TIER_SELF_HOSTED_BASIC,
         ),
-        PlanTierOption(
+        SupportSelectOption(
             CustomerPlan.name_from_tier(CustomerPlan.TIER_SELF_HOSTED_BUSINESS),
             CustomerPlan.TIER_SELF_HOSTED_BUSINESS,
         ),
     ]
     return remote_plan_tiers
+
+
+def get_realm_plan_type_options() -> List[SupportSelectOption]:
+    plan_types = [
+        SupportSelectOption(
+            get_plan_type_string(Realm.PLAN_TYPE_SELF_HOSTED), Realm.PLAN_TYPE_SELF_HOSTED
+        ),
+        SupportSelectOption(get_plan_type_string(Realm.PLAN_TYPE_LIMITED), Realm.PLAN_TYPE_LIMITED),
+        SupportSelectOption(
+            get_plan_type_string(Realm.PLAN_TYPE_STANDARD), Realm.PLAN_TYPE_STANDARD
+        ),
+        SupportSelectOption(
+            get_plan_type_string(Realm.PLAN_TYPE_STANDARD_FREE), Realm.PLAN_TYPE_STANDARD_FREE
+        ),
+        SupportSelectOption(get_plan_type_string(Realm.PLAN_TYPE_PLUS), Realm.PLAN_TYPE_PLUS),
+    ]
+    return plan_types
 
 
 VALID_MODIFY_PLAN_METHODS = [
@@ -434,12 +453,12 @@ def support(
             ]
             + [user.realm for user in users]
         )
-        plan_data: Dict[int, PlanData] = {}
+        realm_support_data: Dict[int, CloudSupportData] = {}
         for realm in all_realms:
             billing_session = RealmBillingSession(user=None, realm=realm)
-            realm_plan_data = get_plan_data_for_support_view(billing_session)
-            plan_data[realm.id] = realm_plan_data
-        context["plan_data"] = plan_data
+            realm_data = get_data_for_cloud_support_view(billing_session)
+            realm_support_data[realm.id] = realm_data
+        context["realm_support_data"] = realm_support_data
 
     def get_realm_owner_emails_as_string(realm: Realm) -> str:
         return ", ".join(
@@ -457,13 +476,12 @@ def support(
 
     context["get_realm_owner_emails_as_string"] = get_realm_owner_emails_as_string
     context["get_realm_admin_emails_as_string"] = get_realm_admin_emails_as_string
-    context["get_discount"] = get_customer_discount_for_support_view
-    context["get_org_type_display_name"] = get_org_type_display_name
     context["format_discount"] = format_discount_percentage
     context["dollar_amount"] = cents_to_dollar_string
     context["realm_icon_url"] = realm_icon_url
     context["Confirmation"] = Confirmation
-    context["sorted_realm_types"] = sorted(
+    context["REALM_PLAN_TYPES"] = get_realm_plan_type_options()
+    context["ORGANIZATION_TYPES"] = sorted(
         Realm.ORG_TYPES.values(), key=lambda d: d["display_order"]
     )
 
@@ -534,6 +552,9 @@ def remote_servers_support(
         default=None, str_validator=check_string_in(VALID_MODIFY_PLAN_METHODS)
     ),
     delete_fixed_price_next_plan: bool = REQ(default=False, json_validator=check_bool),
+    remote_server_status: Optional[str] = REQ(
+        default=None, str_validator=check_string_in(VALID_STATUS_VALUES)
+    ),
 ) -> HttpResponse:
     context: Dict[str, Any] = {}
 
@@ -608,6 +629,28 @@ def remote_servers_support(
             support_view_request = SupportViewRequest(
                 support_type=SupportType.delete_fixed_price_next_plan,
             )
+        elif remote_server_status:
+            assert remote_server is not None
+            remote_server_status_billing_session = RemoteServerBillingSession(
+                support_staff=acting_user, remote_server=remote_server
+            )
+            if remote_server_status == "active":
+                do_reactivate_remote_server(remote_server)
+                context["success_message"] = (
+                    f"Remote server ({remote_server.hostname}) reactivated."
+                )
+            else:
+                assert remote_server_status == "deactivated"
+                try:
+                    do_deactivate_remote_server(remote_server, remote_server_status_billing_session)
+                    context["success_message"] = (
+                        f"Remote server ({remote_server.hostname}) deactivated."
+                    )
+                except ServerDeactivateWithExistingPlanError:
+                    context["error_message"] = (
+                        f"Cannot deactivate remote server ({remote_server.hostname}) that has active or scheduled plans."
+                    )
+
         if support_view_request is not None:
             if remote_realm_support_request:
                 try:
@@ -646,8 +689,8 @@ def remote_servers_support(
         hostname_to_search=hostname_to_search,
     )
     remote_server_to_max_monthly_messages: Dict[int, Union[int, str]] = dict()
-    server_support_data: Dict[int, SupportData] = {}
-    realm_support_data: Dict[int, SupportData] = {}
+    server_support_data: Dict[int, RemoteSupportData] = {}
+    realm_support_data: Dict[int, RemoteSupportData] = {}
     remote_realms: Dict[int, List[RemoteRealm]] = {}
     for remote_server in remote_servers:
         # Get remote realms attached to remote server
@@ -658,11 +701,11 @@ def remote_servers_support(
         # Get plan data for remote realms
         for remote_realm in remote_realms_for_server:
             realm_billing_session = RemoteRealmBillingSession(remote_realm=remote_realm)
-            remote_realm_data = get_data_for_support_view(realm_billing_session)
+            remote_realm_data = get_data_for_remote_support_view(realm_billing_session)
             realm_support_data[remote_realm.id] = remote_realm_data
         # Get plan data for remote server
         server_billing_session = RemoteServerBillingSession(remote_server=remote_server)
-        remote_server_data = get_data_for_support_view(server_billing_session)
+        remote_server_data = get_data_for_remote_support_view(server_billing_session)
         server_support_data[remote_server.id] = remote_server_data
         # Get max monthly messages
         try:

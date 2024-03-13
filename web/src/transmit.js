@@ -63,7 +63,6 @@ export function send_message(request, on_success, error) {
                     reload.initiate({
                         immediate: true,
                         save_pointer: true,
-                        save_narrow: true,
                         save_compose: true,
                         send_after_reload: true,
                     });

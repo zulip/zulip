@@ -1,5 +1,5 @@
 <div class="realm-support-information">
-    <span class="label">realm</span>
+    <span class="cloud-label">Cloud realm</span>
     <h3><img src="{{ realm_icon_url(realm) }}" class="support-realm-icon" /> {{ realm.name }}</h3>
     <b>URL</b>: <a target="_blank" rel="noopener noreferrer" href="{{ realm.uri }}">{{ realm.uri }}</a> |
     <a target="_blank" rel="noopener noreferrer" href="/stats/realm/{{ realm.string_id }}/">stats</a> |
@@ -55,10 +55,12 @@
             {{ csrf_input }}
             <input type="hidden" name="realm_id" value="{{ realm.id }}" />
             <select name="org_type" id="org_type">
-                {% for realm_type in sorted_realm_types %}
-                    <option value="{{ realm_type.id }}" {% if realm.org_type == realm_type.id %}selected{% endif %}>
-                        {{ _(realm_type.name) }}
-                    </option>
+                {% for organization_type in ORGANIZATION_TYPES %}
+                    {% if realm.org_type == organization_type.id %}
+                        <option value="{{ organization_type.id }}" selected>{{ organization_type.name }}</option>
+                    {% else %}
+                        <option value="{{ organization_type.id }}">{{ organization_type.name }}</option>
+                    {% endif %}
                 {% endfor %}
             </select>
             <button type="submit" class="support-submit-button">Update</button>
@@ -68,11 +70,13 @@
             {{ csrf_input }}
             <input type="hidden" name="realm_id" value="{{ realm.id }}" />
             <select name="plan_type">
-                <option value="1" {% if realm.plan_type == 1 %}selected{% endif %}>Self-hosted</option>
-                <option value="2" {% if realm.plan_type == 2 %}selected{% endif %}>Limited</option>
-                <option value="3" {% if realm.plan_type == 3 %}selected{% endif %}>Standard</option>
-                <option value="4" {% if realm.plan_type == 4 %}selected{% endif %}>Standard Free</option>
-                <option value="10" {% if realm.plan_type == 10 %}selected{% endif %}>Plus</option>
+                {% for plan_type in REALM_PLAN_TYPES %}
+                    {% if realm.plan_type == plan_type.value %}
+                        <option value="{{ plan_type.value }}" selected>{{ plan_type.name }}</option>
+                    {% else %}
+                        <option value="{{ plan_type.value }}">{{ plan_type.name }}</option>
+                    {% endif %}
+                {% endfor %}
             </select>
             <button type="submit" class="support-submit-button">Update</button>
         </form>
@@ -81,13 +85,13 @@
             {{ csrf_input }}
             <input type="hidden" name="realm_id" value="{{ realm.id }}" />
             <select name="sponsorship_pending">
-                <option value="true" {% if plan_data[realm.id].customer and plan_data[realm.id].customer.sponsorship_pending %}selected{% endif %}>Yes</option>
-                <option value="false" {% if not plan_data[realm.id].customer or not plan_data[realm.id].customer.sponsorship_pending %}selected{% endif %}>No</option>
+                <option value="true" {% if realm_support_data[realm.id].sponsorship_data.sponsorship_pending %}selected{% endif %}>Yes</option>
+                <option value="false" {% if not realm_support_data[realm.id].sponsorship_data.sponsorship_pending %}selected{% endif %}>No</option>
             </select>
             <button type="submit" class="support-submit-button">Update</button>
         </form>
 
-        {% if plan_data[realm.id].customer and plan_data[realm.id].customer.sponsorship_pending %}
+        {% if realm_support_data[realm.id].sponsorship_data.sponsorship_pending %}
         <form method="POST" class="approve-sponsorship-form support-form">
             {{ csrf_input }}
             <input type="hidden" name="realm_id" value="{{ realm.id }}" />
@@ -103,19 +107,26 @@
             <b>Discount (use 85 for nonprofits)</b>:<br />
             {{ csrf_input }}
             <input type="hidden" name="realm_id" value="{{ realm.id }}" />
-            {% if plan_data[realm.id].current_plan and plan_data[realm.id].current_plan.fixed_price %}
-            <input type="number" name="discount" value="{{ format_discount(get_discount(plan_data[realm.id].customer)) }}" step="0.01" min="0" max="99.99" disabled />
+            {% if realm_support_data[realm.id].plan_data.current_plan and realm_support_data[realm.id].plan_data.current_plan.fixed_price %}
+            <input type="number" name="discount" value="{{ format_discount(realm_support_data[realm.id].sponsorship_data.default_discount) }}" step="0.01" min="0" max="99.99" disabled />
             <button type="submit" class="support-submit-button" disabled>Update</button>
             {% else %}
-            <input type="number" name="discount" value="{{ format_discount(get_discount(plan_data[realm.id].customer)) }}" step="0.01" min="0" max="99.99" required />
+            <input type="number" name="discount" value="{{ format_discount(realm_support_data[realm.id].sponsorship_data.default_discount) }}" step="0.01" min="0" max="99.99" required />
             <button type="submit" class="support-submit-button">Update</button>
             {% endif %}
         </form>
+
+        {% if realm_support_data[realm.id].sponsorship_data.sponsorship_pending %}
+            {% with %}
+                {% set latest_sponsorship_request = realm_support_data[realm.id].sponsorship_data.latest_sponsorship_request %}
+                {% include 'corporate/support/sponsorship_request_details.html' %}
+            {% endwith %}
+        {% endif %}
     </div>
-    {% if plan_data[realm.id].current_plan %}
+    {% if realm_support_data[realm.id].plan_data.current_plan %}
     <div class="current-plan-container">
         {% with %}
-            {% set plan_data = plan_data[realm.id] %}
+            {% set plan_data = realm_support_data[realm.id].plan_data %}
             {% set format_discount = format_discount %}
             {% set dollar_amount = dollar_amount %}
             {% include 'corporate/support/current_plan_details.html' %}
@@ -126,8 +137,8 @@
             {{ csrf_input }}
             <input type="hidden" name="realm_id" value="{{ realm.id }}" />
             <select name="billing_modality" class="billing-modality-select" required>
-                <option value="charge_automatically" {% if plan_data[realm.id].current_plan.charge_automatically %}selected{% endif %}>Charge automatically</option>
-                <option value="send_invoice" {% if not plan_data[realm.id].current_plan.charge_automatically %}selected{% endif %}>Pay by invoice</option>
+                <option value="charge_automatically" {% if realm_support_data[realm.id].plan_data.current_plan.charge_automatically %}selected{% endif %}>Charge automatically</option>
+                <option value="send_invoice" {% if not realm_support_data[realm.id].plan_data.current_plan.charge_automatically %}selected{% endif %}>Pay by invoice</option>
             </select>
             <button type="submit" class="support-submit-button">Update</button>
         </form>

@@ -104,7 +104,6 @@ tr.admin td:first-child {
     color: hsl(120deg 100% 33%);
 }
 
-.current-plan-data-missing,
 .bad {
     font-weight: bold;
     color: hsl(0deg 100% 39%);
@@ -159,18 +158,36 @@ tr.admin td:first-child {
         }
     }
 
-    .label {
-        padding: 2px 4px;
-        font-size: 11.844px;
+    .cloud-label,
+    .remote-label {
+        padding: 2px 8px;
+        font-size: 0.9em;
         font-weight: bold;
-        line-height: 14px;
         color: hsl(0deg 0% 100%);
         text-shadow: 0 -1px 0 hsla(0deg 0% 0% / 25%);
-        background-color: hsl(0deg 0% 60%);
         border-radius: 3px;
+    }
+
+    .cloud-label {
+        background-color: hsl(280deg 100% 40%);
+    }
+
+    .remote-label {
+        background-color: hsl(186deg 76% 36%);
+    }
+
+    .current-audit-log {
+        color: hsl(123deg 46% 34%);
+    }
+
+    .current-plan-data-missing,
+    .stale-audit-log {
+        color: hsl(2deg 64% 53%);
     }
 }
 
+.reactivate-remote-server-button,
+.deactivate-remote-server-button,
 .delete-next-fixed-price-plan-button,
 .approve-sponsorship-button,
 .support-search-button,
@@ -217,16 +234,27 @@ tr.admin td:first-child {
     margin: 10px;
 }
 
-.approve-sponsorship-button {
-    vertical-align: middle;
-}
-
 .support-search-button {
     vertical-align: middle;
     margin: 10px;
 }
 
-.approve-sponsorship-button,
+.approve-sponsorship-button {
+    vertical-align: middle;
+    color: hsl(123deg 46% 34%);
+    background-color: hsl(114deg 25% 85%);
+    border: 1px solid hsl(123deg 46% 34%);
+    border-radius: 2px;
+
+    &:hover,
+    &:focus,
+    &:active {
+        color: hsl(123deg 50% 30%);
+        background-color: hsl(114deg 28% 82%);
+        border: 1px solid hsl(123deg 50% 30%);
+    }
+}
+
 .support-search-button,
 .support-submit-button {
     color: hsl(0deg 0% 20%);
@@ -243,6 +271,7 @@ tr.admin td:first-child {
     }
 }
 
+.deactivate-remote-server-button,
 .delete-next-fixed-price-plan-button,
 .delete-user-button,
 .scrub-realm-button {
@@ -260,6 +289,30 @@ tr.admin td:first-child {
     }
 }
 
+.reactivate-remote-server-button {
+    color: hsl(0deg 0% 100%);
+    background-color: hsl(35deg 70% 56%);
+    border: 1px solid hsl(35deg 70% 50%);
+    border-radius: 2px;
+
+    &:hover,
+    &:focus,
+    &:active {
+        color: hsl(0deg 0% 100%);
+        background-color: hsl(35deg 82% 40%);
+        border: 1px solid hsl(35deg 82% 30%);
+    }
+}
+
+.reactivate-remote-server-button,
+.deactivate-remote-server-button {
+    font-size: 15px;
+    line-height: 1.8;
+    max-width: 550px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
 .remote-support-query-result.remote-server-deactivated {
     background-color: hsl(2deg 64% 58%);
 
@@ -272,6 +325,7 @@ tr.admin td:first-child {
     }
 }
 
+.delete-next-fixed-price-plan-form,
 .delete-user-form {
     margin: 8px 0;
 }
@@ -280,6 +334,8 @@ tr.admin td:first-child {
     text-align: center;
 }
 
+.reactivate-remote-server-form,
+.deactivate-remote-server-form,
 .realm-support-information,
 .remote-server-information,
 .remote-realm-information {

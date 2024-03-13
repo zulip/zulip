@@ -1,10 +1,8 @@
 import * as blueslip from "./blueslip";
 import {Filter} from "./filter";
-import * as inbox_util from "./inbox_util";
 import * as message_lists from "./message_lists";
 import {page_params} from "./page_params";
 import * as people from "./people";
-import * as recent_view_util from "./recent_view_util";
 import type {NarrowTerm} from "./state_data";
 import * as stream_data from "./stream_data";
 import type {StreamSubscription} from "./sub_store";
@@ -32,7 +30,11 @@ export function search_terms(current_filter: Filter | undefined = filter()): Nar
 }
 
 export function is_message_feed_visible(): boolean {
-    return !recent_view_util.is_visible() && !inbox_util.is_visible();
+    // It's important that `message_lists.current` is the
+    // source of truth for this since during the initial app load,
+    // `message_lists.current` is `undefined` and we don't want
+    // to return `true` if we haven't loaded the message feed yet.
+    return message_lists.current !== undefined;
 }
 
 export function update_email(

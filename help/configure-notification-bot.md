@@ -1,45 +1,34 @@
-# Notification bot
+# Configure automated notices
 
-The Zulip notification bot automatically generates messages for
-various organization level events, including:
+The Zulip sends automated notices via **Notification Bot** to notify users about
+changes in their organization or account. Some types of notices can be
+configured, or disabled altogether.
 
-* Stream settings changes such as [name](/help/rename-a-stream),
-  [description](/help/change-the-stream-description),
-  [permission](/help/stream-permissions) and
-  [policy](/help/stream-sending-policy) updates (sent to the
-  "stream events" topic)
-* A topic being [resolved/unresolved](/help/resolve-a-topic)
-* New public stream announcements (private streams are not announced)
-* New user announcements
+Notices sent to streams are translated into the language that the organization
+has configured as the [language for automated messages and invitation
+emails](/help/configure-organization-language). The topic name is also
+translated. Notices sent directly to users will use [their preferred
+language](/help/change-your-language).
 
-The notification bot also generates automated direct messages to
-individual users for some user specific events, such as [being
-subscribed to a stream][add-users-to-stream] by another user.
+## Notices about streams
 
-Additionally, when [moving messages to another stream][move-messages],
-users can have the notification bot send automated notices to help
-others find the moved content.
-
-Organization administrators can configure where (and whether)
-[new stream](#new-stream-announcements) and
-[new user](#new-user-announcements) announcement messages are sent.
-
-Stream messages sent by the notification bot (including the topic)
-are translated into the language that the organization has configured
-as the [organization language for automated messages and invitation
-emails][org-lang]. Direct messages sent by the notification bot to
-a user will use [their preferred language](/help/change-your-language).
-
-## Configure notification bot
-
-{!admin-only.md!}
+Notices about stream settings changes, such as [name](/help/rename-a-stream),
+[description](/help/change-the-stream-description),
+[permission](/help/stream-permissions) and
+[policy](/help/stream-sending-policy) updates are sent to the
+“stream events” topic in the stream that was modified.
 
 ### New stream announcements
 
-You can configure where the Zulip notification bot
-[announces][new-stream-options] new public streams, or disable the new
-stream announcement messages entirely. The topic for these messages
-is "new streams".
+{!admin-only.md!}
+
+When creating a new [public stream](/help/stream-permissions), the
+stream creator can choose to advertise the new stream via an automated
+notice. You can configure what stream Zulip uses for these notices, or
+disable these notices entirely. The topic for these messages is “new
+streams”.
+
+New [private](/help/stream-permissions) streams are never announced.
 
 {start_tabs}
 
@@ -52,11 +41,30 @@ is "new streams".
 
 {end_tabs}
 
+## Notices about topics
+
+A notice is sent when a topic is [resolved or
+unresolved](/help/resolve-a-topic). These notices will be marked as unread only
+for users who had participated in the topic.
+
+Additionally, when moving messages to another
+[stream](/help/move-content-to-another-stream) or
+[topic](/help/move-content-to-another-topic), users can decide whether to send
+automated notices to help others understand how content was moved.
+
+## Notices about users
+
+You will be notified if someone [subscribes you to a
+stream](/help/add-or-remove-users-from-a-stream#add-users-to-a-stream), or
+changes your [group](/help/user-groups) membership.
+
 ### New user announcements
 
-You can configure where the Zulip notification bot announces new users,
-or disable the new user announcement messages entirely. The topic for
-these messages is "signups".
+{!admin-only.md!}
+
+You can configure where **Notification Bot** will post an announcement when new
+users join your organization, or disable new user announcement messages
+entirely. The topic for these messages is “signups”.
 
 {start_tabs}
 
@@ -69,14 +77,27 @@ these messages is "signups".
 
 {end_tabs}
 
-### Zulip update announcements
+## Zulip update announcements
 
-Zulip announces new features and important product and design changes
-via automated notifications sent to the "Zulip updates" topic in a
-configurable stream.
+Zulip announces new features and other important product changes via automated
+messages. This is designed to help users discover new features they may find
+useful, including new configuration options.
 
-You can configure where the Zulip notification bot sends these updates,
-or disable the Zulip update messages entirely.
+These announcements are posted to the “Zulip updates” topic in the stream selected by
+organization administrators. You can read update messages whenever it's
+convenient, or [mute](/help/mute-a-topic) the topic if you are not interested.
+If you organization does not want to receive these announcements, they can be
+disabled.
+
+On self-hosted Zulip servers, announcement messages are shipped with the Zulip
+server version that includes the new feature or product change. You may thus
+receive several announcement messages when your server is upgraded.
+
+Unlike other notices, Zulip update announcements are not translated.
+
+### Configure Zulip update announcements
+
+{!admin-only.md!}
 
 {start_tabs}
 
@@ -91,11 +112,6 @@ or disable the Zulip update messages entirely.
 
 ## Related articles
 
-* [Organization language for automated messages and invitation emails][org-lang]
-* [Streams and topics](/help/streams-and-topics)
-
-[add-users-to-stream]: /help/add-or-remove-users-from-a-stream#add-users-to-a-stream
-[api-create-user]: https://zulip.com/api/create-user
-[new-stream-options]: /help/create-a-stream#stream-options
-[org-lang]: /help/configure-organization-language
-[move-messages]: /help/move-content-to-another-stream
+* [Organization language for automated messages and invitation emails](/help/configure-organization-language)
+* [Moderating open organizations](/help/moderating-open-organizations)
+* [Zulip newsletter](https://zulip.com/help/email-notifications#low-traffic-newsletter)

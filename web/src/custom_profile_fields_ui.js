@@ -172,7 +172,7 @@ export function initialize_custom_pronouns_type_fields(element_id) {
             source() {
                 return commonly_used_pronouns;
             },
-            highlighter(item) {
+            highlighter_html(item) {
                 return typeahead_helper.render_typeahead_item({primary: item});
             },
         });

@@ -34,6 +34,7 @@ function format_member_list_elem(person, user_can_remove_subscribers) {
         email: person.delivery_email,
         can_remove_subscribers: user_can_remove_subscribers,
         for_user_group_members: false,
+        img_src: people.small_avatar_url_for_person(person),
     });
 }
 

@@ -1987,7 +1987,11 @@ class BillingSession(ABC):
     def make_end_of_cycle_updates_if_needed(
         self, plan: CustomerPlan, event_time: datetime
     ) -> Tuple[Optional[CustomerPlan], Optional[LicenseLedger]]:
-        last_ledger_entry = LicenseLedger.objects.filter(plan=plan).order_by("-id").first()
+        last_ledger_entry = (
+            LicenseLedger.objects.filter(plan=plan, event_time__lte=event_time)
+            .order_by("-id")
+            .first()
+        )
         next_billing_cycle = self.get_next_billing_cycle(plan)
         event_in_next_billing_cycle = next_billing_cycle <= event_time
 
@@ -2762,10 +2766,10 @@ class BillingSession(ABC):
             self.make_end_of_cycle_updates_if_needed(plan, event_time)
 
         # The primary way to not create an invoice for a plan is to not have
-        # any new ledger entry. The 'self.on_paid_plan()' check adds an extra
+        # any new ledger entry. The 'plan.is_paid()' check adds an extra
         # layer of defense to avoid creating any invoices for customers not on
         # paid plan. It saves a DB query too.
-        if self.on_paid_plan():
+        if plan.is_paid():
             if plan.invoicing_status == CustomerPlan.INVOICING_STATUS_INITIAL_INVOICE_TO_BE_SENT:
                 invoiced_through_id = -1
                 licenses_base = None
@@ -2792,8 +2796,12 @@ class BillingSession(ABC):
                             "quantity": ledger_entry.licenses,
                         }
                     description = f"{plan.name} - renewal"
-                elif licenses_base is not None and ledger_entry.licenses != licenses_base:
-                    assert plan.price_per_license
+                elif (
+                    plan.fixed_price is None
+                    and licenses_base is not None
+                    and ledger_entry.licenses != licenses_base
+                ):
+                    assert plan.price_per_license is not None
                     last_ledger_entry_renewal = (
                         LicenseLedger.objects.filter(
                             plan=plan, is_renewal=True, event_time__lte=ledger_entry.event_time
@@ -4739,19 +4747,6 @@ def ensure_customer_does_not_have_active_plan(customer: Customer) -> None:
 
 
 @transaction.atomic
-def do_change_remote_server_plan_type(remote_server: RemoteZulipServer, plan_type: int) -> None:
-    old_value = remote_server.plan_type
-    remote_server.plan_type = plan_type
-    remote_server.save(update_fields=["plan_type"])
-    RemoteZulipServerAuditLog.objects.create(
-        event_type=RealmAuditLog.REMOTE_SERVER_PLAN_TYPE_CHANGED,
-        server=remote_server,
-        event_time=timezone_now(),
-        extra_data={"old_value": old_value, "new_value": plan_type},
-    )
-
-
-@transaction.atomic
 def do_reactivate_remote_server(remote_server: RemoteZulipServer) -> None:
     """
     Utility function for reactivating deactivated registrations.
@@ -4848,8 +4843,9 @@ def invoice_plans_as_needed(event_time: Optional[datetime] = None) -> None:
             remote_server = plan.customer.remote_server
             billing_session = RemoteServerBillingSession(remote_server=remote_server)
 
+        assert plan.next_invoice_date is not None  # for mypy
+
         if remote_server:
-            assert plan.next_invoice_date is not None
             if (
                 plan.fixed_price is not None
                 and not plan.reminder_to_review_plan_email_sent
@@ -4896,7 +4892,7 @@ def invoice_plans_as_needed(event_time: Optional[datetime] = None) -> None:
                     plan.save(update_fields=["invoice_overdue_email_sent"])
                 continue
 
-        billing_session.invoice_plan(plan, event_time)
+        billing_session.invoice_plan(plan, plan.next_invoice_date)
 
 
 def is_realm_on_free_trial(realm: Realm) -> bool:

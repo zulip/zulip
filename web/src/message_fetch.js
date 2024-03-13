@@ -251,7 +251,7 @@ export function load_messages(opts, attempt = 1) {
     // But support for the all_messages_data sharing of data with
     // message_lists.home and the (hacky) page_params.narrow feature
     // requires a somewhat ugly bundle of conditionals.
-    if (opts.msg_list === message_lists.home) {
+    if (msg_list_data.filter.is_in_home()) {
         if (page_params.narrow_stream !== undefined) {
             data.narrow = JSON.stringify(page_params.narrow);
         }

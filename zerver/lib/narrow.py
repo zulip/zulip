@@ -105,7 +105,7 @@ def check_narrow_for_events(narrow: Collection[NarrowTerm]) -> None:
 
 
 def is_spectator_compatible(narrow: Iterable[Dict[str, Any]]) -> bool:
-    # This implementation should agree with the similar function in web/src/hash_util.js.
+    # This implementation should agree with is_spectator_compatible in hash_parser.ts.
     for element in narrow:
         operator = element["operator"]
         if "operand" not in element:

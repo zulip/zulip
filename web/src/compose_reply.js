@@ -7,6 +7,7 @@ import * as channel from "./channel";
 import * as compose_actions from "./compose_actions";
 import * as compose_state from "./compose_state";
 import * as compose_ui from "./compose_ui";
+import * as copy_and_paste from "./copy_and_paste";
 import * as hash_util from "./hash_util";
 import {$t} from "./i18n";
 import * as inbox_ui from "./inbox_ui";
@@ -129,10 +130,51 @@ export function reply_with_mention(opts) {
     compose_ui.insert_syntax_and_focus(mention);
 }
 
-export function quote_and_reply(opts) {
+export function selection_within_message_id(selection = window.getSelection()) {
+    // Returns the message_id if the selection is entirely within a message,
+    // otherwise returns undefined.
+    if (!selection.toString()) {
+        return undefined;
+    }
+    const {start_id, end_id} = copy_and_paste.analyze_selection(selection);
+    if (start_id === end_id) {
+        return start_id;
+    }
+    return undefined;
+}
+
+function get_quote_target(opts) {
     assert(message_lists.current !== undefined);
-    const message_id = opts.message_id || message_lists.current.selected_id();
+    let message_id;
+    let quote_content;
+    if (opts.message_id) {
+        // If triggered via the message actions popover
+        message_id = opts.message_id;
+        if (opts.quote_content) {
+            quote_content = opts.quote_content;
+        }
+    } else {
+        // If triggered via hotkey
+        const selection_message_id = selection_within_message_id();
+        if (selection_message_id) {
+            // If the current selection is entirely within a message, we
+            // quote that selection.
+            message_id = selection_message_id;
+            quote_content = get_message_selection();
+        } else {
+            // Else we pick the currently focused message.
+            message_id = message_lists.current.selected_id();
+        }
+    }
     const message = message_lists.current.get(message_id);
+    // If the current selection, if any, is not entirely within the target message,
+    // we quote that entire message.
+    quote_content ??= message.raw_content;
+    return {message_id, message, quote_content};
+}
+
+export function quote_and_reply(opts) {
+    const {message_id, message, quote_content} = get_quote_target(opts);
     const quoting_placeholder = $t({defaultMessage: "[Quoting…]"});
 
     // If the last compose type textarea focused on is still in the DOM, we add
@@ -154,7 +196,7 @@ export function quote_and_reply(opts) {
 
     compose_ui.insert_syntax_and_focus(quoting_placeholder, $textarea, "block");
 
-    function replace_content(message) {
+    function replace_content(message, raw_content) {
         // Final message looks like:
         //     @_**Iago|5** [said](link to message):
         //     ```quote
@@ -168,25 +210,107 @@ export function quote_and_reply(opts) {
             },
         );
         content += "\n";
-        const fence = fenced_code.get_unused_fence(message.raw_content);
-        content += `${fence}quote\n${message.raw_content}\n${fence}`;
+        const fence = fenced_code.get_unused_fence(raw_content);
+        content += `${fence}quote\n${raw_content}\n${fence}`;
 
         compose_ui.replace_syntax(quoting_placeholder, content, $textarea);
         compose_ui.autosize_textarea($textarea);
     }
 
-    if (message && message.raw_content) {
-        replace_content(message);
+    if (message && quote_content) {
+        replace_content(message, quote_content);
         return;
     }
 
     channel.get({
         url: "/json/messages/" + message_id,
         success(data) {
-            message.raw_content = data.raw_content;
-            replace_content(message);
+            replace_content(message, data.raw_content);
         },
     });
+}
+
+function extract_range_html(range, preserve_ancestors = false) {
+    // Returns the html of the range as a string, optionally preserving 2
+    // levels of ancestors.
+    const temp_div = document.createElement("div");
+    if (!preserve_ancestors) {
+        temp_div.append(range.cloneContents());
+        return temp_div.innerHTML;
+    }
+    let container =
+        range.commonAncestorContainer.nodeType === Node.ELEMENT_NODE
+            ? range.commonAncestorContainer
+            : range.commonAncestorContainer.parentElement;
+    // The reason for preserving 2, not just 1, ancestors is code blocks; a
+    // selection completely inside a code block has a code element as its
+    // container element, inside a pre element, which is needed to identify
+    // the selection as being part of a code block as opposed to inline code.
+    const outer_container = container.parentElement.cloneNode();
+    container = container.cloneNode();
+    container.append(range.cloneContents());
+    outer_container.append(container);
+    temp_div.append(outer_container);
+    return temp_div.innerHTML;
+}
+
+function get_range_intersection_with_element(range, element) {
+    // Returns a new range that is a subset of range and is inside element.
+    const intersection = document.createRange();
+    intersection.selectNodeContents(element);
+
+    if (intersection.compareBoundaryPoints(Range.START_TO_START, range) < 0) {
+        intersection.setStart(range.startContainer, range.startOffset);
+    }
+
+    if (intersection.compareBoundaryPoints(Range.END_TO_END, range) > 0) {
+        intersection.setEnd(range.endContainer, range.endOffset);
+    }
+
+    return intersection;
+}
+
+export function get_message_selection(selection = window.getSelection()) {
+    let selected_message_content_raw = "";
+
+    // We iterate over all ranges in the selection, to find the ranges containing
+    // the message_content div or its descendants, if any, then convert the html
+    // in those ranges to markdown for quoting (firefox can have multiple ranges
+    // in one selection), and also compute their combined bounding rect.
+    for (let i = 0; i < selection.rangeCount; i = i + 1) {
+        let range = selection.getRangeAt(i);
+        const range_common_ancestor = range.commonAncestorContainer;
+        let html_to_convert = "";
+
+        // If the common ancestor is the message_content div or its child, we can quote
+        // this entire range at least.
+        if (range_common_ancestor.classList?.contains("message_content")) {
+            html_to_convert = extract_range_html(range);
+        } else if ($(range_common_ancestor).parents(".message_content").length) {
+            // We want to preserve the structure of the html with 2 levels of
+            // ancestors (to retain code block / list formatting) in such a range.
+            html_to_convert = extract_range_html(range, true);
+        } else if (
+            // If the common ancestor contains the message_content div, we can quote the part
+            // of this range that is in the message_content div, if any.
+            range_common_ancestor instanceof Element &&
+            range_common_ancestor.querySelector(".message_content") &&
+            range.cloneContents().querySelector(".message_content")
+        ) {
+            // Narrow down the range to the part that is in the message_content div.
+            range = get_range_intersection_with_element(
+                range,
+                range_common_ancestor.querySelector(".message_content"),
+            );
+            html_to_convert = extract_range_html(range);
+        } else {
+            continue;
+        }
+        const markdown_text = copy_and_paste.paste_handler_converter(html_to_convert);
+        selected_message_content_raw = selected_message_content_raw + "\n" + markdown_text;
+    }
+    selected_message_content_raw = selected_message_content_raw.trim();
+    return selected_message_content_raw;
 }
 
 export function initialize() {

@@ -35,7 +35,7 @@
         {% set realm = user.realm %}
         <div class="support-query-result user-support-container">
             <div class="user-information-section">
-                <span class="label">user</span>
+                <span class="cloud-label">Cloud user</span>
                 <h3>{{ user.full_name }}</h3>
                 <b>Email</b>: {{ user.delivery_email }}<br />
                 <b>Date joined</b>: {{ user.date_joined|timesince }} ago<br />
@@ -72,7 +72,7 @@
         {% set object = confirmation.object %}
         <div class="support-query-result confirmation-container">
             <div class="confirmation-information-section">
-                <span class="label">confirmation</span>
+                <span class="cloud-label">Cloud confirmation</span>
                 {% if confirmation.type == Confirmation.USER_REGISTRATION %}
                 <h3>Pre-registration user</h3>
                 {% set email = object.email %}
@@ -116,10 +116,10 @@
                         {% include "corporate/support/realm_details.html" %}
                     {% endwith %}
                 {% elif realm %}
-                    <span class="label">realm</span>
+                    <span class="cloud-label">Cloud realm</span>
                     <h3>{{ realm.string_id }}</h3>
                 {% else %}
-                    <span class="label">realm</span>
+                    <span class="cloud-label">Cloud realm</span>
                     <h3>N/A</h3>
                 {% endif %}
             </div>

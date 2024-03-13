@@ -147,6 +147,19 @@ specified code playground.
     generate the URL. You can refer to parts of the documentation on URL
     templates from [adding a custom linkifier](/help/add-a-custom-linkifier).
 
+### Examples of playground URL templates
+
+Here is a list of playground URL templates you can use for some popular
+languages:
+
+* For Java: `https://pythontutor.com/java.html#code={code}` or
+  `https://cscircles.cemc.uwaterloo.ca/java_visualize/#code={code}`
+* For JavaScript: `https://pythontutor.com/javascript.html#code={code}`
+* For Python: `https://pythontutor.com/python-compiler.html#code={code}`
+* For C: `https://pythontutor.com/c.html#code={code}`
+* For C++: `https://pythontutor.com/cpp.html#code={code}`
+* For Rust: `https://play.rust-lang.org/?code={code}`
+
 ### Technical details
 
 * You can configure multiple playgrounds for a given language; if you do that,

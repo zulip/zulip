@@ -12,6 +12,7 @@ from django.utils.timezone import now as timezone_now
 from corporate.lib.stripe import (
     BillingSession,
     PushNotificationsEnabledStatus,
+    RealmBillingSession,
     RemoteRealmBillingSession,
     RemoteServerBillingSession,
     get_configured_fixed_price_plan_offer,
@@ -95,12 +96,19 @@ class MobilePushData:
 
 
 @dataclass
-class SupportData:
+class RemoteSupportData:
     date_created: datetime
+    has_stale_audit_log: bool
     plan_data: PlanData
     sponsorship_data: SponsorshipData
     user_data: RemoteCustomerUserCount
     mobile_push_data: MobilePushData
+
+
+@dataclass
+class CloudSupportData:
+    plan_data: PlanData
+    sponsorship_data: SponsorshipData
 
 
 def get_realm_support_url(realm: Realm) -> str:
@@ -110,14 +118,6 @@ def get_realm_support_url(realm: Realm) -> str:
         urlunsplit(("", "", reverse("support"), urlencode({"q": realm.string_id}), "")),
     )
     return support_url
-
-
-def get_customer_discount_for_support_view(
-    customer: Optional[Customer] = None,
-) -> Optional[Decimal]:
-    if customer is None:
-        return None
-    return customer.default_discount
 
 
 def get_customer_sponsorship_data(customer: Customer) -> SponsorshipData:
@@ -353,7 +353,7 @@ def get_mobile_push_data(remote_entity: Union[RemoteZulipServer, RemoteRealm]) -
         )
 
 
-def get_data_for_support_view(billing_session: BillingSession) -> SupportData:
+def get_data_for_remote_support_view(billing_session: BillingSession) -> RemoteSupportData:
     if isinstance(billing_session, RemoteServerBillingSession):
         user_data = get_remote_server_guest_and_non_guest_count(billing_session.remote_server.id)
         stale_audit_log_data = has_stale_audit_log(billing_session.remote_server)
@@ -375,10 +375,25 @@ def get_data_for_support_view(billing_session: BillingSession) -> SupportData:
     else:
         sponsorship_data = SponsorshipData()
 
-    return SupportData(
+    return RemoteSupportData(
         date_created=date_created,
+        has_stale_audit_log=stale_audit_log_data,
         plan_data=plan_data,
         sponsorship_data=sponsorship_data,
         user_data=user_data,
         mobile_push_data=mobile_data,
+    )
+
+
+def get_data_for_cloud_support_view(billing_session: BillingSession) -> CloudSupportData:
+    assert isinstance(billing_session, RealmBillingSession)
+    plan_data = get_plan_data_for_support_view(billing_session)
+    if plan_data.customer is not None:
+        sponsorship_data = get_customer_sponsorship_data(plan_data.customer)
+    else:
+        sponsorship_data = SponsorshipData()
+
+    return CloudSupportData(
+        plan_data=plan_data,
+        sponsorship_data=sponsorship_data,
     )

@@ -5,17 +5,16 @@ from django.http import HttpRequest, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 
-from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
-from zerver.lib.validator import WildValue, check_string, to_wild_value
+from zerver.lib.typed_endpoint import JsonBodyPayload, typed_endpoint
+from zerver.lib.validator import WildValue, check_string
 
 
 @csrf_exempt
 @require_POST
-@has_request_variables
+@typed_endpoint
 def report_csp_violations(
-    request: HttpRequest,
-    csp_report: WildValue = REQ(argument_type="body", converter=to_wild_value),
+    request: HttpRequest, *, csp_report: JsonBodyPayload[WildValue]
 ) -> HttpResponse:
     def get_attr(csp_report_attr: str) -> str:
         return csp_report.get(csp_report_attr, "").tame(check_string)

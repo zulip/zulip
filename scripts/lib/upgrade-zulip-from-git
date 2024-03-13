@@ -40,8 +40,14 @@ logging.basicConfig(format="%(asctime)s upgrade-zulip-from-git: %(message)s", le
 
 parser = argparse.ArgumentParser()
 parser.add_argument("refname", help="Git reference, e.g. a branch, tag, or commit ID.")
-parser.add_argument(
+git_ref = parser.add_mutually_exclusive_group()
+git_ref.add_argument(
     "--remote-url", help="Override the Git remote URL configured in /etc/zulip/zulip.conf."
+)
+git_ref.add_argument(
+    "--local-ref",
+    action="store_true",
+    help="Provided branch name has been pushed directly to /srv/zulip.git already",
 )
 args, extra_options = parser.parse_known_args()
 
@@ -75,9 +81,10 @@ try:
         subprocess.check_call(["chown", "-R", "zulip:zulip", LOCAL_GIT_CACHE_DIR])
 
     os.chdir(LOCAL_GIT_CACHE_DIR)
-    subprocess.check_call(
-        ["git", "remote", "set-url", "origin", remote_url], preexec_fn=su_to_zulip
-    )
+    if not args.local_ref:
+        subprocess.check_call(
+            ["git", "remote", "set-url", "origin", remote_url], preexec_fn=su_to_zulip
+        )
 
     fetch_spec = subprocess.check_output(
         ["git", "config", "remote.origin.fetch"],
@@ -134,9 +141,11 @@ try:
             preexec_fn=su_to_zulip,
         )
 
-    subprocess.check_call(
-        [os.path.join(get_deploy_root(), "scripts/lib/update-git-upstream")], preexec_fn=su_to_zulip
-    )
+    if not args.local_ref:
+        subprocess.check_call(
+            [os.path.join(get_deploy_root(), "scripts/lib/update-git-upstream")],
+            preexec_fn=su_to_zulip,
+        )
 
     # Generate the deployment directory via git worktree from our local repository.
     try:
@@ -149,8 +158,11 @@ try:
         ).strip()
     except subprocess.CalledProcessError as e:
         if e.returncode == 128:
-            # Try in the origin namespace
-            fullref = f"refs/remotes/origin/{refname}"
+            # Try in the origin namespace, or local heads if --local-ref
+            if args.local_ref:
+                fullref = f"refs/heads/{refname}"
+            else:
+                fullref = f"refs/remotes/origin/{refname}"
             commit_hash = subprocess.check_output(
                 ["git", "rev-parse", "--verify", fullref],
                 preexec_fn=su_to_zulip,

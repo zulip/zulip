@@ -40,7 +40,7 @@ export const pm_recipient = {
         // input typeahead is different from the topic input
         // typeahead but both can be present in the DOM.
         const entry = await page.waitForSelector('.typeahead[style*="display: block"] .active a', {
-            visible: true,
+            visible: false,
         });
         await entry!.click();
     },

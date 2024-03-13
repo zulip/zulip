@@ -60,7 +60,7 @@ export function set_up($input, pills, opts) {
             }
             return source;
         },
-        highlighter(item) {
+        highlighter_html(item) {
             if (include_streams(this.query)) {
                 return typeahead_helper.render_stream(item);
             }

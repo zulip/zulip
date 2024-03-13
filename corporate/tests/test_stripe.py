@@ -64,7 +64,6 @@ from corporate.lib.stripe import (
     compute_plan_parameters,
     customer_has_credit_card_as_default_payment_method,
     customer_has_last_n_invoices_open,
-    do_change_remote_server_plan_type,
     do_deactivate_remote_server,
     do_reactivate_remote_server,
     downgrade_small_realms_behind_on_payments_as_needed,
@@ -1290,6 +1289,9 @@ class StripeTest(StripeTestCase):
                 .first(),
                 (19, 19),
             )
+            # Fast forward next_invoice_date to 10 months from the free_trial_end_date
+            plan.next_invoice_date = add_months(free_trial_end_date, 10)
+            plan.save(update_fields=["next_invoice_date"])
             invoice_plans_as_needed(add_months(free_trial_end_date, 10))
             [invoice0, invoice1] = iter(stripe.Invoice.list(customer=stripe_customer.id))
             invoice_params = {
@@ -1310,6 +1312,9 @@ class StripeTest(StripeTestCase):
                 },
             }
 
+            # Fast forward next_invoice_date to one year from the free_trial_end_date
+            plan.next_invoice_date = add_months(free_trial_end_date, 12)
+            plan.save(update_fields=["next_invoice_date"])
             invoice_plans_as_needed(add_months(free_trial_end_date, 12))
             [invoice0, invoice1, invoice2] = iter(stripe.Invoice.list(customer=stripe_customer.id))
 
@@ -2604,6 +2609,10 @@ class StripeTest(StripeTestCase):
         }
         for key, value in monthly_plan_invoice_item_params.items():
             self.assertEqual(monthly_plan_invoice_item[key], value)
+
+        # Fast forward next_invoice_date to one year from the day we switched to annual plan.
+        annual_plan.next_invoice_date = add_months(self.now, 13)
+        annual_plan.save(update_fields=["next_invoice_date"])
         invoice_plans_as_needed(add_months(self.now, 13))
 
         [invoice0, invoice1, invoice2, invoice3, invoice4] = iter(
@@ -2918,7 +2927,7 @@ class StripeTest(StripeTestCase):
         for key, value in monthly_plan_invoice_item_params.items():
             self.assertEqual(invoice_item0[key], value)
 
-        with time_machine.travel(self.now, tick=False):
+        with time_machine.travel(self.next_year, tick=False):
             response = self.client_get("/billing/")
         self.assert_not_in_success_response(
             ["Your plan will switch to annual billing on February 2, 2012"], response
@@ -2990,6 +2999,9 @@ class StripeTest(StripeTestCase):
         assert plan is not None
         self.assertIsNotNone(plan.next_invoice_date)
         self.assertEqual(plan.status, CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE)
+        # Fast forward the next_invoice_date to next year.
+        plan.next_invoice_date = self.next_year
+        plan.save(update_fields=["next_invoice_date"])
         invoice_plans_as_needed(self.next_year)
         plan = CustomerPlan.objects.first()
         assert plan is not None
@@ -3366,9 +3378,13 @@ class StripeTest(StripeTestCase):
             context.exception.error_description, "subscribing with existing subscription"
         )
 
+        # Fast forward the next_invoice_date to next year.
+        new_plan.next_invoice_date = self.next_year
+        new_plan.save(update_fields=["next_invoice_date"])
         invoice_plans_as_needed(self.next_year)
 
-        response = self.client_get("/billing/")
+        with time_machine.travel(self.next_year, tick=False):
+            response = self.client_get("/billing/")
         self.assertEqual(response.status_code, 302)
         self.assertEqual("/plans/", response["Location"])
 
@@ -4753,30 +4769,6 @@ class BillingHelpersTest(ZulipTestCase):
         plan.save(update_fields=["status"])
         self.assertTrue(is_realm_on_free_trial(realm))
 
-    def test_change_remote_server_plan_type(self) -> None:
-        server_uuid = str(uuid.uuid4())
-        remote_server = RemoteZulipServer.objects.create(
-            uuid=server_uuid,
-            api_key="magic_secret_api_key",
-            hostname="demo.example.com",
-            contact_email="email@example.com",
-        )
-        self.assertEqual(remote_server.plan_type, RemoteZulipServer.PLAN_TYPE_SELF_MANAGED)
-
-        do_change_remote_server_plan_type(remote_server, RemoteZulipServer.PLAN_TYPE_BUSINESS)
-
-        remote_server = RemoteZulipServer.objects.get(uuid=server_uuid)
-        remote_realm_audit_log = RemoteZulipServerAuditLog.objects.filter(
-            event_type=RealmAuditLog.REMOTE_SERVER_PLAN_TYPE_CHANGED
-        ).last()
-        assert remote_realm_audit_log is not None
-        expected_extra_data = {
-            "old_value": RemoteZulipServer.PLAN_TYPE_SELF_MANAGED,
-            "new_value": RemoteZulipServer.PLAN_TYPE_BUSINESS,
-        }
-        self.assertEqual(remote_realm_audit_log.extra_data, expected_extra_data)
-        self.assertEqual(remote_server.plan_type, RemoteZulipServer.PLAN_TYPE_BUSINESS)
-
     def test_deactivate_reactivate_remote_server(self) -> None:
         server_uuid = str(uuid.uuid4())
         remote_server = RemoteZulipServer.objects.create(
@@ -4901,9 +4893,10 @@ class LicenseLedgerTest(StripeTestCase):
         billing_session.update_license_ledger_if_needed(self.now)
         self.assertFalse(LicenseLedger.objects.exists())
         # Test plan not automanaged
-        self.local_upgrade(
-            self.seat_count + 1, False, CustomerPlan.BILLING_SCHEDULE_ANNUAL, True, False
-        )
+        with time_machine.travel(self.now, tick=False):
+            self.local_upgrade(
+                self.seat_count + 1, False, CustomerPlan.BILLING_SCHEDULE_ANNUAL, True, False
+            )
         plan = CustomerPlan.objects.get()
         self.assertEqual(LicenseLedger.objects.count(), 1)
         self.assertEqual(plan.licenses(), self.seat_count + 1)
@@ -5480,6 +5473,9 @@ class TestSupportBillingHelpers(StripeTestCase):
         self.assertEqual(plan.discount, 50)
         customer.refresh_from_db()
         self.assertEqual(customer.default_discount, 50)
+        # Fast forward the next_invoice_date to next year.
+        plan.next_invoice_date = self.next_year
+        plan.save(update_fields=["next_invoice_date"])
         invoice_plans_as_needed(self.next_year + timedelta(days=10))
         stripe_customer_id = customer.stripe_customer_id
         assert stripe_customer_id is not None
@@ -6011,7 +6007,7 @@ class TestRemoteRealmBillingFlow(StripeTestCase, RemoteRealmBillingTestCase):
         assert latest_ledger is not None
         self.assertEqual(latest_ledger.licenses, min_licenses + 10)
 
-        with time_machine.travel(self.now + timedelta(days=1), tick=False):
+        with time_machine.travel(self.now + timedelta(days=3), tick=False):
             response = self.client_get(
                 f"{self.billing_session.billing_base_url}/billing/", subdomain="selfhosting"
             )
@@ -6160,7 +6156,7 @@ class TestRemoteRealmBillingFlow(StripeTestCase, RemoteRealmBillingTestCase):
             assert latest_ledger is not None
             self.assertEqual(latest_ledger.licenses, min_licenses + 10)
 
-            with time_machine.travel(self.now + timedelta(days=1), tick=False):
+            with time_machine.travel(self.now + timedelta(days=3), tick=False):
                 response = self.client_get(
                     f"{self.billing_session.billing_base_url}/billing/", subdomain="selfhosting"
                 )
@@ -6280,7 +6276,7 @@ class TestRemoteRealmBillingFlow(StripeTestCase, RemoteRealmBillingTestCase):
         assert latest_ledger is not None
         self.assertEqual(latest_ledger.licenses, min_licenses + 10)
 
-        with time_machine.travel(self.now + timedelta(days=1), tick=False):
+        with time_machine.travel(self.now + timedelta(days=3), tick=False):
             response = self.client_get(
                 f"{self.billing_session.billing_base_url}/billing/", subdomain="selfhosting"
             )
@@ -7939,7 +7935,7 @@ class TestRemoteServerBillingFlow(StripeTestCase, RemoteServerTestCase):
             assert latest_ledger is not None
             self.assertEqual(latest_ledger.licenses, 28)
 
-            with time_machine.travel(self.now + timedelta(days=1), tick=False):
+            with time_machine.travel(self.now + timedelta(days=3), tick=False):
                 response = self.client_get(
                     f"{self.billing_session.billing_base_url}/billing/", subdomain="selfhosting"
                 )
@@ -8059,7 +8055,7 @@ class TestRemoteServerBillingFlow(StripeTestCase, RemoteServerTestCase):
         assert latest_ledger is not None
         self.assertEqual(latest_ledger.licenses, 28)
 
-        with time_machine.travel(self.now + timedelta(days=1), tick=False):
+        with time_machine.travel(self.now + timedelta(days=3), tick=False):
             response = self.client_get(
                 f"{self.billing_session.billing_base_url}/billing/", subdomain="selfhosting"
             )

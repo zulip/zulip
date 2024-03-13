@@ -137,7 +137,7 @@ run_test("set_up", ({mock_template}) => {
         assert.ok(config.stopAdvance);
 
         assert.equal(typeof config.source, "function");
-        assert.equal(typeof config.highlighter, "function");
+        assert.equal(typeof config.highlighter_html, "function");
         assert.equal(typeof config.matcher, "function");
         assert.equal(typeof config.sorter, "function");
         assert.equal(typeof config.updater, "function");
@@ -155,9 +155,9 @@ run_test("set_up", ({mock_template}) => {
 
         (function test_highlighter() {
             if (opts.stream) {
-                // Test stream highlighter for widgets that allow stream pills.
+                // Test stream highlighter_html for widgets that allow stream pills.
                 assert.equal(
-                    config.highlighter.call(fake_stream_this, denmark),
+                    config.highlighter_html.call(fake_stream_this, denmark),
                     $fake_rendered_stream,
                 );
             }
@@ -165,17 +165,23 @@ run_test("set_up", ({mock_template}) => {
                 // If user is also allowed along with user_group
                 // then we should check that each of them rendered correctly.
                 assert.equal(
-                    config.highlighter.call(fake_group_this, testers),
+                    config.highlighter_html.call(fake_group_this, testers),
                     $fake_rendered_group,
                 );
-                assert.equal(config.highlighter.call(fake_person_this, me), $fake_rendered_person);
+                assert.equal(
+                    config.highlighter_html.call(fake_person_this, me),
+                    $fake_rendered_person,
+                );
             }
             if (opts.user && !opts.user_group) {
-                assert.equal(config.highlighter.call(fake_person_this, me), $fake_rendered_person);
+                assert.equal(
+                    config.highlighter_html.call(fake_person_this, me),
+                    $fake_rendered_person,
+                );
             }
             if (!opts.user && opts.user_group) {
                 assert.equal(
-                    config.highlighter.call(fake_group_this, testers),
+                    config.highlighter_html.call(fake_group_this, testers),
                     $fake_rendered_group,
                 );
             }

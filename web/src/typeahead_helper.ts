@@ -567,19 +567,28 @@ export function sort_slash_commands(matches: SlashCommand[], query: string): Sla
     return [...results.matches, ...results.rest];
 }
 
-// Gives stream a score from 0 to 3 based on its activity
 function activity_score(sub: StreamSubscription): number {
-    let stream_score = 0;
+    // We assign the highest score to the stream being composed
+    // to, and the lowest score to unsubscribed streams. For others,
+    // we prioritise pinned unmuted streams > unpinned unmuted streams
+    // > pinned muted streams > unpinned muted streams, using recent
+    // activity as a tiebreaker.
+    if (sub.name === compose_state.stream_name()) {
+        return 8;
+    }
     if (!sub.subscribed) {
-        stream_score = -1;
-    } else {
-        if (sub.pin_to_top) {
-            stream_score += 2;
-        }
-        // Note: A pinned stream may accumulate a 3rd point if it has recent activity.
-        if (stream_list_sort.has_recent_activity(sub)) {
-            stream_score += 1;
-        }
+        return -1;
+    }
+
+    let stream_score = 0;
+    if (!sub.is_muted) {
+        stream_score += 4;
+    }
+    if (sub.pin_to_top) {
+        stream_score += 2;
+    }
+    if (stream_list_sort.has_recent_activity(sub)) {
+        stream_score += 1;
     }
     return stream_score;
 }

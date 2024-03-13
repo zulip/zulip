@@ -176,7 +176,7 @@ class TestRemoteServerSupportEndpoint(ZulipTestCase):
         ) -> None:
             self.assert_in_success_response(
                 [
-                    '<span class="label">remote server</span>',
+                    '<span class="remote-label">Remote server</span>',
                     f"<h3>{hostname} <a",
                     f"<b>Contact email</b>: admin@{hostname}",
                     "<b>Billing users</b>:",
@@ -196,7 +196,7 @@ class TestRemoteServerSupportEndpoint(ZulipTestCase):
         ) -> None:
             self.assert_in_success_response(
                 [
-                    '<span class="label">remote realm</span>',
+                    '<span class="remote-label">Remote realm</span>',
                     f"<h3>{name}</h3>",
                     f"<b>Remote realm host:</b> {host}<br />",
                     "<b>Date created</b>: 01 December 2023",
@@ -214,7 +214,7 @@ class TestRemoteServerSupportEndpoint(ZulipTestCase):
             )
             self.assert_in_success_response(
                 [
-                    '<span class="label">remote server: deactivated</span>',
+                    '<span class="remote-label">Remote server: deactivated</span>',
                     f"<h3>{hostname} <a",
                     f"<b>Contact email</b>: admin@{hostname}",
                     "<b>Billing users</b>:",
@@ -428,7 +428,10 @@ class TestRemoteServerSupportEndpoint(ZulipTestCase):
         unknown_uuid = uuid.uuid4()
         result = self.client_get("/activity/remote/support", {"q": f"{unknown_uuid}"})
         self.assert_not_in_success_response(
-            ['<span class="label">remote server</span>', '<span class="label">remote realm</span>'],
+            [
+                '<span class="remote-label">Remote server</span>',
+                '<span class="remote-label">Remote realm</span>',
+            ],
             result,
         )
 
@@ -573,6 +576,70 @@ class TestRemoteServerSupportEndpoint(ZulipTestCase):
         self.assertEqual(plan.tier, CustomerPlan.TIER_SELF_HOSTED_LEGACY)
         self.assertEqual(next_plan.tier, CustomerPlan.TIER_SELF_HOSTED_BASIC)
 
+    def test_support_deactivate_remote_server(self) -> None:
+        iago = self.example_user("iago")
+        self.login_user(iago)
+
+        # A remote server cannot be deactivated when an upgrade is scheduled.
+        remote_server_with_upgrade = RemoteZulipServer.objects.get(hostname="zulip-4.example.com")
+        self.assertFalse(remote_server_with_upgrade.deactivated)
+        result = self.client_post(
+            "/activity/remote/support",
+            {
+                "remote_server_id": f"{remote_server_with_upgrade.id}",
+                "remote_server_status": "deactivated",
+            },
+        )
+        self.assert_in_success_response(
+            [
+                f"Cannot deactivate remote server ({remote_server_with_upgrade.hostname}) that has active or scheduled plans."
+            ],
+            result,
+        )
+        remote_server_with_upgrade.refresh_from_db()
+        self.assertFalse(remote_server_with_upgrade.deactivated)
+
+        remote_server_no_upgrade = RemoteZulipServer.objects.get(hostname="zulip-5.example.com")
+        self.assertFalse(remote_server_no_upgrade.deactivated)
+        result = self.client_post(
+            "/activity/remote/support",
+            {
+                "remote_server_id": f"{remote_server_no_upgrade.id}",
+                "remote_server_status": "deactivated",
+            },
+        )
+        self.assert_in_success_response(
+            [f"Remote server ({remote_server_no_upgrade.hostname}) deactivated."], result
+        )
+        remote_server_no_upgrade.refresh_from_db()
+        self.assertTrue(remote_server_no_upgrade.deactivated)
+        audit_log = RemoteZulipServerAuditLog.objects.filter(
+            event_type=RemoteZulipServerAuditLog.REMOTE_SERVER_DEACTIVATED
+        ).last()
+        assert audit_log is not None
+        self.assertEqual(audit_log.server, remote_server_no_upgrade)
+
+    def test_support_reactivate_remote_server(self) -> None:
+        iago = self.example_user("iago")
+        self.login_user(iago)
+
+        remote_server = RemoteZulipServer.objects.get(hostname="zulip-0.example.com")
+        self.assertTrue(remote_server.deactivated)
+        result = self.client_post(
+            "/activity/remote/support",
+            {"remote_server_id": f"{remote_server.id}", "remote_server_status": "active"},
+        )
+        self.assert_in_success_response(
+            [f"Remote server ({remote_server.hostname}) reactivated."], result
+        )
+        remote_server.refresh_from_db()
+        self.assertFalse(remote_server.deactivated)
+        audit_log = RemoteZulipServerAuditLog.objects.filter(
+            event_type=RemoteZulipServerAuditLog.REMOTE_SERVER_REACTIVATED
+        ).last()
+        assert audit_log is not None
+        self.assertEqual(audit_log.server, remote_server)
+
 
 class TestSupportEndpoint(ZulipTestCase):
     def create_customer_and_plan(self, realm: Realm, monthly: bool = False) -> Customer:
@@ -598,7 +665,7 @@ class TestSupportEndpoint(ZulipTestCase):
         LicenseLedger.objects.create(
             licenses=10,
             licenses_at_next_renewal=10,
-            event_time=timezone_now(),
+            event_time=now,
             is_renewal=True,
             plan=plan,
         )
@@ -616,7 +683,7 @@ class TestSupportEndpoint(ZulipTestCase):
         ) -> None:
             self.assert_in_success_response(
                 [
-                    '<span class="label">user</span>\n',
+                    '<span class="cloud-label">Cloud user</span>\n',
                     f"<h3>{full_name}</h3>",
                     f"<b>Email</b>: {email}",
                     "<b>Is active</b>: True<br />",
@@ -681,7 +748,7 @@ class TestSupportEndpoint(ZulipTestCase):
                     f'<input type="hidden" name="realm_id" value="{zulip_realm.id}"',
                     "Zulip Dev</h3>",
                     '<option value="1" selected>Self-hosted</option>',
-                    '<option value="2" >Limited</option>',
+                    '<option value="2">Limited</option>',
                     'input type="number" name="discount" value="None"',
                     '<option value="active" selected>Active</option>',
                     '<option value="deactivated" >Deactivated</option>',
@@ -698,7 +765,7 @@ class TestSupportEndpoint(ZulipTestCase):
                     f'<input type="hidden" name="realm_id" value="{lear_realm.id}"',
                     "Lear &amp; Co.</h3>",
                     '<option value="1" selected>Self-hosted</option>',
-                    '<option value="2" >Limited</option>',
+                    '<option value="2">Limited</option>',
                     'input type="number" name="discount" value="None"',
                     '<option value="active" selected>Active</option>',
                     '<option value="deactivated" >Deactivated</option>',
@@ -722,7 +789,7 @@ class TestSupportEndpoint(ZulipTestCase):
         ) -> None:
             self.assert_in_success_response(
                 [
-                    '<span class="label">confirmation</span>\n',
+                    '<span class="cloud-label">Cloud confirmation</span>\n',
                     f"<b>Email</b>: {email}",
                 ],
                 result,
@@ -750,7 +817,7 @@ class TestSupportEndpoint(ZulipTestCase):
         def check_realm_creation_query_result(result: "TestHttpResponse", email: str) -> None:
             self.assert_in_success_response(
                 [
-                    '<span class="label">confirmation</span>\n',
+                    '<span class="cloud-label">Cloud confirmation</span>\n',
                     "<h3>Realm creation</h3>\n",
                     "<b>Link</b>: http://testserver/accounts/do_confirm/",
                     "<b>Expires in</b>: 1\xa0day",
@@ -761,7 +828,7 @@ class TestSupportEndpoint(ZulipTestCase):
         def check_multiuse_invite_link_query_result(result: "TestHttpResponse") -> None:
             self.assert_in_success_response(
                 [
-                    '<span class="label">confirmation</span>\n',
+                    '<span class="cloud-label">Cloud confirmation</span>\n',
                     "<h3>Multiuse invite</h3>\n",
                     "<b>Link</b>: http://zulip.testserver/join/",
                     "<b>Expires in</b>: 1\xa0week, 3\xa0days",
@@ -772,7 +839,7 @@ class TestSupportEndpoint(ZulipTestCase):
         def check_realm_reactivation_link_query_result(result: "TestHttpResponse") -> None:
             self.assert_in_success_response(
                 [
-                    '<span class="label">confirmation</span>\n',
+                    '<span class="cloud-label">Cloud confirmation</span>\n',
                     "<h3>Realm reactivation</h3>\n",
                     "<b>Link</b>: http://zulip.testserver/reactivate/",
                     "<b>Expires in</b>: 1\xa0day",

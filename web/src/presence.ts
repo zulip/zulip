@@ -13,7 +13,7 @@ export type PresenceStatus = {
     last_active?: number;
 };
 
-type PresenceInfoFromEvent = {
+export type PresenceInfoFromEvent = {
     website: {
         client: "website";
         status: "idle" | "active";

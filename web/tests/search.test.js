@@ -70,10 +70,10 @@ run_test("initialize", ({override_rewire, mock_template}) => {
 
             /* Test highlighter */
             let expected_value = `<div class="search_list_item">\n    <span>Search for ver</span>\n</div>\n`;
-            assert.equal(opts.highlighter(source[0]), expected_value);
+            assert.equal(opts.highlighter_html(source[0]), expected_value);
 
             expected_value = `<div class="search_list_item">\n    <span>Stream <strong>Ver</strong>ona</span>\n</div>\n`;
-            assert.equal(opts.highlighter(source[1]), expected_value);
+            assert.equal(opts.highlighter_html(source[1]), expected_value);
 
             /* Test sorter */
             assert.equal(opts.sorter(search_suggestions.strings), search_suggestions.strings);
@@ -146,16 +146,16 @@ run_test("initialize", ({override_rewire, mock_template}) => {
 
             /* Test highlighter */
             let expected_value = `<div class="search_list_item">\n    <span>Search for zo</span>\n</div>\n`;
-            assert.equal(opts.highlighter(source[0]), expected_value);
+            assert.equal(opts.highlighter_html(source[0]), expected_value);
 
             expected_value = `<div class="search_list_item">\n    <span>sent by</span>\n    <span class="pill-container pill-container-btn">\n        <div class='pill ' tabindex=0>\n    <img class="pill-image" src="https://secure.gravatar.com/avatar/0f030c97ab51312c7bbffd3966198ced?d&#x3D;identicon&amp;version&#x3D;1&amp;s&#x3D;50" />\n    <span class="pill-label">\n        <span class="pill-value">&lt;strong&gt;Zo&lt;/strong&gt;e</span></span>\n    <div class="exit">\n        <span aria-hidden="true">&times;</span>\n    </div>\n</div>\n    </span>\n</div>\n`;
-            assert.equal(opts.highlighter(source[1]), expected_value);
+            assert.equal(opts.highlighter_html(source[1]), expected_value);
 
             expected_value = `<div class="search_list_item">\n    <span>direct messages with</span>\n    <span class="pill-container pill-container-btn">\n        <div class='pill ' tabindex=0>\n    <img class="pill-image" src="https://secure.gravatar.com/avatar/0f030c97ab51312c7bbffd3966198ced?d&#x3D;identicon&amp;version&#x3D;1&amp;s&#x3D;50" />\n    <span class="pill-label">\n        <span class="pill-value">&lt;strong&gt;Zo&lt;/strong&gt;e</span></span>\n    <div class="exit">\n        <span aria-hidden="true">&times;</span>\n    </div>\n</div>\n    </span>\n</div>\n`;
-            assert.equal(opts.highlighter(source[2]), expected_value);
+            assert.equal(opts.highlighter_html(source[2]), expected_value);
 
             expected_value = `<div class="search_list_item">\n    <span>group direct messages including</span>\n    <span class="pill-container pill-container-btn">\n        <div class='pill ' tabindex=0>\n    <img class="pill-image" src="https://secure.gravatar.com/avatar/0f030c97ab51312c7bbffd3966198ced?d&#x3D;identicon&amp;version&#x3D;1&amp;s&#x3D;50" />\n    <span class="pill-label">\n        <span class="pill-value">&lt;strong&gt;Zo&lt;/strong&gt;e</span></span>\n    <div class="exit">\n        <span aria-hidden="true">&times;</span>\n    </div>\n</div>\n    </span>\n</div>\n`;
-            assert.equal(opts.highlighter(source[3]), expected_value);
+            assert.equal(opts.highlighter_html(source[3]), expected_value);
 
             /* Test sorter */
             assert.equal(opts.sorter(search_suggestions.strings), search_suggestions.strings);

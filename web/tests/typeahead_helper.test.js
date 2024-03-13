@@ -122,7 +122,7 @@ function test(label, f) {
     });
 }
 
-test("sort_streams", ({override}) => {
+test("sort_streams", ({override, override_rewire}) => {
     let test_streams = [
         {
             stream_id: 101,
@@ -130,6 +130,7 @@ test("sort_streams", ({override}) => {
             pin_to_top: false,
             stream_weekly_traffic: 0,
             subscribed: true,
+            is_muted: false,
         },
         {
             stream_id: 102,
@@ -137,6 +138,7 @@ test("sort_streams", ({override}) => {
             pin_to_top: false,
             stream_weekly_traffic: 100,
             subscribed: true,
+            is_muted: false,
         },
         {
             stream_id: 103,
@@ -144,6 +146,7 @@ test("sort_streams", ({override}) => {
             pin_to_top: false,
             stream_weekly_traffic: 0,
             subscribed: true,
+            is_muted: true,
         },
         {
             stream_id: 104,
@@ -151,6 +154,7 @@ test("sort_streams", ({override}) => {
             pin_to_top: true,
             stream_weekly_traffic: 100,
             subscribed: true,
+            is_muted: false,
         },
         {
             stream_id: 105,
@@ -158,6 +162,15 @@ test("sort_streams", ({override}) => {
             pin_to_top: false,
             stream_weekly_traffic: 0,
             subscribed: true,
+            is_muted: false,
+        },
+        {
+            stream_id: 106,
+            name: "dead (almost)",
+            pin_to_top: false,
+            stream_weekly_traffic: 2,
+            subscribed: true,
+            is_muted: false,
         },
     ];
 
@@ -173,14 +186,17 @@ test("sort_streams", ({override}) => {
         "stream_has_topics",
         (stream_id) => ![105, 205].includes(stream_id),
     );
+    override_rewire(compose_state, "stream_name", () => "Dev");
 
     test_streams = th.sort_streams(test_streams, "d");
-    assert.deepEqual(test_streams[0].name, "Denmark"); // Pinned streams first
-    assert.deepEqual(test_streams[1].name, "Docs"); // Active streams next
-    assert.deepEqual(test_streams[2].name, "Derp"); // Less subscribers
-    assert.deepEqual(test_streams[3].name, "Dev"); // Alphabetically last
-    assert.deepEqual(test_streams[4].name, "dead"); // Inactive streams last
+    assert.deepEqual(test_streams[0].name, "Dev"); // Stream being composed to
+    assert.deepEqual(test_streams[1].name, "Denmark"); // Pinned stream
+    assert.deepEqual(test_streams[2].name, "Docs"); // Active stream
+    assert.deepEqual(test_streams[3].name, "dead (almost)"); // Relatively inactive stream
+    assert.deepEqual(test_streams[4].name, "dead"); // Completely inactive stream
+    assert.deepEqual(test_streams[5].name, "Derp"); // Muted stream last
 
+    override_rewire(compose_state, "stream_name", () => "Different");
     // Test sort streams with description
     test_streams = [
         {
