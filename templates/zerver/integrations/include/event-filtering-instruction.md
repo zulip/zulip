@@ -1,5 +1,5 @@
-Below are the events, to filter triggering notifications, that the
-{{ integration_display_name }} bot supports:
+You will be able to configure which of the following {{ integration_display_name
+}} events trigger notifications:
 
 {% set comma = joiner(", ") %}
 
