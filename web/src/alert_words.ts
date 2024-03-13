@@ -7,6 +7,10 @@ import * as people from "./people";
 // data, since that matches what the server sends us.
 let my_alert_words: string[] = [];
 
+type AlertWordData = {
+    word: string;
+};
+
 export function set_words(words: string[]): void {
     my_alert_words = words;
 }
@@ -86,6 +90,6 @@ export function notifies(message: Message): boolean {
     return !people.is_current_user(message.sender_email) && message.alerted;
 }
 
-export const initialize = (params: {alert_words: string[]}): void => {
-    my_alert_words = params.alert_words;
+export const initialize = (params: {alert_words: AlertWordData[]}): void => {
+    my_alert_words = params.alert_words.map((alert_word) => alert_word.word);
 };

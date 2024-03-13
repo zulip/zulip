@@ -11,16 +11,16 @@ set_global("page_params", {
 
 const params = {
     alert_words: [
-        "alertone",
-        "alerttwo",
-        "alertthree",
-        "al*rt.*s",
-        ".+",
-        "emoji",
-        "FD&C",
-        "<3",
-        ">8",
-        "5'11\"",
+        {word: "alertone"},
+        {word: "alerttwo"},
+        {word: "alertthree"},
+        {word: "al*rt.*s"},
+        {word: ".+"},
+        {word: "emoji"},
+        {word: "FD&C"},
+        {word: "<3"},
+        {word: ">8"},
+        {word: "5'11\""},
     ],
 };
 

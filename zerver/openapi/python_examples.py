@@ -1424,9 +1424,9 @@ def get_alert_words(client: Client) -> None:
 def add_alert_words(client: Client) -> None:
     # {code_example|start}
     # Add words (or phrases) to the user's set of configured alert words.
-    word = ["foo", "bar"]
-
-    result = client.add_alert_words(word)
+    word = json.dumps([{"word": "foo"}, {"word": "bar"}])
+    request = {"alert_words": word}
+    result = client.call_endpoint(url="/users/me/alert_words", method="POST", request=request)
     # {code_example|end}
     validate_against_openapi_schema(result, "/users/me/alert_words", "post", "200")
 

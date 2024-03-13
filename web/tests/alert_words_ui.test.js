@@ -13,7 +13,7 @@ const alert_words = zrequire("alert_words");
 const alert_words_ui = zrequire("alert_words_ui");
 
 alert_words.initialize({
-    alert_words: ["foo", "bar"],
+    alert_words: [{word: "foo"}, {word: "bar"}],
 });
 
 run_test("rerender_alert_words_ui", ({mock_template}) => {

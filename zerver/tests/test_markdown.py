@@ -20,7 +20,7 @@ from zerver.actions.realm_settings import do_set_realm_property
 from zerver.actions.user_groups import check_add_user_group
 from zerver.actions.user_settings import do_change_user_setting
 from zerver.actions.users import change_user_is_active
-from zerver.lib.alert_words import get_alert_word_automaton
+from zerver.lib.alert_words import AlertWordData, get_alert_word_automaton
 from zerver.lib.camo import get_camo_url
 from zerver.lib.create_user import create_user
 from zerver.lib.emoji import codepoint_to_name, get_emoji_url
@@ -1655,7 +1655,9 @@ class MarkdownTest(ZulipTestCase):
 
     def test_alert_words(self) -> None:
         user_profile = self.example_user("othello")
-        do_add_alert_words(user_profile, ["ALERTWORD", "scaryword"])
+        do_add_alert_words(
+            user_profile, [AlertWordData(word="ALERTWORD"), AlertWordData(word="scaryword")]
+        )
         msg = Message(
             sender=user_profile, sending_client=get_client("test"), realm=user_profile.realm
         )
@@ -1684,13 +1686,13 @@ class MarkdownTest(ZulipTestCase):
         self.assertEqual(rendering_result.user_ids_with_alert_words, set())
 
     def test_alert_words_returns_user_ids_with_alert_words(self) -> None:
-        alert_words_for_users: Dict[str, List[str]] = {
-            "hamlet": ["how"],
-            "cordelia": ["this possible"],
-            "iago": ["hello"],
-            "prospero": ["hello"],
-            "othello": ["how are you"],
-            "aaron": ["hey"],
+        alert_words_for_users: Dict[str, List[AlertWordData]] = {
+            "hamlet": [AlertWordData(word="how")],
+            "cordelia": [AlertWordData(word="this possible")],
+            "iago": [AlertWordData(word="hello")],
+            "prospero": [AlertWordData(word="hello")],
+            "othello": [AlertWordData(word="how are you")],
+            "aaron": [AlertWordData(word="hey")],
         }
         user_profiles: Dict[str, UserProfile] = {}
         for username, alert_words in alert_words_for_users.items():
@@ -1723,12 +1725,12 @@ class MarkdownTest(ZulipTestCase):
         self.assertEqual(rendering_result.user_ids_with_alert_words, expected_user_ids)
 
     def test_alert_words_returns_user_ids_with_alert_words_1(self) -> None:
-        alert_words_for_users: Dict[str, List[str]] = {
-            "hamlet": ["provisioning", "Prod deployment"],
-            "cordelia": ["test", "Prod"],
-            "iago": ["prod"],
-            "prospero": ["deployment"],
-            "othello": ["last"],
+        alert_words_for_users: Dict[str, List[AlertWordData]] = {
+            "hamlet": [AlertWordData(word="provisioning"), AlertWordData(word="Prod deployment")],
+            "cordelia": [AlertWordData(word="test"), AlertWordData(word="Prod")],
+            "iago": [AlertWordData(word="prod")],
+            "prospero": [AlertWordData(word="deployment")],
+            "othello": [AlertWordData(word="last")],
         }
         user_profiles: Dict[str, UserProfile] = {}
         for username, alert_words in alert_words_for_users.items():
@@ -1765,12 +1767,16 @@ class MarkdownTest(ZulipTestCase):
         self.assertEqual(rendering_result.user_ids_with_alert_words, expected_user_ids)
 
     def test_alert_words_returns_user_ids_with_alert_words_in_french(self) -> None:
-        alert_words_for_users: Dict[str, List[str]] = {
-            "hamlet": ["réglementaire", "une politique", "une merveille"],
-            "cordelia": ["énormément", "Prod"],
-            "iago": ["prod"],
-            "prospero": ["deployment"],
-            "othello": ["last"],
+        alert_words_for_users: Dict[str, List[AlertWordData]] = {
+            "hamlet": [
+                AlertWordData(word="réglementaire"),
+                AlertWordData(word="une politique"),
+                AlertWordData(word="une merveille"),
+            ],
+            "cordelia": [AlertWordData(word="énormément"), AlertWordData(word="Prod")],
+            "iago": [AlertWordData(word="prod")],
+            "prospero": [AlertWordData(word="deployment")],
+            "othello": [AlertWordData(word="last")],
         }
         user_profiles: Dict[str, UserProfile] = {}
         for username, alert_words in alert_words_for_users.items():
@@ -1800,7 +1806,7 @@ class MarkdownTest(ZulipTestCase):
         self.assertEqual(rendering_result.user_ids_with_alert_words, expected_user_ids)
 
     def test_alert_words_returns_empty_user_ids_with_alert_words(self) -> None:
-        alert_words_for_users: Dict[str, List[str]] = {
+        alert_words_for_users: Dict[str, List[AlertWordData]] = {
             "hamlet": [],
             "cordelia": [],
             "iago": [],
@@ -1833,12 +1839,14 @@ class MarkdownTest(ZulipTestCase):
         # None of the users have their alert-words appear in the message content
         self.assertEqual(rendering_result.user_ids_with_alert_words, expected_user_ids)
 
-    def get_mock_alert_words(self, num_words: int, word_length: int) -> List[str]:
-        alert_words = ["x" * word_length] * num_words  # type List[str]
+    def get_mock_alert_words(self, num_words: int, word_length: int) -> List[AlertWordData]:
+        alert_words = [
+            AlertWordData(word=("x" * word_length))
+        ] * num_words  # type List[AlertWordData]
         return alert_words
 
     def test_alert_words_with_empty_alert_words(self) -> None:
-        alert_words_for_users: Dict[str, List[str]] = {
+        alert_words_for_users: Dict[str, List[AlertWordData]] = {
             "hamlet": [],
             "cordelia": [],
             "iago": [],
@@ -1868,8 +1876,8 @@ class MarkdownTest(ZulipTestCase):
         self.assertEqual(rendering_result.user_ids_with_alert_words, expected_user_ids)
 
     def test_alert_words_returns_user_ids_with_alert_words_with_huge_alert_words(self) -> None:
-        alert_words_for_users: Dict[str, List[str]] = {
-            "hamlet": ["issue124"],
+        alert_words_for_users: Dict[str, List[AlertWordData]] = {
+            "hamlet": [AlertWordData(word="issue124")],
             "cordelia": self.get_mock_alert_words(500, 10),
             "iago": self.get_mock_alert_words(500, 10),
             "othello": self.get_mock_alert_words(500, 10),

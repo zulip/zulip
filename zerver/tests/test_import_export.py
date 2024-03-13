@@ -38,6 +38,7 @@ from zerver.actions.user_status import do_update_user_status
 from zerver.actions.user_topics import do_set_user_topic_visibility_policy
 from zerver.actions.users import do_deactivate_user
 from zerver.lib import upload
+from zerver.lib.alert_words import AlertWordData
 from zerver.lib.avatar_hash import user_avatar_path
 from zerver.lib.bot_config import set_bot_config
 from zerver.lib.bot_lib import StateHandler
@@ -1824,8 +1825,8 @@ class SingleUserExportTest(ExportFile):
         possible, just to make it a bit easier to read the test.
         """
 
-        do_add_alert_words(cordelia, ["pizza"])
-        do_add_alert_words(hamlet, ["bogus"])
+        do_add_alert_words(cordelia, [AlertWordData(word="pizza")])
+        do_add_alert_words(hamlet, [AlertWordData(word="bogus")])
 
         @checker
         def zerver_alertword(records: List[Record]) -> None:

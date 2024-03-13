@@ -58,7 +58,7 @@ function add_alert_word(): void {
         return;
     }
 
-    const words_to_be_added = [alert_word];
+    const words_to_be_added = [{word: alert_word}];
 
     const data = {alert_words: JSON.stringify(words_to_be_added)};
     dialog_widget.submit_api_request(channel.post, "/json/users/me/alert_words", data);
