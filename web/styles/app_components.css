@@ -39,16 +39,6 @@ kbd {
     }
 }
 
-@media (width < $xl_min) {
-    .hide-xl {
-        display: none !important;
-    }
-
-    .show-xl {
-        display: block !important;
-    }
-}
-
 .light {
     font-weight: 300;
 }
