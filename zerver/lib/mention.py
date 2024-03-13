@@ -22,7 +22,7 @@ USER_GROUP_MENTIONS_RE = re.compile(
 )
 
 topic_wildcards = frozenset(["topic"])
-stream_wildcards = frozenset(["all", "everyone", "stream"])
+stream_wildcards = frozenset(["all", "everyone", "stream", "channel"])
 
 
 @dataclass

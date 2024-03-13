@@ -20,6 +20,12 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 9.0
 
+**Feature level 247**
+
+* [Markdown message formatting](/api/message-formatting#mentions):
+  Added `channel` to the supported options for [wildcard
+  mentions](/help/mention-a-user-or-group#mention-everyone-on-a-stream).
+
 **Feature level 246**
 
 * [`POST /register`](/api/register-queue), [`POST
