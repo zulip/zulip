@@ -1,4 +1,4 @@
-## Use cases
+## Guides for popular use cases
 
 * [Business](/for/business/)
 * [Education](/for/education/)
