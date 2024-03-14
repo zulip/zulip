@@ -99,6 +99,8 @@ def read_stop_words() -> List[str]:
 
 # "stream" is a legacy alias for "channel"
 channel_operators: List[str] = ["channel", "stream"]
+# "streams" is a legacy alias for "channels"
+channels_operators: List[str] = ["channels", "streams"]
 
 
 def check_narrow_for_events(narrow: Collection[NarrowTerm]) -> None:
@@ -113,7 +115,7 @@ def is_spectator_compatible(narrow: Iterable[Dict[str, Any]]) -> bool:
     # This implementation should agree with is_spectator_compatible in hash_parser.ts.
     supported_operators = [
         *channel_operators,
-        "streams",
+        *channels_operators,
         "topic",
         "sender",
         "has",
@@ -136,8 +138,9 @@ def is_web_public_narrow(narrow: Optional[Iterable[Dict[str, Any]]]) -> bool:
 
     return any(
         # Web-public queries are only allowed for limited types of narrows.
-        # term == {'operator': 'streams', 'operand': 'web-public', 'negated': False}
-        term["operator"] == "streams"
+        # term == {'operator': 'channels', 'operand': 'web-public', 'negated': False}
+        # or term == {'operator': 'streams', 'operand': 'web-public', 'negated': False}
+        term["operator"] in channels_operators
         and term["operand"] == "web-public"
         and term["negated"] is False
         for term in narrow
@@ -286,7 +289,9 @@ class NarrowBuilder:
             "channel": self.by_channel,
             # "stream" is a legacy alias for "channel"
             "stream": self.by_channel,
-            "streams": self.by_streams,
+            "channels": self.by_channels,
+            # "streams" is a legacy alias for "channels"
+            "streams": self.by_channels,
             "topic": self.by_topic,
             "sender": self.by_sender,
             "near": self.by_near,
@@ -488,17 +493,17 @@ class NarrowBuilder:
         cond = column("recipient_id", Integer) == recipient_id
         return query.where(maybe_negate(cond))
 
-    def by_streams(self, query: Select, operand: str, maybe_negate: ConditionTransform) -> Select:
+    def by_channels(self, query: Select, operand: str, maybe_negate: ConditionTransform) -> Select:
         self.check_not_both_channel_and_dm_narrow(is_channel_narrow=True)
 
         if operand == "public":
-            # Get all both subscribed and non-subscribed public streams
-            # but exclude any private subscribed streams.
+            # Get all both subscribed and non-subscribed public channels
+            # but exclude any private subscribed channels.
             recipient_queryset = get_public_streams_queryset(self.realm)
         elif operand == "web-public":
             recipient_queryset = get_web_public_streams_queryset(self.realm)
         else:
-            raise BadNarrowOperatorError("unknown streams operand " + operand)
+            raise BadNarrowOperatorError("unknown channels operand " + operand)
 
         recipient_ids = recipient_queryset.values_list("recipient_id", flat=True).order_by("id")
         cond = column("recipient_id", Integer).in_(recipient_ids)
@@ -911,7 +916,7 @@ def ok_to_include_history(
                 else:
                     include_history = can_access_stream_history_by_id(user_profile, operand)
             elif (
-                term["operator"] == "streams"
+                term["operator"] in channels_operators
                 and term["operand"] == "public"
                 and not term.get("negated", False)
                 and user_profile.can_access_public_streams()
