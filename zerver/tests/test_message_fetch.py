@@ -131,14 +131,14 @@ class NarrowBuilderTest(ZulipTestCase):
         term = dict(operator="channel", operand="non-existing-channel")
         self.assertRaises(BadNarrowOperatorError, self._build_query, term)
 
-    def test_add_term_using_streams_operator_and_invalid_operand_should_raise_error(
+    def test_add_term_using_channels_operator_and_invalid_operand_should_raise_error(
         self,
     ) -> None:  # NEGATED
-        term = dict(operator="streams", operand="invalid_operands")
+        term = dict(operator="channels", operand="invalid_operands")
         self.assertRaises(BadNarrowOperatorError, self._build_query, term)
 
-    def test_add_term_using_streams_operator_and_public_operand(self) -> None:
-        term = dict(operator="streams", operand="public")
+    def test_add_term_using_channels_operator_and_public_operand(self) -> None:
+        term = dict(operator="channels", operand="public")
         self._do_add_term_test(
             term,
             "WHERE recipient_id IN (__[POSTCOMPILE_recipient_id_1])",
@@ -173,8 +173,8 @@ class NarrowBuilderTest(ZulipTestCase):
             "WHERE recipient_id IN (__[POSTCOMPILE_recipient_id_1])",
         )
 
-    def test_add_term_using_streams_operator_and_public_operand_negated(self) -> None:
-        term = dict(operator="streams", operand="public", negated=True)
+    def test_add_term_using_channels_operator_and_public_operand_negated(self) -> None:
+        term = dict(operator="channels", operand="public", negated=True)
         self._do_add_term_test(
             term,
             "WHERE (recipient_id NOT IN (__[POSTCOMPILE_recipient_id_1]))",
@@ -322,7 +322,7 @@ class NarrowBuilderTest(ZulipTestCase):
             self._build_query(topic_term)
         self.assertEqual(expected_error_message, str(error.exception))
 
-        channels_term = dict(operator="streams", operand="public")
+        channels_term = dict(operator="channels", operand="public")
         with self.assertRaises(BadNarrowOperatorError) as error:
             self._build_query(channels_term)
         self.assertEqual(expected_error_message, str(error.exception))
@@ -633,6 +633,27 @@ class NarrowBuilderTest(ZulipTestCase):
         term = dict(operator="stream", operand="non-existing-channel")
         self.assertRaises(BadNarrowOperatorError, self._build_query, term)
 
+    # Test that "streams" (legacy alias for "channels" operator) works.
+    def test_add_term_using_streams_operator_and_invalid_operand_should_raise_error(
+        self,
+    ) -> None:  # NEGATED
+        term = dict(operator="streams", operand="invalid_operands")
+        self.assertRaises(BadNarrowOperatorError, self._build_query, term)
+
+    def test_add_term_using_streams_operator_and_public_operand(self) -> None:
+        term = dict(operator="streams", operand="public")
+        self._do_add_term_test(
+            term,
+            "WHERE recipient_id IN (__[POSTCOMPILE_recipient_id_1])",
+        )
+
+    def test_add_term_using_streams_operator_and_public_operand_negated(self) -> None:
+        term = dict(operator="streams", operand="public", negated=True)
+        self._do_add_term_test(
+            term,
+            "WHERE (recipient_id NOT IN (__[POSTCOMPILE_recipient_id_1]))",
+        )
+
     def _do_add_term_test(
         self, term: Dict[str, Any], where_clause: str, params: Optional[Dict[str, Any]] = None
     ) -> None:
@@ -928,7 +949,7 @@ class NarrowLibraryTest(ZulipTestCase):
         )
         self.assertFalse(is_spectator_compatible([{"operator": "is", "operand": "starred"}]))
         self.assertFalse(is_spectator_compatible([{"operator": "is", "operand": "dm"}]))
-        self.assertTrue(is_spectator_compatible([{"operator": "streams", "operand": "public"}]))
+        self.assertTrue(is_spectator_compatible([{"operator": "channels", "operand": "public"}]))
 
         # Malformed input not allowed
         self.assertFalse(is_spectator_compatible([{"operator": "has"}]))
@@ -953,6 +974,8 @@ class NarrowLibraryTest(ZulipTestCase):
                 ]
             )
         )
+        # "streams" is a legacy alias for "channels" operator
+        self.assertTrue(is_spectator_compatible([{"operator": "streams", "operand": "public"}]))
 
 
 class IncludeHistoryTest(ZulipTestCase):
@@ -966,15 +989,15 @@ class IncludeHistoryTest(ZulipTestCase):
         ]
         self.assertFalse(ok_to_include_history(narrow, user_profile, False))
 
-        # streams:public searches should include history for non-guest members.
+        # channels:public searches should include history for non-guest members.
         narrow = [
-            dict(operator="streams", operand="public"),
+            dict(operator="channels", operand="public"),
         ]
         self.assertTrue(ok_to_include_history(narrow, user_profile, False))
 
-        # Negated -streams:public searches should not include history.
+        # Negated -channels:public searches should not include history.
         narrow = [
-            dict(operator="streams", operand="public", negated=True),
+            dict(operator="channels", operand="public", negated=True),
         ]
         self.assertFalse(ok_to_include_history(narrow, user_profile, False))
 
@@ -1029,24 +1052,24 @@ class IncludeHistoryTest(ZulipTestCase):
         self.assertFalse(ok_to_include_history(narrow, user_profile, False))
 
         # No point in searching history for is operator even if included with
-        # streams:public
+        # channels:public
         narrow = [
-            dict(operator="streams", operand="public"),
+            dict(operator="channels", operand="public"),
             dict(operator="is", operand="mentioned"),
         ]
         self.assertFalse(ok_to_include_history(narrow, user_profile, False))
         narrow = [
-            dict(operator="streams", operand="public"),
+            dict(operator="channels", operand="public"),
             dict(operator="is", operand="unread"),
         ]
         self.assertFalse(ok_to_include_history(narrow, user_profile, False))
         narrow = [
-            dict(operator="streams", operand="public"),
+            dict(operator="channels", operand="public"),
             dict(operator="is", operand="alerted"),
         ]
         self.assertFalse(ok_to_include_history(narrow, user_profile, False))
         narrow = [
-            dict(operator="streams", operand="public"),
+            dict(operator="channels", operand="public"),
             dict(operator="is", operand="resolved"),
         ]
         self.assertFalse(ok_to_include_history(narrow, user_profile, False))
@@ -1069,9 +1092,9 @@ class IncludeHistoryTest(ZulipTestCase):
         # Using 'Cordelia' to compare between a guest and a normal user
         subscribed_user_profile = self.example_user("cordelia")
 
-        # streams:public searches should not include history for guest members.
+        # channels:public searches should not include history for guest members.
         narrow = [
-            dict(operator="streams", operand="public"),
+            dict(operator="channels", operand="public"),
         ]
         self.assertFalse(ok_to_include_history(narrow, guest_user_profile, False))
 
@@ -1869,7 +1892,7 @@ class GetOldMessagesTest(ZulipTestCase):
         )
 
     def test_unauthenticated_get_messages(self) -> None:
-        # Require `streams:web-public` as narrow to get web-public messages.
+        # Require channels:web-public as narrow to get web-public messages.
         get_params = {
             "anchor": 10000000000000000,
             "num_before": 5,
@@ -1886,7 +1909,7 @@ class GetOldMessagesTest(ZulipTestCase):
         # Successful access to web-public channel messages.
         web_public_channel_get_params: Dict[str, Union[int, str, bool]] = {
             **get_params,
-            "narrow": orjson.dumps([dict(operator="streams", operand="web-public")]).decode(),
+            "narrow": orjson.dumps([dict(operator="channels", operand="web-public")]).decode(),
         }
         result = self.client_get("/json/messages", dict(web_public_channel_get_params))
         # More detailed check of message parameters is done in `test_get_messages_with_web_public`.
@@ -1918,7 +1941,7 @@ class GetOldMessagesTest(ZulipTestCase):
             # "is:dm" is not a is_spectator_compatible narrow.
             "narrow": orjson.dumps(
                 [
-                    dict(operator="streams", operand="web-public"),
+                    dict(operator="channels", operand="web-public"),
                     dict(operator="is", operand="dm"),
                 ]
             ).decode(),
@@ -1937,7 +1960,7 @@ class GetOldMessagesTest(ZulipTestCase):
         result = self.client_get("/json/messages", dict(web_public_channel_get_params))
         self.assert_json_success(result)
 
-        # Cannot access even web-public channels without `streams:web-public` narrow.
+        # Cannot access even web-public channels without channels:web-public narrow.
         non_web_public_channel_get_params: Dict[str, Union[int, str, bool]] = {
             **get_params,
             "narrow": orjson.dumps([dict(operator="channel", operand="Rome")]).decode(),
@@ -1945,12 +1968,12 @@ class GetOldMessagesTest(ZulipTestCase):
         result = self.client_get("/json/messages", dict(non_web_public_channel_get_params))
         self.check_unauthenticated_response(result)
 
-        # Verify that same request would work with `streams:web-public` added.
+        # Verify that same request would work with channels:web-public added.
         rome_web_public_get_params: Dict[str, Union[int, str, bool]] = {
             **get_params,
             "narrow": orjson.dumps(
                 [
-                    dict(operator="streams", operand="web-public"),
+                    dict(operator="channels", operand="web-public"),
                     # Rome is a web-channel channel.
                     dict(operator="channel", operand="Rome"),
                 ]
@@ -1959,12 +1982,12 @@ class GetOldMessagesTest(ZulipTestCase):
         result = self.client_get("/json/messages", dict(rome_web_public_get_params))
         self.assert_json_success(result)
 
-        # Cannot access non-web-public channel even with `streams:web-public` narrow.
+        # Cannot access non-web-public channel even with channels:web-public narrow.
         scotland_web_public_get_params: Dict[str, Union[int, str, bool]] = {
             **get_params,
             "narrow": orjson.dumps(
                 [
-                    dict(operator="streams", operand="web-public"),
+                    dict(operator="channels", operand="web-public"),
                     # Scotland is not a web-public channel.
                     dict(operator="channel", operand="Scotland"),
                 ]
@@ -2024,7 +2047,7 @@ class GetOldMessagesTest(ZulipTestCase):
             "num_after": 1,
             "narrow": orjson.dumps(
                 [
-                    dict(operator="streams", operand="web-public"),
+                    dict(operator="channels", operand="web-public"),
                     dict(operator="channel", operand="web-public-channel"),
                 ]
             ).decode(),
@@ -2035,7 +2058,7 @@ class GetOldMessagesTest(ZulipTestCase):
     def test_get_messages_with_web_public(self) -> None:
         """
         An unauthenticated call to GET /json/messages with valid parameters
-        including `streams:web-public` narrow returns list of messages in the
+        including channels:web-public narrow returns list of messages in the
         web-public channels.
         """
         self.setup_web_public_test(num_web_public_message=8)
@@ -2044,7 +2067,7 @@ class GetOldMessagesTest(ZulipTestCase):
             "anchor": "first_unread",
             "num_before": 5,
             "num_after": 1,
-            "narrow": orjson.dumps([dict(operator="streams", operand="web-public")]).decode(),
+            "narrow": orjson.dumps([dict(operator="channels", operand="web-public")]).decode(),
         }
         result = self.client_get("/json/messages", dict(post_params))
         # Of the last 7 (num_before + num_after + 1) messages, only 5
@@ -4087,7 +4110,8 @@ recipient_id = %(recipient_id_3)s AND upper(subject) = upper(%(param_2)s))\
         sql_template = "SELECT anon_1.message_id \nFROM (SELECT id AS message_id \nFROM zerver_message \nWHERE realm_id = 2 AND recipient_id IN ({public_channels_recipients}) ORDER BY zerver_message.id ASC \n LIMIT 10) AS anon_1 ORDER BY message_id ASC"
         sql = sql_template.format(**query_ids)
         self.common_check_get_messages_query(
-            {"anchor": 0, "num_before": 0, "num_after": 9, "narrow": '[["streams", "public"]]'}, sql
+            {"anchor": 0, "num_before": 0, "num_after": 9, "narrow": '[["channels", "public"]]'},
+            sql,
         )
 
         sql_template = "SELECT anon_1.message_id, anon_1.flags \nFROM (SELECT message_id, flags \nFROM zerver_usermessage JOIN zerver_message ON zerver_usermessage.message_id = zerver_message.id \nWHERE user_profile_id = {hamlet_id} AND (recipient_id NOT IN ({public_channels_recipients})) ORDER BY message_id ASC \n LIMIT 10) AS anon_1 ORDER BY message_id ASC"
@@ -4097,7 +4121,7 @@ recipient_id = %(recipient_id_3)s AND upper(subject) = upper(%(param_2)s))\
                 "anchor": 0,
                 "num_before": 0,
                 "num_after": 9,
-                "narrow": '[{"operator":"streams", "operand":"public", "negated": true}]',
+                "narrow": '[{"operator":"channels", "operand":"public", "negated": true}]',
             },
             sql,
         )
