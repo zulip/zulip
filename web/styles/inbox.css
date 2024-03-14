@@ -448,10 +448,15 @@
             &:focus,
             &:focus-within,
             &:hover {
+                .inbox-row-visibility-policy-inherit,
                 .inbox-action-button {
                     opacity: 1;
                 }
             }
+        }
+
+        .inbox-row-visibility-policy-inherit {
+            opacity: 0;
         }
 
         .inbox-action-button {
