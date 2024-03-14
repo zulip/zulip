@@ -311,14 +311,21 @@ class NarrowBuilderTest(ZulipTestCase):
         )
 
     def test_combined_channel_dm(self) -> None:
+        expected_error_message = (
+            "Invalid narrow operator: No message can be both a channel message and direct message"
+        )
         term1 = dict(operator="dm", operand=self.othello_email)
         self._build_query(term1)
 
         topic_term = dict(operator="topic", operand="bogus")
-        self.assertRaises(BadNarrowOperatorError, self._build_query, topic_term)
+        with self.assertRaises(BadNarrowOperatorError) as error:
+            self._build_query(topic_term)
+        self.assertEqual(expected_error_message, str(error.exception))
 
-        channel_term = dict(operator="streams", operand="public")
-        self.assertRaises(BadNarrowOperatorError, self._build_query, channel_term)
+        channels_term = dict(operator="streams", operand="public")
+        with self.assertRaises(BadNarrowOperatorError) as error:
+            self._build_query(channels_term)
+        self.assertEqual(expected_error_message, str(error.exception))
 
     def test_add_term_using_dm_operator_not_the_same_user_as_operand_and_negated(
         self,
