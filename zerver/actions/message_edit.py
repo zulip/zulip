@@ -64,7 +64,7 @@ from zerver.lib.topic import (
 )
 from zerver.lib.types import EditHistoryEvent
 from zerver.lib.url_encoding import near_stream_message_url
-from zerver.lib.user_message import UserMessageLite, bulk_insert_ums
+from zerver.lib.user_message import bulk_insert_all_ums
 from zerver.lib.user_topics import get_users_with_user_topic_visibility_policy
 from zerver.lib.widget import is_widget_message
 from zerver.models import (
@@ -700,24 +700,22 @@ def do_update_message(
 
     if new_stream is not None:
         assert stream_being_edited is not None
-        if user_ids_gaining_usermessages:
-            ums_to_create = []
-            for message_id in changed_message_ids:
-                for user_profile_id in user_ids_gaining_usermessages:
-                    # The fact that the user didn't have a UserMessage originally means we can infer that the user
-                    # was not mentioned in the original message (even if mention syntax was present, it would not
-                    # take effect for a user who was not subscribed). If we were editing the message's content, we
-                    # would rerender the message and then use the new stream's data to determine whether this is
-                    # a mention of a subscriber; but as we are not doing so, we choose to preserve the "was this
-                    # mention syntax an actual mention" decision made during the original rendering for implementation
-                    # simplicity. As a result, the only flag to consider applying here is read.
-                    um = UserMessageLite(
-                        user_profile_id=user_profile_id,
-                        message_id=message_id,
-                        flags=UserMessage.flags.read,
-                    )
-                    ums_to_create.append(um)
-            bulk_insert_ums(ums_to_create)
+
+        # The fact that the user didn't have a UserMessage
+        # originally means we can infer that the user was not
+        # mentioned in the original message (even if mention
+        # syntax was present, it would not take effect for a user
+        # who was not subscribed). If we were editing the
+        # message's content, we would rerender the message and
+        # then use the new stream's data to determine whether this
+        # is a mention of a subscriber; but as we are not doing
+        # so, we choose to preserve the "was this mention syntax
+        # an actual mention" decision made during the original
+        # rendering for implementation simplicity. As a result,
+        # the only flag to consider applying here is read.
+        bulk_insert_all_ums(
+            user_ids_gaining_usermessages, changed_message_ids, UserMessage.flags.read
+        )
 
         # Delete UserMessage objects for users who will no
         # longer have access to these messages.  Note: This could be
