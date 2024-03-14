@@ -379,7 +379,7 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
             "id": OrgTypeEnum.Unspecified.value,
             "hidden": True,
             "display_order": 0,
-            "onboarding_zulip_guide_url": None,
+            "onboarding_zulip_guide_url": "https://zulip.com/use-cases/",
         },
         "business": {
             "name": "Business",
@@ -435,14 +435,14 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
             "id": OrgTypeEnum.Government.value,
             "hidden": False,
             "display_order": 8,
-            "onboarding_zulip_guide_url": None,
+            "onboarding_zulip_guide_url": "https://zulip.com/use-cases/",
         },
         "political_group": {
             "name": "Political group",
             "id": OrgTypeEnum.PoliticalGroup.value,
             "hidden": False,
             "display_order": 9,
-            "onboarding_zulip_guide_url": None,
+            "onboarding_zulip_guide_url": "https://zulip.com/use-cases/",
         },
         "community": {
             "name": "Community",
@@ -456,14 +456,14 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
             "id": OrgTypeEnum.Personal.value,
             "hidden": False,
             "display_order": 100,
-            "onboarding_zulip_guide_url": None,
+            "onboarding_zulip_guide_url": "https://zulip.com/use-cases/",
         },
         "other": {
             "name": "Other",
             "id": OrgTypeEnum.Other.value,
             "hidden": False,
             "display_order": 1000,
-            "onboarding_zulip_guide_url": None,
+            "onboarding_zulip_guide_url": "https://zulip.com/use-cases/",
         },
     }
 
