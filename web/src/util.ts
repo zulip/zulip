@@ -272,6 +272,36 @@ export function convert_message_topic(message: Message): void {
 
 let inertDocument: Document | undefined;
 
+export function make_inline_images_lightbox_previewable(html: string): string {
+    if (inertDocument === undefined) {
+        inertDocument = new DOMParser().parseFromString("", "text/html");
+    }
+    const template = inertDocument.createElement("template");
+    template.innerHTML = html;
+
+    for (const img of template.content.querySelectorAll("img")) {
+        if (img.parentElement?.tagName === "A") {
+            // skip images that are already previewable
+            continue;
+        }
+        const anchor = inertDocument.createElement("a");
+        const src = img.getAttribute("src");
+        if (src) {
+            anchor.setAttribute("href", src);
+        }
+        const alt = img.getAttribute("alt");
+        if (alt) {
+            anchor.setAttribute("title", alt);
+        }
+        anchor.append(img.cloneNode(true));
+        const span = inertDocument.createElement("span");
+        span.classList.add("message_inline_image", "true_inline");
+        span.append(anchor);
+        img.parentNode?.replaceChild(span, img);
+    }
+    return template.innerHTML;
+}
+
 export function clean_user_content_links(html: string): string {
     if (inertDocument === undefined) {
         inertDocument = new DOMParser().parseFromString("", "text/html");

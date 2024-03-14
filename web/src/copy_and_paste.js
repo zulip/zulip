@@ -311,8 +311,7 @@ function image_to_zulip_markdown(_content, node) {
     }
     const src = node.getAttribute("src") || node.getAttribute("href") || "";
     const title = deduplicate_newlines(node.getAttribute("title")) || "";
-    // Using Zulip's link like syntax for images
-    return src ? "[" + title + "](" + src + ")" : node.getAttribute("alt") || "";
+    return src ? "![" + title + "](" + src + ")" : node.getAttribute("alt") || "";
 }
 
 function within_single_element(html_fragment) {

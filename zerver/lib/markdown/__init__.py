@@ -2133,6 +2133,50 @@ class LinkInlineProcessor(markdown.inlinepatterns.LinkInlineProcessor):
         return None, None, None
 
 
+class ImageInlineProcessor(markdown.inlinepatterns.ImageInlineProcessor):
+    def __init__(self, pattern: str, zmd: "ZulipMarkdown") -> None:
+        super().__init__(pattern, zmd)
+        self.zmd = zmd
+
+    def zulip_specific_src_changes(self, el: Element) -> Union[None, Element]:
+        # function partially copied from LinkInlineProcessor.zulip_specific_link_changes
+        src = el.get("src")
+        assert src is not None
+
+        # Sanitize URL or don't parse image. See linkify_tests in markdown_test_cases for banned syntax.
+        src = sanitize_url(self.unescape(src.strip()))
+        if src is None:
+            return None  # no-op; the image is not processed.
+
+        # Rewrite local links to be relative
+        db_data: Optional[DbData] = self.zmd.zulip_db_data
+        src = rewrite_local_links_to_relative(db_data, src)
+
+        el.set("src", src)
+
+        if settings.THUMBNAIL_IMAGES and user_uploads_or_external(src):
+            # We strip leading '/' from relative URLs here to ensure
+            # consistency in what gets passed to /thumbnail
+            src = src.lstrip("/")
+            el.set("src", "/thumbnail?" + urlencode({"url": src, "size": "thumbnail"}))
+            el.set("data-src-fullsize", "/thumbnail?" + urlencode({"url": src, "size": "full"}))
+
+        return el
+
+    @override
+    def handleMatch(  # type: ignore[override] # https://github.com/python/mypy/issues/10197
+        self, m: Match[str], data: str
+    ) -> Tuple[Union[Element, str, None], Optional[int], Optional[int]]:
+        ret = super().handleMatch(m, data)
+        if ret[0] is not None:
+            img, match_start, index = ret
+            assert isinstance(img, Element)
+            img = self.zulip_specific_src_changes(img)
+            if img is not None:
+                return img, match_start, index
+        return None, None, None
+
+
 def get_sub_registry(r: markdown.util.Registry[T], keys: List[str]) -> markdown.util.Registry[T]:
     # Registry is a new class added by Python-Markdown to replace OrderedDict.
     # Since Registry doesn't support .keys(), it is easier to make a new
@@ -2291,6 +2335,7 @@ class ZulipMarkdown(markdown.Markdown):
             UserGroupMentionPattern(mention.USER_GROUP_MENTIONS_RE, self), "usergroupmention", 65
         )
         reg.register(LinkInlineProcessor(markdown.inlinepatterns.LINK_RE, self), "link", 60)
+        reg.register(ImageInlineProcessor(markdown.inlinepatterns.IMAGE_LINK_RE, self), "image", 58)
         reg.register(AutoLink(get_web_link_regex(), self), "autolink", 55)
         # Reserve priority 45-54 for linkifiers
         reg = self.register_linkifiers(reg)
