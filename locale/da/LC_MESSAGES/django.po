@@ -4,7 +4,7 @@
 # FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
 # 
 # Translators:
-# jens_hymoller, 2023
+# Jens Hymøller, 2023
 # Transifex Bot <>, 2024
 # 
 #, fuzzy

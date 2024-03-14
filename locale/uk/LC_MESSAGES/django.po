@@ -4,10 +4,11 @@
 # FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
 # 
 # Translators:
-# Transifex Bot <>, 2023
 # Олег Кравчук <olegkvk@ukr.net>, 2023
 # Mykola Ronik <mantikor.san@gmail.com>, 2023
 # Denis Ivanov, 2023
+# Transifex Bot <>, 2024
+# Oleksii Bovtunenko, 2024
 # 
 #, fuzzy
 msgid ""
@@ -16,7 +17,7 @@ msgstr ""
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2023-12-15 21:31+0000\n"
 "PO-Revision-Date: 2023-12-15 21:32+0000\n"
-"Last-Translator: Denis Ivanov, 2023\n"
+"Last-Translator: Oleksii Bovtunenko, 2024\n"
 "Language-Team: Ukrainian (https://app.transifex.com/zulip/teams/53893/uk/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -43,21 +44,21 @@ msgstr "Приватні канали"
 
 #: analytics/views/stats.py:319
 msgid "Direct messages"
-msgstr ""
+msgstr "Особисті повідомлення"
 
 #: analytics/views/stats.py:320
 msgid "Group direct messages"
-msgstr ""
+msgstr "Групувати особисті повідомлення"
 
 #: analytics/views/stats.py:343
 #, python-brace-format
 msgid "Missing stream for chart: {chart_name}"
-msgstr ""
+msgstr "Відсутній канал для графіка: {chart_name}"
 
 #: analytics/views/stats.py:351
 #, python-brace-format
 msgid "Unknown chart name: {chart_name}"
-msgstr ""
+msgstr "Невідома назва діаграми: {chart_name}"
 
 #: analytics/views/stats.py:361
 #, python-brace-format
@@ -85,6 +86,11 @@ msgid ""
 "[deactivate inactive users]({deactivate_user_help_page_link}) to allow new "
 "users to join."
 msgstr ""
+"В вашій організації не залишилось ліцензій Zulip, і вона більше не може "
+"приймати нових користувачів. Будь ласка, [збільште кількість ліцензій] "
+"({billing_page_link}) або [ввімкніть неактивних користувачів] "
+"({deactivate_user_help_page_link}), щоб дозволити приєднатися новим "
+"користувачам."
 
 #: corporate/lib/registration.py:36
 #, python-brace-format
@@ -94,6 +100,10 @@ msgid ""
 "users]({deactivate_user_help_page_link}) to allow more than one user to "
 "join."
 msgstr ""
+"В вашій організації залишилась тільки одна ліцензія Zulip. Ви можете "
+"[збільшити кількість ліцензій] ({billing_page_link}) або [відключити "
+"неактивних користувачів] ({deactivate_user_help_page_link}), щоб дозволити "
+"приєднатися більше ніж одному користувачу."
 
 #: corporate/lib/registration.py:41
 #, python-brace-format
@@ -103,6 +113,10 @@ msgid ""
 "users]({deactivate_user_help_page_link}) to allow more than two users to "
 "join."
 msgstr ""
+"В вашій організації залишилось тільки дві ліцензії Zulip. Ви можете "
+"[збільшити кількість ліцензій] ({billing_page_link}) або [відключити "
+"неактивних користувачів] ({deactivate_user_help_page_link}), щоб дозволити "
+"приєднатися більш ніж двум користувачам."
 
 #: corporate/lib/registration.py:46
 #, python-brace-format
@@ -112,6 +126,10 @@ msgid ""
 "users]({deactivate_user_help_page_link}) to allow more than three users to "
 "join."
 msgstr ""
+"В вашій організації залишилось тільки три ліцензії Zulip. Ви можете "
+"[збільшити кількість ліцензій] ({billing_page_link}) або [відключити "
+"неактивних користувачів] ({deactivate_user_help_page_link}), щоб дозволити "
+"приєднатися більш ніж трьом користувачам."
 
 #: corporate/lib/registration.py:57
 #, python-brace-format
@@ -121,10 +139,14 @@ msgid ""
 "licenses]({billing_page_link}) or [deactivate inactive "
 "users]({deactivate_user_help_page_link}) to allow new members to join."
 msgstr ""
+"Новому учаснику ({email}) не вдалося приєднатися до вашої організації, тому "
+"що всі ліцензії Zulip використовуються. Будь ласка, [збільшіть кількість "
+"лицензій] ({billing_page_link}) або [відключіть неактивних користувачів] "
+"({deactivate_user_help_page_link}), щоб приєднати нових учасників."
 
 #: corporate/lib/registration.py:109
 msgid "All Zulip licenses for this organization are currently in use."
-msgstr ""
+msgstr "Всі ліцензії Zulip для цієї організації вже використовуються."
 
 #: corporate/lib/registration.py:112
 #, python-brace-format
@@ -132,15 +154,17 @@ msgid ""
 "Your organization does not have enough unused Zulip licenses to invite "
 "{num_invites} users."
 msgstr ""
+"В вашій організації недостатньо вільних ліцензій Zulip, щоб запросити "
+"{num_invites} користувачів."
 
 #: corporate/lib/remote_billing_util.py:133
 #: corporate/lib/remote_billing_util.py:169
 msgid "Registration is deactivated"
-msgstr ""
+msgstr "Регістрація вимкнена"
 
 #: corporate/lib/remote_billing_util.py:166
 msgid "Invalid remote server."
-msgstr ""
+msgstr "Невірний віддалений сервер."
 
 #: corporate/lib/stripe.py:203
 #, python-brace-format
@@ -148,6 +172,8 @@ msgid ""
 "You must purchase licenses for all active users in your organization "
 "(minimum {min_licenses})."
 msgstr ""
+"Вам необхідно придбати ліцензії для всіх активних користувачів вашої "
+"організації (мінімум {min_licenses})."
 
 #: corporate/lib/stripe.py:209
 #, python-brace-format
@@ -155,10 +181,12 @@ msgid ""
 "Invoices with more than {max_licenses} licenses can't be processed from this"
 " page. To complete the upgrade, please contact {email}."
 msgstr ""
+"Рахунки на більш ніж {max_licenses} ліцензій не можуть бути оброблені на цій"
+" сторінці. Для завершення апгрейду, будь ласка, зв'яжіться з {email}."
 
 #: corporate/lib/stripe.py:351
 msgid "No payment method on file."
-msgstr ""
+msgstr "Не вказано спосіб оплати."
 
 #: corporate/lib/stripe.py:359
 #, python-brace-format
@@ -187,47 +215,57 @@ msgstr ""
 #: corporate/lib/stripe.py:1225
 msgid "Please add a credit card before starting your free trial."
 msgstr ""
+"Будь ласка, вкажіть дані платіжної картки перед початком безкоштовного "
+"пробного використання."
 
 #: corporate/lib/stripe.py:1246
 msgid "Please add a credit card to schedule upgrade."
-msgstr ""
+msgstr "Будь ласка, вкажіть дані платіжної картки щоб запланувати оновлення."
 
 #: corporate/lib/stripe.py:1994
 msgid ""
 "Unable to update the plan. The plan has been expired and replaced with a new"
 " plan."
-msgstr ""
+msgstr "Неможливо поновити тариф. Тарифний план закінчився і замінений новим."
 
 #: corporate/lib/stripe.py:1999
 msgid "Unable to update the plan. The plan has ended."
-msgstr ""
+msgstr "Неможливо поновити тариф. Тарифний план закінчився."
 
 #: corporate/lib/stripe.py:2054
 msgid ""
 "Cannot update licenses in the current billing period for free trial plan."
 msgstr ""
+"Не вдається оновити ліцензії у поточному розрахунковому періоді для "
+"безкоштовного пробного тарифу."
 
 #: corporate/lib/stripe.py:2059 corporate/lib/stripe.py:2087
 msgid ""
 "Unable to update licenses manually. Your plan is on automatic license "
 "management."
 msgstr ""
+"Не можливо оновити ліцензії вручну. Ваш тариф на автоматичному керуванні."
 
 #: corporate/lib/stripe.py:2065
 #, python-brace-format
 msgid ""
 "Your plan is already on {licenses} licenses in the current billing period."
 msgstr ""
+"Ваш тариф вже включає {licenses} ліцензій у поточному розрахунковому "
+"періоді."
 
 #: corporate/lib/stripe.py:2070
 msgid "You cannot decrease the licenses in the current billing period."
 msgstr ""
+"Ви не можете зменшити кількість ліцензій у путочному розрахунковому періоді."
 
 #: corporate/lib/stripe.py:2096
 msgid ""
 "Cannot change the licenses for next billing cycle for a plan that is being "
 "downgraded."
 msgstr ""
+"Не вдається змінити ліцензії на наступний платіжний період для тарифу, "
+"рівень якого буде знижений."
 
 #: corporate/lib/stripe.py:2102
 #, python-brace-format
@@ -235,18 +273,20 @@ msgid ""
 "Your plan is already scheduled to renew with {licenses_at_next_renewal} "
 "licenses."
 msgstr ""
+"Ваш тариф вже заплановано до продовження на {licenses_at_next_renewal} "
+"ліцензій."
 
 #: corporate/lib/stripe.py:2117
 msgid "Nothing to change."
-msgstr ""
+msgstr "Нема що змінювати"
 
 #: corporate/lib/stripe.py:2322
 msgid "No customer for this organization!"
-msgstr ""
+msgstr "Ця організація не має клієнтів!"
 
 #: corporate/lib/stripe.py:2331
 msgid "Session not found"
-msgstr ""
+msgstr "Сеансу не знайдено"
 
 #: corporate/lib/stripe.py:2337 zerver/decorator.py:197
 msgid "Must be a billing administrator or an organization owner"
@@ -254,7 +294,7 @@ msgstr "Повинен бути адміністратором платежів 
 
 #: corporate/lib/stripe.py:2348
 msgid "Payment intent not found"
-msgstr ""
+msgstr "Призначення платежу не знайдено"
 
 #: corporate/lib/stripe.py:2351
 msgid "Pass stripe_session_id or stripe_payment_intent_id"
@@ -267,40 +307,44 @@ msgid ""
 "\n"
 "If you could {begin_link}list Zulip as a sponsor on your website{end_link}, we would really appreciate it!"
 msgstr ""
+"Запит вашої організації на спонсорований хостинг схвалено! Ви були переведені на {plan_name} безкоштовно. {emoji}\n"
+"\n"
+"Якщо ви зможете {begin_link}вказати Zulip як спонсора на своєму веб-сайті{end_link}, ми будемо вам дуже вдячні!"
 
 #: corporate/views/billing_page.py:328
 msgid "Parameter 'confirmed' is required"
-msgstr ""
+msgstr "Параметр 'підтверджено' є обов'язковим"
 
 #: corporate/views/remote_billing_page.py:134
 msgid "Billing access token expired."
-msgstr ""
+msgstr "Термін дії токена платіжного доступу минув."
 
 #: corporate/views/remote_billing_page.py:136
 msgid "Invalid billing access token."
-msgstr ""
+msgstr "Недійсний токен платіжного доступу."
 
 #: corporate/views/remote_billing_page.py:273
 msgid "User account doesn't exist yet."
-msgstr ""
+msgstr "Обліковий запис користувача ще не створено."
 
 #: corporate/views/remote_billing_page.py:278
 #: corporate/views/remote_billing_page.py:691
 msgid "You must accept the Terms of Service to proceed."
-msgstr ""
+msgstr "Щоб продовжити, ви повинні прийняти Умови використання."
 
 #: corporate/views/remote_billing_page.py:504
 msgid ""
 "This zulip_org_id is not registered with Zulip's billing management system."
 msgstr ""
+"Цей zulip_org_id не зареєстровано у системі управління платежами Zulip."
 
 #: corporate/views/remote_billing_page.py:511
 msgid "Invalid zulip_org_key for this zulip_org_id."
-msgstr ""
+msgstr "Невірний zulip_org_key для цього zulip_org_id."
 
 #: corporate/views/remote_billing_page.py:515
 msgid "Your server registration has been deactivated."
-msgstr ""
+msgstr "Реєстрація сервера відкликана."
 
 #: templates/404.html:4
 #: templates/zilencer/remote_realm_server_mismatch_error.html:4
@@ -313,7 +357,7 @@ msgstr ""
 
 #: templates/404.html:19
 msgid "Page not found (404)"
-msgstr ""
+msgstr "Сторінку не знайдено (404)"
 
 #: templates/404.html:22
 #, python-format
@@ -323,6 +367,9 @@ msgid ""
 "                        <a href=\"mailto:%(support_email)s\">contact support</a>.\n"
 "                        "
 msgstr ""
+"\n"
+"Якщо ця помилка непередбачена, ви можете\n"
+"<a href=\"mailto:%(support_email)s\">зв'язатися з підтримкою</a>."
 
 #: templates/500.html:4 templates/500.html:21
 #: zerver/actions/scheduled_messages.py:401 zerver/middleware.py:393
@@ -512,11 +559,11 @@ msgstr ""
 
 #: templates/confirmation/confirm_email_change.html:4
 msgid "Email changed"
-msgstr ""
+msgstr "Адресу електронної пошти змінено"
 
 #: templates/confirmation/confirm_email_change.html:12
 msgid "Email changed!"
-msgstr "Електронна пошта змінилася!"
+msgstr "Адресу електронної пошти змінено!"
 
 #: templates/confirmation/confirm_email_change.html:16
 #, python-format
@@ -597,7 +644,7 @@ msgstr "Платежі"
 #: templates/zerver/change_email_address_visibility_modal.html:8
 #: templates/zerver/development/email_log.html:36
 msgid "Close modal"
-msgstr ""
+msgstr "Закрити модальне вікно"
 
 #: templates/corporate/billing.html:370 templates/corporate/billing.html:454
 #: templates/corporate/billing.html:482 templates/corporate/billing.html:510
@@ -1137,7 +1184,7 @@ msgstr ""
 #: templates/corporate/for/research.html:39
 #: templates/corporate/for/research.html:419
 msgid "Request sponsorship"
-msgstr ""
+msgstr "Запросити спонсорство"
 
 #: templates/corporate/for/education.html:35
 msgid "Education pricing"
@@ -1207,7 +1254,7 @@ msgstr "Звернутися в службу підтримки"
 
 #: templates/corporate/support_request.html:15
 msgid "From"
-msgstr ""
+msgstr "Від"
 
 #: templates/corporate/support_request.html:19
 msgid "Organization"
@@ -1215,11 +1262,11 @@ msgstr "Організація"
 
 #: templates/corporate/support_request.html:23
 msgid "Subject"
-msgstr ""
+msgstr "Тема"
 
 #: templates/corporate/support_request.html:27
 msgid "Message"
-msgstr ""
+msgstr "Повідомлення"
 
 #: templates/corporate/support_request.html:33
 msgid "Submit"
@@ -2982,7 +3029,7 @@ msgstr "Знайти облікові записи"
 
 #: templates/zerver/footer.html:6
 msgid "Product"
-msgstr ""
+msgstr "Продукт"
 
 #: templates/zerver/footer.html:9
 msgid "Why Zulip"
@@ -2994,11 +3041,11 @@ msgstr "Особливості"
 
 #: templates/zerver/footer.html:12
 msgid "Self-hosting"
-msgstr ""
+msgstr "Самостійне розміщення"
 
 #: templates/zerver/footer.html:13
 msgid "Security"
-msgstr ""
+msgstr "Безпека"
 
 #: templates/zerver/footer.html:14
 msgid "Integrations"
@@ -3014,11 +3061,11 @@ msgstr "Нова організація"
 
 #: templates/zerver/footer.html:22
 msgid "Solutions"
-msgstr ""
+msgstr "Рішення"
 
 #: templates/zerver/footer.html:25
 msgid "Business"
-msgstr ""
+msgstr "Бізнес"
 
 #: templates/zerver/footer.html:26
 msgid "Education"
@@ -3026,7 +3073,7 @@ msgstr "Навчання"
 
 #: templates/zerver/footer.html:27
 msgid "Research"
-msgstr ""
+msgstr "Дослідження"
 
 #: templates/zerver/footer.html:28
 msgid "Events & conferences"
@@ -3038,7 +3085,7 @@ msgstr ""
 
 #: templates/zerver/footer.html:30
 msgid "Communities"
-msgstr ""
+msgstr "Спільноти"
 
 #: templates/zerver/footer.html:31
 msgid "Customer stories"
@@ -3094,11 +3141,11 @@ msgstr ""
 
 #: templates/zerver/footer.html:75
 msgid "Translation"
-msgstr ""
+msgstr "Переклад"
 
 #: templates/zerver/footer.html:79
 msgid "GitHub"
-msgstr ""
+msgstr "GitHub"
 
 #: templates/zerver/footer.html:84
 msgid "About us"
@@ -3118,11 +3165,11 @@ msgstr ""
 
 #: templates/zerver/footer.html:93
 msgid "Jobs"
-msgstr ""
+msgstr "Робота"
 
 #: templates/zerver/footer.html:94
 msgid "Blog"
-msgstr ""
+msgstr "Блог"
 
 #: templates/zerver/footer.html:95
 msgid "Support Zulip"
@@ -3130,19 +3177,19 @@ msgstr "Підтримати Zulip"
 
 #: templates/zerver/footer.html:98
 msgid "X (Twitter)"
-msgstr ""
+msgstr "X (Twitter)"
 
 #: templates/zerver/footer.html:99
 msgid "Mastodon"
-msgstr ""
+msgstr "Mastodon"
 
 #: templates/zerver/footer.html:100
 msgid "LinkedIn"
-msgstr ""
+msgstr "LinkedIn"
 
 #: templates/zerver/footer.html:110
 msgid "Powered by <a href=\"https://zulip.com\">Zulip</a>"
-msgstr ""
+msgstr "Працює за підтримки <a href=\"https://zulip.com\">Zulip</a>"
 
 #: templates/zerver/footer.html:116
 msgid "Terms of Service"
@@ -3432,7 +3479,7 @@ msgstr "Коротше, краще, ніж довше."
 #: templates/zerver/realm_creation_form.html:34
 #: templates/zerver/register.html:52
 msgid "Organization type"
-msgstr ""
+msgstr "Тип організації"
 
 #: templates/zerver/realm_creation_form.html:47
 #: templates/zerver/register.html:56
@@ -3514,7 +3561,7 @@ msgstr "Створити нову організацію."
 
 #: templates/zerver/register.html:5
 msgid "Registration"
-msgstr ""
+msgstr "Реєстрація"
 
 #: templates/zerver/register.html:21
 msgid "Create your organization"
@@ -4054,7 +4101,7 @@ msgstr ""
 
 #: zerver/actions/message_send.py:1544
 msgid "Direct messages are disabled in this organization."
-msgstr ""
+msgstr "Особисті повідомлення в цій організації вимкнені."
 
 #: zerver/actions/message_send.py:1554
 msgid "You do not have permission to access some of the recipients."
@@ -4170,7 +4217,7 @@ msgstr ""
 
 #: zerver/actions/streams.py:1564 zerver/actions/streams.py:1569
 msgid "Forever"
-msgstr ""
+msgstr "Назавжди"
 
 #: zerver/actions/streams.py:1570
 msgid "Messages in this stream will now be retained forever."
@@ -4757,7 +4804,7 @@ msgstr "Розгортання"
 
 #: zerver/lib/integrations.py:47
 msgid "Entertainment"
-msgstr ""
+msgstr "Розваги"
 
 #: zerver/lib/integrations.py:48
 msgid "Communication"
@@ -5178,7 +5225,7 @@ msgstr "Будь ласка оберіть один: 'stream' або 'stream_id'
 #: zerver/lib/streams.py:432 zerver/lib/streams.py:500
 #: zerver/views/streams.py:391 zerver/views/user_topics.py:101
 msgid "Invalid stream ID"
-msgstr ""
+msgstr "Невірний ID"
 
 #: zerver/lib/streams.py:475
 #, python-brace-format
@@ -5687,7 +5734,7 @@ msgstr "Ніхто"
 
 #: zerver/models.py:1961
 msgid "Unknown user"
-msgstr ""
+msgstr "Невідомий користувач"
 
 #: zerver/models.py:2117
 msgid "Organization owner"
@@ -5711,7 +5758,7 @@ msgstr "Гість"
 
 #: zerver/models.py:2709
 msgid "Web-public"
-msgstr ""
+msgstr "Відкрито в мережі"
 
 #: zerver/models.py:2715
 msgid "Public"
@@ -5798,7 +5845,7 @@ msgstr "Зовнішній обліковий запис"
 
 #: zerver/models.py:5053
 msgid "Pronouns"
-msgstr ""
+msgstr "Займенники"
 
 #: zerver/signals.py:105
 msgid "Unknown IP address"
@@ -6638,6 +6685,8 @@ msgid ""
 "Failed to migrate customer from server to realms. Please contact support for"
 " assistance."
 msgstr ""
+"Не вдалося перенести клієнта з сервера у хмару. Будь ласка, зв'яжіться з "
+"підтримкою для отримання допомоги."
 
 #: zilencer/views.py:1030
 msgid "Malformed audit log data"

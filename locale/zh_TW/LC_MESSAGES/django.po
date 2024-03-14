@@ -4,11 +4,11 @@
 # FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
 # 
 # Translators:
-# Transifex Bot <>, 2023
 # Richard Chen <yihsun.r.chen@gmail.com>, 2023
 # Leon H., 2023
 # Sean Yuan <pinshan.yuan@gmail.com>, 2023
 # s s <sshiuan2+transifex.com@gmail.com>, 2023
+# Transifex Bot <>, 2024
 # 
 #, fuzzy
 msgid ""
@@ -17,7 +17,7 @@ msgstr ""
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2023-12-15 21:31+0000\n"
 "PO-Revision-Date: 2023-12-15 21:32+0000\n"
-"Last-Translator: s s <sshiuan2+transifex.com@gmail.com>, 2023\n"
+"Last-Translator: Transifex Bot <>, 2024\n"
 "Language-Team: Chinese (Taiwan) (https://app.transifex.com/zulip/teams/53893/zh_TW/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -44,7 +44,7 @@ msgstr "私人串流"
 
 #: analytics/views/stats.py:319
 msgid "Direct messages"
-msgstr ""
+msgstr "私訊"
 
 #: analytics/views/stats.py:320
 msgid "Group direct messages"
@@ -146,7 +146,7 @@ msgstr ""
 
 #: corporate/lib/remote_billing_util.py:166
 msgid "Invalid remote server."
-msgstr ""
+msgstr "遠端伺服器失效"
 
 #: corporate/lib/stripe.py:203
 #, python-brace-format
@@ -164,7 +164,7 @@ msgstr ""
 
 #: corporate/lib/stripe.py:351
 msgid "No payment method on file."
-msgstr ""
+msgstr "沒有任何付款方式"
 
 #: corporate/lib/stripe.py:359
 #, python-brace-format
@@ -191,11 +191,11 @@ msgstr "發生錯誤。請稍待數秒後再試一次。"
 
 #: corporate/lib/stripe.py:1225
 msgid "Please add a credit card before starting your free trial."
-msgstr ""
+msgstr "請增加信用卡付款已獲取免費模式"
 
 #: corporate/lib/stripe.py:1246
 msgid "Please add a credit card to schedule upgrade."
-msgstr ""
+msgstr "請增加信用卡付款已升級"
 
 #: corporate/lib/stripe.py:1994
 msgid ""
@@ -210,13 +210,13 @@ msgstr "無法更新方案。該方案已經結束。"
 #: corporate/lib/stripe.py:2054
 msgid ""
 "Cannot update licenses in the current billing period for free trial plan."
-msgstr ""
+msgstr "無法在目前計費週期內更新免費試用計畫的許可證"
 
 #: corporate/lib/stripe.py:2059 corporate/lib/stripe.py:2087
 msgid ""
 "Unable to update licenses manually. Your plan is on automatic license "
 "management."
-msgstr ""
+msgstr "無法手動更新許可證。您的計劃是自動許可證管理"
 
 #: corporate/lib/stripe.py:2065
 #, python-brace-format
@@ -5027,7 +5027,7 @@ msgstr "請選擇其一： 'stream' or 'stream_id'."
 #: zerver/lib/streams.py:432 zerver/lib/streams.py:500
 #: zerver/views/streams.py:391 zerver/views/user_topics.py:101
 msgid "Invalid stream ID"
-msgstr ""
+msgstr "頻道ID不正確"
 
 #: zerver/lib/streams.py:475
 #, python-brace-format

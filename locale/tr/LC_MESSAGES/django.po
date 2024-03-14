@@ -2849,8 +2849,8 @@ msgid ""
 "In Zulip, <b>streams</b> determine who gets a message. <b>Topics</b> tell "
 "you what the message is about."
 msgstr ""
-"Zulip'te <b>akışlar</b> bir mesajı kimin alacağını belirler. <b>Topikler</b>"
-" mesajın ne hakkında olduğunu söyler."
+"Zulip'te <b>kanallar</b> bir mesajı kimin alacağını belirler. "
+"<b>Topikler</b> mesajın ne hakkında olduğunu söyler."
 
 #: templates/zerver/emails/onboarding_zulip_topics.html:13
 #: templates/zerver/emails/onboarding_zulip_topics.txt:3
@@ -2864,7 +2864,7 @@ msgstr ""
 
 #: templates/zerver/emails/onboarding_zulip_topics.html:16
 msgid "Streams and topics in the Zulip app"
-msgstr "Zulip uygulamasındaki akışlar ve konular"
+msgstr "Zulip uygulamasındaki kanallar ve konular"
 
 #: templates/zerver/emails/onboarding_zulip_topics.html:19
 #: templates/zerver/emails/onboarding_zulip_topics.txt:5
@@ -2895,7 +2895,7 @@ msgstr ""
 "Konunuz için mükemmel ismi seçme konusunda stres yapmayın. Yerinde olmayan "
 "bir şey varsa, <a href=\"%(move_messages_link)s\">mesajları taşımak</a>, <a "
 "href=\"%(rename_topics_link)s\">konuları yeniden adlandırmak</a> ve hatta <a"
-" href=\"%(move_topic_to_different_stream_link)s\">konuyu farklı bir akışa "
+" href=\"%(move_topic_to_different_stream_link)s\">konuyu farklı bir kanala "
 "taşımak</a> kolaydır."
 
 #: templates/zerver/emails/onboarding_zulip_topics.html:28
@@ -2913,7 +2913,7 @@ msgid ""
 "In Zulip, streams determine who gets a message. Topics tell you what the "
 "message is about."
 msgstr ""
-"Zulip'te bir mesajı kimin alacağını akışlar belirler. Konular size mesajın "
+"Zulip'te bir mesajı kimin alacağını kanallar belirler. Konular size mesajın "
 "ne hakkında olduğunu söyler."
 
 #: templates/zerver/emails/onboarding_zulip_topics.txt:7
@@ -2926,7 +2926,7 @@ msgid ""
 msgstr ""
 "Konunuz için mükemmel ismi seçme konusunda stres yapmayın. Yerinde olmayan "
 "bir şey varsa, mesajları taşımak (%(move_messages_link)s), konuları yeniden "
-"adlandırmak (%(rename_topics_link)s) ve hatta bir konuyu farklı bir akışa "
+"adlandırmak (%(rename_topics_link)s) ve hatta bir konuyu farklı bir kanala "
 "taşımak (%(move_topic_to_different_stream_link)s) kolaydır."
 
 #: templates/zerver/emails/password_reset.html:9
@@ -4233,7 +4233,7 @@ msgstr "Değiştirilecek bir şey yok"
 
 #: zerver/actions/message_edit.py:104
 msgid "Direct messages cannot be moved to streams."
-msgstr "Doğrudan mesajlar akışlara taşınamaz."
+msgstr "Doğrudan mesajlar kanallara taşınamaz."
 
 #: zerver/actions/message_edit.py:106
 msgid "Direct messages cannot have topics."
@@ -4531,7 +4531,7 @@ msgstr "Sonsuza dek"
 
 #: zerver/actions/streams.py:1570
 msgid "Messages in this stream will now be retained forever."
-msgstr "Bu akıştaki mesajlar artık sonsuza kadar saklanacaktır."
+msgstr "Bu kanaldaki mesajlar artık sonsuza kadar saklanacaktır."
 
 #: zerver/actions/streams.py:1576
 #, python-brace-format
@@ -5056,7 +5056,7 @@ msgstr "Organizasyon kayıtlı değil"
 #: zerver/lib/exceptions.py:633
 msgid ""
 "You do not have permission to use stream wildcard mentions in this stream."
-msgstr "Bu akışta kanal joker karakterlerini kullanma izniniz yok."
+msgstr "Bu kanalda kanal joker karakterlerini kullanma izniniz yok."
 
 #: zerver/lib/exceptions.py:645
 msgid ""
@@ -5317,12 +5317,12 @@ msgid ""
 "In Zulip, streams [determine who gets a message](/help/streams-and-topics). "
 "They are similar to channels in other chat apps."
 msgstr ""
-"Zulip'te akışlar [kimin mesaj alacağını belirler](/help/streams-and-topics)."
-" Diğer sohbet uygulamalarındaki kanallara benzerler."
+"Zulip'te kanallar [kimin mesaj alacağını belirler](/help/streams-and-"
+"topics). Diğer sohbet uygulamalarındaki kanallara benzerler."
 
 #: zerver/lib/onboarding.py:179
 msgid "[Browse and subscribe to streams](#streams/all)."
-msgstr "[Akışlara göz atın ve abone olun](#streams/all)."
+msgstr "[Kanallara göz atın ve abone olun](#streams/all)."
 
 #: zerver/lib/onboarding.py:186
 msgid ""
@@ -5518,7 +5518,7 @@ msgstr "Cihaz push bouncer tarafından tanınmıyor"
 
 #: zerver/lib/recipient_parsing.py:14
 msgid "Invalid data type for stream ID"
-msgstr "Akış kimliği için geçersiz veri türü"
+msgstr "Kanal kimliği için geçersiz veri türü"
 
 #: zerver/lib/recipient_parsing.py:29
 msgid "Recipient list may only contain user IDs"
@@ -5599,7 +5599,7 @@ msgstr "Yeni üyeler bu kanala gönderemez."
 #: zerver/lib/streams.py:315
 #, python-brace-format
 msgid "Not authorized to send to stream '{stream_name}'"
-msgstr "'{stream_name}' akışına gönderme yetkisi yok"
+msgstr "'{stream_name}' kanalına gönderme yetkisi yok"
 
 #: zerver/lib/streams.py:321
 msgid "Please supply 'stream'."
@@ -5618,7 +5618,7 @@ msgstr "Geçersiz kalan kimliği"
 #: zerver/lib/streams.py:475
 #, python-brace-format
 msgid "Stream name '{stream_name}' is already taken."
-msgstr "Akış adı '{stream_name}' zaten alınmış."
+msgstr "Kanal adı '{stream_name}' zaten alınmış."
 
 #: zerver/lib/streams.py:484 zerver/lib/streams.py:604
 #, python-brace-format
@@ -5632,7 +5632,7 @@ msgstr "Varsayılan bir kanal özel olamaz."
 #: zerver/lib/streams.py:753
 #, python-brace-format
 msgid "Stream(s) ({stream_names}) do not exist"
-msgstr "Akış(lar) ({stream_names}) mevcut değil"
+msgstr "Kanal(lar) ({stream_names}) mevcut değil"
 
 #: zerver/lib/streams.py:762 zerver/views/streams.py:320
 msgid "Web-public streams are not enabled."
@@ -5645,17 +5645,17 @@ msgstr "'{group_id}' kimliğine sahip varsayılan kanal grubu mevcut değil."
 
 #: zerver/lib/string_validation.py:41
 msgid "Stream name can't be empty!"
-msgstr "Akış adı boş olamaz!"
+msgstr "Kanal adı boş olamaz!"
 
 #: zerver/lib/string_validation.py:45
 #, python-brace-format
 msgid "Stream name too long (limit: {max_length} characters)."
-msgstr "Akış adı çok uzun (sınır: {max_length} karakter)."
+msgstr "Kanal adı çok uzun (sınır: {max_length} karakter)."
 
 #: zerver/lib/string_validation.py:53
 #, python-brace-format
 msgid "Invalid character in stream name, at position {position}!"
-msgstr "Akış adında {position} konumunda geçersiz karakter!"
+msgstr "Kanal adında {position} konumunda geçersiz karakter!"
 
 #: zerver/lib/string_validation.py:61
 msgid "Topic can't be empty!"
@@ -6381,11 +6381,11 @@ msgstr "En az bir e-posta adresi belirtmelisiniz."
 #: zerver/views/invite.py:87
 #, python-brace-format
 msgid "Stream does not exist with id: {stream_id}. No invites were sent."
-msgstr "Akış, id: {stream_id} ile mevcut değil. Hiçbir davet gönderilmedi."
+msgstr "Kanal, id: {stream_id} ile mevcut değil. Hiçbir davet gönderilmedi."
 
 #: zerver/views/invite.py:94
 msgid "You do not have permission to subscribe other users to streams."
-msgstr "Diğer kullanıcıları akışlara abone etme izniniz yok."
+msgstr "Diğer kullanıcıları kanallara abone etme izniniz yok."
 
 #: zerver/views/invite.py:131 zerver/views/invite.py:134
 #: zerver/views/invite.py:151 zerver/views/invite.py:154
@@ -6695,7 +6695,7 @@ msgstr "Bilinmeyen abonelik özelliği: {property}"
 #: zerver/views/streams.py:1076
 #, python-brace-format
 msgid "Not subscribed to stream id {stream_id}"
-msgstr "Akış kimliğine abone değil {stream_id}"
+msgstr "Kanal kimliğine abone değil {stream_id}"
 
 #: zerver/views/submessage.py:38
 msgid "Invalid json for submessage"
