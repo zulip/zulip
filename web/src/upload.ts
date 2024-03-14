@@ -23,6 +23,12 @@ import {realm} from "./state_data";
 let drag_drop_img: HTMLElement | null = null;
 let compose_upload_object: Uppy;
 const upload_objects_by_message_edit_row = new Map<number, Uppy>();
+// This list is identical to the one defined in zerver/lib/markdown/__init__.py
+const IMAGE_EXTENSIONS = new Set([".bmp", ".gif", ".jpe", ".jpeg", ".jpg", ".png", ".webp"]);
+
+function is_image(file_name: string): boolean {
+    return IMAGE_EXTENSIONS.has(file_name.slice(file_name.lastIndexOf(".")));
+}
 
 export function compose_upload_cancel(): void {
     compose_upload_object.cancelAll();
@@ -374,8 +380,11 @@ export function setup_upload(config: Config): Uppy {
             return;
         }
         const split_url = url.split("/");
-        const filename = split_url.at(-1);
-        const syntax_to_insert = "[" + filename + "](" + url + ")";
+        const filename = split_url.at(-1)!;
+        let syntax_to_insert = "[" + filename + "](" + url + ")";
+        if (is_image(filename)) {
+            syntax_to_insert = "!" + syntax_to_insert;
+        }
         const $text_area = config.textarea();
         const replacement_successful = compose_ui.replace_syntax(
             get_translated_status(file),

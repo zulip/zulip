@@ -664,6 +664,29 @@ class MarkdownTest(ZulipTestCase):
             '<p><a href="https://vimeo.com/246979354">https://vimeo.com/246979354</a></p>',
         )
 
+    def test_inline_image(self) -> None:
+        image_url = "https://www.google.com/images/srpr/logo4w.png"
+        msg = f"The Google logo looks like this: ![Google logo]({image_url}) and..."
+        converted = markdown_convert_wrapper(msg)
+        self.assertEqual(
+            converted,
+            f"""<p>The Google logo looks like this: <img alt="Google logo" src="{get_camo_url(image_url)}"> and...</p>""",
+        )
+
+        msg = '![foo](/url "the title")'
+        converted = markdown_convert_wrapper(msg)
+        self.assertEqual(
+            converted,
+            '<p><img alt="foo" src="/url" title="the title"></p>',
+        )
+
+        msg = "![](/url)"
+        converted = markdown_convert_wrapper(msg)
+        self.assertEqual(
+            converted,
+            '<p><img alt="" src="/url"></p>',
+        )
+
     @override_settings(THUMBNAIL_IMAGES=True, INLINE_IMAGE_PREVIEW=True)
     def test_inline_image_thumbnail_url(self) -> None:
         realm = get_realm("zephyr")
