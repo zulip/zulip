@@ -4146,6 +4146,16 @@ class RemoteRealmBillingSession(BillingSession):
             CustomerPlan.TIER_SELF_HOSTED_BUSINESS,
         ):
             return PlanTierChangeType.UPGRADE
+        elif (
+            current_plan_tier == CustomerPlan.TIER_SELF_HOSTED_BASIC
+            and new_plan_tier == CustomerPlan.TIER_SELF_HOSTED_LEGACY
+        ):
+            return PlanTierChangeType.DOWNGRADE
+        elif (
+            current_plan_tier == CustomerPlan.TIER_SELF_HOSTED_BUSINESS
+            and new_plan_tier == CustomerPlan.TIER_SELF_HOSTED_LEGACY
+        ):
+            return PlanTierChangeType.DOWNGRADE
         else:
             assert current_plan_tier == CustomerPlan.TIER_SELF_HOSTED_BUSINESS
             assert new_plan_tier == CustomerPlan.TIER_SELF_HOSTED_BASIC
