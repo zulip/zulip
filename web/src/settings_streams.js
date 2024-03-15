@@ -44,10 +44,19 @@ function create_choice_row() {
     // List of non-default streams that are not yet selected.
     function get_options() {
         const chosen_default_streams = get_chosen_default_streams();
-
-        return stream_data
+        const default_stream = stream_data
             .get_non_default_stream_names()
             .filter((e) => !chosen_default_streams.has(e.unique_id));
+        const sub = default_stream.map((e) =>
+            stream_data.get_sub_by_id(Number.parseInt(e.unique_id, 10)),
+        );
+        const item = sub.map((obj) => ({
+            name: obj.name,
+            unique_id: obj.stream_id,
+            stream: {...obj},
+        }));
+
+        return item;
     }
 
     function item_click_callback(event, dropdown) {
