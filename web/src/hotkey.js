@@ -998,12 +998,18 @@ export function process_hotkey(e, hotkey) {
             return true;
         case "compose": // 'c': compose
             if (!compose_state.composing()) {
-                compose_actions.start("stream", {trigger: "compose_hotkey"});
+                compose_actions.start("stream", {
+                    trigger: "compose_hotkey",
+                    keep_composebox_empty: true,
+                });
             }
             return true;
         case "compose_private_message":
             if (!compose_state.composing()) {
-                compose_actions.start("private", {trigger: "compose_hotkey"});
+                compose_actions.start("private", {
+                    trigger: "compose_hotkey",
+                    keep_composebox_empty: true,
+                });
             }
             return true;
         case "open_drafts":
