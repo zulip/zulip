@@ -6,6 +6,7 @@ const {mock_esm, zrequire} = require("./lib/namespace");
 const {run_test, noop} = require("./lib/test");
 const $ = require("./lib/zjquery");
 
+const bootstrap_typeahead = mock_esm("../src/bootstrap_typeahead");
 const narrow_state = mock_esm("../src/narrow_state");
 const search_suggestion = mock_esm("../src/search_suggestion");
 
@@ -16,9 +17,8 @@ mock_esm("../src/filter", {
 });
 
 const search = zrequire("search");
-const bootstrap_typeahead = zrequire("bootstrap_typeahead");
 
-run_test("initialize", ({override_rewire, mock_template}) => {
+run_test("initialize", ({override, override_rewire, mock_template}) => {
     const $search_query_box = $("#search_query");
     const $searchbox_form = $("#searchbox_form");
 
@@ -36,7 +36,7 @@ run_test("initialize", ({override_rewire, mock_template}) => {
     search_suggestion.max_num_of_search_results = 999;
     let terms;
 
-    override_rewire(bootstrap_typeahead, "create", ($element, opts) => {
+    override(bootstrap_typeahead, "create", ($element, opts) => {
         assert.equal($element, $search_query_box);
         assert.equal(opts.items, 999);
         assert.equal(opts.naturalSearch, true);
@@ -306,7 +306,7 @@ run_test("initialize", ({override_rewire, mock_template}) => {
     assert.ok(is_blurred);
 });
 
-run_test("initiate_search", ({override_rewire}) => {
+run_test("initiate_search", ({override}) => {
     // open typeahead and select text when navbar is open
     // this implicitly expects the code to used the chained
     // function calls, which is something to keep in mind if
@@ -314,7 +314,7 @@ run_test("initiate_search", ({override_rewire}) => {
     narrow_state.filter = () => ({is_keyword_search: () => false});
     let typeahead_forced_open = false;
     let is_searchbox_text_selected = false;
-    override_rewire(bootstrap_typeahead, "lookup", () => {
+    override(bootstrap_typeahead, "lookup", () => {
         typeahead_forced_open = true;
     });
     $("#search_query").on("select", () => {
