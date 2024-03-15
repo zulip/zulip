@@ -1505,7 +1505,7 @@ $option_title_width: 180px;
     .custom_user_field,
     .user-name-section {
         .field_hint {
-            color: hsl(0deg 0% 67%);
+            color: var(--color-text-settings-field-hint);
         }
     }
 }

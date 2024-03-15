@@ -250,6 +250,7 @@
     --color-text-sidebar-popover-menu: hsl(0deg 0% 20%);
     --color-text-url: hsl(200deg 100% 40%);
     --color-text-url-hover: hsl(200deg 100% 25%);
+    --color-text-settings-field-hint: hsl(0deg 0% 57%);
 
     /* Markdown code colors */
     --color-markdown-code-text: hsl(0deg 0% 0%);
@@ -564,6 +565,7 @@
         hsl(0deg 0% 11%)
     );
     --color-text-url-hover: hsl(200deg 79% 66%);
+    --color-text-settings-field-hint: hsl(0deg 0% 52%);
 
     /* Markdown code colors */
     /* Note that Markdown code-link colors are identical
