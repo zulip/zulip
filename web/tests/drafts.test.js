@@ -73,6 +73,7 @@ const draft_1 = {
     type: "stream",
     content: "Test stream message",
     updatedAt: mock_current_timestamp,
+    is_sending_saving: false,
 };
 const draft_2 = {
     private_message_recipient: "aaron@zulip.com",
@@ -80,6 +81,7 @@ const draft_2 = {
     type: "private",
     content: "Test direct message",
     updatedAt: mock_current_timestamp,
+    is_sending_saving: false,
 };
 const short_msg = {
     stream_id,
@@ -87,6 +89,7 @@ const short_msg = {
     type: "stream",
     content: "a",
     updatedAt: mock_current_timestamp,
+    is_sending_saving: false,
 };
 
 function test(label, f) {
@@ -243,6 +246,7 @@ test("initialize", ({override_rewire}) => {
         let called = false;
         override_rewire(drafts, "update_draft", () => {
             called = true;
+            return 100;
         });
         f();
         assert.ok(called);
@@ -262,6 +266,7 @@ test("remove_old_drafts", ({override_rewire}) => {
         type: "stream",
         content: "Test stream message",
         updatedAt: Date.now(),
+        is_sending_saving: false,
     };
     const draft_4 = {
         private_message_recipient: "aaron@zulip.com",
@@ -269,6 +274,7 @@ test("remove_old_drafts", ({override_rewire}) => {
         type: "private",
         content: "Test direct message",
         updatedAt: new Date().setDate(-30),
+        is_sending_saving: false,
     };
     const draft_model = drafts.draft_model;
     const ls = localstorage();
@@ -462,6 +468,7 @@ test("format_drafts", ({override, override_rewire, mock_template}) => {
         content: "Test stream message",
         stream_id: 30,
         updatedAt: feb12().getTime(),
+        is_sending_saving: false,
     };
     const draft_2 = {
         private_message_recipient: "aaron@zulip.com",
@@ -469,6 +476,7 @@ test("format_drafts", ({override, override_rewire, mock_template}) => {
         type: "private",
         content: "Test direct message",
         updatedAt: date(-1),
+        is_sending_saving: false,
     };
     const draft_3 = {
         topic: "topic",
@@ -476,6 +484,7 @@ test("format_drafts", ({override, override_rewire, mock_template}) => {
         stream_id: 40,
         content: "Test stream message 2",
         updatedAt: date(-10),
+        is_sending_saving: false,
     };
     const draft_4 = {
         private_message_recipient: "aaron@zulip.com",
@@ -483,6 +492,7 @@ test("format_drafts", ({override, override_rewire, mock_template}) => {
         type: "private",
         content: "Test direct message 2",
         updatedAt: date(-5),
+        is_sending_saving: false,
     };
     const draft_5 = {
         private_message_recipient: "aaron@zulip.com",
@@ -490,6 +500,7 @@ test("format_drafts", ({override, override_rewire, mock_template}) => {
         type: "private",
         content: "Test direct message 3",
         updatedAt: date(-2),
+        is_sending_saving: false,
     };
 
     const expected = [
@@ -619,6 +630,7 @@ test("filter_drafts", ({override, override_rewire, mock_template}) => {
         content: "Test stream message",
         stream_id: 30,
         updatedAt: feb12().getTime(),
+        is_sending_saving: false,
     };
     const pm_draft_1 = {
         private_message_recipient: "aaron@zulip.com",
@@ -626,6 +638,7 @@ test("filter_drafts", ({override, override_rewire, mock_template}) => {
         type: "private",
         content: "Test direct message",
         updatedAt: date(-1),
+        is_sending_saving: false,
     };
     const stream_draft_2 = {
         topic: "topic",
@@ -633,6 +646,7 @@ test("filter_drafts", ({override, override_rewire, mock_template}) => {
         stream_id: 40,
         content: "Test stream message 2",
         updatedAt: date(-10),
+        is_sending_saving: false,
     };
     const pm_draft_2 = {
         private_message_recipient: "aaron@zulip.com",
@@ -640,6 +654,7 @@ test("filter_drafts", ({override, override_rewire, mock_template}) => {
         type: "private",
         content: "Test direct message 2",
         updatedAt: date(-5),
+        is_sending_saving: false,
     };
     const pm_draft_3 = {
         private_message_recipient: "aaron@zulip.com",
@@ -647,6 +662,7 @@ test("filter_drafts", ({override, override_rewire, mock_template}) => {
         type: "private",
         content: "Test direct message 3",
         updatedAt: date(-2),
+        is_sending_saving: false,
     };
 
     const expected_pm_drafts = [

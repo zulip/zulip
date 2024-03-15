@@ -179,7 +179,11 @@ export function send_message(request = create_message_object()) {
 
     // Silently save / update a draft to ensure the message is not lost in case send fails.
     // We delete the draft on successful send.
-    request.draft_id = drafts.update_draft({no_notify: true, update_count: false});
+    request.draft_id = drafts.update_draft({
+        no_notify: true,
+        update_count: false,
+        is_sending_saving: true,
+    });
 
     let local_id;
     let locally_echoed;
@@ -246,6 +250,10 @@ export function send_message(request = create_message_object()) {
         // We might not have updated the draft count because we assumed the
         // message would send. Ensure that the displayed count is correct.
         drafts.sync_count();
+
+        const draft = drafts.draft_model.getDraft(request.draft_id);
+        draft.is_sending_saving = false;
+        drafts.draft_model.editDraft(request.draft_id, draft);
     }
 
     transmit.send_message(request, success, error);
@@ -404,9 +412,15 @@ function schedule_message_to_custom_date() {
         scheduled_delivery_timestamp,
     };
 
+    const draft_id = drafts.update_draft({
+        no_notify: true,
+        update_count: false,
+        is_sending_saving: true,
+    });
+
     const $banner_container = $("#compose_banners");
     const success = function (data) {
-        drafts.draft_model.deleteDraft($("textarea#compose-textarea").data("draft-id"));
+        drafts.draft_model.deleteDraft(draft_id);
         clear_compose_box();
         const new_row_html = render_success_message_scheduled_banner({
             scheduled_message_id: data.scheduled_message_id,
@@ -425,6 +439,9 @@ function schedule_message_to_custom_date() {
             $banner_container,
             $("textarea#compose-textarea"),
         );
+        const draft = drafts.draft_model.getDraft(draft_id);
+        draft.is_sending_saving = false;
+        drafts.draft_model.editDraft(draft_id, draft);
     };
 
     channel.post({
