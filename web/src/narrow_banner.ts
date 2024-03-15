@@ -1,6 +1,7 @@
 import $ from "jquery";
 import assert from "minimalistic-assert";
 
+import {all_messages_data} from "./all_messages_data";
 import {$t, $t_html} from "./i18n";
 import type {NarrowBannerData, SearchData} from "./narrow_error";
 import {narrow_error} from "./narrow_error";
@@ -11,6 +12,7 @@ import * as settings_config from "./settings_config";
 import * as spectators from "./spectators";
 import {realm} from "./state_data";
 import * as stream_data from "./stream_data";
+import {get_user_group_from_id} from "./user_groups";
 
 const SPECTATOR_STREAM_NARROW_BANNER = {
     title: "",
@@ -70,7 +72,7 @@ function retrieve_search_query_data(): SearchData {
     return search_string_result;
 }
 
-function pick_empty_narrow_banner(): NarrowBannerData {
+export function pick_empty_narrow_banner(): NarrowBannerData {
     const default_banner = {
         title: $t({defaultMessage: "There are no messages here."}),
         // Spectators cannot start a conversation.
@@ -203,17 +205,6 @@ function pick_empty_narrow_banner(): NarrowBannerData {
                     };
                 case "dm":
                     // You have no direct messages.
-                    if (
-                        realm.realm_private_message_policy ===
-                        settings_config.private_message_policy_values.disabled.code
-                    ) {
-                        return {
-                            title: $t({
-                                defaultMessage:
-                                    "You are not allowed to send direct messages in this organization.",
-                            }),
-                        };
-                    }
                     return {
                         title: $t({defaultMessage: "You have no direct messages yet!"}),
                         html: $t_html(
@@ -310,15 +301,42 @@ function pick_empty_narrow_banner(): NarrowBannerData {
             }
             const user_ids = people.emails_strings_to_user_ids_array(first_operand);
             assert(user_ids !== undefined);
+            const user_ids_string = user_ids.join(",");
+            if (!people.user_can_direct_message(user_ids_string)) {
+                const {name} = get_user_group_from_id(realm.realm_direct_message_permission_group);
+                if (name === "role:nobody") {
+                    return {
+                        title: $t({
+                            defaultMessage:
+                                "You are not allowed to send direct messages in this organization.",
+                        }),
+                    };
+                }
+                const display_name = settings_config.system_user_groups_list.find(
+                    (group) => group.name === name,
+                )?.display_name;
+                assert(display_name !== undefined);
+                return {
+                    title: $t(
+                        {
+                            defaultMessage:
+                                "{allowed_user_group} must be in every direct message conversation.",
+                        },
+                        {allowed_user_group: display_name.replace(" and ", " or ")},
+                    ),
+                };
+            }
+            const previous_messages_exist = all_messages_data
+                .all_messages()
+                .find((message) => message.is_private && message.to_user_ids === user_ids_string);
             if (
-                realm.realm_private_message_policy ===
-                    settings_config.private_message_policy_values.disabled.code &&
-                (user_ids.length !== 1 || !people.get_by_user_id(user_ids[0]).is_bot)
+                !previous_messages_exist &&
+                !people.user_can_initiate_direct_message_thread(user_ids_string)
             ) {
                 return {
                     title: $t({
                         defaultMessage:
-                            "You are not allowed to send direct messages in this organization.",
+                            "You are not allowed to start direct message conversations in this organization.",
                     }),
                 };
             }
@@ -395,15 +413,42 @@ function pick_empty_narrow_banner(): NarrowBannerData {
                     title: $t({defaultMessage: "This user does not exist!"}),
                 };
             }
+            const person_id_string = person_in_dms.user_id.toString();
+            if (!people.user_can_direct_message(person_id_string)) {
+                const {name} = get_user_group_from_id(realm.realm_direct_message_permission_group);
+                if (name === "role:nobody") {
+                    return {
+                        title: $t({
+                            defaultMessage:
+                                "You are not allowed to send direct messages in this organization.",
+                        }),
+                    };
+                }
+                const display_name = settings_config.system_user_groups_list.find(
+                    (group) => group.name === name,
+                )?.display_name;
+                assert(display_name !== undefined);
+                return {
+                    title: $t(
+                        {
+                            defaultMessage:
+                                "{allowed_user_group} must be in every direct message conversation.",
+                        },
+                        {allowed_user_group: display_name.replace(" and ", " or ")},
+                    ),
+                };
+            }
+            const previous_messages_exist = all_messages_data
+                .all_messages()
+                .find((message) => message.is_private && message.to_user_ids === person_id_string);
             if (
-                realm.realm_private_message_policy ===
-                    settings_config.private_message_policy_values.disabled.code &&
-                !person_in_dms.is_bot
+                !previous_messages_exist &&
+                !people.user_can_initiate_direct_message_thread(person_id_string)
             ) {
                 return {
                     title: $t({
                         defaultMessage:
-                            "You are not allowed to send direct messages in this organization.",
+                            "You are not allowed to start direct message conversations in this organization.",
                     }),
                 };
             }

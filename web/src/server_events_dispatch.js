@@ -12,6 +12,7 @@ import * as browser_history from "./browser_history";
 import {buddy_list} from "./buddy_list";
 import * as compose_call from "./compose_call";
 import * as compose_call_ui from "./compose_call_ui";
+import * as compose_closed_ui from "./compose_closed_ui";
 import * as compose_pm_pill from "./compose_pm_pill";
 import * as compose_recipient from "./compose_recipient";
 import * as compose_state from "./compose_state";
@@ -219,6 +220,8 @@ export function dispatch_normal_event(event) {
                 description: noop,
                 digest_emails_enabled: noop,
                 digest_weekday: noop,
+                direct_message_initiator_group: noop,
+                direct_message_permission_group: noop,
                 email_changes_disabled: settings_account.update_email_change_display,
                 disallow_disposable_email_addresses: noop,
                 inline_image_preview: noop,
@@ -236,7 +239,6 @@ export function dispatch_normal_event(event) {
                 name_changes_disabled: settings_account.update_name_change_display,
                 new_stream_announcements_stream_id: stream_ui_updates.update_announce_stream_option,
                 org_type: noop,
-                private_message_policy: compose_recipient.check_posting_policy_for_compose_box,
                 push_notifications_enabled: noop,
                 send_welcome_emails: noop,
                 message_content_allowed_in_email_notifications: noop,
@@ -299,6 +301,28 @@ export function dispatch_normal_event(event) {
                                     settings_invites.update_invite_user_panel();
                                     sidebar_ui.update_invite_user_option();
                                     gear_menu.rerender();
+                                }
+
+                                if (
+                                    key === "direct_message_initiator_group" ||
+                                    key === "direct_message_permission_group"
+                                ) {
+                                    if (
+                                        realm.realm_direct_message_permission_group ===
+                                        user_groups.get_user_group_from_name("role:nobody").id
+                                    ) {
+                                        $("#realm_direct_message_initiator_group_widget").prop(
+                                            "disabled",
+                                            true,
+                                        );
+                                    } else {
+                                        $("#realm_direct_message_initiator_group_widget").prop(
+                                            "disabled",
+                                            false,
+                                        );
+                                    }
+                                    compose_closed_ui.update_buttons_for_private();
+                                    compose_recipient.check_posting_policy_for_compose_box();
                                 }
 
                                 if (key === "edit_topic_policy") {

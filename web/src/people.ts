@@ -15,6 +15,7 @@ import * as settings_config from "./settings_config";
 import * as settings_data from "./settings_data";
 import {current_user, realm} from "./state_data";
 import * as timerender from "./timerender";
+import {is_user_in_group} from "./user_groups";
 import {user_settings} from "./user_settings";
 import * as util from "./util";
 
@@ -804,27 +805,41 @@ export function should_add_guest_user_indicator(user_id: number): boolean {
     return user.is_guest;
 }
 
-export function user_can_direct_message(recipient_ids_string: string): boolean {
-    // Common function for checking if a user can send a direct
-    // message to the target user (or group of users) represented by a
-    // user ids string.
-
-    // Regardless of policy, we allow sending direct messages to bots and to self.
+export function user_can_initiate_direct_message_thread(recipient_ids_string: string): boolean {
     const recipient_ids = user_ids_string_to_ids_array(recipient_ids_string);
-    if (
-        recipient_ids.length === 1 &&
-        (is_valid_bot_user(recipient_ids[0]) || is_my_user_id(recipient_ids[0]))
-    ) {
+    let is_recipient_bot_or_self = true;
+    for (const recipient of recipient_ids) {
+        if (!is_valid_bot_user(recipient) && !(recipient === my_user_id)) {
+            is_recipient_bot_or_self = false;
+        }
+    }
+    if (is_recipient_bot_or_self) {
         return true;
     }
+    return is_user_in_group(realm.realm_direct_message_initiator_group, my_user_id);
+}
 
-    if (
-        realm.realm_private_message_policy ===
-        settings_config.private_message_policy_values.disabled.code
-    ) {
-        return false;
+export function user_can_direct_message(recipient_ids_string: string): boolean {
+    const recipient_ids = user_ids_string_to_ids_array(recipient_ids_string);
+    let is_recipient_bot_or_self = true;
+    for (const recipient of recipient_ids) {
+        if (!is_valid_bot_user(recipient) && !(recipient === my_user_id)) {
+            is_recipient_bot_or_self = false;
+        }
     }
-    return true;
+    if (is_recipient_bot_or_self) {
+        return true;
+    }
+    const direct_message_permission_group_id = realm.realm_direct_message_permission_group;
+    if (is_user_in_group(direct_message_permission_group_id, my_user_id)) {
+        return true;
+    }
+    for (const recipient_id of recipient_ids) {
+        if (is_user_in_group(direct_message_permission_group_id, recipient_id)) {
+            return true;
+        }
+    }
+    return false;
 }
 
 function gravatar_url_for_email(email: string): string {

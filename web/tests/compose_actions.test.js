@@ -9,7 +9,7 @@ const {run_test, noop} = require("./lib/test");
 const $ = require("./lib/zjquery");
 const {realm} = require("./lib/zpage_params");
 
-const settings_config = zrequire("settings_config");
+const user_groups = zrequire("user_groups");
 
 set_global("document", {
     to_$: () => $("document-stub"),
@@ -500,7 +500,22 @@ test("on_narrow", ({override, override_rewire}) => {
         is_bot: true,
     };
     people.add_active_user(bot);
+    const nobody = {
+        name: "role:nobody",
+        id: 1,
+        members: new Set([]),
+        is_system_group: true,
+        direct_subgroup_ids: new Set([]),
+    };
+    const everyone = {
+        name: "role:everyone",
+        id: 2,
+        members: new Set([1]),
+        is_system_group: true,
+        direct_subgroup_ids: new Set([]),
+    };
 
+    user_groups.initialize({realm_user_groups: [nobody, everyone]});
     let cancel_called = false;
     override_rewire(compose_actions, "cancel", () => {
         cancel_called = true;
@@ -537,8 +552,8 @@ test("on_narrow", ({override, override_rewire}) => {
         start_called = true;
     });
     narrowed_by_pm_reply = true;
-    realm.realm_private_message_policy =
-        settings_config.private_message_policy_values.disabled.code;
+    realm.realm_direct_message_permission_group = nobody.id;
+    realm.realm_direct_message_initiator_group = everyone.id;
     compose_actions.on_narrow({
         force_close: false,
         trigger: "not-search",
@@ -553,8 +568,7 @@ test("on_narrow", ({override, override_rewire}) => {
     });
     assert.ok(start_called);
 
-    realm.realm_private_message_policy =
-        settings_config.private_message_policy_values.by_anyone.code;
+    realm.realm_direct_message_permission_group = everyone.id;
     compose_actions.on_narrow({
         force_close: false,
         trigger: "not-search",

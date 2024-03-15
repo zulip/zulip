@@ -249,7 +249,7 @@ export function get_realm_user_groups_for_dropdown_list_widget(
         allowed_system_groups,
     } = group_setting_config;
 
-    const system_user_groups = settings_config.system_user_groups_list
+    let system_user_groups = settings_config.system_user_groups_list
         .filter((group) => {
             if (!allow_internet_group && group.name === "role:internet") {
                 return false;
@@ -285,6 +285,15 @@ export function get_realm_user_groups_for_dropdown_list_widget(
         });
 
     if (require_system_group) {
+        if (setting_name === "direct_message_permission_group") {
+            system_user_groups = system_user_groups.map((group) => {
+                if (group.name === "Nobody") {
+                    group.name = "Direct messages disabled";
+                }
+                group.name = group.name.replace(" and ", " or ");
+                return group;
+            });
+        }
         return system_user_groups;
     }
 

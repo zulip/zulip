@@ -8,6 +8,7 @@ import render_stream_wildcard_warning from "../templates/compose_banner/stream_w
 import render_wildcard_mention_not_allowed_error from "../templates/compose_banner/wildcard_mention_not_allowed_error.hbs";
 import render_compose_limit_indicator from "../templates/compose_limit_indicator.hbs";
 
+import {all_messages_data} from "./all_messages_data";
 import * as channel from "./channel";
 import * as compose_banner from "./compose_banner";
 import * as compose_pm_pill from "./compose_pm_pill";
@@ -26,6 +27,7 @@ import * as settings_data from "./settings_data";
 import {current_user, realm} from "./state_data";
 import * as stream_data from "./stream_data";
 import * as sub_store from "./sub_store";
+import {get_user_group_from_id} from "./user_groups";
 import * as util from "./util";
 
 let user_acknowledged_stream_wildcard = false;
@@ -677,20 +679,60 @@ function validate_stream_message(scheduling_message) {
 // for now)
 function validate_private_message() {
     const user_ids = compose_pm_pill.get_user_ids();
+    const user_ids_string = user_ids.join(",");
     const $banner_container = $("#compose_banners");
 
-    const user_ids_string = user_ids.join(",");
+    if (!people.user_can_direct_message(user_ids.join(","))) {
+        const {name} = get_user_group_from_id(realm.realm_direct_message_permission_group);
+        if (name === "role:nobody") {
+            compose_banner.show_error_message(
+                $t({
+                    defaultMessage:
+                        "You are not allowed to send direct messages in this organization.",
+                }),
+                compose_banner.CLASSNAMES.private_messages_disabled,
+                $banner_container,
+                $("#private_message_recipient"),
+            );
+            return false;
+        }
 
-    if (!people.user_can_direct_message(user_ids_string)) {
+        const {display_name} = settings_config.system_user_groups_list.find(
+            (group) => group.name === name,
+        );
         compose_banner.show_error_message(
-            $t({defaultMessage: "Direct messages are disabled in this organization."}),
+            $t(
+                {
+                    defaultMessage:
+                        "{allowed_user_group} must be in every direct message conversation.",
+                },
+                {allowed_user_group: display_name.replace(" and ", " or ")},
+            ),
             compose_banner.CLASSNAMES.private_messages_disabled,
             $banner_container,
             $("#private_message_recipient"),
         );
         return false;
     }
+    const previous_messages_exist = all_messages_data
+        .all_messages()
+        .find((message) => message.is_private && message.to_user_ids === user_ids_string);
 
+    if (
+        !previous_messages_exist &&
+        !people.user_can_initiate_direct_message_thread(user_ids_string)
+    ) {
+        compose_banner.show_error_message(
+            $t({
+                defaultMessage:
+                    "You are not allowed to start direct message conversations in this organization.",
+            }),
+            compose_banner.CLASSNAMES.private_messages_disabled,
+            $banner_container,
+            $("#private_message_recipient"),
+        );
+        return false;
+    }
     if (compose_state.private_message_recipient().length === 0) {
         compose_banner.show_error_message(
             $t({defaultMessage: "Please specify at least one valid recipient."}),

@@ -558,6 +558,8 @@ export function initialize_everything(state_data) {
         "realm_description",
         "realm_digest_emails_enabled",
         "realm_digest_weekday",
+        "realm_direct_message_initiator_group",
+        "realm_direct_message_permission_group",
         "realm_disallow_disposable_email_addresses",
         "realm_domains",
         "realm_edit_topic_policy",
@@ -776,7 +778,10 @@ export function initialize_everything(state_data) {
     user_status.initialize(user_status_params);
     compose_recipient.initialize();
     compose_pm_pill.initialize({
-        on_pill_create_or_remove: compose_recipient.update_placeholder_text,
+        on_pill_create_or_remove() {
+            compose_recipient.update_placeholder_text();
+            compose_recipient.check_posting_policy_for_compose_box();
+        },
     });
     compose_closed_ui.initialize();
     compose_reply.initialize();

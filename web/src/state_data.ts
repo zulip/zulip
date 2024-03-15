@@ -122,6 +122,8 @@ export const realm_schema = z.object({
     realm_create_web_public_stream_policy: z.number(),
     realm_delete_own_message_policy: z.number(),
     realm_description: z.string(),
+    realm_direct_message_initiator_group: z.number(),
+    realm_direct_message_permission_group: z.number(),
     realm_domains: z.array(
         z.object({
             domain: z.string(),

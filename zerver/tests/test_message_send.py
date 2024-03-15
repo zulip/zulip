@@ -26,7 +26,10 @@ from zerver.actions.message_send import (
     internal_send_stream_message_by_name,
     send_rate_limited_pm_notification_to_bot_owner,
 )
-from zerver.actions.realm_settings import do_set_realm_property
+from zerver.actions.realm_settings import (
+    do_change_realm_permission_group_setting,
+    do_set_realm_property,
+)
 from zerver.actions.streams import do_change_stream_post_policy
 from zerver.actions.user_groups import add_subgroups_to_user_group, check_add_user_group
 from zerver.actions.user_settings import do_change_user_setting
@@ -2352,20 +2355,64 @@ class PersonalMessageSendTest(ZulipTestCase):
             receiver=self.example_user("othello"),
         )
 
-    def test_private_message_policy(self) -> None:
+    def test_direct_message_initiator_group_setting(self) -> None:
         """
-        Tests that PRIVATE_MESSAGE_POLICY_DISABLED works correctly.
+        Tests that direct_message_initiator_group_setting works correctly.
         """
         user_profile = self.example_user("hamlet")
+        polonius = self.example_user("polonius")
+        admin = self.example_user("iago")
+        realm = user_profile.realm
+        administrators_system_group = UserGroup.objects.get(
+            name=SystemGroups.ADMINISTRATORS, realm=realm, is_system_group=True
+        )
         self.login_user(user_profile)
-        do_set_realm_property(
-            user_profile.realm,
-            "private_message_policy",
-            Realm.PRIVATE_MESSAGE_POLICY_DISABLED,
+        self.send_personal_message(user_profile, polonius)
+        do_change_realm_permission_group_setting(
+            realm,
+            "direct_message_initiator_group",
+            administrators_system_group,
             acting_user=None,
         )
         with self.assertRaises(JsonableError):
             self.send_personal_message(user_profile, self.example_user("cordelia"))
+        with self.assertRaises(JsonableError):
+            self.send_personal_message(user_profile, admin)
+
+        self.send_personal_message(user_profile, polonius)
+        self.send_personal_message(admin, user_profile)
+        self.send_personal_message(user_profile, user_profile)
+
+        bot_profile = self.create_test_bot("testbot", user_profile)
+        notification_bot = get_system_bot("notification-bot@zulip.com", user_profile.realm_id)
+        self.send_personal_message(user_profile, notification_bot)
+        self.send_personal_message(user_profile, bot_profile)
+        self.send_personal_message(bot_profile, user_profile)
+
+    def test_direct_message_permission_group_setting(self) -> None:
+        """
+        Tests that direct_message_permission_group_setting works correctly.
+        """
+        user_profile = self.example_user("hamlet")
+
+        admin = self.example_user("iago")
+        realm = user_profile.realm
+        administrators_system_group = UserGroup.objects.get(
+            name=SystemGroups.ADMINISTRATORS, realm=realm, is_system_group=True
+        )
+        self.login_user(user_profile)
+        do_change_realm_permission_group_setting(
+            realm,
+            "direct_message_permission_group",
+            administrators_system_group,
+            acting_user=None,
+        )
+        with self.assertRaises(JsonableError):
+            self.send_personal_message(user_profile, self.example_user("cordelia"))
+
+        self.send_personal_message(user_profile, admin)
+        self.send_personal_message(admin, user_profile)
+        self.send_personal_message(user_profile, user_profile)
 
         bot_profile = self.create_test_bot("testbot", user_profile)
         notification_bot = get_system_bot("notification-bot@zulip.com", user_profile.realm_id)
@@ -2618,7 +2665,15 @@ class InternalPrepTest(ZulipTestCase):
         Test that a user can send a direct message to themselves and to a bot in a DM disabled organization
         """
         sender = self.example_user("hamlet")
-        sender.realm.private_message_policy = Realm.PRIVATE_MESSAGE_POLICY_DISABLED
+        nobody_system_group = UserGroup.objects.get(
+            name=SystemGroups.NOBODY, realm=sender.realm, is_system_group=True
+        )
+        do_change_realm_permission_group_setting(
+            sender.realm,
+            "direct_message_permission_group",
+            nobody_system_group,
+            acting_user=None,
+        )
         sender.realm.save()
 
         #  Create a non-bot user
@@ -2662,7 +2717,9 @@ class InternalPrepTest(ZulipTestCase):
                 "content": "Test message",
             },
         )
-        self.assert_json_error(result, "Direct messages are disabled in this organization.")
+        self.assert_json_error(
+            result, "You are not allowed to send direct messages to these recipient(s)."
+        )
 
         # Test sending a message to the bot
         result = self.api_post(

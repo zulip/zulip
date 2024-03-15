@@ -805,7 +805,8 @@ input[type="checkbox"] {
 }
 
 #org-join-settings,
-#org-guest-settings {
+#org-guest-settings,
+#org-direct-message-permissions {
     .dropdown-widget-button {
         width: 325px;
         color: hsl(0deg 0% 33%);
