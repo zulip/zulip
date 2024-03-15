@@ -1,5 +1,4 @@
 import Handlebars from "handlebars/runtime";
-
 import * as common from "./common";
 import {Filter} from "./filter";
 import * as huddle_data from "./huddle_data";
@@ -48,13 +47,13 @@ function match_criteria(terms, criteria) {
     });
 }
 
-function check_validity(last, terms, valid, invalid) {
+function check_validity(last, terms, valid, incompatible_patterns) {
     // valid: list of strings valid for the last operator
-    // invalid: list of terms invalid for any previous terms except last.
+    // incompatible_patterns: list of terms incompatible for any previous terms except last.
     if (!valid.includes(last.operator)) {
         return false;
     }
-    if (match_criteria(terms, invalid)) {
+    if (match_criteria(terms, incompatible_patterns)) {
         return false;
     }
     return true;
@@ -98,14 +97,14 @@ function compare_by_huddle(huddle_emails) {
 
 function get_stream_suggestions(last, terms) {
     const valid = ["stream", "search", ""];
-    const invalid = [
+    const incompatible_patterns = [
         {operator: "stream"},
         {operator: "streams"},
         {operator: "is", operand: "dm"},
         {operator: "dm"},
         {operator: "dm-including"},
     ];
-    if (!check_validity(last, terms, valid, invalid)) {
+    if (!check_validity(last, terms, valid, incompatible_patterns)) {
         return [];
     }
 
@@ -254,15 +253,15 @@ function get_person_suggestions(people_getter, last, terms, autocomplete_operato
     }
 
     const valid = ["search", autocomplete_operator];
-    let invalid;
+    let incompatible_patterns;
 
     switch (autocomplete_operator) {
         case "dm-including":
-            invalid = [{operator: "stream"}, {operator: "is", operand: "resolved"}];
+            incompatible_patterns = [{operator: "stream"}, {operator: "is", operand: "resolved"}];
             break;
         case "dm":
         case "pm-with":
-            invalid = [
+            incompatible_patterns = [
                 {operator: "dm"},
                 {operator: "pm-with"},
                 {operator: "stream"},
@@ -271,11 +270,11 @@ function get_person_suggestions(people_getter, last, terms, autocomplete_operato
             break;
         case "sender":
         case "from":
-            invalid = [{operator: "sender"}, {operator: "from"}];
+            incompatible_patterns = [{operator: "sender"}, {operator: "from"}];
             break;
     }
 
-    if (!check_validity(last, terms, valid, invalid)) {
+    if (!check_validity(last, terms, valid, incompatible_patterns)) {
         return [];
     }
 
@@ -357,13 +356,13 @@ export function get_topic_suggestions_from_candidates({candidate_topics, guess})
 }
 
 function get_topic_suggestions(last, terms) {
-    const invalid = [
+    const incompatible_patterns = [
         {operator: "dm"},
         {operator: "is", operand: "dm"},
         {operator: "dm-including"},
         {operator: "topic"},
     ];
-    if (!check_validity(last, terms, ["stream", "topic", "search"], invalid)) {
+    if (!check_validity(last, terms, ["stream", "topic", "search"], incompatible_patterns)) {
         return [];
     }
 
@@ -476,13 +475,13 @@ function get_special_filter_suggestions(last, terms, suggestions) {
         suggestions = suggestions.map((suggestion) => ({
             search_string: "-" + suggestion.search_string,
             description_html: "exclude " + suggestion.description_html,
-            invalid: suggestion.invalid,
+            incompatible_patterns: suggestion.incompatible_patterns,
         }));
     }
 
     const last_string = Filter.unparse([last]).toLowerCase();
     suggestions = suggestions.filter((s) => {
-        if (match_criteria(terms, s.invalid)) {
+        if (match_criteria(terms, s.incompatible_patterns)) {
             return false;
         }
         if (last_string === "") {
@@ -508,7 +507,7 @@ function get_streams_filter_suggestions(last, terms) {
         {
             search_string: "streams:public",
             description_html: "All public streams in organization",
-            invalid: [
+            incompatible_patterns: [
                 {operator: "is", operand: "dm"},
                 {operator: "stream"},
                 {operator: "dm-including"},
@@ -525,7 +524,7 @@ function get_is_filter_suggestions(last, terms) {
         {
             search_string: "is:dm",
             description_html: "direct messages",
-            invalid: [
+            incompatible_patterns: [
                 {operator: "is", operand: "dm"},
                 {operator: "is", operand: "resolved"},
                 {operator: "stream"},
@@ -536,27 +535,27 @@ function get_is_filter_suggestions(last, terms) {
         {
             search_string: "is:starred",
             description_html: "starred messages",
-            invalid: [{operator: "is", operand: "starred"}],
+            incompatible_patterns: [{operator: "is", operand: "starred"}],
         },
         {
             search_string: "is:mentioned",
             description_html: "@-mentions",
-            invalid: [{operator: "is", operand: "mentioned"}],
+            incompatible_patterns: [{operator: "is", operand: "mentioned"}],
         },
         {
             search_string: "is:alerted",
             description_html: "alerted messages",
-            invalid: [{operator: "is", operand: "alerted"}],
+            incompatible_patterns: [{operator: "is", operand: "alerted"}],
         },
         {
             search_string: "is:unread",
             description_html: "unread messages",
-            invalid: [{operator: "is", operand: "unread"}],
+            incompatible_patterns: [{operator: "is", operand: "unread"}],
         },
         {
             search_string: "is:resolved",
             description_html: "topics marked as resolved",
-            invalid: [
+            incompatible_patterns: [
                 {operator: "is", operand: "resolved"},
                 {operator: "is", operand: "dm"},
                 {operator: "dm"},
@@ -572,17 +571,17 @@ function get_has_filter_suggestions(last, terms) {
         {
             search_string: "has:link",
             description_html: "messages that contain links",
-            invalid: [{operator: "has", operand: "link"}],
+            incompatible_patterns: [{operator: "has", operand: "link"}],
         },
         {
             search_string: "has:image",
             description_html: "messages that contain images",
-            invalid: [{operator: "has", operand: "image"}],
+            incompatible_patterns: [{operator: "has", operand: "image"}],
         },
         {
             search_string: "has:attachment",
             description_html: "messages that contain attachments",
-            invalid: [{operator: "has", operand: "attachment"}],
+            incompatible_patterns: [{operator: "has", operand: "attachment"}],
         },
     ];
     return get_special_filter_suggestions(last, terms, suggestions);
@@ -601,9 +600,9 @@ function get_sent_by_me_suggestions(last, terms) {
     const sent_string = negated_symbol + "sent";
     const description_html = verb + "sent by me";
 
-    const invalid = [{operator: "sender"}, {operator: "from"}];
+    const incompatible_patterns = [{operator: "sender"}, {operator: "from"}];
 
-    if (match_criteria(terms, invalid)) {
+    if (match_criteria(terms, incompatible_patterns)) {
         return [];
     }
 
