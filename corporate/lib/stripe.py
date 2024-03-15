@@ -1130,7 +1130,11 @@ class BillingSession(ABC):
         self,
         metadata: Dict[str, Any],
     ) -> str:
-        # NOTE: This charges users immediately.
+        """
+        Charge customer based on `billing_modality`. If `billing_modality` is `charge_automatically`,
+        charge customer immediately. If the charge fails, the invoice will be voided.
+        If `billing_modality` is `send_invoice`, create an invoice and send it to the customer.
+        """
         customer = self.get_customer()
         assert customer is not None and customer.stripe_customer_id is not None
         charge_automatically = metadata["billing_modality"] == "charge_automatically"
@@ -2441,6 +2445,7 @@ class BillingSession(ABC):
                     pay_by_invoice_payments_page = invoice.hosted_invoice_url
             else:
                 # NOTE: Only use `last_send_invoice` to display invoice due information and not to verify payment.
+                # Since `last_send_invoice` can vary from invoice for upgrade, additional license, support contract etc.
                 last_send_invoice = (
                     Invoice.objects.filter(customer=customer, status=Invoice.SENT)
                     .order_by("id")
