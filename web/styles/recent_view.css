@@ -165,7 +165,14 @@
         .search_group {
             display: flex;
             flex-grow: 1;
-            margin: 0 -27px 10px 0;
+            margin: 0 0 10px;
+            position: relative;
+        }
+
+        #recent_view_search_clear {
+            display: none;
+            position: absolute;
+            right: -5px;
         }
 
         #recent_view_search {
@@ -178,7 +185,7 @@
 
         .clear_search_button {
             /* Overrides app_components.css property. */
-            padding-top: 4px !important;
+            padding-top: 7px !important;
         }
 
         .btn-recent-filters {
