@@ -46,7 +46,6 @@ const people = zrequire("people");
 const user_groups = zrequire("user_groups");
 const stream_data = zrequire("stream_data");
 const stream_list_sort = zrequire("stream_list_sort");
-const compose = zrequire("compose");
 const compose_pm_pill = zrequire("compose_pm_pill");
 const compose_recipient = zrequire("compose_recipient");
 const composebox_typeahead = zrequire("composebox_typeahead");
@@ -1154,12 +1153,12 @@ test("initialize", ({override, override_rewire, mock_template}) => {
 
     user_settings.enter_sends = false;
     let compose_finish_called = false;
-    override_rewire(compose, "finish", () => {
+    function finish() {
         compose_finish_called = true;
-    });
+    }
 
     ct.initialize({
-        on_enter_send: compose.finish,
+        on_enter_send: finish,
     });
 
     $("#private_message_recipient").val("othello@zulip.com, ");
@@ -1301,7 +1300,7 @@ test("initialize", ({override, override_rewire, mock_template}) => {
     $("#private_message_recipient").off("blur");
     $("#send_later").css = noop;
     ct.initialize({
-        on_enter_send: compose.finish,
+        on_enter_send: finish,
     });
 
     // Now let's make sure that all the stub functions have been called
