@@ -3456,8 +3456,8 @@ zxcvbn==4.4.28 \
     # via -r requirements/common.in
 
 # The following packages are considered to be unsafe in a requirements file:
-https://github.com/zulip/pip/archive/6642149c44297200f44dfe215b1cb7954d47ed77.zip#egg=pip==20.3.4+git \
-    --hash=sha256:4dfbc892b80b32091921c7cead7c4aff06c726e520633ac89bc463137e0fd27d
+https://github.com/zulip/pip/archive/39e8b5ecfcd8d19872f103d680713bc8e9de9d00.zip#egg=pip==20.3.4+git \
+    --hash=sha256:2c8ae0783fea3e2b98b422d443b19c443779f0881882f905e0728be7b4043d1b
     # via
     #   -r requirements/pip.in
     #   pip-tools
