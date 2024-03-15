@@ -63,7 +63,6 @@ mock_esm("../src/popovers", {
 
 const people = zrequire("people");
 
-const compose_setup = zrequire("compose_setup");
 const compose_state = zrequire("compose_state");
 const compose_actions = zrequire("compose_actions");
 const compose_reply = zrequire("compose_reply");
@@ -223,11 +222,9 @@ test("start", ({override, override_rewire, mock_template}) => {
     };
 
     let abort_xhr_called = false;
-    override_rewire(compose_setup, "abort_xhr", () => {
+    compose_actions.register_compose_cancel_hook(() => {
         abort_xhr_called = true;
     });
-
-    compose_actions.register_compose_cancel_hook(compose_setup.abort_xhr);
     $("textarea#compose-textarea").set_height(50);
 
     assert_hidden("#compose_controls");
