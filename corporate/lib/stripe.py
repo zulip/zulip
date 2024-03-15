@@ -1994,15 +1994,10 @@ class BillingSession(ABC):
             )
 
     def get_next_billing_cycle(self, plan: CustomerPlan) -> datetime:
-        last_ledger_renewal = (
-            LicenseLedger.objects.filter(plan=plan, is_renewal=True).order_by("-id").first()
-        )
-        assert last_ledger_renewal is not None
-        last_renewal = last_ledger_renewal.event_time
-
         if plan.status in (
             CustomerPlan.FREE_TRIAL,
             CustomerPlan.DOWNGRADE_AT_END_OF_FREE_TRIAL,
+            CustomerPlan.NEVER_STARTED,
         ):
             assert plan.next_invoice_date is not None
             next_billing_cycle = plan.next_invoice_date
@@ -2010,6 +2005,11 @@ class BillingSession(ABC):
             assert plan.end_date is not None
             next_billing_cycle = plan.end_date
         else:
+            last_ledger_renewal = (
+                LicenseLedger.objects.filter(plan=plan, is_renewal=True).order_by("-id").first()
+            )
+            assert last_ledger_renewal is not None
+            last_renewal = last_ledger_renewal.event_time
             next_billing_cycle = start_of_next_billing_cycle(plan, last_renewal)
 
         if plan.end_date is not None:
