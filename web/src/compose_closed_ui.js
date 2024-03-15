@@ -183,10 +183,16 @@ export function initialize() {
 
     // Click handlers for buttons in the compose box.
     $("body").on("click", ".compose_new_conversation_button", () => {
-        compose_actions.start("stream", {trigger: "clear topic button"});
+        compose_actions.start("stream", {
+            trigger: "clear topic button",
+            keep_composebox_empty: true,
+        });
     });
 
     $("body").on("click", ".compose_new_direct_message_button", () => {
-        compose_actions.start("private", {trigger: "new direct message"});
+        compose_actions.start("private", {
+            trigger: "new direct message",
+            keep_composebox_empty: true,
+        });
     });
 }
