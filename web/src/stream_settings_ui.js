@@ -479,7 +479,7 @@ export function redraw_left_panel(left_panel_params = get_left_panel_params()) {
 let sort_order = "by-stream-name";
 
 export function get_left_panel_params() {
-    const $search_box = $("#stream_filter input[type='text']");
+    const $search_box = $("#search_stream_name");
     const input = $search_box.expectOne().val().trim();
     const params = {
         input,
@@ -600,6 +600,10 @@ export function setup_page(callback) {
 
         // show the "Stream settings" header by default.
         $(".display-type #stream_settings_title").show();
+
+        if (!$("#search_stream_name").val()) {
+            $("#clear_search_stream_name").hide();
+        }
     }
 
     function populate_and_fill() {
@@ -648,7 +652,12 @@ export function setup_page(callback) {
         stream_create.set_up_handlers();
 
         const throttled_redraw_left_panel = _.throttle(redraw_left_panel, 50);
-        $("#stream_filter input[type='text']").on("input", () => {
+        $("#search_stream_name").on("input", () => {
+            if (!$("#search_stream_name").val()) {
+                $("#clear_search_stream_name").hide();
+            } else {
+                $("#clear_search_stream_name").show();
+            }
             // Debounce filtering in case a user is typing quickly
             throttled_redraw_left_panel();
         });
@@ -658,7 +667,7 @@ export function setup_page(callback) {
         // is only useful if the user has permission to create
         // streams, either explicitly via user_can_create_streams, or
         // implicitly because realm.realm_is_zephyr_mirror_realm.
-        $("#stream_filter input[type='text']").on("keypress", (e) => {
+        $("#search_stream_name").on("keypress", (e) => {
             if (!keydown_util.is_enter_event(e)) {
                 return;
             }
@@ -677,7 +686,8 @@ export function setup_page(callback) {
         });
 
         $("#clear_search_stream_name").on("click", () => {
-            $("#stream_filter input[type='text']").val("");
+            $("#search_stream_name").val("");
+            $("#clear_search_stream_name").hide();
             redraw_left_panel();
         });
 
