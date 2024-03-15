@@ -1553,9 +1553,18 @@ export function initialize({
         }, 300),
     );
 
+    $("body").on("input", "#recent_view_search", () => {
+        if ($("#recent_view_search").val()) {
+            $("#recent_view_search_clear").css("visibility", "visible");
+        } else {
+            $("#recent_view_search_clear").css("visibility", "hidden");
+        }
+    });
+
     $("body").on("click", "#recent_view_search_clear", (e) => {
         e.stopPropagation();
         $("#recent_view_search").val("");
+        $("#recent_view_search_clear").css("visibility", "hidden");
         update_filters_view();
     });
 
