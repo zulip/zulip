@@ -21,12 +21,7 @@ from corporate.lib.stripe import (
     get_configured_fixed_price_plan_offer,
     get_free_trial_days,
 )
-from corporate.models import (
-    CustomerPlan,
-    get_current_plan_by_customer,
-    get_customer_by_realm,
-    is_legacy_customer,
-)
+from corporate.models import CustomerPlan, get_current_plan_by_customer, get_customer_by_realm
 from zerver.context_processors import get_realm_from_request, latest_info_context
 from zerver.decorator import add_google_analytics, zulip_login_required
 from zerver.lib.github import (
@@ -193,9 +188,9 @@ def remote_realm_plans_page(
                     status=CustomerPlan.NEVER_STARTED,
                 )
 
-        if is_legacy_customer(customer):
-            # Free trial is disabled for legacy customers.
-            context.free_trial_days = None
+    if billing_session.is_legacy_customer():
+        # Free trial is disabled for legacy customers.
+        context.free_trial_days = None
 
     context.is_new_customer = (
         not context.on_free_tier and context.customer_plan is None and not context.is_sponsored
@@ -256,7 +251,7 @@ def remote_server_plans_page(
                     status=CustomerPlan.NEVER_STARTED,
                 )
 
-        if is_legacy_customer(customer):
+        if billing_session.is_legacy_customer():
             # Free trial is disabled for legacy customers.
             context.free_trial_days = None
 
