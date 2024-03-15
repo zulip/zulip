@@ -2169,28 +2169,19 @@ class StripeTest(StripeTestCase):
         with self.assertRaises(signing.BadSignature):
             unsign_string(signed_string, "randomsalt")
 
-    # This tests both the payment method string, and also is a very basic
-    # test that the various upgrade paths involving non-standard payment
-    # histories don't throw errors
     @mock_stripe()
     def test_payment_method_string(self, *mocks: Mock) -> None:
-        pass
-        # If you sign up with a card, we should show your card as the payment method
-        # Already tested in test_initial_upgrade
-
         # If you pay by invoice, your payment method should be
-        # "Billed by invoice", even if you have a card on file
-        # user = self.example_user("hamlet")
-        # billing_session = RealmBillingSession(user)
-        # billing_session.create_stripe_customer()
-        # self.login_user(user)
-        # self.upgrade(invoice=True)
-        # stripe_customer = stripe_get_customer(Customer.objects.get(realm=user.realm).stripe_customer_id)
-        # self.assertEqual('Billed by invoice', payment_method_string(stripe_customer))
-
-        # If you sign up with a card and then downgrade, we still have your
-        # card on file, and should show it
-        # TODO
+        # "Invoice", even if you have a card on file.
+        user = self.example_user("hamlet")
+        billing_session = RealmBillingSession(user)
+        billing_session.create_stripe_customer()
+        self.login_user(user)
+        self.add_card_to_customer_for_upgrade()
+        self.upgrade(invoice=True)
+        response = self.client_get("/billing/")
+        self.assert_not_in_success_response(["Visa ending in"], response)
+        self.assert_in_success_response(["Invoice", "You will receive an invoice for"], response)
 
     @mock_stripe()
     def test_replace_payment_method(self, *mocks: Mock) -> None:
