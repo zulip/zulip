@@ -1,5 +1,5 @@
 import ClipboardJS from "clipboard";
-import {parseISO} from "date-fns";
+import {isValid, parseISO} from "date-fns";
 import $ from "jquery";
 
 import render_profile_access_error_model from "../templates/profile_access_error_modal.hbs";
@@ -269,6 +269,23 @@ function render_manage_profile_content(user) {
     }
 }
 
+function get_tippy_content(field_name) {
+    const hyperlink = /\[([^[\]]*?)]\((.*?)\)/g;
+    const mentions = /_?\*{1,2}([^*]+)\*{1,2}/g;
+    const time = /<time:([^>]+)>/g;
+    const tippy_content = field_name
+        .replaceAll(hyperlink, (_, content) => content)
+        .replaceAll(mentions, (_, mentioned_user) => mentioned_user)
+        .replaceAll(time, (_, time_str) => {
+            const timestamp = parseISO(time_str);
+            if (isValid(timestamp)) {
+                return timerender.format_markdown_time(timestamp);
+            }
+            return time_str;
+        });
+    return tippy_content;
+}
+
 export function get_custom_profile_field_data(user, field, field_types) {
     const field_value = people.get_custom_profile_data(user.user_id, field.id);
     const field_type = field.type;
@@ -280,6 +297,7 @@ export function get_custom_profile_field_data(user, field, field_types) {
     if (!field_value.value) {
         return profile_field;
     }
+    profile_field.tippy_content = get_tippy_content(field.name);
     profile_field.id = field.id;
     profile_field.name = field.name;
     profile_field.rendered_name = field.rendered_name !== "" ? field.rendered_name : undefined;

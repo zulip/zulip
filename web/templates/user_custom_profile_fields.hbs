@@ -9,13 +9,13 @@
         {{/unless}}
         {{#if this.is_link}}
             <div class="custom-user-url-field">
-                <a tabindex="0" href="{{this.value}}" target="_blank" rel="noopener noreferrer" class="value custom-profile-fields-link {{#if ../for_user_card_popover}}tippy-zulip-tooltip{{/if}}" data-tippy-content="{{this.name}}">{{this.value}}</a>
+                <a tabindex="0" href="{{this.value}}" target="_blank" rel="noopener noreferrer" class="value custom-profile-fields-link {{#if ../for_user_card_popover}}tippy-zulip-tooltip{{/if}}" data-tippy-content="{{this.tippy_content}}">{{this.value}}</a>
                 <button type="submit" class="tippy-zulip-tooltip copy-custom-field-url" data-tippy-content="{{t 'Copy URL' }}">
                     {{> copy_to_clipboard_svg }}
                 </button>
             </div>
         {{else if this.is_external_account}}
-            <a tabindex="0" href="{{this.link}}" target="_blank" rel="noopener noreferrer" class="value custom-profile-fields-link {{#if ../for_user_card_popover}}tippy-zulip-tooltip{{/if}}" data-tippy-content="{{this.name}}">
+            <a tabindex="0" href="{{this.link}}" target="_blank" rel="noopener noreferrer" class="value custom-profile-fields-link {{#if ../for_user_card_popover}}tippy-zulip-tooltip{{/if}}" data-tippy-content="{{this.tippy_content}}">
                 {{#if (eq this.subtype "github") }}
                 <i class="fa fa-github" aria-hidden="true"></i>
                 {{else if (eq this.subtype "twitter") }}
@@ -29,9 +29,9 @@
             </div>
         {{else}}
             {{#if this.rendered_value}}
-            <span class="value rendered_markdown {{#if ../for_user_card_popover}}tippy-zulip-tooltip{{/if}}" data-tippy-content="{{this.name}}">{{rendered_markdown this.rendered_value}}</span>
+            <span class="value rendered_markdown {{#if ../for_user_card_popover}}tippy-zulip-tooltip{{/if}}" data-tippy-content="{{this.tippy_content}}">{{rendered_markdown this.rendered_value}}</span>
             {{else}}
-            <span class="value {{#if ../for_user_card_popover}}tippy-zulip-tooltip"{{/if}} data-tippy-content="{{this.name}}">{{this.value}}</span>
+            <span class="value {{#if ../for_user_card_popover}}tippy-zulip-tooltip"{{/if}} data-tippy-content="{{this.tippy_content}}">{{this.value}}</span>
             {{/if}}
         {{/if}}
     </li>
