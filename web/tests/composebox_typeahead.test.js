@@ -10,6 +10,7 @@ const {current_user, realm, user_settings} = require("./lib/zpage_params");
 
 let autosize_called;
 
+const bootstrap_typeahead = mock_esm("../src/bootstrap_typeahead");
 const compose_ui = mock_esm("../src/compose_ui", {
     autosize_textarea() {
         autosize_called = true;
@@ -35,7 +36,6 @@ set_global("setTimeout", (f, time) => {
 });
 set_global("document", "document-stub");
 
-const bootstrap_typeahead = zrequire("bootstrap_typeahead");
 const typeahead = zrequire("../shared/src/typeahead");
 const stream_topic_history = zrequire("stream_topic_history");
 const compose_state = zrequire("compose_state");
@@ -757,7 +757,7 @@ test("initialize", ({override, override_rewire, mock_template}) => {
     let topic_typeahead_called = false;
     let pm_recipient_typeahead_called = false;
     let compose_textarea_typeahead_called = false;
-    override_rewire(bootstrap_typeahead, "create", ($element, options) => {
+    override(bootstrap_typeahead, "create", ($element, options) => {
         switch ($element) {
             case $("input#stream_message_recipient_topic"): {
                 override_rewire(stream_topic_history, "get_recent_topic_names", (stream_id) => {
