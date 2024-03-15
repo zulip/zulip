@@ -1,4 +1,5 @@
 import $ from "jquery";
+import _ from "lodash";
 
 import type {Filter} from "./filter";
 import {localstorage} from "./localstorage";
@@ -113,6 +114,11 @@ export function handle_narrow_activated(filter: Filter): void {
             $filter_li = $(".top_left_mentions");
             $filter_li.addClass("active-filter");
         }
+    }
+    const term_types = filter.sorted_term_types();
+    if (_.isEqual(term_types, ["sender", "has-reaction"])) {
+        $filter_li = $(".top_left_my_reactions");
+        $filter_li.addClass("active-filter");
     }
 }
 

@@ -669,6 +669,36 @@ export function initialize() {
         do_render_buddy_list_tooltip($elem, title_data, noop, noop, false, undefined, false);
     });
 
+    $("body").on("mouseenter", ".top_left_my_reactions", (e) => {
+        e.stopPropagation();
+        const $elem = $(e.currentTarget);
+
+        function get_target_node() {
+            return document.querySelector("#left-sidebar-navigation-area");
+        }
+
+        // Whole list is just replaced, so we need to check for that.
+        function check_reference_removed(mutation, instance) {
+            return Array.prototype.includes.call(
+                mutation.removedNodes,
+                $(instance.reference).parents(".left-sidebar-navigation-list")[0],
+            );
+        }
+        const title_data = {
+            first_line: "Your messages that have received reactions.",
+            second_line: "",
+            third_line: "",
+        };
+        const check_subtree = true;
+        do_render_buddy_list_tooltip(
+            $elem,
+            title_data,
+            get_target_node,
+            check_reference_removed,
+            check_subtree,
+        );
+    });
+
     // MISC
 
     {

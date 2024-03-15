@@ -832,6 +832,9 @@ export class Filter {
         if (_.isEqual(term_types, ["sender"])) {
             return true;
         }
+        if (_.isEqual(term_types, ["sender", "has-reaction"])) {
+            return true;
+        }
         return false;
     }
 
@@ -901,6 +904,12 @@ export class Filter {
         const term_types = this.sorted_term_types();
         let icon;
         let zulip_icon;
+
+        if (_.isEqual(term_types, ["sender", "has-reaction"])) {
+            zulip_icon = "smile";
+            return {...context, zulip_icon};
+        }
+
         switch (term_types[0]) {
             case "in-home":
             case "in-all":
@@ -1025,6 +1034,9 @@ export class Filter {
                 case "is-unread":
                     return $t({defaultMessage: "Unread messages"});
             }
+        }
+        if (_.isEqual(term_types, ["sender", "has-reaction"])) {
+            return $t({defaultMessage: "Your messages with reactions"});
         }
         /* istanbul ignore next */
         return undefined;
