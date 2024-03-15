@@ -35,6 +35,7 @@ const draft_schema = z.intersection(
     z.object({
         content: z.string(),
         updatedAt: z.number(),
+        is_sending_saving: z.boolean().default(false),
     }),
     z.discriminatedUnion("type", [
         z.object({
@@ -60,6 +61,7 @@ const possibly_buggy_draft_schema = z.intersection(
     z.object({
         content: z.string(),
         updatedAt: z.number(),
+        is_sending_saving: z.boolean().default(false),
     }),
     z.discriminatedUnion("type", [
         z.object({
@@ -303,6 +305,7 @@ export function snapshot_message(): LocalStorageDraft | undefined {
             type: "private",
             reply_to: recipient,
             private_message_recipient: recipient,
+            is_sending_saving: false,
         };
     }
     assert(message.type === "stream");
@@ -311,6 +314,7 @@ export function snapshot_message(): LocalStorageDraft | undefined {
         type: "stream",
         stream_id: compose_state.stream_id(),
         topic: compose_state.topic(),
+        is_sending_saving: false,
     };
 }
 
@@ -375,12 +379,15 @@ function maybe_notify(no_notify: boolean): void {
 type UpdateDraftOptions = {
     no_notify?: boolean;
     update_count?: boolean;
+    is_sending_saving?: boolean;
 };
 
 export function update_draft(opts: UpdateDraftOptions = {}): string | undefined {
+    const draft_id = $("textarea#compose-textarea").data("draft-id");
+    const old_draft = draft_model.getDraft(draft_id);
+
     const no_notify = opts.no_notify ?? false;
     const draft = snapshot_message();
-    const draft_id = $("textarea#compose-textarea").data("draft-id");
 
     if (draft === undefined) {
         // The user cleared the compose box, which means
@@ -390,6 +397,12 @@ export function update_draft(opts: UpdateDraftOptions = {}): string | undefined 
             draft_model.deleteDraft(draft_id);
         }
         return undefined;
+    }
+
+    if (opts.is_sending_saving !== undefined) {
+        draft.is_sending_saving = opts.is_sending_saving;
+    } else {
+        draft.is_sending_saving = old_draft ? old_draft.is_sending_saving : false;
     }
 
     if (draft_id !== undefined) {
@@ -507,6 +520,7 @@ export function get_last_draft_based_on_compose_state(): LocalStorageDraftWithId
     );
     return drafts_for_compose_state
         .sort((draft_a, draft_b) => draft_a.updatedAt - draft_b.updatedAt)
+        .filter((draft) => !draft.is_sending_saving)
         .pop();
 }
 

@@ -239,6 +239,12 @@ test_ui("send_message", ({override, override_rewire, mock_template}) => {
         stub_state.get_events_running_called += 1;
     });
 
+    override_rewire(drafts, "update_draft", () => 100);
+    override(drafts.draft_model, "getDraft", (draft_id) => {
+        assert.equal(draft_id, 100);
+        return {};
+    });
+
     // Tests start here.
     (function test_message_send_success_codepath() {
         stub_state = initialize_state_stub_dict();
@@ -251,7 +257,6 @@ test_ui("send_message", ({override, override_rewire, mock_template}) => {
         override(markdown, "render", noop);
         override(markdown, "get_topic_links", noop);
 
-        override_rewire(drafts, "update_draft", () => 100);
         override_rewire(echo, "try_deliver_locally", (message_request) => {
             const local_id_float = 123.04;
             return echo.insert_local_message(message_request, local_id_float, (messages) =>
