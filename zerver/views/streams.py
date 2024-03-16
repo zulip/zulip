@@ -1,5 +1,17 @@
 from collections import defaultdict
-from typing import Any, Callable, Dict, List, Literal, Mapping, Optional, Sequence, Set, Union
+from typing import (
+    Any,
+    Callable,
+    Dict,
+    List,
+    Literal,
+    Mapping,
+    Optional,
+    Sequence,
+    Set,
+    Tuple,
+    Union,
+)
 
 import orjson
 from django.conf import settings
@@ -510,6 +522,8 @@ def remove_subscriptions_backend(
         realm, people_to_unsub, streams, acting_user=user_profile
     )
 
+    send_messages_for_removed_subscribers(removed, acting_user=user_profile)
+
     for subscriber, removed_stream in removed:
         result["removed"].append(removed_stream.name)
     for subscriber, not_subscribed_stream in not_subscribed:
@@ -518,25 +532,84 @@ def remove_subscriptions_backend(
     return json_success(request, data=result)
 
 
-def you_were_just_subscribed_message(
-    acting_user: UserProfile, recipient_user: UserProfile, stream_names: Set[str]
+def make_message_for_subscription_change(
+    acting_user: UserProfile,
+    recipient_user: UserProfile,
+    stream_names: Set[str],
+    *,
+    add_subscription: bool = False,
+    remove_subscription: bool = False,
 ) -> str:
     subscriptions = sorted(stream_names)
-    if len(subscriptions) == 1:
-        with override_language(recipient_user.default_language):
+    message: str = ""
+    with override_language(recipient_user.default_language):
+        if add_subscription and len(subscriptions) == 1:
             return _("{user_full_name} subscribed you to the stream {stream_name}.").format(
                 user_full_name=silent_mention_syntax_for_user(acting_user),
                 stream_name=f"#**{subscriptions[0]}**",
             )
-
-    with override_language(recipient_user.default_language):
-        message = _("{user_full_name} subscribed you to the following streams:").format(
-            user_full_name=silent_mention_syntax_for_user(acting_user),
-        )
+        elif remove_subscription and len(subscriptions) == 1:
+            return _("{user_full_name} unsubscribed you from the stream {stream_name}.").format(
+                user_full_name=silent_mention_syntax_for_user(acting_user),
+                stream_name=f"#**{subscriptions[0]}**",
+            )
+        elif add_subscription:
+            message = _("{user_full_name} subscribed you to the following streams:").format(
+                user_full_name=silent_mention_syntax_for_user(acting_user),
+            )
+        else:
+            message = _("{user_full_name} unsubscribed you from the following streams:").format(
+                user_full_name=silent_mention_syntax_for_user(acting_user),
+            )
     message += "\n\n"
     for stream_name in subscriptions:
         message += f"* #**{stream_name}**\n"
     return message
+
+
+def send_messages_for_removed_subscribers(
+    removed_subscribers: List[Tuple[UserProfile, Stream]], acting_user: UserProfile
+) -> None:
+    if len(removed_subscribers) == 0:
+        return
+
+    user_id_to_unsubscribed_streams: Dict[Any, Set[str]] = {}
+    user_id_to_user: Dict[Any, UserProfile] = {}
+    for user, stream in removed_subscribers:
+        if user.id in user_id_to_unsubscribed_streams:
+            user_id_to_unsubscribed_streams[user.id].add(stream.name)
+        else:
+            user_id_to_unsubscribed_streams[user.id] = {stream.name}
+            user_id_to_user[user.id] = user
+
+    mention_backend = MentionBackend(acting_user.realm_id)
+    all_messages = []
+    for user_id, stream_names in user_id_to_unsubscribed_streams.items():
+        # Our caller already filters deactivated users. We need to check for
+        # other cases where we shouldn't send notification message.
+        if user_id == acting_user.id:
+            continue
+        if user_id_to_user[user_id].is_bot:
+            continue
+
+        sender = get_system_bot(settings.NOTIFICATION_BOT, user_id_to_user[user_id].realm_id)
+        message = make_message_for_subscription_change(
+            acting_user=acting_user,
+            recipient_user=user_id_to_user[user_id],
+            stream_names=stream_names,
+            remove_subscription=True,
+        )
+
+        all_messages.append(
+            internal_prep_private_message(
+                sender=sender,
+                recipient_user=user,
+                content=message,
+                mention_backend=mention_backend,
+            )
+        )
+
+    do_send_messages(all_messages)
 
 
 RETENTION_DEFAULT: Union[str, int] = "realm_default"
@@ -751,10 +824,11 @@ def send_messages_for_new_subscribers(
             recipient_user = email_to_user_profile[email]
             sender = get_system_bot(settings.NOTIFICATION_BOT, recipient_user.realm_id)
 
-            msg = you_were_just_subscribed_message(
+            msg = make_message_for_subscription_change(
                 acting_user=user_profile,
                 recipient_user=recipient_user,
                 stream_names=notify_stream_names,
+                add_subscription=True,
             )
 
             notifications.append(
