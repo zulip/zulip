@@ -2902,6 +2902,36 @@ class StreamAdminTest(ZulipTestCase):
         )
         self.assert_json_error(result, "No such user", status_code=400)
 
+    def test_remove_user_from_multiple_streams(self) -> None:
+        admin = self.example_user("iago")
+        self.login_user(admin)
+        subbed_user = self.example_user("cordelia")
+
+        # Set up the stream.
+        stream_names = ["hümbüǵ", "1", "..."]
+        for name in stream_names:
+            self.subscribe(subbed_user, name)
+
+        # Set up the principal to be unsubscribed.
+        principals = [subbed_user.id]
+
+        with self.assert_database_query_count(23):
+            with cache_tries_captured() as cache_tries:
+                with self.captureOnCommitCallbacks(execute=True):
+                    result = self.client_delete(
+                        "/json/users/me/subscriptions",
+                        {
+                            "subscriptions": orjson.dumps(stream_names).decode(),
+                            "principals": orjson.dumps(principals).decode(),
+                        },
+                    )
+        self.assert_length(cache_tries, 4)
+
+        if result.status_code not in [400]:
+            for name in stream_names:
+                users_subbed_to_streams = self.users_subscribed_to_stream(name, subbed_user.realm)
+            self.assertNotIn(subbed_user, users_subbed_to_streams)
+
 
 class DefaultStreamTest(ZulipTestCase):
     def get_default_stream_names(self, realm: Realm) -> Set[str]:
