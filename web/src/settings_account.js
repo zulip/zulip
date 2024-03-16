@@ -241,7 +241,6 @@ export function add_custom_profile_fields_to_settings() {
         pill_update_handler,
     );
     custom_profile_fields_ui.initialize_custom_date_type_fields(element_id);
-    custom_profile_fields_ui.initialize_custom_pronouns_type_fields(element_id);
 }
 
 export function hide_confirm_email_banner() {

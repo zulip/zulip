@@ -23,9 +23,14 @@
         {{else if is_url_field }}
         <input class="custom_user_field_value {{#if for_manage_user_modal}}modal_url_input{{else}}settings_url_input{{/if}}" type="{{ field_type }}" value="{{ field_value.value }}" maxlength="2048" />
         {{else if is_pronouns_field}}
-        <input class="custom_user_field_value pronouns_type_field {{#if for_manage_user_modal}}modal_text_input{{else}}settings_text_input{{/if}}" type="{{ field_type }}" value="{{ field_value.value }}" maxlength="50" />
+        <input class="custom_user_field_value pronouns_type_field {{#if for_manage_user_modal}}modal_text_input{{else}}settings_text_input{{/if}}" type="{{ field_type }}" value="{{ field_value.value }}" maxlength="50" list="pronoun-options" />
         {{else}}
         <input class="custom_user_field_value {{#if for_manage_user_modal}}modal_text_input{{else}}settings_text_input{{/if}}" type="{{ field_type }}" value="{{ field_value.value }}" maxlength="50" />
         {{/if}}
+        <datalist id="pronoun-options">
+            <option value="She/her"></option>
+            <option value="He/him"></option>
+            <option value="They/them"></option>
+        </datalist>
     </div>
 </div>

@@ -2,12 +2,9 @@ import $ from "jquery";
 
 import render_settings_custom_user_profile_field from "../templates/settings/custom_user_profile_field.hbs";
 
-import * as bootstrap_typeahead from "./bootstrap_typeahead";
-import {$t} from "./i18n";
 import * as people from "./people";
 import * as pill_typeahead from "./pill_typeahead";
 import {realm} from "./state_data";
-import * as typeahead_helper from "./typeahead_helper";
 import * as user_pill from "./user_pill";
 
 export function append_custom_profile_fields(element_id, user_id) {
@@ -156,23 +153,4 @@ export function initialize_custom_date_type_fields(element_id) {
         .on("click", function () {
             $(this).parent().find(".custom_user_field_value").val("");
         });
-}
-
-export function initialize_custom_pronouns_type_fields(element_id) {
-    const commonly_used_pronouns = [
-        $t({defaultMessage: "he/him"}),
-        $t({defaultMessage: "she/her"}),
-        $t({defaultMessage: "they/them"}),
-    ];
-    bootstrap_typeahead.create($(element_id).find(".pronouns_type_field"), {
-        items: 3,
-        fixed: true,
-        helpOnEmptyStrings: true,
-        source() {
-            return commonly_used_pronouns;
-        },
-        highlighter_html(item) {
-            return typeahead_helper.render_typeahead_item({primary: item});
-        },
-    });
 }
