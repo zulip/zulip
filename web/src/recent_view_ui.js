@@ -216,7 +216,7 @@ function get_min_load_count(already_rendered_count, load_count) {
     return load_count;
 }
 
-function is_table_focused() {
+export function is_table_focused() {
     return $current_focus_elem === "table";
 }
 
