@@ -1,5 +1,8 @@
 {{#> compose_banner }}
     <p class="banner_message">
-        {{#tr}}Warning: <strong>#{stream_name}</strong> is a private stream.{{/tr}}
+        {{#tr}}
+            Warning: <strong><z-link></z-link></strong> is a private stream.
+            {{#*inline "z-link"}}{{> ../inline_decorated_stream_name stream=stream}}{{/inline}}
+        {{/tr}}
     </p>
 {{/compose_banner}}

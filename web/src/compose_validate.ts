@@ -339,7 +339,10 @@ function show_stream_wildcard_warnings(opts: StreamWildcardOptions): void {
     const stream_name = sub_store.maybe_get_stream_name(opts.stream_id);
     const is_edit_container = opts.$banner_container.closest(".edit_form_banners").length > 0;
     const classname = compose_banner.CLASSNAMES.wildcard_warning;
-
+    let stream;
+    if (stream_name) {
+        stream = stream_data.get_sub(stream_name);
+    }
     let button_text = opts.scheduling_message
         ? $t({defaultMessage: "Yes, schedule"})
         : $t({defaultMessage: "Yes, send"});
@@ -356,6 +359,7 @@ function show_stream_wildcard_warnings(opts: StreamWildcardOptions): void {
         button_text,
         hide_close_button: true,
         classname,
+        stream,
         scheduling_message: opts.scheduling_message,
     });
 

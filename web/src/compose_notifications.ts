@@ -34,12 +34,19 @@ export function notify_unmute(muted_narrow: string, stream_id: number, topic_nam
     );
 }
 
+type PrivacyIcon = {
+    invite_only: boolean;
+    is_web_public: boolean;
+    name: string;
+};
+
 export function notify_above_composebox(
     banner_text: string,
     classname: string,
     above_composebox_narrow_url: string | null,
     link_msg_id: number,
     link_text: string,
+    privacy_icon?: PrivacyIcon,
 ): void {
     const $notification = $(
         render_message_sent_banner({
@@ -48,6 +55,7 @@ export function notify_above_composebox(
             above_composebox_narrow_url,
             link_msg_id,
             link_text,
+            privacy_icon,
         }),
     );
     // We pass in include_unmute_banner as false because we don't want to
@@ -82,8 +90,7 @@ export function notify_automatic_new_visibility_policy(
 // Handlebars templates that will do further escaping.
 function get_message_header(message: Message): string {
     if (message.type === "stream") {
-        const stream_name = stream_data.get_stream_name_from_id(message.stream_id);
-        return `#${stream_name} > ${message.topic}`;
+        return ` > ${message.topic}`;
     }
     if (message.display_recipient.length > 2) {
         return $t(
@@ -194,9 +201,16 @@ export function notify_local_mixes(messages: Message[], need_user_to_scroll: boo
             // other than maybe sending the above message.
             continue;
         }
-
+        let privacy_icon;
+        if (message.type === "stream") {
+            privacy_icon = {
+                invite_only: stream_data.is_invite_only_by_stream_id(message.stream_id),
+                is_web_public: stream_data.is_web_public(message.stream_id),
+                name: stream_data.get_stream_name_from_id(message.stream_id),
+            };
+        }
         const link_text = $t(
-            {defaultMessage: "Go to {message_recipient}"},
+            {defaultMessage: "{message_recipient}"},
             {message_recipient: get_message_header(message)},
         );
 
@@ -206,6 +220,7 @@ export function notify_local_mixes(messages: Message[], need_user_to_scroll: boo
             get_above_composebox_narrow_url(message),
             link_msg_id,
             link_text,
+            privacy_icon,
         );
     }
 }
