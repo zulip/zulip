@@ -375,15 +375,15 @@ export function setup_upload(config) {
         }
         const split_url = url.split("/");
         const filename = split_url.at(-1);
-        const filename_url = "[" + filename + "](" + url + ")";
+        const syntax_to_insert = "[" + filename + "](" + url + ")";
         const $text_area = get_item("textarea", config);
         const replacement_successful = compose_ui.replace_syntax(
             get_translated_status(file),
-            filename_url,
+            syntax_to_insert,
             $text_area,
         );
         if (!replacement_successful) {
-            compose_ui.insert_syntax_and_focus(filename_url, $text_area);
+            compose_ui.insert_syntax_and_focus(syntax_to_insert, $text_area);
         }
 
         compose_ui.autosize_textarea($text_area);
