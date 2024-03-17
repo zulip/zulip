@@ -116,14 +116,15 @@ Form is validated both client-side using jquery-validation (see signup.js) and s
                     {% else %}
                         <input id="id_full_name" class="required" type="text" name="full_name"
                           value="{% if full_name %}{{ full_name }}{% elif form.full_name.value() %}{{ form.full_name.value() }}{% endif %}"
-                          maxlength="{{ MAX_NAME_LENGTH }}" placeholder="{% trans %}Full name or 名前{% endtrans %}" required />
-                        <label for="id_full_name" class="inline-block label-title">{{ _('Full name') }}</label>
+                          maxlength="{{ MAX_NAME_LENGTH }}" placeholder="{% trans %}Your full name{% endtrans %}" required />
+                        <label for="id_full_name" class="inline-block label-title">{{ _('Name') }}</label>
                         {% if form.full_name.errors %}
                             {% for error in form.full_name.errors %}
                             <p class="help-inline text-error">{{ error }}</p>
                             {% endfor %}
                         {% endif %}
                     {% endif %}
+                    <p class="registration-form-hint">{{ _('This is how your account is displayed in Zulip.') }}</p>
                 </div>
 
                 <div class="input-box" id="profile_info_section" style="display:none;">

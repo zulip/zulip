@@ -11,13 +11,13 @@ import * as compose_pm_pill from "./compose_pm_pill";
 import * as compose_state from "./compose_state";
 import * as compose_ui from "./compose_ui";
 import * as compose_validate from "./compose_validate";
+import * as drafts from "./drafts";
 import * as dropdown_widget from "./dropdown_widget";
 import {$t} from "./i18n";
 import * as narrow_state from "./narrow_state";
 import * as people from "./people";
 import * as settings_config from "./settings_config";
 import {realm} from "./state_data";
-import * as stream_bar from "./stream_bar";
 import * as stream_data from "./stream_data";
 import * as sub_store from "./sub_store";
 import * as ui_util from "./ui_util";
@@ -95,6 +95,7 @@ function update_fade() {
 export function update_on_recipient_change() {
     update_fade();
     update_narrow_to_recipient_visibility();
+    drafts.update_compose_draft_count();
     check_posting_policy_for_compose_box();
 }
 
@@ -205,12 +206,8 @@ export function on_compose_select_recipient_update() {
 
     if (curr_message_type === "stream") {
         // Update stream name in the recipient box.
-        const $stream_header_colorblock = $(
-            "#compose_select_recipient_widget_wrapper .stream_header_colorblock",
-        );
         const stream_id = compose_state.stream_id();
         update_recipient_label(stream_id);
-        stream_bar.decorate(stream_id, $stream_header_colorblock);
     }
 
     update_on_recipient_change();

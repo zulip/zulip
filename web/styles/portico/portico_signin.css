@@ -668,7 +668,7 @@ html {
     }
 }
 
-#new-user-email-address-visibility {
+.registration-form-hint {
     text-align: left;
     font-size: 0.8em;
     line-height: normal;

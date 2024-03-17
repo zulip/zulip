@@ -2,6 +2,7 @@ import $ from "jquery";
 
 import render_settings_custom_user_profile_field from "../templates/settings/custom_user_profile_field.hbs";
 
+import * as bootstrap_typeahead from "./bootstrap_typeahead";
 import {$t} from "./i18n";
 import * as people from "./people";
 import * as pill_typeahead from "./pill_typeahead";
@@ -163,17 +164,15 @@ export function initialize_custom_pronouns_type_fields(element_id) {
         $t({defaultMessage: "she/her"}),
         $t({defaultMessage: "they/them"}),
     ];
-    $(element_id)
-        .find(".pronouns_type_field")
-        .typeahead({
-            items: 3,
-            fixed: true,
-            helpOnEmptyStrings: true,
-            source() {
-                return commonly_used_pronouns;
-            },
-            highlighter_html(item) {
-                return typeahead_helper.render_typeahead_item({primary: item});
-            },
-        });
+    bootstrap_typeahead.create($(element_id).find(".pronouns_type_field"), {
+        items: 3,
+        fixed: true,
+        helpOnEmptyStrings: true,
+        source() {
+            return commonly_used_pronouns;
+        },
+        highlighter_html(item) {
+            return typeahead_helper.render_typeahead_item({primary: item});
+        },
+    });
 }

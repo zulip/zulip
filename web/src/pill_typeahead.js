@@ -1,4 +1,5 @@
 import * as blueslip from "./blueslip";
+import * as bootstrap_typeahead from "./bootstrap_typeahead";
 import * as composebox_typeahead from "./composebox_typeahead";
 import * as people from "./people";
 import * as stream_pill from "./stream_pill";
@@ -31,7 +32,7 @@ export function set_up($input, pills, opts) {
     const include_users = opts.user;
     const exclude_bots = opts.exclude_bots;
 
-    $input.typeahead({
+    bootstrap_typeahead.create($input, {
         items: 5,
         fixed: true,
         dropup: true,

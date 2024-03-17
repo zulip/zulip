@@ -2,6 +2,7 @@ import $ from "jquery";
 import _ from "lodash";
 import {delegate} from "tippy.js";
 
+import render_drafts_tooltip from "../templates/drafts_tooltip.hbs";
 import render_narrow_to_compose_recipients_tooltip from "../templates/narrow_to_compose_recipients_tooltip.hbs";
 
 import * as compose_recipient from "./compose_recipient";
@@ -104,10 +105,23 @@ export function initialize() {
         target: ".send-control-button",
         delay: LONG_HOVER_DELAY,
         placement: "top",
-        onShow() {
+        onShow(instance) {
             // Don't show send-area tooltips if the popover is displayed.
             if (popover_menus.is_scheduled_messages_popover_displayed()) {
                 return false;
+            }
+            if (instance.reference.id === "compose-drafts-button") {
+                const count =
+                    instance.reference.querySelector(".compose-drafts-count").textContent || 0;
+                // Explain that the number in brackets is the number of drafts for this conversation.
+                const draft_count_msg = $t(
+                    {
+                        defaultMessage:
+                            "{count, plural, one {# draft} other {# drafts}} for this conversation",
+                    },
+                    {count},
+                );
+                instance.setContent(parse_html(render_drafts_tooltip({draft_count_msg})));
             }
             return true;
         },

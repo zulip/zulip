@@ -293,6 +293,7 @@ export function initialize(): void {
         const message = message_lists.current.get(id);
         assert(message !== undefined);
         message.condensed = true;
+        condense_row($row);
         e.stopPropagation();
         e.preventDefault();
     });

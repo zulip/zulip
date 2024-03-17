@@ -16,7 +16,7 @@ import sys
 import time
 import uuid
 from datetime import datetime, timedelta
-from typing import IO, Any, Dict, List, Sequence, Set
+from typing import IO, Any, Dict, List, Optional, Sequence, Set, Union, overload
 from urllib.parse import SplitResult
 
 DEPLOYMENTS_DIR = "/home/zulip/deployments"
@@ -583,24 +583,36 @@ def assert_running_as_root(strip_lib_from_paths: bool = False) -> None:
         sys.exit(1)
 
 
+@overload
 def get_config(
     config_file: configparser.RawConfigParser,
     section: str,
     key: str,
-    default_value: str = "",
-) -> str:
-    if config_file.has_option(section, key):
-        return config_file.get(section, key)
-    return default_value
-
-
-def get_config_bool(
-    config_file: configparser.RawConfigParser, section: str, key: str, default_value: bool = False
-) -> bool:
+    default_value: None = None,
+) -> Optional[str]: ...
+@overload
+def get_config(
+    config_file: configparser.RawConfigParser,
+    section: str,
+    key: str,
+    default_value: str,
+) -> str: ...
+@overload
+def get_config(
+    config_file: configparser.RawConfigParser, section: str, key: str, default_value: bool
+) -> bool: ...
+def get_config(
+    config_file: configparser.RawConfigParser,
+    section: str,
+    key: str,
+    default_value: Union[str, bool, None] = None,
+) -> Union[str, bool, None]:
     if config_file.has_option(section, key):
         val = config_file.get(section, key)
-        # This list is parallel to puppet/zulip/lib/puppet/parser/functions/zulipconf.rb
-        return val in ["1", "y", "t", "true", "yes", "enable", "enabled"]
+        if isinstance(default_value, bool):
+            # This list is parallel to puppet/zulip/lib/puppet/functions/zulipconf.rb
+            return val.lower() in ["1", "y", "t", "true", "yes", "enable", "enabled"]
+        return val
     return default_value
 
 

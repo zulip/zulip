@@ -6,6 +6,7 @@ const {mock_esm, zrequire} = require("./lib/namespace");
 const {run_test, noop} = require("./lib/test");
 const $ = require("./lib/zjquery");
 
+const bootstrap_typeahead = mock_esm("../src/bootstrap_typeahead");
 const narrow_state = mock_esm("../src/narrow_state");
 const search_suggestion = mock_esm("../src/search_suggestion");
 
@@ -17,7 +18,7 @@ mock_esm("../src/filter", {
 
 const search = zrequire("search");
 
-run_test("initialize", ({override_rewire, mock_template}) => {
+run_test("initialize", ({override, override_rewire, mock_template}) => {
     const $search_query_box = $("#search_query");
     const $searchbox_form = $("#searchbox_form");
 
@@ -35,7 +36,8 @@ run_test("initialize", ({override_rewire, mock_template}) => {
     search_suggestion.max_num_of_search_results = 999;
     let terms;
 
-    $search_query_box.typeahead = (opts) => {
+    override(bootstrap_typeahead, "create", ($element, opts) => {
+        assert.equal($element, $search_query_box);
         assert.equal(opts.items, 999);
         assert.equal(opts.naturalSearch, true);
         assert.equal(opts.helpOnEmptyStrings, true);
@@ -206,7 +208,7 @@ run_test("initialize", ({override_rewire, mock_template}) => {
             $search_query_box.off("blur");
         }
         return {};
-    };
+    });
 
     search.initialize({
         on_narrow_search(raw_terms, options) {
@@ -304,7 +306,7 @@ run_test("initialize", ({override_rewire, mock_template}) => {
     assert.ok(is_blurred);
 });
 
-run_test("initiate_search", () => {
+run_test("initiate_search", ({override}) => {
     // open typeahead and select text when navbar is open
     // this implicitly expects the code to used the chained
     // function calls, which is something to keep in mind if
@@ -312,12 +314,9 @@ run_test("initiate_search", () => {
     narrow_state.filter = () => ({is_keyword_search: () => false});
     let typeahead_forced_open = false;
     let is_searchbox_text_selected = false;
-    $("#search_query").typeahead = (lookup) => {
-        if (lookup === "lookup") {
-            typeahead_forced_open = true;
-        }
-        return $("#search_query");
-    };
+    override(bootstrap_typeahead, "lookup", () => {
+        typeahead_forced_open = true;
+    });
     $("#search_query").on("select", () => {
         is_searchbox_text_selected = true;
     });

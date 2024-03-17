@@ -2809,8 +2809,13 @@ sphinx==7.1.2 \
     # via
     #   -r requirements/docs.in
     #   myst-parser
+    #   sphinx-design
     #   sphinx-rtd-theme
     #   sphinxcontrib-jquery
+sphinx-design==0.5.0 \
+    --hash=sha256:1af1267b4cea2eedd6724614f19dcc88fe2e15aff65d06b2f6252cee9c4f4c1e \
+    --hash=sha256:e8e513acea6f92d15c6de3b34e954458f245b8e761b45b63950f65373352ab00
+    # via -r requirements/docs.in
 sphinx-rtd-theme==2.0.0 \
     --hash=sha256:bd5d7b80622406762073a04ef8fadc5f9151261563d47027de09910ce03afe6b \
     --hash=sha256:ec93d0856dc280cf3aee9a4c9807c60e027c7f7b461b77aeffed682e68f0e586
@@ -3456,8 +3461,8 @@ zxcvbn==4.4.28 \
     # via -r requirements/common.in
 
 # The following packages are considered to be unsafe in a requirements file:
-https://github.com/zulip/pip/archive/6642149c44297200f44dfe215b1cb7954d47ed77.zip#egg=pip==20.3.4+git \
-    --hash=sha256:4dfbc892b80b32091921c7cead7c4aff06c726e520633ac89bc463137e0fd27d
+https://github.com/zulip/pip/archive/39e8b5ecfcd8d19872f103d680713bc8e9de9d00.zip#egg=pip==20.3.4+git \
+    --hash=sha256:2c8ae0783fea3e2b98b422d443b19c443779f0881882f905e0728be7b4043d1b
     # via
     #   -r requirements/pip.in
     #   pip-tools

@@ -60,6 +60,7 @@
         "discountable": false,
         "discounts": [],
         "id": "il_NORMALIZED00000000000001",
+        "invoice": "in_NORMALIZED00000000000001",
         "invoice_item": "ii_NORMALIZED00000000000001",
         "livemode": false,
         "metadata": {},

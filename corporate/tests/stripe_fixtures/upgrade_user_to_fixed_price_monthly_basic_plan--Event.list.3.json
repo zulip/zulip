@@ -47,9 +47,9 @@
           "ending_balance": 0,
           "footer": null,
           "from_invoice": null,
-          "hosted_invoice_url": "https://invoice.stripe.com/i/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QV3luM1NyMnhhSnNHSm5sOXNOeWpTUmpmQUliaUNuLDk4MDI4ODQz0200tdZgycjC?s=ap",
+          "hosted_invoice_url": "https://invoice.stripe.com/i/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QZm9VWms0dVdrZ3NnVUFPSTFVM21DbWJnVkJHVUVqLDEwMDA2NjIyNA0200IPkF1An7?s=ap",
           "id": "in_NORMALIZED00000000000001",
-          "invoice_pdf": "https://pay.stripe.com/invoice/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QV3luM1NyMnhhSnNHSm5sOXNOeWpTUmpmQUliaUNuLDk4MDI4ODQz0200tdZgycjC/pdf?s=ap",
+          "invoice_pdf": "https://pay.stripe.com/invoice/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QZm9VWms0dVdrZ3NnVUFPSTFVM21DbWJnVkJHVUVqLDEwMDA2NjIyNA0200IPkF1An7/pdf?s=ap",
           "issuer": {
             "type": "self"
           },
@@ -66,6 +66,7 @@
                 "discountable": false,
                 "discounts": [],
                 "id": "il_NORMALIZED00000000000001",
+                "invoice": "in_NORMALIZED00000000000001",
                 "invoice_item": "ii_NORMALIZED00000000000001",
                 "livemode": false,
                 "metadata": {},
@@ -172,15 +173,15 @@
           "webhooks_delivered_at": 1000000000
         }
       },
-      "id": "evt_1Ohuq7DEQaroqDjsKsStDB7D",
+      "id": "evt_1OqSr6DEQaroqDjs7tQgbPCK",
       "livemode": false,
       "object": "event",
-      "pending_webhooks": 2,
+      "pending_webhooks": 0,
       "request": {
         "id": "req_NORMALIZED0002",
-        "idempotency_key": "60bfe494-eafc-40bb-b33e-aee1f2ade1d8"
+        "idempotency_key": "0ec92505-c7f8-4c95-932f-5f5d18ebf6a0"
       },
-      "type": "invoice.paid"
+      "type": "invoice.payment_succeeded"
     },
     {
       "api_version": "2020-08-27",
@@ -229,9 +230,9 @@
           "ending_balance": 0,
           "footer": null,
           "from_invoice": null,
-          "hosted_invoice_url": "https://invoice.stripe.com/i/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QV3luM1NyMnhhSnNHSm5sOXNOeWpTUmpmQUliaUNuLDk4MDI4ODQy0200uKS2f2a0?s=ap",
+          "hosted_invoice_url": "https://invoice.stripe.com/i/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QZm9VWms0dVdrZ3NnVUFPSTFVM21DbWJnVkJHVUVqLDEwMDA2NjIyNA0200IPkF1An7?s=ap",
           "id": "in_NORMALIZED00000000000001",
-          "invoice_pdf": "https://pay.stripe.com/invoice/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QV3luM1NyMnhhSnNHSm5sOXNOeWpTUmpmQUliaUNuLDk4MDI4ODQy0200uKS2f2a0/pdf?s=ap",
+          "invoice_pdf": "https://pay.stripe.com/invoice/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QZm9VWms0dVdrZ3NnVUFPSTFVM21DbWJnVkJHVUVqLDEwMDA2NjIyNA0200IPkF1An7/pdf?s=ap",
           "issuer": {
             "type": "self"
           },
@@ -248,6 +249,7 @@
                 "discountable": false,
                 "discounts": [],
                 "id": "il_NORMALIZED00000000000001",
+                "invoice": "in_NORMALIZED00000000000001",
                 "invoice_item": "ii_NORMALIZED00000000000001",
                 "livemode": false,
                 "metadata": {},
@@ -352,29 +354,17 @@
           "total_tax_amounts": [],
           "transfer_data": null,
           "webhooks_delivered_at": 1000000000
-        },
-        "previous_attributes": {
-          "amount_paid": 0,
-          "amount_remaining": 10000,
-          "attempt_count": 0,
-          "attempted": false,
-          "charge": null,
-          "paid": false,
-          "status": "open",
-          "status_transitions": {
-            "paid_at": null
-          }
         }
       },
-      "id": "evt_1Ohuq6DEQaroqDjsWkrwKJjo",
+      "id": "evt_1OqSr6DEQaroqDjsHshBxmgI",
       "livemode": false,
       "object": "event",
       "pending_webhooks": 0,
       "request": {
         "id": "req_NORMALIZED0002",
-        "idempotency_key": "60bfe494-eafc-40bb-b33e-aee1f2ade1d8"
+        "idempotency_key": "0ec92505-c7f8-4c95-932f-5f5d18ebf6a0"
       },
-      "type": "invoice.updated"
+      "type": "invoice.paid"
     }
   ],
   "has_more": false,

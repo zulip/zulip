@@ -469,7 +469,6 @@ export function redraw_left_panel(left_panel_params = get_left_panel_params()) {
             .get_content_element($("#streams_overlay_container .streams-list"))
             .append(widgets.get(stream_id));
     }
-    maybe_reset_right_panel();
     update_empty_left_panel_message();
 
     // return this for test convenience
@@ -489,14 +488,6 @@ export function get_left_panel_params() {
     return params;
 }
 
-export function maybe_reset_right_panel() {
-    if ($(".stream-row.active").hasClass("notdisplayed")) {
-        $(".right .settings").hide();
-        $(".nothing-selected").show();
-        $(".stream-row.active").removeClass("active");
-    }
-}
-
 // Make it explicit that our toggler is not created right away.
 export let toggler;
 
@@ -514,6 +505,9 @@ export function switch_stream_tab(tab_name) {
     }
 
     redraw_left_panel();
+    if ($(".stream-row.active").hasClass("notdisplayed")) {
+        stream_edit.empty_right_panel();
+    }
     stream_edit.setup_subscriptions_tab_hash(tab_name);
 }
 

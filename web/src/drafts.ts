@@ -157,6 +157,7 @@ export const draft_model = (function () {
         ls.set(KEY, drafts);
         if (update_count) {
             set_count(Object.keys(drafts).length);
+            update_compose_draft_count();
         }
     }
 
@@ -207,6 +208,24 @@ export const draft_model = (function () {
         deleteDraft,
     };
 })();
+
+export function update_compose_draft_count(): void {
+    const $count_container = $(".compose-drafts-count-container");
+    const $count_ele = $count_container.find(".compose-drafts-count");
+    if (!compose_state.has_full_recipient()) {
+        $count_ele.text("");
+        $count_container.hide();
+        return;
+    }
+    const compose_draft_count = Object.keys(filter_drafts_by_compose_box_and_recipient()).length;
+    if (compose_draft_count > 0) {
+        $count_ele.text(compose_draft_count > 99 ? "99+" : compose_draft_count);
+        $count_container.show();
+    } else {
+        $count_ele.text("");
+        $count_container.hide();
+    }
+}
 
 export function sync_count(): void {
     const drafts = draft_model.get();
@@ -429,7 +448,7 @@ export function current_recipient_data(): {
 }
 
 export function filter_drafts_by_compose_box_and_recipient(
-    drafts: Record<string, LocalStorageDraft>,
+    drafts = draft_model.get(),
 ): Record<string, LocalStorageDraft> {
     const {stream_name, topic, private_recipients} = current_recipient_data();
     const stream_id = stream_name ? stream_data.get_stream_id(stream_name) : undefined;

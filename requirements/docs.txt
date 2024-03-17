@@ -295,8 +295,13 @@ sphinx==7.1.2 \
     # via
     #   -r requirements/docs.in
     #   myst-parser
+    #   sphinx-design
     #   sphinx-rtd-theme
     #   sphinxcontrib-jquery
+sphinx-design==0.5.0 \
+    --hash=sha256:1af1267b4cea2eedd6724614f19dcc88fe2e15aff65d06b2f6252cee9c4f4c1e \
+    --hash=sha256:e8e513acea6f92d15c6de3b34e954458f245b8e761b45b63950f65373352ab00
+    # via -r requirements/docs.in
 sphinx-rtd-theme==2.0.0 \
     --hash=sha256:bd5d7b80622406762073a04ef8fadc5f9151261563d47027de09910ce03afe6b \
     --hash=sha256:ec93d0856dc280cf3aee9a4c9807c60e027c7f7b461b77aeffed682e68f0e586

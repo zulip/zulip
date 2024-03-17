@@ -47,9 +47,9 @@
           "ending_balance": 0,
           "footer": null,
           "from_invoice": null,
-          "hosted_invoice_url": "https://invoice.stripe.com/i/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QV3lrbllJUVF1cE5aZHM4aDRzQUNXQkh6VE0zbHJYLDk4MDI4NjMw0200UfxszQfl?s=ap",
+          "hosted_invoice_url": "https://invoice.stripe.com/i/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QZm9QVWxzNEpLT1NwQnljeUFyUDlZcURoQVQySlU2LDEwMDA2NTk4MA0200MWq67ZiA?s=ap",
           "id": "in_NORMALIZED00000000000002",
-          "invoice_pdf": "https://pay.stripe.com/invoice/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QV3lrbllJUVF1cE5aZHM4aDRzQUNXQkh6VE0zbHJYLDk4MDI4NjMw0200UfxszQfl/pdf?s=ap",
+          "invoice_pdf": "https://pay.stripe.com/invoice/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QZm9QVWxzNEpLT1NwQnljeUFyUDlZcURoQVQySlU2LDEwMDA2NTk4MA0200MWq67ZiA/pdf?s=ap",
           "issuer": {
             "type": "self"
           },
@@ -66,6 +66,7 @@
                 "discountable": false,
                 "discounts": [],
                 "id": "il_NORMALIZED00000000000001",
+                "invoice": "in_NORMALIZED00000000000002",
                 "invoice_item": "ii_NORMALIZED00000000000001",
                 "livemode": false,
                 "metadata": {},
@@ -164,16 +165,16 @@
           "total_excluding_tax": 960000,
           "total_tax_amounts": [],
           "transfer_data": null,
-          "webhooks_delivered_at": null
+          "webhooks_delivered_at": 1000000000
         }
       },
-      "id": "evt_1OhumgDEQaroqDjsDcclWoC5",
+      "id": "evt_1OqSnADEQaroqDjshpg28yE4",
       "livemode": false,
       "object": "event",
       "pending_webhooks": 0,
       "request": {
         "id": "req_NORMALIZED0001",
-        "idempotency_key": "0651699c-3851-4e9d-b8d5-297e38b573db"
+        "idempotency_key": "80619383-8520-4d01-8ec9-b83268266cf7"
       },
       "type": "invoice.finalized"
     }

@@ -1,7 +1,7 @@
 {
   "address": null,
   "balance": 0,
-  "created": 1708574643,
+  "created": 1000000000,
   "currency": null,
   "default_currency": null,
   "default_source": null,
@@ -9,11 +9,11 @@
   "description": "demo.example.com 6cde5f7a-1f7",
   "discount": null,
   "email": "hamlet@zulip.com",
-  "id": "cus_PbgtpRvLU7dw2y",
-  "invoice_prefix": "CE82FB85",
+  "id": "cus_NORMALIZED0001",
+  "invoice_prefix": "NORMA01",
   "invoice_settings": {
     "custom_fields": null,
-    "default_payment_method": "pm_1OmTVwDEQaroqDjsJyP28EtN",
+    "default_payment_method": "pm_1OqSrDDEQaroqDjsgjyqCI9X",
     "footer": null,
     "rendering_options": null
   },

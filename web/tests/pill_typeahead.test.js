@@ -7,10 +7,12 @@ const {run_test} = require("./lib/test");
 const blueslip = require("./lib/zblueslip");
 const $ = require("./lib/zjquery");
 
-const input_pill = zrequire("input_pill");
-const pill_typeahead = zrequire("pill_typeahead");
 const noop = function () {};
 
+const bootstrap_typeahead = mock_esm("../src/bootstrap_typeahead");
+
+const input_pill = zrequire("input_pill");
+const pill_typeahead = zrequire("pill_typeahead");
 const peer_data = zrequire("peer_data");
 const people = zrequire("people");
 const stream_data = zrequire("stream_data");
@@ -105,7 +107,7 @@ for (const sub of subs) {
     stream_data.add_sub(sub);
 }
 
-run_test("set_up", ({mock_template}) => {
+run_test("set_up", ({mock_template, override}) => {
     mock_template("input_pill.hbs", true, (data, html) => {
         assert.equal(typeof data.display_value, "string");
         assert.equal(typeof data.has_image, "boolean");
@@ -130,7 +132,8 @@ run_test("set_up", ({mock_template}) => {
     }
 
     let opts = {};
-    $fake_input.typeahead = (config) => {
+    override(bootstrap_typeahead, "create", ($element, config) => {
+        assert.equal($element, $fake_input);
         assert.equal(config.items, 5);
         assert.ok(config.fixed);
         assert.ok(config.dropup);
@@ -316,7 +319,7 @@ run_test("set_up", ({mock_template}) => {
         // input_pill_typeahead_called is set true if
         // no exception occurs in pill_typeahead.set_up.
         input_pill_typeahead_called = true;
-    };
+    });
 
     function test_pill_typeahead(opts) {
         pill_typeahead.set_up($fake_input, $pill_widget, opts);

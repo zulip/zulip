@@ -2,15 +2,16 @@
 
 const {strict: assert} = require("assert");
 
-const {mock_stream_header_colorblock} = require("./lib/compose");
 const {mock_banners} = require("./lib/compose_banner");
 const {mock_esm, set_global, zrequire} = require("./lib/namespace");
 const {run_test, noop} = require("./lib/test");
 const $ = require("./lib/zjquery");
 const {user_settings} = require("./lib/zpage_params");
 
+const user_pill = mock_esm("../src/user_pill");
+const messages_overlay_ui = mock_esm("../src/messages_overlay_ui");
+
 const compose_pm_pill = zrequire("compose_pm_pill");
-const user_pill = zrequire("user_pill");
 const people = zrequire("people");
 const compose_state = zrequire("compose_state");
 const compose_recipient = zrequire("compose_recipient");
@@ -61,7 +62,6 @@ user_settings.twenty_four_hour_time = false;
 const {localstorage} = zrequire("localstorage");
 const drafts = zrequire("drafts");
 const drafts_overlay_ui = zrequire("drafts_overlay_ui");
-const messages_overlay_ui = zrequire("messages_overlay_ui");
 const timerender = zrequire("timerender");
 
 const mock_current_timestamp = 1234;
@@ -144,25 +144,27 @@ test("fix buggy drafts", ({override_rewire}) => {
     assert.equal(draft.topic, "");
 });
 
-test("draft_model add", () => {
+test("draft_model add", ({override_rewire}) => {
     const draft_model = drafts.draft_model;
     const ls = localstorage();
     assert.equal(ls.get("draft"), undefined);
 
     const $unread_count = $("<unread-count-stub>");
     $(".top_left_drafts").set_find_results(".unread_count", $unread_count);
+    override_rewire(drafts, "update_compose_draft_count", noop);
 
     const id = draft_model.addDraft(draft_1);
     assert.deepEqual(draft_model.getDraft(id), draft_1);
 });
 
-test("draft_model edit", () => {
+test("draft_model edit", ({override_rewire}) => {
     const draft_model = drafts.draft_model;
     const ls = localstorage();
     assert.equal(ls.get("draft"), undefined);
 
     const $unread_count = $("<unread-count-stub>");
     $(".top_left_drafts").set_find_results(".unread_count", $unread_count);
+    override_rewire(drafts, "update_compose_draft_count", noop);
 
     const id = draft_model.addDraft(draft_1);
     assert.deepEqual(draft_model.getDraft(id), draft_1);
@@ -171,13 +173,14 @@ test("draft_model edit", () => {
     assert.deepEqual(draft_model.getDraft(id), draft_2);
 });
 
-test("draft_model delete", () => {
+test("draft_model delete", ({override_rewire}) => {
     const draft_model = drafts.draft_model;
     const ls = localstorage();
     assert.equal(ls.get("draft"), undefined);
 
     const $unread_count = $("<unread-count-stub>");
     $(".top_left_drafts").set_find_results(".unread_count", $unread_count);
+    override_rewire(drafts, "update_compose_draft_count", noop);
 
     const id = draft_model.addDraft(draft_1);
     assert.deepEqual(draft_model.getDraft(id), draft_1);
@@ -187,13 +190,11 @@ test("draft_model delete", () => {
 });
 
 test("snapshot_message", ({override, override_rewire}) => {
-    override_rewire(user_pill, "get_user_ids", () => [aaron.user_id]);
+    override(user_pill, "get_user_ids", () => [aaron.user_id]);
     override_rewire(compose_pm_pill, "set_from_emails", noop);
     mock_banners();
 
     $(".narrow_to_compose_recipients").toggleClass = noop;
-
-    mock_stream_header_colorblock();
 
     let curr_draft;
 
@@ -253,7 +254,7 @@ test("initialize", ({override_rewire}) => {
     drafts_overlay_ui.initialize();
 });
 
-test("remove_old_drafts", () => {
+test("remove_old_drafts", ({override_rewire}) => {
     const draft_3 = {
         topic: "topic",
         type: "stream",
@@ -275,6 +276,7 @@ test("remove_old_drafts", () => {
 
     const $unread_count = $("<unread-count-stub>");
     $(".top_left_drafts").set_find_results(".unread_count", $unread_count);
+    override_rewire(drafts, "update_compose_draft_count", noop);
 
     drafts.remove_old_drafts();
     assert.deepEqual(draft_model.get(), {id3: draft_3});
@@ -286,7 +288,7 @@ test("update_draft", ({override, override_rewire}) => {
     assert.equal(draft_id, undefined);
 
     override_rewire(compose_pm_pill, "set_from_emails", noop);
-    override_rewire(user_pill, "get_user_ids", () => [aaron.user_id]);
+    override(user_pill, "get_user_ids", () => [aaron.user_id]);
     compose_state.set_message_type("private");
     compose_state.message_content("dummy content");
     compose_state.private_message_recipient(aaron.email);
@@ -294,6 +296,7 @@ test("update_draft", ({override, override_rewire}) => {
     const $container = $(".top_left_drafts");
     const $child = $(".unread_count");
     $container.set_find_results(".unread_count", $child);
+    override_rewire(drafts, "update_compose_draft_count", noop);
 
     tippy_args = {
         content: "translated: Saved as draft",
@@ -343,6 +346,7 @@ test("update_draft", ({override, override_rewire}) => {
 
 test("rename_stream_recipient", ({override_rewire}) => {
     override_rewire(drafts, "set_count", noop);
+    override_rewire(drafts, "update_compose_draft_count", noop);
 
     const stream_A = {
         subscribed: false,
@@ -425,7 +429,7 @@ test("rename_stream_recipient", ({override_rewire}) => {
     assert_draft("id4", stream_B.stream_id, "e");
 });
 
-test("delete_all_drafts", () => {
+test("delete_all_drafts", ({override_rewire}) => {
     const draft_model = drafts.draft_model;
     const ls = localstorage();
     const data = {draft_1, draft_2, short_msg};
@@ -434,12 +438,13 @@ test("delete_all_drafts", () => {
 
     const $unread_count = $("<unread-count-stub>");
     $(".top_left_drafts").set_find_results(".unread_count", $unread_count);
+    override_rewire(drafts, "update_compose_draft_count", noop);
 
     drafts.delete_all_drafts();
     assert.deepEqual(draft_model.get(), {});
 });
 
-test("format_drafts", ({override_rewire, mock_template}) => {
+test("format_drafts", ({override, override_rewire, mock_template}) => {
     override_rewire(stream_data, "get_color", () => "#FFFFFF");
     function feb12() {
         return new Date(1549958107000); // 2/12/2019 07:55:07 AM (UTC+0)
@@ -556,7 +561,7 @@ test("format_drafts", ({override_rewire, mock_template}) => {
         return {name: "stream 2", stream_id, invite_only: false, is_web_public: false};
     });
 
-    override_rewire(user_pill, "get_user_ids", () => []);
+    override(user_pill, "get_user_ids", () => []);
     compose_state.set_message_type("private");
     compose_state.private_message_recipient(null);
 
@@ -567,7 +572,7 @@ test("format_drafts", ({override_rewire, mock_template}) => {
         return "<draft table stub>";
     });
 
-    override_rewire(messages_overlay_ui, "set_initial_element", noop);
+    override(messages_overlay_ui, "set_initial_element", noop);
 
     const $unread_count = $("<unread-count-stub>");
     $(".top_left_drafts").set_find_results(".unread_count", $unread_count);
@@ -596,7 +601,7 @@ test("format_drafts", ({override_rewire, mock_template}) => {
     drafts_overlay_ui.launch();
 });
 
-test("filter_drafts", ({override_rewire, mock_template}) => {
+test("filter_drafts", ({override, override_rewire, mock_template}) => {
     override_rewire(stream_data, "get_color", () => "#FFFFFF");
     function feb12() {
         return new Date(1549958107000); // 2/12/2019 07:55:07 AM (UTC+0)
@@ -729,12 +734,12 @@ test("filter_drafts", ({override_rewire, mock_template}) => {
         return "<draft table stub>";
     });
 
-    override_rewire(messages_overlay_ui, "set_initial_element", noop);
+    override(messages_overlay_ui, "set_initial_element", noop);
 
     const $unread_count = $("<unread-count-stub>");
     $(".top_left_drafts").set_find_results(".unread_count", $unread_count);
 
-    override_rewire(user_pill, "get_user_ids", () => [aaron.user_id]);
+    override(user_pill, "get_user_ids", () => [aaron.user_id]);
     override_rewire(compose_pm_pill, "set_from_emails", noop);
     compose_state.set_message_type("private");
     compose_state.private_message_recipient(aaron.email);

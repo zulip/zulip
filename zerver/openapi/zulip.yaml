@@ -958,13 +958,14 @@ paths:
                                     in a new message that the server has already marked as read for
                                     the user.
 
-                                    **Changes**: In Zulip 8.0 (feature level 224), the `wildcard_mentioned` flag
-                                    was deprecated in favor of the `stream_wildcard_mentioned` and `topic_wildcard_mentioned`
-                                    flags. The `wildcard_mentioned` flag exists for backwards compatibility with
-                                    older clients and equals `stream_wildcard_mentioned` || `topic_wildcard_mentioned`.
-                                    Clients interacting with older servers should treat this field as an old name
-                                    for `stream_wildcard_mentioned`. @topic mentions were not available prior to
-                                    this feature level.
+                                    **Changes**: In Zulip 8.0 (feature level 224), the `wildcard_mentioned`
+                                    flag was deprecated in favor of the `stream_wildcard_mentioned` and
+                                    `topic_wildcard_mentioned` flags. The `wildcard_mentioned` flag exists
+                                    for backwards compatibility with older clients and equals
+                                    `stream_wildcard_mentioned || topic_wildcard_mentioned`. Clients
+                                    supporting older server versions should treat this field as a previous
+                                    name for the `stream_wildcard_mentioned` flag as topic wildcard mentions
+                                    were not available prior to this feature level.
 
                                     [message-flags]: /api/update-message-flags#available-flags
                                   items:
@@ -2412,13 +2413,14 @@ paths:
                                     to identify cases where a mention or alert word was added by the
                                     edit.
 
-                                    **Changes**: In Zulip 8.0 (feature level 224), the `wildcard_mentioned` flag
-                                    was deprecated in favor of the `stream_wildcard_mentioned` and `topic_wildcard_mentioned`
-                                    flags. The `wildcard_mentioned` flag exists for backwards compatibility with
-                                    older clients and equals `stream_wildcard_mentioned` || `topic_wildcard_mentioned`.
-                                    Clients interacting with older servers should treat this field as an old name
-                                    for `stream_wildcard_mentioned`. @topic mentions were not available prior to
-                                    this feature level.
+                                    **Changes**: In Zulip 8.0 (feature level 224), the `wildcard_mentioned`
+                                    flag was deprecated in favor of the `stream_wildcard_mentioned` and
+                                    `topic_wildcard_mentioned` flags. The `wildcard_mentioned` flag exists
+                                    for backwards compatibility with older clients and equals
+                                    `stream_wildcard_mentioned || topic_wildcard_mentioned`. Clients
+                                    supporting older server versions should treat this field as a previous
+                                    name for the `stream_wildcard_mentioned` flag as topic wildcard mentions
+                                    were not available prior to this feature level.
 
                                     [message-flags]: /api/update-message-flags#available-flags
                                   items:
@@ -6318,13 +6320,14 @@ paths:
                                   description: |
                                     The user's [message flags][message-flags] for the message.
 
-                                    **Changes**: In Zulip 8.0 (feature level 224), the `wildcard_mentioned` flag
-                                    was deprecated in favor of the `stream_wildcard_mentioned` and `topic_wildcard_mentioned`
-                                    flags. The `wildcard_mentioned` flag exists for backwards compatibility with
-                                    older clients and equals `stream_wildcard_mentioned` || `topic_wildcard_mentioned`.
-                                    Clients interacting with older servers should treat this field as an old name
-                                    for `stream_wildcard_mentioned`. @topic mentions were not available prior to
-                                    this feature level.
+                                    **Changes**: In Zulip 8.0 (feature level 224), the `wildcard_mentioned`
+                                    flag was deprecated in favor of the `stream_wildcard_mentioned` and
+                                    `topic_wildcard_mentioned` flags. The `wildcard_mentioned` flag exists
+                                    for backwards compatibility with older clients and equals
+                                    `stream_wildcard_mentioned || topic_wildcard_mentioned`. Clients
+                                    supporting older server versions should treat this field as a previous
+                                    name for the `stream_wildcard_mentioned` flag as topic wildcard mentions
+                                    were not available prior to this feature level.
 
                                     [message-flags]: /api/update-message-flags#available-flags
                                   items:
@@ -6838,43 +6841,27 @@ paths:
                         </td>
                     </tr>
                     <tr>
-                        <td><code>wildcard_mentioned</code></td>
-                        <td>
-                            Whether this message contained either a
-                            <a href="/help/mention-a-user-or-group#mention-everyone-on-a-stream">stream wildcard mention</a>
-                            like @**all** or a topic wildcard mention (@**topic**). Cannot be changed
-                            by the user directly, but can change if the message is edited to add/remove
-                            a stream or/and topic wildcard mention.
-
-                            **Changes**: In Zulip 8.0 (feature level 224), the `wildcard_mentioned` flag
-                            was deprecated in favor of the `stream_wildcard_mentioned` and `topic_wildcard_mentioned`
-                            flags. The `wildcard_mentioned` flag exists for backwards compatibility with
-                            older clients and equals `stream_wildcard_mentioned` || `topic_wildcard_mentioned`.
-                            Clients interacting with older servers should treat this field as an old name
-                            for `stream_wildcard_mentioned`. @topic mentions were not available prior to
-                            this feature level.
-                        </td>
-                    </tr>
-                    <tr>
                         <td><code>stream_wildcard_mentioned</code></td>
                         <td>
                             Whether this message contained a
                             <a href="/help/mention-a-user-or-group#mention-everyone-on-a-stream">stream wildcard mention</a>
-                            like @**all**. Cannot be changed by the user directly, but
+                            (like @**all**). Cannot be changed by the user directly, but
                             can change if the message is edited to add/remove
                             a stream wildcard mention.
-
-                            **Changes**: New in Zulip 8.0 (feature level 224).
+                            <br /><br />
+                            <b>Changes</b>: New in Zulip 8.0 (feature level 224).
                         </td>
                     </tr>
                     <tr>
                         <td><code>topic_wildcard_mentioned</code></td>
                         <td>
-                            Whether this message contained a topic wildcard mention (@**topic**).
+                            Whether this message contained a
+                            <a href="/help/mention-a-user-or-group#mention-all-topic-participants">topic wildcard mention</a>
+                            (@**topic**).
                             Cannot be changed by the user directly, but can change if
                             the message is edited to add/remove a topic wildcard mention.
-
-                            **Changes**: New in Zulip 8.0 (feature level 224).
+                            <br /><br />
+                            <b>Changes</b>: New in Zulip 8.0 (feature level 224).
                         </td>
                     <tr>
                         <td><code>has_alert_word</code></td>
@@ -6889,12 +6876,34 @@ paths:
                     <tr>
                         <td><code>historical</code></td>
                         <td>
-                            Is `true` for messages that the user did not receive
+                            Is <code>true</code> for messages that the user did not receive
                             at the time they were sent but later was added to
-                            the user's history (E.g. because they starred or
+                            the user's history (e.g. because they starred or
                             reacted to a message sent to a public stream
                             before they subscribed to that stream). Cannot be
                             changed by the user directly.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><code>wildcard_mentioned</code></td>
+                        <td>
+                            Whether this message contained either a
+                            <a href="/help/mention-a-user-or-group#mention-everyone-on-a-stream">stream wildcard mention</a>
+                            (like @**all**) or a
+                            <a href="/help/mention-a-user-or-group#mention-all-topic-participants">topic wildcard mention</a>
+                            (@**topic**). Cannot be changed by the user directly, but can change if
+                            the message is edited to add/remove a stream and/or topic wildcard
+                            mention.
+                            <br /><br />
+                            <b>Changes</b>: Deprecated in Zulip 8.0 (feature level 224), in favor of
+                            the <code>stream_wildcard_mentioned</code> and
+                            <code>topic_wildcard_mentioned</code> flags. The
+                            <code>wildcard_mentioned</code> flag exists for backwards compatibility
+                            with older clients and equals
+                            <code>stream_wildcard_mentioned || topic_wildcard_mentioned</code>.
+                            Clients supporting older server versions should treat this field as a
+                            previous name for the <code>stream_wildcard_mentioned</code> flag as
+                            topic wildcard mentions were not available prior to this feature level.
                         </td>
                     </tr>
                 </tbody>
@@ -7597,13 +7606,14 @@ paths:
                                 description: |
                                   The user's [message flags][message-flags] for the message.
 
-                                  **Changes**: In Zulip 8.0 (feature level 224), the `wildcard_mentioned` flag
-                                  was deprecated in favor of the `stream_wildcard_mentioned` and `topic_wildcard_mentioned`
-                                  flags. The `wildcard_mentioned` flag exists for backwards compatibility with
-                                  older clients and equals `stream_wildcard_mentioned` || `topic_wildcard_mentioned`.
-                                  Clients interacting with older servers should treat this field as an old name
-                                  for `stream_wildcard_mentioned`. @topic mentions were not available prior to
-                                  this feature level.
+                                  **Changes**: In Zulip 8.0 (feature level 224), the `wildcard_mentioned`
+                                  flag was deprecated in favor of the `stream_wildcard_mentioned` and
+                                  `topic_wildcard_mentioned` flags. The `wildcard_mentioned` flag exists
+                                  for backwards compatibility with older clients and equals
+                                  `stream_wildcard_mentioned || topic_wildcard_mentioned`. Clients
+                                  supporting older server versions should treat this field as a previous
+                                  name for the `stream_wildcard_mentioned` flag as topic wildcard mentions
+                                  were not available prior to this feature level.
 
                                   [message-flags]: /api/update-message-flags#available-flags
                                 items:

@@ -163,10 +163,6 @@
             #compose_select_recipient_widget {
                 border-radius: 4px !important;
             }
-
-            .stream_header_colorblock {
-                display: none;
-            }
         }
 
         .topic-marker-container {
@@ -828,12 +824,12 @@ textarea.new_message_textarea,
 }
 
 #compose_select_recipient_widget {
-    border-radius: 0 4px 4px 0;
     width: auto;
     outline: none;
 
     &.dropdown-widget-button {
         padding: 0 6px;
+        border-radius: 4px;
     }
 }
 
@@ -1163,13 +1159,8 @@ textarea.new_message_textarea,
     justify-content: flex-start;
     height: var(--compose-recipient-box-min-height);
 
-    .stream_header_colorblock {
-        margin: 0;
-    }
-
     .dropdown_widget_value {
         flex-grow: 1;
-        overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
         color: var(--color-text-default);
@@ -1334,12 +1325,18 @@ textarea.new_message_textarea,
        as 100% of the container width, plus
        the 8px from the negative left margin. */
     max-width: calc(100% + 8px);
-    /* Set an ellipsis when the translated
-       version of `Drafts` exceeds the width,
-       and keep button text to a single line. */
-    white-space: nowrap;
-    overflow-x: hidden;
-    text-overflow: ellipsis;
+    display: flex;
+    gap: 1px;
+
+    .compose-drafts-text {
+        /* Set an ellipsis when the translated
+           version of `Drafts` exceeds the width,
+           and keep button text to a single line. */
+        white-space: nowrap;
+        overflow-x: hidden;
+        text-overflow: ellipsis;
+        flex-grow: 1;
+    }
 
     @media (width < $mc_min) {
         margin-left: 0;

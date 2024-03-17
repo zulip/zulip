@@ -6,6 +6,7 @@ import * as blueslip from "./blueslip";
 import * as compose_banner from "./compose_banner";
 import {$t} from "./i18n";
 import {realm_user_settings_defaults} from "./realm_user_settings_defaults";
+import * as scroll_util from "./scroll_util";
 import * as settings_config from "./settings_config";
 import {realm} from "./state_data";
 import * as stream_data from "./stream_data";
@@ -39,10 +40,10 @@ export function get_sorted_options_list(option_values_object) {
 export function get_realm_time_limits_in_minutes(property) {
     if (realm[property] === null) {
         // This represents "Anytime" case.
-        return null;
+        return "";
     }
     let val = (realm[property] / 60).toFixed(1);
-    if (Number.parseFloat(val, 10) === Number.parseInt(val, 10)) {
+    if (Number.parseFloat(val) === Number.parseInt(val, 10)) {
         val = Number.parseInt(val, 10);
     }
     return val.toString();
@@ -128,8 +129,8 @@ export function extract_property_name($elem, for_realm_default_settings) {
     return /^id_(.*)$/.exec($elem.attr("id").replaceAll("-", "_"))[1];
 }
 
-export function get_subsection_property_elements(subsection) {
-    return [...$(subsection).find(".prop-element")];
+export function get_subsection_property_elements($subsection) {
+    return [...$subsection.find(".prop-element")];
 }
 
 export function set_property_dropdown_value(property_name) {
@@ -404,6 +405,12 @@ export function change_save_button_state($element, state) {
     $textEl.text(button_text);
     $saveBtn.attr("data-status", data_status);
     if (state === "unsaved") {
+        // Ensure the save button is visible when the state is "unsaved",
+        // so the user does not miss saving their changes.
+        scroll_util.scroll_element_into_container(
+            $element.parent(".subsection-header"),
+            $("#settings_content"),
+        );
         enable_or_disable_save_button($element.closest(".settings-subsection-parent"));
     }
     show_hide_element($element, is_show, 800);
@@ -475,7 +482,7 @@ export function get_auth_method_list_data() {
 }
 
 export function parse_time_limit($elem) {
-    return Math.floor(Number.parseFloat(Number($elem.val()), 10).toFixed(1) * 60);
+    return Math.floor(Number.parseFloat(Number($elem.val())).toFixed(1) * 60);
 }
 
 function get_time_limit_setting_value($input_elem, for_api_data = true) {
@@ -537,8 +544,6 @@ export function check_property_changed(elem, for_realm_default_settings, sub, gr
             proposed_val = get_dropdown_list_widget_setting_value($elem);
             break;
         case "email_notifications_batching_period_seconds":
-            proposed_val = get_time_limit_setting_value($elem, false);
-            break;
         case "realm_message_content_edit_limit_seconds":
         case "realm_message_content_delete_limit_seconds":
         case "realm_move_messages_between_streams_limit_seconds":
@@ -561,11 +566,11 @@ export function check_property_changed(elem, for_realm_default_settings, sub, gr
         case "emojiset":
         case "user_list_style":
         case "stream_privacy":
-            proposed_val = get_input_element_value($elem, "radio-group");
+            proposed_val = get_input_element_value(elem, "radio-group");
             break;
         default:
             if (current_val !== undefined) {
-                proposed_val = get_input_element_value($elem, typeof current_val);
+                proposed_val = get_input_element_value(elem, typeof current_val);
             } else {
                 blueslip.error("Element refers to unknown property", {property_name});
             }
@@ -580,7 +585,7 @@ function switching_to_private(properties_elements, for_realm_default_settings) {
         if (property_name !== "stream_privacy") {
             continue;
         }
-        const proposed_val = get_input_element_value($elem, "radio-group");
+        const proposed_val = get_input_element_value(elem, "radio-group");
         return proposed_val === "invite-only-public-history" || proposed_val === "invite-only";
     }
     return false;

@@ -23,7 +23,6 @@ import * as resize from "./resize";
 import * as settings_config from "./settings_config";
 import * as spectators from "./spectators";
 import {realm} from "./state_data";
-import * as stream_bar from "./stream_bar";
 import * as stream_data from "./stream_data";
 
 const compose_clear_box_hooks = [];
@@ -115,12 +114,6 @@ export function complete_starting_tasks(msg_type, opts) {
 
     maybe_scroll_up_selected_message(opts);
     compose_fade.start_compose(msg_type);
-    if (msg_type === "stream") {
-        stream_bar.decorate(
-            opts.stream_id,
-            $("#stream_message_recipient_topic .message_header_stream"),
-        );
-    }
     $(document).trigger(new $.Event("compose_started.zulip", opts));
     compose_recipient.update_placeholder_text();
     compose_recipient.update_narrow_to_recipient_visibility();
@@ -245,13 +238,6 @@ export function start(msg_type, opts) {
         clear_box();
     }
 
-    if (msg_type === "stream") {
-        const $stream_header_colorblock = $(
-            "#compose_select_recipient_widget_wrapper .stream_header_colorblock",
-        );
-        stream_bar.decorate(opts.stream_id, $stream_header_colorblock);
-    }
-
     if (msg_type === "private") {
         compose_state.set_compose_recipient_id(compose_state.DIRECT_MESSAGE_ID);
         compose_recipient.on_compose_select_recipient_update();
@@ -308,6 +294,7 @@ export function start(msg_type, opts) {
     }
 
     compose_recipient.check_posting_policy_for_compose_box();
+    drafts.update_compose_draft_count();
 
     // Reset the `max-height` property of `compose-textarea` so that the
     // compose-box do not cover the last messages of the current stream
@@ -410,6 +397,7 @@ export function on_topic_narrow() {
     compose_validate.warn_if_topic_resolved(true);
     compose_fade.set_focused_recipient("stream");
     compose_fade.update_message_list();
+    drafts.update_compose_draft_count();
     $("textarea#compose-textarea").trigger("focus");
 }
 

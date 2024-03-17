@@ -21,12 +21,7 @@ from corporate.lib.stripe import (
     get_configured_fixed_price_plan_offer,
     get_free_trial_days,
 )
-from corporate.models import (
-    CustomerPlan,
-    get_current_plan_by_customer,
-    get_customer_by_realm,
-    is_legacy_customer,
-)
+from corporate.models import CustomerPlan, get_current_plan_by_customer, get_customer_by_realm
 from zerver.context_processors import get_realm_from_request, latest_info_context
 from zerver.decorator import add_google_analytics, zulip_login_required
 from zerver.lib.github import (
@@ -193,9 +188,9 @@ def remote_realm_plans_page(
                     status=CustomerPlan.NEVER_STARTED,
                 )
 
-        if is_legacy_customer(customer):
-            # Free trial is disabled for legacy customers.
-            context.free_trial_days = None
+    if billing_session.is_legacy_customer():
+        # Free trial is disabled for legacy customers.
+        context.free_trial_days = None
 
     context.is_new_customer = (
         not context.on_free_tier and context.customer_plan is None and not context.is_sponsored
@@ -256,7 +251,7 @@ def remote_server_plans_page(
                     status=CustomerPlan.NEVER_STARTED,
                 )
 
-        if is_legacy_customer(customer):
+        if billing_session.is_legacy_customer():
             # Free trial is disabled for legacy customers.
             context.free_trial_days = None
 
@@ -410,6 +405,7 @@ def customer_portal(
     return_to_billing_page: Json[bool] = False,
     manual_license_management: Json[bool] = False,
     tier: Optional[Json[int]] = None,
+    setup_payment_by_invoice: Json[bool] = False,
 ) -> HttpResponseRedirect:
     user = request.user
     assert user.is_authenticated
@@ -419,7 +415,7 @@ def customer_portal(
 
     billing_session = RealmBillingSession(user=user, realm=user.realm)
     review_billing_information_url = billing_session.get_stripe_customer_portal_url(
-        return_to_billing_page, manual_license_management, tier
+        return_to_billing_page, manual_license_management, tier, setup_payment_by_invoice
     )
     return HttpResponseRedirect(review_billing_information_url)
 
@@ -433,9 +429,10 @@ def remote_realm_customer_portal(
     return_to_billing_page: Json[bool] = False,
     manual_license_management: Json[bool] = False,
     tier: Optional[Json[int]] = None,
+    setup_payment_by_invoice: Json[bool] = False,
 ) -> HttpResponseRedirect:
     review_billing_information_url = billing_session.get_stripe_customer_portal_url(
-        return_to_billing_page, manual_license_management, tier
+        return_to_billing_page, manual_license_management, tier, setup_payment_by_invoice
     )
     return HttpResponseRedirect(review_billing_information_url)
 
@@ -449,8 +446,9 @@ def remote_server_customer_portal(
     return_to_billing_page: Json[bool] = False,
     manual_license_management: Json[bool] = False,
     tier: Optional[Json[int]] = None,
+    setup_payment_by_invoice: Json[bool] = False,
 ) -> HttpResponseRedirect:
     review_billing_information_url = billing_session.get_stripe_customer_portal_url(
-        return_to_billing_page, manual_license_management, tier
+        return_to_billing_page, manual_license_management, tier, setup_payment_by_invoice
     )
     return HttpResponseRedirect(review_billing_information_url)

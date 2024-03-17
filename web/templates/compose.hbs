@@ -58,7 +58,7 @@
                             <div class="topic-marker-container order-1">
                                 <a role="button" class="narrow_to_compose_recipients zulip-icon zulip-icon-arrow-left-circle" data-tooltip-template-id="narrow_to_compose_recipients_tooltip"></a>
                             </div>
-                            {{> dropdown_widget_with_stream_colorblock
+                            {{> dropdown_widget_wrapper
                               widget_name="compose_select_recipient"}}
                             <div class="topic-marker-container">
                                 <i class="fa fa-angle-right" aria-hidden="true"></i>
@@ -86,8 +86,8 @@
                             <div class="drag"></div>
 
                             <div id="message-send-controls-container">
-                                <a id="compose-drafts-button" role="button" class="send-control-button hide-sm" tabindex=0 href="#drafts" data-tooltip-template-id="compose_draft_tooltip_template">
-                                    {{t 'Drafts' }}
+                                <a id="compose-drafts-button" role="button" class="send-control-button hide-sm" tabindex=0 href="#drafts">
+                                    <span class="compose-drafts-text">{{t 'Drafts' }}</span><span class="compose-drafts-count-container">(<span class="compose-drafts-count"></span>)</span>
                                 </a>
                                 <span id="compose-limit-indicator"></span>
                                 <div class="message-send-controls">

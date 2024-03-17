@@ -51,7 +51,7 @@ and set a password for their account.
 1. Enter your email address.
 
 1. *(optional)* If the name on the account is still a placeholder,
-   edit the **Full name** field.
+   edit the **Name** field.
 
 1. Click **Add**.
 

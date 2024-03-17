@@ -17,12 +17,12 @@
     "status": null
   },
   "billing_reason": "manual",
-  "charge": "ch_3Ok6F8DEQaroqDjs177d5Sdi",
+  "charge": "ch_NORMALIZED00000000000001",
   "collection_method": "charge_automatically",
-  "created": 1708008533,
+  "created": 1000000000,
   "currency": "usd",
   "custom_fields": null,
-  "customer": "cus_PZEia820z9Zo16",
+  "customer": "cus_NORMALIZED0001",
   "customer_address": null,
   "customer_email": "hamlet@zulip.com",
   "customer_name": null,
@@ -37,13 +37,13 @@
   "discount": null,
   "discounts": [],
   "due_date": null,
-  "effective_at": 1708008534,
+  "effective_at": 1000000000,
   "ending_balance": 0,
   "footer": null,
   "from_invoice": null,
-  "hosted_invoice_url": "https://invoice.stripe.com/i/acct_17vTkwDEQaroqDjs/test_YWNjdF8xN3ZUa3dERVFhcm9xRGpzLF9QWkVpRm5DMWQxaEhrZnV6Rnl6OWFLcXFJem5IbVNaLDk4NTQ5MzM20200bsZCZ46O?s=ap",
-  "id": "in_1Ok6F7DEQaroqDjslOe91xON",
-  "invoice_pdf": "https://pay.stripe.com/invoice/acct_17vTkwDEQaroqDjs/test_YWNjdF8xN3ZUa3dERVFhcm9xRGpzLF9QWkVpRm5DMWQxaEhrZnV6Rnl6OWFLcXFJem5IbVNaLDk4NTQ5MzM20200bsZCZ46O/pdf?s=ap",
+  "hosted_invoice_url": "https://invoice.stripe.com/i/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QZm9Ta25VWk5Hc3NKSU10czNpdGdoRzdnZ3NmaEFsLDEwMDA2NjExOQ0200DrFfC7M5?s=ap",
+  "id": "in_NORMALIZED00000000000001",
+  "invoice_pdf": "https://pay.stripe.com/invoice/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QZm9Ta25VWk5Hc3NKSU10czNpdGdoRzdnZ3NmaEFsLDEwMDA2NjExOQ0200DrFfC7M5/pdf?s=ap",
   "issuer": {
     "type": "self"
   },
@@ -59,30 +59,30 @@
         "discount_amounts": [],
         "discountable": false,
         "discounts": [],
-        "id": "il_1Ok6F7DEQaroqDjs5qpv2Heh",
-        "invoice": "in_1Ok6F7DEQaroqDjslOe91xON",
-        "invoice_item": "ii_1Ok6F7DEQaroqDjs24pAIHvX",
+        "id": "il_NORMALIZED00000000000001",
+        "invoice": "in_NORMALIZED00000000000001",
+        "invoice_item": "ii_NORMALIZED00000000000001",
         "livemode": false,
         "metadata": {},
         "object": "line_item",
         "period": {
-          "end": 1708008533,
-          "start": 1708008533
+          "end": 1000000000,
+          "start": 1000000000
         },
         "plan": null,
         "price": {
           "active": false,
           "billing_scheme": "per_unit",
-          "created": 1706114464,
+          "created": 1000000000,
           "currency": "usd",
           "custom_unit_amount": null,
-          "id": "price_1Oc9VcDEQaroqDjs9z5VJret",
+          "id": "price_NORMALIZED00000000000001",
           "livemode": false,
           "lookup_key": null,
           "metadata": {},
           "nickname": null,
           "object": "price",
-          "product": "prod_PDUwJ9ZgTQzjad",
+          "product": "prod_NORMALIZED0001",
           "recurring": null,
           "tax_behavior": "unspecified",
           "tiers_mode": null,
@@ -106,7 +106,7 @@
     "has_more": false,
     "object": "list",
     "total_count": 1,
-    "url": "/v1/invoices/in_1Ok6F7DEQaroqDjslOe91xON/lines"
+    "url": "/v1/invoices/in_NORMALIZED00000000000001/lines"
   },
   "livemode": false,
   "metadata": {
@@ -116,19 +116,19 @@
     "plan_tier": "103"
   },
   "next_payment_attempt": null,
-  "number": "4B9E7A40-0001",
+  "number": "NORMALI-0002",
   "object": "invoice",
   "on_behalf_of": null,
   "paid": true,
   "paid_out_of_band": false,
-  "payment_intent": "pi_3Ok6F8DEQaroqDjs1alKvD7i",
+  "payment_intent": "pi_NORMALIZED00000000000001",
   "payment_settings": {
     "default_mandate": null,
     "payment_method_options": null,
     "payment_method_types": null
   },
-  "period_end": 1708008533,
-  "period_start": 1708008533,
+  "period_end": 1000000000,
+  "period_start": 1000000000,
   "post_payment_credit_notes_amount": 0,
   "pre_payment_credit_notes_amount": 0,
   "quote": null,
@@ -146,9 +146,9 @@
   "statement_descriptor": "Zulip Basic",
   "status": "paid",
   "status_transitions": {
-    "finalized_at": 1708008534,
+    "finalized_at": 1000000000,
     "marked_uncollectible_at": null,
-    "paid_at": 1708008535,
+    "paid_at": 1000000000,
     "voided_at": null
   },
   "subscription": null,
@@ -164,5 +164,5 @@
   "total_excluding_tax": 10000,
   "total_tax_amounts": [],
   "transfer_data": null,
-  "webhooks_delivered_at": 1708008534
+  "webhooks_delivered_at": 1000000000
 }

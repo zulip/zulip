@@ -25,7 +25,7 @@
             <form id="remote-billing-confirm-login-form" method="post" action="{{ action_url }}">
                 {{ csrf_input }}
                 <div class="input-box remote-billing-confirm-login-form-field">
-                    <label for="full_name" class="inline-block label-title">Full name</label>
+                    <label for="full_name" class="inline-block label-title">Name</label>
                     {% if not user_full_name %}
                     <input id="full_name" name="full_name" class="required" type="text" />
                     <div id="remote-billing-confirm-login-form-full_name-error" class="alert alert-danger remote-billing-confirm-login-form-field-error full_name-error"></div>
