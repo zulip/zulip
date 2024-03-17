@@ -349,7 +349,7 @@
     .message_embed .data-container::after {
         background: linear-gradient(
             0deg,
-            hsl(212deg 28% 18%),
+            var(--color-background-stream-message-content),
             transparent 100%
         );
     }

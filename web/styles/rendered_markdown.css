@@ -629,7 +629,7 @@
 
             background: linear-gradient(
                 0deg,
-                hsl(0deg 0% 100%),
+                var(--color-background-stream-message-content),
                 transparent 100%
             );
         }
