@@ -13,13 +13,13 @@ import * as ui_util from "./ui_util";
 let giphy_fetch;
 let search_term = "";
 let gifs_grid;
-let giphy_popover_instance = null;
+let giphy_popover_instance;
 
 // Only used if popover called from edit message, otherwise it is `undefined`.
 let edit_message_id;
 
 export function is_popped_from_edit_message() {
-    return giphy_popover_instance && edit_message_id !== undefined;
+    return giphy_popover_instance !== undefined && edit_message_id !== undefined;
 }
 
 export function focus_current_edit_message() {
