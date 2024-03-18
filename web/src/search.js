@@ -57,7 +57,11 @@ export function initialize({on_narrow_search}) {
     // just represents the key of the hash, so it's redundant.)
     let search_map = new Map();
 
-    bootstrap_typeahead.create($search_query_box, {
+    const bootstrap_typeahead_input = {
+        $element: $search_query_box,
+        type: "input",
+    };
+    bootstrap_typeahead.create(bootstrap_typeahead_input, {
         source(query) {
             const suggestions = search_suggestion.get_suggestions(query);
             // Update our global search_map hash
