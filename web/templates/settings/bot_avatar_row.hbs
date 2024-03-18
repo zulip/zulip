@@ -36,7 +36,10 @@
         </div>
         <div class="email">
             <div class="field">{{t "Bot email" }}</div>
-            <div class="value">{{email}}</div>
+            <div class="value">
+                {{email}}
+                <i id="copy_bot_email" class="fa fa-copy tippy-zulip-tooltip copy_bot_email" data-tippy-content="{{t 'Copy bot email' }}" data-tippy-placement="right" data-clipboard-text="{{email}}"></i>
+            </div>
         </div>
         {{#if is_active}}
         <div class="api_key">

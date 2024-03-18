@@ -965,6 +965,10 @@ input[type="checkbox"] {
         display: flex;
     }
 
+    #copy_bot_email {
+        cursor: pointer;
+    }
+
     .bot_info {
         padding: 10px;
     }

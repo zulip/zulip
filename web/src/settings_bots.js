@@ -445,6 +445,11 @@ export function set_up() {
         integration_url_modal.show_generate_integration_url_modal(api_key);
     });
 
+    const bot_mail_clipboard = new ClipboardJS("#copy_bot_email");
+    bot_mail_clipboard.on("success", (e) => {
+        show_copied_confirmation(e.trigger);
+    })
+
     const clipboard = new ClipboardJS("#copy_zuliprc", {
         text(trigger) {
             const $bot_info = $(trigger).closest(".bot-information-box").find(".bot_info");
