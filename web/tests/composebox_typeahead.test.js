@@ -431,11 +431,14 @@ test("topics_seen_for", ({override, override_rewire}) => {
 test("content_typeahead_selected", ({override}) => {
     const fake_this = {
         query: "",
-        $element: {},
+        input_element: {
+            $element: {},
+            type: "input",
+        },
     };
     let caret_called1 = false;
     let caret_called2 = false;
-    fake_this.$element.caret = function (...args) {
+    fake_this.input_element.$element.caret = function (...args) {
         if (args.length === 0) {
             // .caret() used in split_at_cursor
             caret_called1 = true;
@@ -448,7 +451,7 @@ test("content_typeahead_selected", ({override}) => {
         return this;
     };
     let range_called = false;
-    fake_this.$element.range = function (...args) {
+    fake_this.input_element.$element.range = function (...args) {
         const [arg1, arg2] = args;
         // .range() used in setTimeout
         assert.ok(arg2 > arg1);
@@ -690,7 +693,7 @@ test("content_typeahead_selected", ({override}) => {
     // Test special case to not close code blocks if there is text afterward
     fake_this.query = "```p\nsome existing code";
     fake_this.token = "p";
-    fake_this.$element.caret = () => 4; // Put cursor right after ```p
+    fake_this.input_element.$element.caret = () => 4; // Put cursor right after ```p
     actual_value = ct.content_typeahead_selected.call(fake_this, "python");
     expected_value = "```python\nsome existing code";
     assert.equal(actual_value, expected_value);
@@ -757,8 +760,8 @@ test("initialize", ({override, override_rewire, mock_template}) => {
     let topic_typeahead_called = false;
     let pm_recipient_typeahead_called = false;
     let compose_textarea_typeahead_called = false;
-    override(bootstrap_typeahead, "create", ($element, options) => {
-        switch ($element) {
+    override(bootstrap_typeahead, "create", (input_element, options) => {
+        switch (input_element.$element) {
             case $("input#stream_message_recipient_topic"): {
                 override_rewire(stream_topic_history, "get_recent_topic_names", (stream_id) => {
                     assert.equal(stream_id, sweden_stream.stream_id);
@@ -987,14 +990,17 @@ test("initialize", ({override, override_rewire, mock_template}) => {
                 // properly set as the .source(). All its features are tested later on
                 // in test_begins_typeahead().
                 let fake_this = {
-                    $element: {},
+                    input_element: {
+                        $element: {},
+                        type: "input",
+                    },
                 };
                 let caret_called = false;
-                fake_this.$element.caret = () => {
+                fake_this.input_element.$element.caret = () => {
                     caret_called = true;
                     return 7;
                 };
-                fake_this.$element.closest = () => [];
+                fake_this.input_element.$element.closest = () => [];
                 let actual_value = options.source.call(fake_this, "test #s");
                 assert.deepEqual(sorted_names_from(actual_value), ["Sweden", "The Netherlands"]);
                 assert.ok(caret_called);
@@ -1318,6 +1324,10 @@ test("begins_typeahead", ({override, override_rewire}) => {
     override(stream_topic_history_util, "get_server_history", noop);
 
     const begin_typehead_this = {
+        input_element: {
+            $element: {},
+            type: "input",
+        },
         options: {
             completions: {
                 emoji: true,

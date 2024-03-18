@@ -152,7 +152,12 @@ function build_page() {
     const $search_pygments_box = $("#playground_pygments_language");
     let language_labels = new Map();
 
-    bootstrap_typeahead.create($search_pygments_box, {
+    const bootstrap_typeahead_input = {
+        $element: $search_pygments_box,
+        type: "input",
+    };
+
+    bootstrap_typeahead.create(bootstrap_typeahead_input, {
         source(query) {
             language_labels = realm_playground.get_pygments_typeahead_list_for_settings(query);
             return [...language_labels.keys()];
@@ -164,6 +169,9 @@ function build_page() {
         matcher(item) {
             const q = this.query.trim().toLowerCase();
             return item.toLowerCase().startsWith(q);
+        },
+        sorter(items) {
+            return bootstrap_typeahead.defaultSorter(items, this.query);
         },
     });
 

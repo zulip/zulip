@@ -585,7 +585,7 @@ export function get_person_suggestions(query, opts) {
 
 export function get_stream_topic_data(hacky_this) {
     const opts = {};
-    const $message_row = hacky_this.$element.closest(".message_row");
+    const $message_row = hacky_this.input_element.$element.closest(".message_row");
     if ($message_row.length === 1) {
         // we are editing a message so we try to use its keys.
         const msg = message_store.get(rows.id($message_row));
@@ -667,7 +667,7 @@ const ALLOWED_MARKDOWN_FEATURES = {
 };
 
 export function get_candidates(query) {
-    const split = split_at_cursor(query, this.$element);
+    const split = split_at_cursor(query, this.input_element.$element);
     let current_token = tokenize_compose_str(split[0]);
     if (current_token === "") {
         return false;
@@ -861,10 +861,10 @@ export function content_highlighter_html(item) {
 }
 
 export function content_typeahead_selected(item, event) {
-    const pieces = split_at_cursor(this.query, this.$element);
+    const pieces = split_at_cursor(this.query, this.input_element.$element);
     let beginning = pieces[0];
     let rest = pieces[1];
-    const $textbox = this.$element;
+    const $textbox = this.input_element.$element;
     // Accepting some typeahead selections, like polls, will generate
     // placeholder text that is selected, in order to clarify for the
     // user what a given parameter is for. This object stores the
@@ -1008,7 +1008,11 @@ export function content_typeahead_selected(item, event) {
                 $textbox.caret(beginning.length, beginning.length);
                 compose_ui.autosize_textarea($textbox);
             };
-            flatpickr.show_flatpickr(this.$element[0], on_timestamp_selection, timestamp);
+            flatpickr.show_flatpickr(
+                this.input_element.$element[0],
+                on_timestamp_selection,
+                timestamp,
+            );
             return beginning + rest;
         }
     }
@@ -1094,6 +1098,10 @@ export function compose_trigger_selection(event) {
 }
 
 export function initialize_topic_edit_typeahead(form_field, stream_name, dropup) {
+    const bootstrap_typeahead_input = {
+        $element: form_field,
+        type: "input",
+    };
     const options = {
         fixed: true,
         dropup,
@@ -1113,7 +1121,7 @@ export function initialize_topic_edit_typeahead(form_field, stream_name, dropup)
         },
         items: 5,
     };
-    bootstrap_typeahead.create(form_field, options);
+    bootstrap_typeahead.create(bootstrap_typeahead_input, options);
 }
 
 function get_header_html() {
@@ -1141,7 +1149,11 @@ function get_header_html() {
 }
 
 export function initialize_compose_typeahead(selector) {
-    bootstrap_typeahead.create($(selector), {
+    const bootstrap_typeahead_input = {
+        $element: $(selector),
+        type: "input",
+    };
+    bootstrap_typeahead.create(bootstrap_typeahead_input, {
         items: max_num_items,
         dropup: true,
         fixed: true,
@@ -1172,7 +1184,11 @@ export function initialize({on_enter_send}) {
     $("form#send_message_form").on("keydown", (e) => handle_keydown(e, {on_enter_send}));
     $("form#send_message_form").on("keyup", handle_keyup);
 
-    bootstrap_typeahead.create($("input#stream_message_recipient_topic"), {
+    const stream_message_typeahead_input = {
+        $element: $("input#stream_message_recipient_topic"),
+        type: "input",
+    };
+    bootstrap_typeahead.create(stream_message_typeahead_input, {
         source() {
             return topics_seen_for(compose_state.stream_id());
         },
@@ -1197,7 +1213,11 @@ export function initialize({on_enter_send}) {
         header_html: render_topic_typeahead_hint,
     });
 
-    bootstrap_typeahead.create($("#private_message_recipient"), {
+    const private_message_typeahead_input = {
+        $element: $("#private_message_recipient"),
+        type: "contenteditable",
+    };
+    bootstrap_typeahead.create(private_message_typeahead_input, {
         source: get_pm_people,
         items: max_num_items,
         dropup: true,

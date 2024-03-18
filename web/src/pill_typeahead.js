@@ -32,7 +32,11 @@ export function set_up($input, pills, opts) {
     const include_users = opts.user;
     const exclude_bots = opts.exclude_bots;
 
-    bootstrap_typeahead.create($input, {
+    const bootstrap_typeahead_input = {
+        $element: $input,
+        type: "contenteditable",
+    };
+    bootstrap_typeahead.create(bootstrap_typeahead_input, {
         items: 5,
         fixed: true,
         dropup: true,
