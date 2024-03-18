@@ -162,8 +162,6 @@ const defaults = {
     stopAdvance: false,
     dropup: false,
     advanceKeyCodes: [],
-    openInputFieldOnKeyUp: null,
-    closeInputFieldOnHide: null,
     tabIsEnter: true,
 };
 
@@ -291,7 +289,7 @@ Typeahead.prototype = {
     hide() {
         this.$container.hide();
         this.shown = false;
-        if (this.options.closeInputFieldOnHide !== null) {
+        if (this.options.closeInputFieldOnHide !== undefined) {
             this.options.closeInputFieldOnHide();
         }
         return this;
@@ -574,7 +572,7 @@ Typeahead.prototype = {
                 ) {
                     return;
                 }
-                if (this.options.openInputFieldOnKeyUp !== null && !this.shown) {
+                if (this.options.openInputFieldOnKeyUp !== undefined && !this.shown) {
                     // If the typeahead isn't shown yet, the `lookup` call will open it.
                     // Here we make a callback to the input field before we open the
                     // lookahead in case it needs to make UI changes first (e.g. widening
