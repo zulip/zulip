@@ -39,6 +39,7 @@ from zerver.actions.realm_settings import (
 from zerver.actions.user_groups import check_add_user_group
 from zerver.actions.user_settings import do_change_user_setting, do_regenerate_api_key
 from zerver.actions.user_topics import do_set_user_topic_visibility_policy
+from zerver.lib import redis_utils
 from zerver.lib.avatar import absolute_avatar_url, get_avatar_for_inaccessible_user
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.push_notifications import (
@@ -64,12 +65,15 @@ from zerver.lib.push_notifications import (
     send_notifications_to_bouncer,
 )
 from zerver.lib.remote_server import (
+    PUSH_NOTIFICATIONS_RECENTLY_WORKING_REDIS_KEY,
     AnalyticsRequest,
     PushNotificationBouncerError,
     PushNotificationBouncerRetryLaterError,
     PushNotificationBouncerServerError,
     build_analytics_data,
     get_realms_info_for_push_bouncer,
+    record_push_notifications_recently_working,
+    redis_client,
     send_server_data_to_push_bouncer,
     send_to_push_bouncer,
 )
@@ -1334,6 +1338,12 @@ class AnalyticsBouncerTest(BouncerTestCase):
             ),
         )
 
+    @override
+    def setUp(self) -> None:
+        redis_client.delete(PUSH_NOTIFICATIONS_RECENTLY_WORKING_REDIS_KEY)
+
+        return super().setUp()
+
     @override_settings(PUSH_NOTIFICATION_BOUNCER_URL="https://push.zulip.org.example.com")
     @responses.activate
     def test_analytics_failure_api(self) -> None:
@@ -1353,6 +1363,40 @@ class AnalyticsBouncerTest(BouncerTestCase):
             )
             self.assertTrue(resp.assert_call_count(ANALYTICS_STATUS_URL, 1))
             self.assertPushNotificationsAre(False)
+
+        # Simulate ConnectionError again, but this time with a redis record indicating
+        # that push notifications have recently worked fine.
+        with responses.RequestsMock() as resp, self.assertLogs(
+            "zulip.analytics", level="WARNING"
+        ) as mock_warning:
+            resp.add(responses.GET, ANALYTICS_STATUS_URL, body=ConnectionError())
+            Realm.objects.all().update(push_notifications_enabled=True)
+            record_push_notifications_recently_working()
+
+            send_server_data_to_push_bouncer()
+            self.assertEqual(
+                "WARNING:zulip.analytics:ConnectionError while trying to connect to push notification bouncer",
+                mock_warning.output[0],
+            )
+            self.assertTrue(resp.assert_call_count(ANALYTICS_STATUS_URL, 1))
+            # push_notifications_enabled shouldn't get set to False, because this is treated
+            # as a transient error.
+            self.assertPushNotificationsAre(True)
+
+            # However after an hour has passed without seeing push notifications
+            # working, we take the error seriously.
+            with time_machine.travel(now() + timedelta(minutes=61), tick=False):
+                send_server_data_to_push_bouncer()
+                self.assertEqual(
+                    "WARNING:zulip.analytics:ConnectionError while trying to connect to push notification bouncer",
+                    mock_warning.output[1],
+                )
+                self.assertTrue(resp.assert_call_count(ANALYTICS_STATUS_URL, 2))
+                self.assertPushNotificationsAre(False)
+
+            redis_client.delete(
+                redis_utils.REDIS_KEY_PREFIX + PUSH_NOTIFICATIONS_RECENTLY_WORKING_REDIS_KEY
+            )
 
         with responses.RequestsMock() as resp, self.assertLogs(
             "zulip.analytics", level="WARNING"

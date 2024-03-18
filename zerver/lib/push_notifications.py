@@ -45,6 +45,7 @@ from zerver.lib.exceptions import ErrorCode, JsonableError
 from zerver.lib.message import access_message_and_usermessage, huddle_users
 from zerver.lib.outgoing_http import OutgoingSession
 from zerver.lib.remote_server import (
+    record_push_notifications_recently_working,
     send_json_to_push_bouncer,
     send_server_data_to_push_bouncer,
     send_to_push_bouncer,
@@ -662,15 +663,18 @@ def send_notifications_to_bouncer(
         # The server may have updated our understanding of whether
         # push notifications will work.
         assert isinstance(remote_realm_dict, dict)
+        can_push = remote_realm_dict["can_push"]
         do_set_realm_property(
             user_profile.realm,
             "push_notifications_enabled",
-            remote_realm_dict["can_push"],
+            can_push,
             acting_user=None,
         )
         do_set_push_notifications_enabled_end_timestamp(
             user_profile.realm, remote_realm_dict["expected_end_timestamp"], acting_user=None
         )
+        if can_push:
+            record_push_notifications_recently_working()
 
     logger.info(
         "Sent mobile push notifications for user %s through bouncer: %s via FCM devices, %s via APNs devices",
