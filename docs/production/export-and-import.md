@@ -508,22 +508,39 @@ for more details on supported options.
 
 ## Database-only backup tools
 
-The [Zulip-specific backup tool documented above](#backups) is perfect
-for an all-in-one backup solution, and can be used for nightly
-backups. For administrators wanting continuous point-in-time backups,
-Zulip has built-in support for taking daily backup snapshots along
-with [streaming write-ahead log (WAL)][wal] backups using
-[wal-g](https://github.com/wal-g/wal-g) and storing them in Amazon S3.
-By default, these backups are stored for 30 days.
+The [Zulip-specific backup tool documented above](#backups) is perfect for an
+all-in-one backup solution, and can be used for nightly backups. For
+administrators wanting continuous point-in-time backups, Zulip has built-in
+support for taking daily backup snapshots along with [streaming write-ahead log
+(WAL)][wal] backups using [wal-g](https://github.com/wal-g/wal-g). By default,
+these backups are stored for 30 days.
 
 Note these database backups, by themselves, do not constitute a full
 backup of the Zulip system! [See above](#backup-details) for other
 pieces which are necessary to back up a Zulip system.
 
-To enable continuous point-in-time backups:
+Daily full-database backups will be taken at 0200 UTC, and every [WAL][wal]
+archive file will be backed up as it is saved by PostgreSQL; these are written
+every 16KiB of the WAL. This means that if there are periods of slow activity,
+it may be minutes before the backup is saved into S3 -- see
+[`archive_timeout`][archive-timeout] for how to set an upper bound on this.
 
-1. Edit `/etc/zulip/zulip-secrets.conf` on the
-   PostgreSQL server to add:
+If you need always-current backup availability, Zulip also has
+[built-in database replication support](deployment.md#postgresql-warm-standby).
+
+You can (and should) monitor that backups are running regularly via
+the Nagios plugin installed into
+`/usr/lib/nagios/plugins/zulip_postgresql_backups/check_postgresql_backup`.
+
+### Streaming backups to S3
+
+This provides a durable and reliable off-host database backup, and we suggest
+this configuration for resilience to disk failures. Because backups are written
+to S3 as the WAL logs are written, this means that an active Zulip server will
+be regularly sending PutObject requests to S3, possibly thousands of times per
+day.
+
+1. Edit `/etc/zulip/zulip-secrets.conf` on the PostgreSQL server to add:
 
    ```ini
    s3_region = # region to write to S3; defaults to EC2 host's region
@@ -532,27 +549,40 @@ To enable continuous point-in-time backups:
    s3_backups_bucket = # name of S3 backup bucket
    ```
 
-1. Run `/home/zulip/deployments/current/scripts/zulip-puppet-apply`.
+1. Run:
 
-Daily full-database backups will be taken at 0200 UTC, and every WAL
-archive file will be written to S3 as it is saved by PostgreSQL; these
-are written every 16KiB of the WAL. This means that if there are
-periods of slow activity, it may be minutes before the backup is saved
-into S3 -- see [`archive_timeout`][archive-timeout] for how to set an
-upper bound on this. On an active Zulip server, this also means the
-Zulip server will be regularly sending PutObject requests to S3,
-possibly thousands of times per day.
+   ```shell
+   /home/zulip/deployments/current/scripts/zulip-puppet-apply
+   ```
 
 You may also want to adjust the
 [concurrency](system-configuration.md#backups-disk-concurrency) or [S3 storage
 class](system-configuration.md#backups-storage-class).
 
-If you need always-current backup availability, Zulip also has
-[built-in database replication support](deployment.md#postgresql-warm-standby).
+### Streaming backups to local disk
 
-You can (and should) monitor that backups are running regularly via
-the Nagios plugin installed into
-`/usr/lib/nagios/plugins/zulip_postgresql_backups/check_postgresql_backup`.
+As an alternative to storing backups to S3, you can also store backups to a
+local disk. This option is not recommended for disaster recovery purposes,
+since unless the directory is on a different disk from the database itself,
+_backups will likely also be lost if the database is lost._ This setting can be
+useful if the path is on a NAS mountpoint, or if some other process copies this
+data off the disk; or if backups are purely for point-in-time historical
+analysis of recent application-level data changes.
+
+1. Edit `/etc/zulip/zulip.conf` on the PostgreSQL server, and add to the existing
+   `[postgresql]` section:
+
+   ```ini
+    # Adjust this path to your desired storage location; this should be on a
+    # different disk than /var/lib/postgresql/ which stores the database.
+    backups_directory = /srv/zulip-db-backups
+   ```
+
+1. Run:
+
+   ```shell
+   /home/zulip/deployments/current/scripts/zulip-puppet-apply
+   ```
 
 [wal]: https://www.postgresql.org/docs/current/wal-intro.html
 [archive-timeout]: https://www.postgresql.org/docs/current/runtime-config-wal.html#GUC-ARCHIVE-TIMEOUT
