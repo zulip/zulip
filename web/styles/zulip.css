@@ -1811,31 +1811,6 @@ div.focused-message-list {
     font-size: 0;
 }
 
-.nav .dropdown-menu {
-    left: auto;
-    right: -7px;
-    top: 35px;
-    /* Match the width of the right sidebar so that we don't have
-       the presence dots distracting you when looking at this. */
-    min-width: 240px;
-    box-shadow: 0 0 5px hsl(0deg 0% 0% / 20%);
-
-    &::after {
-        position: absolute;
-        width: 0;
-        height: 0;
-        top: -7px;
-        right: 19px;
-        display: inline-block;
-        border-right: 7px solid transparent;
-        border-bottom: 7px solid hsl(0deg 0% 67%);
-        border-left: 7px solid transparent;
-        content: "";
-        z-index: 10;
-    }
-}
-
-.nav .dropdown-menu a,
 .typeahead.dropdown-menu a {
     color: inherit;
 }
@@ -2460,15 +2435,6 @@ select.invite-as {
         }
     }
 
-    .nav .dropdown-menu {
-        min-width: 180px;
-        box-shadow: 0 0 5px hsl(0deg 0% 0% / 20%);
-
-        &::after {
-            right: 21px;
-        }
-    }
-
     .column-middle {
         margin-right: 7px;
     }
@@ -2568,10 +2534,6 @@ select.invite-as {
 
     .column-left.expanded .left-sidebar-navigation-area {
         margin-top: 10px;
-    }
-
-    .nav .dropdown-menu {
-        right: -13px;
     }
 
     /* Usually the styling is applied directly to the icon, but here

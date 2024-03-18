@@ -628,10 +628,6 @@
         }
     }
 
-    .nav .dropdown-menu::after {
-        border-bottom-color: hsl(235deg 18% 7%);
-    }
-
     .narrow_to_compose_recipients,
     .expand_composebox_button,
     .collapse_composebox_button,
