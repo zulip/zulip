@@ -410,11 +410,8 @@ Typeahead.prototype = {
             .on("blur", this.blur.bind(this))
             .on("keypress", this.keypress.bind(this))
             .on("keyup", this.keyup.bind(this))
-            .on("click", this.element_click.bind(this));
-
-        if (this.eventSupported("keydown")) {
-            this.$element.on("keydown", this.keydown.bind(this));
-        }
+            .on("click", this.element_click.bind(this))
+            .on("keydown", this.keydown.bind(this));
 
         this.$menu
             .on("click", "li", this.click.bind(this))
@@ -431,15 +428,6 @@ Typeahead.prototype = {
             this.$element.off(event_);
         }
         this.$element.removeData("typeahead");
-    },
-
-    eventSupported(eventName) {
-        let isSupported = eventName in this.$element;
-        if (!isSupported) {
-            this.$element.setAttribute(eventName, "return;");
-            isSupported = typeof this.$element[eventName] === "function";
-        }
-        return isSupported;
     },
 
     resizeHandler() {
