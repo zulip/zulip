@@ -266,19 +266,21 @@ export function initialize() {
         },
     });
 
-    message_list_tooltip([".recipient_bar_icon"], {
+    message_list_tooltip(".recipient_bar_icon", {
         delay: LONG_HOVER_DELAY,
         onHidden(instance) {
             instance.destroy();
         },
     });
 
-    message_list_tooltip([".rendered_markdown time", ".rendered_markdown .copy_codeblock"], {
-        content: timerender.get_markdown_time_tooltip,
-        onHidden(instance) {
-            instance.destroy();
+    message_list_tooltip(".rendered_markdown time, .rendered_markdown .copy_codeblock",
+        {
+            content: timerender.get_markdown_time_tooltip,
+            onHidden(instance) {
+                instance.destroy();
+            },
         },
-    });
+    );
 
     message_list_tooltip(".message_inline_image > a > img", {
         // Add a short delay so the user can mouseover several inline images without
