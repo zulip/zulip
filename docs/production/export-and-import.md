@@ -556,8 +556,9 @@ day.
    ```
 
 You may also want to adjust the
-[concurrency](system-configuration.md#backups_disk_concurrency) or [S3 storage
-class](system-configuration.md#backups_storage_class).
+[concurrency](system-configuration.md#backups_disk_concurrency), [S3 storage
+class](system-configuration.md#backups_storage_class), or [incremental
+backups][incremental] configuration.
 
 ### Streaming backups to local disk
 
@@ -584,6 +585,10 @@ analysis of recent application-level data changes.
    /home/zulip/deployments/current/scripts/zulip-puppet-apply
    ```
 
+You may also want to adjust the [incremental backups][incremental]
+configuration.
+
 [wal]: https://www.postgresql.org/docs/current/wal-intro.html
 [archive-timeout]: https://www.postgresql.org/docs/current/runtime-config-wal.html#GUC-ARCHIVE-TIMEOUT
 [mobile-push]: ../production/mobile-push-notifications.md
+[incremental]: system-configuration.md#backups_incremental
