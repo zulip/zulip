@@ -963,9 +963,15 @@ input[type="checkbox"] {
         font-family: "Source Code Pro", monospace;
         font-size: 0.85em;
         display: flex;
+        align-items: center;
     }
 
-    #copy_bot_email {
+    .api_key #copy_api_key {
+        margin-left: 5px;
+    }
+
+    #copy_bot_email,
+    #copy_api_key {
         cursor: pointer;
     }
 

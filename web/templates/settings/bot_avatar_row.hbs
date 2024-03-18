@@ -47,6 +47,7 @@
             <div class="api-key-value-and-button no-select">
                 <!-- have the `.text-select` in `.no-select` so that the value doesn't have trailing whitespace. -->
                 <span class="value text-select">{{api_key}}</span>
+                <i id="copy_api_key" class="fa fa-copy tippy-zulip-tooltip copy_api_key" data-tippy-content="{{t 'Copy api key' }}" data-tippy-placement="left" data-clipboard-text="{{api_key}}"></i>
                 <button type="submit" class="button no-style btn-secondary regenerate_bot_api_key tippy-zulip-delayed-tooltip" data-tippy-content="{{t 'Generate new API key' }}" data-user-id="{{user_id}}">
                     <i class="fa fa-refresh" aria-hidden="true"></i>
                 </button>
