@@ -303,10 +303,7 @@ Typeahead.prototype = {
             return this.shown ? this.hide() : this;
         }
 
-        const items =
-            typeof this.source === "function"
-                ? this.source(this.query, this.process.bind(this))
-                : this.source;
+        const items = this.source(this.query);
 
         if (!items && this.shown) {
             this.hide();
