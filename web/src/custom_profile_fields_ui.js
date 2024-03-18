@@ -165,12 +165,19 @@ export function initialize_custom_pronouns_type_fields(element_id) {
         $t({defaultMessage: "she/her"}),
         $t({defaultMessage: "they/them"}),
     ];
-    bootstrap_typeahead.create($(element_id).find(".pronouns_type_field"), {
+    const bootstrap_typeahead_input = {
+        $element: $(element_id).find(".pronouns_type_field"),
+        type: "input",
+    };
+    bootstrap_typeahead.create(bootstrap_typeahead_input, {
         items: 3,
         fixed: true,
         helpOnEmptyStrings: true,
         source() {
             return commonly_used_pronouns;
+        },
+        sorter(items) {
+            return bootstrap_typeahead.defaultSorter(items, this.query);
         },
         highlighter_html(item) {
             return typeahead_helper.render_typeahead_item({primary: item});

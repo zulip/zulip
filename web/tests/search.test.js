@@ -36,8 +36,8 @@ run_test("initialize", ({override, override_rewire, mock_template}) => {
     search_suggestion.max_num_of_search_results = 999;
     let terms;
 
-    override(bootstrap_typeahead, "create", ($element, opts) => {
-        assert.equal($element, $search_query_box);
+    override(bootstrap_typeahead, "create", (input_element, opts) => {
+        assert.equal(input_element.$element, $search_query_box);
         assert.equal(opts.items, 999);
         assert.equal(opts.naturalSearch, true);
         assert.equal(opts.helpOnEmptyStrings, true);
