@@ -54,7 +54,7 @@ function message_list_tooltip(target, props = {}) {
                 return false;
             }
 
-            return true;
+            return undefined;
         },
         ...other_props,
     });
@@ -144,7 +144,7 @@ export function initialize() {
                 $elem.get(0),
             ];
             hide_tooltip_if_reference_removed(target, config, instance, nodes_to_check_for_removal);
-            return true;
+            return undefined;
         },
         onHidden(instance) {
             instance.destroy();
@@ -180,7 +180,7 @@ export function initialize() {
                 $elem.get(0),
             ];
             hide_tooltip_if_reference_removed(target, config, instance, nodes_to_check_for_removal);
-            return true;
+            return undefined;
         },
         onHidden(instance) {
             instance.destroy();
@@ -235,7 +235,7 @@ export function initialize() {
             }
             const time = new Date(message.timestamp * 1000);
             instance.setContent(timerender.get_full_datetime_clarification(time));
-            return true;
+            return undefined;
         },
         onHidden(instance) {
             instance.destroy();
