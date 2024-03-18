@@ -149,47 +149,43 @@ function get_pseudo_keycode(event) {
 /* TYPEAHEAD PUBLIC CLASS DEFINITION
  * ================================= */
 
-const header_element_html =
+const HEADER_ELEMENT_HTML =
     '<p class="typeahead-header"><span id="typeahead-header-text"></span></p>';
-
-const defaults = {
-    source: [],
-    items: 8,
-    container: '<div class="typeahead dropdown-menu"></div>',
-    menu: '<ul class="typeahead-menu"></ul>',
-    item: "<li><a></a></li>",
-    minLength: 1,
-    stopAdvance: false,
-    dropup: false,
-    advanceKeyCodes: [],
-    tabIsEnter: true,
-};
+const CONTAINER_HTML = '<div class="typeahead dropdown-menu"></div>';
+const MENU_HTML = '<ul class="typeahead-menu"></ul>';
+const ITEM_HTML = "<li><a></a></li>";
+const MIN_LENGTH = 1;
 
 const Typeahead = function (element, options) {
     this.$element = $(element);
-    this.options = {
-        ...defaults,
-        ...options,
-    };
-    this.matcher = this.options.matcher ?? this.matcher;
-    this.sorter = this.options.sorter ?? this.sorter;
-    this.highlighter_html = this.options.highlighter_html;
-    this.updater = this.options.updater ?? this.updater;
-    this.$container = $(this.options.container).appendTo(this.options.parentElement ?? "body");
-    this.$menu = $(this.options.menu).appendTo(this.$container);
-    this.$header = $(header_element_html).appendTo(this.$container);
-    this.source = this.options.source;
+    this.items = options.items ?? 8;
+    this.matcher = options.matcher ?? this.matcher;
+    this.sorter = options.sorter ?? this.sorter;
+    this.highlighter_html = options.highlighter_html;
+    this.updater = options.updater ?? this.updater;
+    this.$container = $(CONTAINER_HTML).appendTo(options.parentElement ?? "body");
+    this.$menu = $(MENU_HTML).appendTo(this.$container);
+    this.$header = $(HEADER_ELEMENT_HTML).appendTo(this.$container);
+    this.source = options.source;
     this.shown = false;
     this.mouse_moved_since_typeahead = false;
-    this.dropup = this.options.dropup;
-    this.fixed = this.options.fixed ?? false;
-    this.automated = this.options.automated ?? (() => false);
-    this.trigger_selection = this.options.trigger_selection ?? (() => false);
-    this.on_escape = this.options.on_escape;
+    this.dropup = options.dropup ?? false;
+    this.fixed = options.fixed ?? false;
+    this.automated = options.automated ?? (() => false);
+    this.trigger_selection = options.trigger_selection ?? (() => false);
+    this.on_escape = options.on_escape;
     // return a string to show in typeahead header or false.
-    this.header_html = this.options.header_html ?? (() => false);
+    this.header_html = options.header_html ?? (() => false);
     // return a string to show in typeahead items or false.
-    this.option_label = this.options.option_label ?? (() => false);
+    this.option_label = options.option_label ?? (() => false);
+    this.stopAdvance = options.stopAdvance ?? false;
+    this.advanceKeyCodes = options.advanceKeyCodes ?? [];
+    this.openInputFieldOnKeyUp = options.openInputFieldOnKeyUp;
+    this.closeInputFieldOnHide = options.closeInputFieldOnHide;
+    this.tabIsEnter = options.tabIsEnter ?? true;
+    this.helpOnEmptyStrings = options.helpOnEmptyStrings ?? false;
+    this.naturalSearch = options.naturalSearch ?? false;
+    this.parentElement = options.parentElement;
 
     if (this.fixed) {
         this.$container.css("position", "fixed");
@@ -247,7 +243,7 @@ Typeahead.prototype = {
 
         // If a parent element was specified, we shouldn't manually
         // position the element, since it's already in the right place.
-        if (!this.options.parentElement) {
+        if (!this.parentElement) {
             let pos;
 
             if (this.fixed) {
@@ -289,8 +285,8 @@ Typeahead.prototype = {
     hide() {
         this.$container.hide();
         this.shown = false;
-        if (this.options.closeInputFieldOnHide !== undefined) {
-            this.options.closeInputFieldOnHide();
+        if (this.closeInputFieldOnHide !== undefined) {
+            this.closeInputFieldOnHide();
         }
         return this;
     },
@@ -301,8 +297,8 @@ Typeahead.prototype = {
             : this.$element.val();
 
         if (
-            (!this.options.helpOnEmptyStrings || hideOnEmpty) &&
-            (!this.query || this.query.length < this.options.minLength)
+            (!this.helpOnEmptyStrings || hideOnEmpty) &&
+            (!this.query || this.query.length < MIN_LENGTH)
         ) {
             return this.shown ? this.hide() : this;
         }
@@ -330,7 +326,7 @@ Typeahead.prototype = {
             this.select();
             return this;
         }
-        return this.render(final_items.slice(0, this.options.items), matching_items).show();
+        return this.render(final_items.slice(0, this.items), matching_items).show();
     },
 
     matcher(item) {
@@ -358,7 +354,7 @@ Typeahead.prototype = {
 
     render(final_items, matching_items) {
         const $items = $(final_items).map((_index, item) => {
-            const $i = $(this.options.item).data("typeahead-value", item);
+            const $i = $(ITEM_HTML).data("typeahead-value", item);
             const item_html = this.highlighter_html(item);
             const $item_html = $i.find("a").html(item_html);
 
@@ -385,7 +381,7 @@ Typeahead.prototype = {
 
         $next.addClass("active");
 
-        if (this.options.naturalSearch) {
+        if (this.naturalSearch) {
             this.set_value();
         }
     },
@@ -400,7 +396,7 @@ Typeahead.prototype = {
 
         $prev.addClass("active");
 
-        if (this.options.naturalSearch) {
+        if (this.naturalSearch) {
             this.set_value();
         }
     },
@@ -439,8 +435,8 @@ Typeahead.prototype = {
     maybeStopAdvance(e) {
         const pseudo_keycode = get_pseudo_keycode(e);
         if (
-            (this.options.stopAdvance || (pseudo_keycode !== 9 && pseudo_keycode !== 13)) &&
-            !this.options.advanceKeyCodes.includes(e.keyCode)
+            (this.stopAdvance || (pseudo_keycode !== 9 && pseudo_keycode !== 13)) &&
+            !this.advanceKeyCodes.includes(e.keyCode)
         ) {
             e.stopPropagation();
         }
@@ -454,7 +450,7 @@ Typeahead.prototype = {
 
         switch (pseudo_keycode) {
             case 9: // tab
-                if (!this.options.tabIsEnter) {
+                if (!this.tabIsEnter) {
                     return;
                 }
                 e.preventDefault();
@@ -519,7 +515,7 @@ Typeahead.prototype = {
 
             case 9: // tab
                 // If the typeahead is not shown or tabIsEnter option is not set, do nothing and return
-                if (!this.options.tabIsEnter || !this.shown) {
+                if (!this.tabIsEnter || !this.shown) {
                     return;
                 }
 
@@ -560,12 +556,12 @@ Typeahead.prototype = {
                 ) {
                     return;
                 }
-                if (this.options.openInputFieldOnKeyUp !== undefined && !this.shown) {
+                if (this.openInputFieldOnKeyUp !== undefined && !this.shown) {
                     // If the typeahead isn't shown yet, the `lookup` call will open it.
                     // Here we make a callback to the input field before we open the
                     // lookahead in case it needs to make UI changes first (e.g. widening
                     // the search bar).
-                    this.options.openInputFieldOnKeyUp();
+                    this.openInputFieldOnKeyUp();
                 }
                 this.lookup(false);
         }
@@ -578,10 +574,7 @@ Typeahead.prototype = {
     blur(e) {
         // Blurs that move focus to elsewhere within the parent element shouldn't
         // hide the typeahead.
-        if (
-            this.options.parentElement &&
-            $(e.relatedTarget).parents(this.options.parentElement).length > 0
-        ) {
+        if (this.parentElement && $(e.relatedTarget).parents(this.parentElement).length > 0) {
             return;
         }
         setTimeout(() => {
