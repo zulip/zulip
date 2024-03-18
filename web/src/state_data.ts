@@ -105,6 +105,7 @@ export const realm_schema = z.object({
     max_avatar_file_size_mib: z.number(),
     max_icon_file_size_mib: z.number(),
     max_logo_file_size_mib: z.number(),
+    max_topic_length: z.number(),
     realm_add_custom_emoji_policy: z.number(),
     realm_allow_edit_history: z.boolean(),
     realm_available_video_chat_providers: z.object({
@@ -134,6 +135,14 @@ export const realm_schema = z.object({
     realm_enable_spectator_access: z.boolean(),
     realm_icon_source: z.string(),
     realm_icon_url: z.string(),
+    realm_incoming_webhook_bots: z.array(
+        z.object({
+            display_name: z.string(),
+            name: z.string(),
+            all_event_types: z.nullable(z.array(z.string())),
+            // We currently ignore the `config` field in these objects.
+        }),
+    ),
     realm_invite_to_realm_policy: z.number(),
     realm_invite_to_stream_policy: z.number(),
     realm_is_zephyr_mirror_realm: z.boolean(),
