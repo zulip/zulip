@@ -995,7 +995,6 @@ test("initialize", ({override, override_rewire, mock_template}) => {
                     return 7;
                 };
                 fake_this.$element.closest = () => [];
-                fake_this.options = options;
                 let actual_value = options.source.call(fake_this, "test #s");
                 assert.deepEqual(sorted_names_from(actual_value), ["Sweden", "The Netherlands"]);
                 assert.ok(caret_called);
