@@ -422,8 +422,15 @@ export function register_popover_menu(target: string, popover_props: Partial<Pop
 
 export function initialize(): void {
     /* Configure popovers to hide when toggling overlays. */
-    overlays.register_pre_open_hook(popovers.hide_all);
-    overlays.register_pre_close_hook(popovers.hide_all);
-    modals.register_pre_open_hook(popovers.hide_all);
-    modals.register_pre_close_hook(popovers.hide_all);
+    // The intention of this to hide any popovers before opening an overlay / modal
+    // after the current popover exit logic is complete.
+    const hide_popovers_if_any_visible = (): void => {
+        setTimeout(() => {
+            popovers.hide_all();
+        }, 0);
+    };
+    overlays.register_pre_open_hook(hide_popovers_if_any_visible);
+    overlays.register_pre_close_hook(hide_popovers_if_any_visible);
+    modals.register_pre_open_hook(hide_popovers_if_any_visible);
+    modals.register_pre_close_hook(hide_popovers_if_any_visible);
 }
