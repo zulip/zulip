@@ -24,8 +24,8 @@ import * as util from "./util";
 
 // TODO: Refactor to push this into a field of ComposeTriggeredOptions.
 type messageType = "stream" | "private";
-type ComposeTriggeredOptions = {
-    trigger: string;
+export type ComposeTriggeredOptions = {
+    trigger?: string;
     private_message_recipient: string;
     topic: string;
     stream_id: number;
