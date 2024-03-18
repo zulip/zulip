@@ -331,7 +331,6 @@ p.n-margin {
 .app-main,
 .header-main {
     width: 100%;
-    min-width: 950px;
     margin: 0 auto;
     padding: 0;
     position: relative;
@@ -2435,11 +2434,6 @@ select.invite-as {
 }
 
 @media (width < $xl_min) {
-    .app-main,
-    .header-main {
-        min-width: 750px;
-    }
-
     .column-right {
         display: none;
 
@@ -2505,13 +2499,6 @@ select.invite-as {
                 width: var(--left-sidebar-width);
             }
         }
-    }
-
-    body,
-    html,
-    .app-main,
-    .header-main {
-        min-width: 350px;
     }
 
     .column-middle,
@@ -2625,6 +2612,8 @@ select.invite-as {
         overflow-x: hidden;
     }
 
+    /* We don't want user to experience Zulip below this width since
+       we don't don't develop features for below this width. */
     body,
     html,
     .app-main,
