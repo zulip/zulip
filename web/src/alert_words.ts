@@ -87,5 +87,5 @@ export function notifies(message: Message): boolean {
 }
 
 export const initialize = (params: {alert_words: string[]}): void => {
-    my_alert_words = params.alert_words;
+    set_words(params.alert_words);
 };
