@@ -2435,7 +2435,7 @@ select.invite-as {
         }
     }
 
-    .column-middle {
+    .app-main .column-middle {
         margin-right: 7px;
     }
 
@@ -2467,21 +2467,17 @@ select.invite-as {
         }
     }
 
-    .column-middle,
     .app-main .column-middle {
         margin-left: 7px;
         margin-right: 7px;
     }
 
-    .header-main .column-middle {
-        margin-left: 0;
-    }
-
-    .column-middle-inner {
+    #navbar-middle {
         margin-left: 0;
     }
 
     .app-main .column-middle .column-middle-inner {
+        margin-left: 0;
         margin-right: 0;
     }
 
