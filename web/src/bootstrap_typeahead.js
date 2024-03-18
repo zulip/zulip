@@ -350,7 +350,7 @@ Typeahead.prototype = {
     },
 
     render(final_items, matching_items) {
-        const $items = $(final_items).map((_index, item) => {
+        const $items = final_items.map((item) => {
             const $i = $(ITEM_HTML).data("typeahead-value", item);
             const item_html = this.highlighter_html(item);
             const $item_html = $i.find("a").html(item_html);
@@ -360,10 +360,10 @@ Typeahead.prototype = {
             if (option_label_html) {
                 $item_html.append(option_label_html).addClass("typeahead-option-label");
             }
-            return $i[0];
+            return $i;
         });
 
-        $items.first().addClass("active");
+        $items[0].addClass("active");
         this.$menu.empty().append($items);
         return this;
     },
