@@ -85,6 +85,14 @@ const keyboard_handling_context: messages_overlay_ui.Context = {
     },
 };
 
+function get_display_stream_name(stream_id: number): string {
+    const stream_name = sub_store.maybe_get_stream_name(stream_id);
+    if (stream_name === undefined) {
+        return $t({defaultMessage: "Unknown stream"});
+    }
+    return stream_name;
+}
+
 export function fetch_and_render_message_history(message: Message): void {
     $("#message-edit-history-overlay-container").empty();
     $("#message-edit-history-overlay-container").append(render_message_history_overlay());
@@ -128,22 +136,15 @@ export function fetch_and_render_message_history(message: Message): void {
                     prev_topic = msg.prev_topic;
                     new_topic = msg.topic;
                 } else if (msg.prev_topic && msg.prev_stream) {
-                    const sub = sub_store.get(msg.prev_stream);
                     edited_by_notice = $t({defaultMessage: "Moved by {full_name}"}, {full_name});
                     topic_edited = true;
                     prev_topic = msg.prev_topic;
                     new_topic = msg.topic;
                     stream_changed = true;
                     prev_stream_id = msg.prev_stream;
-                    if (!sub) {
-                        prev_stream = $t({defaultMessage: "Unknown stream"});
-                    } else {
-                        prev_stream = sub_store.maybe_get_stream_name(msg.prev_stream);
-                    }
+                    prev_stream = get_display_stream_name(msg.prev_stream);
                     if (prev_stream_item !== null) {
-                        prev_stream_item.new_stream = sub_store.maybe_get_stream_name(
-                            msg.prev_stream,
-                        );
+                        prev_stream_item.new_stream = get_display_stream_name(msg.prev_stream);
                     }
                 } else if (msg.prev_topic) {
                     edited_by_notice = $t({defaultMessage: "Moved by {full_name}"}, {full_name});
@@ -151,19 +152,12 @@ export function fetch_and_render_message_history(message: Message): void {
                     prev_topic = msg.prev_topic;
                     new_topic = msg.topic;
                 } else if (msg.prev_stream) {
-                    const sub = sub_store.get(msg.prev_stream);
                     edited_by_notice = $t({defaultMessage: "Moved by {full_name}"}, {full_name});
                     stream_changed = true;
                     prev_stream_id = msg.prev_stream;
-                    if (!sub) {
-                        prev_stream = $t({defaultMessage: "Unknown stream"});
-                    } else {
-                        prev_stream = sub_store.maybe_get_stream_name(msg.prev_stream);
-                    }
+                    prev_stream = get_display_stream_name(msg.prev_stream);
                     if (prev_stream_item !== null) {
-                        prev_stream_item.new_stream = sub_store.maybe_get_stream_name(
-                            msg.prev_stream,
-                        );
+                        prev_stream_item.new_stream = get_display_stream_name(msg.prev_stream);
                     }
                 } else {
                     // just a content edit
@@ -194,7 +188,7 @@ export function fetch_and_render_message_history(message: Message): void {
             }
             if (prev_stream_item !== null) {
                 assert(message.type === "stream");
-                prev_stream_item.new_stream = sub_store.maybe_get_stream_name(message.stream_id);
+                prev_stream_item.new_stream = get_display_stream_name(message.stream_id);
             }
 
             // In order to correctly compute the recipient_bar_color
