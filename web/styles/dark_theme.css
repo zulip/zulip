@@ -1165,7 +1165,7 @@
         }
     }
 
-    .panel_subscriber_member_list > .pill-container {
+    .panel_user_list > .pill-container {
         &:hover {
             color: inherit;
         }
