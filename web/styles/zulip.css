@@ -339,7 +339,7 @@ p.n-margin {
 body.has-overlay-scrollbar {
     /* Move simplebar scrollbar to the left so that
        browser scrollbar doesn't overlap with it. */
-    .column-right .simplebar-track.simplebar-vertical {
+    .app-main .column-right .simplebar-track.simplebar-vertical {
         right: var(--browser-overlay-scrollbar-width);
     }
 }
@@ -359,7 +359,7 @@ body.has-overlay-scrollbar {
 /* Set flex display on login buttons only in the
    spectator view. We want them to display none
    otherwise. */
-.spectator-view .column-right .spectator_login_buttons {
+.spectator-view #top_navbar .column-right .spectator_login_buttons {
     display: flex;
 
     @media (width < $xl_min) or (height < $short_navbar_cutoff_height) {
@@ -367,6 +367,7 @@ body.has-overlay-scrollbar {
     }
 }
 
+/* This applies to column-left both in navbar and app. */
 .column-right {
     width: var(--right-sidebar-width);
     max-width: var(--right-sidebar-width);
@@ -525,6 +526,7 @@ body.has-overlay-scrollbar {
     }
 }
 
+/* This applies to column-left both in navbar and app. */
 .column-left {
     width: var(--left-sidebar-width);
     max-width: var(--left-sidebar-width);
@@ -534,8 +536,8 @@ body.has-overlay-scrollbar {
 }
 
 #message_feed_container,
-.column-left .left-sidebar,
-.column-right .right-sidebar {
+.app-main .column-left .left-sidebar,
+.app-main .column-right .right-sidebar {
     padding-top: calc(
         var(--navbar-fixed-height) + var(--header-padding-bottom)
     );
@@ -2409,7 +2411,7 @@ select.invite-as {
 }
 
 @media (width < $xl_min) {
-    .column-right {
+    .app-main .column-right {
         display: none;
 
         &.expanded {
@@ -2446,7 +2448,7 @@ select.invite-as {
 }
 
 @media (width < $md_min) {
-    .column-left {
+    .app-main .column-left {
         display: none;
 
         &.expanded {
@@ -2514,8 +2516,8 @@ select.invite-as {
 }
 
 @media (height < $short_navbar_cutoff_height) {
-    .column-right.expanded .right-sidebar,
-    .column-left.expanded .left-sidebar {
+    .app-main .column-right.expanded .right-sidebar,
+    .app-main .column-left.expanded .left-sidebar {
         margin-top: var(--navbar-fixed-height);
         /* For very short screen sizes, skip the relatively large top padding. */
         padding-top: 0;
@@ -2524,11 +2526,11 @@ select.invite-as {
     /* TODO: Properly and accurately align the
        topmost headers on the left and right
        sidebar. */
-    .column-right.expanded .right-sidebar-items {
+    .app-main .column-right.expanded .right-sidebar-items {
         margin-top: 10px;
     }
 
-    .column-left.expanded .left-sidebar-navigation-area {
+    .app-main .column-left.expanded .left-sidebar-navigation-area {
         margin-top: 10px;
     }
 
@@ -2559,7 +2561,7 @@ select.invite-as {
         top: 5px;
     }
 
-    .column-right #personal-menu .header-button-avatar {
+    #top_navbar .column-right #personal-menu .header-button-avatar {
         width: 20px;
         height: 20px;
     }
