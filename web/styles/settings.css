@@ -131,7 +131,9 @@ h3,
 
 .admin_profile_fields_table {
     & th.display,
-    td.display_in_profile_summary_cell {
+    & th.required,
+    td.display_in_profile_summary_cell,
+    td.required-cell {
         text-align: center;
     }
 }
@@ -670,6 +672,15 @@ input[type="checkbox"] {
     & textarea {
         width: 311px;
     }
+}
+
+.required-symbol {
+    color: hsl(0deg 66% 60%);
+}
+
+.settings-profile-user-field {
+    margin-top: 5px;
+    max-width: fit-content;
 }
 
 .control-label-disabled {
@@ -1513,7 +1524,6 @@ $option_title_width: 180px;
 #edit-user-form {
     .person_picker {
         min-width: 206px;
-        margin-top: 5px;
     }
 
     & textarea {
@@ -1536,7 +1546,6 @@ $option_title_width: 180px;
     & select {
         /* Override undesired Bootstrap default. */
         margin-bottom: 0;
-        margin-top: 5px;
     }
 }
 
@@ -1903,6 +1912,22 @@ $option_title_width: 180px;
         box-shadow:
             inset 0 1px 1px hsl(0deg 0% 0% / 7.5%),
             0 0 8px hsl(206deg 80% 62% / 60%);
+    }
+}
+
+.empty-required-field {
+    border: 1px solid hsl(3deg 57% 33%);
+    border-radius: 5px;
+
+    .settings_url_input,
+    .settings_text_input,
+    .settings_textarea,
+    .pill-container {
+        border-color: hsl(0deg 0% 100%);
+
+        &:focus {
+            border-color: hsl(206deg 80% 62% / 80%);
+        }
     }
 }
 

@@ -482,6 +482,10 @@
         border-width: 1px;
     }
 
+    .field {
+        border-color: hsl(3deg 73% 74%);
+    }
+
     .deactivated-pill {
         background-color: hsl(0deg 86% 14%) !important;
     }

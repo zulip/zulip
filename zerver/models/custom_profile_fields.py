@@ -77,6 +77,7 @@ class CustomProfileField(models.Model):
     # Whether the field should be displayed in smaller summary
     # sections of a page displaying custom profile fields.
     display_in_profile_summary = models.BooleanField(default=False)
+    required = models.BooleanField(default=False)
 
     SHORT_TEXT = 1
     LONG_TEXT = 2
@@ -165,6 +166,7 @@ class CustomProfileField(models.Model):
             "hint": self.hint,
             "field_data": self.field_data,
             "order": self.order,
+            "required": self.required,
         }
         if self.display_in_profile_summary:
             data_as_dict["display_in_profile_summary"] = True

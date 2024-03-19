@@ -9,6 +9,7 @@ const $ = require("./lib/zjquery");
 const {current_user} = require("./lib/zpage_params");
 
 const message_live_update = mock_esm("../src/message_live_update");
+const navbar_alerts = mock_esm("../src/navbar_alerts");
 const settings_account = mock_esm("../src/settings_account", {
     maybe_update_deactivate_account_button() {},
     update_email() {},
@@ -68,7 +69,7 @@ function initialize() {
 
 initialize();
 
-run_test("updates", () => {
+run_test("updates", ({override}) => {
     let person;
 
     const isaac = {
@@ -79,6 +80,7 @@ run_test("updates", () => {
     };
     people.add_active_user(isaac);
 
+    override(navbar_alerts, "maybe_show_empty_required_profile_fields_alert", noop);
     user_events.update_person({
         user_id: isaac.user_id,
         role: settings_config.user_role_values.guest.code,

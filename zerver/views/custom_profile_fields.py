@@ -155,6 +155,7 @@ def create_realm_custom_profile_field(
     field_data: ProfileFieldData = REQ(default={}, json_validator=check_profile_field_data),
     field_type: int = REQ(json_validator=check_int),
     display_in_profile_summary: bool = REQ(default=False, json_validator=check_bool),
+    required: bool = REQ(default=False, json_validator=check_bool),
 ) -> HttpResponse:
     if display_in_profile_summary and display_in_profile_summary_limit_reached(user_profile.realm):
         raise JsonableError(
@@ -170,6 +171,7 @@ def create_realm_custom_profile_field(
                 realm=user_profile.realm,
                 field_subtype=field_subtype,
                 display_in_profile_summary=display_in_profile_summary,
+                required=required,
             )
             return json_success(request, data={"id": field.id})
         else:
@@ -180,6 +182,7 @@ def create_realm_custom_profile_field(
                 field_type=field_type,
                 hint=hint,
                 display_in_profile_summary=display_in_profile_summary,
+                required=required,
             )
             return json_success(request, data={"id": field.id})
     except IntegrityError:
@@ -209,6 +212,7 @@ def update_realm_custom_profile_field(
     hint: str = REQ(default=""),
     field_data: ProfileFieldData = REQ(default={}, json_validator=check_profile_field_data),
     display_in_profile_summary: bool = REQ(default=False, json_validator=check_bool),
+    required: bool = REQ(default=False, json_validator=check_bool),
 ) -> HttpResponse:
     realm = user_profile.realm
     try:
@@ -246,6 +250,7 @@ def update_realm_custom_profile_field(
             hint=hint,
             field_data=field_data,
             display_in_profile_summary=display_in_profile_summary,
+            required=required,
         )
     except IntegrityError:
         raise JsonableError(_("A field with that label already exists."))

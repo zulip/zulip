@@ -45,5 +45,12 @@
             </label>
         </div>
     {{/if}}
+    <div class="input-group">
+        <label class="checkbox" for="edit-required-{{id}}">
+            <input class="edit-required" type="checkbox" id="edit-required-{{id}}" name="required" {{#if required}} checked="checked" {{/if}}/>
+            <span></span>
+            {{t 'Required field' }}
+        </label>
+    </div>
 </form>
 {{/with}}
