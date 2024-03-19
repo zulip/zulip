@@ -6,6 +6,11 @@
 
 {!configure-topic-notifications.md!}
 
+!!! keyboard_tip ""
+
+    You can also use the <kbd>Shift</kbd> + <kbd>M</kbd> [keyboard
+    shortcut](/help/keyboard-shortcuts) to mute or unmute a topic.
+
 ## Automatically unmute topics in muted streams
 
 {!automatically-unmute-topics-in-muted-streams.md!}
