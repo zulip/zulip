@@ -37,6 +37,7 @@ import * as overlays from "./overlays";
 import * as peer_data from "./peer_data";
 import * as people from "./people";
 import * as pm_list from "./pm_list";
+import {received_reaction} from "./reaction_notifications";
 import * as reactions from "./reactions";
 import * as realm_icon from "./realm_icon";
 import * as realm_logo from "./realm_logo";
@@ -189,6 +190,7 @@ export function dispatch_normal_event(event) {
             switch (event.op) {
                 case "add":
                     reactions.add_reaction(event);
+                    received_reaction(event);
                     break;
                 case "remove":
                     reactions.remove_reaction(event);
