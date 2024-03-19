@@ -556,8 +556,8 @@ day.
    ```
 
 You may also want to adjust the
-[concurrency](system-configuration.md#backups-disk-concurrency) or [S3 storage
-class](system-configuration.md#backups-storage-class).
+[concurrency](system-configuration.md#backups_disk_concurrency) or [S3 storage
+class](system-configuration.md#backups_storage_class).
 
 ### Streaming backups to local disk
 
