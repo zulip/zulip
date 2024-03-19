@@ -1,3 +1,4 @@
+import $ from "jquery";
 import _ from "lodash";
 import assert from "minimalistic-assert";
 
@@ -244,6 +245,7 @@ export function set_cursor_and_filter(): void {
 
 export function initiate_search(): void {
     if (user_filter) {
+        $("body").removeClass("hide-right-sidebar");
         popovers.hide_all();
         user_filter.initiate_search();
     }

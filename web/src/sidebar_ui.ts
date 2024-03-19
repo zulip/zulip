@@ -4,6 +4,7 @@ import render_left_sidebar from "../templates/left_sidebar.hbs";
 import render_right_sidebar from "../templates/right_sidebar.hbs";
 
 import {buddy_list} from "./buddy_list";
+import {media_breakpoints_num} from "./css_variables";
 import {page_params} from "./page_params";
 import * as rendered_markdown from "./rendered_markdown";
 import * as resize from "./resize";
@@ -68,6 +69,11 @@ export function initialize(): void {
     $("#userlist-toggle-button").on("click", (e) => {
         e.preventDefault();
         e.stopPropagation();
+
+        if (window.innerWidth >= media_breakpoints_num.xl) {
+            $("body").toggleClass("hide-right-sidebar");
+            return;
+        }
 
         if (right_sidebar_expanded_as_overlay) {
             hide_userlist_sidebar();
