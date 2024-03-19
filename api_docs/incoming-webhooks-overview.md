@@ -189,10 +189,18 @@ Parameters accepted in the URL include:
   [URL-encoded][url-encoder]. By default the integration will have a
   topic configured for stream messages.
 
-* `only_events`, `exclude_events`: Some incoming webhook integrations
-  support these parameters to filter which events will trigger a
-  notification. For details, see the integration's [integration
-  documentation](/integrations) page.
+* `only_events`, `exclude_events`: Some incoming webhook integrations support
+  these parameters to filter which events will trigger a notification. You can
+  append either `&only_events=["event_a","event_b"]` or
+  `&exclude_events=["event_a","event_b"]` (or both, with different events) to
+  the URL, with an arbitrary number of supported events. You can use UNIX-style
+  wildcards like `*` to include multiple events. For example, `test*` matches
+  every event that starts with `test`.
+
+    !!! tip ""
+
+        For a list of supported events, see the integration's [integration
+        documentation](/integrations) page.
 
 [browse-streams]: /help/browse-and-subscribe-to-streams
 [add-bot]: /help/add-a-bot-or-integration
