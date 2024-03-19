@@ -578,6 +578,24 @@ export function initialize(): void {
     });
 
     delegate("body", {
+        target: "#userlist-toggle",
+        delay: LONG_HOVER_DELAY,
+        placement: "bottom",
+        appendTo: () => document.body,
+        onShow(instance) {
+            let template = "show-userlist-tooltip-template";
+            if ($("#right-sidebar-container").is(":visible")) {
+                template = "hide-userlist-tooltip-template";
+            }
+            $(instance.reference).attr("data-tooltip-template-id", template);
+            instance.setContent(get_tooltip_content(instance.reference));
+        },
+        onHidden(instance) {
+            instance.destroy();
+        },
+    });
+
+    delegate("body", {
         target: "#realm-logo",
         placement: "right",
         appendTo: () => document.body,

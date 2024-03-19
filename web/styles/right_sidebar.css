@@ -287,12 +287,13 @@ $user_status_emoji_width: 24px;
 }
 
 #userlist-toggle {
-    display: none;
     text-align: center;
     vertical-align: middle;
 }
 
 #userlist-toggle-button {
+    /* Same color as icon but a bit darker. */
+    box-shadow: inset 0 -2px 0 hsl(241.36deg 27.48% 37.73%);
     text-decoration: none;
     color: hsl(0deg 0% 60%);
 
