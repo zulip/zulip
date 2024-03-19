@@ -2496,10 +2496,6 @@ select.invite-as {
         margin-left: 40px;
     }
 
-    .zulip-icon-search {
-        right: 115px;
-    }
-
     .dropdown-menu ul {
         margin: 0 -25px 0 0;
         background: transparent;
