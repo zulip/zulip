@@ -54,7 +54,7 @@ async function test_restore_stream_message_draft_by_opening_compose_box(page: Pa
     await common.check_compose_state(page, {
         stream: "Denmark",
         topic: "tests",
-        content: "Test stream message.",
+        content: "Test stream message. ",
     });
     await page.click("#compose_close");
     await page.waitForSelector("#send_message_form", {visible: false});
@@ -74,7 +74,7 @@ async function test_restore_private_message_draft_by_opening_composebox(page: Pa
     await page.waitForSelector("#private_message_recipient", {visible: true});
 
     await common.check_form_contents(page, "form#send_message_form", {
-        content: "Test direct message.",
+        content: "Test direct message. ",
     });
     await page.click("#compose_close");
     await page.waitForSelector("#private_message_recipient", {visible: false});
