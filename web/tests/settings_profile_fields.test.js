@@ -99,6 +99,7 @@ run_test("populate_profile_fields", ({mock_template}) => {
             field_data: "",
             display_in_profile_summary: false,
             valid_to_display_in_summary: true,
+            required: false,
         },
         {
             type: SELECT_ID,
@@ -117,6 +118,7 @@ run_test("populate_profile_fields", ({mock_template}) => {
             ]),
             display_in_profile_summary: false,
             valid_to_display_in_summary: true,
+            required: false,
         },
         {
             type: EXTERNAL_ACCOUNT_ID,
@@ -128,6 +130,7 @@ run_test("populate_profile_fields", ({mock_template}) => {
             }),
             display_in_profile_summary: true,
             valid_to_display_in_summary: true,
+            required: false,
         },
         {
             type: EXTERNAL_ACCOUNT_ID,
@@ -140,6 +143,7 @@ run_test("populate_profile_fields", ({mock_template}) => {
             }),
             display_in_profile_summary: true,
             valid_to_display_in_summary: true,
+            required: false,
         },
     ];
     const expected_template_data = [
@@ -154,6 +158,7 @@ run_test("populate_profile_fields", ({mock_template}) => {
                 is_external_account_field: false,
                 display_in_profile_summary: false,
                 valid_to_display_in_summary: true,
+                required: false,
             },
             can_modify: true,
             realm_default_external_accounts: realm.realm_default_external_accounts,
@@ -172,6 +177,7 @@ run_test("populate_profile_fields", ({mock_template}) => {
                 is_external_account_field: false,
                 display_in_profile_summary: false,
                 valid_to_display_in_summary: true,
+                required: false,
             },
             can_modify: true,
             realm_default_external_accounts: realm.realm_default_external_accounts,
@@ -187,6 +193,7 @@ run_test("populate_profile_fields", ({mock_template}) => {
                 is_external_account_field: true,
                 display_in_profile_summary: true,
                 valid_to_display_in_summary: true,
+                required: false,
             },
             can_modify: true,
             realm_default_external_accounts: realm.realm_default_external_accounts,
@@ -202,6 +209,7 @@ run_test("populate_profile_fields", ({mock_template}) => {
                 is_external_account_field: true,
                 display_in_profile_summary: true,
                 valid_to_display_in_summary: true,
+                required: false,
             },
             can_modify: true,
             realm_default_external_accounts: realm.realm_default_external_accounts,

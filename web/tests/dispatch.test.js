@@ -40,6 +40,7 @@ const message_lists = mock_esm("../src/message_lists");
 const user_topics_ui = mock_esm("../src/user_topics_ui");
 const muted_users_ui = mock_esm("../src/muted_users_ui");
 const narrow_title = mock_esm("../src/narrow_title");
+const navbar_alerts = mock_esm("../src/navbar_alerts");
 const pm_list = mock_esm("../src/pm_list");
 const reactions = mock_esm("../src/reactions");
 const realm_icon = mock_esm("../src/realm_icon");
@@ -115,7 +116,6 @@ message_lists.home = {
 message_lists.all_rendered_message_lists = () => [message_lists.home, message_lists.current];
 
 // page_params is highly coupled to dispatching now
-
 page_params.test_suite = false;
 current_user.is_admin = true;
 realm.realm_description = "already set description";
@@ -134,8 +134,17 @@ function dispatch(ev) {
     server_events_dispatch.dispatch_normal_event(ev);
 }
 
+const me = {
+    email: "me@example.com",
+    user_id: 20,
+    full_name: "Me Myself",
+    timezone: "America/Los_Angeles",
+};
+
 people.init();
+people.add_active_user(me);
 people.add_active_user(test_user);
+people.initialize_current_user(me.user_id);
 
 message_helper.process_new_message(test_message);
 
@@ -295,6 +304,7 @@ run_test("custom profile fields", ({override}) => {
     const event = event_fixtures.custom_profile_fields;
     override(settings_profile_fields, "populate_profile_fields", noop);
     override(settings_account, "add_custom_profile_fields_to_settings", noop);
+    override(navbar_alerts, "maybe_show_empty_required_profile_fields_alert", noop);
     dispatch(event);
     assert_same(realm.custom_profile_fields, event.fields);
 });
@@ -432,6 +442,8 @@ run_test("realm settings", ({override}) => {
     override(sidebar_ui, "update_invite_user_option", noop);
     override(gear_menu, "rerender", noop);
     override(narrow_title, "redraw_title", noop);
+    override(navbar_alerts, "check_profile_incomplete", noop);
+    override(navbar_alerts, "show_profile_incomplete", noop);
 
     function test_electron_dispatch(event, fake_send_event) {
         with_overrides(({override}) => {

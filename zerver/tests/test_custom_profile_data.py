@@ -482,6 +482,7 @@ class UpdateCustomProfileFieldTest(CustomProfileFieldTestCase):
         self.assertEqual(field.name, "New phone number")
         self.assertIs(field.hint, "")
         self.assertEqual(field.field_type, CustomProfileField.SHORT_TEXT)
+        self.assertEqual(field.required, False)
 
         result = self.client_patch(
             f"/json/realm/profile_fields/{field.id}",
@@ -516,7 +517,19 @@ class UpdateCustomProfileFieldTest(CustomProfileFieldTestCase):
             info={
                 "name": "New phone number",
                 "hint": "New contact number",
+                "required": "invalid value",
+            },
+        )
+        msg = 'Argument "required" is not valid JSON.'
+        self.assert_json_error(result, msg)
+
+        result = self.client_patch(
+            f"/json/realm/profile_fields/{field.id}",
+            info={
+                "name": "New phone number",
+                "hint": "New contact number",
                 "display_in_profile_summary": "true",
+                "required": "true",
             },
         )
         self.assert_json_success(result)
@@ -527,6 +540,7 @@ class UpdateCustomProfileFieldTest(CustomProfileFieldTestCase):
         self.assertEqual(field.hint, "New contact number")
         self.assertEqual(field.field_type, CustomProfileField.SHORT_TEXT)
         self.assertEqual(field.display_in_profile_summary, True)
+        self.assertEqual(field.required, True)
 
         result = self.client_patch(
             f"/json/realm/profile_fields/{field.id}",

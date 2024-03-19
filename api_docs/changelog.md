@@ -20,6 +20,15 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 9.0
 
+**Feature level 244**
+
+* [`POST /register`](/api/register-queue), [`GET /events`](/api/get-events),
+  [`POST /realm/profile_fields`](/api/create-custom-profile-field),
+  [`GET /realm/profile_fields`](/api/get-custom-profile-fields): Added a new
+  parameter `required`, on custom profile field objects, indicating whether an
+  organization administrator has configured the field as something users should
+  be required to provide.
+
 **Feature level 243**
 
 * [`POST /register`](/api/register-queue), [`GET

@@ -1913,6 +1913,7 @@ paths:
                                         "hint": "Enter your GitHub username",
                                         "field_data": '{"subtype":"github"}',
                                         "order": 8,
+                                        "required": true,
                                       },
                                     ],
                                   "id": 0,
@@ -10298,6 +10299,7 @@ paths:
                               "hint": "Enter your GitHub username",
                               "field_data": '{"subtype":"github"}',
                               "order": 8,
+                              "required": true,
                             },
                             {
                               "id": 9,
@@ -10422,6 +10424,18 @@ paths:
                     **Changes**: New in Zulip 6.0 (feature level 146).
                   type: boolean
                   example: true
+                required:
+                  description: |
+                    Whether an organization administrator has configured this profile field as
+                    required.
+
+                    Because the required property is mutable, clients cannot assume that a required
+                    custom profile field has a value. The Zulip web application displays a prominent
+                    banner to any user who has not set a value for a required field.
+
+                    **Changes**: New in Zulip 9.0 (feature level 244).
+                  type: boolean
+                  example: true
               required:
                 - field_type
             encoding:
@@ -10430,6 +10444,8 @@ paths:
               field_data:
                 contentType: application/json
               display_in_profile_summary:
+                contentType: application/json
+              required:
                 contentType: application/json
       responses:
         "200":
@@ -18946,6 +18962,17 @@ components:
             [profile field types](/help/custom-profile-fields#profile-field-types).
 
             **Changes**: New in Zulip 6.0 (feature level 146).
+        required:
+          type: boolean
+          description: |
+            Whether an organization administrator has configured this profile field as
+            required.
+
+            Because the required property is mutable, clients cannot assume that a required
+            custom profile field has a value. The Zulip web application displays a prominent
+            banner to any user who has not set a value for a required field.
+
+            **Changes**: New in Zulip 9.0 (feature level 244).
     OnboardingStep:
       type: object
       additionalProperties: false
