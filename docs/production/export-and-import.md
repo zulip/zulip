@@ -543,6 +543,10 @@ upper bound on this. On an active Zulip server, this also means the
 Zulip server will be regularly sending PutObject requests to S3,
 possibly thousands of times per day.
 
+You may also want to adjust the
+[concurrency](system-configuration.md#backups-disk-concurrency) or [S3 storage
+class](system-configuration.md#backups-storage-class).
+
 If you need always-current backup availability, Zulip also has
 [built-in database replication support](deployment.md#postgresql-warm-standby).
 
