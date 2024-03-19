@@ -124,9 +124,18 @@ export function is_message_editable_ignoring_permissions(message) {
         return false;
     }
 
-    // Messages in deactivated streams are not editable.
-    if (message.type === "stream" && stream_data.get_sub_by_id(message.stream_id) === undefined) {
-        return false;
+    if (message.type === "stream") {
+        const sub = stream_data.get_sub_by_id(message.stream_id);
+
+        // Messages in deactivated streams are not editable.
+        if (sub === undefined) {
+            return false;
+        }
+
+        // Messages in private streams can only edited by subscribed users.
+        if (sub.invite_only && !sub.subscribed) {
+            return false;
+        }
     }
 
     return true;

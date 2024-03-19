@@ -8,6 +8,13 @@ const {current_user, realm} = require("./lib/zpage_params");
 
 realm.realm_move_messages_within_stream_limit_seconds = 259200;
 
+const noop = function () {};
+
+mock_esm("../src/peer_data", {
+    add_subscriber: noop,
+    remove_subscriber: noop,
+});
+
 const message_edit = zrequire("message_edit");
 const people = zrequire("people");
 const stream_data = zrequire("stream_data");
@@ -91,7 +98,15 @@ run_test("is_content_editable", () => {
     // Cannot edit messages in a deactivated stream.
     assert.equal(is_content_editable(message, 55), false);
 
-    stream_data.add_sub({stream_id: 1, name: "Test stream"});
+    stream_data.add_sub({stream_id: 1, name: "Test stream", invite_only: true});
+    const sub = stream_data.get_sub_by_id(1);
+    stream_data.subscribe_myself(sub);
+    assert.equal(is_content_editable(message, 55), true);
+
+    stream_data.unsubscribe_myself(sub);
+    // Only subscribers can edit messages in private streams.
+    assert.equal(is_content_editable(message, 55), false);
+    stream_data.subscribe_myself(sub);
 });
 
 run_test("is_topic_editable", ({override}) => {
@@ -152,7 +167,15 @@ run_test("is_topic_editable", ({override}) => {
     // Cannot edit message's topic in a deactivated stream.
     assert.equal(message_edit.is_topic_editable(message), false);
 
-    stream_data.add_sub({stream_id: 1, name: "Test stream"});
+    stream_data.add_sub({stream_id: 1, name: "Test stream", invite_only: true});
+    const sub = stream_data.get_sub_by_id(1);
+    stream_data.subscribe_myself(sub);
+    assert.equal(message_edit.is_topic_editable(message), true);
+
+    stream_data.unsubscribe_myself(sub);
+    // Only subscribers can edit message's topic in private streams.
+    assert.equal(message_edit.is_topic_editable(message), false);
+    stream_data.subscribe_myself(sub);
 });
 
 run_test("is_stream_editable", ({override}) => {
@@ -203,7 +226,15 @@ run_test("is_stream_editable", ({override}) => {
     // Cannot move messages from a deactivated stream.
     assert.equal(message_edit.is_stream_editable(message), false);
 
-    stream_data.add_sub({stream_id: 1, name: "Test stream"});
+    stream_data.add_sub({stream_id: 1, name: "Test stream", invite_only: true});
+    const sub = stream_data.get_sub_by_id(1);
+    stream_data.subscribe_myself(sub);
+    assert.equal(message_edit.is_stream_editable(message), true);
+
+    stream_data.unsubscribe_myself(sub);
+    // Only subscribers can move messages from private streams.
+    assert.equal(message_edit.is_stream_editable(message), false);
+    stream_data.subscribe_myself(sub);
 });
 
 run_test("get_deletability", ({override}) => {
