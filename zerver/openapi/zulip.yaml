@@ -11497,6 +11497,13 @@ paths:
                     **Changes**: New in Zulip 8.0 (feature level 189).
                   type: boolean
                   example: false
+                enable_dm_reaction_notifications:
+                  description: |
+                    Enable Desktop notifications for direct messages reaction.
+
+                    **Changes**: New in Zulip 10.0 (feature level 285).
+                  type: boolean
+                  example: false
                 email_notifications_batching_period_seconds:
                   description: |
                     The duration (in seconds) for which the server should wait to batch
@@ -11613,6 +11620,23 @@ paths:
                     - 4 - Never
 
                     **Changes**: New in Zulip 8.0 (feature level 214).
+                  type: integer
+                  enum:
+                    - 1
+                    - 2
+                    - 3
+                    - 4
+                  example: 1
+                streams_reaction_notification:
+                  description: |
+                    Enable Desktop notifications for stream messages reaction.
+
+                    - 1 - Never
+                    - 2 - In topics I follow
+                    - 3 - In unmuted topics
+                    - 4 - Always
+
+                    **Changes**: New in Zulip 10.0 (feature level 285).
                   type: integer
                   enum:
                     - 1
@@ -11758,6 +11782,8 @@ paths:
                 contentType: application/json
               enable_followed_topic_email_notifications:
                 contentType: application/json
+              enable_dm_reaction_notifications:
+                contentType: application/json
               enable_followed_topic_push_notifications:
                 contentType: application/json
               enable_followed_topic_audible_notifications:
@@ -11787,6 +11813,8 @@ paths:
               automatically_follow_topics_policy:
                 contentType: application/json
               automatically_unmute_topics_in_muted_streams_policy:
+                contentType: application/json
+              streams_reaction_notification:
                 contentType: application/json
               automatically_follow_topics_where_mentioned:
                 contentType: application/json
@@ -14582,6 +14610,12 @@ paths:
                               Enable audible desktop notifications for messages sent to followed topics.
 
                               **Changes**: New in Zulip 8.0 (feature level 189).
+                          enable_dm_reaction_notifications:
+                            type: boolean
+                            description: |
+                              Enable Desktop notifications for direct messages reaction.
+
+                              **Changes**: New in Zulip 10.0 (feature level 285).
                           email_notifications_batching_period_seconds:
                             type: integer
                             description: |
@@ -14682,6 +14716,17 @@ paths:
                               - 4 - Never
 
                               **Changes**: New in Zulip 8.0 (feature level 214).
+                          streams_reaction_notification:
+                            type: integer
+                            description: |
+                              Enable Desktop notifications for stream messages reaction.
+
+                              - 1 - Never
+                              - 2 - In topics I follow
+                              - 3 - In unmuted topics
+                              - 4 - Always
+
+                              **Changes**: New in Zulip 10.0 (feature level 285).
                           automatically_follow_topics_where_mentioned:
                             type: boolean
                             description: |
@@ -17087,6 +17132,12 @@ paths:
                               Enable audible desktop notifications for messages sent to followed topics.
 
                               **Changes**: New in Zulip 8.0 (feature level 189).
+                          enable_dm_reaction_notifications:
+                            type: boolean
+                            description: |
+                              Enable Desktop notifications for direct messages reaction.
+
+                              **Changes**: New in Zulip 10.0 (feature level 285).
                           enable_digest_emails:
                             type: boolean
                             description: |
@@ -17167,6 +17218,17 @@ paths:
                               - 4 - Never
 
                               **Changes**: New in Zulip 8.0 (feature level 214).
+                          streams_reaction_notification:
+                            type: integer
+                            description: |
+                              Enable Desktop notifications for stream messages reaction.
+
+                              - 1 - Never
+                              - 2 - In topics I follow
+                              - 3 - In unmuted topics
+                              - 4 - Always
+
+                              **Changes**: New in Zulip 10.0 (feature level 285).
                           automatically_follow_topics_where_mentioned:
                             type: boolean
                             description: |
@@ -18365,6 +18427,13 @@ paths:
                     **Changes**: New in Zulip 8.0 (feature level 189).
                   type: boolean
                   example: false
+                enable_dm_reaction_notifications:
+                  description: |
+                    Enable Desktop notifications for direct messages reaction.
+
+                    **Changes**: New in Zulip 10.0 (feature level 285).
+                  type: boolean
+                  example: false
                 enable_followed_topic_audible_notifications:
                   description: |
                     Enable audible desktop notifications for messages sent to followed topics.
@@ -18498,6 +18567,23 @@ paths:
                     - 4 - Never
 
                     **Changes**: New in Zulip 8.0 (feature level 214).
+                  type: integer
+                  enum:
+                    - 1
+                    - 2
+                    - 3
+                    - 4
+                  example: 1
+                streams_reaction_notification:
+                  description: |
+                    Enable Desktop notifications for stream messages reaction.
+
+                    - 1 - Never
+                    - 2 - In topics I follow
+                    - 3 - In unmuted topics
+                    - 4 - Always
+
+                    **Changes**: New in Zulip 10.0 (feature level 285).
                   type: integer
                   enum:
                     - 1
@@ -18653,6 +18739,8 @@ paths:
                 contentType: application/json
               enable_followed_topic_push_notifications:
                 contentType: application/json
+              enable_dm_reaction_notifications:
+                contentType: application/json
               enable_followed_topic_audible_notifications:
                 contentType: application/json
               enable_digest_emails:
@@ -18676,6 +18764,8 @@ paths:
               automatically_follow_topics_policy:
                 contentType: application/json
               automatically_unmute_topics_in_muted_streams_policy:
+                contentType: application/json
+              streams_reaction_notification:
                 contentType: application/json
               automatically_follow_topics_where_mentioned:
                 contentType: application/json

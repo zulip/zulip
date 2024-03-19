@@ -276,6 +276,13 @@ def json_change_settings(
     enable_followed_topic_desktop_notifications: Json[bool] | None = None,
     enable_followed_topic_email_notifications: Json[bool] | None = None,
     enable_followed_topic_push_notifications: Json[bool] | None = None,
+    enable_dm_reaction_notifications: Json[bool] | None = None,
+    streams_reaction_notification: Json[
+        Annotated[
+            int, check_int_in_validator(UserProfile.STREAM_REACTION_NOTIFICATION_POLICY_CHOICES)
+        ]
+    ]
+    | None = None,
     enable_followed_topic_audible_notifications: Json[bool] | None = None,
     enable_followed_topic_wildcard_mentions_notify: Json[bool] | None = None,
     notification_sound: str | None = None,

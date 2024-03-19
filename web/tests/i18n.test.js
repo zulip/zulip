@@ -97,6 +97,7 @@ run_test("{{#tr}} to tag for translation", ({mock_template}) => {
             automatically_follow_topics_policy: "Automatically follow topics",
             automatically_unmute_topics_in_muted_streams_policy:
                 "Automatically unmute topics in muted channels",
+            streams_reaction_notification: "Notify me about reactions to my stream messages",
         },
     };
 

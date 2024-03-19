@@ -205,6 +205,11 @@ export function set_up(settings_panel) {
         settings_object.automatically_unmute_topics_in_muted_streams_policy,
     );
 
+    const $streams_reaction_notification_dropdown = $container.find(
+        ".setting_streams_reaction_notification",
+    );
+    $streams_reaction_notification_dropdown.val(settings_object.streams_reaction_notification);
+
     set_enable_digest_emails_visibility($container, for_realm_settings);
 
     if (for_realm_settings) {
@@ -338,7 +343,8 @@ export function update_page(settings_panel) {
             case "notification_sound":
             case "realm_name_in_email_notifications_policy":
             case "automatically_follow_topics_policy":
-            case "automatically_unmute_topics_in_muted_streams_policy": {
+            case "automatically_unmute_topics_in_muted_streams_policy":
+            case "streams_reaction_notification": {
                 $container.find(`.setting_${CSS.escape(setting)}`).val(settings_object[setting]);
                 break;
             }

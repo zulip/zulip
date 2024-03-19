@@ -93,6 +93,31 @@
           prefix=prefix}}
     </div>
 
+    <div
+      class="reaction_notifications m-10 {{#if for_realm_settings}}settings-subsection-parent{{else}}subsection-parent{{/if}}">
+        <div class="subsection-header inline-block">
+            <h3>{{t "Reaction notifications" }}</h3>
+            {{> settings_save_discard_widget section_name="reaction-notifications-settings" show_only_indicator=(not
+              for_realm_settings) }}
+        </div>
+
+
+        {{> settings_checkbox
+          setting_name="enable_dm_reaction_notifications"
+          is_checked=(lookup settings_object "enable_dm_reaction_notifications")
+          label=(lookup settings_label "enable_dm_reaction_notifications")
+          prefix=prefix}}
+
+        <div class="input-group">
+            <label for="streams_reaction_notification" class="dropdown-title">{{ settings_label.streams_reaction_notification }}</label>
+            <select name="streams_reaction_notification"
+              class="setting_streams_reaction_notification prop-element settings_select bootstrap-focus-style"
+              id="{{prefix}}streams_reaction_notification" data-setting-widget-type="number">
+                {{> dropdown_options_widget option_values=streams_reaction_notification_values}}
+            </select>
+        </div>
+    </div>
+
     <div class="desktop_notifications m-10 {{#if for_realm_settings}}settings-subsection-parent{{else}}subsection-parent{{/if}}">
 
         <div class="subsection-header inline-block">

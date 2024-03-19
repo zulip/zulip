@@ -195,6 +195,23 @@ class UserBaseSettings(models.Model):
     enable_followed_topic_audible_notifications = models.BooleanField(default=True)
     enable_followed_topic_wildcard_mentions_notify = models.BooleanField(default=True)
 
+    # Reaction notifications.
+    enable_dm_reaction_notifications = models.BooleanField(default=True)
+
+    STREAM_REACTION_NOTIFICATIONS_POLICY_NEVER = 1
+    STREAM_REACTION_NOTIFICATION_POLICY_FOLLOWED_TOPIC = 2
+    STREAM_REACTION_NOTIFICATION_POLICY_UNMUTED_TOPIC = 3
+    STREAM_REACTION_NOTIFICATION_POLICY_ALWAYS = 4
+    STREAM_REACTION_NOTIFICATION_POLICY_CHOICES = [
+        STREAM_REACTION_NOTIFICATIONS_POLICY_NEVER,
+        STREAM_REACTION_NOTIFICATION_POLICY_FOLLOWED_TOPIC,
+        STREAM_REACTION_NOTIFICATION_POLICY_UNMUTED_TOPIC,
+        STREAM_REACTION_NOTIFICATION_POLICY_ALWAYS,
+    ]
+    streams_reaction_notification = models.PositiveSmallIntegerField(
+        default=STREAM_REACTION_NOTIFICATION_POLICY_ALWAYS
+    )
+
     # Direct message + @-mention notifications.
     enable_desktop_notifications = models.BooleanField(default=True)
     pm_content_in_desktop_notifications = models.BooleanField(default=True)
@@ -367,6 +384,8 @@ class UserBaseSettings(models.Model):
         automatically_follow_topics_policy=int,
         automatically_unmute_topics_in_muted_streams_policy=int,
         automatically_follow_topics_where_mentioned=bool,
+        enable_dm_reaction_notifications=bool,
+        streams_reaction_notification=int,
     )
 
     notification_setting_types = {
