@@ -2351,7 +2351,8 @@ class BillingSession(ABC):
         assert plan is not None
 
         new_plan, last_ledger_entry = self.make_end_of_cycle_updates_if_needed(plan, now)
-        assert last_ledger_entry is not None
+        if last_ledger_entry is None:
+            return {"current_plan_downgraded": True}
         plan = new_plan if new_plan is not None else plan
 
         context = self.get_billing_context_from_plan(customer, plan, last_ledger_entry, now)

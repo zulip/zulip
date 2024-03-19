@@ -2062,6 +2062,81 @@ class StripeTest(StripeTestCase):
         response = self.client_get("/billing/")
         self.assertNotEqual("/sponsorship/", response["Location"])
 
+    @mock_stripe(tested_timestamp_fields=["created"])
+    def test_redirect_for_billing_page_downgrade_at_free_trial_end(self, *mocks: Mock) -> None:
+        user = self.example_user("hamlet")
+        self.login_user(user)
+
+        with self.settings(CLOUD_FREE_TRIAL_DAYS=30):
+            response = self.client_get("/upgrade/")
+            free_trial_end_date = self.now + timedelta(days=30)
+
+            self.assert_in_success_response(
+                ["Your card will not be charged", "free trial", "30-day"], response
+            )
+            self.assertNotEqual(user.realm.plan_type, Realm.PLAN_TYPE_STANDARD)
+            self.assertFalse(Customer.objects.filter(realm=user.realm).exists())
+
+            stripe_customer = self.add_card_and_upgrade(user)
+            customer = Customer.objects.get(stripe_customer_id=stripe_customer.id, realm=user.realm)
+            plan = CustomerPlan.objects.get(
+                customer=customer,
+                automanage_licenses=True,
+                price_per_license=8000,
+                fixed_price=None,
+                discount=None,
+                billing_cycle_anchor=self.now,
+                billing_schedule=CustomerPlan.BILLING_SCHEDULE_ANNUAL,
+                invoiced_through=LicenseLedger.objects.first(),
+                next_invoice_date=free_trial_end_date,
+                tier=CustomerPlan.TIER_CLOUD_STANDARD,
+                status=CustomerPlan.FREE_TRIAL,
+                # For payment through card.
+                charge_automatically=True,
+            )
+            LicenseLedger.objects.get(
+                plan=plan,
+                is_renewal=True,
+                event_time=self.now,
+                licenses=self.seat_count,
+                licenses_at_next_renewal=self.seat_count,
+            )
+
+            realm = get_realm("zulip")
+            self.assertEqual(realm.plan_type, Realm.PLAN_TYPE_STANDARD)
+
+            with time_machine.travel(self.now, tick=False):
+                response = self.client_get("/billing/")
+            self.assert_not_in_success_response(["Pay annually"], response)
+            for substring in [
+                "Zulip Cloud Standard <i>(free trial)</i>",
+                "Your plan will automatically renew on",
+                "February 1, 2012",
+                "Visa ending in 4242",
+                "Update card",
+            ]:
+                self.assert_in_response(substring, response)
+
+            # schedule downgrade
+            with time_machine.travel(self.now + timedelta(days=3), tick=False), self.assertLogs(
+                "corporate.stripe", "INFO"
+            ) as m:
+                response = self.client_billing_patch(
+                    "/billing/plan",
+                    {"status": CustomerPlan.DOWNGRADE_AT_END_OF_FREE_TRIAL},
+                )
+                self.assert_json_success(response)
+                plan.refresh_from_db()
+                self.assertEqual(plan.status, CustomerPlan.DOWNGRADE_AT_END_OF_FREE_TRIAL)
+                expected_log = f"INFO:corporate.stripe:Change plan status: Customer.id: {customer.id}, CustomerPlan.id: {plan.id}, status: {CustomerPlan.DOWNGRADE_AT_END_OF_FREE_TRIAL}"
+                self.assertEqual(m.output[0], expected_log)
+
+            # Visit /billing on free-trial end date before the invoice cron runs.
+            with time_machine.travel(free_trial_end_date, tick=False):
+                response = self.client_get("/billing/")
+                self.assertEqual(response.status_code, 302)
+                self.assertEqual("/plans/", response["Location"])
+
     def test_upgrade_page_for_demo_organizations(self) -> None:
         user = self.example_user("hamlet")
         user.realm.demo_organization_scheduled_deletion_date = timezone_now() + timedelta(days=30)
@@ -6289,6 +6364,93 @@ class TestRemoteRealmBillingFlow(StripeTestCase, RemoteRealmBillingTestCase):
 
     @responses.activate
     @mock_stripe()
+    def test_redirect_for_remote_realm_billing_page_downgrade_at_free_trial_end(
+        self, *mocks: Mock
+    ) -> None:
+        with self.settings(SELF_HOSTING_FREE_TRIAL_DAYS=30):
+            self.login("hamlet")
+            hamlet = self.example_user("hamlet")
+
+            self.add_mock_response()
+            with time_machine.travel(self.now, tick=False):
+                send_server_data_to_push_bouncer(consider_usage_statistics=False)
+
+            result = self.execute_remote_billing_authentication_flow(hamlet)
+            self.assertEqual(result.status_code, 302)
+            self.assertEqual(result["Location"], f"{self.billing_session.billing_base_url}/plans/")
+
+            # upgrade to basic plan
+            with time_machine.travel(self.now, tick=False):
+                result = self.client_get(
+                    f"{self.billing_session.billing_base_url}/upgrade/?tier={CustomerPlan.TIER_SELF_HOSTED_BASIC}",
+                    subdomain="selfhosting",
+                )
+            self.assertEqual(result.status_code, 200)
+
+            self.assert_in_success_response(
+                [
+                    "Start free trial",
+                    "Zulip Basic",
+                    "Due",
+                    "on February 1, 2012",
+                    "Add card",
+                    "Start 30-day free trial",
+                ],
+                result,
+            )
+
+            self.assertFalse(Customer.objects.exists())
+            self.assertFalse(CustomerPlan.objects.exists())
+            self.assertFalse(LicenseLedger.objects.exists())
+
+            with time_machine.travel(self.now, tick=False):
+                stripe_customer = self.add_card_and_upgrade(
+                    tier=CustomerPlan.TIER_SELF_HOSTED_BASIC, schedule="monthly"
+                )
+
+            self.assertEqual(Invoice.objects.count(), 0)
+            customer = Customer.objects.get(stripe_customer_id=stripe_customer.id)
+            plan = CustomerPlan.objects.get(customer=customer)
+            LicenseLedger.objects.get(plan=plan)
+
+            with time_machine.travel(self.now + timedelta(days=1), tick=False):
+                response = self.client_get(
+                    f"{self.billing_session.billing_base_url}/billing/", subdomain="selfhosting"
+                )
+            for substring in [
+                "Zulip Basic",
+                "(free trial)",
+                "Your plan will automatically renew on",
+                "February 1, 2012",
+            ]:
+                self.assert_in_response(substring, response)
+
+            # schedule downgrade
+            with time_machine.travel(self.now + timedelta(days=3), tick=False), self.assertLogs(
+                "corporate.stripe", "INFO"
+            ) as m:
+                response = self.client_billing_patch(
+                    "/billing/plan",
+                    {"status": CustomerPlan.DOWNGRADE_AT_END_OF_FREE_TRIAL},
+                )
+                self.assert_json_success(response)
+                plan.refresh_from_db()
+                self.assertEqual(plan.status, CustomerPlan.DOWNGRADE_AT_END_OF_FREE_TRIAL)
+                expected_log = f"INFO:corporate.stripe:Change plan status: Customer.id: {customer.id}, CustomerPlan.id: {plan.id}, status: {CustomerPlan.DOWNGRADE_AT_END_OF_FREE_TRIAL}"
+                self.assertEqual(m.output[0], expected_log)
+
+            # Visit /billing on free-trial end date before the invoice cron runs.
+            with time_machine.travel(self.now + timedelta(days=30), tick=False):
+                response = self.client_get(
+                    f"{self.billing_session.billing_base_url}/billing/", subdomain="selfhosting"
+                )
+                self.assertEqual(response.status_code, 302)
+                self.assertEqual(
+                    f"{self.billing_session.billing_base_url}/plans/", response["Location"]
+                )
+
+    @responses.activate
+    @mock_stripe()
     def test_upgrade_remote_realm_user_to_monthly_basic_plan(self, *mocks: Mock) -> None:
         self.login("hamlet")
         hamlet = self.example_user("hamlet")
@@ -8065,6 +8227,95 @@ class TestRemoteServerBillingFlow(StripeTestCase, RemoteServerTestCase):
             )
 
             # TODO: Add test for invoice generation once that's implemented.
+
+    @responses.activate
+    @mock_stripe()
+    def test_redirect_for_remote_server_billing_page_downgrade_at_free_trial_end(
+        self, *mocks: Mock
+    ) -> None:
+        with self.settings(SELF_HOSTING_FREE_TRIAL_DAYS=30):
+            self.login("hamlet")
+            hamlet = self.example_user("hamlet")
+
+            self.add_mock_response()
+            with time_machine.travel(self.now, tick=False):
+                send_server_data_to_push_bouncer(consider_usage_statistics=False)
+
+            result = self.execute_remote_billing_authentication_flow(
+                hamlet.delivery_email, hamlet.full_name
+            )
+            self.assertEqual(result.status_code, 302)
+            self.assertEqual(result["Location"], f"{self.billing_session.billing_base_url}/plans/")
+
+            # upgrade to basic plan
+            with time_machine.travel(self.now, tick=False):
+                result = self.client_get(
+                    f"{self.billing_session.billing_base_url}/upgrade/?tier={CustomerPlan.TIER_SELF_HOSTED_BASIC}",
+                    subdomain="selfhosting",
+                )
+            self.assertEqual(result.status_code, 200)
+
+            self.assert_in_success_response(
+                [
+                    "Start free trial",
+                    "Zulip Basic",
+                    "Due",
+                    "on February 1, 2012",
+                    "Add card",
+                    "Start 30-day free trial",
+                ],
+                result,
+            )
+
+            self.assertFalse(Customer.objects.exists())
+            self.assertFalse(CustomerPlan.objects.exists())
+            self.assertFalse(LicenseLedger.objects.exists())
+
+            with time_machine.travel(self.now, tick=False):
+                stripe_customer = self.add_card_and_upgrade(
+                    tier=CustomerPlan.TIER_SELF_HOSTED_BASIC, schedule="monthly"
+                )
+
+            self.assertEqual(Invoice.objects.count(), 0)
+            customer = Customer.objects.get(stripe_customer_id=stripe_customer.id)
+            plan = CustomerPlan.objects.get(customer=customer)
+            LicenseLedger.objects.get(plan=plan)
+
+            with time_machine.travel(self.now + timedelta(days=1), tick=False):
+                response = self.client_get(
+                    f"{self.billing_session.billing_base_url}/billing/", subdomain="selfhosting"
+                )
+            for substring in [
+                "Zulip Basic",
+                "(free trial)",
+                "Your plan will automatically renew on",
+                "February 1, 2012",
+            ]:
+                self.assert_in_response(substring, response)
+
+            # schedule downgrade
+            with time_machine.travel(self.now + timedelta(days=3), tick=False), self.assertLogs(
+                "corporate.stripe", "INFO"
+            ) as m:
+                response = self.client_billing_patch(
+                    "/billing/plan",
+                    {"status": CustomerPlan.DOWNGRADE_AT_END_OF_FREE_TRIAL},
+                )
+                self.assert_json_success(response)
+                plan.refresh_from_db()
+                self.assertEqual(plan.status, CustomerPlan.DOWNGRADE_AT_END_OF_FREE_TRIAL)
+                expected_log = f"INFO:corporate.stripe:Change plan status: Customer.id: {customer.id}, CustomerPlan.id: {plan.id}, status: {CustomerPlan.DOWNGRADE_AT_END_OF_FREE_TRIAL}"
+                self.assertEqual(m.output[0], expected_log)
+
+            # Visit /billing on free-trial end date before the invoice cron runs.
+            with time_machine.travel(self.now + timedelta(days=30), tick=False):
+                response = self.client_get(
+                    f"{self.billing_session.billing_base_url}/billing/", subdomain="selfhosting"
+                )
+                self.assertEqual(response.status_code, 302)
+                self.assertEqual(
+                    f"{self.billing_session.billing_base_url}/plans/", response["Location"]
+                )
 
     @responses.activate
     @mock_stripe()
