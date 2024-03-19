@@ -2456,6 +2456,7 @@ select.invite-as {
             margin-right: calc(var(--header-height) * 4 + 10px);
         }
 
+        #typing_notifications,
         #scheduled_message_indicator,
         #compose-content {
             margin-right: 7px;
@@ -2523,6 +2524,7 @@ select.invite-as {
             top: 5%;
         }
 
+        #typing_notifications,
         #scheduled_message_indicator,
         #compose-content {
             margin-left: 7px;
