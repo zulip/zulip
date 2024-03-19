@@ -2496,16 +2496,11 @@ select.invite-as {
         margin-left: 40px;
     }
 
-    .dropdown-menu ul {
-        margin: 0 -25px 0 0;
-        background: transparent;
+    .dropdown-menu ul li {
+        width: 100%;
 
-        & li {
-            width: 100%;
-
-            & a {
-                white-space: normal;
-            }
+        & a {
+            white-space: normal;
         }
     }
 
