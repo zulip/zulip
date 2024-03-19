@@ -72,7 +72,7 @@ function change_logo_delete_button(
 export function render(): void {
     const $file_input = $<HTMLInputElement>("#realm-day-logo-upload-widget .image_file_input");
     const $night_file_input = $<HTMLInputElement>(
-        "#realm-night-logo-upload-widget .realm-logo-file-input",
+        "#realm-night-logo-upload-widget .image_file_input",
     );
     $("#realm-day-logo-upload-widget .image-block").attr("src", realm.realm_logo_url);
 
