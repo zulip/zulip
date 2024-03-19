@@ -17,6 +17,11 @@ import * as util from "./util";
 
 function get_notification_content(message) {
     let content;
+
+    if (message.reaction_label) {
+        return message.reaction_label;
+    }
+
     // Convert the content to plain text, replacing emoji with their alt text
     const $content = $("<div>").html(message.content);
     ui_util.replace_emoji_with_text($content);
@@ -70,6 +75,11 @@ function debug_notification_source_value(message) {
 function get_notification_key(message) {
     let key;
 
+    if (message.current_reaction_key) {
+        key = message.current_reaction_key;
+        return key;
+    }
+
     if (message.type === "private" || message.type === "test-notification") {
         key = message.display_reply_to;
     } else {
@@ -91,6 +101,10 @@ function get_notification_title(message, msg_count) {
     let title_suffix = "";
     let other_recipients;
     let other_recipients_translated;
+
+    if (message.reacted_by) {
+        title_prefix = message.reacted_by;
+    }
 
     if (msg_count > 1) {
         title_prefix = $t(
@@ -144,6 +158,7 @@ export function process_notification(notification) {
     const message = notification.message;
     const content = get_notification_content(message);
     const key = get_notification_key(message);
+    const notification_tag = message.current_reaction_key ? message.id + key : message.id;
     let notification_object;
     let msg_count = 1;
 
@@ -162,7 +177,7 @@ export function process_notification(notification) {
         notification_object = new desktop_notifications.NotificationAPI(title, {
             icon: icon_url,
             body: content,
-            tag: message.id,
+            tag: notification_tag,
         });
         desktop_notifications.notice_memory.set(key, {
             obj: notification_object,
