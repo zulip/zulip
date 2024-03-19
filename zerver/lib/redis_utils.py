@@ -1,3 +1,4 @@
+import os
 import re
 import secrets
 from typing import Any, Dict, Mapping, Optional
@@ -84,3 +85,11 @@ def validate_key_fits_format(key: str, key_format: str) -> None:
 
     if not re.fullmatch(regex, key):
         raise ZulipRedisKeyOfWrongFormatError(f"{key} does not match format {key_format}")
+
+
+REDIS_KEY_PREFIX = ""
+
+
+def bounce_redis_key_prefix_for_testing(test_name: str) -> None:
+    global REDIS_KEY_PREFIX
+    REDIS_KEY_PREFIX = test_name + ":" + str(os.getpid()) + ":"

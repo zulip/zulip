@@ -67,7 +67,7 @@ from zerver.lib.initial_password import initial_password
 from zerver.lib.message import access_message
 from zerver.lib.notification_data import UserMessageNotificationsData
 from zerver.lib.per_request_cache import flush_per_request_caches
-from zerver.lib.rate_limiter import bounce_redis_key_prefix_for_testing
+from zerver.lib.redis_utils import bounce_redis_key_prefix_for_testing
 from zerver.lib.sessions import get_session_dict_user
 from zerver.lib.soft_deactivation import do_soft_deactivate_users
 from zerver.lib.stream_subscription import get_subscribed_stream_ids_for_user
