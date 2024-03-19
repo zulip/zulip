@@ -190,7 +190,9 @@ class Command(ZulipBaseCommand):
             add_context = add_context_from_dict
 
         if admins_only:
-            users = users.filter(is_realm_admin=True)
+            users = users.filter(
+                role__in=[UserProfile.ROLE_REALM_ADMINISTRATOR, UserProfile.ROLE_REALM_OWNER]
+            )
 
         # Only email users who've agreed to the terms of service.
         if settings.TERMS_OF_SERVICE_VERSION is not None:
