@@ -1,5 +1,4 @@
 import logging
-import os
 import time
 from abc import ABC, abstractmethod
 from typing import Dict, List, Optional, Set, Tuple, Type, cast
@@ -11,6 +10,7 @@ from django.conf import settings
 from django.http import HttpRequest
 from typing_extensions import override
 
+from zerver.lib import redis_utils
 from zerver.lib.cache import cache_with_key
 from zerver.lib.exceptions import RateLimitedError
 from zerver.lib.redis_utils import get_redis_client
@@ -21,8 +21,6 @@ from zerver.models import UserProfile
 
 client = get_redis_client()
 rules: Dict[str, List[Tuple[int, int]]] = settings.RATE_LIMITING_RULES
-
-KEY_PREFIX = ""
 
 logger = logging.getLogger(__name__)
 
@@ -157,11 +155,6 @@ class RateLimitedIPAddr(RateLimitedObject):
     @override
     def rules(self) -> List[Tuple[int, int]]:
         return rules[self.domain]
-
-
-def bounce_redis_key_prefix_for_testing(test_name: str) -> None:
-    global KEY_PREFIX
-    KEY_PREFIX = test_name + ":" + str(os.getpid()) + ":"
 
 
 class RateLimiterBackend(ABC):
@@ -323,7 +316,8 @@ class RedisRateLimiterBackend(RateLimiterBackend):
     @classmethod
     def get_keys(cls, entity_key: str) -> List[str]:
         return [
-            f"{KEY_PREFIX}ratelimit:{entity_key}:{keytype}" for keytype in ["list", "zset", "block"]
+            f"{redis_utils.REDIS_KEY_PREFIX}ratelimit:{entity_key}:{keytype}"
+            for keytype in ["list", "zset", "block"]
         ]
 
     @classmethod
