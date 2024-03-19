@@ -59,6 +59,8 @@ export type UserSettings = (StreamNotificationSettings &
     automatically_follow_topics_policy: number;
     automatically_unmute_topics_in_muted_streams_policy: number;
     automatically_follow_topics_where_mentioned: boolean;
+    enable_dm_reaction_notifications: boolean;
+    streams_reaction_notification: number;
     timezone: string;
 };
 
