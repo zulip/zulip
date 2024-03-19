@@ -36,7 +36,7 @@ export function show_generate_integration_url_modal(api_key: string): void {
         let integration_input_dropdown_widget: DropdownWidget;
 
         const $override_topic = $("#integration-url-override-topic");
-        const $topic_input = $<HTMLInputElement>("#integration-url-topic-input");
+        const $topic_input = $<HTMLInputElement>("input#integration-url-topic-input");
         const $integration_url = $("#generate-integration-url-modal .integration-url");
         const $dialog_submit_button = $("#generate-integration-url-modal .dialog_submit_button");
 
