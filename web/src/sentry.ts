@@ -1,4 +1,5 @@
 import * as Sentry from "@sentry/browser";
+import assert from "minimalistic-assert";
 
 import {page_params} from "./base_page_params";
 import {current_user, realm} from "./state_data";
@@ -8,6 +9,14 @@ type UserInfo = {
     realm: string;
     role?: string;
 };
+
+const sentry_key =
+    // No parameter is the portico pages, empty string is the empty realm
+    page_params.realm_sentry_key === undefined
+        ? "www"
+        : page_params.realm_sentry_key === ""
+          ? "(root)"
+          : page_params.realm_sentry_key;
 
 export function normalize_path(path: string, is_portico = false): string {
     if (path === undefined) {
@@ -30,15 +39,36 @@ export function shouldCreateSpanForRequest(url: string): boolean {
     return parsed.pathname !== "/json/events";
 }
 
-if (page_params.server_sentry_dsn) {
-    const sentry_key =
-        // No parameter is the portico pages, empty string is the empty realm
-        page_params.realm_sentry_key === undefined
-            ? "www"
-            : page_params.realm_sentry_key === ""
-              ? "(root)"
-              : page_params.realm_sentry_key;
+export function initialize(): void {
+    // The current_user and realm structures are not available until this is
+    // called from ui_init.initialize_everything.
+    assert(page_params.page_type === "home");
 
+    const user_role = current_user.is_owner
+        ? "Organization owner"
+        : current_user.is_admin
+          ? "Organization administrator"
+          : current_user.is_moderator
+            ? "Moderator"
+            : current_user.is_guest
+              ? "Guest"
+              : page_params.is_spectator
+                ? "Spectator"
+                : current_user.user_id
+                  ? "Member"
+                  : "Logged out";
+    const user_info: UserInfo = {realm: sentry_key, role: user_role};
+    if (current_user.user_id) {
+        user_info.id = current_user.user_id.toString();
+    }
+    Sentry.setTags({
+        user_role,
+        server_version: realm.zulip_version,
+    });
+    Sentry.setUser(user_info);
+}
+
+if (page_params.server_sentry_dsn) {
     const sample_rates = new Map([
         // This is controlled by shouldCreateSpanForRequest, above, but also put here for consistency
         ["call GET /json/events", 0],
@@ -76,35 +106,10 @@ if (page_params.server_sentry_dsn) {
             const user_info: UserInfo = {
                 realm: sentry_key,
             };
-            if (
-                sentry_key !== "www" &&
-                page_params.page_type === "home" &&
-                current_user !== undefined
-            ) {
-                user_info.role = current_user.is_owner
-                    ? "Organization owner"
-                    : current_user.is_admin
-                      ? "Organization administrator"
-                      : current_user.is_moderator
-                        ? "Moderator"
-                        : current_user.is_guest
-                          ? "Guest"
-                          : page_params.is_spectator
-                            ? "Spectator"
-                            : current_user.user_id
-                              ? "Member"
-                              : "Logged out";
-                if (current_user.user_id) {
-                    user_info.id = current_user.user_id.toString();
-                }
-            }
             scope.setTags({
                 realm: sentry_key,
-                user_role: user_info.role ?? "Browser",
+                user_role: "Browser",
             });
-            if (realm !== undefined) {
-                scope.setTag("server_version", realm.zulip_version);
-            }
             scope.setUser(user_info);
             return scope;
         },
