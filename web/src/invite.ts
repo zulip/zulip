@@ -407,7 +407,7 @@ function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void
 
         $(".custom-expiration-time").on("change", () => {
             custom_expiration_time_input = Number.parseFloat(
-                $<HTMLInputElement>("#custom-expiration-time-input").val()!,
+                $<HTMLInputElement>("input#custom-expiration-time-input").val()!,
             );
             custom_expiration_time_unit = $<HTMLSelectElement & {type: "select-one"}>(
                 "select:not([multiple])#custom-expiration-time-unit",
