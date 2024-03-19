@@ -7,7 +7,7 @@ from django.contrib.staticfiles.views import serve as staticfiles_serve
 from django.http.request import HttpRequest
 from django.http.response import FileResponse
 from django.urls import path
-from django.views.generic import TemplateView
+from django.views.generic import RedirectView, TemplateView
 from django.views.static import serve
 
 from zerver.views.auth import login_page
@@ -52,6 +52,7 @@ urls = [
             "show_indexes": True,
         },
     ),
+    path("docs/", RedirectView.as_view(url="/docs/index.html")),
     path(
         "docs/<path:path>",
         serve,

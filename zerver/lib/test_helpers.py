@@ -505,6 +505,7 @@ def write_instrumentation_reports(full_suite: bool, include_webhooks: bool) -> N
             "config-error/(?P<error_name>[^/]+)",
             "confirmation_key/",
             "node-coverage/(?P<path>.+)",
+            "docs/",
             "docs/(?P<path>.+)",
             "casper/(?P<path>.+)",
             "static/(?P<path>.+)",
