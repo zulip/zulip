@@ -119,9 +119,10 @@ export function is_message_editable_ignoring_permissions(message) {
     }
 
     // Messages where we're currently locally echoing an edit not yet acknowledged
-    // by the server.
+    // by the server. They are shown in the message edit box, but with "Save"
+    // disabled.
     if (currently_echoing_messages.has(message.id)) {
-        return false;
+        return true;
     }
     return true;
 }
@@ -284,7 +285,8 @@ export function stream_and_topic_exist_in_edit_history(message, stream_id, topic
 
 export function hide_message_edit_spinner($row) {
     $row.find(".loader").hide();
-    $row.find(".message_edit_save span").show();
+    $row.find(".message_edit_saving_container").hide();
+    $row.find(".message_edit_save_container").show();
     $row.find(".message_edit_save").removeClass("disable-btn");
     $row.find(".message_edit_cancel").removeClass("disable-btn");
 }
@@ -341,9 +343,14 @@ function handle_message_row_edit_keydown(e) {
             if (composebox_typeahead.should_enter_send(e)) {
                 const $row = $(".message_edit_content:focus").closest(".message_row");
                 const $message_edit_save_button = $row.find(".message_edit_save");
-                if ($message_edit_save_button.prop("disabled")) {
-                    // In cases when the save button is disabled
-                    // we need to disable save on pressing Enter
+                const $message_edit_save_container = $row.find(".message_edit_save_container");
+                if (
+                    $message_edit_save_button.prop("disabled") ||
+                    $message_edit_save_container.is(":hidden")
+                ) {
+                    // In cases when the save button is disabled,
+                    // or the save button is hidden to show the saving
+                    // button, we need to disable save on pressing Enter
                     // Prevent default to avoid new-line on pressing
                     // Enter inside the textarea in this case
                     e.preventDefault();
@@ -455,6 +462,8 @@ function edit_message($row, raw_content) {
 
     const is_editable = is_content_editable(message, seconds_left_buffer);
 
+    const currently_echoing = currently_echoing_messages.has(message.id);
+
     const $form = $(
         render_message_edit_form({
             message_id: message.id,
@@ -466,6 +475,12 @@ function edit_message($row, raw_content) {
             max_message_length: realm.max_message_length,
         }),
     );
+
+    if (currently_echoing) {
+        $form.find(".message_edit_save_container").hide();
+    } else {
+        $form.find(".message_edit_saving_container").hide();
+    }
 
     const edit_obj = {$form, raw_content};
     currently_editing_messages.set(message.id, edit_obj);
@@ -522,6 +537,7 @@ function edit_message($row, raw_content) {
         // row just refers to something like the currently selected message, and
         // can change out from under us
         const $message_edit_save_container = $row.find(".message_edit_save_container");
+        const $message_edit_saving_container = $row.find(".message_edit_saving_container");
         const $message_edit_save = $row.find("button.message_edit_save");
         // Do this right away, rather than waiting for the timer to do its first update,
         // since otherwise there is a noticeable lag
@@ -534,6 +550,7 @@ function edit_message($row, raw_content) {
                 // since it isn't clear what to do with the half-finished edit. It's nice to keep
                 // the half-finished edit around so that they can copy-paste it, but we don't want
                 // people to think "Save" will save the half-finished edit.
+                $message_edit_saving_container.hide();
                 $message_edit_save.prop("disabled", true);
                 $message_edit_save_container.addClass("tippy-zulip-tooltip");
                 $message_edit_countdown_timer.addClass("expired");

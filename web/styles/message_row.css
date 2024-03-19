@@ -498,7 +498,8 @@ $time_column_min_width: 42px; /* + padding */
         line-height: 1;
     }
 
-    .message_edit_save {
+    .message_edit_save,
+    .message_edit_saving {
         /* Match Save button's basic colors to
            the compose box Send button. */
         color: var(--color-compose-send-button-icon-color);
@@ -517,6 +518,10 @@ $time_column_min_width: 42px; /* + padding */
             filter: saturate(0);
             opacity: 0.5;
         }
+    }
+
+    .message_edit_saving {
+        display: inline-block;
     }
 
     .message_edit_cancel,
