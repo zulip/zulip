@@ -210,6 +210,14 @@ export function initialize() {
             });
             $popper.one("click", ".compose_new_message", () => {
                 drafts.update_draft();
+                // If they want to compose a new message instead
+                // of seeing the draft, remember this and don't
+                // restore drafts in this narrow until the user
+                // switches narrows. This allows a user to send
+                // a bunch of messages in a conversation without
+                // clicking the "start a new draft" button every
+                // time.
+                compose_state.prevent_draft_restoring();
                 compose.clear_compose_box();
                 instance.hide();
             });

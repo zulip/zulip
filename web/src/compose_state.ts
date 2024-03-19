@@ -213,3 +213,16 @@ export function update_email(user_id: number, new_email: string): void {
 
     private_message_recipient(reply_to);
 }
+
+let _can_restore_drafts = true;
+export function prevent_draft_restoring(): void {
+    _can_restore_drafts = false;
+}
+
+export function allow_draft_restoring(): void {
+    _can_restore_drafts = true;
+}
+
+export function can_restore_drafts(): boolean {
+    return _can_restore_drafts;
+}
