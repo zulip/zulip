@@ -542,7 +542,7 @@ input[type="checkbox"] {
 
 .language_selection_widget {
     .title {
-        margin-bottom: 3px;
+        margin-bottom: var(--margin-bottom-field-description);
     }
 
     .language_selection_button {
@@ -1488,7 +1488,7 @@ $option_title_width: 180px;
     gap: 15px;
 
     .jitsi_server_url_custom_input_label {
-        margin-bottom: 3px;
+        margin-bottom: var(--margin-bottom-field-description);
     }
 }
 
@@ -1597,7 +1597,7 @@ $option_title_width: 180px;
 }
 
 .dropdown-title {
-    margin-bottom: 3px;
+    margin-bottom: var(--margin-bottom-field-description);
 }
 
 .profile-field-choices {

@@ -173,6 +173,10 @@
     */
     --stream-subscriber-list-max-height: 100%;
 
+    /*
+      Reusable dimensions and offsets.
+    */
+    --margin-bottom-field-description: 3px;
     /* Gap between tabs in the tab picker */
     --grid-gap-tab-picker: 2px;
 
