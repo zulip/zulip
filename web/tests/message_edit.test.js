@@ -279,6 +279,16 @@ run_test("get_deletability", ({override}) => {
     message.timestamp = current_timestamp - 60;
     override(settings_data, "user_can_delete_own_message", () => true);
     assert.equal(message_edit.get_deletability(message), false);
+
+    message.type = "stream";
+    message.stream_id = 1;
+    message.timestamp = current_timestamp - 5;
+    stream_data.add_sub({stream_id: 1, name: "test"});
+    assert.equal(message_edit.get_deletability(message), true);
+
+    stream_data.delete_sub(1);
+    // Cannot delete messages in a deactivated stream.
+    assert.equal(message_edit.get_deletability(message), false);
 });
 
 run_test("stream_and_topic_exist_in_edit_history", () => {

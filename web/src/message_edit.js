@@ -176,6 +176,11 @@ export function is_message_sent_by_my_bot(message) {
 }
 
 export function get_deletability(message) {
+    // Messages in deactivated streams cannot be deleted.
+    if (message.type === "stream" && stream_data.get_sub_by_id(message.stream_id) === undefined) {
+        return false;
+    }
+
     if (current_user.is_admin) {
         return true;
     }
