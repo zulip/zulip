@@ -1,10 +1,14 @@
 Get Zulip notifications for your Airbrake bug tracker!
 
+### Basic setup
+
+{start_tabs}
+
 1. {!create-stream.md!}
 
 1. {!create-an-incoming-webhook.md!}
 
-1. {!generate-integration-url.md!}
+1. {!generate-webhook-url-basic.md!}
 
 1. Go to your project's settings on the Airbrake site. Click on the
    **Integration** section, and select **Webhook**.
@@ -12,6 +16,12 @@ Get Zulip notifications for your Airbrake bug tracker!
 1. Enter the URL constructed above, and check **Enabled**.
    Click **Save**.
 
+{end_tabs}
+
 {!congrats.md!}
 
 ![](/static/images/integrations/airbrake/001.png)
+
+### Related documentation
+
+{!webhooks-url-specification.md!}
