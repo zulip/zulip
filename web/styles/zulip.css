@@ -2446,6 +2446,10 @@ select.invite-as {
             /* = (width of button, square with header) * 4 (number of buttons) + 10px extra margin. */
             margin-right: calc(var(--header-height) * 4 + 10px);
         }
+
+        #compose-content {
+            margin-right: 7px;
+        }
     }
 }
 
@@ -2508,6 +2512,10 @@ select.invite-as {
             left: 5%;
             top: 5%;
         }
+
+        #compose-content {
+            margin-left: 7px;
+        }
     }
 }
 
@@ -2569,12 +2577,17 @@ select.invite-as {
     }
 
     /* We don't want user to experience Zulip below this width since
-       we don't don't develop features for below this width. */
+       we don't develop features for below this width. */
     body,
     html,
     .app-main,
     .header-main {
         min-width: 320px;
+    }
+
+    #compose #compose-content {
+        margin-right: 5px;
+        margin-left: 5px;
     }
 }
 
