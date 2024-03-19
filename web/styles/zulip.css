@@ -2461,6 +2461,10 @@ select.invite-as {
         #compose-content {
             margin-right: 7px;
         }
+
+        #userlist-toggle {
+            display: block;
+        }
     }
 }
 
