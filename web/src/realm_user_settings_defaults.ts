@@ -18,6 +18,7 @@ export type RealmDefaultSettings = {
     enable_followed_topic_email_notifications: boolean;
     enable_followed_topic_push_notifications: boolean;
     enable_followed_topic_wildcard_mentions_notify: boolean;
+    enable_dm_reaction_notifications: boolean;
     enable_login_emails: boolean;
     enable_marketing_emails: boolean;
     enable_offline_email_notifications: boolean;
@@ -40,6 +41,7 @@ export type RealmDefaultSettings = {
     send_private_typing_notifications: boolean;
     send_stream_typing_notifications: boolean;
     starred_message_counts: boolean;
+    streams_reaction_notification: number;
     translate_emoticons: boolean;
     twenty_four_hour_time: boolean;
     user_list_style: boolean;

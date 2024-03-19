@@ -114,6 +114,7 @@ run_test("tr_tag", ({mock_template}) => {
                 "Automatically unmute topics in muted channels",
             automatically_follow_topics_where_mentioned:
                 "Automatically follow topics where I'm mentioned",
+            streams_reaction_notification: "Notify me about reactions to my stream messages",
         },
         show_push_notifications_tooltip: false,
         user_role_text: "Member",
