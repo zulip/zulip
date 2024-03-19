@@ -2451,24 +2451,25 @@ select.invite-as {
 
 @media (width < $md_min) {
     .default-sidebar-behaviour {
-        .app-main .column-left {
+        .app-main .column-left,
+        .header-main .column-left {
             display: none;
+        }
 
-            &.expanded {
-                display: block;
-                position: absolute;
-                float: none;
-                left: 0;
-                top: 0;
+        .app-main .column-left.expanded {
+            display: block;
+            position: absolute;
+            float: none;
+            left: 0;
+            top: 0;
 
-                .left-sidebar {
-                    background-color: var(--color-background);
-                    box-shadow: 0 2px 3px 0 hsl(0deg 0% 0% / 10%);
-                    border-right: 1px solid var(--color-border-sidebar);
-                    height: 100%;
-                    padding-left: 10px;
-                    width: var(--left-sidebar-width);
-                }
+            .left-sidebar {
+                background-color: var(--color-background);
+                box-shadow: 0 2px 3px 0 hsl(0deg 0% 0% / 10%);
+                border-right: 1px solid var(--color-border-sidebar);
+                height: 100%;
+                padding-left: 10px;
+                width: var(--left-sidebar-width);
             }
         }
 
