@@ -110,9 +110,9 @@ server's state on another machine perfectly.
 
 1. As root, import the backup:
 
-```bash
-/home/zulip/deployments/current/scripts/setup/restore-backup /path/to/backup
-```
+   ```bash
+   /home/zulip/deployments/current/scripts/setup/restore-backup /path/to/backup
+   ```
 
 When that finishes, your Zulip server should be fully operational again.
 
@@ -392,13 +392,13 @@ of all the organization's uploaded files.
    following commands, replacing the filename with the path to your data
    export tarball:
 
-```bash
-cd ~
-tar -xf /path/to/export/file/zulip-export-zcmpxfm6.tar.gz
-cd /home/zulip/deployments/current
-./manage.py import '' ~/zulip-export-zcmpxfm6
-./scripts/start-server
-```
+   ```bash
+   cd ~
+   tar -xf /path/to/export/file/zulip-export-zcmpxfm6.tar.gz
+   cd /home/zulip/deployments/current
+   ./manage.py import '' ~/zulip-export-zcmpxfm6
+   ./scripts/start-server
+   ```
 
 This could take several minutes to run depending on how much data you're
 importing.
@@ -525,12 +525,12 @@ To enable continuous point-in-time backups:
 1. Edit `/etc/zulip/zulip-secrets.conf` on the
    PostgreSQL server to add:
 
-```ini
-s3_region = # region to write to S3; defaults to EC2 host's region
-s3_backups_key = # aws public key; optional, if access not through role
-s3_backups_secret_key =  # aws secret key; optional, if access not through role
-s3_backups_bucket = # name of S3 backup bucket
-```
+   ```ini
+   s3_region = # region to write to S3; defaults to EC2 host's region
+   s3_backups_key = # aws public key; optional, if access not through role
+   s3_backups_secret_key =  # aws secret key; optional, if access not through role
+   s3_backups_bucket = # name of S3 backup bucket
+   ```
 
 1. Run `/home/zulip/deployments/current/scripts/zulip-puppet-apply`.
 
