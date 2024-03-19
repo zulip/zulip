@@ -361,10 +361,6 @@ body.has-overlay-scrollbar {
    otherwise. */
 .spectator-view #top_navbar .column-right .spectator_login_buttons {
     display: flex;
-
-    @media (width < $xl_min) or (height < $short_navbar_cutoff_height) {
-        display: none;
-    }
 }
 
 /* This applies to column-left both in navbar and app. */
@@ -2396,16 +2392,29 @@ select.invite-as {
 }
 
 @media (width < $xl_min) or (height < $short_navbar_cutoff_height) {
-    .spectator-view.default-sidebar-behaviour {
-        #navbar-middle {
-            /* = (width of button, square with header) * 3 (number of buttons) + 10px extra margin. */
-            margin-right: calc(var(--header-height) * 3 + 10px);
+    .default-sidebar-behaviour {
+        &.spectator-view.default-sidebar-behaviour {
+            #navbar-middle {
+                /* = (width of button, square with header) * 3 (number of buttons) + 10px extra margin. */
+                margin-right: calc(var(--header-height) * 3 + 10px);
+            }
+
+            #help-menu,
+            #gear-menu {
+                position: relative;
+                right: var(--header-height);
+            }
         }
 
-        #help-menu,
-        #gear-menu {
-            position: relative;
-            right: var(--header-height);
+        &.spectator-view #top_navbar .column-right .spectator_login_buttons {
+            display: none;
+        }
+
+        .header-main .column-right {
+            /* For a diminutive right column in the navbar,
+               allow the width to be that of the flexing
+               button elements. */
+            width: auto;
         }
     }
 }
@@ -2783,13 +2792,6 @@ select.invite-as {
     /* Move the column to the right with absolute
        positioning, rather than margin. */
     right: 7px;
-
-    @media (width < $xl_min) or (height < $short_navbar_cutoff_height) {
-        /* For a diminutive right column in the navbar,
-           allow the width to be that of the flexing
-           button elements. */
-        width: auto;
-    }
 
     & a:focus {
         filter: none;
