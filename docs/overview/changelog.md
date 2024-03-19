@@ -7,6 +7,36 @@ up-to-date list of all changes.
 
 ## Zulip Server 8.x series
 
+### Zulip Server 8.3
+
+_Released 2024-03-19_
+
+- **CVE-2024-27286:** Incorrectly preserved access when moving messages between
+  streams.
+- Added beta support for the upcoming Ubuntu 24.04 release.
+- Added new DM search options to the compliant export tool.
+- Added a helpful error page for installations trying to access “plan
+  management” when they had not configured the mobile push notifications service
+  yet.
+- Added a
+  [local-disk database backup](../production/export-and-import.md#streaming-backups-to-local-disk)
+  option.
+- Added the ability to store
+  [incremental database backups](../production/system-configuration.md#backups_incremental).
+- Improved performance of bulk-moving messages between streams by ~2x.
+- Streamlined documentation for the Zulip server installer.
+- Fixed the “Topics are required for this organization” pop-up incorrectly
+  closing on some keypresses.
+- Fixed the analytics cron job leaking its lock if unexpectedly interrupted
+  (e.g. by a reboot).
+- Fixed sorting by expiration date in the “Invites” settings panel.
+- Fixed the gear menu staying open after clicking on “plan management”.
+- Fixed a small visual issue with bot icons in the left sidebar DM section.
+- Fixed installation with an existent but empty `zulip` database.
+- Backported various developer tooling improvements.
+- Upgraded dependencies.
+- Updated translations, including new translations for Gujarati and Greek.
+
 ### Zulip Server 8.2
 
 _Released 2024-02-16_
