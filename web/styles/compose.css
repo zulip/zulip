@@ -1347,26 +1347,6 @@ textarea.new_message_textarea,
     }
 }
 
-@media (width < $xl_min) {
-    #compose-content {
-        margin-right: 7px;
-    }
-}
-
-@media (width < $md_min) {
-    #compose-content {
-        margin-right: 7px;
-        margin-left: 7px;
-    }
-}
-
-@media (width < $mm_min) {
-    #compose-content {
-        margin-right: 5px;
-        margin-left: 5px;
-    }
-}
-
 #compose.compose-fullscreen {
     z-index: 99;
 
