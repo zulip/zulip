@@ -609,10 +609,6 @@
         background-color: unset;
     }
 
-    .dropdown-menu a {
-        color: inherit;
-    }
-
     .popover hr,
     hr {
         color: hsl(212deg 28% 18%);
