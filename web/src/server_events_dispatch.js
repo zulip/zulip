@@ -91,10 +91,20 @@ import * as user_topics_ui from "./user_topics_ui";
 export function dispatch_normal_event(event) {
     const noop = function () {};
     switch (event.type) {
-        case "alert_words":
-            alert_words.set_words(event.alert_words);
+        case "alert_words": {
+            const alert_words_list = [];
+            for (const word of event.alert_words) {
+                if (Array.isArray(word)) {
+                    alert_words_list.push(word[0]);
+                } else {
+                    alert_words_list.push(word);
+                }
+            }
+            alert_words.set_words(alert_words_list);
+            alert_words.set_follow_topic_containing_alert_word(event.alert_words);
             alert_words_ui.rerender_alert_words_ui();
             break;
+        }
 
         case "attachment":
             attachments_ui.update_attachments(event);

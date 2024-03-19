@@ -1,4 +1,4 @@
-from typing import Dict, Iterable, List
+from typing import Dict, Iterable, List, Tuple, Union
 
 import ahocorasick
 from django.db import transaction
@@ -46,24 +46,81 @@ def get_alert_word_automaton(realm: Realm) -> ahocorasick.Automaton:
     return alert_word_automaton
 
 
-def user_alert_words(user_profile: UserProfile) -> List[str]:
-    return list(AlertWord.objects.filter(user_profile=user_profile).values_list("word", flat=True))
+def user_alert_words(user_profile: UserProfile) -> List[Tuple[str, bool]]:
+    return list(
+        AlertWord.objects.filter(user_profile=user_profile).values_list(
+            "word", "follow_topic_containing_alert_word"
+        )
+    )
+
+
+def get_alert_words_list_for_event(
+    words: List[Tuple[str, bool]],
+) -> Union[List[str], List[Tuple[str, bool]]]:
+    user_configured_automatic_follow_policy = False
+    alert_words: List[str] = []
+
+    for word in words:
+        alert_word = word[0]
+        automatic_follow_topic_containing_alert_word = word[1]
+        if automatic_follow_topic_containing_alert_word:
+            user_configured_automatic_follow_policy = True
+        alert_words.append(alert_word)
+
+    if user_configured_automatic_follow_policy:
+        return words
+
+    return alert_words
+
+
+def add_follow_topic_field_to_alert_words(
+    alert_words: Iterable[Union[str, Tuple[str, bool]]],
+) -> Iterable[Tuple[str, bool]]:
+    new_alert_words: List[Tuple[str, bool]] = []
+    for index, word in enumerate(alert_words):
+        if isinstance(word, str):
+            assert isinstance(word, str)
+            new_alert_words.append((word, False))
+        else:
+            assert isinstance(word, tuple)
+            new_alert_words.append((word[0], word[1]))
+
+    return new_alert_words
 
 
 @transaction.atomic
-def add_user_alert_words(user_profile: UserProfile, new_words: Iterable[str]) -> List[str]:
-    existing_words_lower = {word.lower() for word in user_alert_words(user_profile)}
+def add_user_alert_words(
+    user_profile: UserProfile, new_words: Iterable[Union[str, Tuple[str, bool]]]
+) -> List[Tuple[str, bool]]:
+    existing_words = {word[0].lower(): word[1] for word in user_alert_words(user_profile)}
+    existing_words_lower = list(existing_words.keys())
 
     # Keeping the case, use a dictionary to get the set of
     # case-insensitive distinct, new alert words
-    word_dict: Dict[str, str] = {}
-    for word in new_words:
-        if word.lower() in existing_words_lower:
+    word_dict: Dict[str, Tuple[str, bool]] = {}
+    new_alert_words = add_follow_topic_field_to_alert_words(new_words)
+    for word in new_alert_words:
+        alert_word = word[0]
+        follow_topic_containing_alert_word = word[1]
+        if alert_word.lower() in existing_words_lower:
+            if follow_topic_containing_alert_word != existing_words[alert_word.lower()]:
+                alert_word_obj = AlertWord.objects.get(
+                    user_profile=user_profile, word__iexact=alert_word
+                )
+                alert_word_obj.follow_topic_containing_alert_word = (
+                    follow_topic_containing_alert_word
+                )
+                alert_word_obj.save(update_fields=["follow_topic_containing_alert_word"])
             continue
-        word_dict[word.lower()] = word
+        word_dict[alert_word.lower()] = word
 
     AlertWord.objects.bulk_create(
-        AlertWord(user_profile=user_profile, word=word, realm=user_profile.realm)
+        AlertWord(
+            user_profile=user_profile,
+            word=word[0],
+            realm=user_profile.realm,
+            follow_topic_containing_alert_word=word[1],
+        )
         for word in word_dict.values()
     )
     # Django bulk_create operations don't flush caches, so we need to do this ourselves.
@@ -73,7 +130,9 @@ def add_user_alert_words(user_profile: UserProfile, new_words: Iterable[str]) ->
 
 
 @transaction.atomic
-def remove_user_alert_words(user_profile: UserProfile, delete_words: Iterable[str]) -> List[str]:
+def remove_user_alert_words(
+    user_profile: UserProfile, delete_words: Iterable[str]
+) -> List[Tuple[str, bool]]:
     # TODO: Ideally, this would be a bulk query, but Django doesn't have a `__iexact`.
     # We can clean this up if/when PostgreSQL has more native support for case-insensitive fields.
     # If we turn this into a bulk operation, we will need to call flush_realm_alert_words() here.

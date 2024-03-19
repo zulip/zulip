@@ -1,10 +1,15 @@
 {{! Alert word in the settings page that can be removed }}
-{{#with alert_word}}
 <tr class="alert-word-item" data-word='{{word}}'>
     <td>
         <div class="alert_word_listing">
             <span class="value">{{word}}</span>
         </div>
+    </td>
+    <td class="follow_topic_with_alert_word_cell">
+        <label class="checkbox follow_topic_containing_alert_word_label" for="follow_topic_containing_alert_word_for_{{word}}">
+            <input type="checkbox" class="follow_topic_containing_alert_word" id="follow_topic_containing_alert_word_for_{{word}}" {{#if follow_topic_containing_alert_word}} checked="checked" {{/if}} data-word="{{word}}"/>
+            <span></span>
+        </label>
     </td>
     <td>
         <button type="submit" class="button rounded small delete btn-danger remove-alert-word" title="{{t 'Delete alert word' }}" data-word="{{word}}">
@@ -12,4 +17,3 @@
         </button>
     </td>
 </tr>
-{{/with}}

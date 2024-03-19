@@ -108,7 +108,17 @@ optional_value_type = UnionType(
 alert_words_event = event_dict_type(
     required_keys=[
         ("type", Equals("alert_words")),
-        ("alert_words", ListType(str)),
+        (
+            "alert_words",
+            ListType(
+                UnionType(
+                    [
+                        str,
+                        ListType(UnionType([str, bool])),
+                    ]
+                )
+            ),
+        ),
     ]
 )
 check_alert_words = make_checker(alert_words_event)

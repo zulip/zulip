@@ -1,4 +1,5 @@
 import _ from "lodash";
+import assert from "minimalistic-assert";
 
 import type {Message} from "./message_store";
 import * as people from "./people";
@@ -6,9 +7,22 @@ import * as people from "./people";
 // For simplicity, we use a list for our internal
 // data, since that matches what the server sends us.
 let my_alert_words: string[] = [];
+const follow_topic_containing_alert_word = new Map<string, boolean>();
 
 export function set_words(words: string[]): void {
     my_alert_words = words;
+}
+
+export function set_follow_topic_containing_alert_word(
+    alert_words_list: [string, boolean][] | string[],
+): void {
+    for (const word of alert_words_list) {
+        if (Array.isArray(word)) {
+            follow_topic_containing_alert_word.set(word[0], word[1]);
+        } else {
+            follow_topic_containing_alert_word.set(word, false);
+        }
+    }
 }
 
 export function get_word_list(): {word: string}[] {
@@ -19,6 +33,12 @@ export function get_word_list(): {word: string}[] {
         words.push({word});
     }
     return words;
+}
+
+export function get_follow_topic_containing_alert_word_policy(alert_word: string): boolean {
+    const alert_word_policy = follow_topic_containing_alert_word.get(alert_word);
+    assert(alert_word_policy !== undefined);
+    return alert_word_policy;
 }
 
 export function has_alert_word(word: string): boolean {
@@ -86,6 +106,15 @@ export function notifies(message: Message): boolean {
     return !people.is_current_user(message.sender_email) && message.alerted;
 }
 
-export const initialize = (params: {alert_words: string[]}): void => {
-    my_alert_words = params.alert_words;
+export const initialize = (params: {alert_words: [string, boolean][] | string[]}): void => {
+    my_alert_words = [];
+    follow_topic_containing_alert_word.clear();
+    for (const word of params.alert_words) {
+        if (Array.isArray(word)) {
+            my_alert_words.push(word[0]);
+        } else {
+            my_alert_words.push(word);
+        }
+    }
+    set_follow_topic_containing_alert_word(params.alert_words);
 };

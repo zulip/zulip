@@ -151,13 +151,29 @@ function assert_same(actual, expected) {
     assert.deepEqual(actual, expected);
 }
 
-run_test("alert_words", ({override}) => {
+run_test("alert_words_with_follow_topic_set", ({override}) => {
     alert_words.initialize({alert_words: []});
     assert.ok(!alert_words.has_alert_word("fire"));
     assert.ok(!alert_words.has_alert_word("lunch"));
 
     override(alert_words_ui, "rerender_alert_words_ui", noop);
-    const event = event_fixtures.alert_words;
+    const event = event_fixtures.alert_words_with_follow_topic;
+    dispatch(event);
+
+    assert.deepEqual(alert_words.get_word_list(), [{word: "fire"}, {word: "lunch"}]);
+    assert.ok(!alert_words.get_follow_topic_containing_alert_word_policy("lunch"));
+    assert.ok(alert_words.get_follow_topic_containing_alert_word_policy("fire"));
+    assert.ok(alert_words.has_alert_word("fire"));
+    assert.ok(alert_words.has_alert_word("lunch"));
+});
+
+run_test("alert_words_with_no_follow_topic_set", ({override}) => {
+    alert_words.initialize({alert_words: []});
+    assert.ok(!alert_words.has_alert_word("fire"));
+    assert.ok(!alert_words.has_alert_word("lunch"));
+
+    override(alert_words_ui, "rerender_alert_words_ui", noop);
+    const event = event_fixtures.alert_words_with_no_follow_topic;
     dispatch(event);
 
     assert.deepEqual(alert_words.get_word_list(), [{word: "fire"}, {word: "lunch"}]);

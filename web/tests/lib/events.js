@@ -103,7 +103,15 @@ exports.test_realm_emojis = {
 };
 
 exports.fixtures = {
-    alert_words: {
+    alert_words_with_follow_topic: {
+        type: "alert_words",
+        alert_words: [
+            ["fire", true],
+            ["lunch", false],
+        ],
+    },
+
+    alert_words_with_no_follow_topic: {
         type: "alert_words",
         alert_words: ["fire", "lunch"],
     },

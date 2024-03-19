@@ -13,7 +13,10 @@ const alert_words = zrequire("alert_words");
 const alert_words_ui = zrequire("alert_words_ui");
 
 alert_words.initialize({
-    alert_words: ["foo", "bar"],
+    alert_words: [
+        ["foo", true],
+        ["bar", false],
+    ],
 });
 
 run_test("rerender_alert_words_ui", ({mock_template}) => {
@@ -33,7 +36,7 @@ run_test("rerender_alert_words_ui", ({mock_template}) => {
         generic_sort_functions: noop,
     });
     mock_template("settings/alert_word_settings_item.hbs", false, (args) => {
-        assert.ok(["foo", "bar"].includes(args.alert_word.word));
+        assert.ok(["foo", "bar"].includes(args.word));
     });
     assert.equal(alert_words_ui.loaded, false);
     alert_words_ui.rerender_alert_words_ui();

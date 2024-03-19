@@ -92,6 +92,7 @@ from zerver.lib.users import (
 from zerver.lib.validator import check_widget_content
 from zerver.lib.widget import do_widget_post_save_actions
 from zerver.models import (
+    AlertWord,
     Client,
     Message,
     Realm,
@@ -1012,6 +1013,40 @@ def do_send_messages(
                         topic_name=send_request.message.topic_name(),
                         visibility_policy=UserTopic.VisibilityPolicy.FOLLOWED,
                     )
+
+            # Set the visibility_policy of the users whose alert words set are
+            # present in the message to "FOLLOWED" if "automatically_follow_topic_
+            # containing_alert_word" is "True" for that alert word.
+            if len(send_request.rendering_result.user_ids_with_alert_words) > 0:
+                alert_words_object = AlertWord.objects.filter(
+                    realm_id=realm_id,
+                    user_profile_id__in=send_request.rendering_result.user_ids_with_alert_words,
+                    word__in=send_request.rendering_result.alert_words,
+                    follow_topic_containing_alert_word=True,
+                ).select_related("user_profile")
+
+                expect_follow_users = {word.user_profile for word in alert_words_object}
+
+                if len(expect_follow_users) > 0:
+                    user_topics_query_set = UserTopic.objects.filter(
+                        user_profile__in=expect_follow_users,
+                        stream_id=send_request.stream.id,
+                        topic_name__iexact=send_request.message.topic_name(),
+                        visibility_policy=UserTopic.VisibilityPolicy.FOLLOWED,
+                    )
+                    skip_follow_users = {
+                        user_topic.user_profile for user_topic in user_topics_query_set
+                    }
+
+                    to_follow_users = list(expect_follow_users - skip_follow_users)
+
+                    if to_follow_users:
+                        bulk_do_set_user_topic_visibility_policy(
+                            user_profiles=to_follow_users,
+                            stream=send_request.stream,
+                            topic_name=send_request.message.topic_name(),
+                            visibility_policy=UserTopic.VisibilityPolicy.FOLLOWED,
+                        )
 
         # Deliver events to the real-time push system, as well as
         # enqueuing any additional processing triggered by the message.
