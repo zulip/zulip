@@ -8,7 +8,12 @@ import * as people from "./people";
 let my_alert_words: string[] = [];
 
 export function set_words(words: string[]): void {
+    // This module's highlighting algorithm of greedily created
+    // highlight spans cannot correctly handle overlapping alert word
+    // clauses, but processing in order from longest-to-shortest
+    // reduces some symptoms of this. See #28415 for details.
     my_alert_words = words;
+    my_alert_words.sort((a, b) => b.length - a.length);
 }
 
 export function get_word_list(): {word: string}[] {
