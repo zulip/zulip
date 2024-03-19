@@ -59,6 +59,29 @@ const emoji = zrequire("emoji");
 const emoji_codes = zrequire("../../static/generated/emoji/emoji_codes.json");
 const people = zrequire("people");
 const reactions = zrequire("reactions");
+const reaction_notifications = zrequire("reaction_notifications");
+const desktop_notifications = zrequire("desktop_notifications");
+const message_notifications = zrequire("message_notifications");
+const stream_data = zrequire("stream_data");
+const user_topics = zrequire("user_topics");
+const settings_config = zrequire("settings_config");
+
+const general = {
+    subscribed: true,
+    name: "general",
+    stream_id: 10,
+    is_muted: false,
+    wildcard_mentions_notify: null,
+};
+
+stream_data.add_sub(general);
+
+user_topics.update_user_topics(
+    general.stream_id,
+    general.name,
+    "followed topic",
+    user_topics.all_visibility_policies.FOLLOWED,
+);
 
 const emoji_params = {
     realm_emoji: {
@@ -1007,6 +1030,85 @@ test("update_existing_reaction (me)", () => {
         $our_reaction.attr("aria-label"),
         "translated: You (click to remove) and Bob van Roberts reacted with :8ball:",
     );
+});
+
+run_test("received_reaction", ({override}) => {
+    const clean_reaction = {
+        class: "message_reaction reacted",
+        count: 1,
+        emoji_alt_code: false,
+        emoji_name: "8ball",
+        emoji_code: "1f3b1",
+        is_realm_emoji: false,
+        label: "translated: You (click to remove) reacted with :8ball:",
+        local_id: "unicode_emoji,1f3b1",
+        user_ids: [cali.user_id],
+        vote_text: "translated: You",
+    };
+    const message = {
+        user_id: alice.user_id,
+        message_id: 2001,
+        content: "example content",
+        reaction_type: "unicode_emoji",
+        type: "stream",
+        stream_id: general.stream_id,
+        topic: "followed topic",
+        emoji_code: "1f3b1",
+        sent_by_me: true,
+        clean_reactions: new Map(
+            Object.entries({
+                "unicode_emoji,1f3b1": clean_reaction,
+            }),
+        ),
+    };
+
+    user_settings.display_emoji_reaction_users = true;
+    override(message_store, "get", () => message);
+
+    reaction_notifications.received_reaction(message);
+    assert.deepEqual(message.reaction_label, "translated: Cali reacted with :8ball:.");
+
+    clean_reaction.user_ids.push(alice.user_id);
+    message.clean_reactions = new Map(
+        Object.entries({
+            "unicode_emoji,1f3b1": clean_reaction,
+        }),
+    );
+    current_user.user_id = alice.user_id;
+    reaction_notifications.received_reaction(message);
+    assert.deepEqual(message.reaction_label, "translated: You and Cali reacted with :8ball:.");
+
+    user_settings.streams_reaction_notification =
+        settings_config.streams_reaction_notification_values.always.code;
+    user_settings.enable_followed_topics_reactions_notifications = true;
+    user_settings.enable_followed_topic_desktop_notifications = true;
+    user_settings.enable_followed_topic_audible_notifications = true;
+    user_settings.enable_desktop_notifications = true;
+    $("#user-notification-sound-audio").get = function () {
+        return {
+            play: noop,
+        };
+    };
+
+    clean_reaction.user_ids.push(bob.user_id);
+    message.clean_reactions = new Map(
+        Object.entries({
+            "unicode_emoji,1f3b1": clean_reaction,
+        }),
+    );
+    current_user.user_id = cali.user_id;
+    reaction_notifications.received_reaction(message);
+
+    assert.deepEqual(
+        message.reaction_label,
+        "translated: Bob van Roberts and 2 others reacted with :8ball:.",
+    );
+
+    const n = desktop_notifications.get_notifications();
+    assert.deepEqual(n.size, 0);
+
+    assert.equal(message_notifications.should_send_desktop_notification(message), true);
+    assert.equal(message_notifications.should_send_audible_notification(message), true);
 });
 
 test("update_existing_reaction (them)", () => {
