@@ -191,8 +191,14 @@ Parameters accepted in the URL include:
 
 * `only_events`, `exclude_events`: Some incoming webhook integrations
   support these parameters to filter which events will trigger a
-  notification. For details, see the integration's [integration
-  documentation](/integrations) page.
+  notification. The events to include or exclude should be formatted
+  as a list of strings, e.g. `&only_events=["event_a","event_b"]` or
+  `&exclude_events=["event_a","event_b"]`. An arbitrary number of
+  supported events can be listed. Note that you can also use UNIX-style
+  wildcards like `*` to include multiple events. E.g., `test*` matches
+  every event that starts with `test`. The events supported by a specific
+  integration can be found on its [integration documentation](/integrations)
+  page.
 
 [browse-streams]: /help/browse-and-subscribe-to-streams
 [add-bot]: /help/add-a-bot-or-integration

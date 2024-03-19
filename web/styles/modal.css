@@ -467,3 +467,23 @@
         }
     }
 }
+
+#generate-integration-url-modal {
+    #integrations-event-container {
+        .integration-all-events-buttons {
+            display: flex;
+            gap: 10px;
+            margin: 5px 0 10px;
+        }
+
+        #integrations-event-options {
+            .integration-event-wrapper {
+                margin: 5px 0;
+            }
+
+            .integration-event-name {
+                word-break: break-all;
+            }
+        }
+    }
+}
