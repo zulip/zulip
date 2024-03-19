@@ -2496,7 +2496,7 @@ select.invite-as {
         margin-left: 40px;
     }
 
-    .dropdown-menu ul li {
+    .typeahead.dropdown-menu .typeahead-menu li {
         width: 100%;
 
         & a {

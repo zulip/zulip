@@ -1186,8 +1186,10 @@ textarea.new_message_textarea,
     }
 }
 
-.dropdown-menu {
-    & ul {
+.typeahead.dropdown-menu {
+    background: hsl(0deg 0% 100%);
+
+    .typeahead-menu {
         list-style: none;
         margin: 0;
         background-color: var(--color-background-popover);
@@ -1205,10 +1207,6 @@ textarea.new_message_textarea,
 
     #typeahead-header-text {
         font-size: 12px;
-    }
-
-    &.typeahead {
-        background: hsl(0deg 0% 100%);
     }
 }
 
