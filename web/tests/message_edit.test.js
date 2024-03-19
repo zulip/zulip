@@ -320,6 +320,16 @@ run_test("get_deletability", ({override}) => {
     stream_data.delete_sub(1);
     // Cannot delete messages in a deactivated stream.
     assert.equal(message_edit.get_deletability(message), false);
+
+    stream_data.add_sub({stream_id: 1, name: "Test stream", invite_only: true});
+    const sub = stream_data.get_sub_by_id(1);
+    stream_data.subscribe_myself(sub);
+    assert.equal(message_edit.get_deletability(message), true);
+
+    stream_data.unsubscribe_myself(sub);
+    // Only subscribers can delete messages in private streams.
+    assert.equal(message_edit.get_deletability(message), false);
+    stream_data.subscribe_myself(sub);
 });
 
 run_test("stream_and_topic_exist_in_edit_history", () => {
