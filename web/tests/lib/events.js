@@ -105,7 +105,7 @@ exports.test_realm_emojis = {
 exports.fixtures = {
     alert_words: {
         type: "alert_words",
-        alert_words: ["fire", "lunch"],
+        alert_words: [{word: "fire"}, {word: "lunch"}],
     },
 
     attachment__add: {

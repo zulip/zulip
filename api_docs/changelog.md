@@ -20,6 +20,15 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 9.0
 
+**Feature level 244**
+
+* [`POST /register`](/api/register-queue), [`POST /events`](/api/get-events),
+  [`GET /users/me/alert_words`](/api/get-alert-words),
+  [`POST /users/me/alert_words`](/api/add-alert-words),
+  [`DELETE /users/me/alert_words`](/api/remove-alert-words): Migrate alert words
+  from list of strings to list of objects, with `word` as the property containing
+  the alert word string.
+
 **Feature level 243**
 
 * [`POST /register`](/api/register-queue), [`GET

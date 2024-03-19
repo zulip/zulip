@@ -92,7 +92,7 @@ export function dispatch_normal_event(event) {
     const noop = function () {};
     switch (event.type) {
         case "alert_words":
-            alert_words.set_words(event.alert_words);
+            alert_words.set_words(event.alert_words.map((alert_word) => alert_word.word));
             alert_words_ui.rerender_alert_words_ui();
             break;
 

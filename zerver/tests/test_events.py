@@ -130,6 +130,7 @@ from zerver.actions.users import (
     do_update_outgoing_webhook_service,
 )
 from zerver.actions.video_calls import do_set_zoom_token
+from zerver.lib.alert_words import AlertWordData
 from zerver.lib.drafts import DraftData, do_create_drafts, do_delete_draft, do_edit_draft
 from zerver.lib.event_schema import (
     check_alert_words,
@@ -1640,7 +1641,9 @@ class NormalActionsTest(BaseAction):
         check_user_group_add_members("events[1]", events[1])
 
     def test_alert_words_events(self) -> None:
-        events = self.verify_action(lambda: do_add_alert_words(self.user_profile, ["alert_word"]))
+        events = self.verify_action(
+            lambda: do_add_alert_words(self.user_profile, [AlertWordData(word="alert_word")])
+        )
         check_alert_words("events[0]", events[0])
 
         events = self.verify_action(
