@@ -1589,12 +1589,27 @@ $option_title_width: 180px;
     }
 }
 
+/* TODO: Remove .dropdown-title once the more
+   generic and reusable .settings-field-label has
+   been placed throughout the settings modals. */
+.settings-field-label,
 .dropdown-title {
     margin-bottom: var(--margin-bottom-field-description);
 }
 
 .settings-profile-user-field-hint {
     color: var(--color-text-settings-field-hint);
+    /* We effectively eliminate the margin-bottom on
+       .settings-field-label by pulling .field-hint
+       up a corresponding negative value. This cinches
+       things up a little tighter, given the generous
+       line-height (20px) on <label> elements, though
+       note well that that comes care of Bootstrap. */
+    margin-top: calc(var(--margin-bottom-field-description) * -1.5);
+    /* Maintain the same margin-bottom value as appears
+       with .settings-field-label to display text-input
+       combinations uniformly throughout the settings UI. */
+    margin-bottom: var(--margin-bottom-field-description);
 }
 
 .profile-field-choices {
