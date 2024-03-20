@@ -16,7 +16,7 @@ export function get_message_events(message) {
         return undefined;
     }
 
-    message.submessages.sort((m1, m2) => Number.parseInt(m1.id, 10) - Number.parseInt(m2.id, 10));
+    message.submessages.sort((m1, m2) => m1.id - m2.id);
 
     const events = message.submessages.map((obj) => ({
         sender_id: obj.sender_id,
