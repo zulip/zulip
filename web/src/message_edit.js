@@ -471,8 +471,6 @@ function edit_message($row, raw_content) {
     currently_editing_messages.set(message.id, edit_obj);
     message_lists.current.show_edit_message($row, edit_obj);
 
-    $form.on("keydown", handle_message_row_edit_keydown);
-
     $form
         .find(".message-edit-feature-group .video_link")
         .toggle(compose_call.compute_show_video_chat_button());
@@ -1416,4 +1414,8 @@ export function is_message_oldest_or_newest(
         },
         error: error_callback,
     });
+}
+
+export function initialize() {
+    $("body").on("keydown", ".message_edit_form", handle_message_row_edit_keydown);
 }

@@ -59,6 +59,7 @@ import {localstorage} from "./localstorage";
 import * as markdown from "./markdown";
 import * as markdown_config from "./markdown_config";
 import * as message_actions_popover from "./message_actions_popover";
+import * as message_edit from "./message_edit";
 import * as message_edit_history from "./message_edit_history";
 import * as message_fetch from "./message_fetch";
 import * as message_list from "./message_list";
@@ -872,6 +873,7 @@ export function initialize_everything(state_data) {
     user_status_ui.initialize();
     fenced_code.initialize(pygments_data);
     message_edit_history.initialize();
+    message_edit.initialize();
     hotkey.initialize();
     desktop_integration.initialize();
 
