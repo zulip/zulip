@@ -621,4 +621,19 @@ export function initialize(): void {
             instance.destroy();
         },
     });
+
+    delegate("body", {
+        target: ".popover-contains-shift-hotkey",
+        trigger: "mouseenter",
+        placement: "top",
+        appendTo: () => document.body,
+        onShow(instance) {
+            const hotkey_hints = $(instance.reference).attr("data-hotkey-hints");
+            if (hotkey_hints) {
+                instance.setContent(hotkey_hints.replace("⇧", "Shift").replaceAll(",", " + "));
+                return undefined;
+            }
+            return false;
+        },
+    });
 }
