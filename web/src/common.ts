@@ -113,6 +113,19 @@ export function adjust_mac_hotkey_hints(hotkeys: string[]): void {
     }
 }
 
+// We convert the Shift key with ⇧ (Level 2 Select Symbol) in the
+// popover menu hotkey hints. This helps us reduce the width of
+// the popover menus.
+export function adjust_shift_hotkey(hotkeys: string[]): boolean {
+    for (const [index, hotkey] of hotkeys.entries()) {
+        if (hotkey === "Shift") {
+            hotkeys[index] = "⇧";
+            return true;
+        }
+    }
+    return false;
+}
+
 // See https://zulip.readthedocs.io/en/latest/development/authentication.html#password-form-implementation
 // for design details on this feature.
 function set_password_toggle_label(
