@@ -419,13 +419,11 @@ export function paste_handler_converter(paste_html) {
             // We parse the copied html to then check if the generating link (which, if
             // present, always comes before the preview in the copied html) is also there.
 
-            // If the preview has an aria-label, it means it does have a named link in the
-            // message, and if the 1st element with the same image link in the copied html
+            // If the 1st element with the same image link in the copied html
             // does not have the `message_inline_image` class, it means it is the generating
             // link, and not the preview, meaning the generating link is copied as well.
             const copied_html = new DOMParser().parseFromString(paste_html, "text/html");
             if (
-                node.firstChild.hasAttribute("aria-label") &&
                 !copied_html
                     .querySelector("a[href='" + node.firstChild.getAttribute("href") + "']")
                     ?.parentNode?.classList.contains("message_inline_image")
