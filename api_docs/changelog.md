@@ -20,6 +20,11 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 9.0
 
+**Feature level 251**
+
+* [`POST /register`](/api/register-queue): Fixed `realm_upload_quota_mib`
+  value to actually be in MiB. Until now the value was in bytes.
+
 **Feature level 250**
 
 * [`GET /messages`](/api/get-messages),
