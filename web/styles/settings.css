@@ -1533,13 +1533,6 @@ $option_title_width: 180px;
         padding-left: 2px;
         vertical-align: middle;
     }
-
-    .custom_user_field,
-    .user-name-section {
-        .settings-profile-user-field-hint {
-            color: var(--color-text-settings-field-hint);
-        }
-    }
 }
 
 #edit-user-form {
@@ -1598,6 +1591,10 @@ $option_title_width: 180px;
 
 .dropdown-title {
     margin-bottom: var(--margin-bottom-field-description);
+}
+
+.settings-profile-user-field-hint {
+    color: var(--color-text-settings-field-hint);
 }
 
 .profile-field-choices {
