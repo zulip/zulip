@@ -4489,7 +4489,7 @@ paths:
                                         Since these automated messages are sent by the server, this field is
                                         primarily relevant to clients containing UI for changing it.
 
-                                        [new-stream-announce]: /help/configure-notification-bot#new-stream-announcements
+                                        [new-stream-announce]: /help/configure-automated-notices#new-stream-announcements
 
                                         **Changes**: In Zulip 9.0 (feature level 241), renamed 'notifications_stream_id'
                                         to `new_stream_announcements_stream_id`.
@@ -4555,7 +4555,7 @@ paths:
                                         Since these automated messages are sent by the server, this field is
                                         primarily relevant to clients containing UI for changing it.
 
-                                        [new-user-announce]: /help/configure-notification-bot#new-user-announcements
+                                        [new-user-announce]: /help/configure-automated-notices#new-user-announcements
 
                                         **Changes**: In Zulip 9.0 (feature level 241), renamed
                                         'signup_notifications_stream_id' to `signup_announcements_stream_id`.
@@ -9256,7 +9256,7 @@ paths:
                 announce:
                   description: |
                     If one of the streams specified did not exist previously and is thus created
-                    by this call, this determines whether [notification bot](/help/configure-notification-bot)
+                    by this call, this determines whether [notification bot](/help/configure-automated-notices)
                     will send an announcement about the new stream's creation.
                   type: boolean
                   default: false
@@ -15159,7 +15159,7 @@ paths:
                           Since these automated messages are sent by the server, this field is
                           primarily relevant to clients containing UI for changing it.
 
-                          [new-stream-announce]: /help/configure-notification-bot#new-stream-announcements
+                          [new-stream-announce]: /help/configure-automated-notices#new-stream-announcements
 
                           **Changes**: In Zulip 9.0 (feature level 241), renamed 'realm_notifications_stream_id'
                           to `realm_new_stream_announcements_stream_id`.
@@ -15176,7 +15176,7 @@ paths:
                           Since these automated messages are sent by the server, this field is
                           primarily relevant to clients containing UI for changing it.
 
-                          [new-user-announce]: /help/configure-notification-bot#new-user-announcements
+                          [new-user-announce]: /help/configure-automated-notices#new-user-announcements
 
                           **Changes**: In Zulip 9.0 (feature level 241), renamed
                           'realm_signup_notifications_stream_id' to `realm_signup_announcements_stream_id`.

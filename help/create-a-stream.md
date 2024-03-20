@@ -23,7 +23,7 @@ There are several parameters you can set while creating a stream. All but
 * **Stream description**: Helps users decide whether to subscribe when they
   are browsing streams.
 
-* **Announce new stream in the [stream configured by your organization](/help/configure-notification-bot#new-stream-announcements)**:
+* **Announce new stream in the [stream configured by your organization](/help/configure-automated-notices#new-stream-announcements)**:
   Posts a message in the "new streams" topic advertising the new stream.
 
 * **Who can access the stream?**: See [Stream permissions](/help/stream-permissions).

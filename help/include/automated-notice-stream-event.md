@@ -4,4 +4,4 @@
     bot][notification-bot] to the "stream events" topic in the
     modified stream.
 
-[notification-bot]: /help/configure-notification-bot
+[notification-bot]: /help/configure-automated-notices
