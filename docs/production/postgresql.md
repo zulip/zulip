@@ -48,6 +48,14 @@ PostgreSQL documentation):
     overhead. I want to be sure that I connect to a server I trust,
     and that it's the one I specify.
 
+Set the remote server's PostgreSQL version in `/etc/zulip/zulip.conf`:
+
+```ini
+[postgresql]
+# Set this to match the version running on your remote PostgreSQL server
+version = 16
+```
+
 Then you should specify the password of the user zulip for the
 database in /etc/zulip/zulip-secrets.conf:
 
