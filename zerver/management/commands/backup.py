@@ -2,10 +2,11 @@ import os
 import re
 import tempfile
 from argparse import ArgumentParser, RawTextHelpFormatter
+from glob import glob
 from typing import Any
 
 from django.conf import settings
-from django.core.management.base import CommandParser
+from django.core.management.base import CommandError, CommandParser
 from django.db import connection
 from django.utils.timezone import now as timezone_now
 from typing_extensions import override
@@ -72,8 +73,26 @@ class Command(ZulipBaseCommand):
                 paths.append(("settings", "/etc/zulip"))
 
             if not options["skip_db"]:
+                # Find the version of of the pg_dump client to use.
+                # We must not use a pg_dump client binary which is
+                # newer than the server's version, since binary
+                # pg_dump output is not always backwards-compatible.
+                pg_dump_versions = []
+                pg_dump_binaries = glob("/usr/lib/postgresql/*/bin/pg_dump")
+                for pg_dump_binary in pg_dump_binaries:
+                    version_string = pg_dump_binary.split("/")[4]
+                    if version_string.isdecimal() and int(version_string) <= major_pg_version:
+                        pg_dump_versions.append(int(version_string))
+
+                if not pg_dump_versions:
+                    raise CommandError(
+                        "Could not find a valid pg_dump version which is compatible with server version {}: found {}".format(
+                            major_pg_version, pg_dump_binaries
+                        )
+                    )
+                pg_dump_versions.sort(reverse=True)
                 pg_dump_command = [
-                    f"/usr/lib/postgresql/{major_pg_version}/bin/pg_dump",
+                    f"/usr/lib/postgresql/{pg_dump_versions[0]}/bin/pg_dump",
                     "--format=directory",
                     "--file=" + os.path.join(tmp, "zulip-backup", "database"),
                     "--username=" + settings.DATABASES["default"]["USER"],
