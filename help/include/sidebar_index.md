@@ -225,7 +225,7 @@
 * [Message retention policy](/help/message-retention-policy)
 * [Weekly digest emails](/help/digest-emails)
 * [Disable welcome emails](/help/disable-welcome-emails)
-* [Configure automated notices](/help/configure-notification-bot)
+* [Configure automated notices](/help/configure-automated-notices)
 * [Configure multi-language search](/help/configure-multi-language-search)
 
 ## Bots & integrations
