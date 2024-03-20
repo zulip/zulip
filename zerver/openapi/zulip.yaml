@@ -15277,7 +15277,10 @@ paths:
 
                           If `null`, there is no limit.
 
-                          **Changes**: New in Zulip 5.0 (feature level 72). Previously,
+                          **Changes**: Before Zulip 9.0 (feature level 251), this field
+                          was incorrectly measured in bytes, not MiB.
+
+                          New in Zulip 5.0 (feature level 72). Previously,
                           this was called `realm_upload_quota`.
                       realm_org_type:
                         type: integer

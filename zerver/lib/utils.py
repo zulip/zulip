@@ -33,3 +33,10 @@ def process_list_in_batches(
             break
         process_batch(items)
         offset += chunk_size
+
+
+def optional_bytes_to_mib(value: Optional[int]) -> Optional[int]:
+    if value is None:
+        return None
+    else:
+        return value >> 20
