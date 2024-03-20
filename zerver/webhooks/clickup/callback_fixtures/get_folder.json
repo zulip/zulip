@@ -1,0 +1,14 @@
+{
+    "id": "457",
+    "name": "Lord Foldemort",
+    "orderindex": 0,
+    "override_statuses": false,
+    "hidden": false,
+    "space": {
+        "id": "789",
+        "name": "Space Name",
+        "access": true
+    },
+    "task_count": "0",
+    "lists": []
+}
