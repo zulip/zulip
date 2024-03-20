@@ -57,7 +57,7 @@ Git workflow, or if you'd like a Git refresher.
 
 [github-help-draft-pr]: https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/about-pull-requests#draft-pull-requests
 [gitbook-rebase]: https://git-scm.com/book/en/v2/Git-Branching-Rebasing
-[github-rebase-pr]: https://github.com/edx/edx-platform/wiki/How-to-Rebase-a-Pull-Request
+[github-rebase-pr]: https://github.com/openedx/edx-platform/wiki/How-to-Rebase-a-Pull-Request
 [github-zulip]: https://github.com/zulip/
 [github-zulip-zulip]: https://github.com/zulip/zulip/
 [continuous-integration]: ../testing/continuous-integration.md
