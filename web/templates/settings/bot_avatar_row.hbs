@@ -1,8 +1,8 @@
 <li class="bot-information-box white-box">
-    <div class="image overflow-hidden">
-        <img src="{{avatar_url}}" class="avatar" />
-        <div class="details">
-            <div class="name">{{name}}</div>
+    <div class="bot-card-image overflow-hidden">
+        <img src="{{avatar_url}}" class="bot-card-avatar" />
+        <div class="bot-card-details">
+            <div class="bot-card-name">{{name}}</div>
             {{#if is_active}}
             <div class="edit-bot-buttons">
                 <button type="submit" class="btn open_edit_bot_form tippy-zulip-delayed-tooltip" data-sidebar-form="edit-bot" data-tippy-content="{{t 'Edit bot' }}" data-email="{{email}}">
@@ -29,26 +29,26 @@
             {{/if}}
         </div>
     </div>
-    <div class="bot_info" data-user-id="{{user_id}}">
-        <div class="type">
-            <div class="field">{{t "Bot type" }}</div>
-            <div class="value">{{type}}</div>
+    <div class="bot-card-info" data-user-id="{{user_id}}">
+        <div class="bot-card-type">
+            <div class="bot-card-field">{{t "Bot type" }}</div>
+            <div class="bot-card-value">{{type}}</div>
         </div>
-        <div class="email">
-            <div class="field">{{t "Bot email" }}</div>
-            <div class="value">{{email}}</div>
+        <div class="bot-card-email">
+            <div class="bot-card-field">{{t "Bot email" }}</div>
+            <div class="bot-card-value">{{email}}</div>
         </div>
         {{#if is_active}}
-        <div class="api_key">
-            <span class="field">{{t "API key" }}</span>
-            <div class="api-key-value-and-button no-select">
+        <div class="bot-card-api-key">
+            <span class="bot-card-field">{{t "API key" }}</span>
+            <div class="bot-card-api-key-value-and-button no-select">
                 <!-- have the `.text-select` in `.no-select` so that the value doesn't have trailing whitespace. -->
-                <span class="value text-select">{{api_key}}</span>
-                <button type="submit" class="button no-style btn-secondary regenerate_bot_api_key tippy-zulip-delayed-tooltip" data-tippy-content="{{t 'Generate new API key' }}" data-user-id="{{user_id}}">
+                <span class="bot-card-value text-select">{{api_key}}</span>
+                <button type="submit" class="button no-style btn-secondary bot-card-regenerate-bot-api-key tippy-zulip-delayed-tooltip" data-tippy-content="{{t 'Generate new API key' }}" data-user-id="{{user_id}}">
                     <i class="fa fa-refresh" aria-hidden="true"></i>
                 </button>
             </div>
-            <div class="api_key_error text-error"></div>
+            <div class="bot-card-api-key-error text-error"></div>
         </div>
         {{else}}
         <button class="button round btn-warning reactivate_bot" data-user-id="{{user_id}}">{{t "Reactivate bot" }}</button>
