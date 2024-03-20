@@ -2591,6 +2591,14 @@ class AnalyticsBouncerTest(BouncerTestCase):
             f"Support URL: {billing_session.support_url()}",
             email.body,
         )
+        self.assertIn(
+            f"Internal billing notice for {billing_session.billing_entity_display_name}.",
+            email.body,
+        )
+        self.assertIn(
+            "Investigate why remote realm is marked as locally deleted when it's on a paid plan.",
+            email.body,
+        )
         self.assertEqual(
             f"{billing_session.billing_entity_display_name} on paid plan marked as locally deleted",
             email.subject,

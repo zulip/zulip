@@ -4942,6 +4942,7 @@ def invoice_plans_as_needed(event_time: Optional[datetime] = None) -> None:
                     if last_audit_log_update is not None:
                         last_audit_log_update_string = last_audit_log_update.strftime("%Y-%m-%d")
                     context = {
+                        "billing_entity": billing_session.billing_entity_display_name,
                         "support_url": billing_session.support_url(),
                         "last_audit_log_update": last_audit_log_update_string,
                         "notice_reason": "invoice_overdue",

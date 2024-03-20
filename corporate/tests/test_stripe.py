@@ -7131,6 +7131,14 @@ class TestRemoteRealmBillingFlow(StripeTestCase, RemoteRealmBillingTestCase):
             f"Support URL: {self.billing_session.support_url()}",
             message.body,
         )
+        self.assertIn(
+            f"Internal billing notice for {self.billing_session.billing_entity_display_name}.",
+            message.body,
+        )
+        self.assertIn(
+            "Reminder to re-evaluate the pricing and configure a new fixed-price plan accordingly.",
+            message.body,
+        )
         self.assertEqual(
             f"Fixed-price plan for {billing_entity} ends on {end_date.strftime('%Y-%m-%d')}",
             message.subject,
@@ -7514,11 +7522,19 @@ class TestRemoteRealmBillingFlow(StripeTestCase, RemoteRealmBillingTestCase):
         message = outbox[-1]
         self.assert_length(message.to, 1)
         self.assertEqual(message.to[0], "sales@zulip.com")
-        self.assertEqual(message.subject, "Invoice overdue due to stale data")
+        self.assertEqual(
+            message.subject,
+            f"Invoice overdue for {self.billing_session.billing_entity_display_name} due to stale data",
+        )
         self.assertIn(
             f"Support URL: {self.billing_session.support_url()}",
             message.body,
         )
+        self.assertIn(
+            f"Internal billing notice for {self.billing_session.billing_entity_display_name}.",
+            message.body,
+        )
+        self.assertIn("Recent invoice is overdue for payment.", message.body)
         self.assertIn(
             f"Last data upload: {last_audit_log_update.strftime('%Y-%m-%d')}", message.body
         )
@@ -8979,11 +8995,19 @@ class TestRemoteServerBillingFlow(StripeTestCase, RemoteServerTestCase):
         message = outbox[-1]
         self.assert_length(message.to, 1)
         self.assertEqual(message.to[0], "sales@zulip.com")
-        self.assertEqual(message.subject, "Invoice overdue due to stale data")
+        self.assertEqual(
+            message.subject,
+            f"Invoice overdue for {self.billing_session.billing_entity_display_name} due to stale data",
+        )
         self.assertIn(
             f"Support URL: {self.billing_session.support_url()}",
             message.body,
         )
+        self.assertIn(
+            f"Internal billing notice for {self.billing_session.billing_entity_display_name}.",
+            message.body,
+        )
+        self.assertIn("Recent invoice is overdue for payment.", message.body)
         self.assertIn(
             f"Last data upload: {last_audit_log_upload.strftime('%Y-%m-%d')}", message.body
         )

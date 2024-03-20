@@ -2,12 +2,15 @@
 
 {% block content %}
 
+<p>Internal billing notice for {{ billing_entity }}.</p>
+
 {% if notice_reason == "fixed_price_plan_ends_soon" %}
 <p>Reminder to re-evaluate the pricing and configure a new fixed-price plan accordingly.</p>
 {% elif notice_reason == "invoice_overdue" %}
+<p>Recent invoice is overdue for payment.</p>
 <b>Last data upload</b>: {{ last_audit_log_update }}
 {% elif notice_reason == "locally_deleted_realm_on_paid_plan" %}
-<p>Investigate the reason for {{billing_entity}} on paid plan marked as locally deleted.</p>
+<p>Investigate why remote realm is marked as locally deleted when it's on a paid plan.</p>
 {% endif %}
 
 <br /><br />
