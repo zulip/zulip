@@ -315,10 +315,10 @@ export function edit_locally(message, request) {
             // all flags, so we need to restore those flags that are
             // properties of how the user has interacted with the
             // message, and not its rendering.
-            message = {
-                ...message,
-                ...markdown.render(message.raw_content),
-            };
+            const {content, flags, is_me_message} = markdown.render(message.raw_content);
+            message.content = content;
+            message.flags = flags;
+            message.is_me_message = is_me_message;
             if (request.starred !== undefined) {
                 message.starred = request.starred;
             }
