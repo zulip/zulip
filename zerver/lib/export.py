@@ -152,6 +152,7 @@ ALL_ZULIP_TABLES = {
     "zerver_realmplayground",
     "zerver_realmreactivationstatus",
     "zerver_realmuserdefault",
+    "zerver_realmsession",
     "zerver_recipient",
     "zerver_scheduledemail",
     "zerver_scheduledemail_users",
