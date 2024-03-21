@@ -1138,10 +1138,6 @@ ul {
     }
 }
 
-#personal-menu-dropdown {
-    padding-bottom: 5px;
-}
-
 .personal-menu-header {
     display: flex;
     flex-flow: row nowrap;
@@ -1331,10 +1327,8 @@ ul {
 }
 
 #gear-menu-dropdown {
-    padding: 5px 0;
-
     .org-info {
-        padding: 4px 0 5px;
+        padding: 9px 0 5px;
 
         & li {
             display: flex;
@@ -1413,10 +1407,6 @@ ul {
     }
 }
 
-#help-menu-dropdown {
-    padding-bottom: 5px;
-}
-
 ul.popover-menu-outer-list {
     list-style: none;
     margin: 0;
@@ -1426,10 +1416,6 @@ ul.popover-menu-outer-list {
 
         &:last-child {
             border-bottom: none;
-
-            ul.popover-menu-inner-list {
-                padding-bottom: 0;
-            }
         }
 
         ul.popover-menu-inner-list {
