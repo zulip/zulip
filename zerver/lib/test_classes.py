@@ -32,6 +32,7 @@ import responses
 from django.apps import apps
 from django.conf import settings
 from django.core.mail import EmailMessage
+from django.core.signals import got_request_exception
 from django.db import connection
 from django.db.migrations.executor import MigrationExecutor
 from django.db.migrations.state import StateApps
@@ -152,10 +153,23 @@ class UploadSerializeMixin(SerializeMixin):
 class ZulipClientHandler(ClientHandler):
     @override
     def get_response(self, request: HttpRequest) -> HttpResponseBase:
+        got_exception = False
+
+        def on_exception(**kwargs: object) -> None:
+            nonlocal got_exception
+            if kwargs["request"] is request:
+                got_exception = True
+
         request.body  # noqa: B018 # prevents RawPostDataException
-        response = super().get_response(request)
+        got_request_exception.connect(on_exception)
+        try:
+            response = super().get_response(request)
+        finally:
+            got_request_exception.disconnect(on_exception)
+
         if (
-            request.method != "OPTIONS"
+            not got_exception  # Django will reraise this exception
+            and request.method != "OPTIONS"
             and isinstance(response, HttpResponse)
             and not (
                 response.status_code == 302 and response.headers["Location"].startswith("/login/")
