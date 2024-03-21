@@ -156,51 +156,61 @@ below are for a webhook named `MyWebHook`.
   spot why something isn't working or if the service is using custom HTTP
   headers.
 
-## URLs
+## URL specification
 
-The base URL for an incoming webhook integration bot is
-`{{ api_url }}/v1/external/INTEGRATION_NAME?api_key=API_KEY` where
+The base URL for an incoming webhook integration bot, where
 `INTEGRATION_NAME` is the name of the specific webhook integration and
 `API_KEY` is the API key of the bot created by the user for the
-integration.
+integration, is:
 
-The list of existing webhook integrations can be found in
-`zerver/lib/integrations.py` (at `WEBHOOK_INTEGRATIONS`) or by browsing
-the [Integrations documentation](/integrations/).
+```
+{{ api_url }}/v1/external/INTEGRATION_NAME?api_key=API_KEY
+```
+
+The list of existing webhook integrations can be found by browsing the
+[Integrations documentation](/integrations/) or in
+`zerver/lib/integrations.py` at `WEBHOOK_INTEGRATIONS`.
 
 Parameters accepted in the URL include:
 
-* `api_key`: **Required**. The API key of the bot created by the user
-  for the integration. To get a bot's API key, see the [API
-  keys](/api/api-keys) documentation.
+### api_key *(required)*
 
-* `stream`: The stream for the integration to send notifications to.
-  Can be either the stream ID or the [URL-encoded][url-encoder] stream
-  name. By default the integration will send direct messages to the
-  bot's owner.
+The API key of the bot created by the user for the integration. To get a
+bot's API key, see the [API keys](/api/api-keys) documentation.
 
-    !!! tip ""
+### stream
 
-        A stream ID can be found when [browsing streams][browse-streams]
-        in the web app via the URL.
+The stream for the integration to send notifications to. Can be either
+the stream ID or the [URL-encoded][url-encoder] stream name. By default
+the integration will send direct messages to the bot's owner.
 
-* `topic`: The topic in the specified stream for the integration to
-  send notifications to. The topic should also be
-  [URL-encoded][url-encoder]. By default the integration will have a
-  topic configured for stream messages.
+!!! tip ""
 
-* `only_events`, `exclude_events`: Some incoming webhook integrations support
-  these parameters to filter which events will trigger a notification. You can
-  append either `&only_events=["event_a","event_b"]` or
-  `&exclude_events=["event_a","event_b"]` (or both, with different events) to
-  the URL, with an arbitrary number of supported events. You can use UNIX-style
-  wildcards like `*` to include multiple events. For example, `test*` matches
-  every event that starts with `test`.
+    A stream ID can be found when [browsing streams][browse-streams]
+    in the web app via the URL.
 
-    !!! tip ""
+### topic
 
-        For a list of supported events, see the integration's [integration
-        documentation](/integrations) page.
+The topic in the specified stream for the integration to send
+notifications to. The topic should also be [URL-encoded][url-encoder].
+By default the integration will have a topic configured for stream
+messages.
+
+### only_events, exclude_events
+
+Some incoming webhook integrations support these parameters to filter
+which events will trigger a notification. You can append either
+`&only_events=["event_a","event_b"]` or
+`&exclude_events=["event_a","event_b"]` (or both, with different events)
+to the URL, with an arbitrary number of supported events.
+
+You can use UNIX-style wildcards like `*` to include multiple events.
+For example, `test*` matches every event that starts with `test`.
+
+!!! tip ""
+
+    For a list of supported events, see a specific [integration's
+    documentation](/integrations) page.
 
 [browse-streams]: /help/browse-and-subscribe-to-streams
 [add-bot]: /help/add-a-bot-or-integration
