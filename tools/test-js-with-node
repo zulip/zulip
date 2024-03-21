@@ -117,7 +117,7 @@ EXEMPT_FILES = make_set(
         "web/src/hotspots.ts",
         "web/src/inbox_ui.js",
         "web/src/inbox_util.ts",
-        "web/src/info_overlay.js",
+        "web/src/info_overlay.ts",
         "web/src/integration_url_modal.ts",
         "web/src/invite.ts",
         "web/src/left_sidebar_navigation_area.ts",
