@@ -275,11 +275,16 @@ def install_yum_deps(deps_to_install: List[str]) -> None:
     #        Requires: perl(IPC::Run)
     yum_extra_flags: List[str] = []
     if vendor == "rhel":
-        exitcode, subs_status = subprocess.getstatusoutput("sudo subscription-manager status")
-        if exitcode == 1:
+        proc = subprocess.run(
+            ["sudo", "subscription-manager", "status"],
+            stdout=subprocess.PIPE,
+            text=True,
+            check=False,
+        )
+        if proc.returncode == 1:
             # TODO this might overkill since `subscription-manager` is already
             # called in setup-yum-repo
-            if "Status" in subs_status:
+            if "Status" in proc.stdout:
                 # The output is well-formed
                 yum_extra_flags = ["--skip-broken"]
             else:
