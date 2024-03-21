@@ -15,4 +15,4 @@ The generated URL will look something like this:
 see [the webhook URLs specification][incoming-webhook-urls].*
 
 [generate-url]: /help/generate-integration-url
-[incoming-webhook-urls]: /api/incoming-webhooks-overview#urls
+[incoming-webhook-urls]: /api/incoming-webhooks-overview#url-specification
