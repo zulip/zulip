@@ -465,6 +465,8 @@ class UpdateCustomProfileFieldTest(CustomProfileFieldTestCase):
         self.assert_json_error(result, "Field id 100 not found.")
 
         field = CustomProfileField.objects.get(name="Phone number", realm=realm)
+        # Although name is an optional field, an empty string is not allowed since name
+        # cannot be empty.
         result = self.client_patch(
             f"/json/realm/profile_fields/{field.id}",
             info={"name": ""},
@@ -528,14 +530,26 @@ class UpdateCustomProfileFieldTest(CustomProfileFieldTestCase):
         self.assertEqual(field.field_type, CustomProfileField.SHORT_TEXT)
         self.assertEqual(field.display_in_profile_summary, True)
 
+        # Test whether name and hint are optional or not
         result = self.client_patch(
             f"/json/realm/profile_fields/{field.id}",
-            info={"name": "Name ", "display_in_profile_summary": "true"},
+            info={"display_in_profile_summary": "true"},
         )
         self.assert_json_success(result)
         field.refresh_from_db()
-        self.assertEqual(field.name, "Name")
+        self.assertEqual(field.name, "New phone number")
         self.assertEqual(field.display_in_profile_summary, True)
+        self.assertEqual(field.hint, "New contact number")
+
+        # Empty string for hint should set it to an empty string
+        result = self.client_patch(
+            f"/json/realm/profile_fields/{field.id}",
+            info={"hint": "", "display_in_profile_summary": "true"},
+        )
+        self.assert_json_success(result)
+        field.refresh_from_db()
+        self.assertEqual(field.display_in_profile_summary, True)
+        self.assertEqual(field.hint, "")
 
         field = CustomProfileField.objects.get(name="Favorite editor", realm=realm)
         result = self.client_patch(
@@ -572,6 +586,29 @@ class UpdateCustomProfileFieldTest(CustomProfileFieldTestCase):
             },
         )
         self.assert_json_success(result)
+
+        # Check if field_data is unchanged if we pass it as None
+        result = self.client_patch(
+            f"/json/realm/profile_fields/{field.id}",
+            info={
+                "name": "Favorite editor",
+                "display_in_profile_summary": "true",
+            },
+        )
+        self.assert_json_success(result)
+        field.refresh_from_db()
+        self.assertEqual(field.field_data, field_data)
+
+        # Empty field_data should not be allowed
+        result = self.client_patch(
+            f"/json/realm/profile_fields/{field.id}",
+            info={
+                "name": "Favorite editor",
+                "field_data": {},
+                "display_in_profile_summary": "true",
+            },
+        )
+        self.assert_json_error(result, "Field must have at least one choice.")
 
         field = CustomProfileField.objects.get(name="Birthday", realm=realm)
         result = self.client_patch(

@@ -1390,7 +1390,11 @@ class NormalActionsTest(BaseAction):
 
         events = self.verify_action(
             lambda: try_update_realm_custom_profile_field(
-                realm, field, name, hint=hint, display_in_profile_summary=display_in_profile_summary
+                realm=realm,
+                field=field,
+                name=name,
+                hint=hint,
+                display_in_profile_summary=display_in_profile_summary,
             )
         )
         check_custom_profile_fields("events[0]", events[0])
@@ -1416,7 +1420,9 @@ class NormalActionsTest(BaseAction):
 
         hint = "What pronouns should people use to refer you?"
         events = self.verify_action(
-            lambda: try_update_realm_custom_profile_field(realm, field, name, hint=hint),
+            lambda: try_update_realm_custom_profile_field(
+                realm=realm, field=field, name=name, hint=hint
+            ),
             pronouns_field_type_supported=False,
         )
         check_custom_profile_fields("events[0]", events[0])
