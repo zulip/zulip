@@ -388,7 +388,6 @@ export function process_from_server(messages) {
             // the "main" codepath that doesn't have to id reconciliation.
             // We simply return non-echo messages to our caller.
             non_echo_messages.push(message);
-            sent_messages.report_event_received(local_id);
             continue;
         }
 

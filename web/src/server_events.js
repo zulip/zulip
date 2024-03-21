@@ -106,9 +106,13 @@ function get_events_success(events) {
         try {
             messages = echo.process_from_server(messages);
             if (messages.length > 0) {
-                const sent_by_this_client = messages.some((msg) =>
-                    sent_messages.messages.has(msg.local_id),
-                );
+                let sent_by_this_client = false;
+                for (const msg of messages) {
+                    if (sent_messages.messages.has(msg.local_id)) {
+                        sent_by_this_client = true;
+                    }
+                    sent_messages.report_event_received(msg.local_id);
+                }
                 // If some message in this batch of events was sent by this
                 // client, almost every time, this message will be the only one
                 // in messages, because multiple messages being returned by
