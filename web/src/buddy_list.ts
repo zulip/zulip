@@ -248,7 +248,15 @@ export class BuddyList extends BuddyListConf {
         }
 
         this.render_section_headers();
-        if (!this.render_data.hide_headers) {
+        if (this.render_data.hide_headers) {
+            // Ensure the section isn't collapsed, because we're hiding its header
+            // so there's no way to collapse or uncollapse the list in this view.
+            $("#buddy-list-other-users-container").toggleClass("collapsed", false);
+        } else {
+            $("#buddy-list-other-users-container").toggleClass(
+                "collapsed",
+                this.other_users_is_collapsed,
+            );
             this.update_empty_list_placeholders();
         }
     }
