@@ -325,13 +325,7 @@ def do_create_realm(
         support_url = get_realm_support_url(realm)
         organization_type = get_org_type_display_name(realm.org_type)
 
-        message = "[{name}]({support_link}) ([{subdomain}]({realm_link})). Organization type: {type}".format(
-            name=realm.name,
-            subdomain=realm.display_subdomain,
-            realm_link=realm.uri,
-            support_link=support_url,
-            type=organization_type,
-        )
+        message = f"[{realm.name}]({support_url}) ([{realm.display_subdomain}]({realm.uri})). Organization type: {organization_type}"
         topic_name = "new organizations"
 
         try:
