@@ -539,6 +539,12 @@ $time_column_min_width: 42px; /* + padding */
     max-height: 24em;
 }
 
+/* The selector needs to be written this way to override the specificity
+of the base style defined for a read-only textarea in dark mode. */
+.message_edit_form .edit-controls textarea.message_edit_content:read-only {
+    opacity: 1;
+}
+
 .message_edit_countdown_timer {
     text-align: right;
     display: inline;
