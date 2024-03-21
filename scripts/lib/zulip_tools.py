@@ -563,10 +563,10 @@ def assert_not_running_as_root() -> None:
     if is_root():
         pwent = get_zulip_pwent()
         msg = (
-            "{shortname} should not be run as root. Use `su {user}` to switch to the 'zulip'\n"
-            "user before rerunning this, or use \n  su {user} -c '{name} ...'\n"
+            f"{os.path.basename(script_name)} should not be run as root. Use `su {pwent.pw_name}` to switch to the 'zulip'\n"
+            f"user before rerunning this, or use \n  su {pwent.pw_name} -c '{script_name} ...'\n"
             "to switch users and run this as a single command."
-        ).format(name=script_name, shortname=os.path.basename(script_name), user=pwent.pw_name)
+        )
         print(msg)
         sys.exit(1)
 
