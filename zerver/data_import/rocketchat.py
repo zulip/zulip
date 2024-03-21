@@ -880,7 +880,7 @@ def map_receiver_id_to_recipient_id(
     for recipient in zerver_recipient:
         if recipient["type"] == Recipient.STREAM:
             stream_id_to_recipient_id[recipient["type_id"]] = recipient["id"]
-        elif recipient["type"] == Recipient.HUDDLE:
+        elif recipient["type"] == Recipient.DIRECT_MESSAGE_GROUP:
             huddle_id_to_recipient_id[recipient["type_id"]] = recipient["id"]
         elif recipient["type"] == Recipient.PERSONAL:
             user_id_to_recipient_id[recipient["type_id"]] = recipient["id"]

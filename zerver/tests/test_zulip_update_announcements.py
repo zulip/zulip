@@ -45,7 +45,7 @@ class ZulipUpdateAnnouncementsTest(ZulipTestCase):
         )
 
         group_direct_messages = Message.objects.filter(
-            realm=realm, recipient__type=Recipient.HUDDLE
+            realm=realm, recipient__type=Recipient.DIRECT_MESSAGE_GROUP
         )
         self.assertFalse(group_direct_messages.exists())
 
@@ -124,7 +124,7 @@ class ZulipUpdateAnnouncementsTest(ZulipTestCase):
         self.assertIsNotNone(realm.zulip_update_announcements_stream)
 
         group_direct_messages = Message.objects.filter(
-            realm=realm, recipient__type=Recipient.HUDDLE
+            realm=realm, recipient__type=Recipient.DIRECT_MESSAGE_GROUP
         )
         self.assertFalse(group_direct_messages.exists())
 

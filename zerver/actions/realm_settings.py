@@ -589,7 +589,7 @@ def do_scrub_realm(realm: Realm, *, acting_user: Optional[UserProfile]) -> None:
         *Stream.objects.filter(realm=realm).values_list("recipient_id", flat=True),
         *UserProfile.objects.filter(realm=realm).values_list("recipient_id", flat=True),
         *Subscription.objects.filter(
-            recipient__type=Recipient.HUDDLE, user_profile__realm=realm
+            recipient__type=Recipient.DIRECT_MESSAGE_GROUP, user_profile__realm=realm
         ).values_list("recipient_id", flat=True),
     ]
     cross_realm_bot_message_ids = list(

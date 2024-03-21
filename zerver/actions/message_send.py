@@ -372,7 +372,7 @@ def get_recipient_info(
                 )
             )
 
-    elif recipient.type == Recipient.HUDDLE:
+    elif recipient.type == Recipient.DIRECT_MESSAGE_GROUP:
         message_to_user_ids = get_huddle_user_ids(recipient)
 
     else:
@@ -738,7 +738,7 @@ def create_user_messages(
     base_flags = 0
     if rendering_result.mentions_stream_wildcard:
         base_flags |= UserMessage.flags.stream_wildcard_mentioned
-    if message.recipient.type in [Recipient.HUDDLE, Recipient.PERSONAL]:
+    if message.recipient.type in [Recipient.DIRECT_MESSAGE_GROUP, Recipient.PERSONAL]:
         base_flags |= UserMessage.flags.is_private
 
     # For long_term_idle (aka soft-deactivated) users, we are allowed
@@ -1222,7 +1222,7 @@ def do_send_messages(
 
 
 def already_sent_mirrored_message_id(message: Message) -> Optional[int]:
-    if message.recipient.type == Recipient.HUDDLE:
+    if message.recipient.type == Recipient.DIRECT_MESSAGE_GROUP:
         # For huddle messages, we use a 10-second window because the
         # timestamps aren't guaranteed to actually match between two
         # copies of the same message.

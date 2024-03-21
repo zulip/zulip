@@ -450,7 +450,7 @@ def process_missed_message(to: str, message: EmailMessage) -> None:
         recipient_user = get_user_profile_by_id(recipient_user_id)
         recipient_str = recipient_user.email
         internal_send_private_message(user_profile, recipient_user, body)
-    elif recipient.type == Recipient.HUDDLE:
+    elif recipient.type == Recipient.DIRECT_MESSAGE_GROUP:
         display_recipient = get_display_recipient(recipient)
         emails = [user_dict["email"] for user_dict in display_recipient]
         recipient_str = ", ".join(emails)
