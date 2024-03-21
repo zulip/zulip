@@ -2391,6 +2391,11 @@ select.invite-as {
     }
 }
 
+.empty-view-placeholder {
+    max-width: 700px;
+    margin: auto;
+}
+
 @media (width < $xl_min) or (height < $short_navbar_cutoff_height) {
     .default-sidebar-behaviour {
         &.spectator-view.default-sidebar-behaviour {

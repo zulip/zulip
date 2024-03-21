@@ -1,6 +1,8 @@
 import $ from "jquery";
 import assert from "minimalistic-assert";
 
+import render_starred_empty_view_placeholder from "../templates/starred_empty_view_placeholder.hbs";
+
 import {$t, $t_html} from "./i18n";
 import type {NarrowBannerData, SearchData} from "./narrow_error";
 import {narrow_error} from "./narrow_error";
@@ -173,25 +175,17 @@ function pick_empty_narrow_banner(): NarrowBannerData {
                     // You currently have no starred messages.
                     return {
                         title: $t({defaultMessage: "You have no starred messages."}),
-                        html: $t_html(
-                            {
-                                defaultMessage:
-                                    "Learn more about starring messages <z-link>here</z-link>.",
-                            },
-                            {
-                                "z-link": (content_html) =>
-                                    `<a target="_blank" rel="noopener noreferrer" href="/help/star-a-message">${content_html.join(
-                                        "",
-                                    )}</a>`,
-                            },
-                        ),
+                        html: render_starred_empty_view_placeholder(),
                     };
                 case "mentioned":
                     return {
-                        title: $t({defaultMessage: "You haven't been mentioned yet!"}),
+                        title: $t({
+                            defaultMessage: "This view will show messages where you are mentioned.",
+                        }),
                         html: $t_html(
                             {
-                                defaultMessage: "Learn more about mentions <z-link>here</z-link>.",
+                                defaultMessage:
+                                    "To call attention to a message, you can mention a user, a group, topic participants, or all subscribers to a stream. Type @ in the compose box, and choose who you'd like to mention from the list of suggestions. <z-link>Learn more</z-link>",
                             },
                             {
                                 "z-link": (content_html) =>
