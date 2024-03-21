@@ -641,10 +641,6 @@ li,
     its own border and background color */
     border: none;
     background-clip: content-box;
-    /* The z-index here ensures that the copy-message
-    icon is clickable and is needed because of reduced
-    opacity of readonly textarea */
-    z-index: 2;
 
     &:hover svg path {
         fill: var(--color-fill-hover-copy-icon);
