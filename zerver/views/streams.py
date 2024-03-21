@@ -525,13 +525,13 @@ def you_were_just_subscribed_message(
     if len(subscriptions) == 1:
         with override_language(recipient_user.default_language):
             return _("{user_full_name} subscribed you to the stream {stream_name}.").format(
-                user_full_name=f"@**{acting_user.full_name}|{acting_user.id}**",
+                user_full_name=silent_mention_syntax_for_user(acting_user),
                 stream_name=f"#**{subscriptions[0]}**",
             )
 
     with override_language(recipient_user.default_language):
         message = _("{user_full_name} subscribed you to the following streams:").format(
-            user_full_name=f"@**{acting_user.full_name}|{acting_user.id}**",
+            user_full_name=silent_mention_syntax_for_user(acting_user),
         )
     message += "\n\n"
     for stream_name in subscriptions:
