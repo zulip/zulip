@@ -582,7 +582,7 @@ def check_can_access_user(
     subscribed_recipient_ids = Subscription.objects.filter(
         user_profile=user_profile,
         active=True,
-        recipient__type__in=[Recipient.STREAM, Recipient.HUDDLE],
+        recipient__type__in=[Recipient.STREAM, Recipient.DIRECT_MESSAGE_GROUP],
     ).values_list("recipient_id", flat=True)
 
     if Subscription.objects.filter(
@@ -628,7 +628,7 @@ def get_inaccessible_user_ids(
     subscribed_recipient_ids = Subscription.objects.filter(
         user_profile=acting_user,
         active=True,
-        recipient__type__in=[Recipient.STREAM, Recipient.HUDDLE],
+        recipient__type__in=[Recipient.STREAM, Recipient.DIRECT_MESSAGE_GROUP],
     ).values_list("recipient_id", flat=True)
 
     common_subscription_user_ids = (
@@ -701,7 +701,7 @@ def get_subscribers_of_target_user_subscriptions(
         Subscription.objects.filter(
             user_profile__in=target_user_ids,
             active=True,
-            recipient__type__in=[Recipient.STREAM, Recipient.HUDDLE],
+            recipient__type__in=[Recipient.STREAM, Recipient.DIRECT_MESSAGE_GROUP],
         )
         .order_by("user_profile_id")
         .values("user_profile_id", "recipient_id")
@@ -725,11 +725,12 @@ def get_subscribers_of_target_user_subscriptions(
     if include_deactivated_users_for_huddles:
         subs_in_target_user_subscriptions_query = subs_in_target_user_subscriptions_query.filter(
             Q(recipient__type=Recipient.STREAM, is_user_active=True)
-            | Q(recipient__type=Recipient.HUDDLE)
+            | Q(recipient__type=Recipient.DIRECT_MESSAGE_GROUP)
         )
     else:
         subs_in_target_user_subscriptions_query = subs_in_target_user_subscriptions_query.filter(
-            recipient__type__in=[Recipient.STREAM, Recipient.HUDDLE], is_user_active=True
+            recipient__type__in=[Recipient.STREAM, Recipient.DIRECT_MESSAGE_GROUP],
+            is_user_active=True,
         )
 
     subs_in_target_user_subscriptions = subs_in_target_user_subscriptions_query.order_by(

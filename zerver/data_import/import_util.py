@@ -257,7 +257,8 @@ def build_huddle_subscriptions(
     recipient_map = {
         recipient["id"]: recipient["type_id"]  # recipient_id -> stream_id
         for recipient in zerver_recipient
-        if recipient["type"] == Recipient.HUDDLE and recipient["type_id"] in huddle_ids
+        if recipient["type"] == Recipient.DIRECT_MESSAGE_GROUP
+        and recipient["type_id"] in huddle_ids
     }
 
     for recipient_id, huddle_id in recipient_map.items():
@@ -340,7 +341,7 @@ def build_recipients(
 
     for huddle in zerver_huddle:
         type_id = huddle["id"]
-        type = Recipient.HUDDLE
+        type = Recipient.DIRECT_MESSAGE_GROUP
         recipient = Recipient(
             type_id=type_id,
             id=NEXT_ID("recipient"),

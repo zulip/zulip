@@ -200,7 +200,7 @@ def build_message_list(
     messages_to_render: List[Dict[str, Any]] = []
 
     def sender_string(message: Message) -> str:
-        if message.recipient.type in (Recipient.STREAM, Recipient.HUDDLE):
+        if message.recipient.type in (Recipient.STREAM, Recipient.DIRECT_MESSAGE_GROUP):
             return message.sender.full_name
         else:
             return ""
@@ -263,7 +263,7 @@ def build_message_list(
             )
             header = f"You and {message.sender.full_name}"
             header_html = f"<a style='color: #ffffff;' href='{narrow_link}'>{header}</a>"
-        elif message.recipient.type == Recipient.HUDDLE:
+        elif message.recipient.type == Recipient.DIRECT_MESSAGE_GROUP:
             grouping = {"huddle": message.recipient_id}
             display_recipient = get_display_recipient(message.recipient)
             narrow_link = huddle_narrow_url(
@@ -470,7 +470,7 @@ def do_send_missedmessage_events_reply_in_zulip(
         reply_to_name = "Zulip"
 
     senders = list({m["message"].sender for m in missed_messages})
-    if missed_messages[0]["message"].recipient.type == Recipient.HUDDLE:
+    if missed_messages[0]["message"].recipient.type == Recipient.DIRECT_MESSAGE_GROUP:
         display_recipient = get_display_recipient(missed_messages[0]["message"].recipient)
         narrow_url = huddle_narrow_url(
             user=user_profile,

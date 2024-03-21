@@ -51,7 +51,7 @@ def get_recipient_from_user_profiles(
     huddle = get_or_create_huddle(user_ids)
     return Recipient(
         id=huddle.recipient_id,
-        type=Recipient.HUDDLE,
+        type=Recipient.DIRECT_MESSAGE_GROUP,
         type_id=huddle.id,
     )
 
