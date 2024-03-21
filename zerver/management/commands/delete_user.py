@@ -57,10 +57,7 @@ This will:
 
         for user_profile in user_profiles:
             print(
-                "{} has {} active bots that will be deactivated as a result of the user's deletion.".format(
-                    user_profile.delivery_email,
-                    get_active_bots_owned_by_user(user_profile).count(),
-                )
+                f"{user_profile.delivery_email} has {get_active_bots_owned_by_user(user_profile).count()} active bots that will be deactivated as a result of the user's deletion."
             )
 
         if not options["for_real"]:

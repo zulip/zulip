@@ -2240,7 +2240,7 @@ class BillingSession(ABC):
         # Should do this in JavaScript, using the user's time zone
         if plan.is_free_trial() or downgrade_at_end_of_free_trial:
             assert plan.next_invoice_date is not None
-            renewal_date = "{dt:%B} {dt.day}, {dt.year}".format(dt=plan.next_invoice_date)
+            renewal_date = f"{plan.next_invoice_date:%B} {plan.next_invoice_date.day}, {plan.next_invoice_date.year}"
         else:
             renewal_date = "{dt:%B} {dt.day}, {dt.year}".format(
                 dt=start_of_next_billing_cycle(plan, now)

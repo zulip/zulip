@@ -45,9 +45,7 @@ with open("/proc/meminfo") as meminfo:
 ram_gb = float(ram_size) / 1024.0 / 1024.0
 if ram_gb < 1.5:
     print(
-        "You have insufficient RAM ({} GB) to run the Zulip development environment.".format(
-            round(ram_gb, 2)
-        )
+        f"You have insufficient RAM ({round(ram_gb, 2)} GB) to run the Zulip development environment."
     )
     print("We recommend at least 2 GB of RAM, and require at least 1.5 GB.")
     sys.exit(1)
