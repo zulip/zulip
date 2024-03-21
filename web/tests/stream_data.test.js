@@ -491,24 +491,32 @@ test("default_stream_names", () => {
 
 test("delete_sub", () => {
     const canada = {
+        archived: false,
         stream_id: 101,
         name: "Canada",
         subscribed: true,
     };
 
     stream_data.add_sub(canada);
+    const num_subscribed_subs = stream_data.num_subscribed_subs();
 
     assert.ok(stream_data.is_subscribed_by_name("Canada"));
     assert.equal(stream_data.get_sub("Canada").stream_id, canada.stream_id);
     assert.equal(sub_store.get(canada.stream_id).name, "Canada");
+    assert.equal(stream_data.is_stream_archived(canada.stream_id), false);
 
     stream_data.delete_sub(canada.stream_id);
+    assert.ok(stream_data.is_stream_archived(canada.stream_id));
     assert.ok(!stream_data.is_subscribed_by_name("Canada"));
-    assert.ok(!stream_data.get_sub("Canada"));
-    assert.ok(!sub_store.get(canada.stream_id));
+    assert.ok(stream_data.get_sub("Canada"));
+    assert.ok(sub_store.get(canada.stream_id));
+    assert.equal(stream_data.num_subscribed_subs(), num_subscribed_subs - 1);
 
     blueslip.expect("warn", "Failed to archive stream 99999");
     stream_data.delete_sub(99999);
+
+    blueslip.expect("warn", "Can't subscribe to an archived stream.");
+    stream_data.subscribe_myself(canada);
 });
 
 test("notifications", () => {
@@ -965,6 +973,9 @@ test("can_post_messages_in_stream", () => {
     assert.equal(stream_data.can_post_messages_in_stream(social), true);
 
     page_params.is_spectator = true;
+    assert.equal(stream_data.can_post_messages_in_stream(social), false);
+
+    social.archived = true;
     assert.equal(stream_data.can_post_messages_in_stream(social), false);
 });
 

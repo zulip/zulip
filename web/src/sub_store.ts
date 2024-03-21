@@ -11,6 +11,7 @@ export const enum StreamPostPolicy {
 
 // These types are taken from the `zerver/lib/types.py`.
 export type Stream = {
+    archived: boolean;
     date_created: number;
     description: string;
     first_message_id: number | null;
@@ -94,10 +95,6 @@ export function validate_stream_ids(stream_ids: number[]): number[] {
 
 export function clear(): void {
     subs_by_stream_id.clear();
-}
-
-export function delete_sub(stream_id: number): void {
-    subs_by_stream_id.delete(stream_id);
 }
 
 export function add_hydrated_sub(stream_id: number, sub: StreamSubscription): void {

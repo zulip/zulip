@@ -20,6 +20,20 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 9.0
 
+**Feature level 244**
+
+* [`GET /streams/{stream_id}`](/api/get-stream-by-id), [`GET /events`]
+  (/api/get-events): The `archived` property has been added to the streams
+  and subscriptions to indicate their active status.
+
+* [`GET /streams`](/api/get-streams): The parameter `exclude_archived`
+  controls whether archived streams should be returned.
+
+* [`POST /register`](/api/register-queue): The new [client capability]
+  (/api/register-queue#parameter-client_capabilities) `archived_streams`
+  allows the client to decide whether to include archived streams in the
+  result.
+
 **Feature level 243**
 
 * [`POST /register`](/api/register-queue), [`GET

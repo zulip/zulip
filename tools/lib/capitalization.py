@@ -151,6 +151,8 @@ IGNORED_PHRASES = [
     r"does not apply to administrators",
     # Used as indicator with names for guest users.
     r"guest",
+    # Used as indicator with names for archived streams.
+    r"archived",
     # Used in pills for deactivated users.
     r"deactivated",
     # This is a reference to a setting/secret and should be lowercase.

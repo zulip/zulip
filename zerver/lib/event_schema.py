@@ -50,6 +50,7 @@ from zerver.models import Realm, RealmUserDefault, Stream, UserProfile
 # These fields are used for "stream" events, and are included in the
 # larger "subscription" events that also contain personal settings.
 default_stream_fields = [
+    ("archived", bool),
     ("can_remove_subscribers_group", int),
     ("date_created", int),
     ("description", str),

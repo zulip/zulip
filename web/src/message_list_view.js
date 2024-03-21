@@ -219,6 +219,7 @@ function populate_group_from_message_container(group, message_container) {
         group.topic = message_container.msg.topic;
         group.match_topic = util.get_match_topic(message_container.msg);
         group.stream_url = message_container.stream_url;
+        group.archived = stream_data.is_stream_archived(message_container.msg.stream_id);
         group.topic_url = message_container.topic_url;
         const sub = sub_store.get(message_container.msg.stream_id);
         if (sub === undefined) {

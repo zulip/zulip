@@ -28,6 +28,7 @@ import * as message_edit from "./message_edit";
 import * as message_events from "./message_events";
 import * as message_lists from "./message_lists";
 import * as message_live_update from "./message_live_update";
+import * as message_view_header from "./message_view_header";
 import * as muted_users_ui from "./muted_users_ui";
 import * as narrow_state from "./narrow_state";
 import * as narrow_title from "./narrow_title";
@@ -544,16 +545,20 @@ export function dispatch_normal_event(event) {
                     break;
                 case "delete":
                     for (const stream of event.streams) {
+                        stream_data.remove_default_stream(stream.stream_id);
+                        settings_streams.update_default_streams_table();
                         const was_subscribed = sub_store.get(stream.stream_id).subscribed;
+                        stream_data.delete_sub(stream.stream_id);
                         const is_narrowed_to_stream = narrow_state.is_for_stream_id(
                             stream.stream_id,
                         );
+                        stream_data.delete_sub(stream.stream_id);
                         if (is_narrowed_to_stream) {
                             assert(message_lists.current !== undefined);
                             message_lists.current.update_trailing_bookend();
                         }
-                        stream_data.delete_sub(stream.stream_id);
                         stream_settings_ui.remove_stream(stream.stream_id);
+                        message_view_header.maybe_rerender_title_area_for_stream(stream);
                         if (was_subscribed) {
                             stream_list.remove_sidebar_row(stream.stream_id);
                             if (stream.stream_id === compose_state.selected_recipient_id) {
@@ -561,8 +566,6 @@ export function dispatch_normal_event(event) {
                                 compose_recipient.on_compose_select_recipient_update();
                             }
                         }
-                        settings_streams.update_default_streams_table();
-                        stream_data.remove_default_stream(stream.stream_id);
                         if (realm.realm_new_stream_announcements_stream_id === stream.stream_id) {
                             realm.realm_new_stream_announcements_stream_id = -1;
                             settings_org.sync_realm_settings("new_stream_announcements_stream_id");
@@ -578,6 +581,7 @@ export function dispatch_normal_event(event) {
                             );
                         }
                     }
+                    message_live_update.rerender_messages_view();
                     stream_list.update_subscribe_to_more_streams_link();
                     break;
                 default:
