@@ -52,14 +52,18 @@
                     <div id="stream_settings_title" class="stream-info-title">{{t 'Stream settings' }}</div>
                 </div>
                 <div class="nothing-selected">
+                    <button type="button" class="create_stream_button animated-purple-button" {{#unless can_create_streams}}disabled{{/unless}}>{{t 'Create stream' }}</button>
                     {{#if can_create_streams}}
-                    <button type="button" class="create_stream_button animated-purple-button">{{t 'Create stream' }}</button>
                     <span>
                         {{#tr}}
                             First time? Read our <z-link>guidelines</z-link> for creating and naming streams.
                             {{#*inline "z-link"}}<a href="/help/getting-your-organization-started-with-zulip#create-streams" target="_blank" rel="noopener noreferrer">{{> @partial-block}}</a>{{/inline}}
                         {{/tr}}
                     </span>
+                    {{else}}
+                    {{#tr}}
+                        You do not have permission to create streams in this organization.
+                    {{/tr}}
                     {{/if}}
                 </div>
                 <div id="stream_settings" class="settings" data-simplebar data-simplebar-auto-hide="false">
