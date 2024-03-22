@@ -57,8 +57,9 @@ class RealmSessionStore(LeaklessCachedDbSessionStore):
         return RealmSession
 
     @override
-    def create_model_instance(self, data: Dict[str, Union[int, str]]) -> AbstractBaseSession:
+    def create_model_instance(self, data: Dict[str, Union[int, str]]) -> RealmSession:
         obj = super().create_model_instance(data)
+        assert isinstance(obj, RealmSession)
 
         if "realm_id" in data:
             realm_id = int(data["realm_id"])
@@ -72,8 +73,8 @@ class RealmSessionStore(LeaklessCachedDbSessionStore):
 
         ip_address = data.get("ip_address")
 
-        obj.realm_id = realm_id  # type: ignore[attr-defined] # not in AbstractBaseSession, we're adding attributes to it
-        obj.user_id = user_id  # type: ignore[attr-defined]  # same as above
-        obj.ip_address = ip_address  # type: ignore[attr-defined] # same as above
+        obj.realm_id = realm_id
+        obj.user_id = user_id
+        obj.ip_address = ip_address
 
         return obj
