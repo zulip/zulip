@@ -307,6 +307,8 @@ class TestCreateStreams(ZulipTestCase):
             self.assertTrue(stream.stream_post_policy == Stream.STREAM_POST_POLICY_ADMINS)
             self.assertTrue(stream.message_retention_days == -1)
             self.assertEqual(stream.can_remove_subscribers_group.id, moderators_system_group.id)
+            # Streams created where acting_user is None have no creator
+            self.assertIsNone(stream.creator_id)
 
         new_streams, existing_streams = create_streams_if_needed(
             realm,
@@ -604,6 +606,28 @@ class TestCreateStreams(ZulipTestCase):
             result,
             "'can_remove_subscribers_group' setting cannot be set to 'role:nobody' group.",
         )
+
+    def test_acting_user_is_creator(self) -> None:
+        """
+        If backend calls provide an acting_user while trying to
+        create streams, assign acting_user as the stream creator
+        """
+        hamlet = self.example_user("hamlet")
+        new_streams, _ = create_streams_if_needed(
+            hamlet.realm,
+            [
+                StreamDict(
+                    name="hamlet's test stream",
+                    description="No description",
+                    invite_only=True,
+                    is_web_public=True,
+                    stream_post_policy=Stream.STREAM_POST_POLICY_ADMINS,
+                )
+            ],
+            acting_user=hamlet,
+        )
+        created_stream = new_streams[0]
+        self.assertEqual(created_stream.creator_id, hamlet.id)
 
 
 class RecipientTest(ZulipTestCase):
@@ -4412,6 +4436,35 @@ class SubscriptionAPITest(ZulipTestCase):
         self._test_user_settings_for_creating_streams(
             "create_web_public_stream_policy", invite_only=False, is_web_public=True
         )
+
+    def test_stream_creator_id(self) -> None:
+        iago = self.example_user("iago")
+        self.login_user(iago)
+        user1 = self.example_user("hamlet")
+        user2 = self.example_user("desdemona")
+
+        streams_to_sub = ["new_stream"]
+        # We create streams by subscribing users to non-existent streams
+        # Here we subscribe users other than the stream creator
+        with self.capture_send_event_calls(5) as events:
+            self.common_subscribe_to_streams(
+                iago,
+                streams_to_sub,
+                dict(principals=orjson.dumps([user1.id, user2.id]).decode()),
+            )
+        self.assertEqual(events[0]["event"]["streams"][0]["creator_id"], iago.id)
+        created_stream_id = events[0]["event"]["streams"][0]["stream_id"]
+
+        all_streams = self.api_get(iago, "/api/v1/streams")
+        json = self.assert_json_success(all_streams)
+        for stream in json["streams"]:
+            if stream["stream_id"] == created_stream_id:
+                # Acting user should be the creator for api created streams
+                self.assertEqual(stream["creator_id"], iago.id)
+                continue
+
+            # Streams that aren't created using the api should have no creator
+            self.assertIsNone(stream["creator_id"])
 
     def test_private_stream_policies(self) -> None:
         def validation_func(user_profile: UserProfile) -> bool:

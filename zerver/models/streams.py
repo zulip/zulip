@@ -30,6 +30,7 @@ class Stream(models.Model):
     name = models.CharField(max_length=MAX_NAME_LENGTH, db_index=True)
     realm = models.ForeignKey(Realm, db_index=True, on_delete=CASCADE)
     date_created = models.DateTimeField(default=timezone_now)
+    creator = models.ForeignKey(UserProfile, null=True, on_delete=models.SET_NULL)
     deactivated = models.BooleanField(default=False)
     description = models.CharField(max_length=MAX_DESCRIPTION_LENGTH, default="")
     rendered_description = models.TextField(default="")
@@ -180,6 +181,7 @@ class Stream(models.Model):
     # * "realm" and "recipient" are not exposed to clients via the API.
     API_FIELDS = [
         "date_created",
+        "creator_id",
         "description",
         "first_message_id",
         "history_public_to_subscribers",
@@ -197,6 +199,7 @@ class Stream(models.Model):
         return DefaultStreamDict(
             can_remove_subscribers_group=self.can_remove_subscribers_group_id,
             date_created=datetime_to_timestamp(self.date_created),
+            creator_id=self.creator_id,
             description=self.description,
             first_message_id=self.first_message_id,
             history_public_to_subscribers=self.history_public_to_subscribers,

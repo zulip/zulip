@@ -154,6 +154,7 @@ def create_stream_if_needed(
             defaults=dict(
                 name=stream_name,
                 description=stream_description,
+                creator=acting_user,
                 invite_only=invite_only,
                 is_web_public=is_web_public,
                 stream_post_policy=stream_post_policy,
@@ -862,6 +863,7 @@ def stream_to_dict(
     return APIStreamDict(
         can_remove_subscribers_group=stream.can_remove_subscribers_group_id,
         date_created=datetime_to_timestamp(stream.date_created),
+        creator_id=stream.creator_id,
         description=stream.description,
         first_message_id=stream.first_message_id,
         history_public_to_subscribers=stream.history_public_to_subscribers,

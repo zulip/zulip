@@ -43,6 +43,7 @@ def get_web_public_subs(realm: Realm) -> SubscriptionInfo:
         # Add Stream fields.
         can_remove_subscribers_group_id = stream.can_remove_subscribers_group_id
         date_created = datetime_to_timestamp(stream.date_created)
+        creator_id = stream.creator_id
         description = stream.description
         first_message_id = stream.first_message_id
         history_public_to_subscribers = stream.history_public_to_subscribers
@@ -75,6 +76,7 @@ def get_web_public_subs(realm: Realm) -> SubscriptionInfo:
             can_remove_subscribers_group=can_remove_subscribers_group_id,
             color=color,
             date_created=date_created,
+            creator_id=creator_id,
             description=description,
             desktop_notifications=desktop_notifications,
             email_notifications=email_notifications,
@@ -111,6 +113,7 @@ def build_unsubscribed_sub_from_stream_dict(
     raw_stream_dict = RawStreamDict(
         can_remove_subscribers_group_id=stream_dict["can_remove_subscribers_group"],
         date_created=timestamp_to_datetime(stream_dict["date_created"]),
+        creator_id=stream_dict["creator_id"],
         description=stream_dict["description"],
         first_message_id=stream_dict["first_message_id"],
         history_public_to_subscribers=stream_dict["history_public_to_subscribers"],
@@ -142,6 +145,7 @@ def build_stream_dict_for_sub(
     # Handle Stream.API_FIELDS
     can_remove_subscribers_group_id = raw_stream_dict["can_remove_subscribers_group_id"]
     date_created = datetime_to_timestamp(raw_stream_dict["date_created"])
+    creator_id = raw_stream_dict["creator_id"]
     description = raw_stream_dict["description"]
     first_message_id = raw_stream_dict["first_message_id"]
     history_public_to_subscribers = raw_stream_dict["history_public_to_subscribers"]
@@ -186,6 +190,7 @@ def build_stream_dict_for_sub(
         can_remove_subscribers_group=can_remove_subscribers_group_id,
         color=color,
         date_created=date_created,
+        creator_id=creator_id,
         description=description,
         desktop_notifications=desktop_notifications,
         email_notifications=email_notifications,
@@ -214,6 +219,7 @@ def build_stream_dict_for_never_sub(
 ) -> NeverSubscribedStreamDict:
     can_remove_subscribers_group_id = raw_stream_dict["can_remove_subscribers_group_id"]
     date_created = datetime_to_timestamp(raw_stream_dict["date_created"])
+    creator_id = raw_stream_dict["creator_id"]
     description = raw_stream_dict["description"]
     first_message_id = raw_stream_dict["first_message_id"]
     history_public_to_subscribers = raw_stream_dict["history_public_to_subscribers"]
@@ -239,6 +245,7 @@ def build_stream_dict_for_never_sub(
     return NeverSubscribedStreamDict(
         can_remove_subscribers_group=can_remove_subscribers_group_id,
         date_created=date_created,
+        creator_id=creator_id,
         description=description,
         first_message_id=first_message_id,
         history_public_to_subscribers=history_public_to_subscribers,

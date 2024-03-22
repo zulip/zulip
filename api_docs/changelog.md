@@ -20,6 +20,14 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 9.0
 
+**Feature level 245**
+
+* [`POST /register`](/api/register-queue), [`GET /events`](/api/get-events),
+  [`GET /streams`](/api/get-streams),
+  [`GET /streams/{stream_id}`](/api/get-stream-by-id): Added a new
+  field `creator_id`, on stream objects, containing the user id of the stream
+  creator. This field will be null for streams that do not have a creator.
+
 **Feature level 244**
 
 * [`POST /register`](/api/register-queue), [`GET /events`](/api/get-events),
