@@ -193,8 +193,12 @@ export function initialize() {
             // Handle dynamic "starred messages" and "edit" widgets.
             const $elem = $(instance.reference);
             const tippy_content = $elem.attr("data-tippy-content");
-            const $template = $(`#${CSS.escape($elem.attr("data-tooltip-template-id"))}`);
-            instance.setContent(tippy_content ?? parse_html($template.html()));
+            if (tippy_content !== undefined) {
+                instance.setContent(tippy_content);
+            } else {
+                const $template = $(`#${CSS.escape($elem.attr("data-tooltip-template-id"))}`);
+                instance.setContent(parse_html($template.html()));
+            }
         },
         onHidden(instance) {
             instance.destroy();
