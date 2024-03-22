@@ -1,3 +1,5 @@
+# https://github.com/typeddjango/django-stubs/issues/1698
+# mypy: disable-error-code="explicit-override"
 from typing import Dict, Optional, Type, Union
 
 from django.contrib.sessions.backends.cached_db import SessionStore as CachedDbSessionStore
@@ -11,7 +13,7 @@ from zerver.models.users import UserProfile
 
 
 # custom session model
-class RealmSession(AbstractBaseSession):  # type: ignore[explicit-override] # some called functions by this class like get_next_by_expire_date override the parent functions, but since we don't explictly use or define them we cannot use @override
+class RealmSession(AbstractBaseSession):
     realm = models.ForeignKey(Realm, null=True, on_delete=models.CASCADE)
     user = models.ForeignKey(UserProfile, null=True, on_delete=models.CASCADE)
     ip_address = models.GenericIPAddressField(null=True)
