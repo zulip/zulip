@@ -1299,7 +1299,10 @@ def handle_push_notification(user_profile_id: int, missed_message: Dict[str, Any
     with transaction.atomic(savepoint=False):
         try:
             (message, user_message) = access_message(
-                user_profile, missed_message["message_id"], lock_message=True
+                user_profile,
+                missed_message["message_id"],
+                lock_message=True,
+                get_user_message="object",
             )
         except JsonableError:
             if ArchivedMessage.objects.filter(id=missed_message["message_id"]).exists():
