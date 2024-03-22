@@ -1,6 +1,6 @@
 import $ from "jquery";
 
-import render_search_list_item from "..templates/search_list_item.hbs";
+import render_search_list_item from "../templates/search_list_item.hbs";
 
 import * as bootstrap_typeahead from "./bootstrap_typeahead";
 import {Filter} from "./filter";
@@ -12,18 +12,15 @@ import * as search_suggestion from "./search_suggestion";
 // Exported for unit testing
 export let is_using_input_method = false;
 
-export function set_search_bar_text(text: string): void {
+export function set_search_bar_text(text) {
     $("#search_query").val(text);
 }
 
-function get_search_bar_text(): string {
-    return $("#search_query").val() as string;
+function get_search_bar_text() {
+    return $("#search_query").val();
 }
 
-function narrow_or_search_for_term(
-    search_string: string,
-    {on_narrow_search}: {on_narrow_search: Function},
-): string {
+function narrow_or_search_for_term(search_string, {on_narrow_search}) {
     if (search_string === "") {
         exit_search({keep_search_narrow_open: true});
         return "";
@@ -49,7 +46,7 @@ function narrow_or_search_for_term(
     return get_search_bar_text();
 }
 
-export function initialize({on_narrow_search}: {on_narrow_search: Function}): void {
+export function initialize({on_narrow_search}) {
     const $search_query_box = $("#search_query");
     const $searchbox_form = $("#searchbox_form");
 
@@ -58,10 +55,10 @@ export function initialize({on_narrow_search}: {on_narrow_search: Function}): vo
     // (It's a bit of legacy that we have an object with only one important
     // field.  There's also a "search_string" field on each element that actually
     // just represents the key of the hash, so it's redundant.)
-    let search_map = new Map<string, any>();
+    let search_map = new Map();
 
     bootstrap_typeahead.create($search_query_box, {
-        source(query: string): string[] {
+        source(query) {
             const suggestions = search_suggestion.get_suggestions(query);
             // Update our global search_map hash
             search_map = suggestions.lookup_table;
@@ -71,17 +68,17 @@ export function initialize({on_narrow_search}: {on_narrow_search: Function}): vo
         items: search_suggestion.max_num_of_search_results,
         helpOnEmptyStrings: true,
         naturalSearch: true,
-        highlighter_html(item: string): string {
+        highlighter_html(item) {
             const obj = search_map.get(item);
             return render_search_list_item(obj);
         },
-        matcher(): boolean {
+        matcher() {
             return true;
         },
-        updater(search_string: string): string {
+        updater(search_string) {
             return narrow_or_search_for_term(search_string, {on_narrow_search});
         },
-        sorter(items: string[]): string[] {
+        sorter(items) {
             return items;
         },
         advanceKeyCodes: [8],
@@ -179,14 +176,12 @@ export function initialize({on_narrow_search}: {on_narrow_search: Function}): vo
         if ($(e.relatedTarget).parents("#searchbox-input-container").length > 0) {
             return;
         }
-        // But otherwise, it should behave like the input blurring
+        // But otherwise, it should behave like the input blurring.
         $("#search_query").trigger("blur");
     });
-
     // This prevents a bug where tab shows a visual change before the blur handler kicks in
-    $("#search_exit").on("keydown", (e: JQuery.KeyDownEvent) => {
+    $("#search_exit").on("keydown", (e) => {
         if (e.key === "tab") {
-            // hide all popovers and exit search
             popovers.hide_all();
             exit_search({keep_search_narrow_open: false});
             e.preventDefault();
@@ -208,7 +203,7 @@ export function initiate_search() {
 // This is what the default searchbox text would be for this narrow,
 // NOT what might be currently displayed there. We can use this both
 // to set the initial text and to see if the user has changed it.
-function get_initial_search_string(): string {
+function get_initial_search_string() {
     let search_string = narrow_state.search_string();
     if (search_string !== "" && !narrow_state.filter()?.is_keyword_search()) {
         // saves the user a keystroke for quick searches
@@ -223,7 +218,7 @@ function reset_searchbox_text() {
     set_search_bar_text(get_initial_search_string());
 }
 
-function exit_search(opts: {keep_search_narrow_open: boolean}) {
+function exit_search(opts) {
     const filter = narrow_state.filter();
     if (!filter || filter.is_common_narrow()) {
         // for common narrows, we change the UI (and don't redirect)
