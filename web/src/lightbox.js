@@ -213,7 +213,7 @@ export function render_lightbox_media_list(preview_source) {
                 $video.attr("src", src);
                 $video.attr("controls", false);
 
-                $node.html($video);
+                $node.append($video);
             } else {
                 $node = $("<div>")
                     .addClass(className)
@@ -241,7 +241,8 @@ function display_image(payload) {
     const $img_container = $("#lightbox_overlay .image-preview > .zoom-element");
     const img = new Image();
     img.src = payload.source;
-    $img_container.html(img).show();
+    $img_container.empty();
+    $img_container.append(img).show();
 
     const filename = payload.url?.split("/").pop();
     $(".media-description .title")
@@ -282,7 +283,8 @@ function display_video(payload) {
         const $video = $("<video>");
         $video.attr("src", payload.source);
         $video.attr("controls", true);
-        $(".video-player").html($video);
+        $(".video-player").empty();
+        $(".video-player").append($video);
         $(".media-actions .open").attr("href", payload.source);
 
         const filename = payload.url?.split("/").pop();
@@ -322,7 +324,8 @@ function display_video(payload) {
     $iframe.attr("frameborder", 0);
     $iframe.attr("allowfullscreen", true);
 
-    $("#lightbox_overlay .player-container").html($iframe);
+    $("#lightbox_overlay .player-container").empty();
+    $("#lightbox_overlay .player-container").append($iframe);
     $(".media-actions .open").attr("href", payload.url);
 }
 
