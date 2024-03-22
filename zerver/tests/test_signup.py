@@ -29,7 +29,7 @@ from zerver.actions.realm_settings import (
 )
 from zerver.actions.users import change_user_is_active, do_change_user_role, do_deactivate_user
 from zerver.decorator import do_two_factor_login
-from zerver.forms import HomepageForm, check_subdomain_available
+from zerver.forms import HomepageForm, RegistrationForm, check_subdomain_available
 from zerver.lib.default_streams import get_default_streams_for_realm_as_dicts
 from zerver.lib.email_notifications import enqueue_welcome_emails
 from zerver.lib.i18n import get_default_language_for_new_user
@@ -409,6 +409,19 @@ class PasswordResetTest(ZulipTestCase):
                 final_reset_url, {"new_password1": "easy", "new_password2": "easy"}
             )
             self.assert_in_response("The password is too weak.", result)
+
+            # Verify passwords longer than max length don't work.
+            too_long_password_len = RegistrationForm.MAX_PASSWORD_LENGTH + 1
+            too_long_password = "a" * too_long_password_len
+
+            result = self.client_post(
+                final_reset_url,
+                {"new_password1": too_long_password, "new_password2": too_long_password},
+            )
+            self.assert_in_response(
+                f"Ensure this value has at most {RegistrationForm.MAX_PASSWORD_LENGTH} characters",
+                result,
+            )
 
             result = self.client_post(
                 final_reset_url, {"new_password1": "f657gdGGk9", "new_password2": "f657gdGGk9"}
@@ -2519,6 +2532,25 @@ class UserSignUpTest(ZulipTestCase):
             # _WSGIPatchedWSGIResponse does not exist in Django, thus the inverted isinstance check.
             assert not isinstance(result, UserProfile)
             self.assert_in_success_response(["The password is too weak."], result)
+            with self.assertRaises(UserProfile.DoesNotExist):
+                # Account wasn't created.
+                get_user(email, get_realm("zulip"))
+
+    def test_signup_with_too_long_password(self) -> None:
+        """
+        Check if signing up with a password that exceeds the maximum length fails.
+        """
+        email = "newguy@zulip.com"
+        too_long_password_len = RegistrationForm.MAX_PASSWORD_LENGTH + 1
+        too_long_password = "a" * too_long_password_len
+
+        with self.settings(PASSWORD_MIN_GUESSES=1000):
+            result = self.verify_signup(email=email, password=too_long_password)
+            assert not isinstance(result, UserProfile)
+            self.assert_in_success_response(
+                [f"The password cannot exceed {RegistrationForm.MAX_PASSWORD_LENGTH} characters in length."],
+                result,
+            )
             with self.assertRaises(UserProfile.DoesNotExist):
                 # Account wasn't created.
                 get_user(email, get_realm("zulip"))
