@@ -14,6 +14,7 @@ const max_topics = 8;
 const max_topics_with_unread = 12;
 
 export type TopicInfo = {
+    stream_id: number;
     topic_name: string;
     topic_resolved_prefix: string;
     topic_display_name: string;
@@ -123,6 +124,7 @@ function choose_topics(
         }
 
         const topic_info: TopicInfo = {
+            stream_id,
             topic_name,
             topic_resolved_prefix,
             topic_display_name,

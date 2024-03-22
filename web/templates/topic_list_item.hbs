@@ -6,13 +6,13 @@
         <a href="{{url}}" class="topic-name" title="{{topic_name}}">
             {{topic_display_name}}
         </a>
-        <div class="topic-markers-and-controls">
+        <div class="topic-markers-and-controls change_visibility_policy" data-stream-id="{{stream_id}}" data-topic-name="{{topic_name}}">
             {{#if contains_unread_mention}}
                 <span class="unread_mention_info">
                     @
                 </span>
             {{else if is_followed}}
-                <i class="zulip-icon zulip-icon-follow" aria-hidden="true"></i>
+                <i class="zulip-icon zulip-icon-follow no-tooltip" role="button" aria-hidden="true"></i>
             {{/if}}
             <span class="unread_count {{#if is_zero}}zero_count{{/if}}">
                 {{unread}}

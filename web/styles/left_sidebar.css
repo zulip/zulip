@@ -457,6 +457,11 @@ ul.filters {
 
     .zulip-icon-follow {
         opacity: 0.6;
+
+        &:hover {
+            opacity: 1;
+            color: var(--color-left-sidebar-follow-icon-hover);
+        }
     }
 
     & li.muted_topic,
