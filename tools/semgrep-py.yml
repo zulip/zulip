@@ -45,8 +45,8 @@ rules:
 
   - id: dont-use-empty-select_related
     pattern-either:
-      - pattern: $X.objects. ... .select_related()
-      - pattern: $X.objects. ... .prefetch_related()
+      - pattern: $X.select_related()
+      - pattern: $X.prefetch_related()
     message: |
       Do not use a bare '.select_related()' or '.prefetch_related()', which can join many more tables than expected.  Specify the relations to follow explicitly.
     languages: [python]
