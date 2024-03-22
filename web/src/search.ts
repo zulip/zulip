@@ -88,7 +88,9 @@ export function initialize({on_narrow_search}: {on_narrow_search: Function}): vo
 
         // Use our custom typeahead `on_escape` hook to exit
         // the search bar as soon as the user hits Esc.
-        on_escape: () => exit_search({keep_search_narrow_open: false}),
+        on_escape() {
+            exit_search({keep_search_narrow_open: false});
+        },
         tabIsEnter: false,
         openInputFieldOnKeyUp() {
             if ($(".navbar-search.expanded").length === 0) {
