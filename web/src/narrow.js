@@ -326,7 +326,7 @@ export function activate(raw_terms, opts) {
                         // message locally available and then call
                         // narrow.activate recursively, setting a flag to
                         // indicate we've already done this.
-                        message_helper.process_new_message(data.message);
+                        data.message = message_helper.process_new_message(data.message);
                         activate(raw_terms, {
                             ...opts,
                             fetched_target_message: true,

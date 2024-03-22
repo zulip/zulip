@@ -20,7 +20,7 @@ export type DisplayRecipientUser = {
     unknown_local_echo_user?: boolean;
 };
 
-export type DisplayRecipient = string | DisplayRecipientUser[];
+export type DisplayRecipient = DisplayRecipientUser[];
 
 export type MessageEditHistoryEntry = {
     user_id: number | null;
@@ -139,7 +139,6 @@ export type Message = (
               type: "stream";
               is_private: false;
               is_stream: true;
-              stream: string;
               topic: string;
           }
     );
@@ -163,7 +162,7 @@ export function get(message_id: number): Message | undefined {
     return stored_messages.get(message_id);
 }
 
-export function get_pm_emails(message: Message): string {
+export function get_pm_emails(message: RawMessage): string {
     const user_ids = people.pm_with_user_ids(message) ?? [];
     const emails = user_ids
         .map((user_id) => {
@@ -179,37 +178,41 @@ export function get_pm_emails(message: Message): string {
     return emails.join(", ");
 }
 
-export function get_pm_full_names(message: Message): string {
+export function get_pm_full_names(message: Message | RawMessage): string {
     const user_ids = people.pm_with_user_ids(message) ?? [];
     const names = people.get_display_full_names(user_ids).sort();
 
     return names.join(", ");
 }
 
-export function set_message_booleans(message: Message): void {
-    const flags = message.flags ?? [];
+export function set_message_booleans(message: RawMessage): MessageWithBooleans {
+    const {flags, ...rest} = message;
 
     function convert_flag(flag_name: string): boolean {
         return flags.includes(flag_name);
     }
 
-    message.unread = !convert_flag("read");
-    message.historical = convert_flag("historical");
-    message.starred = convert_flag("starred");
-    message.mentioned =
-        convert_flag("mentioned") ||
-        convert_flag("stream_wildcard_mentioned") ||
-        convert_flag("topic_wildcard_mentioned");
-    message.mentioned_me_directly = convert_flag("mentioned");
-    message.stream_wildcard_mentioned = convert_flag("stream_wildcard_mentioned");
-    message.topic_wildcard_mentioned = convert_flag("topic_wildcard_mentioned");
-    message.collapsed = convert_flag("collapsed");
-    message.alerted = convert_flag("has_alert_word");
+    const message_with_booleans: MessageWithBooleans = {
+        ...rest,
+        unread: !convert_flag("read"),
+        historical: convert_flag("historical"),
+        starred: convert_flag("starred"),
+        mentioned:
+            convert_flag("mentioned") ||
+            convert_flag("stream_wildcard_mentioned") ||
+            convert_flag("topic_wildcard_mentioned"),
+        mentioned_me_directly: convert_flag("mentioned"),
+        stream_wildcard_mentioned: convert_flag("stream_wildcard_mentioned"),
+        topic_wildcard_mentioned: convert_flag("topic_wildcard_mentioned"),
+        collapsed: convert_flag("collapsed"),
+        alerted: convert_flag("has_alert_word"),
+    };
+
+    return message_with_booleans;
 
     // Once we have set boolean flags here, the `flags` attribute is
     // just a distraction, so we delete it.  (All the downstream code
     // uses booleans.)
-    delete message.flags;
 }
 
 export function update_booleans(message: Message, flags: string[]): void {

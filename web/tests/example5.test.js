@@ -53,7 +53,7 @@ const isaac = {
     full_name: "Isaac Newton",
 };
 people.add_active_user(isaac);
-
+people.initialize_current_user(isaac.user_id);
 /*
    Next we create a test_helper that will allow us to redirect methods to an
    events array, and we can then later verify that the sequence of side effect
@@ -92,7 +92,22 @@ run_test("insert_message", ({override}) => {
         sender_id: isaac.user_id,
         id: 1001,
         content: "example content",
-        topic: "Foo",
+        subject: "Foo",
+        type: "stream",
+        flags: [],
+        avatar_url: null,
+        client: "",
+        content_type: "text/html",
+        display_recipient: [],
+        edit_history: [],
+        is_me_message: false,
+        reactions: [],
+        recipient_id: 31,
+        sender_email: isaac.email,
+        sender_full_name: isaac.full_name,
+        sender_realm_str: "zulip",
+        submessages: [],
+        timestamp: 0,
     };
 
     assert.equal(message_store.get(new_message.id), undefined);

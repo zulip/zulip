@@ -6,7 +6,7 @@ import * as typeahead from "../shared/src/typeahead";
 import * as blueslip from "./blueslip";
 import {FoldDict} from "./fold_dict";
 import {$t} from "./i18n";
-import type {DisplayRecipientUser, Message, MessageWithBooleans} from "./message_store";
+import type {DisplayRecipientUser, Message, MessageWithBooleans, RawMessage} from "./message_store";
 import * as message_user_ids from "./message_user_ids";
 import * as muted_users from "./muted_users";
 import {page_params} from "./page_params";
@@ -583,7 +583,7 @@ export function all_user_ids_in_pm(message: Message): number[] | undefined {
 }
 
 export function pm_with_user_ids(
-    message: Message & {reply_to?: string; url?: string},
+    message: (RawMessage | Message) & {reply_to?: string; url?: string},
 ): number[] | undefined {
     if (message.type !== "private") {
         return undefined;
@@ -624,7 +624,7 @@ export function pm_perma_link(message: Message): string | undefined {
     return url;
 }
 
-export function pm_with_url(message: Message): string | undefined {
+export function pm_with_url(message: RawMessage): string | undefined {
     const user_ids = pm_with_user_ids(message);
 
     if (!user_ids) {

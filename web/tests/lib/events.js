@@ -18,6 +18,25 @@ exports.test_user = test_user;
 exports.test_message = {
     sender_id: test_user.user_id,
     id: 99,
+    stream_id: 101,
+    type: "stream",
+    flags: [],
+    topic: "copenhagen",
+    subject: "copenhagen",
+    avatar_url: null,
+    client: "",
+    content: "",
+    content_type: "text/html",
+    display_recipient: [],
+    edit_history: [],
+    is_me_message: false,
+    reactions: [],
+    recipient_id: 101,
+    sender_email: test_user.email,
+    sender_full_name: test_user.full_name,
+    sender_realm_str: "zulip",
+    submessages: [],
+    timestamp: 0,
 };
 
 const typing_person1 = {

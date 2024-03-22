@@ -57,17 +57,17 @@ function test_helper(side_effects) {
 }
 
 run_test("update_messages", () => {
-    const original_message = {
+    let original_message = {
         id: 111,
         display_recipient: denmark.name,
         flags: ["mentioned"],
         sender_id: alice.user_id,
         stream_id: denmark.stream_id,
-        topic: "lunch",
+        subject: "lunch",
         type: "stream",
     };
 
-    message_helper.process_new_message(original_message);
+    original_message = message_helper.process_new_message(original_message);
 
     assert.equal(original_message.mentioned, true);
     assert.equal(original_message.unread, true);
@@ -129,25 +129,29 @@ run_test("update_messages", () => {
             display_recipient: denmark.name,
             historical: false,
             id: 111,
+            is_private: false,
             is_stream: true,
             last_edit_timestamp: undefined,
             mentioned: false,
-            stream_wildcard_mentioned: false,
-            topic_wildcard_mentioned: false,
             mentioned_me_directly: false,
             message_reactions: [],
             raw_content: "**new content**",
-            reply_to: alice.email,
-            sender_email: alice.email,
-            sender_full_name: alice.full_name,
+            reply_to: undefined,
+            sender_email: "alice@example.com",
+            sender_full_name: "Alice Patel",
             sender_id: 32,
             sent_by_me: false,
             starred: false,
-            status_emoji_info: undefined,
-            stream_id: denmark.stream_id,
+            starred_status: "",
+            stream_id: 101,
+            stream_wildcard_mentioned: false,
+            subject: "lunch",
             topic: "lunch",
+            topic_links: [],
+            topic_wildcard_mentioned: false,
             type: "stream",
             unread: true,
+            url: "",
         },
     ]);
 });

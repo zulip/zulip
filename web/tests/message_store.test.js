@@ -103,8 +103,20 @@ test("process_new_message", () => {
         flags: ["has_alert_word"],
         is_me_message: false,
         id: 2067,
+        avatar_url: null,
+        client: "",
+        content: "",
+        content_type: "text/html",
+        edit_history: [],
+        reactions: [],
+        recipient_id: 31,
+        sender_full_name: "me",
+        sender_realm_str: "zulip",
+        submessages: [],
+        timestamp: 0,
     };
-    message_helper.process_new_message(message);
+
+    message = message_helper.process_new_message(message);
 
     assert.deepEqual(message_user_ids.user_ids().sort(), [me.user_id, bob.user_id, cindy.user_id]);
 
@@ -123,6 +135,21 @@ test("process_new_message", () => {
         id: 2067,
         match_subject: "topic foo",
         match_content: "bar content",
+        type: "stream",
+        flags: [],
+        avatar_url: null,
+        client: "",
+        content_type: "text/html",
+        display_recipient: [],
+        edit_history: [],
+        is_me_message: false,
+        reactions: [],
+        recipient_id: 31,
+        sender_email: "me@example.com",
+        sender_id: me.user_id,
+        sender_realm_str: "zulip",
+        submessages: [],
+        timestamp: 0,
     };
     message = message_helper.process_new_message(message);
 
@@ -140,9 +167,17 @@ test("process_new_message", () => {
         topic: "cool thing",
         subject: "the_subject",
         id: 2068,
+        flags: [],
+        is_me_message: false,
+        reactions: [],
+        recipient_id: 0,
+        sender_full_name: denise.full_name,
+        sender_realm_str: "zulip",
+        submessages: [],
+        timestamp: Date.now(),
     };
 
-    message_helper.process_new_message(message);
+    message = message_helper.process_new_message(message);
     assert.equal(message.reply_to, "denise@example.com");
     assert.deepEqual(message.flags, undefined);
     assert.equal(message.alerted, false);
@@ -160,9 +195,9 @@ test("message_booleans_parity", () => {
     // This test asserts that both have identical behavior for the
     // flags common between them.
     const assert_bool_match = (flags, expected_message) => {
-        const set_message = {topic: "set_message_booleans", flags};
+        let set_message = {topic: "set_message_booleans", flags};
         const update_message = {topic: "update_booleans"};
-        message_store.set_message_booleans(set_message);
+        set_message = message_store.set_message_booleans(set_message);
         message_store.update_booleans(update_message, flags);
         for (const key of Object.keys(expected_message)) {
             assert.equal(
@@ -308,7 +343,7 @@ test("update_booleans", () => {
 });
 
 test("update_property", () => {
-    const message1 = {
+    let message1 = {
         type: "stream",
         sender_full_name: alice.full_name,
         sender_id: alice.user_id,
@@ -316,8 +351,19 @@ test("update_property", () => {
         stream_id: devel.stream_id,
         display_recipient: devel.name,
         id: 100,
+        flags: [],
+        avatar_url: null,
+        client: "",
+        content: "",
+        content_type: "text/html",
+        edit_history: [],
+        reactions: [],
+        recipient_id: 31,
+        sender_realm_str: "zulip",
+        submessages: [],
+        timestamp: 0,
     };
-    const message2 = {
+    let message2 = {
         type: "stream",
         sender_full_name: bob.full_name,
         sender_id: bob.user_id,
@@ -325,10 +371,22 @@ test("update_property", () => {
         stream_id: denmark.stream_id,
         display_recipient: denmark.name,
         id: 101,
+        flags: [],
+        avatar_url: null,
+        client: "",
+        content_type: "text/html",
+        edit_history: [],
+        is_me_message: false,
+        reactions: [],
+        recipient_id: 31,
+        sender_email: "me@example.com",
+        sender_realm_str: "zulip",
+        submessages: [],
+        timestamp: 0,
     };
-    for (const message of [message1, message2]) {
-        message_helper.process_new_message(message);
-    }
+
+    message1 = message_helper.process_new_message(message1);
+    message2 = message_helper.process_new_message(message2);
 
     assert.equal(message1.sender_full_name, alice.full_name);
     assert.equal(message2.sender_full_name, bob.full_name);

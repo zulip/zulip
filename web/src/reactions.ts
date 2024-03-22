@@ -480,7 +480,7 @@ export function set_clean_reactions(message: Message): void {
       be displayed visually to users.
     */
 
-    if (message.clean_reactions) {
+    if (!message.reactions) {
         // Update display details for the reaction. In particular,
         // user_settings.display_emoji_reaction_users or the names of
         // the users appearing in the reaction may have changed since
@@ -496,7 +496,6 @@ export function set_clean_reactions(message: Message): void {
     // This first loop creates a temporary distinct_reactions data
     // structure, which will accumulate the set of users who have
     // reacted with each distinct reaction.
-    assert(message.reactions !== undefined);
     const distinct_reactions = new Map<string, RawReaction>();
     const user_map = new Map<string, number[]>();
     for (const reaction of message.reactions) {

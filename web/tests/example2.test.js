@@ -28,6 +28,12 @@ const isaac = {
     full_name: "Isaac Newton",
 };
 
+const thomas = {
+    email: "thomas@example.com",
+    user_id: 31,
+    full_name: "Thomas Edison",
+};
+
 const denmark_stream = {
     color: "blue",
     name: "Denmark",
@@ -42,15 +48,35 @@ const messages = {
         stream_id: denmark_stream.stream_id,
         type: "stream",
         flags: ["has_alert_word"],
-        topic: "copenhagen",
-        // note we don't have every field that a "real" message
-        // would have, and that can be fine
+        subject: "copenhagen",
+        avatar_url: null,
+        client: "",
+        content: "",
+        content_type: "text/html",
+        display_recipient: [
+            {
+                email: thomas.email,
+                full_name: thomas.full_name,
+                id: thomas.user_id,
+                is_mirror_dummy: false,
+            },
+        ],
+        edit_history: [],
+        is_me_message: false,
+        reactions: [],
+        recipient_id: 31,
+        sender_email: isaac.email,
+        sender_full_name: isaac.full_name,
+        sender_realm_str: "zulip",
+        submessages: [],
+        timestamp: 0,
     },
 };
 
 // We aren't going to modify isaac in our tests, so we will
 // create him at the top.
 people.add_active_user(isaac);
+people.initialize_current_user(isaac.user_id);
 
 // We are going to test a core module called messages_store.js next.
 // This is an example of a deep unit test, where our dependencies
@@ -61,14 +87,14 @@ run_test("message_store", () => {
     stream_data.clear_subscriptions();
     stream_data.add_sub(denmark_stream);
 
-    const in_message = {...messages.isaac_to_denmark_stream};
+    let in_message = {...messages.isaac_to_denmark_stream};
 
     assert.equal(in_message.alerted, undefined);
 
     // Let's add a message into our message_store via
     // message_helper.process_new_message.
     assert.equal(message_store.get(in_message.id), undefined);
-    message_helper.process_new_message(in_message);
+    in_message = message_helper.process_new_message(in_message);
     const message = message_store.get(in_message.id);
     assert.equal(in_message.alerted, true);
     assert.equal(message, in_message);
@@ -91,9 +117,10 @@ run_test("unread", () => {
 
     assert.equal(unread.num_unread_for_topic(stream_id, topic_name), 0);
 
-    const in_message = {...messages.isaac_to_denmark_stream};
+    let in_message = {...messages.isaac_to_denmark_stream};
     message_store.set_message_booleans(in_message);
 
+    in_message = message_helper.process_new_message(in_message);
     unread.process_loaded_messages([in_message]);
     assert.equal(unread.num_unread_for_topic(stream_id, topic_name), 1);
 });
