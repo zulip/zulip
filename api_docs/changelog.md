@@ -20,6 +20,15 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 9.0
 
+**Feature level 254**
+
+* [`POST /register`](/api/register-queue), [`GET /events`](/api/get-events),
+  [`GET /streams`](/api/get-streams),
+  [`GET /streams/{stream_id}`](/api/get-stream-by-id),
+  [`GET /users/me/subscriptions`](/api/get-subscriptions): Added a new
+  field `creator_id`, on stream and subscription objects, containing the
+  user id of the stream creator.
+
 **Feature level 253**
 
 * [`PATCH /realm/user_settings_defaults`](/api/update-realm-user-settings-defaults),

@@ -680,6 +680,7 @@ paths:
                                       {
                                         "name": "test_stream",
                                         "stream_id": 9,
+                                        "creator_id": null,
                                         "description": "",
                                         "rendered_description": "",
                                         "invite_only": false,
@@ -1325,6 +1326,7 @@ paths:
                                         "description": "",
                                         "rendered_description": "",
                                         "date_created": 1691057093,
+                                        "creator_id": 11,
                                         "invite_only": true,
                                         "is_web_public": false,
                                         "stream_post_policy": 1,
@@ -1382,6 +1384,7 @@ paths:
                                         "description": "",
                                         "rendered_description": "",
                                         "date_created": 1691057093,
+                                        "creator_id": 11,
                                         "invite_only": true,
                                         "is_web_public": false,
                                         "stream_post_policy": 1,
@@ -1958,6 +1961,7 @@ paths:
                                               "description": "Located in the United Kingdom",
                                               "rendered_description": "<p>Located in the United Kingdom</p>",
                                               "date_created": 1691057093,
+                                              "creator_id": 8,
                                               "invite_only": false,
                                               "is_web_public": false,
                                               "stream_post_policy": 1,
@@ -1973,6 +1977,7 @@ paths:
                                               "description": "A Scandinavian country",
                                               "rendered_description": "<p>A Scandinavian country</p>",
                                               "date_created": 1691057093,
+                                              "creator_id": null,
                                               "invite_only": false,
                                               "is_web_public": false,
                                               "stream_post_policy": 1,
@@ -1988,6 +1993,7 @@ paths:
                                               "description": "A city in Italy",
                                               "rendered_description": "<p>A city in Italy</p>",
                                               "date_created": 1691057093,
+                                              "creator_id": 9,
                                               "invite_only": false,
                                               "is_web_public": false,
                                               "stream_post_policy": 1,
@@ -2034,6 +2040,7 @@ paths:
                                         "description": "Located in the United Kingdom",
                                         "rendered_description": "<p>Located in the United Kingdom</p>",
                                         "date_created": 1691057093,
+                                        "creator_id": 8,
                                         "invite_only": false,
                                         "is_web_public": false,
                                         "stream_post_policy": 1,
@@ -9186,6 +9193,7 @@ paths:
                             {
                               "audible_notifications": true,
                               "color": "#e79ab5",
+                              "creator_id": null,
                               "description": "A Scandinavian country",
                               "desktop_notifications": true,
                               "is_muted": false,
@@ -9199,6 +9207,7 @@ paths:
                             {
                               "audible_notifications": true,
                               "color": "#e79ab5",
+                              "creator_id": 8,
                               "description": "Located in the United Kingdom",
                               "desktop_notifications": true,
                               "is_muted": false,
@@ -13075,6 +13084,8 @@ paths:
                                 name: {}
                                 description: {}
                                 date_created: {}
+                                creator_id:
+                                  nullable: true
                                 invite_only: {}
                                 rendered_description: {}
                                 is_web_public: {}
@@ -17636,6 +17647,8 @@ paths:
                                 name: {}
                                 description: {}
                                 date_created: {}
+                                creator_id:
+                                  nullable: true
                                 invite_only: {}
                                 rendered_description: {}
                                 is_web_public: {}
@@ -17677,6 +17690,7 @@ paths:
                                 - name
                                 - description
                                 - date_created
+                                - creator_id
                                 - invite_only
                                 - rendered_description
                                 - is_web_public
@@ -17695,6 +17709,7 @@ paths:
                           [
                             {
                               "can_remove_subscribers_group": 10,
+                              "creator_id": null,
                               "date_created": 1691057093,
                               "description": "A private stream",
                               "first_message_id": 18,
@@ -17712,6 +17727,7 @@ paths:
                             },
                             {
                               "can_remove_subscribers_group": 9,
+                              "creator_id": 12,
                               "date_created": 1691057093,
                               "description": "A default public stream",
                               "first_message_id": 21,
@@ -17782,6 +17798,7 @@ paths:
                             "first_message_id": 1,
                             "history_public_to_subscribers": true,
                             "date_created": 1691057093,
+                            "creator_id": null,
                             "invite_only": false,
                             "is_announcement_only": false,
                             "is_web_public": false,
@@ -19106,6 +19123,8 @@ components:
             name: {}
             description: {}
             date_created: {}
+            creator_id:
+              nullable: true
             invite_only: {}
             rendered_description: {}
             is_web_public: {}
@@ -19137,6 +19156,7 @@ components:
             - name
             - description
             - date_created
+            - creator_id
             - invite_only
             - rendered_description
             - is_web_public
@@ -19156,6 +19176,8 @@ components:
             name: {}
             description: {}
             date_created: {}
+            creator_id:
+              nullable: true
             invite_only: {}
             rendered_description: {}
             is_web_public: {}
@@ -19172,6 +19194,7 @@ components:
             - name
             - description
             - date_created
+            - creator_id
             - invite_only
             - rendered_description
             - is_web_public
@@ -19206,6 +19229,19 @@ components:
             The UNIX timestamp for when the stream was created, in UTC seconds.
 
             **Changes**: New in Zulip 4.0 (feature level 30).
+        creator_id:
+          type: integer
+          nullable: true
+          description: |
+            The ID of the user who created this stream.
+
+            Is `null` for streams with no recorded creator, often because they are very
+            old, or were created via a data import tool or [management
+            command][management-commands].
+
+            **Changes**: New in Zulip 9.0 (feature level 254).
+
+            [management-commands]: https://zulip.readthedocs.io/en/latest/production/management-commands.html
         invite_only:
           type: boolean
           description: |
@@ -19932,6 +19968,19 @@ components:
             The UNIX timestamp for when the stream was created, in UTC seconds.
 
             **Changes**: New in Zulip 4.0 (feature level 30).
+        creator_id:
+          type: integer
+          nullable: true
+          description: |
+            The ID of the user who created this stream.
+
+            Is `null` for streams with no recorded creator, often because they are very
+            old, or were created via a data import tool or [management
+            command][management-commands].
+
+            **Changes**: New in Zulip 9.0 (feature level 254).
+
+            [management-commands]: https://zulip.readthedocs.io/en/latest/production/management-commands.html
         invite_only:
           type: boolean
           description: |
