@@ -478,14 +478,18 @@ class TestCreateStreams(ZulipTestCase):
         final_message_count = Message.objects.count()
         final_usermessage_count = UserMessage.objects.count()
 
+        stream_id = orjson.loads(response.content)["subscribed"]["cordelia@zulip.com"][0][
+            "stream_id"
+        ]
+
         expected_response = {
             "result": "success",
             "msg": "",
             "subscribed": {
-                "AARON@zulip.com": ["brand new stream"],
-                "cordelia@zulip.com": ["brand new stream"],
-                "hamlet@zulip.com": ["brand new stream"],
-                "iago@zulip.com": ["brand new stream"],
+                "AARON@zulip.com": [{"stream_id": stream_id, "name": "brand new stream"}],
+                "cordelia@zulip.com": [{"stream_id": stream_id, "name": "brand new stream"}],
+                "hamlet@zulip.com": [{"stream_id": stream_id, "name": "brand new stream"}],
+                "iago@zulip.com": [{"stream_id": stream_id, "name": "brand new stream"}],
             },
             "already_subscribed": {},
         }
@@ -4093,7 +4097,9 @@ class SubscriptionAPITest(ZulipTestCase):
             self.test_user, subscriptions, other_params, invite_only=invite_only
         )
         json = self.assert_json_success(result)
-        self.assertEqual(sorted(subscribed), sorted(json["subscribed"][email]))
+        self.assertEqual(
+            sorted(subscribed), sorted([obj["name"] for obj in json["subscribed"][email]])
+        )
         self.assertEqual(sorted(already_subscribed), sorted(json["already_subscribed"][email]))
         user = get_user(email, realm)
         new_streams = self.get_streams(user)
@@ -4745,7 +4751,9 @@ class SubscriptionAPITest(ZulipTestCase):
         do_change_stream_post_policy(stream, Stream.STREAM_POST_POLICY_ADMINS, acting_user=member)
         result = self.common_subscribe_to_streams(member, ["stream1"])
         json = self.assert_json_success(result)
-        self.assertEqual(json["subscribed"], {member.email: ["stream1"]})
+        self.assertEqual(
+            json["subscribed"], {member.email: [{"stream_id": stream.id, "name": "stream1"}]}
+        )
         self.assertEqual(json["already_subscribed"], {})
 
     def test_subscribe_to_stream_post_policy_restrict_new_members_stream(self) -> None:
@@ -4765,7 +4773,9 @@ class SubscriptionAPITest(ZulipTestCase):
         )
         result = self.common_subscribe_to_streams(new_member, ["stream1"])
         json = self.assert_json_success(result)
-        self.assertEqual(json["subscribed"], {new_member.email: ["stream1"]})
+        self.assertEqual(
+            json["subscribed"], {new_member.email: [{"stream_id": stream.id, "name": "stream1"}]}
+        )
         self.assertEqual(json["already_subscribed"], {})
 
     def test_subscribe_to_stream_post_policy_moderators_stream(self) -> None:
@@ -4782,7 +4792,9 @@ class SubscriptionAPITest(ZulipTestCase):
         )
         result = self.common_subscribe_to_streams(member, ["stream1"])
         json = self.assert_json_success(result)
-        self.assertEqual(json["subscribed"], {member.email: ["stream1"]})
+        self.assertEqual(
+            json["subscribed"], {member.email: [{"stream_id": stream.id, "name": "stream1"}]}
+        )
         self.assertEqual(json["already_subscribed"], {})
 
     def test_guest_user_subscribe(self) -> None:
@@ -5858,7 +5870,11 @@ class InviteOnlyStreamTest(ZulipTestCase):
         result = self.common_subscribe_to_streams(hamlet, [stream_name], invite_only=True)
 
         json = self.assert_json_success(result)
-        self.assertEqual(json["subscribed"], {hamlet.email: [stream_name]})
+
+        new_stream_id = json["subscribed"][hamlet.email][0]["stream_id"]
+        self.assertEqual(
+            json["subscribed"], {hamlet.email: [{"stream_id": new_stream_id, "name": stream_name}]}
+        )
         self.assertEqual(json["already_subscribed"], {})
 
         # Subscribing oneself to an invite-only stream is not allowed
@@ -5886,7 +5902,10 @@ class InviteOnlyStreamTest(ZulipTestCase):
             extra_post_data={"principals": orjson.dumps([othello.id]).decode()},
         )
         json = self.assert_json_success(result)
-        self.assertEqual(json["subscribed"], {othello.email: [stream_name]})
+        new_stream_id = json["subscribed"][othello.email][0]["stream_id"]
+        self.assertEqual(
+            json["subscribed"], {othello.email: [{"stream_id": new_stream_id, "name": stream_name}]}
+        )
         self.assertEqual(json["already_subscribed"], {})
 
         # Make sure both users are subscribed to this stream

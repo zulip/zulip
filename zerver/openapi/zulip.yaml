@@ -9353,15 +9353,23 @@ paths:
                         type: object
                         description: |
                           A dictionary where the key is the Zulip API email address of the user/bot
-                          and the value is a list of the names of the streams that were subscribed
-                          to as a result of the query.
+                          and the value is a list of objects, each containing the `stream_id` and `name`
+                          of the streams that were subscribed to as a result of the query.
                         additionalProperties:
                           description: |
-                            `{email_address}`: List of the names of the streams that were subscribed
-                            to as a result of the query.
+                            An array of the streams that
+                            the user was subscribed to as a result of the query.
                           type: array
                           items:
-                            type: string
+                            type: object
+                            properties:
+                              stream_id:
+                                type: integer
+                                description: The ID of the subscribed stream.
+                              name:
+                                type: string
+                                description: The name of the subscribed stream.
+                            additionalProperties: false
                       already_subscribed:
                         type: object
                         description: |
@@ -9388,7 +9396,11 @@ paths:
                           {"iago@zulip.com": ["new stream"]},
                         "msg": "",
                         "result": "success",
-                        "subscribed": {"newbie@zulip.com": ["new stream"]},
+                        "subscribed":
+                          {
+                            "newbie@zulip.com":
+                              [{"stream_id": 1, "name": "Verona"}],
+                          },
                       }
         "400":
           description: Bad request.
@@ -9482,11 +9494,19 @@ paths:
                           subscribed to as a result of the query.
                         additionalProperties:
                           description: |
-                            `{email_id}`: A list of the names of streams that
+                            An array of the streams that
                             the user was subscribed to as a result of the query.
                           type: array
                           items:
-                            type: string
+                            type: object
+                            properties:
+                              stream_id:
+                                type: integer
+                                description: The ID of the subscribed stream.
+                              name:
+                                type: string
+                                description: The name of the subscribed stream.
+                            additionalProperties: false
                       already_subscribed:
                         type: object
                         description: |
