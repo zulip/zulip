@@ -1366,7 +1366,9 @@ def handle_push_notification(user_profile_id: int, missed_message: Dict[str, Any
     mentioned_user_group_id = missed_message.get("mentioned_user_group_id")
 
     if mentioned_user_group_id is not None:
-        user_group = UserGroup.objects.get(id=mentioned_user_group_id, realm=user_profile.realm)
+        user_group = UserGroup.objects.get(
+            id=mentioned_user_group_id, realm_id=user_profile.realm_id
+        )
         mentioned_user_group_name = user_group.name
 
     # Soft reactivate if pushing to a long_term_idle user that is personally mentioned
