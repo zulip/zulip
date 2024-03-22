@@ -1048,6 +1048,7 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
         # Stream objects are created by Django.
         fix_datetime_fields(data, "zerver_stream")
         re_map_foreign_keys(data, "zerver_stream", "realm", related_table="realm")
+        re_map_foreign_keys(data, "zerver_stream", "creator", related_table="user_profile")
         if role_system_groups_dict is not None:
             # Because the system user groups are missing, we manually set up
             # the defaults for can_remove_subscribers_group for all the
