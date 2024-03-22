@@ -5,6 +5,7 @@ from typing import (
     Collection,
     Dict,
     List,
+    Literal,
     Mapping,
     Optional,
     Sequence,
@@ -12,6 +13,7 @@ from typing import (
     Tuple,
     TypedDict,
     Union,
+    overload,
 )
 
 from django.conf import settings
@@ -260,11 +262,35 @@ def messages_for_ids(
     return message_list
 
 
+@overload
 def access_message(
     user_profile: UserProfile,
     message_id: int,
+    get_user_message: None = ...,
+    lock_message: bool = ...,
+) -> Message: ...
+@overload
+def access_message(
+    user_profile: UserProfile,
+    message_id: int,
+    get_user_message: Literal["exists"],
+    lock_message: bool = ...,
+) -> Tuple[Message, bool]: ...
+@overload
+def access_message(
+    user_profile: UserProfile,
+    message_id: int,
+    get_user_message: Literal["object"],
+    lock_message: bool = ...,
+) -> Tuple[Message, Optional[UserMessage]]: ...
+
+
+def access_message(
+    user_profile: UserProfile,
+    message_id: int,
+    get_user_message: Optional[Literal["exists", "object"]] = None,
     lock_message: bool = False,
-) -> Tuple[Message, Optional[UserMessage]]:
+) -> Union[Message, Tuple[Message, bool], Tuple[Message, Optional[UserMessage]]]:
     """You can access a message by ID in our APIs that either:
     (1) You received or have previously accessed via starring
         (aka have a UserMessage row for).
@@ -290,10 +316,21 @@ def access_message(
     except Message.DoesNotExist:
         raise JsonableError(_("Invalid message(s)"))
 
-    user_message = get_usermessage_by_message_id(user_profile, message_id)
+    if get_user_message == "object":
+        user_message = get_usermessage_by_message_id(user_profile, message_id)
+        has_user_message = user_message is not None
+    else:
+        has_user_message = UserMessage.objects.filter(
+            user_profile=user_profile, message_id=message_id
+        ).exists()
 
-    if has_message_access(user_profile, message, has_user_message=user_message is not None):
-        return (message, user_message)
+    if has_message_access(user_profile, message, has_user_message=has_user_message):
+        if get_user_message is None:
+            return message
+        if get_user_message == "exists":
+            return (message, has_user_message)
+        if get_user_message == "object":
+            return (message, user_message)
     raise JsonableError(_("Invalid message(s)"))
 
 

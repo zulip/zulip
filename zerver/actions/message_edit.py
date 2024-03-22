@@ -1217,7 +1217,7 @@ def check_update_message(
     and raises a JsonableError if otherwise.
     It returns the number changed.
     """
-    message, ignored_user_message = access_message(user_profile, message_id, lock_message=True)
+    message = access_message(user_profile, message_id, lock_message=True)
 
     # If there is a change to the content, check that it hasn't been too long
     # Allow an extra 20 seconds since we potentially allow editing 15 seconds
