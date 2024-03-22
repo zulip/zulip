@@ -34,7 +34,7 @@ This article aims to provide a brief introduction. We recommend the
 internationalization in general; we agree with essentially all of
 their style guidelines.
 
-[edx-i18n]: https://edx.readthedocs.io/projects/edx-developer-guide/en/latest/internationalization/i18n.html
+[edx-i18n]: https://docs.openedx.org/en/latest/developers/references/developer_guide/internationalization/i18n.html
 
 ## Key details about human language
 

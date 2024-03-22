@@ -87,14 +87,14 @@ export function initialize(): void {
 
     function update_discount_details(): void {
         const selected_org_type =
-            $<HTMLSelectElement>("#organization-type")
+            $<HTMLSelectElement>("select#organization-type")
                 .find(":selected")
                 .attr("data-string-value") ?? "";
         helpers.update_discount_details(selected_org_type, is_remotely_hosted);
     }
 
     update_discount_details();
-    $<HTMLSelectElement>("#organization-type").on("change", () => {
+    $<HTMLSelectElement>("select#organization-type").on("change", () => {
         update_discount_details();
     });
 }

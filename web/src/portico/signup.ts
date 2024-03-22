@@ -101,7 +101,7 @@ $(() => {
     }
 
     $("#registration").on("submit", () => {
-        if ($<HTMLInputElement>("#registration").valid()) {
+        if ($("#registration").valid()) {
             $(".register-button .loader").css("display", "inline-block");
             $(".register-button").prop("disabled", true);
             $(".register-button span").hide();

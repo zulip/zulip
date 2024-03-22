@@ -7,10 +7,13 @@ from typing import Any, Dict, List, Optional, Set, Tuple
 from unittest import mock
 
 import orjson
+import requests
+import responses
 from bs4 import BeautifulSoup
 from django.conf import settings
 from django.test import override_settings
 from markdown import Markdown
+from responses import matchers
 from typing_extensions import override
 
 from zerver.actions.alert_words import do_add_alert_words
@@ -296,6 +299,79 @@ class MarkdownMiscTest(ZulipTestCase):
             with self.assertLogs(level="ERROR") as m:
                 render_tex("random text")
             self.assertEqual(m.output, ["ERROR:root:Cannot find KaTeX for latex rendering!"])
+
+    @responses.activate
+    @override_settings(KATEX_SERVER=True, SHARED_SECRET="foo")
+    def test_katex_server(self) -> None:
+        responses.post(
+            "http://localhost:9700/",
+            match=[
+                matchers.urlencoded_params_matcher(
+                    {"content": "foo", "is_display": "false", "shared_secret": "foo"}
+                )
+            ],
+            content_type="text/html; charset=utf-8",
+            body="<i>html</i>",
+        )
+        self.assertEqual(render_tex("foo"), "<i>html</i>")
+
+        responses.post(
+            "http://localhost:9700/?",
+            match=[
+                matchers.urlencoded_params_matcher(
+                    {"content": "foo", "is_display": "true", "shared_secret": "foo"}
+                )
+            ],
+            content_type="text/html; charset=utf-8",
+            body="<i>other</i>",
+        )
+        self.assertEqual(render_tex("foo", is_inline=False), "<i>other</i>")
+
+        responses.post(
+            "http://localhost:9700/",
+            content_type="text/html; charset=utf-8",
+            status=400,
+            body=r"KaTeX parse error: &#39;\&#39;",
+        )
+        self.assertEqual(render_tex("bad"), None)
+
+        responses.post(
+            "http://localhost:9700/",
+            content_type="text/html; charset=utf-8",
+            status=400,
+            body=r"KaTeX parse error: &#39;\&#39;",
+        )
+        self.assertEqual(render_tex("bad"), None)
+
+        responses.post("http://localhost:9700/", status=403, body="")
+        with self.assertLogs(level="WARNING") as m:
+            self.assertEqual(render_tex("bad"), None)
+        self.assertEqual(m.output, ["WARNING:root:KaTeX rendering service failed: (403) "])
+
+        responses.post("http://localhost:9700/", status=500, body="")
+        with self.assertLogs(level="WARNING") as m:
+            self.assertEqual(render_tex("bad"), None)
+        self.assertEqual(m.output, ["WARNING:root:KaTeX rendering service failed: (500) "])
+
+        responses.post("http://localhost:9700/", body=requests.exceptions.Timeout())
+        with self.assertLogs(level="WARNING") as m:
+            self.assertEqual(render_tex("bad"), None)
+        self.assertEqual(
+            m.output, ["WARNING:root:KaTeX rendering service timed out with 3 byte long input"]
+        )
+
+        responses.post("http://localhost:9700/", body=requests.exceptions.ConnectionError())
+        with self.assertLogs(level="WARNING") as m:
+            self.assertEqual(render_tex("bad"), None)
+        self.assertEqual(m.output, ["WARNING:root:KaTeX rendering service failed: ConnectionError"])
+
+        with override_settings(KATEX_SERVER_PORT=9701):
+            responses.post(
+                "http://localhost:9701/",
+                body="<i>html</i>",
+                content_type="text/html; charset=utf-8",
+            )
+            self.assertEqual(render_tex("foo"), "<i>html</i>")
 
 
 class MarkdownListPreprocessorTest(ZulipTestCase):
@@ -2799,9 +2875,7 @@ class MarkdownTest(ZulipTestCase):
         content = "#**Denmark**"
         self.assertEqual(
             render_message_markdown(msg, content).rendered_content,
-            '<p><a class="stream" data-stream-id="{d.id}" href="/#narrow/stream/{d.id}-Denmark">#{d.name}</a></p>'.format(
-                d=denmark,
-            ),
+            f'<p><a class="stream" data-stream-id="{denmark.id}" href="/#narrow/stream/{denmark.id}-Denmark">#{denmark.name}</a></p>',
         )
 
     def test_invalid_stream_followed_by_valid_mention(self) -> None:
@@ -2815,9 +2889,7 @@ class MarkdownTest(ZulipTestCase):
         content = "#**Invalid** and #**Denmark**"
         self.assertEqual(
             render_message_markdown(msg, content).rendered_content,
-            '<p>#<strong>Invalid</strong> and <a class="stream" data-stream-id="{d.id}" href="/#narrow/stream/{d.id}-Denmark">#{d.name}</a></p>'.format(
-                d=denmark,
-            ),
+            f'<p>#<strong>Invalid</strong> and <a class="stream" data-stream-id="{denmark.id}" href="/#narrow/stream/{denmark.id}-Denmark">#{denmark.name}</a></p>',
         )
 
     def test_stream_multiple(self) -> None:
@@ -2851,9 +2923,7 @@ class MarkdownTest(ZulipTestCase):
         content = "#**CaseSens**"
         self.assertEqual(
             render_message_markdown(msg, content).rendered_content,
-            '<p><a class="stream" data-stream-id="{s.id}" href="/#narrow/stream/{s.id}-{s.name}">#{s.name}</a></p>'.format(
-                s=case_sens,
-            ),
+            f'<p><a class="stream" data-stream-id="{case_sens.id}" href="/#narrow/stream/{case_sens.id}-{case_sens.name}">#{case_sens.name}</a></p>',
         )
 
     def test_stream_case_sensitivity_nonmatching(self) -> None:
@@ -2881,9 +2951,7 @@ class MarkdownTest(ZulipTestCase):
         content = "#**Denmark>some topic**"
         self.assertEqual(
             render_message_markdown(msg, content).rendered_content,
-            '<p><a class="stream-topic" data-stream-id="{d.id}" href="/#narrow/stream/{d.id}-Denmark/topic/some.20topic">#{d.name} &gt; some topic</a></p>'.format(
-                d=denmark,
-            ),
+            f'<p><a class="stream-topic" data-stream-id="{denmark.id}" href="/#narrow/stream/{denmark.id}-Denmark/topic/some.20topic">#{denmark.name} &gt; some topic</a></p>',
         )
 
     def test_topic_atomic_string(self) -> None:
@@ -2905,9 +2973,7 @@ class MarkdownTest(ZulipTestCase):
         content = "#**Denmark>#1234**"
         self.assertEqual(
             render_message_markdown(msg, content).rendered_content,
-            '<p><a class="stream-topic" data-stream-id="{d.id}" href="/#narrow/stream/{d.id}-Denmark/topic/.231234">#{d.name} &gt; #1234</a></p>'.format(
-                d=denmark,
-            ),
+            f'<p><a class="stream-topic" data-stream-id="{denmark.id}" href="/#narrow/stream/{denmark.id}-Denmark/topic/.231234">#{denmark.name} &gt; #1234</a></p>',
         )
 
     def test_topic_multiple(self) -> None:
@@ -2976,10 +3042,7 @@ class MarkdownTest(ZulipTestCase):
         href = f"/#narrow/stream/{stream.id}-Stream-.231234"
         self.assertEqual(
             render_message_markdown(msg, content).rendered_content,
-            '<p><a class="stream" data-stream-id="{s.id}" href="{href}">#{s.name}</a></p>'.format(
-                s=stream,
-                href=href,
-            ),
+            f'<p><a class="stream" data-stream-id="{stream.id}" href="{href}">#{stream.name}</a></p>',
         )
 
     def test_stream_invalid(self) -> None:

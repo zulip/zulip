@@ -190,6 +190,18 @@ more than 3.5GiB of RAM, 4 on hosts with less.
 Number of days of access logs to keep, for both nginx and the application.
 Defaults to 14 days.
 
+#### `katex_server`
+
+Set to a true value to run a separate service for [rendering math with
+LaTeX](https://zulip.com/help/latex). This is not necessary except on servers
+with users who send several math blocks in a single message; it will address
+issues with such messages occasionally failing to send, at cost of a small
+amount of increased memory usage.
+
+#### `katex_server_port`
+
+Set to the port number for the KaTeX server, if enabled; defaults to port 9700.
+
 ### `[postfix]`
 
 #### `mailname`
@@ -244,6 +256,23 @@ Number of concurrent disk reads to use when taking backups. Defaults to 1; you
 may wish to increase this if you are taking backups on a replica, so can afford
 to affect other disk I/O, and have an SSD which is good at parallel random
 reads.
+
+#### `backups_directory`
+
+If S3 secrets are not configured, perform daily database backups to this path on
+disk instead. It should be owned by the `postgres` user.
+
+This option is not recommended for disaster recovery purposes, since unless the
+directory is on a different disk from the database itself, _backups will likely
+also be lost if the database is lost._ This setting can be useful if the path is
+on a NAS mountpoint, or if some other process copies this data off the disk; or
+if backups are purely for point-in-time historical analysis of recent
+application-level data changes.
+
+#### `backups_incremental`
+
+The number of delta (incremental) database backups to take between full backups.
+Defaults to 0 for S3 backups, and 6 for local-disk backups.
 
 #### `backups_storage_class`
 

@@ -507,7 +507,7 @@ class MessageDict:
 
         if recipient_type == Recipient.STREAM:
             display_type = "stream"
-        elif recipient_type in (Recipient.HUDDLE, Recipient.PERSONAL):
+        elif recipient_type in (Recipient.DIRECT_MESSAGE_GROUP, Recipient.PERSONAL):
             assert not isinstance(display_recipient, str)
             display_type = "private"
             if len(display_recipient) == 1:

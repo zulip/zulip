@@ -372,7 +372,7 @@ def get_recipient_info(
                 )
             )
 
-    elif recipient.type == Recipient.HUDDLE:
+    elif recipient.type == Recipient.DIRECT_MESSAGE_GROUP:
         message_to_user_ids = get_huddle_user_ids(recipient)
 
     else:
@@ -738,7 +738,7 @@ def create_user_messages(
     base_flags = 0
     if rendering_result.mentions_stream_wildcard:
         base_flags |= UserMessage.flags.stream_wildcard_mentioned
-    if message.recipient.type in [Recipient.HUDDLE, Recipient.PERSONAL]:
+    if message.recipient.type in [Recipient.DIRECT_MESSAGE_GROUP, Recipient.PERSONAL]:
         base_flags |= UserMessage.flags.is_private
 
     # For long_term_idle (aka soft-deactivated) users, we are allowed
@@ -865,7 +865,7 @@ def do_send_messages(
 
     # Save the message receipts in the database
     user_message_flags: Dict[int, Dict[int, List[str]]] = defaultdict(dict)
-    with transaction.atomic():
+    with transaction.atomic(savepoint=False):
         Message.objects.bulk_create(send_request.message for send_request in send_message_requests)
 
         # Claim attachments in message
@@ -1222,7 +1222,7 @@ def do_send_messages(
 
 
 def already_sent_mirrored_message_id(message: Message) -> Optional[int]:
-    if message.recipient.type == Recipient.HUDDLE:
+    if message.recipient.type == Recipient.DIRECT_MESSAGE_GROUP:
         # For huddle messages, we use a 10-second window because the
         # timestamps aren't guaranteed to actually match between two
         # copies of the same message.
@@ -1974,17 +1974,35 @@ def internal_send_stream_message_by_name(
     return sent_message_result.message_id
 
 
-def internal_send_huddle_message(
-    realm: Realm, sender: UserProfile, emails: List[str], content: str
-) -> Optional[int]:
-    addressee = Addressee.for_private(emails, realm)
-    message = _internal_prep_message(
+def internal_prep_huddle_message(
+    realm: Realm,
+    sender: UserProfile,
+    content: str,
+    *,
+    emails: Optional[List[str]] = None,
+    recipient_users: Optional[List[UserProfile]] = None,
+) -> Optional[SendMessageRequest]:
+    if recipient_users is not None:
+        addressee = Addressee.for_user_profiles(recipient_users)
+    else:
+        assert emails is not None
+        addressee = Addressee.for_private(emails, realm)
+
+    return _internal_prep_message(
         realm=realm,
         sender=sender,
         addressee=addressee,
         content=content,
     )
+
+
+def internal_send_huddle_message(
+    realm: Realm, sender: UserProfile, emails: List[str], content: str
+) -> Optional[int]:
+    message = internal_prep_huddle_message(realm, sender, content, emails=emails)
+
     if message is None:
         return None
+
     sent_message_result = do_send_messages([message])[0]
     return sent_message_result.message_id

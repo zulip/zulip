@@ -39,16 +39,6 @@ kbd {
     }
 }
 
-@media (width < $xl_min) {
-    .hide-xl {
-        display: none !important;
-    }
-
-    .show-xl {
-        display: block !important;
-    }
-}
-
 .light {
     font-weight: 300;
 }
@@ -482,12 +472,6 @@ div.overlay {
     width: 10px;
     border-radius: 3px 0 0 3px;
     border-bottom: 0;
-}
-
-.stream_header_colorblock {
-    @extend .stream-selection-header-colorblock;
-    margin-bottom: 5px;
-    z-index: 1;
 }
 
 .edit-controls .fa-angle-right,

@@ -9,7 +9,7 @@ class OutgoingSession(requests.Session):
     def __init__(
         self,
         role: str,
-        timeout: int,
+        timeout: float,
         headers: Optional[Dict[str, str]] = None,
         max_retries: Optional[Union[int, Retry]] = None,
     ) -> None:
@@ -29,9 +29,9 @@ class OutgoingSession(requests.Session):
 
 class OutgoingHTTPAdapter(requests.adapters.HTTPAdapter):
     role: str
-    timeout: int
+    timeout: float
 
-    def __init__(self, role: str, timeout: int, max_retries: Optional[Retry]) -> None:
+    def __init__(self, role: str, timeout: float, max_retries: Optional[Retry]) -> None:
         self.role = role
         self.timeout = timeout
         super().__init__(max_retries=max_retries)

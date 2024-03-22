@@ -1,6 +1,7 @@
 import $ from "jquery";
 import _ from "lodash";
 
+import render_introduce_zulip_view_modal from "../templates/introduce_zulip_view_modal.hbs";
 import render_recent_view_filters from "../templates/recent_view_filters.hbs";
 import render_recent_view_row from "../templates/recent_view_row.hbs";
 import render_recent_view_body from "../templates/recent_view_table.hbs";
@@ -10,9 +11,10 @@ import * as blueslip from "./blueslip";
 import * as buddy_data from "./buddy_data";
 import * as compose_closed_ui from "./compose_closed_ui";
 import * as compose_state from "./compose_state";
+import * as dialog_widget from "./dialog_widget";
 import * as dropdown_widget from "./dropdown_widget";
 import * as hash_util from "./hash_util";
-import {$t} from "./i18n";
+import {$t, $t_html} from "./i18n";
 import * as left_sidebar_navigation_area from "./left_sidebar_navigation_area";
 import * as ListWidget from "./list_widget";
 import * as loading from "./loading";
@@ -21,6 +23,7 @@ import * as message_store from "./message_store";
 import * as message_util from "./message_util";
 import * as modals from "./modals";
 import * as muted_users from "./muted_users";
+import * as onboarding_steps from "./onboarding_steps";
 import * as overlays from "./overlays";
 import {page_params} from "./page_params";
 import * as people from "./people";
@@ -35,6 +38,7 @@ import * as sub_store from "./sub_store";
 import * as timerender from "./timerender";
 import * as ui_util from "./ui_util";
 import * as unread from "./unread";
+import {user_settings} from "./user_settings";
 import * as user_status from "./user_status";
 import * as user_topics from "./user_topics";
 import * as views_util from "./views_util";
@@ -1070,6 +1074,24 @@ export function show() {
         set_visible: recent_view_util.set_visible,
         complete_rerender,
     });
+
+    if (onboarding_steps.ONE_TIME_NOTICES_TO_DISPLAY.has("intro_recent_view_modal")) {
+        const html_body = render_introduce_zulip_view_modal({
+            zulip_view: "recent_conversations",
+            current_home_view_and_escape_navigation_enabled:
+                user_settings.web_home_view === "recent_topics" &&
+                user_settings.web_escape_navigates_to_home_view,
+        });
+        dialog_widget.launch({
+            html_heading: $t_html({defaultMessage: "Welcome to <b>recent conversations</b>!"}),
+            html_body,
+            html_submit_button: $t_html({defaultMessage: "Continue"}),
+            on_click() {},
+            single_footer_button: true,
+            focus_submit_on_open: true,
+        });
+        onboarding_steps.post_onboarding_step_as_read("intro_recent_view_modal");
+    }
 }
 
 function filter_buttons() {

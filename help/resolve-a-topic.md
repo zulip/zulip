@@ -11,7 +11,7 @@ Marking a topic as resolved:
 * Puts a ✔ at the beginning of the topic name, e.g. `example topic`
   becomes `✔ example topic`.
 * Triggers an automated notice from the [notification
-  bot](/help/configure-notification-bot) indicating that
+  bot](/help/configure-automated-notices) indicating that
   you resolved the topic. This message will be marked as unread
   only for users who had participated in the topic.
 * Changes whether the topic appears when using the `is:resolved` and

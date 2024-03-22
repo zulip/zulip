@@ -39,8 +39,27 @@ def bulk_insert_ums(ums: List[UserMessageLite]) -> None:
         INSERT into
             zerver_usermessage (user_profile_id, message_id, flags)
         VALUES %s
+        ON CONFLICT DO NOTHING
     """
     )
 
     with connection.cursor() as cursor:
         execute_values(cursor.cursor, query, vals)
+
+
+def bulk_insert_all_ums(user_ids: List[int], message_ids: List[int], flags: int) -> None:
+    if not user_ids or not message_ids:
+        return
+
+    query = SQL(
+        """
+        INSERT INTO zerver_usermessage (user_profile_id, message_id, flags)
+        SELECT user_profile_id, message_id, %s AS flags
+          FROM UNNEST(%s) user_profile_id
+          CROSS JOIN UNNEST(%s) message_id
+        ON CONFLICT DO NOTHING
+        """
+    )
+
+    with connection.cursor() as cursor:
+        cursor.execute(query, [flags, user_ids, message_ids])

@@ -152,9 +152,25 @@ function get_pseudo_keycode(event) {
 const header_element_html =
     '<p class="typeahead-header"><span id="typeahead-header-text"></span></p>';
 
+const defaults = {
+    source: [],
+    items: 8,
+    container: '<div class="typeahead dropdown-menu"></div>',
+    menu: '<ul class="typeahead-menu"></ul>',
+    item: "<li><a></a></li>",
+    minLength: 1,
+    stopAdvance: false,
+    dropup: false,
+    advanceKeyCodes: [],
+    tabIsEnter: true,
+};
+
 const Typeahead = function (element, options) {
     this.$element = $(element);
-    this.options = $.extend({}, $.fn.typeahead.defaults, options);
+    this.options = {
+        ...defaults,
+        ...options,
+    };
     this.matcher = this.options.matcher ?? this.matcher;
     this.sorter = this.options.sorter ?? this.sorter;
     this.highlighter_html = this.options.highlighter_html;
@@ -273,7 +289,7 @@ Typeahead.prototype = {
     hide() {
         this.$container.hide();
         this.shown = false;
-        if (this.options.closeInputFieldOnHide !== null) {
+        if (this.options.closeInputFieldOnHide !== undefined) {
             this.options.closeInputFieldOnHide();
         }
         return this;
@@ -394,11 +410,8 @@ Typeahead.prototype = {
             .on("blur", this.blur.bind(this))
             .on("keypress", this.keypress.bind(this))
             .on("keyup", this.keyup.bind(this))
-            .on("click", this.element_click.bind(this));
-
-        if (this.eventSupported("keydown")) {
-            this.$element.on("keydown", this.keydown.bind(this));
-        }
+            .on("click", this.element_click.bind(this))
+            .on("keydown", this.keydown.bind(this));
 
         this.$menu
             .on("click", "li", this.click.bind(this))
@@ -415,15 +428,6 @@ Typeahead.prototype = {
             this.$element.off(event_);
         }
         this.$element.removeData("typeahead");
-    },
-
-    eventSupported(eventName) {
-        let isSupported = eventName in this.$element;
-        if (!isSupported) {
-            this.$element.setAttribute(eventName, "return;");
-            isSupported = typeof this.$element[eventName] === "function";
-        }
-        return isSupported;
     },
 
     resizeHandler() {
@@ -556,7 +560,7 @@ Typeahead.prototype = {
                 ) {
                     return;
                 }
-                if (this.options.openInputFieldOnKeyUp !== null && !this.shown) {
+                if (this.options.openInputFieldOnKeyUp !== undefined && !this.shown) {
                     // If the typeahead isn't shown yet, the `lookup` call will open it.
                     // Here we make a callback to the input field before we open the
                     // lookahead in case it needs to make UI changes first (e.g. widening
@@ -633,33 +637,11 @@ Typeahead.prototype = {
 /* TYPEAHEAD PLUGIN DEFINITION
  * =========================== */
 
-$.fn.typeahead = function (option) {
-    return this.each(function () {
-        const $this = $(this);
-        let data = $this.data("typeahead");
-        const options = typeof option === "object" && option;
-        if (!data) {
-            $this.data("typeahead", (data = new Typeahead(this, options)));
-        }
-        if (typeof option === "string") {
-            data[option]();
-        }
-    });
-};
+export function create($element, options) {
+    $element.data("typeahead", new Typeahead($element, options));
+}
 
-$.fn.typeahead.defaults = {
-    source: [],
-    items: 8,
-    container: '<div class="typeahead dropdown-menu"></div>',
-    menu: '<ul class="typeahead-menu"></ul>',
-    item: "<li><a></a></li>",
-    minLength: 1,
-    stopAdvance: false,
-    dropup: false,
-    advanceKeyCodes: [],
-    openInputFieldOnKeyUp: null,
-    closeInputFieldOnHide: null,
-    tabIsEnter: true,
-};
-
-$.fn.typeahead.Constructor = Typeahead;
+export function lookup($element) {
+    const typeahead = $element.data("typeahead");
+    typeahead.lookup();
+}

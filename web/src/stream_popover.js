@@ -18,7 +18,6 @@ import * as message_lists from "./message_lists";
 import * as popover_menus from "./popover_menus";
 import {left_sidebar_tippy_options} from "./popover_menus";
 import * as settings_data from "./settings_data";
-import * as stream_bar from "./stream_bar";
 import * as stream_color from "./stream_color";
 import * as stream_data from "./stream_data";
 import * as stream_settings_api from "./stream_settings_api";
@@ -33,7 +32,6 @@ import * as util from "./util";
 // that pop up from the left sidebar.
 let stream_popover_instance = null;
 let stream_widget_value;
-let $stream_header_colorblock;
 
 function get_popover_menu_items(sidebar_elem) {
     if (!sidebar_elem) {
@@ -486,7 +484,6 @@ export async function build_move_topic_to_stream_popover(
 
     function render_selected_stream() {
         const stream_id = Number.parseInt(stream_widget_value, 10);
-        stream_bar.decorate(stream_id, $stream_header_colorblock);
         const stream = stream_data.get_sub_by_id(stream_id);
         if (stream === undefined) {
             $("#move_topic_to_stream_widget .dropdown_widget_value").text(
@@ -531,9 +528,6 @@ export async function build_move_topic_to_stream_popover(
             return;
         }
 
-        $stream_header_colorblock = $("#dialog_widget_modal .topic_stream_edit_header").find(
-            ".stream_header_colorblock",
-        );
         stream_widget_value = current_stream_id;
         const streams_list_options = () =>
             stream_data.get_options_for_dropdown_widget().filter((stream) => {
@@ -557,9 +551,6 @@ export async function build_move_topic_to_stream_popover(
 
         render_selected_stream();
         $("#move_topic_to_stream_widget").prop("disabled", disable_stream_input);
-        if (disable_stream_input) {
-            $stream_header_colorblock.addClass("disabled");
-        }
         $("#move_topic_modal .move_messages_edit_topic").on("input", () => {
             update_submit_button_disabled_state(stream_widget_value);
         });

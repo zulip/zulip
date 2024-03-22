@@ -287,6 +287,7 @@ export function get_custom_profile_field_data(user, field, field_types) {
     profile_field.is_external_account = field_type === field_types.EXTERNAL_ACCOUNT.id;
     profile_field.type = field_type;
     profile_field.display_in_profile_summary = field.display_in_profile_summary;
+    profile_field.required = field.required;
 
     switch (field_type) {
         case field_types.DATE.id:

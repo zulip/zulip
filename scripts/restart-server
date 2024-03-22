@@ -18,7 +18,7 @@ from scripts.lib.zulip_tools import (
     ENDC,
     OKGREEN,
     WARNING,
-    get_config_bool,
+    get_config,
     get_config_file,
     get_tornado_ports,
     has_application_server,
@@ -101,12 +101,17 @@ if has_application_server():
             )
         )
 
+    # This is an optional service, so may or may not exist
+    workers.extend(list_supervisor_processes(["zulip-katex"]))
+
 if has_process_fts_updates():
     workers.append("process-fts-updates")
 
 # Before we start (re)starting main services, make sure to start any
 # optional auxiliary services that we don't stop, but do expect to be
-# running, and aren't currently.
+# running, and aren't currently.  These get new versions by getting
+# updated supervisor files, and puppet restarts them -- so we never
+# restart them in here, only start them.
 aux_services = list_supervisor_processes(["go-camo", "smokescreen"], only_running=False)
 if aux_services:
     subprocess.check_call(["supervisorctl", "start", *aux_services])
@@ -185,7 +190,7 @@ if has_application_server():
     if (
         action == "restart"
         and not args.less_graceful
-        and get_config_bool(config_file, "application_server", "rolling_restart")
+        and get_config(config_file, "application_server", "rolling_restart", False)
         and os.path.exists("/home/zulip/deployments/uwsgi-control")
     ):
         # See if it's currently running

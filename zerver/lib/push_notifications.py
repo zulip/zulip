@@ -994,7 +994,7 @@ def get_message_payload(
         data["stream"] = get_message_stream_name_from_database(message)
         data["stream_id"] = message.recipient.type_id
         data["topic"] = message.topic_name()
-    elif message.recipient.type == Recipient.HUDDLE:
+    elif message.recipient.type == Recipient.DIRECT_MESSAGE_GROUP:
         data["recipient_type"] = "private"
         data["pm_users"] = huddle_users(message.recipient.id)
     else:  # Recipient.PERSONAL
@@ -1007,7 +1007,7 @@ def get_apns_alert_title(message: Message) -> str:
     """
     On an iOS notification, this is the first bolded line.
     """
-    if message.recipient.type == Recipient.HUDDLE:
+    if message.recipient.type == Recipient.DIRECT_MESSAGE_GROUP:
         recipients = get_display_recipient(message.recipient)
         assert isinstance(recipients, list)
         return ", ".join(sorted(r["full_name"] for r in recipients))

@@ -2733,7 +2733,7 @@ class DeleteUserTest(ZulipTestCase):
 
         huddle_with_hamlet_recipient_ids = list(
             Subscription.objects.filter(
-                user_profile=hamlet, recipient__type=Recipient.HUDDLE
+                user_profile=hamlet, recipient__type=Recipient.DIRECT_MESSAGE_GROUP
             ).values_list("recipient_id", flat=True)
         )
         self.assertGreater(len(huddle_with_hamlet_recipient_ids), 0)
@@ -2800,7 +2800,7 @@ class DeleteUserTest(ZulipTestCase):
 
         huddle_with_hamlet_recipient_ids = list(
             Subscription.objects.filter(
-                user_profile=hamlet, recipient__type=Recipient.HUDDLE
+                user_profile=hamlet, recipient__type=Recipient.DIRECT_MESSAGE_GROUP
             ).values_list("recipient_id", flat=True)
         )
         self.assertGreater(len(huddle_with_hamlet_recipient_ids), 0)

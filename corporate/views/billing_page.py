@@ -83,6 +83,8 @@ def billing_page(
 
     main_context = billing_session.get_billing_page_context()
     if main_context:
+        if main_context.get("current_plan_downgraded") is True:
+            return HttpResponseRedirect(reverse("plans"))
         context.update(main_context)
         context["success_message"] = success_message
 
@@ -142,6 +144,8 @@ def remote_realm_billing_page(
         return billing_session.missing_data_error_page(request)
 
     if main_context:
+        if main_context.get("current_plan_downgraded") is True:
+            return HttpResponseRedirect(reverse("remote_realm_plans_page", args=(realm_uuid,)))
         context.update(main_context)
         context["success_message"] = success_message
 
@@ -215,6 +219,13 @@ def remote_server_billing_page(
         return billing_session.missing_data_error_page(request)
 
     if main_context:
+        if main_context.get("current_plan_downgraded") is True:
+            return HttpResponseRedirect(
+                reverse(
+                    "remote_server_plans_page",
+                    kwargs={"server_uuid": billing_session.remote_server.uuid},
+                )
+            )
         context.update(main_context)
         context["success_message"] = success_message
 

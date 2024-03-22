@@ -490,7 +490,7 @@ def get_messages_with_usermessage_rows_for_user(
 def huddle_users(recipient_id: int) -> str:
     display_recipient: List[UserDisplayRecipient] = get_display_recipient_by_id(
         recipient_id,
-        Recipient.HUDDLE,
+        Recipient.DIRECT_MESSAGE_GROUP,
         None,
     )
 
@@ -672,7 +672,7 @@ def extract_unread_data_from_um_rows(
                 other_user_id=other_user_id,
             )
 
-        elif msg_type == Recipient.HUDDLE:
+        elif msg_type == Recipient.DIRECT_MESSAGE_GROUP:
             user_ids_string = get_huddle_users(recipient_id)
             huddle_dict[message_id] = dict(
                 user_ids_string=user_ids_string,

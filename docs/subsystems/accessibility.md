@@ -80,5 +80,5 @@ possible, the following resources may be useful.
 - The [Open edX Accessibility Guidelines][openedx-guidelines] for developers
 
 [chrome-webstore]: https://chrome.google.com/webstore/detail/accessibility-developer-t/fpkknkljclfencbdbgkenhalefipecmb
-[openedx-guidelines]: https://edx.readthedocs.io/projects/edx-developer-guide/en/latest/conventions/accessibility.html
+[openedx-guidelines]: https://docs.openedx.org/en/latest/developers/concepts/accessibility.html
 [accessibility-issues]: https://github.com/zulip/zulip/issues?q=is%3Aissue+is%3Aopen+label%3A%22area%3A%20accessibility%22

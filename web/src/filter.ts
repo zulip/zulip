@@ -411,7 +411,7 @@ export class Filter {
                 // If any search query was present and it is followed by some other filters
                 // then we must add that search filter in its current position in the
                 // terms list. This is done so that the last active filter is correctly
-                // detected by the `get_search_result` function (in search_suggestions.js).
+                // detected by the `get_search_result` function (in search_suggestions.ts).
                 maybe_add_search_terms();
                 term = {negated, operator, operand};
                 terms.push(term);

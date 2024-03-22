@@ -65,7 +65,7 @@ def do_delete_user(user_profile: UserProfile, *, acting_user: Optional[UserProfi
 
     subscribed_huddle_recipient_ids = set(
         Subscription.objects.filter(
-            user_profile=user_profile, recipient__type=Recipient.HUDDLE
+            user_profile=user_profile, recipient__type=Recipient.DIRECT_MESSAGE_GROUP
         ).values_list("recipient_id", flat=True)
     )
     user_id = user_profile.id
@@ -203,7 +203,7 @@ def do_delete_user_preserving_messages(user_profile: UserProfile) -> None:
             sender=temp_replacement_user
         )
         Subscription.objects.filter(
-            user_profile=user_profile, recipient__type=Recipient.HUDDLE
+            user_profile=user_profile, recipient__type=Recipient.DIRECT_MESSAGE_GROUP
         ).update(user_profile=temp_replacement_user)
         user_profile.delete()
 
@@ -229,7 +229,7 @@ def do_delete_user_preserving_messages(user_profile: UserProfile) -> None:
             sender=replacement_user
         )
         Subscription.objects.filter(
-            user_profile=temp_replacement_user, recipient__type=Recipient.HUDDLE
+            user_profile=temp_replacement_user, recipient__type=Recipient.DIRECT_MESSAGE_GROUP
         ).update(user_profile=replacement_user, is_user_active=replacement_user.is_active)
         temp_replacement_user.delete()
 
@@ -276,12 +276,12 @@ def send_events_for_user_deactivation(user_profile: UserProfile) -> None:
     # separately.
     deactivated_user_subs = Subscription.objects.filter(
         user_profile=user_profile,
-        recipient__type__in=[Recipient.STREAM, Recipient.HUDDLE],
+        recipient__type__in=[Recipient.STREAM, Recipient.DIRECT_MESSAGE_GROUP],
         active=True,
     ).values_list("recipient_id", flat=True)
     subscribers_in_deactivated_user_subs = Subscription.objects.filter(
         recipient_id__in=list(deactivated_user_subs),
-        recipient__type__in=[Recipient.STREAM, Recipient.HUDDLE],
+        recipient__type__in=[Recipient.STREAM, Recipient.DIRECT_MESSAGE_GROUP],
         is_user_active=True,
         active=True,
     ).values_list("recipient__type", "user_profile_id")
@@ -289,7 +289,7 @@ def send_events_for_user_deactivation(user_profile: UserProfile) -> None:
     subscribers_in_deactivated_user_streams = set()
     subscribers_in_deactivated_user_huddles = set()
     for recipient_type, user_id in subscribers_in_deactivated_user_subs:
-        if recipient_type == Recipient.HUDDLE:
+        if recipient_type == Recipient.DIRECT_MESSAGE_GROUP:
             subscribers_in_deactivated_user_huddles.add(user_id)
         else:
             subscribers_in_deactivated_user_streams.add(user_id)

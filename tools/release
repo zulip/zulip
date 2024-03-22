@@ -111,7 +111,7 @@ gh auth status \
 
 # Extract the changelog, print it
 changelog_anchor="zulip-server-${version//./-}"
-changelog=$(VERSION="$version" perl -nle '$v=quotemeta($ENV{VERSION}); print if $rc = /^### $v/ .. /^#{1,3} (?!$v)/ and $rc !~ /E0/' docs/overview/changelog.md)
+changelog=$(VERSION="$version" perl -nle '$v=quotemeta($ENV{VERSION}); print if $rc = /^### Zulip Server $v/ .. /^#{1,3} Zulip Server (?!$v)/ and $rc !~ /E0/' docs/overview/changelog.md)
 echo "$changelog"
 
 echo -e "\n\n(pausing for 15s, ^C to cancel)"

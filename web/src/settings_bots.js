@@ -397,19 +397,19 @@ export function set_up() {
         user_deactivation_ui.confirm_reactivation(user_id, handle_confirm, true);
     });
 
-    $("#active_bots_list").on("click", "button.regenerate_bot_api_key", (e) => {
+    $("#active_bots_list").on("click", "button.bot-card-regenerate-bot-api-key", (e) => {
         const bot_id = Number.parseInt($(e.currentTarget).attr("data-user-id"), 10);
         channel.post({
             url: "/json/bots/" + encodeURIComponent(bot_id) + "/api_key/regenerate",
             success(data) {
                 const $row = $(e.currentTarget).closest("li");
-                $row.find(".api_key").find(".value").text(data.api_key);
-                $row.find("api_key_error").hide();
+                $row.find(".bot-card-api-key").find(".value").text(data.api_key);
+                $row.find(".bot-card-api-key-error").hide();
             },
             error(xhr) {
                 if (xhr.responseJSON?.msg) {
                     const $row = $(e.currentTarget).closest("li");
-                    $row.find(".api_key_error").text(xhr.responseJSON.msg).show();
+                    $row.find(".bot-card-api-key-error").text(xhr.responseJSON.msg).show();
                 }
             },
         });
@@ -419,13 +419,13 @@ export function set_up() {
         e.preventDefault();
         e.stopPropagation();
         const $li = $(e.currentTarget).closest("li");
-        const bot_id = Number.parseInt($li.find(".bot_info").attr("data-user-id"), 10);
+        const bot_id = Number.parseInt($li.find(".bot-card-info").attr("data-user-id"), 10);
         const bot = people.get_by_user_id(bot_id);
         user_profile.show_user_profile(bot, "manage-profile-tab");
     });
 
     $("#active_bots_list").on("click", "a.download_bot_zuliprc", function () {
-        const $bot_info = $(this).closest(".bot-information-box").find(".bot_info");
+        const $bot_info = $(this).closest(".bot-information-box").find(".bot-card-info");
         const bot_id = Number.parseInt($bot_info.attr("data-user-id"), 10);
         $(this).attr("href", generate_zuliprc_url(bot_id));
     });
@@ -447,7 +447,7 @@ export function set_up() {
 
     const clipboard = new ClipboardJS("#copy_zuliprc", {
         text(trigger) {
-            const $bot_info = $(trigger).closest(".bot-information-box").find(".bot_info");
+            const $bot_info = $(trigger).closest(".bot-information-box").find(".bot-card-info");
             const bot_id = Number.parseInt($bot_info.attr("data-user-id"), 10);
             const bot = bot_data.get(bot_id);
             const data = generate_zuliprc_content(bot);

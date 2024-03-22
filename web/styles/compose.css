@@ -163,10 +163,6 @@
             #compose_select_recipient_widget {
                 border-radius: 4px !important;
             }
-
-            .stream_header_colorblock {
-                display: none;
-            }
         }
 
         .topic-marker-container {
@@ -828,12 +824,12 @@ textarea.new_message_textarea,
 }
 
 #compose_select_recipient_widget {
-    border-radius: 0 4px 4px 0;
     width: auto;
     outline: none;
 
     &.dropdown-widget-button {
         padding: 0 6px;
+        border-radius: 4px;
     }
 }
 
@@ -1163,13 +1159,8 @@ textarea.new_message_textarea,
     justify-content: flex-start;
     height: var(--compose-recipient-box-min-height);
 
-    .stream_header_colorblock {
-        margin: 0;
-    }
-
     .dropdown_widget_value {
         flex-grow: 1;
-        overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
         color: var(--color-text-default);
@@ -1195,8 +1186,10 @@ textarea.new_message_textarea,
     }
 }
 
-.dropdown-menu {
-    & ul {
+.typeahead.dropdown-menu {
+    background: hsl(0deg 0% 100%);
+
+    .typeahead-menu {
         list-style: none;
         margin: 0;
         background-color: var(--color-background-popover);
@@ -1214,10 +1207,6 @@ textarea.new_message_textarea,
 
     #typeahead-header-text {
         font-size: 12px;
-    }
-
-    &.typeahead {
-        background: hsl(0deg 0% 100%);
     }
 }
 
@@ -1355,26 +1344,6 @@ textarea.new_message_textarea,
         /* Align the `Drafts` text with the
            send icon below. */
         padding: 0 5px;
-    }
-}
-
-@media (width < $xl_min) {
-    #compose-content {
-        margin-right: 7px;
-    }
-}
-
-@media (width < $md_min) {
-    #compose-content {
-        margin-right: 7px;
-        margin-left: 7px;
-    }
-}
-
-@media (width < $mm_min) {
-    #compose-content {
-        margin-right: 5px;
-        margin-left: 5px;
     }
 }
 

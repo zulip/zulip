@@ -259,7 +259,7 @@ The `verify_action` function simulates the possible race condition in
 order to verify that the `apply_events` logic works correctly in the
 context of some action function. To use our concrete example above,
 we are seeing that applying the events from the
-`do_remove_default_stream` action inside of `apply_events` to a stale
+`do_add_default_stream` action inside of `apply_events` to a stale
 copy of your state results in the same state dictionary as doing the
 action and then fetching a fresh copy of the state.
 

@@ -53,7 +53,7 @@ Some important code entities for the widget implementation are:
 - `/json/submessage` API endpoint
 - `web/src/submessage.js`
 - `web/src/poll_widget.js`
-- `web/src/widgetize.js`
+- `web/src/widgetize.ts`
 - `web/src/zform.js`
 - `web/templates/widgets/`
 - `zerver/lib/widget.py`
@@ -79,7 +79,7 @@ appropriate widgets.
 The web app client will next collect poll options and votes
 from users. The web app client has
 code in `submessage.js` that dispatches events
-to `widgetize.js`, which in turn sends events to
+to `widgetize.ts`, which in turn sends events to
 individual widgets. The widgets know how to render
 themselves and set up click/input handlers to collect
 data. They can then post back to `/json/submessage`
@@ -299,7 +299,7 @@ When the message gets to the client, the codepath for **zform**
 is actually quite similar to what happens with a more
 customized widget like **poll**. (In fact, **zform** is a
 sibling of **poll** and **zform** just has a somewhat more
-generic job to do.) In `web/src/widgetize.js` you will see
+generic job to do.) In `web/src/widgetize.ts` you will see
 where this code converges, with snippets like this:
 
 ```js

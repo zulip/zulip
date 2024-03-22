@@ -1048,7 +1048,7 @@ li.top_left_scheduled_messages {
 #stream_filters li:hover .stream-sidebar-menu-icon,
 .top_left_row:hover .sidebar-menu-icon,
 .bottom_left_row:hover .sidebar-menu-icon,
-.column-left .left-sidebar .left_sidebar_menu_icon_visible {
+.app-main .column-left .left-sidebar .left_sidebar_menu_icon_visible {
     /* We push against `display: none` with
        `display: flex` because the sidebar vdots
        all expect to be displayed as flex items

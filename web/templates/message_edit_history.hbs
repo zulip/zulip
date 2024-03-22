@@ -1,21 +1,55 @@
 {{! Client-side Handlebars template for viewing message edit history. }}
 
 {{#each edited_messages}}
-    {{#if show_date_row}}
-    <div class="date_row"><span>{{ display_date }}</span></div>
-    {{/if}}
-    <div class="messagebox-content">
-        <div class="message_top_line"><span class="message_time">{{ timestamp }}</span></div>
-        {{#if topic_edited}}
-        <div class="message_content message_edit_history_content"><p>Topic: <span class="highlight_text_inserted">{{ new_topic }}</span> <span class="highlight_text_deleted">{{ prev_topic }}</span></p></div>
-        {{/if}}
-        {{#if stream_changed}}
-        <div class="message_content message_edit_history_content"><p>Stream: <span class="highlight_text_inserted">{{ new_stream }}</span> <span class="highlight_text_deleted">{{ prev_stream }}</span></p></div>
-        {{/if}}
-        {{#if body_to_render}}
-        <div class="message_content rendered_markdown message_edit_history_content">{{rendered_markdown body_to_render}}</div>
-        {{/if}}
-        <div class="message_author"><div class="author_details">{{ edited_by_notice }}</div></div>
+    <div class="overlay-message-row" data-message-edit-history-id="{{timestamp}}">
+        <div class="overlay-message-info-box" tabindex="0">
+            {{#if is_stream }}
+            <div class="message_header message_header_stream">
+                <div class="message-header-contents" style="background: {{recipient_bar_color}};">
+                    <div class="message_label_clickable stream_label">
+                        <span class="private_message_header_name">{{ edited_by_notice }}</span>
+                    </div>
+                    <div class="recipient_row_date" title="{{t 'Last modified'}}">{{t "{edited_at_time}" }}
+
+                    </div>
+                </div>
+            </div>
+            {{else}}
+            <div class="message_header message_header_private_message">
+                <div class="message-header-contents">
+                    <div class="message_label_clickable stream_label">
+                        <span class="private_message_header_name">{{ edited_by_notice }}</span>
+                    </div>
+                    <div class="recipient_row_date" title="{{t 'Last modified'}}">{{t "{edited_at_time}" }}</div>
+                </div>
+            </div>
+            {{/if}}
+            <div class="message_row{{^is_stream}} private-message{{/is_stream}}" role="listitem">
+                <div class="messagebox">
+                    <div class="messagebox-content">
+                        {{#if topic_edited}}
+                        <div class="message_content message_edit_history_content">
+                            <p>Topic: <span class="highlight_text_inserted">{{ new_topic }}</span>
+                                <span class="highlight_text_deleted">{{ prev_topic}}</span>
+                            </p>
+                        </div>
+                        {{/if}}
+                        {{#if stream_changed}}
+                        <div class="message_content message_edit_history_content">
+                            <p>Stream: <span class="highlight_text_inserted">{{ new_stream }}</span>
+                                <span class="highlight_text_deleted">{{ prev_stream }}</span>
+                            </p>
+                        </div>
+                        {{/if}}
+                        {{#if body_to_render}}
+                        <div class="message_content rendered_markdown message_edit_history_content">
+                            {{ rendered_markdown body_to_render}}
+                        </div>
+                        {{/if}}
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
-    <hr />
 {{/each}}
+

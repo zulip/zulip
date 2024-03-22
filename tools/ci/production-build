@@ -48,6 +48,6 @@ cp -a \
 PNPM="/usr/local/bin/pnpm"
 tar -C /tmp -xzf /tmp/production-build/zulip-server-test.tar.gz zulip-server-test/prod-static/serve/webpack-bundles
 (
-    GLOBIGNORE=/tmp/zulip-server-test/prod-static/serve/webpack-bundles/katex-cli.js
+    GLOBIGNORE="/tmp/zulip-server-test/prod-static/serve/webpack-bundles/katex*.js"
     "$PNPM" exec es-check es2020 /tmp/zulip-server-test/prod-static/serve/webpack-bundles/*.js
 )

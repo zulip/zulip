@@ -87,10 +87,8 @@ export function save_narrow(terms) {
 }
 
 export function activate(raw_terms, opts) {
-    /* Main entry point for switching to a new view / message list.
-       Note that for historical reasons related to the current
-       client-side caching structure, the "All messages"/message_lists.home
-       view is reached via `narrow.deactivate()`.
+    /* Main entry point for switching to a new view / message list
+       (including all messages and home views).
 
        The name is based on "narrowing to a subset of the user's
        messages.".  Supported parameters:

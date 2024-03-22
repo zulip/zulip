@@ -224,7 +224,7 @@ def move_expired_personal_and_huddle_messages_to_archive(
     assert message_retention_days != -1
     check_date = timezone_now() - timedelta(days=message_retention_days)
 
-    recipient_types = (Recipient.PERSONAL, Recipient.HUDDLE)
+    recipient_types = (Recipient.PERSONAL, Recipient.DIRECT_MESSAGE_GROUP)
 
     # Archive expired personal and huddle Messages in the realm, including cross-realm messages.
     # Uses index: zerver_message_realm_recipient_date_sent

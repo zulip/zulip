@@ -605,10 +605,6 @@ $time_column_min_width: 42px; /* + padding */
         margin-top: 0;
     }
 
-    .stream_header_colorblock {
-        margin-bottom: 10px;
-    }
-
     & textarea {
         width: 100%;
         min-width: 206px;

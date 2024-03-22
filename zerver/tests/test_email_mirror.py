@@ -1081,7 +1081,7 @@ class TestMissedMessageEmailMessages(ZulipTestCase):
 
         self.assertEqual(message.content, "TestMissedHuddleMessageEmailMessages body")
         self.assertEqual(message.sender, self.example_user("cordelia"))
-        self.assertEqual(message.recipient.type, Recipient.HUDDLE)
+        self.assertEqual(message.recipient.type, Recipient.DIRECT_MESSAGE_GROUP)
 
         # Confirm Othello received the message.
         user_profile = self.example_user("othello")
@@ -1089,7 +1089,7 @@ class TestMissedMessageEmailMessages(ZulipTestCase):
 
         self.assertEqual(message.content, "TestMissedHuddleMessageEmailMessages body")
         self.assertEqual(message.sender, self.example_user("cordelia"))
-        self.assertEqual(message.recipient.type, Recipient.HUDDLE)
+        self.assertEqual(message.recipient.type, Recipient.DIRECT_MESSAGE_GROUP)
 
     def test_receive_missed_stream_message_email_messages(self) -> None:
         # build dummy messages for message notification email reply

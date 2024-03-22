@@ -176,9 +176,10 @@ in the Zulip app to add more to your repertoire as needed.
 
 * **Collapse/show message**: <kbd>-</kbd>
 
-* **Toggle topic mute**: <kbd>Shift</kbd> + <kbd>M</kbd> — Muted topics
-  don't show up in any views (including **All messages**), and don't contribute
-  to unread counts. Read more about [muting or unmuting topics](/help/mute-a-topic).
+* **Toggle topic mute**: <kbd>Shift</kbd> + <kbd>M</kbd>. This works in both
+  message views and views that list topics (e.g., [inbox](/help/inbox), [recent
+  conversations](/help/recent-conversations)). Learn about [muted
+  topics](/help/mute-a-topic).
 
 ## Recent conversations
 

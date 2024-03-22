@@ -22,6 +22,7 @@ class ProfileDataElementBase(TypedDict, total=False):
     type: int
     hint: str
     display_in_profile_summary: bool
+    required: bool
     field_data: str
     order: int
 

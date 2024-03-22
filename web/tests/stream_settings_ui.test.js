@@ -16,6 +16,10 @@ mock_esm("../src/hash_util", {
     by_stream_url() {},
 });
 
+mock_esm("../src/browser_history", {
+    update() {},
+});
+
 mock_esm("../src/hash_parser", {
     get_current_hash_section: () => denmark_stream_id,
 });
@@ -212,6 +216,9 @@ run_test("redraw_left_panel", ({mock_template}) => {
     };
 
     test_filter({input: "d", subscribed_only: true}, [poland]);
+    assert.ok($(".stream-row-denmark").hasClass("active"));
+
+    stream_settings_ui.switch_stream_tab("subscribed");
     assert.ok(!$(".stream-row-denmark").hasClass("active"));
     assert.ok(!$(".right .settings").visible());
     assert.ok($(".nothing-selected").visible());

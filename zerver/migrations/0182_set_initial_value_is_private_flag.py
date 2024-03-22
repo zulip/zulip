@@ -20,7 +20,7 @@ def set_initial_value_of_is_private_flag(
     print("\nStart setting initial value for is_private flag...", flush=True)
     while True:
         range_end = i + 10000
-        # Can't use [Recipient.PERSONAL, Recipient.HUDDLE] in migration files
+        # Can't use [Recipient.PERSONAL, Recipient.DIRECT_MESSAGE_GROUP] in migration files
         message_ids = list(
             Message.objects.filter(recipient__type__in=[1, 3], id__gt=i, id__lte=range_end)
             .values_list("id", flat=True)

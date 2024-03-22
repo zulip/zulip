@@ -262,8 +262,8 @@ Running migrations:
   Applying zerver.NNNN_realm_mandatory_topics... OK
 ```
 
-Once you've run the migration, restart memcached on your development
-server (`/etc/init.d/memcached restart`) and then [restart the development server](../development/remote.md#running-the-development-server)
+Once you've run the migration, flush memcached on your development
+server (`./scripts/setup/flush-memcached`) and then [restart the development server](../development/remote.md#running-the-development-server)
 to avoid interacting with cached objects.
 
 ### Handle database interactions

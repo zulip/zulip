@@ -205,9 +205,7 @@ def send_mm_reply_to_stream(
             message_content=body,
         )
     except JsonableError as error:
-        error_message = "Error sending message to stream {stream} via message notification email reply:\n{error}".format(
-            stream=stream.name, error=error.msg
-        )
+        error_message = f"Error sending message to stream {stream.name} via message notification email reply:\n{error.msg}"
         internal_send_private_message(
             get_system_bot(settings.NOTIFICATION_BOT, user_profile.realm_id),
             user_profile,
@@ -452,7 +450,7 @@ def process_missed_message(to: str, message: EmailMessage) -> None:
         recipient_user = get_user_profile_by_id(recipient_user_id)
         recipient_str = recipient_user.email
         internal_send_private_message(user_profile, recipient_user, body)
-    elif recipient.type == Recipient.HUDDLE:
+    elif recipient.type == Recipient.DIRECT_MESSAGE_GROUP:
         display_recipient = get_display_recipient(recipient)
         emails = [user_dict["email"] for user_dict in display_recipient]
         recipient_str = ", ".join(emails)

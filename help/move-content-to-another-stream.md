@@ -108,4 +108,4 @@ that one does not have permission to access.
 * [Move content to another topic](/help/move-content-to-another-topic)
 * [Restrict moving messages](/help/restrict-moving-messages)
 
-[notification-bot]: /help/configure-notification-bot
+[notification-bot]: /help/configure-automated-notices

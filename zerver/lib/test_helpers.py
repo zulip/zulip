@@ -505,6 +505,7 @@ def write_instrumentation_reports(full_suite: bool, include_webhooks: bool) -> N
             "config-error/(?P<error_name>[^/]+)",
             "confirmation_key/",
             "node-coverage/(?P<path>.+)",
+            "docs/",
             "docs/(?P<path>.+)",
             "casper/(?P<path>.+)",
             "static/(?P<path>.+)",
@@ -615,7 +616,7 @@ def use_db_models(
         Recipient = apps.get_model("zerver", "Recipient")
         Recipient.PERSONAL = 1
         Recipient.STREAM = 2
-        Recipient.HUDDLE = 3
+        Recipient.DIRECT_MESSAGE_GROUP = 3
         ScheduledEmail = apps.get_model("zerver", "ScheduledEmail")
         ScheduledMessage = apps.get_model("zerver", "ScheduledMessage")
         Service = apps.get_model("zerver", "Service")

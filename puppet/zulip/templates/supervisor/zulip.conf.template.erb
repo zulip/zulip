@@ -106,6 +106,23 @@ programs=<% @queues.each_with_index do |queue, i| -%>zulip_events_<%= queue %><%
 programs=zulip_events
 <% end %>
 
+<% if @katex_server %>
+[program:zulip-katex]
+command=/usr/local/bin/secret-env-wrapper SHARED_SECRET=shared_secret /srv/zulip-node/bin/node /home/zulip/deployments/current/static/webpack-bundles/katex_server.js <%= @katex_server_port %>
+environment=NODE_ENV=production
+priority=200                   ; the relative start priority (default 999)
+autostart=true                 ; start at supervisord start (default: true)
+autorestart=true               ; whether/when to restart (default: unexpected)
+stopsignal=TERM                 ; signal used to kill process (default TERM)
+stopwaitsecs=30                ; max num secs to wait b4 SIGKILL (default 10)
+user=zulip                    ; setuid to this UNIX account to run the program
+redirect_stderr=true           ; redirect proc stderr to stdout (default false)
+stdout_logfile=/var/log/zulip/katex.log         ; stdout log path, NONE for none; default AUTO
+stdout_logfile_maxbytes=20MB   ; max # logfile bytes b4 rotation (default 50MB)
+stdout_logfile_backups=3     ; # of stdout logfile backups (default 10)
+directory=/home/zulip/deployments/current/
+<% end %>
+
 ; The [include] section can just contain the "files" setting.  This
 ; setting can list multiple files (separated by whitespace or
 ; newlines).  It can also contain wildcards.  The filenames are

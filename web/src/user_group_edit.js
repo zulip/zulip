@@ -670,10 +670,7 @@ export function maybe_reset_right_panel(groups_list_data) {
 
     const group_ids = new Set(groups_list_data.map((group) => group.id));
     if (!group_ids.has(active_group_id)) {
-        $(".right .settings").hide();
-        $(".nothing-selected").show();
-        $(".group-row.active").removeClass("active");
-        reset_active_group_id();
+        show_user_group_settings_pane.nothing_selected();
     }
 }
 

@@ -1,7 +1,7 @@
 import $ from "jquery";
 import assert from "minimalistic-assert";
 
-type Context = {
+export type Context = {
     items_container_selector: string;
     items_list_selector: string;
     row_item_selector: string;

@@ -50,6 +50,16 @@ class zulip::postgresql_backups {
     ],
   }
 
+  $postgresql_backup_directory = zulipconf('postgresql', 'backups_directory', '')
+  if $postgresql_backup_directory != '' {
+    file { $postgresql_backup_directory:
+      ensure => directory,
+      owner  => 'postgres',
+      group  => 'postgres',
+      mode   => '0600',
+    }
+  }
+
   file { "${zulip::common::nagios_plugins_dir}/zulip_postgresql_backups":
     require => Package[$zulip::common::nagios_plugins],
     recurse => true,

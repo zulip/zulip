@@ -10,6 +10,7 @@ import {buddy_list} from "./buddy_list";
 import * as compose_state from "./compose_state";
 import * as message_live_update from "./message_live_update";
 import * as narrow_state from "./narrow_state";
+import * as navbar_alerts from "./navbar_alerts";
 import * as people from "./people";
 import * as pm_list from "./pm_list";
 import * as settings from "./settings";
@@ -21,7 +22,7 @@ import * as settings_profile_fields from "./settings_profile_fields";
 import * as settings_realm_user_settings_defaults from "./settings_realm_user_settings_defaults";
 import * as settings_streams from "./settings_streams";
 import * as settings_users from "./settings_users";
-import {current_user} from "./state_data";
+import {current_user, realm} from "./state_data";
 import * as stream_events from "./stream_events";
 
 export const update_person = function update(person) {
@@ -128,6 +129,33 @@ export const update_person = function update(person) {
 
     if (Object.hasOwn(person, "custom_profile_field")) {
         people.set_custom_profile_field_data(person.user_id, person.custom_profile_field);
+        if (person.user_id === people.my_current_user_id()) {
+            navbar_alerts.maybe_show_empty_required_profile_fields_alert();
+
+            const field_id = person.custom_profile_field.id;
+            const field_value = people.get_custom_profile_data(person.user_id, field_id)?.value;
+            const is_field_required = realm.custom_profile_fields?.find(
+                (f) => field_id === f.id,
+            )?.required;
+            if (is_field_required) {
+                const $custom_user_field = $(
+                    `.profile-settings-form .custom_user_field[data-field-id="${CSS.escape(field_id)}"]`,
+                );
+                const $field = $custom_user_field.find(".field");
+                const $required_symbol = $custom_user_field.find(".required-symbol");
+                if (!field_value) {
+                    if (!$field.hasClass("empty-required-field")) {
+                        $field.addClass("empty-required-field");
+                        $required_symbol.removeClass("hidden");
+                    }
+                } else {
+                    if ($field.hasClass("empty-required-field")) {
+                        $field.removeClass("empty-required-field");
+                        $required_symbol.addClass("hidden");
+                    }
+                }
+            }
+        }
     }
 
     if (Object.hasOwn(person, "timezone")) {

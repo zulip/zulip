@@ -611,7 +611,9 @@ def channels_to_zerver_stream(
 
             added_mpims[mpim["name"]] = (mpim["id"], huddle_id_count)
 
-            recipient = build_recipient(huddle_id_count, recipient_id_count, Recipient.HUDDLE)
+            recipient = build_recipient(
+                huddle_id_count, recipient_id_count, Recipient.DIRECT_MESSAGE_GROUP
+            )
             realm["zerver_recipient"].append(recipient)
             slack_recipient_name_to_zulip_recipient_id[mpim["name"]] = recipient_id_count
 

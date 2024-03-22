@@ -37,10 +37,7 @@ class Command(ZulipBaseCommand):
             print(session.expire_date, session.get_decoded())
         print("")
         print(
-            "{} has {} active bots that will also be deactivated.".format(
-                user_profile.delivery_email,
-                get_active_bots_owned_by_user(user_profile).count(),
-            )
+            f"{user_profile.delivery_email} has {get_active_bots_owned_by_user(user_profile).count()} active bots that will also be deactivated."
         )
 
         if not options["for_real"]:

@@ -277,6 +277,12 @@
                 ],
                 "unicorn/prefer-string-replace-all": "off"
             }
+        },
+        {
+            "files": ["web/server/**"],
+            "env": {
+                "node": true
+            }
         }
     ]
 }

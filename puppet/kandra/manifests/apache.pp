@@ -1,9 +1,7 @@
 class kandra::apache {
-  $apache_packages = [# Needed to run Apache with WSGI
-                      'apache2',
-                      'libapache2-mod-wsgi',
-                      ]
-  package { $apache_packages: ensure => installed }
+  package { 'apache2':
+    ensure => installed,
+  }
   service { 'apache2':
     require => Package['apache2'],
   }

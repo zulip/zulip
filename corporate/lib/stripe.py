@@ -51,7 +51,6 @@ from corporate.models import (
     get_customer_by_realm,
     get_customer_by_remote_realm,
     get_customer_by_remote_server,
-    is_legacy_customer,
 )
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.logging_util import log_to_file
@@ -761,6 +760,32 @@ class BillingSession(ABC):
     def org_name(self) -> str:
         pass
 
+    def is_legacy_customer(self) -> bool:
+        if isinstance(self, RealmBillingSession):
+            return False
+
+        customers_to_check = []
+        if isinstance(self, RemoteRealmBillingSession):
+            customer = self.get_customer()
+            if customer is not None:
+                customers_to_check.append(customer)
+
+            # Also, check if server for a remote realm was ever on a legacy plan.
+            # We don't migrate ENDED legacy plans from server to remote realm, so we can end
+            # in this state if the first time they registered with us was after the legacy plan.
+            server_customer = get_customer_by_remote_server(self.remote_realm.server)
+            if server_customer is not None:
+                customers_to_check.append(server_customer)
+
+        if isinstance(self, RemoteServerBillingSession):
+            customer = self.get_customer()
+            if customer is not None:
+                customers_to_check.append(customer)
+
+        return CustomerPlan.objects.filter(
+            customer__in=customers_to_check, tier=CustomerPlan.TIER_SELF_HOSTED_LEGACY
+        ).exists()
+
     def get_past_invoices_session_url(self) -> str:
         headline = "List of past invoices"
         customer = self.get_customer()
@@ -1105,7 +1130,11 @@ class BillingSession(ABC):
         self,
         metadata: Dict[str, Any],
     ) -> str:
-        # NOTE: This charges users immediately.
+        """
+        Charge customer based on `billing_modality`. If `billing_modality` is `charge_automatically`,
+        charge customer immediately. If the charge fails, the invoice will be voided.
+        If `billing_modality` is `send_invoice`, create an invoice and send it to the customer.
+        """
         customer = self.get_customer()
         assert customer is not None and customer.stripe_customer_id is not None
         charge_automatically = metadata["billing_modality"] == "charge_automatically"
@@ -1860,9 +1889,9 @@ class BillingSession(ABC):
             if fixed_price_plan_offer is not None:
                 free_trial = False
 
-            if is_legacy_customer(customer):
-                # Free trial is not available for legacy customers.
-                free_trial = False
+        if self.is_legacy_customer():
+            # Free trial is not available for legacy customers.
+            free_trial = False
 
         remote_server_legacy_plan = self.get_remote_server_legacy_plan(customer)
         should_schedule_upgrade_for_legacy_remote_server = (
@@ -1965,15 +1994,10 @@ class BillingSession(ABC):
             )
 
     def get_next_billing_cycle(self, plan: CustomerPlan) -> datetime:
-        last_ledger_renewal = (
-            LicenseLedger.objects.filter(plan=plan, is_renewal=True).order_by("-id").first()
-        )
-        assert last_ledger_renewal is not None
-        last_renewal = last_ledger_renewal.event_time
-
         if plan.status in (
             CustomerPlan.FREE_TRIAL,
             CustomerPlan.DOWNGRADE_AT_END_OF_FREE_TRIAL,
+            CustomerPlan.NEVER_STARTED,
         ):
             assert plan.next_invoice_date is not None
             next_billing_cycle = plan.next_invoice_date
@@ -1981,6 +2005,11 @@ class BillingSession(ABC):
             assert plan.end_date is not None
             next_billing_cycle = plan.end_date
         else:
+            last_ledger_renewal = (
+                LicenseLedger.objects.filter(plan=plan, is_renewal=True).order_by("-id").first()
+            )
+            assert last_ledger_renewal is not None
+            last_renewal = last_ledger_renewal.event_time
             next_billing_cycle = start_of_next_billing_cycle(plan, last_renewal)
 
         if plan.end_date is not None:
@@ -2211,7 +2240,7 @@ class BillingSession(ABC):
         # Should do this in JavaScript, using the user's time zone
         if plan.is_free_trial() or downgrade_at_end_of_free_trial:
             assert plan.next_invoice_date is not None
-            renewal_date = "{dt:%B} {dt.day}, {dt.year}".format(dt=plan.next_invoice_date)
+            renewal_date = f"{plan.next_invoice_date:%B} {plan.next_invoice_date.day}, {plan.next_invoice_date.year}"
         else:
             renewal_date = "{dt:%B} {dt.day}, {dt.year}".format(
                 dt=start_of_next_billing_cycle(plan, now)
@@ -2322,7 +2351,8 @@ class BillingSession(ABC):
         assert plan is not None
 
         new_plan, last_ledger_entry = self.make_end_of_cycle_updates_if_needed(plan, now)
-        assert last_ledger_entry is not None
+        if last_ledger_entry is None:
+            return {"current_plan_downgraded": True}
         plan = new_plan if new_plan is not None else plan
 
         context = self.get_billing_context_from_plan(customer, plan, last_ledger_entry, now)
@@ -2416,6 +2446,7 @@ class BillingSession(ABC):
                     pay_by_invoice_payments_page = invoice.hosted_invoice_url
             else:
                 # NOTE: Only use `last_send_invoice` to display invoice due information and not to verify payment.
+                # Since `last_send_invoice` can vary from invoice for upgrade, additional license, support contract etc.
                 last_send_invoice = (
                     Invoice.objects.filter(customer=customer, status=Invoice.SENT)
                     .order_by("id")
@@ -2454,7 +2485,7 @@ class BillingSession(ABC):
         is_self_hosted_billing = not isinstance(self, RealmBillingSession)
         if fixed_price is None and remote_server_legacy_plan_end_date is None:
             free_trial_days = get_free_trial_days(is_self_hosted_billing, tier)
-            if customer is not None and is_legacy_customer(customer):
+            if self.is_legacy_customer():
                 # Free trial is not available for legacy customers.
                 free_trial_days = None
             if free_trial_days is not None:
@@ -4121,6 +4152,16 @@ class RemoteRealmBillingSession(BillingSession):
             CustomerPlan.TIER_SELF_HOSTED_BUSINESS,
         ):
             return PlanTierChangeType.UPGRADE
+        elif (
+            current_plan_tier == CustomerPlan.TIER_SELF_HOSTED_BASIC
+            and new_plan_tier == CustomerPlan.TIER_SELF_HOSTED_LEGACY
+        ):
+            return PlanTierChangeType.DOWNGRADE
+        elif (
+            current_plan_tier == CustomerPlan.TIER_SELF_HOSTED_BUSINESS
+            and new_plan_tier == CustomerPlan.TIER_SELF_HOSTED_LEGACY
+        ):
+            return PlanTierChangeType.DOWNGRADE
         else:
             assert current_plan_tier == CustomerPlan.TIER_SELF_HOSTED_BUSINESS
             assert new_plan_tier == CustomerPlan.TIER_SELF_HOSTED_BASIC
@@ -4901,6 +4942,7 @@ def invoice_plans_as_needed(event_time: Optional[datetime] = None) -> None:
                     if last_audit_log_update is not None:
                         last_audit_log_update_string = last_audit_log_update.strftime("%Y-%m-%d")
                     context = {
+                        "billing_entity": billing_session.billing_entity_display_name,
                         "support_url": billing_session.support_url(),
                         "last_audit_log_update": last_audit_log_update_string,
                         "notice_reason": "invoice_overdue",

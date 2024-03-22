@@ -45,9 +45,7 @@ with open("/proc/meminfo") as meminfo:
 ram_gb = float(ram_size) / 1024.0 / 1024.0
 if ram_gb < 1.5:
     print(
-        "You have insufficient RAM ({} GB) to run the Zulip development environment.".format(
-            round(ram_gb, 2)
-        )
+        f"You have insufficient RAM ({round(ram_gb, 2)} GB) to run the Zulip development environment."
     )
     print("We recommend at least 2 GB of RAM, and require at least 1.5 GB.")
     sys.exit(1)
@@ -277,11 +275,16 @@ def install_yum_deps(deps_to_install: List[str]) -> None:
     #        Requires: perl(IPC::Run)
     yum_extra_flags: List[str] = []
     if vendor == "rhel":
-        exitcode, subs_status = subprocess.getstatusoutput("sudo subscription-manager status")
-        if exitcode == 1:
+        proc = subprocess.run(
+            ["sudo", "subscription-manager", "status"],
+            stdout=subprocess.PIPE,
+            text=True,
+            check=False,
+        )
+        if proc.returncode == 1:
             # TODO this might overkill since `subscription-manager` is already
             # called in setup-yum-repo
-            if "Status" in subs_status:
+            if "Status" in proc.stdout:
                 # The output is well-formed
                 yum_extra_flags = ["--skip-broken"]
             else:

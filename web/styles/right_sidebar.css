@@ -341,12 +341,6 @@ $user_status_emoji_width: 24px;
     margin-top: 5px;
 }
 
-@media (width < $xl_min) {
-    #userlist-toggle {
-        display: block;
-    }
-}
-
 #user_search_section {
     white-space: nowrap;
     margin-bottom: 10px;

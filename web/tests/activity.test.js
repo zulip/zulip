@@ -239,7 +239,7 @@ test("presence_list_full_update", ({override, mock_template}) => {
         presence_rows = [...presence_rows, ...data.presence_rows];
     });
 
-    $(".user-list-filter").trigger("focus");
+    $("input.user-list-filter").trigger("focus");
 
     const user_ids = activity_ui.build_user_sidebar();
 
@@ -258,7 +258,7 @@ test("presence_list_full_update", ({override, mock_template}) => {
 });
 
 function simulate_right_column_buddy_list() {
-    $(".user-list-filter").closest = (selector) => {
+    $("input.user-list-filter").closest = (selector) => {
         assert.equal(selector, ".app-main [class^='column-']");
         return $.create("right-sidebar").addClass("column-right");
     };
@@ -353,7 +353,7 @@ test("handlers", ({override, override_rewire, mock_template}) => {
             stopPropagation() {},
         };
 
-        const handler = $(".user-list-filter").get_on_handler("focus");
+        const handler = $("input.user-list-filter").get_on_handler("focus");
         handler(e);
     })();
 
@@ -372,7 +372,7 @@ test("handlers", ({override, override_rewire, mock_template}) => {
     (function test_enter_key() {
         init();
 
-        $(".user-list-filter").val("al");
+        $("input.user-list-filter").val("al");
         narrowed = false;
         activity_ui.user_cursor.go_to(alice.user_id);
         filter_key_handlers.Enter();
@@ -395,7 +395,7 @@ test("handlers", ({override, override_rewire, mock_template}) => {
     (function test_blur_filter() {
         init();
         const e = {};
-        const handler = $(".user-list-filter").get_on_handler("blur");
+        const handler = $("input.user-list-filter").get_on_handler("blur");
         handler(e);
     })();
 });
@@ -678,7 +678,7 @@ test("insert_unfiltered_user_with_filter", () => {
     // This test only tests that we do not explode when
     // try to insert Fred into a list where he does not
     // match the search filter.
-    const $user_filter = $(".user-list-filter");
+    const $user_filter = $("input.user-list-filter");
     $user_filter.val("do-not-match-filter");
     activity_ui.redraw_user(fred.user_id);
 });

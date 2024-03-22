@@ -9,16 +9,3 @@
     list-style: none;
     margin: 0;
 }
-
-@media (width < $xl_min) {
-    #typing_notifications {
-        margin-right: 7px;
-    }
-}
-
-@media (width < $md_min) {
-    #typing_notifications {
-        margin-right: 7px;
-        margin-left: 7px;
-    }
-}

@@ -314,6 +314,21 @@ def send_initial_realm_messages(realm: Realm) -> None:
             start_topic_help_url="/help/starting-a-new-topic",
         )
 
+        content_of_zulip_update_announcements_topic_name = (
+            _("""
+Welcome! To help you learn about new features and configuration options, \
+this topic will receive messages about important changes in Zulip.
+
+You can read these update messages whenever it's convenient, or \
+[mute]({mute_topic_help_url}) this topic if you are not interested. \
+If your organization does not want to receive these announcements, \
+they can be disabled. [Learn more]({zulip_update_announcements_help_url}).
+            """)
+        ).format(
+            zulip_update_announcements_help_url="/help/configure-automated-notices#zulip-update-announcements",
+            mute_topic_help_url="/help/mute-a-topic",
+        )
+
     welcome_messages: List[Dict[str, str]] = [
         {
             "stream": Realm.INITIAL_PRIVATE_STREAM_NAME,
@@ -334,6 +349,11 @@ def send_initial_realm_messages(realm: Realm) -> None:
             "stream": realm.DEFAULT_NOTIFICATION_STREAM_NAME,
             "topic_name": "swimming turtles",
             "content": content_of_swimming_turtles_topic_name,
+        },
+        {
+            "stream": Realm.DEFAULT_NOTIFICATION_STREAM_NAME,
+            "topic_name": str(Realm.ZULIP_UPDATE_ANNOUNCEMENTS_TOPIC_NAME),
+            "content": content_of_zulip_update_announcements_topic_name,
         },
     ]
 

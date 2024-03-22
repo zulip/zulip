@@ -138,6 +138,7 @@ exports.fixtures = {
                 field_data: "",
                 order: 1,
                 display_in_profile_summary: false,
+                required: false,
             },
             {
                 id: 2,
@@ -147,6 +148,7 @@ exports.fixtures = {
                 field_data: "",
                 order: 2,
                 display_in_profile_summary: false,
+                required: false,
             },
         ],
     },

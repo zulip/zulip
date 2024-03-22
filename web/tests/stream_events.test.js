@@ -9,6 +9,7 @@ const blueslip = require("./lib/zblueslip");
 const $ = require("./lib/zjquery");
 
 const color_data = mock_esm("../src/color_data");
+const compose_recipient = mock_esm("../src/compose_recipient");
 const stream_color_events = mock_esm("../src/stream_color_events");
 const stream_list = mock_esm("../src/stream_list");
 const stream_muting = mock_esm("../src/stream_muting");
@@ -44,7 +45,6 @@ const people = zrequire("people");
 const settings_config = zrequire("settings_config");
 const stream_data = zrequire("stream_data");
 const stream_events = zrequire("stream_events");
-const compose_recipient = zrequire("compose_recipient");
 
 const george = {
     email: "george@zulip.com",
@@ -94,9 +94,9 @@ function test(label, f) {
     });
 }
 
-test("update_property", ({override, override_rewire}) => {
-    override_rewire(compose_recipient, "possibly_update_stream_name_in_compose", noop);
-    override_rewire(compose_recipient, "on_compose_select_recipient_update", noop);
+test("update_property", ({override}) => {
+    override(compose_recipient, "possibly_update_stream_name_in_compose", noop);
+    override(compose_recipient, "on_compose_select_recipient_update", noop);
 
     const sub = {...frontend};
     stream_data.add_sub(sub);

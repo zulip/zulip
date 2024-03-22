@@ -3274,9 +3274,7 @@ class DefaultStreamGroupTest(ZulipTestCase):
         )
         self.assert_json_error(
             result,
-            "Default stream group name too long (limit: {} characters)".format(
-                DefaultStreamGroup.MAX_NAME_LENGTH
-            ),
+            f"Default stream group name too long (limit: {DefaultStreamGroup.MAX_NAME_LENGTH} characters)",
         )
 
         result = self.client_post(

@@ -1,5 +1,6 @@
 import $ from "jquery";
 
+import {unresolve_name} from "../shared/src/resolved_topic";
 import render_add_poll_modal from "../templates/add_poll_modal.hbs";
 
 import * as compose from "./compose";
@@ -168,7 +169,22 @@ export function initialize() {
             const topic_name = $target.attr("data-topic-name");
 
             message_edit.with_first_message_id(stream_id, topic_name, (message_id) => {
-                message_edit.toggle_resolve_topic(message_id, topic_name, true);
+                if (message_id === undefined) {
+                    // There is no message in the topic, so it is sufficient to
+                    // just remove the topic resolved prefix (✔) from the topic name.
+                    const $input = $("input#stream_message_recipient_topic");
+                    const new_topic = unresolve_name(topic_name);
+                    $input.val(new_topic);
+                    // Trigger an input event, since this is a form of
+                    // user-triggered edit to that field.
+                    $input.trigger("input");
+
+                    // TODO: Probably this should also renarrow to the
+                    // new topic, if we were currently viewing the old
+                    // topic, just as if a message edit had occurred.
+                } else {
+                    message_edit.toggle_resolve_topic(message_id, topic_name, true);
+                }
                 compose_validate.clear_topic_resolved_warning(true);
             });
         },

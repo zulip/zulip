@@ -200,7 +200,7 @@ class StreamSidebar {
 export const stream_sidebar = new StreamSidebar();
 
 function get_search_term(): string {
-    const $search_box = $<HTMLInputElement>(".stream-list-filter").expectOne();
+    const $search_box = $<HTMLInputElement>("input.stream-list-filter").expectOne();
     const search_term = $search_box.val();
     assert(search_term !== undefined);
     return search_term.trim();

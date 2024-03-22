@@ -2,6 +2,7 @@
 # https://www.sphinx-doc.org/en/master/usage/configuration.html
 # https://myst-parser.readthedocs.io/en/latest/sphinx/reference.html
 # https://sphinx-rtd-theme.readthedocs.io/en/stable/configuring.html
+# https://sphinx-design.readthedocs.io/en/latest/tabs.html
 
 import os
 import sys
@@ -17,6 +18,7 @@ on_rtd = os.environ.get("READTHEDOCS") == "True"
 extensions = [
     "myst_parser",
     "sphinx_rtd_theme",
+    "sphinx_design",
 ]
 templates_path = ["_templates"]
 project = "Zulip"

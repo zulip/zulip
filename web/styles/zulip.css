@@ -331,7 +331,6 @@ p.n-margin {
 .app-main,
 .header-main {
     width: 100%;
-    min-width: 950px;
     margin: 0 auto;
     padding: 0;
     position: relative;
@@ -340,7 +339,7 @@ p.n-margin {
 body.has-overlay-scrollbar {
     /* Move simplebar scrollbar to the left so that
        browser scrollbar doesn't overlap with it. */
-    .column-right .simplebar-track.simplebar-vertical {
+    .app-main .column-right .simplebar-track.simplebar-vertical {
         right: var(--browser-overlay-scrollbar-width);
     }
 }
@@ -360,14 +359,11 @@ body.has-overlay-scrollbar {
 /* Set flex display on login buttons only in the
    spectator view. We want them to display none
    otherwise. */
-.spectator-view .column-right .spectator_login_buttons {
+.spectator-view #top_navbar .column-right .spectator_login_buttons {
     display: flex;
-
-    @media (width < $xl_min) or (height < $short_navbar_cutoff_height) {
-        display: none;
-    }
 }
 
+/* This applies to column-left both in navbar and app. */
 .column-right {
     width: var(--right-sidebar-width);
     max-width: var(--right-sidebar-width);
@@ -526,6 +522,7 @@ body.has-overlay-scrollbar {
     }
 }
 
+/* This applies to column-left both in navbar and app. */
 .column-left {
     width: var(--left-sidebar-width);
     max-width: var(--left-sidebar-width);
@@ -535,8 +532,8 @@ body.has-overlay-scrollbar {
 }
 
 #message_feed_container,
-.column-left .left-sidebar,
-.column-right .right-sidebar {
+.app-main .column-left .left-sidebar,
+.app-main .column-right .right-sidebar {
     padding-top: calc(
         var(--navbar-fixed-height) + var(--header-padding-bottom)
     );
@@ -1812,31 +1809,6 @@ div.focused-message-list {
     font-size: 0;
 }
 
-.nav .dropdown-menu {
-    left: auto;
-    right: -7px;
-    top: 35px;
-    /* Match the width of the right sidebar so that we don't have
-       the presence dots distracting you when looking at this. */
-    min-width: 240px;
-    box-shadow: 0 0 5px hsl(0deg 0% 0% / 20%);
-
-    &::after {
-        position: absolute;
-        width: 0;
-        height: 0;
-        top: -7px;
-        right: 19px;
-        display: inline-block;
-        border-right: 7px solid transparent;
-        border-bottom: 7px solid hsl(0deg 0% 67%);
-        border-left: 7px solid transparent;
-        content: "";
-        z-index: 10;
-    }
-}
-
-.nav .dropdown-menu a,
 .typeahead.dropdown-menu a {
     color: inherit;
 }
@@ -2420,76 +2392,90 @@ select.invite-as {
 }
 
 @media (width < $xl_min) or (height < $short_navbar_cutoff_height) {
-    .spectator-view {
-        #navbar-middle {
-            /* = (width of button, square with header) * 3 (number of buttons) + 10px extra margin. */
-            margin-right: calc(var(--header-height) * 3 + 10px);
+    .default-sidebar-behaviour {
+        &.spectator-view.default-sidebar-behaviour {
+            #navbar-middle {
+                /* = (width of button, square with header) * 3 (number of buttons) + 10px extra margin. */
+                margin-right: calc(var(--header-height) * 3 + 10px);
+            }
+
+            #help-menu,
+            #gear-menu {
+                position: relative;
+                right: var(--header-height);
+            }
         }
 
-        #help-menu,
-        #gear-menu {
-            position: relative;
-            right: var(--header-height);
+        &.spectator-view #top_navbar .column-right .spectator_login_buttons {
+            display: none;
+        }
+
+        .header-main .column-right {
+            /* For a diminutive right column in the navbar,
+               allow the width to be that of the flexing
+               button elements. */
+            width: auto;
         }
     }
 }
 
 @media (width < $xl_min) {
-    .app-main,
-    .header-main {
-        min-width: 750px;
-    }
+    .default-sidebar-behaviour {
+        .app-main .column-right {
+            display: none;
 
-    .column-right {
-        display: none;
+            &.expanded {
+                display: block;
+                position: absolute;
+                float: none;
+                right: 15px;
+                top: 0;
 
-        &.expanded {
+                .simplebar-track.simplebar-vertical {
+                    right: 0;
+                }
+
+                .right-sidebar {
+                    box-shadow: 0 -2px 3px 0 hsl(0deg 0% 0% / 10%);
+                    border-left: 1px solid var(--color-border-sidebar);
+                    padding-right: 15px;
+                    padding-left: 15px;
+                    height: 100%;
+                    right: 0;
+                    background-color: var(--color-background);
+                }
+            }
+        }
+
+        .app-main .column-middle {
+            margin-right: 7px;
+        }
+
+        #navbar-middle {
+            /* = (width of button, square with header) * 4 (number of buttons) + 10px extra margin. */
+            margin-right: calc(var(--header-height) * 4 + 10px);
+        }
+
+        #typing_notifications,
+        #scheduled_message_indicator,
+        #compose-content {
+            margin-right: 7px;
+        }
+
+        #userlist-toggle {
             display: block;
-            position: absolute;
-            float: none;
-            right: 15px;
-            top: 0;
-
-            .simplebar-track.simplebar-vertical {
-                right: 0;
-            }
-
-            .right-sidebar {
-                box-shadow: 0 -2px 3px 0 hsl(0deg 0% 0% / 10%);
-                border-left: 1px solid hsl(0deg 0% 87%);
-                padding-right: 15px;
-                padding-left: 15px;
-                height: 100%;
-                right: 0;
-                background-color: var(--color-background);
-            }
         }
-    }
-
-    .nav .dropdown-menu {
-        min-width: 180px;
-        box-shadow: 0 0 5px hsl(0deg 0% 0% / 20%);
-
-        &::after {
-            right: 21px;
-        }
-    }
-
-    .column-middle {
-        margin-right: 7px;
-    }
-
-    #navbar-middle {
-        /* = (width of button, square with header) * 4 (number of buttons) + 10px extra margin. */
-        margin-right: calc(var(--header-height) * 4 + 10px);
     }
 }
 
 @media (width < $md_min) {
-    .column-left {
-        display: none;
+    .default-sidebar-behaviour {
+        .app-main .column-left,
+        .header-main .column-left {
+            display: none;
+        }
 
-        &.expanded {
+        .app-main .column-left.expanded {
             display: block;
             position: absolute;
             float: none;
@@ -2499,68 +2485,60 @@ select.invite-as {
             .left-sidebar {
                 background-color: var(--color-background);
                 box-shadow: 0 2px 3px 0 hsl(0deg 0% 0% / 10%);
-                border-right: 1px solid hsl(0deg 0% 87%);
+                border-right: 1px solid var(--color-border-sidebar);
                 height: 100%;
                 padding-left: 10px;
                 width: var(--left-sidebar-width);
             }
         }
-    }
 
-    body,
-    html,
-    .app-main,
-    .header-main {
-        min-width: 350px;
-    }
+        .app-main .column-middle {
+            margin-left: 7px;
+            margin-right: 7px;
+        }
 
-    .column-middle,
-    .app-main .column-middle {
-        margin-left: 7px;
-        margin-right: 7px;
-    }
+        #navbar-middle {
+            margin-left: 0;
+        }
 
-    .header-main .column-middle {
-        margin-left: 0;
-    }
+        .app-main .column-middle .column-middle-inner {
+            margin-left: 0;
+            margin-right: 0;
+        }
 
-    .column-middle-inner {
-        margin-left: 0;
-    }
+        #streamlist-toggle {
+            display: block;
+        }
 
-    .app-main .column-middle .column-middle-inner {
-        margin-right: 0;
-    }
+        .top-navbar-container {
+            margin-left: 40px;
+        }
 
-    #streamlist-toggle {
-        display: block;
-    }
-
-    .top-navbar-container {
-        margin-left: 40px;
-    }
-
-    .zulip-icon-search {
-        right: 115px;
-    }
-
-    .dropdown-menu ul {
-        margin: 0 -25px 0 0;
-        background: transparent;
-
-        & li {
+        .typeahead.dropdown-menu .typeahead-menu li {
             width: 100%;
 
             & a {
                 white-space: normal;
             }
         }
+
+        #feedback_container {
+            width: calc(90% - 30px);
+            left: 5%;
+            top: 5%;
+        }
+
+        #typing_notifications,
+        #scheduled_message_indicator,
+        #compose-content {
+            margin-left: 7px;
+        }
     }
 }
 
 @media (height < $short_navbar_cutoff_height) {
-    .column-right.expanded .right-sidebar,
-    .column-left.expanded .left-sidebar {
+    .app-main .column-right.expanded .right-sidebar,
+    .app-main .column-left.expanded .left-sidebar {
         margin-top: var(--navbar-fixed-height);
         /* For very short screen sizes, skip the relatively large top padding. */
         padding-top: 0;
@@ -2569,16 +2547,12 @@ select.invite-as {
     /* TODO: Properly and accurately align the
        topmost headers on the left and right
        sidebar. */
-    .column-right.expanded .right-sidebar-items {
+    .app-main .column-right.expanded .right-sidebar-items {
         margin-top: 10px;
     }
 
-    .column-left.expanded .left-sidebar-navigation-area {
+    .app-main .column-left.expanded .left-sidebar-navigation-area {
         margin-top: 10px;
-    }
-
-    .nav .dropdown-menu {
-        right: -13px;
     }
 
     /* Usually the styling is applied directly to the icon, but here
@@ -2608,7 +2582,7 @@ select.invite-as {
         top: 5px;
     }
 
-    .column-right #personal-menu .header-button-avatar {
+    #top_navbar .column-right #personal-menu .header-button-avatar {
         width: 20px;
         height: 20px;
     }
@@ -2619,19 +2593,18 @@ select.invite-as {
         overflow-x: hidden;
     }
 
+    /* We don't want user to experience Zulip below this width since
+       we don't develop features for below this width. */
     body,
     html,
     .app-main,
     .header-main {
         min-width: 320px;
     }
-}
 
-@media (width < $md_min) {
-    #feedback_container {
-        width: calc(90% - 30px);
-        left: 5%;
-        top: 5%;
+    #compose #compose-content {
+        margin-right: 5px;
+        margin-left: 5px;
     }
 }
 
@@ -2825,13 +2798,6 @@ select.invite-as {
     /* Move the column to the right with absolute
        positioning, rather than margin. */
     right: 7px;
-
-    @media (width < $xl_min) or (height < $short_navbar_cutoff_height) {
-        /* For a diminutive right column in the navbar,
-           allow the width to be that of the flexing
-           button elements. */
-        width: auto;
-    }
 
     & a:focus {
         filter: none;

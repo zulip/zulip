@@ -1,9 +1,13 @@
+Internal billing notice for {{ billing_entity }}.
+
 {% if notice_reason == "fixed_price_plan_ends_soon" %}
 Reminder to re-evaluate the pricing and configure a new fixed-price plan accordingly.
 {% elif notice_reason == "invoice_overdue" %}
+Recent invoice is overdue for payment.
+
 Last data upload: {{ last_audit_log_update }}
 {% elif notice_reason == "locally_deleted_realm_on_paid_plan" %}
-Investigate the reason for {{billing_entity}} on paid plan marked as locally deleted.
+Investigate why remote realm is marked as locally deleted when it's on a paid plan.
 {% endif %}
 
 Support URL: {{ support_url }}

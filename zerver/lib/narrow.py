@@ -576,7 +576,7 @@ class NarrowBuilder:
             raise BadNarrowOperatorError("unknown user in " + str(operand))
 
         # Group direct message
-        if recipient.type == Recipient.HUDDLE:
+        if recipient.type == Recipient.DIRECT_MESSAGE_GROUP:
             cond = column("recipient_id", Integer) == recipient.id
             return query.where(maybe_negate(cond))
 
@@ -627,14 +627,14 @@ class NarrowBuilder:
             recipient_tuple["recipient_id"]
             for recipient_tuple in Subscription.objects.filter(
                 user_profile=self.user_profile,
-                recipient__type=Recipient.HUDDLE,
+                recipient__type=Recipient.DIRECT_MESSAGE_GROUP,
             ).values("recipient_id")
         ]
         narrow_recipient_ids = [
             recipient_tuple["recipient_id"]
             for recipient_tuple in Subscription.objects.filter(
                 user_profile=other_user,
-                recipient__type=Recipient.HUDDLE,
+                recipient__type=Recipient.DIRECT_MESSAGE_GROUP,
             ).values("recipient_id")
         ]
 

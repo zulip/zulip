@@ -104,6 +104,7 @@ export function dispatch_normal_event(event) {
             realm.custom_profile_fields = event.fields;
             settings_profile_fields.populate_profile_fields(realm.custom_profile_fields);
             settings_account.add_custom_profile_fields_to_settings();
+            navbar_alerts.maybe_show_empty_required_profile_fields_alert();
             break;
 
         case "default_streams":

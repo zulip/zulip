@@ -3,6 +3,7 @@ import $ from "jquery";
 import render_confirm_delete_playground from "../templates/confirm_dialog/confirm_delete_playground.hbs";
 import render_admin_playground_list from "../templates/settings/admin_playground_list.hbs";
 
+import * as bootstrap_typeahead from "./bootstrap_typeahead";
 import * as channel from "./channel";
 import * as confirm_dialog from "./confirm_dialog";
 import * as dialog_widget from "./dialog_widget";
@@ -151,7 +152,7 @@ function build_page() {
     const $search_pygments_box = $("#playground_pygments_language");
     let language_labels = new Map();
 
-    $search_pygments_box.typeahead({
+    bootstrap_typeahead.create($search_pygments_box, {
         source(query) {
             language_labels = realm_playground.get_pygments_typeahead_list_for_settings(query);
             return [...language_labels.keys()];
@@ -167,7 +168,8 @@ function build_page() {
     });
 
     $search_pygments_box.on("click", (e) => {
-        $search_pygments_box.typeahead("lookup").trigger("select");
+        bootstrap_typeahead.lookup($search_pygments_box);
+        $search_pygments_box.trigger("select");
         e.preventDefault();
         e.stopPropagation();
     });

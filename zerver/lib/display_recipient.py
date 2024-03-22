@@ -144,7 +144,9 @@ def bulk_fetch_user_display_recipients(
     get_type = lambda tup: tup[1]
 
     personal_tuples = [tup for tup in recipient_tuples if get_type(tup) == Recipient.PERSONAL]
-    huddle_tuples = [tup for tup in recipient_tuples if get_type(tup) == Recipient.HUDDLE]
+    huddle_tuples = [
+        tup for tup in recipient_tuples if get_type(tup) == Recipient.DIRECT_MESSAGE_GROUP
+    ]
 
     huddle_recipient_ids = [get_recipient_id(tup) for tup in huddle_tuples]
     huddle_recipient_id_to_user_ids = bulk_get_huddle_user_ids(huddle_recipient_ids)

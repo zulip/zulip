@@ -269,6 +269,7 @@ function open_custom_profile_field_form_modal() {
             display_in_profile_summary: $("#profile_field_display_in_profile_summary").is(
                 ":checked",
             ),
+            required: $("#profile-field-required").is(":checked"),
         };
         const url = "/json/realm/profile_fields";
         const opts = {
@@ -454,6 +455,7 @@ function open_edit_form_modal(e) {
             hint: field.hint,
             choices,
             display_in_profile_summary: field.display_in_profile_summary === true,
+            required: field.required === true,
             is_select_field: field.type === field_types.SELECT.id,
             is_external_account_field: field.type === field_types.EXTERNAL_ACCOUNT.id,
             valid_to_display_in_summary: is_valid_to_display_in_summary(field.type),
@@ -510,6 +512,7 @@ function open_edit_form_modal(e) {
         data.display_in_profile_summary = $profile_field_form
             .find("input[name=display_in_profile_summary]")
             .is(":checked");
+        data.required = $profile_field_form.find("input[name=required]").is(":checked");
 
         const new_field_data = read_field_data_from_form(
             Number.parseInt(field.type, 10),
@@ -588,6 +591,7 @@ function toggle_display_in_profile_summary_profile_field(e) {
         hint: field.hint,
         field_data,
         display_in_profile_summary: !field.display_in_profile_summary,
+        required: field.required,
     };
     const $profile_field_status = $("#admin-profile-field-status").expectOne();
 
@@ -599,6 +603,31 @@ function toggle_display_in_profile_summary_profile_field(e) {
     );
 }
 
+function toggle_required(e) {
+    const field_id = Number.parseInt($(e.currentTarget).attr("data-profile-field-id"), 10);
+    const field = get_profile_field(field_id);
+
+    let field_data;
+    if (field.field_data) {
+        field_data = field.field_data;
+    }
+
+    const data = {
+        name: field.name,
+        hint: field.hint,
+        field_data,
+        display_in_profile_summary: field.display_in_profile_summary,
+        required: !field.required,
+    };
+    const $profile_field_status = $("#admin-profile-field-status").expectOne();
+
+    settings_ui.do_settings_change(
+        channel.patch,
+        "/json/realm/profile_fields/" + field_id,
+        data,
+        $profile_field_status,
+    );
+}
 export function reset() {
     meta.loaded = false;
 }
@@ -648,6 +677,7 @@ export function do_populate_profile_fields(profile_fields_data) {
         }
 
         const display_in_profile_summary = profile_field.display_in_profile_summary === true;
+        const required = profile_field.required === true;
         $profile_fields_table.append(
             render_admin_profile_field_list({
                 profile_field: {
@@ -661,6 +691,7 @@ export function do_populate_profile_fields(profile_fields_data) {
                         profile_field.type === field_types.EXTERNAL_ACCOUNT.id,
                     display_in_profile_summary,
                     valid_to_display_in_summary: is_valid_to_display_in_summary(profile_field.type),
+                    required,
                 },
                 can_modify: current_user.is_admin,
                 realm_default_external_accounts: realm.realm_default_external_accounts,
@@ -767,4 +798,5 @@ export function build_page() {
         ".display_in_profile_summary",
         toggle_display_in_profile_summary_profile_field,
     );
+    $("#admin_profile_fields_table").on("click", ".required-field-toggle", toggle_required);
 }

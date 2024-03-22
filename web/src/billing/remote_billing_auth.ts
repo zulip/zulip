@@ -2,7 +2,7 @@ import $ from "jquery";
 
 function handle_submit_for_server_login_form(form: HTMLFormElement): void {
     // Get value of zulip_org_id.
-    const zulip_org_id = $<HTMLInputElement>("#zulip-org-id").val();
+    const zulip_org_id = $<HTMLInputElement>("input#zulip-org-id").val();
     const $error_field = $(".zulip_org_id-error");
     if (zulip_org_id === undefined) {
         // Already handled by `validate` plugin.
@@ -66,14 +66,14 @@ export function initialize(): void {
         },
     });
 
-    $<HTMLInputElement>("#enable-major-release-emails").on("change", function () {
+    $<HTMLInputElement>("input#enable-major-release-emails").on("change", function () {
         if (this.checked) {
             $(this).val("true");
         }
         $(this).val("false");
     });
 
-    $<HTMLInputElement>("#enable-maintenance-release-emails").on("change", function () {
+    $<HTMLInputElement>("input#enable-maintenance-release-emails").on("change", function () {
         if (this.checked) {
             $(this).val("true");
         }

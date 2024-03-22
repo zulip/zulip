@@ -7,6 +7,7 @@
 
 # Django itself
 Django[argon2]==4.2.*
+asgiref<3.8.0  # Breaks with https://github.com/django/asgiref/pull/367
 
 # needed for NotRequired, ParamSpec
 typing-extensions
@@ -97,7 +98,7 @@ tornado
 orjson
 
 # Needed for iOS push notifications
-https://github.com/zulip/aioapns/archive/2d69284481d328bd3e4168c631d75a38268eddb9.zip#egg=aioapns==3.1+git  # https://github.com/Fatal1ty/aioapns/pull/52
+aioapns
 
 python-twitter
 

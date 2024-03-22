@@ -354,10 +354,8 @@
         );
     }
 
-    .column-left .left-sidebar,
     .stream_name_search_section,
-    .group_name_search_section,
-    .column-right .right-sidebar {
+    .group_name_search_section {
         border-color: hsl(0deg 0% 0% / 20%);
     }
 
@@ -484,6 +482,10 @@
         border-width: 1px;
     }
 
+    .field {
+        border-color: hsl(3deg 73% 74%);
+    }
+
     .deactivated-pill {
         background-color: hsl(0deg 86% 14%) !important;
     }
@@ -598,7 +600,8 @@
     }
 
     #draft_overlay,
-    #scheduled_messages_overlay_container {
+    #scheduled_messages_overlay_container,
+    #message-edit-history-overlay-container {
         .flex.overlay-content > div {
             box-shadow: 0 0 30px hsl(213deg 31% 0%);
             background-color: var(--color-background);
@@ -608,10 +611,6 @@
     /* Undo default dropdown background color for dark mode. */
     #searchbox_form .dropdown-menu ul {
         background-color: unset;
-    }
-
-    .dropdown-menu a {
-        color: inherit;
     }
 
     .popover hr,
@@ -628,10 +627,6 @@
         .gear-menu-select-light-theme {
             display: block;
         }
-    }
-
-    .nav .dropdown-menu::after {
-        border-bottom-color: hsl(235deg 18% 7%);
     }
 
     .narrow_to_compose_recipients,
@@ -839,7 +834,7 @@
         border-color: hsl(217deg 64% 59% / 70%);
     }
 
-    #message-edit-history {
+    #message-edit-history-overlay-container {
         .message_edit_history_content {
             .highlight_text_inserted {
                 color: hsl(122deg 100% 81%);

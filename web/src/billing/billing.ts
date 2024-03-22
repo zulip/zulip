@@ -96,11 +96,11 @@ export function initialize(): void {
         old_current_manual_license_count: number;
     } {
         const new_current_manual_license_count: number = Number.parseInt(
-            $<HTMLInputElement>("#current-manual-license-count").val()!,
+            $<HTMLInputElement>("input#current-manual-license-count").val()!,
             10,
         );
         const old_current_manual_license_count: number = Number.parseInt(
-            $<HTMLInputElement>("#current-manual-license-count").attr("data-original-value")!,
+            $<HTMLInputElement>("input#current-manual-license-count").attr("data-original-value")!,
             10,
         );
         return {
@@ -114,11 +114,11 @@ export function initialize(): void {
         old_next_manual_license_count: number;
     } {
         const new_next_manual_license_count: number = Number.parseInt(
-            $<HTMLInputElement>("#next-manual-license-count").val()!,
+            $<HTMLInputElement>("input#next-manual-license-count").val()!,
             10,
         );
         const old_next_manual_license_count: number = Number.parseInt(
-            $<HTMLInputElement>("#next-manual-license-count").attr("data-original-value")!,
+            $<HTMLInputElement>("input#next-manual-license-count").attr("data-original-value")!,
             10,
         );
         return {
@@ -323,7 +323,7 @@ export function initialize(): void {
         }, 300); // Wait for 300ms after the user stops typing
     });
 
-    $<HTMLInputElement>(".billing-frequency-select").on("change", function () {
+    $<HTMLSelectElement>("select.billing-frequency-select").on("change", function () {
         const $wrapper = $(".org-billing-frequency-wrapper");
         const switch_to_annual_eoc = $wrapper.attr("data-switch-to-annual-eoc") === "true";
         const switch_to_monthly_eoc = $wrapper.attr("data-switch-to-monthly-eoc") === "true";

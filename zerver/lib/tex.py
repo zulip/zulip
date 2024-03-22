@@ -1,12 +1,22 @@
 import logging
 import os
 import subprocess
-from typing import Optional
+from typing import Any, Optional
 
 import lxml.html
+import requests
 from django.conf import settings
 
+from zerver.lib.outgoing_http import OutgoingSession
 from zerver.lib.storage import static_path
+
+
+class KatexSession(OutgoingSession):
+    def __init__(self, **kwargs: Any) -> None:
+        # We set a very short timeout because these requests are
+        # expected to be quite fast (milliseconds) and blocking on
+        # this affects message rendering performance.
+        super().__init__(role="katex", timeout=0.5, **kwargs)
 
 
 def render_tex(tex: str, is_inline: bool = True) -> Optional[str]:
@@ -22,6 +32,38 @@ def render_tex(tex: str, is_inline: bool = True) -> Optional[str]:
                  will show the content centered, and in the "expanded" form
                  (default True)
     """
+
+    if settings.KATEX_SERVER:
+        try:
+            resp = KatexSession().post(
+                # We explicitly disable the Smokescreen proxy for this
+                # call, since it intentionally connects to localhost.
+                # This is safe because the host is explicitly fixed, and
+                # the port is pulled from our own configuration.
+                f"http://localhost:{settings.KATEX_SERVER_PORT}/",
+                data={
+                    "content": tex,
+                    "is_display": "false" if is_inline else "true",
+                    "shared_secret": settings.SHARED_SECRET,
+                },
+                proxies={"http": ""},
+            )
+        except requests.exceptions.Timeout:
+            logging.warning("KaTeX rendering service timed out with %d byte long input", len(tex))
+            return None
+        except requests.exceptions.RequestException as e:
+            logging.warning("KaTeX rendering service failed: %s", type(e).__name__)
+            return None
+
+        if resp.status_code == 200:
+            return resp.content.decode().strip()
+        elif resp.status_code == 400:
+            return None
+        else:
+            logging.warning(
+                "KaTeX rendering service failed: (%s) %s", resp.status_code, resp.content.decode()
+            )
+            return None
 
     katex_path = (
         static_path("webpack-bundles/katex-cli.js")

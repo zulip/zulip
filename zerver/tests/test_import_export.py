@@ -684,7 +684,7 @@ class RealmImportExportTest(ExportFile):
         # Third huddle is not exported since none of the members gave consent
         assert huddle_a is not None and huddle_b is not None
         huddle_recipients = Recipient.objects.filter(
-            type_id__in=[huddle_a.id, huddle_b.id], type=Recipient.HUDDLE
+            type_id__in=[huddle_a.id, huddle_b.id], type=Recipient.DIRECT_MESSAGE_GROUP
         )
         pm_query = Q(recipient__in=huddle_recipients) | Q(sender__in=consented_user_ids)
         exported_huddle_ids = (
@@ -984,7 +984,9 @@ class RealmImportExportTest(ExportFile):
             # Huddles don't have a realm column, so we just test all Huddles for simplicity.
             self.assertEqual(
                 huddle_object.recipient_id,
-                Recipient.objects.get(type=Recipient.HUDDLE, type_id=huddle_object.id).id,
+                Recipient.objects.get(
+                    type=Recipient.DIRECT_MESSAGE_GROUP, type_id=huddle_object.id
+                ).id,
             )
 
         self.assertEqual(ScheduledMessage.objects.filter(realm=imported_realm).count(), 1)

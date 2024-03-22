@@ -116,7 +116,18 @@ run_test("notifications", () => {
 
 run_test("munging", () => {
     alert_words.initialize(params);
-
+    assert.deepEqual(alert_words.get_word_list(), [
+        {word: "alertthree"},
+        {word: "alertone"},
+        {word: "alerttwo"},
+        {word: "al*rt.*s"},
+        {word: "emoji"},
+        {word: `5'11"`},
+        {word: "FD&C"},
+        {word: ".+"},
+        {word: "<3"},
+        {word: ">8"},
+    ]);
     let saved_content = regular_message.content;
     alert_words.process_message(regular_message);
     assert.equal(saved_content, regular_message.content);

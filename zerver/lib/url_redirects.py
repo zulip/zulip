@@ -82,6 +82,7 @@ HELP_DOCUMENTATION_REDIRECTS: List[URLRedirect] = [
     URLRedirect("/help/finding-a-topic-to-read", "/help/finding-a-conversation-to-read"),
     URLRedirect("/help/view-and-browse-images", "/help/view-images-and-videos"),
     URLRedirect("/help/bots-and-integrations", "/help/bots-overview"),
+    URLRedirect("/help/configure-notification-bot", "/help/configure-automated-notices"),
 ]
 
 LANDING_PAGE_REDIRECTS = [
