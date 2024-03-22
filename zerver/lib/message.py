@@ -2,6 +2,7 @@ from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from typing import (
     Any,
+    Callable,
     Collection,
     Dict,
     List,
@@ -23,6 +24,7 @@ from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
 from django_stubs_ext import ValuesQuerySet
 from psycopg2.sql import SQL
+from returns.curry import partial
 
 from analytics.lib.counts import COUNT_STATS
 from analytics.models import RealmCount
@@ -318,9 +320,14 @@ def access_message(
 
     if get_user_message == "object":
         user_message = get_usermessage_by_message_id(user_profile, message_id)
-        has_user_message = user_message is not None
+        has_user_message = lambda: user_message is not None
+    elif get_user_message == "exists":
+        local_exists = UserMessage.objects.filter(
+            user_profile=user_profile, message_id=message_id
+        ).exists()
+        has_user_message = lambda: local_exists
     else:
-        has_user_message = UserMessage.objects.filter(
+        has_user_message = lambda: UserMessage.objects.filter(
             user_profile=user_profile, message_id=message_id
         ).exists()
 
@@ -328,7 +335,7 @@ def access_message(
         if get_user_message is None:
             return message
         if get_user_message == "exists":
-            return (message, has_user_message)
+            return (message, local_exists)
         if get_user_message == "object":
             return (message, user_message)
     raise JsonableError(_("Invalid message(s)"))
@@ -380,7 +387,7 @@ def has_message_access(
     user_profile: UserProfile,
     message: Message,
     *,
-    has_user_message: bool,
+    has_user_message: Callable[[], bool],
     stream: Optional[Stream] = None,
     is_subscribed: Optional[bool] = None,
 ) -> bool:
@@ -394,7 +401,7 @@ def has_message_access(
 
     if message.recipient.type != Recipient.STREAM:
         # You can only access direct messages you received
-        return has_user_message
+        return has_user_message()
 
     if stream is None:
         stream = Stream.objects.get(id=message.recipient.type_id)
@@ -421,7 +428,7 @@ def has_message_access(
         # (1) Have directly received the message.
         # AND
         # (2) Be subscribed to the stream.
-        return has_user_message and is_subscribed_helper()
+        return has_user_message() and is_subscribed_helper()
 
     # is_history_public_to_subscribers, so check if you're subscribed
     return is_subscribed_helper()
@@ -461,12 +468,11 @@ def bulk_access_messages(
     subscribed_recipient_ids = set(get_subscribed_stream_recipient_ids_for_user(user_profile))
 
     for message in messages:
-        has_user_message = message.id in user_message_set
         is_subscribed = message.recipient_id in subscribed_recipient_ids
         if has_message_access(
             user_profile,
             message,
-            has_user_message=has_user_message,
+            has_user_message=partial(lambda m: m.id in user_message_set, message),
             stream=streams.get(message.recipient_id) if stream is None else stream,
             is_subscribed=is_subscribed,
         ):
