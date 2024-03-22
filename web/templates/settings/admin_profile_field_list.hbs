@@ -23,6 +23,14 @@
         </span>
         {{/if}}
     </td>
+    <td class="required-cell">
+        <span class="profile-field-required">
+            <label class="checkbox" for="profile-field-required-{{id}}">
+                <input class="required-field-toggle required-checkbox-{{required}}" type="checkbox" id="profile-field-required-{{id}}" {{#if required}} checked="checked" {{/if}} data-profile-field-id="{{id}}"/>
+                <span></span>
+            </label>
+        </span>
+    </td>
     {{#if ../can_modify}}
     <td class="actions">
         <button class="button rounded small btn-warning open-edit-form-modal tippy-zulip-delayed-tooltip" data-tippy-content="{{t 'Edit custom profile field' }}" data-profile-field-id="{{id}}">

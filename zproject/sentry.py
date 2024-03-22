@@ -1,5 +1,5 @@
 import os
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING, Any, Dict, Optional, Union
 
 import sentry_sdk
 from django.utils.translation import override as override_language
@@ -32,8 +32,9 @@ def add_context(event: "Event", hint: "Hint") -> Optional["Event"]:
         # https://docs.sentry.io/platforms/python/guides/django/enriching-error-data/additional-data/identify-user/
         event.setdefault("tags", {})
         user_info = event.get("user", {})
-        if user_info.get("id"):
-            user_profile = get_user_profile_by_id(user_info["id"])
+        user_id = user_info.get("id")
+        if isinstance(user_id, str):
+            user_profile = get_user_profile_by_id(int(user_id))
             event["tags"]["realm"] = user_info["realm"] = user_profile.realm.string_id or "root"
             with override_language(settings.LANGUAGE_CODE):
                 # str() to force the lazy-translation to apply now,
@@ -49,7 +50,22 @@ def add_context(event: "Event", hint: "Hint") -> Optional["Event"]:
     return event
 
 
+def traces_sampler(sampling_context: Dict[str, Any]) -> Union[float, bool]:
+    from django.conf import settings
+
+    queue = sampling_context.get("queue")
+    if queue is not None and isinstance(queue, str):
+        if isinstance(settings.SENTRY_TRACE_WORKER_RATE, float):
+            return settings.SENTRY_TRACE_WORKER_RATE
+        else:
+            return settings.SENTRY_TRACE_WORKER_RATE.get(queue, 0.0)
+    else:
+        return settings.SENTRY_TRACE_RATE
+
+
 def setup_sentry(dsn: Optional[str], environment: str) -> None:
+    from django.conf import settings
+
     if not dsn:
         return
 
@@ -79,6 +95,8 @@ def setup_sentry(dsn: Optional[str], environment: str) -> None:
         # PII while having the identifiers needed to determine that an
         # exception only affects a small subset of users or realms.
         send_default_pii=True,
+        traces_sampler=traces_sampler,
+        profiles_sample_rate=settings.SENTRY_PROFILE_RATE,
     )
 
     # Ignore all of the loggers from django.security that are for user

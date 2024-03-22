@@ -27,7 +27,7 @@ export enum DataTypes {
     STRING = "string",
 }
 
-type Option = {
+export type Option = {
     unique_id: number | string;
     name: string;
     is_setting_disabled?: boolean;

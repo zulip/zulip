@@ -62,6 +62,7 @@ export function append_custom_profile_fields(element_id, user_id) {
             is_select_field,
             field_choices,
             for_manage_user_modal: element_id === "#edit-user-form .custom-profile-field-form",
+            is_empty_required_field: field.required && !field_value.value,
         });
         $(element_id).append(html);
     }

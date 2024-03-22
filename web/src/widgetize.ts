@@ -2,15 +2,42 @@ import $ from "jquery";
 
 import * as blueslip from "./blueslip";
 import * as message_lists from "./message_lists";
+import type {Message} from "./message_store";
+import type {Event, ExtraData as PollWidgetExtraData} from "./poll_widget";
 
-export const widgets = new Map();
-export const widget_contents = new Map();
+// TODO: This ZFormExtraData type should be moved to web/src/zform.js when it will be migrated
+type ZFormExtraData = {
+    type: string;
+    heading: string;
+    choices: {type: string; reply: string; long_name: string; short_name: string}[];
+};
 
-export function clear_for_testing() {
+type WidgetOptions = {
+    widget_type: string;
+    extra_data: PollWidgetExtraData | ZFormExtraData | null;
+    events: Event[];
+    $row: JQuery;
+    message: Message;
+    post_to_server: (data: {msg_type: string; data: string}) => void;
+};
+
+type WidgetValue = Record<string, unknown> & {
+    activate: (data: {
+        $elem: JQuery;
+        callback: (data: string) => void;
+        message: Message;
+        extra_data: WidgetOptions["extra_data"];
+    }) => void;
+};
+
+export const widgets = new Map<string, WidgetValue>();
+export const widget_contents = new Map<number, JQuery>();
+
+export function clear_for_testing(): void {
     widget_contents.clear();
 }
 
-function set_widget_in_message($row, $widget_elem) {
+function set_widget_in_message($row: JQuery, $widget_elem: JQuery): void {
     const $content_holder = $row.find(".message_content");
 
     // Avoid adding the $widget_elem if it already exists.
@@ -23,7 +50,7 @@ function set_widget_in_message($row, $widget_elem) {
     }
 }
 
-export function activate(in_opts) {
+export function activate(in_opts: WidgetOptions): void {
     const widget_type = in_opts.widget_type;
     const extra_data = in_opts.extra_data;
     const events = in_opts.events;
@@ -41,14 +68,14 @@ export function activate(in_opts) {
         return;
     }
 
-    const callback = function (data) {
+    const callback = function (data: string): void {
         post_to_server({
             msg_type: "widget",
             data,
         });
     };
 
-    if (!$row.attr("id").startsWith(`message-row-${message_lists.current?.id}-`)) {
+    if (!$row.attr("id")!.startsWith(`message-row-${message_lists.current?.id}-`)) {
         // Don't activate widgets for messages that are not in the current view.
         return;
     }
@@ -63,7 +90,7 @@ export function activate(in_opts) {
     // the HTML that will eventually go in this div.
     $widget_elem = $("<div>").addClass("widget-content");
 
-    widgets.get(widget_type).activate({
+    widgets.get(widget_type)!.activate({
         $elem: $widget_elem,
         callback,
         message,
@@ -81,7 +108,7 @@ export function activate(in_opts) {
     }
 }
 
-export function set_widgets_for_list() {
+export function set_widgets_for_list(): void {
     for (const [idx, $widget_elem] of widget_contents) {
         if (message_lists.current?.get(idx) !== undefined) {
             const $row = message_lists.current.get_row(idx);
@@ -90,7 +117,7 @@ export function set_widgets_for_list() {
     }
 }
 
-export function handle_event(widget_event) {
+export function handle_event(widget_event: Event & {message_id: number}): void {
     const $widget_elem = widget_contents.get(widget_event.message_id);
 
     if (!$widget_elem) {

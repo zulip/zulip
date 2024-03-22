@@ -359,6 +359,8 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
         on_delete=models.SET_NULL,
     )
 
+    zulip_update_announcements_level = models.PositiveIntegerField(null=True)
+
     MESSAGE_RETENTION_SPECIAL_VALUES_MAP = {
         "unlimited": -1,
     }

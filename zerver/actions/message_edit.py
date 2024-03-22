@@ -64,7 +64,7 @@ from zerver.lib.topic import (
 )
 from zerver.lib.types import EditHistoryEvent
 from zerver.lib.url_encoding import near_stream_message_url
-from zerver.lib.user_message import UserMessageLite, bulk_insert_ums
+from zerver.lib.user_message import bulk_insert_all_ums
 from zerver.lib.user_topics import get_users_with_user_topic_visibility_policy
 from zerver.lib.widget import is_widget_message
 from zerver.models import (
@@ -72,7 +72,9 @@ from zerver.models import (
     Attachment,
     Message,
     Reaction,
+    Recipient,
     Stream,
+    Subscription,
     UserMessage,
     UserProfile,
     UserTopic,
@@ -550,7 +552,8 @@ def do_update_message(
         orig_topic_name = target_message.topic_name()
         event["propagate_mode"] = propagate_mode
 
-    losing_access_user_ids: List[int] = []
+    users_losing_access = UserProfile.objects.none()
+    user_ids_gaining_usermessages: List[int] = []
     if new_stream is not None:
         assert content is None
         assert target_message.is_stream_message()
@@ -572,49 +575,55 @@ def do_update_message(
         # though the messages were deleted, and we should send a
         # delete_message event to them instead.
 
-        subs_to_old_stream = get_active_subscriptions_for_stream_id(
-            stream_id, include_deactivated_users=True
-        ).select_related("user_profile")
-        subs_to_new_stream = list(
-            get_active_subscriptions_for_stream_id(
+        # We select _all_ current subscriptions, not just active ones,
+        # for the current stream, since there may be users who were
+        # previously subscribed when the message was sent, but are no
+        # longer, who should also lose their UserMessage rows.
+        old_stream_all_users = UserProfile.objects.filter(
+            id__in=Subscription.objects.filter(
+                recipient__type=Recipient.STREAM,
+                recipient__type_id=stream_id,
+            ).values_list("user_profile_id")
+        ).only("id")
+
+        new_stream_current_users = UserProfile.objects.filter(
+            id__in=get_active_subscriptions_for_stream_id(
                 new_stream.id, include_deactivated_users=True
-            ).select_related("user_profile")
-        )
+            ).values_list("user_profile_id")
+        ).only("id")
 
-        old_stream_user_ids = {user.user_profile_id for user in subs_to_old_stream}
-        new_stream_user_ids = {user.user_profile_id for user in subs_to_new_stream}
+        users_losing_usermessages = old_stream_all_users.difference(new_stream_current_users)
+        if new_stream.is_public():
+            # Only guest users are losing access, if it's moving to a public stream
+            users_losing_access = old_stream_all_users.filter(
+                role=UserProfile.ROLE_GUEST
+            ).difference(new_stream_current_users)
+        else:
+            # If it's moving to a private stream, all non-subscribed users are losing access
+            users_losing_access = users_losing_usermessages
 
-        # Get users who aren't subscribed to the new_stream.
-        subs_losing_usermessages = [
-            sub for sub in subs_to_old_stream if sub.user_profile_id not in new_stream_user_ids
-        ]
-        # Users who can longer access the message without some action
-        # from administrators.
-        subs_losing_access = [
-            sub
-            for sub in subs_losing_usermessages
-            if sub.user_profile.is_guest or not new_stream.is_public()
-        ]
-        losing_access_user_ids = [sub.user_profile_id for sub in subs_losing_access]
+        unmodified_user_messages = ums.exclude(user_profile__in=users_losing_usermessages)
 
-        unmodified_user_messages = ums.exclude(
-            user_profile_id__in=[sub.user_profile_id for sub in subs_losing_usermessages]
-        )
-
-        gaining_usermessage_user_ids = []
         if not new_stream.is_history_public_to_subscribers():
-            # For private streams, with history not public to subscribers,
-            # We find out users who are not present in the msgs' old stream
-            # and create new UserMessage for these users so that they can
-            # access this message.
-            gaining_usermessage_user_ids += [
-                user_id for user_id in new_stream_user_ids if user_id not in old_stream_user_ids
-            ]
+            # We need to guarantee that every currently-subscribed
+            # user of the new stream has a UserMessage row, since
+            # being a member when the message is moved is always
+            # enough to have access.  We cannot reduce that set by
+            # removing either active or all subscribers from the old
+            # stream, since neither set guarantees that the user was
+            # subscribed when these messages were sent -- in fact, it
+            # may not be consistent across the messages.
+            #
+            # There may be current users of the new stream who already
+            # have a usermessage row -- we handle this via `ON
+            # CONFLICT DO NOTHING` during insert.
+            user_ids_gaining_usermessages = list(
+                new_stream_current_users.values_list("id", flat=True)
+            )
     else:
         # If we're not moving the topic to another stream, we don't
         # modify the original set of UserMessage objects queried.
         unmodified_user_messages = ums
-        gaining_usermessage_user_ids = []
 
     # We save the full topic name so that checks that require comparison
     # between the original topic and the topic name passed into this function
@@ -687,65 +696,59 @@ def do_update_message(
         changed_message_ids = list(changed_messages.values_list("id", flat=True))
         changed_messages_count = len(changed_message_ids)
 
-        if new_stream is not None:
-            assert stream_being_edited is not None
-            if gaining_usermessage_user_ids:
-                ums_to_create = []
-                for message_id in changed_message_ids:
-                    for user_profile_id in gaining_usermessage_user_ids:
-                        # The fact that the user didn't have a UserMessage originally means we can infer that the user
-                        # was not mentioned in the original message (even if mention syntax was present, it would not
-                        # take effect for a user who was not subscribed). If we were editing the message's content, we
-                        # would rerender the message and then use the new stream's data to determine whether this is
-                        # a mention of a subscriber; but as we are not doing so, we choose to preserve the "was this
-                        # mention syntax an actual mention" decision made during the original rendering for implementation
-                        # simplicity. As a result, the only flag to consider applying here is read.
-                        um = UserMessageLite(
-                            user_profile_id=user_profile_id,
-                            message_id=message_id,
-                            flags=UserMessage.flags.read,
-                        )
-                        ums_to_create.append(um)
-                bulk_insert_ums(ums_to_create)
+    if new_stream is not None:
+        assert stream_being_edited is not None
 
-            # Delete UserMessage objects for users who will no
-            # longer have access to these messages.  Note: This could be
-            # very expensive, since it's N guest users x M messages.
-            UserMessage.objects.filter(
-                user_profile_id__in=[sub.user_profile_id for sub in subs_losing_usermessages],
-                message_id__in=changed_messages,
-            ).delete()
+        # The fact that the user didn't have a UserMessage
+        # originally means we can infer that the user was not
+        # mentioned in the original message (even if mention
+        # syntax was present, it would not take effect for a user
+        # who was not subscribed). If we were editing the
+        # message's content, we would rerender the message and
+        # then use the new stream's data to determine whether this
+        # is a mention of a subscriber; but as we are not doing
+        # so, we choose to preserve the "was this mention syntax
+        # an actual mention" decision made during the original
+        # rendering for implementation simplicity. As a result,
+        # the only flag to consider applying here is read.
+        bulk_insert_all_ums(
+            user_ids_gaining_usermessages, changed_message_ids, UserMessage.flags.read
+        )
 
-            delete_event: DeleteMessagesEvent = {
-                "type": "delete_message",
-                "message_ids": changed_message_ids,
-                "message_type": "stream",
-                "stream_id": stream_being_edited.id,
-                "topic": orig_topic_name,
-            }
-            send_event(user_profile.realm, delete_event, losing_access_user_ids)
+        # Delete UserMessage objects for users who will no
+        # longer have access to these messages.  Note: This could be
+        # very expensive, since it's N guest users x M messages.
+        UserMessage.objects.filter(
+            user_profile__in=users_losing_usermessages,
+            message__in=changed_messages,
+        ).delete()
 
-            # Reset the Attachment.is_*_public caches for all messages
-            # moved to another stream with different access permissions.
-            if new_stream.invite_only != stream_being_edited.invite_only:
-                Attachment.objects.filter(messages__in=changed_messages.values("id")).update(
-                    is_realm_public=None,
-                )
-                ArchivedAttachment.objects.filter(
-                    messages__in=changed_messages.values("id")
-                ).update(
-                    is_realm_public=None,
-                )
+        delete_event: DeleteMessagesEvent = {
+            "type": "delete_message",
+            "message_ids": changed_message_ids,
+            "message_type": "stream",
+            "stream_id": stream_being_edited.id,
+            "topic": orig_topic_name,
+        }
+        send_event(user_profile.realm, delete_event, [user.id for user in users_losing_access])
 
-            if new_stream.is_web_public != stream_being_edited.is_web_public:
-                Attachment.objects.filter(messages__in=changed_messages.values("id")).update(
-                    is_web_public=None,
-                )
-                ArchivedAttachment.objects.filter(
-                    messages__in=changed_messages.values("id")
-                ).update(
-                    is_web_public=None,
-                )
+        # Reset the Attachment.is_*_public caches for all messages
+        # moved to another stream with different access permissions.
+        if new_stream.invite_only != stream_being_edited.invite_only:
+            Attachment.objects.filter(messages__in=changed_messages.values("id")).update(
+                is_realm_public=None,
+            )
+            ArchivedAttachment.objects.filter(messages__in=changed_messages.values("id")).update(
+                is_realm_public=None,
+            )
+
+        if new_stream.is_web_public != stream_being_edited.is_web_public:
+            Attachment.objects.filter(messages__in=changed_messages.values("id")).update(
+                is_web_public=None,
+            )
+            ArchivedAttachment.objects.filter(messages__in=changed_messages.values("id")).update(
+                is_web_public=None,
+            )
 
     # This does message.save(update_fields=[...])
     save_message_for_edit_use_case(message=target_message)
@@ -796,13 +799,8 @@ def do_update_message(
         )
 
         if new_stream is not None:
-            subscriptions = subscriptions.exclude(user_profile_id__in=losing_access_user_ids)
+            subscriptions = subscriptions.exclude(user_profile__in=users_losing_access)
 
-        # All users that are subscribed to the stream must be
-        # notified when a message is edited
-        subscriber_ids = set(subscriptions.values_list("user_profile_id", flat=True))
-
-        if new_stream is not None:
             # TODO: Guest users don't see the new moved topic
             # unless breadcrumb message for new stream is
             # enabled. Excluding these users from receiving this
@@ -814,16 +812,18 @@ def do_update_message(
             # Don't send this event to guest subs who are not
             # subscribers of the old stream but are subscribed to
             # the new stream; clients will be confused.
-            old_stream_unsubbed_guests = [
-                sub
-                for sub in subs_to_new_stream
-                if sub.user_profile.is_guest and sub.user_profile_id not in subscriber_ids
-            ]
+            old_stream_current_users = UserProfile.objects.filter(
+                id__in=get_active_subscriptions_for_stream_id(
+                    stream_being_edited.id, include_deactivated_users=True
+                ).values_list("user_profile_id", flat=True)
+            ).only("id")
             subscriptions = subscriptions.exclude(
-                user_profile_id__in=[sub.user_profile_id for sub in old_stream_unsubbed_guests]
+                user_profile__in=new_stream_current_users.filter(
+                    role=UserProfile.ROLE_GUEST
+                ).difference(old_stream_current_users)
             )
-            subscriber_ids = set(subscriptions.values_list("user_profile_id", flat=True))
 
+        subscriber_ids = set(subscriptions.values_list("user_profile_id", flat=True))
         users_to_be_notified += map(subscriber_info, sorted(subscriber_ids))
 
     # UserTopic updates and the content of notifications depend on
@@ -876,10 +876,11 @@ def do_update_message(
         stream_inaccessible_to_user_profiles: List[UserProfile] = []
         orig_topic_user_profile_to_visibility_policy: Dict[UserProfile, int] = {}
         target_topic_user_profile_to_visibility_policy: Dict[UserProfile, int] = {}
+        user_ids_losing_access = {user.id for user in users_losing_access}
         for user_topic in get_users_with_user_topic_visibility_policy(
             stream_being_edited.id, orig_topic_name
         ):
-            if new_stream is not None and user_topic.user_profile_id in losing_access_user_ids:
+            if new_stream is not None and user_topic.user_profile_id in user_ids_losing_access:
                 stream_inaccessible_to_user_profiles.append(user_topic.user_profile)
             else:
                 orig_topic_user_profile_to_visibility_policy[user_topic.user_profile] = (
@@ -937,10 +938,9 @@ def do_update_message(
             visibility_policy=UserTopic.VisibilityPolicy.INHERIT,
         )
 
-        # If the messages are being moved to a stream the user
-        # can access. We move the user topic records for such
-        # users, but removing the old topic visibility_policy
-        # and then creating a new one.
+        # If the messages are being moved to a stream the user _can_
+        # access, we move the user topic records, by removing the old
+        # topic visibility_policy and creating a new one.
         #
         # Algorithm used for the 'merge userTopic states' case:
         # Using the 'user_profiles_for_visibility_policy_pair' dictionary,

@@ -22,13 +22,13 @@ problematic behavior.
 * Add a [waiting period](/help/restrict-permissions-of-new-members) before
   new users can take disruptive actions.
 * Monitor new users by enabling [new user
-  announcements](/help/configure-notification-bot#new-user-announcements).
+  announcements](/help/configure-automated-notices#new-user-announcements).
 
 ### Restrict permissions for making changes
 
 * Restrict who can [create streams](/help/configure-who-can-create-streams), or
   monitor new streams by enabling [new stream
-  announcements](/help/configure-notification-bot#new-stream-announcements).
+  announcements](/help/configure-automated-notices#new-stream-announcements).
 * Restrict who can [add custom emoji](/help/custom-emoji#change-who-can-add-custom-emoji).
 * Restrict who can [move messages to another
   stream](/help/restrict-moving-messages#configure-who-can-move-messages-to-another-stream),

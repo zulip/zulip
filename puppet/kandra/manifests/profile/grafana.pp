@@ -56,6 +56,10 @@ class kandra::profile::grafana inherits kandra::profile::base {
     notify  => Service[supervisor],
   }
 
+  $email_host = zulipconf('grafana', 'email_host', '')
+  $email_from = zulipconf('grafana', 'email_from', '')
+  $email_user = zulipsecret('secrets', 'grafana_email_user', '')
+  $email_password = zulipsecret('secrets', 'grafana_email_password', '')
   file { '/etc/grafana':
     ensure => directory,
     owner  => 'root',
@@ -63,11 +67,11 @@ class kandra::profile::grafana inherits kandra::profile::base {
     mode   => '0755',
   }
   file { '/etc/grafana/grafana.ini':
-    ensure => file,
-    owner  => 'root',
-    group  => 'root',
-    mode   => '0644',
-    source => 'puppet:///modules/kandra/grafana/grafana.ini',
-    notify => Service[supervisor],
+    ensure  => file,
+    owner   => 'root',
+    group   => 'root',
+    mode    => '0644',
+    content => template('kandra/grafana.ini.template.erb'),
+    notify  => Service[supervisor],
   }
 }

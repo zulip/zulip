@@ -7,6 +7,7 @@ import render_search_operator from "../templates/search_operators.hbs";
 import * as browser_history from "./browser_history";
 import * as common from "./common";
 import * as components from "./components";
+import type {Toggle} from "./components";
 import {$t, $t_html} from "./i18n";
 import * as keydown_util from "./keydown_util";
 import * as markdown from "./markdown";
@@ -18,10 +19,10 @@ import * as util from "./util";
 
 // Make it explicit that our toggler is undefined until
 // set_up_toggler is called.
-export let toggler;
+export let toggler: Toggle | undefined;
 
-function format_usage_html(...keys) {
-    const get_formatted_keys = () => keys.map((key) => `<kbd>${key}</kbd>`).join("+");
+function format_usage_html(...keys: string[]): string {
+    const get_formatted_keys: () => string = () => keys.map((key) => `<kbd>${key}</kbd>`).join("+");
     return $t_html(
         {
             defaultMessage: "(or <key-html></key-html>)",
@@ -243,7 +244,7 @@ Coffee`,
     },
 ];
 
-export function set_up_toggler() {
+export function set_up_toggler(): void {
     for (const row of markdown_help_rows) {
         if (row.markdown && !row.output_html) {
             const message = {
@@ -274,7 +275,7 @@ export function set_up_toggler() {
             {label: $t({defaultMessage: "Message formatting"}), key: "message-formatting"},
             {label: $t({defaultMessage: "Search filters"}), key: "search-operators"},
         ],
-        callback(_name, key) {
+        callback(_name: string, key: string) {
             $(".overlay-modal").hide();
             $(`#${CSS.escape(key)}`).show();
             scroll_util
@@ -314,7 +315,7 @@ export function set_up_toggler() {
     common.adjust_mac_kbd_tags("#markdown-instructions kbd");
 }
 
-export function show(target) {
+export function show(target: string | undefined): void {
     const $overlay = $(".informational-overlays");
 
     if (!$overlay.hasClass("show")) {
@@ -332,6 +333,6 @@ export function show(target) {
     }
 
     if (target) {
-        toggler.goto(target);
+        toggler!.goto(target);
     }
 }

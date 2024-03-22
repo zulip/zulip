@@ -64,6 +64,7 @@ const overlays = mock_esm("../src/overlays", {
     drafts_open: () => false,
     scheduled_messages_open: () => false,
     info_overlay_open: () => false,
+    message_edit_history_open: () => false,
 });
 const popovers = mock_esm("../src/user_card_popover", {
     manage_menu: {

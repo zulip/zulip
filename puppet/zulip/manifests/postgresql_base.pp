@@ -100,8 +100,13 @@ class zulip::postgresql_base {
     }
   }
 
-  $s3_backups_bucket = zulipsecret('secrets', 's3_backups_bucket', '')
-  if $s3_backups_bucket != '' {
+  $backups_s3_bucket = zulipsecret('secrets', 's3_backups_bucket', '')
+  $backups_directory = zulipconf('postgresql', 'backups_directory', '')
+  if $backups_s3_bucket != '' or $backups_directory != '' {
     include zulip::postgresql_backups
+  } else {
+    file { '/etc/cron.d/pg_backup_and_purge':
+      ensure  => absent,
+    }
   }
 }

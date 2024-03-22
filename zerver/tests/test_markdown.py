@@ -2875,9 +2875,7 @@ class MarkdownTest(ZulipTestCase):
         content = "#**Denmark**"
         self.assertEqual(
             render_message_markdown(msg, content).rendered_content,
-            '<p><a class="stream" data-stream-id="{d.id}" href="/#narrow/stream/{d.id}-Denmark">#{d.name}</a></p>'.format(
-                d=denmark,
-            ),
+            f'<p><a class="stream" data-stream-id="{denmark.id}" href="/#narrow/stream/{denmark.id}-Denmark">#{denmark.name}</a></p>',
         )
 
     def test_invalid_stream_followed_by_valid_mention(self) -> None:
@@ -2891,9 +2889,7 @@ class MarkdownTest(ZulipTestCase):
         content = "#**Invalid** and #**Denmark**"
         self.assertEqual(
             render_message_markdown(msg, content).rendered_content,
-            '<p>#<strong>Invalid</strong> and <a class="stream" data-stream-id="{d.id}" href="/#narrow/stream/{d.id}-Denmark">#{d.name}</a></p>'.format(
-                d=denmark,
-            ),
+            f'<p>#<strong>Invalid</strong> and <a class="stream" data-stream-id="{denmark.id}" href="/#narrow/stream/{denmark.id}-Denmark">#{denmark.name}</a></p>',
         )
 
     def test_stream_multiple(self) -> None:
@@ -2927,9 +2923,7 @@ class MarkdownTest(ZulipTestCase):
         content = "#**CaseSens**"
         self.assertEqual(
             render_message_markdown(msg, content).rendered_content,
-            '<p><a class="stream" data-stream-id="{s.id}" href="/#narrow/stream/{s.id}-{s.name}">#{s.name}</a></p>'.format(
-                s=case_sens,
-            ),
+            f'<p><a class="stream" data-stream-id="{case_sens.id}" href="/#narrow/stream/{case_sens.id}-{case_sens.name}">#{case_sens.name}</a></p>',
         )
 
     def test_stream_case_sensitivity_nonmatching(self) -> None:
@@ -2957,9 +2951,7 @@ class MarkdownTest(ZulipTestCase):
         content = "#**Denmark>some topic**"
         self.assertEqual(
             render_message_markdown(msg, content).rendered_content,
-            '<p><a class="stream-topic" data-stream-id="{d.id}" href="/#narrow/stream/{d.id}-Denmark/topic/some.20topic">#{d.name} &gt; some topic</a></p>'.format(
-                d=denmark,
-            ),
+            f'<p><a class="stream-topic" data-stream-id="{denmark.id}" href="/#narrow/stream/{denmark.id}-Denmark/topic/some.20topic">#{denmark.name} &gt; some topic</a></p>',
         )
 
     def test_topic_atomic_string(self) -> None:
@@ -2981,9 +2973,7 @@ class MarkdownTest(ZulipTestCase):
         content = "#**Denmark>#1234**"
         self.assertEqual(
             render_message_markdown(msg, content).rendered_content,
-            '<p><a class="stream-topic" data-stream-id="{d.id}" href="/#narrow/stream/{d.id}-Denmark/topic/.231234">#{d.name} &gt; #1234</a></p>'.format(
-                d=denmark,
-            ),
+            f'<p><a class="stream-topic" data-stream-id="{denmark.id}" href="/#narrow/stream/{denmark.id}-Denmark/topic/.231234">#{denmark.name} &gt; #1234</a></p>',
         )
 
     def test_topic_multiple(self) -> None:
@@ -3052,10 +3042,7 @@ class MarkdownTest(ZulipTestCase):
         href = f"/#narrow/stream/{stream.id}-Stream-.231234"
         self.assertEqual(
             render_message_markdown(msg, content).rendered_content,
-            '<p><a class="stream" data-stream-id="{s.id}" href="{href}">#{s.name}</a></p>'.format(
-                s=stream,
-                href=href,
-            ),
+            f'<p><a class="stream" data-stream-id="{stream.id}" href="{href}">#{stream.name}</a></p>',
         )
 
     def test_stream_invalid(self) -> None:

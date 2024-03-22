@@ -102,6 +102,7 @@ import * as scheduled_messages_ui from "./scheduled_messages_ui";
 import * as scroll_bar from "./scroll_bar";
 import * as scroll_util from "./scroll_util";
 import * as search from "./search";
+import * as sentry from "./sentry";
 import * as server_events from "./server_events";
 import * as settings from "./settings";
 import * as settings_data from "./settings_data";
@@ -278,6 +279,13 @@ export function initialize_kitchen_sink_stuff() {
     } else {
         $("body").addClass("more_dense_mode");
     }
+
+    // To keep the specificity same for the CSS related to hiding the
+    // sidebars, we add the class to the body which is then later replaced
+    // by the class to hide right / left sidebar. We can take our time to do
+    // this since we are still showing the loading indicator screen and
+    // the rendered sidebars hasn't been displayed to the user yet.
+    $("body").addClass("default-sidebar-behaviour");
 
     $(window).on("blur", () => {
         $(document.body).addClass("window_blurred");
@@ -638,6 +646,7 @@ export function initialize_everything(state_data) {
 
     set_current_user(current_user_params);
     set_realm(realm_params);
+    sentry.initialize();
 
     /* To store theme data for spectators, we need to initialize
        user_settings before setting the theme. */

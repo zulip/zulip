@@ -1107,7 +1107,7 @@ def custom_fetch_huddle_objects(response: TableData, context: Context) -> None:
 
     # First we get all huddles involving someone in the realm.
     realm_huddle_subs = Subscription.objects.select_related("recipient").filter(
-        recipient__type=Recipient.HUDDLE, user_profile__in=user_profile_ids
+        recipient__type=Recipient.DIRECT_MESSAGE_GROUP, user_profile__in=user_profile_ids
     )
     realm_huddle_recipient_ids = {sub.recipient_id for sub in realm_huddle_subs}
 
@@ -2257,7 +2257,8 @@ def export_messages_single_user(
     )
 
     my_subscriptions = Subscription.objects.filter(
-        user_profile=user_profile, recipient__type__in=[Recipient.PERSONAL, Recipient.HUDDLE]
+        user_profile=user_profile,
+        recipient__type__in=[Recipient.PERSONAL, Recipient.DIRECT_MESSAGE_GROUP],
     )
     my_recipient_ids = [sub.recipient_id for sub in my_subscriptions]
     messages_to_me = Message.objects.filter(

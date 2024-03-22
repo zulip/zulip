@@ -655,6 +655,17 @@ export function filter_and_sort_candidates(completing, candidates, token) {
     return sorted_results;
 }
 
+const ALLOWED_MARKDOWN_FEATURES = {
+    mention: true,
+    emoji: true,
+    silent_mention: true,
+    slash: true,
+    stream: true,
+    syntax: true,
+    topic: true,
+    timestamp: true,
+};
+
 export function get_candidates(query) {
     const split = split_at_cursor(query, this.$element);
     let current_token = tokenize_compose_str(split[0]);
@@ -676,7 +687,7 @@ export function get_candidates(query) {
 
     // Start syntax highlighting autocompleter if the first three characters are ```
     const syntax_token = current_token.slice(0, 3);
-    if (this.options.completions.syntax && (syntax_token === "```" || syntax_token === "~~~")) {
+    if (ALLOWED_MARKDOWN_FEATURES.syntax && (syntax_token === "```" || syntax_token === "~~~")) {
         // Only autocomplete if user starts typing a language after ```
         if (current_token.length === 3) {
             return false;
@@ -699,7 +710,7 @@ export function get_candidates(query) {
 
     // Only start the emoji autocompleter if : is directly after one
     // of the whitespace or punctuation chars we split on.
-    if (this.options.completions.emoji && current_token[0] === ":") {
+    if (ALLOWED_MARKDOWN_FEATURES.emoji && current_token[0] === ":") {
         // We don't want to match non-emoji emoticons such
         // as :P or :-p
         // Also, if the user has only typed a colon and nothing after,
@@ -716,7 +727,7 @@ export function get_candidates(query) {
         return emoji_collection;
     }
 
-    if (this.options.completions.mention && current_token[0] === "@") {
+    if (ALLOWED_MARKDOWN_FEATURES.mention && current_token[0] === "@") {
         current_token = current_token.slice(1);
         this.completing = "mention";
         // Silent mentions
@@ -740,7 +751,7 @@ export function get_candidates(query) {
         return commands;
     }
 
-    if (this.options.completions.slash && current_token[0] === "/") {
+    if (ALLOWED_MARKDOWN_FEATURES.slash && current_token[0] === "/") {
         current_token = current_token.slice(1);
 
         this.completing = "slash";
@@ -748,7 +759,7 @@ export function get_candidates(query) {
         return get_slash_commands_data();
     }
 
-    if (this.options.completions.stream && current_token[0] === "#") {
+    if (ALLOWED_MARKDOWN_FEATURES.stream && current_token[0] === "#") {
         if (current_token.length === 1) {
             return false;
         }
@@ -768,7 +779,7 @@ export function get_candidates(query) {
         return stream_data.get_unsorted_subs();
     }
 
-    if (this.options.completions.topic) {
+    if (ALLOWED_MARKDOWN_FEATURES.topic) {
         // Stream regex modified from marked.js
         // Matches '#**stream name** >' at the end of a split.
         const stream_regex = /#\*\*([^*>]+)\*\*\s?>$/;
@@ -804,7 +815,7 @@ export function get_candidates(query) {
             }
         }
     }
-    if (this.options.completions.timestamp) {
+    if (ALLOWED_MARKDOWN_FEATURES.timestamp) {
         const time_jump_regex = /<time(:([^>]*?)>?)?$/;
         if (time_jump_regex.test(split[0])) {
             this.completing = "time_jump";
@@ -1122,16 +1133,6 @@ function get_header_html() {
 }
 
 export function initialize_compose_typeahead(selector) {
-    const completions = {
-        mention: true,
-        emoji: true,
-        silent_mention: true,
-        slash: true,
-        stream: true,
-        syntax: true,
-        topic: true,
-        timestamp: true,
-    };
     bootstrap_typeahead.create($(selector), {
         items: max_num_items,
         dropup: true,
@@ -1150,7 +1151,6 @@ export function initialize_compose_typeahead(selector) {
         },
         updater: content_typeahead_selected,
         stopAdvance: true, // Do not advance to the next field on a Tab or Enter
-        completions,
         automated: compose_automated_selection,
         trigger_selection: compose_trigger_selection,
         header_html: get_header_html,

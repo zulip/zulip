@@ -131,7 +131,9 @@ h3,
 
 .admin_profile_fields_table {
     & th.display,
-    td.display_in_profile_summary_cell {
+    & th.required,
+    td.display_in_profile_summary_cell,
+    td.required-cell {
         text-align: center;
     }
 }
@@ -672,6 +674,15 @@ input[type="checkbox"] {
     }
 }
 
+.required-symbol {
+    color: hsl(0deg 66% 60%);
+}
+
+.settings-profile-user-field {
+    margin-top: 5px;
+    max-width: fit-content;
+}
+
 .control-label-disabled {
     color: hsl(0deg 0% 82%);
 
@@ -848,11 +859,11 @@ input[type="checkbox"] {
     list-style-type: none;
     margin-left: 0;
 
-    .image {
+    .bot-card-image {
         vertical-align: top;
     }
 
-    .name {
+    .bot-card-name {
         font-weight: 600;
         font-size: 1.1rem;
         margin: 7px 5px;
@@ -863,7 +874,7 @@ input[type="checkbox"] {
         white-space: pre;
     }
 
-    .regenerate_bot_api_key {
+    .bot-card-regenerate-bot-api-key {
         position: relative;
         margin-left: 5px;
         color: hsl(0deg 0% 67%);
@@ -930,13 +941,13 @@ input[type="checkbox"] {
 
         overflow: auto;
 
-        .details {
+        .bot-card-details {
             display: inline-block;
             width: calc(100% - 75px);
         }
     }
 
-    & img.avatar {
+    & img.bot-card-avatar {
         margin: 10px 5px 0 10px;
         height: 50px;
         width: 50px;
@@ -945,13 +956,13 @@ input[type="checkbox"] {
         box-shadow: 0 0 4px hsl(0deg 0% 0% / 10%);
     }
 
-    .email,
-    .type {
+    .bot-card-email,
+    .bot-card-type {
         margin-bottom: 5px;
     }
 
-    .email .value,
-    .api_key .api-key-value-and-button {
+    .bot-card-email .bot-card-value,
+    .bot-card-api-key .bot-card-api-key-value-and-button {
         display: block;
         margin-left: 0;
         word-wrap: break-word;
@@ -959,17 +970,17 @@ input[type="checkbox"] {
         white-space: normal;
     }
 
-    .api_key .api-key-value-and-button {
+    .bot-card-api-key .bot-card-api-key-value-and-button {
         font-family: "Source Code Pro", monospace;
         font-size: 0.85em;
         display: flex;
     }
 
-    .bot_info {
+    .bot-card-info {
         padding: 10px;
     }
 
-    .field {
+    .bot-card-field {
         text-transform: uppercase;
         font-weight: 600;
         color: hsl(0deg 0% 67%);
@@ -1504,7 +1515,7 @@ $option_title_width: 180px;
 
     .custom_user_field,
     .user-name-section {
-        .field_hint {
+        .settings-profile-field-user-hint {
             color: var(--color-text-settings-field-hint);
         }
     }
@@ -1513,7 +1524,6 @@ $option_title_width: 180px;
 #edit-user-form {
     .person_picker {
         min-width: 206px;
-        margin-top: 5px;
     }
 
     & textarea {
@@ -1536,7 +1546,6 @@ $option_title_width: 180px;
     & select {
         /* Override undesired Bootstrap default. */
         margin-bottom: 0;
-        margin-top: 5px;
     }
 }
 
@@ -1903,6 +1912,22 @@ $option_title_width: 180px;
         box-shadow:
             inset 0 1px 1px hsl(0deg 0% 0% / 7.5%),
             0 0 8px hsl(206deg 80% 62% / 60%);
+    }
+}
+
+.empty-required-field {
+    border: 1px solid hsl(3deg 57% 33%);
+    border-radius: 5px;
+
+    .settings_url_input,
+    .settings_text_input,
+    .settings_textarea,
+    .pill-container {
+        border-color: hsl(0deg 0% 100%);
+
+        &:focus {
+            border-color: hsl(206deg 80% 62% / 80%);
+        }
     }
 }
 

@@ -170,7 +170,7 @@ class AnalyticsTestCase(ZulipTestCase):
         for key, value in defaults.items():
             kwargs[key] = kwargs.get(key, value)
         huddle = Huddle.objects.create(**kwargs)
-        recipient = Recipient.objects.create(type_id=huddle.id, type=Recipient.HUDDLE)
+        recipient = Recipient.objects.create(type_id=huddle.id, type=Recipient.DIRECT_MESSAGE_GROUP)
         huddle.recipient = recipient
         huddle.save(update_fields=["recipient"])
         return huddle, recipient

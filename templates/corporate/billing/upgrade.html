@@ -47,7 +47,7 @@
                         for ${{ scheduled_upgrade_invoice_amount_due }}
                         {% endif %}
                         has been sent to <b>{{email}}</b>.
-                        To complete the plan upgrade process, please pay the amount due. Reload this page if already paid.
+                        To complete the plan upgrade process, please pay the amount due. Once the invoice has been paid, reload this page to see billing details.
                     </div>
                 </div>
                 {% else %}
@@ -316,7 +316,11 @@
             </header>
             <main class="modal__content">
                 <p>
-                    Make sure you have the correct address for the invoice. Please <a href="{{ page_params.billing_base_url }}/customer_portal/?manual_license_management=true&tier={{ page_params.tier }}&setup_payment_by_invoice=true" target="_blank">update billing information</a> if you haven't done it yet.
+                    Please be sure to
+                    <a href="{{ page_params.billing_base_url }}/customer_portal/?manual_license_management=true&tier={{ page_params.tier }}&setup_payment_by_invoice=true" target="_blank" rel="noopener noreferrer">configure</a>
+                    your billing details if you have not done so already. This information will appear on your invoice and receipt.
+                    <br />
+                    Your invoice will be sent to <b>{{email}}</b>.
                 </p>
             </main>
             <footer class="modal__footer">

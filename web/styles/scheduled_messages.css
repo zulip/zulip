@@ -25,16 +25,3 @@
     font-style: italic;
     color: hsl(0deg 0% 53%);
 }
-
-@media (width < $xl_min) {
-    #scheduled_message_indicator {
-        margin-right: 7px;
-    }
-}
-
-@media (width < $md_min) {
-    #scheduled_message_indicator {
-        margin-right: 7px;
-        margin-left: 7px;
-    }
-}

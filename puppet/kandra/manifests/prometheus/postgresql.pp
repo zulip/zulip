@@ -49,7 +49,7 @@ class kandra::prometheus::postgresql {
 
   include zulip::postgresql_client
   exec { 'create prometheus postgres user':
-    require => Package['postgresql-client'],
+    require => Class['zulip::postgresql_client'],
     command => '/usr/bin/createuser -g pg_monitor prometheus',
     unless  => 'test -f /usr/bin/psql && /usr/bin/psql -tAc "select usename from pg_user" | /bin/grep -xq prometheus',
     user    => 'postgres',

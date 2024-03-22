@@ -162,8 +162,6 @@ const defaults = {
     stopAdvance: false,
     dropup: false,
     advanceKeyCodes: [],
-    openInputFieldOnKeyUp: null,
-    closeInputFieldOnHide: null,
     tabIsEnter: true,
 };
 
@@ -291,7 +289,7 @@ Typeahead.prototype = {
     hide() {
         this.$container.hide();
         this.shown = false;
-        if (this.options.closeInputFieldOnHide !== null) {
+        if (this.options.closeInputFieldOnHide !== undefined) {
             this.options.closeInputFieldOnHide();
         }
         return this;
@@ -412,11 +410,8 @@ Typeahead.prototype = {
             .on("blur", this.blur.bind(this))
             .on("keypress", this.keypress.bind(this))
             .on("keyup", this.keyup.bind(this))
-            .on("click", this.element_click.bind(this));
-
-        if (this.eventSupported("keydown")) {
-            this.$element.on("keydown", this.keydown.bind(this));
-        }
+            .on("click", this.element_click.bind(this))
+            .on("keydown", this.keydown.bind(this));
 
         this.$menu
             .on("click", "li", this.click.bind(this))
@@ -433,15 +428,6 @@ Typeahead.prototype = {
             this.$element.off(event_);
         }
         this.$element.removeData("typeahead");
-    },
-
-    eventSupported(eventName) {
-        let isSupported = eventName in this.$element;
-        if (!isSupported) {
-            this.$element.setAttribute(eventName, "return;");
-            isSupported = typeof this.$element[eventName] === "function";
-        }
-        return isSupported;
     },
 
     resizeHandler() {
@@ -574,7 +560,7 @@ Typeahead.prototype = {
                 ) {
                     return;
                 }
-                if (this.options.openInputFieldOnKeyUp !== null && !this.shown) {
+                if (this.options.openInputFieldOnKeyUp !== undefined && !this.shown) {
                     // If the typeahead isn't shown yet, the `lookup` call will open it.
                     // Here we make a callback to the input field before we open the
                     // lookahead in case it needs to make UI changes first (e.g. widening

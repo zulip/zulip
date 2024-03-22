@@ -1021,7 +1021,9 @@ class RocketChatImporter(ZulipTestCase):
         self.assertTrue(stream_messages[23].has_image)
         self.assertTrue(stream_messages[23].has_link)
 
-        huddle_messages = messages.filter(recipient__type=Recipient.HUDDLE).order_by("date_sent")
+        huddle_messages = messages.filter(recipient__type=Recipient.DIRECT_MESSAGE_GROUP).order_by(
+            "date_sent"
+        )
         huddle_recipients = huddle_messages.values_list("recipient", flat=True)
         self.assert_length(huddle_messages, 4)
         self.assert_length(set(huddle_recipients), 1)

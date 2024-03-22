@@ -1,6 +1,6 @@
 import os
 from email.headerregistry import Address
-from typing import TYPE_CHECKING, Any, Callable, Dict, List, Literal, Optional, Tuple
+from typing import TYPE_CHECKING, Any, Callable, Dict, List, Literal, Optional, Tuple, Union
 
 from django_auth_ldap.config import GroupOfUniqueNamesType, LDAPGroupType
 
@@ -138,6 +138,9 @@ LOGGING_SHOW_PID = False
 
 # Sentry.io error defaults to off
 SENTRY_DSN: Optional[str] = None
+SENTRY_TRACE_WORKER_RATE: Union[float, Dict[str, float]] = 0.0
+SENTRY_TRACE_RATE: float = 0.0
+SENTRY_PROFILE_RATE: float = 0.1
 SENTRY_FRONTEND_DSN: Optional[str] = None
 SENTRY_FRONTEND_SAMPLE_RATE: float = 1.0
 SENTRY_FRONTEND_TRACE_RATE: float = 0.1

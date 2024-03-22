@@ -592,4 +592,15 @@ export function initialize(): void {
             );
         },
     });
+
+    delegate("body", {
+        target: ".custom-user-field-label-wrapper",
+        content: $t({
+            defaultMessage: "This profile field is required.",
+        }),
+        appendTo: () => document.body,
+        onHidden(instance) {
+            instance.destroy();
+        },
+    });
 }

@@ -83,6 +83,12 @@ ONE_TIME_NOTICES: List[OneTimeNotice] = [
     OneTimeNotice(
         name="visibility_policy_banner",
     ),
+    OneTimeNotice(
+        name="intro_inbox_view_modal",
+    ),
+    OneTimeNotice(
+        name="intro_recent_view_modal",
+    ),
 ]
 
 # We would most likely implement new hotspots in the future that aren't

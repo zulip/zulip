@@ -187,7 +187,7 @@ export const initialize = (): void => {
 
     update_due_today(selected_schedule);
     $("#payment-schedule-select").val(selected_schedule);
-    $<HTMLInputElement>("#payment-schedule-select").on("change", function () {
+    $<HTMLSelectElement>("select#payment-schedule-select").on("change", function () {
         selected_schedule = this.value;
         ls.set("selected_schedule", selected_schedule);
         update_due_today(selected_schedule);
@@ -195,7 +195,7 @@ export const initialize = (): void => {
 
     update_due_today_for_remote_server(remote_server_plan_start_date);
     $("#remote-server-plan-start-date-select").val(remote_server_plan_start_date);
-    $<HTMLInputElement>("#remote-server-plan-start-date-select").on("change", function () {
+    $<HTMLSelectElement>("select#remote-server-plan-start-date-select").on("change", function () {
         remote_server_plan_start_date = this.value;
         ls.set("remote_server_plan_start_date", remote_server_plan_start_date);
         update_due_today_for_remote_server(remote_server_plan_start_date);
@@ -208,7 +208,7 @@ export const initialize = (): void => {
         `Pay monthly ($${helpers.format_money(prices.monthly)}/user/month)`,
     );
 
-    $<HTMLInputElement>("#manual_license_count").on("keyup", function () {
+    $<HTMLInputElement>("input#manual_license_count").on("keyup", function () {
         const license_count = Number.parseInt(this.value, 10);
         update_license_count(license_count);
     });

@@ -1913,6 +1913,7 @@ paths:
                                         "hint": "Enter your GitHub username",
                                         "field_data": '{"subtype":"github"}',
                                         "order": 8,
+                                        "required": true,
                                       },
                                     ],
                                   "id": 0,
@@ -4489,7 +4490,7 @@ paths:
                                         Since these automated messages are sent by the server, this field is
                                         primarily relevant to clients containing UI for changing it.
 
-                                        [new-stream-announce]: /help/configure-notification-bot#new-stream-announcements
+                                        [new-stream-announce]: /help/configure-automated-notices#new-stream-announcements
 
                                         **Changes**: In Zulip 9.0 (feature level 241), renamed 'notifications_stream_id'
                                         to `new_stream_announcements_stream_id`.
@@ -4555,7 +4556,7 @@ paths:
                                         Since these automated messages are sent by the server, this field is
                                         primarily relevant to clients containing UI for changing it.
 
-                                        [new-user-announce]: /help/configure-notification-bot#new-user-announcements
+                                        [new-user-announce]: /help/configure-automated-notices#new-user-announcements
 
                                         **Changes**: In Zulip 9.0 (feature level 241), renamed
                                         'signup_notifications_stream_id' to `signup_announcements_stream_id`.
@@ -9256,7 +9257,7 @@ paths:
                 announce:
                   description: |
                     If one of the streams specified did not exist previously and is thus created
-                    by this call, this determines whether [notification bot](/help/configure-notification-bot)
+                    by this call, this determines whether [notification bot](/help/configure-automated-notices)
                     will send an announcement about the new stream's creation.
                   type: boolean
                   default: false
@@ -10298,6 +10299,7 @@ paths:
                               "hint": "Enter your GitHub username",
                               "field_data": '{"subtype":"github"}',
                               "order": 8,
+                              "required": true,
                             },
                             {
                               "id": 9,
@@ -10422,6 +10424,18 @@ paths:
                     **Changes**: New in Zulip 6.0 (feature level 146).
                   type: boolean
                   example: true
+                required:
+                  description: |
+                    Whether an organization administrator has configured this profile field as
+                    required.
+
+                    Because the required property is mutable, clients cannot assume that a required
+                    custom profile field has a value. The Zulip web application displays a prominent
+                    banner to any user who has not set a value for a required field.
+
+                    **Changes**: New in Zulip 9.0 (feature level 244).
+                  type: boolean
+                  example: true
               required:
                 - field_type
             encoding:
@@ -10430,6 +10444,8 @@ paths:
               field_data:
                 contentType: application/json
               display_in_profile_summary:
+                contentType: application/json
+              required:
                 contentType: application/json
       responses:
         "200":
@@ -15159,7 +15175,7 @@ paths:
                           Since these automated messages are sent by the server, this field is
                           primarily relevant to clients containing UI for changing it.
 
-                          [new-stream-announce]: /help/configure-notification-bot#new-stream-announcements
+                          [new-stream-announce]: /help/configure-automated-notices#new-stream-announcements
 
                           **Changes**: In Zulip 9.0 (feature level 241), renamed 'realm_notifications_stream_id'
                           to `realm_new_stream_announcements_stream_id`.
@@ -15176,7 +15192,7 @@ paths:
                           Since these automated messages are sent by the server, this field is
                           primarily relevant to clients containing UI for changing it.
 
-                          [new-user-announce]: /help/configure-notification-bot#new-user-announcements
+                          [new-user-announce]: /help/configure-automated-notices#new-user-announcements
 
                           **Changes**: In Zulip 9.0 (feature level 241), renamed
                           'realm_signup_notifications_stream_id' to `realm_signup_announcements_stream_id`.
@@ -18946,6 +18962,17 @@ components:
             [profile field types](/help/custom-profile-fields#profile-field-types).
 
             **Changes**: New in Zulip 6.0 (feature level 146).
+        required:
+          type: boolean
+          description: |
+            Whether an organization administrator has configured this profile field as
+            required.
+
+            Because the required property is mutable, clients cannot assume that a required
+            custom profile field has a value. The Zulip web application displays a prominent
+            banner to any user who has not set a value for a required field.
+
+            **Changes**: New in Zulip 9.0 (feature level 244).
     OnboardingStep:
       type: object
       additionalProperties: false

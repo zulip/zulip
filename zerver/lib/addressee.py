@@ -197,3 +197,11 @@ class Addressee:
             msg_type="private",
             user_profiles=user_profiles,
         )
+
+    @staticmethod
+    def for_user_profiles(user_profiles: Sequence[UserProfile]) -> "Addressee":
+        assert len(user_profiles) > 0
+        return Addressee(
+            msg_type="private",
+            user_profiles=user_profiles,
+        )

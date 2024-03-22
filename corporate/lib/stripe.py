@@ -2240,7 +2240,7 @@ class BillingSession(ABC):
         # Should do this in JavaScript, using the user's time zone
         if plan.is_free_trial() or downgrade_at_end_of_free_trial:
             assert plan.next_invoice_date is not None
-            renewal_date = "{dt:%B} {dt.day}, {dt.year}".format(dt=plan.next_invoice_date)
+            renewal_date = f"{plan.next_invoice_date:%B} {plan.next_invoice_date.day}, {plan.next_invoice_date.year}"
         else:
             renewal_date = "{dt:%B} {dt.day}, {dt.year}".format(
                 dt=start_of_next_billing_cycle(plan, now)
@@ -2351,7 +2351,8 @@ class BillingSession(ABC):
         assert plan is not None
 
         new_plan, last_ledger_entry = self.make_end_of_cycle_updates_if_needed(plan, now)
-        assert last_ledger_entry is not None
+        if last_ledger_entry is None:
+            return {"current_plan_downgraded": True}
         plan = new_plan if new_plan is not None else plan
 
         context = self.get_billing_context_from_plan(customer, plan, last_ledger_entry, now)
@@ -4941,6 +4942,7 @@ def invoice_plans_as_needed(event_time: Optional[datetime] = None) -> None:
                     if last_audit_log_update is not None:
                         last_audit_log_update_string = last_audit_log_update.strftime("%Y-%m-%d")
                     context = {
+                        "billing_entity": billing_session.billing_entity_display_name,
                         "support_url": billing_session.support_url(),
                         "last_audit_log_update": last_audit_log_update_string,
                         "notice_reason": "invoice_overdue",

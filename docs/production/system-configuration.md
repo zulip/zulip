@@ -257,6 +257,23 @@ may wish to increase this if you are taking backups on a replica, so can afford
 to affect other disk I/O, and have an SSD which is good at parallel random
 reads.
 
+#### `backups_directory`
+
+If S3 secrets are not configured, perform daily database backups to this path on
+disk instead. It should be owned by the `postgres` user.
+
+This option is not recommended for disaster recovery purposes, since unless the
+directory is on a different disk from the database itself, _backups will likely
+also be lost if the database is lost._ This setting can be useful if the path is
+on a NAS mountpoint, or if some other process copies this data off the disk; or
+if backups are purely for point-in-time historical analysis of recent
+application-level data changes.
+
+#### `backups_incremental`
+
+The number of delta (incremental) database backups to take between full backups.
+Defaults to 0 for S3 backups, and 6 for local-disk backups.
+
 #### `backups_storage_class`
 
 What [storage class](https://aws.amazon.com/s3/storage-classes/) to use when

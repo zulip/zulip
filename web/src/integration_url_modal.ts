@@ -1,17 +1,19 @@
 import ClipboardJS from "clipboard";
 import $ from "jquery";
+import type {Instance} from "tippy.js";
 
 import render_generate_integration_url_modal from "../templates/settings/generate_integration_url_modal.hbs";
 
 import {show_copied_confirmation} from "./copied_tooltip";
 import * as dialog_widget from "./dialog_widget";
 import * as dropdown_widget from "./dropdown_widget";
+import type {DropdownWidget, Option} from "./dropdown_widget";
 import {$t_html} from "./i18n";
 import {realm} from "./state_data";
 import * as stream_data from "./stream_data";
 import * as util from "./util";
 
-export function show_generate_integration_url_modal(api_key) {
+export function show_generate_integration_url_modal(api_key: string): void {
     const default_url_message = $t_html({defaultMessage: "Integration URL will appear here."});
     const streams = stream_data.subscribed_subs();
     const default_integration_option = {
@@ -28,24 +30,25 @@ export function show_generate_integration_url_modal(api_key) {
         max_topic_length: realm.max_topic_length,
     });
 
-    function generate_integration_url_post_render() {
+    function generate_integration_url_post_render(): void {
         let selected_integration = "";
-        let stream_input_dropdown_widget;
-        let integration_input_dropdown_widget;
+        let stream_input_dropdown_widget: DropdownWidget;
+        let integration_input_dropdown_widget: DropdownWidget;
 
         const $override_topic = $("#integration-url-override-topic");
-        const $topic_input = $("#integration-url-topic-input");
+        const $topic_input = $<HTMLInputElement>("input#integration-url-topic-input");
         const $integration_url = $("#generate-integration-url-modal .integration-url");
         const $dialog_submit_button = $("#generate-integration-url-modal .dialog_submit_button");
 
         $dialog_submit_button.prop("disabled", true);
 
-        new ClipboardJS("#generate-integration-url-modal .dialog_submit_button", {
+        const clipboard = new ClipboardJS("#generate-integration-url-modal .dialog_submit_button", {
             text() {
                 return $integration_url.text();
             },
-        }).on("success", (e) => {
-            show_copied_confirmation(e.trigger);
+        });
+        clipboard.on("success", () => {
+            show_copied_confirmation($("#generate-integration-url-modal .dialog_submit_button")[0]);
         });
 
         $override_topic.on("change", function () {
@@ -57,8 +60,8 @@ export function show_generate_integration_url_modal(api_key) {
             update_url();
         });
 
-        function update_url() {
-            selected_integration = integration_input_dropdown_widget.value();
+        function update_url(): void {
+            selected_integration = integration_input_dropdown_widget.value()!.toString();
             if (selected_integration === default_integration_option.unique_id) {
                 $integration_url.text(default_url_message);
                 $dialog_submit_button.prop("disabled", true);
@@ -66,11 +69,11 @@ export function show_generate_integration_url_modal(api_key) {
             }
 
             const stream_id = stream_input_dropdown_widget.value();
-            const topic_name = $topic_input.val();
+            const topic_name = $topic_input.val()!;
 
             const params = new URLSearchParams({api_key});
             if (stream_id !== -1) {
-                params.set("stream", stream_id);
+                params.set("stream", stream_id!.toString());
                 if (topic_name !== "") {
                     params.set("topic", topic_name);
                 }
@@ -78,7 +81,7 @@ export function show_generate_integration_url_modal(api_key) {
 
             const realm_url = realm.realm_uri;
             const base_url = `${realm_url}/api/v1/external/`;
-            $integration_url.text(`${base_url}${selected_integration}?${params}`);
+            $integration_url.text(`${base_url}${selected_integration}?${params.toString()}`);
             $dialog_submit_button.prop("disabled", false);
 
             if ($override_topic.prop("checked") && topic_name === "") {
@@ -99,7 +102,7 @@ export function show_generate_integration_url_modal(api_key) {
         });
         integration_input_dropdown_widget.setup();
 
-        function get_options_for_integration_input_dropdown_widget() {
+        function get_options_for_integration_input_dropdown_widget(): Option[] {
             const options = [
                 default_integration_option,
                 ...realm.realm_incoming_webhook_bots
@@ -112,7 +115,10 @@ export function show_generate_integration_url_modal(api_key) {
             return options;
         }
 
-        function integration_item_click_callback(event, dropdown) {
+        function integration_item_click_callback(
+            event: JQuery.ClickEvent,
+            dropdown: Instance,
+        ): void {
             integration_input_dropdown_widget.render();
             $(".integration-url-name-wrapper").trigger("input");
 
@@ -134,7 +140,7 @@ export function show_generate_integration_url_modal(api_key) {
         });
         stream_input_dropdown_widget.setup();
 
-        function get_options_for_stream_dropdown_widget() {
+        function get_options_for_stream_dropdown_widget(): Option[] {
             const options = [
                 direct_messages_option,
                 ...streams
@@ -148,7 +154,7 @@ export function show_generate_integration_url_modal(api_key) {
             return options;
         }
 
-        function stream_item_click_callback(event, dropdown) {
+        function stream_item_click_callback(event: JQuery.ClickEvent, dropdown: Instance): void {
             stream_input_dropdown_widget.render();
             $(".integration-url-stream-wrapper").trigger("input");
             const user_selected_option = stream_input_dropdown_widget.value();
@@ -174,7 +180,9 @@ export function show_generate_integration_url_modal(api_key) {
         id: "generate-integration-url-modal",
         html_submit_button: $t_html({defaultMessage: "Copy URL"}),
         html_exit_button: $t_html({defaultMessage: "Close"}),
-        on_click() {},
+        on_click() {
+            return;
+        },
         post_render: generate_integration_url_post_render,
     });
 }

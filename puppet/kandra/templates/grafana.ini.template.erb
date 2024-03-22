@@ -29,6 +29,17 @@ domain = monitoring.teleport.zulipchat.net
 root_url = https://monitoring.teleport.zulipchat.net/
 
 
+#################################### SMTP ####################################
+[smtp]
+enabled = true
+from_name = Grafana
+from_address = <%= @email_from %>
+host = <%= @email_host %>
+user = <%= @email_user %>
+password = <%= @email_password %>
+startTLS_policy = MandatoryStartTLS
+
+
 #################################### Auth JWT ####################################
 [auth.jwt]
 # Grafana should trust the JWT that is provided in a header from Teleport; see

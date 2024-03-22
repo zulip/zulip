@@ -1144,7 +1144,9 @@ def generate_and_send_messages(
         recipient.id
         for recipient in Recipient.objects.filter(type=Recipient.STREAM, type_id__in=stream_ids)
     ]
-    recipient_huddles: List[int] = [h.id for h in Recipient.objects.filter(type=Recipient.HUDDLE)]
+    recipient_huddles: List[int] = [
+        h.id for h in Recipient.objects.filter(type=Recipient.DIRECT_MESSAGE_GROUP)
+    ]
 
     huddle_members: Dict[int, List[int]] = {}
     for h in recipient_huddles:
@@ -1189,10 +1191,10 @@ def generate_and_send_messages(
             elif message_type == Recipient.STREAM:
                 message.subject = saved_data["subject"]
                 message.recipient = get_recipient_by_id(recipient_id)
-            elif message_type == Recipient.HUDDLE:
+            elif message_type == Recipient.DIRECT_MESSAGE_GROUP:
                 message.recipient = get_recipient_by_id(recipient_id)
         elif randkey <= random_max * options["percent_huddles"] / 100.0:
-            message_type = Recipient.HUDDLE
+            message_type = Recipient.DIRECT_MESSAGE_GROUP
             message.recipient = get_recipient_by_id(random.choice(recipient_huddles))
         elif (
             randkey
@@ -1205,7 +1207,7 @@ def generate_and_send_messages(
             message_type = Recipient.STREAM
             message.recipient = get_recipient_by_id(random.choice(recipient_streams))
 
-        if message_type == Recipient.HUDDLE:
+        if message_type == Recipient.DIRECT_MESSAGE_GROUP:
             sender_id = random.choice(huddle_members[message.recipient.id])
             message.sender = get_user_profile_by_id(sender_id)
         elif message_type == Recipient.PERSONAL:

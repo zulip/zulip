@@ -1302,7 +1302,7 @@ class RealmCreationTest(ZulipTestCase):
 
         # Check welcome messages
         for stream_name, text, message_count in [
-            (Realm.DEFAULT_NOTIFICATION_STREAM_NAME, "with the topic", 3),
+            (Realm.DEFAULT_NOTIFICATION_STREAM_NAME, "with the topic", 4),
             (Realm.INITIAL_PRIVATE_STREAM_NAME, "private stream", 1),
         ]:
             stream = get_stream(stream_name, realm)
@@ -1741,7 +1741,7 @@ class RealmCreationTest(ZulipTestCase):
         private_stream_in_italian = "canale privato"
 
         for stream_name, text, message_count in [
-            (Realm.DEFAULT_NOTIFICATION_STREAM_NAME, with_the_topic_in_italian, 3),
+            (Realm.DEFAULT_NOTIFICATION_STREAM_NAME, with_the_topic_in_italian, 4),
             (Realm.INITIAL_PRIVATE_STREAM_NAME, private_stream_in_italian, 1),
         ]:
             stream = get_stream(stream_name, realm)
