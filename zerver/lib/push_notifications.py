@@ -922,13 +922,7 @@ def get_mobile_push_content(rendered_content: str) -> str:
         return plain_text
 
     if settings.PUSH_NOTIFICATION_REDACT_CONTENT:
-        return (
-            "*"
-            + _(
-                "This organization has disabled including message content in mobile push notifications"
-            )
-            + "*"
-        )
+        return _("New message")
 
     elem = lxml.html.fragment_fromstring(rendered_content, create_parent=True)
     change_katex_to_raw_latex(elem)
