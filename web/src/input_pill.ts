@@ -43,6 +43,7 @@ type InputPill<T> = {
 };
 
 type InputPillStore<T> = {
+    onTextInputHook?: () => void;
     pills: InputPill<T>[];
     pill_config: InputPillCreateOptions<T>["pill_config"];
     $parent: JQuery;
@@ -72,9 +73,11 @@ export type InputPillContainer<T> = {
     items: () => InputPillItem<T>[];
     onPillCreate: (callback: () => void) => void;
     onPillRemove: (callback: (pill: InputPill<T>) => void) => void;
+    onTextInputHook: (callback: () => void) => void;
     createPillonPaste: (callback: () => void) => void;
     clear: () => void;
     clear_text: () => void;
+    getCurrentText: () => string | null;
     is_pending: () => boolean;
     _get_pills_for_testing: () => InputPill<T>[];
 };
@@ -107,6 +110,10 @@ export function create<T>(opts: InputPillCreateOptions<T>): InputPillContainer<T
 
         clear_text() {
             store.$input.text("");
+        },
+
+        getCurrentText() {
+            return store.$input.text();
         },
 
         is_pending() {
@@ -328,7 +335,6 @@ export function create<T>(opts: InputPillCreateOptions<T>): InputPillContainer<T
 
                 return;
             }
-
             const selection = window.getSelection();
             // If no text is selected, and the cursor is just to the
             // right of the last pill (with or without text in the
@@ -364,6 +370,8 @@ export function create<T>(opts: InputPillCreateOptions<T>): InputPillContainer<T
 
                 return;
             }
+
+            store.onTextInputHook?.();
         });
 
         // handle events while hovering on ".pill" elements.
@@ -403,7 +411,7 @@ export function create<T>(opts: InputPillCreateOptions<T>): InputPillContainer<T
 
             // get text representation of clipboard
             assert(e.originalEvent instanceof ClipboardEvent);
-            const text = e.originalEvent.clipboardData?.getData("text/plain");
+            const text = e.originalEvent.clipboardData?.getData("text/plain").replaceAll("\n", ",");
 
             // insert text manually
             document.execCommand("insertText", false, text);
@@ -445,6 +453,7 @@ export function create<T>(opts: InputPillCreateOptions<T>): InputPillContainer<T
         appendValidatedData: funcs.appendValidatedData.bind(funcs),
 
         getByElement: funcs.getByElement.bind(funcs),
+        getCurrentText: funcs.getCurrentText.bind(funcs),
         items: funcs.items.bind(funcs),
 
         onPillCreate(callback) {
@@ -453,6 +462,10 @@ export function create<T>(opts: InputPillCreateOptions<T>): InputPillContainer<T
 
         onPillRemove(callback) {
             store.onPillRemove = callback;
+        },
+
+        onTextInputHook(callback) {
+            store.onTextInputHook = callback;
         },
 
         createPillonPaste(callback) {

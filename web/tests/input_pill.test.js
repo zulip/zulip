@@ -639,3 +639,40 @@ run_test("appendValue/clear", ({mock_template}) => {
     assert.deepEqual(removed_colors, ["blue", "yellow", "red"]);
     assert.equal($pill_input[0].textContent, "");
 });
+
+run_test("getCurrentText/onTextInputHook", ({mock_template}) => {
+    mock_template("input_pill.hbs", true, (data, html) => {
+        assert.equal(typeof data.display_value, "string");
+        return html;
+    });
+
+    const info = set_up();
+    const config = info.config;
+    const items = info.items;
+    const $pill_input = info.$pill_input;
+    const $container = info.$container;
+
+    const widget = input_pill.create(config);
+    widget.appendValue("blue,red");
+    assert.deepEqual(widget.items(), [items.blue, items.red]);
+
+    const onTextInputHook = () => {
+        assert.deepEqual(widget.items(), [items.blue, items.red]);
+    };
+    widget.onTextInputHook(onTextInputHook);
+
+    $pill_input.text("yellow");
+    assert.equal(widget.getCurrentText(), "yellow");
+
+    const key_handler = $container.get_on_handler("keydown", ".input");
+    key_handler({
+        key: " ",
+        preventDefault: noop,
+    });
+    key_handler({
+        key: ",",
+        preventDefault: noop,
+    });
+
+    assert.deepEqual(widget.items(), [items.blue, items.red, items.yellow]);
+});
