@@ -83,14 +83,13 @@ following commands:
 ./manage.py migrate
 ```
 
-You can read our
+It's highly recommended to read our
 [database migration documentation](../subsystems/schema-migrations.md)
 to learn more about creating and applying database migrations.
 
-**Test your changes:** Once you've run the migration, flush memcached
-on your development server (`./scripts/setup/flush-memcached`) and then
-[restart the development server](../development/remote.md#running-the-development-server)
-to avoid interacting with cached objects.
+**Test your changes:** Once you've run the migration, [restart the
+development
+server](../development/remote.md#running-the-development-server).
 
 ### Backend changes
 
@@ -262,9 +261,8 @@ Running migrations:
   Applying zerver.NNNN_realm_mandatory_topics... OK
 ```
 
-Once you've run the migration, flush memcached on your development
-server (`./scripts/setup/flush-memcached`) and then [restart the development server](../development/remote.md#running-the-development-server)
-to avoid interacting with cached objects.
+Once you've run the migration, [restart the development
+server](../development/remote.md#running-the-development-server).
 
 ### Handle database interactions
 
