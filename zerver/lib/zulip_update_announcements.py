@@ -13,7 +13,7 @@ from zerver.actions.message_send import (
     internal_prep_huddle_message,
     internal_prep_stream_message,
 )
-from zerver.lib.message import SendMessageRequest
+from zerver.lib.message import SendMessageRequest, remove_single_newlines
 from zerver.models.realm_audit_logs import RealmAuditLog
 from zerver.models.realms import Realm
 from zerver.models.users import UserProfile, get_system_bot
@@ -30,16 +30,18 @@ class ZulipUpdateAnnouncement:
 zulip_update_announcements: List[ZulipUpdateAnnouncement] = [
     ZulipUpdateAnnouncement(
         level=1,
-        message="""\
-Zulip is introducing **Zulip updates**! To help you learn about new features and \
+        message=remove_single_newlines(
+            """
+Zulip is introducing **Zulip updates**! To help you learn about new features and
 configuration options, this topic will receive messages about important changes in Zulip.
 
-You can read these update messages whenever it's convenient, or [mute]({mute_topic_help_url}) \
-this topic if you are not interested. If your organization does not want to receive these \
+You can read these update messages whenever it's convenient, or [mute]({mute_topic_help_url})
+this topic if you are not interested. If your organization does not want to receive these
 announcements, they can be disabled. [Learn more]({zulip_update_announcements_help_url}).
 """.format(
-            zulip_update_announcements_help_url="/help/configure-automated-notices#zulip-update-announcements",
-            mute_topic_help_url="/help/mute-a-topic",
+                zulip_update_announcements_help_url="/help/configure-automated-notices#zulip-update-announcements",
+                mute_topic_help_url="/help/mute-a-topic",
+            ),
         ),
     ),
 ]
@@ -73,28 +75,32 @@ def internal_prep_group_direct_message_for_old_realm(
     with override_language(realm.default_language):
         topic_name = str(realm.ZULIP_UPDATE_ANNOUNCEMENTS_TOPIC_NAME)
     if realm.zulip_update_announcements_stream is None:
-        content = """\
-You can now [configure]({organization_settings_url}) a stream where Zulip \
-will send [updates]({zulip_update_announcements_help_url}) about new Zulip features. \
+        content = remove_single_newlines(
+            """
+You can now [configure]({organization_settings_url}) a stream where Zulip
+will send [updates]({zulip_update_announcements_help_url}) about new Zulip features.
 These notifications are currently turned off in your organization.
 """.format(
-            zulip_update_announcements_help_url="/help/configure-automated-notices#zulip-update-announcements",
-            organization_settings_url="/#organization/organization-settings",
+                zulip_update_announcements_help_url="/help/configure-automated-notices#zulip-update-announcements",
+                organization_settings_url="/#organization/organization-settings",
+            )
         )
     else:
-        content = """\
-Users in your organization will now receive [updates]({zulip_update_announcements_help_url}) \
+        content = remove_single_newlines(
+            """
+Users in your organization will now receive [updates]({zulip_update_announcements_help_url})
 about new Zulip features in #**{zulip_update_announcements_stream}>{topic_name}**.
 
-If you like, you can [configure]({organization_settings_url}) a different stream for \
-these updates (and [move]({move_content_another_stream_help_url}) the initial updates there), \
+If you like, you can [configure]({organization_settings_url}) a different stream for
+these updates (and [move]({move_content_another_stream_help_url}) the initial updates there),
 or [turn this feature off]({organization_settings_url}) altogether.
 """.format(
-            zulip_update_announcements_help_url="/help/configure-automated-notices#zulip-update-announcements",
-            zulip_update_announcements_stream=realm.zulip_update_announcements_stream.name,
-            topic_name=topic_name,
-            organization_settings_url="/#organization/organization-settings",
-            move_content_another_stream_help_url="/help/move-content-to-another-stream",
+                zulip_update_announcements_help_url="/help/configure-automated-notices#zulip-update-announcements",
+                zulip_update_announcements_stream=realm.zulip_update_announcements_stream.name,
+                topic_name=topic_name,
+                organization_settings_url="/#organization/organization-settings",
+                move_content_another_stream_help_url="/help/move-content-to-another-stream",
+            )
         )
     return internal_prep_huddle_message(realm, sender, content, recipient_users=administrators)
 
