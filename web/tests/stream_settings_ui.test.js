@@ -50,6 +50,8 @@ run_test("redraw_left_panel", ({mock_template}) => {
         stream_weekly_traffic: null,
         color: "red",
         can_remove_subscribers_group: admins_group.id,
+        date_created: 1691057093,
+        creator_id: null,
     };
     const poland = {
         elem: "poland",
@@ -61,6 +63,8 @@ run_test("redraw_left_panel", ({mock_template}) => {
         stream_weekly_traffic: 13,
         color: "red",
         can_remove_subscribers_group: admins_group.id,
+        date_created: 1691057093,
+        creator_id: null,
     };
     const pomona = {
         elem: "pomona",
@@ -72,6 +76,8 @@ run_test("redraw_left_panel", ({mock_template}) => {
         stream_weekly_traffic: 0,
         color: "red",
         can_remove_subscribers_group: admins_group.id,
+        date_created: 1691057093,
+        creator_id: null,
     };
     const cpp = {
         elem: "cpp",
@@ -83,6 +89,8 @@ run_test("redraw_left_panel", ({mock_template}) => {
         stream_weekly_traffic: 6,
         color: "red",
         can_remove_subscribers_group: admins_group.id,
+        date_created: 1691057093,
+        creator_id: null,
     };
     const zzyzx = {
         elem: "zzyzx",
@@ -94,6 +102,8 @@ run_test("redraw_left_panel", ({mock_template}) => {
         stream_weekly_traffic: 6,
         color: "red",
         can_remove_subscribers_group: admins_group.id,
+        date_created: 1691057093,
+        creator_id: null,
     };
 
     const sub_row_data = [denmark, poland, pomona, cpp, zzyzx];
