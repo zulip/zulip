@@ -60,7 +60,7 @@ type DropdownWidgetOptions = {
     tippy_props?: Partial<tippy.Props>;
     // NOTE: Any value other than `undefined` will be rendered when class is initialized.
     default_id?: string | number;
-    unique_id_type: DataTypes;
+    unique_id_type?: DataTypes;
     // Text to show if the current value is not in `get_options()`.
     text_if_current_value_not_in_options?: string;
     hide_search_box?: boolean;
@@ -90,7 +90,7 @@ export class DropdownWidget {
     instance: tippy.Instance | undefined;
     default_id: string | number | undefined;
     current_value: string | number | undefined;
-    unique_id_type: DataTypes;
+    unique_id_type: DataTypes | undefined;
     $events_container: JQuery;
     text_if_current_value_not_in_options: string;
     hide_search_box: boolean;
