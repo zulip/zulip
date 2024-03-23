@@ -155,6 +155,9 @@ IGNORED_PHRASES = [
     r"deactivated",
     # This is a reference to a setting/secret and should be lowercase.
     r"zulip_org_id",
+    # Used in stream settings for stream creator details
+    r"unknown user",
+    r"on",
 ]
 
 # Sort regexes in descending order of their lengths. As a result, the

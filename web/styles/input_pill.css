@@ -156,7 +156,8 @@
     }
 }
 
-.panel_subscriber_member_list > .pill-container {
+.panel_subscriber_member_list > .pill-container,
+.stream-creator-details > .pill-container {
     background-color: hsl(0deg 0% 0% / 7%);
 
     &:hover {
@@ -174,6 +175,23 @@
 
         > .pill-value {
             padding: 5px;
+            max-width: 165px;
+        }
+    }
+}
+
+/* Specific styling on top of shared styling above */
+.stream-creator-details > .pill-container {
+    > .pill {
+        align-items: baseline;
+
+        > .pill-image {
+            /* Add line-height equal to height to mimic baseline alignment. */
+            line-height: 20px;
+            align-self: center;
+        }
+
+        > .pill-label {
             max-width: 165px;
         }
     }

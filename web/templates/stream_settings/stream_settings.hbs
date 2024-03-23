@@ -75,22 +75,44 @@
                   can_remove_subscribers_setting_widget_name="can_remove_subscribers_group" }}
             </div>
             {{/with}}
-            <div class="stream-email-box" {{#unless can_access_stream_email}}style="display: none;"{{/unless}}>
-                <div class="stream-email-box-header">
+            <div class="stream-details-box">
+                <div class="stream-details-box-header">
                     <h3 class="stream_setting_subsection_title">
-                        {{t "Email address" }}
-                        {{> ../help_link_widget link="/help/message-a-stream-by-email" }}
+                        {{t "Stream details" }}
                     </h3>
                     <div class="stream_email_address_error alert-notification"></div>
                 </div>
+                <div class="stream-creator-details">
+                    {{t "Created by" }}
+                    {{#if creator_details}}
+                    {{#with creator_details}}
+                    <span class="pill-container pill-container-btn">
+                        <a data-user-id="{{user_id}}" class="view_user_profile pill" tabindex="0">
+                            <img class="pill-image" src="{{avatar_url}}" />
+                            <span class="pill-label">
+                                <span class="pill-value">{{name}}</span>
+                            </span>
+                        </a>
+                    </span>
+                    {{/with}}
+                    {{else}}
+                    <i>{{t "unknown user"}}</i>
+                    {{/if}}
+                    {{t "on" }} {{sub.date_created_string}}.
+                    <a href="{{sub.preview_url}}/topic/stream.20events">{{t "Stream events" }}</a>
+                </div>
                 <p>
-                    {{t "You can use email to send messages to Zulip streams."}}
+                    <strong>{{t "Stream ID"}}:</strong> {{sub.stream_id}}
                 </p>
+                {{#if can_access_stream_email}}
                 <p>
+                    <strong>{{t "Email address"}}:</strong> {{t "You can use email to send messages to Zulip streams"}}
+                    {{> ../help_link_widget link="/help/message-a-stream-by-email" }}
                     <button class="button rounded copy_email_button" type="button" name="button">
-                        <span class="copy_button">{{t "Generate email address" }}</span>
+                        <span class="copy_button">{{t "Generate email address"}}</span>
                     </button>
                 </p>
+                {{/if}}
             </div>
         </div>
 

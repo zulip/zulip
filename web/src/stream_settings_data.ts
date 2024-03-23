@@ -5,10 +5,12 @@ import {current_user} from "./state_data";
 import * as stream_data from "./stream_data";
 import type {StreamSpecificNotificationSettings, StreamSubscription} from "./sub_store";
 import * as sub_store from "./sub_store";
+import * as timerender from "./timerender";
 import {user_settings} from "./user_settings";
 import * as util from "./util";
 
 export type SettingsSubscription = StreamSubscription & {
+    date_created_string: string;
     is_realm_admin: boolean;
     can_change_name_description: boolean;
     should_display_subscription_button: boolean;
@@ -25,6 +27,10 @@ export type SettingsSubscription = StreamSubscription & {
 export function get_sub_for_settings(sub: StreamSubscription): SettingsSubscription {
     return {
         ...sub,
+        date_created_string: timerender.get_localized_date_or_time_for_format(
+            new Date(sub.date_created * 1000),
+            "dayofyear_year",
+        ),
 
         is_realm_admin: current_user.is_admin,
         // Admin can change any stream's name & description either stream is public or

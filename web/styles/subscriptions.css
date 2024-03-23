@@ -950,7 +950,11 @@ h4.user_group_setting_subsection_title {
         }
     }
 
-    .stream-email-box {
+    .stream-details-box {
+        .stream-creator-details {
+            margin: 0 0 10px; /* mimic paragraph spacing */
+        }
+
         .stream_email_address_error {
             vertical-align: top;
             margin-left: 15px;

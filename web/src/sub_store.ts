@@ -12,6 +12,7 @@ export const enum StreamPostPolicy {
 // These types are taken from the `zerver/lib/types.py`.
 export type Stream = {
     date_created: number;
+    creator_id: number | null;
     description: string;
     first_message_id: number | null;
     history_public_to_subscribers: boolean;

@@ -182,7 +182,7 @@ Parameters accepted in the URL include:
     !!! tip ""
 
         A stream ID can be found when [browsing streams][browse-streams]
-        in the web app via the URL.
+        in the web app via the URL or under the "Stream details" section.
 
 * `topic`: The topic in the specified stream for the integration to
   send notifications to. The topic should also be
