@@ -87,7 +87,7 @@ function update_fade() {
     // so we clear the older warning.
     compose_validate.clear_topic_resolved_warning();
 
-    compose_validate.warn_if_topic_resolved();
+    compose_validate.warn_if_topic_resolved(true);
     compose_fade.set_focused_recipient(msg_type);
     compose_fade.update_all();
 }
