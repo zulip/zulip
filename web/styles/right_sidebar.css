@@ -194,7 +194,7 @@ $user_status_emoji_width: 24px;
 }
 
 .user_sidebar_entry .selectable_sidebar_block {
-    width: calc(100% - 16px);
+    width: calc(100% - 26px);
     display: flex;
     flex-direction: row;
 }
