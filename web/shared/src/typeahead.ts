@@ -67,12 +67,18 @@ export function query_matches_string(
         // the match can be anywhere in the string.
         return source_str.includes(query);
     }
+    const queries = query.split(split_char);
+    const source_arr = source_str.split(split_char);
 
-    // If there is a separator character in the query, then we
-    // require the match to start at the start of a token.
-    // (E.g. for 'ab cd ef', query could be 'ab c' or 'cd ef',
-    // but not 'b cd ef'.)
-    return source_str.startsWith(query) || source_str.includes(split_char + query);
+    // Require a prefix match for every word (e.g., for 'ab cd ef',
+    // the query can be 'ab c', 'a c e', 'a e', 'ef', but not 'b cd','b ' or 'efg', etc.).
+    // Without the space i.e. for a single word in query, we only see whether whole search word includes query
+    // (e.g., for 'King Hamlet', the query can be 'in', 'ing', 'am', 'le' or 'ng', etc.).
+    // The order of query words separated by space doesn't matter like
+    // (e.g., for 'ab cd ef', the query can be 'ef cd' or 'e cd a' , etc.).
+    return queries.every((query) =>
+        source_arr.some((source) => source !== undefined && source.startsWith(query)),
+    );
 }
 
 function clean_query(query: string): string {

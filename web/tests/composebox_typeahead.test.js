@@ -1742,12 +1742,28 @@ test("typeahead_results", () => {
     // Autocomplete user mentions by user name.
     assert_mentions_matches("cordelia", [cordelia]);
     assert_mentions_matches("cordelia, le", [cordelia]);
-    assert_mentions_matches("cordelia, le ", []);
+    assert_mentions_matches("cordelia, le ", [cordelia]);
     assert_mentions_matches("moor", [othello]);
     assert_mentions_matches("moor ", [othello]);
     assert_mentions_matches("moor of", [othello]);
+    assert_mentions_matches("othello the moor of venice", [othello]);
+    assert_mentions_matches("the othello venice", [othello]);
+    assert_mentions_matches("o the v", [othello]);
+    assert_mentions_matches("the v o", [othello]);
+    assert_mentions_matches("the moor", [othello]);
+    assert_mentions_matches("moor the", [othello]);
+    assert_mentions_matches("moor of venice", [othello]);
+    assert_mentions_matches("ell", [othello]);
+    assert_mentions_matches("othello moor", [othello]);
+    assert_mentions_matches(" of moor ", [othello]);
+    assert_mentions_matches("othello moor venice", [othello]);
+    assert_mentions_matches("thello", [othello]);
+    assert_mentions_matches("othello ", [othello]);
+    assert_mentions_matches("thello ", []);
+    assert_mentions_matches("othello desdemona", []);
     assert_mentions_matches("moor of ven", [othello]);
     assert_mentions_matches("oor", [othello]);
+    assert_mentions_matches("venice ", [othello]);
     assert_mentions_matches("oor ", []);
     assert_mentions_matches("oor o", []);
     assert_mentions_matches("oor of venice", []);
@@ -1801,8 +1817,9 @@ test("typeahead_results", () => {
     // Autocomplete stream by stream name
     assert_stream_matches("den", [denmark_stream, sweden_stream]);
     assert_stream_matches("denmark", [denmark_stream]);
-    assert_stream_matches("denmark ", []);
-    assert_stream_matches("den ", []);
+    assert_stream_matches("denmark ", [denmark_stream]);
+    assert_stream_matches("den ", [denmark_stream]);
+    assert_stream_matches("en ", []);
     assert_stream_matches("the ", [netherland_stream]);
     // Do not match stream descriptions
     assert_stream_matches("cold", []);
