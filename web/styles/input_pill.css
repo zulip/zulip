@@ -141,6 +141,10 @@
     }
 }
 
+#invitee_emails_container .pill-container {
+    width: 100%;
+}
+
 .deactivated-pill {
     background-color: hsl(0deg 86% 86%) !important;
 }

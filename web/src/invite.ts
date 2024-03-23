@@ -1,4 +1,3 @@
-import autosize from "autosize";
 import ClipboardJS from "clipboard";
 import {add} from "date-fns";
 import $ from "jquery";
@@ -16,7 +15,9 @@ import * as compose_banner from "./compose_banner";
 import {show_copied_confirmation} from "./copied_tooltip";
 import {csrf_token} from "./csrf";
 import * as dialog_widget from "./dialog_widget";
+import * as email_pill from "./email_pill";
 import {$t, $t_html} from "./i18n";
+import * as input_pill from "./input_pill";
 import {page_params} from "./page_params";
 import * as scroll_util from "./scroll_util";
 import * as settings_config from "./settings_config";
@@ -29,6 +30,7 @@ import * as util from "./util";
 
 let custom_expiration_time_input = 10;
 let custom_expiration_time_unit = "days";
+let pills: email_pill.EmailPillWidget;
 
 function reset_error_messages(): void {
     $("#dialog_error").hide().text("").removeClass(common.status_classes);
@@ -43,7 +45,7 @@ function get_common_invitation_data(): {
     invite_as: number;
     stream_ids: string;
     invite_expires_in_minutes: string;
-    invitee_emails?: string;
+    invitee_emails: string;
 } {
     const invite_as = Number.parseInt(
         $<HTMLSelectElement & {type: "select-one"}>("select:not([multiple])#invite_as").val()!,
@@ -79,7 +81,19 @@ function get_common_invitation_data(): {
         invite_as,
         stream_ids: JSON.stringify(stream_ids),
         invite_expires_in_minutes: JSON.stringify(expires_in),
+        invitee_emails: pills
+            .items()
+            .map((pill) => email_pill.get_email_from_item(pill))
+            .join(","),
     };
+    const current_email = email_pill.get_current_email(pills);
+    if (current_email) {
+        if (pills.items().length === 0) {
+            data.invitee_emails = current_email;
+        } else {
+            data.invitee_emails += "," + current_email;
+        }
+    }
     return data;
 }
 
@@ -100,16 +114,14 @@ function submit_invitation_form(): void {
         "select:not([multiple])#expires_in",
     );
     const $invite_status = $("#dialog_error");
-    const $invitee_emails = $<HTMLTextAreaElement>("textarea#invitee_emails");
     const data = get_common_invitation_data();
-    data.invitee_emails = $invitee_emails.val()!;
 
     void channel.post({
         url: "/json/invites",
         data,
         beforeSend,
         success() {
-            const number_of_invites_sent = $invitee_emails.val()!.split(/[\n,]/).length;
+            const number_of_invites_sent = pills.items().length;
             ui_report.success(
                 $t_html(
                     {
@@ -120,7 +132,7 @@ function submit_invitation_form(): void {
                 ),
                 $invite_status,
             );
-            $invitee_emails.val("");
+            pills.clear();
 
             if (page_params.development_environment) {
                 const rendered_email_msg = render_settings_dev_env_email_access();
@@ -171,7 +183,9 @@ function submit_invitation_form(): void {
                 ui_report.message(error_response, $invite_status, "alert-error");
 
                 if (response_body.sent_invitations) {
-                    $invitee_emails.val(invitee_emails_errored.join("\n"));
+                    for (const email of invitee_emails_errored) {
+                        pills.appendValue(email);
+                    }
                 }
             }
         },
@@ -327,7 +341,14 @@ function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void
         const $expires_in = $<HTMLSelectElement & {type: "select-one"}>(
             "select:not([multiple])#expires_in",
         );
-        const $invitee_emails = $<HTMLTextAreaElement>("textarea#invitee_emails");
+        const $pill_container = $("#invitee_emails_container .pill-container");
+        pills = input_pill.create({
+            $container: $pill_container,
+            create_item_from_text: email_pill.create_item_from_email,
+            get_text_from_item: email_pill.get_email_from_item,
+        });
+        const $pill_input = $("#invitee_emails_container .pill-container .input");
+        $pill_input.trigger("focus");
 
         $("#invite-user-modal .dialog_submit_button").prop("disabled", true);
         $("#email_invite_radio").prop("checked", true);
@@ -339,8 +360,6 @@ function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void
         }
 
         const user_has_email_set = !settings_data.user_email_not_configured();
-
-        autosize($invitee_emails.trigger("focus"));
 
         set_custom_time_inputs_visibility();
         set_expires_on_text();
@@ -358,10 +377,15 @@ function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void
         function toggle_invite_submit_button(): void {
             $("#invite-user-modal .dialog_submit_button").prop(
                 "disabled",
-                $invitee_emails.val()!.trim() === "" &&
+                pills.items().length === 0 &&
+                    email_pill.get_current_email(pills) === null &&
                     !$("#generate_multiuse_invite_radio").is(":checked"),
             );
         }
+
+        pills.onPillCreate(toggle_invite_submit_button);
+        pills.onPillRemove(toggle_invite_submit_button);
+        pills.onTextInputHook(toggle_invite_submit_button);
 
         $("#invite-user-modal").on("input", "input, textarea, select", () => {
             toggle_invite_submit_button();
