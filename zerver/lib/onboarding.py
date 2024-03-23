@@ -14,7 +14,7 @@ from zerver.actions.message_send import (
 )
 from zerver.actions.reactions import do_add_reaction
 from zerver.lib.emoji import get_emoji_data
-from zerver.lib.message import SendMessageRequest
+from zerver.lib.message import SendMessageRequest, remove_single_newlines
 from zerver.models import Message, Realm, UserProfile
 from zerver.models.users import get_system_bot
 
@@ -314,19 +314,21 @@ def send_initial_realm_messages(realm: Realm) -> None:
             start_topic_help_url="/help/starting-a-new-topic",
         )
 
-        content_of_zulip_update_announcements_topic_name = (
-            _("""
-Welcome! To help you learn about new features and configuration options, \
+        content_of_zulip_update_announcements_topic_name = remove_single_newlines(
+            (
+                _("""
+Welcome! To help you learn about new features and configuration options,
 this topic will receive messages about important changes in Zulip.
 
-You can read these update messages whenever it's convenient, or \
-[mute]({mute_topic_help_url}) this topic if you are not interested. \
-If your organization does not want to receive these announcements, \
+You can read these update messages whenever it's convenient, or
+[mute]({mute_topic_help_url}) this topic if you are not interested.
+If your organization does not want to receive these announcements,
 they can be disabled. [Learn more]({zulip_update_announcements_help_url}).
             """)
-        ).format(
-            zulip_update_announcements_help_url="/help/configure-automated-notices#zulip-update-announcements",
-            mute_topic_help_url="/help/mute-a-topic",
+            ).format(
+                zulip_update_announcements_help_url="/help/configure-automated-notices#zulip-update-announcements",
+                mute_topic_help_url="/help/mute-a-topic",
+            )
         )
 
     welcome_messages: List[Dict[str, str]] = [
