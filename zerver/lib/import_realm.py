@@ -4,7 +4,7 @@ import shutil
 from concurrent.futures import ProcessPoolExecutor, as_completed
 from datetime import datetime, timezone
 from mimetypes import guess_type
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Set, Tuple
 
 import bmemcached
 import orjson
@@ -701,12 +701,15 @@ def bulk_import_client(data: TableData, model: Any, table: TableName) -> None:
 
 
 def fix_subscriptions_is_user_active_column(
-    data: TableData, user_profiles: List[UserProfile]
+    data: TableData, user_profiles: List[UserProfile], crossrealm_user_ids: Set[int]
 ) -> None:
     table = get_db_table(Subscription)
     user_id_to_active_status = {user.id: user.is_active for user in user_profiles}
     for sub in data[table]:
-        sub["is_user_active"] = user_id_to_active_status[sub["user_profile_id"]]
+        if sub["user_profile_id"] in crossrealm_user_ids:
+            sub["is_user_active"] = True
+        else:
+            sub["is_user_active"] = user_id_to_active_status[sub["user_profile_id"]]
 
 
 def process_avatars(record: Dict[str, Any]) -> None:
@@ -1022,6 +1025,7 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
     # Remap the user IDs for notification_bot and friends to their
     # appropriate IDs on this server
     internal_realm = get_realm(settings.SYSTEM_BOT_REALM)
+    crossrealm_user_ids = set()
     for item in data["zerver_userprofile_crossrealm"]:
         logging.info(
             "Adding to ID map: %s %s",
@@ -1030,6 +1034,7 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
         )
         new_user_id = get_system_bot(item["email"], internal_realm.id).id
         update_id_map(table="user_profile", old_id=item["id"], new_id=new_user_id)
+        crossrealm_user_ids.add(new_user_id)
         new_recipient_id = Recipient.objects.get(type=Recipient.PERSONAL, type_id=new_user_id).id
         update_id_map(table="recipient", old_id=item["recipient_id"], new_id=new_recipient_id)
 
@@ -1131,7 +1136,7 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
     get_huddles_from_subscription(data, "zerver_subscription")
     re_map_foreign_keys(data, "zerver_subscription", "recipient", related_table="recipient")
     update_model_ids(Subscription, data, "subscription")
-    fix_subscriptions_is_user_active_column(data, user_profiles)
+    fix_subscriptions_is_user_active_column(data, user_profiles, crossrealm_user_ids)
     bulk_import_model(data, Subscription)
 
     if "zerver_realmauditlog" in data:
@@ -1409,7 +1414,9 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
     import_attachments(attachment_data)
 
     # Import the analytics file.
-    import_analytics_data(realm=realm, import_dir=import_dir)
+    import_analytics_data(
+        realm=realm, import_dir=import_dir, crossrealm_user_ids=crossrealm_user_ids
+    )
 
     if settings.BILLING_ENABLED:
         do_change_realm_plan_type(realm, Realm.PLAN_TYPE_LIMITED, acting_user=None)
@@ -1664,7 +1671,7 @@ def import_attachments(data: TableData) -> None:
             logging.info("Successfully imported M2M table %s", m2m_table_name)
 
 
-def import_analytics_data(realm: Realm, import_dir: Path) -> None:
+def import_analytics_data(realm: Realm, import_dir: Path, crossrealm_user_ids: Set[int]) -> None:
     analytics_filename = os.path.join(import_dir, "analytics.json")
     if not os.path.exists(analytics_filename):
         return
@@ -1682,6 +1689,9 @@ def import_analytics_data(realm: Realm, import_dir: Path) -> None:
     fix_datetime_fields(data, "analytics_usercount")
     re_map_foreign_keys(data, "analytics_usercount", "realm", related_table="realm")
     re_map_foreign_keys(data, "analytics_usercount", "user", related_table="user_profile")
+    data["analytics_usercount"] = [
+        row for row in data["analytics_usercount"] if row["user_id"] not in crossrealm_user_ids
+    ]
     update_model_ids(UserCount, data, "analytics_usercount")
     bulk_import_model(data, UserCount)
 
