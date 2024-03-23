@@ -38,7 +38,7 @@ DIV_TAB_CONTENT_TEMPLATE = """
 """.strip()
 
 # If adding new entries here, also check if you need to update
-# tabbed-instructions.js
+# tabbed-instructions.ts
 TAB_SECTION_LABELS = {
     "desktop-web": "Desktop/Web",
     "ios": "iOS",
