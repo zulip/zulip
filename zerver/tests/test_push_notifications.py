@@ -496,14 +496,19 @@ class PushBouncerNotificationTest(BouncerTestCase):
 
     def test_register_validate_ios_app_id(self) -> None:
         endpoint = "/api/v1/remotes/push/register"
-        args = {"user_id": 11, "token": "1122", "token_kind": PushDeviceToken.APNS}
+        args = {
+            "user_id": 11,
+            "token": "1122",
+            "token_kind": PushDeviceToken.APNS,
+            "ios_app_id": "'; tables --",
+        }
 
-        result = self.uuid_post(
-            self.server_uuid,
-            endpoint,
-            {**args, "ios_app_id": "'; tables --"},
-        )
-        self.assert_json_error(result, "Invalid app ID")
+        result = self.uuid_post(self.server_uuid, endpoint, args)
+        self.assert_json_error(result, "ios_app_id has invalid format")
+
+        args["ios_app_id"] = "com.zulip.apple"
+        result = self.uuid_post(self.server_uuid, endpoint, args)
+        self.assert_json_success(result)
 
     def test_register_device_deduplication(self) -> None:
         hamlet = self.example_user("hamlet")
@@ -5003,6 +5008,24 @@ class PushBouncerSignupTest(ZulipTestCase):
         request["zulip_org_id"] = zulip_org_id
         result = self.client_post("/api/v1/remotes/server/register", request)
         self.assert_json_error(result, "Invalid UUID")
+
+        # check if zulip org id is of allowed length
+        zulip_org_id = "18cedb98"
+        request["zulip_org_id"] = zulip_org_id
+        result = self.client_post("/api/v1/remotes/server/register", request)
+        self.assert_json_error(result, "zulip_org_id is not length 36")
+
+    def test_push_signup_invalid_zulip_org_key(self) -> None:
+        zulip_org_id = str(uuid.uuid4())
+        zulip_org_key = get_random_string(63)
+        request = dict(
+            zulip_org_id=zulip_org_id,
+            zulip_org_key=zulip_org_key,
+            hostname="invalid-host",
+            contact_email="server-admin@zulip.com",
+        )
+        result = self.client_post("/api/v1/remotes/server/register", request)
+        self.assert_json_error(result, "zulip_org_key is not length 64")
 
     def test_push_signup_success(self) -> None:
         zulip_org_id = str(uuid.uuid4())

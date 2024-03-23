@@ -330,6 +330,8 @@ ERROR_TEMPLATES = {
     "string_too_short": _("{var_name} is too short."),
     "string_type": _("{var_name} is not a string"),
     "unexpected_keyword_argument": _('Argument "{argument}" at {var_name} is unexpected'),
+    "string_pattern_mismatch": _("{var_name} has invalid format"),
+    "string_fixed_length": _("{var_name} is not length {length}"),
 }
 
 
