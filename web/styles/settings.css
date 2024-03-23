@@ -504,6 +504,21 @@ input[type="checkbox"] {
     }
 }
 
+.advanced-configurations-container {
+    .advance-config-title-container {
+        display: flex;
+        align-items: center;
+
+        .stream_setting_subsection_title {
+            margin: 4px 8px;
+        }
+
+        #toggle-advanced-configurations-icon {
+            font-size: 20px;
+        }
+    }
+}
+
 .organization-settings-parent > div:first-of-type {
     margin-top: 10px;
 }

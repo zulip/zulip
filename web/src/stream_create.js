@@ -116,6 +116,32 @@ class StreamNameError {
 }
 const stream_name_error = new StreamNameError();
 
+function toggle_advanced_configurations() {
+    const $advanced_configurations_view = $(".advanced-configurations-collapase-view");
+    const $toggle_button = $("#toggle-advanced-configurations-icon");
+
+    if ($advanced_configurations_view.is(":visible")) {
+        // Toggle into the condensed state
+        $advanced_configurations_view.hide();
+        $toggle_button.addClass("fa-caret-right");
+        $toggle_button.removeClass("fa-caret-down");
+    } else {
+        // Toggle into the expanded state
+        $advanced_configurations_view.show();
+        $toggle_button.addClass("fa-caret-down");
+        $toggle_button.removeClass("fa-caret-right");
+    }
+}
+
+$("body").on(
+    "click",
+    ".advanced-configurations-container #toggle-advanced-configurations-icon",
+    (e) => {
+        e.stopPropagation();
+        toggle_advanced_configurations();
+    },
+);
+
 // Stores the previous state of the stream creation checkbox.
 let stream_announce_previous_value;
 
