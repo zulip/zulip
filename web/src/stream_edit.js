@@ -223,7 +223,7 @@ function setup_dropdown(sub, slim_sub) {
             event.stopPropagation();
             can_remove_subscribers_group_widget.render();
             settings_components.save_discard_stream_settings_widget_status_handler(
-                $("#stream_permission_settings"),
+                $(".advanced-configurations-container"),
                 slim_sub,
             );
         },
