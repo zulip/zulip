@@ -1,3 +1,4 @@
+import os
 import subprocess
 from argparse import ArgumentParser
 from typing import Any, Dict
@@ -80,6 +81,8 @@ class Command(ZulipBaseCommand):
             "contact_email": settings.ZULIP_ADMINISTRATOR,
         }
         if options["rotate_key"]:
+            if not os.access(SECRETS_FILENAME, os.W_OK):
+                raise CommandError(f"{SECRETS_FILENAME} is not writable by the current user.")
             request["new_org_key"] = get_random_string(64)
 
         print(

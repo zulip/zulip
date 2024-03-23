@@ -168,6 +168,8 @@ run_test("wildcard_mentions_regexp", () => {
 
     const messages_with_everyone_mentions = [
         "@**everyone**",
+        '"@**everyone**"',
+        "@**everyone**: Look at this!",
         "some text before @**everyone** some text after",
         "@**everyone** some text after only",
         "some text before only @**everyone**",

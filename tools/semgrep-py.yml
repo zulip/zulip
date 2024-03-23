@@ -43,6 +43,15 @@ rules:
       exclude:
         - "**/migrations/"
 
+  - id: dont-use-empty-select_related
+    pattern-either:
+      - pattern: $X.select_related()
+      - pattern: $X.prefetch_related()
+    message: |
+      Do not use a bare '.select_related()' or '.prefetch_related()', which can join many more tables than expected.  Specify the relations to follow explicitly.
+    languages: [python]
+    severity: ERROR
+
   - id: dont-import-models-in-migrations
     patterns:
       - pattern-not: from zerver.lib.redis_utils import get_redis_client
