@@ -6,6 +6,7 @@ import _ from "lodash";
 
 import render_success_message_scheduled_banner from "../templates/compose_banner/success_message_scheduled_banner.hbs";
 import render_wildcard_mention_not_allowed_error from "../templates/compose_banner/wildcard_mention_not_allowed_error.hbs";
+import render_split_message_part from "../templates/split_message_part.hbs";
 
 import * as channel from "./channel";
 import * as compose_banner from "./compose_banner";
@@ -43,6 +44,10 @@ export function clear_private_stream_alert() {
     $(`#compose_banners .${CSS.escape(compose_banner.CLASSNAMES.private_stream_warning)}`).remove();
 }
 
+export function is_preview_area_visible() {
+    return $("#compose .preview_message_area").is(":visible");
+}
+
 export function clear_preview_area() {
     $("textarea#compose-textarea").show();
     $("textarea#compose-textarea").trigger("focus");
@@ -78,7 +83,7 @@ export function show_preview_area() {
     );
 }
 
-export function create_message_object() {
+export function create_message_object(message_content = compose_state.message_content()) {
     // Topics are optional, and we provide a placeholder if one isn't given.
     let topic = compose_state.topic();
     if (topic === "") {
@@ -88,7 +93,7 @@ export function create_message_object() {
     // Changes here must also be kept in sync with echo.try_deliver_locally
     const message = {
         type: compose_state.get_message_type(),
-        content: compose_state.message_content(),
+        content: message_content,
         sender_id: current_user.user_id,
         queue_id: server_events.queue_id,
         stream_id: undefined,
@@ -169,7 +174,60 @@ export function send_message_success(request, data) {
     }
 }
 
-export function send_message(request = create_message_object()) {
+export function toggle_split_messages() {
+    const state = compose_validate.is_split_messages_enabled();
+    compose_validate.set_split_messages_enabled(!state);
+    // preview area and compose banner should be updated with the new setting
+    if (is_preview_area_visible()) {
+        // update the preview area if it was already visible
+        clear_preview_area();
+        show_preview_area();
+    }
+    compose_validate.update_split_messages_info_banner();
+}
+
+function set_compose_content(content) {
+    const $text_area = $("textarea#compose-textarea");
+    $text_area.val(content).trigger("focus");
+    compose_ui.autosize_textarea($text_area);
+    compose_validate.update_split_messages_info_banner();
+}
+/**
+ * Splits a message into 2 parts, if possible
+ * @param {string} message_content the content to be split
+ * @param {boolean} split_messages whether the option is enabled
+ * @returns a pair of strings: the first being the individual split message, the second being the
+ * remaining part of the message, which will be undefined when there are no further parts to send
+ */
+function split_message(message_content, split_messages) {
+    if (!split_messages) {
+        return [message_content];
+    }
+    if (!message_content) {
+        return [""];
+    }
+    const index = message_content.indexOf(compose_validate.SPLIT_DELIMITER);
+    if (index === -1) {
+        // no delimiter is found
+        return [message_content];
+    }
+    const parts = [
+        message_content.slice(0, index),
+        message_content.slice(index + compose_validate.SPLIT_DELIMITER.length),
+    ];
+    if (!parts[0]) {
+        // there are too many "\n\n\n" sequences, so some parts are empty strings
+        return split_message(parts[1], true);
+    }
+    return parts;
+}
+export function send_message(
+    message_content = compose_state.message_content(),
+    split_messages = compose_validate.is_split_messages_enabled(),
+) {
+    const [content_to_send, rest_of_the_content] = split_message(message_content, split_messages);
+    const request = create_message_object(content_to_send);
+
     compose_state.set_recipient_edited_manually(false);
     if (request.type === "private") {
         request.to = JSON.stringify(request.to);
@@ -183,8 +241,10 @@ export function send_message(request = create_message_object()) {
 
     let local_id;
     let locally_echoed;
-
-    const message = echo.try_deliver_locally(request, message_events.insert_new_messages);
+    // do not try local echo if message will be split in parts
+    const message = !split_messages
+        ? echo.try_deliver_locally(request, message_events.insert_new_messages)
+        : null;
     if (message) {
         // We are rendering this message locally with an id
         // like 92l99.01 that corresponds to a reasonable
@@ -206,6 +266,11 @@ export function send_message(request = create_message_object()) {
 
     function success(data) {
         send_message_success(request, data);
+        if (split_messages && Boolean(rest_of_the_content)) {
+            send_message(rest_of_the_content, true);
+        } else {
+            compose_validate.clear_split_messages_info_banner();
+        }
     }
 
     function error(response, server_error_code) {
@@ -238,14 +303,22 @@ export function send_message(request = create_message_object()) {
             // (Restoring this state is handled by clear_compose_box
             // for locally echoed messages.)
             compose_ui.hide_compose_spinner();
-            return;
+        } else {
+            echo.message_send_error(message.id, response);
+
+            // We might not have updated the draft count because we assumed the
+            // message would send. Ensure that the displayed count is correct.
+            drafts.sync_count();
         }
-
-        echo.message_send_error(message.id, response);
-
-        // We might not have updated the draft count because we assumed the
-        // message would send. Ensure that the displayed count is correct.
-        drafts.sync_count();
+        if (split_messages) {
+            if (rest_of_the_content) {
+                set_compose_content(
+                    content_to_send + compose_validate.SPLIT_DELIMITER + rest_of_the_content,
+                );
+            } else {
+                set_compose_content(content_to_send);
+            }
+        }
     }
 
     transmit.send_message(request, success, error);
@@ -326,7 +399,7 @@ export function do_post_send_tasks() {
 }
 
 export function render_and_show_preview($preview_spinner, $preview_content_box, content) {
-    function show_preview(rendered_content, raw_content) {
+    function show_preview(rendered_content, message_number, raw_content) {
         // content is passed to check for status messages ("/me ...")
         // and will be undefined in case of errors
         let rendered_preview_html;
@@ -340,44 +413,75 @@ export function render_and_show_preview($preview_spinner, $preview_content_box, 
         } else {
             rendered_preview_html = rendered_content;
         }
-
-        $preview_content_box.html(util.clean_user_content_links(rendered_preview_html));
+        if (message_number > 0) {
+            // the raw_content is a sub-part of a
+            // split message, so we enumerate it
+            const params = {
+                message_number,
+                rendered_preview_html,
+            };
+            const enumerated_rendered_preview_html = render_split_message_part(params);
+            $preview_content_box.append(
+                util.clean_user_content_links(enumerated_rendered_preview_html),
+            );
+        } else {
+            $preview_content_box.html(util.clean_user_content_links(rendered_preview_html));
+        }
         rendered_markdown.update_elements($preview_content_box);
     }
 
     if (content.length === 0) {
         show_preview($t_html({defaultMessage: "Nothing to preview"}));
     } else {
-        if (markdown.contains_backend_only_syntax(content)) {
-            const $spinner = $preview_spinner.expectOne();
-            loading.make_indicator($spinner);
-        } else {
-            // For messages that don't appear to contain syntax that
-            // is only supported by our backend Markdown processor, we
-            // render using the frontend Markdown processor (but still
-            // render server-side to ensure the preview is accurate;
-            // if the `markdown.contains_backend_only_syntax` logic is
-            // wrong, users will see a brief flicker of the locally
-            // echoed frontend rendering before receiving the
-            // authoritative backend rendering from the server).
-            markdown.render(content);
+        render_message_part(content, 1);
+        function render_message_part(whole_content, message_number) {
+            const [content, remaining_content] = split_message(
+                whole_content,
+                compose_validate.will_split_into_multiple_messages(),
+            );
+            if (!remaining_content && message_number === 1) {
+                // the first time we split the message, there
+                // is no remaining content, so we should not
+                // render messages enumerated
+                message_number = 0;
+            }
+            if (markdown.contains_backend_only_syntax(content)) {
+                const $spinner = $preview_spinner.expectOne();
+                loading.make_indicator($spinner);
+            } else {
+                // For messages that don't appear to contain syntax that
+                // is only supported by our backend Markdown processor, we
+                // render using the frontend Markdown processor (but still
+                // render server-side to ensure the preview is accurate;
+                // if the `markdown.contains_backend_only_syntax` logic is
+                // wrong, users will see a brief flicker of the locally
+                // echoed frontend rendering before receiving the
+                // authoritative backend rendering from the server).
+                markdown.render(content);
+            }
+            channel.post({
+                url: "/json/messages/render",
+                data: {content},
+                success(response_data) {
+                    if (markdown.contains_backend_only_syntax(content)) {
+                        loading.destroy_indicator($preview_spinner);
+                    }
+                    show_preview(response_data.rendered, message_number, content);
+                    if (remaining_content) {
+                        render_message_part(remaining_content, message_number + 1);
+                    }
+                },
+                error() {
+                    if (markdown.contains_backend_only_syntax(content)) {
+                        loading.destroy_indicator($preview_spinner);
+                    }
+                    show_preview(
+                        $t_html({defaultMessage: "Failed to generate preview"}),
+                        message_number,
+                    );
+                },
+            });
         }
-        channel.post({
-            url: "/json/messages/render",
-            data: {content},
-            success(response_data) {
-                if (markdown.contains_backend_only_syntax(content)) {
-                    loading.destroy_indicator($preview_spinner);
-                }
-                show_preview(response_data.rendered, content);
-            },
-            error() {
-                if (markdown.contains_backend_only_syntax(content)) {
-                    loading.destroy_indicator($preview_spinner);
-                }
-                show_preview($t_html({defaultMessage: "Failed to generate preview"}));
-            },
-        });
     }
 }
 

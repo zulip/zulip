@@ -54,6 +54,7 @@ export const CLASSNAMES = {
     zephyr_not_running: "zephyr_not_running",
     generic_compose_error: "generic_compose_error",
     user_not_subscribed: "user_not_subscribed",
+    split_messages: "split_messages",
 };
 
 export function get_compose_banner_container($textarea: JQuery): JQuery {

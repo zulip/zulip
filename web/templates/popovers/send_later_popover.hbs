@@ -39,6 +39,13 @@
     </li>
     <hr />
     <li>
+        <input id="split_messages_checkbox" type="checkbox" {{#if split_messages}}checked{{/if}} />
+        <label for="split_messages_checkbox" class="split_messages_toggle">
+            {{t "Send as multiple messages"}}
+        </label>
+    </li>
+    <hr />
+    <li>
         <a class="open_send_later_modal" tabindex="0">{{t "Schedule message" }}</a>
     </li>
     {{#if formatted_send_later_time}}

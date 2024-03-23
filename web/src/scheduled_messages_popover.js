@@ -156,6 +156,7 @@ export function initialize() {
                     render_send_later_popover({
                         enter_sends_true: user_settings.enter_sends,
                         formatted_send_later_time,
+                        split_messages: compose_validate.is_split_messages_enabled(),
                     }),
                 ),
             );
@@ -202,6 +203,14 @@ export function initialize() {
             $popper.one("click", ".open_send_later_modal", () => {
                 open_send_later_menu();
                 instance.hide();
+            });
+
+            // Handle split messages clicks
+            $popper.one("click", "#split_messages_checkbox", () => {
+                compose.toggle_split_messages();
+                setTimeout(() => {
+                    instance.hide();
+                }, ENTER_SENDS_SELECTION_DELAY);
             });
         },
         onHidden(instance) {

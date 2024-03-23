@@ -6,6 +6,7 @@ import * as resolved_topic from "../shared/src/resolved_topic";
 import render_compose_banner from "../templates/compose_banner/compose_banner.hbs";
 import render_not_subscribed_warning from "../templates/compose_banner/not_subscribed_warning.hbs";
 import render_private_stream_warning from "../templates/compose_banner/private_stream_warning.hbs";
+import render_split_message_banner from "../templates/compose_banner/split_message_banner.hbs";
 import render_stream_wildcard_warning from "../templates/compose_banner/stream_wildcard_warning.hbs";
 import render_wildcard_mention_not_allowed_error from "../templates/compose_banner/wildcard_mention_not_allowed_error.hbs";
 import render_compose_limit_indicator from "../templates/compose_limit_indicator.hbs";
@@ -16,6 +17,7 @@ import * as compose_pm_pill from "./compose_pm_pill";
 import * as compose_state from "./compose_state";
 import * as compose_ui from "./compose_ui";
 import {$t} from "./i18n";
+import {localstorage} from "./localstorage";
 import * as message_store from "./message_store";
 import * as narrow_state from "./narrow_state";
 import {page_params} from "./page_params";
@@ -884,4 +886,74 @@ export function convert_mentions_to_silent_in_direct_messages(
 
     const silent_mention_text = people.get_mention_syntax(full_name, user_id, true);
     return silent_mention_text;
+}
+
+export const SPLIT_DELIMITER = "\n\n\n";
+
+/**
+ * @param {string} content the content to be split
+ * @returns a list of non-empty message parts, split by the delimiter
+ */
+export function message_content_split_parts(content = compose_state.message_content()): string[] {
+    return content.split(SPLIT_DELIMITER).filter((k) => k.length > 0);
+}
+
+/**
+ * checks whether the message actually needs to be split, as it is possible
+ * that `split_messages` is enabled but the message doesn't contain the delimiter.
+ */
+export function will_split_into_multiple_messages(): boolean {
+    if (!is_split_messages_enabled()) {
+        return false;
+    }
+    return message_content_split_parts().length > 1;
+}
+
+const ls = localstorage();
+let split_messages_enabled = ls.get("split_messages") === "true";
+export function is_split_messages_enabled(): boolean {
+    return split_messages_enabled;
+}
+
+/**
+ * sets the state of the option to the value passed, and
+ * also in the localstorage (if supported)
+ * @param {boolean} enable Whether to enable the option
+ */
+export function set_split_messages_enabled(enable: boolean): void {
+    split_messages_enabled = enable;
+    ls.set("split_messages", String(enable));
+}
+let split_messages_banner_shown = false;
+
+export function update_split_messages_info_banner(): void {
+    if (will_split_into_multiple_messages()) {
+        show_split_messages_info_banner();
+        compose_ui.autosize_textarea($("textarea#compose-textarea"));
+    } else {
+        clear_split_messages_info_banner();
+    }
+}
+
+function show_split_messages_info_banner(): void {
+    clear_split_messages_info_banner();
+    const context = {
+        banner_type: compose_banner.INFO,
+        button_text: $t({
+            defaultMessage: "Send as a single message",
+        }),
+        message_count: message_content_split_parts().length,
+        classname: compose_banner.CLASSNAMES.split_messages,
+    };
+    const new_row_html = render_split_message_banner(context);
+    compose_banner.append_compose_banner_to_banner_list($(new_row_html), $("#compose_banners"));
+    split_messages_banner_shown = true;
+}
+
+export function clear_split_messages_info_banner(): void {
+    if (!split_messages_banner_shown) {
+        return;
+    }
+    $(`#compose_banners .${CSS.escape(compose_banner.CLASSNAMES.split_messages)}`).remove();
+    split_messages_banner_shown = false;
 }
