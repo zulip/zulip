@@ -75,22 +75,56 @@
                   can_remove_subscribers_setting_widget_name="can_remove_subscribers_group" }}
             </div>
             {{/with}}
-            <div class="stream-email-box" {{#unless can_access_stream_email}}style="display: none;"{{/unless}}>
-                <div class="stream-email-box-header">
+            <div class="stream_details_box">
+                <div class="stream_details_box_header">
                     <h3 class="stream_setting_subsection_title">
-                        {{t "Email address" }}
-                        {{> ../help_link_widget link="/help/message-a-stream-by-email" }}
+                        {{t "Stream details" }}
                     </h3>
                     <div class="stream_email_address_error alert-notification"></div>
                 </div>
-                <p>
-                    {{t "You can use email to send messages to Zulip streams."}}
-                </p>
-                <p>
-                    <button class="button rounded copy_email_button" type="button" name="button">
+                {{#with sub}}
+                <div class="stream_creator_details stream_details_subsection">
+                    {{#if creator}}
+                    {{#tr}}
+                        Created by <z-user></z-user> on <z-stream-date-created></z-stream-date-created>.
+                        {{#*inline "z-user"}}
+                            {{> ../user_display_only_pill
+                              is_inline=true
+                              user_id=creator.user_id
+                              img_src=creator.avatar_url
+                              display_value=creator.full_name
+                              is_current_user=is_creator }}
+                        {{/inline}}
+                        {{#*inline "z-stream-date-created"}}{{date_created_string}}{{/inline}}
+                    {{/tr}}
+                    {{else}}
+                    {{#tr}}
+                        Created on <z-stream-date-created></z-stream-date-created>.
+                        {{#*inline "z-stream-date-created"}}{{date_created_string}}{{/inline}}
+                    {{/tr}}
+                    {{/if}}
+                </div>
+                <div class="stream_details_subsection">
+                    {{t "Stream events"}}<br/>
+                    <a href="{{preview_url}}/topic/stream.20events">{{t "View events" }}</a>
+                </div>
+                <div class="stream_details_subsection">
+                    {{t "Stream ID"}}<br/>
+                    {{stream_id}}
+                </div>
+                {{/with}}
+                {{#if can_access_stream_email}}
+                <div class="input-group stream-email-box">
+                    <label for="copy_stream_email_button" class="title inline-block">Email address</label>
+                    <p class="field-hint">
+                        {{t "You can use email to send messages to Zulip streams."}}
+                        {{> ../help_link_widget link="/help/message-a-stream-by-email" }}
+                    </p>
+                    <button class="button small rounded copy_email_button" id="copy_stream_email_button" type="button">
                         <span class="copy_button">{{t "Generate email address" }}</span>
                     </button>
-                </p>
+                </div>
+                {{/if}}
             </div>
         </div>
 

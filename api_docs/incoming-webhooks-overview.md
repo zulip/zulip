@@ -187,7 +187,7 @@ the integration will send direct messages to the bot's owner.
 !!! tip ""
 
     A stream ID can be found when [browsing streams][browse-streams]
-    in the web app via the URL.
+    in the web or desktop apps.
 
 ### topic
 

@@ -126,7 +126,7 @@ help center because they are primarily useful to API clients:
 
     A user ID can be found by [viewing a user's profile][view-profile]
     in the web or desktop apps. A stream ID can be found when [browsing
-    streams][browse-streams] in the web app via the URL.
+    streams][browse-streams] in the web or desktop apps.
 
 The operands for these search options must be encoded either as an
 integer ID or a JSON list of integer IDs. For example, to query
