@@ -22,7 +22,7 @@ import * as stream_data from "./stream_data";
 import * as user_status from "./user_status";
 import * as util from "./util";
 
-type ComposeTriggeredOptions = {
+export type ComposeTriggeredOptions = {
     trigger: string;
 } & (
     | {
@@ -35,7 +35,7 @@ type ComposeTriggeredOptions = {
           private_message_recipient: string;
       }
 );
-type ComposePlaceholderOptions =
+export type ComposePlaceholderOptions =
     | {
           message_type: "stream";
           stream_id: number | undefined;
