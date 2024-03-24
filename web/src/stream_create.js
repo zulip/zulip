@@ -139,6 +139,42 @@ function toggle_advanced_configurations() {
     }
 }
 
+$("body").on("click", ".settings-sticky-footer #stream_creation_go_to_subscribers", (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    const stream_name = $("#create_stream_name").val().trim();
+    const is_stream_name_valid = stream_name_error.validate_for_submit(stream_name);
+    const privacy_type = $("#stream_creation_form input[type=radio][name=privacy]:checked").val();
+    let invite_only = false;
+    let is_web_public = false;
+
+    if (is_stream_name_valid) {
+        if (privacy_type === "invite-only" || privacy_type === "invite-only-public-history") {
+            invite_only = true;
+        } else if (privacy_type === "web-public") {
+            is_web_public = true;
+        }
+
+        const sub = {
+            name: stream_name,
+            invite_only,
+            is_web_public,
+        };
+        stream_settings_components.show_subs_pane.create_stream("subscribers_container", sub);
+    }
+});
+
+$("body").on(
+    "click",
+    ".settings-sticky-footer #stream_creation_go_to_configure_channel_settings",
+    (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        stream_settings_components.show_subs_pane.create_stream("configure_channel_settings");
+    },
+);
+
 $("body").on("click", ".advanced-configurations-container .advance-config-title-container", (e) => {
     e.stopPropagation();
     toggle_advanced_configurations();
@@ -435,6 +471,7 @@ export function set_up_handlers() {
         const name_ok = stream_name_error.validate_for_submit(stream_name);
 
         if (!name_ok) {
+            stream_settings_components.show_subs_pane.create_stream("configure_channel_settings");
             return;
         }
 
