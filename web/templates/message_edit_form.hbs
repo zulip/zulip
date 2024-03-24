@@ -3,7 +3,9 @@
 <form id="edit_form_{{message_id}}" class="new-style">
     <div class="edit_form_banners"></div>
     <div class="edit-controls">
-        {{> copy_message_button message_id=this.message_id}}
+        <div class="copy_button_base copy_message tippy-zulip-tooltip" data-tippy-content="{{t 'Copy and close' }}" aria-label="{{t 'Copy and close' }}" role="button">
+            {{> copy_to_clipboard_svg}}
+        </div>
         <textarea class="message_edit_content" maxlength="{{ max_message_length }}">{{content}}</textarea>
         <div class="scrolling_list preview_message_area" id="preview_message_area_{{message_id}}" style="display:none;">
             <div class="markdown_preview_spinner"></div>

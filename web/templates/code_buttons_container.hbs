@@ -1,6 +1,8 @@
 <div class="code-buttons-container">
-    {{~> copy_code_button~}}
+    <button class="btn copy_button_base copy_codeblock" data-tippy-content="{{t 'Copy code' }}" data-tippy-trigger="mouseenter" aria-label="{{t 'Copy code' }}">
+        {{> copy_to_clipboard_svg}}
+    </button>
     {{~#if show_playground_button~}}
-    {{~> view_code_in_playground~}}
+        {{~> view_code_in_playground~}}
     {{~/if~}}
 </div>

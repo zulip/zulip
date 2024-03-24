@@ -633,9 +633,9 @@ li,
 /* Classes which style copy buttons */
 .copy_button_base {
     outline-color: hsl(0deg 0% 73%);
-    height: 18px;
-    width: 10px;
-    padding: 6px;
+    height: 16px;
+    width: 16px;
+    padding: 2px;
     display: block;
     /* The below two avoids the padded element from displaying
     its own border and background color */
@@ -655,10 +655,10 @@ li,
     float: right;
     position: relative;
     cursor: pointer;
-    top: 30px;
+    top: 34px;
     /* To make sure the svg doesn't occupy any vertical space. */
     margin-top: -30px;
-    right: 2px;
+    right: 6px;
     padding-top: 2px;
 
     #clipboard_image {
@@ -668,7 +668,7 @@ li,
 
 #copy_generated_invite_link {
     position: relative;
-    margin-right: -32px;
+    margin-right: -23px;
     margin-top: -1px;
     padding: 6px 3px 6px 13px;
     float: right;
@@ -682,14 +682,9 @@ li,
         fill: var(--color-fill-user-invite-copy-icon);
     }
 
-    &:hover svg path {
+    &:hover path {
         fill: var(--color-fill-hover-copy-icon);
     }
-}
-
-#clipboard_image {
-    margin-top: -5px;
-    margin-left: -8px;
 }
 
 /* Classes for hiding and showing controls */
@@ -2374,18 +2369,19 @@ select.invite-as {
         height: 40px;
     }
 
-    & i.fa-copy {
+    .zulip-version {
+        margin-left: 3px;
         cursor: pointer;
-    }
-
-    .fa-copy:hover {
-        color: hsl(170deg 48% 54%);
     }
 
     .overlay-body {
         max-height: 60vh;
         padding: 15px;
     }
+}
+
+.copy_to_clipboard:hover {
+    fill: hsl(200deg 100% 40%);
 }
 
 @media (width < $xl_min) or (height < $short_navbar_cutoff_height) {

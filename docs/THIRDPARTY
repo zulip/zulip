@@ -59,6 +59,10 @@ Files: static/generated/emoji/images/emoji/unicode/*
 Copyright: Google, Inc.
 License: Apache-2.0
 
+Files: static/images/help/copy_to_clipboard.svg
+Copyright: 2013-2023 Cole Bemis (https://feathericons.com)
+License: Expat
+
 Files: tools/check-thirdparty
 Copyright: 2020 Kandra Labs, Inc.
 License: GPL-2.0+

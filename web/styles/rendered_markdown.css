@@ -766,7 +766,7 @@
            issue in dark mode. */
         background-color: transparent !important;
         /* Square off the box around the copy-to-clipboard icon. */
-        padding: 0 2px 0 4px;
+        padding: 3px 2px 0 4px;
 
         &:hover {
             /* Regrettably, !important is necessary for a thorny
