@@ -217,7 +217,6 @@ export function compare_by_pms(user_a: User, user_b: User): number {
     // recent DM message history with a user, but does have some older
     // message history that's outside the "recent messages only"
     // data set powering people.get_recipient_count.
-    /* istanbul ignore next */
     if (a_is_partner && !b_is_partner) {
         return -1;
     } else if (!a_is_partner && b_is_partner) {
@@ -243,7 +242,7 @@ export function compare_by_pms(user_a: User, user_b: User): number {
 export function compare_people_for_relevance(
     person_a: UserOrMention,
     person_b: UserOrMention,
-    tertiary_compare: (user_a: User, user_b: User) => number,
+    compare_by_current_conversation?: (user_a: User, user_b: User) => number,
     current_stream_id?: number,
 ): number {
     // give preference to "all", "everyone" or "stream"
@@ -284,17 +283,14 @@ export function compare_people_for_relevance(
         }
     }
 
-    // give preference to direct message partners if both (are)/(are not) subscribers
-    const a_is_partner = pm_conversations.is_partner(person_a.user_id);
-    const b_is_partner = pm_conversations.is_partner(person_b.user_id);
-
-    if (a_is_partner && !b_is_partner) {
-        return -1;
-    } else if (!a_is_partner && b_is_partner) {
-        return 1;
+    if (compare_by_current_conversation !== undefined) {
+        const preference = compare_by_current_conversation(person_a, person_b);
+        if (preference !== 0) {
+            return preference;
+        }
     }
 
-    return tertiary_compare(person_a, person_b);
+    return compare_by_pms(person_a, person_b);
 }
 
 export function sort_people_for_relevance(
@@ -308,9 +304,7 @@ export function sort_people_for_relevance(
         current_stream = stream_data.get_sub_by_id(current_stream_id);
     }
     if (!current_stream) {
-        objs.sort((person_a, person_b) =>
-            compare_people_for_relevance(person_a, person_b, compare_by_pms),
-        );
+        objs.sort((person_a, person_b) => compare_people_for_relevance(person_a, person_b));
     } else {
         objs.sort((person_a, person_b) =>
             compare_people_for_relevance(
