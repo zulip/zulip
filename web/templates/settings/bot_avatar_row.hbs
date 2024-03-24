@@ -36,7 +36,10 @@
         </div>
         <div class="bot-card-email">
             <div class="bot-card-field">{{t "Bot email" }}</div>
-            <div class="bot-card-value">{{email}}</div>
+            <div class="bot-card-value">
+                {{email}}
+                <i id="copy-bot-card-email" class="fa fa-copy tippy-zulip-tooltip copy-bot-card-email" data-tippy-content="{{t 'Copy bot email' }}" data-tippy-placement="right" data-clipboard-text="{{email}}"></i>
+            </div>
         </div>
         {{#if is_active}}
         <div class="bot-card-api-key">

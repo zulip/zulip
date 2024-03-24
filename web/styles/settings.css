@@ -976,6 +976,10 @@ input[type="checkbox"] {
         display: flex;
     }
 
+    .bot-card-value .copy-bot-card-email {
+        cursor: pointer;
+    }
+
     .bot-card-info {
         padding: 10px;
     }
