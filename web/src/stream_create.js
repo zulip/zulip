@@ -133,6 +133,44 @@ function toggle_advanced_configurations() {
     }
 }
 
+export function toggle_stream_creation_tabs(next_tab) {
+    if (next_tab) {
+        // Hide stream creation containers and show add subscriber container
+        $(
+            ".create_stream_title_container, .create_stream_description_container, .create_stream_types_container",
+        ).hide();
+        $(".stream_create_add_subscriber_container, .finalize_create_stream").show();
+        $("#create_stream_next_tab").hide();
+        $("#create_stream_back_tab").show();
+        $("#subscription_overlay .stream-info-title").text(
+            $t({defaultMessage: "Create stream: add subscribers"}),
+        );
+    } else {
+        // Hide add subscriber container and show stream creation containers
+        $(
+            ".create_stream_title_container, .create_stream_description_container, .create_stream_types_container",
+        ).show();
+        $(".stream_create_add_subscriber_container, .finalize_create_stream").hide();
+        $("#create_stream_next_tab").show();
+        $("#create_stream_back_tab").hide();
+        $("#subscription_overlay .stream-info-title").text(
+            $t({defaultMessage: "Create stream: configure settings"}),
+        );
+    }
+}
+
+$("body").on("click", ".settings-sticky-footer #create_stream_next_tab", (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    toggle_stream_creation_tabs(true);
+});
+
+$("body").on("click", ".settings-sticky-footer #create_stream_back_tab", (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    toggle_stream_creation_tabs(false);
+});
+
 $("body").on(
     "click",
     ".advanced-configurations-container #toggle-advanced-configurations-icon",
@@ -428,6 +466,7 @@ export function set_up_handlers() {
     $container.on("click", ".finalize_create_stream", (e) => {
         e.preventDefault();
         clear_error_display();
+        toggle_stream_creation_tabs();
 
         const stream_name = $("#create_stream_name").val().trim();
         const name_ok = stream_name_error.validate_for_submit(stream_name);

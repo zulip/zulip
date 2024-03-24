@@ -46,7 +46,9 @@ export const show_subs_pane = {
     create_stream() {
         $(".nothing-selected, .settings, #stream-creation").hide();
         $("#stream-creation").show();
-        $("#subscription_overlay .stream-info-title").text($t({defaultMessage: "Create stream"}));
+        $("#subscription_overlay .stream-info-title").text(
+            $t({defaultMessage: "Create stream: configure settings"}),
+        );
     },
 };
 
