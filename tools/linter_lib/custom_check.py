@@ -144,7 +144,7 @@ js_rules = RuleList(
             "exclude_pattern": r"""\.html\(("|'|render_|\w+_html|html|message\.content|util\.clean_user_content_links|rendered_|$|\)|error_html|widget_elem|\$error|\$\("<p>"\))""",
             "exclude": {
                 "web/src/portico",
-                "web/src/lightbox.js",
+                "web/src/lightbox.ts",
                 "web/src/ui_report.ts",
                 "web/src/dialog_widget.ts",
                 "web/tests/",
