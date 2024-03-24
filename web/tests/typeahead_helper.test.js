@@ -432,9 +432,9 @@ test("sort_recipients", () => {
         "b_user_3@zulip.net",
         "a_user@zulip.org",
         "b_bot@example.com",
-        "a_bot@zulip.com",
         "b_user_1@zulip.net",
         "b_user_2@zulip.net",
+        "a_bot@zulip.com",
     ]);
 });
 
@@ -455,7 +455,7 @@ test("sort_recipients all mention", () => {
         current_topic: "Linux topic",
     });
 
-    assertSameEmails(results, [all_obj, a_bot, a_user, b_user_1, b_user_2, b_user_3, b_bot, zman]);
+    assertSameEmails(results, [all_obj, a_user, a_bot, b_user_1, b_user_2, b_user_3, zman, b_bot]);
 });
 
 test("sort_recipients pm counts", () => {
@@ -482,8 +482,8 @@ test("sort_recipients pm counts", () => {
 
     assert.deepEqual(get_typeahead_result("b", linux_sub.stream_id, "Linux topic"), [
         "b_user_3@zulip.net",
-        "b_user_1@zulip.net",
         "b_user_2@zulip.net",
+        "b_user_1@zulip.net",
         "b_bot@example.com",
         "a_bot@zulip.com",
         "a_user@zulip.org",
@@ -575,6 +575,32 @@ test("sort_recipients subscribers", () => {
     });
     const recipients_email = recipients.map((person) => person.email);
     const expected = ["b_user_2@zulip.net", "b_user_1@zulip.net"];
+    assert.deepEqual(recipients_email, expected);
+});
+
+test("sort_recipients recent senders", () => {
+    // b_user_2 is the only recent sender, b_user_3 is the only pm partner
+    // and all are subscribed to the stream Linux.
+    const small_matches = [b_user_1, b_user_2, b_user_3];
+    peer_data.add_subscriber(linux_sub.stream_id, b_user_1.user_id);
+    peer_data.add_subscriber(linux_sub.stream_id, b_user_2.user_id);
+    peer_data.add_subscriber(linux_sub.stream_id, b_user_3.user_id);
+    recent_senders.process_stream_message({
+        sender_id: b_user_2.user_id,
+        stream_id: linux_sub.stream_id,
+        topic: "Linux topic",
+        id: (next_id += 1),
+    });
+    pm_conversations.set_partner(b_user_3.user_id);
+    const recipients = th.sort_recipients({
+        users: small_matches,
+        query: "b",
+        current_stream_id: linux_sub.stream_id,
+        current_topic: "Linux topic",
+    });
+    const recipients_email = recipients.map((person) => person.email);
+    // Prefer recent sender over pm partner
+    const expected = ["b_user_2@zulip.net", "b_user_3@zulip.net", "b_user_1@zulip.net"];
     assert.deepEqual(recipients_email, expected);
 });
 
