@@ -14,6 +14,7 @@ import * as compose_ui from "./compose_ui";
 import * as compose_validate from "./compose_validate";
 import * as dialog_widget from "./dialog_widget";
 import * as flatpickr from "./flatpickr";
+import {by_stream_topic_url} from "./hash_util";
 import {$t_html} from "./i18n";
 import * as message_edit from "./message_edit";
 import * as narrow from "./narrow";
@@ -179,9 +180,10 @@ export function initialize() {
                     // user-triggered edit to that field.
                     $input.trigger("input");
 
-                    // TODO: Probably this should also renarrow to the
-                    // new topic, if we were currently viewing the old
-                    // topic, just as if a message edit had occurred.
+                    // renarrow to the new topic
+                    const stream_id = compose_state.stream_id();
+                    const url = by_stream_topic_url(stream_id, new_topic);
+                    window.location.href = url;
                 } else {
                     message_edit.toggle_resolve_topic(message_id, topic_name, true);
                 }
