@@ -69,7 +69,7 @@ class RealmSessionStore(LeaklessCachedDbSessionStore):
             realm_id = None
 
         if "user_id" in data:
-            user_id = int(data["user_id"])
+            user_id = int(data["_auth_user_id"])
         else:
             user_id = None
 
