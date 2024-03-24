@@ -450,6 +450,11 @@ export function set_up() {
         show_copied_confirmation(e.trigger);
     });
 
+    const api_key_clipboard = new ClipboardJS("#copy-bot-card-api-key");
+    api_key_clipboard.on("success", (e) => {
+        show_copied_confirmation(e.trigger);
+    });
+
     const clipboard = new ClipboardJS("#copy_zuliprc", {
         text(trigger) {
             const $bot_info = $(trigger).closest(".bot-information-box").find(".bot-card-info");

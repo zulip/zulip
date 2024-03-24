@@ -974,10 +974,16 @@ input[type="checkbox"] {
         font-family: "Source Code Pro", monospace;
         font-size: 0.85em;
         display: flex;
+        align-items: center;
     }
 
-    .bot-card-value .copy-bot-card-email {
+    .bot-card-value .copy-bot-card-email,
+    .bot-card-api-key-value-and-button .copy-bot-card-api-key {
         cursor: pointer;
+    }
+
+    .bot-card-api-key-value-and-button .copy-bot-card-api-key {
+        margin-left: 3px;
     }
 
     .bot-card-info {
