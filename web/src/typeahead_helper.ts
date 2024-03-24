@@ -270,17 +270,21 @@ export function compare_people_for_relevance(
         }
     }
 
-    // give preference to direct message partners if both (are)/(are not) subscribers
-    const a_is_partner = pm_conversations.is_partner(person_a.user_id);
-    const b_is_partner = pm_conversations.is_partner(person_b.user_id);
+    const preference = tertiary_compare(person_a, person_b);
 
-    if (a_is_partner && !b_is_partner) {
-        return -1;
-    } else if (!a_is_partner && b_is_partner) {
-        return 1;
+    if (preference === 0) {
+        // as a tiebreaker, give preference to direct message partners
+        const a_is_partner = pm_conversations.is_partner(person_a.user_id);
+        const b_is_partner = pm_conversations.is_partner(person_b.user_id);
+
+        if (a_is_partner && !b_is_partner) {
+            return -1;
+        } else if (!a_is_partner && b_is_partner) {
+            return 1;
+        }
     }
 
-    return tertiary_compare(person_a, person_b);
+    return preference;
 }
 
 export function sort_people_for_relevance(
