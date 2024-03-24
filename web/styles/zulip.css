@@ -2399,6 +2399,10 @@ select.invite-as {
     }
 }
 
+.copy_to_clipboard_svg:hover path {
+    fill: hsl(200deg 100% 40%);
+}
+
 @media (width < $xl_min) or (height < $short_navbar_cutoff_height) {
     .default-sidebar-behaviour {
         &.spectator-view.default-sidebar-behaviour {
