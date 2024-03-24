@@ -359,7 +359,7 @@ export function build_open_media_function(on_close) {
                 payload = asset_map.get($preview_src);
             }
             if (payload === undefined) {
-                payload = parse_media_data($media);
+                payload = parse_media_data($media[0]);
             }
         }
 
