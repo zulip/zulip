@@ -55,13 +55,18 @@
         }
 
         .exit {
-            opacity: 0.5;
-            font-size: 1.3em;
-            margin-right: 3px;
+            opacity: 0;
+            transition: opacity 0.3s ease
         }
 
-        &:hover .exit {
+        &:hover.exit {
             opacity: 1;
+        }
+
+        &:hover {
+            .exit {
+                opacity: 1;
+            }
         }
     }
 
