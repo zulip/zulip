@@ -4,6 +4,7 @@ import _ from "lodash";
 import TurndownService from "turndown";
 
 import * as compose_ui from "./compose_ui";
+import * as hash_util from "./hash_util";
 import * as message_lists from "./message_lists";
 import {page_params} from "./page_params";
 import * as rows from "./rows";
@@ -588,17 +589,26 @@ export function paste_handler(event) {
         // Trim the paste_text to accommodate sloppy copying
         const trimmed_paste_text = paste_text.trim();
 
-        // Only intervene to generate formatted links when dealing
-        // with a URL and a URL-safe range selection.
-        if (isUrl(trimmed_paste_text) && is_safe_url_paste_target($textarea)) {
+        if (isUrl(trimmed_paste_text)) {
             event.preventDefault();
             event.stopPropagation();
             const url = trimmed_paste_text;
-            compose_ui.format_text($textarea, "linked", url);
+            if (is_safe_url_paste_target($textarea)) {
+                // Only intervene to generate formatted links when dealing
+                // with a URL and a URL-safe range selection.
+                compose_ui.format_text($textarea, "linked", url);
+            } else {
+                // try to convert the url in the text to
+                // #**stream>topic** syntax, else retain the original text
+                // only to be done when shift key is not pressed
+                const text = compose_ui.shift_pressed
+                    ? url
+                    : try_stream_topic_syntax_text(url, $textarea);
+                compose_ui.insert_and_scroll_into_view(text, $textarea);
+            }
             return;
         }
-
-        // We do not paste formatted markdoown when inside a code block.
+        // We do not paste formatted markdown when inside a code block.
         // Unlike Chrome, Firefox doesn't automatically paste plainly on using Ctrl+Shift+V,
         // hence we need to handle it ourselves, by checking if shift key is pressed, and only
         // if not, we proceed with the default formatted paste.
@@ -611,8 +621,34 @@ export function paste_handler(event) {
             event.preventDefault();
             event.stopPropagation();
             paste_html = maybe_transform_html(paste_html, paste_text);
-            const text = paste_handler_converter(paste_html);
+            let text = paste_handler_converter(paste_html);
+            if (isUrl(text)) {
+                // if the url in the text can be converted to a valid
+                // #**stream>topic** syntax, replace it with the syntax
+                text = try_stream_topic_syntax_text(text, $textarea);
+            }
             compose_ui.insert_and_scroll_into_view(text, $textarea);
+            return;
+        }
+        /**
+         * adds the original link text to the undo stack of the browser if the text is a
+         * valid stream topic url
+         * @param {string} text
+         * @returns the `text` transformed to `#**stream>topic**` syntax if the `text`
+         * is a valid stream topic url, else the original `text`
+         */
+        function try_stream_topic_syntax_text(text, $textarea) {
+            const stream_topic = hash_util.decode_stream_topic_hash_from_url(text);
+            if (stream_topic) {
+                const text_area = $textarea.get(0);
+                text_area.focus();
+                const init_cursor_pos = text_area.selectionStart;
+                document.execCommand("insertText", false, text);
+                const new_cursor_pos = text_area.selectionStart;
+                text_area.setSelectionRange(init_cursor_pos, new_cursor_pos);
+                return "#**" + stream_topic.join(">") + "**";
+            }
+            return text;
         }
     }
 }
