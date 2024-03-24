@@ -122,7 +122,7 @@ EXEMPT_FILES = make_set(
         "web/src/invite.ts",
         "web/src/left_sidebar_navigation_area.ts",
         "web/src/left_sidebar_navigation_area_popovers.js",
-        "web/src/lightbox.js",
+        "web/src/lightbox.ts",
         "web/src/list_util.ts",
         "web/src/list_widget.ts",
         "web/src/loading.ts",
