@@ -45,12 +45,35 @@ export const show_subs_pane = {
         $(".settings").show();
         set_right_panel_title(sub);
     },
-    create_stream() {
+    create_stream(container_name = "configure_channel_settings", sub) {
+        $(".stream_creation_container").hide();
+        if (container_name === "configure_channel_settings") {
+            $("#subscription_overlay .stream-info-title").text(
+                $t({defaultMessage: "Configure new channel settings"}),
+            );
+        } else {
+            $("#subscription_overlay .stream-info-title").html(render_selected_stream_title({sub}));
+        }
+        update_footer_buttons(container_name);
+        $(`.${container_name}`).show();
         $(".nothing-selected, .settings, #stream-creation").hide();
         $("#stream-creation").show();
-        $("#subscription_overlay .stream-info-title").text($t({defaultMessage: "Create channel"}));
     },
 };
+
+export function update_footer_buttons(container_name) {
+    if (container_name === "subscribers_container") {
+        // Hide stream creation containers and show add subscriber container
+        $(".finalize_create_stream").show();
+        $("#stream_creation_go_to_subscribers").hide();
+        $("#stream_creation_go_to_configure_channel_settings").show();
+    } else {
+        // Hide add subscriber container and show stream creation containers
+        $(".finalize_create_stream").hide();
+        $("#stream_creation_go_to_subscribers").show();
+        $("#stream_creation_go_to_configure_channel_settings").hide();
+    }
+}
 
 export function get_active_data() {
     const $active_row = $("div.stream-row.active");
