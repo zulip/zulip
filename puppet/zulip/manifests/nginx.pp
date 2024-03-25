@@ -107,6 +107,6 @@ class zulip::nginx {
   }
 
   service { 'nginx':
-    ensure     => running,
+    ensure => running,
   }
 }
