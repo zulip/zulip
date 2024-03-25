@@ -79,7 +79,7 @@ class zulip::postgresql_base {
     # Removed 2020-12 in version 4.0; these lines can be removed when
     # we drop support for upgrading from Zulip 3 or older.
     package{"${postgresql}-pgroonga":
-      ensure  => purged,
+      ensure => purged,
     }
 
     package{"${postgresql}-pgdg-pgroonga":
@@ -106,7 +106,7 @@ class zulip::postgresql_base {
     include zulip::postgresql_backups
   } else {
     file { '/etc/cron.d/pg_backup_and_purge':
-      ensure  => absent,
+      ensure => absent,
     }
   }
 }

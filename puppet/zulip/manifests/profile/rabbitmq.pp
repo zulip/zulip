@@ -72,7 +72,7 @@ class zulip::profile::rabbitmq {
     ],
   }
   package { $rabbitmq_packages:
-    ensure  => installed,
+    ensure => installed,
   }
   # epmd doesn't have an init script, so we just check if it is
   # running, and if it isn't, start it.  Even in case of a race, this
