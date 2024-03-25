@@ -5,7 +5,7 @@ class kandra::vector {
   $dir = "/srv/zulip-vector-${version}"
   $bin = "${dir}/bin/vector"
 
-  $arch = $::os['architecture'] ? {
+  $arch = $facts['os']['architecture'] ? {
     'amd64'   => 'x86_64',
     'aarch64' => 'aarch64',
   }

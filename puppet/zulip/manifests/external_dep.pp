@@ -5,11 +5,12 @@ define zulip::external_dep(
   String $sha256 = '',
   String $mode = '0755',
 ) {
+  $arch = $facts['os']['architecture']
   if $sha256 == '' {
     if $zulip::common::versions[$title]['sha256'] =~ Hash {
-      $sha256_filled = $zulip::common::versions[$title]['sha256'][$::os['architecture']]
+      $sha256_filled = $zulip::common::versions[$title]['sha256'][$arch]
       if $sha256_filled == undef {
-        err("No sha256 found for ${title} for architecture ${facts['os']['architecture']}")
+        err("No sha256 found for ${title} for architecture ${arch}")
         fail()
       }
     } else {

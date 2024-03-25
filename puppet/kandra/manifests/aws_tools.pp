@@ -18,7 +18,7 @@ class kandra::aws_tools {
   }
 
   if ! $is_ec2 {
-    if $::os['architecture'] != 'amd64' {
+    if $facts['os']['architecture'] != 'amd64' {
       # We would need to build aws_signing_helper from source
       fail('Only amd64 hosts supported on non-EC2')
     }
