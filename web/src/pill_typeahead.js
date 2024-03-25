@@ -80,8 +80,8 @@ export function set_up($input, pills, opts) {
             // default cases.
             return typeahead_helper.render_person(item);
         },
-        matcher(item) {
-            let query = this.query.toLowerCase();
+        matcher(item, query) {
+            query = query.toLowerCase();
             query = query.replaceAll("\u00A0", " ");
 
             if (include_streams(query)) {

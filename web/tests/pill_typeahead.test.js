@@ -193,9 +193,9 @@ run_test("set_up", ({mock_template, override}) => {
         (function test_matcher() {
             let result;
             if (opts.stream) {
-                result = config.matcher.call(fake_stream_this, denmark);
+                result = config.matcher.call(fake_stream_this, denmark, fake_stream_this.query);
                 assert.ok(result);
-                result = config.matcher.call(fake_stream_this, sweden);
+                result = config.matcher.call(fake_stream_this, sweden, fake_stream_this.query);
                 assert.ok(!result);
             }
             if (opts.user_group && opts.user) {
@@ -204,28 +204,28 @@ run_test("set_up", ({mock_template, override}) => {
                 or group is returned. */
 
                 // group query, with correct item.
-                result = config.matcher.call(fake_group_this, testers);
+                result = config.matcher.call(fake_group_this, testers, fake_group_this.query);
                 assert.ok(result);
                 // group query, with wrong item.
-                result = config.matcher.call(fake_group_this, admins);
+                result = config.matcher.call(fake_group_this, admins, fake_group_this.query);
                 assert.ok(!result);
                 // person query with correct item.
-                result = config.matcher.call(fake_person_this, me);
+                result = config.matcher.call(fake_person_this, me, fake_person_this.query);
                 assert.ok(result);
                 // person query with wrong item.
-                result = config.matcher.call(fake_person_this, jill);
+                result = config.matcher.call(fake_person_this, jill, fake_person_this.query);
                 assert.ok(!result);
             }
             if (opts.user_group && !opts.user) {
-                result = config.matcher.call(fake_group_this, testers);
+                result = config.matcher.call(fake_group_this, testers, fake_group_this.query);
                 assert.ok(result);
-                result = config.matcher.call(fake_group_this, admins);
+                result = config.matcher.call(fake_group_this, admins, fake_group_this.query);
                 assert.ok(!result);
             }
             if (opts.user && !opts.user_group) {
-                result = config.matcher.call(fake_person_this, me);
+                result = config.matcher.call(fake_person_this, me, fake_person_this.query);
                 assert.ok(result);
-                result = config.matcher.call(fake_person_this, jill);
+                result = config.matcher.call(fake_person_this, jill, fake_person_this.query);
                 assert.ok(!result);
             }
         })();
