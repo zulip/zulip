@@ -229,6 +229,7 @@
     --color-compose-embedded-button-background-hover: hsl(
         231deg 100% 90% / 50%
     );
+    --color-compose-chevron-arrow: hsl(0deg 0% 58%);
 
     /* Text colors */
     --color-text-default: hsl(0deg 0% 20%);
