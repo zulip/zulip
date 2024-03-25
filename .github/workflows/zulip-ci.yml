@@ -32,27 +32,27 @@ jobs:
           # The comments at the top explain how to build and upload these images.
           # Ubuntu 20.04 ships with Python 3.8.10.
           - docker_image: zulip/ci:focal
-            name: Ubuntu 20.04 (Python 3.8, backend + frontend)
+            name: Ubuntu 20.04 (Python 3.8, backend)
             os: focal
             include_documentation_tests: false
-            include_frontend_tests: true
+            include_frontend_tests: false
           # Debian 11 ships with Python 3.9.2.
           - docker_image: zulip/ci:bullseye
-            name: Debian 11 (Python 3.9, backend + documentation)
+            name: Debian 11 (Python 3.9, backend)
             os: bullseye
-            include_documentation_tests: true
+            include_documentation_tests: false
             include_frontend_tests: false
-          # Ubuntu 22.04 ships with Python 3.10.4.
+          # Ubuntu 22.04 ships with Python 3.10.12.
           - docker_image: zulip/ci:jammy
-            name: Ubuntu 22.04 (Python 3.10, backend)
+            name: Ubuntu 22.04 (Python 3.10, backend + frontend)
             os: jammy
             include_documentation_tests: false
-            include_frontend_tests: false
+            include_frontend_tests: true
           # Debian 12 ships with Python 3.11.2.
           - docker_image: zulip/ci:bookworm
-            name: Debian 12 (Python 3.11, backend)
+            name: Debian 12 (Python 3.11, backend + documentation)
             os: bookworm
-            include_documentation_tests: false
+            include_documentation_tests: true
             include_frontend_tests: false
           # Ubuntu 24.04 ships with Python 3.12.2.
           - docker_image: zulip/ci:noble
