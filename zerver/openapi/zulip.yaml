@@ -3288,6 +3288,12 @@ paths:
                               additionalProperties: false
                               description: |
                                 Event sent to all users when users have been added to a user group.
+
+                                This event is also sent when reactivating a user for all the user
+                                groups the reactivated user was a member of before being deactivated.
+
+                                **Changes**: Starting with Zulip 10.0 (feature level 303), this
+                                event can also be sent when reactivating a user.
                               properties:
                                 id:
                                   $ref: "#/components/schemas/EventIdSchema"
@@ -3324,6 +3330,13 @@ paths:
                               description: |
                                 Event sent to all users when users have been removed from
                                 a user group.
+
+                                This event is also sent when deactivating a user, for all
+                                the user groups the deactivated user is a member of, but only
+                                to the users who cannot access the deactivated user.
+
+                                **Changes**: Starting with Zulip 10.0 (feature level 303),
+                                this event can also be sent when deactivating a user.
                               properties:
                                 id:
                                   $ref: "#/components/schemas/EventIdSchema"
@@ -20596,6 +20609,10 @@ paths:
                               type: array
                               description: |
                                 The integer user IDs of the user group members.
+
+                                **Changes**: Prior to Zulip 10.0 (feature level 303), this
+                                list also included deactivated users who were members of
+                                the user group before being deactivated.
                               items:
                                 type: integer
                             direct_subgroup_ids:
@@ -20818,7 +20835,11 @@ paths:
       description: |
         Check whether a user is member of user group.
 
-        **Changes**: New in Zulip 6.0 (feature level 127).
+        **Changes**: Prior to Zulip 10.0 (feature level 303),
+        this returned true when the user was deactivated but
+        was member of the user group before being deactivated.
+
+        New in Zulip 6.0 (feature level 127).
       parameters:
         - $ref: "#/components/parameters/UserGroupId"
         - $ref: "#/components/parameters/UserId"
@@ -21940,6 +21961,10 @@ components:
           description: |
             Array containing the ID of the users who are
             members of this user group.
+
+            **Changes**: Prior to Zulip 10.0 (feature level 303), this
+            list also included deactivated users who were members of
+            the user group before being deactivated.
         direct_subgroup_ids:
           type: array
           items:
