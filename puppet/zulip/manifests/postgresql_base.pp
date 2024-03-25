@@ -3,7 +3,7 @@ class zulip::postgresql_base {
   include zulip::postgresql_common
   include zulip::process_fts_updates
 
-  case $::os['family'] {
+  case $facts['os']['family'] {
     'Debian': {
       $postgresql = "postgresql-${zulip::postgresql_common::version}"
       $postgresql_sharedir = "/usr/share/postgresql/${zulip::postgresql_common::version}"
@@ -96,7 +96,7 @@ class zulip::postgresql_base {
           test "$(dpkg-query --show --showformat='\${Version}' "${postgresql}-pgdg-pgroonga")" \
              = "$(cat ${pgroonga_setup_sql_path}.applied)"
           | EOT
-      command => "${::zulip_scripts_path}/setup/pgroonga-config ${postgresql_sharedir}",
+      command => "${facts['zulip_scripts_path']}/setup/pgroonga-config ${postgresql_sharedir}",
     }
   }
 
