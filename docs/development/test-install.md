@@ -62,16 +62,16 @@ branch, or a significant time has passed since you last used it.
 ### Test an install
 
 The `test-install` tooling takes a distribution release name
-(e.g. "focal"), the path to an unpacked release directory
+(e.g. "jammy"), the path to an unpacked release directory
 or tarball, and then any of the normal options you want to pass down
 into the installer.
 
-For example, to test an install onto Ubuntu 20.04 "Focal", we might
+For example, to test an install onto Ubuntu 22.04 "Jammy", we might
 call:
 
 ```bash
 sudo ./tools/test-install/install \
-  -r focal \
+  -r jammy \
   ./zulip-test-installer/ \
   --hostname=zulip.example.net \
   --email=username@example.net
@@ -97,7 +97,7 @@ After using `lxc-ls` to list containers, you can choose one of them
 and connect to its terminal:
 
 ```bash
-sudo lxc-attach --clear-env -n zulip-install-focal-PUvff
+sudo lxc-attach --clear-env -n zulip-install-jammy-PUvff
 ```
 
 ### Stopping and destroying containers
@@ -112,7 +112,7 @@ sudo ./tools/test-install/destroy-all -f
 To destroy just one container:
 
 ```bash
-sudo lxc-destroy -f -n zulip-install-focal-PUvff
+sudo lxc-destroy -f -n zulip-install-jammy-PUvff
 ```
 
 ### Iterating on the installer
@@ -126,7 +126,7 @@ which will start up a new container. Here, we update just the
 rsync -az scripts puppet zulip-test-installer/zulip-server/
 
 sudo ./tools/test-install/install \
- -r focal \
+ -r jammy \
  ./zulip-test-installer/ \
  --hostname=zulip.example.net \
  --email=username@example.net
