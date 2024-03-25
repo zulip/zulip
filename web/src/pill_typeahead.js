@@ -122,8 +122,8 @@ export function set_up($input, pills, opts) {
                 max_num_items: undefined,
             });
         },
-        updater(item) {
-            if (include_streams(this.query)) {
+        updater(item, query) {
+            if (include_streams(query)) {
                 stream_pill.append_stream(item, pills);
             } else if (include_user_groups && user_groups.is_user_group(item)) {
                 user_group_pill.append_user_group(item, pills);
