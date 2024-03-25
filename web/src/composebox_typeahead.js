@@ -872,8 +872,8 @@ export function content_highlighter_html(item) {
     }
 }
 
-export function content_typeahead_selected(item, event) {
-    const pieces = split_at_cursor(this.query, this.input_element.$element);
+export function content_typeahead_selected(item, query, event) {
+    const pieces = split_at_cursor(query, this.input_element.$element);
     let beginning = pieces[0];
     let rest = pieces[1];
     const $textbox = this.input_element.$element;

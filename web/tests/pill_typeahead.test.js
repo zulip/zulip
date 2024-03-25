@@ -305,11 +305,11 @@ run_test("set_up", ({mock_template, override}) => {
                     return pills.length;
                 }
                 assert.equal(number_of_pills(), 0);
-                config.updater.call(fake_stream_this, denmark);
+                config.updater(denmark, fake_stream_this.query);
                 assert.equal(number_of_pills(), 1);
-                config.updater.call(fake_person_this, me);
+                config.updater(me, fake_person_this.query);
                 assert.equal(number_of_pills(), 2);
-                config.updater.call(fake_group_this, testers);
+                config.updater(testers, fake_group_this.query);
                 assert.equal(number_of_pills(), 3);
 
                 assert.ok(update_func_called);
