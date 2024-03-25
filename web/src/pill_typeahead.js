@@ -40,9 +40,9 @@ export function set_up($input, pills, opts) {
         items: 5,
         fixed: true,
         dropup: true,
-        source() {
+        source(query) {
             let source = [];
-            if (include_streams(this.query)) {
+            if (include_streams(query)) {
                 // If query starts with # we expect,
                 // only stream suggestions so we simply
                 // return stream source.
