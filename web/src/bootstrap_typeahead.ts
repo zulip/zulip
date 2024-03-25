@@ -192,7 +192,7 @@ class Typeahead<ItemType extends string | object> {
     input_element: InputElement;
     items: number;
     matcher: (item: ItemType, query: string) => boolean;
-    sorter: (items: ItemType[]) => ItemType[];
+    sorter: (items: ItemType[], query: string) => ItemType[];
     highlighter_html: (item: ItemType, query: string) => string | undefined;
     updater: (
         item: ItemType,
@@ -384,7 +384,7 @@ class Typeahead<ItemType extends string | object> {
     process(items: ItemType[]): this {
         const matching_items = $.grep(items, (item) => this.matcher(item, this.query));
 
-        const final_items = this.sorter(matching_items);
+        const final_items = this.sorter(matching_items, this.query);
 
         if (!final_items.length) {
             return this.shown ? this.hide() : this;
@@ -705,7 +705,7 @@ type TypeaheadOptions<ItemType> = {
     openInputFieldOnKeyUp?: () => void;
     option_label?: (matching_items: ItemType[], item: ItemType) => string | false;
     parentElement?: string;
-    sorter: (items: ItemType[]) => ItemType[];
+    sorter: (items: ItemType[], query: string) => ItemType[];
     stopAdvance?: boolean;
     tabIsEnter?: boolean;
     trigger_selection?: (event: JQuery.KeyDownEvent) => boolean;

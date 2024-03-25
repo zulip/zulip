@@ -233,17 +233,17 @@ run_test("set_up", ({mock_template, override}) => {
         (function test_sorter() {
             if (opts.stream) {
                 sort_streams_called = false;
-                config.sorter.call(fake_stream_this);
+                config.sorter([], fake_stream_this.query);
                 assert.ok(sort_streams_called);
             }
             if (opts.user_group) {
                 sort_recipients_called = false;
-                config.sorter.call(fake_group_this, [testers]);
+                config.sorter([testers], fake_group_this.query);
                 assert.ok(sort_recipients_called);
             }
             if (opts.user) {
                 sort_recipients_called = false;
-                config.sorter.call(fake_person_this, [me]);
+                config.sorter([me], fake_person_this.query);
                 assert.ok(sort_recipients_called);
             }
         })();

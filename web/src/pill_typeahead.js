@@ -99,8 +99,7 @@ export function set_up($input, pills, opts) {
             }
             return matches;
         },
-        sorter(matches) {
-            const query = this.query;
+        sorter(matches, query) {
             if (include_streams(query)) {
                 return typeahead_helper.sort_streams(matches, query.trim().slice(1));
             }

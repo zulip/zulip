@@ -170,8 +170,8 @@ function build_page() {
             const q = query.trim().toLowerCase();
             return item.toLowerCase().startsWith(q);
         },
-        sorter(items) {
-            return bootstrap_typeahead.defaultSorter(items, this.query);
+        sorter(items, query) {
+            return bootstrap_typeahead.defaultSorter(items, query);
         },
     });
 

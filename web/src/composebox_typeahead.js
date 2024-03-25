@@ -1118,10 +1118,10 @@ export function initialize_topic_edit_typeahead(form_field, stream_name, dropup)
         highlighter_html(item) {
             return typeahead_helper.render_typeahead_item({primary: item});
         },
-        sorter(items) {
-            const sorted = typeahead_helper.sorter(this.query, items, (x) => x);
-            if (sorted.length > 0 && !sorted.includes(this.query)) {
-                sorted.unshift(this.query);
+        sorter(items, query) {
+            const sorted = typeahead_helper.sorter(query, items, (x) => x);
+            if (sorted.length > 0 && !sorted.includes(query)) {
+                sorted.unshift(query);
             }
             return sorted;
         },
@@ -1207,10 +1207,10 @@ export function initialize({on_enter_send}) {
         highlighter_html(item) {
             return typeahead_helper.render_typeahead_item({primary: item});
         },
-        sorter(items) {
-            const sorted = typeahead_helper.sorter(this.query, items, (x) => x);
-            if (sorted.length > 0 && !sorted.includes(this.query)) {
-                sorted.unshift(this.query);
+        sorter(items, query) {
+            const sorted = typeahead_helper.sorter(query, items, (x) => x);
+            if (sorted.length > 0 && !sorted.includes(query)) {
+                sorted.unshift(query);
             }
             return sorted;
         },
