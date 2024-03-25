@@ -7032,10 +7032,14 @@ paths:
                     The narrow you want update flags within. See how to
                     [construct a narrow](/api/construct-narrow).
 
-                    **Changes**: In Zulip 7.0 (feature level 177), narrows gained support
-                    for three new filters related to direct messages: `is:dm`, `dm` and
-                    `dm-including`; replacing and deprecating `is:private`, `pm-with` and
-                    `group-pm-with` respectively.
+                    **Changes**: In Zulip 7.0 (feature level 177), narrows
+                    gained support for three new filters related to direct
+                    messages: `is:dm`, `dm` and `dm-including`; replacing
+                    and deprecating `is:private`, `pm-with` and `group-pm-with`
+                    respectively.
+
+                    `is:unread` can now be applied as an operand to quickly
+                    find unread messages.
                   type: array
                   items:
                     oneOf:
