@@ -65,8 +65,8 @@ export function set_up($input, pills, opts) {
             }
             return source;
         },
-        highlighter_html(item) {
-            if (include_streams(this.query)) {
+        highlighter_html(item, query) {
+            if (include_streams(query)) {
                 return typeahead_helper.render_stream(item);
             }
 

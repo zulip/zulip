@@ -160,7 +160,7 @@ run_test("set_up", ({mock_template, override}) => {
             if (opts.stream) {
                 // Test stream highlighter_html for widgets that allow stream pills.
                 assert.equal(
-                    config.highlighter_html.call(fake_stream_this, denmark),
+                    config.highlighter_html(denmark, fake_stream_this.query),
                     $fake_rendered_stream,
                 );
             }
@@ -168,23 +168,23 @@ run_test("set_up", ({mock_template, override}) => {
                 // If user is also allowed along with user_group
                 // then we should check that each of them rendered correctly.
                 assert.equal(
-                    config.highlighter_html.call(fake_group_this, testers),
+                    config.highlighter_html(testers, fake_group_this.query),
                     $fake_rendered_group,
                 );
                 assert.equal(
-                    config.highlighter_html.call(fake_person_this, me),
+                    config.highlighter_html(me, fake_person_this.query),
                     $fake_rendered_person,
                 );
             }
             if (opts.user && !opts.user_group) {
                 assert.equal(
-                    config.highlighter_html.call(fake_person_this, me),
+                    config.highlighter_html(me, fake_person_this.query),
                     $fake_rendered_person,
                 );
             }
             if (!opts.user && opts.user_group) {
                 assert.equal(
-                    config.highlighter_html.call(fake_group_this, testers),
+                    config.highlighter_html(testers, fake_group_this.query),
                     $fake_rendered_group,
                 );
             }

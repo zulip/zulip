@@ -193,7 +193,7 @@ class Typeahead<ItemType extends string | object> {
     items: number;
     matcher: (item: ItemType, query: string) => boolean;
     sorter: (items: ItemType[]) => ItemType[];
-    highlighter_html: (item: ItemType) => string | undefined;
+    highlighter_html: (item: ItemType, query: string) => string | undefined;
     updater: (
         item: ItemType,
         event?: JQuery.ClickEvent | JQuery.KeyUpEvent | JQuery.KeyDownEvent,
@@ -404,7 +404,7 @@ class Typeahead<ItemType extends string | object> {
     render(final_items: ItemType[], matching_items: ItemType[]): this {
         const $items: JQuery[] = final_items.map((item) => {
             const $i = $(ITEM_HTML).data("typeahead-value", item);
-            const item_html = this.highlighter_html(item) ?? "";
+            const item_html = this.highlighter_html(item, this.query) ?? "";
             const $item_html = $i.find("a").html(item_html);
 
             const option_label_html = this.option_label(matching_items, item);
@@ -688,7 +688,7 @@ class Typeahead<ItemType extends string | object> {
  * =========================== */
 
 type TypeaheadOptions<ItemType> = {
-    highlighter_html: (item: ItemType) => string | undefined;
+    highlighter_html: (item: ItemType, query: string) => string | undefined;
     items: number;
     source: (query: string) => ItemType[];
     // optional options
