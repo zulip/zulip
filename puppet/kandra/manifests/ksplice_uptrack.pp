@@ -14,7 +14,7 @@ class kandra::ksplice_uptrack {
       mode    => '0644',
       content => template('kandra/uptrack/uptrack.conf.erb'),
     }
-    $setup_apt_repo_file = "${::zulip_scripts_path}/lib/setup-apt-repo"
+    $setup_apt_repo_file = "${facts['zulip_scripts_path']}/lib/setup-apt-repo"
     exec{ 'setup-apt-repo-ksplice':
       command => "${setup_apt_repo_file} --list ksplice",
       unless  => "${setup_apt_repo_file} --list ksplice --verify",
