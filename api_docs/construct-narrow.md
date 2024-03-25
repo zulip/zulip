@@ -45,6 +45,12 @@ operator, search the current user's personal message history. See
 [searching shared history](/help/search-for-messages#searching-shared-history)
 for details.
 
+Clients should note that the `is:unread` filter takes advantage of the
+fact that there is a database index for unread messages, which can be an
+important optimization when fetching messages in certain cases (e.g.
+when [adding the `read` flag to a user's personal
+messages](/api/update-message-flags-for-narrow)).
+
 **Changes**: In Zulip 7.0 (feature level 177), support was added
 for three filters related to direct messages: `is:dm`, `dm` and
 `dm-including`. The `dm` operator replaced and deprecated the

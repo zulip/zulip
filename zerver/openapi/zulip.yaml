@@ -7043,6 +7043,11 @@ paths:
                     The narrow you want update flags within. See how to
                     [construct a narrow](/api/construct-narrow).
 
+                    Note that, when adding the `read` flag to messages, clients should
+                    consider including a narrow with the `is:unread` filter as an
+                    optimization. Including that filter takes advantage of the fact that
+                    the server has a database index for unread messages.
+
                     **Changes**: In Zulip 7.0 (feature level 177), narrows gained support
                     for three new filters related to direct messages: `is:dm`, `dm` and
                     `dm-including`; replacing and deprecating `is:private`, `pm-with` and
