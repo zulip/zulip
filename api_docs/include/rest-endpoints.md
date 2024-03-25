@@ -106,6 +106,11 @@
 * [Create a custom profile field](/api/create-custom-profile-field)
 * [Update realm-level defaults of user settings](/api/update-realm-user-settings-defaults)
 
+#### Invites
+
+* [Get all invites](/api/get-invites)
+* [Send invites](/api/send-invites)
+
 #### Real-time events
 
 * [Real time events API](/api/real-time-events)
