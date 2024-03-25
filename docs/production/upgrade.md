@@ -413,10 +413,9 @@ instructions for other supported platforms.
    /home/zulip/deployments/current/scripts/setup/reindex-textual-data --force
    ```
 
-7. We recommend that you now [upgrade from Ubuntu 20.04 to
-   22.04](#upgrading-from-ubuntu-2004-focal-to-2204-jammy). Although
-   Ubuntu 20.04 is still supported at this time, Ubuntu 22.04 will be
-   supported farther into the future.
+7. [Upgrade from Ubuntu 20.04 to
+   22.04](#upgrading-from-ubuntu-2004-focal-to-2204-jammy), so that
+   you are running a supported operating system.
 
 ### Upgrading from Ubuntu 16.04 Xenial to 18.04 Bionic
 
@@ -615,6 +614,9 @@ instructions for other supported platforms.
 
 7. As an additional step, you can also [upgrade the PostgreSQL version](#upgrading-postgresql).
 
+8. [Upgrade from Debian 11 to 12](#upgrading-from-debian-11-to-12),
+   so that you are running a supported operating system.
+
 ### Upgrading from Debian 9 to 10
 
 1. Upgrade your server to the latest Zulip `2.1.x` release. You can
@@ -686,7 +688,7 @@ instructions for other supported platforms.
    /home/zulip/deployments/current/manage.py audit_fts_indexes
    ```
 
-9. [Upgrading from Debian 10 to 11](#upgrading-from-debian-10-to-11),
+9. [Upgrade from Debian 10 to 11](#upgrading-from-debian-10-to-11),
    so that you are running a supported operating system.
 
 ## Upgrading PostgreSQL
@@ -695,7 +697,7 @@ Starting with Zulip 3.0, we use the latest available version of
 PostgreSQL at installation time (currently version 15). Upgrades to
 the version of PostgreSQL are no longer linked to upgrades of the
 distribution; that is, you may opt to upgrade to PostgreSQL 15 while
-running Ubuntu 20.04.
+running Ubuntu 22.04.
 
 Not all versions of Zulip Server support all versions of PostgreSQL, however:
 

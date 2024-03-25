@@ -135,11 +135,6 @@ jobs:
         include:
           # Docker images are built from 'tools/ci/Dockerfile'; the comments at
           # the top explain how to build and upload these images.
-          - docker_image: zulip/ci:focal
-            name: Ubuntu 20.04 production install
-            os: focal
-            extra-args: ""
-
           - docker_image: zulip/ci:jammy
             name: Ubuntu 22.04 production install and PostgreSQL upgrade with pgroonga
             os: jammy
@@ -148,11 +143,6 @@ jobs:
           - docker_image: zulip/ci:noble
             name: Ubuntu 24.04 production install
             os: noble
-            extra-args: ""
-
-          - docker_image: zulip/ci:bullseye
-            name: Debian 11 production install
-            os: bullseye
             extra-args: ""
 
           - docker_image: zulip/ci:bookworm
@@ -247,15 +237,6 @@ jobs:
         include:
           # Docker images are built from 'tools/ci/Dockerfile.prod'; the comments at
           # the top explain how to build and upload these images.
-          - docker_image: zulip/ci:focal-3.2
-            name: 3.2 Version Upgrade
-            os: focal
-          - docker_image: zulip/ci:bullseye-4.2
-            name: 4.2 Version Upgrade
-            os: bullseye
-          - docker_image: zulip/ci:bullseye-5.0
-            name: 5.0 Version Upgrade
-            os: bullseye
           - docker_image: zulip/ci:jammy-6.0
             name: 6.0 Version Upgrade
             os: jammy

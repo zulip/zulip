@@ -26,6 +26,4 @@ types-regex
 types-requests<2.31.0.7  # https://github.com/python/typeshed/issues/10825
 types-zxcvbn
 
-importlib-metadata ; python_version < "3.10"  # for SQLAlchemy
-
 django-stubs

@@ -71,8 +71,8 @@ the internet.)
 :::{tab-item} Ubuntu/Debian
 :sync: os-ubuntu
 
-- Ubuntu 20.04, 22.04, or 24.04
-- Debian 11 or 12
+- Ubuntu 22.04, or 24.04
+- Debian 12
   :::
 
 :::{tab-item} Fedora

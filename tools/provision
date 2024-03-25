@@ -32,8 +32,8 @@ esac
 
 python_version="$(python3 --version)"
 case "$python_version" in
-    Python\ 3.[0-7].*)
-        echo 'Error: Zulip requires an OS with Python 3.8 or later.' >&2
+    Python\ 3.[0-9].*)
+        echo 'Error: Zulip requires an OS with Python 3.10 or later.' >&2
         exit 1
         ;;
 esac

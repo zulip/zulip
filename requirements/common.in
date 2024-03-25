@@ -20,7 +20,6 @@ Jinja2
 
 # Needed for Markdown processing
 Markdown
-importlib-metadata ; python_version < "3.10"  # for Markdown
 Pygments
 jsx-lexer
 uri-template
@@ -84,9 +83,6 @@ django-bmemcached
 
 # Needed for zerver/tests/test_timestamp.py
 python-dateutil
-
-# Needed for time zone work
-https://github.com/zulip/zoneinfo/archive/f9687abaea8453be1c8d0e21544bd557d65af933.zip#egg=backports.zoneinfo==0.2.1+git ; python_version < "3.9"  # https://github.com/pganssle/zoneinfo/pull/126
 
 # Needed for Redis
 redis
@@ -165,7 +161,6 @@ requests-oauthlib
 
 # For OpenAPI schema validation.
 openapi-core
-importlib-resources ; python_version < "3.9"
 
 # For reporting errors to sentry.io
 sentry-sdk

@@ -112,7 +112,7 @@ try:
         ).splitlines()
 
         # We can't use `git worktree list --porcelain -z` here because
-        # Ubuntu 20.04 Focal only has git 2.25.1, and -z was
+        # Ubuntu 22.04 only has git 2.34.1, and -z was
         # introduced in 2.36
         worktree_data = subprocess.check_output(
             ["git", "worktree", "list", "--porcelain"],
