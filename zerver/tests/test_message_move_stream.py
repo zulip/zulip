@@ -1098,7 +1098,7 @@ class MessageMoveStreamTest(ZulipTestCase):
             "iago", "test move stream", "new stream", "test"
         )
 
-        with self.assert_database_query_count(52), self.assert_memcached_count(14):
+        with self.assert_database_query_count(51), self.assert_memcached_count(14):
             result = self.client_patch(
                 f"/json/messages/{msg_id}",
                 {
@@ -1202,7 +1202,7 @@ class MessageMoveStreamTest(ZulipTestCase):
                 has_message_access(
                     user,
                     Message.objects.get(id=msg_id_to_test_acesss),
-                    has_user_message=has_user_message,
+                    has_user_message=lambda: has_user_message,
                     stream=stream,
                     is_subscribed=is_subscribed,
                 ),
@@ -1612,7 +1612,7 @@ class MessageMoveStreamTest(ZulipTestCase):
             has_message_access(
                 user_losing_access,
                 Message.objects.get(id=msg_id),
-                has_user_message=True,
+                has_user_message=lambda: True,
                 stream=old_stream,
                 is_subscribed=True,
             ),
@@ -1628,7 +1628,7 @@ class MessageMoveStreamTest(ZulipTestCase):
             has_message_access(
                 user_losing_access,
                 Message.objects.get(id=msg_id),
-                has_user_message=True,
+                has_user_message=lambda: True,
                 stream=old_stream,
                 is_subscribed=False,
             ),
@@ -1652,7 +1652,7 @@ class MessageMoveStreamTest(ZulipTestCase):
             has_message_access(
                 user_losing_access,
                 Message.objects.get(id=msg_id),
-                has_user_message=True,
+                has_user_message=lambda: True,
                 stream=new_stream,
                 is_subscribed=False,
             ),
@@ -1686,7 +1686,7 @@ class MessageMoveStreamTest(ZulipTestCase):
             has_message_access(
                 user,
                 Message.objects.get(id=first_msg_id),
-                has_user_message=True,
+                has_user_message=lambda: True,
                 stream=old_stream,
                 is_subscribed=True,
             ),
@@ -1702,7 +1702,7 @@ class MessageMoveStreamTest(ZulipTestCase):
             has_message_access(
                 user,
                 Message.objects.get(id=first_msg_id),
-                has_user_message=True,
+                has_user_message=lambda: True,
                 stream=old_stream,
                 is_subscribed=False,
             ),
@@ -1719,7 +1719,7 @@ class MessageMoveStreamTest(ZulipTestCase):
             has_message_access(
                 user,
                 Message.objects.get(id=second_msg_id),
-                has_user_message=False,
+                has_user_message=lambda: False,
                 stream=old_stream,
                 is_subscribed=False,
             ),
@@ -1745,7 +1745,7 @@ class MessageMoveStreamTest(ZulipTestCase):
             has_message_access(
                 user,
                 Message.objects.get(id=first_msg_id),
-                has_user_message=True,
+                has_user_message=lambda: True,
                 stream=new_stream,
                 is_subscribed=True,
             ),
@@ -1755,7 +1755,7 @@ class MessageMoveStreamTest(ZulipTestCase):
             has_message_access(
                 user,
                 Message.objects.get(id=second_msg_id),
-                has_user_message=True,
+                has_user_message=lambda: True,
                 stream=new_stream,
                 is_subscribed=True,
             ),
@@ -1786,7 +1786,7 @@ class MessageMoveStreamTest(ZulipTestCase):
             has_message_access(
                 user,
                 Message.objects.get(id=msg_id),
-                has_user_message=False,
+                has_user_message=lambda: False,
                 stream=old_stream,
                 is_subscribed=False,
             ),
@@ -1803,7 +1803,7 @@ class MessageMoveStreamTest(ZulipTestCase):
             has_message_access(
                 user,
                 Message.objects.get(id=msg_id),
-                has_user_message=False,
+                has_user_message=lambda: False,
                 stream=old_stream,
                 is_subscribed=False,
             ),
@@ -1828,7 +1828,7 @@ class MessageMoveStreamTest(ZulipTestCase):
             has_message_access(
                 user,
                 Message.objects.get(id=msg_id),
-                has_user_message=True,
+                has_user_message=lambda: True,
                 stream=new_stream,
                 is_subscribed=True,
             ),

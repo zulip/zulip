@@ -180,8 +180,8 @@ and privacy in mind:
 
   There's a `PUSH_NOTIFICATION_REDACT_CONTENT` setting available to
   disable any message content being sent via the push notification
-  bouncer (i.e. message content will be replaced with
-  `***REDACTED***`). Note that this setting makes push notifications
+  bouncer (i.e., message content will be replaced with
+  `New message`). Note that this setting makes push notifications
   significantly less usable.
 
   We plan to

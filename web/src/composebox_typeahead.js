@@ -91,14 +91,14 @@ function get_language_matcher(query) {
 
 export function query_matches_person(query, person) {
     return (
-        typeahead.query_matches_string(query, person.full_name, " ") ||
+        typeahead.query_matches_string_in_order(query, person.full_name, " ") ||
         (Boolean(person.delivery_email) &&
-            typeahead.query_matches_string(query, people.get_visible_email(person), " "))
+            typeahead.query_matches_string_in_order(query, people.get_visible_email(person), " "))
     );
 }
 
 export function query_matches_name(query, user_group_or_stream) {
-    return typeahead.query_matches_string(query, user_group_or_stream.name, " ");
+    return typeahead.query_matches_string_in_order(query, user_group_or_stream.name, " ");
 }
 
 function get_stream_or_user_group_matcher(query) {
@@ -115,8 +115,8 @@ function get_slash_matcher(query) {
 
     return function (item) {
         return (
-            typeahead.query_matches_string(query, item.name, " ") ||
-            typeahead.query_matches_string(query, item.aliases, " ")
+            typeahead.query_matches_string_in_order(query, item.name, " ") ||
+            typeahead.query_matches_string_in_order(query, item.aliases, " ")
         );
     };
 }
@@ -129,7 +129,7 @@ function get_topic_matcher(query) {
             topic,
         };
 
-        return typeahead.query_matches_string(query, obj.topic, " ");
+        return typeahead.query_matches_string_in_order(query, obj.topic, " ");
     };
 }
 

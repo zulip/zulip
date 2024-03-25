@@ -16,7 +16,7 @@ def read_receipts(
     user_profile: UserProfile,
     message_id: int = REQ(converter=to_non_negative_int, path_only=True),
 ) -> HttpResponse:
-    message = access_message(user_profile, message_id)[0]
+    message = access_message(user_profile, message_id)
 
     if not user_profile.realm.enable_read_receipts:
         raise JsonableError(_("Read receipts are disabled in this organization."))

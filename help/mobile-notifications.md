@@ -206,6 +206,12 @@ notification settings.
 
 {end_tabs}
 
+### Why am I seeing “New message” in place of message text?
+
+Administrators of self-hosted Zulip servers can
+[configure](https://zulip.readthedocs.io/en/stable/production/mobile-push-notifications.html#security-and-privacy)
+push notifications not to include any message content.
+
 ### Contacting Zulip support
 
 If you are still having trouble with your push notifications, you can send an

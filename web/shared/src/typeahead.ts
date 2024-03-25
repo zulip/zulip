@@ -50,17 +50,49 @@ export function remove_diacritics(s: string): string {
     return s.normalize("NFKD").replace(unicode_marks, "");
 }
 
-// This function attempts to match a query with a source text.
+export function last_prefix_match(prefix: string, words: string[]): number | null {
+    // This function takes in a lexicographically sorted array of `words`,
+    // and a `prefix` string. It uses binary search to compute the index
+    // of `prefix`'s upper bound, that is, the string immediately after
+    // the lexicographically last prefix match of `prefix`. So, the return
+    // value is the upper bound minus 1, that is, the last prefix match's
+    // index. When no prefix match is found, we return null.
+    let left = 0;
+    let right = words.length;
+    let found = false;
+    while (left < right) {
+        const mid = Math.floor((left + right) / 2);
+        if (words[mid].startsWith(prefix)) {
+            // Note that left can never be 0 if `found` is true,
+            // since it is incremented at least once here.
+            left = mid + 1;
+            found = true;
+        } else if (words[mid] < prefix) {
+            left = mid + 1;
+        } else {
+            right = mid;
+        }
+    }
+    if (found) {
+        return left - 1;
+    }
+    return null;
+}
+
+// This function attempts to match a query in order with a source text.
 // * query is the user-entered search query
 // * source_str is the string we're matching in, e.g. a user's name
 // * split_char is the separator for this syntax (e.g. ' ').
-export function query_matches_string(
+export function query_matches_string_in_order(
     query: string,
     source_str: string,
     split_char: string,
 ): boolean {
     source_str = source_str.toLowerCase();
     source_str = remove_diacritics(source_str);
+
+    query = query.toLowerCase();
+    query = remove_diacritics(query);
 
     if (!query.includes(split_char)) {
         // If query is a single token (doesn't contain a separator),
@@ -73,6 +105,68 @@ export function query_matches_string(
     // (E.g. for 'ab cd ef', query could be 'ab c' or 'cd ef',
     // but not 'b cd ef'.)
     return source_str.startsWith(query) || source_str.includes(split_char + query);
+}
+
+// Match the words in the query to the words in the source text, in any order.
+//
+// The query matches the source if each word in the query can be matched to
+// a different word in the source. The order the words appear in the query
+// or in the source does not affect the result.
+//
+// A query word matches a source word if it is a prefix of the source word,
+// after both words are converted to lowercase and diacritics are removed.
+//
+// Returns true if the query matches, and false if not.
+//
+// * query is the user-entered search query
+// * source_str is the string we're matching in, e.g. a user's name
+// * split_char is the separator for this syntax (e.g. ' ').
+export function query_matches_string_in_any_order(
+    query: string,
+    source_str: string,
+    split_char: string,
+): boolean {
+    source_str = source_str.toLowerCase();
+    source_str = remove_diacritics(source_str);
+
+    query = query.toLowerCase();
+    query = remove_diacritics(query);
+
+    const search_words = query.split(split_char).filter(Boolean);
+    const source_words = source_str.split(split_char).filter(Boolean);
+    if (search_words.length > source_words.length) {
+        return false;
+    }
+
+    // We go through the search words in reverse lexicographical order, and to select
+    // the corresponding source word for each, one by one, we find the lexicographically
+    // last possible prefix match and immediately then remove it from consideration for
+    // remaining search words.
+
+    // This essentially means that there is no search word lexicographically greater than
+    // our current search word (say, q1) which might require the current corresponding source
+    // word (as all search words lexicographically greater than it have already been matched)
+    // and also that all search words lexicographically smaller than it have the best possible
+    // chance for getting matched.
+
+    // This is because if the source word we just removed (say, s1) is the sole match for
+    // another search word (say, q2 - obviously lexicographically smaller than q1), this
+    // means that either q2 = q1 or that q2 is a prefix of q1. In either case, the final
+    // return value of this function should anyway be false, as s1 would be the sole match
+    // for q1 too; while we need unique matches for each search word.
+
+    search_words.sort().reverse();
+    source_words.sort();
+    for (const word of search_words) {
+        // `match_index` is the index of the best possible match of `word`.
+        const match_index = last_prefix_match(word, source_words);
+        if (match_index === null) {
+            // We return false if no match was found for `word`.
+            return false;
+        }
+        source_words.splice(match_index, 1);
+    }
+    return true;
 }
 
 function clean_query(query: string): string {
@@ -108,7 +202,7 @@ export function get_emoji_matcher(query: string): (emoji: Emoji) => boolean {
         const matches_emoji_literal =
             emoji.reaction_type === "unicode_emoji" &&
             parse_unicode_emoji_code(emoji.emoji_code) === query;
-        return matches_emoji_literal || query_matches_string(query, emoji.emoji_name, "_");
+        return matches_emoji_literal || query_matches_string_in_order(query, emoji.emoji_name, "_");
     };
 }
 

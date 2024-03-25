@@ -195,11 +195,11 @@ export class CachedValue<T> {
 }
 
 export function find_stream_wildcard_mentions(message_content: string): string | null {
-    const mention = message_content.match(/(^|\s)(@\*{2}(all|everyone|stream)\*{2})($|\s)/);
+    const mention = message_content.match(/(?<![^\s"'(/<[{])(@\*{2}(all|everyone|stream)\*{2})/);
     if (mention === null) {
         return null;
     }
-    return mention[3];
+    return mention[2];
 }
 
 export const move_array_elements_to_front = function util_move_array_elements_to_front<T>(
