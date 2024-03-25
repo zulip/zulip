@@ -191,7 +191,7 @@ type InputElement =
 class Typeahead<ItemType extends string | object> {
     input_element: InputElement;
     items: number;
-    matcher: (item: ItemType) => boolean;
+    matcher: (item: ItemType, query: string) => boolean;
     sorter: (items: ItemType[]) => ItemType[];
     highlighter_html: (item: ItemType) => string | undefined;
     updater: (
@@ -232,7 +232,7 @@ class Typeahead<ItemType extends string | object> {
             assert(!this.input_element.$element.is("[contenteditable]"));
         }
         this.items = options.items ?? 8;
-        this.matcher = options.matcher ?? ((item) => this.defaultMatcher(item));
+        this.matcher = options.matcher ?? ((item, query) => this.defaultMatcher(item, query));
         this.sorter = options.sorter;
         this.highlighter_html = options.highlighter_html;
         this.updater = options.updater ?? ((items) => this.defaultUpdater(items));
@@ -382,7 +382,7 @@ class Typeahead<ItemType extends string | object> {
     }
 
     process(items: ItemType[]): this {
-        const matching_items = $.grep(items, (item) => this.matcher(item));
+        const matching_items = $.grep(items, (item) => this.matcher(item, this.query));
 
         const final_items = this.sorter(matching_items);
 
@@ -396,9 +396,9 @@ class Typeahead<ItemType extends string | object> {
         return this.render(final_items.slice(0, this.items), matching_items).show();
     }
 
-    defaultMatcher(item: ItemType): boolean {
+    defaultMatcher(item: ItemType, query: string): boolean {
         assert(typeof item === "string");
-        return item.toLowerCase().includes(this.query.toLowerCase());
+        return item.toLowerCase().includes(query.toLowerCase());
     }
 
     render(final_items: ItemType[], matching_items: ItemType[]): this {
@@ -699,7 +699,7 @@ type TypeaheadOptions<ItemType> = {
     fixed?: boolean;
     header_html?: () => string | false;
     helpOnEmptyStrings?: boolean;
-    matcher?: (item: ItemType) => boolean;
+    matcher?: (item: ItemType, query: string) => boolean;
     naturalSearch?: boolean;
     on_escape?: () => void;
     openInputFieldOnKeyUp?: () => void;
