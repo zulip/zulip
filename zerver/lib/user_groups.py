@@ -267,9 +267,9 @@ def user_groups_in_realm_serialized(realm: Realm) -> List[UserGroupDict]:
             can_mention_group=user_group.can_mention_group_id,
         )
 
-    membership = UserGroupMembership.objects.filter(user_group__realm=realm).values_list(
-        "user_group_id", "user_profile_id"
-    )
+    membership = UserGroupMembership.objects.filter(
+        user_group__realm=realm, user_profile__is_active=True
+    ).values_list("user_group_id", "user_profile_id")
     for user_group_id, user_profile_id in membership:
         group_dicts[user_group_id]["members"].append(user_profile_id)
 
@@ -293,13 +293,13 @@ def get_direct_user_groups(user_profile: UserProfile) -> List[UserGroup]:
 def get_user_group_direct_member_ids(
     user_group: UserGroup,
 ) -> ValuesQuerySet[UserGroupMembership, int]:
-    return UserGroupMembership.objects.filter(user_group=user_group).values_list(
-        "user_profile_id", flat=True
-    )
+    return UserGroupMembership.objects.filter(
+        user_group=user_group, user_profile__is_active=True
+    ).values_list("user_profile_id", flat=True)
 
 
 def get_user_group_direct_members(user_group: UserGroup) -> QuerySet[UserProfile]:
-    return user_group.direct_members.all()
+    return user_group.direct_members.filter(is_active=True)
 
 
 def get_direct_memberships_of_users(user_group: UserGroup, members: List[UserProfile]) -> List[int]:
@@ -329,7 +329,9 @@ def get_recursive_subgroups(user_group: UserGroup) -> QuerySet[UserGroup]:
 
 
 def get_recursive_group_members(user_group: UserGroup) -> QuerySet[UserProfile]:
-    return UserProfile.objects.filter(direct_groups__in=get_recursive_subgroups(user_group))
+    return UserProfile.objects.filter(
+        is_active=True, direct_groups__in=get_recursive_subgroups(user_group)
+    )
 
 
 def get_recursive_membership_groups(user_profile: UserProfile) -> QuerySet[UserGroup]:
