@@ -69,17 +69,17 @@ export function show(opts) {
         return;
     }
 
-    // Hide selected elements in the left sidebar.
-    opts.highlight_view_in_left_sidebar();
-    stream_list.handle_message_view_deactivated();
-    pm_list.handle_message_view_deactivated();
-
     // Hide "middle-column" which has html for rendering
     // a messages narrow. We hide it and show the view.
     $("#message_feed_container").hide();
     opts.$view.show();
     message_lists.update_current_message_list(undefined);
     opts.set_visible(true);
+
+    // Hide selected elements in the left sidebar.
+    opts.highlight_view_in_left_sidebar();
+    stream_list.handle_message_view_deactivated();
+    pm_list.handle_message_view_deactivated();
 
     unread_ui.hide_unread_banner();
     opts.update_compose();
