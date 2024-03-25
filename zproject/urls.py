@@ -55,6 +55,7 @@ from zerver.views.custom_profile_fields import (
     update_realm_custom_profile_field,
     update_user_custom_profile_data,
 )
+from zerver.views.custom_welcome_message import preview_custom_welcome_test_message
 from zerver.views.digest import digest_page
 from zerver.views.documentation import IntegrationView, MarkdownDirectoryView, integration_doc
 from zerver.views.drafts import create_drafts, delete_draft, edit_draft, fetch_drafts
@@ -303,6 +304,8 @@ v1_api_and_json_patterns = [
     ),
     # realm/deactivate -> zerver.views.deactivate_realm
     rest_path("realm/deactivate", POST=deactivate_realm),
+    # realm/preview_custom_welcome_message -> zerver.views.custom_welcome_message
+    rest_path("realm/preview_custom_welcome_message", POST=preview_custom_welcome_test_message),
     # users -> zerver.views.users
     rest_path("users", GET=get_members_backend, POST=create_user_backend),
     rest_path("users/me", GET=get_profile_backend, DELETE=deactivate_user_own_backend),

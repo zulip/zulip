@@ -1,4 +1,4 @@
-from typing import Dict, List
+from typing import Dict, List, Optional
 
 from django.conf import settings
 from django.db import transaction
@@ -40,7 +40,9 @@ def create_if_missing_realm_internal_bots() -> None:
             setup_realm_internal_bots(realm)
 
 
-def send_initial_direct_message(user: UserProfile) -> None:
+def send_initial_direct_message(
+    user: UserProfile, custom_welcome_test_message: Optional[str] = None
+) -> None:
     # We adjust the initial Welcome Bot direct message for education organizations.
     education_organization = user.realm.org_type in (
         Realm.ORG_TYPES["education_nonprofit"]["id"],
@@ -100,6 +102,26 @@ def send_initial_direct_message(user: UserProfile) -> None:
                 + "\n\n"
             ).format(demo_organization_help_url=demo_organization_help)
 
+        custom_welcome_message_string = ""
+        custom_welcome_message_text = ""
+        # Add extra content for a custom welcome message configured by administrators.
+        if custom_welcome_test_message is not None:
+            custom_welcome_message_text = custom_welcome_test_message.strip()
+        elif (
+            user.realm.custom_welcome_message_enabled
+            and user.realm.custom_welcome_message_text is not None
+        ):
+            custom_welcome_message_text = user.realm.custom_welcome_message_text.strip()
+
+        if custom_welcome_message_text:
+            custom_welcome_message_string = (
+                _(
+                    "The administrators for this organization would also like to share the following information:\n\n"
+                    "{realm_custom_welcome_message}"
+                )
+                + "\n\n"
+            ).format(realm_custom_welcome_message=custom_welcome_message_text)
+
         content = "".join(
             [
                 _("Hello, and welcome to Zulip!") + "👋" + " ",
@@ -113,6 +135,8 @@ def send_initial_direct_message(user: UserProfile) -> None:
                 + "\n\n",
                 _("Here are a few messages I understand:") + " ",
                 bot_commands(),
+                "\n\n",
+                "{realm_custom_welcome_message_text}",
             ]
         )
 
@@ -120,6 +144,7 @@ def send_initial_direct_message(user: UserProfile) -> None:
         getting_started_text=getting_started_string,
         organization_setup_text=organization_setup_string,
         demo_organization_text=demo_organization_warning_string,
+        realm_custom_welcome_message_text=custom_welcome_message_string,
     )
 
     internal_send_private_message(

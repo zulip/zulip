@@ -907,12 +907,17 @@ function should_disable_save_button_for_time_limit_settings(
 
 function enable_or_disable_save_button($subsection_elem: JQuery): void {
     const time_limit_settings = [...$subsection_elem.find(".time-limit-setting")];
+    const custom_welcome_message_text_value = $subsection_elem
+        .find("#id_realm_custom_welcome_message_text")
+        .val();
 
     let disable_save_btn = false;
     if (time_limit_settings.length) {
         disable_save_btn = should_disable_save_button_for_time_limit_settings(time_limit_settings);
     } else if ($subsection_elem.attr("id") === "org-other-settings") {
         disable_save_btn = should_disable_save_button_for_jitsi_server_url_setting();
+    } else if (custom_welcome_message_text_value?.toString().trim() === "") {
+        disable_save_btn = true;
     }
 
     $subsection_elem.find(".subsection-changes-save button").prop("disabled", disable_save_btn);

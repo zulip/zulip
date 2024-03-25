@@ -240,6 +240,8 @@ export function dispatch_normal_event(event) {
                 private_message_policy: compose_recipient.check_posting_policy_for_compose_box,
                 push_notifications_enabled: noop,
                 send_welcome_emails: noop,
+                custom_welcome_message_enabled: noop,
+                custom_welcome_message_text: noop,
                 message_content_allowed_in_email_notifications: noop,
                 enable_spectator_access: noop,
                 signup_announcements_stream_id: noop,
