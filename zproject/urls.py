@@ -233,6 +233,7 @@ from zerver.views.video_calls import (
     make_zoom_video_call,
     register_zoom_user,
 )
+from zerver.views.welcome_bot_custom_message import send_test_custom_welcome_bot_message
 from zerver.views.zephyr import webathena_kerberos_login
 from zproject import dev_urls
 
@@ -300,6 +301,8 @@ v1_api_and_json_patterns = [
     ),
     # realm/deactivate -> zerver.views.deactivate_realm
     rest_path("realm/deactivate", POST=deactivate_realm),
+    # realm/test_custom_welcome_bot_message -> zerver.views.welcome_bot_custom_message
+    rest_path("realm/test_custom_welcome_bot_message", POST=send_test_custom_welcome_bot_message),
     # users -> zerver.views.users
     rest_path("users", GET=get_members_backend, POST=create_user_backend),
     rest_path("users/me", GET=get_profile_backend, DELETE=deactivate_user_own_backend),

@@ -233,6 +233,8 @@ export function dispatch_normal_event(event) {
                 push_notifications_enabled: noop,
                 require_unique_names: noop,
                 send_welcome_emails: noop,
+                custom_welcome_bot_message_enabled: noop,
+                custom_welcome_bot_message: noop,
                 message_content_allowed_in_email_notifications: noop,
                 enable_spectator_access: noop,
                 signup_announcements_stream_id: noop,

@@ -20,6 +20,16 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 9.0
 
+**Feature level 267**
+
+* [`POST /register`](/api/register-queue): Two new organization settings have been introduced:
+ `realm_custom_welcome_bot_message_enabled`, enables a custom message from admins in the
+  welcome bot message. and `realm_custom_welcome_bot_message`, allows admins to provide the
+  custom welcome bot message.
+
+* [`POST /realm/test_custom_welcome_bot_message`](/api/test-custom-welcome-bot-message): Added new endpoint
+  to send test messages with the custom welcome bot message.
+
 **Feature level 266**
 
 * `PATCH /realm`, [`POST /register`](/api/register-queue),

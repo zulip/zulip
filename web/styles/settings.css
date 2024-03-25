@@ -180,11 +180,20 @@ h3,
     }
 }
 
-.admin-realm-description {
+.admin-realm-description,
+.admin-realm-custom-welcome-bot-message {
     height: 16em;
     width: 100%;
     max-width: 500px;
     box-sizing: border-box;
+}
+
+.custom-welcome-bot-message-wrapper {
+    max-width: 500px;
+}
+
+#id_realm_custom_welcome_bot_message {
+    margin: 10px 0;
 }
 
 .setting_notification_sound,

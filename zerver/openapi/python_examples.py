@@ -1557,6 +1557,19 @@ def upload_custom_emoji(client: Client) -> None:
     validate_against_openapi_schema(result, "/realm/emoji/{emoji_name}", "post", "200")
 
 
+@openapi_test_function("/realm/test_custom_welcome_bot_message:post")
+def test_custom_welcome_bot_message(client: Client) -> None:
+    # {code_example|start}
+    # Send a test custom welcome bot message with the provided text.
+    request = {"custom_welcome_bot_message": "Custom Welcome Message Text"}
+    result = client.call_endpoint(
+        "/realm/test_custom_welcome_bot_message", method="POST", request=request
+    )
+    # {code_example|end}
+
+    validate_against_openapi_schema(result, "/realm/test_custom_welcome_bot_message", "post", "200")
+
+
 @openapi_test_function("/realm/emoji/{emoji_name}:delete")
 def delete_custom_emoji(client: Client) -> None:
     emoji_name = "my_custom_emoji"
@@ -1806,6 +1819,7 @@ def test_server_organizations(client: Client) -> None:
     get_realm_emoji(client)
     upload_custom_emoji(client)
     delete_custom_emoji(client)
+    test_custom_welcome_bot_message(client)
     get_realm_profile_fields(client)
     reorder_realm_profile_fields(client)
     create_realm_profile_field(client)

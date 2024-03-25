@@ -1215,6 +1215,18 @@ function should_disable_save_button_for_jitsi_server_url_setting(): boolean {
     );
 }
 
+function should_disable_save_button_for_custom_welcome_bot_message_setting(): boolean {
+    const is_custom_welcome_bot_message_enabled = $(
+        "#id_realm_custom_welcome_bot_message_enabled",
+    ).is(":checked");
+    const custom_welcome_bot_message_value = $("#id_realm_custom_welcome_bot_message")
+        .val()
+        ?.toString()
+        .trim();
+
+    return is_custom_welcome_bot_message_enabled && custom_welcome_bot_message_value === "";
+}
+
 function should_disable_save_button_for_time_limit_settings(
     time_limit_settings: HTMLElement[],
 ): boolean {
@@ -1282,6 +1294,8 @@ function enable_or_disable_save_button($subsection_elem: JQuery): void {
                 tippy_instance.destroy();
             }
         }
+    } else if ($subsection_elem.attr("id") === "org-notifications") {
+        disable_save_btn = should_disable_save_button_for_custom_welcome_bot_message_setting();
     }
 
     $subsection_elem.find(".subsection-changes-save button").prop("disabled", disable_save_btn);

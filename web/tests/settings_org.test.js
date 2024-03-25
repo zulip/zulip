@@ -81,6 +81,10 @@ function createSaveButtons(subsection) {
     $save_button_controls.closest = () => $stub_save_button_header;
     $stub_save_button_header.set_find_results(".time-limit-setting", []);
     $stub_save_button_header.set_find_results(".subsection-changes-save button", $stub_save_button);
+    $stub_save_button_header.set_find_results(
+        "#id_realm_custom_welcome_bot_message",
+        $("#id_realm_custom_welcome_bot_message"),
+    );
 
     return {
         props,
@@ -602,6 +606,9 @@ test("set_up", ({override, override_rewire}) => {
     );
     $("#enable_digest_emails_label").set_parent($.create("<stub digest setting checkbox>"));
     $("#id_realm_digest_weekday").set_parent($.create("<stub digest weekday setting dropdown>"));
+    $("#id_realm_custom_welcome_bot_message").set_parent(
+        $.create("<stub custom welcome bot message>"),
+    );
     $("#allowed_domains_label").set_parent($.create("<stub-allowed-domain-label-parent>"));
     const $waiting_period_parent_elem = $.create("waiting-period-parent-stub");
     $("#id_realm_waiting_period_threshold").set_parent($waiting_period_parent_elem);

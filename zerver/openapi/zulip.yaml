@@ -12865,6 +12865,44 @@ paths:
                           }
                         description: |
                           A typical failed JSON response for an invalid email invitation ID:
+  /realm/test_custom_welcome_bot_message:
+    post:
+      operationId: test-custom-welcome-bot-message
+      summary: Test Custom Welcome Bot Message
+      tags: ["server_and_organizations"]
+      description: |
+        Send a preview of a custom welcome bot message to the organization administrators.
+        This allows administrators to visualize how the welcome message will appear when
+        received by new users upon joining the organization.
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                custom_welcome_bot_message:
+                  description: |
+                    This is the welcome message provided by administrators to be included
+                    in the message sent by the Welcome Bot to new users.
+                  type: string
+                  maxLength: 1000
+                  example: "Welcome to Zulip! We're excited to have you on board."
+              required:
+                - custom_welcome_bot_message
+      responses:
+        "200":
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
+                    example: {"msg": "", "result": "success"}
   /register:
     post:
       operationId: register-queue
@@ -15578,6 +15616,21 @@ paths:
 
                           Whether or not this organization is configured to send the standard Zulip
                           [welcome emails](/help/disable-welcome-emails) to new users joining the organization.
+                      realm_custom_welcome_bot_message_enabled:
+                        type: boolean
+                        description: |
+                          Indicates whether the organization is configured to include a custom message from administrators
+                          in the welcome message sent by the Welcome Bot to new users. When enabled, administrators can provide
+                          additional information to new users beyond the standard welcome message.
+
+                          **Changes**: New in Zulip 9.0 (feature level 267).
+                      realm_custom_welcome_bot_message:
+                        type: string
+                        description: |
+                          The custom welcome bot message provided by administrators to be included in the welcome
+                          message sent by the Welcome Bot to new users.
+
+                          **Changes**: New in Zulip 9.0 (feature level 267).
                       realm_message_content_allowed_in_email_notifications:
                         type: boolean
                         description: |

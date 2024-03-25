@@ -357,6 +357,13 @@ function set_digest_emails_weekday_visibility() {
     );
 }
 
+function set_custom_welcome_bot_message_visibility() {
+    settings_components.change_element_block_display_property(
+        "id_realm_custom_welcome_bot_message",
+        realm.realm_custom_welcome_bot_message_enabled,
+    );
+}
+
 function set_create_web_public_stream_dropdown_visibility() {
     settings_components.change_element_block_display_property(
         "id_realm_create_web_public_stream_policy",
@@ -461,6 +468,9 @@ function update_dependent_subsettings(property_name) {
                 true,
             );
             set_digest_emails_weekday_visibility();
+            break;
+        case "realm_custom_welcome_bot_message_enabled":
+            set_custom_welcome_bot_message_visibility();
             break;
         case "realm_enable_spectator_access":
             set_create_web_public_stream_dropdown_visibility();
@@ -924,6 +934,7 @@ export function build_page() {
     set_org_join_restrictions_dropdown();
     set_message_content_in_email_notifications_visibility();
     set_digest_emails_weekday_visibility();
+    set_custom_welcome_bot_message_visibility();
     set_create_web_public_stream_dropdown_visibility();
 
     register_save_discard_widget_handlers($(".admin-realm-form"), "/json/realm", false);
@@ -990,6 +1001,51 @@ export function build_page() {
             "id_realm_digest_weekday",
             digest_emails_enabled === true,
         );
+    });
+
+    $("#id_realm_custom_welcome_bot_message_enabled").on("change", (e) => {
+        const custom_welcome_bot_message_enabled = $(e.target).is(":checked");
+        settings_components.change_element_block_display_property(
+            "id_realm_custom_welcome_bot_message",
+            custom_welcome_bot_message_enabled === true,
+        );
+    });
+
+    $("#id-send-custom-welcome-bot-message").on("click", () => {
+        const custom_welcome_bot_message = $("#id_realm_custom_welcome_bot_message").val();
+
+        if (custom_welcome_bot_message.trim() === "") {
+            ui_report.client_error(
+                $t_html({
+                    defaultMessage: "Failed: Custom Welcome Bot message is required!",
+                }),
+                $("#custom-welcome-bot-message-status"),
+                1200,
+            );
+            return;
+        }
+
+        channel.post({
+            url: "/json/realm/test_custom_welcome_bot_message",
+            data: {
+                custom_welcome_bot_message,
+            },
+            success() {
+                ui_report.success(
+                    $t_html({defaultMessage: "Custom Welcome Bot message sent successfully!"}),
+                    $("#custom-welcome-bot-message-status"),
+                    1200,
+                );
+            },
+            error(xhr) {
+                ui_report.error(
+                    $t_html({defaultMessage: "Error sending custom welcome message!"}),
+                    xhr,
+                    $("#custom-welcome-bot-message-status"),
+                    1200,
+                );
+            },
+        });
     });
 
     $("#id_realm_org_join_restrictions").on("change", (e) => {

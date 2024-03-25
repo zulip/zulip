@@ -3422,6 +3422,10 @@ class RealmPropertyActionTest(BaseAction):
             message_content_edit_limit_seconds=[1000, 1100, 1200, None],
             move_messages_within_stream_limit_seconds=[1000, 1100, 1200],
             move_messages_between_streams_limit_seconds=[1000, 1100, 1200],
+            custom_welcome_bot_message=[
+                "Custom Welcome Bot Message",
+                "New Custom Welcome Bot Message",
+            ],
         )
 
         vals = test_values.get(name)

@@ -6,7 +6,7 @@
                 <h3>{{t "Automated messages and emails" }}</h3>
                 {{> settings_save_discard_widget section_name="notifications" }}
             </div>
-            <div class="inline-block organization-settings-parent">
+            <div class="organization-settings-parent">
                 <div class="realm_default_language">
                     {{> language_selection_widget
                       section_name="realm_default_language"
@@ -63,6 +63,22 @@
                         <option value="5">{{t "Saturday" }}</option>
                         <option value="6">{{t "Sunday" }}</option>
                     </select>
+                </div>
+                {{> settings_checkbox
+                  setting_name="realm_custom_welcome_bot_message_enabled"
+                  prefix="id_"
+                  is_checked=realm_custom_welcome_bot_message_enabled
+                  label=admin_settings_label.realm_custom_welcome_bot_message_enabled}}
+
+                <div class="input-group custom-welcome-bot-message-wrapper">
+                    <div class="alert" id="custom-welcome-bot-message-status"></div>
+                    <label for="realm_custom_welcome_bot_message">{{t "Message text" }}</label>
+                    <textarea id="id_realm_custom_welcome_bot_message" name="realm_custom_welcome_bot_message"
+                      class="admin-realm-custom-welcome-bot-message setting-widget prop-element settings_textarea" maxlength="1000"
+                      data-setting-widget-type="string">{{ realm_custom_welcome_bot_message }}</textarea>
+                    <button class="button rounded sea-green" id="id-send-custom-welcome-bot-message" type="button">
+                        {{t 'Send me a test message'}}
+                    </button>
                 </div>
             </div>
         </div>

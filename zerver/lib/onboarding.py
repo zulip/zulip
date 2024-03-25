@@ -1,4 +1,4 @@
-from typing import Dict, List
+from typing import Dict, List, Optional
 
 from django.conf import settings
 from django.db import transaction
@@ -9,6 +9,7 @@ from django.utils.translation import override as override_language
 from zerver.actions.create_realm import setup_realm_internal_bots
 from zerver.actions.message_send import (
     do_send_messages,
+    internal_prep_private_message,
     internal_prep_stream_message_by_name,
     internal_send_private_message,
 )
@@ -40,7 +41,9 @@ def create_if_missing_realm_internal_bots() -> None:
             setup_realm_internal_bots(realm)
 
 
-def send_initial_direct_message(user: UserProfile) -> None:
+def send_initial_direct_message(
+    user: UserProfile, custom_welcome_bot_message: Optional[str] = None
+) -> None:
     # We adjust the initial Welcome Bot direct message for education organizations.
     education_organization = user.realm.org_type in (
         Realm.ORG_TYPES["education_nonprofit"]["id"],
@@ -50,6 +53,7 @@ def send_initial_direct_message(user: UserProfile) -> None:
     # We need to override the language in this code path, because it's
     # called from account registration, which is a pre-account API
     # request and thus may not have the user's language context yet.
+    welcome_bot_message = []
     with override_language(user.default_language):
         if education_organization:
             getting_started_help = user.realm.url + "/help/using-zulip-for-a-class"
@@ -113,6 +117,7 @@ def send_initial_direct_message(user: UserProfile) -> None:
                 + "\n\n",
                 _("Here are a few messages I understand:") + " ",
                 bot_commands(),
+                "\n\n",
             ]
         )
 
@@ -122,14 +127,44 @@ def send_initial_direct_message(user: UserProfile) -> None:
         demo_organization_text=demo_organization_warning_string,
     )
 
-    internal_send_private_message(
-        get_system_bot(settings.WELCOME_BOT, user.realm_id),
-        user,
-        content,
-        # Note: Welcome bot doesn't trigger email/push notifications,
-        # as this is intended to be seen contextually in the application.
-        disable_external_notifications=True,
+    welcome_bot_message.append(
+        internal_prep_private_message(
+            sender=get_system_bot(settings.WELCOME_BOT, user.realm_id),
+            recipient_user=user,
+            content=content,
+            disable_external_notifications=True,
+        )
     )
+
+    welcome_bot_test_message_content = ""
+    welcome_bot_custom_message_content = ""
+    # Send additional welcome bot message configured by administrators.
+    if custom_welcome_bot_message is not None:
+        welcome_bot_custom_message_content = custom_welcome_bot_message.strip()
+    elif user.realm.custom_welcome_bot_message_enabled:
+        assert user.realm.custom_welcome_bot_message is not None
+        welcome_bot_custom_message_content = user.realm.custom_welcome_bot_message
+
+    with override_language(user.default_language):
+        if welcome_bot_custom_message_content:
+            welcome_bot_test_message_content = (
+                _(
+                    "The administrators for this organization would like to share the following information:\n"
+                    "```quote\n{realm_custom_welcome_bot_message}\n```"
+                )
+                + "\n\n"
+            ).format(realm_custom_welcome_bot_message=welcome_bot_custom_message_content)
+
+            welcome_bot_message.append(
+                internal_prep_private_message(
+                    sender=get_system_bot(settings.WELCOME_BOT, user.realm_id),
+                    recipient_user=user,
+                    content=welcome_bot_test_message_content,
+                    disable_external_notifications=True,
+                )
+            )
+
+    do_send_messages(welcome_bot_message)
 
 
 def bot_commands(no_help_command: bool = False) -> str:

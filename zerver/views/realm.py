@@ -144,6 +144,11 @@ def update_realm(
         Optional[Json[Union[int, str]]], ApiParamConfig("message_retention_days")
     ] = None,
     send_welcome_emails: Optional[Json[bool]] = None,
+    custom_welcome_bot_message_enabled: Optional[Json[bool]] = None,
+    custom_welcome_bot_message: Annotated[
+        Optional[str],
+        StringConstraints(max_length=Realm.MAX_REALM_CUSTOM_WELCOME_BOT_MESSAGE_LENGTH),
+    ] = None,
     digest_emails_enabled: Optional[Json[bool]] = None,
     message_content_allowed_in_email_notifications: Optional[Json[bool]] = None,
     bot_creation_policy: Optional[Json[BotCreationPolicyEnum]] = None,

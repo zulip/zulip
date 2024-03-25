@@ -290,6 +290,8 @@ const realm_schema = z.object({
     realm_email_changes_disabled: z.boolean(),
     realm_emails_restricted_to_domains: z.boolean(),
     realm_embedded_bots: NOT_TYPED_YET,
+    realm_custom_welcome_bot_message_enabled: z.boolean(),
+    realm_custom_welcome_bot_message: z.string(),
     realm_enable_guest_user_indicator: z.boolean(),
     realm_enable_read_receipts: NOT_TYPED_YET,
     realm_enable_spectator_access: z.boolean(),
