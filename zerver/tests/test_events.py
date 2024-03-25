@@ -3057,12 +3057,32 @@ class NormalActionsTest(BaseAction):
         do_reactivate_user(user_profile, acting_user=None)
         self.set_up_db_for_testing_user_access()
 
-        # Test that guest users receive event only
-        # if they can access the deactivated user.
+        # Test that users who can access the deactivated user
+        # do not receive the 'user_group/remove_members' event.
+        user_profile = self.example_user("cordelia")
+        with self.verify_action(num_events=1) as events:
+            do_deactivate_user(user_profile, acting_user=None)
+        check_realm_user_update("events[0]", events[0], "is_active")
+
+        do_reactivate_user(user_profile, acting_user=None)
+
+        # Test that guest users receive 'user_group/remove_members'
+        # event if they cannot access the deactivated user.
         user_profile = self.example_user("cordelia")
         self.user_profile = self.example_user("polonius")
-        with self.verify_action(num_events=0, state_change_expected=False) as events:
+        with self.verify_action(num_events=3) as events:
             do_deactivate_user(user_profile, acting_user=None)
+        check_user_group_remove_members("events[0]", events[0])
+        check_user_group_remove_members("events[1]", events[1])
+        check_user_group_remove_members("events[2]", events[2])
+
+        user_profile = self.example_user("cordelia")
+        do_reactivate_user(user_profile, acting_user=None)
+        with self.verify_action(num_events=3, user_list_incomplete=True) as events:
+            do_deactivate_user(user_profile, acting_user=None)
+        check_user_group_remove_members("events[0]", events[0])
+        check_user_group_remove_members("events[1]", events[1])
+        check_user_group_remove_members("events[2]", events[2])
 
         user_profile = self.example_user("shiva")
         with self.verify_action(num_events=1) as events:
@@ -3072,9 +3092,12 @@ class NormalActionsTest(BaseAction):
         # Guest loses access to deactivated user if the user
         # was not involved in DMs.
         user_profile = self.example_user("hamlet")
-        with self.verify_action(num_events=1) as events:
+        with self.verify_action(num_events=4) as events:
             do_deactivate_user(user_profile, acting_user=None)
-        check_realm_user_remove("events[0]", events[0])
+        check_user_group_remove_members("events[0]", events[0])
+        check_user_group_remove_members("events[1]", events[1])
+        check_user_group_remove_members("events[2]", events[2])
+        check_realm_user_remove("events[3]]", events[3])
 
         user_profile = self.example_user("aaron")
         # One update event is for a deactivating a bot owned by aaron.
@@ -3089,15 +3112,17 @@ class NormalActionsTest(BaseAction):
         self.make_stream("Test private stream", invite_only=True)
         self.subscribe(bot, "Test private stream")
         do_deactivate_user(bot, acting_user=None)
-        with self.verify_action(num_events=3) as events:
+        with self.verify_action(num_events=5) as events:
             do_reactivate_user(bot, acting_user=None)
         check_realm_bot_update("events[1]", events[1], "is_active")
         check_subscription_peer_add("events[2]", events[2])
+        check_user_group_add_members("events[3]", events[3])
+        check_user_group_add_members("events[4]", events[4])
 
         # Test 'peer_add' event for private stream is received only if user is subscribed to it.
         do_deactivate_user(bot, acting_user=None)
         self.subscribe(self.example_user("hamlet"), "Test private stream")
-        with self.verify_action(num_events=4) as events:
+        with self.verify_action(num_events=6) as events:
             do_reactivate_user(bot, acting_user=None)
         check_realm_bot_update("events[1]", events[1], "is_active")
         check_subscription_peer_add("events[2]", events[2])
@@ -3110,7 +3135,7 @@ class NormalActionsTest(BaseAction):
         bot.refresh_from_db()
 
         self.user_profile = self.example_user("iago")
-        with self.verify_action(num_events=7) as events:
+        with self.verify_action(num_events=9) as events:
             do_reactivate_user(bot, acting_user=self.example_user("iago"))
         check_realm_bot_update("events[1]", events[1], "is_active")
         check_realm_bot_update("events[2]", events[2], "owner_id")
@@ -3119,20 +3144,26 @@ class NormalActionsTest(BaseAction):
         check_stream_delete("events[5]", events[5])
 
         self.set_up_db_for_testing_user_access()
-        # Test that guest users receive event only
-        # if they can access the reactivated user.
+        # Test that guest users receive realm_user/update event
+        # only if they can access the reactivated user.
         user_profile = self.example_user("cordelia")
         do_deactivate_user(user_profile, acting_user=None)
 
         self.user_profile = self.example_user("polonius")
-        with self.verify_action(num_events=0, state_change_expected=False) as events:
+        # Guest users receives group members update event for three groups -
+        # members group, full members group and hamletcharacters group.
+        with self.verify_action(num_events=3) as events:
             do_reactivate_user(user_profile, acting_user=None)
+        check_user_group_add_members("events[0]", events[0])
+        check_user_group_add_members("events[1]", events[1])
+        check_user_group_add_members("events[2]", events[2])
 
         user_profile = self.example_user("shiva")
         do_deactivate_user(user_profile, acting_user=None)
-        with self.verify_action(num_events=1) as events:
+        with self.verify_action(num_events=2) as events:
             do_reactivate_user(user_profile, acting_user=None)
         check_realm_user_update("events[0]", events[0], "is_active")
+        check_user_group_add_members("events[1]", events[1])
 
     def test_do_deactivate_realm(self) -> None:
         realm = self.user_profile.realm

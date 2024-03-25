@@ -24,6 +24,13 @@ format used by the Zulip server that they are interacting with.
 
 * [`GET /events`](/api/get-events): User reactivation event is not sent
   to users who cannot access the reactivated user anymore.
+* [`GET /events`](/api/get-events): `add_members` and `remove_members`
+  events with `user_group` type can now also be sent when reactivating
+  and deactivating a user respectively.
+* [`POST /register`](/api/register-queue), [`GET /user_groups`](/api/get-user-groups),
+  [`GET /user_groups/{user_group_id}/members/{user_id}`](/api/get-is-user-group-member),
+  [`GET /user_groups/{user_group_id}/members`](/api/get-user-group-members):
+  Deactivated users are not considered as members of a user group anymore.
 
 **Feature level 302**
 

@@ -1092,18 +1092,26 @@ def apply_event(
                 if "new_email" in person:
                     p["email"] = person["new_email"]
 
-                if "is_active" in person and not person["is_active"] and include_subscribers:
-                    for sub_dict in [
-                        state["subscriptions"],
-                        state["unsubscribed"],
-                        state["never_subscribed"],
-                    ]:
-                        for sub in sub_dict:
-                            sub["subscribers"] = [
-                                user_id
-                                for user_id in sub["subscribers"]
-                                if user_id != person_user_id
-                            ]
+                if "is_active" in person and not person["is_active"]:
+                    if include_subscribers:
+                        for sub_dict in [
+                            state["subscriptions"],
+                            state["unsubscribed"],
+                            state["never_subscribed"],
+                        ]:
+                            for sub in sub_dict:
+                                sub["subscribers"] = [
+                                    user_id
+                                    for user_id in sub["subscribers"]
+                                    if user_id != person_user_id
+                                ]
+
+                    for user_group in state["realm_user_groups"]:
+                        user_group["members"] = [
+                            user_id
+                            for user_id in user_group["members"]
+                            if user_id != person_user_id
+                        ]
         elif event["op"] == "remove":
             if person_user_id in state["raw_users"]:
                 if user_list_incomplete:

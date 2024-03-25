@@ -771,3 +771,11 @@ def do_reactivate_user(user_profile: UserProfile, *, acting_user: UserProfile | 
         stream_dict=stream_dict,
         subscriber_peer_info=subscriber_peer_info,
     )
+
+    member_user_groups = user_profile.direct_groups.exclude(named_user_group=None).select_related(
+        "named_user_group"
+    )
+    for user_group in member_user_groups:
+        do_send_user_group_members_update_event(
+            "add_members", user_group.named_user_group, [user_profile.id]
+        )

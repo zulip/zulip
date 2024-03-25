@@ -311,6 +311,30 @@ def send_events_for_user_deactivation(user_profile: UserProfile) -> None:
             realm, event_deactivate_user, list(users_with_access_to_deactivated_user)
         )
 
+    all_active_user_ids = active_user_ids(realm.id)
+    users_without_access_to_deactivated_user = (
+        set(all_active_user_ids) - users_with_access_to_deactivated_user
+    )
+    if users_without_access_to_deactivated_user:
+        # Guests who have access to the deactivated user receive
+        # 'realm_user/update' event and can update the user groups
+        # data, but guests who cannot access the deactivated user
+        # need an explicit 'user_group/remove_members' event to
+        # update the user groups data.
+        deactivated_user_groups = user_profile.direct_groups.exclude(
+            named_user_group=None
+        ).select_related("named_user_group")
+        for user_group in deactivated_user_groups:
+            event = dict(
+                type="user_group",
+                op="remove_members",
+                group_id=user_group.id,
+                user_ids=[user_profile.id],
+            )
+            send_event_on_commit(
+                user_group.realm, event, list(users_without_access_to_deactivated_user)
+            )
+
     users_losing_access_to_deactivated_user = (
         peer_stream_subscribers - users_with_access_to_deactivated_user
     )
