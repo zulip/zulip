@@ -796,28 +796,28 @@ test("initialize", ({override, override_rewire, mock_template}) => {
                 // Notice that alphabetical sorting isn't managed by this sorter,
                 // it is a result of the topics already being sorted after adding
                 // them with add_topic().
-                options.query = "furniture";
-                actual_value = options.sorter(["furniture"]);
+                let query = "furniture";
+                actual_value = options.sorter(["furniture"], query);
                 expected_value = ["furniture"];
                 assert.deepEqual(actual_value, expected_value);
 
                 // A literal match at the beginning of an element puts it at the top.
-                options.query = "ice";
-                actual_value = options.sorter(["even more ice", "ice", "more ice"]);
+                query = "ice";
+                actual_value = options.sorter(["even more ice", "ice", "more ice"], query);
                 expected_value = ["ice", "even more ice", "more ice"];
                 assert.deepEqual(actual_value, expected_value);
 
                 // The sorter should return the query as the first element if there
                 // isn't a topic with such name.
                 // This only happens if typeahead is providing other suggestions.
-                options.query = "e"; // Letter present in "furniture" and "ice"
-                actual_value = options.sorter(["furniture", "ice"]);
+                query = "e"; // Letter present in "furniture" and "ice"
+                actual_value = options.sorter(["furniture", "ice"], query);
                 expected_value = ["e", "furniture", "ice"];
                 assert.deepEqual(actual_value, expected_value);
 
                 // Suggest the query if this query doesn't match any existing topic.
-                options.query = "non-existing-topic";
-                actual_value = options.sorter([]);
+                query = "non-existing-topic";
+                actual_value = options.sorter([], query);
                 expected_value = [];
                 assert.deepEqual(actual_value, expected_value);
 
