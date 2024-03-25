@@ -5,7 +5,7 @@
 class zulip::profile::base {
   include zulip::timesync
   include zulip::common
-  case $::os['family'] {
+  case $facts['os']['family'] {
     'Debian': {
       include zulip::apt_repository
     }
@@ -16,7 +16,7 @@ class zulip::profile::base {
       fail('osfamily not supported')
     }
   }
-  case $::os['family'] {
+  case $facts['os']['family'] {
     'Debian': {
       $base_packages = [
         # Basics

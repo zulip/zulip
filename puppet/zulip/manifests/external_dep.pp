@@ -9,7 +9,7 @@ define zulip::external_dep(
     if $zulip::common::versions[$title]['sha256'] =~ Hash {
       $sha256_filled = $zulip::common::versions[$title]['sha256'][$::os['architecture']]
       if $sha256_filled == undef {
-        err("No sha256 found for ${title} for architecture ${::os['architecture']}")
+        err("No sha256 found for ${title} for architecture ${facts['os']['architecture']}")
         fail()
       }
     } else {

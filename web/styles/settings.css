@@ -1924,6 +1924,7 @@ $option_title_width: 180px;
     .settings_textarea,
     .pill-container {
         border-color: hsl(0deg 0% 100%);
+        margin-bottom: 0;
 
         &:focus {
             border-color: hsl(206deg 80% 62% / 80%);

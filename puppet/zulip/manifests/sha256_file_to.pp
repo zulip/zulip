@@ -6,7 +6,7 @@ define zulip::sha256_file_to(
   String $install_to,
 ) {
   exec { $url:
-    command => "${::zulip_scripts_path}/setup/sha256-file-to ${sha256} ${url} ${install_to}",
+    command => "${facts['zulip_scripts_path']}/setup/sha256-file-to ${sha256} ${url} ${install_to}",
     creates => $install_to,
     timeout => 600,
   }
