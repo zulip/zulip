@@ -251,7 +251,7 @@ run_test("set_up", ({mock_template, override}) => {
         (function test_source() {
             let result;
             if (opts.stream) {
-                result = config.source.call(fake_stream_this);
+                result = config.source(fake_stream_this.query);
                 const stream_ids = result.map((stream) => stream.stream_id);
                 const expected_stream_ids = [denmark.stream_id, sweden.stream_id];
                 assert.deepEqual(stream_ids, expected_stream_ids);
@@ -262,7 +262,7 @@ run_test("set_up", ({mock_template, override}) => {
             function is_group(item) {
                 return item.members;
             }
-            result = config.source.call(fake_person_this);
+            result = config.source(fake_person_this.query);
             actual_result = result
                 .map((item) => {
                     if (is_group(item)) {
