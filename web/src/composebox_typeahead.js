@@ -1105,7 +1105,7 @@ export function initialize_topic_edit_typeahead(form_field, stream_name, dropup)
         },
         items: 5,
     };
-    bootstrap_typeahead.create(form_field, options);
+    // bootstrap_typeahead.create(form_field, options);
 }
 
 function get_header_html() {
