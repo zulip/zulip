@@ -73,6 +73,7 @@ export function should_show_server_upgrade_notification(ls) {
 }
 
 export function maybe_show_empty_required_profile_fields_alert() {
+    const $navbar_alert = $("#navbar_alerts_wrapper").children(".alert").first();
     const empty_required_profile_fields_exist = realm.custom_profile_fields
         .map((f) => ({
             ...f,
@@ -80,15 +81,13 @@ export function maybe_show_empty_required_profile_fields_alert() {
         }))
         .find((f) => f.required && !f.value);
     if (!empty_required_profile_fields_exist) {
+        if ($navbar_alert.data("process") === "profile-missing-required") {
+            $navbar_alert.hide();
+        }
         return;
     }
 
-    const $navbar_alert = $("#navbar_alerts_wrapper").children(".alert").first();
-    if (
-        !$navbar_alert?.length ||
-        $navbar_alert.is("#empty-required-profile-fields-warning") ||
-        $navbar_alert.is(":hidden")
-    ) {
+    if (!$navbar_alert?.length || $navbar_alert.is(":hidden")) {
         open({
             data_process: "profile-missing-required",
             rendered_alert_content_html: render_empty_required_profile_fields(),
@@ -236,7 +235,9 @@ export function initialize() {
             show_step($process, 2);
         } else {
             $(this).closest(".alert").hide();
-            maybe_show_empty_required_profile_fields_alert();
+            if ($process.data("process") !== "profile-missing-required") {
+                maybe_show_empty_required_profile_fields_alert();
+            }
         }
         $(window).trigger("resize");
     });
