@@ -400,7 +400,7 @@ export function initialize(): void {
     });
 
     delegate("body", {
-        target: "#generate_multiuse_invite_radio_container.disabled_setting_tooltip",
+        target: "[data-tab-key='invite-link-tab'].disabled-tab",
         content: $t({
             defaultMessage:
                 "You do not have permissions to generate invite links in this organization.",
@@ -426,7 +426,7 @@ export function initialize(): void {
     });
 
     delegate("body", {
-        target: "#email_invite_radio_container.disabled_setting_tooltip",
+        target: "[data-tab-key='invite-email-tab'].disabled-tab",
         content: $t({
             defaultMessage:
                 "You do not have permissions to send email invitations in this organization.",
