@@ -1,14 +1,20 @@
+import assert from "minimalistic-assert";
+
 import * as alert_words from "./alert_words";
 import * as message_store from "./message_store";
+import type {Message} from "./message_store";
 import * as message_user_ids from "./message_user_ids";
 import * as people from "./people";
 import * as pm_conversations from "./pm_conversations";
 import * as recent_senders from "./recent_senders";
 import * as stream_topic_history from "./stream_topic_history";
 import * as user_status from "./user_status";
+import type {UserStatusEmojiInfo} from "./user_status";
 import * as util from "./util";
 
-export function process_new_message(message) {
+export function process_new_message(
+    message: Message & {status_emoji_info: UserStatusEmojiInfo | undefined},
+): Message {
     // Call this function when processing a new message.  After
     // a message is processed and inserted into the message store
     // cache, most modules use message_store.get to look at
@@ -59,14 +65,15 @@ export function process_new_message(message) {
             message.is_private = true;
             message.reply_to = util.normalize_recipients(message_store.get_pm_emails(message));
             message.display_reply_to = message_store.get_pm_full_names(message);
-            message.pm_with_url = people.pm_with_url(message);
-            message.to_user_ids = people.pm_reply_user_string(message);
+            message.pm_with_url = people.pm_with_url(message)!;
+            message.to_user_ids = people.pm_reply_user_string(message)!;
 
             pm_conversations.process_message(message);
 
             recent_senders.process_private_message(message);
             if (people.is_my_user_id(message.sender_id)) {
                 for (const recip of message.display_recipient) {
+                    assert(typeof recip !== "string");
                     message_user_ids.add_user_id(recip.id);
                 }
             }
