@@ -5,9 +5,9 @@ const {strict: assert} = require("assert");
 const {zrequire} = require("./lib/namespace");
 const {run_test} = require("./lib/test");
 
-const {password_quality, password_warning} = zrequire("password_quality");
+const {password_max_length, password_quality, password_warning} = zrequire("password_quality");
 
-function password_field(min_length, min_guesses) {
+function password_field(min_length, max_length, min_guesses) {
     const self = {};
 
     self.data = (field) => {
@@ -16,6 +16,8 @@ function password_field(min_length, min_guesses) {
                 return min_length;
             case "minGuesses":
                 return min_guesses;
+            case "maxLength":
+                return max_length;
             /* istanbul ignore next */
             default:
                 throw new Error(`Unknown field ${field}`);
@@ -60,7 +62,7 @@ run_test("basics w/progress bar", () => {
     assert.equal(warning, "translated: Password should be at least 10 characters long");
 
     password = "foo";
-    accepted = password_quality(password, $bar, password_field(2, 200));
+    accepted = password_quality(password, $bar, password_field(2, 200, 10));
     assert.ok(accepted);
     assert.equal($bar.w, "10.390277164940581%");
     assert.equal($bar.added_class, "bar-success");
@@ -73,4 +75,15 @@ run_test("basics w/progress bar", () => {
     assert.equal($bar.added_class, "bar-danger");
     warning = password_warning(password, password_field(6));
     assert.equal(warning, 'Repeated characters like "aaa" are easy to guess.');
+
+    password = "hfHeo34FksdBChjeruShJ743U9247U4fdfasdfsSDFSDFJHtigu@sidfgusd";
+    accepted = password_quality(password, $bar, password_field(6, 40, 1e100));
+    assert.ok(!accepted);
+    accepted = password_max_length(password, password_field(6, 40, 1e100));
+    assert.ok(!accepted);
+    warning = password_warning(password, password_field(6, 40, 1e100));
+    assert.equal(
+        warning,
+        `translated: Password should be at most ${40} characters long. Current input is ${password.length} characters long.`,
+    );
 });

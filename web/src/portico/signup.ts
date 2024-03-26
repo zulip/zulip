@@ -48,8 +48,12 @@ $(() => {
 
     $("#registration, #password_reset, #create_realm").validate({
         rules: {
-            password: "password_strength",
-            new_password1: "password_strength",
+            password: {
+                password_strength: true,
+            },
+            new_password1: {
+                password_strength: true,
+            },
         },
         errorElement: "p",
         errorPlacement($error: JQuery, $element: JQuery) {
