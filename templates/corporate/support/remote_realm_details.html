@@ -22,7 +22,7 @@
         <b>Billing users</b>: {{ billing_emails_string }}
         {% if billing_emails_string %}
         <a title="Copy emails" class="copy-button" data-copytext="{{ billing_emails_string }}">
-            <i class="fa fa-copy"></i>
+            {{> copy_to_clipboard_svg}}
         </a>
         {% endif %}
         <br />

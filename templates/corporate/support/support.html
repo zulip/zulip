@@ -101,7 +101,7 @@
                 {% endif %}
                 <b>Link</b>: {{ confirmation.url }}
                 <a title="Copy link" class="copy-button" data-copytext="{{ confirmation.url }}">
-                    <i class="fa fa-copy"></i>
+                    {{> copy_to_clipboard_svg}}
                 </a><br />
                 <b>Expires in</b>: {{ confirmation.expires_in }}<br />
                 {% if confirmation.link_status %}

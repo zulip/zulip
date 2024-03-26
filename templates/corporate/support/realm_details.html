@@ -9,7 +9,7 @@
     <b>Owners</b>: {{ owner_emails_string }}
     {% if owner_emails_string %}
     <a title="Copy emails" class="copy-button" data-copytext="{{ owner_emails_string }}">
-        <i class="fa fa-copy"></i>
+        {{> copy_to_clipboard_svg}}
     </a>
     {% endif %}
     <br />
@@ -17,7 +17,7 @@
     <b>Admins</b>: {{ admin_emails_string }}
     {% if admin_emails_string %}
     <a title="Copy emails" class="copy-button" data-copytext="{{ admin_emails_string }}">
-        <i class="fa fa-copy"></i>
+        {{> copy_to_clipboard_svg}}
     </a>
     {% endif %}
     <br />
@@ -25,7 +25,7 @@
     {% if first_human_user %}
     <b>First human user</b>: {{ first_human_user.delivery_email  }}
     <a title="Copy emails" class="copy-button" data-copytext="{{ first_human_user.delivery_email }}">
-        <i class="fa fa-copy"></i>
+        {{> copy_to_clipboard_svg}}
     </a>
     {% else %}
     <b>First human user</b>:
