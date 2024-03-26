@@ -333,6 +333,8 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
     # Defaults for new users
     default_language = models.CharField(default="en", max_length=MAX_LANGUAGE_ID_LENGTH)
 
+    ZULIP_DISCUSSION_CHANNEL_NAME = gettext_lazy("Zulip")
+    ZULIP_SANDBOX_CHANNEL_NAME = gettext_lazy("sandbox")
     DEFAULT_NOTIFICATION_STREAM_NAME = gettext_lazy("general")
     STREAM_EVENTS_NOTIFICATION_TOPIC_NAME = gettext_lazy("channel events")
     new_stream_announcements_stream = models.ForeignKey(

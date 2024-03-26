@@ -375,21 +375,28 @@ async function test_stream_search_filters_stream_list(page: Page): Promise<void>
     await page.waitForSelector((await get_stream_li(page, "Denmark")) + ".highlighted_stream", {
         hidden: true,
     });
+    await page.waitForSelector((await get_stream_li(page, "sandbox")) + ".highlighted_stream", {
+        hidden: true,
+    });
     await page.waitForSelector((await get_stream_li(page, "Venice")) + ".highlighted_stream", {
         hidden: true,
     });
     await page.waitForSelector((await get_stream_li(page, "Verona")) + ".highlighted_stream", {
         hidden: true,
     });
+    await page.waitForSelector((await get_stream_li(page, "Zulip")) + ".highlighted_stream", {
+        hidden: true,
+    });
 
     // Navigate through suggestions using arrow keys
     await arrow(page, "Down"); // core team -> Denmark
-    await arrow(page, "Down"); // Denmark -> Venice
-    await arrow(page, "Up"); // Venice -> Denmark
+    await arrow(page, "Down"); // Denmark -> sandbox
+    await arrow(page, "Up"); // sandbox -> Denmark
     await arrow(page, "Up"); // Denmark -> core team
     await arrow(page, "Up"); // core team -> core team
     await arrow(page, "Down"); // core team -> Denmark
-    await arrow(page, "Down"); // Denmark -> Venice
+    await arrow(page, "Down"); // Denmark -> sandbox
+    await arrow(page, "Down"); // sandbox-> Venice
     await arrow(page, "Down"); // Venice -> Verona
 
     await page.waitForSelector((await get_stream_li(page, "Verona")) + ".highlighted_stream", {
@@ -403,6 +410,9 @@ async function test_stream_search_filters_stream_list(page: Page): Promise<void>
         hidden: true,
     });
     await page.waitForSelector((await get_stream_li(page, "Venice")) + ".highlighted_stream", {
+        hidden: true,
+    });
+    await page.waitForSelector((await get_stream_li(page, "Zulip")) + ".highlighted_stream", {
         hidden: true,
     });
     await test_search_venice(page);

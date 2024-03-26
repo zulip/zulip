@@ -5633,7 +5633,16 @@ class GetStreamsTest(ZulipTestCase):
 
         self.assertEqual(
             stream_names,
-            {"Venice", "Denmark", "Scotland", "Verona", "Rome", "core team"},
+            {
+                "Venice",
+                "Denmark",
+                "Scotland",
+                "Verona",
+                "Rome",
+                "core team",
+                "Zulip",
+                "sandbox",
+            },
         )
 
     def test_public_streams_api(self) -> None:

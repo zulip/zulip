@@ -1303,7 +1303,8 @@ class RealmCreationTest(ZulipTestCase):
 
         # Check welcome messages
         for stream_name, text, message_count in [
-            (str(Realm.DEFAULT_NOTIFICATION_STREAM_NAME), "with the topic", 4),
+            (str(Realm.DEFAULT_NOTIFICATION_STREAM_NAME), "learn about new features", 3),
+            (str(Realm.ZULIP_SANDBOX_CHANNEL_NAME), "new conversation thread", 5),
         ]:
             stream = get_stream(stream_name, realm)
             recipient = stream.recipient
@@ -1739,10 +1740,12 @@ class RealmCreationTest(ZulipTestCase):
         # TODO: When Italian translated strings are updated for changes
         # that are part of the stream -> channel rename, uncomment below.
         # # Check welcome messages
-        # with_the_topic_in_italian = "con l'argomento"
+        # learn_about_new_features_in_italian = "conoscere le nuove funzionalità"
+        # new_conversation_thread_in_italian = "nuovo thread di conversazione"
 
         # for stream_name, text, message_count in [
-        #     (str(Realm.DEFAULT_NOTIFICATION_STREAM_NAME), with_the_topic_in_italian, 4),
+        #     (str(Realm.DEFAULT_NOTIFICATION_STREAM_NAME), learn_about_new_features_in_italian, 3),
+        #     (str(Realm.ZULIP_SANDBOX_CHANNEL_NAME), new_conversation_thread_in_italian, 5),
         # ]:
         #     stream = get_stream(stream_name, realm)
         #     recipient = stream.recipient
@@ -2560,9 +2563,11 @@ class UserSignUpTest(ZulipTestCase):
         default_streams = []
 
         existing_default_streams = DefaultStream.objects.filter(realm=realm)
-        self.assert_length(existing_default_streams, 1)
-        self.assertEqual(existing_default_streams[0].stream.name, "Verona")
-        default_streams.append(existing_default_streams[0].stream)
+        self.assert_length(existing_default_streams, 3)
+        expected_default_streams = ["Zulip", "sandbox", "Verona"]
+        for i, expected_default_stream in enumerate(expected_default_streams):
+            self.assertEqual(existing_default_streams[i].stream.name, expected_default_stream)
+            default_streams.append(existing_default_streams[i].stream)
 
         for stream_name in ["venice", "rome"]:
             stream = get_stream(stream_name, realm)

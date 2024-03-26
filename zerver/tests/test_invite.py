@@ -793,7 +793,7 @@ class InviteUserTest(InviteUserBase):
         self.assertTrue(find_key_by_email(invitee))
 
         default_streams = get_default_streams_for_realm_as_dicts(realm.id)
-        self.assert_length(default_streams, 1)
+        self.assert_length(default_streams, 3)
 
         self.submit_reg_form_for_user(invitee, "password")
         # If no streams are provided, user is not subscribed to
@@ -2409,7 +2409,7 @@ class MultiuseInviteTest(ZulipTestCase):
         invite_link = self.generate_multiuse_invite_link(streams=streams)
         self.check_user_able_to_register(email3, invite_link)
         # User is not subscribed to default streams as well.
-        self.assert_length(get_default_streams_for_realm_as_dicts(self.realm.id), 1)
+        self.assert_length(get_default_streams_for_realm_as_dicts(self.realm.id), 3)
         self.check_user_subscribed_only_to_streams(name3, [])
 
     def test_multiuse_link_different_realms(self) -> None:
@@ -2478,7 +2478,7 @@ class MultiuseInviteTest(ZulipTestCase):
         invite_link = self.assert_json_success(result)["invite_link"]
         self.check_user_able_to_register(self.nonreg_email("alice"), invite_link)
         # User is not subscribed to default streams as well.
-        self.assert_length(get_default_streams_for_realm_as_dicts(self.realm.id), 1)
+        self.assert_length(get_default_streams_for_realm_as_dicts(self.realm.id), 3)
         self.check_user_subscribed_only_to_streams("alice", [])
 
     def test_multiuse_invite_without_permission_to_subscribe_others(self) -> None:

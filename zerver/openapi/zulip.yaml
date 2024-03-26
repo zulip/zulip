@@ -5879,7 +5879,7 @@ paths:
                       items:
                         type: integer
                       minLength: 1
-                  example: 5
+                  example: 11
                 content:
                   description: |
                     The updated content of the scheduled message.
@@ -6022,7 +6022,7 @@ paths:
                   description: |
                     The ID of the target stream.
                   type: integer
-                  example: 4
+                  example: 10
               required:
                 - stream_id
             encoding:
@@ -6073,7 +6073,7 @@ paths:
                   description: |
                     The ID of the target stream.
                   type: integer
-                  example: 4
+                  example: 10
               required:
                 - stream_id
             encoding:
@@ -11977,7 +11977,7 @@ paths:
                   type: array
                   items:
                     type: integer
-                  example: [1, 4]
+                  example: [1, 10]
               required:
                 - invitee_emails
                 - stream_ids
@@ -12115,7 +12115,7 @@ paths:
                   items:
                     type: integer
                   default: []
-                  example: [1, 4]
+                  example: [1, 10]
             encoding:
               invite_expires_in_minutes:
                 contentType: application/json

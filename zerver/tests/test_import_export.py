@@ -448,7 +448,16 @@ class RealmImportExportTest(ExportFile):
         exported_streams = self.get_set(data["zerver_stream"], "name")
         self.assertEqual(
             exported_streams,
-            {"Denmark", "Rome", "Scotland", "Venice", "Verona", "core team"},
+            {
+                "Denmark",
+                "Rome",
+                "Scotland",
+                "Venice",
+                "Verona",
+                "core team",
+                "Zulip",
+                "sandbox",
+            },
         )
 
         exported_alert_words = data["zerver_alertword"]
@@ -648,6 +657,8 @@ class RealmImportExportTest(ExportFile):
                 "Scotland",
                 "Venice",
                 "Verona",
+                "Zulip",
+                "sandbox",
                 "Private A",
                 "Private B",
                 "Private C",
@@ -668,7 +679,15 @@ class RealmImportExportTest(ExportFile):
         exported_message = self.find_by_id(data["zerver_message"], um.message_id)
         self.assertEqual(exported_message["content"], um.message.content)
 
-        public_stream_names = ["Denmark", "Rome", "Scotland", "Venice", "Verona"]
+        public_stream_names = [
+            "Denmark",
+            "Rome",
+            "Scotland",
+            "Venice",
+            "Verona",
+            "Zulip",
+            "sandbox",
+        ]
         public_stream_ids = Stream.objects.filter(name__in=public_stream_names).values_list(
             "id", flat=True
         )

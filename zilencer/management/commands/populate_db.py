@@ -622,6 +622,9 @@ class Command(BaseCommand):
             create_if_missing_realm_internal_bots()
 
             # Create streams.
+            zulip_discussion_channel_name = str(Realm.ZULIP_DISCUSSION_CHANNEL_NAME)
+            zulip_sandbox_channel_name = str(Realm.ZULIP_SANDBOX_CHANNEL_NAME)
+
             stream_list = [
                 "Verona",
                 "Denmark",
@@ -629,6 +632,8 @@ class Command(BaseCommand):
                 "Venice",
                 "Rome",
                 "core team",
+                zulip_discussion_channel_name,
+                zulip_sandbox_channel_name,
             ]
             stream_dict: Dict[str, Dict[str, Any]] = {
                 "Denmark": {"description": "A Scandinavian country"},
@@ -662,12 +667,20 @@ class Command(BaseCommand):
                 subscriptions_map = {
                     "AARON@zulip.com": ["Verona"],
                     "cordelia@zulip.com": ["Verona"],
-                    "hamlet@zulip.com": ["Verona", "Denmark", "core team"],
+                    "hamlet@zulip.com": [
+                        "Verona",
+                        "Denmark",
+                        "core team",
+                        zulip_discussion_channel_name,
+                        zulip_sandbox_channel_name,
+                    ],
                     "iago@zulip.com": [
                         "Verona",
                         "Denmark",
                         "Scotland",
                         "core team",
+                        zulip_discussion_channel_name,
+                        zulip_sandbox_channel_name,
                     ],
                     "othello@zulip.com": ["Verona", "Denmark", "Scotland"],
                     "prospero@zulip.com": ["Verona", "Denmark", "Scotland", "Venice"],
@@ -678,6 +691,8 @@ class Command(BaseCommand):
                         "Denmark",
                         "Venice",
                         "core team",
+                        zulip_discussion_channel_name,
+                        zulip_sandbox_channel_name,
                     ],
                     "shiva@zulip.com": ["Verona", "Denmark", "Scotland"],
                 }
