@@ -72,9 +72,6 @@ export function toggle_message_actions_menu(message) {
 export function initialize() {
     popover_menus.register_popover_menu(".actions_hover .message-actions-menu-button", {
         theme: "popover-menu",
-        // 320px is our minimum supported width for mobile. We will allow the value to flex
-        // to a max of 350px but we shouldn't make the popover wider than this.
-        maxWidth: "min(max(320px, 100vw), 350px)",
         placement: "bottom",
         popperOptions: {
             modifiers: [
