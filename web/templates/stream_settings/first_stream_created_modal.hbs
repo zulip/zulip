@@ -1,0 +1,30 @@
+<div class="micromodal" id="first_stream_created_modal" aria-hidden="true">
+    <div class="modal__overlay" tabindex="-1">
+        <div class="modal__container" role="dialog" aria-modal="true"
+          aria-labelledby="first_stream_created_modal_label">
+            <header class="modal__header">
+                <h1 class="modal__title" id="first_stream_created_modal_label">
+                    <span>
+                        {{#tr}}
+                        Stream <b>#{stream_name}</b> created!
+                        {{/tr}}
+                    </span>
+                </h1>
+                <button class="modal__close" aria-label="{{t 'Close modal' }}" data-micromodal-close></button>
+            </header>
+            <main class="modal__content">
+                <span>
+                    {{t 'You will now see the stream you created. To go back to stream settings, you can:' }}
+                    <ul>
+                        <li>{{t 'Click on the name of the stream at the top of your Zulip window.' }}</li>
+                        <li>{{#tr}}Use the <b>back</b> button in your browser or desktop app.{{/tr}}</li>
+                    </ul>
+                </span>
+            </main>
+            <footer class="modal__footer">
+                <button type="button" class="modal__btn dialog_exit_button animated-purple-button"
+                  aria-label="{{t 'Close this dialog window' }}" data-micromodal-close>{{t "Continue" }}</button>
+            </footer>
+        </div>
+    </div>
+</div>

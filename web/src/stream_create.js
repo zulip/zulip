@@ -9,6 +9,7 @@ import * as confirm_dialog from "./confirm_dialog";
 import {$t, $t_html} from "./i18n";
 import * as keydown_util from "./keydown_util";
 import * as loading from "./loading";
+import {localstorage} from "./localstorage";
 import * as people from "./people";
 import * as settings_data from "./settings_data";
 import {current_user, realm} from "./state_data";
@@ -31,6 +32,15 @@ export function set_name(stream) {
 
 export function get_name() {
     return created_stream;
+}
+
+const ls = localstorage();
+export function set_first_stream_created() {
+    ls.set("first_stream_created", "true");
+}
+
+export function is_first_stream_created() {
+    return ls.get("first_stream_created") === "true";
 }
 
 class StreamSubscriptionError {

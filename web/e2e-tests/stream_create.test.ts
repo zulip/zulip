@@ -74,15 +74,27 @@ async function test_user_filter_ui(page: Page): Promise<void> {
     await await_user_visible(page, "othello");
 }
 
-async function create_stream(page: Page): Promise<void> {
+async function create_stream(page: Page, first_stream: boolean): Promise<void> {
     await page.waitForSelector('xpath///*[text()="Create stream"]', {visible: true});
-    await common.fill_form(page, "form#stream_creation_form", {
-        stream_name: "Puppeteer",
-        stream_description: "Everything Puppeteer",
-    });
+    const test_stream = {
+        stream_name: "Puppeteer" + (first_stream ? "" : "2"),
+        stream_description: "Everything Puppeteer" + (first_stream ? "" : "2"),
+    };
+    await common.fill_form(page, "form#stream_creation_form", test_stream);
     await page.click("form#stream_creation_form .finalize_create_stream");
+    if (first_stream) {
+        // an explanatory modal is shown for the first stream created
+        await page.waitForSelector(".modal__btn.dialog_exit_button.animated-purple-button");
+        await page.click(".modal__btn.dialog_exit_button.animated-purple-button");
+    }
+    await page.waitForSelector(".message-header-stream-settings-button.tippy-zulip-tooltip", {
+        visible: true,
+    });
+    await page.click(".message-header-stream-settings-button.tippy-zulip-tooltip");
+    await new Promise((r) => setTimeout(r, 1000));
+    await page.waitForSelector(".stream_section");
     await page.waitForSelector(
-        `xpath///*[${common.has_class_x("stream-name")} and text()="Puppeteer"]`,
+        `xpath///*[${common.has_class_x("stream-name")} and text()="${test_stream.stream_name}"]`,
     );
     const stream_name = await common.get_text_from_selector(
         page,
@@ -92,8 +104,8 @@ async function create_stream(page: Page): Promise<void> {
         page,
         ".stream-description .sub-stream-description",
     );
-    assert.strictEqual(stream_name, "Puppeteer");
-    assert.strictEqual(stream_description, "Everything Puppeteer");
+    assert.strictEqual(stream_name, test_stream.stream_name);
+    assert.strictEqual(stream_description, test_stream.stream_description);
 
     // Assert subscriber count becomes 3 (cordelia, desdemona, othello)
     await page.waitForSelector(
@@ -123,7 +135,7 @@ async function test_streams_with_duplicate_names_cannot_be_created(page: Page): 
 async function test_stream_creation(page: Page): Promise<void> {
     await click_create_new_stream(page);
     await test_user_filter_ui(page);
-    await create_stream(page);
+    await create_stream(page, true);
     await test_streams_with_empty_names_cannot_be_created(page);
     await test_streams_with_duplicate_names_cannot_be_created(page);
 }
