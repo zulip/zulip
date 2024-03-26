@@ -21,7 +21,7 @@ You can set a status emoji, status message, or both.
 
 {start_tabs}
 
-{tab|desktop-web}
+{tab|via-user-card}
 
 {!self-user-card.md!}
 
@@ -32,14 +32,58 @@ You can set a status emoji, status message, or both.
 
 1. Click **Save**.
 
+{tab|via-personal-settings}
+
+{!personal-menu.md!}
+
+1. Click **Set status**.
+
+1. Click to select one of the common statuses, *or* choose any emoji and/or
+   write a short message.
+
+1. Click **Save**.
+
 {tab|mobile}
 
 {!mobile-profile-menu.md!}
 
-1. Tap **Set a status**.
+1. Tap **Set your status**.
 
 1. Tap to select one of the common statuses, *or* choose any emoji and/or
    write a short message.
+
+1. Tap **Save**.
+
+{end_tabs}
+
+### Clear a status
+
+{start_tabs}
+
+{tab|via-user-card}
+
+{!self-user-card.md!}
+
+1. Click **(clear)** next to your current status.
+
+1. Click **Save**.
+
+{tab|via-personal-settings}
+
+{!personal-menu.md!}
+
+1. Click on the <i class="zulip-icon zulip-icon-x-circle"></i> to the
+   right of your current status.
+
+{tab|mobile}
+
+{!mobile-profile-menu.md!}
+
+1. Tap **Set your status**.
+
+1. Tap the **x**
+   (<img src="/static/images/help/mobile-x-icon.svg" alt="x" class="help-center-icon"/>)
+   to the right of your current status.
 
 1. Tap **Save**.
 
