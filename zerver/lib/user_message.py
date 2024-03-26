@@ -1,8 +1,8 @@
-from typing import Iterable, List
+from typing import List, Optional
 
 from django.db import connection
 from psycopg2.extras import execute_values
-from psycopg2.sql import SQL
+from psycopg2.sql import SQL, Composable, Literal
 
 from zerver.models import UserMessage
 
@@ -27,7 +27,11 @@ DEFAULT_HISTORICAL_FLAGS = UserMessage.flags.historical | UserMessage.flags.read
 
 
 def create_historical_user_messages(
-    *, user_id: int, message_ids: Iterable[int], flags: int = DEFAULT_HISTORICAL_FLAGS
+    *,
+    user_id: int,
+    message_ids: List[int],
+    flagattr: Optional[int] = None,
+    flag_target: Optional[int] = None,
 ) -> None:
     # Users can see and interact with messages sent to streams with
     # public history for which they do not have a UserMessage because
@@ -36,10 +40,15 @@ def create_historical_user_messages(
     # those messages, we create UserMessage objects for those messages;
     # these have the special historical flag which keeps track of the
     # fact that the user did not receive the message at the time it was sent.
-    UserMessage.objects.bulk_create(
-        UserMessage(user_profile_id=user_id, message_id=message_id, flags=flags)
-        for message_id in message_ids
-    )
+    if flagattr is not None and flag_target is not None:
+        conflict = SQL(
+            "(user_profile_id, message_id) DO UPDATE SET flags = excluded.flags & ~ {mask} | {attr}"
+        ).format(mask=Literal(flagattr), attr=Literal(flag_target))
+        flags = (DEFAULT_HISTORICAL_FLAGS & ~flagattr) | flag_target
+    else:
+        conflict = None
+        flags = DEFAULT_HISTORICAL_FLAGS
+    bulk_insert_all_ums([user_id], message_ids, flags, conflict)
 
 
 def bulk_insert_ums(ums: List[UserMessageLite]) -> None:
@@ -66,7 +75,9 @@ def bulk_insert_ums(ums: List[UserMessageLite]) -> None:
         execute_values(cursor.cursor, query, vals)
 
 
-def bulk_insert_all_ums(user_ids: List[int], message_ids: List[int], flags: int) -> None:
+def bulk_insert_all_ums(
+    user_ids: List[int], message_ids: List[int], flags: int, conflict: Optional[Composable] = None
+) -> None:
     if not user_ids or not message_ids:
         return
 
@@ -76,9 +87,9 @@ def bulk_insert_all_ums(user_ids: List[int], message_ids: List[int], flags: int)
         SELECT user_profile_id, message_id, %s AS flags
           FROM UNNEST(%s) user_profile_id
           CROSS JOIN UNNEST(%s) message_id
-        ON CONFLICT DO NOTHING
+        ON CONFLICT {conflict}
         """
-    )
+    ).format(conflict=conflict if conflict is not None else SQL("DO NOTHING"))
 
     with connection.cursor() as cursor:
         cursor.execute(query, [flags, user_ids, message_ids])

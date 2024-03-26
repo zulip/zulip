@@ -338,8 +338,9 @@ def do_update_message_flags(
 
             create_historical_user_messages(
                 user_id=user_profile.id,
-                message_ids=historical_message_ids,
-                flags=(DEFAULT_HISTORICAL_FLAGS & ~flagattr) | flag_target,
+                message_ids=list(historical_message_ids),
+                flagattr=flagattr,
+                flag_target=flag_target,
             )
 
         to_update = UserMessage.objects.filter(
