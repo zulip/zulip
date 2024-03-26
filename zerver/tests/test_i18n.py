@@ -24,7 +24,7 @@ class EmailTranslationTestCase(ZulipTestCase):
         def check_translation(phrase: str, request_type: str, *args: Any, **kwargs: Any) -> None:
             if request_type == "post":
                 self.client_post(*args, **kwargs)
-            elif request_type == "patch":  # nocoverage: see comment below
+            elif request_type == "patch":
                 self.client_patch(*args, **kwargs)
 
             email_message = mail.outbox[0]
@@ -43,10 +43,12 @@ class EmailTranslationTestCase(ZulipTestCase):
         invite_expires_in_minutes = 2 * 24 * 60
         self.login_user(hamlet)
 
-        # TODO: Uncomment and replace with translation once we have German translations for the strings
-        # in confirm_new_email.txt.
-        # Also remove the "nocoverage" from check_translation above.
-        # check_translation("Viele Grüße", "patch", "/json/settings", {"email": "hamlets-new@zulip.com"})
+        check_translation(
+            "Wir haben eine Anfrage erhalten",
+            "patch",
+            "/json/settings",
+            {"email": "hamlets-new@zulip.com"},
+        )
         check_translation(
             "Incrível!",
             "post",
@@ -70,9 +72,7 @@ class EmailTranslationTestCase(ZulipTestCase):
 
         with self.settings(DEVELOPMENT_LOG_EMAILS=True):
             enqueue_welcome_emails(hamlet)
-        # TODO: Uncomment and replace with translation once we have German translations for the strings
-        # in account_registered emails.
-        # check_translation("Viele Grüße", "")
+        check_translation("Hier findest du einige Tipps", "")
 
 
 class TranslationTestCase(ZulipTestCase):
