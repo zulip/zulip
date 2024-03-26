@@ -344,6 +344,13 @@ export function initialize_kitchen_sink_stuff() {
                 });
             }
         }
+
+        if (message_edit.is_editing(event.id)) {
+            // Focus the edit form textbox after we have scrolled to the message.
+            setTimeout(() => {
+                $row.find(".message_edit_form .message_edit_content").trigger("focus");
+            }, 0);
+        }
     });
 
     if (!realm.realm_allow_message_editing) {
