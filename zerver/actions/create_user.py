@@ -67,24 +67,6 @@ MAX_NUM_ONBOARDING_UNREAD_MESSAGES = 20
 # several weeks old and still be a good place to start.
 ONBOARDING_RECENT_TIMEDELTA = timedelta(weeks=12)
 
-DEFAULT_HISTORICAL_FLAGS = UserMessage.flags.historical | UserMessage.flags.read
-
-
-def create_historical_user_messages(
-    *, user_id: int, message_ids: Iterable[int], flags: int = DEFAULT_HISTORICAL_FLAGS
-) -> None:
-    # Users can see and interact with messages sent to streams with
-    # public history for which they do not have a UserMessage because
-    # they were not a subscriber at the time the message was sent.
-    # In order to add emoji reactions or mutate message flags for
-    # those messages, we create UserMessage objects for those messages;
-    # these have the special historical flag which keeps track of the
-    # fact that the user did not receive the message at the time it was sent.
-    UserMessage.objects.bulk_create(
-        UserMessage(user_profile_id=user_id, message_id=message_id, flags=flags)
-        for message_id in message_ids
-    )
-
 
 def send_message_to_signup_notification_stream(
     sender: UserProfile, realm: Realm, message: str
