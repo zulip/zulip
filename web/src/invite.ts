@@ -168,7 +168,7 @@ function submit_invitation_form(): void {
                     has_billing_access: current_user.is_owner || current_user.is_billing_admin,
                     daily_limit_reached: response_body.daily_limit_reached,
                 });
-                ui_report.message(error_response, $invite_status, "alert-warning");
+                ui_report.message(error_response, $invite_status, "alert-error");
 
                 if (response_body.sent_invitations) {
                     $invitee_emails.val(invitee_emails_errored.join("\n"));
