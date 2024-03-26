@@ -183,7 +183,7 @@ export function initialize() {
     // this button is finished. This is necessary because the fading animation
     // confuses Tippy's built-in `data-reference-hidden` feature.
     $show_scroll_to_bottom_button.on("transitionend", (e) => {
-        if (e.propertyName === "visibility") {
+        if (e.originalEvent.propertyName === "visibility") {
             const tooltip = $("#scroll-to-bottom-button-clickable-area")[0]._tippy;
             // make sure the tooltip exists and the class is not currently showing
             if (tooltip && !$show_scroll_to_bottom_button.hasClass("show")) {
