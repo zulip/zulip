@@ -302,4 +302,40 @@ $(() => {
 
         $(e.target).hide();
     });
+
+    $("#how-realm-creator-found-zulip select").on("change", function () {
+        const elements: Record<string, string> = {
+            Other: "how-realm-creator-found-zulip-other",
+            Advertisement: "how-realm-creator-found-zulip-where-ad",
+            "At an organization that's using it":
+                "how-realm-creator-found-zulip-which-organization",
+        };
+
+        const hideElement = (element: string): void => {
+            const $element = $(`#${element}`);
+            $element.hide();
+            $element.removeAttr("required");
+            $(`#${element}-error`).hide();
+        };
+
+        const showElement = (element: string): void => {
+            const $element = $(`#${element}`);
+            $element.show();
+            $element.attr("required", "required");
+        };
+
+        // Reset state
+        for (const element of Object.values(elements)) {
+            if (element) {
+                hideElement(element);
+            }
+        }
+
+        // Show the additional input box if needed.
+        const selected_option = $("option:selected", this).text();
+        const selected_element = elements[selected_option];
+        if (selected_element) {
+            showElement(selected_element);
+        }
+    });
 });
