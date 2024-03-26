@@ -1,6 +1,5 @@
 from typing import Any, Dict, Optional
 
-from zerver.actions.create_user import create_historical_user_messages
 from zerver.actions.user_topics import do_set_user_topic_visibility_policy
 from zerver.lib.emoji import check_emoji_request, get_emoji_data
 from zerver.lib.exceptions import ReactionExistsError
@@ -13,6 +12,7 @@ from zerver.lib.message import (
 from zerver.lib.message_cache import update_message_cache
 from zerver.lib.stream_subscription import subscriber_ids_with_stream_history_access
 from zerver.lib.streams import access_stream_by_id
+from zerver.lib.user_message import create_historical_user_messages
 from zerver.models import Message, Reaction, Recipient, Stream, UserMessage, UserProfile
 from zerver.tornado.django_api import send_event_on_commit
 
