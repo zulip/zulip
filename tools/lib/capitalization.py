@@ -105,6 +105,12 @@ IGNORED_PHRASES = [
     r"^new channels$",
     r"^channel events$",
     r"^general$",
+    r"^sandbox$",
+    r"^experiments$",
+    r"^greetings$",
+    r"^moving messages$",
+    r"^start a conversation$",
+    r"^welcome to Zulip!$",
     # These are used as example short names (e.g. an uncapitalized context):
     r"^marketing$",
     r"^cookie$",

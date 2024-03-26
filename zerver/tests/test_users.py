@@ -622,9 +622,9 @@ class PermissionTest(ZulipTestCase):
             if new_role in [UserProfile.ROLE_REALM_ADMINISTRATOR, UserProfile.ROLE_REALM_OWNER]:
                 # If the new role is owner or admin, the peer_add event will be
                 # sent for one private stream as well.
-                num_events += 5
+                num_events += 7
             else:
-                num_events += 4
+                num_events += 6
         elif new_role in [
             UserProfile.ROLE_REALM_ADMINISTRATOR,
             UserProfile.ROLE_REALM_OWNER,

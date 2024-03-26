@@ -161,7 +161,7 @@ def get_presence(client: Client) -> None:
 def add_default_stream(client: Client) -> None:
     # {code_example|start}
     # Add a stream to the set of default streams for new users.
-    stream_id = 4
+    stream_id = 10
 
     result = client.add_default_stream(stream_id)
     # {code_example|end}
@@ -173,7 +173,7 @@ def add_default_stream(client: Client) -> None:
 def remove_default_stream(client: Client) -> None:
     # {code_example|start}
     # Remove a stream from the set of default streams for new users.
-    request = {"stream_id": 4}
+    request = {"stream_id": 10}
 
     result = client.call_endpoint(
         url="/default_streams",
@@ -321,7 +321,7 @@ def send_invitations(client: Client) -> None:
         "invitee_emails": "example@zulip.com, logan@zulip.com",
         "invite_expires_in_minutes": 60 * 24 * 10,  # 10 days
         "invite_as": 400,
-        "stream_ids": [1, 5, 6],
+        "stream_ids": [1, 11, 12],
     }
     result = client.call_endpoint(url="/invites", method="POST", request=request)
     # {code_example|end}
@@ -336,7 +336,7 @@ def create_reusable_invitation_link(client: Client) -> None:
     request = {
         "invite_expires_in_minutes": 60 * 24 * 10,  # 10 days
         "invite_as": 400,
-        "stream_ids": [1, 5, 6],
+        "stream_ids": [1, 11, 12],
     }
     result = client.call_endpoint(url="/invites/multiuse", method="POST", request=request)
     # {code_example|end}
@@ -350,7 +350,7 @@ def revoke_email_invitation(client: Client) -> None:
         "invitee_emails": "delete-invite@zulip.com",
         "invite_expires_in_minutes": 14400,  # 10 days
         "invite_as": 400,
-        "stream_ids": [1, 5, 6],
+        "stream_ids": [1, 11, 12],
     }
     result = client.call_endpoint(url="/invites", method="POST", request=request)
 
@@ -668,7 +668,7 @@ def get_streams(client: Client) -> None:
     # {code_example|end}
 
     validate_against_openapi_schema(result, "/streams", "get", "200")
-    assert len(result["streams"]) == 5
+    assert len(result["streams"]) == 7
 
 
 @openapi_test_function("/streams/{stream_id}:patch")
@@ -915,7 +915,7 @@ def update_subscription_settings(client: Client) -> None:
             "value": True,
         },
         {
-            "stream_id": 4,
+            "stream_id": 10,
             "property": "color",
             "value": "#f00f00",
         },

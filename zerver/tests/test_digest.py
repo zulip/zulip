@@ -82,10 +82,10 @@ class TestDigestEmailMessages(ZulipTestCase):
         # are 3 reused streams and one new one, for a net of two fewer
         # than before.
         iago = self.example_user("iago")
-        with self.assert_database_query_count(8):
+        with self.assert_database_query_count(10):
             bulk_handle_digest_email([iago.id], cutoff)
         self.assertEqual(get_recent_topics.cache_info().hits, 3)
-        self.assertEqual(get_recent_topics.cache_info().currsize, 4)
+        self.assertEqual(get_recent_topics.cache_info().currsize, 6)
 
         # Two users in the same batch, with only one new stream from
         # the above.
@@ -94,7 +94,7 @@ class TestDigestEmailMessages(ZulipTestCase):
         with self.assert_database_query_count(9):
             bulk_handle_digest_email([cordelia.id, prospero.id], cutoff)
         self.assertEqual(get_recent_topics.cache_info().hits, 7)
-        self.assertEqual(get_recent_topics.cache_info().currsize, 5)
+        self.assertEqual(get_recent_topics.cache_info().currsize, 7)
 
         # If we use a different cutoff, it clears the cache.
         with self.assert_database_query_count(12):
@@ -241,7 +241,7 @@ class TestDigestEmailMessages(ZulipTestCase):
             digest_user_ids = [user.id for user in digest_users]
 
             get_recent_topics.cache_clear()
-            with self.assert_database_query_count(14):
+            with self.assert_database_query_count(16):
                 with self.assert_memcached_count(0):
                     bulk_handle_digest_email(digest_user_ids, cutoff)
 

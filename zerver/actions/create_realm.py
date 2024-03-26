@@ -278,20 +278,37 @@ def do_create_realm(
 
         maybe_enqueue_audit_log_upload(realm)
 
-    # Create stream once Realm object has been saved
+    # Create channels once Realm object has been saved
+    zulip_discussion_channel = ensure_stream(
+        realm,
+        str(Realm.ZULIP_DISCUSSION_CHANNEL_NAME),
+        stream_description=_("Questions and discussion about using Zulip."),
+        acting_user=None,
+    )
+    zulip_sandbox_channel = ensure_stream(
+        realm,
+        str(Realm.ZULIP_SANDBOX_CHANNEL_NAME),
+        stream_description=_("Experiment with Zulip here. :test_tube:"),
+        acting_user=None,
+    )
     new_stream_announcements_stream = ensure_stream(
         realm,
         str(Realm.DEFAULT_NOTIFICATION_STREAM_NAME),
-        stream_description="Everyone is added to this stream by default. Welcome! :octopus:",
+        stream_description=_("For team-wide conversations"),
         acting_user=None,
     )
     # By default, 'New stream' & 'Zulip update' announcements are sent to the same stream.
     realm.new_stream_announcements_stream = new_stream_announcements_stream
     realm.zulip_update_announcements_stream = new_stream_announcements_stream
 
-    # With the current initial streams situation, the only public
-    # stream is the new_stream_announcements_stream.
-    DefaultStream.objects.create(stream=new_stream_announcements_stream, realm=realm)
+    # With the current initial streams situation, the public channels are
+    # 'zulip_discussion_channel', 'zulip_sandbox_channel', 'new_stream_announcements_stream'.
+    public_channels = [
+        DefaultStream(stream=zulip_discussion_channel, realm=realm),
+        DefaultStream(stream=zulip_sandbox_channel, realm=realm),
+        DefaultStream(stream=new_stream_announcements_stream, realm=realm),
+    ]
+    DefaultStream.objects.bulk_create(public_channels)
 
     # New realm is initialized with the latest zulip update announcements
     # level as it shouldn't receive a bunch of old updates.
