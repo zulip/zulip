@@ -1481,3 +1481,7 @@ ul.popover-menu-outer-list {
         outline-offset: -1px;
     }
 }
+
+#message-actions-menu-dropdown {
+    --popover-menu-max-width: 350px;
+}
