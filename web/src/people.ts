@@ -6,7 +6,7 @@ import * as typeahead from "../shared/src/typeahead";
 import * as blueslip from "./blueslip";
 import {FoldDict} from "./fold_dict";
 import {$t} from "./i18n";
-import type {DisplayRecipientUser, Message, MessageWithBooleans} from "./message_store";
+import type {DisplayRecipientUser, Message} from "./message_store";
 import * as message_user_ids from "./message_user_ids";
 import * as muted_users from "./muted_users";
 import {page_params} from "./page_params";
@@ -1534,7 +1534,7 @@ export function get_user_by_id_assert_valid(
     return person;
 }
 
-function get_involved_people(message: MessageWithBooleans): DisplayRecipientUser[] {
+function get_involved_people(message: Message): DisplayRecipientUser[] {
     let involved_people: DisplayRecipientUser[];
 
     switch (message.type) {
@@ -1564,7 +1564,7 @@ function get_involved_people(message: MessageWithBooleans): DisplayRecipientUser
     return involved_people;
 }
 
-export function extract_people_from_message(message: MessageWithBooleans): void {
+export function extract_people_from_message(message: Message): void {
     const involved_people = get_involved_people(message);
 
     // Add new people involved in this message to the people list
@@ -1610,9 +1610,7 @@ export function filter_for_user_settings_search(persons: User[], query: string):
     return persons.filter((person) => matches_user_settings_search(person, query));
 }
 
-export function maybe_incr_recipient_count(
-    message: MessageWithBooleans & {sent_by_me: boolean},
-): void {
+export function maybe_incr_recipient_count(message: Message & {sent_by_me: boolean}): void {
     if (message.type !== "private") {
         return;
     }
