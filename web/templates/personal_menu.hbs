@@ -86,6 +86,27 @@
                 </li>
                 <li class="navbar-dropdown-menu-outer-list-item">
                     <ul class="navbar-dropdown-menu-inner-list">
+                        <li class="navbar-dropdown-menu-inner-list-item">
+                            <div id="theme-switcher" class="tab-picker">
+                                <input type="radio" id="select-automatic-theme" class="tab-option" name="theme-select" data-theme-code="{{color_scheme_values.automatic.code}}" {{#if (eq user_color_scheme color_scheme_values.automatic.code)}}checked{{/if}} />
+                                <label class="tab-option-content tippy-zulip-delayed-tooltip" for="select-automatic-theme" aria-label="{{t 'Select automatic theme' }}" data-tooltip-template-id="automatic-theme-template" tabindex="0">
+                                    <i class="zulip-icon zulip-icon-monitor" aria-hidden="true"></i>
+                                </label>
+                                <input type="radio" id="select-light-theme" class="tab-option" name="theme-select" data-theme-code="{{color_scheme_values.day.code}}" {{#if (eq user_color_scheme color_scheme_values.day.code)}}checked{{/if}} />
+                                <label class="tab-option-content tippy-zulip-delayed-tooltip" for="select-light-theme" aria-label="{{t 'Select light theme' }}" data-tippy-content="{{t 'Light theme' }}" tabindex="0">
+                                    <i class="zulip-icon zulip-icon-sun" aria-hidden="true"></i>
+                                </label>
+                                <input type="radio" id="select-dark-theme" class="tab-option" name="theme-select" data-theme-code="{{color_scheme_values.night.code}}" {{#if (eq user_color_scheme color_scheme_values.night.code)}}checked{{/if}} />
+                                <label class="tab-option-content tippy-zulip-delayed-tooltip" for="select-dark-theme" aria-label="{{t 'Select dark theme' }}" data-tippy-content="{{t 'Dark theme' }}" tabindex="0">
+                                    <i class="zulip-icon zulip-icon-moon" aria-hidden="true"></i>
+                                </label>
+                                <span class="slider"></span>
+                            </div>
+                        </li>
+                    </ul>
+                </li>
+                <li class="navbar-dropdown-menu-outer-list-item">
+                    <ul class="navbar-dropdown-menu-inner-list">
                         <li class="link-item navbar-dropdown-menu-inner-list-item">
                             <a href="#user/{{user_id}}" tabindex="0" class="view_full_user_profile navbar-dropdown-menu-link">
                                 <i class="navbar-dropdown-icon zulip-icon zulip-icon-account"></i>

@@ -46,7 +46,12 @@ type SelectedLinesSections = {
 
 export let compose_spinner_visible = false;
 export let shift_pressed = false; // true or false
+export let code_formatting_button_triggered = false; // true or false
 let full_size_status = false; // true or false
+
+export function set_code_formatting_button_triggered(value: boolean): void {
+    code_formatting_button_triggered = value;
+}
 
 // Some functions to handle the full size status explicitly
 export function set_full_size(is_full: boolean): void {
@@ -585,7 +590,7 @@ export function format_text(
         }
     };
 
-    const format = (syntax_start: string, syntax_end = syntax_start): void => {
+    const format = (syntax_start: string, syntax_end = syntax_start): boolean => {
         let linebreak_start = "";
         let linebreak_end = "";
         if (syntax_start.startsWith("\n")) {
@@ -606,7 +611,7 @@ export function format_text(
                 range.start - syntax_start.length,
                 range.end - syntax_start.length,
             );
-            return;
+            return false;
         } else if (is_inner_text_formatted(syntax_start, syntax_end)) {
             // Remove syntax inside the selection, if present.
             text =
@@ -620,11 +625,12 @@ export function format_text(
                 range.start,
                 range.end - syntax_start.length - syntax_end.length,
             );
-            return;
+            return false;
         }
 
         // Otherwise, we don't have syntax within or around, so we add it.
         wrapFieldSelection(field, syntax_start, syntax_end);
+        return true;
     };
 
     const format_spoiler = (): void => {
@@ -1010,7 +1016,15 @@ export function format_text(
                 if (range.end < text.length && text[range.end] !== "\n") {
                     block_code_syntax_end = block_code_syntax_end + "\n";
                 }
-                format(block_code_syntax_start, block_code_syntax_end);
+                const added_fence = format(block_code_syntax_start, block_code_syntax_end);
+                if (added_fence) {
+                    const cursor_after_opening_fence =
+                        range.start + block_code_syntax_start.length - 1;
+                    field.setSelectionRange(cursor_after_opening_fence, cursor_after_opening_fence);
+                    set_code_formatting_button_triggered(true);
+                    // Trigger typeahead lookup with a click.
+                    field.click();
+                }
             } else {
                 format(inline_code_syntax);
             }

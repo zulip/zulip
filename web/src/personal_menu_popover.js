@@ -3,6 +3,7 @@ import tippy from "tippy.js";
 
 import render_personal_menu from "../templates/personal_menu.hbs";
 
+import * as channel from "./channel";
 import * as narrow from "./narrow";
 import * as people from "./people";
 import * as popover_menus from "./popover_menus";
@@ -10,6 +11,7 @@ import * as popover_menus_data from "./popover_menus_data";
 import * as popovers from "./popovers";
 import {current_user} from "./state_data";
 import {parse_html} from "./ui_util";
+import {user_settings} from "./user_settings";
 import * as user_status from "./user_status";
 
 export function initialize() {
@@ -38,6 +40,26 @@ export function initialize() {
             tippy(".personal-menu-clear-status", {
                 placement: "top",
                 appendTo: document.body,
+            });
+
+            $popper.on("change", "input[name='theme-select']", (e) => {
+                const new_theme_code = $(e.currentTarget).attr("data-theme-code");
+                channel.patch({
+                    url: "/json/settings",
+                    data: {color_scheme: new_theme_code},
+                    error() {
+                        // NOTE: The additional delay allows us to visually communicate
+                        // that an error occurred due to which we are reverting back
+                        // to the previously used value.
+                        setTimeout(() => {
+                            const prev_theme_code = user_settings.color_scheme;
+                            $(e.currentTarget)
+                                .parent()
+                                .find(`input[data-theme-code="${prev_theme_code}"]`)
+                                .prop("checked", true);
+                        }, 500);
+                    },
+                });
             });
 
             $popper.one("click", ".personal-menu-clear-status", (e) => {

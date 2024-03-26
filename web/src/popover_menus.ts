@@ -146,7 +146,7 @@ function get_popover_items_for_instance(instance: PopoverInstance): JQuery | und
         return undefined;
     }
 
-    return $current_elem.find("a:visible");
+    return $current_elem.find("a, [tabindex='0']").filter(":visible");
 }
 
 export const default_popover_props: Partial<PopoverProps> = {
