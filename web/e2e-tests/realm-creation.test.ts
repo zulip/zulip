@@ -59,6 +59,8 @@ async function realm_creation_tests(page: Page): Promise<void> {
         full_name: "Alice",
         password: "passwordwhichisnotreallycomplex",
         terms: true,
+        how_realm_creator_found_zulip: "other",
+        how_realm_creator_found_zulip_other_text: "test",
     };
     // For some reason, page.click() does not work this for particular checkbox
     // so use page.$eval here to call the .click method in the browser.

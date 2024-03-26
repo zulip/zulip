@@ -48,6 +48,7 @@
             <th>Bots</th>
             <th></th>
             <th colspan=8>Human messages sent, last 8 UTC days (today-so-far first)</th>
+            <th>Referrer</th>
         </tr>
     </thead>
 
@@ -118,6 +119,10 @@
             {% else %}
             <td colspan=8></td>
             {% endif %}
+
+            <td>
+                {{ row.how_realm_creator_found_zulip }}
+            </td>
         </tr>
         {% endfor %}
     </tbody>

@@ -842,6 +842,8 @@ Output:
             "default_stream_group": default_stream_groups,
             "source_realm_id": source_realm_id,
             "is_demo_organization": is_demo_organization,
+            "how_realm_creator_found_zulip": "other",
+            "how_realm_creator_found_zulip_extra_context": "I found it on the internet.",
         }
         if enable_marketing_emails is not None:
             payload["enable_marketing_emails"] = enable_marketing_emails

@@ -82,6 +82,7 @@ from zerver.models import (
     UserProfile,
 )
 from zerver.models.constants import MAX_LANGUAGE_ID_LENGTH
+from zerver.models.realm_audit_logs import RealmAuditLog
 from zerver.models.realms import (
     DisposableEmailError,
     DomainNotAllowedForRealmError,
@@ -464,6 +465,32 @@ def registration_helper(
             realm_type = form.cleaned_data["realm_type"]
             realm_default_language = form.cleaned_data["realm_default_language"]
             is_demo_organization = form.cleaned_data["is_demo_organization"]
+            how_realm_creator_found_zulip = RealmAuditLog.HOW_REALM_CREATOR_FOUND_ZULIP_OPTIONS[
+                form.cleaned_data["how_realm_creator_found_zulip"]
+            ]
+            how_realm_creator_found_zulip_extra_context = ""
+            if (
+                how_realm_creator_found_zulip
+                == RealmAuditLog.HOW_REALM_CREATOR_FOUND_ZULIP_OPTIONS["other"]
+            ):
+                how_realm_creator_found_zulip_extra_context = form.cleaned_data[
+                    "how_realm_creator_found_zulip_other_text"
+                ]
+            elif (
+                how_realm_creator_found_zulip
+                == RealmAuditLog.HOW_REALM_CREATOR_FOUND_ZULIP_OPTIONS["ad"]
+            ):
+                how_realm_creator_found_zulip_extra_context = form.cleaned_data[
+                    "how_realm_creator_found_zulip_where_ad"
+                ]
+            elif (
+                how_realm_creator_found_zulip
+                == RealmAuditLog.HOW_REALM_CREATOR_FOUND_ZULIP_OPTIONS["existing_user"]
+            ):
+                how_realm_creator_found_zulip_extra_context = form.cleaned_data[
+                    "how_realm_creator_found_zulip_which_organization"
+                ]
+
             realm = do_create_realm(
                 string_id,
                 realm_name,
@@ -471,6 +498,8 @@ def registration_helper(
                 default_language=realm_default_language,
                 is_demo_organization=is_demo_organization,
                 prereg_realm=prereg_realm,
+                how_realm_creator_found_zulip=how_realm_creator_found_zulip,
+                how_realm_creator_found_zulip_extra_context=how_realm_creator_found_zulip_extra_context,
             )
         assert realm is not None
 
@@ -686,6 +715,7 @@ def registration_helper(
         "email_address_visibility_moderators": RealmUserDefault.EMAIL_ADDRESS_VISIBILITY_MODERATORS,
         "email_address_visibility_nobody": RealmUserDefault.EMAIL_ADDRESS_VISIBILITY_NOBODY,
         "email_address_visibility_options_dict": UserProfile.EMAIL_ADDRESS_VISIBILITY_ID_TO_NAME_MAP,
+        "how_realm_creator_found_zulip_options": RealmAuditLog.HOW_REALM_CREATOR_FOUND_ZULIP_OPTIONS.items(),
     }
     # Add context for realm creation part of the form.
     context.update(get_realm_create_form_context())
