@@ -1302,7 +1302,7 @@ class RealmCreationTest(ZulipTestCase):
 
         # Check welcome messages
         for stream_name, text, message_count in [
-            (Realm.DEFAULT_NOTIFICATION_STREAM_NAME, "with the topic", 4),
+            (Realm.DEFAULT_NOTIFICATION_STREAM_NAME, "learn about new features", 3),
             (Realm.INITIAL_PRIVATE_STREAM_NAME, "private stream", 1),
         ]:
             stream = get_stream(stream_name, realm)
@@ -1737,11 +1737,12 @@ class RealmCreationTest(ZulipTestCase):
         self.assertEqual(realm.default_language, realm_language)
 
         # Check welcome messages
-        with_the_topic_in_italian = "con l'argomento"
+        # TODO: remove comment once translated
+        # learn_about_new_features_in_italian = "conoscere le nuove funzionalità"
         private_stream_in_italian = "canale privato"
 
         for stream_name, text, message_count in [
-            (Realm.DEFAULT_NOTIFICATION_STREAM_NAME, with_the_topic_in_italian, 4),
+            # (Realm.DEFAULT_NOTIFICATION_STREAM_NAME, learn_about_new_features_in_italian, 3),
             (Realm.INITIAL_PRIVATE_STREAM_NAME, private_stream_in_italian, 1),
         ]:
             stream = get_stream(stream_name, realm)
@@ -2541,9 +2542,11 @@ class UserSignUpTest(ZulipTestCase):
         default_streams = []
 
         existing_default_streams = DefaultStream.objects.filter(realm=realm)
-        self.assert_length(existing_default_streams, 1)
-        self.assertEqual(existing_default_streams[0].stream.name, "Verona")
-        default_streams.append(existing_default_streams[0].stream)
+        self.assert_length(existing_default_streams, 3)
+        expected_default_streams = ["Zulip", "Zulip playground", "Verona"]
+        for i, expected_default_stream in enumerate(expected_default_streams):
+            self.assertEqual(existing_default_streams[i].stream.name, expected_default_stream)
+            default_streams.append(existing_default_streams[i].stream)
 
         for stream_name in ["venice", "rome"]:
             stream = get_stream(stream_name, realm)

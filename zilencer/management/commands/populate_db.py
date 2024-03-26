@@ -620,6 +620,8 @@ class Command(BaseCommand):
 
             # Create public streams.
             signups_stream = Realm.INITIAL_PRIVATE_STREAM_NAME
+            zulip_discussion_stream = Realm.ZULIP_DISCUSSION_STREAM_NAME
+            zulip_playground_stream = Realm.ZULIP_PLAYGROUND_STREAM_NAME
 
             stream_list = [
                 "Verona",
@@ -628,6 +630,8 @@ class Command(BaseCommand):
                 "Venice",
                 "Rome",
                 signups_stream,
+                zulip_discussion_stream,
+                zulip_playground_stream,
             ]
             stream_dict: Dict[str, Dict[str, Any]] = {
                 "Denmark": {"description": "A Scandinavian country"},
@@ -657,12 +661,20 @@ class Command(BaseCommand):
                 subscriptions_map = {
                     "AARON@zulip.com": ["Verona"],
                     "cordelia@zulip.com": ["Verona"],
-                    "hamlet@zulip.com": ["Verona", "Denmark", signups_stream],
+                    "hamlet@zulip.com": [
+                        "Verona",
+                        "Denmark",
+                        signups_stream,
+                        zulip_discussion_stream,
+                        zulip_playground_stream,
+                    ],
                     "iago@zulip.com": [
                         "Verona",
                         "Denmark",
                         "Scotland",
                         signups_stream,
+                        zulip_discussion_stream,
+                        zulip_playground_stream,
                     ],
                     "othello@zulip.com": ["Verona", "Denmark", "Scotland"],
                     "prospero@zulip.com": ["Verona", "Denmark", "Scotland", "Venice"],
@@ -673,6 +685,8 @@ class Command(BaseCommand):
                         "Denmark",
                         "Venice",
                         signups_stream,
+                        zulip_discussion_stream,
+                        zulip_playground_stream,
                     ],
                     "shiva@zulip.com": ["Verona", "Denmark", "Scotland"],
                 }
