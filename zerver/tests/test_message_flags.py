@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, Any, List, Set
+from typing import TYPE_CHECKING, Any, List, Optional, Set
 from unittest import mock
 
 import orjson
@@ -26,6 +26,7 @@ from zerver.lib.message_cache import MessageDict
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import get_subscription, timeout_mock
 from zerver.lib.timeout import TimeoutExpiredError
+from zerver.lib.user_message import DEFAULT_HISTORICAL_FLAGS, create_historical_user_messages
 from zerver.models import (
     Message,
     Recipient,
@@ -232,6 +233,102 @@ class UnreadCountTests(ZulipTestCase):
                 check_flags(msg["flags"], {"read"})
             elif msg["id"] == self.unread_msg_ids[1]:
                 check_flags(msg["flags"], set())
+
+    def test_update_flags_race(self) -> None:
+        user = self.example_user("hamlet")
+        self.login_user(user)
+        self.unsubscribe(user, "Verona")
+
+        first_message_id = self.send_stream_message(
+            self.example_user("cordelia"),
+            "Verona",
+            topic_name="testing",
+        )
+        self.assertFalse(
+            UserMessage.objects.filter(
+                user_profile_id=user.id, message_id=first_message_id
+            ).exists()
+        )
+        # When adjusting flags of messages that we did not receive, we
+        # create UserMessage rows.
+        with mock.patch(
+            "zerver.actions.message_flags.create_historical_user_messages",
+            wraps=create_historical_user_messages,
+        ) as mock_backfill:
+            result = self.client_post(
+                "/json/messages/flags",
+                {
+                    "messages": orjson.dumps([first_message_id]).decode(),
+                    "op": "add",
+                    "flag": "starred",
+                },
+            )
+            self.assert_json_success(result)
+
+            mock_backfill.assert_called_once_with(
+                user_id=user.id,
+                message_ids=[first_message_id],
+                flagattr=UserMessage.flags.starred,
+                flag_target=UserMessage.flags.starred,
+            )
+            um_row = UserMessage.objects.get(user_profile_id=user.id, message_id=first_message_id)
+            self.assertEqual(
+                int(um_row.flags),
+                UserMessage.flags.historical | UserMessage.flags.read | UserMessage.flags.starred,
+            )
+
+        # That creation may race with other things which also create
+        # the UserMessage rows (e.g. reactions); ensure the end result
+        # is correct still.
+        def race_creation(
+            *,
+            user_id: int,
+            message_ids: List[int],
+            flagattr: Optional[int] = None,
+            flag_target: Optional[int] = None,
+        ) -> None:
+            UserMessage.objects.create(
+                user_profile_id=user_id, message_id=message_ids[0], flags=DEFAULT_HISTORICAL_FLAGS
+            )
+            create_historical_user_messages(
+                user_id=user_id, message_ids=message_ids, flagattr=flagattr, flag_target=flag_target
+            )
+
+        second_message_id = self.send_stream_message(
+            self.example_user("cordelia"),
+            "Verona",
+            topic_name="testing",
+        )
+        self.assertFalse(
+            UserMessage.objects.filter(
+                user_profile_id=user.id, message_id=second_message_id
+            ).exists()
+        )
+        with mock.patch(
+            "zerver.actions.message_flags.create_historical_user_messages", wraps=race_creation
+        ) as mock_backfill:
+            result = self.client_post(
+                "/json/messages/flags",
+                {
+                    "messages": orjson.dumps([second_message_id]).decode(),
+                    "op": "add",
+                    "flag": "starred",
+                },
+            )
+            self.assert_json_success(result)
+
+            mock_backfill.assert_called_once_with(
+                user_id=user.id,
+                message_ids=[second_message_id],
+                flagattr=UserMessage.flags.starred,
+                flag_target=UserMessage.flags.starred,
+            )
+
+            um_row = UserMessage.objects.get(user_profile_id=user.id, message_id=second_message_id)
+            self.assertEqual(
+                int(um_row.flags),
+                UserMessage.flags.historical | UserMessage.flags.read | UserMessage.flags.starred,
+            )
 
     def test_update_flags_for_narrow(self) -> None:
         user = self.example_user("hamlet")
