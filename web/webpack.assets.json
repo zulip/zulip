@@ -21,7 +21,6 @@
     ],
     "billing_auth": [
         "./src/bundles/portico",
-        "./src/portico/tippyjs",
         "./src/billing/helpers",
         "jquery-validation",
         "./src/billing/remote_billing_auth",
@@ -30,7 +29,6 @@
     ],
     "upgrade": [
         "./src/bundles/portico",
-        "./src/portico/tippyjs",
         "./src/billing/helpers",
         "./src/billing/upgrade",
         "jquery-validation",
@@ -120,8 +118,7 @@
     "stats": [
         "./src/bundles/portico",
         "./styles/portico/stats.css",
-        "./src/stats/stats",
-        "tippy.js/dist/tippy.css"
+        "./src/stats/stats"
     ],
     "app": ["./src/bundles/app"],
     "digest": ["./src/bundles/portico"]
