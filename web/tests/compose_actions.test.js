@@ -124,6 +124,10 @@ test("start", ({override, override_rewire, mock_template}) => {
 
     let compose_defaults;
     override(narrow_state, "set_compose_defaults", () => compose_defaults);
+    override(compose_ui, "insert_and_scroll_into_view", (content, $textarea, replace_all) => {
+        $textarea.val(content);
+        assert.ok(replace_all);
+    });
 
     // Start stream message
     compose_defaults = {
