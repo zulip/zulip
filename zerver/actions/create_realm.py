@@ -167,6 +167,8 @@ def do_create_realm(
     enable_read_receipts: Optional[bool] = None,
     enable_spectator_access: Optional[bool] = None,
     prereg_realm: Optional[PreregistrationRealm] = None,
+    how_realm_creator_found_zulip: Optional[str] = None,
+    how_realm_creator_found_zulip_extra_context: Optional[str] = None,
 ) -> Realm:
     if string_id in [settings.SOCIAL_AUTH_SUBDOMAIN, settings.SELF_HOSTING_MANAGEMENT_SUBDOMAIN]:
         raise AssertionError(
@@ -243,6 +245,10 @@ def do_create_realm(
             realm=realm,
             event_type=RealmAuditLog.REALM_CREATED,
             event_time=realm.date_created,
+            extra_data={
+                "how_realm_creator_found_zulip": how_realm_creator_found_zulip,
+                "how_realm_creator_found_zulip_extra_context": how_realm_creator_found_zulip_extra_context,
+            },
         )
 
         realm_default_email_address_visibility = RealmUserDefault.EMAIL_ADDRESS_VISIBILITY_EVERYONE
