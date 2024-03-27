@@ -152,6 +152,7 @@ ALL_ZULIP_TABLES = {
     "zerver_realmplayground",
     "zerver_realmreactivationstatus",
     "zerver_realmuserdefault",
+    "zerver_realmsession",
     "zerver_recipient",
     "zerver_scheduledemail",
     "zerver_scheduledemail_users",
@@ -243,6 +244,8 @@ NON_EXPORTED_TABLES = {
     "zerver_submessage",
     # Drafts don't need to be exported as they are supposed to be more ephemeral.
     "zerver_draft",
+    # sessions are treated as secrets, so shouldn't be exported
+    "zerver_realmsession",
     # For any tables listed below here, it's a bug that they are not present in the export.
 }
 
