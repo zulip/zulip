@@ -52,6 +52,7 @@ from zerver.models import Realm, RealmUserDefault, Stream, UserProfile
 default_stream_fields = [
     ("can_remove_subscribers_group", int),
     ("date_created", int),
+    ("creator_id", OptionalType(int)),
     ("description", str),
     ("first_message_id", OptionalType(int)),
     ("history_public_to_subscribers", bool),

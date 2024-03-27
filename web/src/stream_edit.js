@@ -232,6 +232,7 @@ export function show_settings_for(node) {
     stream_data.clean_up_description(slim_sub);
     const sub = stream_settings_data.get_sub_for_settings(slim_sub);
     const all_settings = stream_settings(sub);
+    const creator_details = stream_data.maybe_get_creator_details(sub.creator_id);
 
     const other_settings = [];
     const notification_settings = all_settings.filter((setting) => {
@@ -244,6 +245,7 @@ export function show_settings_for(node) {
 
     const html = render_stream_settings({
         sub,
+        creator_details,
         notification_settings,
         other_settings,
         stream_post_policy_values: settings_config.stream_post_policy_values,

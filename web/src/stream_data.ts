@@ -189,6 +189,32 @@ export function get_sub_by_id(stream_id: number): StreamSubscription | undefined
     return stream_info.get(stream_id);
 }
 
+export function maybe_get_creator_details(creator_id: number | null):
+    | {
+          name: string;
+          user_id: number;
+          is_current_user: boolean;
+          avatar_url: string;
+      }
+    | undefined {
+    if (creator_id === null) {
+        return undefined;
+    }
+
+    try {
+        const creator = people.get_by_user_id(creator_id);
+        return {
+            name: creator.full_name,
+            user_id: creator.user_id,
+            is_current_user: creator.user_id === current_user.user_id,
+            avatar_url: people.small_avatar_url_for_person(creator),
+        };
+    } catch (error) {
+        blueslip.debug("Error while getting stream creator", error);
+        return undefined;
+    }
+}
+
 export function get_stream_id(name: string): number | undefined {
     // Note: Only use this function for situations where
     // you are comfortable with a user dealing with an

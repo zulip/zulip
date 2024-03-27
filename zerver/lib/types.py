@@ -140,6 +140,7 @@ class RawStreamDict(TypedDict):
 
     can_remove_subscribers_group_id: int
     date_created: datetime
+    creator_id: Optional[int]
     description: str
     first_message_id: Optional[int]
     history_public_to_subscribers: bool
@@ -180,6 +181,7 @@ class SubscriptionStreamDict(TypedDict):
     can_remove_subscribers_group: int
     color: str
     date_created: int
+    creator_id: Optional[int]
     description: str
     desktop_notifications: Optional[bool]
     email_notifications: Optional[bool]
@@ -205,6 +207,7 @@ class SubscriptionStreamDict(TypedDict):
 class NeverSubscribedStreamDict(TypedDict):
     can_remove_subscribers_group: int
     date_created: int
+    creator_id: Optional[int]
     description: str
     first_message_id: Optional[int]
     history_public_to_subscribers: bool
@@ -228,6 +231,7 @@ class DefaultStreamDict(TypedDict):
 
     can_remove_subscribers_group: int
     date_created: int
+    creator_id: Optional[int]
     description: str
     first_message_id: Optional[int]
     history_public_to_subscribers: bool

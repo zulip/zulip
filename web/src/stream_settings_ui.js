@@ -221,6 +221,7 @@ export function add_sub_to_table(sub) {
 
     const settings_html = render_stream_settings({
         sub: stream_settings_data.get_sub_for_settings(sub),
+        creator_details: stream_data.maybe_get_creator_details(sub.creator_id),
     });
     scroll_util
         .get_content_element($("#streams_overlay_container .settings"))
