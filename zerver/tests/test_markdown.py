@@ -293,6 +293,15 @@ class MarkdownMiscTest(ZulipTestCase):
         mention_data = MentionData(mention_backend, content, message_sender=None)
         self.assertTrue(mention_data.message_has_topic_wildcards())
 
+        content = "@*hamletcharacters*"
+        group = NamedUserGroup.objects.get(realm=realm, name="hamletcharacters")
+        mention_data = MentionData(mention_backend, content, message_sender=None)
+        self.assertCountEqual(mention_data.get_group_members(group.id), [hamlet.id, cordelia.id])
+
+        change_user_is_active(cordelia, False)
+        mention_data = MentionData(mention_backend, content, message_sender=None)
+        self.assertEqual(mention_data.get_group_members(group.id), [hamlet.id])
+
     def test_invalid_katex_path(self) -> None:
         with self.settings(DEPLOY_ROOT="/nonexistent"):
             with self.assertLogs(level="ERROR") as m:
