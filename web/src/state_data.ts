@@ -103,6 +103,15 @@ export const realm_schema = z.object({
         USER: z.object({id: z.number(), name: z.string()}),
         PRONOUNS: z.object({id: z.number(), name: z.string()}),
     }),
+    giphy_api_key: z.string(),
+    giphy_rating_options: z.object({
+        pg: z.object({id: z.number(), name: z.string()}),
+        g: z.object({id: z.number(), name: z.string()}),
+        y: z.object({id: z.number(), name: z.string()}),
+        "pg-13": z.object({id: z.number(), name: z.string()}),
+        r: z.object({id: z.number(), name: z.string()}),
+        disabled: z.object({id: z.number(), name: z.string()}),
+    }),
     max_avatar_file_size_mib: z.number(),
     max_icon_file_size_mib: z.number(),
     max_logo_file_size_mib: z.number(),
@@ -146,6 +155,7 @@ export const realm_schema = z.object({
     realm_emails_restricted_to_domains: z.boolean(),
     realm_enable_guest_user_indicator: z.boolean(),
     realm_enable_spectator_access: z.boolean(),
+    realm_giphy_rating: z.number(),
     realm_icon_source: z.string(),
     realm_icon_url: z.string(),
     realm_incoming_webhook_bots: z.array(
