@@ -231,9 +231,10 @@ function remove_subscriber({stream_id, target_user_id, $list_entry}) {
         }
 
         if (data.removed.length > 0) {
+            const user_name = people.get_full_name(target_user_id);
             // Remove the user from the subscriber list.
             $list_entry.remove();
-            message = $t({defaultMessage: "Unsubscribed successfully!"});
+            message = $t({defaultMessage: "Unsubscribed {user_name} successfully!"}, {user_name});
             // The rest of the work is done via the subscription -> remove event we will get
         } else {
             message = $t({defaultMessage: "User is already not subscribed."});
