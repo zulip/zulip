@@ -256,6 +256,27 @@ export function start(msg_type, opts) {
         opts.private_message_recipient.replaceAll(/,\s*/g, ", "),
     );
 
+    // If we're not explicitly opening a different draft, restore the last
+    // saved draft (if it exists).
+    if (
+        compose_state.can_restore_drafts() &&
+        !opts.content &&
+        opts.draft_id === undefined &&
+        compose_state.message_content().length === 0 &&
+        !opts.keep_composebox_empty
+    ) {
+        const possible_last_draft = drafts.get_last_draft_based_on_compose_state();
+        if (possible_last_draft !== undefined) {
+            opts.draft_id = possible_last_draft.id;
+            // Add a space at the end so that if the user starts typing
+            // as soon as the composebox opens, they have a bit of separation
+            // from the restored draft. This won't result in a long trail of
+            // spaces if a draft is restored several times, because we trim
+            // whitespace whenever we save drafts.
+            opts.content = possible_last_draft.content + " ";
+        }
+    }
+
     // If the user opens the compose box, types some text, and then clicks on a
     // different stream/topic, we want to keep the text in the compose box
     if (opts.content !== undefined) {

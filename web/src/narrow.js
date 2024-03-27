@@ -359,6 +359,9 @@ export function activate(raw_terms, opts) {
         // recursively.
         reset_ui_state();
 
+        // We sometimes prevent draft restoring until the narrow resets.
+        compose_state.allow_draft_restoring();
+
         if (coming_from_recent_view) {
             recent_view_ui.hide();
         } else if (coming_from_inbox) {

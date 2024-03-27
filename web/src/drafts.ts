@@ -35,6 +35,7 @@ const draft_schema = z.intersection(
     z.object({
         content: z.string(),
         updatedAt: z.number(),
+        is_sending_saving: z.boolean().default(false),
     }),
     z.discriminatedUnion("type", [
         z.object({
@@ -60,6 +61,7 @@ const possibly_buggy_draft_schema = z.intersection(
     z.object({
         content: z.string(),
         updatedAt: z.number(),
+        is_sending_saving: z.boolean().default(false),
     }),
     z.discriminatedUnion("type", [
         z.object({
@@ -281,7 +283,10 @@ export function rename_stream_recipient(
 }
 
 export function snapshot_message(): LocalStorageDraft | undefined {
-    if (!compose_state.composing() || compose_state.message_content().length <= 2) {
+    if (
+        !compose_state.composing() ||
+        compose_state.message_content().length <= compose_state.MINIMUM_MESSAGE_LENGTH_TO_SAVE_DRAFT
+    ) {
         // If you aren't in the middle of composing the body of a
         // message or the message is shorter than 2 characters long, don't try to snapshot.
         return undefined;
@@ -300,6 +305,7 @@ export function snapshot_message(): LocalStorageDraft | undefined {
             type: "private",
             reply_to: recipient,
             private_message_recipient: recipient,
+            is_sending_saving: false,
         };
     }
     assert(message.type === "stream");
@@ -308,6 +314,7 @@ export function snapshot_message(): LocalStorageDraft | undefined {
         type: "stream",
         stream_id: compose_state.stream_id(),
         topic: compose_state.topic(),
+        is_sending_saving: false,
     };
 }
 
@@ -372,22 +379,31 @@ function maybe_notify(no_notify: boolean): void {
 type UpdateDraftOptions = {
     no_notify?: boolean;
     update_count?: boolean;
+    is_sending_saving?: boolean;
 };
 
 export function update_draft(opts: UpdateDraftOptions = {}): string | undefined {
+    const draft_id = $("textarea#compose-textarea").data("draft-id");
+    const old_draft = draft_model.getDraft(draft_id);
+
     const no_notify = opts.no_notify ?? false;
     const draft = snapshot_message();
 
     if (draft === undefined) {
         // The user cleared the compose box, which means
-        // there is nothing to save here.  Don't obliterate
-        // the existing draft yet--the user may have mistakenly
-        // hit delete after select-all or something.
-        // Just do nothing.
+        // there is nothing to save here but delete the
+        // draft if exists.
+        if (draft_id) {
+            draft_model.deleteDraft(draft_id);
+        }
         return undefined;
     }
 
-    const draft_id = $("textarea#compose-textarea").data("draft-id");
+    if (opts.is_sending_saving !== undefined) {
+        draft.is_sending_saving = opts.is_sending_saving;
+    } else {
+        draft.is_sending_saving = old_draft ? old_draft.is_sending_saving : false;
+    }
 
     if (draft_id !== undefined) {
         // We don't save multiple drafts of the same message;
@@ -491,6 +507,21 @@ export function filter_drafts_by_compose_box_and_recipient(
         }
     }
     return _.pick(drafts, narrow_drafts_ids);
+}
+
+export function get_last_draft_based_on_compose_state(): LocalStorageDraftWithId | undefined {
+    const current_drafts = draft_model.get();
+    const drafts_map_for_compose_state = filter_drafts_by_compose_box_and_recipient(current_drafts);
+    const drafts_for_compose_state = Object.entries(drafts_map_for_compose_state).map(
+        ([draft_id, draft]) => ({
+            ...draft,
+            id: draft_id,
+        }),
+    );
+    return drafts_for_compose_state
+        .sort((draft_a, draft_b) => draft_a.updatedAt - draft_b.updatedAt)
+        .filter((draft) => !draft.is_sending_saving)
+        .pop();
 }
 
 export function remove_old_drafts(): void {
