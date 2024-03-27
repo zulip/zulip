@@ -1,6 +1,12 @@
 class zulip::postgresql_client {
-  include zulip::postgresql_common
-  package { "postgresql-client-${zulip::postgresql_common::version}":
-    ensure => installed,
+  $version = zulipconf('postgresql', 'version', undef)
+  if $version != undef {
+    package { "postgresql-client-${version}":
+      ensure => installed,
+    }
+  } else {
+    package { 'postgresql-client':
+      ensure => installed,
+    }
   }
 }
