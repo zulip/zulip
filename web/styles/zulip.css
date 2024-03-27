@@ -2453,10 +2453,6 @@ select.invite-as {
             }
         }
     }
-
-    #userlist-toggle-button {
-        box-shadow: none;
-    }
 }
 
 .hide-right-sidebar {

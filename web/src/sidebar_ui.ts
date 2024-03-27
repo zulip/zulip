@@ -19,14 +19,11 @@ export let right_sidebar_expanded_as_overlay = false;
 
 export function hide_userlist_sidebar(): void {
     $(".app-main .column-right").removeClass("expanded");
-    $("body").removeClass("right-sidebar-expanded");
     right_sidebar_expanded_as_overlay = false;
 }
 
 export function show_userlist_sidebar(): void {
-    // TODO: Refactor to only use class added to body.
     $(".app-main .column-right").addClass("expanded");
-    $("body").addClass("right-sidebar-expanded");
     resize.resize_page_components();
     right_sidebar_expanded_as_overlay = true;
 }
