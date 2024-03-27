@@ -280,7 +280,7 @@ input::placeholder {
                 z-index: 2;
             }
 
-            &.disabled {
+            &>.disabled {
                 pointer-events: none;
                 color: hsl(0deg 0% 80%);
                 border-color: hsl(0deg 0% 87%);

@@ -41,9 +41,12 @@ export function toggle(opts: {
     for (const [i, value] of opts.values.entries()) {
         // create a tab with a tab-id so they don't have to be referenced
         // by text value which can be inconsistent.
-        const $tab = $("<div>")
+        const $tab_parent = $("<div>")
             .addClass("ind-tab")
             .attr({"data-tab-key": value.key, "data-tab-id": i, tabindex: 0});
+
+        const $tab = $("<div>");
+        $tab_parent.append($tab);
 
         /* istanbul ignore if */
         if (value.label_html !== undefined) {
@@ -56,13 +59,13 @@ export function toggle(opts: {
         // add proper classes for styling in CSS.
         if (i === 0) {
             // this should be default selected unless otherwise specified.
-            $tab.addClass("first selected");
+            $tab_parent.addClass("first selected");
         } else if (i === opts.values.length - 1) {
-            $tab.addClass("last");
+            $tab_parent.addClass("last");
         } else {
-            $tab.addClass("middle");
+            $tab_parent.addClass("middle");
         }
-        $component.append($tab);
+        $component.append($tab_parent);
     }
 
     const meta = {
@@ -73,7 +76,7 @@ export function toggle(opts: {
     // Returns false if the requested tab is disabled.
     function select_tab(idx: number): boolean {
         const $elem = meta.$ind_tab.eq(idx);
-        if ($elem.hasClass("disabled")) {
+        if ($elem.hasClass("disabled-tab")) {
             return false;
         }
         meta.$ind_tab.removeClass("selected");
@@ -146,7 +149,8 @@ export function toggle(opts: {
             }
 
             const idx = opts.values.indexOf(value);
-            meta.$ind_tab.eq(idx).addClass("disabled");
+            meta.$ind_tab.eq(idx).children().first().addClass("disabled");
+            meta.$ind_tab.eq(idx).addClass("disabled-tab");
         },
 
         enable_tab(name: string) {
@@ -157,7 +161,8 @@ export function toggle(opts: {
             }
 
             const idx = opts.values.indexOf(value);
-            meta.$ind_tab.eq(idx).removeClass("disabled");
+            meta.$ind_tab.eq(idx).children().first().removeClass("disabled");
+            meta.$ind_tab.eq(idx).removeClass("disabled-tab");
         },
 
         value() {
