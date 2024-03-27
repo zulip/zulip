@@ -158,6 +158,22 @@
     {{t "Message actions" }}
     {{tooltip_hotkey_hints "I"}}
 </template>
+<template id="cancel-button-tooltip-template">
+    <div>
+        <div>{{t "Cancel" }}</div>
+        <div class="italic tooltip-inner-content">
+            {{t "This message will remain saved in your drafts until it is successfully sent." }}
+        </div>
+    </div>
+</template>
+<template id="slow-send-spinner-tooltip-template">
+    <div>
+        <div>{{t "Your message is taking longer than expected to be sent. Sending…" }}</div>
+        <div class="italic">
+            {{t "This message will remain saved in your drafts until it is successfully sent." }}
+        </div>
+    </div>
+</template>
 <template id="star-message-tooltip-template">
     <div class="starred-status">{{t "Star this message" }}</div>
     {{tooltip_hotkey_hints "Ctrl" "S"}}
