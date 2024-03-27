@@ -590,6 +590,12 @@ export const notification_settings_labels = {
     automatically_follow_topics_where_mentioned: $t({
         defaultMessage: "Automatically follow topics where I'm mentioned",
     }),
+    enable_dm_reaction_notifications: $t({
+        defaultMessage: "Notify me about reactions to my DMs",
+    }),
+    streams_reaction_notification: $t({
+        defaultMessage: "Notify me about reactions to my stream messages",
+    }),
 };
 
 export const realm_user_settings_defaults_labels = {
@@ -761,6 +767,8 @@ const other_notification_settings = [
     "automatically_follow_topics_policy",
     "automatically_unmute_topics_in_muted_streams_policy",
     "automatically_follow_topics_where_mentioned",
+    "enable_dm_reaction_notifications",
+    "streams_reaction_notification",
 ];
 
 export const all_notification_settings = [
@@ -967,6 +975,25 @@ export const automatically_follow_or_unmute_topics_policy_values = {
     never: {
         code: 4,
         description: $t({defaultMessage: "Never"}),
+    },
+};
+
+export const streams_reaction_notification_values = {
+    never: {
+        code: 1,
+        description: $t({defaultMessage: "Never"}),
+    },
+    followed_topics: {
+        code: 2,
+        description: $t({defaultMessage: "In topics I follow"}),
+    },
+    unmuted_topics: {
+        code: 3,
+        description: $t({defaultMessage: "In unmuted topics"}),
+    },
+    always: {
+        code: 4,
+        description: $t({defaultMessage: "Always"}),
     },
 };
 
