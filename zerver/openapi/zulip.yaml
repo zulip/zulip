@@ -5843,7 +5843,7 @@ paths:
                       items:
                         type: integer
                       minLength: 1
-                  example: 8
+                  example: 14
                 content:
                   description: |
                     The updated content of the scheduled message.
@@ -5986,7 +5986,7 @@ paths:
                   description: |
                     The ID of the target stream.
                   type: integer
-                  example: 7
+                  example: 13
               required:
                 - stream_id
             encoding:
@@ -6037,7 +6037,7 @@ paths:
                   description: |
                     The ID of the target stream.
                   type: integer
-                  example: 7
+                  example: 13
               required:
                 - stream_id
             encoding:

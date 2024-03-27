@@ -14,7 +14,7 @@ from zerver.actions.message_send import (
 )
 from zerver.actions.reactions import do_add_reaction
 from zerver.lib.emoji import get_emoji_data
-from zerver.lib.message import SendMessageRequest
+from zerver.lib.message import SendMessageRequest, remove_single_newlines
 from zerver.models import Message, Realm, UserProfile
 from zerver.models.users import get_system_bot
 
@@ -282,51 +282,124 @@ def send_initial_realm_messages(realm: Realm) -> None:
             initial_private_stream_name=Realm.INITIAL_PRIVATE_STREAM_NAME,
         )
 
-        content1_of_topic_demonstration_topic_name = (
-            _(
-                "This is a message on stream #**{default_notification_stream_name}** with the "
-                "topic `topic demonstration`."
-            )
-        ).format(default_notification_stream_name=Realm.DEFAULT_NOTIFICATION_STREAM_NAME)
+        content1_of_moving_messages_topic_name = remove_single_newlines(
+            (
+                _("""
+If anything is out of place, it’s easy to [move messages]({move_content_another_topic_help_url}),
+[rename]({rename_topic_help_url}) and [split]({move_content_another_topic_help_url}) topics,
+or even move a topic [to a different stream]({move_content_another_stream_help_url}).
 
-        content2_of_topic_demonstration_topic_name = (
-            _("Topics are a lightweight tool to keep conversations organized.")
-            + " "
-            + _("You can learn more about topics at [Streams and topics]({about_topics_help_url}).")
-        ).format(about_topics_help_url="/help/streams-and-topics")
-
-        content_of_swimming_turtles_topic_name = (
-            _(
-                "This is a message on stream #**{default_notification_stream_name}** with the "
-                "topic `swimming turtles`."
+[](/static/images/cute/turtle.png)
+""")
+            ).format(
+                move_content_another_topic_help_url="/help/move-content-to-another-topic",
+                rename_topic_help_url="/help/rename-a-topic",
+                move_content_another_stream_help_url="/help/move-content-to-another-stream",
             )
-            + "\n"
-            "\n"
-            "[](/static/images/cute/turtle.png)"
-            "\n"
-            "\n"
-            + _(
-                "[Start a new topic]({start_topic_help_url}) any time you're not replying to a \
-            previous message."
-            )
-        ).format(
-            default_notification_stream_name=Realm.DEFAULT_NOTIFICATION_STREAM_NAME,
-            start_topic_help_url="/help/starting-a-new-topic",
         )
 
-        content_of_zulip_update_announcements_topic_name = (
+        content2_of_moving_messages_topic_name = _(
+            ":point_right: Try moving this message to another topic and back!"
+        )
+
+        content1_of_welcome_to_zulip_topic_name = _(
+            "Zulip is organized to help you communicate more efficiently."
+        )
+
+        content2_of_welcome_to_zulip_topic_name = remove_single_newlines(
+            (
+                _("""
+In Zulip, **streams** determine who gets a message, like channels in other apps.
+
+Each conversation in a stream is labeled with a **topic**.  This message is in
+the #**{zulip_discussion_stream_name}** stream, in the "welcome to Zulip!" topic, as you can
+see in the left sidebar and above:
+
+[](/static/images/cute/turtle.png)
+[](/static/images/features/whale.png)
+""")
+            ).format(
+                zulip_discussion_stream_name=Realm.ZULIP_DISCUSSION_STREAM_NAME,
+            )
+        )
+
+        content3_of_welcome_to_zulip_topic_name = remove_single_newlines(
             _("""
-Welcome! To help you learn about new features and configuration options, \
+You can read Zulip one conversation at a time, seeing each message in context,
+no matter how many other conversations are going on.
+""")
+        )
+
+        content4_of_welcome_to_zulip_topic_name = remove_single_newlines(
+            _("""
+:point_right: When you're ready, check out your [Inbox](/#inbox) for other
+conversations with unread messages. You can come back to this conversation
+if you need to from your **Starred** messages.
+""")
+        )
+
+        content1_of_start_conversation_topic_name = remove_single_newlines(
+            _("""
+To kick off a new conversation, click **Start new conversation** below.
+The new conversation thread won’t interrupt ongoing discussions.
+
+[](/static/images/cute/turtle.png)
+""")
+        )
+
+        content2_of_start_conversation_topic_name = _(
+            "For a good topic name, think about finishing the sentence: “Hey, can we chat about…?”"
+        )
+
+        content3_of_start_conversation_topic_name = _(
+            ":point_right: Try starting a new conversation in this stream."
+        )
+
+        content1_of_experiments_topic_name = (
+            _(
+                ":point_right:  Use this topic to try out [Zulip's messaging features]({format_message_help_url})."
+            )
+        ).format(format_message_help_url="/help/format-your-message-using-markdown")
+
+        content2_of_experiments_topic_name = _("""
+```spoiler Want to see some examples?
+
+````python
+print("code blocks")
+````
+
+- bulleted
+- lists
+
+@_**Welcome Bot|689752** said:
+```quote
+Zulip is designed to help you communicate more efficiently.
+```
+```
+""")
+        content1_of_greetings_topic_name = _(
+            'This **greetings** topic is a great place to say "hi" :wave: to your teammates.'
+        )
+
+        content2_of_greetings_topic_name = _(
+            ":point_right:  Click on any message to start a reply in the same topic."
+        )
+
+        content_of_zulip_update_announcements_topic_name = remove_single_newlines(
+            (
+                _("""
+Welcome! To help you learn about new features and configuration options,
 this topic will receive messages about important changes in Zulip.
 
-You can read these update messages whenever it's convenient, or \
-[mute]({mute_topic_help_url}) this topic if you are not interested. \
-If your organization does not want to receive these announcements, \
+You can read these update messages whenever it's convenient, or
+[mute]({mute_topic_help_url}) this topic if you are not interested.
+If your organization does not want to receive these announcements,
 they can be disabled. [Learn more]({zulip_update_announcements_help_url}).
             """)
-        ).format(
-            zulip_update_announcements_help_url="/help/configure-automated-notices#zulip-update-announcements",
-            mute_topic_help_url="/help/mute-a-topic",
+            ).format(
+                zulip_update_announcements_help_url="/help/configure-automated-notices#zulip-update-announcements",
+                mute_topic_help_url="/help/mute-a-topic",
+            )
         )
 
     welcome_messages: List[Dict[str, str]] = [
@@ -337,24 +410,66 @@ they can be disabled. [Learn more]({zulip_update_announcements_help_url}).
         },
         {
             "stream": Realm.DEFAULT_NOTIFICATION_STREAM_NAME,
-            "topic_name": "topic demonstration",
-            "content": content1_of_topic_demonstration_topic_name,
-        },
-        {
-            "stream": Realm.DEFAULT_NOTIFICATION_STREAM_NAME,
-            "topic_name": "topic demonstration",
-            "content": content2_of_topic_demonstration_topic_name,
-        },
-        {
-            "stream": realm.DEFAULT_NOTIFICATION_STREAM_NAME,
-            "topic_name": "swimming turtles",
-            "content": content_of_swimming_turtles_topic_name,
-        },
-        {
-            "stream": Realm.DEFAULT_NOTIFICATION_STREAM_NAME,
             "topic_name": str(Realm.ZULIP_UPDATE_ANNOUNCEMENTS_TOPIC_NAME),
             "content": content_of_zulip_update_announcements_topic_name,
         },
+    ]
+
+    welcome_messages += [
+        {
+            "stream": Realm.ZULIP_DISCUSSION_STREAM_NAME,
+            "topic_name": "moving messages",
+            "content": content,
+        }
+        for content in [
+            content1_of_moving_messages_topic_name,
+            content2_of_moving_messages_topic_name,
+        ]
+    ]
+
+    welcome_messages += [
+        {
+            "stream": realm.ZULIP_DISCUSSION_STREAM_NAME,
+            "topic_name": "welcome to Zulip!",
+            "content": content,
+        }
+        for content in [
+            content1_of_welcome_to_zulip_topic_name,
+            content2_of_welcome_to_zulip_topic_name,
+            content3_of_welcome_to_zulip_topic_name,
+            content4_of_welcome_to_zulip_topic_name,
+        ]
+    ]
+
+    welcome_messages += [
+        {
+            "stream": realm.ZULIP_PLAYGROUND_STREAM_NAME,
+            "topic_name": "start a conversation",
+            "content": content,
+        }
+        for content in [
+            content1_of_start_conversation_topic_name,
+            content2_of_start_conversation_topic_name,
+            content3_of_start_conversation_topic_name,
+        ]
+    ]
+
+    welcome_messages += [
+        {
+            "stream": realm.ZULIP_PLAYGROUND_STREAM_NAME,
+            "topic_name": "experiments",
+            "content": content,
+        }
+        for content in [content1_of_experiments_topic_name, content2_of_experiments_topic_name]
+    ]
+
+    welcome_messages += [
+        {
+            "stream": Realm.DEFAULT_NOTIFICATION_STREAM_NAME,
+            "topic_name": "greetings",
+            "content": content,
+        }
+        for content in [content1_of_greetings_topic_name, content2_of_greetings_topic_name]
     ]
 
     messages = [
@@ -374,9 +489,12 @@ they can be disabled. [Learn more]({zulip_update_announcements_help_url}).
     # We find the one of our just-sent messages with turtle.png in it,
     # and react to it.  This is a bit hacky, but works and is kinda a
     # 1-off thing.
-    turtle_message = Message.objects.select_for_update().get(
-        id__in=message_ids, content__icontains="cute/turtle.png"
+    turtle_message = (
+        Message.objects.select_for_update()
+        .filter(id__in=message_ids, content__icontains="cute/turtle.png")
+        .first()
     )
+    assert turtle_message is not None
     emoji_data = get_emoji_data(realm.id, "turtle")
     do_add_reaction(
         welcome_bot, turtle_message, "turtle", emoji_data.emoji_code, emoji_data.reaction_type

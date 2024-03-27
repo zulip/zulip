@@ -161,7 +161,7 @@ def get_presence(client: Client) -> None:
 def add_default_stream(client: Client) -> None:
     # {code_example|start}
     # Add a stream to the set of default streams for new users.
-    stream_id = 7
+    stream_id = 13
 
     result = client.add_default_stream(stream_id)
     # {code_example|end}
@@ -173,7 +173,7 @@ def add_default_stream(client: Client) -> None:
 def remove_default_stream(client: Client) -> None:
     # {code_example|start}
     # Remove a stream from the set of default streams for new users.
-    request = {"stream_id": 7}
+    request = {"stream_id": 13}
 
     result = client.call_endpoint(
         url="/default_streams",
@@ -608,7 +608,7 @@ def get_streams(client: Client) -> None:
     # {code_example|end}
 
     validate_against_openapi_schema(result, "/streams", "get", "200")
-    assert len(result["streams"]) == 5
+    assert len(result["streams"]) == 7
 
 
 @openapi_test_function("/streams/{stream_id}:patch")
@@ -855,7 +855,7 @@ def update_subscription_settings(client: Client) -> None:
             "value": True,
         },
         {
-            "stream_id": 7,
+            "stream_id": 13,
             "property": "color",
             "value": "#f00f00",
         },
