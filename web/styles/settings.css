@@ -1536,7 +1536,7 @@ $option_title_width: 180px;
 
     .custom_user_field,
     .user-name-section {
-        .settings-profile-field-user-hint {
+        .settings-profile-user-field-hint {
             color: var(--color-text-settings-field-hint);
         }
     }
