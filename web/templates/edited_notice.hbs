@@ -1,4 +1,24 @@
+<div id="editing_notifications" class="edit_notifications">
+    {{#if is_typing}}
+        {{> editing_notifications typing=true}}
+    {{/if}}
+</div>
 {{#if modified}}
+{{#if is_typing}}
+    {{#if msg/local_edit_timestamp}}
+        <div class="message_edit_notice" data-tippy-content="{{t 'Last edited {last_edit_timestr}.'}}" style="display: none;">
+            {{t "SAVING"}}
+        </div>
+    {{else if moved}}
+        <div class="message_edit_notice" data-tippy-content="{{t 'Last moved {last_edit_timestr}.'}}" style="display: none;">
+            {{t "MOVED"}}
+        </div>
+    {{else}}
+        <div class="message_edit_notice" data-tippy-content="{{t 'Last edited {last_edit_timestr}.'}}" style="display: none;">
+            {{t "EDITED"}}
+        </div>
+    {{/if}}
+{{else}}
     {{#if msg/local_edit_timestamp}}
         <div class="message_edit_notice" data-tippy-content="{{t 'Last edited {last_edit_timestr}.'}}">
             {{t "SAVING"}}
@@ -12,4 +32,5 @@
             {{t "EDITED"}}
         </div>
     {{/if}}
+{{/if}}
 {{/if}}

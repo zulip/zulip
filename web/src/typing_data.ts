@@ -4,6 +4,7 @@ import * as util from "./util";
 // See docs/subsystems/typing-indicators.md for details on typing indicators.
 
 const typists_dict = new Map<string, number[]>();
+const edit_message_typing_ids = new Set<number>();
 const inbound_timer_dict = new Map<string, ReturnType<typeof setInterval> | undefined>();
 
 export function clear_for_testing(): void {
@@ -62,6 +63,24 @@ export function get_all_direct_message_typists(): number[] {
 export function get_topic_typists(stream_id: number, topic: string): number[] {
     const typists = typists_dict.get(get_topic_key(stream_id, topic)) ?? [];
     return muted_users.filter_muted_user_ids(typists);
+}
+
+export function add_edit_message_typing_id(message_id: number): void {
+    if (!edit_message_typing_ids.has(message_id)) {
+        edit_message_typing_ids.add(message_id);
+    }
+}
+
+export function remove_edit_message_typing_id(message_id: number): boolean {
+    if (!edit_message_typing_ids.has(message_id)) {
+        return false;
+    }
+    edit_message_typing_ids.delete(message_id);
+    return true;
+}
+
+export function is_message_editing(message_id: number): boolean {
+    return edit_message_typing_ids.has(message_id);
 }
 
 // The next functions aren't pure data, but it is easy

@@ -42,6 +42,7 @@ import {current_user, realm} from "./state_data";
 import * as stream_data from "./stream_data";
 import * as stream_topic_history from "./stream_topic_history";
 import * as timerender from "./timerender";
+import {finish_message_editing} from "./typing";
 import * as ui_report from "./ui_report";
 import * as upload from "./upload";
 import * as util from "./util";
@@ -802,6 +803,7 @@ export function end_message_row_edit($row) {
     upload.deactivate_upload({mode: "edit", row: row_id});
 
     const message = message_lists.current.get(row_id);
+    finish_message_editing(message.id);
     if (message !== undefined && currently_editing_messages.has(message.id)) {
         const scroll_by = currently_editing_messages.get(message.id).scrolled_by;
         const original_scrollTop = message_viewport.scrollTop();
@@ -1044,6 +1046,7 @@ export function save_message_row_edit($row) {
         message = echo.edit_locally(message, currently_echoing_messages.get(message_id));
 
         $row = message_lists.current.get_row(message_id);
+        finish_message_editing(message_id);
         end_message_row_edit($row);
     }
 
@@ -1051,6 +1054,7 @@ export function save_message_row_edit($row) {
         url: "/json/messages/" + message.id,
         data: request,
         success() {
+            finish_message_editing(message.id);
             if (edit_locally_echoed) {
                 delete message.local_edit_timestamp;
                 currently_echoing_messages.delete(message_id);
