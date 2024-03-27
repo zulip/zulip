@@ -48,17 +48,39 @@ export function initialize() {
             }
 
             // TODO: Figure out a good way to offer feedback if this request fails.
-            $popper.on("click", ".visibility_policy_option", (e) => {
-                $(".visibility_policy_option").removeClass("selected_visibility_policy");
-                $(e.currentTarget).addClass("selected_visibility_policy");
+            $popper.on("change", "input[name='visibility-policy-select']", (e) => {
+                const visibility_policy = Number.parseInt(
+                    $(e.currentTarget).attr("data-visibility-policy"),
+                    10,
+                );
+                const success_cb = () => {
+                    if (visibility_policy === user_topics.all_visibility_policies.MUTED) {
+                        instance.hide();
+                    }
+                };
+                const error_cb = () => {
+                    setTimeout(() => {
+                        const prev_visibility_policy = user_topics.get_topic_visibility_policy(
+                            stream_id,
+                            topic_name,
+                        );
+                        $(e.currentTarget)
+                            .parent()
+                            .find(`input[data-visibility-policy="${prev_visibility_policy}"]`)
+                            .prop("checked", true);
+                    }, 500);
+                };
 
-                const visibility_policy = $(e.currentTarget).attr("data-visibility-policy");
                 user_topics.set_user_topic_visibility_policy(
                     stream_id,
                     topic_name,
                     visibility_policy,
+                    false,
+                    false,
+                    undefined,
+                    success_cb,
+                    error_cb,
                 );
-                instance.hide();
             });
         },
         onHidden(instance) {
