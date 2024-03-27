@@ -110,10 +110,11 @@ Handlebars.registerHelper("tr", function (options) {
     return new Handlebars.SafeString(result);
 });
 
-Handlebars.registerHelper(
-    "rendered_markdown",
-    (content) => new Handlebars.SafeString(util.clean_user_content_links(content)),
-);
+Handlebars.registerHelper("rendered_markdown", (content) => {
+    content = util.make_inline_images_lightbox_previewable(content);
+    content = util.clean_user_content_links(content);
+    return new Handlebars.SafeString(content);
+});
 
 Handlebars.registerHelper("numberFormat", (number) => number.toLocaleString());
 

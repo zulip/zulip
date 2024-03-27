@@ -389,6 +389,10 @@
         }
     }
 
+    .message_inline_image.true_inline {
+        margin-bottom: unset;
+    }
+
     &.rtl .twitter-image,
     &.rtl .message_inline_image {
         margin-left: unset;

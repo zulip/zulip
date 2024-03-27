@@ -21,6 +21,8 @@ import {realm} from "./state_data";
 let drag_drop_img = null;
 let compose_upload_object;
 const upload_objects_by_message_edit_row = new Map();
+// This list is identical to the one defined in zerver/lib/markdown/__init__.py
+const IMAGE_EXTENSIONS = new Set([".bmp", ".gif", ".jpe", ".jpeg", ".jpg", ".png", ".webp"]);
 
 export function compose_upload_cancel() {
     compose_upload_object.cancelAll();
@@ -375,15 +377,18 @@ export function setup_upload(config) {
         }
         const split_url = url.split("/");
         const filename = split_url.at(-1);
-        const filename_url = "[" + filename + "](" + url + ")";
+        let syntax_to_insert = "[" + filename + "](" + url + ")";
+        if (IMAGE_EXTENSIONS.has(filename.slice(filename.lastIndexOf(".")))) {
+            syntax_to_insert = "!" + syntax_to_insert;
+        }
         const $text_area = get_item("textarea", config);
         const replacement_successful = compose_ui.replace_syntax(
             get_translated_status(file),
-            filename_url,
+            syntax_to_insert,
             $text_area,
         );
         if (!replacement_successful) {
-            compose_ui.insert_syntax_and_focus(filename_url, $text_area);
+            compose_ui.insert_syntax_and_focus(syntax_to_insert, $text_area);
         }
 
         compose_ui.autosize_textarea($text_area);
