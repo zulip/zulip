@@ -1116,6 +1116,13 @@
         box-shadow: 0 1px 4px 0 hsl(0deg 0% 100% / 66.6%);
     }
 
+    .animated-purple-button:disabled {
+        box-shadow: none;
+        opacity: 1;
+        background-color: hsl(0deg 0% 83% / 50%) !important;
+        color: hsl(0deg 0% 100%);
+    }
+
     .color_animated_button {
         background-color: hsl(211deg 29% 14%);
 
