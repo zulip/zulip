@@ -52,22 +52,32 @@ export function handle_keyboard(key: string): void {
     popover_menus.popover_items_handle_keyboard(key, $items);
 }
 
-// element is the target element to pop off of;
-// message_id is the message id containing it, which should be selected;
+// Function called with `message_id` when user-group-mention is clicked.
+// Function called with user_group object when input_pill is clicked.
+// `element` is the target element to pop off of;
+// `message_id` is the message id containing it, which should be selected;
 export function toggle_user_group_info_popover(
     element: ReferenceElement,
-    message_id: number,
+    group_or_message: number | user_groups.UserGroup,
 ): void {
     if (is_open()) {
         hide();
         return;
     }
-    const $elt = $(element);
-    const user_group_id_str = $elt.attr("data-user-group-id");
-    assert(user_group_id_str !== undefined);
 
-    const user_group_id = Number.parseInt(user_group_id_str, 10);
-    const group = user_groups.get_user_group_from_id(user_group_id);
+    let group: user_groups.UserGroup;
+    let message_id: number | undefined;
+
+    if (typeof group_or_message === "number") {
+        message_id = group_or_message;
+        const $elt = $(element);
+        const user_group_id_str = $elt.attr("data-user-group-id");
+        assert(user_group_id_str !== undefined);
+        const user_group_id = Number.parseInt(user_group_id_str, 10);
+        group = user_groups.get_user_group_from_id(user_group_id);
+    } else {
+        group = group_or_message;
+    }
 
     popover_menus.toggle_popover_menu(
         element,
@@ -100,9 +110,11 @@ export function toggle_user_group_info_popover(
                     is_guest: current_user.is_guest,
                 };
                 instance.setContent(ui_util.parse_html(render_user_group_info_popover(args)));
+                $(window).on("popstate", hide);
             },
             onHidden() {
                 hide();
+                $(window).off("popstate", hide);
             },
         },
         {
@@ -128,6 +140,17 @@ export function register_click_handlers(): void {
         } catch {
             // This user group has likely been deleted.
             blueslip.info("Unable to find user group in message" + message.sender_id);
+        }
+    });
+
+    // Show the user_group_popover when pill clicked in subscriber settings.
+    $("body").on("click", ".pill[group-id]", (e) => {
+        const $pill = $(e.target).closest(".pill");
+        const group_id_string = $pill.attr("group-id");
+        if (group_id_string !== undefined) {
+            const group_id = Number.parseInt(group_id_string, 10);
+            const group = user_groups.get_user_group_from_id(group_id);
+            toggle_user_group_info_popover($pill[0], group);
         }
     });
 }
