@@ -1206,7 +1206,7 @@ def register_queue_all_events(client: Client) -> str:
     # Register the queue and get all events
     # Mainly for verifying schema of /register.
     result = client.register()
-
+    print(result)
     validate_against_openapi_schema(result, "/register", "post", "200")
     return result["queue_id"]
 
@@ -1396,6 +1396,18 @@ def upload_custom_emoji(client: Client) -> None:
     # {code_example|end}
 
     validate_against_openapi_schema(result, "/realm/emoji/{emoji_name}", "post", "200")
+
+
+@openapi_test_function("/realm/preview_custom_welcome_message:post")
+def test_preview_custom_welcome_message(client: Client) -> None:
+    # {code_example|start}
+    # description of test
+    request = {"custom_welcome_test_message": "Custom Welcome Message Text"}
+    result = client.call_endpoint(
+        "/realm/preview_custom_welcome_message", method="POST", request=request
+    )
+    # {code_example|end}
+    validate_against_openapi_schema(result, "/realm/preview_custom_welcome_message", "post", "200")
 
 
 @openapi_test_function("/realm/emoji/{emoji_name}:delete")
@@ -1648,6 +1660,7 @@ def test_server_organizations(client: Client) -> None:
     get_realm_emoji(client)
     upload_custom_emoji(client)
     delete_custom_emoji(client)
+    test_preview_custom_welcome_message(client)
     get_realm_profile_fields(client)
     reorder_realm_profile_fields(client)
     create_realm_profile_field(client)

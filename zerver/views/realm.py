@@ -121,6 +121,11 @@ def update_realm(
         "message_retention_days", json_validator=check_string_or_int, default=None
     ),
     send_welcome_emails: Optional[bool] = REQ(json_validator=check_bool, default=None),
+    custom_welcome_message_enabled: Optional[bool] = REQ(json_validator=check_bool, default=None),
+    custom_welcome_message_text: Optional[str] = REQ(
+        str_validator=check_capped_string(Realm.MAX_REALM_CUSTOM_WELCOME_MESSAGE_LENGTH),
+        default=None,
+    ),
     digest_emails_enabled: Optional[bool] = REQ(json_validator=check_bool, default=None),
     message_content_allowed_in_email_notifications: Optional[bool] = REQ(
         json_validator=check_bool, default=None

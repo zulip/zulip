@@ -11785,6 +11785,44 @@ paths:
       responses:
         "200":
           $ref: "#/components/responses/SimpleSuccess"
+  /realm/preview_custom_welcome_message:
+    post:
+      operationId: preview-custom-welcome-message
+      summary: Preview Custom Welcome Message
+      tags: ["server_and_organizations"]
+      description: |
+        Send a preview of a custom welcome message to the organization administrators.
+        This allows administrators to visualize how the welcome message will appear when
+        received by new users upon joining the organization.
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                custom_welcome_test_message:
+                  description: |
+                    The custom welcome message text provided by administrators to be included
+                    in the welcome message sent by the Welcome Bot to new users.
+                  type: string
+                  maxLength: 1000
+                  example: "Welcome to Zulip! We're excited to have you on board."
+              required:
+                - custom_welcome_test_message
+      responses:
+        "200":
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
+                    example: {"msg": "", "result": "success"}
   /register:
     post:
       operationId: register-queue
@@ -14446,6 +14484,21 @@ paths:
 
                           Whether or not this organization is configured to send the standard Zulip
                           [welcome emails](/help/disable-welcome-emails) to new users joining the organization.
+                      realm_custom_welcome_message_enabled:
+                        type: boolean
+                        description: |
+                          Indicates whether the organization is configured to include a custom message from administrators
+                          in the welcome message sent by the Welcome Bot to new users. When enabled, administrators can provide
+                          additional information to new users beyond the standard welcome message.
+
+                          **Changes**: New in Zulip 9.0 (feature level 242).
+                      realm_custom_welcome_message_text:
+                        type: string
+                        description: |
+                          The custom welcome message text provided by administrators to be included in the welcome
+                          message sent by the Welcome Bot to new users.
+
+                          **Changes**: New in Zulip 9.0 (feature level 242).
                       realm_message_content_allowed_in_email_notifications:
                         type: boolean
                         description: |
@@ -15513,6 +15566,21 @@ paths:
                             type: boolean
                             description: |
                               Include the message's content in email notifications for new messages.
+                          # custom_welcome_message_enabled:
+                          #   type: boolean
+                          #   description: |
+                          #     Indicates whether the organization is configured to include a custom message from administrators
+                          #     in the welcome message sent by the Welcome Bot to new users. When enabled, administrators can provide
+                          #     additional information to new users beyond the standard welcome message.
+
+                          #     **Changes**: New in Zulip 9.0 (feature level 242).
+                          # custom_welcome_message_text:
+                          #   type: string
+                          #   description: |
+                          #     The custom welcome message text provided by administrators to be included in the welcome
+                          #     message sent by the Welcome Bot to new users.
+
+                          #     **Changes**: New in Zulip 9.0 (feature level 242).
                           pm_content_in_desktop_notifications:
                             type: boolean
                             description: |

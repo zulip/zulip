@@ -144,6 +144,8 @@ export const realm_schema = z.object({
     realm_edit_topic_policy: z.number(),
     realm_email_changes_disabled: z.boolean(),
     realm_emails_restricted_to_domains: z.boolean(),
+    realm_custom_welcome_message_enabled: z.boolean(),
+    realm_custom_welcome_message_text: z.string(),
     realm_enable_guest_user_indicator: z.boolean(),
     realm_enable_spectator_access: z.boolean(),
     realm_icon_source: z.string(),

@@ -188,6 +188,8 @@ class HomeTest(ZulipTestCase):
         "realm_push_notifications_enabled",
         "realm_push_notifications_enabled_end_timestamp",
         "realm_send_welcome_emails",
+        "realm_custom_welcome_message_enabled",
+        "realm_custom_welcome_message_text",
         "realm_signup_announcements_stream_id",
         "realm_upload_quota_mib",
         "realm_uri",
