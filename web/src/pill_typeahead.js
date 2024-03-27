@@ -32,13 +32,17 @@ export function set_up($input, pills, opts) {
     const include_users = opts.user;
     const exclude_bots = opts.exclude_bots;
 
-    bootstrap_typeahead.create($input, {
+    const bootstrap_typeahead_input = {
+        $element: $input,
+        type: "contenteditable",
+    };
+    bootstrap_typeahead.create(bootstrap_typeahead_input, {
         items: 5,
         fixed: true,
         dropup: true,
-        source() {
+        source(query) {
             let source = [];
-            if (include_streams(this.query)) {
+            if (include_streams(query)) {
                 // If query starts with # we expect,
                 // only stream suggestions so we simply
                 // return stream source.
@@ -61,8 +65,8 @@ export function set_up($input, pills, opts) {
             }
             return source;
         },
-        highlighter_html(item) {
-            if (include_streams(this.query)) {
+        highlighter_html(item, query) {
+            if (include_streams(query)) {
                 return typeahead_helper.render_stream(item);
             }
 
@@ -76,8 +80,8 @@ export function set_up($input, pills, opts) {
             // default cases.
             return typeahead_helper.render_person(item);
         },
-        matcher(item) {
-            let query = this.query.toLowerCase();
+        matcher(item, query) {
+            query = query.toLowerCase();
             query = query.replaceAll("\u00A0", " ");
 
             if (include_streams(query)) {
@@ -95,8 +99,7 @@ export function set_up($input, pills, opts) {
             }
             return matches;
         },
-        sorter(matches) {
-            const query = this.query;
+        sorter(matches, query) {
             if (include_streams(query)) {
                 return typeahead_helper.sort_streams(matches, query.trim().slice(1));
             }
@@ -119,8 +122,8 @@ export function set_up($input, pills, opts) {
                 max_num_items: undefined,
             });
         },
-        updater(item) {
-            if (include_streams(this.query)) {
+        updater(item, query) {
+            if (include_streams(query)) {
                 stream_pill.append_stream(item, pills);
             } else if (include_user_groups && user_groups.is_user_group(item)) {
                 user_group_pill.append_user_group(item, pills);

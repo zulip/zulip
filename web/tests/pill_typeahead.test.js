@@ -132,8 +132,8 @@ run_test("set_up", ({mock_template, override}) => {
     }
 
     let opts = {};
-    override(bootstrap_typeahead, "create", ($element, config) => {
-        assert.equal($element, $fake_input);
+    override(bootstrap_typeahead, "create", (input_element, config) => {
+        assert.equal(input_element.$element, $fake_input);
         assert.equal(config.items, 5);
         assert.ok(config.fixed);
         assert.ok(config.dropup);
@@ -160,7 +160,7 @@ run_test("set_up", ({mock_template, override}) => {
             if (opts.stream) {
                 // Test stream highlighter_html for widgets that allow stream pills.
                 assert.equal(
-                    config.highlighter_html.call(fake_stream_this, denmark),
+                    config.highlighter_html.call(fake_stream_this, denmark, fake_stream_this.query),
                     $fake_rendered_stream,
                 );
             }
@@ -168,23 +168,23 @@ run_test("set_up", ({mock_template, override}) => {
                 // If user is also allowed along with user_group
                 // then we should check that each of them rendered correctly.
                 assert.equal(
-                    config.highlighter_html.call(fake_group_this, testers),
+                    config.highlighter_html.call(fake_group_this, testers, fake_group_this.query),
                     $fake_rendered_group,
                 );
                 assert.equal(
-                    config.highlighter_html.call(fake_person_this, me),
+                    config.highlighter_html.call(fake_person_this, me, fake_person_this.query),
                     $fake_rendered_person,
                 );
             }
             if (opts.user && !opts.user_group) {
                 assert.equal(
-                    config.highlighter_html.call(fake_person_this, me),
+                    config.highlighter_html.call(fake_person_this, me, fake_person_this.query),
                     $fake_rendered_person,
                 );
             }
             if (!opts.user && opts.user_group) {
                 assert.equal(
-                    config.highlighter_html.call(fake_group_this, testers),
+                    config.highlighter_html.call(fake_group_this, testers, fake_group_this.query),
                     $fake_rendered_group,
                 );
             }
@@ -193,9 +193,9 @@ run_test("set_up", ({mock_template, override}) => {
         (function test_matcher() {
             let result;
             if (opts.stream) {
-                result = config.matcher.call(fake_stream_this, denmark);
+                result = config.matcher.call(fake_stream_this, denmark, fake_stream_this.query);
                 assert.ok(result);
-                result = config.matcher.call(fake_stream_this, sweden);
+                result = config.matcher.call(fake_stream_this, sweden, fake_stream_this.query);
                 assert.ok(!result);
             }
             if (opts.user_group && opts.user) {
@@ -204,28 +204,28 @@ run_test("set_up", ({mock_template, override}) => {
                 or group is returned. */
 
                 // group query, with correct item.
-                result = config.matcher.call(fake_group_this, testers);
+                result = config.matcher.call(fake_group_this, testers, fake_group_this.query);
                 assert.ok(result);
                 // group query, with wrong item.
-                result = config.matcher.call(fake_group_this, admins);
+                result = config.matcher.call(fake_group_this, admins, fake_group_this.query);
                 assert.ok(!result);
                 // person query with correct item.
-                result = config.matcher.call(fake_person_this, me);
+                result = config.matcher.call(fake_person_this, me, fake_person_this.query);
                 assert.ok(result);
                 // person query with wrong item.
-                result = config.matcher.call(fake_person_this, jill);
+                result = config.matcher.call(fake_person_this, jill, fake_person_this.query);
                 assert.ok(!result);
             }
             if (opts.user_group && !opts.user) {
-                result = config.matcher.call(fake_group_this, testers);
+                result = config.matcher.call(fake_group_this, testers, fake_group_this.query);
                 assert.ok(result);
-                result = config.matcher.call(fake_group_this, admins);
+                result = config.matcher.call(fake_group_this, admins, fake_group_this.query);
                 assert.ok(!result);
             }
             if (opts.user && !opts.user_group) {
-                result = config.matcher.call(fake_person_this, me);
+                result = config.matcher.call(fake_person_this, me, fake_person_this.query);
                 assert.ok(result);
-                result = config.matcher.call(fake_person_this, jill);
+                result = config.matcher.call(fake_person_this, jill, fake_person_this.query);
                 assert.ok(!result);
             }
         })();
@@ -233,17 +233,17 @@ run_test("set_up", ({mock_template, override}) => {
         (function test_sorter() {
             if (opts.stream) {
                 sort_streams_called = false;
-                config.sorter.call(fake_stream_this);
+                config.sorter.call(fake_stream_this, [], fake_stream_this.query);
                 assert.ok(sort_streams_called);
             }
             if (opts.user_group) {
                 sort_recipients_called = false;
-                config.sorter.call(fake_group_this, [testers]);
+                config.sorter.call(fake_group_this, [testers], fake_group_this.query);
                 assert.ok(sort_recipients_called);
             }
             if (opts.user) {
                 sort_recipients_called = false;
-                config.sorter.call(fake_person_this, [me]);
+                config.sorter.call(fake_person_this, [me], fake_person_this.query);
                 assert.ok(sort_recipients_called);
             }
         })();
@@ -251,7 +251,7 @@ run_test("set_up", ({mock_template, override}) => {
         (function test_source() {
             let result;
             if (opts.stream) {
-                result = config.source.call(fake_stream_this);
+                result = config.source.call(fake_stream_this, fake_stream_this.query);
                 const stream_ids = result.map((stream) => stream.stream_id);
                 const expected_stream_ids = [denmark.stream_id, sweden.stream_id];
                 assert.deepEqual(stream_ids, expected_stream_ids);
@@ -262,7 +262,7 @@ run_test("set_up", ({mock_template, override}) => {
             function is_group(item) {
                 return item.members;
             }
-            result = config.source.call(fake_person_this);
+            result = config.source.call(fake_person_this, fake_person_this.query);
             actual_result = result
                 .map((item) => {
                     if (is_group(item)) {
@@ -305,11 +305,11 @@ run_test("set_up", ({mock_template, override}) => {
                     return pills.length;
                 }
                 assert.equal(number_of_pills(), 0);
-                config.updater.call(fake_stream_this, denmark);
+                config.updater.call(fake_stream_this, denmark, fake_stream_this.query);
                 assert.equal(number_of_pills(), 1);
-                config.updater.call(fake_person_this, me);
+                config.updater.call(fake_person_this, me, fake_person_this.query);
                 assert.equal(number_of_pills(), 2);
-                config.updater.call(fake_group_this, testers);
+                config.updater.call(fake_group_this, testers, fake_group_this.query);
                 assert.equal(number_of_pills(), 3);
 
                 assert.ok(update_func_called);
