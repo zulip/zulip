@@ -67,6 +67,14 @@ releases.
 
 ## Changes in Zulip 8.0
 
+**Feature level 238**
+
+* `POST /calls/bigbluebutton/create`: Added a `voice_only` parameter
+  controlling whether the call should be voice-only, in which case we
+  keep cameras disabled for this call. The side effects are that now we
+  only support BigBlueButton 2.4 and above, and that only the call creator
+  is a moderator and all other joinees are viewers.
+
 **Feature level 237**
 
 No changes; feature level used for Zulip 8.0 release.

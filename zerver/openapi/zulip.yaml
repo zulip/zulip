@@ -18418,6 +18418,14 @@ paths:
             Title to use for the BigBlueButton meeting.
 
             A good choice is something like "{stream_name} meeting".
+        - in: query
+          name: voice_only
+          schema:
+            type: boolean
+          required: true
+          description: |
+            Whether the call should be voice-only, in which case we keep
+            cameras disabled for this call.
       responses:
         "200":
           description: Success.
