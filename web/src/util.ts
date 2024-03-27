@@ -533,3 +533,8 @@ export function format_array_as_list(
     // Return the formatted string.
     return list_formatter.format(array);
 }
+
+// Returns the remaining time in milliseconds from the start_time and duration.
+export function get_remaining_time(start_time: number, duration: number): number {
+    return Math.max(0, start_time + duration - Date.now());
+}

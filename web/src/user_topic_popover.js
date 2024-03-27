@@ -6,6 +6,7 @@ import * as popover_menus from "./popover_menus";
 import * as popover_menus_data from "./popover_menus_data";
 import {parse_html} from "./ui_util";
 import * as user_topics from "./user_topics";
+import * as util from "./util";
 
 export function initialize() {
     popover_menus.register_popover_menu(".change_visibility_policy", {
@@ -50,13 +51,30 @@ export function initialize() {
 
             // TODO: Figure out a good way to offer feedback if this request fails.
             $popper.on("change", "input[name='visibility-policy-select']", (e) => {
-                const visibility_policy = $(e.currentTarget).attr("data-visibility-policy");
+                const start_time = Date.now();
+                const visibility_policy = Number.parseInt(
+                    $(e.currentTarget).attr("data-visibility-policy"),
+                    10,
+                );
+
+                const success_cb = () => {
+                    setTimeout(
+                        () => {
+                            popover_menus.hide_current_popover_if_visible(instance);
+                        },
+                        util.get_remaining_time(start_time, 500),
+                    );
+                };
+
                 user_topics.set_user_topic_visibility_policy(
                     stream_id,
                     topic_name,
                     visibility_policy,
+                    false,
+                    false,
+                    undefined,
+                    success_cb,
                 );
-                popover_menus.hide_current_popover_if_visible(instance);
             });
         },
         onHidden(instance) {
