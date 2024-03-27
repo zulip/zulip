@@ -12,7 +12,6 @@ import * as compose_banner from "./compose_banner";
 import * as compose_closed_ui from "./compose_closed_ui";
 import * as compose_recipient from "./compose_recipient";
 import * as compose_state from "./compose_state";
-import * as condense from "./condense";
 import * as feedback_widget from "./feedback_widget";
 import {Filter} from "./filter";
 import * as hash_parser from "./hash_parser";
@@ -56,10 +55,8 @@ import * as unread_ops from "./unread_ops";
 import * as unread_ui from "./unread_ui";
 import {user_settings} from "./user_settings";
 import * as util from "./util";
-import * as widgetize from "./widgetize";
 
 const LARGER_THAN_MAX_MESSAGE_ID = 10000000000000000;
-export let has_visited_all_messages = false;
 
 export function reset_ui_state() {
     // Resets the state of various visual UI elements that are
@@ -95,7 +92,7 @@ export function activate(raw_terms, opts) {
 
        raw_terms: Narrowing/search terms; used to construct
        a Filter object that decides which messages belong in the
-       view.  Required (See the above note on how `message_lists.home` works)
+       view.
 
        All other options are encoded via the `opts` dictionary:
 
@@ -125,14 +122,14 @@ export function activate(raw_terms, opts) {
         raw_terms = [{operator: "is", operand: "home"}];
     }
     const filter = new Filter(raw_terms);
+    const filter_to_all_messages_view = filter.is_in_home();
 
-    const is_narrowed_to_all_messages_view = narrow_state.filter()?.is_in_home();
-    if (has_visited_all_messages && is_narrowed_to_all_messages_view && filter.is_in_home()) {
+    if (filter_to_all_messages_view && message_lists.current?.data.filter.is_in_home()) {
         // If we're already looking at the All messages view, exit without doing any work.
         return;
     }
 
-    if (filter.is_in_home() && message_scroll_state.actively_scrolling) {
+    if (filter_to_all_messages_view && message_scroll_state.actively_scrolling) {
         // `All messages` narrow.
         // TODO: Figure out why puppeteer test for this fails when run for narrows
         // other than `All messages`.
@@ -147,7 +144,7 @@ export function activate(raw_terms, opts) {
     }
 
     // Use to determine if user read any unread messages in non-All Messages narrow.
-    const was_narrowed_already = narrow_state.filter() !== undefined;
+    const was_narrowed_already = message_lists.current?.narrowed;
 
     // Since narrow.activate is called directly from various
     // places in our code without passing through hashchange,
@@ -156,7 +153,7 @@ export function activate(raw_terms, opts) {
         page_params.is_spectator &&
         raw_terms.length &&
         // Allow spectator to access all messages view.
-        !filter.is_in_home() &&
+        !filter_to_all_messages_view &&
         raw_terms.some(
             (raw_term) => !hash_parser.allowed_web_public_narrows.includes(raw_term.operator),
         )
@@ -367,7 +364,8 @@ export function activate(raw_terms, opts) {
             // We must instead be switching from another message view.
             // Save the scroll position in that message list, so that
             // we can restore it if/when we later navigate back to that view.
-            message_lists.save_pre_narrow_offset_for_reload();
+            // NOTE: uncomment when we start tracking multiple message lists.
+            // message_lists.save_pre_narrow_offset_for_reload();
         }
 
         // most users aren't going to send a bunch of a out-of-narrow messages
@@ -423,44 +421,36 @@ export function activate(raw_terms, opts) {
 
         const excludes_muted_topics = filter.excludes_muted_topics();
 
-        let msg_list;
-        if (filter.is_in_home()) {
-            has_visited_all_messages = true;
-            msg_list = message_lists.home;
-        } else {
-            let msg_data = new MessageListData({
+        let msg_data = new MessageListData({
+            filter,
+            excludes_muted_topics,
+        });
+
+        // Populate the message list if we can apply our filter locally (i.e.
+        // with no backend help) and we have the message we want to select.
+        // Also update id_info accordingly.
+        maybe_add_local_messages({
+            id_info,
+            msg_data,
+        });
+
+        if (!id_info.local_select_id) {
+            // If we're not actually ready to select an ID, we need to
+            // trash the `MessageListData` object that we just constructed
+            // and pass an empty one to MessageList, because the block of
+            // messages in the MessageListData built inside
+            // maybe_add_local_messages is likely not be contiguous with
+            // the block we're about to request from the server instead.
+            msg_data = new MessageListData({
                 filter,
                 excludes_muted_topics,
             });
-
-            // Populate the message list if we can apply our filter locally (i.e.
-            // with no backend help) and we have the message we want to select.
-            // Also update id_info accordingly.
-            maybe_add_local_messages({
-                id_info,
-                msg_data,
-            });
-
-            if (!id_info.local_select_id) {
-                // If we're not actually ready to select an ID, we need to
-                // trash the `MessageListData` object that we just constructed
-                // and pass an empty one to MessageList, because the block of
-                // messages in the MessageListData built inside
-                // maybe_add_local_messages is likely not be contiguous with
-                // the block we're about to request from the server instead.
-                msg_data = new MessageListData({
-                    filter,
-                    excludes_muted_topics,
-                });
-            }
-
-            msg_list = new message_list.MessageList({
-                data: msg_data,
-            });
         }
-        assert(msg_list !== undefined);
 
-        narrow_state.set_has_shown_message_list_view();
+        const msg_list = new message_list.MessageList({
+            data: msg_data,
+        });
+
         // Show the new set of messages. It is important to set message_lists.current to
         // the view right as it's being shown, because we rely on message_lists.current
         // being shown for deciding when to condense messages.
@@ -469,92 +459,61 @@ export function activate(raw_terms, opts) {
 
         message_lists.update_current_message_list(msg_list);
 
-        let select_immediately;
-        let select_opts;
-        let then_select_offset;
-        if (filter.is_in_home()) {
-            select_immediately = true;
-            select_opts = {
-                empty_ok: true,
-                force_rerender: false,
-            };
-
-            if (unread.messages_read_in_narrow) {
-                // We read some unread messages in a narrow. Instead of going back to
-                // where we were before the narrow, go to our first unread message (or
-                // the bottom of the feed, if there are no unread messages).
-                id_info.final_select_id = message_lists.current.first_unread_message_id();
-            } else {
-                // We narrowed, but only backwards in time (ie no unread were read). Try
-                // to go back to exactly where we were before narrowing.
-                // We scroll the user back to exactly the offset from the selected
-                // message that they were at the time that they narrowed.
-                // TODO: Make this correctly handle the case of resizing while narrowed.
-                then_select_offset = message_lists.current.pre_narrow_offset;
-                id_info.final_select_id = message_lists.current.selected_id();
-            }
+        if (filter_to_all_messages_view) {
             // We are navigating to the All messages view from another narrow, so we reset the
             // reading state to allow user to read messages again in All messages view if user has
             // marked some messages as unread in the last All messages session and thus prevented reading.
             message_lists.current.resume_reading();
-            // Reset the collapsed status of messages rows.
-            condense.condense_and_collapse(message_lists.current.view.$list.find(".message_row"));
-            message_edit.handle_narrow_deactivated();
-            widgetize.set_widgets_for_list();
-            message_feed_top_notices.update_top_of_narrow_notices(msg_list);
+        }
 
-            // We may need to scroll to the selected message after swapping
-            // the currently displayed center panel to All messages.
-            message_viewport.maybe_scroll_to_selected();
-        } else {
-            select_immediately = id_info.local_select_id !== undefined;
-            select_opts = {
-                empty_ok: false,
-                force_rerender: true,
-            };
+        let then_select_offset;
+        const select_immediately = id_info.local_select_id !== undefined;
+        const select_opts = {
+            empty_ok: filter_to_all_messages_view,
+            force_rerender: true,
+        };
 
-            if (id_info.target_id === id_info.final_select_id) {
-                then_select_offset = opts.then_select_offset;
+        if (id_info.target_id === id_info.final_select_id) {
+            then_select_offset = opts.then_select_offset;
+        }
+
+        {
+            let anchor;
+
+            // Either we're trying to center the narrow around a
+            // particular message ID (which could be max_int), or we're
+            // asking the server to figure out for us what the first
+            // unread message is, and center the narrow around that.
+            switch (id_info.final_select_id) {
+                case undefined:
+                    anchor = "first_unread";
+                    break;
+                case -1:
+                    // This case should never happen in this code path; it's
+                    // here in case we choose to extract this as an
+                    // independent reusable function.
+                    anchor = "oldest";
+                    break;
+                case LARGER_THAN_MAX_MESSAGE_ID:
+                    anchor = "newest";
+                    break;
+                default:
+                    anchor = id_info.final_select_id;
             }
-
-            {
-                let anchor;
-
-                // Either we're trying to center the narrow around a
-                // particular message ID (which could be max_int), or we're
-                // asking the server to figure out for us what the first
-                // unread message is, and center the narrow around that.
-                switch (id_info.final_select_id) {
-                    case undefined:
-                        anchor = "first_unread";
-                        break;
-                    case -1:
-                        // This case should never happen in this code path; it's
-                        // here in case we choose to extract this as an
-                        // independent reusable function.
-                        anchor = "oldest";
-                        break;
-                    case LARGER_THAN_MAX_MESSAGE_ID:
-                        anchor = "newest";
-                        break;
-                    default:
-                        anchor = id_info.final_select_id;
-                }
-                message_fetch.load_messages_for_narrow({
-                    anchor,
-                    cont() {
-                        if (!select_immediately) {
-                            render_message_list_with_selected_message({
-                                id_info,
-                                select_offset: then_select_offset,
-                                msg_list: message_lists.current,
-                                select_opts,
-                            });
-                        }
-                    },
-                    msg_list,
-                });
-            }
+            message_fetch.load_messages_for_narrow({
+                anchor,
+                cont() {
+                    if (!select_immediately) {
+                        render_message_list_with_selected_message({
+                            id_info,
+                            select_offset: then_select_offset,
+                            msg_list: message_lists.current,
+                            select_opts,
+                        });
+                    }
+                },
+                msg_list,
+            });
         }
         assert(select_opts !== undefined);
         assert(select_immediately !== undefined);

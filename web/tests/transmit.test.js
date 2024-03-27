@@ -80,7 +80,6 @@ run_test("transmit_message_ajax_reload_pending", () => {
         reload_initiated = true;
         assert.deepEqual(opts, {
             immediate: true,
-            save_pointer: true,
             save_compose: true,
             send_after_reload: true,
         });

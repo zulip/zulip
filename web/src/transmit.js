@@ -62,7 +62,6 @@ export function send_message(request, on_success, error) {
                     // The error might be due to the server changing
                     reload.initiate({
                         immediate: true,
-                        save_pointer: true,
                         save_compose: true,
                         send_after_reload: true,
                     });

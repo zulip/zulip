@@ -60,15 +60,8 @@ export function set_current(msg_list: MessageList | undefined): void {
 }
 
 export function update_current_message_list(msg_list: MessageList | undefined): void {
-    if (msg_list !== home) {
-        home?.view.$list.removeClass("focused-message-list");
-    }
-
-    if (current !== home) {
-        // Remove old msg list from DOM.
-        current?.view.$list.remove();
-    }
-
+    // Remove old msg list from DOM.
+    current?.view.$list.remove();
     set_current(msg_list);
     current?.view.$list.addClass("focused-message-list");
 }

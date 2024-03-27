@@ -16,7 +16,7 @@ export let narrow_title = "home";
 
 export function compute_narrow_title(filter?: Filter): string {
     if (filter === undefined) {
-        // "All messages" and "Recent conversations" views have
+        // "Inbox" and "Recent conversations" views have
         // an `undefined` filter.
         if (recent_view_util.is_visible()) {
             return $t({defaultMessage: "Recent conversations"});

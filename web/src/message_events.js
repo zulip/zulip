@@ -166,7 +166,6 @@ export function insert_new_messages(messages, sent_by_this_client) {
     message_notifications.received_messages(messages);
     stream_list.update_streams_sidebar();
     pm_list.update_private_messages();
-    recent_view_ui.process_messages(messages);
 }
 
 export function update_messages(events) {
@@ -393,6 +392,8 @@ export function update_messages(events) {
                 // messages within a narrow.
                 selection_changed_topic &&
                 current_filter &&
+                // We don't want to take user away from All messages view in this case.
+                !current_filter.is_in_home() &&
                 current_filter.has_topic(old_stream_name, orig_topic)
             ) {
                 let new_filter = current_filter;
@@ -532,7 +533,6 @@ export function update_messages(events) {
     // propagated edits to be updated (since the topic edits can have
     // changed the correct grouping of messages).
     if (any_topic_edited || any_stream_changed) {
-        message_lists.home.update_muting_and_rerender();
         // However, we don't need to rerender message_list if
         // we just changed the narrow earlier in this function.
         //
@@ -542,7 +542,7 @@ export function update_messages(events) {
         // edit.  Doing so could save significant work, since most
         // topic edits will not match the current topic narrow in
         // large organizations.
-        if (!changed_narrow && message_lists.current?.narrowed) {
+        if (!changed_narrow) {
             message_lists.current.update_muting_and_rerender();
         }
     } else {

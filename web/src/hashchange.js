@@ -12,7 +12,6 @@ import * as inbox_ui from "./inbox_ui";
 import * as inbox_util from "./inbox_util";
 import * as info_overlay from "./info_overlay";
 import * as message_fetch from "./message_fetch";
-import * as message_lists from "./message_lists";
 import * as message_viewport from "./message_viewport";
 import * as modals from "./modals";
 import * as narrow from "./narrow";
@@ -161,7 +160,6 @@ function do_hashchange_normal(from_reload) {
             if (from_reload) {
                 blueslip.debug("We are narrowing as part of a reload.");
                 if (message_fetch.initial_narrow_pointer !== undefined) {
-                    message_lists.home.pre_narrow_offset = message_fetch.initial_offset;
                     narrow_opts.then_select_id = message_fetch.initial_narrow_pointer;
                     narrow_opts.then_select_offset = message_fetch.initial_narrow_offset;
                 }

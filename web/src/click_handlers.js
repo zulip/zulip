@@ -193,7 +193,7 @@ export function initialize() {
         // user to the message's near view instead of opening the
         // compose box.
         const current_filter = narrow_state.filter();
-        if (current_filter !== undefined && !current_filter.supports_collapsing_recipients()) {
+        if (!current_filter.supports_collapsing_recipients()) {
             const message = message_store.get(id);
 
             if (message === undefined) {
