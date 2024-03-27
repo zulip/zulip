@@ -1366,8 +1366,9 @@ export function get_mention_syntax(full_name: string, user_id: number, silent: b
     }
     if (
         (is_duplicate_full_name(full_name) || full_name_matches_wildcard_mention(full_name)) &&
-        user_id
+        user_id > 0
     ) {
+        // user_id > 0 => filters out the wildcards.
         mention += `|${user_id}`;
     }
     mention += "**";
