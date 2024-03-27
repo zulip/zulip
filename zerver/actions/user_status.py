@@ -15,6 +15,7 @@ def do_update_user_status(
     emoji_name: Optional[str],
     emoji_code: Optional[str],
     reaction_type: Optional[str],
+    status_end_time: Optional[str],
 ) -> None:
     # Deprecated way for clients to access the user's `presence_enabled`
     # setting, with away != presence_enabled. Can be removed when clients
@@ -28,12 +29,13 @@ def do_update_user_status(
     realm = user_profile.realm
 
     update_user_status(
-        user_profile_id=user_profile.id,
+        user_profile=user_profile,
         status_text=status_text,
         client_id=client_id,
         emoji_name=emoji_name,
         emoji_code=emoji_code,
         reaction_type=reaction_type,
+        status_end_time=status_end_time,
     )
 
     event = dict(
@@ -51,4 +53,8 @@ def do_update_user_status(
         event["emoji_name"] = emoji_name
         event["emoji_code"] = emoji_code
         event["reaction_type"] = reaction_type
+
+    if status_end_time is not None:
+        event["status_end_time"] = status_end_time
+
     send_event(realm, event, get_user_ids_who_can_access_user(user_profile))

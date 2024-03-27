@@ -82,3 +82,4 @@ class UserStatus(AbstractEmoji):
     emoji_code = models.TextField(default="")
 
     status_text = models.CharField(max_length=255, default="")
+    status_end_time = models.TextField(default="")

@@ -86,6 +86,7 @@ import * as user_group_edit from "./user_group_edit";
 import * as user_groups from "./user_groups";
 import {user_settings} from "./user_settings";
 import * as user_status from "./user_status";
+import {set_user_status_end_time} from "./user_status";
 import * as user_topics_ui from "./user_topics_ui";
 
 export function dispatch_normal_event(event) {
@@ -927,6 +928,7 @@ export function dispatch_normal_event(event) {
                     user_status.get_status_emoji(event.user_id),
                 );
             }
+            set_user_status_end_time(event.status_end_time);
             break;
 
         case "user_topic":

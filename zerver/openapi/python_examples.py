@@ -229,6 +229,25 @@ def create_user(client: Client) -> None:
 
 
 @openapi_test_function("/users/me/status:post")
+def update_status_with_clear_time(client: Client) -> None:
+    # {code_example|start}
+    # The request contains the new status and away boolean
+    request = {
+        "status_text": "on vacation",
+        "away": False,
+        "emoji_name": "car",
+        "emoji_code": "1f697",
+        "reaction_type": "unicode_emoji",
+        "status_end_time": "1706625128",
+    }
+    result = client.call_endpoint(url="/users/me/status", method="POST", request=request)
+
+    # {code_example|end}
+
+    validate_against_openapi_schema(result, "/users/me/status", "post", "200")
+
+
+@openapi_test_function("/users/me/status:post")
 def update_status(client: Client) -> None:
     # {code_example|start}
     # The request contains the new status and away boolean
@@ -1570,6 +1589,7 @@ def test_users(client: Client, owner_client: Client) -> None:
     deactivate_user(client)
     reactivate_user(client)
     update_user(client)
+    update_status_with_clear_time(client)
     update_status(client)
     get_user_by_email(client)
     get_subscription_status(client)

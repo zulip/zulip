@@ -82,6 +82,7 @@ def update_user_status_backend(
     # that requires nontrivial work on the API documentation, since it's not clear
     # that the reactions endpoint would prefer such a change.
     emoji_type: Annotated[Optional[str], ApiParamConfig("reaction_type")] = None,
+    status_end_time: Optional[str] = None,
 ) -> HttpResponse:
     if status_text is not None:
         status_text = status_text.strip()
@@ -131,6 +132,7 @@ def update_user_status_backend(
         emoji_name=emoji_name,
         emoji_code=emoji_code,
         reaction_type=emoji_type,
+        status_end_time=status_end_time,
     )
 
     return json_success(request)

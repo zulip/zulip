@@ -20,6 +20,15 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 9.0
 
+**Feature level 245**
+
+* [`GET /events`](/api/get-events): Added `status_end_time` field
+  to `user_status` object.
+* [`POST /register`](/api/register-queue): Added `status_end_time`
+  field to `user_status` objects.
+* [`POST /users/me/status`](/api/update-status): Added support for new
+  `status_end_time` parameter.
+
 **Feature level 244**
 
 * [`POST /register`](/api/register-queue), [`GET /events`](/api/get-events),
