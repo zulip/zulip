@@ -8,6 +8,7 @@ import * as pm_conversations from "./pm_conversations";
 import * as unread from "./unread";
 import * as user_status from "./user_status";
 import type {UserStatusEmojiInfo} from "./user_status";
+import * as util from "./util";
 
 // Maximum number of conversation threads to show in default view.
 const max_conversations_to_show = 8;
@@ -55,7 +56,12 @@ export function get_conversations(): DisplayObject[] {
         const user_ids_string = conversation.user_ids_string;
         const reply_to = people.user_ids_string_to_emails_string(user_ids_string);
         assert(reply_to !== undefined);
-        const recipients_string = people.get_recipients(user_ids_string);
+        // for left side bar we want user_ids to be using .join(", ");
+        const recipients_string = util.format_array_as_list(
+            people.get_recipients(user_ids_string),
+            "narrow",
+            "conjunction",
+        );
 
         const num_unread = unread.num_unread_for_user_ids_string(user_ids_string);
         const is_group = user_ids_string.includes(",");
