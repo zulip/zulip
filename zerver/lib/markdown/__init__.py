@@ -2372,7 +2372,132 @@ class ZulipMarkdown(markdown.Markdown):
             )
 
 
+class ZulipInlineMarkdown(ZulipMarkdown):
+    @override
+    def build_parser(self) -> Self:
+        # Build the parser using selected default features from Python-Markdown.
+        # The complete list of all available processors can be found in the
+        # super().build_parser() function.
+        #
+        # Note: for any Python-Markdown updates, manually check if we want any
+        # of the new features added upstream or not; they wouldn't get
+        # included by default.
+        self.preprocessors = self.build_preprocessors()
+        self.parser = self.build_block_parser()
+        self.inlinePatterns = self.build_inlinepatterns()
+        self.treeprocessors = self.build_treeprocessors()
+        self.postprocessors = self.build_postprocessors()
+        return self
+
+    @override
+    def build_preprocessors(self) -> markdown.util.Registry[markdown.preprocessors.Preprocessor]:
+        # We disable the following preprocessors from upstream:
+        #
+        # html_block - insecure
+        # reference - references don't make sense in a chat context.
+        preprocessors = markdown.util.Registry[markdown.preprocessors.Preprocessor]()
+        return preprocessors
+
+    @override
+    def build_block_parser(self) -> BlockParser:
+        # We disable the following blockparsers from upstream:
+        #
+        # indent - replaced by ours
+        # setextheader - disabled; we only support hashheaders for headings
+        # olist - replaced by ours
+        # ulist - replaced by ours
+        # quote - replaced by ours
+        parser = BlockParser(self)
+        # We get priority 51 from our 'include' extension
+        parser.blockprocessors.register(
+            markdown.blockprocessors.ParagraphProcessor(parser), "paragraph", 50
+        )
+        return parser
+
+    @override
+    def build_inlinepatterns(self) -> markdown.util.Registry[markdown.inlinepatterns.Pattern]:
+        # We disable the following upstream inline patterns:
+        #
+        # backtick -        replaced by ours
+        # escape -          probably will re-add at some point.
+        # link -            replaced by ours
+        # image_link -      replaced by ours
+        # autolink -        replaced by ours
+        # automail -        replaced by ours
+        # linebreak -       we use nl2br and consider that good enough
+        # html -            insecure
+        # reference -       references not useful
+        # image_reference - references not useful
+        # short_reference - references not useful
+        # ---------------------------------------------------
+        # strong_em -       for these three patterns,
+        # strong2 -         we have our own versions where
+        # emphasis2 -       we disable _ for bold and emphasis
+
+        # Declare regexes for clean single line calls to .register().
+        #
+        # Custom strikethrough syntax: ~~foo~~
+        DEL_RE = r"(?<!~)(\~\~)([^~\n]+?)(\~\~)(?!~)"
+        # Custom bold syntax: **foo** but not __foo__
+        # str inside ** must start and end with a word character
+        # it need for things like "const char *x = (char *)y"
+        EMPHASIS_RE = r"(\*)(?!\s+)([^\*^\n]+)(?<!\s)\*"
+        STRONG_RE = r"(\*\*)([^\n]+?)\2"
+        STRONG_EM_RE = r"(\*\*\*)(?!\s+)([^\*^\n]+)(?<!\s)\*\*\*"
+        TEX_RE = r"\B(?<!\$)\$\$(?P<body>[^\n_$](\\\$|[^$\n])*)\$\$(?!\$)\B"
+        TIMESTAMP_RE = r"<time:(?P<time>[^>]*?)>"
+
+        # Add inline patterns.  We use a custom numbering of the
+        # rules, that preserves the order from upstream but leaves
+        # space for us to add our own.
+        reg = markdown.util.Registry[markdown.inlinepatterns.Pattern]()
+        reg.register(
+            markdown.inlinepatterns.DoubleTagPattern(STRONG_EM_RE, "strong,em"), "strong_em", 100
+        )
+        reg.register(UserMentionPattern(mention.MENTIONS_RE, self), "usermention", 95)
+        reg.register(Tex(TEX_RE, self), "tex", 90)
+        reg.register(StreamTopicPattern(get_compiled_stream_topic_link_regex(), self), "topic", 87)
+        reg.register(StreamPattern(get_compiled_stream_link_regex(), self), "stream", 85)
+        reg.register(Timestamp(TIMESTAMP_RE), "timestamp", 75)
+        reg.register(
+            UserGroupMentionPattern(mention.USER_GROUP_MENTIONS_RE, self), "usergroupmention", 65
+        )
+        reg.register(LinkInlineProcessor(markdown.inlinepatterns.LINK_RE, self), "link", 60)
+        reg.register(AutoLink(get_web_link_regex(), self), "autolink", 55)
+        # Reserve priority 45-54 for linkifiers
+        reg = self.register_linkifiers(reg)
+        reg.register(
+            markdown.inlinepatterns.HtmlInlineProcessor(markdown.inlinepatterns.ENTITY_RE, self),
+            "entity",
+            40,
+        )
+        reg.register(markdown.inlinepatterns.SimpleTagPattern(STRONG_RE, "strong"), "strong", 35)
+        reg.register(markdown.inlinepatterns.SimpleTagPattern(EMPHASIS_RE, "em"), "emphasis", 30)
+        reg.register(markdown.inlinepatterns.SimpleTagPattern(DEL_RE, "del"), "del", 25)
+        reg.register(
+            markdown.inlinepatterns.SimpleTextInlineProcessor(
+                markdown.inlinepatterns.NOT_STRONG_RE
+            ),
+            "not_strong",
+            20,
+        )
+        reg.register(Emoji(EMOJI_REGEX, self), "emoji", 15)
+        reg.register(EmoticonTranslation(EMOTICON_RE, self), "translate_emoticons", 10)
+        # We get priority 5 from 'nl2br' extension
+        reg.register(UnicodeEmoji(cast(Pattern[str], POSSIBLE_EMOJI_RE), self), "unicodeemoji", 0)
+        return reg
+
+    @override
+    def build_treeprocessors(self) -> markdown.util.Registry[markdown.treeprocessors.Treeprocessor]:
+        # Here we build all the processors from upstream, plus a few of our own.
+        treeprocessors = markdown.util.Registry[markdown.treeprocessors.Treeprocessor]()
+        # We get priority 30 from 'hilite' extension
+        treeprocessors.register(markdown.treeprocessors.InlineProcessor(self), "inline", 25)
+        return treeprocessors
+
+
 md_engines: Dict[Tuple[int, bool], ZulipMarkdown] = {}
+md_engines_inline: Dict[Tuple[int, bool], ZulipInlineMarkdown] = {}
 linkifier_data: Dict[int, List[LinkifierDict]] = {}
 
 
@@ -2383,6 +2508,19 @@ def make_md_engine(linkifiers_key: int, email_gateway: bool) -> None:
 
     linkifiers = linkifier_data[linkifiers_key]
     md_engines[md_engine_key] = ZulipMarkdown(
+        linkifiers=linkifiers,
+        linkifiers_key=linkifiers_key,
+        email_gateway=email_gateway,
+    )
+
+
+def make_md_engine_inline(linkifiers_key: int, email_gateway: bool) -> None:
+    md_engine_key = (linkifiers_key, email_gateway)
+    if md_engine_key in md_engines_inline:
+        del md_engines_inline[md_engine_key]
+
+    linkifiers = linkifier_data[linkifiers_key]
+    md_engines_inline[md_engine_key] = ZulipInlineMarkdown(
         linkifiers=linkifiers,
         linkifiers_key=linkifiers_key,
         email_gateway=email_gateway,
@@ -2527,7 +2665,10 @@ def topic_links(linkifiers_key: int, topic_name: str) -> List[Dict[str, str]]:
     return [{"url": match.url, "text": match.text} for match in applied_matches]
 
 
-def maybe_update_markdown_engines(linkifiers_key: int, email_gateway: bool) -> None:
+def maybe_update_markdown_engines(
+    linkifiers_key: int,
+    email_gateway: bool,
+) -> None:
     linkifiers = linkifiers_for_realm(linkifiers_key)
     if linkifiers_key not in linkifier_data or linkifier_data[linkifiers_key] != linkifiers:
         # Linkifier data has changed, update `linkifier_data` and any
@@ -2541,6 +2682,25 @@ def maybe_update_markdown_engines(linkifiers_key: int, email_gateway: bool) -> N
     if (linkifiers_key, email_gateway) not in md_engines:
         # Markdown engine corresponding to this key doesn't exists so create one.
         make_md_engine(linkifiers_key, email_gateway)
+
+
+def maybe_update_markdown_engines_inline(
+    linkifiers_key: int,
+    email_gateway: bool,
+) -> None:
+    linkifiers = linkifiers_for_realm(linkifiers_key)
+    if linkifiers_key not in linkifier_data or linkifier_data[linkifiers_key] != linkifiers:
+        # Linkifier data has changed, update `linkifier_data` and any
+        # of the existing Markdown engines using this set of linkifiers.
+        linkifier_data[linkifiers_key] = linkifiers
+        for email_gateway_flag in [True, False]:
+            if (linkifiers_key, email_gateway_flag) in md_engines_inline:
+                # Update only existing engines(if any), don't create new one.
+                make_md_engine_inline(linkifiers_key, email_gateway_flag)
+
+    if (linkifiers_key, email_gateway) not in md_engines_inline:
+        # Markdown engine corresponding to this key doesn't exists so create one.
+        make_md_engine_inline(linkifiers_key, email_gateway)
 
 
 # We want to log Markdown parser failures, but shouldn't log the actual input
@@ -2692,6 +2852,137 @@ def do_convert(
         _md_engine.zulip_db_data = None
 
 
+def do_convert_inline(
+    content: str,
+    realm_alert_words_automaton: Optional[ahocorasick.Automaton] = None,
+    message: Optional[Message] = None,
+    message_realm: Optional[Realm] = None,
+    sent_by_bot: bool = False,
+    translate_emoticons: bool = False,
+    url_embed_data: Optional[Dict[str, Optional[UrlEmbedData]]] = None,
+    mention_data: Optional[MentionData] = None,
+    email_gateway: bool = False,
+    no_previews: bool = False,
+) -> MessageRenderingResult:
+    """Convert Markdown to HTML, with Zulip-specific settings and hacks."""
+    # This logic is a bit convoluted, but the overall goal is to support a range of use cases:
+    # * Nothing is passed in other than content -> just run default options (e.g. for docs)
+    # * message is passed, but no realm is -> look up realm from message
+    # * message_realm is passed -> use that realm for Markdown purposes
+    if message is not None and message_realm is None:
+        message_realm = message.get_realm()
+    if message_realm is None:
+        linkifiers_key = DEFAULT_MARKDOWN_KEY
+    else:
+        linkifiers_key = message_realm.id
+
+    if message and hasattr(message, "id") and message.id:
+        logging_message_id = "id# " + str(message.id)
+    else:
+        logging_message_id = "unknown"
+
+    if (
+        message is not None
+        and message_realm is not None
+        and message_realm.is_zephyr_mirror_realm
+        and message.sending_client.name == "zephyr_mirror"
+    ):
+        # Use slightly customized Markdown processor for content
+        # delivered via zephyr_mirror
+        linkifiers_key = ZEPHYR_MIRROR_MARKDOWN_KEY
+
+    maybe_update_markdown_engines_inline(linkifiers_key, email_gateway)
+    md_engine_key = (linkifiers_key, email_gateway)
+    _md_engine_inline = md_engines_inline[md_engine_key]
+    # Reset the parser; otherwise it will get slower over time.
+    _md_engine_inline.reset()
+
+    # Filters such as UserMentionPattern need a message.
+    rendering_result: MessageRenderingResult = MessageRenderingResult(
+        rendered_content="",
+        mentions_topic_wildcard=False,
+        mentions_stream_wildcard=False,
+        mentions_user_ids=set(),
+        mentions_user_group_ids=set(),
+        alert_words=set(),
+        links_for_preview=set(),
+        user_ids_with_alert_words=set(),
+        potential_attachment_path_ids=[],
+    )
+
+    _md_engine_inline.zulip_message = message
+    _md_engine_inline.zulip_rendering_result = rendering_result
+    _md_engine_inline.zulip_realm = message_realm
+    _md_engine_inline.zulip_db_data = None  # for now
+
+    # Pre-fetch data from the DB that is used in the Markdown thread
+    if message_realm is not None:
+        # Here we fetch the data structures needed to render
+        # mentions/stream mentions from the database, but only
+        # if there is syntax in the message that might use them, since
+        # the fetches are somewhat expensive and these types of syntax
+        # are uncommon enough that it's a useful optimization.
+
+        if mention_data is None:
+            mention_backend = MentionBackend(message_realm.id)
+            message_sender = None
+            if message is not None:
+                message_sender = message.sender
+            mention_data = MentionData(mention_backend, content, message_sender)
+
+        stream_names = possible_linked_stream_names(content)
+        stream_name_info = mention_data.get_stream_name_map(stream_names)
+
+        if content_has_emoji_syntax(content):
+            active_realm_emoji = get_name_keyed_dict_for_active_realm_emoji(message_realm.id)
+        else:
+            active_realm_emoji = {}
+
+        _md_engine_inline.zulip_db_data = DbData(
+            realm_alert_words_automaton=realm_alert_words_automaton,
+            mention_data=mention_data,
+            active_realm_emoji=active_realm_emoji,
+            realm_uri=message_realm.uri,
+            sent_by_bot=sent_by_bot,
+            stream_names=stream_name_info,
+            translate_emoticons=translate_emoticons,
+        )
+
+    try:
+        # Spend at most 5 seconds rendering; this protects the backend
+        # from being overloaded by bugs (e.g. Markdown logic that is
+        # extremely inefficient in corner cases) as well as user
+        # errors (e.g. a linkifier that makes some syntax
+        # infinite-loop).
+        rendering_result.rendered_content = timeout(5, lambda: _md_engine_inline.convert(content))
+
+        # Throw an exception if the content is huge; this protects the
+        # rest of the codebase from any bugs where we end up rendering
+        # something huge.
+        MAX_MESSAGE_LENGTH = settings.MAX_MESSAGE_LENGTH
+        if len(rendering_result.rendered_content) > MAX_MESSAGE_LENGTH * 100:
+            raise MarkdownRenderingError(
+                f"Rendered content exceeds {MAX_MESSAGE_LENGTH * 100} characters (message {logging_message_id})"
+            )
+        return rendering_result
+    except Exception:
+        cleaned = privacy_clean_markdown(content)
+        markdown_logger.exception(
+            "Exception in Markdown parser; input (sanitized) was: %s\n (message %s)",
+            cleaned,
+            logging_message_id,
+        )
+
+        raise MarkdownRenderingError
+    finally:
+        # These next three lines are slightly paranoid, since
+        # we always set these right before actually using the
+        # engine, but better safe then sorry.
+        _md_engine_inline.zulip_message = None
+        _md_engine_inline.zulip_realm = None
+        _md_engine_inline.zulip_db_data = None
+
+
 markdown_time_start = 0.0
 markdown_total_time = 0.0
 markdown_total_requests = 0
@@ -2779,3 +3070,23 @@ def render_message_markdown(
     )
 
     return rendering_result
+
+
+def markdown_convert_inline(
+    content: str,
+    realm_alert_words_automaton: Optional[ahocorasick.Automaton] = None,
+    message: Optional[Message] = None,
+    message_realm: Optional[Realm] = None,
+    sent_by_bot: bool = False,
+    translate_emoticons: bool = False,
+    url_embed_data: Optional[Dict[str, Optional[UrlEmbedData]]] = None,
+    mention_data: Optional[MentionData] = None,
+    email_gateway: bool = False,
+    no_previews: bool = False,
+) -> MessageRenderingResult:
+    markdown_stats_start()
+    ret = do_convert_inline(
+        content, None, message, message_realm, False, translate_emoticons, None, None, False, False
+    )
+    markdown_stats_finish()
+    return ret

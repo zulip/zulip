@@ -243,6 +243,8 @@ run_test("activate another person poll", ({mock_template}) => {
     const $poll_question_header = set_widget_find_result(".poll-question-header");
     const $poll_question_container = set_widget_find_result(".poll-question-bar");
     const $poll_option_container = set_widget_find_result(".poll-option-bar");
+    set_widget_find_result("ul.poll-widget time");
+    $("ul.poll-widget time").each = function () {};
 
     const $poll_vote_button = set_widget_find_result("button.poll-vote");
     const $poll_please_wait = set_widget_find_result(".poll-please-wait");
@@ -350,6 +352,8 @@ run_test("activate own poll", ({mock_template}) => {
     set_widget_find_result("button.poll-option");
     const $poll_option_input = set_widget_find_result("input.poll-option");
     const $widget_option_container = set_widget_find_result("ul.poll-widget");
+    set_widget_find_result("ul.poll-widget time");
+    $("ul.poll-widget time").each = function () {};
 
     const $poll_question_submit = set_widget_find_result("button.poll-question-check");
     const $poll_edit_question = set_widget_find_result(".poll-edit-question");

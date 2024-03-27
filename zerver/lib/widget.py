@@ -2,6 +2,7 @@ import json
 import re
 from typing import Any, Optional, Tuple
 
+from zerver.lib.markdown import markdown_convert_inline
 from zerver.lib.message import SendMessageRequest
 from zerver.models import Message, SubMessage
 
@@ -35,7 +36,7 @@ def get_extra_data_from_widget_type(content: str, widget_type: Optional[str]) ->
             # before adding an option.
             option = re.sub(r"(\s*[-*]?\s*)", "", line.strip(), count=1)
             if len(option) > 0:
-                options.append(option)
+                options.append(markdown_convert_inline(option).rendered_content)
         extra_data = {
             "question": question,
             "options": options,

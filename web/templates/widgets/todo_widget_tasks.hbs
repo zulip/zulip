@@ -8,9 +8,9 @@
             </div>
             <div>
                 {{#if completed}}
-                <strike><strong>{{ task }}</strong>{{#if desc }}: {{ desc }}{{/if}}</strike>
+                <strike><strong class="task_complete">{{rendered_markdown task }}</strong>{{#if desc }}<span class="task_desc_complete">: </span><span class="description_complete">{{rendered_markdown desc }}</span>{{/if}}</strike>
                 {{else}}
-                <strong>{{ task }}</strong>{{#if desc }}: {{ desc }}{{/if}}
+                <strong class="task">{{rendered_markdown task }}</strong>{{#if desc }}<span class="task_desc">: </span><span class="description">{{rendered_markdown desc }}</span>{{/if}}
                 {{/if}}
             </div>
         </label>

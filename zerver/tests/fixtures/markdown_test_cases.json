@@ -14,10 +14,24 @@
       "text_content": "Hamlet said:\ndef speak(self):\n    x = 1\n"
     },
     {
+      "name": "inline_markdown_codeblock_hilite_python",
+      "input": "Hamlet said:\n~~~~.python \ndef speak(self):\n    x = 1\n~~~~",
+      "markdown": "Inline",
+      "expected_output": "<p>Hamlet said:<br>~~~~.python <br>def speak(self):<br>    x = 1<br>~~~~</p>",
+      "text_content": "Hamlet said:~~~~.python def speak(self):    x = 1~~~~"
+    },
+    {
       "name": "codeblock_hilite_invented_language",
       "input": "``` inventedlanguage\ndef speak(self):\n    x = 1\n```",
       "expected_output": "<div class=\"codehilite\" data-code-language=\"inventedlanguage\"><pre><span></span><code>def speak(self):\n    x = 1\n</code></pre></div>",
       "text_content": "def speak(self):\n    x = 1\n"
+    },
+    {
+      "name": "inline_markdown_codeblock_hilite_invented_language",
+      "input": "``` inventedlanguage\ndef speak(self):\n    x = 1\n```",
+      "markdown": "Inline",
+      "expected_output": "<p>``` inventedlanguage<br>def speak(self):<br>    x = 1<br>```</p>",
+      "text_content": "``` inventedlanguagedef speak(self):    x = 1```"
     },
     {
       "name": "codeblock_canonicalize_lang_alias",
@@ -30,6 +44,13 @@
       "name": "ampampamp",
       "input": "& &amp; &amp;amp;\n~~~~\n& &amp; &amp;amp;\n~~~~\n    & &amp; &amp;amp;",
       "expected_output": "<p>&amp; &amp; &amp;amp;</p>\n<div class=\"codehilite\"><pre><span></span><code>&amp; &amp;amp; &amp;amp;amp;\n</code></pre></div>\n<div class=\"codehilite\"><pre><span></span><code>&amp; &amp;amp; &amp;amp;amp;\n</code></pre></div>"
+    },
+    {
+      "name": "inline_markdown_ampampamp",
+      "input": "& &amp; &amp;amp;\n~~~~\n& &amp; &amp;amp;\n~~~~\n    & &amp; &amp;amp;",
+      "markdown": "Inline",
+      "expected_output": "<p>&amp; &amp; &amp;amp;<br>~~~~<br>&amp; &amp; &amp;amp;<br>~~~~<br>    &amp; &amp; &amp;amp;</p>",
+      "text_content": "& & &amp;~~~~& & &amp;~~~~    & & &amp;"
     },
     {
       "name": "basic_paragraph",
@@ -46,6 +67,12 @@
     {
       "name": "normal_text_test",
       "input": "it's lunch time",
+      "expected_output": "<p>it's lunch time</p>"
+    },
+    {
+      "name": "inline_markdown_normal_text_test",
+      "input": "it's lunch time",
+      "markdown": "Inline",
       "expected_output": "<p>it's lunch time</p>"
     },
     {
@@ -71,6 +98,13 @@
       "input": "\n```\nfenced code\n```\n\n```inline code```\n",
       "expected_output": "<div class=\"codehilite\"><pre><span></span><code>fenced code\n</code></pre></div>\n<p><code>inline code</code></p>",
       "text_content": "fenced code\n\ninline code"
+    },
+    {
+      "name": "inline_markdown_codeblock_backticks",
+      "input": "\n```\nfenced code\n```\n\n```inline code```\n",
+      "markdown": "Inline",
+      "expected_output": "<p>```<br>fenced code<br>```</p><p>```inline code```<br></p>",
+      "text_content": "```fenced code``````inline code```"
     },
     {
       "name": "hanging_multi_codeblock",
@@ -175,6 +209,12 @@
       "expected_output": "<h1>Hello world</h1>"
     },
     {
+      "name": "inline_markdown_hashheading_enabled",
+      "input": "# Hello world",
+      "markdown": "Inline",
+      "expected_output": "<p># Hello world</p>"
+    },
+    {
       "name": "hashheading_needs_spaces",
       "input": "#Hello world",
       "expected_output": "<p>#Hello world</p>"
@@ -209,6 +249,13 @@
       "input": "Some text with a list:\n\n* One item\n* Two items\n* Three items",
       "expected_output": "<p>Some text with a list:</p>\n<ul>\n<li>One item</li>\n<li>Two items</li>\n<li>Three items</li>\n</ul>",
       "text_content": "Some text with a list:\n\nOne item\nTwo items\nThree items\n"
+    },
+    {
+      "name": "inline_markdown_ulist_standard_1",
+      "input": "Some text with a list:\n\n* One item\n* Two items\n* Three items",
+      "markdown": "Inline",
+      "expected_output": "<p>Some text with a list:</p><p>* One item<br>* Two items<br>* Three items</p>",
+      "text_content": "Some text with a list:* One item* Two items* Three items"
     },
     {
       "name": "ulist_standard_2",
@@ -303,6 +350,13 @@
       "text_content": "I like software hardware"
     },
     {
+      "name": "inline_markdown_strikthrough_basic",
+      "input": "I like ~~software~~ hardware",
+      "markdown": "Inline",
+      "expected_output": "<p>I like <del>software</del> hardware</p>",
+      "text_content": "I like software hardware"
+    },
+    {
       "name": "strikthrough_multiword_with_no_space_in_between",
       "input": "I ~~like software~~ love hardware",
       "expected_output": "<p>I <del>like software</del> love hardware</p>",
@@ -332,6 +386,13 @@
       "text_content": "foo"
     },
     {
+      "name": "inline_markdown_emphasis_text",
+      "input": "*foo*",
+      "markdown": "Inline",
+      "expected_output": "<p><em>foo</em></p>",
+      "text_content": "foo"
+    },
+    {
       "name": "emphasis_code",
       "input": "const char *x = (char *)y",
       "expected_output": "<p>const char *x = (char *)y</p>"
@@ -355,6 +416,13 @@
     {
       "name": "star_strong",
       "input": "**foo**",
+      "expected_output": "<p><strong>foo</strong></p>",
+      "text_content": "foo"
+    },
+    {
+      "name": "inline_markdown_star_strong",
+      "input": "**foo**",
+      "markdown": "Inline",
       "expected_output": "<p><strong>foo</strong></p>",
       "text_content": "foo"
     },
@@ -411,6 +479,14 @@
       "expected_output": "<p>Google logo today: <a href=\"https://www.google.com/images/srpr/logo4w.png\">https://www.google.com/images/srpr/logo4w.png</a><br>\nKinda boring</p>\n<div class=\"message_inline_image\"><a href=\"https://www.google.com/images/srpr/logo4w.png\"><img data-src-fullsize=\"/thumbnail?url=https%3A%2F%2Fwww.google.com%2Fimages%2Fsrpr%2Flogo4w.png&amp;size=full\" src=\"/thumbnail?url=https%3A%2F%2Fwww.google.com%2Fimages%2Fsrpr%2Flogo4w.png&amp;size=thumbnail\"></a></div>",
       "backend_only_rendering": true,
       "text_content": "Google logo today: https:\/\/www.google.com\/images\/srpr\/logo4w.png\nKinda boring\n"
+    },
+    {
+      "name": "inline_markdown_inline_image",
+      "input": "Google logo today: https://www.google.com/images/srpr/logo4w.png Kinda boring",
+      "markdown": "Inline",
+      "expected_output": "<p>Google logo today: <a href=\"https://www.google.com/images/srpr/logo4w.png\">https://www.google.com/images/srpr/logo4w.png</a> Kinda boring</p>",
+      "backend_only_rendering": true,
+      "text_content": "Google logo today: https:\/\/www.google.com\/images\/srpr\/logo4w.png Kinda boring"
     },
     {
       "name": "blockquote_inline_image",
@@ -472,6 +548,14 @@
       "text_content": "Google link\n"
     },
     {
+      "name": "inline_markdown_only_named_inline_video",
+      "input": "[Google link](https://file-examples-com.github.io/uploads/2017/04/file_example_MP4_480_1_5MG.mp4)",
+      "markdown": "Inline",
+      "expected_output": "<p><a href=\"https://file-examples-com.github.io/uploads/2017/04/file_example_MP4_480_1_5MG.mp4\">Google link</a></p>",
+      "backend_only_rendering": true,
+      "text_content": "Google link"
+    },
+    {
       "name": "link_with_text",
       "input": "[hello](https://github.com)",
       "expected_output": "<p><a href=\"https://github.com\">hello</a></p>"
@@ -479,6 +563,12 @@
     {
       "name": "link_without_text",
       "input": "[](https://github.com)",
+      "expected_output": "<p><a href=\"https://github.com\">https://github.com</a></p>"
+    },
+    {
+      "name": "inline_markdown_link_without_text",
+      "input": "[](https://github.com)",
+      "markdown": "Inline",
       "expected_output": "<p><a href=\"https://github.com\">https://github.com</a></p>"
     },
     {
@@ -599,6 +689,12 @@
     {
       "name": "random_emoji_2",
       "input": ":poop:",
+      "expected_output": "<p><span aria-label=\"poop\" class=\"emoji emoji-1f4a9\" role=\"img\" title=\"poop\">:poop:</span></p>"
+    },
+    {
+      "name": "inline_markdown_random_emoji_2",
+      "input": ":poop:",
+      "markdown": "Inline",
       "expected_output": "<p><span aria-label=\"poop\" class=\"emoji emoji-1f4a9\" role=\"img\" title=\"poop\">:poop:</span></p>"
     },
     {
@@ -812,6 +908,14 @@
       "text_content": "Jun 5th 2017, 10:30PM"
     },
     {
+      "name": "inline_markdown_timestamp_backend_markdown_only",
+      "input": "<time:Jun 5th 2017, 10:30PM>",
+      "markdown": "Inline",
+      "expected_output": "<p><time datetime=\"2017-06-05T22:30:00Z\">Jun 5th 2017, 10:30PM</time></p>",
+      "marked_expected_output": "<p><span>Jun 5th 2017, 10:30PM</span></p>",
+      "text_content": "Jun 5th 2017, 10:30PM"
+    },
+    {
       "name": "timestamp_backend_markdown_and_marked",
       "input": "<time:31 Dec 2017>",
       "expected_output": "<p><time datetime=\"2017-12-31T00:00:00Z\">31 Dec 2017</time></p>",
@@ -965,6 +1069,13 @@
       "text_content": "(…)\noutside spoiler"
     },
     {
+      "name": "inline_markdown_spoilers_empty_header",
+      "input": "```spoiler\ncontent\n```\noutside spoiler\n",
+      "markdown": "Inline",
+      "expected_output": "<p>```spoiler<br>content<br>```<br>outside spoiler<br></p>",
+      "text_content": "```spoilercontent```outside spoiler"
+    },
+    {
       "name": "spoilers_script_tags",
       "input": "```spoiler <script>alert(1)</script>\n<script>alert(1)</script>\n```",
       "expected_output": "<div class=\"spoiler-block\"><div class=\"spoiler-header\">\n<p>&lt;script&gt;alert(1)&lt;/script&gt;</p>\n</div><div class=\"spoiler-content\" aria-hidden=\"true\">\n<p>&lt;script&gt;alert(1)&lt;/script&gt;</p>\n</div></div>",
@@ -1017,6 +1128,12 @@
         "input": "[call me](tel:+14155551234) [or maybe not](sms:+14155551234)",
         "expected_output": "<p><a href=\"tel:+14155551234\">call me</a> <a href=\"sms:+14155551234\">or maybe not</a></p>"
     },
+    {
+      "name": "inline_markdown_telephone_sms_link",
+      "input": "[call me](tel:+14155551234) [or maybe not](sms:+14155551234)",
+      "markdown": "Inline",
+      "expected_output": "<p><a href=\"tel:+14155551234\">call me</a> <a href=\"sms:+14155551234\">or maybe not</a></p>"
+  },
     {
       "name": "codeblock_hilite_shebang_feature_no_path_1",
       "input": "```\n#!python\nprint(\"Hello World\")\n```",
