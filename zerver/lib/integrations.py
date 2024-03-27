@@ -492,6 +492,13 @@ WEBHOOK_INTEGRATIONS: List[WebhookIntegration] = [
     WebhookIntegration("zendesk", ["customer-support"]),
     WebhookIntegration("zabbix", ["monitoring"], display_name="Zabbix"),
     WebhookIntegration("gci", ["misc"], display_name="Google Code-in", stream_name="gci"),
+    WebhookIntegration(
+        "githubsponsor",
+        ["misc"],
+        display_name="githubsponsor",
+        logo="images/integrations/logos/github.svg",
+        stream_name="githubsponsor",
+    ),
 ]
 
 INTEGRATIONS: Dict[str, Integration] = {
@@ -700,7 +707,6 @@ NO_SCREENSHOT_WEBHOOKS = {
     "zapier",  # Docs don't have a screenshot
 }
 
-
 DOC_SCREENSHOT_CONFIG: Dict[str, List[BaseScreenshotConfig]] = {
     "airbrake": [ScreenshotConfig("error_message.json")],
     "alertmanager": [
@@ -846,6 +852,7 @@ DOC_SCREENSHOT_CONFIG: Dict[str, List[BaseScreenshotConfig]] = {
             },
         )
     ],
+    "githubsponsor": [ScreenshotConfig("created.json", "001.png")],
 }
 
 
