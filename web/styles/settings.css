@@ -385,7 +385,7 @@ select.settings_select {
     background-size: 14px;
 }
 
-#admin-user-list,
+#admin-active-users-list,
 #admin-bot-list {
     .table tr:first-of-type td {
         border-top: none;
@@ -1586,7 +1586,7 @@ $option_title_width: 180px;
     }
 }
 
-#admin-user-list .last_active {
+#admin-active-users-list .last_active {
     width: 100px;
 }
 

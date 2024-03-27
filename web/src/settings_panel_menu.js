@@ -123,7 +123,7 @@ export class SettingsPanelMenu {
         return true;
     }
 
-    activate_section_or_default(section) {
+    activate_section_or_default(section, right_section) {
         popovers.hide_all();
         if (!section) {
             // No section is given so we display the default.
@@ -151,10 +151,12 @@ export class SettingsPanelMenu {
         this.$main_elem.children("li").removeClass("active");
         this.$curr_li.addClass("active");
 
-        const settings_section_hash = "#" + this.hash_prefix + section;
+        if (section !== "user-list-admin") {
+            const settings_section_hash = "#" + this.hash_prefix + section;
 
-        // It could be that the hash has already been set.
-        browser_history.update_hash_internally_if_required(settings_section_hash);
+            // It could be that the hash has already been set.
+            browser_history.update_hash_internally_if_required(settings_section_hash);
+        }
 
         $(".settings-section").removeClass("show");
 
@@ -162,6 +164,10 @@ export class SettingsPanelMenu {
 
         this.get_panel().addClass("show");
 
+        if (section === "user-list-admin") {
+            right_section = window.location.hash.split("/")[2];
+            this.get_valid_users_section_panel(right_section);
+        }
         scroll_util.reset_scrollbar($("#settings_content"));
 
         const $settings_overlay_container = $("#settings_overlay_container");
@@ -176,6 +182,16 @@ export class SettingsPanelMenu {
         const sel = `[data-name='${CSS.escape(section)}']`;
         const $panel = $(".settings-section" + sel);
         return $panel;
+    }
+
+    get_valid_users_section_panel(key = "active-users-admin") {
+        history.replaceState({}, "", `#organization/user-list-admin/${key}`);
+        $(".user-settings-section").hide();
+        $(`[data-user-settings-section="${CSS.escape(key)}"]`).show();
+
+        const $current_tab = $("#admin-user-list .tab-switcher .ind-tab");
+        $current_tab.removeClass("selected");
+        $(`#admin-user-list .tab-switcher .ind-tab[data-tab-key="${key}"]`).addClass("selected");
     }
 }
 

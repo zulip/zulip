@@ -313,7 +313,7 @@ run_test("hash_interactions", ({override, override_rewire}) => {
         [settings, "launch"],
     ]);
 
-    window.location.hash = "#organization/user-list-admin";
+    window.location.hash = "#organization/user-list-admin/active-users-admin";
 
     helper.clear_events();
     $window_stub.trigger("hashchange");
