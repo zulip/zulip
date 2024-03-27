@@ -4,7 +4,6 @@ const {strict: assert} = require("assert");
 
 const {zrequire} = require("./lib/namespace");
 const {run_test} = require("./lib/test");
-const {page_params} = require("./lib/zpage_params");
 
 const copy_and_paste = zrequire("copy_and_paste");
 
@@ -23,8 +22,6 @@ run_test("maybe_transform_html", () => {
 });
 
 run_test("paste_handler_converter", () => {
-    page_params.development_environment = true;
-
     /*
         Pasting from another Zulip message
     */

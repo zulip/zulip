@@ -5,7 +5,6 @@ import TurndownService from "turndown";
 
 import * as compose_ui from "./compose_ui";
 import * as message_lists from "./message_lists";
-import {page_params} from "./page_params";
 import * as rows from "./rows";
 
 function find_boundary_tr($initial_tr, iterate_row) {
@@ -605,8 +604,7 @@ export function paste_handler(event) {
         if (
             !compose_ui.cursor_inside_code_block($textarea) &&
             paste_html &&
-            !compose_ui.shift_pressed &&
-            page_params.development_environment
+            !compose_ui.shift_pressed
         ) {
             event.preventDefault();
             event.stopPropagation();
