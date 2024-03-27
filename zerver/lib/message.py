@@ -1,3 +1,4 @@
+import re
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from typing import (
@@ -1439,3 +1440,8 @@ def set_visibility_policy_possible(user_profile: UserProfile, message: Message) 
         return False
 
     return True
+
+
+def remove_single_newlines(content: str) -> str:
+    content = content.strip("\n")
+    return re.sub(r"(?<!\n)\n(?!\n)", " ", content)

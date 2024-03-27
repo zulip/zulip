@@ -5,6 +5,7 @@ import time_machine
 from django.conf import settings
 from django.utils.timezone import now as timezone_now
 
+from zerver.lib.message import remove_single_newlines
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.zulip_update_announcements import (
     ZulipUpdateAnnouncement,
@@ -152,3 +153,30 @@ class ZulipUpdateAnnouncementsTest(ZulipTestCase):
             f"#**{realm.zulip_update_announcements_stream}>{realm.ZULIP_UPDATE_ANNOUNCEMENTS_TOPIC_NAME}**",
             group_direct_message.content,
         )
+
+    def test_remove_single_newlines(self) -> None:
+        # single newlines and double newlines
+        input_text = "This is a sentence.\nThis is another sentence.\n\nThis is a third sentence."
+        expected_output = (
+            "This is a sentence. This is another sentence.\n\nThis is a third sentence."
+        )
+        self.assertEqual(remove_single_newlines(input_text), expected_output)
+
+        # single newline at the beginning
+        input_text = "\nThis is a sentence.\nThis is another sentence.\n\nThis is a third sentence."
+        expected_output = (
+            "This is a sentence. This is another sentence.\n\nThis is a third sentence."
+        )
+        self.assertEqual(remove_single_newlines(input_text), expected_output)
+
+        # single newline at the end
+        input_text = "This is a sentence.\nThis is another sentence.\n\nThis is a third sentence.\n"
+        expected_output = (
+            "This is a sentence. This is another sentence.\n\nThis is a third sentence."
+        )
+        self.assertEqual(remove_single_newlines(input_text), expected_output)
+
+        # only single newlines in the middle
+        input_text = "This is a sentence.\nThis is another sentence.\nThis is a third sentence.\nThis is a fourth sentence."
+        expected_output = "This is a sentence. This is another sentence. This is a third sentence. This is a fourth sentence."
+        self.assertEqual(remove_single_newlines(input_text), expected_output)

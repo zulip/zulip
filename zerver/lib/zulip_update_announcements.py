@@ -13,7 +13,7 @@ from zerver.actions.message_send import (
     internal_prep_huddle_message,
     internal_prep_stream_message,
 )
-from zerver.lib.message import SendMessageRequest
+from zerver.lib.message import SendMessageRequest, remove_single_newlines
 from zerver.models.realm_audit_logs import RealmAuditLog
 from zerver.models.realms import Realm
 from zerver.models.users import UserProfile, get_system_bot
@@ -30,12 +30,12 @@ class ZulipUpdateAnnouncement:
 zulip_update_announcements: List[ZulipUpdateAnnouncement] = [
     ZulipUpdateAnnouncement(
         level=1,
-        message="""\
-Zulip is introducing **Zulip updates**! To help you learn about new features and \
+        message="""
+Zulip is introducing **Zulip updates**! To help you learn about new features and
 configuration options, this topic will receive messages about important changes in Zulip.
 
-You can read these update messages whenever it's convenient, or [mute]({mute_topic_help_url}) \
-this topic if you are not interested. If your organization does not want to receive these \
+You can read these update messages whenever it's convenient, or [mute]({mute_topic_help_url})
+this topic if you are not interested. If your organization does not want to receive these
 announcements, they can be disabled. [Learn more]({zulip_update_announcements_help_url}).
 """.format(
             zulip_update_announcements_help_url="/help/configure-automated-notices#zulip-update-announcements",
@@ -52,7 +52,7 @@ def get_latest_zulip_update_announcements_level() -> int:
 
 def get_zulip_update_announcements_message_for_level(level: int) -> str:
     zulip_update_announcement = zulip_update_announcements[level - 1]
-    return zulip_update_announcement.message
+    return remove_single_newlines(zulip_update_announcement.message)
 
 
 def get_realms_behind_zulip_update_announcements_level(level: int) -> QuerySet[Realm]:
@@ -73,22 +73,22 @@ def internal_prep_group_direct_message_for_old_realm(
     with override_language(realm.default_language):
         topic_name = str(realm.ZULIP_UPDATE_ANNOUNCEMENTS_TOPIC_NAME)
     if realm.zulip_update_announcements_stream is None:
-        content = """\
-Zulip now supports [configuring]({organization_settings_url}) a stream where Zulip will \
-send [updates]({zulip_update_announcements_help_url}) about new Zulip features. \
-These notifications are currently turned off in your organization. If you configure \
+        content = """
+Zulip now supports [configuring]({organization_settings_url}) a stream where Zulip will
+send [updates]({zulip_update_announcements_help_url}) about new Zulip features.
+These notifications are currently turned off in your organization. If you configure
 a stream within one week, your organization will not miss any update messages.
 """.format(
             zulip_update_announcements_help_url="/help/configure-automated-notices#zulip-update-announcements",
             organization_settings_url="/#organization/organization-settings",
         )
     else:
-        content = """\
-Starting tomorrow, users in your organization will receive [updates]({zulip_update_announcements_help_url}) \
+        content = """
+Starting tomorrow, users in your organization will receive [updates]({zulip_update_announcements_help_url})
 about new Zulip features in #**{zulip_update_announcements_stream}>{topic_name}**.
 
-If you like, you can [configure]({organization_settings_url}) a different stream for \
-these updates (and [move]({move_content_another_stream_help_url}) any updates sent before the \
+If you like, you can [configure]({organization_settings_url}) a different stream for
+these updates (and [move]({move_content_another_stream_help_url}) any updates sent before the
 configuration change), or [turn this feature off]({organization_settings_url}) altogether.
 """.format(
             zulip_update_announcements_help_url="/help/configure-automated-notices#zulip-update-announcements",
@@ -97,7 +97,9 @@ configuration change), or [turn this feature off]({organization_settings_url}) a
             organization_settings_url="/#organization/organization-settings",
             move_content_another_stream_help_url="/help/move-content-to-another-stream",
         )
-    return internal_prep_huddle_message(realm, sender, content, recipient_users=administrators)
+    return internal_prep_huddle_message(
+        realm, sender, remove_single_newlines(content), recipient_users=administrators
+    )
 
 
 def is_group_direct_message_sent_to_admins_atleast_one_week_ago(realm: Realm) -> bool:
