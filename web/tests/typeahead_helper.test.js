@@ -88,11 +88,13 @@ const zman = {
     user_id: 7,
 };
 
-const matches = [a_bot, a_user, b_user_1, b_user_2, b_user_3, b_bot, zman];
+const matches = [a_bot, a_user, b_user_1, b_user_2, b_user_3, b_bot, zman, current_user];
 
 for (const person of matches) {
     people.add_active_user(person);
 }
+
+people.initialize_current_user(current_user.user_id);
 
 const dev_sub = {
     name: "Dev",
@@ -356,6 +358,8 @@ test("sort_recipients", () => {
         "a_bot@zulip.com",
         "a_user@zulip.org",
         "zman@test.net",
+        "a_bot@zulip.com",
+        "current_user@example.com",
     ]);
 
     // Typeahead for direct message [query, "", ""]
@@ -367,6 +371,7 @@ test("sort_recipients", () => {
         "b_user_3@zulip.net",
         "zman@test.net",
         "b_bot@example.com",
+        "current_user@example.com",
     ]);
 
     const subscriber_email_1 = "b_user_2@zulip.net";
@@ -411,6 +416,8 @@ test("sort_recipients", () => {
         "a_bot@zulip.com",
         "zman@test.net",
         "a_user@zulip.org",
+        "a_bot@zulip.com",
+        "current_user@example.com",
     ]);
 
     recent_senders.process_stream_message({
@@ -435,6 +442,7 @@ test("sort_recipients", () => {
         "a_bot@zulip.com",
         "b_user_1@zulip.net",
         "b_user_2@zulip.net",
+        "current_user@example.com",
     ]);
 });
 
@@ -455,7 +463,17 @@ test("sort_recipients all mention", () => {
         current_topic: "Linux topic",
     });
 
-    assertSameEmails(results, [all_obj, a_bot, a_user, b_user_1, b_user_2, b_user_3, b_bot, zman]);
+    assertSameEmails(results, [
+        all_obj,
+        a_bot,
+        a_user,
+        b_user_1,
+        b_user_2,
+        b_user_3,
+        b_bot,
+        zman,
+        current_user,
+    ]);
 });
 
 test("sort_recipients pm counts", () => {
@@ -475,6 +493,7 @@ test("sort_recipients pm counts", () => {
         "a_bot@zulip.com",
         "a_user@zulip.org",
         "zman@test.net",
+        "current_user@example.com",
     ]);
 
     // Now prioritize stream membership over pm counts.
@@ -488,20 +507,26 @@ test("sort_recipients pm counts", () => {
         "a_bot@zulip.com",
         "a_user@zulip.org",
         "zman@test.net",
+        "current_user@example.com",
     ]);
-
-    /* istanbul ignore next */
-    function compare() {
-        throw new Error("We do not expect to need a tiebreaker here.");
-    }
 
     // get some line coverage
     assert.equal(
-        th.compare_people_for_relevance(b_user_1, b_user_3, compare, linux_sub.stream_id),
+        th.compare_people_for_relevance(
+            b_user_1,
+            b_user_3,
+            recent_senders.compare_by_recency,
+            linux_sub.stream_id,
+        ),
         1,
     );
     assert.equal(
-        th.compare_people_for_relevance(b_user_3, b_user_1, compare, linux_sub.stream_id),
+        th.compare_people_for_relevance(
+            b_user_3,
+            b_user_1,
+            recent_senders.compare_by_recency,
+            linux_sub.stream_id,
+        ),
         -1,
     );
 });
@@ -525,6 +550,9 @@ test("sort_recipients dup bots", () => {
         "a_bot@zulip.com",
         "a_user@zulip.org",
         "zman@test.net",
+        "a_bot@zulip.com",
+        "a_bot@zulip.com",
+        "current_user@example.com",
     ];
     assert.deepEqual(recipients_email, expected);
 });
@@ -549,6 +577,7 @@ test("sort_recipients dup alls", () => {
 
 test("sort_recipients dup alls direct message", () => {
     compose_state.set_message_type("private");
+    pm_conversations.set_partner(a_user.user_id);
     const all_obj = ct.broadcast_mentions()[0];
 
     // full_name starts with same character but emails are 'all'
@@ -565,6 +594,7 @@ test("sort_recipients dup alls direct message", () => {
 
 test("sort_recipients subscribers", () => {
     // b_user_2 is a subscriber and b_user_1 is not.
+    peer_data.add_subscriber(1, b_user_2.user_id);
     const small_matches = [b_user_2, b_user_1];
     const recipients = th.sort_recipients({
         users: small_matches,
@@ -580,6 +610,7 @@ test("sort_recipients subscribers", () => {
 test("sort_recipients pm partners", () => {
     // b_user_3 is a pm partner and b_user_2 is not and
     // both are not subscribed to the stream Linux.
+    pm_conversations.set_partner(b_user_3.user_id);
     const small_matches = [b_user_3, b_user_2];
     const recipients = th.sort_recipients({
         users: small_matches,
@@ -622,6 +653,8 @@ test("sort broadcast mentions for stream message type", () => {
 
 test("sort broadcast mentions for direct message type", () => {
     compose_state.set_message_type("private");
+    pm_conversations.set_partner(a_user.user_id);
+    pm_conversations.set_partner(zman.user_id);
     const results = th.sort_people_for_relevance(ct.broadcast_mentions().reverse(), "", "");
 
     assert.deepEqual(
@@ -646,15 +679,17 @@ test("test compare directly for stream message type", () => {
     // We don't technically need it now, but our test
     // coverage is subject to the whims of how JS sorts.
     compose_state.set_message_type("stream");
+    pm_conversations.set_partner(zman.user_id);
     const all_obj = ct.broadcast_mentions()[0];
 
     assert.equal(th.compare_people_for_relevance(all_obj, all_obj), 0);
-    assert.equal(th.compare_people_for_relevance(all_obj, zman), -1);
-    assert.equal(th.compare_people_for_relevance(zman, all_obj), 1);
+    assert.equal(th.compare_people_for_relevance(all_obj, zman), 1);
+    assert.equal(th.compare_people_for_relevance(zman, all_obj), -1);
 });
 
 test("test compare directly for direct message", () => {
     compose_state.set_message_type("private");
+    pm_conversations.set_partner(zman.user_id);
     const all_obj = ct.broadcast_mentions()[0];
 
     assert.equal(th.compare_people_for_relevance(all_obj, all_obj), 0);
@@ -871,4 +906,206 @@ test("compare_language", () => {
     // Whenever there is a tie, even in the case neither have a popularity
     // score, then alphabetical order is used to break the tie.
     assert.equal(th.compare_language("custom_a", "custom_b"), util.strcmp("custom_a", "custom_b"));
+});
+
+test("sort recipients", () => {
+    /**
+     * Typeahead sorting for stream-topic conversations has the order of priority is as follows:
+     *
+     * 1. Users who have sent messages to the current topic
+     *    over those who haven't sent to the current topic.
+     * 2. Users who have sent messages to the current stream
+     *    over those who haven't sent to the current stream.
+     * 3. Subscribers over non-subscribers.
+     * 4. Users have PMed with over users haven't PMed with.
+     * 5. Current user interaction with the rest of the users.
+     *
+     * Wildcards are given the following preference over:
+     * - non-subscribers
+     * - users who have not participated in topics
+     * - and the users with whom the current user hasn't PMed.
+     *
+     * In all the cases, the current_user should be at the last position in the results list.
+     */
+
+    const objs = [a_bot, a_user, b_user_1, b_user_2, b_user_3, zman, current_user];
+
+    /**
+     * The following tables will help to visualize the test setup.
+     *
+     * -------------------------------------------------------------------------------
+     *                 stream ID = 1 (Dev)             |       stream ID = 2 (Linux)
+     * -------------------------------------------------------------------------------
+     *         Dev topic     |      New Dev topic      |
+     * -------------------------------------------------------------------------------
+     * a_user (subscriber    | b_user_1 (subscriber    | b_user_2 (subscriber)
+     * and 1st recent sender)| and 1st recent sender)  |
+     * -------------------------------------------------------------------------------
+     * b_user_1 (subscriber  |                         |
+     * and 2nd recent sender)|                         |
+     *
+     *
+     * ----------------------------------------
+     *                     PMs
+     * ----------------------------------------
+     * b_user_3 (PM partner | zman (PM partner
+     * with higher          | with lower
+     * recipient_count)     | recipient_count)
+     */
+
+    peer_data.add_subscriber(1, a_user.user_id);
+    peer_data.add_subscriber(1, b_user_1.user_id);
+    peer_data.add_subscriber(2, b_user_2.user_id);
+
+    recent_senders.process_stream_message({
+        sender_id: b_user_1.user_id,
+        stream_id: 1,
+        topic: "Dev topic",
+        id: (next_id += 1),
+    });
+
+    recent_senders.process_stream_message({
+        sender_id: a_user.user_id,
+        stream_id: 1,
+        topic: "Dev topic",
+        id: (next_id += 1),
+    });
+
+    recent_senders.process_stream_message({
+        sender_id: b_user_1.user_id,
+        stream_id: 1,
+        topic: "New Dev topic",
+        id: (next_id += 1),
+    });
+
+    pm_conversations.set_partner(b_user_3.user_id);
+    pm_conversations.set_partner(zman.user_id);
+    people.set_recipient_count_for_testing(b_user_3.user_id, 50);
+    people.set_recipient_count_for_testing(zman.user_id, 25);
+
+    let results = th.sort_recipients({
+        users: objs,
+        query: "",
+        current_stream: "Dev",
+        current_topic: "Dev topic",
+    });
+
+    assertSameEmails(results, [a_user, b_user_1, b_user_3, zman, a_bot, b_user_2, current_user]);
+
+    results = th.sort_recipients({
+        users: objs,
+        query: "",
+        current_stream: "Linux",
+        current_topic: "",
+    });
+
+    assertSameEmails(results, [b_user_2, b_user_3, zman, a_bot, a_user, b_user_1, current_user]);
+
+    // PM converstaion
+    results = th.sort_recipients({
+        users: objs,
+        query: "",
+        current_stream: "",
+        current_topic: "",
+    });
+
+    assertSameEmails(results, [b_user_3, zman, a_user, b_user_1, b_user_2, a_bot, current_user]);
+});
+
+test("compare recipients with wildcards", () => {
+    // This test is majorly written to add the test coverage.
+    const all_obj = ct.broadcast_mentions()[0];
+    assert.equal(
+        th.compare_people_for_stream_message(
+            all_obj,
+            a_user,
+            recent_senders.compare_by_recency,
+            1,
+            "Dev topic",
+        ),
+        -1,
+    );
+    assert.equal(
+        th.compare_people_for_stream_message(
+            a_user,
+            all_obj,
+            recent_senders.compare_by_recency,
+            1,
+            "Dev topic",
+        ),
+        1,
+    );
+
+    recent_senders.process_stream_message({
+        sender_id: a_user.user_id,
+        stream_id: 1,
+        topic: "Dev topic",
+        id: (next_id += 1),
+    });
+    assert.equal(
+        th.compare_people_for_stream_message(
+            all_obj,
+            a_user,
+            recent_senders.compare_by_recency,
+            1,
+            "Dev topic",
+        ),
+        -1,
+    );
+    assert.equal(
+        th.compare_people_for_stream_message(
+            a_user,
+            all_obj,
+            recent_senders.compare_by_recency,
+            1,
+            "Dev topic",
+        ),
+        1,
+    );
+
+    peer_data.add_subscriber(1, a_user.user_id);
+    assert.equal(
+        th.compare_people_for_stream_message(
+            all_obj,
+            a_user,
+            recent_senders.compare_by_recency,
+            1,
+            "Dev topic",
+        ),
+        -1,
+    );
+    assert.equal(
+        th.compare_people_for_stream_message(
+            a_user,
+            all_obj,
+            recent_senders.compare_by_recency,
+            1,
+            "Dev topic",
+        ),
+        1,
+    );
+
+    pm_conversations.set_partner(a_user.user_id);
+    assert.equal(
+        th.compare_people_for_stream_message(
+            all_obj,
+            a_user,
+            recent_senders.compare_by_recency,
+            1,
+            "Dev topic",
+        ),
+        1,
+    );
+    assert.equal(
+        th.compare_people_for_stream_message(
+            a_user,
+            all_obj,
+            recent_senders.compare_by_recency,
+            1,
+            "Dev topic",
+        ),
+        -1,
+    );
+
+    assert.equal(th.compare_people_for_pm_message(zman, a_user, th.compare_by_pms), 1);
 });

@@ -515,7 +515,11 @@ export function get_person_suggestions(query, opts) {
         // Exclude muted users from typeaheads.
         persons = muted_users.filter_muted_users(persons);
 
-        if (opts.want_broadcast) {
+        if (opts.want_broadcast && query !== "") {
+            // We don't want to show wildcards when user types: `@` in the
+            // composebox. It should be shown when relevant text is typed.
+            // This will make sure that wildcards are used only when user
+            // intends and we are not encouraging when user types: `@`.
             persons = [...persons, ...broadcast_mentions()];
         }
 
