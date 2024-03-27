@@ -35,7 +35,6 @@ from urllib.parse import urlsplit
 import orjson
 import sentry_sdk
 from django.conf import settings
-from django.core.mail.backends.base import BaseEmailBackend
 from django.db import connection, transaction
 from django.db.models import F
 from django.db.utils import IntegrityError
@@ -83,6 +82,7 @@ from zerver.lib.remote_server import (
     send_server_data_to_push_bouncer,
 )
 from zerver.lib.send_email import (
+    BaseEmailBackendExtended,
     EmailNotDeliveredError,
     FromAddress,
     handle_send_email_format_changes,
@@ -828,7 +828,7 @@ class MissedMessageWorker(QueueProcessingWorker):
 class EmailSendingWorker(LoopQueueProcessingWorker):
     def __init__(self, threaded: bool = False, disable_timeout: bool = False) -> None:
         super().__init__(threaded, disable_timeout)
-        self.connection: Optional[BaseEmailBackend] = None
+        self.connection: Optional[BaseEmailBackendExtended] = None
 
     @retry_send_email_failures
     def send_email(self, event: Dict[str, Any]) -> None:
@@ -840,7 +840,11 @@ class EmailSendingWorker(LoopQueueProcessingWorker):
             del copied_event["failed_tries"]
         handle_send_email_format_changes(copied_event)
         self.connection = initialize_connection(self.connection)
-        send_email(**copied_event, connection=self.connection)
+        if not settings.SMTP_MAX_CONNECTION_MINUTES:
+            send_email(**copied_event, connection=self.connection)
+            self.connection.close()
+        else:
+            send_email(**copied_event, connection=self.connection)
 
     @override
     def consume_batch(self, events: List[Dict[str, Any]]) -> None:

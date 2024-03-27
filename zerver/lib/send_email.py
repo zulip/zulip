@@ -3,7 +3,7 @@ import logging
 import os
 import smtplib
 from contextlib import suppress
-from datetime import timedelta
+from datetime import datetime, timedelta
 from email.headerregistry import Address
 from email.parser import Parser
 from email.policy import default
@@ -240,6 +240,12 @@ class NoEmailArgumentError(CommandError):
         super().__init__(msg)
 
 
+class BaseEmailBackendExtended(BaseEmailBackend):
+    def __init__(self, fail_silently: bool = False, **kwargs: Any) -> None:
+        super().__init__(fail_silently=fail_silently, **kwargs)
+        self.open_timestamp: datetime = timezone_now()
+
+
 # When changing the arguments to this function, you may need to write a
 # migration to change or remove any emails in ScheduledEmail.
 def send_email(
@@ -252,7 +258,7 @@ def send_email(
     language: Optional[str] = None,
     context: Mapping[str, Any] = {},
     realm: Optional[Realm] = None,
-    connection: Optional[BaseEmailBackend] = None,
+    connection: Optional[BaseEmailBackendExtended] = None,
     dry_run: bool = False,
     request: Optional[HttpRequest] = None,
 ) -> None:
@@ -310,13 +316,16 @@ def send_email(
 
 
 @backoff.on_exception(backoff.expo, OSError, max_tries=MAX_CONNECTION_TRIES, logger=None)
-def initialize_connection(connection: Optional[BaseEmailBackend] = None) -> BaseEmailBackend:
+def initialize_connection(
+    connection: Optional[BaseEmailBackendExtended],
+) -> BaseEmailBackendExtended:
     if not connection:
         connection = get_connection()
         assert connection is not None
+        connection.open()
+        connection.open_timestamp = timezone_now()
 
-    if connection.open():
-        # If it's a new connection, no need to no-op to check connectivity
+    if not settings.SMTP_MAX_CONNECTION_MINUTES:
         return connection
 
     if isinstance(connection, EmailLogBackEnd) and not get_forward_address():
@@ -324,22 +333,18 @@ def initialize_connection(connection: Optional[BaseEmailBackend] = None) -> Base
         # configured forwarding address, we don't actually send emails.
         #
         # As a result, the connection cannot be closed by the server
-        # (as there is none), and `connection.noop` is not
-        # implemented, so we need to return the connection early.
+        # (as there is none), so we need to return the connection early.
         return connection
 
-    # No-op to ensure that we don't return a connection that has been
-    # closed by the mail server.
-    if isinstance(connection, EmailBackend):
-        try:
-            assert connection.connection is not None
-            status = connection.connection.noop()[0]
-        except Exception:
-            status = -1
-        if status != 250:
-            # Close and connect again.
-            connection.close()
-            connection.open()
+    if (
+        isinstance(connection, EmailBackend)
+        and (timezone_now() - connection.open_timestamp).seconds
+        > settings.SMTP_MAX_CONNECTION_MINUTES * 60
+    ):
+        connection.close()
+        connection.open()
+        connection.open_timestamp = timezone_now()
+        assert connection is not None
 
     return connection
 

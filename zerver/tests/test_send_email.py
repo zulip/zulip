@@ -81,29 +81,6 @@ class TestSendEmail(ZulipTestCase):
 
         self.assertTrue(isinstance(backend, SMTPBackend))
 
-        # Test the old connection case when it is still open
-        backend.open.return_value = False
-        backend.connection.noop.return_value = [250]
-        initialize_connection(backend)
-        self.assertEqual(backend.open.call_count, 1)
-        self.assertEqual(backend.connection.noop.call_count, 1)
-
-        # Test the old connection case when it was closed by the server
-        backend.connection.noop.return_value = [404]
-        backend.close.return_value = False
-        initialize_connection(backend)
-        # 2 more calls to open, 1 more call to noop and 1 call to close
-        self.assertEqual(backend.open.call_count, 3)
-        self.assertEqual(backend.connection.noop.call_count, 2)
-        self.assertEqual(backend.close.call_count, 1)
-
-        # Test backoff procedure
-        backend.open.side_effect = OSError
-        with self.assertRaises(OSError):
-            initialize_connection(backend)
-        # 3 more calls to open as we try 3 times before giving up
-        self.assertEqual(backend.open.call_count, 6)
-
     def test_send_email_exceptions(self) -> None:
         hamlet = self.example_user("hamlet")
         from_name = FromAddress.security_email_from_name(language="en")
