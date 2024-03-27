@@ -10,14 +10,16 @@ from zerver.actions.message_edit import get_mentions_for_message_updates
 from zerver.actions.realm_settings import do_change_realm_plan_type, do_set_realm_property
 from zerver.actions.streams import do_deactivate_stream
 from zerver.actions.user_groups import add_subgroups_to_user_group, check_add_user_group
+from zerver.actions.user_settings import do_change_user_setting
 from zerver.actions.user_topics import do_set_user_topic_visibility_policy
 from zerver.lib.message import messages_for_ids
 from zerver.lib.message_cache import MessageDict
+from zerver.lib.stream_topic import StreamTopicTarget
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import queries_captured
 from zerver.lib.topic import TOPIC_NAME
 from zerver.lib.utils import assert_is_not_none
-from zerver.models import Message, Realm, UserGroup, UserProfile, UserTopic
+from zerver.models import Message, Realm, Subscription, UserGroup, UserProfile, UserTopic
 from zerver.models.groups import SystemGroups
 from zerver.models.realms import get_realm
 from zerver.models.streams import get_stream
@@ -1596,3 +1598,114 @@ class EditMessageTest(ZulipTestCase):
             },
         )
         self.assert_json_success(result)
+
+    def test_move_message_to_new_topic_with_automatic_follow_policy(self) -> None:
+        self.login("iago")
+        hamlet = self.example_user("hamlet")
+        shiva = self.example_user("shiva")
+        stream = self.make_stream("new_stream")
+        self.subscribe(hamlet, stream.name)
+        self.subscribe(shiva, stream.name)
+
+        self.send_stream_message(
+            sender=hamlet,
+            stream_name="new_stream",
+            topic_name="test",
+            content="Never here",
+        )
+        msg_id = self.send_stream_message(
+            sender=hamlet,
+            stream_name="new_stream",
+            topic_name="test",
+            content="Always here",
+        )
+
+        do_change_user_setting(
+            hamlet,
+            "automatically_follow_topics_policy",
+            UserProfile.AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_ON_INITIATION,
+            acting_user=None,
+        )
+
+        stream_topic_target = StreamTopicTarget(
+            stream_id=stream.id,
+            topic_name="testing",
+        )
+
+        user_ids = stream_topic_target.user_ids_with_visibility_policy(
+            UserTopic.VisibilityPolicy.FOLLOWED
+        )
+        self.assertEqual(user_ids, set())
+
+        result = self.client_patch(
+            f"/json/messages/{msg_id}",
+            {
+                "topic": "testing",
+                "propagate_mode": "change_one",
+                "send_notification_to_old_thread": "false",
+            },
+        )
+        self.assert_json_success(result)
+
+        user_ids = stream_topic_target.user_ids_with_visibility_policy(
+            UserTopic.VisibilityPolicy.FOLLOWED
+        )
+        self.assertEqual(user_ids, {hamlet.id})
+
+    def test_move_message_to_new_topic_with_automatic_unmute_policy(self) -> None:
+        self.login("iago")
+        hamlet = self.example_user("hamlet")
+        shiva = self.example_user("shiva")
+        stream = self.make_stream("new_stream")
+        self.subscribe(hamlet, stream.name)
+        self.subscribe(shiva, stream.name)
+        recipient = stream.recipient
+        subscription = Subscription.objects.get(recipient=recipient, user_profile=hamlet)
+        subscription.is_muted = True
+        subscription.save()
+
+        self.send_stream_message(
+            sender=shiva,
+            stream_name="new_stream",
+            topic_name="test",
+            content="Never here",
+        )
+        msg_id = self.send_stream_message(
+            sender=hamlet,
+            stream_name="new_stream",
+            topic_name="test",
+            content="Always here",
+        )
+
+        do_change_user_setting(
+            hamlet,
+            "automatically_unmute_topics_in_muted_streams_policy",
+            UserProfile.AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_ON_INITIATION,
+            acting_user=None,
+        )
+
+        stream_topic_target = StreamTopicTarget(
+            stream_id=stream.id,
+            topic_name="testing",
+        )
+
+        user_ids = stream_topic_target.user_ids_with_visibility_policy(
+            UserTopic.VisibilityPolicy.UNMUTED
+        )
+        self.assertEqual(user_ids, set())
+
+        result = self.client_patch(
+            f"/json/messages/{msg_id}",
+            {
+                "topic": "testing",
+                "propagate_mode": "change_one",
+                "send_notification_to_old_thread": "false",
+            },
+        )
+
+        self.assert_json_success(result)
+
+        user_ids = stream_topic_target.user_ids_with_visibility_policy(
+            UserTopic.VisibilityPolicy.UNMUTED
+        )
+        self.assertEqual(user_ids, {hamlet.id})
