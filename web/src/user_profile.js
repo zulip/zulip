@@ -269,6 +269,15 @@ function render_manage_profile_content(user) {
     }
 }
 
+function get_tippy_content(field_name) {
+    const hyperlink = /\[([^[\]]*?)]\((.*?)\)/g;
+    const mentions = /\*{1,2}([^*]+)\*{1,2}/g;
+    const tippy_content = field_name
+        .replaceAll(hyperlink, (_, content) => content)
+        .replaceAll(mentions, (_, mentioned_user) => mentioned_user);
+    return tippy_content;
+}
+
 export function get_custom_profile_field_data(user, field, field_types) {
     const field_value = people.get_custom_profile_data(user.user_id, field.id);
     const field_type = field.type;
@@ -280,8 +289,10 @@ export function get_custom_profile_field_data(user, field, field_types) {
     if (!field_value.value) {
         return profile_field;
     }
+    profile_field.tippy_content = get_tippy_content(field.name);
     profile_field.id = field.id;
     profile_field.name = field.name;
+    profile_field.rendered_name = field.rendered_name;
     profile_field.is_user_field = false;
     profile_field.is_link = field_type === field_types.URL.id;
     profile_field.is_external_account = field_type === field_types.EXTERNAL_ACCOUNT.id;

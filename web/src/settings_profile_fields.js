@@ -85,6 +85,7 @@ function delete_profile_field(e) {
 
     const html_body = render_confirm_delete_profile_field({
         profile_field_name: profile_field.name,
+        rendered_profile_field_name: profile_field.rendered_name,
         count: users_using_deleting_profile_field,
     });
 
@@ -683,7 +684,9 @@ export function do_populate_profile_fields(profile_fields_data) {
                 profile_field: {
                     id: profile_field.id,
                     name: profile_field.name,
+                    rendered_name: profile_field.rendered_name,
                     hint: profile_field.hint,
+                    rendered_hint: profile_field.rendered_hint,
                     type: field_type_id_to_string(profile_field.type),
                     choices,
                     is_select_field: profile_field.type === field_types.SELECT.id,

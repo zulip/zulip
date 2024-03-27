@@ -90,6 +90,8 @@ export const realm_schema = z.object({
             name: z.string(),
             order: z.number(),
             required: z.boolean(),
+            rendered_hint: z.optional(z.string()),
+            rendered_name: z.optional(z.string()),
             type: z.number(),
         }),
     ),

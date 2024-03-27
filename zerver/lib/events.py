@@ -180,6 +180,11 @@ def fetch_initial_state_data(
 
             del state["custom_profile_field_types"]["PRONOUNS"]
 
+        for field in state["custom_profile_fields"]:
+            if field["rendered_name"] is None:
+                field.pop("rendered_name")
+                field.pop("rendered_hint")
+
     if want("onboarding_steps"):
         # Even if we offered special onboarding steps for guests without an
         # account, we'd maybe need to store their state using cookies
