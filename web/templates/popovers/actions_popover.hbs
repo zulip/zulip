@@ -7,7 +7,7 @@
                 <li class="link-item popover-menu-inner-list-item">
                     <a data-message-id="{{message_id}}" class="respond_button popover-menu-link" tabindex="0">
                         <i class="popover-menu-icon zulip-icon zulip-icon-quote-and-reply" aria-hidden="true"></i>
-                        {{t "Quote and reply" }}
+                        <span class="popover-menu-label">{{t "Quote and reply" }}</span>
                         {{popover_hotkey_hints ">"}}
                     </a>
                 </li>
@@ -21,7 +21,7 @@
                 <li class="link-item popover-menu-inner-list-item">
                     <a data-message-id="{{message_id}}" class="popover_edit_message popover-menu-link" tabindex="0">
                         <i class="popover-menu-icon zulip-icon zulip-icon-edit" aria-hidden="true"></i>
-                        {{editability_menu_item}}
+                        <span class="popover-menu-label">{{editability_menu_item}}</span>
                         {{popover_hotkey_hints "E"}}
                     </a>
                 </li>
@@ -30,7 +30,7 @@
                 <li class="link-item popover-menu-inner-list-item">
                     <a data-message-id="{{message_id}}" class="popover_move_message popover-menu-link" tabindex="0">
                         <i class="popover-menu-icon zulip-icon zulip-icon-move-alt" aria-hidden="true"></i>
-                        {{move_message_menu_item}}
+                        <span class="popover-menu-label">{{move_message_menu_item}}</span>
                         {{popover_hotkey_hints "M"}}
                     </a>
                 </li>
@@ -39,7 +39,7 @@
                 <li class="link-item popover-menu-inner-list-item">
                     <a data-message-id="{{message_id}}" class="delete_message popover-menu-link" tabindex="0">
                         <i class="popover-menu-icon zulip-icon zulip-icon-trash" aria-hidden="true"></i>
-                        {{t "Delete message" }}
+                        <span class="popover-menu-label">{{t "Delete message" }}</span>
                     </a>
                 </li>
                 {{/if}}
@@ -52,7 +52,7 @@
                 <li class="link-item popover-menu-inner-list-item">
                     <a data-message-id="{{message_id}}" class="reaction_button popover-menu-link" tabindex="0">
                         <i class="popover-menu-icon zulip-icon zulip-icon-smile" aria-hidden="true"></i>
-                        {{t "Add emoji reaction" }}
+                        <span class="popover-menu-label">{{t "Add emoji reaction" }}</span>
                         {{popover_hotkey_hints ":"}}
                     </a>
                 </li>
@@ -66,7 +66,7 @@
                 <li class="link-item popover-menu-inner-list-item">
                     <a data-message-id="{{message_id}}" class="mark_as_unread popover-menu-link" tabindex="0">
                         <i class="popover-menu-icon zulip-icon zulip-icon-mark-as-unread" aria-hidden="true"></i>
-                        {{t "Mark as unread from here" }}
+                        <span class="popover-menu-label">{{t "Mark as unread from here" }}</span>
                         {{popover_hotkey_hints "Shift" "U"}}
                     </a>
                 </li>
@@ -75,7 +75,7 @@
                 <li class="link-item popover-menu-inner-list-item">
                     <a data-message-id="{{message_id}}" class="rehide_muted_user_message popover-menu-link" tabindex="0">
                         <i class="popover-menu-icon zulip-icon zulip-icon-hide" aria-hidden="true"></i>
-                        {{t "Hide muted message again" }}
+                        <span class="popover-menu-label">{{t "Hide muted message again" }}</span>
                     </a>
                 </li>
                 {{/if}}
@@ -83,7 +83,7 @@
                 <li class="link-item popover-menu-inner-list-item">
                     <a data-message-id="{{message_id}}" class="popover_toggle_collapse popover-menu-link" tabindex="0">
                         <i class="popover-menu-icon zulip-icon zulip-icon-collapse" aria-hidden="true"></i>
-                        {{t "Collapse message" }}
+                        <span class="popover-menu-label">{{t "Collapse message" }}</span>
                         {{popover_hotkey_hints "-"}}
                     </a>
                 </li>
@@ -92,7 +92,7 @@
                 <li class="link-item popover-menu-inner-list-item">
                     <a data-message-id="{{message_id}}" class="popover_toggle_collapse popover-menu-link" tabindex="0">
                         <i class="popover-menu-icon zulip-icon zulip-icon-expand" aria-hidden="true"></i>
-                        {{t "Expand message" }}
+                        <span class="popover-menu-label">{{t "Expand message" }}</span>
                         {{popover_hotkey_hints "-"}}
                     </a>
                 </li>
@@ -106,7 +106,7 @@
                 <li class="link-item popover-menu-inner-list-item">
                     <a data-message-id="{{message_id}}" class="popover_view_source popover-menu-link" tabindex="0">
                         <i class="popover-menu-icon zulip-icon zulip-icon-source" aria-hidden="true"></i>
-                        {{view_source_menu_item}}
+                        <span class="popover-menu-label">{{view_source_menu_item}}</span>
                         {{popover_hotkey_hints "E"}}
                     </a>
                 </li>
@@ -115,7 +115,7 @@
                 <li class="link-item popover-menu-inner-list-item">
                     <a data-message-id="{{message_id}}" class="view_read_receipts popover-menu-link" tabindex="0">
                         <i class="popover-menu-icon zulip-icon zulip-icon-readreceipts" aria-hidden="true"></i>
-                        {{t "View read receipts" }}
+                        <span class="popover-menu-label">{{t "View read receipts" }}</span>
                         {{popover_hotkey_hints "Shift" "V"}}
                     </a>
                 </li>
@@ -123,7 +123,7 @@
                 <li class="link-item popover-menu-inner-list-item">
                     <a class="copy_link navigate-link-on-enter popover-menu-link" data-message-id="{{message_id}}" data-clipboard-text="{{ conversation_time_url }}" tabindex="0">
                         <i class="popover-menu-icon zulip-icon zulip-icon-link-alt" aria-hidden="true"></i>
-                        {{t "Copy link to message" }}
+                        <span class="popover-menu-label">{{t "Copy link to message" }}</span>
                     </a>
                 </li>
             </ul>

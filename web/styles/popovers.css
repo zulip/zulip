@@ -1211,15 +1211,29 @@ ul {
 
     .simplebar-content {
         min-width: var(--popover-menu-min-width);
-        /*  This is necessary to set the dropdown menu width equal to
-            the width of the longest menu item, thus letting the menu
-            items control the width of the menu. */
+        /* Set the popover menu width equal to the width of the
+        longest menu item, thus letting the menu items control
+        the width of the menu. */
         width: min-content;
+        /* Set `max-width` to the minimum of `97vw` and the value defined by
+        the `--popover-menu-max-width` custom property, which should be defined
+        as a local custom property in the scope of a particular popover where
+        we want apply a `max-width` limit.
+
+        When we don't define this local custom property, the fallback value of
+        `97vw` is considered and the `max-width` is then set to `min(97vw, 97vw)`
+        which is simply equivalent to `97vw`.
+
+        IMPORTANT: Setting `--popover-menu-max-width` in the `:root` scope
+        instead of the local scope, eliminates the fallback behavior and thus
+        prevents us from setting the max-width on a case-to-case basis. */
+        max-width: min(var(--popover-menu-max-width, 97vw), 97vw);
     }
 
-    .popover-menu-inner-list-item {
-        /*  This is necessary to keep long menu items on a single line. */
-        white-space: nowrap;
+    .popover-menu-label {
+        /* Keep menu items on a single line, unless forced to wrap
+        by a max-width on the popover. */
+        width: max-content;
     }
 
     .text-item,
@@ -1381,9 +1395,6 @@ ul {
             font-weight: 600;
             line-height: 22px;
             padding: 0 10px;
-            /* We set white-space to normal for the menu items
-               where we want to explicitly wrap. */
-            white-space: normal;
         }
 
         .org-upgrade {
