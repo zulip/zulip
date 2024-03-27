@@ -69,7 +69,7 @@ stream or topic as read**.
 
 {tab|via-left-sidebar}
 
-1. Hover over a stream, topic, or **All messages** in the left sidebar.
+1. Hover over a stream, topic, or **Global feed** in the left sidebar.
 
 1. Click on the **ellipsis** (<i class="zulip-icon zulip-icon-more-vertical"></i>).
 
@@ -100,8 +100,8 @@ stream or topic as read**.
 
 {tab|mobile}
 
-1. Tap a stream, topic, or the **All messages**
-   (<img src="/static/images/help/mobile-globe-icon.svg" alt="globe" class="help-center-icon"/>)
+1. Tap a stream, topic, or the **Global feed**
+   (<img src="/static/images/help/mobile-globe-icon.svg" alt="globe" class="mobile-icon"/>)
    tab.
 
 2. Tap **Mark stream as read**, **Mark topic as read**, or **Mark all as read**

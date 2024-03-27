@@ -10620,12 +10620,12 @@ paths:
 
                     - "recent_topics" - Recent conversations view
                     - "inbox" - Inbox view
-                    - "all_messages" - All messages view
+                    - "global_feed" - Global feed view
 
                     **Changes**: New in Zulip 8.0 (feature level 219). Previously, this was
                     called `default_view`, which was new in Zulip 4.0 (feature level 42).
                   type: string
-                  example: all_messages
+                  example: global_feed
                 web_escape_navigates_to_home_view:
                   description: |
                     Whether the escape key navigates to the
@@ -13079,7 +13079,7 @@ paths:
 
                               - "recent_topics" - Recent conversations view
                               - "inbox" - Inbox view
-                              - "all_messages" - All messages view
+                              - "global_feed" - Global feed view
 
                               **Changes**: New in Zulip 8.0 (feature level 219). Previously, this was
                               called `default_view`, which was new in Zulip 4.0 (feature level 42).
@@ -15370,7 +15370,7 @@ paths:
 
                               - "recent_topics" - Recent conversations view
                               - "inbox" - Inbox view
-                              - "all_messages" - All messages view
+                              - "global_feed" - Global feed view
 
                               **Changes**: New in Zulip 8.0 (feature level 219). Previously, this was
                               called `default_view`, which was new in Zulip 4.0 (feature level 42).
@@ -16492,7 +16492,7 @@ paths:
 
                     - "recent_topics" - Recent conversations view
                     - "inbox" - Inbox view
-                    - "all_messages" - All messages view
+                    - "global_feed" - Global feed view
 
                     **Changes**: New in Zulip 8.0 (feature level 219). Previously, this was
                     called `default_view`, which was new in Zulip 4.0 (feature level 42).
@@ -16502,7 +16502,7 @@ paths:
 
                     Unnecessary JSON-encoding of this parameter was removed in Zulip 4.0 (feature level 64).
                   type: string
-                  example: all_messages
+                  example: global_feed
                 web_escape_navigates_to_home_view:
                   description: |
                     Whether the escape key navigates to the
@@ -19434,7 +19434,7 @@ components:
           description: |
             Whether the user has muted the stream. Muted streams do
             not count towards your total unread count and do not show up in
-            `All messages` view (previously known as `Home` view).
+            `Global feed` view (previously known as `All messages` view).
 
             **Changes**: Prior to Zulip 2.1.0, this feature was
             represented by the more confusingly named `in_home_view` (with the

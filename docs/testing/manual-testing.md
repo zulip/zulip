@@ -53,7 +53,7 @@ Try using all the navigation hotkeys:
 Try narrowing from the message view:
 
 - Hotkeys
-  - use a to go to All messages
+  - use a to go to Global feed
   - use s to narrow to a stream (select message first
     and verify in sidebar)
   - use S to narrow to the topic (and verify in sidebar)
@@ -184,7 +184,7 @@ For each of the above types of messages, you will want to cycle
 through the following views for Cordelia (and have Hamlet send new
 messages after each narrow):
 
-- Go to All messages view.
+- Go to Global feed view.
 - Go to All direct messages view.
 - Go to Direct messages w/Hamlet.
 - Go to Direct messages w/Hamlet and Othello.

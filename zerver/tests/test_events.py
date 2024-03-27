@@ -3509,7 +3509,7 @@ class NormalActionsTest(BaseAction):
             lambda: do_change_user_setting(
                 self.user_profile,
                 "web_home_view",
-                "all_messages",
+                "global_feed",
                 acting_user=self.user_profile,
             ),
             state_change_expected=True,
@@ -3716,7 +3716,7 @@ class RealmPropertyActionTest(BaseAction):
             web_font_size_px=[UserProfile.WEB_FONT_SIZE_PX_LEGACY],
             web_line_height_percent=[UserProfile.WEB_LINE_HEIGHT_PERCENT_LEGACY],
             color_scheme=UserProfile.COLOR_SCHEME_CHOICES,
-            web_home_view=["recent_topics", "inbox", "all_messages"],
+            web_home_view=["recent_topics", "inbox", "global_feed"],
             emojiset=[emojiset["key"] for emojiset in RealmUserDefault.emojiset_choices()],
             demote_inactive_streams=UserProfile.DEMOTE_STREAMS_CHOICES,
             web_mark_read_on_scroll_policy=UserProfile.WEB_MARK_READ_ON_SCROLL_POLICY_CHOICES,
@@ -3851,7 +3851,7 @@ class UserDisplayActionTest(BaseAction):
         test_changes: Dict[str, Any] = dict(
             emojiset=["twitter"],
             default_language=["es", "de", "en"],
-            web_home_view=["all_messages", "inbox", "recent_topics"],
+            web_home_view=["global_feed", "inbox", "recent_topics"],
             demote_inactive_streams=[2, 3, 1],
             web_mark_read_on_scroll_policy=[2, 3, 1],
             user_list_style=[1, 2, 3],

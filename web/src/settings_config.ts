@@ -97,9 +97,9 @@ export const web_home_view_values = {
         code: "recent_topics",
         description: $t({defaultMessage: "Recent conversations"}),
     },
-    all_messages: {
-        code: "all_messages",
-        description: $t({defaultMessage: "All messages"}),
+    global_feed: {
+        code: "global_feed",
+        description: $t({defaultMessage: "Global feed"}),
     },
 };
 

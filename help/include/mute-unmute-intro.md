@@ -8,8 +8,8 @@ Muting has the following effects:
 - Messages in muted topics do not generate notifications (including [alert
   word](/help/dm-mention-alert-notifications#alert-words) notifications), unless
   you are [mentioned](/help/mention-a-user-or-group).
-- Messages in muted topics do not appear in the [**All messages**
-  view](/help/all-messages) or the mobile **Inbox** view.
+- Messages in muted topics do not appear in the [**Global feed**
+  view](/help/global-feed) or the mobile **Inbox** view.
 - Muted topics appear in the [**Recent conversations**
   view](/help/recent-conversations) only if the **Include muted** filter is
   enabled.

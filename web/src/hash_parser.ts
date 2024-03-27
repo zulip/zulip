@@ -117,7 +117,7 @@ export function is_spectator_compatible(hash: string): boolean {
         "keyboard-shortcuts",
         "message-formatting",
         "search-operators",
-        "all_messages",
+        "global_feed",
         "about-zulip",
     ];
 

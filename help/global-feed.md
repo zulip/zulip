@@ -1,12 +1,12 @@
-# All messages
+# Global feed
 
-{!all-messages.md!}
+{!global-feed.md!}
 
 !!! keyboard_tip ""
 
     Use <kbd>S</kbd> (go to stream) or <kbd>Shift</kbd> +
     <kbd>S</kbd> (go to conversation) to zoom in, and <kbd>A</kbd> to
-    get back to **All messages**.
+    get back to **Global feed**.
 
 
 ## Related articles

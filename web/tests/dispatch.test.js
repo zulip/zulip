@@ -955,7 +955,7 @@ run_test("user_settings", ({override}) => {
 
     {
         event = event_fixtures.user_settings__web_home_view_recent_topics;
-        user_settings.web_home_view = "all_messages";
+        user_settings.web_home_view = "global_feed";
         dispatch(event);
         assert.equal(user_settings.web_home_view, "recent_topics");
     }
@@ -964,12 +964,12 @@ run_test("user_settings", ({override}) => {
         event = event_fixtures.user_settings__web_home_view_all_messages;
         user_settings.web_home_view = "recent_topics";
         dispatch(event);
-        assert.equal(user_settings.web_home_view, "all_messages");
+        assert.equal(user_settings.web_home_view, "global_feed");
     }
 
     {
         event = event_fixtures.user_settings__web_home_view_inbox;
-        user_settings.web_home_view = "all_messages";
+        user_settings.web_home_view = "global_feed";
         dispatch(event);
         assert.equal(user_settings.web_home_view, "inbox");
     }
