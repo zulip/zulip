@@ -717,7 +717,7 @@ export function initialize() {
 
     function handle_compose_click(e) {
         const $target = $(e.target);
-        // Emoji clicks should be handled by their own click handler in emoji_picker.js
+        // Emoji clicks should be handled by their own click handler in emoji_picker.ts
         if ($target.is(".emoji_map, img.emoji, .drag, .compose_gif_icon, .compose_control_menu")) {
             return;
         }
