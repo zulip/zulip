@@ -49,13 +49,25 @@ export function initialize() {
 
             // TODO: Figure out a good way to offer feedback if this request fails.
             $popper.on("change", "input[name='visibility-policy-select']", (e) => {
-                const visibility_policy = $(e.currentTarget).attr("data-visibility-policy");
+                const visibility_policy = Number.parseInt(
+                    $(e.currentTarget).attr("data-visibility-policy"),
+                    10,
+                );
+                const success_cb = () => {
+                    if (visibility_policy === user_topics.all_visibility_policies.MUTED) {
+                        instance.hide();
+                    }
+                };
+
                 user_topics.set_user_topic_visibility_policy(
                     stream_id,
                     topic_name,
                     visibility_policy,
+                    false,
+                    false,
+                    undefined,
+                    success_cb,
                 );
-                instance.hide();
             });
         },
         onHidden(instance) {
