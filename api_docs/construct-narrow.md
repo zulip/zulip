@@ -1,21 +1,16 @@
 # Construct a narrow
 
-A **narrow** is a set of filters for Zulip messages, that can be based
-on many different factors (like sender, stream, topic, search
-keywords, etc.). Narrows are used in various places in the the Zulip
-API (most importantly, in the API for fetching messages).
+A **narrow** is a set of filters for Zulip messages, which can be based on various factors like sender, stream, topic, search keywords, etc. Narrows are extensively used in the Zulip API, particularly in the API for fetching messages.
 
-It is simplest to explain the algorithm for encoding a search as a
-narrow using a single example. Consider the following search query
-(written as it would be entered in the Zulip web app's search box).
-It filters for messages sent to stream `announce`, not sent by
-`iago@zulip.com`, and containing the words `cool` and `sunglasses`:
+It is crucial to consider adding an `is:unread` filter to your narrow when adding the "read" flag. The Zulip server has a database index for unread messages, and including the `is:unread` filter optimizes the performance of fetching messages. This optimization is essential for any full-featured client, although it may not be obvious initially.
+
+The algorithm for encoding a search as a narrow is best explained with an example. Consider the following search query (as it would be entered in the Zulip web app's search box), filtering for messages sent to stream `announce`, not sent by `iago@zulip.com`, and containing the words `cool` and `sunglasses`:
 
 ```
 stream:announce -sender:iago@zulip.com cool sunglasses
 ```
 
-This query would be JSON-encoded for use in the Zulip API using JSON
+This query would be JSON-encoded for use in the Zulip API
 as a list of simple objects, as follows:
 
 ```json
