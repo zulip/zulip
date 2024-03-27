@@ -1,5 +1,7 @@
 import $ from "jquery";
 import assert from "minimalistic-assert";
+import type { Instance, Props } from "tippy.js";
+import tippy from "tippy.js";
 
 import render_compose_banner from "../templates/compose_banner/compose_banner.hbs";
 
@@ -903,6 +905,13 @@ function should_disable_save_button_for_time_limit_settings(
     return disable_save_btn;
 }
 
+declare global {
+    // eslint-disable-next-line @typescript-eslint/consistent-type-definitions
+    interface HTMLElement {
+        _tippy?: Instance; // Define the _tippy property
+    }
+}
+
 function enable_or_disable_save_button($subsection_elem: JQuery): void {
     const time_limit_settings = [...$subsection_elem.find(".time-limit-setting")];
 
@@ -911,7 +920,42 @@ function enable_or_disable_save_button($subsection_elem: JQuery): void {
         disable_save_btn = should_disable_save_button_for_time_limit_settings(time_limit_settings);
     } else if ($subsection_elem.attr("id") === "org-other-settings") {
         disable_save_btn = should_disable_save_button_for_jitsi_server_url_setting();
+        const $button_wrapper = $subsection_elem.find(".subsection-changes-save");
+        const tippy_instance = $button_wrapper[0]._tippy;
+        if (disable_save_btn) {
+            // avoid duplication of tippy
+            if (!tippy_instance) {
+                const opts : Partial<Props> = {placement: "top"};
+                initialize_disable_btn_hint_popover(
+                    $button_wrapper,
+                    $t({defaultMessage: "Cannot save invalid Jitsi server URL."}),
+                    opts,
+                );
+            }
+        } else {
+            if (tippy_instance) {
+                tippy_instance.destroy();
+            }
+        }
     }
 
     $subsection_elem.find(".subsection-changes-save button").prop("disabled", disable_save_btn);
+}
+
+
+
+export function initialize_disable_btn_hint_popover($btn_wrapper: JQuery, hint_text: string|undefined, opts: Partial<Props>):void {
+    const tippy_opts: Partial<Props> = {
+        animation: false,
+        hideOnClick: false,
+        placement: "bottom",
+        ...opts,
+    };
+
+    // If hint_text is undefined, we use the HTML content of a
+    // <template> whose id is given by data-tooltip-template-id
+    if (hint_text !== undefined) {
+        tippy_opts.content = hint_text;
+    }
+    tippy($btn_wrapper[0], tippy_opts);
 }
