@@ -143,6 +143,22 @@ test("get_conversations", ({override}) => {
 
     pm_data = pm_list_data.get_conversations();
     assert.deepEqual(pm_data, expected_data);
+
+    expected_data.unshift({
+        recipients: "Iago",
+        user_ids_string: "106",
+        unread: 0,
+        is_zero: true,
+        is_active: true,
+        url: "#narrow/dm/106-Iago",
+        status_emoji_info: {emoji_code: "20"},
+        user_circle_class: "user_circle_empty",
+        is_group: false,
+        is_bot: false,
+    });
+    set_pm_with_filter("iago@zulip.com");
+    pm_data = pm_list_data.get_conversations();
+    assert.deepEqual(pm_data, expected_data);
 });
 
 test("get_conversations bot", ({override}) => {
