@@ -161,7 +161,7 @@ export function search_public_streams_notice_url(terms: Term[]): string {
     return search_terms_to_hash([public_operator, ...terms]);
 }
 
-export function parse_narrow(hash: string): Term[] | undefined {
+export function parse_narrow(hash: string[]): Term[] | undefined {
     // This will throw an exception when passed an invalid hash
     // at the decodeHashComponent call, handle appropriately.
     let i;
@@ -191,6 +191,42 @@ export function parse_narrow(hash: string): Term[] | undefined {
         terms.push({negated, operator, operand});
     }
     return terms;
+}
+
+/**
+ *
+ * @param url_str string containing the url
+ * @returns `string[]` containing only the stream and topic (if present) (in this order)
+ * or `null` if the url is not a valid narrow url
+ */
+export function decode_stream_topic_hash_from_url(url_str: string): string[] | null {
+    try {
+        const index = url_str.indexOf("#narrow");
+        const origin = new URL(url_str).origin;
+        if (origin !== window.location.origin) {
+            return null;
+        }
+        const terms = parse_narrow(url_str.slice(index).split(/\//));
+        if (terms === undefined) {
+            return null;
+        }
+        if (terms.length === 0 || terms.length > 2) {
+            // near links are not transformed
+            return null;
+        }
+        // this check is important as a malformed url
+        // may have `stream`, `topic` or `near:` in any order
+        const res = [];
+        if (terms[0]?.operator === "stream") {
+            res.push(terms[0].operand);
+        }
+        if (terms[1]?.operator === "topic") {
+            res.push(terms[1].operand);
+        }
+        return res.length === 0 ? null : res;
+    } catch {
+        return null;
+    }
 }
 
 export function validate_stream_settings_hash(hash: string): string {
