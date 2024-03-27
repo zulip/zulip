@@ -118,7 +118,6 @@ export function update_unread_count_in_dom($unread_count_elem: JQuery, count: nu
     // This function is used to update unread count in top left corner
     // elements.
     const $unread_count_span = $unread_count_elem.find(".unread_count");
-
     if (count === 0) {
         $unread_count_span.addClass("hide");
         $unread_count_span.text("");

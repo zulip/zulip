@@ -6,6 +6,15 @@
             <i class="fa fa-book" aria-hidden="true"></i>
             {{t "Mark all messages as read" }}
         </a>
+        <a tabindex="0" id="toggle_display_home_view_msg_count">
+            {{#if home_view_msg_count}}
+            <i class="fa fa-eye-slash" aria-hidden="true"></i>
+            {{t "Hide unread counter" }}
+            {{else}}
+            <i class="fa fa-eye" aria-hidden="true"></i>
+            {{t "Show unread counter" }}
+            {{/if}}
+        </a>
     </li>
     {{/if}}
     {{#unless is_home_view}}

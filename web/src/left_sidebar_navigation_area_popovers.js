@@ -41,6 +41,19 @@ function register_mark_all_read_handler(event) {
     instance.hide();
 }
 
+function register_toggle_display_left_sidebar_messsage_count_handler(event) {
+    const {instance} = event.data;
+    const data = {};
+    const home_view_unread_msg_count = user_settings.web_left_sidebar_unreads_count_summary;
+    data.web_left_sidebar_unreads_count_summary = JSON.stringify(!home_view_unread_msg_count);
+
+    channel.patch({
+        url: "/json/settings",
+        data,
+    });
+    instance.hide();
+}
+
 export function initialize() {
     // Starred messages popover
     popover_menus.register_popover_menu(".starred-messages-sidebar-menu-icon", {
@@ -126,6 +139,13 @@ export function initialize() {
                 {instance},
                 register_mark_all_read_handler,
             );
+
+            $popper.one(
+                "click",
+                "#toggle_display_home_view_msg_count",
+                {instance},
+                register_toggle_display_left_sidebar_messsage_count_handler,
+            );
         },
         onShow(instance) {
             popovers.hide_all();
@@ -134,6 +154,7 @@ export function initialize() {
                 ui_util.parse_html(
                     render_left_sidebar_inbox_popover({
                         is_home_view: user_settings.web_home_view === view_code,
+                        home_view_msg_count: user_settings.web_left_sidebar_unreads_count_summary,
                         view_code,
                     }),
                 ),
@@ -157,16 +178,22 @@ export function initialize() {
                 {instance},
                 register_mark_all_read_handler,
             );
+
+            $popper.one(
+                "click",
+                "#toggle_display_home_view_msg_count",
+                {instance},
+                register_toggle_display_left_sidebar_messsage_count_handler,
+            );
         },
         onShow(instance) {
-            popover_menus.popover_instances.left_sidebar_all_messages_popover = instance;
-            ui_util.show_left_sidebar_menu_icon(instance.reference);
             popovers.hide_all();
             const view_code = settings_config.web_home_view_values.all_messages.code;
             instance.setContent(
                 ui_util.parse_html(
                     render_left_sidebar_all_messages_popover({
                         is_home_view: user_settings.web_home_view === view_code,
+                        home_view_msg_count: user_settings.web_left_sidebar_unreads_count_summary,
                         view_code,
                     }),
                 ),
@@ -190,6 +217,13 @@ export function initialize() {
                 {instance},
                 register_mark_all_read_handler,
             );
+
+            $popper.one(
+                "click",
+                "#toggle_display_home_view_msg_count",
+                {instance},
+                register_toggle_display_left_sidebar_messsage_count_handler,
+            );
         },
         onShow(instance) {
             popover_menus.popover_instances.left_sidebar_recent_view_popover = instance;
@@ -200,6 +234,7 @@ export function initialize() {
                 ui_util.parse_html(
                     render_left_sidebar_recent_view_popover({
                         is_home_view: user_settings.web_home_view === view_code,
+                        home_view_msg_count: user_settings.web_left_sidebar_unreads_count_summary,
                         view_code,
                     }),
                 ),

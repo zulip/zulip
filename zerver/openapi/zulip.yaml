@@ -10679,6 +10679,11 @@ paths:
                     - 2
                     - 3
                   example: 2
+                web_left_sidebar_unreads_count_summary:
+                  description: |
+                    Enables users to customize the visibility of unread message counters in the left sidebar.
+                  type: boolean
+                  example: true
                 enable_stream_desktop_notifications:
                   description: |
                     Enable visual desktop notifications for stream messages.
@@ -10970,6 +10975,8 @@ paths:
               user_list_style:
                 contentType: application/json
               web_stream_unreads_count_display_policy:
+                contentType: application/json
+              web_left_sidebar_unreads_count_summary:
                 contentType: application/json
               enable_stream_desktop_notifications:
                 contentType: application/json
@@ -13096,6 +13103,12 @@ paths:
                               - 3 - No streams
 
                               **Changes**: New in Zulip 8.0 (feature level 210).
+                          web_left_sidebar_unreads_count_summary:
+                            type: boolean
+                            description: |
+                              Enables users to customize the visibility of unread message counters in the left sidebar.
+
+                              **Changes**: New in Zulip 9.0 (feature level 243).
                           timezone:
                             type: string
                             description: |
@@ -15368,6 +15381,12 @@ paths:
                               - 3 - No streams
 
                               **Changes**: New in Zulip 8.0 (feature level 210).
+                          web_left_sidebar_unreads_count_summary:
+                            type: boolean
+                            description: |
+                              Enables users to customize the visibility of unread message counters in the left sidebar.
+
+                              **Changes**: New in Zulip 9.0 (feature level 243).
                           enable_stream_desktop_notifications:
                             type: boolean
                             description: |
@@ -16507,6 +16526,11 @@ paths:
                     - 2
                     - 3
                   example: 2
+                web_left_sidebar_unreads_count_summary:
+                  description: |
+                    Enables users to customize the visibility of unread message counters in the left sidebar.
+                  type: boolean
+                  example: true
                 timezone:
                   description: |
                     The IANA identifier of the user's [configured time zone](/help/change-your-timezone).
@@ -16876,6 +16900,8 @@ paths:
               user_list_style:
                 contentType: application/json
               web_stream_unreads_count_display_policy:
+                contentType: application/json
+              web_left_sidebar_unreads_count_summary:
                 contentType: application/json
               enable_stream_desktop_notifications:
                 contentType: application/json

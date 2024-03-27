@@ -47,6 +47,7 @@ export type RealmDefaultSettings = {
     automatically_follow_topics_policy: number;
     automatically_unmute_topics_in_muted_streams_policy: number;
     automatically_follow_topics_where_mentioned: boolean;
+    web_left_sidebar_unreads_count_summary: boolean;
 };
 
 export let realm_user_settings_defaults: RealmDefaultSettings;
