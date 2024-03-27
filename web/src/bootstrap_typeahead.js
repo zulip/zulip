@@ -130,6 +130,19 @@
  *
  *   This allows us to have things like a close button, and be able
  *   to move focus there without the typeahead closing.
+ *
+ * 15. Add `allowNoHighlight` and `shouldHighlightFirstResult` options:
+ *
+ *   Allow none of the typeahead options to be highlighted, which lets
+ *   the user remove highlight by going navigating (with the keyboard)
+ *   past the last item or before the first item.
+ *
+ *   Why? A main way to initiate a search is to press enter from the
+ *   search box, but if an item is highlighted then the enter key selects
+ *   that item to add it as a pill to the search box.
+ *
+ *   `shouldHighlightFirstResult` relatedly lets us decide whether
+ *   the first result should be highlighted when the typeahead opens.
  * ============================================================ */
 
 import $ from "jquery";
@@ -163,6 +176,11 @@ const defaults = {
     dropup: false,
     advanceKeyCodes: [],
     tabIsEnter: true,
+    shouldHighlightFirstResult: () => true,
+    // Used for contenteditble divs. If this is set to false, we
+    // don't set the html content of the div from this module, and
+    // it's handled from the caller (or updater function) instead.
+    updateElementContent: true,
 };
 
 const Typeahead = function (element, options) {
@@ -194,9 +212,6 @@ const Typeahead = function (element, options) {
     if (this.fixed) {
         this.$container.css("position", "fixed");
     }
-    // The naturalSearch option causes arrow keys to immediately
-    // update the search box with the underlying values from the
-    // search suggestions.
     this.listen();
 };
 
@@ -206,10 +221,15 @@ Typeahead.prototype = {
     select(e) {
         const val = this.$menu.find(".active").data("typeahead-value");
         if (this.$element.is("[contenteditable]")) {
-            this.$element.text(this.updater(val, e)).trigger("change");
-            // Empty text after the change event handler
-            // converts the input text to html elements.
-            this.$element.text("");
+            if (this.options.updateElementContent) {
+                this.$element.text(this.updater(val, e)).trigger("change");
+                // Empty textContent after the change event handler
+                // converts the input text to html elements.
+                this.$element.text("");
+            } else {
+                this.updater(val, e);
+                this.$element.trigger("change");
+            }
         } else {
             const after_text = this.updater(val, e);
             const [from, to_before, to_after] = get_string_diff(this.$element.val(), after_text);
@@ -220,7 +240,7 @@ Typeahead.prototype = {
             this.$element.trigger("change");
         }
 
-        return this.hide();
+        return this.lookup(true);
     },
 
     set_value() {
@@ -370,7 +390,9 @@ Typeahead.prototype = {
             return $i[0];
         });
 
-        $items.first().addClass("active");
+        if (!(this.options.allowNoHighlight && !this.options.shouldHighlightFirstResult())) {
+            $items.first().addClass("active");
+        }
         this.$menu.empty().append($items);
         return this;
     },
@@ -379,30 +401,36 @@ Typeahead.prototype = {
         const $active = this.$menu.find(".active").removeClass("active");
         let $next = $active.next();
 
+        // This lets there be a way to not have any item highlighted,
+        // which can be important for e.g. letting the user press enter on
+        // whatever's already in the search box.
+        if (this.options.allowNoHighlight && $active.length && !$next.length) {
+            return;
+        }
+
         if (!$next.length) {
             $next = $(this.$menu.find("li")[0]);
         }
 
         $next.addClass("active");
-
-        if (this.options.naturalSearch) {
-            this.set_value();
-        }
     },
 
     prev() {
         const $active = this.$menu.find(".active").removeClass("active");
         let $prev = $active.prev();
 
+        // This lets there be a way to not have any item highlighted,
+        // which can be important for e.g. letting the user press enter on
+        // whatever's already in the search box.
+        if (this.options.allowNoHighlight && $active.length && !$prev.length) {
+            return;
+        }
+
         if (!$prev.length) {
             $prev = this.$menu.find("li").last();
         }
 
         $prev.addClass("active");
-
-        if (this.options.naturalSearch) {
-            this.set_value();
-        }
     },
 
     listen() {
