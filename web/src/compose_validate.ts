@@ -540,11 +540,11 @@ export function validate_stream_message_mentions(opts: StreamWildcardOptions): b
     return true;
 }
 
-export function validate_stream_message_address_info(stream_name: string): boolean {
-    if (stream_data.is_subscribed_by_name(stream_name)) {
+export function validate_stream_message_address_info(sub: StreamSubscription): boolean {
+    if (sub.subscribed) {
         return true;
     }
-    compose_banner.show_stream_not_subscribed_error(stream_name);
+    compose_banner.show_stream_not_subscribed_error(sub);
     return false;
 }
 
@@ -598,7 +598,7 @@ function validate_stream_message(scheduling_message: boolean): boolean {
     );
 
     if (
-        !validate_stream_message_address_info(sub.name) ||
+        !validate_stream_message_address_info(sub) ||
         !validate_stream_message_mentions({
             stream_id: sub.stream_id,
             $banner_container,
