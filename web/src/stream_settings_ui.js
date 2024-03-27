@@ -890,6 +890,7 @@ export function initialize() {
         // trigger this code path due to bootstrap magic.
         if (e.clientY !== 0) {
             stream_edit.open_edit_panel_empty();
+            stream_create.toggle_stream_creation_tabs();
         }
     });
 
