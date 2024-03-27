@@ -10,7 +10,7 @@
 
 {tab|curl}
 
-``` curl
+```bash
 # For stream messages
 curl -X POST {{ api_url }}/v1/messages \
     -u BOT_EMAIL_ADDRESS:BOT_API_KEY \
