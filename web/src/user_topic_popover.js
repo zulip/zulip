@@ -49,10 +49,7 @@ export function initialize() {
             }
 
             // TODO: Figure out a good way to offer feedback if this request fails.
-            $popper.on("click", ".visibility_policy_option", (e) => {
-                $(".visibility_policy_option").removeClass("selected_visibility_policy");
-                $(e.currentTarget).addClass("selected_visibility_policy");
-
+            $popper.on("change", "input[name='visibility-policy-select']", (e) => {
                 const visibility_policy = $(e.currentTarget).attr("data-visibility-policy");
                 user_topics.set_user_topic_visibility_policy(
                     stream_id,
