@@ -430,12 +430,10 @@ class WorkerTest(ZulipTestCase):
         # details, but the summary is that IntegrityErrors due to database constraints are raised at
         # the end of the test, not inside the `try` block. So, we have the code inside the `try` block
         # raise `IntegrityError` by mocking.
-        with patch(
-            "zerver.models.ScheduledMessageNotificationEmail.objects.create",
-            side_effect=IntegrityError,
-        ), self.assertLogs(level="DEBUG") as debug_logs, patch.object(
-            mmw.cv, "notify"
-        ) as notify_mock:
+        with patch("zerver.worker.queue_processors.connection") as db_connection, self.assertLogs(
+            level="DEBUG"
+        ) as debug_logs, patch.object(mmw.cv, "notify") as notify_mock:
+            db_connection.cursor.side_effect = IntegrityError
             mmw.consume_single_event(hamlet_event1)
             self.assertEqual(notify_mock.call_count, 0)
             self.assertIn(
