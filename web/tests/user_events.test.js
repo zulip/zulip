@@ -20,6 +20,10 @@ const settings_users = mock_esm("../src/settings_users", {
     update_user_data() {},
     update_view_on_deactivate() {},
 });
+mock_esm("../src/user_profile", {
+    update_profile_modal_ui() {},
+    update_user_custom_profile_fields() {},
+});
 const stream_events = mock_esm("../src/stream_events");
 
 mock_esm("../src/activity_ui", {
