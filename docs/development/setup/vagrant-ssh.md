@@ -8,7 +8,7 @@ $ vagrant ssh
 You should see output that starts like this:
 
 ```console
-Welcome to Ubuntu 20.04.4 LTS (GNU/Linux 5.4.0-107-generic x86_64)
+Welcome to Ubuntu 22.04.3 LTS (GNU/Linux 5.15.0-92-generic x86_64)
 ```
 
 Congrats, you're now inside the Zulip development environment!

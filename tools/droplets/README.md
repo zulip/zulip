@@ -130,7 +130,7 @@ so they are notified.
    - Check "Monitoring", "IPv6", and "User data"
    - Paste the contents of `tools/droplets/new-droplet-image` into the
      text box which says `Enter user data here...`
-   - Name it e.g. `base-ubuntu-20-04.zulipdev.org`
+   - Name it e.g. `base-ubuntu-22-04.zulipdev.org`
 1. Add an A record for `base.zulipdev.org` to point to the new host.
 1. Wait for the host to boot.
 1. `scp tools/droplets/new-droplet-image base.zulipdev.org:/tmp/new-droplet-image`

@@ -15,7 +15,7 @@ Vagrant.configure("2") do |config|
   ubuntu_mirror = ""
   vboxadd_version = nil
 
-  config.vm.box = "bento/ubuntu-20.04"
+  config.vm.box = "bento/ubuntu-22.04"
 
   config.vm.synced_folder ".", "/vagrant", disabled: true
   config.vm.synced_folder ".", "/srv/zulip", docker_consistency: "z"

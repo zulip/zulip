@@ -61,9 +61,9 @@ os_info="$(
     read -r os_version_id
 } <<<"$os_info"
 
-# Pin PostgreSQL on Ubuntu 20.04, so we can test upgrading it
-if [ "$os_id $os_version_id" = 'ubuntu 20.04' ]; then
-    export POSTGRESQL_VERSION=12
+# Pin PostgreSQL on Ubuntu 22.04, so we can test upgrading it
+if [ "$os_id $os_version_id" = 'ubuntu 22.04' ]; then
+    export POSTGRESQL_VERSION=14
 fi
 
 # Install

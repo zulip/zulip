@@ -1,2 +1,0 @@
-deb http://apt.postgresql.org/pub/repos/apt/ bullseye-pgdg main
-deb-src http://apt.postgresql.org/pub/repos/apt/ bullseye-pgdg main
