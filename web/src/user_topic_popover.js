@@ -49,9 +49,9 @@ export function initialize() {
                 return;
             }
 
-            // TODO: Figure out a good way to offer feedback if this request fails.
             $popper.on("change", "input[name='visibility-policy-select']", (e) => {
                 const start_time = Date.now();
+
                 const visibility_policy = Number.parseInt(
                     $(e.currentTarget).attr("data-visibility-policy"),
                     10,
@@ -66,6 +66,22 @@ export function initialize() {
                     );
                 };
 
+                const error_cb = () => {
+                    const prev_visibility_policy = user_topics.get_topic_visibility_policy(
+                        stream_id,
+                        topic_name,
+                    );
+                    const $prev_visibility_policy_input = $(e.currentTarget)
+                        .parent()
+                        .find(`input[data-visibility-policy="${prev_visibility_policy}"]`);
+                    setTimeout(
+                        () => {
+                            $prev_visibility_policy_input.prop("checked", true);
+                        },
+                        util.get_remaining_time(start_time, 500),
+                    );
+                };
+
                 user_topics.set_user_topic_visibility_policy(
                     stream_id,
                     topic_name,
@@ -74,6 +90,7 @@ export function initialize() {
                     false,
                     undefined,
                     success_cb,
+                    error_cb,
                 );
             });
         },
