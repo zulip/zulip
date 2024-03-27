@@ -1131,7 +1131,7 @@ class SlackImporter(ZulipTestCase):
                 "channel_name": "random",
             },
             {
-                "text": "random",
+                "text": "A random text smaller than 60 characters",
                 "user": "U061A5N1G",
                 "ts": "1439868294.000008",
                 # A different Thread!
@@ -1139,7 +1139,7 @@ class SlackImporter(ZulipTestCase):
                 "channel_name": "random",
             },
             {
-                "text": "random",
+                "text": "A random text which is greater than 60 characters is used",
                 "user": "U061A5N1G",
                 "ts": "1439868295.000008",
                 # Another different Thread!
@@ -1190,13 +1190,18 @@ class SlackImporter(ZulipTestCase):
         self.assertEqual(zerver_message[0]["content"], "@**Jane**: hey!")
         self.assertEqual(zerver_message[0]["has_link"], False)
         self.assertEqual(zerver_message[1]["content"], "random")
-        self.assertEqual(zerver_message[1][EXPORT_TOPIC_NAME], "2015-06-12 Slack thread 1")
-        self.assertEqual(zerver_message[2][EXPORT_TOPIC_NAME], "2015-06-12 Slack thread 1")
-        # A new thread with a different date from 2015-06-12, starts the counter from 1.
-        self.assertEqual(zerver_message[3][EXPORT_TOPIC_NAME], "2015-08-18 Slack thread 1")
-        # A new thread with a different timestamp, but the same date as 2015-08-18, starts the
-        # counter from 2.
-        self.assertEqual(zerver_message[4][EXPORT_TOPIC_NAME], "2015-08-18 Slack thread 2")
+        self.assertEqual(zerver_message[1][EXPORT_TOPIC_NAME], "2015-06-12 random")
+        self.assertEqual(zerver_message[2][EXPORT_TOPIC_NAME], "2015-06-12 random")
+        # A new thread with a different date from 2015-06-12, with content length smaller than 60 characters.
+        self.assertEqual(
+            zerver_message[3][EXPORT_TOPIC_NAME],
+            "2015-08-18 A random text smaller than 60 characters",
+        )
+        # A new thread with a different timestamp, but the same date as 2015-08-18, with content length greater than 60 characters.
+        self.assertEqual(
+            zerver_message[4][EXPORT_TOPIC_NAME],
+            "2015-08-18 A random text which is greater than 60 character…",
+        )
         self.assertEqual(
             zerver_message[1]["recipient"], slack_recipient_name_to_zulip_recipient_id["random"]
         )
