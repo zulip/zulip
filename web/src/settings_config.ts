@@ -131,7 +131,7 @@ export const twenty_four_hour_time_values = {
 
 export type DisplaySettings = {
     settings: {
-        user_display_settings: string[];
+        user_preferences: string[];
     };
     render_only: {
         high_contrast_mode: boolean;
@@ -142,7 +142,7 @@ export type DisplaySettings = {
 /* istanbul ignore next */
 export const get_all_preferences = (): DisplaySettings => ({
     settings: {
-        user_display_settings: [
+        user_preferences: [
             "dense_mode",
             "high_contrast_mode",
             "fluid_layout_width",
