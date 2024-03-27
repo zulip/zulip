@@ -1,4 +1,5 @@
 import logging
+import textwrap
 from collections import defaultdict
 from datetime import datetime
 from typing import Callable, Dict, List, Optional, Tuple, TypedDict
@@ -179,13 +180,16 @@ def bulk_set_user_topic_visibility_policy_in_database(
             visibility_policy=visibility_policy, last_updated=last_updated
         )
 
+    # truncate user_topic_name
+    truncate_topic_name = textwrap.shorten(topic_name, width=60, placeholder="")
+
     if user_profiles_without_visibility_policy:
         UserTopic.objects.bulk_create(
             UserTopic(
                 user_profile=user_profile,
                 stream_id=stream_id,
                 recipient_id=recipient_id,
-                topic_name=topic_name,
+                topic_name=truncate_topic_name,
                 last_updated=last_updated,
                 visibility_policy=visibility_policy,
             )
