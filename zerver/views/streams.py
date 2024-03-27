@@ -680,7 +680,7 @@ def add_subscriptions_backend(
     for sub_info in subscribed:
         subscriber = sub_info.user
         stream = sub_info.stream
-        result["subscribed"][subscriber.email].append(stream.name)
+        result["subscribed"][subscriber.email].append({"stream_id": stream.id, "name": stream.name})
         email_to_user_profile[subscriber.email] = subscriber
     for sub_info in already_subscribed:
         subscriber = sub_info.user
@@ -709,7 +709,7 @@ def add_subscriptions_backend(
 def send_messages_for_new_subscribers(
     user_profile: UserProfile,
     subscribers: Set[UserProfile],
-    new_subscriptions: Dict[str, List[str]],
+    new_subscriptions: Dict[str, List[Dict[str, Any]]],
     email_to_user_profile: Dict[str, UserProfile],
     created_streams: List[Stream],
     announce: bool,
@@ -733,7 +733,7 @@ def send_messages_for_new_subscribers(
     # or if a new stream was created with the "announce" option.
     notifications = []
     if new_subscriptions:
-        for email, subscribed_stream_names in new_subscriptions.items():
+        for email, subscribed_streams in new_subscriptions.items():
             if email == user_profile.email:
                 # Don't send a Zulip if you invited yourself.
                 continue
@@ -743,6 +743,7 @@ def send_messages_for_new_subscribers(
 
             # For each user, we notify them about newly subscribed streams, except for
             # streams that were newly created.
+            subscribed_stream_names = {stream["name"] for stream in subscribed_streams}
             notify_stream_names = set(subscribed_stream_names) - newly_created_stream_names
 
             if not notify_stream_names:
