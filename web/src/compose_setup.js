@@ -88,6 +88,10 @@ export function initialize() {
         } else {
             $(".add-poll").parent().removeClass("disabled-on-hover");
         }
+
+        // show banner if the option to split is enabled
+        // and the message contains the split delimiter
+        compose_validate.update_split_messages_info_banner();
     });
 
     $("#compose form").on("submit", (e) => {
@@ -187,6 +191,15 @@ export function initialize() {
                 }
                 compose_validate.clear_topic_resolved_warning(true);
             });
+        },
+    );
+
+    $("body").on(
+        "click",
+        `.${CSS.escape(compose_banner.CLASSNAMES.split_messages)} .main-view-banner-action-button`,
+        (event) => {
+            event.preventDefault();
+            compose.toggle_split_messages();
         },
     );
 
