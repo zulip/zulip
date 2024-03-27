@@ -1020,6 +1020,13 @@ export class MessageListView {
             }
         }
 
+        const is_conversation_view = this.list.data.filter.is_conversation_view();
+        if (is_conversation_view) {
+            $(".focused-message-list").addClass("is-conversation-view");
+        } else {
+            $(".focused-message-list").removeClass("is-conversation-view");
+        }
+
         return undefined;
     }
 
