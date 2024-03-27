@@ -5,7 +5,7 @@ import re
 import string
 from datetime import datetime, timedelta
 from typing import Any, Dict, List, Union
-from unittest import mock
+from unittest import mock, skipUnless
 
 import orjson
 from django.conf import settings
@@ -15,6 +15,7 @@ from typing_extensions import override
 
 from confirmation.models import Confirmation, create_confirmation_link
 from zerver.actions.create_realm import do_change_realm_subdomain, do_create_realm
+from zerver.actions.create_user import do_create_user
 from zerver.actions.message_send import (
     internal_send_huddle_message,
     internal_send_private_message,
@@ -59,6 +60,9 @@ from zerver.models.groups import SystemGroups
 from zerver.models.realms import get_realm
 from zerver.models.streams import get_stream
 from zerver.models.users import get_system_bot, get_user_profile_by_id
+
+if settings.ZILENCER_ENABLED:
+    from corporate.lib.stripe import get_seat_count
 
 
 class RealmTest(ZulipTestCase):
@@ -909,8 +913,22 @@ class RealmTest(ZulipTestCase):
         self.assertEqual(realm_audit_log.acting_user, iago)
         self.assertEqual(realm.org_type, Realm.ORG_TYPES["government"]["id"])
 
+    @skipUnless(settings.ZILENCER_ENABLED, "requires zilencer")
     def test_change_realm_plan_type(self) -> None:
         realm = get_realm("zulip")
+
+        # Create additional user, so that the realm has a lot of seats for the purposes
+        # of upload quota calculation.
+        for count in range(10):
+            do_create_user(
+                f"email{count}@example.com",
+                f"password {count}",
+                realm,
+                "name",
+                role=UserProfile.ROLE_MEMBER,
+                acting_user=None,
+            )
+
         iago = self.example_user("iago")
         self.assertEqual(realm.plan_type, Realm.PLAN_TYPE_SELF_HOSTED)
         self.assertEqual(realm.max_invites, settings.INVITES_DEFAULT_REALM_DAILY_MAX)
@@ -938,7 +956,9 @@ class RealmTest(ZulipTestCase):
         self.assertEqual(realm.plan_type, Realm.PLAN_TYPE_STANDARD)
         self.assertEqual(realm.max_invites, Realm.INVITES_STANDARD_REALM_DAILY_MAX)
         self.assertEqual(realm.message_visibility_limit, None)
-        self.assertEqual(realm.upload_quota_gb, Realm.UPLOAD_QUOTA_STANDARD)
+        self.assertEqual(
+            realm.upload_quota_gb, get_seat_count(realm) * settings.UPLOAD_QUOTA_PER_USER_GB
+        )
         everyone_system_group = UserGroup.objects.get(name=SystemGroups.EVERYONE, realm=realm)
         self.assertEqual(realm.can_access_all_users_group_id, everyone_system_group.id)
 
@@ -956,7 +976,7 @@ class RealmTest(ZulipTestCase):
         self.assertEqual(realm.plan_type, Realm.PLAN_TYPE_STANDARD_FREE)
         self.assertEqual(realm.max_invites, Realm.INVITES_STANDARD_REALM_DAILY_MAX)
         self.assertEqual(realm.message_visibility_limit, None)
-        self.assertEqual(realm.upload_quota_gb, Realm.UPLOAD_QUOTA_STANDARD)
+        self.assertEqual(realm.upload_quota_gb, Realm.UPLOAD_QUOTA_STANDARD_FREE)
 
         do_change_realm_plan_type(realm, Realm.PLAN_TYPE_LIMITED, acting_user=iago)
         do_change_realm_plan_type(realm, Realm.PLAN_TYPE_PLUS, acting_user=iago)
@@ -964,7 +984,9 @@ class RealmTest(ZulipTestCase):
         self.assertEqual(realm.plan_type, Realm.PLAN_TYPE_PLUS)
         self.assertEqual(realm.max_invites, Realm.INVITES_STANDARD_REALM_DAILY_MAX)
         self.assertEqual(realm.message_visibility_limit, None)
-        self.assertEqual(realm.upload_quota_gb, Realm.UPLOAD_QUOTA_STANDARD)
+        self.assertEqual(
+            realm.upload_quota_gb, get_seat_count(realm) * settings.UPLOAD_QUOTA_PER_USER_GB
+        )
 
         do_change_realm_permission_group_setting(
             realm, "can_access_all_users_group", members_system_group, acting_user=None
@@ -974,8 +996,21 @@ class RealmTest(ZulipTestCase):
         self.assertEqual(realm.plan_type, Realm.PLAN_TYPE_STANDARD)
         self.assertEqual(realm.max_invites, Realm.INVITES_STANDARD_REALM_DAILY_MAX)
         self.assertEqual(realm.message_visibility_limit, None)
-        self.assertEqual(realm.upload_quota_gb, Realm.UPLOAD_QUOTA_STANDARD)
+        self.assertEqual(
+            realm.upload_quota_gb, get_seat_count(realm) * settings.UPLOAD_QUOTA_PER_USER_GB
+        )
         self.assertEqual(realm.can_access_all_users_group_id, everyone_system_group.id)
+
+        # Test that custom_upload_quota_gb overrides the default upload_quota_gb
+        # implied by a plan and makes .upload_quota_gb be unaffacted by plan changes.
+        realm.custom_upload_quota_gb = 100
+        realm.save(update_fields=["custom_upload_quota_gb"])
+        do_change_realm_plan_type(realm, Realm.PLAN_TYPE_PLUS, acting_user=iago)
+        self.assertEqual(realm.plan_type, Realm.PLAN_TYPE_PLUS)
+        self.assertEqual(realm.upload_quota_gb, 100)
+
+        realm.custom_upload_quota_gb = None
+        realm.save(update_fields=["custom_upload_quota_gb"])
 
         do_change_realm_plan_type(realm, Realm.PLAN_TYPE_SELF_HOSTED, acting_user=iago)
         self.assertEqual(realm.plan_type, Realm.PLAN_TYPE_SELF_HOSTED)
