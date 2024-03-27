@@ -3,6 +3,7 @@
 const {strict: assert} = require("assert");
 
 const _ = require("lodash");
+const MockDate = require("mockdate");
 
 const {set_global, zrequire} = require("./lib/namespace");
 const {run_test} = require("./lib/test");
@@ -388,4 +389,23 @@ run_test("format_array_as_list", () => {
     // when Intl.ListFormat does not exist
     global.Intl.ListFormat = undefined;
     assert.equal(util.format_array_as_list(array, "long", "conjunction"), "apple, banana, orange");
+});
+
+run_test("get_remaining_time", () => {
+    // When current time is less than start time
+    // Set a random start time
+    const start_time = new Date(1000).getTime();
+    // Set current time to 400ms ahead of the start time
+    MockDate.set(start_time + 400);
+    const duration = 500;
+    let expected_remaining_time = 100;
+    assert.equal(util.get_remaining_time(start_time, duration), expected_remaining_time);
+
+    // When current time is greater than start time + duration
+    // Set current time to 100ms after the start time + duration
+    MockDate.set(start_time + duration + 100);
+    expected_remaining_time = 0;
+    assert.equal(util.get_remaining_time(start_time, duration), expected_remaining_time);
+
+    MockDate.reset();
 });
