@@ -199,6 +199,31 @@ export function activate(raw_terms, opts) {
             final_select_id: undefined,
         };
 
+        /*  (issue #14971)
+
+            Previously, using "first" or "latest" as final_select_id
+            caused errors due to data type mismatch.
+            This change employs conditional assignments:
+
+            * When then_select_id is "first", target_id is set to a special value (-1).
+              This sets final_select_id to assign "oldest" to the anchor, fetching
+              messages starting from the first message.
+
+            * Similarly, for "latest", target_id is set to another special value
+              (LARGER_THAN_MAX_MESSAGE_ID) to assign "newest" to the anchor,
+              fetching messages starting from the latest message.
+
+            NB: Review the switch statement below to see how the special values are used
+        */
+        const home_key = opts.trigger === "home";
+        const end_key = opts.trigger === "end";
+        if (home_key) {
+            id_info.target_id = -1;
+        }
+        if (end_key) {
+            id_info.target_id = LARGER_THAN_MAX_MESSAGE_ID;
+        }
+
         const terms = filter.terms();
 
         // These two narrowing operators specify what message should be

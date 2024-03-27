@@ -1,7 +1,9 @@
 import assert from "minimalistic-assert";
 
+import * as hash_util from "./hash_util";
 import * as message_lists from "./message_lists";
 import * as message_viewport from "./message_viewport";
+import {activate} from "./narrow";
 import * as unread_ops from "./unread_ops";
 
 function go_to_row(msg_id) {
@@ -46,18 +48,39 @@ export function down(with_centering) {
 }
 
 export function to_home() {
-    assert(message_lists.current !== undefined);
-    message_viewport.set_last_movement_direction(-1);
-    const first_id = message_lists.current.first().id;
-    message_lists.current.select_id(first_id, {then_scroll: true, from_scroll: true});
+    const found_oldest = message_lists.current.data.fetch_status.has_found_oldest();
+    if (found_oldest) {
+        message_viewport.set_last_movement_direction(-1);
+        const first_id = message_lists.current.first().id;
+        message_lists.current.select_id(first_id, {then_scroll: true, from_scroll: true});
+    } else {
+        // NB: In Firefox, window.location.hash is URI-decoded.
+        // Even if the URL bar says #%41%42%43%44, the value here will
+        // be #ABCD.
+        const hash = window.location.hash.split("/");
+        const operators = hash_util.parse_narrow(hash);
+        const opts = {trigger: "home"};
+        // To avoid conflicts and unnecessary bloat.
+        // We only use `activate` from `narrow.js`.
+        activate(operators, opts);
+    }
 }
 
 export function to_end() {
-    assert(message_lists.current !== undefined);
-    const next_id = message_lists.current.last().id;
-    message_viewport.set_last_movement_direction(1);
-    message_lists.current.select_id(next_id, {then_scroll: true, from_scroll: true});
-    unread_ops.process_visible();
+    const found_newest = message_lists.current.data.fetch_status.has_found_newest();
+    if (found_newest) {
+        const next_id = message_lists.current.last().id;
+        message_viewport.set_last_movement_direction(1);
+        message_lists.current.select_id(next_id, {then_scroll: true, from_scroll: true});
+        unread_ops.process_visible();
+    } else {
+        const hash = window.location.hash.split("/");
+        const operators = hash_util.parse_narrow(hash);
+        const opts = {trigger: "end"};
+        // To avoid conflicts and unnecessary bloat.
+        // We only use `activate` from `narrow.js`.
+        activate(operators, opts);
+    }
 }
 
 function amount_to_paginate() {
