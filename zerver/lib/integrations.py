@@ -8,7 +8,6 @@ from django.utils.module_loading import import_string
 from django.utils.translation import gettext_lazy
 from django_stubs_ext import StrPromise
 from typing_extensions import TypeAlias
-
 from zerver.lib.storage import static_path
 
 """This module declares all of the (documented) integrations available
@@ -375,6 +374,7 @@ WEBHOOK_INTEGRATIONS: List[WebhookIntegration] = [
     WebhookIntegration("buildbot", ["continuous-integration"], display_name="Buildbot"),
     WebhookIntegration("canarytoken", ["monitoring"], display_name="Thinkst Canarytokens"),
     WebhookIntegration("circleci", ["continuous-integration"], display_name="CircleCI"),
+    WebhookIntegration("clickup", ["project-management"], display_name="ClickUp"),
     WebhookIntegration("clubhouse", ["project-management"]),
     WebhookIntegration("codeship", ["continuous-integration", "deployment"]),
     WebhookIntegration("crashlytics", ["monitoring"]),
@@ -735,6 +735,7 @@ DOC_SCREENSHOT_CONFIG: Dict[str, List[BaseScreenshotConfig]] = {
         ScreenshotConfig("bitbucket_job_completed.json", image_name="001.png"),
         ScreenshotConfig("github_job_completed.json", image_name="002.png"),
     ],
+    "clickup": [ScreenshotConfig("task_created.json")],
     "clubhouse": [ScreenshotConfig("story_create.json")],
     "codeship": [ScreenshotConfig("error_build.json")],
     "crashlytics": [ScreenshotConfig("issue_message.json")],
