@@ -1,4 +1,5 @@
 import $ from "jquery";
+import _ from "lodash";
 
 import * as common from "../common";
 import {$t} from "../i18n";
@@ -21,12 +22,14 @@ $(() => {
         // Reset the state of the password strength bar if the page
         // was just reloaded due to a validation failure on the backend.
         password_quality($password_field.val()!, $("#pw_strength .bar"), $password_field);
-
-        $password_field.on("input", function () {
-            // Update the password strength bar even if we aren't validating
-            // the field yet.
-            password_quality($(this).val()!, $("#pw_strength .bar"), $(this));
-        });
+        // Update the password strength bar even if we aren't validating
+        // the field yet.
+        $password_field.on(
+            "input",
+            _.debounce(() => {
+                password_quality($password_field.val()!, $("#pw_strength .bar"), $password_field);
+            }, 500),
+        );
     }
 
     common.setup_password_visibility_toggle(
@@ -47,6 +50,7 @@ $(() => {
     );
 
     $("#registration, #password_reset, #create_realm").validate({
+        onkeyup: false,
         rules: {
             password: "password_strength",
             new_password1: "password_strength",
