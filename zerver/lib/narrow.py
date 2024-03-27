@@ -1018,7 +1018,27 @@ def add_narrow_conditions(
 
     if search_operands:
         is_search = True
-        query = query.add_columns(topic_column_sa(), column("rendered_content", Text))
+        query = query.add_columns(
+            # This topic escaping logic ensures consistent escaping of topic names throughout
+            # the system, ensuring accuracy in string highlighting and avoiding any discrepancies.
+            #
+            # When a topic name is fetched from the database, it goes through this logic.
+            # The `func.escape_html()` function is used to escape the topic name, ensuring that
+            # special characters are properly escaped. This helps to avoid the need to apply other
+            # escaping logic to the topic name for string highlighting purposes. As a result, the
+            # highlighted string will accurately match the actual topic name displayed in the UI.
+            # This approach prevents any inconsistencies or offsets that could occur if different
+            # escaping functions were used.
+            #
+            # It's important to note that the `process_fts_updates` script, responsible for
+            # updating the relevant columns in the database, also utilizes the same escaping
+            # logic. This alignment ensures that the escaped topic names stored in the database
+            # and the topic names used during string highlighting are in sync. Therefore, there
+            # is no need for any special handling in `process_fts_updates` to align with this
+            # escaping logic.
+            func.escape_html(topic_column_sa(), type_=Text).label("escaped_topic_name"),
+            column("rendered_content", Text),
+        )
         search_term = dict(
             operator="search",
             operand=" ".join(search_operands),

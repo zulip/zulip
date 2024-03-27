@@ -2566,6 +2566,7 @@ class GetOldMessagesTest(ZulipTestCase):
             ("日本", "今朝はごはんを食べました。"),
             ("日本", "昨日、日本 のお菓子を送りました。"),
             ("english", "I want to go to 日本!"),
+            ("McDonald'sBurger", "McDonald'sBurger"),
         ]
 
         next_message_id = self.get_last_message().id + 1
@@ -2693,6 +2694,28 @@ class GetOldMessagesTest(ZulipTestCase):
             '<p>こんに <span class="highlight">ちは</span> 。 <span class="highlight">今日は</span> いい 天気ですね。</p>',
         )
 
+        # Search operands with HTML special characters
+        special_search_narrow = [
+            dict(operator="search", operand="sBurger"),
+        ]
+        special_search_result = self.get_and_check_messages(
+            dict(
+                narrow=orjson.dumps(special_search_narrow).decode(),
+                anchor=next_message_id,
+                num_after=10,
+                num_before=0,
+            )
+        )
+        self.assert_length(special_search_result["messages"], 1)
+        self.assertEqual(
+            special_search_result["messages"][0][MATCH_TOPIC],
+            'McDonald&#39;<span class="highlight">sBurger</span>',
+        )
+        self.assertEqual(
+            special_search_result["messages"][0]["match_content"],
+            '<p>McDonald\'<span class="highlight">sBurger</span></p>',
+        )
+
     @override_settings(USING_PGROONGA=False)
     def test_get_visible_messages_with_search(self) -> None:
         self.login("hamlet")
@@ -2771,6 +2794,7 @@ class GetOldMessagesTest(ZulipTestCase):
             ("english", "https://domain.com/path/to.something-I,want/"),
             ("english", "foo.cht"),
             ("bread & butter", "chalk & cheese"),
+            ("McDonald'sBurger", "McDonald'sBurger"),
         ]
 
         for topic, content in messages_to_search:
@@ -2975,6 +2999,27 @@ class GetOldMessagesTest(ZulipTestCase):
         self.assertEqual(
             special_search_result["messages"][0]["match_content"],
             '<p>chalk <span class="highlight">&amp;</span> cheese</p>',
+        )
+
+        special_search_narrow = [
+            dict(operator="search", operand="sBurger"),
+        ]
+        special_search_result = self.get_and_check_messages(
+            dict(
+                narrow=orjson.dumps(special_search_narrow).decode(),
+                anchor=next_message_id,
+                num_after=10,
+                num_before=0,
+            )
+        )
+        self.assert_length(special_search_result["messages"], 1)
+        self.assertEqual(
+            special_search_result["messages"][0][MATCH_TOPIC],
+            'McDonald&#39;<span class="highlight">sBurger</span>',
+        )
+        self.assertEqual(
+            special_search_result["messages"][0]["match_content"],
+            '<p>McDonald\'<span class="highlight">sBurger</span></p>',
         )
 
     def test_messages_in_narrow_for_non_search(self) -> None:
@@ -4102,8 +4147,8 @@ recipient_id = %(recipient_id_3)s AND upper(subject) = upper(%(param_2)s))\
         query_ids = self.get_query_ids()
 
         sql_template = """\
-SELECT anon_1.message_id, anon_1.flags, anon_1.subject, anon_1.rendered_content, anon_1.content_matches, anon_1.topic_matches \n\
-FROM (SELECT message_id, flags, subject, rendered_content, array((SELECT ARRAY[sum(length(anon_3) - 11) OVER (ROWS BETWEEN UNBOUNDED PRECEDING AND 1 PRECEDING) + 11, strpos(anon_3, '</ts-match>') - 1] AS anon_2 \n\
+SELECT anon_1.message_id, anon_1.flags, anon_1.escaped_topic_name, anon_1.rendered_content, anon_1.content_matches, anon_1.topic_matches \n\
+FROM (SELECT message_id, flags, escape_html(subject) AS escaped_topic_name, rendered_content, array((SELECT ARRAY[sum(length(anon_3) - 11) OVER (ROWS BETWEEN UNBOUNDED PRECEDING AND 1 PRECEDING) + 11, strpos(anon_3, '</ts-match>') - 1] AS anon_2 \n\
 FROM unnest(string_to_array(ts_headline('zulip.english_us_search', rendered_content, plainto_tsquery('zulip.english_us_search', 'jumping'), 'HighlightAll = TRUE, StartSel = <ts-match>, StopSel = </ts-match>'), '<ts-match>')) AS anon_3\n\
  LIMIT ALL OFFSET 1)) AS content_matches, array((SELECT ARRAY[sum(length(anon_5) - 11) OVER (ROWS BETWEEN UNBOUNDED PRECEDING AND 1 PRECEDING) + 11, strpos(anon_5, '</ts-match>') - 1] AS anon_4 \n\
 FROM unnest(string_to_array(ts_headline('zulip.english_us_search', escape_html(subject), plainto_tsquery('zulip.english_us_search', 'jumping'), 'HighlightAll = TRUE, StartSel = <ts-match>, StopSel = </ts-match>'), '<ts-match>')) AS anon_5\n\
@@ -4118,8 +4163,8 @@ WHERE user_profile_id = {hamlet_id} AND (search_tsvector @@ plainto_tsquery('zul
         )
 
         sql_template = """\
-SELECT anon_1.message_id, anon_1.subject, anon_1.rendered_content, anon_1.content_matches, anon_1.topic_matches \n\
-FROM (SELECT id AS message_id, subject, rendered_content, array((SELECT ARRAY[sum(length(anon_3) - 11) OVER (ROWS BETWEEN UNBOUNDED PRECEDING AND 1 PRECEDING) + 11, strpos(anon_3, '</ts-match>') - 1] AS anon_2 \n\
+SELECT anon_1.message_id, anon_1.escaped_topic_name, anon_1.rendered_content, anon_1.content_matches, anon_1.topic_matches \n\
+FROM (SELECT id AS message_id, escape_html(subject) AS escaped_topic_name, rendered_content, array((SELECT ARRAY[sum(length(anon_3) - 11) OVER (ROWS BETWEEN UNBOUNDED PRECEDING AND 1 PRECEDING) + 11, strpos(anon_3, '</ts-match>') - 1] AS anon_2 \n\
 FROM unnest(string_to_array(ts_headline('zulip.english_us_search', rendered_content, plainto_tsquery('zulip.english_us_search', 'jumping'), 'HighlightAll = TRUE, StartSel = <ts-match>, StopSel = </ts-match>'), '<ts-match>')) AS anon_3\n\
  LIMIT ALL OFFSET 1)) AS content_matches, array((SELECT ARRAY[sum(length(anon_5) - 11) OVER (ROWS BETWEEN UNBOUNDED PRECEDING AND 1 PRECEDING) + 11, strpos(anon_5, '</ts-match>') - 1] AS anon_4 \n\
 FROM unnest(string_to_array(ts_headline('zulip.english_us_search', escape_html(subject), plainto_tsquery('zulip.english_us_search', 'jumping'), 'HighlightAll = TRUE, StartSel = <ts-match>, StopSel = </ts-match>'), '<ts-match>')) AS anon_5\n\
@@ -4140,8 +4185,8 @@ WHERE realm_id = 2 AND recipient_id = {scotland_recipient} AND (search_tsvector 
         )
 
         sql_template = """\
-SELECT anon_1.message_id, anon_1.flags, anon_1.subject, anon_1.rendered_content, anon_1.content_matches, anon_1.topic_matches \n\
-FROM (SELECT message_id, flags, subject, rendered_content, array((SELECT ARRAY[sum(length(anon_3) - 11) OVER (ROWS BETWEEN UNBOUNDED PRECEDING AND 1 PRECEDING) + 11, strpos(anon_3, '</ts-match>') - 1] AS anon_2 \n\
+SELECT anon_1.message_id, anon_1.flags, anon_1.escaped_topic_name, anon_1.rendered_content, anon_1.content_matches, anon_1.topic_matches \n\
+FROM (SELECT message_id, flags, escape_html(subject) AS escaped_topic_name, rendered_content, array((SELECT ARRAY[sum(length(anon_3) - 11) OVER (ROWS BETWEEN UNBOUNDED PRECEDING AND 1 PRECEDING) + 11, strpos(anon_3, '</ts-match>') - 1] AS anon_2 \n\
 FROM unnest(string_to_array(ts_headline('zulip.english_us_search', rendered_content, plainto_tsquery('zulip.english_us_search', '"jumping" quickly'), 'HighlightAll = TRUE, StartSel = <ts-match>, StopSel = </ts-match>'), '<ts-match>')) AS anon_3\n\
  LIMIT ALL OFFSET 1)) AS content_matches, array((SELECT ARRAY[sum(length(anon_5) - 11) OVER (ROWS BETWEEN UNBOUNDED PRECEDING AND 1 PRECEDING) + 11, strpos(anon_5, '</ts-match>') - 1] AS anon_4 \n\
 FROM unnest(string_to_array(ts_headline('zulip.english_us_search', escape_html(subject), plainto_tsquery('zulip.english_us_search', '"jumping" quickly'), 'HighlightAll = TRUE, StartSel = <ts-match>, StopSel = </ts-match>'), '<ts-match>')) AS anon_5\n\
