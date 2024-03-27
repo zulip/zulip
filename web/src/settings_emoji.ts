@@ -214,7 +214,8 @@ function show_modal(): void {
     const html_body = render_add_emoji({});
 
     function add_custom_emoji(): void {
-        dialog_widget.show_dialog_spinner();
+        const $button = $("#dialog_widget_modal .modal__btn");
+        loading.show_spinner($button);
 
         const $emoji_status = $("#dialog_error");
         const emoji: Record<string, string> = {};
@@ -231,7 +232,8 @@ function show_modal(): void {
                 },
                 error(xhr) {
                     $("#dialog_error").hide();
-                    dialog_widget.hide_dialog_spinner();
+                    const $button = $("#dialog_widget_modal .modal__btn");
+                    loading.hide_spinner($button);
                     ui_report.error($t_html({defaultMessage: "Failed"}), xhr, $emoji_status);
                 },
             });
@@ -246,7 +248,8 @@ function show_modal(): void {
                 $t_html({defaultMessage: "Failed: Emoji name is required."}),
                 $emoji_status,
             );
-            dialog_widget.hide_dialog_spinner();
+            const $button = $("#dialog_widget_modal .modal__btn");
+            loading.hide_spinner($button);
             return;
         }
 
@@ -257,7 +260,8 @@ function show_modal(): void {
                 }),
                 $emoji_status,
             );
-            dialog_widget.hide_dialog_spinner();
+            const $button = $("#dialog_widget_modal .modal__btn");
+            loading.hide_spinner($button);
             return;
         }
 
@@ -277,7 +281,8 @@ function show_modal(): void {
                     }),
                     $emoji_status,
                 );
-                dialog_widget.hide_dialog_spinner();
+                const $button = $("#dialog_widget_modal .modal__btn");
+                loading.hide_spinner($button);
                 return;
             }
 

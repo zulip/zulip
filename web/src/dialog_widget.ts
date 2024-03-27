@@ -71,32 +71,6 @@ type RequestOpts = {
     error_continuation?: Parameters<AjaxRequestHandler>[0]["error"];
 };
 
-export function hide_dialog_spinner(): void {
-    $(".dialog_submit_button span").show();
-    $("#dialog_widget_modal .modal__btn").prop("disabled", false);
-
-    const $spinner = $("#dialog_widget_modal .modal__spinner");
-    loading.destroy_indicator($spinner);
-}
-
-export function show_dialog_spinner(): void {
-    // Disable both the buttons.
-    $("#dialog_widget_modal .modal__btn").prop("disabled", true);
-
-    const $spinner = $("#dialog_widget_modal .modal__spinner");
-    const dialog_submit_button_span_width = $(".dialog_submit_button span").width();
-    const dialog_submit_button_span_height = $(".dialog_submit_button span").height();
-
-    // Hide the submit button after computing its height, since submit
-    // buttons with long text might affect the size of the button.
-    $(".dialog_submit_button span").hide();
-
-    loading.make_indicator($spinner, {
-        width: dialog_submit_button_span_width,
-        height: dialog_submit_button_span_height,
-    });
-}
-
 // Supports a callback to be called once the modal finishes closing.
 export function close(on_hidden_callback?: () => void): void {
     modals.close("dialog_widget_modal", {on_hidden: on_hidden_callback});
@@ -202,7 +176,8 @@ export function launch(conf: DialogWidgetConfig): void {
             return;
         }
         if (conf.loading_spinner) {
-            show_dialog_spinner();
+            const $button = $("#dialog_widget_modal .modal__btn");
+            loading.show_spinner($button);
         } else if (conf.close_on_submit) {
             close();
         }
@@ -236,7 +211,8 @@ export function submit_api_request(
         error_continuation,
     }: RequestOpts = {},
 ): void {
-    show_dialog_spinner();
+    const $button = $("#dialog_widget_modal .modal__btn");
+    loading.show_spinner($button);
     void request_method({
         url,
         data,
@@ -248,7 +224,7 @@ export function submit_api_request(
         },
         error(xhr, error_type, xhn) {
             ui_report.error(failure_msg_html, xhr, $("#dialog_error"));
-            hide_dialog_spinner();
+            loading.hide_spinner($button);
             if (error_continuation !== undefined) {
                 error_continuation(xhr, error_type, xhn);
             }
