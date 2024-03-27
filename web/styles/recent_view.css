@@ -168,6 +168,10 @@
             margin: 0 -27px 10px 0;
         }
 
+        #recent_view_search_clear {
+            visibility: hidden;
+        }
+
         #recent_view_search {
             flex-grow: 1;
             padding-right: 20px;
