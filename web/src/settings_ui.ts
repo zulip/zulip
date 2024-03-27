@@ -2,7 +2,7 @@ import $ from "jquery";
 
 import checkbox_image from "../images/checkbox-green.svg";
 
-import type {AjaxRequestHandler} from "./channel";
+import type {AjaxRequestHandler, PatchRequestData} from "./channel";
 import {$t, $t_html} from "./i18n";
 import * as loading from "./loading";
 import * as ui_report from "./ui_report";
@@ -34,7 +34,7 @@ export const strings = {
 export function do_settings_change(
     request_method: AjaxRequestHandler,
     url: string,
-    data: Parameters<AjaxRequestHandler>[0]["data"],
+    data: Omit<Parameters<AjaxRequestHandler>[0]["data"], "undefined"> | PatchRequestData,
     $status_element: JQuery,
     {
         success_msg_html = strings.success_html,
