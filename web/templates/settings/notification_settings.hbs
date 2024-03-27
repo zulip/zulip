@@ -8,22 +8,27 @@
         <table class="notification-table table table-bordered wrapped-table">
             <thead>
                 <tr>
-                    <th rowspan="2" width="30%"></th>
-                    <th colspan="2" width="28%">{{t "Desktop"}}</th>
+                    <th rowspan="2" width="30%"><div class="notification-table-header-content"></div></th>
+                    <th colspan="2" width="28%"><div class="notification-table-header-content">{{t "Desktop"}}</div></th>
                     <th rowspan="2" width="14%">
-                        <span {{#if (not realm_push_notifications_enabled) }}class="control-label-disabled tippy-zulip-tooltip" data-tooltip-template-id="mobile-push-notification-tooltip-template"{{/if}}>
-                            {{t "Mobile"}}
-                        </span>
-                        {{> ../help_link_widget link="/help/mobile-notifications#enabling-push-notifications-for-self-hosted-servers" }}
+                        <div class="notification-table-header-content">
+                            <span {{#if (not realm_push_notifications_enabled) }}class="control-label-disabled tippy-zulip-tooltip" data-tooltip-template-id="mobile-push-notification-tooltip-template"{{/if}}>
+                                {{t "Mobile"}}
+                            </span>
+                            {{> ../help_link_widget link="/help/mobile-notifications#enabling-push-notifications-for-self-hosted-servers" }}
+                        </div>
                     </th>
-                    <th rowspan="2" width="14%">{{t "Email"}}</th>
-                    <th rowspan="2" width="14%">@all
-                        <i class="fa fa-question-circle settings-info-icon tippy-zulip-tooltip" data-tippy-content="{{t 'Whether wildcard mentions like @all are treated as mentions for the purpose of notifications.' }}"></i>
+                    <th rowspan="2" width="14%"><div class="notification-table-header-content">{{t "Email"}}</div></th>
+                    <th rowspan="2" width="14%">
+                        <div class="notification-table-header-content">
+                            <span class="zulip-icon-at-sign-container"><i class="zulip-icon zulip-icon-at-sign" aria-hidden="true"></i>all</span>
+                            <i class="fa fa-question-circle settings-info-icon tippy-zulip-tooltip" data-tippy-content="{{t 'Whether wildcard mentions like @all are treated as mentions for the purpose of notifications.' }}"></i>
+                        </div>
                     </th>
                 </tr>
                 <tr>
-                    <th>{{t "Visual"}}</th>
-                    <th>{{t "Audible"}}</th>
+                    <th><div class="notification-table-header-content">{{t "Visual"}}</div></th>
+                    <th><div class="notification-table-header-content">{{t "Audible"}}</div></th>
                 </tr>
             </thead>
             <tbody>

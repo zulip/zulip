@@ -76,7 +76,7 @@ function create_devel_sidebar_row({mock_template}) {
     stream_has_any_unread_mentions = false;
     stream_list.create_sidebar_row(devel);
     assert.equal($devel_count.text(), "42");
-    assert.equal($devel_unread_mention_info.text(), "");
+    assert.equal($devel_unread_mention_info.is(":visible"), false);
 }
 
 function create_social_sidebar_row({mock_template}) {
@@ -99,7 +99,7 @@ function create_social_sidebar_row({mock_template}) {
     stream_has_any_unread_mentions = true;
     stream_list.create_sidebar_row(social);
     assert.equal($social_count.text(), "99");
-    assert.equal($social_unread_mention_info.text(), "@");
+    assert.equal($social_unread_mention_info.is(":visible"), true);
 }
 
 function create_stream_subheader({mock_template}) {
