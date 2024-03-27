@@ -333,10 +333,21 @@ class NarrowBuilder:
         return method(query, operand, maybe_negate)
 
     def by_has(self, query: Select, operand: str, maybe_negate: ConditionTransform) -> Select:
-        if operand not in ["attachment", "image", "link"]:
+        if operand not in ["attachment", "image", "link", "reaction"]:
             raise BadNarrowOperatorError("unknown 'has' operand " + operand)
+
+        if operand == "reaction":
+            exists_cond = (
+                select(1)
+                .select_from(table("zerver_reaction"))
+                .where(self.msg_id_column == literal_column("zerver_reaction.message_id", Integer))
+                .exists()
+            )
+            return query.where(maybe_negate(exists_cond))
+
         col_name = "has_" + operand
         cond = column(col_name, Boolean)
+
         return query.where(maybe_negate(cond))
 
     def by_in(self, query: Select, operand: str, maybe_negate: ConditionTransform) -> Select:

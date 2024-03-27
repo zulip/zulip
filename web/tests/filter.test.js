@@ -356,6 +356,10 @@ function assert_not_mark_read_with_has_operands(additional_terms_to_test) {
     has_link_term = [{operator: "has", operand: "attachment"}];
     filter = new Filter([...additional_terms_to_test, ...has_link_term]);
     assert.ok(!filter.can_mark_messages_read());
+
+    has_link_term = [{operator: "has", operand: "reaction"}];
+    filter = new Filter([...additional_terms_to_test, ...has_link_term]);
+    assert.ok(!filter.can_mark_messages_read());
 }
 function assert_not_mark_read_with_is_operands(additional_terms_to_test) {
     additional_terms_to_test = additional_terms_to_test || [];
@@ -680,6 +684,10 @@ test("canonicalization", () => {
     term = Filter.canonicalize_term({operator: "has", operand: "links"});
     assert.equal(term.operator, "has");
     assert.equal(term.operand, "link");
+
+    term = Filter.canonicalize_term({operator: "has", operand: "reactions"});
+    assert.equal(term.operator, "has");
+    assert.equal(term.operand, "reaction");
 });
 
 test("predicate_basics", () => {
@@ -880,6 +888,28 @@ test("predicate_basics", () => {
         content: "<p>Testing</p>",
     };
 
+    const reaction_msg = {
+        message_reactions: [
+            {
+                local_id: "unicode_emoji,1f60d",
+                user_ids: [7],
+                emoji_name: "heart_eyes",
+                emoji_code: "1f60d",
+                reaction_type: "unicode_emoji",
+                emoji_alt_code: false,
+                is_realm_emoji: false,
+                count: 1,
+                label: "Zoe reacted with :heart_eyes:",
+                class: "message_reaction",
+                vote_text: "Zoe",
+            },
+        ],
+    };
+
+    const non_reaction_msg = {
+        message_reactions: [],
+    };
+
     predicate = get_predicate([["has", "non_valid_operand"]]);
     assert.ok(!predicate(img_msg));
     assert.ok(!predicate(non_img_attachment_msg));
@@ -922,6 +952,10 @@ test("predicate_basics", () => {
     assert.ok(!has_image(link_msg));
     set_find_results_for_msg_content(no_has_filter_matching_msg, ".message_inline_image", false);
     assert.ok(!has_image(no_has_filter_matching_msg));
+
+    const has_reaction = get_predicate([["has", "reaction"]]);
+    assert.ok(has_reaction(reaction_msg));
+    assert.ok(!has_reaction(non_reaction_msg));
 });
 
 test("negated_predicates", () => {
