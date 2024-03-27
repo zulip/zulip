@@ -1,6 +1,6 @@
 import $ from "jquery";
 import assert from "minimalistic-assert";
-import tippy from "tippy.js";
+import tippy, {createSingleton} from "tippy.js";
 
 // You won't find every click handler here, but it's a good place to start!
 
@@ -892,6 +892,30 @@ export function initialize() {
                 compose_actions.cancel();
             }
         }
+    });
+
+    // COMPOSE BUTTON TOOLTIPS
+    const compose_buttons = tippy(".compose_button_tooltip", {
+        trigger: "mouseenter",
+        placement: "top",
+    });
+    createSingleton(compose_buttons, {
+        onTrigger(instance, event) {
+            const templateId = event.currentTarget.dataset.tooltipTemplateId;
+            if (templateId) {
+                const templateElement = document.querySelector(`#${templateId}`);
+                if (templateElement) {
+                    const parsedHTML = ui_util.parse_html(templateElement.innerHTML);
+                    instance.setContent(parsedHTML);
+                }
+            }
+
+            if (event.currentTarget.classList.contains("disabled-on-hover")) {
+                instance.setProps({delay: 0});
+            } else {
+                instance.setProps({delay: 500});
+            }
+        },
     });
 
     // Workaround for Bootstrap issue #5900, which basically makes dropdowns
