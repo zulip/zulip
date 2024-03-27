@@ -209,6 +209,7 @@ def do_invite_users(
     *,
     invite_expires_in_minutes: Optional[int],
     invite_as: int = PreregistrationUser.INVITE_AS["MEMBER"],
+    subscribe_to_default_streams: bool = False,
 ) -> None:
     num_invites = len(invitee_emails)
 
@@ -299,7 +300,11 @@ def do_invite_users(
     for email in validated_emails:
         # The logged in user is the referrer.
         prereg_user = PreregistrationUser(
-            email=email, referred_by=user_profile, invited_as=invite_as, realm=user_profile.realm
+            email=email,
+            referred_by=user_profile,
+            invited_as=invite_as,
+            realm=user_profile.realm,
+            subscribe_to_default_streams=subscribe_to_default_streams,
         )
         prereg_user.save()
         stream_ids = [stream.id for stream in streams]
@@ -439,9 +444,14 @@ def do_create_multiuse_invite_link(
     invited_as: int,
     invite_expires_in_minutes: Optional[int],
     streams: Sequence[Stream] = [],
+    subscribe_to_default_streams: bool = False,
 ) -> str:
     realm = referred_by.realm
-    invite = MultiuseInvite.objects.create(realm=realm, referred_by=referred_by)
+    invite = MultiuseInvite.objects.create(
+        realm=realm,
+        referred_by=referred_by,
+        subscribe_to_default_streams=subscribe_to_default_streams,
+    )
     if streams:
         invite.streams.set(streams)
     invite.invited_as = invited_as

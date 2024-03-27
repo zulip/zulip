@@ -20,6 +20,13 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 9.0
 
+**Feature level 245**
+
+* `POST /invites`, `POST /invites/multiuse`: Added `subscribe_to_default_streams`
+  parameter to indicate whether to subscribe the invited user to default streams
+  when creating the new user account instead of passing the stream IDs of
+  default streams in `stream_ids` parameter.
+
 **Feature level 244**
 
 * [`POST /register`](/api/register-queue), [`GET /events`](/api/get-events),

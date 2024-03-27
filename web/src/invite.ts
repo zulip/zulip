@@ -44,6 +44,7 @@ function get_common_invitation_data(): {
     stream_ids: string;
     invite_expires_in_minutes: string;
     invitee_emails?: string;
+    subscribe_to_default_streams: string;
 } {
     const invite_as = Number.parseInt(
         $<HTMLSelectElement & {type: "select-one"}>("select:not([multiple])#invite_as").val()!,
@@ -62,10 +63,13 @@ function get_common_invitation_data(): {
         expires_in = Number.parseFloat(raw_expires_in);
     }
 
-    let stream_ids: number[] = [];
-    const default_stream_ids = stream_data.get_default_stream_ids();
-    if (default_stream_ids.length !== 0 && $("#invite_select_default_streams").prop("checked")) {
-        stream_ids = default_stream_ids;
+    const stream_ids: number[] = [];
+    let subscribe_to_default_streams = false;
+    if (
+        $("#invite_select_default_streams").prop("checked") ||
+        !settings_data.user_can_subscribe_other_users()
+    ) {
+        subscribe_to_default_streams = true;
     } else {
         $<HTMLInputElement>("#invite-stream-checkboxes input:checked").each(function () {
             const stream_id = Number.parseInt($(this).val()!, 10);
@@ -79,6 +83,7 @@ function get_common_invitation_data(): {
         invite_as,
         stream_ids: JSON.stringify(stream_ids),
         invite_expires_in_minutes: JSON.stringify(expires_in),
+        subscribe_to_default_streams: JSON.stringify(subscribe_to_default_streams),
     };
     return data;
 }
@@ -321,6 +326,7 @@ function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void
         new_stream_announcements_stream: stream_data.get_new_stream_announcements_stream(),
         show_select_default_streams_option: stream_data.get_default_stream_ids().length !== 0,
         user_has_email_set: !settings_data.user_email_not_configured(),
+        can_subscribe_other_users: settings_data.user_can_subscribe_other_users(),
     });
 
     function invite_user_modal_post_render(): void {
