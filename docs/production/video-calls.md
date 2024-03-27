@@ -22,8 +22,9 @@ installation, you'll need to register a custom Zoom app as follows:
 
 1. Inside the Zoom app management page:
 
-   - On the **App Credentials** tab, set both the **Redirect URL for
-     OAuth** and the **Whitelist URL** to
+   - On the **App Credentials** tab, set the **Redirect URL for
+     OAuth** to `htps://zulip.example.com/help/start-a-call` and the
+     **Whitelist URL** to
      `https://zulip.example.com/calls/zoom/complete` (replacing
      `zulip.example.com` by your main Zulip hostname).
    - On the **Scopes** tab, add the `meeting:write` scope.
