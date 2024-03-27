@@ -1238,14 +1238,15 @@ ul {
 
     .text-item,
     .link-item .popover-menu-link {
+        box-sizing: border-box;
         display: flex;
         flex-flow: row nowrap;
-        align-items: center;
+        align-items: flex-start;
         gap: 5px;
-        padding: 0 10px;
+        padding: 3px 10px;
         font-size: 15px;
         line-height: 16px;
-        height: 26px;
+        min-height: 26px;
 
         .popover-menu-icon {
             width: 16px;
@@ -1266,6 +1267,11 @@ ul {
 
         &:focus-within {
             background: var(--color-background-hover-popover-menu);
+        }
+
+        .popover-menu-label,
+        .popover-menu-icon {
+            margin-top: 2px;
         }
 
         .popover-menu-icon {
