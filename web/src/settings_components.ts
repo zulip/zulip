@@ -570,7 +570,9 @@ export function get_input_element_value(
             return $(input_elem).prop("checked");
         case "string":
             assert(
-                input_elem instanceof HTMLInputElement || input_elem instanceof HTMLSelectElement,
+                input_elem instanceof HTMLInputElement ||
+                    input_elem instanceof HTMLSelectElement ||
+                    input_elem instanceof HTMLTextAreaElement,
             );
             input_value = $(input_elem).val()!;
             assert(typeof input_value === "string");
