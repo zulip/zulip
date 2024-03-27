@@ -1114,6 +1114,10 @@ export class Filter {
         return this.has_operand("stream", stream_name) && this.has_operand("topic", topic);
     }
 
+    has_stream(stream_name: string): boolean {
+        return this.has_operand("stream", stream_name);
+    }
+
     sorted_term_types(): string[] {
         if (this._sorted_term_types === undefined) {
             this._sorted_term_types = this._build_sorted_term_types();
@@ -1220,5 +1224,13 @@ export class Filter {
             // not narrowed to starred messages
             !this.has_operand("is", "starred")
         );
+    }
+
+    is_stream_or_topic_narrow(): boolean {
+        const term_type = this.sorted_term_types();
+        if (_.isEqual(term_type, ["stream", "topic"]) || _.isEqual(term_type, ["stream"])) {
+            return true;
+        }
+        return false;
     }
 }

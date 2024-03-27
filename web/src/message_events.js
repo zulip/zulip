@@ -116,7 +116,7 @@ function maybe_add_narrowed_messages(messages, msg_list, callback, attempt = 1) 
 }
 
 export function insert_new_messages(messages, sent_by_this_client) {
-    messages = messages.map((message) => message_helper.process_new_message(message));
+    messages = messages.map((message) => message_helper.process_new_message(message, true));
 
     const any_untracked_unread_messages = unread.process_loaded_messages(messages, false);
     huddle_data.process_loaded_messages(messages);
@@ -279,16 +279,20 @@ export function update_messages(events) {
                 message_lists.current !== undefined &&
                 event.message_ids.includes(current_selected_id);
             const event_messages = [];
+            const messages_not_available_locally = [];
             for (const message_id of event.message_ids) {
                 // We don't need to concern ourselves updating data structures
                 // for messages we don't have stored locally.
                 const message = message_store.get(message_id);
                 if (message !== undefined) {
                     event_messages.push(message);
+                } else {
+                    messages_not_available_locally.push(message_id);
                 }
             }
             // The event.message_ids received from the server are not in sorted order.
             event_messages.sort((a, b) => a.id - b.id);
+            messages_not_available_locally.sort();
 
             if (
                 going_forward_change &&
@@ -335,24 +339,7 @@ export function update_messages(events) {
                 }
                 moved_message.last_edit_timestamp = event.edit_timestamp;
 
-                // Remove the Recent Conversations entry for the old topics;
-                // must be called before we call set_message_topic.
-                //
-                // TODO: Use a single bulk request to do this removal.
-                // Note that we need to be careful to only remove IDs
-                // that were present in stream_topic_history data.
-                // This may not be possible to do correctly without extra
-                // complexity; the present loop assumes stream_topic_history has
-                // only messages in message_store, but that's been false
-                // since we added the server_history feature.
-                stream_topic_history.remove_messages({
-                    stream_id: moved_message.stream_id,
-                    topic_name: moved_message.topic,
-                    num_messages: 1,
-                    max_removed_msg_id: moved_message.id,
-                });
-
-                // Update the unread counts; again, this must be called
+                // Update the unread counts; this must be called
                 // before we modify the topic field on the message.
                 unread.update_unread_topics(moved_message, event);
 
@@ -366,14 +353,43 @@ export function update_messages(events) {
                     moved_message.stream_id = new_stream_id;
                     moved_message.display_recipient = new_stream_name;
                 }
-
-                // Add the Recent Conversations entry for the new stream/topics.
-                stream_topic_history.add_message({
-                    stream_id: moved_message.stream_id,
-                    topic_name: moved_message.topic,
-                    message_id: moved_message.id,
-                });
             }
+
+            // In case there are no such messages, set it as -1 here, such that it is
+            // neglected in Math.max calcualtion.
+            const latest_locally_available_message_id = event_messages.length
+                ? event_messages.at(-1).id
+                : -1;
+            const latest_locally_unavailable_message_id = messages_not_available_locally.length
+                ? messages_not_available_locally.at(-1)
+                : -1;
+
+            const max_moved_message_id = Math.max(
+                latest_locally_available_message_id,
+                latest_locally_unavailable_message_id,
+            );
+            stream_topic_history.remove_messages({
+                stream_id: old_stream_id,
+                topic_name: orig_topic,
+                max_removed_msg_id: max_moved_message_id,
+                topic_deleted: event.propagate_mode === "change_all",
+            });
+
+            // Add the Recent Conversations entry for the new stream/topics.
+            // We ignore the messages not available locally here as the message_ids
+            // passed in the event may also contain the messages that we might
+            // not have access to like in the case of topic being edited
+            // in a private stream with protected history.
+            const stream_id = stream_changed ? new_stream_id : old_stream_id;
+            const can_latest_message_be_inaccessible =
+                max_moved_message_id === latest_locally_unavailable_message_id &&
+                !sub_store.get(stream_id).history_public_to_subscribers;
+            stream_topic_history.add_moved_message({
+                stream_id,
+                topic_name: topic_edited ? new_topic : orig_topic,
+                max_moved_message_id,
+                can_latest_message_be_inaccessible,
+            });
 
             const old_stream_name = stream_archived ? undefined : old_stream.name;
             if (
@@ -430,6 +446,65 @@ export function update_messages(events) {
                         then_select_id: current_selected_id,
                     };
                     narrow.activate(terms, opts);
+                }
+            }
+
+            // If we don't have the moved messages locally, but should have
+            // them after the move, then it must be the case that changing the
+            // stream or topic of the messages modified whether they match the
+            // current view
+            //
+            // The only way that is possible is if the current view's filters
+            // would reject the old stream/topic pair but accept the new one.
+            if (messages_not_available_locally.length && current_filter) {
+                const stream_name = stream_changed
+                    ? sub_store.get(new_stream_id).name
+                    : old_stream_name;
+                const topic_name = topic_edited ? new_topic : orig_topic;
+
+                // TODO: We should also handle the "streams:" and "search:"
+                // narrow cases by checking whether the moved messages match
+                // the current view's filter more precisely rather than just
+                // doing the stream and topic check like we do now.
+                if (
+                    current_filter.has_topic(stream_name, topic_name) ||
+                    (current_filter.has_stream(stream_name) &&
+                        !current_filter.has_operator("topic"))
+                ) {
+                    const oldest_message_not_available_locally = messages_not_available_locally[0];
+                    const latest_message_not_available_locally =
+                        messages_not_available_locally.slice(-1);
+                    let need_to_renarrow = true;
+
+                    // We can skip re-narrowing process, if we are certain that all the moved
+                    // messages that are not available locally will not be shown in the current
+                    // scroll position and would be fetched when scrolled.
+                    if (
+                        !message_lists.current.data.fetch_status.has_found_oldest() &&
+                        latest_message_not_available_locally < message_lists.current.first().id
+                    ) {
+                        need_to_renarrow = false;
+                    }
+                    if (
+                        !message_lists.current.data.fetch_status.has_found_newest() &&
+                        oldest_message_not_available_locally > message_lists.current.last().id
+                    ) {
+                        need_to_renarrow = false;
+                    }
+
+                    if (need_to_renarrow) {
+                        const terms = current_filter.terms();
+                        const opts = {
+                            trigger: "stream/topic change",
+                            then_select_id: current_selected_id,
+                        };
+                        narrow.activate(terms, opts);
+
+                        // changed_narrow is set to true here as we do not need to update
+                        // the message list further in the code since it is already in the
+                        // updated state due to re-narrow.
+                        changed_narrow = true;
+                    }
                 }
             }
 
