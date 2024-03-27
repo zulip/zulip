@@ -124,6 +124,7 @@ export function set_user_topic_visibility_policy(
     from_banner?: boolean,
     $status_element?: JQuery,
     success_cb?: () => void,
+    error_cb?: () => void,
 ): void {
     const data = {
         stream_id,
@@ -194,6 +195,11 @@ export function set_user_topic_visibility_policy(
                     title_text: $t({defaultMessage: "Topic muted"}),
                     undo_button_text: $t({defaultMessage: "Undo mute"}),
                 });
+            }
+        },
+        error() {
+            if (error_cb) {
+                error_cb();
             }
         },
     });
