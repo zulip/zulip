@@ -143,6 +143,7 @@ export function handle_narrow_activated(filter) {
     const active_filter = filter;
     const is_all_private_message_view = _.isEqual(active_filter.sorted_term_types(), ["is-dm"]);
     const narrow_to_private_messages_section = active_filter.operands("dm").length !== 0;
+    const is_private_messages_in_view = active_filter.has_operator("dm");
 
     if (is_all_private_message_view) {
         // In theory, this should get expanded when we scroll to the
@@ -160,6 +161,8 @@ export function handle_narrow_activated(filter) {
             `li[data-user-ids-string='${CSS.escape(current_user_ids_string)}']`,
         );
         scroll_pm_into_view($active_filter_li);
+        update_private_messages();
+    } else if (!is_private_messages_in_view) {
         update_private_messages();
     }
 }
