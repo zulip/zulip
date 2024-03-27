@@ -60,6 +60,7 @@ from zerver.lib.streams import (
 )
 from zerver.lib.topic import (
     RESOLVED_TOPIC_PREFIX,
+    get_followed_topic_condition_sa,
     get_resolved_topic_condition_sa,
     get_topic_from_message_info,
     topic_column_sa,
@@ -175,6 +176,8 @@ def build_narrow_predicate(
                 topic_name = get_topic_from_message_info(message)
                 if not topic_name.startswith(RESOLVED_TOPIC_PREFIX):
                     return False
+            elif operator == "is" and operand == "followed" and message["type"] != "stream":
+                return False
             return True
 
         for narrow_term in narrow:
@@ -382,6 +385,9 @@ class NarrowBuilder:
             return query.where(maybe_negate(cond))
         elif operand == "resolved":
             cond = get_resolved_topic_condition_sa()
+            return query.where(maybe_negate(cond))
+        elif operand == "followed":
+            cond = get_followed_topic_condition_sa()
             return query.where(maybe_negate(cond))
         raise BadNarrowOperatorError("unknown 'is' operand " + operand)
 

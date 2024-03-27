@@ -31,6 +31,10 @@
             {{~!-- squash whitespace --~}}
             {{this.verb}}topics marked as resolved
             {{~!-- squash whitespace --~}}
+        {{else if (eq this.operand "followed")}}
+            {{~!-- squash whitespace --~}}
+            {{this.verb}}topics followed
+            {{~!-- squash whitespace --~}}
         {{else}}
             {{~!-- squash whitespace --~}}
             invalid {{this.operand}} operand for is operator

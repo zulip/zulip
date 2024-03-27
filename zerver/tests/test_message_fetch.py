@@ -268,6 +268,10 @@ class NarrowBuilderTest(ZulipTestCase):
         term = dict(operator="is", operand="resolved", negated=True)
         self._do_add_term_test(term, "WHERE (subject NOT LIKE %(subject_1)s || '%%'")
 
+    def test_add_term_using_is_operator_for_negated_followed_topics(self) -> None:
+        term = dict(operator="is", operand="followed", negated=True)
+        self._do_add_term_test(term, "WHERE (subject NOT IN (__[POSTCOMPILE_subject_1]))")
+
     def test_add_term_using_non_supported_operator_should_raise_error(self) -> None:
         term = dict(operator="is", operand="non_supported")
         self.assertRaises(BadNarrowOperatorError, self._build_query, term)
@@ -852,6 +856,24 @@ class NarrowLibraryTest(ZulipTestCase):
         self.assertFalse(
             narrow_predicate(
                 message={"type": "stream", "subject": "java"},
+                flags=[],
+            )
+        )
+
+        ###
+
+        narrow_predicate = build_narrow_predicate([NarrowTerm(operator="is", operand="followed")])
+
+        self.assertTrue(
+            narrow_predicate(
+                message={"type": "stream"},
+                flags=[],
+            )
+        )
+
+        self.assertFalse(
+            narrow_predicate(
+                message={"type": "private"},
                 flags=[],
             )
         )

@@ -606,6 +606,11 @@ function get_is_filter_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Sugge
                 {operator: "dm-including"},
             ],
         },
+        {
+            search_string: "is:followed",
+            description_html: "topics followed",
+            incompatible_patterns: [{operator: "is", operand: "followed"}],
+        },
     ];
     return get_special_filter_suggestions(last, terms, suggestions);
 }

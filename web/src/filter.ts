@@ -151,6 +151,11 @@ function message_matches_search_term(message: Message, operator: string, operand
                     return unread.message_unread(message);
                 case "resolved":
                     return message.type === "stream" && resolved_topic.is_resolved(message.topic);
+                case "followed":
+                    return (
+                        message.type === "stream" &&
+                        user_topics.is_topic_followed(message.stream_id, message.topic)
+                    );
                 default:
                     return false; // is:whatever returns false
             }
@@ -480,6 +485,7 @@ export class Filter {
             "is-starred",
             "is-unread",
             "is-resolved",
+            "is-followed",
             "has-link",
             "has-image",
             "has-attachment",
@@ -728,6 +734,8 @@ export class Filter {
             "not-is-dm",
             "is-resolved",
             "not-is-resolved",
+            "is-followed",
+            "not-is-followed",
             "in-home",
             "in-all",
             "streams-public",
@@ -828,6 +836,9 @@ export class Filter {
         if (_.isEqual(term_types, ["sender"])) {
             return true;
         }
+        if (_.isEqual(term_types, ["is-followed"])) {
+            return true;
+        }
         return false;
     }
 
@@ -882,6 +893,8 @@ export class Filter {
                     return "/#narrow/dm/" + people.emails_to_slug(this.operands("dm").join(","));
                 case "is-resolved":
                     return "/#narrow/topics/is/resolved";
+                case "is-followed":
+                    return "/#narrow/topics/is/followed";
                 // TODO: It is ambiguous how we want to handle the 'sender' case,
                 // we may remove it in the future based on design decisions
                 case "sender":
@@ -1013,6 +1026,8 @@ export class Filter {
                     return $t({defaultMessage: "All direct messages"});
                 case "is-resolved":
                     return $t({defaultMessage: "Topics marked as resolved"});
+                case "is-followed":
+                    return $t({defaultMessage: "Topics followed"});
                 // These cases return false for is_common_narrow, and therefore are not
                 // formatted in the message view header. They are used in narrow.js to
                 // update the browser title.

@@ -11,7 +11,7 @@ from sqlalchemy.types import Boolean, Text
 from zerver.lib.request import REQ
 from zerver.lib.types import EditHistoryEvent
 from zerver.lib.utils import assert_is_not_none
-from zerver.models import Message, Reaction, Stream, UserMessage, UserProfile
+from zerver.models import Message, Reaction, Stream, UserMessage, UserProfile, UserTopic
 
 # Only use these constants for events.
 ORIG_TOPIC = "orig_subject"
@@ -82,6 +82,13 @@ def topic_match_sa(topic_name: str) -> ColumnElement[Boolean]:
 def get_resolved_topic_condition_sa() -> ColumnElement[Boolean]:
     resolved_topic_cond = column("subject", Text).startswith(RESOLVED_TOPIC_PREFIX)
     return resolved_topic_cond
+
+
+def get_followed_topic_condition_sa() -> ColumnElement[Boolean]:
+    followed_topic = UserTopic.objects.filter(visibility_policy=UserTopic.VisibilityPolicy.FOLLOWED)
+    followed_topic_names = [topic["topic_name"] for topic in followed_topic.values("topic_name")]
+    follow_topic_cond = column("subject", Text).in_(followed_topic_names)
+    return follow_topic_cond
 
 
 def topic_column_sa() -> ColumnElement[Text]:
