@@ -193,6 +193,7 @@ export function maybe_get_creator_details(creator_id: number | null):
     | {
           name: string;
           user_id: number;
+          is_current_user: boolean;
           avatar_url: string;
       }
     | undefined {
@@ -205,6 +206,7 @@ export function maybe_get_creator_details(creator_id: number | null):
         return {
             name: creator.full_name,
             user_id: creator.user_id,
+            is_current_user: creator.user_id === current_user.user_id,
             avatar_url: people.small_avatar_url_for_person(creator),
         };
     } catch (error) {

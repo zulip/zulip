@@ -825,6 +825,7 @@ test("creator_id", () => {
     const creator_details = {
         name: "Test User",
         user_id: 101,
+        is_current_user: false,
         avatar_url: "http://zulip.zulipdev.com/avatar/101?s=50",
     };
     assert.deepStrictEqual(stream_data.maybe_get_creator_details(101), creator_details);

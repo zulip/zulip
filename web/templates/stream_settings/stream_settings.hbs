@@ -83,7 +83,7 @@
                     <div class="stream_email_address_error alert-notification"></div>
                 </div>
                 <div class="stream-creator-details">
-                    {{t "Created by" }}
+                    <strong>{{t "Created by:" }}</strong>
                     {{#if creator_details}}
                     {{#with creator_details}}
                     <span class="pill-container pill-container-btn">
@@ -91,12 +91,13 @@
                             <img class="pill-image" src="{{avatar_url}}" />
                             <span class="pill-label">
                                 <span class="pill-value">{{name}}</span>
+                                {{#if is_current_user}} <span class="my_user_status">{{t "(you)"}}</span>{{/if}}
                             </span>
                         </a>
                     </span>
                     {{/with}}
                     {{else}}
-                    <i>{{t "unknown user"}}</i>
+                    <i>{{t "(unknown user)"}}</i>
                     {{/if}}
                     {{t "on" }} {{sub.date_created_string}}.
                     <a href="{{sub.preview_url}}/topic/stream.20events">{{t "Stream events" }}</a>
@@ -108,10 +109,12 @@
                 <p>
                     <strong>{{t "Email address"}}:</strong> {{t "You can use email to send messages to Zulip streams"}}
                     {{> ../help_link_widget link="/help/message-a-stream-by-email" }}
-                    <button class="button rounded copy_email_button" type="button" name="button">
-                        <span class="copy_button">{{t "Generate email address"}}</span>
-                    </button>
                 </p>
+                <div class="input-group">
+                    <button class="button small rounded copy_email_button" type="button">
+                        <span class="copy_button">{{t "Generate email address" }}</span>
+                    </button>
+                </div>
                 {{/if}}
             </div>
         </div>
