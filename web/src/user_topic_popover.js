@@ -58,6 +58,18 @@ export function initialize() {
                         instance.hide();
                     }
                 };
+                const error_cb = () => {
+                    setTimeout(() => {
+                        const prev_visibility_policy = user_topics.get_topic_visibility_policy(
+                            stream_id,
+                            topic_name,
+                        );
+                        $(e.currentTarget)
+                            .parent()
+                            .find(`input[data-visibility-policy="${prev_visibility_policy}"]`)
+                            .prop("checked", true);
+                    }, 500);
+                };
 
                 user_topics.set_user_topic_visibility_policy(
                     stream_id,
@@ -67,6 +79,7 @@ export function initialize() {
                     false,
                     undefined,
                     success_cb,
+                    error_cb,
                 );
             });
         },

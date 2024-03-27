@@ -122,6 +122,7 @@ export function set_user_topic_visibility_policy(
     from_banner?: boolean,
     $status_element?: JQuery,
     success_cb?: () => void,
+    error_cb?: () => void,
 ): void {
     const data = {
         stream_id,
@@ -194,6 +195,7 @@ export function set_user_topic_visibility_policy(
                 });
             }
         },
+        error: error_cb,
     });
 }
 
