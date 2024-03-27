@@ -162,7 +162,14 @@ def make_zoom_video_call(
         "settings": {
             "host_video": is_video_call,
             "participant_video": is_video_call,
-        }
+        },
+        # Generate a default password depending on the user settings. This will
+        # result in the password being appended to the returned Join URL.
+        #
+        # If we don't request a password to be set, the waiting room will be
+        # forcibly enabled in Zoom organizations that require some kind of
+        # authentication for all meetings.
+        "default_password": True,
     }
 
     try:
