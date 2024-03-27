@@ -4,6 +4,7 @@ import _ from "lodash";
 import render_stream_creation_confirmation_banner from "../templates/modal_banner/stream_creation_confirmation_banner.hbs";
 import render_browse_streams_list from "../templates/stream_settings/browse_streams_list.hbs";
 import render_browse_streams_list_item from "../templates/stream_settings/browse_streams_list_item.hbs";
+import render_first_stream_created_modal from "../templates/stream_settings/first_stream_created_modal.hbs";
 import render_stream_settings from "../templates/stream_settings/stream_settings.hbs";
 import render_stream_settings_overlay from "../templates/stream_settings/stream_settings_overlay.hbs";
 
@@ -20,6 +21,7 @@ import * as keydown_util from "./keydown_util";
 import * as message_lists from "./message_lists";
 import * as message_live_update from "./message_live_update";
 import * as message_view_header from "./message_view_header";
+import * as modals from "./modals";
 import * as overlays from "./overlays";
 import * as resize from "./resize";
 import * as scroll_util from "./scroll_util";
@@ -234,18 +236,36 @@ export function add_sub_to_table(sub) {
         // ID isn't known yet.  These are appended to the top of the
         // list, so they are more visible.
         stream_ui_updates.row_for_stream_id(sub.stream_id).trigger("click");
+        const stream_url = hash_util.by_stream_url(sub.stream_id);
         const context = {
             banner_type: compose_banner.SUCCESS,
             classname: "stream_creation_confirmation",
             stream_name: sub.name,
-            stream_url: hash_util.by_stream_url(sub.stream_id),
+            stream_url,
         };
         $("#stream_settings .stream-creation-confirmation-banner").html(
             render_stream_creation_confirmation_banner(context),
         );
         stream_create.reset_created_stream();
+        // goto topic `stream events` of the newly created stream
+        window.location.href = stream_url + "/topic/stream.20events";
+        if (!stream_create.is_first_stream_created()) {
+            stream_create.set_first_stream_created();
+            show_first_stream_created_modal(sub.name);
+        }
     }
     update_empty_left_panel_message();
+}
+
+function show_first_stream_created_modal(stream_name) {
+    $("body").append(
+        render_first_stream_created_modal({
+            stream_name,
+        }),
+    );
+    modals.open("first_stream_created_modal", {
+        autoremove: true,
+    });
 }
 
 export function remove_stream(stream_id) {
