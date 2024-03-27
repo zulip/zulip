@@ -1,5 +1,4 @@
 import $ from "jquery";
-import assert from "minimalistic-assert";
 
 import render_compose_banner from "../templates/compose_banner/compose_banner.hbs";
 import render_stream_does_not_exist_error from "../templates/compose_banner/stream_does_not_exist_error.hbs";
@@ -7,6 +6,7 @@ import render_stream_does_not_exist_error from "../templates/compose_banner/stre
 import {$t} from "./i18n";
 import * as scroll_util from "./scroll_util";
 import * as stream_data from "./stream_data";
+import type {StreamSubscription} from "./sub_store";
 
 export let scroll_to_message_banner_message_id: number | null = null;
 export function set_scroll_to_message_banner_message_id(val: number | null): void {
@@ -183,14 +183,11 @@ export function show_stream_does_not_exist_error(stream_name: string): void {
     $("#compose_select_recipient_widget").trigger("click");
 }
 
-export function show_stream_not_subscribed_error(stream_name: string): void {
+export function show_stream_not_subscribed_error(sub: StreamSubscription): void {
     const $banner_container = $("#compose_banners");
     if ($(`#compose_banners .${CSS.escape(CLASSNAMES.user_not_subscribed)}`).length) {
         return;
     }
-    const sub = stream_data.get_sub(stream_name);
-    // We expect this to be a does-not-exist error if it was undefined.
-    assert(sub !== undefined);
     const new_row_html = render_compose_banner({
         banner_type: ERROR,
         banner_text: $t({

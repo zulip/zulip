@@ -90,7 +90,7 @@ test_ui("validate_stream_message_address_info", ({mock_template}) => {
         subscribed: true,
     };
     stream_data.add_sub(party_sub);
-    assert.ok(compose_validate.validate_stream_message_address_info("social"));
+    assert.ok(compose_validate.validate_stream_message_address_info(party_sub));
 
     party_sub.subscribed = false;
     stream_data.add_sub(party_sub);
@@ -101,14 +101,14 @@ test_ui("validate_stream_message_address_info", ({mock_template}) => {
         user_not_subscribed_rendered = true;
         return html;
     });
-    assert.ok(!compose_validate.validate_stream_message_address_info("social"));
+    assert.ok(!compose_validate.validate_stream_message_address_info(party_sub));
     assert.ok(user_not_subscribed_rendered);
 
     party_sub.name = "Frontend";
     party_sub.stream_id = 102;
     stream_data.add_sub(party_sub);
     user_not_subscribed_rendered = false;
-    assert.ok(!compose_validate.validate_stream_message_address_info("Frontend"));
+    assert.ok(!compose_validate.validate_stream_message_address_info(party_sub));
     assert.ok(user_not_subscribed_rendered);
 });
 
