@@ -568,26 +568,22 @@ ul {
 
     .user_profile_manage_own_edit_button,
     .user_profile_manage_others_edit_button {
-        width: 25px;
-        height: 14px;
+        width: 22px;
+        height: 18px;
         text-align: center;
-        font-size: 18px;
+        text-decoration: none;
+        font-size: 16px;
+        margin-top: 2px;
     }
 
     .user_profile_manage_own_copy_link_button {
-        width: 20px;
-        height: 15px;
+        width: 22px;
+        height: 20px;
+        font-size: 19px;
         text-align: center;
-        font-size: 15px;
-    }
-
-    #user_profile_manage_own_copy_link {
-        height: 25px;
+        text-decoration: none;
         margin-right: 8px;
-    }
-
-    #user_profile_manage_own_edit_link {
-        height: 25px;
+        margin-top: 2px;
     }
 
     .deactivated-user-icon {
