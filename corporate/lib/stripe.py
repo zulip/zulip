@@ -1575,7 +1575,6 @@ class BillingSession(ABC):
     def generate_stripe_invoice(
         self,
         plan_tier: int,
-        seat_count: int,
         licenses: int,
         license_management: str,
         billing_schedule: int,
@@ -1591,7 +1590,6 @@ class BillingSession(ABC):
             "license_management": license_management,
             "price_per_license": None,
             "fixed_price": None,
-            "seat_count": seat_count,
             "type": "upgrade",
             "plan_tier": plan_tier,
         }
@@ -1914,7 +1912,6 @@ class BillingSession(ABC):
         else:
             stripe_invoice_id = self.generate_stripe_invoice(
                 upgrade_request.tier,
-                seat_count,
                 licenses,
                 license_management,
                 billing_schedule,
