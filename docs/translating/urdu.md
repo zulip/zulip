@@ -25,7 +25,7 @@ Zulip friendly and usable.
 ## Terms(اصطلاحات)
 
 - Message - **پیغام**
-- Private message (PM) - **ذاتی پیغام**
+- Direct message (DM) - **براہ راست پیغام**
 - Stream - **سٹریم**
 - Topic - **موضوع**
 - Private/invite-only stream - **ذاتی / دعوت کی ضرورت والی سٹریم**

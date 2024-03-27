@@ -18,13 +18,13 @@ Zulip 的文风比较口语化，考虑到大多数中国用户的习惯，翻�
 
 "Message" can be literally translated as "消息" and "信息", both
 OK. Here "消息" is chosen for translation. For example, "Stream
-Message" is translated as "频道消息", while "Private Message" is
-translated as "私信". The domestic WeiBo, WeChat also keep in line
+Message" is translated as "频道消息", while "Direct Message" is
+translated as "直信". The domestic WeiBo, WeChat also keep in line
 with the habit. "Starred Message" is similar to "Star Mail (星标邮件)"
 feature in QQ Mail, so it is translated into "星标消息".
 
 Message 可直译为“消息”、“信息”等，两者皆可，这里统一选用“消息”。例如，
-“Stream Message”译作“频道消息”；但“Private Message”又译为“私信"，与国
+“Stream Message”译作“频道消息”；但“Direct Message”又译为“直信"，与国
 内微博、微信的使用习惯保持一致。“Starred Message”类似于 QQ 邮箱中的“星标
 邮件”功能，这里也借鉴翻译为“星标消息”。
 
