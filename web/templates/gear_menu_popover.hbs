@@ -56,48 +56,54 @@
             <ul class="popover-menu-inner-list">
                 <li class="link-item popover-menu-inner-list-item hidden-for-spectators">
                     <a href="#streams/subscribed" class="navigate-link-on-enter popover-menu-link">
-                        <i class="popover-menu-icon zulip-icon zulip-icon-hash" aria-hidden="true"></i> {{t 'Stream settings' }}
+                        <i class="popover-menu-icon zulip-icon zulip-icon-hash" aria-hidden="true"></i>
+                        <span class="popover-menu-text">{{t 'Stream settings' }}</span>
                     </a>
                 </li>
                 <li class="link-item popover-menu-inner-list-item admin-menu-item hidden-for-spectators">
                     <a href="#organization" class="navigate-link-on-enter popover-menu-link">
                         <i class="popover-menu-icon zulip-icon zulip-icon-building" aria-hidden="true"></i>
-                        <span>{{t 'Organization settings' }}</span>
+                        <span class="popover-menu-text">{{t 'Organization settings' }}</span>
                     </a>
                 </li>
                 {{#unless is_guest}}
                 <li class="link-item popover-menu-inner-list-item hidden-for-spectators">
                     <a href="#groups/your" class="navigate-link-on-enter popover-menu-link">
-                        <i class="popover-menu-icon zulip-icon zulip-icon-user-cog" aria-hidden="true"></i> {{t 'Group settings' }}
+                        <i class="popover-menu-icon zulip-icon zulip-icon-user-cog" aria-hidden="true"></i>
+                        <span class="popover-menu-text">{{t 'Group settings' }}</span>
                     </a>
                 </li>
                 {{/unless}}
                 <li class="link-item popover-menu-inner-list-item hidden-for-spectators">
                     <a href="#settings" class="navigate-link-on-enter popover-menu-link">
-                        <i class="popover-menu-icon zulip-icon zulip-icon-tool" aria-hidden="true"></i> {{t 'Personal settings' }}
+                        <i class="popover-menu-icon zulip-icon zulip-icon-tool" aria-hidden="true"></i>
+                        <span class="popover-menu-text">{{t 'Personal settings' }}</span>
                     </a>
                 </li>
                 {{#unless is_guest}}
                 <li class="link-item popover-menu-inner-list-item hidden-for-spectators">
                     <a href="/stats" target="_blank" rel="noopener noreferrer" class="navigate-link-on-enter popover-menu-link">
                         <i class="popover-menu-icon zulip-icon zulip-icon-bar-chart" aria-hidden="true"></i>
-                        <span>{{t 'Usage statistics' }}</span>
+                        <span class="popover-menu-text">{{t 'Usage statistics' }}</span>
                     </a>
                 </li>
                 {{/unless}}
                 <li class="link-item popover-menu-inner-list-item only-visible-for-spectators">
                     <a tabindex="0" class="change-language-spectator popover-menu-link">
-                        <i class="popover-menu-icon zulip-icon zulip-icon-f-globe" aria-hidden="true"></i> {{t 'Select language' }}
+                        <i class="popover-menu-icon zulip-icon zulip-icon-f-globe" aria-hidden="true"></i>
+                        <span class="popover-menu-text">{{t 'Select language' }}</span>
                     </a>
                 </li>
                 <li class="link-item popover-menu-inner-list-item gear-menu-select-dark-theme only-visible-for-spectators">
                     <a tabindex="0" class="navigate-link-on-enter popover-menu-link">
-                        <i class="popover-menu-icon zulip-icon zulip-icon-moon" aria-hidden="true"></i> {{t 'Switch to dark theme' }}
+                        <i class="popover-menu-icon zulip-icon zulip-icon-moon" aria-hidden="true"></i>
+                        <span class="popover-menu-text">{{t 'Switch to dark theme' }}</span>
                     </a>
                 </li>
                 <li class="link-item popover-menu-inner-list-item gear-menu-select-light-theme only-visible-for-spectators">
                     <a tabindex="0" class="navigate-link-on-enter popover-menu-link">
-                        <i class="popover-menu-icon zulip-icon zulip-icon-sun" aria-hidden="true"></i> {{t 'Switch to light theme' }}
+                        <i class="popover-menu-icon zulip-icon zulip-icon-sun" aria-hidden="true"></i>
+                        <span class="popover-menu-text">{{t 'Switch to light theme' }}</span>
                     </a>
                 </li>
             </ul>
@@ -106,37 +112,43 @@
             <ul class="popover-menu-inner-list">
                 <li class="link-item popover-menu-inner-list-item">
                     <a href="{{ apps_page_url }}" target="_blank" rel="noopener noreferrer" class="navigate-link-on-enter popover-menu-link">
-                        <i class="popover-menu-icon zulip-icon zulip-icon-monitor" aria-hidden="true"></i> {{t 'Desktop & mobile apps' }}
+                        <i class="popover-menu-icon zulip-icon zulip-icon-monitor" aria-hidden="true"></i>
+                        <span class="popover-menu-text">{{t 'Desktop & mobile apps' }}</span>
                     </a>
                 </li>
                 <li class="link-item popover-menu-inner-list-item">
                     <a href="/integrations/" target="_blank" rel="noopener noreferrer" class="navigate-link-on-enter popover-menu-link">
-                        <i class="popover-menu-icon zulip-icon zulip-icon-git-pull-request" aria-hidden="true"></i> {{t 'Integrations' }}
+                        <i class="popover-menu-icon zulip-icon zulip-icon-git-pull-request" aria-hidden="true"></i>
+                        <span class="popover-menu-text">{{t 'Integrations' }}</span>
                     </a>
                 </li>
                 <li class="link-item popover-menu-inner-list-item">
                     <a href="/api/" target="_blank" rel="noopener noreferrer" class="navigate-link-on-enter popover-menu-link">
-                        <i class="popover-menu-icon zulip-icon zulip-icon-file-text" aria-hidden="true"></i> {{t 'API documentation' }}
+                        <i class="popover-menu-icon zulip-icon zulip-icon-file-text" aria-hidden="true"></i>
+                        <span class="popover-menu-text">{{t 'API documentation' }}</span>
                     </a>
                 </li>
                 {{#if show_billing}}
                 <li class="link-item popover-menu-inner-list-item">
                     <a href="/billing/" target="_blank" rel="noopener noreferrer" class="navigate-link-on-enter popover-menu-link">
-                        <i class="popover-menu-icon zulip-icon zulip-icon-credit-card" aria-hidden="true"></i> {{t 'Billing' }}
+                        <i class="popover-menu-icon zulip-icon zulip-icon-credit-card" aria-hidden="true"></i>
+                        <span class="popover-menu-text">{{t 'Billing' }}</span>
                     </a>
                 </li>
                 {{/if}}
                 {{#if promote_sponsoring_zulip}}
                 <li class="link-item popover-menu-inner-list-item">
                     <a href="https://zulip.com/help/support-zulip-project" target="_blank" rel="noopener noreferrer" class="navigate-link-on-enter popover-menu-link">
-                        <i class="popover-menu-icon zulip-icon zulip-icon-heart" aria-hidden="true"></i> {{t 'Support Zulip' }}
+                        <i class="popover-menu-icon zulip-icon zulip-icon-heart" aria-hidden="true"></i>
+                        <span class="popover-menu-text">{{t 'Support Zulip' }}</span>
                     </a>
                 </li>
                 {{/if}}
                 {{#if show_remote_billing }}
                 <li class="link-item popover-menu-inner-list-item">
                     <a href="/self-hosted-billing/" id="open-self-hosted-billing" target="_blank" rel="noopener noreferrer" class="navigate-link-on-enter popover-menu-link">
-                        <i class="popover-menu-icon zulip-icon zulip-icon-rocket" aria-hidden="true"></i> {{t 'Plan management' }}
+                        <i class="popover-menu-icon zulip-icon zulip-icon-rocket" aria-hidden="true"></i>
+                        <span class="popover-menu-text">{{t 'Plan management' }}</span>
                     </a>
                 </li>
                 {{/if}}
@@ -144,7 +156,8 @@
                 {{!-- This will be hidden for self hosted realms since they will have corporate disabled. --}}
                 <li class="link-item popover-menu-inner-list-item">
                     <a href="/plans/" target="_blank" rel="noopener noreferrer" class="navigate-link-on-enter popover-menu-link">
-                        <i class="popover-menu-icon zulip-icon zulip-icon-rocket" aria-hidden="true"></i> {{t 'Plans and pricing' }}
+                        <i class="popover-menu-icon zulip-icon zulip-icon-rocket" aria-hidden="true"></i>
+                        <span class="popover-menu-text">{{t 'Plans and pricing' }}</span>
                     </a>
                 </li>
                 {{/if}}
@@ -156,20 +169,23 @@
                 {{#if (or can_invite_users_by_email can_create_multiuse_invite)}}
                 <li class="link-item popover-menu-inner-list-item">
                     <a tabindex="0" class="invite-user-link popover-menu-link">
-                        <i class="popover-menu-icon zulip-icon zulip-icon-user-plus" aria-hidden="true"></i> {{t 'Invite users' }}
+                        <i class="popover-menu-icon zulip-icon zulip-icon-user-plus" aria-hidden="true"></i>
+                        <span class="popover-menu-text">{{t 'Invite users' }}</span>
                     </a>
                 </li>
                 {{/if}}
                 {{#if show_webathena}}
                 <li class="link-item popover-menu-inner-list-item" title="{{t 'Grant Zulip the Kerberos tickets needed to run your Zephyr mirror via Webathena' }}" id="webathena_login_menu">
                     <a href="#webathena" class="webathena_login popover-menu-link">
-                        <i class="popover-menu-icon fa fa-bolt" aria-hidden="true"></i>{{t 'Link with Webathena' }}
+                        <i class="popover-menu-icon fa fa-bolt" aria-hidden="true"></i>
+                        <span class="popover-menu-text">{{t 'Link with Webathena' }}</span>
                     </a>
                 </li>
                 {{/if}}
                 <li class="link-item popover-menu-inner-list-item only-visible-for-spectators">
                     <a href="{{login_link}}" class="navigate-link-on-enter popover-menu-link">
-                        <i class="popover-menu-icon zulip-icon zulip-icon-log-in" aria-hidden="true"></i> {{t 'Log in' }}
+                        <i class="popover-menu-icon zulip-icon zulip-icon-log-in" aria-hidden="true"></i>
+                        <span class="popover-menu-text">{{t 'Log in' }}</span>
                     </a>
                 </li>
             </ul>

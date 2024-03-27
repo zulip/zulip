@@ -55,14 +55,14 @@
                         <li class="link-item popover-menu-inner-list-item">
                             <a tabindex="0" class="update_status_text popover-menu-link">
                                 <i class="popover-menu-icon zulip-icon zulip-icon-smile-smaller"></i>
-                                {{#tr}}Edit status{{/tr}}
+                                <span class="popover-menu-text">{{t 'Edit status' }}</span>
                             </a>
                         </li>
                         {{else}}
                         <li class="link-item hidden-for-spectators popover-menu-inner-list-item">
                             <a tabindex="0" class="update_status_text popover-menu-link">
                                 <i class="popover-menu-icon zulip-icon zulip-icon-smile-smaller"></i>
-                                {{#tr}}Set status{{/tr}}
+                                <span class="popover-menu-text">{{t 'Set status' }}</span>
                             </a>
                         </li>
                         {{/if}}
@@ -71,14 +71,14 @@
                         <li class="link-item hidden-for-spectators popover-menu-inner-list-item">
                             <a tabindex="0" class="invisible_mode_turn_off popover-menu-link">
                                 <i class="popover-menu-icon zulip-icon zulip-icon-play-circle"></i>
-                                {{#tr}}Turn off invisible mode{{/tr}}
+                                <span class="popover-menu-text">{{t 'Turn off invisible mode' }}</span>
                             </a>
                         </li>
                         {{else}}
                         <li class="link-item hidden-for-spectators popover-menu-inner-list-item">
                             <a tabindex="0" class="invisible_mode_turn_on popover-menu-link">
                                 <i class="popover-menu-icon zulip-icon zulip-icon-stop-circle"></i>
-                                {{#tr}}Go invisible{{/tr}}
+                                <span class="popover-menu-text">{{t 'Go invisible' }}</span>
                             </a>
                         </li>
                         {{/if}}
@@ -110,19 +110,19 @@
                         <li class="link-item popover-menu-inner-list-item">
                             <a href="#user/{{user_id}}" tabindex="0" class="view_full_user_profile popover-menu-link">
                                 <i class="popover-menu-icon zulip-icon zulip-icon-account"></i>
-                                {{#tr}}View your profile{{/tr}}
+                                <span class="popover-menu-text">{{t 'View your profile' }}</span>
                             </a>
                         </li>
                         <li class="link-item popover-menu-inner-list-item">
                             <a tabindex="0" class="narrow-self-direct-message popover-menu-link">
                                 <i class="popover-menu-icon zulip-icon zulip-icon-users"></i>
-                                {{#tr}}View messages with yourself{{/tr}}
+                                <span class="popover-menu-text">{{t 'View messages with yourself' }}</span>
                             </a>
                         </li>
                         <li class="link-item popover-menu-inner-list-item">
                             <a tabindex="0" class="narrow-messages-sent popover-menu-link">
                                 <i class="popover-menu-icon zulip-icon zulip-icon-message-square"></i>
-                                {{#tr}}View messages sent{{/tr}}
+                                <span class="popover-menu-text">{{t 'View messages sent' }}</span>
                             </a>
                         </li>
                     </ul>
@@ -132,7 +132,7 @@
                         <li class="link-item popover-menu-inner-list-item">
                             <a href="#settings/profile" class="open-profile-settings popover-menu-link">
                                 <i class="popover-menu-icon zulip-icon zulip-icon-tool"></i>
-                                {{#tr}}Settings{{/tr}}
+                                <span class="popover-menu-text">{{t 'Settings' }}</span>
                             </a>
                         </li>
                     </ul>
@@ -142,7 +142,7 @@
                         <li class="link-item popover-menu-inner-list-item">
                             <a class="logout_button hidden-for-spectators popover-menu-link" tabindex="0">
                                 <i class="popover-menu-icon zulip-icon zulip-icon-log-out" aria-hidden="true"></i>
-                                {{t 'Log out' }}
+                                <span class="popover-menu-text">{{t 'Log out' }}</span>
                             </a>
                         </li>
                     </ul>

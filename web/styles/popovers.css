@@ -1211,15 +1211,15 @@ ul {
 
     .simplebar-content {
         min-width: var(--popover-menu-min-width);
-        /*  This is necessary to set the dropdown menu width equal to
-            the width of the longest menu item, thus letting the menu
-            items control the width of the menu. */
         width: min-content;
+        max-width: 97vw;
     }
 
-    .popover-menu-inner-list-item {
-        /*  This is necessary to keep long menu items on a single line. */
-        white-space: nowrap;
+    .popover-menu-text {
+        /*  This is necessary to set the popover menu width equal to
+            the width of the longest menu item, thus letting the menu
+            items control the width of the menu. */
+        width: max-content;
     }
 
     .text-item,
@@ -1381,9 +1381,6 @@ ul {
             font-weight: 600;
             line-height: 22px;
             padding: 0 10px;
-            /* We set white-space to normal for the menu items
-               where we want to explicitly wrap. */
-            white-space: normal;
         }
 
         .org-upgrade {
