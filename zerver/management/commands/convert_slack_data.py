@@ -62,7 +62,7 @@ class Command(BaseCommand):
 
         for path in options["slack_data_path"]:
             if not os.path.exists(path):
-                raise CommandError(f"Slack data directory not found: '{path}'")
+                raise CommandError(f"Slack data file or directory not found: '{path}'")
 
             print("Converting data ...")
             convert_slack_threads = not options["no_convert_slack_threads"]
