@@ -393,7 +393,6 @@ export function populate_auth_methods(auth_method_to_bool_map) {
         return;
     }
     const $auth_methods_list = $("#id_realm_authentication_methods").expectOne();
-    auth_method_to_bool_map = settings_components.sort_object_by_key(auth_method_to_bool_map);
     let rendered_auth_method_rows = "";
     for (const [auth_method, value] of Object.entries(auth_method_to_bool_map)) {
         // Certain authentication methods are not available to be enabled without
@@ -490,7 +489,9 @@ export function discard_property_element_changes(elem, for_realm_default_setting
             settings_components.set_input_element_value($elem, property_value);
             break;
         case "realm_authentication_methods":
-            populate_auth_methods(property_value);
+            populate_auth_methods(
+                settings_components.realm_authentication_methods_to_boolean_dict(),
+            );
             break;
         case "realm_new_stream_announcements_stream_id":
         case "realm_signup_announcements_stream_id":
