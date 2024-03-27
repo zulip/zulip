@@ -80,6 +80,14 @@ export function adjust_mac_kbd_tags(kbd_elem_class: string): void {
         }
 
         $(this).text(key_text);
+
+        // In case of shortcuts, the Mac equivalent of which involves extra keys,
+        // we use data-mac-following-key attribute to append the extra key to the
+        // previous key. Currently, this is used to append Opt to Cmd for the Paste
+        // as plain text shortcut.
+        if ($(this).attr("data-mac-following-key")) {
+            $(this).after(" + <kbd>" + $(this).attr("data-mac-following-key") + "</kbd>");
+        }
     });
 }
 
