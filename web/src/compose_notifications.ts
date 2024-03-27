@@ -114,35 +114,28 @@ export function get_muted_narrow(message: Message): string | undefined {
     return undefined;
 }
 
-export function get_local_notify_mix_reason(message: Message): string | undefined {
+export function is_local_mix(message: Message): boolean {
     if (message_lists.current === undefined) {
         // For non-message list views like Inbox, the message is not visible after sending it.
-        return undefined;
+        return true;
     }
 
-    const $row = message_lists.current.get_row(message.id);
-    if ($row.length > 0) {
-        // If our message is in the current message list, we do
-        // not have a mix, so we are happy.
-        return undefined;
-    }
-
-    // offscreen because it is outside narrow
-    // we can only look for these on non-search (can_apply_locally) messages
-    // see also: exports.notify_messages_outside_current_search
     const current_filter = narrow_state.filter();
-    if (
-        current_filter &&
-        current_filter.can_apply_locally() &&
-        !current_filter.predicate()(message)
-    ) {
-        return $t({defaultMessage: "Sent! Your message is outside your current view."});
+    const $row = message_lists.current.get_row(message.id);
+    if (current_filter && current_filter.is_conversation_view() && $row.length > 0) {
+        // If our message is in the current conversation view, we do
+        // not have a mix, so we are happy.
+        return false;
     }
 
-    return undefined;
+    return true;
 }
 
-export function notify_local_mixes(messages: Message[], need_user_to_scroll: boolean): void {
+export function notify_local_mixes(
+    messages: Message[],
+    need_user_to_scroll: boolean,
+    {narrow_to_recipient}: {narrow_to_recipient: (message_id: number) => void},
+): void {
     /*
         This code should only be called when we are displaying
         messages sent by current client. It notifies users that
@@ -171,13 +164,13 @@ export function notify_local_mixes(messages: Message[], need_user_to_scroll: boo
             continue;
         }
 
-        let banner_text = get_local_notify_mix_reason(message);
+        const local_mix = is_local_mix(message);
 
         const link_msg_id = message.id;
 
-        if (!banner_text) {
+        if (!local_mix) {
             if (need_user_to_scroll) {
-                banner_text = $t({defaultMessage: "Sent!"});
+                const banner_text = $t({defaultMessage: "Sent!"});
                 const link_text = $t({defaultMessage: "Scroll down to view your message."});
                 notify_above_composebox(
                     banner_text,
@@ -195,18 +188,7 @@ export function notify_local_mixes(messages: Message[], need_user_to_scroll: boo
             continue;
         }
 
-        const link_text = $t(
-            {defaultMessage: "Go to {message_recipient}"},
-            {message_recipient: get_message_header(message)},
-        );
-
-        notify_above_composebox(
-            banner_text,
-            compose_banner.CLASSNAMES.narrow_to_recipient,
-            get_above_composebox_narrow_url(message),
-            link_msg_id,
-            link_text,
-        );
+        narrow_to_recipient(link_msg_id);
     }
 }
 

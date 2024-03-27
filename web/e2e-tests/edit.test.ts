@@ -29,7 +29,7 @@ async function edit_stream_message(page: Page, content: string): Promise<void> {
     await common.wait_for_fully_processed_message(page, content);
 }
 
-async function test_stream_message_edit(page: Page, message_list_id: number): Promise<void> {
+async function test_stream_message_edit(page: Page): Promise<void> {
     await common.send_message(page, "stream", {
         stream_name: "Verona",
         topic: "edits",
@@ -38,6 +38,7 @@ async function test_stream_message_edit(page: Page, message_list_id: number): Pr
 
     await edit_stream_message(page, "test edited");
 
+    const message_list_id = await common.get_current_msg_list_id(page, true);
     await common.check_messages_sent(page, message_list_id, [["Verona > edits", ["test edited"]]]);
 }
 
@@ -76,7 +77,7 @@ async function test_edit_message_with_slash_me(page: Page): Promise<void> {
     );
 }
 
-async function test_edit_private_message(page: Page, message_list_id: number): Promise<void> {
+async function test_edit_private_message(page: Page): Promise<void> {
     await common.send_message(page, "private", {
         recipient: "cordelia@zulip.com",
         content: "test editing pm",
@@ -87,6 +88,7 @@ async function test_edit_private_message(page: Page, message_list_id: number): P
     await page.click(".message_edit_save");
     await common.wait_for_fully_processed_message(page, "test edited pm");
 
+    const message_list_id = await common.get_current_msg_list_id(page, true);
     await common.check_messages_sent(page, message_list_id, [
         ["You and Cordelia, Lear's daughter", ["test edited pm"]],
     ]);
@@ -96,11 +98,10 @@ async function edit_tests(page: Page): Promise<void> {
     await common.log_in(page);
     await page.click("#left-sidebar-navigation-list .top_left_all_messages");
     await page.waitForSelector(".message-list .message_row", {visible: true});
-    const message_list_id = await common.get_current_msg_list_id(page, true);
 
-    await test_stream_message_edit(page, message_list_id);
+    await test_stream_message_edit(page);
     await test_edit_message_with_slash_me(page);
-    await test_edit_private_message(page, message_list_id);
+    await test_edit_private_message(page);
 }
 
 common.run_test(edit_tests);
