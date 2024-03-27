@@ -63,6 +63,7 @@ DEACTIVATED_ACCOUNT_ERROR = gettext_lazy(
     " Please contact your organization administrator to reactivate it."
 )
 PASSWORD_TOO_WEAK_ERROR = gettext_lazy("The password is too weak.")
+PASSWORD_TOO_LONG_ERROR = gettext_lazy("The password cannot exceed 100 characters in length.")
 
 
 def email_is_not_mit_mailing_list(email: str) -> None:
@@ -166,7 +167,11 @@ class RegistrationForm(RealmDetailsForm):
     full_name = forms.CharField(max_length=UserProfile.MAX_NAME_LENGTH)
     # The required-ness of the password field gets overridden if it isn't
     # actually required for a realm
-    password = forms.CharField(widget=forms.PasswordInput, max_length=MAX_PASSWORD_LENGTH)
+    password = forms.CharField(
+        widget=forms.PasswordInput,
+        max_length=MAX_PASSWORD_LENGTH,
+        error_messages={"max_length": PASSWORD_TOO_LONG_ERROR},
+    )
     is_demo_organization = forms.BooleanField(required=False)
     enable_marketing_emails = forms.BooleanField(required=False)
     email_address_visibility = forms.TypedChoiceField(
@@ -205,9 +210,10 @@ class RegistrationForm(RealmDetailsForm):
 
     def clean_password(self) -> str:
         password = self.cleaned_data["password"]
+        # The frontend code tries to stop the user from submitting the form
+        # with a weak password, but if the user bypasses that protection,
+        # this error code path will run.
         if self.fields["password"].required and not check_password_strength(password):
-            # The frontend code tries to stop the user from submitting the form with a weak password,
-            # but if the user bypasses that protection, this error code path will run.
             raise ValidationError(str(PASSWORD_TOO_WEAK_ERROR))
 
         return password

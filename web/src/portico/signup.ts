@@ -1,4 +1,5 @@
 import $ from "jquery";
+import assert from "minimalistic-assert";
 
 import * as common from "../common";
 import {$t} from "../i18n";
@@ -27,6 +28,20 @@ $(() => {
             // the field yet.
             password_quality($(this).val()!, $("#pw_strength .bar"), $(this));
         });
+
+        $password_field.on("paste", function (e: JQuery.TriggeredEvent) {
+            // Paste in data even if it is longer than max length
+            // in order to allow the django default "Ensure this value
+            // has less than 100 characters" to be triggered, and avoid
+            // silent truncation.
+            assert(e.originalEvent instanceof ClipboardEvent);
+            const pastedData = e.originalEvent.clipboardData?.getData("text");
+
+            if (pastedData!.length > $password_field.data("maxLength")) {
+                e.preventDefault();
+                $(this).val(pastedData!);
+            }
+        });
     }
 
     common.setup_password_visibility_toggle(
@@ -48,8 +63,12 @@ $(() => {
 
     $("#registration, #password_reset, #create_realm").validate({
         rules: {
-            password: "password_strength",
-            new_password1: "password_strength",
+            password: {
+                password_strength: true,
+            },
+            new_password1: {
+                password_strength: true,
+            },
         },
         errorElement: "p",
         errorPlacement($error: JQuery, $element: JQuery) {

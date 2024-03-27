@@ -29,7 +29,7 @@ from zerver.actions.realm_settings import (
 )
 from zerver.actions.users import change_user_is_active, do_change_user_role, do_deactivate_user
 from zerver.decorator import do_two_factor_login
-from zerver.forms import HomepageForm, check_subdomain_available
+from zerver.forms import HomepageForm, RegistrationForm, check_subdomain_available
 from zerver.lib.default_streams import get_default_streams_for_realm_as_dicts
 from zerver.lib.email_notifications import enqueue_welcome_emails
 from zerver.lib.i18n import get_default_language_for_new_user
@@ -404,12 +404,6 @@ class PasswordResetTest(ZulipTestCase):
 
         # Reset your password
         with self.settings(PASSWORD_MIN_LENGTH=3, PASSWORD_MIN_GUESSES=1000):
-            # Verify weak passwords don't work.
-            result = self.client_post(
-                final_reset_url, {"new_password1": "easy", "new_password2": "easy"}
-            )
-            self.assert_in_response("The password is too weak.", result)
-
             result = self.client_post(
                 final_reset_url, {"new_password1": "f657gdGGk9", "new_password2": "f657gdGGk9"}
             )
@@ -424,6 +418,67 @@ class PasswordResetTest(ZulipTestCase):
 
             # make sure old password no longer works
             self.assert_login_failure(email, password=old_password)
+
+    def test_password_reset_with_weak_password(self) -> None:
+        user = self.example_user("hamlet")
+        email = user.delivery_email
+
+        self.login_user(user)
+
+        # start the password reset process by supplying an email address
+        result = self.client_post("/accounts/password/reset/", {"email": email})
+
+        # Visit the password reset link.
+        password_reset_url = self.get_confirmation_url_from_outbox(
+            email, url_pattern=settings.EXTERNAL_HOST + r"(\S\S+)"
+        )
+        result = self.client_get(password_reset_url)
+
+        final_reset_url = result["Location"]
+        result = self.client_get(final_reset_url)
+        self.assertEqual(result.status_code, 200)
+
+        # Reset your password
+        with self.settings(PASSWORD_MIN_LENGTH=3, PASSWORD_MIN_GUESSES=1000):
+            # Verify weak passwords don't work.
+            result = self.client_post(
+                final_reset_url, {"new_password1": "easy", "new_password2": "easy"}
+            )
+            self.assert_in_response("The password is too weak.", result)
+
+    def test_password_reset_with_long_password(self) -> None:
+        user = self.example_user("hamlet")
+        email = user.delivery_email
+
+        self.login_user(user)
+
+        # start the password reset process by supplying an email address
+        result = self.client_post("/accounts/password/reset/", {"email": email})
+
+        # Visit the password reset link.
+        password_reset_url = self.get_confirmation_url_from_outbox(
+            email, url_pattern=settings.EXTERNAL_HOST + r"(\S\S+)"
+        )
+        result = self.client_get(password_reset_url)
+
+        final_reset_url = result["Location"]
+        result = self.client_get(final_reset_url)
+        self.assertEqual(result.status_code, 200)
+
+        # Reset your password
+        with self.settings(PASSWORD_MIN_LENGTH=3, PASSWORD_MIN_GUESSES=1000):
+            # Verify passwords longer than max length don't work.
+            too_long_password_len = RegistrationForm.MAX_PASSWORD_LENGTH + 1
+            too_long_password = "a" * too_long_password_len
+
+            result = self.client_post(
+                final_reset_url,
+                {"new_password1": too_long_password, "new_password2": too_long_password},
+            )
+            self.assert_in_response(
+                f"Ensure this value has at most {RegistrationForm.MAX_PASSWORD_LENGTH} characters",
+                result,
+            )
 
     @patch("django.http.HttpRequest.get_host")
     def test_password_reset_page_redirects_for_root_alias_when_root_domain_landing_page_is_enabled(
@@ -2519,6 +2574,27 @@ class UserSignUpTest(ZulipTestCase):
             # _WSGIPatchedWSGIResponse does not exist in Django, thus the inverted isinstance check.
             assert not isinstance(result, UserProfile)
             self.assert_in_success_response(["The password is too weak."], result)
+            with self.assertRaises(UserProfile.DoesNotExist):
+                # Account wasn't created.
+                get_user(email, get_realm("zulip"))
+
+    def test_signup_with_too_long_password(self) -> None:
+        """
+        Check if signing up with a password that exceeds the maximum length fails.
+        """
+        email = "newguy@zulip.com"
+        too_long_password_len = RegistrationForm.MAX_PASSWORD_LENGTH + 1
+        too_long_password = "a" * too_long_password_len
+
+        with self.settings(PASSWORD_MIN_GUESSES=1000):
+            result = self.verify_signup(email=email, password=too_long_password)
+            assert not isinstance(result, UserProfile)
+            self.assert_in_success_response(
+                [
+                    f"The password cannot exceed {RegistrationForm.MAX_PASSWORD_LENGTH} characters in length."
+                ],
+                result,
+            )
             with self.assertRaises(UserProfile.DoesNotExist):
                 # Account wasn't created.
                 get_user(email, get_realm("zulip"))
