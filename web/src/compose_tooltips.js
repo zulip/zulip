@@ -5,6 +5,7 @@ import {delegate} from "tippy.js";
 import render_drafts_tooltip from "../templates/drafts_tooltip.hbs";
 import render_narrow_to_compose_recipients_tooltip from "../templates/narrow_to_compose_recipients_tooltip.hbs";
 
+import * as compose_closed_ui from "./compose_closed_ui";
 import * as compose_recipient from "./compose_recipient";
 import * as compose_state from "./compose_state";
 import * as compose_validate from "./compose_validate";
@@ -22,6 +23,8 @@ export function initialize() {
             // reply button's actual area is its containing span.
             "#compose_buttons .compose-reply-button-wrapper",
             "#left_bar_compose_mobile_button_big",
+            ".compose_new_direct_message_button",
+            ".compose_new_conversation_button",
             "#new_direct_message_button",
         ],
         delay: EXTRA_LONG_HOVER_DELAY,
@@ -180,6 +183,16 @@ export function initialize() {
 
             return parse_html(render_narrow_to_compose_recipients_tooltip({display_current_view}));
         },
+        onHidden(instance) {
+            instance.destroy();
+        },
+    });
+
+    delegate("body", {
+        target: ".disabled_compose_new_conversation_container",
+        maxWidth: 350,
+        content: () => compose_closed_ui.get_stream_posting_policy_error_message(),
+        appendTo: () => document.body,
         onHidden(instance) {
             instance.destroy();
         },

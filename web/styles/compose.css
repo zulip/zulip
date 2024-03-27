@@ -69,6 +69,12 @@
             text-overflow: ellipsis;
         }
 
+        #new_conversation_container {
+            display: flex;
+            flex-shrink: 0;
+            align-items: center;
+        }
+
         #new_conversation_button {
             /* Remove the  `padding` to prevent margin from affecting parent height. */
             padding: 0 10px;
@@ -76,6 +82,7 @@
             min-width: inherit;
             margin: 1px;
             flex-shrink: 0;
+            user-select: none;
 
             transition: background-color 0.2s ease;
 
@@ -86,6 +93,11 @@
                     --color-compose-embedded-button-background-hover
                 );
                 color: var(--color-compose-embedded-button-text-color-hover);
+            }
+
+            &.disabled_compose_new_conversation_button {
+                cursor: default;
+                opacity: 0.5;
             }
         }
     }
