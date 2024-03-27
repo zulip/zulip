@@ -930,7 +930,7 @@ class ZulipLDAPAuthBackendBase(ZulipAuthMixin, LDAPBackend):
         full_name = self.get_mapped_name(ldap_user)
         if full_name != user_profile.full_name:
             try:
-                full_name = check_full_name(full_name)
+                full_name = check_full_name(full_name, user_profile.realm)
             except JsonableError as e:
                 raise ZulipLDAPError(e.msg)
             do_change_full_name(user_profile, full_name, None)
@@ -1148,7 +1148,7 @@ class ZulipLDAPAuthBackend(ZulipLDAPAuthBackendBase):
         # We have valid LDAP credentials; time to create an account.
         full_name = self.get_mapped_name(ldap_user)
         try:
-            full_name = check_full_name(full_name)
+            full_name = check_full_name(full_name, self._realm)
         except JsonableError as e:
             raise ZulipLDAPError(e.msg)
 

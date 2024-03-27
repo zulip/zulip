@@ -180,6 +180,7 @@ class RegistrationForm(RealmDetailsForm):
         # Since the superclass doesn't except random extra kwargs, we
         # remove it from the kwargs dict before initializing.
         self.realm_creation = kwargs["realm_creation"]
+        self.realm = kwargs.pop("realm", None)
 
         super().__init__(*args, **kwargs)
         if settings.TERMS_OF_SERVICE_VERSION is not None:
@@ -199,7 +200,7 @@ class RegistrationForm(RealmDetailsForm):
 
     def clean_full_name(self) -> str:
         try:
-            return check_full_name(self.cleaned_data["full_name"])
+            return check_full_name(self.cleaned_data["full_name"], self.realm)
         except JsonableError as e:
             raise ValidationError(e.msg)
 
