@@ -1,6 +1,6 @@
 {{#with user_topic}}
 <tr data-stream-id="{{stream_id}}" data-stream="{{stream}}" data-topic="{{topic}}" data-date-updated="{{date_updated_str}}" data-visibility-policy="{{visibility_policy}}">
-    <td>{{stream}}</td>
+    <td>{{> inline_decorated_stream_name stream=stream_info show_colored_icon=true}}</td>
     <td>{{topic}}</td>
     <td>
         <select class="settings_user_topic_visibility_policy prop-element list_select bootstrap-focus-style" data-setting-widget-type="number">

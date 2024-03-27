@@ -8,6 +8,7 @@ import * as keydown_util from "./keydown_util";
 import * as narrow_state from "./narrow_state";
 import * as popovers from "./popovers";
 import * as search_suggestion from "./search_suggestion";
+import * as stream_data from "./stream_data";
 
 // Exported for unit testing
 export let is_using_input_method = false;
@@ -69,6 +70,16 @@ export function initialize({on_narrow_search}) {
         helpOnEmptyStrings: true,
         naturalSearch: true,
         highlighter_html(item) {
+            if (item.slice(0, 7) === "stream:") {
+                const stream_name = item.slice(item.indexOf(":") + 1);
+                const sub = stream_data.get_sub(stream_name);
+
+                for (const [key, value] of search_map.entries()) {
+                    if (key.includes("stream:")) {
+                        value.stream = sub;
+                    }
+                }
+            }
             const obj = search_map.get(item);
             return render_search_list_item(obj);
         },

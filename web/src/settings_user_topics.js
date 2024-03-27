@@ -5,6 +5,7 @@ import render_user_topic_ui_row from "../templates/user_topic_ui_row.hbs";
 import * as ListWidget from "./list_widget";
 import * as scroll_util from "./scroll_util";
 import * as settings_config from "./settings_config";
+import * as stream_data from "./stream_data";
 import * as user_topics from "./user_topics";
 
 export let loaded = false;
@@ -27,6 +28,11 @@ export function populate_list() {
         name: "user-topics-list",
         get_item: ListWidget.default_get_item,
         modifier_html(user_topic) {
+            const stream_info = stream_data.get_sub(user_topic.stream);
+            user_topic = {
+                ...user_topic,
+                stream_info,
+            };
             const context = {
                 user_topic,
                 user_topic_visibility_policy_values:
