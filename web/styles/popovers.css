@@ -1069,50 +1069,15 @@ ul {
 
 .visibility_policy_popover {
     padding: 0 4px;
+}
 
-    .visibility_policy_popover_container {
-        display: flex;
-        flex-direction: column;
-        gap: 1px;
-        padding: 1px;
-        background-color: var(--color-background-tab-picker-container);
-        border-radius: 5px;
-    }
-
-    .visibility_policy_option {
+.recipient-bar-topic-visibility-switcher {
+    .tab-option-content {
+        font-size: 15px;
+        color: var(--color-text-popover-menu);
+        gap: 10px;
+        justify-content: flex-start;
         padding: 2px 13px;
-        border-radius: 4px;
-        cursor: pointer;
-
-        .icon_and_text {
-            display: flex;
-            align-items: center;
-            text-decoration: none;
-            color: var(--color-tab-picker-icon);
-            gap: 10px;
-
-            &i {
-                font-size: 16px;
-            }
-        }
-
-        &:hover:not(.selected_visibility_policy) {
-            background-color: var(
-                --color-background-tab-picker-tab-option-hover
-            );
-        }
-
-        &:active:not(.selected_visibility_policy) {
-            outline: 1px solid var(--color-outline-tab-picker-tab-option);
-            outline-offset: -1px;
-        }
-    }
-
-    .selected_visibility_policy {
-        background-color: var(--color-background-tab-picker-selected-tab);
-        outline: 1px solid var(--color-outline-tab-picker-tab-option);
-        outline-offset: -1px;
-        z-index: 1;
     }
 }
 
