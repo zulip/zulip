@@ -239,10 +239,15 @@ html {
         & a {
             &.highlighted {
                 background-color: hsl(152deg 40% 42%);
+            }
+        }
 
+        & a:focus {
+            &.highlighted {
                 /* Don't show the focus outline for the highlighted page. */
                 outline: 0;
             }
+            outline: 5px auto hsl(153deg 32% 55%);
         }
     }
 }
