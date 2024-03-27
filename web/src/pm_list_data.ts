@@ -53,6 +53,9 @@ export function get_conversations(): DisplayObject[] {
 
     for (const conversation of private_messages) {
         const user_ids_string = conversation.user_ids_string;
+        const dms_contain_unread_mention = unread.dms_has_mention(
+            unread.get_msg_ids_for_user_ids_string(user_ids_string),
+        );
         const reply_to = people.user_ids_string_to_emails_string(user_ids_string);
         assert(reply_to !== undefined);
         const recipients_string = people.get_recipients(user_ids_string);
@@ -89,6 +92,7 @@ export function get_conversations(): DisplayObject[] {
             user_circle_class,
             is_group,
             is_bot,
+            dms_contain_unread_mention,
         };
         display_objects.push(display_object);
     }

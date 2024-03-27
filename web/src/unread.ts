@@ -982,6 +982,17 @@ export function get_msg_ids_for_topic(stream_id: number, topic_name: string): nu
     return unread_topic_counter.get_msg_ids_for_topic(stream_id, topic_name);
 }
 
+export function dms_has_mention(msg_ids: number | number[]): boolean {
+    const idsToCheck = Array.isArray(msg_ids) ? msg_ids : [msg_ids];
+
+    for (const msg_id of idsToCheck) {
+        if (message_has_mention(msg_id)) {
+            return true;
+        }
+    }
+    return false;
+}
+
 export function get_msg_ids_for_user_ids_string(user_ids_string: string): number[] {
     return unread_direct_message_counter.get_msg_ids_for_user_ids_string(user_ids_string);
 }
@@ -1034,6 +1045,14 @@ type UnreadHuddleInfo = {
     user_ids_string: string;
     unread_message_ids: number[];
 };
+
+export function get_msg_ids_for_dms(): number[] {
+    return unread_direct_message_counter.get_msg_ids();
+}
+
+export function message_has_mention(message_id: number): boolean {
+    return direct_message_with_mention_count.has(message_id);
+}
 
 type UnreadMessagesParams = {
     unread_msgs: {

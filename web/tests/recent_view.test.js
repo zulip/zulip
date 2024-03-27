@@ -175,6 +175,9 @@ mock_esm("../src/unread", {
     num_unread_for_user_ids_string() {
         return 0;
     },
+    get_msg_ids_for_user_ids_string: () => false,
+    message_has_mention: () => false,
+    dms_has_mention: () => false,
     topic_has_any_unread_mentions: () => false,
 });
 mock_esm("../src/resize", {
