@@ -243,7 +243,7 @@ EXEMPT_FILES = make_set(
         "web/src/stream_settings_containers.ts",
         "web/src/stream_settings_ui.js",
         "web/src/stream_ui_updates.js",
-        "web/src/submessage.js",
+        "web/src/submessage.ts",
         "web/src/subscriber_api.ts",
         "web/src/timerender.ts",
         "web/src/tippyjs.ts",
