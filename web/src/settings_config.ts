@@ -133,9 +133,12 @@ export type DisplaySettings = {
     settings: {
         user_display_settings: string[];
     };
+    render_group?: boolean;
     render_only: {
-        high_contrast_mode: boolean;
-        dense_mode: boolean;
+        dense_mode?: boolean;
+        high_contrast_mode?: boolean;
+        web_font_size_px?: boolean;
+        web_line_height_percent?: boolean;
     };
 };
 
@@ -150,8 +153,20 @@ export const get_all_preferences = (): DisplaySettings => ({
         ],
     },
     render_only: {
-        high_contrast_mode: page_params.development_environment,
         dense_mode: page_params.development_environment,
+        high_contrast_mode: page_params.development_environment,
+    },
+});
+
+/* istanbul ignore next */
+export const get_information_density_preferences = (): DisplaySettings => ({
+    render_group: page_params.development_environment,
+    render_only: {
+        web_font_size_px: page_params.development_environment,
+        web_line_height_percent: page_params.development_environment,
+    },
+    settings: {
+        user_display_settings: ["web_font_size_px", "web_line_height_percent"],
     },
 });
 
@@ -538,7 +553,14 @@ const user_role_array = Object.values(user_role_values);
 export const user_role_map = new Map(user_role_array.map((role) => [role.code, role.description]));
 
 export const preferences_settings_labels = {
+    default_language_settings_label: $t({defaultMessage: "Language"}),
     dense_mode: $t({defaultMessage: "Dense mode"}),
+    display_emoji_reaction_users: new Handlebars.SafeString(
+        $t_html({
+            defaultMessage:
+                "Display names of reacting users when few users have reacted to a message",
+        }),
+    ),
     fluid_layout_width: $t({defaultMessage: "Use full width on wide screens"}),
     high_contrast_mode: $t({defaultMessage: "High contrast mode"}),
     starred_message_counts: $t({defaultMessage: "Show counts for starred messages"}),
@@ -548,25 +570,26 @@ export const preferences_settings_labels = {
             defaultMessage: "Convert emoticons before sending (<code>:)</code> becomes 😃)",
         }),
     ),
-    display_emoji_reaction_users: new Handlebars.SafeString(
-        $t_html({
-            defaultMessage:
-                "Display names of reacting users when few users have reacted to a message",
-        }),
-    ),
     web_escape_navigates_to_home_view: $t({defaultMessage: "Escape key navigates to home view"}),
-    default_language_settings_label: $t({defaultMessage: "Language"}),
+    web_font_size_px: $t({defaultMessage: "Message-area font size (px)"}),
+    web_line_height_percent: $t({defaultMessage: "Message-area line height (%)"}),
 };
 
 export const notification_settings_labels = {
-    enable_online_push_notifications: $t({
-        defaultMessage: "Send mobile notifications even if I'm online",
+    automatically_follow_topics_policy: $t({
+        defaultMessage: "Automatically follow topics",
     }),
-    pm_content_in_desktop_notifications: $t({
-        defaultMessage: "Include content of direct messages in desktop notifications",
+    automatically_follow_topics_where_mentioned: $t({
+        defaultMessage: "Automatically follow topics where I'm mentioned",
+    }),
+    automatically_unmute_topics_in_muted_streams_policy: $t({
+        defaultMessage: "Automatically unmute topics in muted streams",
     }),
     desktop_icon_count_display: $t({
         defaultMessage: "Unread count badge (appears in desktop sidebar and browser tab)",
+    }),
+    enable_online_push_notifications: $t({
+        defaultMessage: "Send mobile notifications even if I'm online",
     }),
     enable_digest_emails: $t({defaultMessage: "Send digest emails when I'm away"}),
     enable_login_emails: $t({
@@ -578,17 +601,11 @@ export const notification_settings_labels = {
     message_content_in_email_notifications: $t({
         defaultMessage: "Include message content in message notification emails",
     }),
+    pm_content_in_desktop_notifications: $t({
+        defaultMessage: "Include content of direct messages in desktop notifications",
+    }),
     realm_name_in_email_notifications_policy: $t({
         defaultMessage: "Include organization name in subject of message notification emails",
-    }),
-    automatically_follow_topics_policy: $t({
-        defaultMessage: "Automatically follow topics",
-    }),
-    automatically_unmute_topics_in_muted_streams_policy: $t({
-        defaultMessage: "Automatically unmute topics in muted streams",
-    }),
-    automatically_follow_topics_where_mentioned: $t({
-        defaultMessage: "Automatically follow topics where I'm mentioned",
     }),
 };
 

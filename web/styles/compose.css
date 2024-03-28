@@ -177,14 +177,10 @@
                little layout shifts with pills. */
             flex: 0 0 auto;
             height: var(--compose-recipient-box-min-height);
-            /* Round up natural width to next whole pixel. */
-            width: 23px;
 
-            .fa-angle-right {
-                font-size: 0.9em;
-                -webkit-text-stroke: 0.05em;
-                align-self: center;
-                margin: 0 5px;
+            .zulip-icon-chevron-right {
+                font-size: 16px;
+                color: var(--color-compose-chevron-arrow);
             }
         }
 
@@ -1176,7 +1172,7 @@ textarea.new_message_textarea,
 
     .zulip-icon-chevron-down {
         padding-left: 5px;
-        color: hsl(0deg 0% 58%);
+        color: var(--color-compose-chevron-arrow);
         font-weight: lighter;
     }
 

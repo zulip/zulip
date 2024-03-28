@@ -140,6 +140,9 @@
     */
     --stream-subscriber-list-max-height: 100%;
 
+    /* Gap between tabs in the tab picker */
+    --grid-gap-tab-picker: 2px;
+
     /* Colors used across the app */
     --color-date: hsl(0deg 0% 15% / 75%);
     --color-background-private-message-header: hsl(46deg 35% 93%);
@@ -195,6 +198,7 @@
     --color-background-tab-picker-selected-tab: hsl(0deg 0% 100%);
     --color-outline-tab-picker-tab-option: hsl(0deg 0% 0% / 30%);
     --color-background-tab-picker-tab-option-hover: hsl(0deg 0% 100% / 60%);
+    --color-background-tab-picker-tab-option-active: hsl(0deg 0% 100% / 35%);
     --color-background-popover: hsl(0deg 0% 100%);
     --color-background-alert-word: hsl(18deg 100% 84%);
     --color-buddy-list-highlighted-user: hsl(120deg 12.3% 71.4% / 38%);
@@ -229,6 +233,7 @@
     --color-compose-embedded-button-background-hover: hsl(
         231deg 100% 90% / 50%
     );
+    --color-compose-chevron-arrow: hsl(0deg 0% 58%);
 
     /* Text colors */
     --color-text-default: hsl(0deg 0% 20%);
@@ -499,6 +504,7 @@
     --color-background-tab-picker-selected-tab: hsl(0deg 0% 100% / 7%);
     --color-outline-tab-picker-tab-option: hsl(0deg 0% 100% / 12%);
     --color-background-tab-picker-tab-option-hover: hsl(0deg 0% 100% / 5%);
+    --color-background-tab-picker-tab-option-active: hsl(0deg 0% 100% / 3%);
     --color-background-alert-word: hsl(22deg 70% 35%);
     --color-buddy-list-highlighted-user: hsl(136deg 25% 73% / 20%);
     --color-border-sidebar: hsl(0deg 0% 0% / 20%);

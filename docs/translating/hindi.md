@@ -1,11 +1,7 @@
 # Hindi translation style guide (हिन्दी अनुवाद शैली मार्गदर्शक)
 
-Use informal Hindi for translation:
-
-- Informal "you" (_तू_) instead of formal form _आप_. Many top software
-  companies (e.g. Google) use the informal one, because it's much more common in
-  the daily language and avoids making translations look like they were written
-  by machines.
+- Use _आप_ as the second-person pronoun. Don't use तुम or तू.
+  (See [chat thread](https://chat.zulip.org/#narrow/stream/58-translation/topic/Hindi.20Translation/near/1762384).)
 
 - Imperative, active, and continuous verbs, e.g. _manage streams_ -
   _चैनल प्रबंधित करें_, not _चैनल प्रबंधन_.
@@ -62,7 +58,6 @@ Zulip friendly and usable.
 
 ## Others (अन्य)
 
-- You - **तुम**: also "आप" if it's in plural.
 - We - **हम**
 - Message table - **संदेश बोर्ड**
 - Enter/Intro - **दर्ज / परिचय**

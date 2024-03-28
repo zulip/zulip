@@ -8,7 +8,6 @@ from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
 
 from analytics.lib.counts import COUNT_STATS, do_increment_logging_stat
-from zerver.actions.create_user import DEFAULT_HISTORICAL_FLAGS, create_historical_user_messages
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.message import (
     bulk_access_messages,
@@ -18,6 +17,7 @@ from zerver.lib.message import (
 from zerver.lib.queue import queue_json_publish
 from zerver.lib.stream_subscription import get_subscribed_stream_recipient_ids_for_user
 from zerver.lib.topic import filter_by_topic_name_via_message
+from zerver.lib.user_message import DEFAULT_HISTORICAL_FLAGS, create_historical_user_messages
 from zerver.models import Message, Recipient, UserMessage, UserProfile
 from zerver.tornado.django_api import send_event
 
@@ -338,8 +338,9 @@ def do_update_message_flags(
 
             create_historical_user_messages(
                 user_id=user_profile.id,
-                message_ids=historical_message_ids,
-                flags=(DEFAULT_HISTORICAL_FLAGS & ~flagattr) | flag_target,
+                message_ids=list(historical_message_ids),
+                flagattr=flagattr,
+                flag_target=flag_target,
             )
 
         to_update = UserMessage.objects.filter(

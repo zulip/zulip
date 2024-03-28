@@ -74,4 +74,12 @@ class zulip::app_frontend_once {
     mode   => '0644',
     source => 'puppet:///modules/zulip/cron.d/clearsessions',
   }
+
+  file { '/etc/cron.d/send_zulip_update_announcements':
+    ensure => file,
+    owner  => 'root',
+    group  => 'root',
+    mode   => '0644',
+    source => 'puppet:///modules/zulip/cron.d/send_zulip_update_announcements',
+  }
 }

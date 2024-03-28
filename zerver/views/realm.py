@@ -529,6 +529,8 @@ def update_realm_user_settings_defaults(
     color_scheme: Optional[int] = REQ(
         json_validator=check_int_in(UserProfile.COLOR_SCHEME_CHOICES), default=None
     ),
+    web_font_size_px: Optional[int] = REQ(json_validator=check_int, default=None),
+    web_line_height_percent: Optional[int] = REQ(json_validator=check_int, default=None),
     translate_emoticons: Optional[bool] = REQ(json_validator=check_bool, default=None),
     display_emoji_reaction_users: Optional[bool] = REQ(json_validator=check_bool, default=None),
     web_home_view: Optional[str] = REQ(

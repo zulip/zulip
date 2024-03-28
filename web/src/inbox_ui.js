@@ -170,13 +170,12 @@ function format_dm(user_ids_string, unread_count, latest_msg_id) {
 
     const reply_to = people.user_ids_string_to_emails_string(user_ids_string);
     const rendered_dm_with = recipient_ids
-        .map((recipient_id) =>
-            render_user_with_status_icon({
-                name: people.get_display_full_name(recipient_id),
-                status_emoji_info: user_status.get_status_emoji(recipient_id),
-            }),
-        )
-        .sort();
+        .map((recipient_id) => ({
+            name: people.get_display_full_name(recipient_id),
+            status_emoji_info: user_status.get_status_emoji(recipient_id),
+        }))
+        .sort((a, b) => util.strcmp(a.name, b.name))
+        .map((user_info) => render_user_with_status_icon(user_info));
 
     let user_circle_class;
     let is_bot = false;

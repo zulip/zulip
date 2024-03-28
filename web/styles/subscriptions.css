@@ -239,6 +239,14 @@ h4.user_group_setting_subsection_title {
     .search {
         max-width: 160px;
     }
+
+    @media (max-width: $ms_min) {
+        float: none;
+        display: flex;
+        justify-content: flex-start;
+        align-items: center;
+        margin: 0 0 5px;
+    }
 }
 
 .subscriber_list_add .form-inline,

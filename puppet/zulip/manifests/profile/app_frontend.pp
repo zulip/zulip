@@ -10,7 +10,7 @@ class zulip::profile::app_frontend {
   } else {
     $nginx_listen_port = zulipconf('application_server', 'nginx_listen_port', 443)
   }
-  $ssl_dir = $::os['family'] ? {
+  $ssl_dir = $facts['os']['family'] ? {
     'Debian' => '/etc/ssl',
     'RedHat' => '/etc/pki/tls',
   }
@@ -61,7 +61,7 @@ class zulip::profile::app_frontend {
           test -d /etc/letsencrypt/renewal &&
           grep -qx "authenticator = standalone" /etc/letsencrypt/renewal/*.conf
           | EOT
-        command => "${::zulip_scripts_path}/lib/fix-standalone-certbot",
+        command => "${facts['zulip_scripts_path']}/lib/fix-standalone-certbot",
       }
   }
 

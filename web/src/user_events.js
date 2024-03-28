@@ -141,7 +141,7 @@ export const update_person = function update(person) {
                 const $custom_user_field = $(
                     `.profile-settings-form .custom_user_field[data-field-id="${CSS.escape(field_id)}"]`,
                 );
-                const $field = $custom_user_field.find(".field");
+                const $field = $custom_user_field.find(".settings-profile-user-field");
                 const $required_symbol = $custom_user_field.find(".required-symbol");
                 if (!field_value) {
                     if (!$field.hasClass("empty-required-field")) {

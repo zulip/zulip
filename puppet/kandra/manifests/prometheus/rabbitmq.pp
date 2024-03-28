@@ -10,5 +10,10 @@ class kandra::prometheus::rabbitmq {
     unless  => 'grep -q rabbitmq_prometheus /etc/rabbitmq/enabled_plugins',
     require => Service['rabbitmq-server'],
   }
+  exec { 'enable rabbitmq-prometheus-per-metric':
+    command => "rabbitmqctl eval 'application:set_env(rabbitmq_prometheus, return_per_object_metrics, true).'",
+    unless  => "rabbitmqctl eval 'application:get_env(rabbitmq_prometheus, return_per_object_metrics).' | grep -q true",
+    require => Exec['enable rabbitmq-prometheus'],
+  }
   kandra::firewall_allow { 'rabbitmq': port => '15692' }
 }

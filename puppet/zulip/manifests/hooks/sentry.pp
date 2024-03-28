@@ -5,7 +5,7 @@ class zulip::hooks::sentry {
   $version = $zulip::common::versions['sentry-cli']['version']
   $bin = "/srv/zulip-sentry-cli-${version}"
 
-  $arch = $::os['architecture'] ? {
+  $arch = $facts['os']['architecture'] ? {
     'amd64'   => 'x86_64',
     'aarch64' => 'aarch64',
   }

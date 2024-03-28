@@ -795,6 +795,14 @@ strong {
             color: hsl(0deg 0% 20%);
             white-space: nowrap;
 
+            /* hidden text just to maintain line height for a blank option */
+            strong:empty {
+                &::after {
+                    content: ".";
+                    visibility: hidden;
+                }
+            }
+
             &:hover {
                 text-decoration: none;
             }
@@ -2419,33 +2427,41 @@ select.invite-as {
     }
 }
 
-@media (width < $xl_min) {
-    .default-sidebar-behaviour {
-        .app-main .column-right {
-            display: none;
+%hide-right-sidebar {
+    .app-main .column-right {
+        display: none;
 
-            &.expanded {
-                display: block;
-                position: absolute;
-                float: none;
-                right: 15px;
-                top: 0;
+        &.expanded {
+            display: block;
+            position: absolute;
+            float: none;
+            right: 15px;
+            top: 0;
 
-                .simplebar-track.simplebar-vertical {
-                    right: 0;
-                }
+            .simplebar-track.simplebar-vertical {
+                right: 0;
+            }
 
-                .right-sidebar {
-                    box-shadow: 0 -2px 3px 0 hsl(0deg 0% 0% / 10%);
-                    border-left: 1px solid var(--color-border-sidebar);
-                    padding-right: 15px;
-                    padding-left: 15px;
-                    height: 100%;
-                    right: 0;
-                    background-color: var(--color-background);
-                }
+            .right-sidebar {
+                box-shadow: 0 -2px 3px 0 hsl(0deg 0% 0% / 10%);
+                border-left: 1px solid var(--color-border-sidebar);
+                padding-right: 15px;
+                padding-left: 15px;
+                height: 100%;
+                right: 0;
+                background-color: var(--color-background);
             }
         }
+    }
+}
+
+.hide-right-sidebar {
+    @extend %hide-right-sidebar;
+}
+
+@media (width < $xl_min) {
+    .default-sidebar-behaviour {
+        @extend %hide-right-sidebar;
 
         .app-main .column-middle {
             margin-right: 7px;
@@ -2460,10 +2476,6 @@ select.invite-as {
         #scheduled_message_indicator,
         #compose-content {
             margin-right: 7px;
-        }
-
-        #userlist-toggle {
-            display: block;
         }
     }
 }

@@ -493,6 +493,27 @@ input[type="checkbox"] {
     }
 }
 
+.information-density-settings {
+    max-width: 325px;
+
+    .input-group {
+        display: flex;
+        gap: 5px;
+        align-items: baseline;
+
+        label {
+            flex: 1 0 max-content;
+        }
+
+        .settings_text_input {
+            width: 0;
+            flex: 0 0 8ch;
+            margin-left: auto;
+            text-align: right;
+        }
+    }
+}
+
 #stream-specific-notify-table .unmute_stream {
     position: relative;
     left: 3px;
@@ -1924,6 +1945,7 @@ $option_title_width: 180px;
     .settings_textarea,
     .pill-container {
         border-color: hsl(0deg 0% 100%);
+        margin-bottom: 0;
 
         &:focus {
             border-color: hsl(206deg 80% 62% / 80%);

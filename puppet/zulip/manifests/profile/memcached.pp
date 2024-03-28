@@ -2,7 +2,7 @@ class zulip::profile::memcached {
   include zulip::profile::base
   include zulip::sasl_modules
 
-  case $::os['family'] {
+  case $facts['os']['family'] {
     'Debian': {
       $memcached_packages = [ 'memcached', 'sasl2-bin' ]
       $memcached_user = 'memcache'

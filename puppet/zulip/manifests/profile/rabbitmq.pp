@@ -1,6 +1,6 @@
 class zulip::profile::rabbitmq {
   include zulip::profile::base
-  $erlang = $::os['family'] ? {
+  $erlang = $facts['os']['family'] ? {
     'Debian' => 'erlang-base',
     'RedHat' => 'erlang',
   }
@@ -50,7 +50,7 @@ class zulip::profile::rabbitmq {
     notify => Service['rabbitmq-server'],
   }
   exec { 'warn-rabbitmq-nodename-change':
-    command   => "${::zulip_scripts_path}/lib/warn-rabbitmq-nodename-change",
+    command   => "${facts['zulip_scripts_path']}/lib/warn-rabbitmq-nodename-change",
     onlyif    => '[ -f /etc/rabbitmq/rabbitmq-env.conf ] && ! grep -xq NODENAME=zulip@localhost /etc/rabbitmq/rabbitmq-env.conf',
     before    => [
       File['/etc/rabbitmq/rabbitmq-env.conf'],
@@ -72,7 +72,7 @@ class zulip::profile::rabbitmq {
     ],
   }
   package { $rabbitmq_packages:
-    ensure  => installed,
+    ensure => installed,
   }
   # epmd doesn't have an init script, so we just check if it is
   # running, and if it isn't, start it.  Even in case of a race, this
@@ -94,7 +94,7 @@ class zulip::profile::rabbitmq {
   }
 
   exec { 'configure-rabbitmq':
-    command     => "${::zulip_scripts_path}/setup/configure-rabbitmq",
+    command     => "${facts['zulip_scripts_path']}/setup/configure-rabbitmq",
     refreshonly => true,
     require     => Service['rabbitmq-server'],
   }
