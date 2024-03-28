@@ -243,6 +243,10 @@ function display_image(payload) {
     img.src = payload.source;
     $img_container.html(img).show();
 
+    $("#lightbox_overlay .image-preview > .zoom-element > img")
+        .attr("src", "")
+        .attr("src", payload.source);
+
     const filename = payload.url?.split("/").pop();
     $(".media-description .title")
         .text(payload.title || "N/A")
