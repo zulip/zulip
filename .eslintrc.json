@@ -198,6 +198,8 @@
                 "@typescript-eslint/no-use-before-define": ["error", {"functions": false}],
                 "@typescript-eslint/parameter-properties": "error",
                 "@typescript-eslint/promise-function-async": "error",
+                "@typescript-eslint/restrict-plus-operands": ["error", {}],
+                "@typescript-eslint/restrict-template-expressions": ["error", {}],
                 "no-undef": "error"
             }
         },
