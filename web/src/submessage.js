@@ -1,7 +1,22 @@
+import z from "zod";
+
 import * as blueslip from "./blueslip";
 import * as channel from "./channel";
 import * as message_store from "./message_store";
 import * as widgetize from "./widgetize";
+
+export const zform_widget_extra_data_schema = z.object({
+    choices: z.array(
+        z.object({
+            type: z.string(),
+            long_name: z.string(),
+            reply: z.string(),
+            short_name: z.string(),
+        }),
+    ),
+    heading: z.string(),
+    type: z.literal("choices"),
+});
 
 export function get_message_events(message) {
     if (message.locally_echoed) {

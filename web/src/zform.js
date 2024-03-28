@@ -1,23 +1,10 @@
 import $ from "jquery";
-import {z} from "zod";
 
 import render_widgets_zform_choices from "../templates/widgets/zform_choices.hbs";
 
 import * as blueslip from "./blueslip";
+import {zform_widget_extra_data_schema} from "./submessage";
 import * as transmit from "./transmit";
-
-const zform_widget_extra_data_schema = z.object({
-    choices: z.array(
-        z.object({
-            type: z.string(),
-            long_name: z.string(),
-            reply: z.string(),
-            short_name: z.string(),
-        }),
-    ),
-    heading: z.string(),
-    type: z.literal("choices"),
-});
 
 export function activate(opts) {
     const self = {};
