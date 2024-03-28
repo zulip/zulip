@@ -15,4 +15,6 @@ class Command(ZulipBaseCommand):
     @override
     def handle(self, *args: Any, **options: Any) -> None:
         if settings.BILLING_ENABLED:
-            invoice_plans_as_needed()
+            from datetime import datetime, timezone
+            date = datetime(2024, 4, 29, tzinfo=timezone.utc)
+            invoice_plans_as_needed(date)
