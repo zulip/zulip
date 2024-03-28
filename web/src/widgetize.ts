@@ -12,9 +12,11 @@ type ZFormExtraData = {
     choices: {type: string; reply: string; long_name: string; short_name: string}[];
 };
 
+type WidgetExtraData = PollWidgetExtraData | ZFormExtraData | null;
+
 type WidgetOptions = {
     widget_type: string;
-    extra_data: PollWidgetExtraData | ZFormExtraData | null;
+    extra_data: WidgetExtraData;
     events: Event[];
     $row: JQuery;
     message: Message;
@@ -26,7 +28,7 @@ type WidgetValue = Record<string, unknown> & {
         $elem: JQuery;
         callback: (data: string) => void;
         message: Message;
-        extra_data: WidgetOptions["extra_data"];
+        extra_data: WidgetExtraData;
     }) => void;
 };
 
