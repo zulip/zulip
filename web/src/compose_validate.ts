@@ -1,6 +1,5 @@
 import $ from "jquery";
 import assert from "minimalistic-assert";
-import {z} from "zod";
 
 import * as resolved_topic from "../shared/src/resolved_topic";
 import render_compose_banner from "../templates/compose_banner/compose_banner.hbs";
@@ -10,7 +9,6 @@ import render_stream_wildcard_warning from "../templates/compose_banner/stream_w
 import render_wildcard_mention_not_allowed_error from "../templates/compose_banner/wildcard_mention_not_allowed_error.hbs";
 import render_compose_limit_indicator from "../templates/compose_limit_indicator.hbs";
 
-import * as channel from "./channel";
 import * as compose_banner from "./compose_banner";
 import * as compose_pm_pill from "./compose_pm_pill";
 import * as compose_state from "./compose_state";
@@ -18,7 +16,6 @@ import * as compose_ui from "./compose_ui";
 import {$t} from "./i18n";
 import * as message_store from "./message_store";
 import * as narrow_state from "./narrow_state";
-import {page_params} from "./page_params";
 import * as peer_data from "./peer_data";
 import * as people from "./people";
 import * as reactions from "./reactions";
@@ -45,10 +42,6 @@ type StreamWildcardOptions = {
 };
 
 export let wildcard_mention_threshold = 15;
-
-const server_subscription_exists_schema = z.object({
-    subscribed: z.boolean(),
-});
 
 export function set_upload_in_progress(status: boolean): void {
     upload_in_progress = status;
@@ -397,42 +390,6 @@ export function get_invalid_recipient_emails(): string[] {
     return invalid_recipients;
 }
 
-function check_unsubscribed_stream_for_send(
-    stream_name: string,
-    autosubscribe: boolean,
-): string | undefined {
-    let result;
-    if (!autosubscribe) {
-        return "not-subscribed";
-    }
-
-    // In the rare circumstance of the autosubscribe option, we
-    // *Synchronously* try to subscribe to the stream before sending
-    // the message.  This is deprecated and we hope to remove it; see
-    // #4650.
-    void channel.post({
-        url: "/json/subscriptions/exists",
-        data: {stream: stream_name, autosubscribe: true},
-        async: false,
-        success(data) {
-            const clean_data = server_subscription_exists_schema.parse(data);
-            if (clean_data.subscribed) {
-                result = "subscribed";
-            } else {
-                result = "not-subscribed";
-            }
-        },
-        error(xhr: JQuery.jqXHR) {
-            if (xhr.status === 404) {
-                result = "does-not-exist";
-            } else {
-                result = "error";
-            }
-        },
-    });
-    return result;
-}
-
 function is_recipient_large_stream(): boolean {
     const stream_id = compose_state.stream_id();
     if (stream_id === undefined) {
@@ -584,19 +541,11 @@ export function validate_stream_message_mentions(opts: StreamWildcardOptions): b
     return true;
 }
 
-export function validation_error(error_type: string, stream_name: string): boolean {
+function validation_error(error_type: string, stream_name: string): boolean {
     const $banner_container = $("#compose_banners");
     switch (error_type) {
         case "does-not-exist":
             compose_banner.show_stream_does_not_exist_error(stream_name);
-            return false;
-        case "error":
-            compose_banner.show_error_message(
-                $t({defaultMessage: "Error checking subscription."}),
-                compose_banner.CLASSNAMES.subscription_error,
-                $banner_container,
-                $("#compose_select_recipient_widget_wrapper"),
-            );
             return false;
         case "not-subscribed": {
             if (
@@ -633,10 +582,7 @@ export function validate_stream_message_address_info(stream_name: string): boole
     if (stream_data.is_subscribed_by_name(stream_name)) {
         return true;
     }
-    const autosubscribe = page_params.narrow_stream !== undefined;
-    const error_type = check_unsubscribed_stream_for_send(stream_name, autosubscribe);
-    assert(error_type !== undefined);
-    return validation_error(error_type, stream_name);
+    return validation_error("not-subscribed", stream_name);
 }
 
 function validate_stream_message(scheduling_message: boolean): boolean {

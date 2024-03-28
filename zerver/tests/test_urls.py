@@ -106,7 +106,6 @@ class PublicURLTest(ZulipTestCase):
             401: [
                 "/json/messages",
                 "/json/invites",
-                "/json/subscriptions/exists",
                 "/api/v1/users/me/subscriptions/properties",
                 "/json/fetch_api_key",
                 "/json/users/me/subscriptions",
