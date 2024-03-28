@@ -427,7 +427,7 @@ def update_or_create_user_group_for_setting(
 
     from zerver.lib.users import user_ids_to_users
 
-    member_users = user_ids_to_users(direct_members, realm)
+    member_users = user_ids_to_users(direct_members, realm, allow_deactivated=False)
     user_group.direct_members.set(member_users)
 
     potential_subgroups = NamedUserGroup.objects.select_for_update().filter(
