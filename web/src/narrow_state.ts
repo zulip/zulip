@@ -369,17 +369,6 @@ export function narrowed_to_topic(current_filter: Filter | undefined = filter())
     return current_filter.has_operator("stream") && current_filter.has_operator("topic");
 }
 
-export function narrowed_to_search(current_filter: Filter | undefined = filter()): boolean {
-    return current_filter !== undefined && current_filter.is_keyword_search();
-}
-
-export function narrowed_to_starred(current_filter: Filter | undefined = filter()): boolean {
-    if (current_filter === undefined) {
-        return false;
-    }
-    return current_filter.has_operand("is", "starred");
-}
-
 export function is_for_stream_id(stream_id: number, filter?: Filter): boolean {
     // This is not perfect, since we still track narrows by
     // name, not id, but at least the interface is good going
