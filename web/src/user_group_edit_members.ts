@@ -44,8 +44,7 @@ function get_potential_members(): User[] {
 
 function get_user_group_members(group: UserGroup): User[] {
     const member_ids = [...group.members];
-    const active_member_ids = member_ids.filter((user_id) => people.is_person_active(user_id));
-    return people.get_users_from_ids(active_member_ids);
+    return people.get_users_from_ids(member_ids);
 }
 
 export function update_member_list_widget(group: UserGroup): void {
