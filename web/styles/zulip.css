@@ -912,10 +912,6 @@ td.pointer {
     animation: rotate 1s infinite linear;
 }
 
-.status-time {
-    top: 8px !important;
-}
-
 .message_controls {
     display: flex;
     align-items: baseline;
