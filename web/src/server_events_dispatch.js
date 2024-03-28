@@ -746,6 +746,8 @@ export function dispatch_normal_event(event) {
                 }
             }
             if (event.property === "twenty_four_hour_time") {
+                // Recalculate timestamp column width
+                message_lists.calculate_timestamp_widths();
                 // Rerender the whole message list UI
                 for (const msg_list of message_lists.all_rendered_message_lists()) {
                     msg_list.rerender();

@@ -71,7 +71,7 @@
     --message-box-icon-height: 25px;
     /* This width is updated with an exact pixel
        width upon UI initialization. */
-    --message-box-timestamp-column-width: 42px;
+    --message-box-timestamp-column-width: 0;
 
     /*
     Reaction container UI scaling.
