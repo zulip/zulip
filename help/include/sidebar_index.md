@@ -170,6 +170,7 @@
 * [Import from Slack](/help/import-from-slack)
 * [Import from Gitter](/help/import-from-gitter)
 * [Import from Rocket.Chat](/help/import-from-rocketchat)
+* [Import from self-hosted Zulip](/help/import-from-self-hosted-zulip)
 * [Configure authentication methods](/help/configure-authentication-methods)
 * [SAML authentication](/help/saml-authentication)
 * [SCIM provisioning](/help/scim)

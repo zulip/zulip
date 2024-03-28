@@ -113,3 +113,4 @@ users at once, [notifying](/help/dm-mention-alert-notifications) them about a me
 * [Streams and topics](/help/streams-and-topics)
 * [Moderating open organizations](/help/moderating-open-organizations)
 * [Setting up Zulip for a class](/help/setting-up-zulip-for-a-class)
+* [Import from self-hosted Zulip](/help/import-from-self-hosted-zulip)

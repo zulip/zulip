@@ -117,6 +117,8 @@ TAB_SECTION_LABELS = {
     "all-versions": "All versions",
     "for-a-bot": "For a bot",
     "for-yourself": "For yourself",
+    "backup": "Backup Tool",
+    "export": "Data Export",
 }
 
 
