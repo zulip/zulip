@@ -617,6 +617,12 @@ export function initialize(): void {
             defaultMessage: "This profile field is required.",
         }),
         appendTo: () => document.body,
+        onShow(instance) {
+            if ($(instance.reference).children("label").eq(0).hasClass("required-field")) {
+                return undefined;
+            }
+            return false;
+        },
         onHidden(instance) {
             instance.destroy();
         },
