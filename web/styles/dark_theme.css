@@ -525,10 +525,6 @@
         color: hsl(0deg 0% 42% / 90%) !important;
     }
 
-    .message_time:hover {
-        color: var(--color-message-action-interactive);
-    }
-
     & input[type="text"]:focus,
     input[type="email"]:focus,
     input[type="number"]:focus,

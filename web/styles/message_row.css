@@ -194,7 +194,7 @@ $time_column_min_width: 42px; /* + padding */
             grid-area: edited;
         }
 
-        .message_time {
+        .message-time {
             justify-self: end;
             padding-right: 5px;
             /* Maintain first-line baseline regardless of
@@ -419,7 +419,7 @@ $time_column_min_width: 42px; /* + padding */
                 grid-area: message;
             }
 
-            .message_time {
+            .message-time {
                 grid-area: time;
                 /* Don't adjust the line-height for collapsed or
                    edited/source messages when there's a sender,
@@ -476,9 +476,9 @@ $time_column_min_width: 42px; /* + padding */
     }
 
     /* Locally echoed messages. */
-    &.locally-echoed .message_time {
+    &.locally-echoed .message-time {
         opacity: 0;
-        /* Don't show pointer when message_time doesn't has a link. */
+        /* Don't show pointer when message-time doesn't have a link. */
         cursor: default;
     }
 
