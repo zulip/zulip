@@ -612,7 +612,7 @@ export function initialize(): void {
     });
 
     delegate("body", {
-        target: ".custom-user-field-label-wrapper",
+        target: ".custom-user-field-label-wrapper.required-field-wrapper",
         content: $t({
             defaultMessage: "This profile field is required.",
         }),
