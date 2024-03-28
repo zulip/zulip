@@ -3,18 +3,6 @@ $distance_of_text_elements_from_message_box_top: 8.5px;
 $distance_of_non_text_elements_from_message_box: 6px;
 $message_box_margin: 3px;
 
-/* The time column usually just needs enough space to display the
-   timestamp. The minimum width here is enough for "22:22 PM", which
-   is roughly the widest this will be in English; this is nice as the
-   timestamps and message controls will be vertically aligned.
-
-   But in some locales, the time encoding is wider, (especially where
-   the "PM" abbreviation is longer), so we allow the column to be
-   wider for individual messages if required, up to `max-content`, to
-   prevent ugly line-wrapping. In practice, it's unlikely we'll see
-   anything wider than 60px. */
-$time_column_min_width: 42px; /* + padding */
-
 .message_row {
     display: grid;
     /* Prevent the messagebox column from overflowing the 1fr
@@ -144,13 +132,18 @@ $time_column_min_width: 42px; /* + padding */
         /* Prevent the message column from overflowing the 1fr
            space allotted by specifying `minmax(0,1fr)`, which
            sets 0 as the minimum size, not the grid default of
-           `auto`. */
+           `auto`.
+
+            The calculated `--message-box-timestamp-column-width`
+            should match `max-content` exactly, but `max-content`
+            ensures the timestamp will always have enough space
+            in the column. */
         grid-template:
             var(--message-box-icon-height) repeat(3, auto) /
             $avatar_column_width minmax(0, 1fr) calc(
                 3 * var(--message-box-icon-width)
             )
-            8px minmax($time_column_min_width, max-content);
+            8px minmax(var(--message-box-timestamp-column-width), max-content);
         /* Named grid areas provide flexibility for positioning grid items
            reliably, even if the row or column definitions of the grid change. */
         grid-template-areas:
@@ -164,7 +157,7 @@ $time_column_min_width: 42px; /* + padding */
             /* Set the controls area to 0 to give more space
                to the edit/source view area. */
             grid-template-columns: $avatar_column_width minmax(0, 1fr) 0 8px minmax(
-                    $time_column_min_width,
+                    var(--message-box-timestamp-column-width),
                     max-content
                 );
         }
@@ -174,7 +167,10 @@ $time_column_min_width: 42px; /* + padding */
                 $avatar_column_width minmax(0, 1fr) calc(
                     2 * var(--message-box-icon-width)
                 )
-                8px minmax($time_column_min_width, max-content);
+                8px minmax(
+                    var(--message-box-timestamp-column-width),
+                    max-content
+                );
         }
 
         .message_controls {
