@@ -116,6 +116,7 @@
 * [Read receipts](/help/read-receipts)
 
 ## People
+* [User list](/help/user-list)
 * [Status and availability](/help/status-and-availability)
 * [User cards](/help/user-cards)
 * [View someone's profile](/help/view-someones-profile)
