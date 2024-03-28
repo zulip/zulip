@@ -792,7 +792,7 @@ export function sender_is_guest(message: Message): boolean {
 
 export function is_valid_bot_user(user_id: number): boolean {
     const user = maybe_get_user_by_id(user_id, true);
-    return user !== undefined && user.is_bot;
+    return user?.is_bot ?? false;
 }
 
 export function should_add_guest_user_indicator(user_id: number): boolean {

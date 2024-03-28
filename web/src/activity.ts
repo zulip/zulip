@@ -40,7 +40,7 @@ const DEFAULT_IDLE_TIMEOUT_MS = 5 * 60 * 1000;
 // should be true.  When a server-initiated reload happens, however,
 // it should be initialized to false.  We handle this with a check for
 // whether the window is focused at initialization time.
-export let client_is_active = document.hasFocus && document.hasFocus();
+export let client_is_active = document.hasFocus();
 
 // new_user_input is a more strict version of client_is_active used
 // primarily for analytics.  We initialize this to true, to count new

@@ -30,7 +30,9 @@ set_global("navigator", {
 });
 
 // jQuery stuff should go away if we make an initialize() method.
-set_global("document", "document-stub");
+set_global("document", {
+    hasFocus: () => false,
+});
 
 const activity_ui = mock_esm("../src/activity_ui");
 const browser_history = mock_esm("../src/browser_history");
