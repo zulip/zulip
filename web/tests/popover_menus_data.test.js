@@ -4,6 +4,7 @@ const {strict: assert} = require("assert");
 
 const {mock_esm, zrequire} = require("./lib/namespace");
 const {run_test} = require("./lib/test");
+const $ = require("./lib/zjquery");
 const {page_params, realm} = require("./lib/zpage_params");
 
 const {Filter} = zrequire("filter");
@@ -121,6 +122,12 @@ function set_page_params_no_edit_restrictions() {
 // Test init function
 function test(label, f) {
     run_test(label, (helpers) => {
+        // Stubs for calculate_timestamp_widths()
+        $("<div>").css = noop;
+        $(":root").css = noop;
+        $("<div>").width = noop;
+        $("<div>").remove = noop;
+
         // Clear stuff for testing environment
         add_initialize_users();
         message_lists.initialize();

@@ -872,6 +872,7 @@ run_test("user_settings", ({override}) => {
     let event = event_fixtures.user_settings__default_language;
     user_settings.default_language = "en";
     override(settings_preferences, "update_page", noop);
+    override(message_lists, "calculate_timestamp_widths", noop);
     override(overlays, "settings_open", () => true);
     dispatch(event);
     assert_same(user_settings.default_language, "fr");
