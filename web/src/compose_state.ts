@@ -83,7 +83,7 @@ function get_or_set(
 // integer -> stream id of the selected stream.
 // "direct" -> Direct message is selected.
 export let selected_recipient_id: number | "direct" | "" = "";
-export const DIRECT_MESSAGE_ID = "direct" as const;
+export const DIRECT_MESSAGE_ID = "direct";
 
 export function set_selected_recipient_id(recipient_id: number | "direct" | ""): void {
     selected_recipient_id = recipient_id;
