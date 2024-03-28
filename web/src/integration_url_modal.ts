@@ -41,6 +41,7 @@ export function show_generate_integration_url_modal(api_key: string): void {
         const $dialog_submit_button = $("#generate-integration-url-modal .dialog_submit_button");
 
         $dialog_submit_button.prop("disabled", true);
+        $("#integration-url-stream_widget").prop("disabled", true);
 
         const clipboard = new ClipboardJS("#generate-integration-url-modal .dialog_submit_button", {
             text() {
@@ -63,11 +64,12 @@ export function show_generate_integration_url_modal(api_key: string): void {
         function update_url(): void {
             selected_integration = integration_input_dropdown_widget.value()!.toString();
             if (selected_integration === default_integration_option.unique_id) {
+                $("#integration-url-stream_widget").prop("disabled", true);
                 $integration_url.text(default_url_message);
                 $dialog_submit_button.prop("disabled", true);
                 return;
             }
-
+            $("#integration-url-stream_widget").prop("disabled", false);
             const stream_id = stream_input_dropdown_widget.value();
             const topic_name = $topic_input.val()!;
 
