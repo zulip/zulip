@@ -50,7 +50,7 @@ type InputPillStore<T> = {
     create_item_from_text: InputPillCreateOptions<T>["create_item_from_text"];
     get_text_from_item: InputPillCreateOptions<T>["get_text_from_item"];
     onPillCreate?: () => void;
-    removePillFunction?: (pill: InputPill<T>) => void;
+    onPillRemove?: (pill: InputPill<T>) => void;
     createPillonPaste?: () => void;
 };
 
@@ -214,8 +214,8 @@ export function create<T>(opts: InputPillCreateOptions<T>): InputPillContainer<T
             if (idx !== undefined) {
                 store.pills[idx].$element.remove();
                 const pill = store.pills.splice(idx, 1);
-                if (store.removePillFunction !== undefined) {
-                    store.removePillFunction(pill[0]);
+                if (store.onPillRemove !== undefined) {
+                    store.onPillRemove(pill[0]);
                 }
 
                 // This is needed to run the "change" event handler registered in
@@ -240,8 +240,8 @@ export function create<T>(opts: InputPillCreateOptions<T>): InputPillContainer<T
 
             if (pill) {
                 pill.$element.remove();
-                if (!quiet && store.removePillFunction !== undefined) {
-                    store.removePillFunction(pill);
+                if (!quiet && store.onPillRemove !== undefined) {
+                    store.onPillRemove(pill);
                 }
             }
         },
@@ -452,7 +452,7 @@ export function create<T>(opts: InputPillCreateOptions<T>): InputPillContainer<T
         },
 
         onPillRemove(callback) {
-            store.removePillFunction = callback;
+            store.onPillRemove = callback;
         },
 
         createPillonPaste(callback) {
