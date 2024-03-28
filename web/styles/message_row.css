@@ -190,39 +190,6 @@ $message_box_margin: 3px;
             grid-area: edited;
         }
 
-        .message-time {
-            justify-self: end;
-            padding-right: 5px;
-            /* Maintain first-line baseline regardless of
-               what happens in the message-content area (e.g., a
-               collapsed message, or source/edit view). This
-               line-height also keeps EDITED/MOVED messages
-               in place, care of their baseline-group participation
-               within the grid.
-
-               That said, 28px is a bit of a magical number.
-               In theory, this should be 27px. That's the height
-               of a single-message row without a sender. (See the
-               calculations for the height of a single-line,
-               sender-less message row in the message box grid.)
-               But when shifting into collapsed or source views,
-               28px is necessary to maintain the vertical alignment
-               of the EDITED messages, hover controls, and
-               timestamp. It's possible that this is also due to a
-               a rounding error, given how --message-box-line-height
-               is expressed as a unitless decimal. */
-            line-height: 28px;
-            text-align: end;
-            grid-area: time;
-
-            &.notvisible {
-                /* This happens when message failed to send. We don't want to
-                   display time but still want it to occupy space. */
-                width: 45px !important;
-                position: unset !important;
-            }
-        }
-
         .slow-send-spinner {
             display: none;
             justify-self: end;
@@ -416,7 +383,6 @@ $message_box_margin: 3px;
             }
 
             .message-time {
-                grid-area: time;
                 /* Don't adjust the line-height for collapsed or
                    edited/source messages when there's a sender,
                    as the sender text is always visible. */
@@ -540,6 +506,50 @@ $message_box_margin: 3px;
         &:hover {
             background: var(--color-exit-button-background-interactive);
         }
+    }
+}
+
+.message-time {
+    justify-self: end;
+    padding-right: 5px;
+    /* Maintain first-line baseline regardless of
+       what happens in the message-content area (e.g., a
+       collapsed message, or source/edit view). This
+       line-height also keeps EDITED/MOVED messages
+       in place, care of their baseline-group participation
+       within the grid.
+
+       That said, 28px is a bit of a magical number.
+       In theory, this should be 27px. That's the height
+       of a single-message row without a sender. (See the
+       calculations for the height of a single-line,
+       sender-less message row in the message box grid.)
+       But when shifting into collapsed or source views,
+       28px is necessary to maintain the vertical alignment
+       of the EDITED messages, hover controls, and
+       timestamp. It's possible that this is also due to a
+       a rounding error, given how --message-box-line-height
+       is expressed as a unitless decimal. */
+    line-height: 28px;
+    grid-area: time;
+    display: block;
+    font-size: 13px;
+    font-weight: 350;
+    text-align: end;
+    opacity: 0.8;
+    color: var(--color-text-default);
+    letter-spacing: 0.02em;
+    /* Disable blue link styling for the message timestamp link. */
+    &:hover {
+        text-decoration: none;
+        color: var(--color-message-action-interactive);
+    }
+
+    &.notvisible {
+        /* This happens when message failed to send. We don't want to
+           display time but still want it to occupy space. */
+        width: 45px !important;
+        position: unset !important;
     }
 }
 

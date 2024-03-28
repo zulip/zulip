@@ -888,21 +888,6 @@ td.pointer {
     transition: all 3s ease-in-out;
 }
 
-.messagebox-content .message-time {
-    display: block;
-    font-size: 13px;
-    font-weight: 350;
-    text-align: right;
-    opacity: 0.8;
-    color: var(--color-text-default);
-    letter-spacing: 0.02em;
-    /* Disable blue link styling for the message timestamp link. */
-    &:hover {
-        text-decoration: none;
-        color: var(--color-message-action-interactive);
-    }
-}
-
 .messagebox-content .slow-send-spinner {
     display: block;
     font-size: 12px;
