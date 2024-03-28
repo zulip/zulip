@@ -36,10 +36,7 @@ export function current_user_has_reacted_to_emoji(message: Message, local_id: st
     set_clean_reactions(message);
 
     const clean_reaction_object = message.clean_reactions.get(local_id);
-    return (
-        clean_reaction_object !== undefined &&
-        clean_reaction_object.user_ids.includes(current_user.user_id)
-    );
+    return clean_reaction_object?.user_ids.includes(current_user.user_id) ?? false;
 }
 
 function get_message(message_id: number): Message | undefined {
@@ -281,7 +278,7 @@ export function add_reaction(event: ReactionEvent): void {
     const local_id = get_local_reaction_id(event);
     const user_id = event.user_id;
     let clean_reaction_object = message.clean_reactions.get(local_id);
-    if (clean_reaction_object && clean_reaction_object.user_ids.includes(user_id)) {
+    if (clean_reaction_object?.user_ids.includes(user_id)) {
         return;
     }
 
