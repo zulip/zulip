@@ -1182,6 +1182,18 @@ class UserProfileTest(ZulipTestCase):
         with self.assertRaises(JsonableError):
             user_ids_to_users(real_user_ids, get_realm("zephyr"))
 
+        do_deactivate_user(self.example_user("hamlet"), acting_user=None)
+        with self.assertRaises(JsonableError):
+            user_ids_to_users(real_user_ids, get_realm("zulip"), allow_deactivated=False)
+
+        self.assertEqual(
+            {
+                user_profile.id
+                for user_profile in user_ids_to_users(real_user_ids, get_realm("zulip"))
+            },
+            set(real_user_ids),
+        )
+
     def test_get_accounts_for_email(self) -> None:
         reset_email_visibility_to_everyone_in_zulip_realm()
 
