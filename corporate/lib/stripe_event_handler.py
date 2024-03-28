@@ -11,6 +11,7 @@ from corporate.lib.stripe import (
     RemoteRealmBillingSession,
     RemoteServerBillingSession,
     get_configured_fixed_price_plan_offer,
+    get_current_plan_by_customer,
 )
 from corporate.models import Customer, CustomerPlan, Event, Invoice, Session
 from zerver.lib.send_email import FromAddress, send_email
@@ -172,14 +173,26 @@ def handle_invoice_paid_event(stripe_invoice: stripe.Invoice, invoice: Invoice) 
                 remote_server_legacy_plan=remote_server_legacy_plan,
                 stripe_invoice_paid=True,
             )
-        else:
-            billing_session.process_initial_upgrade(
-                plan_tier,
-                int(metadata["licenses"]),
-                metadata["license_management"] == "automatic",
-                billing_schedule=billing_schedule,
-                charge_automatically=charge_automatically,
-                free_trial=False,
-                remote_server_legacy_plan=remote_server_legacy_plan,
-                stripe_invoice_paid=True,
-            )
+            return
+        elif metadata.get("on_free_trial"):
+            free_trial_plan = invoice.plan
+            if free_trial_plan and free_trial_plan.is_free_trial():
+                # We don't need to do anything here. When the free trial ends we will
+                # check if user has paid the invoice, if not we downgrade the user.
+                return
+
+            # If customer paid after end of free trial, we just upgrade via default method below.
+            assert free_trial_plan.status >= CustomerPlan.LIVE_STATUS_THRESHOLD
+            # Also check if customer is not on any other active plan.
+            assert get_current_plan_by_customer(customer) is None
+
+        billing_session.process_initial_upgrade(
+            plan_tier,
+            int(metadata["licenses"]),
+            metadata["license_management"] == "automatic",
+            billing_schedule=billing_schedule,
+            charge_automatically=charge_automatically,
+            free_trial=False,
+            remote_server_legacy_plan=remote_server_legacy_plan,
+            stripe_invoice_paid=True,
+        )
