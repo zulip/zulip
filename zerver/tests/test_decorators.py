@@ -15,7 +15,7 @@ from typing_extensions import override
 
 from zerver.actions.create_realm import do_create_realm
 from zerver.actions.create_user import do_reactivate_user
-from zerver.actions.realm_settings import do_deactivate_realm, do_reactivate_realm
+from zerver.actions.realm_settings import do_deactivate_realm
 from zerver.actions.user_settings import do_change_user_setting
 from zerver.actions.users import change_user_is_active, do_deactivate_user
 from zerver.decorator import (
@@ -1138,120 +1138,6 @@ class TestAuthenticatedRequirePostDecorator(ZulipTestCase):
                 mock_warning.output,
                 ["WARNING:root:Method Not Allowed (GET): /api/v1/dev_fetch_api_key"],
             )
-
-        with self.assertLogs(level="WARNING") as mock_warning:
-            result = self.client_get(r"/json/subscriptions/exists", {"stream": "Verona"})
-            self.assertEqual(result.status_code, 405)
-            self.assertEqual(
-                mock_warning.output,
-                ["WARNING:root:Method Not Allowed (GET): /json/subscriptions/exists"],
-            )
-
-
-class TestAuthenticatedJsonPostViewDecorator(ZulipTestCase):
-    def test_authenticated_json_post_view_if_everything_is_correct(self) -> None:
-        user = self.example_user("hamlet")
-        self.login_user(user)
-        response = self._do_test(user)
-        self.assert_json_success(response)
-
-    def test_authenticated_json_post_view_if_user_not_logged_in(self) -> None:
-        user = self.example_user("hamlet")
-        self.assert_json_error_contains(
-            self._do_test(user),
-            "Not logged in: API authentication or user session required",
-            status_code=401,
-        )
-
-    def test_authenticated_json_post_view_with_get_request(self) -> None:
-        self.login("hamlet")
-        with self.assertLogs(level="WARNING") as m:
-            result = self.client_get(r"/json/subscriptions/exists", {"stream": "Verona"})
-            self.assertEqual(result.status_code, 405)
-        self.assertEqual(
-            m.output,
-            [
-                "WARNING:root:Method Not Allowed ({}): {}".format(
-                    "GET", "/json/subscriptions/exists"
-                )
-            ],
-        )
-
-    def test_authenticated_json_post_view_if_subdomain_is_invalid(self) -> None:
-        user = self.example_user("hamlet")
-        email = user.delivery_email
-        self.login_user(user)
-        with self.assertLogs(level="WARNING") as m, mock.patch(
-            "zerver.decorator.get_subdomain", return_value=""
-        ):
-            self.assert_json_error_contains(
-                self._do_test(user), "Account is not associated with this subdomain"
-            )
-        self.assertEqual(
-            m.output,
-            [
-                "WARNING:root:User {} ({}) attempted to access API on wrong subdomain ({})".format(
-                    email, "zulip", ""
-                ),
-                "WARNING:root:User {} ({}) attempted to access API on wrong subdomain ({})".format(
-                    email, "zulip", ""
-                ),
-            ],
-        )
-
-        with self.assertLogs(level="WARNING") as m, mock.patch(
-            "zerver.decorator.get_subdomain", return_value="acme"
-        ):
-            self.assert_json_error_contains(
-                self._do_test(user), "Account is not associated with this subdomain"
-            )
-        self.assertEqual(
-            m.output,
-            [
-                "WARNING:root:User {} ({}) attempted to access API on wrong subdomain ({})".format(
-                    email, "zulip", "acme"
-                ),
-                "WARNING:root:User {} ({}) attempted to access API on wrong subdomain ({})".format(
-                    email, "zulip", "acme"
-                ),
-            ],
-        )
-
-    def test_authenticated_json_post_view_if_user_is_incoming_webhook(self) -> None:
-        bot = self.example_user("webhook_bot")
-        bot.set_password("test")
-        bot.save()
-        self.login_by_email(bot.email, password="test")
-        self.assert_json_error_contains(self._do_test(bot), "Webhook bots can only access webhooks")
-
-    def test_authenticated_json_post_view_if_user_is_not_active(self) -> None:
-        user_profile = self.example_user("hamlet")
-        self.login_user(user_profile)
-        # we deactivate user manually because do_deactivate_user removes user session
-        change_user_is_active(user_profile, False)
-        self.assert_json_error_contains(
-            self._do_test(user_profile), "Account is deactivated", status_code=401
-        )
-        do_reactivate_user(user_profile, acting_user=None)
-
-    def test_authenticated_json_post_view_if_user_realm_is_deactivated(self) -> None:
-        user_profile = self.example_user("hamlet")
-        self.login_user(user_profile)
-        # we deactivate user's realm manually because do_deactivate_user removes user session
-        user_profile.realm.deactivated = True
-        user_profile.realm.save()
-        self.assert_json_error_contains(
-            self._do_test(user_profile),
-            "This organization has been deactivated",
-            status_code=401,
-        )
-        do_reactivate_realm(user_profile.realm)
-
-    def _do_test(self, user: UserProfile) -> "TestHttpResponse":
-        stream_name = "stream name"
-        self.common_subscribe_to_streams(user, [stream_name], allow_fail=True)
-        data = {"stream": stream_name}
-        return self.client_post("/json/subscriptions/exists", data)
 
 
 class TestAuthenticatedJsonViewDecorator(ZulipTestCase):

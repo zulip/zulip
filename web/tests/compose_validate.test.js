@@ -8,9 +8,8 @@ const {mock_esm, zrequire} = require("./lib/namespace");
 const {run_test, noop} = require("./lib/test");
 const blueslip = require("./lib/zblueslip");
 const $ = require("./lib/zjquery");
-const {current_user, page_params, realm} = require("./lib/zpage_params");
+const {current_user, realm} = require("./lib/zpage_params");
 
-const channel = mock_esm("../src/channel");
 const compose_banner = zrequire("compose_banner");
 const compose_pm_pill = zrequire("compose_pm_pill");
 const compose_state = zrequire("compose_state");
@@ -105,53 +104,12 @@ test_ui("validate_stream_message_address_info", ({mock_template}) => {
     assert.ok(!compose_validate.validate_stream_message_address_info("social"));
     assert.ok(user_not_subscribed_rendered);
 
-    page_params.narrow_stream = "social";
-    channel.post = (payload) => {
-        assert.equal(payload.data.stream, "social");
-        payload.data.subscribed = true;
-        payload.success(payload.data);
-    };
-    assert.ok(compose_validate.validate_stream_message_address_info("social"));
-
     party_sub.name = "Frontend";
     party_sub.stream_id = 102;
     stream_data.add_sub(party_sub);
-    channel.post = (payload) => {
-        assert.equal(payload.data.stream, "Frontend");
-        payload.data.subscribed = false;
-        payload.success(payload.data);
-    };
     user_not_subscribed_rendered = false;
     assert.ok(!compose_validate.validate_stream_message_address_info("Frontend"));
     assert.ok(user_not_subscribed_rendered);
-
-    let stream_does_not_exist_rendered = false;
-    mock_template("compose_banner/stream_does_not_exist_error.hbs", false, (data) => {
-        assert.equal(data.classname, compose_banner.CLASSNAMES.stream_does_not_exist);
-        assert.equal(data.stream_name, "Frontend");
-        stream_does_not_exist_rendered = true;
-        return "<banner-stub>";
-    });
-    channel.post = (payload) => {
-        assert.equal(payload.data.stream, "Frontend");
-        payload.error({status: 404});
-    };
-    assert.ok(!compose_validate.validate_stream_message_address_info("Frontend"));
-    assert.ok(stream_does_not_exist_rendered);
-
-    let subscription_error_rendered = false;
-    mock_template("compose_banner/compose_banner.hbs", false, (data) => {
-        assert.equal(data.classname, "subscription_error");
-        assert.equal(data.banner_text, $t({defaultMessage: "Error checking subscription."}));
-        subscription_error_rendered = true;
-        return "<banner-stub>";
-    });
-    channel.post = (payload) => {
-        assert.equal(payload.data.stream, "social");
-        payload.error({status: 500});
-    };
-    assert.ok(!compose_validate.validate_stream_message_address_info("social"));
-    assert.ok(subscription_error_rendered);
 });
 
 test_ui("validate", ({mock_template}) => {
