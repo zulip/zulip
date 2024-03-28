@@ -36,6 +36,7 @@ from zerver.lib.soft_deactivation import queue_soft_reactivation
 from zerver.lib.subdomains import get_subdomain, is_root_domain_available
 from zerver.lib.users import check_full_name
 from zerver.models import Realm, UserProfile
+from zerver.models.realm_audit_logs import RealmAuditLog
 from zerver.models.realms import (
     DisposableEmailError,
     DomainNotAllowedForRealmError,
@@ -140,6 +141,8 @@ class RealmDetailsForm(forms.Form):
     realm_name = forms.CharField(max_length=Realm.MAX_REALM_NAME_LENGTH)
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
+        # Since the superclass doesn't accept random extra kwargs, we
+        # remove it from the kwargs dict before initializing.
         self.realm_creation = kwargs["realm_creation"]
         del kwargs["realm_creation"]
 
@@ -177,10 +180,6 @@ class RegistrationForm(RealmDetailsForm):
     )
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
-        # Since the superclass doesn't except random extra kwargs, we
-        # remove it from the kwargs dict before initializing.
-        self.realm_creation = kwargs["realm_creation"]
-
         super().__init__(*args, **kwargs)
         if settings.TERMS_OF_SERVICE_VERSION is not None:
             self.fields["terms"] = forms.BooleanField(required=True)
@@ -195,6 +194,19 @@ class RegistrationForm(RealmDetailsForm):
         self.fields["realm_default_language"] = forms.ChoiceField(
             choices=[(lang["code"], lang["name"]) for lang in get_language_list()],
             required=self.realm_creation,
+        )
+        self.fields["how_realm_creator_found_zulip"] = forms.ChoiceField(
+            choices=RealmAuditLog.HOW_REALM_CREATOR_FOUND_ZULIP_OPTIONS.items(),
+            required=self.realm_creation,
+        )
+        self.fields["how_realm_creator_found_zulip_other_text"] = forms.CharField(
+            max_length=100, required=False
+        )
+        self.fields["how_realm_creator_found_zulip_where_ad"] = forms.CharField(
+            max_length=100, required=False
+        )
+        self.fields["how_realm_creator_found_zulip_which_organization"] = forms.CharField(
+            max_length=100, required=False
         )
 
     def clean_full_name(self) -> str:

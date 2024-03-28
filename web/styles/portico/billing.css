@@ -2,12 +2,6 @@
     --color-background-modal: hsl(0deg 0% 98%);
 }
 
-[data-tippy-root] .tippy-box .tippy-content {
-    font-size: 14px;
-    font-weight: normal;
-    color: hsl(0deg 0% 100%);
-}
-
 .billing-upgrade-page {
     font-family: "Source Sans 3 VF", sans-serif;
     background-color: hsl(0deg 0% 98%);

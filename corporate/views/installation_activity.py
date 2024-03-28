@@ -30,6 +30,7 @@ from corporate.views.support import get_plan_type_string
 from zerver.decorator import require_server_admin
 from zerver.lib.request import has_request_variables
 from zerver.models import Realm
+from zerver.models.realm_audit_logs import RealmAuditLog
 from zerver.models.realms import get_org_type_display_name
 
 
@@ -102,7 +103,8 @@ def realm_summary_table() -> str:
             coalesce(wau_table.value, 0) wau_count,
             coalesce(dau_table.value, 0) dau_count,
             coalesce(user_count_table.value, 0) user_profile_count,
-            coalesce(bot_count_table.value, 0) bot_count
+            coalesce(bot_count_table.value, 0) bot_count,
+            coalesce(realm_audit_log_table.how_realm_creator_found_zulip, '') how_realm_creator_found_zulip
         FROM
             zerver_realm as realm
             LEFT OUTER JOIN (
@@ -157,6 +159,15 @@ def realm_summary_table() -> str:
                     AND subgroup = 'true'
                     AND end_time = %(active_users_audit_end_time)s
             ) as bot_count_table ON realm.id = bot_count_table.realm_id
+            LEFT OUTER JOIN (
+                SELECT
+                    extra_data->>'how_realm_creator_found_zulip' as how_realm_creator_found_zulip,
+                    realm_id
+                from
+                    zerver_realmauditlog
+                WHERE
+                    event_type = %(realm_creation_event_type)s
+            ) as realm_audit_log_table ON realm.id = realm_audit_log_table.realm_id
         WHERE
             _14day_active_humans IS NOT NULL
             or realm.plan_type = 3
@@ -178,6 +189,7 @@ def realm_summary_table() -> str:
             "active_users_audit_end_time": COUNT_STATS[
                 "active_users_audit:is_bot:day"
             ].last_successful_fill(),
+            "realm_creation_event_type": RealmAuditLog.REALM_CREATED,
         },
     )
     rows = dictfetchall(cursor)
