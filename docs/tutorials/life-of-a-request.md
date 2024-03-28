@@ -60,9 +60,9 @@ in
 [the directory structure doc](../overview/directory-structure.md).
 
 The main Zulip Django app is `zerver`. The routes are found in
-`zproject/urls.py` and `zproject/legacy_urls.py`.
+`zproject/urls.py`.
 
-There are HTML-serving, REST API, legacy, and webhook url patterns. We
+There are HTML-serving, REST API, and webhook url patterns. We
 will look at how each of these types of requests are handled, and focus
 on how the REST API handles our user creation example.
 
@@ -85,7 +85,7 @@ Note the `zh-hans` prefix--that url pattern gets added by `i18n_patterns`.
 Our example is a REST API endpoint. It's a PUT to `/users`.
 
 With the exception of incoming webhooks (which we do not usually control the
-format of), legacy endpoints, and logged-out endpoints, Zulip uses REST
+format of) and logged-out endpoints, Zulip uses REST
 for its API. This means that we use:
 
 - POST for creating something new where we don't have a unique
@@ -143,14 +143,6 @@ rest_path('users',
 ```
 
 In this way, the API is partially self-documenting.
-
-### Legacy endpoints are used by the web client
-
-The endpoints from the legacy JSON API are written without REST in
-mind. They are used extensively by the web client, and use POST.
-
-You can see them in
-[zproject/legacy_urls.py](https://github.com/zulip/zulip/blob/main/zproject/legacy_urls.py).
 
 ### Incoming webhook integrations may not be RESTful
 

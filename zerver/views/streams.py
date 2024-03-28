@@ -40,19 +40,10 @@ from zerver.actions.streams import (
     get_subscriber_ids,
 )
 from zerver.context_processors import get_valid_realm_from_request
-from zerver.decorator import (
-    authenticated_json_view,
-    require_non_guest_user,
-    require_post,
-    require_realm_admin,
-)
+from zerver.decorator import require_non_guest_user, require_realm_admin
 from zerver.lib.default_streams import get_default_stream_ids_for_realm
 from zerver.lib.email_mirror_helpers import encode_email_address
-from zerver.lib.exceptions import (
-    JsonableError,
-    OrganizationOwnerRequiredError,
-    ResourceNotFoundError,
-)
+from zerver.lib.exceptions import JsonableError, OrganizationOwnerRequiredError
 from zerver.lib.mention import MentionBackend, silent_mention_syntax_for_user
 from zerver.lib.message import bulk_access_stream_messages_query
 from zerver.lib.request import REQ, has_request_variables
@@ -74,7 +65,6 @@ from zerver.lib.streams import (
     list_to_streams,
     stream_to_dict,
 )
-from zerver.lib.string_validation import check_stream_name
 from zerver.lib.subscription_info import gather_subscriptions
 from zerver.lib.timeout import TimeoutExpiredError, timeout
 from zerver.lib.topic import (
@@ -957,38 +947,6 @@ def delete_in_topic(
         return json_success(request, data={"complete": False})
 
     return json_success(request, data={"complete": True})
-
-
-@require_post
-@authenticated_json_view
-@has_request_variables
-def json_stream_exists(
-    request: HttpRequest,
-    user_profile: UserProfile,
-    stream_name: str = REQ("stream"),
-    autosubscribe: bool = REQ(json_validator=check_bool, default=False),
-) -> HttpResponse:
-    check_stream_name(stream_name)
-
-    try:
-        (stream, sub) = access_stream_by_name(user_profile, stream_name)
-    except JsonableError as e:
-        raise ResourceNotFoundError(e.msg)
-
-    # access_stream functions return a subscription if and only if we
-    # are already subscribed.
-    result = {"subscribed": sub is not None}
-
-    # If we got here, we're either subscribed or the stream is public.
-    # So if we're not yet subscribed and autosubscribe is enabled, we
-    # should join.
-    if sub is None and autosubscribe:
-        bulk_add_subscriptions(
-            user_profile.realm, [stream], [user_profile], acting_user=user_profile
-        )
-        result["subscribed"] = True
-
-    return json_success(request, data=result)  # results are ignored for HEAD requests
 
 
 @has_request_variables
