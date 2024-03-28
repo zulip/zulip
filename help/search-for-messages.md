@@ -6,6 +6,24 @@ top of the app. There is a convenient [**search filters reference**](#search-fil
 in the Zulip app that you can use whenever you need a reminder of the search
 filters below.
 
+## Search for messages
+
+{start_tabs}
+
+{tab|desktop-web}
+
+1. Click the **search** (<i class="search_icon zulip-icon
+   zulip-icon-search"></i>) icon in the top bar to open the search box.
+
+1. Type your query, and press <kbd>Enter</kbd>.
+
+!!! keyboard_tip ""
+
+    You can also use the <kbd>/</kbd> or <kbd>Ctrl</kbd> + <kbd>K</kbd>
+    keyboard shortcut to start searching messages.
+
+{end_tabs}
+
 ## Keyword search
 
 Zulip lets you search messages and topics by keyword. For example:
