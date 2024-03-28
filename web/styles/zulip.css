@@ -888,7 +888,7 @@ td.pointer {
     transition: all 3s ease-in-out;
 }
 
-.messagebox-content .message_time {
+.messagebox-content .message-time {
     display: block;
     font-size: 13px;
     font-weight: 350;
