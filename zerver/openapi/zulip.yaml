@@ -20288,6 +20288,9 @@ paths:
       tags: ["users"]
       description: |
         Update the members of a [user group](/help/user-groups).
+
+        **Changes**: Prior to Zulip 10.0 (feature level 303), deactivated
+        users could also be added or removed from a user group.
       x-curl-examples-parameters:
         oneOf:
           - type: exclude

@@ -234,13 +234,14 @@ def bulk_get_cross_realm_bots() -> dict[str, UserProfile]:
     return {user.email.lower(): user for user in users}
 
 
-def user_ids_to_users(user_ids: Sequence[int], realm: Realm) -> list[UserProfile]:
-    # TODO: Consider adding a flag to control whether deactivated
-    # users should be included.
+def user_ids_to_users(
+    user_ids: Sequence[int], realm: Realm, *, allow_deactivated: bool
+) -> list[UserProfile]:
+    user_query = UserProfile.objects.filter(id__in=user_ids, realm=realm)
+    if not allow_deactivated:
+        user_query = user_query.filter(is_active=True)
 
-    user_profiles = list(
-        UserProfile.objects.filter(id__in=user_ids, realm=realm).select_related("realm")
-    )
+    user_profiles = list(user_query.select_related("realm"))
 
     found_user_ids = {user_profile.id for user_profile in user_profiles}
 

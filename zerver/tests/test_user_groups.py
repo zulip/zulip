@@ -7,6 +7,7 @@ import time_machine
 from django.utils.timezone import now as timezone_now
 
 from zerver.actions.create_realm import do_create_realm
+from zerver.actions.create_user import do_reactivate_user
 from zerver.actions.realm_settings import (
     do_change_realm_permission_group_setting,
     do_set_realm_property,
@@ -1695,6 +1696,10 @@ class UserGroupAPITestCase(UserGroupTestCase):
         self.login_user(desdemona)
 
         params = {"add": orjson.dumps([desdemona.id, iago.id, webhook_bot.id]).decode()}
+        result = self.client_post(f"/json/user_groups/{user_group.id}/members", info=params)
+        self.assert_json_error(result, f"Invalid user ID: {iago.id}")
+
+        params = {"add": orjson.dumps([desdemona.id, webhook_bot.id]).decode()}
         initial_last_message = self.get_last_message()
         result = self.client_post(f"/json/user_groups/{user_group.id}/members", info=params)
         self.assert_json_success(result)
@@ -1729,6 +1734,18 @@ class UserGroupAPITestCase(UserGroupTestCase):
         # Test user remove itself,bot and deactivated user from user group.
         desdemona = self.example_user("desdemona")
         self.login_user(desdemona)
+
+        # Add user to group after reactivation to test removing deactivated user.
+        do_reactivate_user(iago, acting_user=None)
+        self.client_post(
+            f"/json/user_groups/{user_group.id}/members",
+            info={"add": orjson.dumps([iago.id]).decode()},
+        )
+        do_deactivate_user(iago, acting_user=None)
+
+        params = {"delete": orjson.dumps([iago.id, desdemona.id, webhook_bot.id]).decode()}
+        result = self.client_post(f"/json/user_groups/{user_group.id}/members", info=params)
+        self.assert_json_error(result, f"Invalid user ID: {iago.id}")
 
         params = {"delete": orjson.dumps([desdemona.id, webhook_bot.id]).decode()}
         initial_last_message = self.get_last_message()

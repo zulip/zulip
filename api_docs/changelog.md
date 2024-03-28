@@ -38,6 +38,8 @@ format used by the Zulip server that they are interacting with.
 * [`POST /register`](/api/register-queue): Settings, represented as
   [group-setting value](/api/group-setting-values), do not include deactivated
   users in the `direct_members` list for settings set to anonymous groups.
+* [`PATCH /user_groups/{user_group_id}/members`](/api/update-user-group-members):
+  Deactivated users cannot be added or removed from a user group.
 
 **Feature level 302**
 
