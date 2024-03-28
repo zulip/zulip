@@ -50,9 +50,10 @@ export function do_process_submessages(in_opts) {
     if (!events) {
         return;
     }
+    const [widget_event, ...inbound_events] = events;
 
-    if (events[0].sender_id !== message.sender_id) {
-        blueslip.warn(`User ${events[0].sender_id} tried to hijack message ${message.id}`);
+    if (widget_event.sender_id !== message.sender_id) {
+        blueslip.warn(`User ${widget_event.sender_id} tried to hijack message ${message.id}`);
         return;
     }
 
@@ -60,7 +61,7 @@ export function do_process_submessages(in_opts) {
 
     // Right now, our only use of submessages is widgets.
 
-    const data = events[0].data;
+    const data = widget_event.data;
 
     if (data === undefined) {
         return;
@@ -77,7 +78,7 @@ export function do_process_submessages(in_opts) {
     widgetize.activate({
         widget_type,
         extra_data: data.extra_data,
-        events,
+        events: inbound_events,
         $row,
         message,
         post_to_server,

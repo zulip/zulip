@@ -58,8 +58,6 @@ export function activate(in_opts: WidgetOptions): void {
     const message = in_opts.message;
     const post_to_server = in_opts.post_to_server;
 
-    events.shift();
-
     if (!widgets.has(widget_type)) {
         if (widget_type === "tictactoe") {
             return; // don't warn for deleted legacy widget
