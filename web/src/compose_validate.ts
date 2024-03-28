@@ -1,5 +1,4 @@
 import $ from "jquery";
-import assert from "minimalistic-assert";
 
 import * as resolved_topic from "../shared/src/resolved_topic";
 import render_compose_banner from "../templates/compose_banner/compose_banner.hbs";
@@ -541,48 +540,12 @@ export function validate_stream_message_mentions(opts: StreamWildcardOptions): b
     return true;
 }
 
-function validation_error(error_type: string, stream_name: string): boolean {
-    const $banner_container = $("#compose_banners");
-    switch (error_type) {
-        case "does-not-exist":
-            compose_banner.show_stream_does_not_exist_error(stream_name);
-            return false;
-        case "not-subscribed": {
-            if (
-                $(`#compose_banners .${CSS.escape(compose_banner.CLASSNAMES.user_not_subscribed)}`)
-                    .length
-            ) {
-                return false;
-            }
-            const sub = stream_data.get_sub(stream_name);
-            // We expect this to be a does-not-exist error if it was undefined.
-            assert(sub !== undefined);
-            const new_row_html = render_compose_banner({
-                banner_type: compose_banner.ERROR,
-                banner_text: $t({
-                    defaultMessage:
-                        "You're not subscribed to this stream. You will not be notified if other users reply to your message.",
-                }),
-                button_text: stream_data.can_toggle_subscription(sub)
-                    ? $t({defaultMessage: "Subscribe"})
-                    : null,
-                classname: compose_banner.CLASSNAMES.user_not_subscribed,
-                // The message cannot be sent until the user subscribes to the stream, so
-                // closing the banner would be more confusing than helpful.
-                hide_close_button: true,
-            });
-            compose_banner.append_compose_banner_to_banner_list($(new_row_html), $banner_container);
-            return false;
-        }
-    }
-    return true;
-}
-
 export function validate_stream_message_address_info(stream_name: string): boolean {
     if (stream_data.is_subscribed_by_name(stream_name)) {
         return true;
     }
-    return validation_error("not-subscribed", stream_name);
+    compose_banner.show_stream_not_subscribed_error(stream_name);
+    return false;
 }
 
 function validate_stream_message(scheduling_message: boolean): boolean {
@@ -615,7 +578,8 @@ function validate_stream_message(scheduling_message: boolean): boolean {
 
     const sub = stream_data.get_sub_by_id(stream_id);
     if (!sub) {
-        return validation_error("does-not-exist", stream_id.toString());
+        compose_banner.show_stream_does_not_exist_error(stream_id.toString());
+        return false;
     }
 
     if (!stream_data.can_post_messages_in_stream(sub)) {
