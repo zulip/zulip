@@ -715,7 +715,7 @@ export async function run_test_async(test_function: (page: Page) => Promise<void
 }
 
 export function run_test(test_function: (page: Page) => Promise<void>): void {
-    run_test_async(test_function).catch((error) => {
+    run_test_async(test_function).catch((error: unknown) => {
         console.error(error);
         process.exit(1);
     });
