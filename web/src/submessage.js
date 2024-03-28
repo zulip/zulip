@@ -18,6 +18,35 @@ export const zform_widget_extra_data_schema = z.object({
     type: z.literal("choices"),
 });
 
+const poll_widget_extra_data_schema = z.object({
+    question: z.string().optional(),
+    options: z.array(z.string()).optional(),
+});
+
+const widget_data_event_schema = z.object({
+    sender_id: z.number(),
+    data: z.object({
+        widget_type: z.string().optional(),
+        extra_data: z
+            .union([zform_widget_extra_data_schema, poll_widget_extra_data_schema])
+            .nullable(),
+    }),
+});
+
+const inbound_data_event_schema = z.object({
+    sender_id: z.number(),
+    data: z.intersection(
+        z.object({
+            type: z.string(),
+        }),
+        z.record(z.string(), z.unknown()),
+    ),
+});
+
+const submessages_event_schema = z
+    .tuple([widget_data_event_schema])
+    .rest(inbound_data_event_schema);
+
 export function get_message_events(message) {
     if (message.locally_echoed) {
         return undefined;
@@ -37,8 +66,8 @@ export function get_message_events(message) {
         sender_id: obj.sender_id,
         data: JSON.parse(obj.content),
     }));
-
-    return events;
+    const clean_events = submessages_event_schema.parse(events);
+    return clean_events;
 }
 
 export function process_submessages(in_opts) {
