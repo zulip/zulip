@@ -1,6 +1,7 @@
 import itertools
 import os
 import random
+import math
 from typing import Any, Dict, List
 
 import orjson
@@ -24,6 +25,10 @@ def generate_topics(num_topics: int) -> List[str]:
     # it is important we test on it.
     num_single_word_topics = num_topics // 3
     topic_names = random.choices(config["nouns"], k=num_single_word_topics)
+
+    # Make url topics account for 5% of total topics.
+    num_url_topics = max(math.ceil(num_topics * 0.05), 1)
+    topic_names.extend(random.choices(config["embedLinks"], k=num_url_topics))
 
     sentence = ["adjectives", "nouns", "connectors", "verbs", "adverbs"]
     for pos in sentence:

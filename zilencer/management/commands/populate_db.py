@@ -4,6 +4,7 @@ import random
 from collections import defaultdict
 from datetime import datetime, timedelta
 from typing import Any, Dict, List, Mapping, Sequence, Tuple
+import tempfile
 
 import bmemcached
 import orjson
@@ -74,6 +75,8 @@ from zerver.models.streams import get_stream
 from zerver.models.users import get_user, get_user_by_delivery_email, get_user_profile_by_id
 from zilencer.models import RemoteRealm, RemoteZulipServer, RemoteZulipServerAuditLog
 from zilencer.views import update_remote_realm_data_for_server
+from django.core.files.uploadedfile import UploadedFile
+from zerver.lib.upload import upload_message_attachment_from_request
 
 settings.USING_TORNADO = False
 # Disable using memcached caches to avoid 'unsupported pickle
@@ -198,6 +201,18 @@ def create_alert_words(realm_id: int) -> None:
     AlertWord.objects.bulk_create(recs)
 
 
+def create_attachment(user: UserProfile) -> str:
+    attach_file = tempfile.NamedTemporaryFile(mode="w+t", delete=False)
+    attach_file.write("temporary test attachment file")
+    attach_file.close()
+    file_size = os.stat(attach_file.name).st_size
+    locator: str
+    with open(attach_file.name, "rb") as fp:
+        locator = upload_message_attachment_from_request(UploadedFile(fp), user, file_size)
+    os.unlink(attach_file.name)
+    return locator
+
+
 class Command(BaseCommand):
     help = "Populate a test database"
 
@@ -270,6 +285,13 @@ class Command(BaseCommand):
         )
 
         parser.add_argument(
+            "--percent-attachments",
+            type=float,
+            default=15,
+            help="The percent of messages to have attachments."
+        )
+
+        parser.add_argument(
             "--stickiness",
             type=float,
             default=20,
@@ -287,7 +309,7 @@ class Command(BaseCommand):
             "--test-suite",
             action="store_true",
             help="Configures populate_db to create a deterministic "
-            "data set for the backend tests.",
+                 "data set for the backend tests.",
         )
 
     @override
@@ -331,7 +353,7 @@ class Command(BaseCommand):
                 name="Zulip Dev",
                 emails_restricted_to_domains=False,
                 description="The Zulip development environment default organization."
-                "  It's great for testing!",
+                            "  It's great for testing!",
                 invite_required=False,
                 plan_type=Realm.PLAN_TYPE_SELF_HOSTED,
                 org_type=Realm.ORG_TYPES["business"]["id"],
@@ -404,13 +426,14 @@ class Command(BaseCommand):
                 ("Zoe", "ZOE@zulip.com"),
                 ("Othello, the Moor of Venice", "othello@zulip.com"),
                 ("Iago", "iago@zulip.com"),
+                ("HappyPanda😊", "happypanda@zulip.com"),
                 ("Prospero from The Tempest", "prospero@zulip.com"),
                 ("Cordelia, Lear's daughter", "cordelia@zulip.com"),
                 ("King Hamlet", "hamlet@zulip.com"),
                 ("aaron", "AARON@zulip.com"),
                 ("Polonius", "polonius@zulip.com"),
                 ("Desdemona", "desdemona@zulip.com"),
-                ("शिव", "shiva@zulip.com"),
+                ("शिव", "shiva@zulip.com")
             ]
 
             # For testing really large batches:
@@ -536,6 +559,11 @@ class Command(BaseCommand):
             assign_time_zone_by_delivery_email("polonius@zulip.com", "Asia/Shanghai")  # China
             assign_time_zone_by_delivery_email("shiva@zulip.com", "Asia/Kolkata")  # India
             assign_time_zone_by_delivery_email("cordelia@zulip.com", "UTC")
+            assign_time_zone_by_delivery_email("happypanda@zulip.com", "UTC")
+
+
+
+
 
             iago = get_user_by_delivery_email("iago@zulip.com", zulip_realm)
             do_change_user_role(iago, UserProfile.ROLE_REALM_ADMINISTRATOR, acting_user=None)
@@ -675,6 +703,8 @@ class Command(BaseCommand):
                         signups_stream,
                     ],
                     "shiva@zulip.com": ["Verona", "Denmark", "Scotland"],
+                    "happypanda@zulip.com": ["Verona", "Denmark", "Scotland"],
+
                 }
 
                 for profile in profiles:
@@ -1062,7 +1092,7 @@ class Command(BaseCommand):
             count = options["num_messages"] // threads
             if i < options["num_messages"] % threads:
                 count += 1
-            jobs.append((count, personals_pairs, options, random.randint(0, 10**10)))
+            jobs.append((count, personals_pairs, options, random.randint(0, 10 ** 10)))
 
         for job in jobs:
             generate_and_send_messages(job)
@@ -1172,6 +1202,7 @@ def generate_and_send_messages(
     recipients: Dict[int, Tuple[int, int, Dict[str, Any]]] = {}
     messages: List[Message] = []
     while num_messages < tot_messages:
+        has_attachment = False
         saved_data: Dict[str, Any] = {}
         message = Message(realm=realm)
         message.sending_client = get_client("populate_db")
@@ -1206,6 +1237,8 @@ def generate_and_send_messages(
         elif randkey <= random_max * 1.0:
             message_type = Recipient.STREAM
             message.recipient = get_recipient_by_id(random.choice(recipient_streams))
+        if randkey <= (random_max * options["percent_attachments"] / 100.0):
+            has_attachment = True
 
         if message_type == Recipient.DIRECT_MESSAGE_GROUP:
             sender_id = random.choice(huddle_members[message.recipient.id])
@@ -1227,6 +1260,11 @@ def generate_and_send_messages(
         message.date_sent = choose_date_sent(
             num_messages, tot_messages, options["oldest_message_days"], options["threads"]
         )
+
+        if has_attachment:
+            locator = create_attachment(message.sender)
+            message.content += f"\n[attachment.txt]({locator})"
+
         messages.append(message)
 
         recipients[num_messages] = (message_type, message.recipient.id, saved_data)
