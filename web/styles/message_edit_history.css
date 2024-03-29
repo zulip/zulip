@@ -50,4 +50,12 @@
         display: none;
         margin: 10px;
     }
+
+    .overlay_loading_indicator_style {
+        width: 100% !important;
+        height: 100% !important;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
 }

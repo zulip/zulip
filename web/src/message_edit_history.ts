@@ -8,6 +8,7 @@ import render_message_history_overlay from "../templates/message_history_overlay
 import {exit_overlay} from "./browser_history";
 import * as channel from "./channel";
 import {$t, $t_html} from "./i18n";
+import * as loading from "./loading";
 import * as message_lists from "./message_lists";
 import type {Message} from "./message_store";
 import * as messages_overlay_ui from "./messages_overlay_ui";
@@ -93,9 +94,24 @@ function get_display_stream_name(stream_id: number): string {
     return stream_name;
 }
 
+function show_loading_indicator(): void {
+    loading.make_indicator($(".message-edit-history-container .loading_indicator"));
+    $(".message-edit-history-container .loading_indicator").addClass(
+        "overlay_loading_indicator_style",
+    );
+}
+
+function hide_loading_indicator(): void {
+    loading.destroy_indicator($(".message-edit-history-container .loading_indicator"));
+    $(".message-edit-history-container .loading_indicator").removeClass(
+        "overlay_loading_indicator_style",
+    );
+}
+
 export function fetch_and_render_message_history(message: Message): void {
     $("#message-edit-history-overlay-container").html(render_message_history_overlay());
     open_overlay();
+    show_loading_indicator();
     void channel.get({
         url: "/json/messages/" + message.id + "/history",
         data: {message_id: JSON.stringify(message.id)},
@@ -214,6 +230,7 @@ export function fetch_and_render_message_history(message: Message): void {
                 edited_messages: content_edit_history,
             });
             $("#message-history-overlay").attr("data-message-id", message.id);
+            hide_loading_indicator();
             $("#message-history-overlay .overlay-messages-list").append($(rendered_list_html));
 
             // Pass the history through rendered_markdown.ts
@@ -235,6 +252,7 @@ export function fetch_and_render_message_history(message: Message): void {
                 xhr,
                 $("#message-history-overlay #message-history-error"),
             );
+            hide_loading_indicator();
             $("#message-history-error").show();
         },
     });
