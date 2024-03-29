@@ -4,9 +4,9 @@ import {page_params} from "./page_params";
 import * as personal_menu_popover from "./personal_menu_popover";
 import * as popover_menus from "./popover_menus";
 import {
-    show_userlist_sidebar,
     hide_userlist_sidebar,
     right_sidebar_expanded_as_overlay,
+    show_userlist_sidebar,
 } from "./sidebar_ui";
 
 export function is_navbar_menus_displayed() {
