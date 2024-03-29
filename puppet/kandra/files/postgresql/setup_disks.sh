@@ -1,12 +1,21 @@
-#!/bin/sh
+#!/bin/bash
 set -x
 set -e
 
-# This file only exists on the server, ignore its non-existence locally
-# shellcheck disable=SC1091
-. "/sys/dev/block/259:0/uevent"
+set -o pipefail
 
-LOCALDISK="/dev/$DEVNAME"
+LOCALDISK=$(
+    nvme list -o json \
+        | jq -r '.Devices[] | select(.ModelNumber | contains("Instance Storage")) | .DevicePath' \
+        | head -n1
+)
+
+if [ -z "$LOCALDISK" ]; then
+    echo "No instance storage found!"
+    nvme list
+    exit 1
+fi
+
 if ! grep -q "$LOCALDISK" /etc/fstab; then
     echo "$LOCALDISK   /srv  xfs    nofail,noatime 1 1" >>/etc/fstab
 fi

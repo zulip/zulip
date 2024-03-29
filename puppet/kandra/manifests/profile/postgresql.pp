@@ -4,8 +4,7 @@ class kandra::profile::postgresql inherits kandra::profile::base {
   include kandra::teleport::db
   include kandra::prometheus::postgresql
 
-  $common_packages = ['xfsprogs']
-  package { $common_packages: ensure => installed }
+  package { ['xfsprogs', 'nvme-cli']: ensure => installed }
 
   kandra::firewall_allow{ 'postgresql': }
 
@@ -27,7 +26,7 @@ class kandra::profile::postgresql inherits kandra::profile::base {
   }
   exec { 'setup_disks':
     command => '/root/setup_disks.sh',
-    require => Package["postgresql-${zulip::postgresql_common::version}", 'xfsprogs'],
+    require => Package["postgresql-${zulip::postgresql_common::version}", 'xfsprogs', 'nvme-cli'],
     unless  => 'test /var/lib/postgresql/ -ef /srv/postgresql/',
   }
 
