@@ -47,19 +47,28 @@ class kandra::prometheus::postgresql {
     require => Exec['compile postgres_exporter'],
   }
 
-  include zulip::postgresql_client
-  exec { 'create prometheus postgres user':
-    require => Class['zulip::postgresql_client'],
-    command => '/usr/bin/createuser -g pg_monitor prometheus',
-    unless  => 'test -f /usr/bin/psql && /usr/bin/psql -tAc "select usename from pg_user" | /bin/grep -xq prometheus',
-    user    => 'postgres',
+  if false {
+    # This is left commented out, since it only makes sense to run
+    # against a server where the database exists and is writable --
+    # the former of which happens outside th scope of puppet right
+    # now, and the latter of which can only be determined after the
+    # database is in place.  Given that it has been run once, we do
+    # not expect to ever need it to run again; it is left here for
+    # completeness.
+    include zulip::postgresql_client
+    exec { 'create prometheus postgres user':
+      require => Class['zulip::postgresql_client'],
+      command => '/usr/bin/createuser -g pg_monitor prometheus',
+      unless  => 'test -f /usr/bin/psql && /usr/bin/psql -tAc "select usename from pg_user" | /bin/grep -xq prometheus)',
+      user    => 'postgres',
+      before  => File["${zulip::common::supervisor_conf_dir}/prometheus_postgres_exporter.conf"],
+    }
   }
 
   kandra::firewall_allow { 'postgres_exporter': port => '9187' }
   file { "${zulip::common::supervisor_conf_dir}/prometheus_postgres_exporter.conf":
     ensure  => file,
     require => [
-      Exec['create prometheus postgres user'],
       User[prometheus],
       Package[supervisor],
       File[$bin],
