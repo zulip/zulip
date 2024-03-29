@@ -1303,7 +1303,7 @@ class RealmCreationTest(ZulipTestCase):
 
         # Check welcome messages
         for stream_name, text, message_count in [
-            (Realm.DEFAULT_NOTIFICATION_STREAM_NAME, "with the topic", 4),
+            (str(Realm.DEFAULT_NOTIFICATION_STREAM_NAME), "with the topic", 4),
         ]:
             stream = get_stream(stream_name, realm)
             recipient = stream.recipient
@@ -1742,7 +1742,7 @@ class RealmCreationTest(ZulipTestCase):
         # with_the_topic_in_italian = "con l'argomento"
 
         # for stream_name, text, message_count in [
-        #     (Realm.DEFAULT_NOTIFICATION_STREAM_NAME, with_the_topic_in_italian, 4),
+        #     (str(Realm.DEFAULT_NOTIFICATION_STREAM_NAME), with_the_topic_in_italian, 4),
         # ]:
         #     stream = get_stream(stream_name, realm)
         #     recipient = stream.recipient
