@@ -186,7 +186,7 @@
             </div>
 
             <div class="input-group">
-                <label for="realm_move_messages_between_streams_policy">{{t "Who can move messages to another channel" }}
+                <label for="realm_move_messages_between_streams_policy" class="settings-field-label">{{t "Who can move messages to another channel" }}
                 </label>
                 <select name="realm_move_messages_between_streams_policy" class="setting-widget prop-element bootstrap-focus-style move-message-policy-setting settings_select" id="id_realm_move_messages_between_streams_policy" data-setting-widget-type="number">
                     {{> dropdown_options_widget option_values=move_messages_between_streams_policy_values}}
@@ -318,7 +318,7 @@
             </div>
             <div class="m-10 inline-block organization-permissions-parent">
                 <div class="input-group">
-                    <label for="realm_bot_creation_policy">{{t "Who can add bots" }}</label>
+                    <label for="realm_bot_creation_policy" class="settings-field-label">{{t "Who can add bots" }}</label>
                     <select name="realm_bot_creation_policy" class="setting-widget prop-element settings_select bootstrap-focus-style" id="id_realm_bot_creation_policy" data-setting-widget-type="number">
                         {{> dropdown_options_widget option_values=bot_creation_policy_values}}
                     </select>
@@ -339,7 +339,7 @@
                 </div>
 
                 <div class="input-group">
-                    <label for="realm_private_message_policy">{{t "Who can use direct messages" }} ({{t "beta" }})
+                    <label for="realm_private_message_policy" class="settings-field-label">{{t "Who can use direct messages" }} ({{t "beta" }})
                         {{> ../help_link_widget link="/help/restrict-direct-messages" }}
                     </label>
                     <select name="realm_private_message_policy" class="setting-widget prop-element settings_select bootstrap-focus-style" id="id_realm_private_message_policy" data-setting-widget-type="number">
