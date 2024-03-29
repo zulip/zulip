@@ -1,13 +1,18 @@
 import isUrl from "is-url";
 import $ from "jquery";
 import _ from "lodash";
+import assert from "minimalistic-assert";
 import TurndownService from "turndown";
+import type {TagName} from "turndown";
 
 import * as compose_ui from "./compose_ui";
 import * as message_lists from "./message_lists";
 import * as rows from "./rows";
 
-function find_boundary_tr($initial_tr, iterate_row) {
+function find_boundary_tr(
+    $initial_tr: JQuery,
+    iterate_row: (row: JQuery) => JQuery,
+): (number | boolean)[] | undefined {
     let j;
     let skip_same_td_check = false;
     let $tr = $initial_tr;
@@ -40,7 +45,7 @@ function find_boundary_tr($initial_tr, iterate_row) {
     return [rows.id($tr), skip_same_td_check];
 }
 
-function construct_recipient_header($message_row) {
+function construct_recipient_header($message_row: JQuery): JQuery {
     const message_header_content = rows
         .get_message_recipient_header($message_row)
         .text()
@@ -65,7 +70,7 @@ Do not be afraid to change this code if you understand
 how modern browsers deal with copy/paste.  Just test
 your changes carefully.
 */
-function construct_copy_div($div, start_id, end_id) {
+function construct_copy_div($div: JQuery, start_id: number, end_id: number): void {
     if (message_lists.current === undefined) {
         return;
     }
@@ -89,8 +94,9 @@ function construct_copy_div($div, start_id, end_id) {
             should_include_start_recipient_header = true;
         }
         const message = message_lists.current.get(rows.id($row));
+        assert(message !== undefined);
         const $content = $(message.content);
-        $content.first().prepend(message.sender_full_name + ": ");
+        $content.first().prepend(message?.sender_full_name + ": ");
         $div.append($content);
     }
 
@@ -99,7 +105,7 @@ function construct_copy_div($div, start_id, end_id) {
     }
 }
 
-function select_div($div, selection) {
+function select_div($div: JQuery, selection: Selection | null): void {
     $div.css({
         position: "absolute",
         left: "-99999px",
@@ -114,23 +120,23 @@ function select_div($div, selection) {
         background: "#FFF",
     }).attr("id", "copytempdiv");
     $("body").append($div);
-    selection.selectAllChildren($div[0]);
+    selection?.selectAllChildren($div[0]);
 }
 
-function remove_div(_div, ranges, selection) {
+function remove_div(_div: JQuery, ranges: Range[], selection: Selection | null): void {
     window.setTimeout(() => {
         selection = window.getSelection();
-        selection.removeAllRanges();
+        selection?.removeAllRanges();
 
         for (const range of ranges) {
-            selection.addRange(range);
+            selection?.addRange(range);
         }
 
         $("#copytempdiv").remove();
     }, 0);
 }
 
-export function copy_handler() {
+export function copy_handler(): void {
     // This is the main handler for copying message content via
     // `Ctrl+C` in Zulip (note that this is totally independent of the
     // "select region" copy behavior on Linux; that is handled
@@ -145,8 +151,7 @@ export function copy_handler() {
     //
     // * Otherwise, we want to copy the bodies of all messages that
     //   were partially covered by the selection.
-
-    const selection = window.getSelection();
+    const selection: Selection | null = window.getSelection();
     const analysis = analyze_selection(selection);
     const ranges = analysis.ranges;
     const start_id = analysis.start_id;
@@ -188,7 +193,12 @@ export function copy_handler() {
     remove_div($div, ranges, selection);
 }
 
-export function analyze_selection(selection) {
+export function analyze_selection(selection: Selection | null): {
+    ranges: Range[];
+    start_id: number | undefined;
+    end_id: number | undefined;
+    skip_same_td_check: boolean;
+} {
     // Here we analyze our selection to determine if part of a message
     // or multiple messages are selected.
     //
@@ -200,21 +210,29 @@ export function analyze_selection(selection) {
     // analyze the combined range of the selections, and copy their
     // full content.
 
+    if (!selection) {
+        return {
+            ranges: [],
+            start_id: undefined,
+            end_id: undefined,
+            skip_same_td_check: false,
+        };
+    }
+
     let i;
-    let range;
+    let range: Range;
     const ranges = [];
-    let $startc;
-    let $endc;
-    let $initial_end_tr;
-    let start_id;
-    let end_id;
-    let start_data;
-    let end_data;
+    let $startc: JQuery<Node>;
+    let $endc: JQuery<Node>;
+    let $initial_end_tr: JQuery;
+    let start_id: number | undefined;
+    let end_id: number | undefined;
+    let start_data: (number | boolean)[] | undefined;
+    let end_data: (number | boolean)[] | undefined;
     // skip_same_td_check is true whenever we know for a fact that the
     // selection covers multiple messages (and thus we should no
     // longer consider letting the browser handle the copy event).
     let skip_same_td_check = false;
-
     for (i = 0; i < selection.rangeCount; i += 1) {
         range = selection.getRangeAt(i);
         ranges.push(range);
@@ -222,13 +240,13 @@ export function analyze_selection(selection) {
         $startc = $(range.startContainer);
         start_data = find_boundary_tr(
             $startc.parents(".selectable_row, .message_header").first(),
-            ($row) => $row.next(),
+            ($row: JQuery) => $row.next(),
         );
         if (start_data === undefined) {
             // Skip any selection sections that don't intersect a message.
             continue;
         }
-        if (start_id === undefined) {
+        if (start_id === undefined && typeof start_data[0] === "number") {
             // start_id is the Zulip message ID of the first message
             // touched by the selection.
             start_id = start_data[0];
@@ -236,13 +254,13 @@ export function analyze_selection(selection) {
 
         $endc = $(range.endContainer);
         $initial_end_tr = get_end_tr_from_endc($endc);
-        end_data = find_boundary_tr($initial_end_tr, ($row) => $row.prev());
+        end_data = find_boundary_tr($initial_end_tr, ($row: JQuery) => $row.prev());
 
         if (end_data === undefined) {
             // Skip any selection sections that don't intersect a message.
             continue;
         }
-        if (end_data[0] !== undefined) {
+        if (end_data[0] !== undefined && typeof end_data[0] === "number") {
             end_id = end_data[0];
         }
 
@@ -261,7 +279,7 @@ export function analyze_selection(selection) {
     };
 }
 
-function get_end_tr_from_endc($endc) {
+function get_end_tr_from_endc($endc: JQuery<Node>): JQuery {
     if ($endc.attr("id") === "bottom_whitespace" || $endc.attr("id") === "compose_close") {
         // If the selection ends in the bottom whitespace, we should
         // act as though the selection ends on the final message.
@@ -289,7 +307,7 @@ function get_end_tr_from_endc($endc) {
         // we can use the last message from the previous recipient_row.
         if ($endc.parents(".message_header").length > 0) {
             const $overflow_recipient_row = $endc.parents(".recipient_row").first();
-            return $overflow_recipient_row.prev(".recipient_row").last(".message_row");
+            return $overflow_recipient_row.prev(".recipient_row").last();
         }
         // If somehow we get here, do the default return.
     }
@@ -297,53 +315,59 @@ function get_end_tr_from_endc($endc) {
     return $endc.parents(".selectable_row").first();
 }
 
-function deduplicate_newlines(attribute) {
+function deduplicate_newlines(attribute: string | null): string {
     // We replace any occurrences of one or more consecutive newlines followed by
     // zero or more whitespace characters with a single newline character.
     return attribute ? attribute.replaceAll(/(\n+\s*)+/g, "\n") : "";
 }
 
-function image_to_zulip_markdown(_content, node) {
+function image_to_zulip_markdown(_content: string, node: Node): string {
+    if (!(node instanceof HTMLElement)) {
+        return "";
+    }
     if (node.nodeName === "IMG" && node.classList.contains("emoji") && node.hasAttribute("alt")) {
         // For Zulip's custom emoji
-        return node.getAttribute("alt");
+        return node.getAttribute("alt") ?? "";
     }
-    const src = node.getAttribute("src") || node.getAttribute("href") || "";
+    const src = node.getAttribute("src") ?? node.getAttribute("href") ?? "";
     const title = deduplicate_newlines(node.getAttribute("title")) || "";
     // Using Zulip's link like syntax for images
-    return src ? "[" + title + "](" + src + ")" : node.getAttribute("alt") || "";
+    return src ? "[" + title + "](" + src + ")" : node.getAttribute("alt") ?? "";
 }
 
-function within_single_element(html_fragment) {
+function within_single_element(html_fragment: HTMLBodyElement | null): boolean {
     return (
-        html_fragment.childNodes.length === 1 &&
-        html_fragment.firstElementChild &&
-        html_fragment.firstElementChild.innerHTML
+        html_fragment?.childNodes.length === 1 &&
+        Boolean(html_fragment.firstElementChild) &&
+        Boolean(html_fragment.firstElementChild?.innerHTML)
     );
 }
 
-export function is_white_space_pre(paste_html) {
+export function is_white_space_pre(paste_html: string): boolean {
     const html_fragment = new DOMParser()
         .parseFromString(paste_html, "text/html")
         .querySelector("body");
     return (
         within_single_element(html_fragment) &&
-        html_fragment.firstElementChild.style.whiteSpace === "pre"
+        html_fragment?.firstElementChild instanceof HTMLElement &&
+        html_fragment?.firstElementChild?.style?.whiteSpace === "pre"
     );
 }
 
-export function paste_handler_converter(paste_html) {
+export function paste_handler_converter(paste_html: string): string {
     const copied_html_fragment = new DOMParser()
         .parseFromString(paste_html, "text/html")
         .querySelector("body");
     const copied_within_single_element = within_single_element(copied_html_fragment);
-    const outer_elements_to_retain = ["PRE", "UL", "OL", "A", "CODE"];
+    const outer_elements_to_retain = new Set(["PRE", "UL", "OL", "A", "CODE"]);
     // If the entire selection copied is within a single HTML element (like an
     // `h1`), we don't want to retain its styling, except when it is needed to
     // identify the intended structure of the copied content.
     if (
         copied_within_single_element &&
-        !outer_elements_to_retain.includes(copied_html_fragment.firstElementChild.nodeName)
+        copied_html_fragment?.firstElementChild instanceof HTMLElement &&
+        copied_html_fragment.firstChild instanceof HTMLElement &&
+        !outer_elements_to_retain.has(copied_html_fragment.firstElementChild?.nodeName)
     ) {
         paste_html = copied_html_fragment.firstChild.innerHTML;
     }
@@ -364,7 +388,8 @@ export function paste_handler_converter(paste_html) {
         },
     });
     turndownService.addRule("strikethrough", {
-        filter: ["del", "s", "strike"],
+        // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+        filter: ["del", "s", "strike"] as TagName[],
         replacement(content) {
             return "~~" + content + "~~";
         },
@@ -372,15 +397,17 @@ export function paste_handler_converter(paste_html) {
     turndownService.addRule("links", {
         filter: ["a"],
         replacement(content, node) {
-            if (node.href === content) {
+            if (node instanceof HTMLAnchorElement && node.href === content) {
                 // Checks for raw links without custom text.
                 return content;
             }
-            if (node.childNodes.length === 1 && node.firstChild.nodeName === "IMG") {
+            if (node.childNodes.length === 1 && node.firstChild?.nodeName === "IMG") {
                 // ignore link's url if it only has an image
                 return content;
             }
-            return "[" + content + "](" + node.href + ")";
+            return (
+                "[" + content + "](" + (node instanceof HTMLAnchorElement ? node.href : "") + ")"
+            );
         },
     });
     turndownService.addRule("listItem", {
@@ -395,19 +422,20 @@ export function paste_handler_converter(paste_html) {
                 .replaceAll(/\n/gm, "\n  "); // custom 2 space indent
             let prefix = "* ";
             const parent = node.parentNode;
-            if (parent.nodeName === "OL") {
-                const start = parent.getAttribute("start");
+            if (parent?.nodeName === "OL" && parent instanceof HTMLElement) {
+                const start = parent?.getAttribute("start");
                 const index = Array.prototype.indexOf.call(parent.children, node);
                 prefix = (start ? Number(start) + index : index + 1) + ". ";
             }
-            return prefix + content + (node.nextSibling && !/\n$/.test(content) ? "\n" : "");
+            return prefix + content + (node.nextSibling && !content.endsWith("\n") ? "\n" : "");
         },
     });
     turndownService.addRule("zulipImagePreview", {
         filter(node) {
             // select image previews in Zulip messages
             return (
-                node.classList.contains("message_inline_image") && node.firstChild.nodeName === "A"
+                node.classList.contains("message_inline_image") &&
+                node?.firstChild?.nodeName === "A"
             );
         },
 
@@ -420,17 +448,25 @@ export function paste_handler_converter(paste_html) {
             // does not have the `message_inline_image` class, it means it is the generating
             // link, and not the preview, meaning the generating link is copied as well.
             const copied_html = new DOMParser().parseFromString(paste_html, "text/html");
+
             if (
-                node.firstChild.hasAttribute("aria-label") &&
-                !copied_html
-                    .querySelector("a[href='" + node.firstChild.getAttribute("href") + "']")
-                    ?.parentNode?.classList.contains("message_inline_image")
+                node.firstChild instanceof HTMLElement &&
+                node?.firstChild?.hasAttribute("aria-label") &&
+                node.firstChild instanceof HTMLElement
             ) {
-                // We skip previews which have their generating link copied too, to avoid
-                // double pasting the same link.
-                return "";
+                const parentNode = copied_html.querySelector(
+                    "a[href='" + node.firstChild.getAttribute("href") + "]",
+                )?.parentNode;
+                if (
+                    parentNode instanceof HTMLElement &&
+                    !parentNode.classList.contains("message_inline_image")
+                ) {
+                    // We skip previews which have their generating link copied too, to avoid
+                    // double pasting the same link.
+                    return "";
+                }
             }
-            return image_to_zulip_markdown(content, node.firstChild);
+            return image_to_zulip_markdown(content, node.firstChild!);
         },
     });
     turndownService.addRule("images", {
@@ -443,7 +479,8 @@ export function paste_handler_converter(paste_html) {
         // `math` so we drop it to avoid pasting gibberish.
         // In the future, we could have a data-original-latex feature in Zulip HTML
         // if we wanted to paste the original LaTeX for Zulip messages.
-        filter: "math",
+        // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+        filter: "math" as TagName,
 
         replacement() {
             return "";
@@ -464,16 +501,19 @@ export function paste_handler_converter(paste_html) {
             return (
                 options.codeBlockStyle === "fenced" &&
                 node.nodeName === "PRE" &&
-                [...node.childNodes].filter((child) => child.textContent.trim() !== "").length ===
+                [...node.childNodes].filter((child) => child.textContent?.trim() !== "").length ===
                     1 &&
-                [...node.childNodes].find((child) => child.textContent.trim() !== "").nodeName ===
+                [...node.childNodes].find((child) => child.textContent?.trim() !== "")?.nodeName ===
                     "CODE"
             );
         },
 
         replacement(_content, node, options) {
             const codeElement = [...node.childNodes].find((child) => child.nodeName === "CODE");
-            const code = codeElement.textContent;
+            const code = codeElement?.textContent ?? "";
+            if (!(codeElement instanceof HTMLElement && node instanceof HTMLElement)) {
+                return "";
+            }
 
             // We convert single line code inside a code block to inline markdown code,
             // and the code for this is taken from upstream's `code` rule.
@@ -486,20 +526,23 @@ export function paste_handler_converter(paste_html) {
                 // Pick the shortest sequence of backticks that is not found in the code
                 // to be the delimiter.
                 let delimiter = "`";
-                const matches = code.match(/`+/gm) || [];
-                while (matches.includes(delimiter)) {
+                const matches: RegExpMatchArray | null = code.match(/`+/gm);
+                while (matches?.includes(delimiter)) {
                     delimiter = delimiter + "`";
                 }
 
                 return delimiter + extraSpace + code + extraSpace + delimiter;
             }
 
-            const className = codeElement.getAttribute("class") || "";
-            const language = node.parentElement?.classList.contains("zulip-code-block")
-                ? node.closest(".codehilite")?.dataset?.codeLanguage || ""
-                : (className.match(/language-(\S+)/) || [null, ""])[1];
+            const className = codeElement?.getAttribute("class") ?? "";
+            const codehilite = node.closest(".codehilite");
+            const language =
+                node.parentElement?.classList.contains("zulip-code-block") &&
+                codehilite instanceof HTMLElement
+                    ? codehilite?.dataset?.codeLanguage ?? ""
+                    : (className.match(/language-(\S+)/) ?? [null, ""])[1];
 
-            const fenceChar = options.fence.charAt(0);
+            const fenceChar = options.fence?.charAt(0);
             let fenceSize = 3;
             const fenceInCodeRegex = new RegExp("^" + fenceChar + "{3,}", "gm");
 
@@ -510,7 +553,7 @@ export function paste_handler_converter(paste_html) {
                 }
             }
 
-            const fence = fenceChar.repeat(fenceSize);
+            const fence = fenceChar?.repeat(fenceSize);
 
             return (
                 "\n\n" + fence + language + "\n" + code.replace(/\n$/, "") + "\n" + fence + "\n\n"
@@ -528,7 +571,7 @@ export function paste_handler_converter(paste_html) {
     return markdown_text;
 }
 
-function is_safe_url_paste_target($textarea) {
+function is_safe_url_paste_target($textarea: JQuery<HTMLTextAreaElement>): boolean {
     const range = $textarea.range();
 
     if (!range.text) {
@@ -559,7 +602,7 @@ function is_safe_url_paste_target($textarea) {
     return true;
 }
 
-export function maybe_transform_html(html, text) {
+export function maybe_transform_html(html: string, text: string): string {
     if (is_white_space_pre(html)) {
         // Copied content styled with `white-space: pre` is pasted as is
         // but formatted as code. We need this for content copied from
@@ -569,8 +612,17 @@ export function maybe_transform_html(html, text) {
     return html;
 }
 
-export function paste_handler(event) {
-    const clipboardData = event.originalEvent.clipboardData;
+export function paste_handler(
+    event: JQuery.TriggeredEvent<HTMLElement, undefined, HTMLElement, HTMLElement>,
+): void {
+    let originalEvent: ClipboardEvent | undefined;
+    if (event.originalEvent instanceof ClipboardEvent) {
+        originalEvent = event.originalEvent;
+    } else {
+        originalEvent = undefined;
+    }
+
+    const clipboardData = originalEvent?.clipboardData;
     if (!clipboardData) {
         // On IE11, ClipboardData isn't defined.  One can instead
         // access it with `window.clipboardData`, but even that
@@ -580,7 +632,7 @@ export function paste_handler(event) {
         return;
     }
 
-    if (clipboardData.getData) {
+    if (clipboardData.getData && event.currentTarget instanceof HTMLTextAreaElement) {
         const $textarea = $(event.currentTarget);
         const paste_text = clipboardData.getData("text");
         let paste_html = clipboardData.getData("text/html");
@@ -615,7 +667,7 @@ export function paste_handler(event) {
     }
 }
 
-export function initialize() {
+export function initialize(): void {
     $("textarea#compose-textarea").on("paste", paste_handler);
     $("body").on("paste", ".message_edit_content", paste_handler);
 }
