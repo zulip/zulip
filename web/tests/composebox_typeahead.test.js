@@ -462,7 +462,7 @@ test("content_typeahead_selected", ({override}) => {
     set_timeout_called = false;
 
     // emoji
-    fake_this.completing = "emoji";
+    ct.get_or_set_completing_for_tests("emoji");
     fake_this.query = ":octo";
     fake_this.token = "octo";
     const item = {
@@ -486,7 +486,7 @@ test("content_typeahead_selected", ({override}) => {
     assert.equal(actual_value, expected_value);
 
     // mention
-    fake_this.completing = "mention";
+    ct.get_or_set_completing_for_tests("mention");
 
     override(compose_validate, "warn_if_mentioning_unsubscribed_user", noop);
     override(
@@ -548,7 +548,7 @@ test("content_typeahead_selected", ({override}) => {
     assert.equal(actual_value, expected_value);
 
     // silent mention
-    fake_this.completing = "silent_mention";
+    ct.get_or_set_completing_for_tests("silent_mention");
     fake_this.query = "@_kin";
     fake_this.token = "kin";
     with_overrides(({disallow}) => {
@@ -593,37 +593,37 @@ test("content_typeahead_selected", ({override}) => {
     assert.equal(actual_value, expected_value);
 
     fake_this.query = "/m";
-    fake_this.completing = "slash";
+    ct.get_or_set_completing_for_tests("slash");
     actual_value = ct.content_typeahead_selected.call(fake_this, me_slash);
     expected_value = "/me translated: is …";
     assert.equal(actual_value, expected_value);
 
     fake_this.query = "/da";
-    fake_this.completing = "slash";
+    ct.get_or_set_completing_for_tests("slash");
     actual_value = ct.content_typeahead_selected.call(fake_this, dark_slash);
     expected_value = "/dark ";
     assert.equal(actual_value, expected_value);
 
     fake_this.query = "/ni";
-    fake_this.completing = "slash";
+    ct.get_or_set_completing_for_tests("slash");
     actual_value = ct.content_typeahead_selected.call(fake_this, dark_slash);
     expected_value = "/dark ";
     assert.equal(actual_value, expected_value);
 
     fake_this.query = "/li";
-    fake_this.completing = "slash";
+    ct.get_or_set_completing_for_tests("slash");
     actual_value = ct.content_typeahead_selected.call(fake_this, light_slash);
     expected_value = "/light ";
     assert.equal(actual_value, expected_value);
 
     fake_this.query = "/da";
-    fake_this.completing = "slash";
+    ct.get_or_set_completing_for_tests("slash");
     actual_value = ct.content_typeahead_selected.call(fake_this, light_slash);
     expected_value = "/light ";
     assert.equal(actual_value, expected_value);
 
     // stream
-    fake_this.completing = "stream";
+    ct.get_or_set_completing_for_tests("stream");
     let warned_for_stream_link = false;
     override(compose_validate, "warn_if_private_stream_is_linked", (linked_stream) => {
         assert.equal(linked_stream, sweden_stream);
@@ -649,7 +649,7 @@ test("content_typeahead_selected", ({override}) => {
     assert.equal(actual_value, expected_value);
 
     // topic_list
-    fake_this.completing = "topic_list";
+    ct.get_or_set_completing_for_tests("topic_list");
 
     fake_this.query = "Hello #**Sweden>test";
     fake_this.token = "test";
@@ -664,7 +664,7 @@ test("content_typeahead_selected", ({override}) => {
     assert.equal(actual_value, expected_value);
 
     // syntax
-    fake_this.completing = "syntax";
+    ct.get_or_set_completing_for_tests("syntax");
 
     fake_this.query = "~~~p";
     fake_this.token = "p";
@@ -698,7 +698,7 @@ test("content_typeahead_selected", ({override}) => {
     expected_value = "```python\nsome existing code";
     assert.equal(actual_value, expected_value);
 
-    fake_this.completing = "something-else";
+    ct.get_or_set_completing_for_tests("something-else");
 
     fake_this.query = "foo";
     actual_value = ct.content_typeahead_selected.call(fake_this, {});
@@ -1010,7 +1010,8 @@ test("initialize", ({override, override_rewire, mock_template}) => {
                 //
                 // Again, here we only verify that the highlighter has been set to
                 // content_highlighter_html.
-                fake_this = {completing: "mention", token: "othello"};
+                ct.get_or_set_completing_for_tests("mention");
+                fake_this = {token: "othello"};
                 actual_value = options.highlighter_html.call(fake_this, othello);
                 expected_value =
                     `    <span class="user_circle_empty user_circle"></span>\n` +
@@ -1021,7 +1022,8 @@ test("initialize", ({override, override_rewire, mock_template}) => {
                 // Reset the email such that this does not affect further tests.
                 othello.delivery_email = null;
 
-                fake_this = {completing: "mention", token: "hamletcharacters"};
+                ct.get_or_set_completing_for_tests("mention");
+                fake_this = {token: "hamletcharacters"};
                 actual_value = options.highlighter_html.call(fake_this, hamletcharacters);
                 expected_value =
                     '    <i class="typeahead-image icon fa fa-group no-presence-circle" aria-hidden="true"></i>\n<strong>hamletcharacters</strong>&nbsp;&nbsp;\n<small class="autocomplete_secondary">Characters of Hamlet</small>\n';
@@ -1031,35 +1033,39 @@ test("initialize", ({override, override_rewire, mock_template}) => {
 
                 function match(fake_this, item) {
                     const token = fake_this.token;
-                    const completing = fake_this.completing;
+                    const completing = ct.get_or_set_completing_for_tests();
 
                     return ct.compose_content_matcher(completing, token)(item);
                 }
 
-                fake_this = {completing: "emoji", token: "ta"};
+                ct.get_or_set_completing_for_tests("emoji");
+                fake_this = {token: "ta"};
                 assert.equal(match(fake_this, make_emoji(emoji_tada)), true);
                 assert.equal(match(fake_this, make_emoji(emoji_moneybag)), false);
 
-                fake_this = {completing: "stream", token: "swed"};
+                ct.get_or_set_completing_for_tests("stream");
+                fake_this = {token: "swed"};
                 assert.equal(match(fake_this, sweden_stream), true);
                 assert.equal(match(fake_this, denmark_stream), false);
 
-                fake_this = {completing: "syntax", token: "py"};
+                ct.get_or_set_completing_for_tests("syntax");
+                fake_this = {token: "py"};
                 assert.equal(match(fake_this, "python"), true);
                 assert.equal(match(fake_this, "javascript"), false);
 
-                fake_this = {completing: "non-existing-completion"};
+                ct.get_or_set_completing_for_tests("non-existing-completion");
                 assert.equal(match(fake_this), undefined);
 
                 function sort_items(fake_this, item) {
                     const token = fake_this.token;
-                    const completing = fake_this.completing;
+                    const completing = ct.get_or_set_completing_for_tests();
 
                     return ct.sort_results(completing, item, token);
                 }
 
                 // options.sorter()
-                fake_this = {completing: "emoji", token: "ta"};
+                ct.get_or_set_completing_for_tests("emoji");
+                fake_this = {token: "ta"};
                 actual_value = sort_items(fake_this, [
                     make_emoji(emoji_stadium),
                     make_emoji(emoji_tada),
@@ -1067,7 +1073,8 @@ test("initialize", ({override, override_rewire, mock_template}) => {
                 expected_value = [make_emoji(emoji_tada), make_emoji(emoji_stadium)];
                 assert.deepEqual(actual_value, expected_value);
 
-                fake_this = {completing: "emoji", token: "th"};
+                ct.get_or_set_completing_for_tests("emoji");
+                fake_this = {token: "th"};
                 actual_value = sort_items(fake_this, [
                     make_emoji(emoji_thermometer),
                     make_emoji(emoji_thumbs_up),
@@ -1075,7 +1082,8 @@ test("initialize", ({override, override_rewire, mock_template}) => {
                 expected_value = [make_emoji(emoji_thumbs_up), make_emoji(emoji_thermometer)];
                 assert.deepEqual(actual_value, expected_value);
 
-                fake_this = {completing: "emoji", token: "he"};
+                ct.get_or_set_completing_for_tests("emoji");
+                fake_this = {token: "he"};
                 actual_value = sort_items(fake_this, [
                     make_emoji(emoji_headphones),
                     make_emoji(emoji_heart),
@@ -1083,17 +1091,20 @@ test("initialize", ({override, override_rewire, mock_template}) => {
                 expected_value = [make_emoji(emoji_heart), make_emoji(emoji_headphones)];
                 assert.deepEqual(actual_value, expected_value);
 
-                fake_this = {completing: "slash", token: "m"};
+                ct.get_or_set_completing_for_tests("slash");
+                fake_this = {token: "m"};
                 actual_value = sort_items(fake_this, [my_slash, me_slash]);
                 expected_value = [me_slash, my_slash];
                 assert.deepEqual(actual_value, expected_value);
 
-                fake_this = {completing: "slash", token: "da"};
+                ct.get_or_set_completing_for_tests("slash");
+                fake_this = {token: "da"};
                 actual_value = sort_items(fake_this, [dark_slash, light_slash]);
                 expected_value = [dark_slash, light_slash];
                 assert.deepEqual(actual_value, expected_value);
 
-                fake_this = {completing: "stream", token: "de"};
+                ct.get_or_set_completing_for_tests("stream");
+                fake_this = {token: "de"};
                 actual_value = sort_items(fake_this, [sweden_stream, denmark_stream]);
                 expected_value = [denmark_stream, sweden_stream];
                 assert.deepEqual(actual_value, expected_value);
@@ -1101,12 +1112,14 @@ test("initialize", ({override, override_rewire, mock_template}) => {
                 // Matches in the descriptions affect the order as well.
                 // Testing "co" for "cold", in both streams' description. It's at the
                 // beginning of Sweden's description, so that one should go first.
-                fake_this = {completing: "stream", token: "co"};
+                ct.get_or_set_completing_for_tests("stream");
+                fake_this = {token: "co"};
                 actual_value = sort_items(fake_this, [denmark_stream, sweden_stream]);
                 expected_value = [sweden_stream, denmark_stream];
                 assert.deepEqual(actual_value, expected_value);
 
-                fake_this = {completing: "syntax", token: "ap"};
+                ct.get_or_set_completing_for_tests("syntax");
+                fake_this = {token: "ap"};
                 actual_value = sort_items(fake_this, ["abap", "applescript"]);
                 expected_value = ["applescript", "abap"];
                 assert.deepEqual(actual_value, expected_value);
@@ -1125,7 +1138,8 @@ test("initialize", ({override, override_rewire, mock_template}) => {
                 );
 
                 stream_list_sort.set_filter_out_inactives();
-                fake_this = {completing: "stream", token: "s"};
+                ct.get_or_set_completing_for_tests("stream");
+                fake_this = {token: "s"};
                 actual_value = sort_items(fake_this, [sweden_stream, serbia_stream]);
                 expected_value = [sweden_stream, serbia_stream];
                 assert.deepEqual(actual_value, expected_value);
@@ -1141,12 +1155,13 @@ test("initialize", ({override, override_rewire, mock_template}) => {
                 expected_value = [sweden_stream, serbia_stream];
                 assert.deepEqual(actual_value, expected_value);
 
-                fake_this = {completing: "stream", token: "ser"};
+                ct.get_or_set_completing_for_tests("stream");
+                fake_this = {token: "ser"};
                 actual_value = sort_items(fake_this, [denmark_stream, serbia_stream]);
                 expected_value = [serbia_stream, denmark_stream];
                 assert.deepEqual(actual_value, expected_value);
 
-                fake_this = {completing: "non-existing-completion"};
+                ct.get_or_set_completing_for_tests("non-existing-completion");
                 assert.equal(sort_items(fake_this), undefined);
 
                 compose_textarea_typeahead_called = true;
@@ -1560,32 +1575,32 @@ test("tokenizing", () => {
 });
 
 test("content_highlighter_html", ({override_rewire}) => {
-    let fake_this = {completing: "emoji"};
+    ct.get_or_set_completing_for_tests("emoji");
     const emoji = {emoji_name: "person shrugging", emoji_url: "¯\\_(ツ)_/¯"};
     let th_render_typeahead_item_called = false;
     override_rewire(typeahead_helper, "render_emoji", (item) => {
         assert.deepEqual(item, emoji);
         th_render_typeahead_item_called = true;
     });
-    ct.content_highlighter_html.call(fake_this, emoji);
+    ct.content_highlighter_html(emoji);
 
-    fake_this = {completing: "mention"};
+    ct.get_or_set_completing_for_tests("mention");
     let th_render_person_called = false;
     override_rewire(typeahead_helper, "render_person", (person) => {
         assert.deepEqual(person, othello);
         th_render_person_called = true;
     });
-    ct.content_highlighter_html.call(fake_this, othello);
+    ct.content_highlighter_html(othello);
 
     let th_render_user_group_called = false;
     override_rewire(typeahead_helper, "render_user_group", (user_group) => {
         assert.deepEqual(user_group, backend);
         th_render_user_group_called = true;
     });
-    ct.content_highlighter_html.call(fake_this, backend);
+    ct.content_highlighter_html(backend);
 
     // We don't have any fancy rendering for slash commands yet.
-    fake_this = {completing: "slash"};
+    ct.get_or_set_completing_for_tests("slash");
     let th_render_slash_command_called = false;
     const me_slash = {
         text: "/me (Action message)",
@@ -1596,26 +1611,26 @@ test("content_highlighter_html", ({override_rewire}) => {
         });
         th_render_slash_command_called = true;
     });
-    ct.content_highlighter_html.call(fake_this, me_slash);
+    ct.content_highlighter_html(me_slash);
 
-    fake_this = {completing: "stream"};
+    ct.get_or_set_completing_for_tests("stream");
     let th_render_stream_called = false;
     override_rewire(typeahead_helper, "render_stream", (stream) => {
         assert.deepEqual(stream, denmark_stream);
         th_render_stream_called = true;
     });
-    ct.content_highlighter_html.call(fake_this, denmark_stream);
+    ct.content_highlighter_html(denmark_stream);
 
-    fake_this = {completing: "syntax"};
+    ct.get_or_set_completing_for_tests("syntax");
     th_render_typeahead_item_called = false;
     override_rewire(typeahead_helper, "render_typeahead_item", (item) => {
         assert.deepEqual(item, {primary: "py"});
         th_render_typeahead_item_called = true;
     });
-    ct.content_highlighter_html.call(fake_this, "py");
+    ct.content_highlighter_html("py");
 
-    fake_this = {completing: "something-else"};
-    assert.ok(!ct.content_highlighter_html.call(fake_this));
+    ct.get_or_set_completing_for_tests("something-else");
+    assert.ok(!ct.content_highlighter_html());
 
     // Verify that all stub functions have been called.
     assert.ok(th_render_typeahead_item_called);
