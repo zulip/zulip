@@ -268,21 +268,6 @@ def send_initial_realm_messages(realm: Realm) -> None:
     # Order corresponds to the ordering of the streams on the left sidebar, to make the initial Home
     # view slightly less overwhelming
     with override_language(realm.default_language):
-        content_of_private_streams_topic_name = (
-            _("This is a private channel, as indicated by the lock icon next to the channel name.")
-            + " "
-            + _("Private channels are only visible to channel members.")
-            + "\n"
-            "\n"
-            + _(
-                "To manage this channel, go to [Channel settings]({channel_settings_url}) "
-                "and click on `{initial_private_channel_name}`."
-            )
-        ).format(
-            channel_settings_url="#channels/subscribed",
-            initial_private_channel_name=Realm.INITIAL_PRIVATE_STREAM_NAME,
-        )
-
         content1_of_topic_demonstration_topic_name = (
             _(
                 "This is a message on channel #**{default_notification_channel_name}** with the "
@@ -335,11 +320,6 @@ they can be disabled. [Learn more]({zulip_update_announcements_help_url}).
         )
 
     welcome_messages: List[Dict[str, str]] = [
-        {
-            "stream": Realm.INITIAL_PRIVATE_STREAM_NAME,
-            "topic_name": "private channels",
-            "content": content_of_private_streams_topic_name,
-        },
         {
             "stream": Realm.DEFAULT_NOTIFICATION_STREAM_NAME,
             "topic_name": "topic demonstration",

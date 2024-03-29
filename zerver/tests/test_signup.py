@@ -932,7 +932,7 @@ class LoginTest(ZulipTestCase):
         # seem to be any O(N) behavior.  Some of the cache hits are related
         # to sending messages, such as getting the welcome bot, looking up
         # the alert words for a realm, etc.
-        with self.assert_database_query_count(104), self.assert_memcached_count(18):
+        with self.assert_database_query_count(91), self.assert_memcached_count(14):
             with self.captureOnCommitCallbacks(execute=True):
                 self.register(self.nonreg_email("test"), "test")
 
@@ -1304,7 +1304,6 @@ class RealmCreationTest(ZulipTestCase):
         # Check welcome messages
         for stream_name, text, message_count in [
             (Realm.DEFAULT_NOTIFICATION_STREAM_NAME, "with the topic", 4),
-            (Realm.INITIAL_PRIVATE_STREAM_NAME, "private channel", 1),
         ]:
             stream = get_stream(stream_name, realm)
             recipient = stream.recipient
@@ -1741,11 +1740,9 @@ class RealmCreationTest(ZulipTestCase):
         # that are part of the stream -> channel rename, uncomment below.
         # # Check welcome messages
         # with_the_topic_in_italian = "con l'argomento"
-        # private_stream_in_italian = "canale privato"
 
         # for stream_name, text, message_count in [
         #     (Realm.DEFAULT_NOTIFICATION_STREAM_NAME, with_the_topic_in_italian, 4),
-        #     (Realm.INITIAL_PRIVATE_STREAM_NAME, private_stream_in_italian, 1),
         # ]:
         #     stream = get_stream(stream_name, realm)
         #     recipient = stream.recipient

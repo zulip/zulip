@@ -292,15 +292,6 @@ def do_create_realm(
     # stream is the new_stream_announcements_stream.
     DefaultStream.objects.create(stream=new_stream_announcements_stream, realm=realm)
 
-    signup_announcements_stream = ensure_stream(
-        realm,
-        Realm.INITIAL_PRIVATE_STREAM_NAME,
-        invite_only=True,
-        stream_description="A private stream for core team members.",
-        acting_user=None,
-    )
-    realm.signup_announcements_stream = signup_announcements_stream
-
     # New realm is initialized with the latest zulip update announcements
     # level as it shouldn't receive a bunch of old updates.
     realm.zulip_update_announcements_level = get_latest_zulip_update_announcements_level()
@@ -308,7 +299,6 @@ def do_create_realm(
     realm.save(
         update_fields=[
             "new_stream_announcements_stream",
-            "signup_announcements_stream",
             "zulip_update_announcements_stream",
             "zulip_update_announcements_level",
         ]

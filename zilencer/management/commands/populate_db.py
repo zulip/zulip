@@ -621,22 +621,24 @@ class Command(BaseCommand):
             # Add the realm internal bots to each realm.
             create_if_missing_realm_internal_bots()
 
-            # Create public streams.
-            signups_stream = Realm.INITIAL_PRIVATE_STREAM_NAME
-
+            # Create streams.
             stream_list = [
                 "Verona",
                 "Denmark",
                 "Scotland",
                 "Venice",
                 "Rome",
-                signups_stream,
+                "core team",
             ]
             stream_dict: Dict[str, Dict[str, Any]] = {
                 "Denmark": {"description": "A Scandinavian country"},
                 "Scotland": {"description": "Located in the United Kingdom"},
                 "Venice": {"description": "A northeastern Italian city"},
                 "Rome": {"description": "Yet another Italian city", "is_web_public": True},
+                "core team": {
+                    "description": "A private channel for core team members",
+                    "invite_only": True,
+                },
             }
 
             bulk_create_streams(zulip_realm, stream_dict)
@@ -660,12 +662,12 @@ class Command(BaseCommand):
                 subscriptions_map = {
                     "AARON@zulip.com": ["Verona"],
                     "cordelia@zulip.com": ["Verona"],
-                    "hamlet@zulip.com": ["Verona", "Denmark", signups_stream],
+                    "hamlet@zulip.com": ["Verona", "Denmark", "core team"],
                     "iago@zulip.com": [
                         "Verona",
                         "Denmark",
                         "Scotland",
-                        signups_stream,
+                        "core team",
                     ],
                     "othello@zulip.com": ["Verona", "Denmark", "Scotland"],
                     "prospero@zulip.com": ["Verona", "Denmark", "Scotland", "Venice"],
@@ -675,7 +677,7 @@ class Command(BaseCommand):
                         "Verona",
                         "Denmark",
                         "Venice",
-                        signups_stream,
+                        "core team",
                     ],
                     "shiva@zulip.com": ["Verona", "Denmark", "Scotland"],
                 }
@@ -937,10 +939,17 @@ class Command(BaseCommand):
                 )
 
                 mit_user = get_user_by_delivery_email("sipbtest@mit.edu", mit_realm)
-                mit_signup_stream = Stream.objects.get(
-                    name=Realm.INITIAL_PRIVATE_STREAM_NAME, realm=mit_realm
+                bulk_create_streams(
+                    mit_realm,
+                    {
+                        "core team": {
+                            "description": "A private channel for core team members",
+                            "invite_only": True,
+                        }
+                    },
                 )
-                bulk_add_subscriptions(mit_realm, [mit_signup_stream], [mit_user], acting_user=None)
+                core_team_stream = Stream.objects.get(name="core team", realm=mit_realm)
+                bulk_add_subscriptions(mit_realm, [core_team_stream], [mit_user], acting_user=None)
 
                 testsuite_lear_users = [
                     ("King Lear", "king@lear.org"),
@@ -951,11 +960,18 @@ class Command(BaseCommand):
                 )
 
                 lear_user = get_user_by_delivery_email("king@lear.org", lear_realm)
-                lear_signup_stream = Stream.objects.get(
-                    name=Realm.INITIAL_PRIVATE_STREAM_NAME, realm=lear_realm
+                bulk_create_streams(
+                    lear_realm,
+                    {
+                        "core team": {
+                            "description": "A private channel for core team members",
+                            "invite_only": True,
+                        }
+                    },
                 )
+                core_team_stream = Stream.objects.get(name="core team", realm=lear_realm)
                 bulk_add_subscriptions(
-                    lear_realm, [lear_signup_stream], [lear_user], acting_user=None
+                    lear_realm, [core_team_stream], [lear_user], acting_user=None
                 )
 
             if not options["test_suite"]:

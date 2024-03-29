@@ -1215,7 +1215,7 @@ class NormalActionsTest(BaseAction):
             )
         prereg_user = PreregistrationUser.objects.get(email="foo@zulip.com")
 
-        with self.verify_action(state_change_expected=True, num_events=7) as events:
+        with self.verify_action(state_change_expected=True, num_events=6) as events:
             do_create_user(
                 "foo@zulip.com",
                 "password",
@@ -1225,7 +1225,7 @@ class NormalActionsTest(BaseAction):
                 acting_user=None,
             )
 
-        check_invites_changed("events[6]", events[6])
+        check_invites_changed("events[6]", events[5])
 
     def test_typing_events(self) -> None:
         with self.verify_action(state_change_expected=False) as events:
@@ -1469,6 +1469,10 @@ class NormalActionsTest(BaseAction):
         )
 
     def test_register_events(self) -> None:
+        realm = self.user_profile.realm
+        realm.signup_announcements_stream = get_stream("core team", realm)
+        realm.save(update_fields=["signup_announcements_stream"])
+
         with self.verify_action(num_events=5) as events:
             self.register("test1@zulip.com", "test1")
         self.assert_length(events, 5)
@@ -1496,6 +1500,9 @@ class NormalActionsTest(BaseAction):
             RealmUserDefault.EMAIL_ADDRESS_VISIBILITY_ADMINS,
             acting_user=None,
         )
+        realm = self.user_profile.realm
+        realm.signup_announcements_stream = get_stream("core team", realm)
+        realm.save(update_fields=["signup_announcements_stream"])
 
         with self.verify_action(num_events=5) as events:
             self.register("test1@zulip.com", "test1")
