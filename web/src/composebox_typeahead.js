@@ -49,6 +49,14 @@ export const max_num_items = 8;
 export let emoji_collection = [];
 
 let completing;
+let token;
+
+export function get_or_set_token_for_testing(val) {
+    if (val !== undefined) {
+        token = val;
+    }
+    return token;
+}
 
 export function get_or_set_completing_for_tests(val) {
     if (val !== undefined) {
@@ -640,10 +648,6 @@ export function get_sorted_filtered_items(query) {
         return false;
     }
 
-    // We are still hacking info onto the "this" from
-    // bootstrap.  Yuck.
-    const token = this.token;
-
     const opts = get_stream_topic_data(this);
 
     if (completing === "mention" || completing === "silent_mention") {
@@ -714,7 +718,7 @@ export function get_candidates(query) {
             current_token = current_token.slice(1);
         }
         completing = "syntax";
-        this.token = current_token;
+        token = current_token;
         // If the code formatting button was triggered, we want to show a blank option
         // to improve the discoverability of the possibility of specifying a language.
         const language_list = compose_ui.code_formatting_button_triggered
@@ -739,7 +743,7 @@ export function get_candidates(query) {
             return false;
         }
         completing = "emoji";
-        this.token = current_token.slice(1);
+        token = current_token.slice(1);
         return emoji_collection;
     }
 
@@ -758,7 +762,7 @@ export function get_candidates(query) {
             completing = null;
             return false;
         }
-        this.token = current_token;
+        token = current_token;
         return {is_silent};
     }
 
@@ -771,7 +775,7 @@ export function get_candidates(query) {
         current_token = current_token.slice(1);
 
         completing = "slash";
-        this.token = current_token;
+        token = current_token;
         return get_slash_commands_data();
     }
 
@@ -791,7 +795,7 @@ export function get_candidates(query) {
         }
 
         completing = "stream";
-        this.token = current_token;
+        token = current_token;
         return stream_data.get_unsorted_subs();
     }
 
@@ -802,7 +806,7 @@ export function get_candidates(query) {
         const should_jump_inside_typeahead = stream_regex.test(split[0]);
         if (should_jump_inside_typeahead) {
             completing = "topic_jump";
-            this.token = ">";
+            token = ">";
             // We return something so that the typeahead is shown, but ultimately
             return [""];
         }
@@ -815,17 +819,17 @@ export function get_candidates(query) {
             const tokens = stream_topic_regex.exec(split[0]);
             if (tokens[1]) {
                 const stream_name = tokens[1];
-                this.token = tokens[2] || "";
+                token = tokens[2] || "";
 
                 // Don't autocomplete if there is a space following '>'
-                if (this.token[0] === " ") {
+                if (token[0] === " ") {
                     return false;
                 }
 
                 const stream_id = stream_data.get_stream_id(stream_name);
                 const topic_list = topics_seen_for(stream_id);
-                if (should_show_custom_query(this.token, topic_list)) {
-                    topic_list.push(this.token);
+                if (should_show_custom_query(token, topic_list)) {
+                    topic_list.push(token);
                 }
                 return topic_list;
             }
@@ -888,17 +892,15 @@ export function content_typeahead_selected(item, event) {
                 beginning.charAt(beginning.lastIndexOf(":") - 1) === " " ||
                 beginning.charAt(beginning.lastIndexOf(":") - 1) === "\n"
             ) {
-                beginning =
-                    beginning.slice(0, -this.token.length - 1) + ":" + item.emoji_name + ": ";
+                beginning = beginning.slice(0, -token.length - 1) + ":" + item.emoji_name + ": ";
             } else {
-                beginning =
-                    beginning.slice(0, -this.token.length - 1) + " :" + item.emoji_name + ": ";
+                beginning = beginning.slice(0, -token.length - 1) + " :" + item.emoji_name + ": ";
             }
             break;
         case "silent_mention":
         case "mention": {
             const is_silent = completing === "silent_mention";
-            beginning = beginning.slice(0, -this.token.length - 1);
+            beginning = beginning.slice(0, -token.length - 1);
             if (beginning.endsWith("@_*")) {
                 beginning = beginning.slice(0, -3);
             } else if (beginning.endsWith("@*") || beginning.endsWith("@_")) {
@@ -934,7 +936,7 @@ export function content_typeahead_selected(item, event) {
             break;
         }
         case "slash":
-            beginning = beginning.slice(0, -this.token.length - 1) + "/" + item.name + " ";
+            beginning = beginning.slice(0, -token.length - 1) + "/" + item.name + " ";
             if (item.placeholder) {
                 beginning = beginning + item.placeholder;
                 highlight.start = item.name.length + 2;
@@ -942,7 +944,7 @@ export function content_typeahead_selected(item, event) {
             }
             break;
         case "stream":
-            beginning = beginning.slice(0, -this.token.length - 1);
+            beginning = beginning.slice(0, -token.length - 1);
             if (beginning.endsWith("#*")) {
                 beginning = beginning.slice(0, -2);
             }
@@ -960,7 +962,7 @@ export function content_typeahead_selected(item, event) {
         case "syntax": {
             // Isolate the end index of the triple backticks/tildes, including
             // possibly a space afterward
-            const backticks = beginning.length - this.token.length;
+            const backticks = beginning.length - token.length;
             beginning = beginning.slice(0, backticks) + item;
             if (item === "spoiler") {
                 // to add in and highlight placeholder "Header"
@@ -991,9 +993,9 @@ export function content_typeahead_selected(item, event) {
         }
         case "topic_list": {
             // Stream + topic mention typeahead; close the stream+topic mention syntax
-            // with the topic and the final **.  Note that this.token.length can be 0
+            // with the topic and the final **.  Note that token.length can be 0
             // if we are completing from `**streamname>`.
-            const start = beginning.length - this.token.length;
+            const start = beginning.length - token.length;
             beginning = beginning.slice(0, start) + item + "** ";
             break;
         }

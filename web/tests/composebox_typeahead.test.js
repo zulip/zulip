@@ -464,7 +464,7 @@ test("content_typeahead_selected", ({override}) => {
     // emoji
     ct.get_or_set_completing_for_tests("emoji");
     fake_this.query = ":octo";
-    fake_this.token = "octo";
+    ct.get_or_set_token_for_testing("octo");
     const item = {
         emoji_name: "octopus",
     };
@@ -474,13 +474,13 @@ test("content_typeahead_selected", ({override}) => {
     assert.equal(actual_value, expected_value);
 
     fake_this.query = " :octo";
-    fake_this.token = "octo";
+    ct.get_or_set_token_for_testing("octo");
     actual_value = ct.content_typeahead_selected.call(fake_this, item);
     expected_value = " :octopus: ";
     assert.equal(actual_value, expected_value);
 
     fake_this.query = "{:octo";
-    fake_this.token = "octo";
+    ct.get_or_set_token_for_testing("octo");
     actual_value = ct.content_typeahead_selected.call(fake_this, item);
     expected_value = "{ :octopus: ";
     assert.equal(actual_value, expected_value);
@@ -496,7 +496,7 @@ test("content_typeahead_selected", ({override}) => {
     );
 
     fake_this.query = "@**Mark Tw";
-    fake_this.token = "Mark Tw";
+    ct.get_or_set_token_for_testing("Mark Tw");
     actual_value = ct.content_typeahead_selected.call(fake_this, twin1);
     expected_value = "@**Mark Twin|105** ";
     assert.equal(actual_value, expected_value);
@@ -508,32 +508,32 @@ test("content_typeahead_selected", ({override}) => {
     });
 
     fake_this.query = "@oth";
-    fake_this.token = "oth";
+    ct.get_or_set_token_for_testing("oth");
     actual_value = ct.content_typeahead_selected.call(fake_this, othello);
     expected_value = "@**Othello, the Moor of Venice** ";
     assert.equal(actual_value, expected_value);
     assert.ok(warned_for_mention);
 
     fake_this.query = "Hello @oth";
-    fake_this.token = "oth";
+    ct.get_or_set_token_for_testing("oth");
     actual_value = ct.content_typeahead_selected.call(fake_this, othello);
     expected_value = "Hello @**Othello, the Moor of Venice** ";
     assert.equal(actual_value, expected_value);
 
     fake_this.query = "@**oth";
-    fake_this.token = "oth";
+    ct.get_or_set_token_for_testing("oth");
     actual_value = ct.content_typeahead_selected.call(fake_this, othello);
     expected_value = "@**Othello, the Moor of Venice** ";
     assert.equal(actual_value, expected_value);
 
     fake_this.query = "@*oth";
-    fake_this.token = "oth";
+    ct.get_or_set_token_for_testing("oth");
     actual_value = ct.content_typeahead_selected.call(fake_this, othello);
     expected_value = "@**Othello, the Moor of Venice** ";
     assert.equal(actual_value, expected_value);
 
     fake_this.query = "@back";
-    fake_this.token = "back";
+    ct.get_or_set_token_for_testing("back");
     with_overrides(({disallow}) => {
         disallow(compose_validate, "warn_if_mentioning_unsubscribed_user");
         actual_value = ct.content_typeahead_selected.call(fake_this, backend);
@@ -542,7 +542,7 @@ test("content_typeahead_selected", ({override}) => {
     assert.equal(actual_value, expected_value);
 
     fake_this.query = "@*back";
-    fake_this.token = "back";
+    ct.get_or_set_token_for_testing("back");
     actual_value = ct.content_typeahead_selected.call(fake_this, backend);
     expected_value = "@*Backend* ";
     assert.equal(actual_value, expected_value);
@@ -550,7 +550,7 @@ test("content_typeahead_selected", ({override}) => {
     // silent mention
     ct.get_or_set_completing_for_tests("silent_mention");
     fake_this.query = "@_kin";
-    fake_this.token = "kin";
+    ct.get_or_set_token_for_testing("kin");
     with_overrides(({disallow}) => {
         disallow(compose_validate, "warn_if_mentioning_unsubscribed_user");
         actual_value = ct.content_typeahead_selected.call(fake_this, hamlet);
@@ -560,25 +560,25 @@ test("content_typeahead_selected", ({override}) => {
     assert.equal(actual_value, expected_value);
 
     fake_this.query = "Hello @_kin";
-    fake_this.token = "kin";
+    ct.get_or_set_token_for_testing("kin");
     actual_value = ct.content_typeahead_selected.call(fake_this, hamlet);
     expected_value = "Hello @_**King Hamlet** ";
     assert.equal(actual_value, expected_value);
 
     fake_this.query = "@_*kin";
-    fake_this.token = "kin";
+    ct.get_or_set_token_for_testing("kin");
     actual_value = ct.content_typeahead_selected.call(fake_this, hamlet);
     expected_value = "@_**King Hamlet** ";
     assert.equal(actual_value, expected_value);
 
     fake_this.query = "@_**kin";
-    fake_this.token = "kin";
+    ct.get_or_set_token_for_testing("kin");
     actual_value = ct.content_typeahead_selected.call(fake_this, hamlet);
     expected_value = "@_**King Hamlet** ";
     assert.equal(actual_value, expected_value);
 
     fake_this.query = "@_back";
-    fake_this.token = "back";
+    ct.get_or_set_token_for_testing("back");
     with_overrides(({disallow}) => {
         disallow(compose_validate, "warn_if_mentioning_unsubscribed_user");
         actual_value = ct.content_typeahead_selected.call(fake_this, backend);
@@ -587,7 +587,7 @@ test("content_typeahead_selected", ({override}) => {
     assert.equal(actual_value, expected_value);
 
     fake_this.query = "@_*back";
-    fake_this.token = "back";
+    ct.get_or_set_token_for_testing("back");
     actual_value = ct.content_typeahead_selected.call(fake_this, backend);
     expected_value = "@_*Backend* ";
     assert.equal(actual_value, expected_value);
@@ -631,19 +631,19 @@ test("content_typeahead_selected", ({override}) => {
     });
 
     fake_this.query = "#swed";
-    fake_this.token = "swed";
+    ct.get_or_set_token_for_testing("swed");
     actual_value = ct.content_typeahead_selected.call(fake_this, sweden_stream);
     expected_value = "#**Sweden** ";
     assert.equal(actual_value, expected_value);
 
     fake_this.query = "Hello #swed";
-    fake_this.token = "swed";
+    ct.get_or_set_token_for_testing("swed");
     actual_value = ct.content_typeahead_selected.call(fake_this, sweden_stream);
     expected_value = "Hello #**Sweden** ";
     assert.equal(actual_value, expected_value);
 
     fake_this.query = "#**swed";
-    fake_this.token = "swed";
+    ct.get_or_set_token_for_testing("swed");
     actual_value = ct.content_typeahead_selected.call(fake_this, sweden_stream);
     expected_value = "#**Sweden** ";
     assert.equal(actual_value, expected_value);
@@ -652,13 +652,13 @@ test("content_typeahead_selected", ({override}) => {
     ct.get_or_set_completing_for_tests("topic_list");
 
     fake_this.query = "Hello #**Sweden>test";
-    fake_this.token = "test";
+    ct.get_or_set_token_for_testing("test");
     actual_value = ct.content_typeahead_selected.call(fake_this, "testing");
     expected_value = "Hello #**Sweden>testing** ";
     assert.equal(actual_value, expected_value);
 
     fake_this.query = "Hello #**Sweden>";
-    fake_this.token = "";
+    ct.get_or_set_token_for_testing("");
     actual_value = ct.content_typeahead_selected.call(fake_this, "testing");
     expected_value = "Hello #**Sweden>testing** ";
     assert.equal(actual_value, expected_value);
@@ -667,32 +667,32 @@ test("content_typeahead_selected", ({override}) => {
     ct.get_or_set_completing_for_tests("syntax");
 
     fake_this.query = "~~~p";
-    fake_this.token = "p";
+    ct.get_or_set_token_for_testing("p");
     actual_value = ct.content_typeahead_selected.call(fake_this, "python");
     expected_value = "~~~python\n\n~~~";
     assert.equal(actual_value, expected_value);
 
     fake_this.query = "Hello ~~~p";
-    fake_this.token = "p";
+    ct.get_or_set_token_for_testing("p");
     actual_value = ct.content_typeahead_selected.call(fake_this, "python");
     expected_value = "Hello ~~~python\n\n~~~";
     assert.equal(actual_value, expected_value);
 
     fake_this.query = "```p";
-    fake_this.token = "p";
+    ct.get_or_set_token_for_testing("p");
     actual_value = ct.content_typeahead_selected.call(fake_this, "python");
     expected_value = "```python\n\n```";
     assert.equal(actual_value, expected_value);
 
     fake_this.query = "```spo";
-    fake_this.token = "spo";
+    ct.get_or_set_token_for_testing("spo");
     actual_value = ct.content_typeahead_selected.call(fake_this, "spoiler");
     expected_value = "```spoiler translated: Header\n\n```";
     assert.equal(actual_value, expected_value);
 
     // Test special case to not close code blocks if there is text afterward
     fake_this.query = "```p\nsome existing code";
-    fake_this.token = "p";
+    ct.get_or_set_token_for_testing("p");
     fake_this.input_element.$element.caret = () => 4; // Put cursor right after ```p
     actual_value = ct.content_typeahead_selected.call(fake_this, "python");
     expected_value = "```python\nsome existing code";
@@ -989,7 +989,7 @@ test("initialize", ({override, override_rewire, mock_template}) => {
                 // For now we only test that get_sorted_filtered_items has been
                 // properly set as the .source(). All its features are tested later on
                 // in test_begins_typeahead().
-                let fake_this = {
+                const fake_this = {
                     input_element: {
                         $element: {},
                         type: "input",
@@ -1011,8 +1011,8 @@ test("initialize", ({override, override_rewire, mock_template}) => {
                 // Again, here we only verify that the highlighter has been set to
                 // content_highlighter_html.
                 ct.get_or_set_completing_for_tests("mention");
-                fake_this = {token: "othello"};
-                actual_value = options.highlighter_html.call(fake_this, othello);
+                ct.get_or_set_token_for_testing("othello");
+                actual_value = options.highlighter_html(othello);
                 expected_value =
                     `    <span class="user_circle_empty user_circle"></span>\n` +
                     `    <img class="typeahead-image" src="http://zulip.zulipdev.com/avatar/${othello.user_id}?s&#x3D;50" />\n` +
@@ -1023,41 +1023,41 @@ test("initialize", ({override, override_rewire, mock_template}) => {
                 othello.delivery_email = null;
 
                 ct.get_or_set_completing_for_tests("mention");
-                fake_this = {token: "hamletcharacters"};
-                actual_value = options.highlighter_html.call(fake_this, hamletcharacters);
+                ct.get_or_set_token_for_testing("hamletcharacters");
+                actual_value = options.highlighter_html(hamletcharacters);
                 expected_value =
                     '    <i class="typeahead-image icon fa fa-group no-presence-circle" aria-hidden="true"></i>\n<strong>hamletcharacters</strong>&nbsp;&nbsp;\n<small class="autocomplete_secondary">Characters of Hamlet</small>\n';
                 assert.equal(actual_value, expected_value);
 
                 // matching
 
-                function match(fake_this, item) {
-                    const token = fake_this.token;
+                function match(item) {
+                    const token = ct.get_or_set_token_for_testing();
                     const completing = ct.get_or_set_completing_for_tests();
 
                     return ct.compose_content_matcher(completing, token)(item);
                 }
 
                 ct.get_or_set_completing_for_tests("emoji");
-                fake_this = {token: "ta"};
-                assert.equal(match(fake_this, make_emoji(emoji_tada)), true);
-                assert.equal(match(fake_this, make_emoji(emoji_moneybag)), false);
+                ct.get_or_set_token_for_testing("ta");
+                assert.equal(match(make_emoji(emoji_tada)), true);
+                assert.equal(match(make_emoji(emoji_moneybag)), false);
 
                 ct.get_or_set_completing_for_tests("stream");
-                fake_this = {token: "swed"};
-                assert.equal(match(fake_this, sweden_stream), true);
-                assert.equal(match(fake_this, denmark_stream), false);
+                ct.get_or_set_token_for_testing("swed");
+                assert.equal(match(sweden_stream), true);
+                assert.equal(match(denmark_stream), false);
 
                 ct.get_or_set_completing_for_tests("syntax");
-                fake_this = {token: "py"};
-                assert.equal(match(fake_this, "python"), true);
-                assert.equal(match(fake_this, "javascript"), false);
+                ct.get_or_set_token_for_testing("py");
+                assert.equal(match("python"), true);
+                assert.equal(match("javascript"), false);
 
                 ct.get_or_set_completing_for_tests("non-existing-completion");
-                assert.equal(match(fake_this), undefined);
+                assert.equal(match(), undefined);
 
-                function sort_items(fake_this, item) {
-                    const token = fake_this.token;
+                function sort_items(item) {
+                    const token = ct.get_or_set_token_for_testing();
                     const completing = ct.get_or_set_completing_for_tests();
 
                     return ct.sort_results(completing, item, token);
@@ -1065,17 +1065,14 @@ test("initialize", ({override, override_rewire, mock_template}) => {
 
                 // options.sorter()
                 ct.get_or_set_completing_for_tests("emoji");
-                fake_this = {token: "ta"};
-                actual_value = sort_items(fake_this, [
-                    make_emoji(emoji_stadium),
-                    make_emoji(emoji_tada),
-                ]);
+                ct.get_or_set_token_for_testing("ta");
+                actual_value = sort_items([make_emoji(emoji_stadium), make_emoji(emoji_tada)]);
                 expected_value = [make_emoji(emoji_tada), make_emoji(emoji_stadium)];
                 assert.deepEqual(actual_value, expected_value);
 
                 ct.get_or_set_completing_for_tests("emoji");
-                fake_this = {token: "th"};
-                actual_value = sort_items(fake_this, [
+                ct.get_or_set_token_for_testing("th");
+                actual_value = sort_items([
                     make_emoji(emoji_thermometer),
                     make_emoji(emoji_thumbs_up),
                 ]);
@@ -1083,29 +1080,26 @@ test("initialize", ({override, override_rewire, mock_template}) => {
                 assert.deepEqual(actual_value, expected_value);
 
                 ct.get_or_set_completing_for_tests("emoji");
-                fake_this = {token: "he"};
-                actual_value = sort_items(fake_this, [
-                    make_emoji(emoji_headphones),
-                    make_emoji(emoji_heart),
-                ]);
+                ct.get_or_set_token_for_testing("he");
+                actual_value = sort_items([make_emoji(emoji_headphones), make_emoji(emoji_heart)]);
                 expected_value = [make_emoji(emoji_heart), make_emoji(emoji_headphones)];
                 assert.deepEqual(actual_value, expected_value);
 
                 ct.get_or_set_completing_for_tests("slash");
-                fake_this = {token: "m"};
-                actual_value = sort_items(fake_this, [my_slash, me_slash]);
+                ct.get_or_set_token_for_testing("m");
+                actual_value = sort_items([my_slash, me_slash]);
                 expected_value = [me_slash, my_slash];
                 assert.deepEqual(actual_value, expected_value);
 
                 ct.get_or_set_completing_for_tests("slash");
-                fake_this = {token: "da"};
-                actual_value = sort_items(fake_this, [dark_slash, light_slash]);
+                ct.get_or_set_token_for_testing("da");
+                actual_value = sort_items([dark_slash, light_slash]);
                 expected_value = [dark_slash, light_slash];
                 assert.deepEqual(actual_value, expected_value);
 
                 ct.get_or_set_completing_for_tests("stream");
-                fake_this = {token: "de"};
-                actual_value = sort_items(fake_this, [sweden_stream, denmark_stream]);
+                ct.get_or_set_token_for_testing("de");
+                actual_value = sort_items([sweden_stream, denmark_stream]);
                 expected_value = [denmark_stream, sweden_stream];
                 assert.deepEqual(actual_value, expected_value);
 
@@ -1113,14 +1107,14 @@ test("initialize", ({override, override_rewire, mock_template}) => {
                 // Testing "co" for "cold", in both streams' description. It's at the
                 // beginning of Sweden's description, so that one should go first.
                 ct.get_or_set_completing_for_tests("stream");
-                fake_this = {token: "co"};
-                actual_value = sort_items(fake_this, [denmark_stream, sweden_stream]);
+                ct.get_or_set_token_for_testing("co");
+                actual_value = sort_items([denmark_stream, sweden_stream]);
                 expected_value = [sweden_stream, denmark_stream];
                 assert.deepEqual(actual_value, expected_value);
 
                 ct.get_or_set_completing_for_tests("syntax");
-                fake_this = {token: "ap"};
-                actual_value = sort_items(fake_this, ["abap", "applescript"]);
+                ct.get_or_set_token_for_testing("ap");
+                actual_value = sort_items(["abap", "applescript"]);
                 expected_value = ["applescript", "abap"];
                 assert.deepEqual(actual_value, expected_value);
 
@@ -1139,8 +1133,8 @@ test("initialize", ({override, override_rewire, mock_template}) => {
 
                 stream_list_sort.set_filter_out_inactives();
                 ct.get_or_set_completing_for_tests("stream");
-                fake_this = {token: "s"};
-                actual_value = sort_items(fake_this, [sweden_stream, serbia_stream]);
+                ct.get_or_set_token_for_testing("s");
+                actual_value = sort_items([sweden_stream, serbia_stream]);
                 expected_value = [sweden_stream, serbia_stream];
                 assert.deepEqual(actual_value, expected_value);
                 // Subscribed stream is inactive
@@ -1151,18 +1145,18 @@ test("initialize", ({override, override_rewire, mock_template}) => {
                 );
 
                 stream_list_sort.set_filter_out_inactives();
-                actual_value = sort_items(fake_this, [sweden_stream, serbia_stream]);
+                actual_value = sort_items([sweden_stream, serbia_stream]);
                 expected_value = [sweden_stream, serbia_stream];
                 assert.deepEqual(actual_value, expected_value);
 
                 ct.get_or_set_completing_for_tests("stream");
-                fake_this = {token: "ser"};
-                actual_value = sort_items(fake_this, [denmark_stream, serbia_stream]);
+                ct.get_or_set_token_for_testing("ser");
+                actual_value = sort_items([denmark_stream, serbia_stream]);
                 expected_value = [serbia_stream, denmark_stream];
                 assert.deepEqual(actual_value, expected_value);
 
                 ct.get_or_set_completing_for_tests("non-existing-completion");
-                assert.equal(sort_items(fake_this), undefined);
+                assert.equal(sort_items(), undefined);
 
                 compose_textarea_typeahead_called = true;
 
