@@ -334,7 +334,6 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
     default_language = models.CharField(default="en", max_length=MAX_LANGUAGE_ID_LENGTH)
 
     DEFAULT_NOTIFICATION_STREAM_NAME = "general"
-    INITIAL_PRIVATE_STREAM_NAME = "core team"
     STREAM_EVENTS_NOTIFICATION_TOPIC_NAME = gettext_lazy("channel events")
     new_stream_announcements_stream = models.ForeignKey(
         "Stream",

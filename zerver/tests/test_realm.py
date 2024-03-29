@@ -1157,9 +1157,7 @@ class RealmTest(ZulipTestCase):
         self.assertEqual(realm.new_stream_announcements_stream.name, "general")
         self.assertEqual(realm.new_stream_announcements_stream.realm, realm)
 
-        assert realm.signup_announcements_stream is not None
-        self.assertEqual(realm.signup_announcements_stream.name, "core team")
-        self.assertEqual(realm.signup_announcements_stream.realm, realm)
+        self.assertIsNone(realm.signup_announcements_stream)
 
         self.assertEqual(realm.plan_type, Realm.PLAN_TYPE_LIMITED)
 
@@ -1205,9 +1203,7 @@ class RealmTest(ZulipTestCase):
         self.assertEqual(realm.new_stream_announcements_stream.name, "general")
         self.assertEqual(realm.new_stream_announcements_stream.realm, realm)
 
-        assert realm.signup_announcements_stream is not None
-        self.assertEqual(realm.signup_announcements_stream.name, "core team")
-        self.assertEqual(realm.signup_announcements_stream.realm, realm)
+        self.assertIsNone(realm.signup_announcements_stream)
 
     def test_realm_is_web_public(self) -> None:
         realm = get_realm("zulip")

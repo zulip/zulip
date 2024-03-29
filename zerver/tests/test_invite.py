@@ -918,6 +918,10 @@ class InviteUserTest(InviteUserBase):
         """
         self.login("hamlet")
         user_profile = self.example_user("hamlet")
+        realm = user_profile.realm
+        realm.signup_announcements_stream = get_stream("core team", realm)
+        realm.save(update_fields=["signup_announcements_stream"])
+
         private_stream_name = "Secret"
         self.make_stream(private_stream_name, invite_only=True)
         self.subscribe(user_profile, private_stream_name)
