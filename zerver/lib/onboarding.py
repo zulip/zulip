@@ -273,7 +273,7 @@ def send_initial_realm_messages(realm: Realm) -> None:
                 "This is a message on channel #**{default_notification_channel_name}** with the "
                 "topic `topic demonstration`."
             )
-        ).format(default_notification_channel_name=Realm.DEFAULT_NOTIFICATION_STREAM_NAME)
+        ).format(default_notification_channel_name=str(Realm.DEFAULT_NOTIFICATION_STREAM_NAME))
 
         content2_of_topic_demonstration_topic_name = (
             _("Topics are a lightweight tool to keep conversations organized.")
@@ -298,7 +298,7 @@ def send_initial_realm_messages(realm: Realm) -> None:
             previous message."
             )
         ).format(
-            default_notification_channel_name=Realm.DEFAULT_NOTIFICATION_STREAM_NAME,
+            default_notification_channel_name=str(Realm.DEFAULT_NOTIFICATION_STREAM_NAME),
             start_topic_help_url="/help/introduction-to-topics#how-to-start-a-new-topic",
         )
 
@@ -321,22 +321,22 @@ they can be disabled. [Learn more]({zulip_update_announcements_help_url}).
 
     welcome_messages: List[Dict[str, str]] = [
         {
-            "stream": Realm.DEFAULT_NOTIFICATION_STREAM_NAME,
+            "stream": str(Realm.DEFAULT_NOTIFICATION_STREAM_NAME),
             "topic_name": "topic demonstration",
             "content": content1_of_topic_demonstration_topic_name,
         },
         {
-            "stream": Realm.DEFAULT_NOTIFICATION_STREAM_NAME,
+            "stream": str(Realm.DEFAULT_NOTIFICATION_STREAM_NAME),
             "topic_name": "topic demonstration",
             "content": content2_of_topic_demonstration_topic_name,
         },
         {
-            "stream": realm.DEFAULT_NOTIFICATION_STREAM_NAME,
+            "stream": str(realm.DEFAULT_NOTIFICATION_STREAM_NAME),
             "topic_name": "swimming turtles",
             "content": content_of_swimming_turtles_topic_name,
         },
         {
-            "stream": Realm.DEFAULT_NOTIFICATION_STREAM_NAME,
+            "stream": str(Realm.DEFAULT_NOTIFICATION_STREAM_NAME),
             "topic_name": str(Realm.ZULIP_UPDATE_ANNOUNCEMENTS_TOPIC_NAME),
             "content": content_of_zulip_update_announcements_topic_name,
         },

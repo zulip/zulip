@@ -5,6 +5,7 @@ from typing import Any, Dict, Optional
 from django.conf import settings
 from django.db import transaction
 from django.utils.timezone import now as timezone_now
+from django.utils.translation import gettext as _
 
 from confirmation import settings as confirmation_settings
 from zerver.actions.message_send import internal_send_stream_message
@@ -280,7 +281,7 @@ def do_create_realm(
     # Create stream once Realm object has been saved
     new_stream_announcements_stream = ensure_stream(
         realm,
-        Realm.DEFAULT_NOTIFICATION_STREAM_NAME,
+        str(Realm.DEFAULT_NOTIFICATION_STREAM_NAME),
         stream_description="Everyone is added to this stream by default. Welcome! :octopus:",
         acting_user=None,
     )
