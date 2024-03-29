@@ -856,7 +856,9 @@ class RemoteBillingAuthenticationTest(RemoteRealmBillingTestCase):
         zulip_realm = get_realm("zulip")
 
         server_billing_session = RemoteServerBillingSession(self.server)
-        server_customer = server_billing_session.update_or_create_customer(stripe_customer_id=None)
+        server_customer = server_billing_session.update_or_create_customer(
+            stripe_customer_id="cus_123server"
+        )
         server_plan = CustomerPlan.objects.create(
             customer=server_customer,
             billing_cycle_anchor=timezone_now(),
@@ -880,7 +882,9 @@ class RemoteBillingAuthenticationTest(RemoteRealmBillingTestCase):
         # Let's create a plan for the realm. This will conflict with the server plan.
         remote_realm = RemoteRealm.objects.get(uuid=zulip_realm.uuid)
         realm_billing_session = RemoteRealmBillingSession(remote_realm)
-        realm_customer = realm_billing_session.update_or_create_customer(stripe_customer_id=None)
+        realm_customer = realm_billing_session.update_or_create_customer(
+            stripe_customer_id="cus_123realm"
+        )
         realm_plan = CustomerPlan.objects.create(
             customer=realm_customer,
             billing_cycle_anchor=timezone_now(),
@@ -932,12 +936,36 @@ class RemoteBillingAuthenticationTest(RemoteRealmBillingTestCase):
             f"Couldn't reconcile billing data between server and realm. Please contact {FromAddress.SUPPORT}",
         )
 
-        # Finally, we simulate a regular, ACTIVE plan for the server again. Combined with
-        # the ENDED plan for the realm, we now have a simple case, where the migration
-        # should proceed.
+        # Now we simulate a regular, ACTIVE plan for the server again. Such a plan can be
+        # migrated, but we run into the last issue: the realm's customer already has a
+        # stripe_customer_id. We wouldn't want to overwrite it, so we error out.
         server_plan.status = CustomerPlan.ACTIVE
         server_plan.save(update_fields=["status"])
+        # Sanity check the assumption that stripe_customer_id is as expected for realm_customer.
+        realm_customer.refresh_from_db()
+        self.assertEqual(realm_customer.stripe_customer_id, "cus_123realm")
 
+        with self.assertLogs("zilencer.views", "WARN") as mock_warn:
+            result = self.execute_remote_billing_authentication_flow(
+                desdemona, return_from_auth_url=True
+            )
+        self.assertEqual(
+            mock_warn.output,
+            [
+                f"WARNING:zilencer.views:Failed to migrate customer from server (id: {remote_realm.server.id}) to realm (id: {remote_realm.id}): "
+                "RemoteRealm customer already exists and plans can't be migrated automatically."
+            ],
+        )
+        self.assert_json_error(
+            result,
+            f"Couldn't reconcile billing data between server and realm. Please contact {FromAddress.SUPPORT}",
+        )
+
+        # Finally, set the stripe_customer_id to None for the realm's customer.
+        # Having an ACTIVE plan for the server and an ENDED plan for the realm, we now have
+        # a simple case, where the migration should proceed.
+        realm_customer.stripe_customer_id = None
+        realm_customer.save(update_fields=["stripe_customer_id"])
         result = self.execute_remote_billing_authentication_flow(
             desdemona, return_from_auth_url=False
         )
@@ -957,6 +985,12 @@ class RemoteBillingAuthenticationTest(RemoteRealmBillingTestCase):
 
         remote_realm.refresh_from_db()
         self.assertEqual(remote_realm.plan_type, RemoteRealm.PLAN_TYPE_COMMUNITY)
+
+        realm_customer.refresh_from_db()
+        self.assertEqual(realm_customer.stripe_customer_id, "cus_123server")
+
+        server_customer.refresh_from_db()
+        self.assertEqual(server_customer.stripe_customer_id, None)
 
     @responses.activate
     def test_transfer_business_plan_from_server_to_realm(
