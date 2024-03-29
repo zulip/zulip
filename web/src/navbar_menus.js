@@ -3,6 +3,11 @@ import * as navbar_help_menu from "./navbar_help_menu";
 import {page_params} from "./page_params";
 import * as personal_menu_popover from "./personal_menu_popover";
 import * as popover_menus from "./popover_menus";
+import {
+    hide_userlist_sidebar,
+    right_sidebar_expanded_as_overlay,
+    show_userlist_sidebar,
+} from "./sidebar_ui";
 
 export function is_navbar_menus_displayed() {
     return (
@@ -23,6 +28,20 @@ export function handle_keyboard_events(event_name) {
         // Open gear menu popover on left arrow.
         personal_menu_popover.toggle();
         gear_menu.toggle();
+        return true;
+    }
+
+    if (popover_menus.is_help_menu_popover_displayed() && event_name === "left_arrow") {
+        navbar_help_menu.toggle();
+        if (!right_sidebar_expanded_as_overlay) {
+            show_userlist_sidebar();
+        }
+        return true;
+    }
+    if (right_sidebar_expanded_as_overlay && event_name === "right_arrow") {
+        // console.log("right_sidebar_expanded_as_overlay is:", right_sidebar_expanded_as_overlay);
+        hide_userlist_sidebar();
+        navbar_help_menu.toggle();
         return true;
     }
 
