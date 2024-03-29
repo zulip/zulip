@@ -48,6 +48,15 @@ export const max_num_items = 8;
 
 export let emoji_collection = [];
 
+let completing;
+
+export function get_or_set_completing_for_tests(val) {
+    if (val !== undefined) {
+        completing = val;
+    }
+    return completing;
+}
+
 export function update_emoji_data() {
     emoji_collection = [];
     for (const emoji_dict of emoji.emojis_by_name.values()) {
@@ -633,7 +642,6 @@ export function get_sorted_filtered_items(query) {
 
     // We are still hacking info onto the "this" from
     // bootstrap.  Yuck.
-    const completing = this.completing;
     const token = this.token;
 
     const opts = get_stream_topic_data(this);
@@ -705,7 +713,7 @@ export function get_candidates(query) {
         if (current_token[0] === " ") {
             current_token = current_token.slice(1);
         }
-        this.completing = "syntax";
+        completing = "syntax";
         this.token = current_token;
         // If the code formatting button was triggered, we want to show a blank option
         // to improve the discoverability of the possibility of specifying a language.
@@ -730,24 +738,24 @@ export function get_candidates(query) {
         if (current_token[1] === " ") {
             return false;
         }
-        this.completing = "emoji";
+        completing = "emoji";
         this.token = current_token.slice(1);
         return emoji_collection;
     }
 
     if (ALLOWED_MARKDOWN_FEATURES.mention && current_token[0] === "@") {
         current_token = current_token.slice(1);
-        this.completing = "mention";
+        completing = "mention";
         // Silent mentions
         let is_silent = false;
         if (current_token.startsWith("_")) {
-            this.completing = "silent_mention";
+            completing = "silent_mention";
             is_silent = true;
             current_token = current_token.slice(1);
         }
         current_token = filter_mention_name(current_token);
         if (!current_token && typeof current_token === "boolean") {
-            this.completing = null;
+            completing = null;
             return false;
         }
         this.token = current_token;
@@ -762,7 +770,7 @@ export function get_candidates(query) {
     if (ALLOWED_MARKDOWN_FEATURES.slash && current_token[0] === "/") {
         current_token = current_token.slice(1);
 
-        this.completing = "slash";
+        completing = "slash";
         this.token = current_token;
         return get_slash_commands_data();
     }
@@ -782,7 +790,7 @@ export function get_candidates(query) {
             return false;
         }
 
-        this.completing = "stream";
+        completing = "stream";
         this.token = current_token;
         return stream_data.get_unsorted_subs();
     }
@@ -793,7 +801,7 @@ export function get_candidates(query) {
         const stream_regex = /#\*\*([^*>]+)\*\*\s?>$/;
         const should_jump_inside_typeahead = stream_regex.test(split[0]);
         if (should_jump_inside_typeahead) {
-            this.completing = "topic_jump";
+            completing = "topic_jump";
             this.token = ">";
             // We return something so that the typeahead is shown, but ultimately
             return [""];
@@ -803,7 +811,7 @@ export function get_candidates(query) {
         const stream_topic_regex = /#\*\*([^*>]+)>([^*]*)$/;
         const should_begin_typeahead = stream_topic_regex.test(split[0]);
         if (should_begin_typeahead) {
-            this.completing = "topic_list";
+            completing = "topic_list";
             const tokens = stream_topic_regex.exec(split[0]);
             if (tokens[1]) {
                 const stream_name = tokens[1];
@@ -826,7 +834,7 @@ export function get_candidates(query) {
     if (ALLOWED_MARKDOWN_FEATURES.timestamp) {
         const time_jump_regex = /<time(:([^>]*?)>?)?$/;
         if (time_jump_regex.test(split[0])) {
-            this.completing = "time_jump";
+            completing = "time_jump";
             return [$t({defaultMessage: "Mention a time-zone-aware time"})];
         }
     }
@@ -834,7 +842,7 @@ export function get_candidates(query) {
 }
 
 export function content_highlighter_html(item) {
-    switch (this.completing) {
+    switch (completing) {
         case "emoji":
             return typeahead_helper.render_emoji(item);
         case "mention":
@@ -871,7 +879,7 @@ export function content_typeahead_selected(item, event) {
     // highlight offsets for that purpose.
     const highlight = {};
 
-    switch (this.completing) {
+    switch (completing) {
         case "emoji":
             // leading and trailing spaces are required for emoji,
             // except if it begins a message or a new line.
@@ -889,7 +897,7 @@ export function content_typeahead_selected(item, event) {
             break;
         case "silent_mention":
         case "mention": {
-            const is_silent = this.completing === "silent_mention";
+            const is_silent = completing === "silent_mention";
             beginning = beginning.slice(0, -this.token.length - 1);
             if (beginning.endsWith("@_*")) {
                 beginning = beginning.slice(0, -3);
@@ -1081,7 +1089,7 @@ export function sort_results(completing, matches, token) {
 }
 
 export function compose_automated_selection() {
-    if (this.completing === "topic_jump") {
+    if (completing === "topic_jump") {
         // automatically jump inside stream mention on typing > just after
         // a stream mention, to begin stream+topic mention typeahead (topic_list).
         return true;
@@ -1090,7 +1098,7 @@ export function compose_automated_selection() {
 }
 
 export function compose_trigger_selection(event) {
-    if (this.completing === "stream" && event.key === ">") {
+    if (completing === "stream" && event.key === ">") {
         // complete stream typeahead partially to immediately start the topic_list typeahead.
         return true;
     }
@@ -1126,7 +1134,7 @@ export function initialize_topic_edit_typeahead(form_field, stream_name, dropup)
 
 function get_header_html() {
     let tip_text = "";
-    switch (this.completing) {
+    switch (completing) {
         case "stream":
             tip_text = $t({defaultMessage: "Press > for list of topics"});
             break;
