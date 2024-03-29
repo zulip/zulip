@@ -26,6 +26,10 @@ class kandra::profile::postgresql inherits kandra::profile::base {
   }
   exec { 'setup_disks':
     command => '/root/setup_disks.sh',
+    # We need to not have started installing the non-AWS kernel, so
+    # the xfs module gets installed for the running kernel, and we can
+    # mount it.
+    before  => Package['linux-image-virtual'],
     require => Package["postgresql-${zulip::postgresql_common::version}", 'xfsprogs', 'nvme-cli'],
     unless  => 'test /var/lib/postgresql/ -ef /srv/data/postgresql/',
   }
