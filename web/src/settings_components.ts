@@ -79,9 +79,7 @@ export function get_realm_time_limits_in_minutes(property: message_time_limit_se
     return val;
 }
 
-type RealmSetting = Omit<typeof realm, "realm_authentication_methods"> & {
-    realm_authentication_methods: Record<string, boolean>;
-};
+type RealmSetting = typeof realm;
 type RealmSettingProperties = keyof RealmSetting | "realm_org_join_restrictions";
 
 type RealmUserSettingDefaultType = typeof realm_user_settings_defaults;
@@ -148,10 +146,6 @@ export function get_property_value(
         return "no_restriction";
     }
 
-    if (property_name === "realm_authentication_methods") {
-        return realm_authentication_methods_to_boolean_dict();
-    }
-
     // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
     return realm[property_name as keyof RealmSetting] as valueof<RealmSetting>;
 }
@@ -164,7 +158,7 @@ export function realm_authentication_methods_to_boolean_dict(): Record<string, b
         auth_method_to_bool[auth_method_name] = auth_method_info.enabled;
     }
 
-    return auth_method_to_bool;
+    return sort_object_by_key(auth_method_to_bool);
 }
 
 export function extract_property_name($elem: JQuery, for_realm_default_settings?: boolean): string {
@@ -711,9 +705,7 @@ export function check_property_changed(
 
     switch (property_name) {
         case "realm_authentication_methods":
-            // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-            current_val = sort_object_by_key(current_val as Record<string, boolean>);
-            current_val = JSON.stringify(current_val);
+            current_val = JSON.stringify(realm_authentication_methods_to_boolean_dict());
             proposed_val = get_auth_method_list_data();
             proposed_val = JSON.stringify(proposed_val);
             break;

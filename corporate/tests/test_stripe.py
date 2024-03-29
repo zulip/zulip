@@ -9079,11 +9079,14 @@ class TestRemoteServerBillingFlow(StripeTestCase, RemoteServerTestCase):
             self.remote_server.plan_type, RemoteZulipServer.PLAN_TYPE_SELF_MANAGED_LEGACY
         )
 
-        with mock.patch("stripe.Invoice.create") as invoice_create, time_machine.travel(
-            plan_end_date, tick=False
-        ):
-            send_server_data_to_push_bouncer(consider_usage_statistics=False)
+        with mock.patch("stripe.Invoice.create") as invoice_create, mock.patch(
+            "corporate.lib.stripe.send_email"
+        ) as send_email, time_machine.travel(plan_end_date, tick=False):
             invoice_plans_as_needed()
+            # Verify that for legacy plan with no next plan scheduled,
+            # invoice overdue email is not sent even if the last audit log
+            # update was 3 months ago.
+            send_email.assert_not_called()
             # The legacy plan is downgraded, no invoice created.
             invoice_create.assert_not_called()
 
@@ -9142,6 +9145,15 @@ class TestRemoteServerBillingFlow(StripeTestCase, RemoteServerTestCase):
             CustomerPlan.TIER_SELF_HOSTED_BUSINESS
         )
         licenses = max(min_licenses, server_user_count)
+
+        with mock.patch("stripe.Invoice.create") as invoice_create, mock.patch(
+            "corporate.lib.stripe.send_email"
+        ) as send_email, time_machine.travel(end_date, tick=False):
+            invoice_plans_as_needed()
+            # Verify that for legacy plan with next plan scheduled, invoice
+            # overdue email is sent if the last audit log is stale.
+            send_email.assert_called()
+            invoice_create.assert_not_called()
 
         with time_machine.travel(end_date, tick=False):
             send_server_data_to_push_bouncer(consider_usage_statistics=False)
