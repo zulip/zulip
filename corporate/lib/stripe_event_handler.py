@@ -19,7 +19,7 @@ from zerver.models.users import get_active_user_profile_by_id_in_realm
 billing_logger = logging.getLogger("corporate.stripe")
 
 
-def error_handler(
+def stripe_event_handler_decorator(
     func: Callable[[Any, Any], None],
 ) -> Callable[[Union[stripe.checkout.Session, stripe.Invoice], Event], None]:
     def wrapper(
@@ -90,7 +90,7 @@ def get_billing_session_for_stripe_webhook(
         return RealmBillingSession(user)
 
 
-@error_handler
+@stripe_event_handler_decorator
 def handle_checkout_session_completed_event(
     stripe_session: stripe.checkout.Session, session: Session
 ) -> None:
@@ -113,7 +113,7 @@ def handle_checkout_session_completed_event(
         billing_session.update_or_create_stripe_customer(payment_method)
 
 
-@error_handler
+@stripe_event_handler_decorator
 def handle_invoice_paid_event(stripe_invoice: stripe.Invoice, invoice: Invoice) -> None:
     invoice.status = Invoice.PAID
     invoice.save(update_fields=["status"])

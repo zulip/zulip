@@ -94,6 +94,7 @@ run_test("adjust_mac_kbd_tags mac", ({override}) => {
         ["Ctrl+K", "Ctrl+K"],
         ["[", "["],
         ["X", "X"],
+        ["data-mac-following-key", "data-mac-following-key"],
     ]);
 
     const fn_shortcuts = new Set(["Home", "End", "PgUp", "PgDn"]);
@@ -112,6 +113,14 @@ run_test("adjust_mac_kbd_tags mac", ({override}) => {
         if (fn_shortcuts.has(old_key)) {
             $stub.before = ($elem) => {
                 assert.equal($elem, inserted_fn_key);
+            };
+        }
+        if (old_key === "data-mac-following-key") {
+            $stub.attr("data-mac-following-key", "⌥");
+            $stub.after = (plus, $elem) => {
+                assert.equal(plus, " + ");
+                assert.equal($elem.selector, "<kbd>");
+                assert.equal($elem.text(), $stub.attr("data-mac-following-key"));
             };
         }
         test_item.$stub = $stub;

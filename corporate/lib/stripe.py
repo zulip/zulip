@@ -4932,8 +4932,11 @@ def invoice_plans_as_needed(event_time: Optional[datetime] = None) -> None:
                 plan.reminder_to_review_plan_email_sent = True
                 plan.save(update_fields=["reminder_to_review_plan_email_sent"])
 
+            free_plan_with_no_next_plan = not plan.is_paid() and plan.status == CustomerPlan.ACTIVE
             last_audit_log_update = remote_server.last_audit_log_update
-            if last_audit_log_update is None or plan.next_invoice_date > last_audit_log_update:
+            if not free_plan_with_no_next_plan and (
+                last_audit_log_update is None or plan.next_invoice_date > last_audit_log_update
+            ):
                 if (
                     last_audit_log_update is None
                     or plan.next_invoice_date - last_audit_log_update >= timedelta(days=1)

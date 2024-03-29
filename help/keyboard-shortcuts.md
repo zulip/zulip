@@ -25,6 +25,10 @@ in the Zulip app to add more to your repertoire as needed.
 
 * **New direct message**: <kbd>X</kbd>
 
+* **Paste formatted text**: <kbd>Ctrl</kbd> + <kbd>V</kbd>
+
+* **Paste as plain text**: <kbd data-mac-following-key="⌥">Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>V</kbd>
+
 * **Cancel compose and save draft**: <kbd>Esc</kbd> or <kbd>Ctrl</kbd> +
   <kbd>[</kbd> — Close the compose box and save the unsent message as a
   draft.

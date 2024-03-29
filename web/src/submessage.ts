@@ -1,9 +1,57 @@
+import z from "zod";
+
 import * as blueslip from "./blueslip";
 import * as channel from "./channel";
 import * as message_store from "./message_store";
+import type {Message} from "./message_store";
+import type {Submessage} from "./types";
 import * as widgetize from "./widgetize";
 
-export function get_message_events(message) {
+export const zform_widget_extra_data_schema = z.object({
+    choices: z.array(
+        z.object({
+            type: z.string(),
+            long_name: z.string(),
+            reply: z.string(),
+            short_name: z.string(),
+        }),
+    ),
+    heading: z.string(),
+    type: z.literal("choices"),
+});
+
+const poll_widget_extra_data_schema = z.object({
+    question: z.string().optional(),
+    options: z.array(z.string()).optional(),
+});
+
+const widget_data_event_schema = z.object({
+    sender_id: z.number(),
+    data: z.object({
+        widget_type: z.string().optional(),
+        extra_data: z
+            .union([zform_widget_extra_data_schema, poll_widget_extra_data_schema])
+            .nullable(),
+    }),
+});
+
+const inbound_data_event_schema = z.object({
+    sender_id: z.number(),
+    data: z.intersection(
+        z.object({
+            type: z.string(),
+        }),
+        z.record(z.string(), z.unknown()),
+    ),
+});
+
+const submessages_event_schema = z
+    .tuple([widget_data_event_schema])
+    .rest(inbound_data_event_schema);
+
+type SubmessageEvents = z.infer<typeof submessages_event_schema>;
+
+export function get_message_events(message: Message): SubmessageEvents | undefined {
     if (message.locally_echoed) {
         return undefined;
     }
@@ -16,28 +64,29 @@ export function get_message_events(message) {
         return undefined;
     }
 
-    message.submessages.sort((m1, m2) => Number.parseInt(m1.id, 10) - Number.parseInt(m2.id, 10));
+    message.submessages.sort((m1, m2) => m1.id - m2.id);
 
     const events = message.submessages.map((obj) => ({
         sender_id: obj.sender_id,
         data: JSON.parse(obj.content),
     }));
-
-    return events;
+    const clean_events = submessages_event_schema.parse(events);
+    return clean_events;
 }
 
-export function process_submessages(in_opts) {
+export function process_submessages(in_opts: {$row: JQuery; message_id: number}): void {
     // This happens in our rendering path, so we try to limit any
     // damage that may be triggered by one rogue message.
     try {
-        return do_process_submessages(in_opts);
+        do_process_submessages(in_opts);
+        return;
     } catch (error) {
         blueslip.error("Failed to do_process_submessages", undefined, error);
-        return undefined;
+        return;
     }
 }
 
-export function do_process_submessages(in_opts) {
+export function do_process_submessages(in_opts: {$row: JQuery; message_id: number}): void {
     const message_id = in_opts.message_id;
     const message = message_store.get(message_id);
 
@@ -50,9 +99,10 @@ export function do_process_submessages(in_opts) {
     if (!events) {
         return;
     }
+    const [widget_event, ...inbound_events] = events;
 
-    if (events[0].sender_id !== message.sender_id) {
-        blueslip.warn(`User ${events[0].sender_id} tried to hijack message ${message.id}`);
+    if (widget_event.sender_id !== message.sender_id) {
+        blueslip.warn(`User ${widget_event.sender_id} tried to hijack message ${message.id}`);
         return;
     }
 
@@ -60,7 +110,7 @@ export function do_process_submessages(in_opts) {
 
     // Right now, our only use of submessages is widgets.
 
-    const data = events[0].data;
+    const data = widget_event.data;
 
     if (data === undefined) {
         return;
@@ -77,14 +127,14 @@ export function do_process_submessages(in_opts) {
     widgetize.activate({
         widget_type,
         extra_data: data.extra_data,
-        events,
+        events: inbound_events,
         $row,
         message,
         post_to_server,
     });
 }
 
-export function update_message(submsg) {
+export function update_message(submsg: Submessage): void {
     const message = message_store.get(submsg.message_id);
 
     if (message === undefined) {
@@ -109,7 +159,7 @@ export function update_message(submsg) {
     message.submessages.push(submsg);
 }
 
-export function handle_event(submsg) {
+export function handle_event(submsg: Submessage): void {
     // Update message.submessages in case we haven't actually
     // activated the widget yet, so that when the message does
     // come in view, the data will be complete.
@@ -139,11 +189,13 @@ export function handle_event(submsg) {
     });
 }
 
-export function make_server_callback(message_id) {
-    return function (opts) {
+export function make_server_callback(
+    message_id: number,
+): (opts: {msg_type: string; data: string}) => void {
+    return function (opts: {msg_type: string; data: string}) {
         const url = "/json/submessage";
 
-        channel.post({
+        void channel.post({
             url,
             data: {
                 message_id,

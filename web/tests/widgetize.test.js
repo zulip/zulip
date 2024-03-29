@@ -46,8 +46,6 @@ const fake_poll_widget = {
         assert.ok($widget_elem.hasClass("widget-content"));
         $widget_elem.handle_events = (e) => {
             is_event_handled = true;
-            assert.notDeepStrictEqual(e, events);
-            events.shift();
             assert.deepStrictEqual(e, events);
         };
         data.callback("test_data");
