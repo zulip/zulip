@@ -898,7 +898,7 @@ def authenticated_json_view(
         *args: ParamT.args,
         **kwargs: ParamT.kwargs,
     ) -> HttpResponse:
-        if not request.user.is_authenticated:  # nocoverage
+        if not request.user.is_authenticated:
             raise UnauthorizedError
 
         user_profile = request.user
@@ -907,7 +907,7 @@ def authenticated_json_view(
 
         validate_account_and_subdomain(request, user_profile)
 
-        if user_profile.is_incoming_webhook:  # nocoverage
+        if user_profile.is_incoming_webhook:
             raise JsonableError(_("Webhook bots can only access webhooks"))
 
         process_client(request, user_profile, is_browser_view=True, query=view_func.__name__)

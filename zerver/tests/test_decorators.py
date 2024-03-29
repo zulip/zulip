@@ -1141,6 +1141,14 @@ class TestAuthenticatedRequirePostDecorator(ZulipTestCase):
 
 
 class TestAuthenticatedJsonViewDecorator(ZulipTestCase):
+    def test_authenticated_json_view_if_user_not_logged_in(self) -> None:
+        user = self.example_user("hamlet")
+        self.assert_json_error_contains(
+            self._do_test(user.delivery_email),
+            "Not logged in: API authentication or user session required",
+            status_code=401,
+        )
+
     def test_authenticated_json_view_if_subdomain_is_invalid(self) -> None:
         user = self.example_user("hamlet")
         email = user.delivery_email
@@ -1174,6 +1182,36 @@ class TestAuthenticatedJsonViewDecorator(ZulipTestCase):
                     email, "zulip", "acme"
                 )
             ],
+        )
+
+    def test_authenticated_json_view_if_user_is_incoming_webhook(self) -> None:
+        bot = self.example_user("webhook_bot")
+        bot.set_password("test")
+        bot.save()
+        self.login_by_email(bot.email, password="test")
+        self.assert_json_error_contains(
+            self._do_test(bot.delivery_email), "Webhook bots can only access webhooks"
+        )
+
+    def test_authenticated_json_view_if_user_is_not_active(self) -> None:
+        user_profile = self.example_user("hamlet")
+        self.login_user(user_profile)
+        # we deactivate user manually because do_deactivate_user removes user session
+        change_user_is_active(user_profile, False)
+        self.assert_json_error_contains(
+            self._do_test(user_profile.delivery_email), "Account is deactivated", status_code=401
+        )
+
+    def test_authenticated_json_view_if_user_realm_is_deactivated(self) -> None:
+        user_profile = self.example_user("hamlet")
+        self.login_user(user_profile)
+        # we deactivate user's realm manually because do_deactivate_user removes user session
+        user_profile.realm.deactivated = True
+        user_profile.realm.save()
+        self.assert_json_error_contains(
+            self._do_test(user_profile.delivery_email),
+            "This organization has been deactivated",
+            status_code=401,
         )
 
     def _do_test(self, user_email: str) -> "TestHttpResponse":
