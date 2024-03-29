@@ -1589,11 +1589,7 @@ $option_title_width: 180px;
     }
 }
 
-/* TODO: Remove .dropdown-title once the more
-   generic and reusable .settings-field-label has
-   been placed throughout the settings modals. */
-.settings-field-label,
-.dropdown-title {
+.settings-field-label {
     margin-bottom: var(--margin-bottom-field-description);
 }
 
