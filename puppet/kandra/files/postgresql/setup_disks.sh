@@ -17,17 +17,16 @@ if [ -z "$LOCALDISK" ]; then
 fi
 
 if ! grep -q "$LOCALDISK" /etc/fstab; then
-    echo "$LOCALDISK   /srv  xfs    nofail,noatime 1 1" >>/etc/fstab
+    echo "$LOCALDISK   /srv/data  xfs    nofail,noatime 1 1" >>/etc/fstab
 fi
 
-if ! mountpoint -q /srv; then
+if [ ! -d /srv/data ]; then
+    mkdir /srv/data
+fi
+
+if ! mountpoint -q /srv/data; then
     mkfs.xfs "$LOCALDISK"
-    # Move any existing files/directories out of the way
-    TMPDIR=$(mktemp -d)
-    mv /srv/* "$TMPDIR"
-    mount /srv
-    mv "$TMPDIR/"* /srv
-    rmdir "$TMPDIR"
+    mount /srv/data
 fi
 
 if [ ! -L /var/lib/postgresql ]; then
@@ -35,11 +34,11 @@ if [ ! -L /var/lib/postgresql ]; then
     if [ -e /var/lib/postgresql ]; then
         mv /var/lib/postgresql "/root/postgresql-data-$(date +'%m-%d-%Y-%T')"
     fi
-    ln -s /srv/postgresql/ /var/lib
+    ln -s /srv/data/postgresql/ /var/lib
 fi
 
-if [ ! -e "/srv/postgresql" ]; then
+if [ ! -e "/srv/data/postgresql" ]; then
     service postgresql stop
-    mkdir "/srv/postgresql"
-    chown postgres:postgres /srv/postgresql
+    mkdir "/srv/data/postgresql"
+    chown postgres:postgres /srv/data/postgresql
 fi
