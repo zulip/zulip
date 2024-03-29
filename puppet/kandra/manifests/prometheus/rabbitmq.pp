@@ -12,7 +12,11 @@ class kandra::prometheus::rabbitmq {
   }
   exec { 'enable rabbitmq-prometheus-per-metric':
     command => "rabbitmqctl eval 'application:set_env(rabbitmq_prometheus, return_per_object_metrics, true).'",
-    unless  => "rabbitmqctl eval 'application:get_env(rabbitmq_prometheus, return_per_object_metrics).' | grep -q true",
+    unless  => @("EOT"),
+      [ -f /usr/sbin/rabbitmqctl ] &&
+      /usr/sbin/rabbitmqctl eval 'application:get_env(rabbitmq_prometheus, return_per_object_metrics).' \
+        | grep -q true
+      | EOT
     require => Exec['enable rabbitmq-prometheus'],
   }
   kandra::firewall_allow { 'rabbitmq': port => '15692' }
