@@ -1024,14 +1024,31 @@ def handle_customer_migration_from_server_to_realm(
         if (
             remote_realm_plan is None
             and server_plan.status != CustomerPlan.SWITCH_PLAN_TIER_AT_PLAN_END
+            and remote_realm_customer.stripe_customer_id is None
         ):
-            # This is a simple case where we don't have to worry about the realm already
-            # having an active plan, or the server having a next plan scheduled that we'd need
+            # This is a simple case where we don't have to worry about the realm
+            # having an active plan or an already configured stripe_customer_id,
+            # or the server having a next plan scheduled that we'd need
             # to figure out how to migrate correctly as well.
             # Any other case is too complex to handle here, and should be handled manually,
             # especially since that should be extremely rare.
             server_plan.customer = remote_realm_customer
             server_plan.save(update_fields=["customer"])
+
+            # The realm's customer does not have .stripe_customer_id set by assumption.
+            # This situation happens e.g. if the Customer was created by a sponsorship request,
+            # so we need to move the value over from the server.
+            # That's because the plan we're transferring might be paid or a free trial and
+            # therefore need a stripe_customer_id to generate invoices.
+            # Hypothetically if the server's customer didn't have a stripe_customer_id set,
+            # that would imply the plan doesn't require it (e.g. this might be a Community plan)
+            # so we don't have to worry about whether we're copying over a valid value or None here.
+            stripe_customer_id = server_customer.stripe_customer_id
+            server_customer.stripe_customer_id = None
+            server_customer.save(update_fields=["stripe_customer_id"])
+
+            remote_realm_customer.stripe_customer_id = stripe_customer_id
+            remote_realm_customer.save(update_fields=["stripe_customer_id"])
         else:
             logger.warning(
                 "Failed to migrate customer from server (id: %s) to realm (id: %s): RemoteRealm customer already exists "
