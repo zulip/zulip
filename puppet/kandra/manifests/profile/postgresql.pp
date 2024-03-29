@@ -27,7 +27,7 @@ class kandra::profile::postgresql inherits kandra::profile::base {
   exec { 'setup_disks':
     command => '/root/setup_disks.sh',
     require => Package["postgresql-${zulip::postgresql_common::version}", 'xfsprogs', 'nvme-cli'],
-    unless  => 'test /var/lib/postgresql/ -ef /srv/postgresql/',
+    unless  => 'test /var/lib/postgresql/ -ef /srv/data/postgresql/',
   }
 
   file { "${zulip::postgresql_base::postgresql_confdir}/pg_hba.conf":
