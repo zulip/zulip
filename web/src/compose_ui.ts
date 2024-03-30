@@ -78,16 +78,16 @@ export function insert_and_scroll_into_view(
     if (replace_all) {
         setFieldText($textarea[0], content);
     } else {
-        console.log("My task is to insert")
+        // console.log("My task is to insert")
         insertTextIntoField($textarea[0], content);
-        console.log("Below my taks is to insert: " + content)
+        // console.log("Below my taks is to insert: " + content)
     }
     // Blurring and refocusing ensures the cursor / selection is in view
     // in chromium browsers.
     $textarea.trigger("blur");
     $textarea.trigger("focus");
     autosize_textarea($textarea);
-    console.log("Again content: " + content)
+    // console.log("Again content: " + content)
 }
 
 function get_focus_area(msg_type: messageType, opts: ComposeTriggeredOptions): string {

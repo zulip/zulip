@@ -221,7 +221,7 @@ export async function upload_files(uppy, config, files) {
                 "block",
                 1,
             );
-            console.log("Hey i am inside upload files: " + file.name)
+            // console.log("Hey i am inside upload files: " + file.name)
             compose_ui.autosize_textarea(get_item("textarea", config));
             file.id = uppy.addFile({
                 source: get_item("source", config),
@@ -229,7 +229,7 @@ export async function upload_files(uppy, config, files) {
                 type: file.type,
                 data: file,
             });
-            console.log("I am below inside upload files: " + file.name)
+            // console.log("I am below inside upload files: " + file.name)
         } catch {
             // Errors are handled by info-visible and upload-error event callbacks.
             continue;
@@ -320,7 +320,7 @@ export function setup_upload(config) {
 
     $(get_item("file_input_identifier", config)).on("change", (event) => {
         const files = event.target.files;
-        console.log("File: " + files.item(0).name)
+        // console.log("File: " + files.item(0).name)
         upload_files(uppy, config, files);
         get_item("textarea", config).trigger("focus");
         event.target.value = "";
