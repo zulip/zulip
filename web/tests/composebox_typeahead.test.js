@@ -987,19 +987,17 @@ test("initialize", ({override, override_rewire, mock_template}) => {
                 // For now we only test that get_sorted_filtered_items has been
                 // properly set as the .source(). All its features are tested later on
                 // in test_begins_typeahead().
-                const fake_this = {
-                    input_element: {
-                        $element: {},
-                        type: "input",
-                    },
+                const input_element = {
+                    $element: {},
+                    type: "input",
                 };
                 let caret_called = false;
-                fake_this.input_element.$element.caret = () => {
+                input_element.$element.caret = () => {
                     caret_called = true;
                     return 7;
                 };
-                fake_this.input_element.$element.closest = () => [];
-                let actual_value = options.source.call(fake_this, "test #s");
+                input_element.$element.closest = () => [];
+                let actual_value = options.source("test #s", input_element);
                 assert.deepEqual(sorted_names_from(actual_value), ["Sweden", "The Netherlands"]);
                 assert.ok(caret_called);
 
@@ -1330,29 +1328,15 @@ test("begins_typeahead", ({override, override_rewire}) => {
     });
     override(stream_topic_history_util, "get_server_history", noop);
 
-    const begin_typehead_this = {
-        input_element: {
-            $element: {},
-            type: "input",
-        },
-        options: {
-            completions: {
-                emoji: true,
-                mention: true,
-                silent_mention: true,
-                slash: true,
-                stream: true,
-                syntax: true,
-                topic: true,
-                timestamp: true,
-            },
-        },
+    const input_element = {
+        $element: {},
+        type: "input",
     };
 
     function get_values(input, rest) {
         // Stub out split_at_cursor that uses $(':focus')
         override_rewire(ct, "split_at_cursor", () => [input, rest]);
-        const values = ct.get_candidates.call(begin_typehead_this, input);
+        const values = ct.get_candidates(input, input_element);
         return values;
     }
 

@@ -600,9 +600,9 @@ export function get_person_suggestions(query, opts) {
     });
 }
 
-export function get_stream_topic_data(hacky_this) {
+export function get_stream_topic_data(input_element) {
     const opts = {};
-    const $message_row = hacky_this.input_element.$element.closest(".message_row");
+    const $message_row = input_element.$element.closest(".message_row");
     if ($message_row.length === 1) {
         // we are editing a message so we try to use its keys.
         const msg = message_store.get(rows.id($message_row));
@@ -617,7 +617,7 @@ export function get_stream_topic_data(hacky_this) {
     return opts;
 }
 
-export function get_sorted_filtered_items(query) {
+export function get_sorted_filtered_items(query, input_element) {
     /*
         This is just a "glue" function to work
         around bootstrap.  We want to control these
@@ -641,14 +641,13 @@ export function get_sorted_filtered_items(query) {
         several years ago.)
     */
 
-    const fetcher = get_candidates.bind(this);
-    const big_results = fetcher(query);
+    const big_results = get_candidates(query, input_element);
 
     if (!big_results) {
         return false;
     }
 
-    const opts = get_stream_topic_data(this);
+    const opts = get_stream_topic_data(input_element);
 
     if (completing === "mention" || completing === "silent_mention") {
         return filter_and_sort_mentions(big_results.is_silent, token, opts);
@@ -678,8 +677,8 @@ const ALLOWED_MARKDOWN_FEATURES = {
     timestamp: true,
 };
 
-export function get_candidates(query) {
-    const split = split_at_cursor(query, this.input_element.$element);
+export function get_candidates(query, input_element) {
+    const split = split_at_cursor(query, input_element.$element);
     let current_token = tokenize_compose_str(split[0]);
     if (current_token === "") {
         return false;
