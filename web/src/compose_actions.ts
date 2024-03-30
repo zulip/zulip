@@ -312,7 +312,7 @@ export function start(raw_opts: ComposeActionsStartOpts): void {
         compose_state.message_content().length === 0 &&
         !opts.keep_composebox_empty
     ) {
-        const possible_last_draft = drafts.get_last_draft_based_on_compose_state();
+        const possible_last_draft = drafts.get_last_restorable_draft_based_on_compose_state();
         if (possible_last_draft !== undefined) {
             opts.draft_id = possible_last_draft.id;
             // Add a space at the end so that if the user starts typing
