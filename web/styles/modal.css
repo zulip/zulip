@@ -145,6 +145,13 @@
     &:hover {
         background: var(--color-exit-button-background-interactive);
     }
+
+    &:disabled {
+        cursor: not-allowed;
+        filter: saturate(0);
+        background-color: hsl(0deg 0% 93%);
+        color: hsl(0deg 3% 52%);
+    }
 }
 
 .dialog_submit_button {
