@@ -203,7 +203,7 @@ class Typeahead<ItemType extends string | object> {
     $container: JQuery;
     $menu: JQuery;
     $header: JQuery;
-    source: (query: string) => ItemType[];
+    source: (query: string, input_element: InputElement) => ItemType[];
     dropup: boolean;
     fixed: boolean;
     automated: () => boolean;
@@ -377,7 +377,7 @@ class Typeahead<ItemType extends string | object> {
             return this.shown ? this.hide() : this;
         }
 
-        const items = this.source(this.query);
+        const items = this.source(this.query, this.input_element);
 
         if (!items && this.shown) {
             this.hide();
@@ -694,7 +694,7 @@ class Typeahead<ItemType extends string | object> {
 type TypeaheadOptions<ItemType> = {
     highlighter_html: (item: ItemType, query: string) => string | undefined;
     items: number;
-    source: (query: string) => ItemType[];
+    source: (query: string, input_element: InputElement) => ItemType[];
     // optional options
     advanceKeyCodes?: number[];
     automated?: () => boolean;
