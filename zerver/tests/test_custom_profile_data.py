@@ -494,7 +494,6 @@ class UpdateCustomProfileFieldTest(CustomProfileFieldTestCase):
         result = self.client_patch(
             f"/json/realm/profile_fields/{field.id}",
             info={
-                "name": "New phone number",
                 "hint": "*" * 81,
             },
         )
@@ -504,8 +503,6 @@ class UpdateCustomProfileFieldTest(CustomProfileFieldTestCase):
         result = self.client_patch(
             f"/json/realm/profile_fields/{field.id}",
             info={
-                "name": "New phone number",
-                "hint": "New contact number",
                 "display_in_profile_summary": "invalid value",
             },
         )
@@ -515,8 +512,6 @@ class UpdateCustomProfileFieldTest(CustomProfileFieldTestCase):
         result = self.client_patch(
             f"/json/realm/profile_fields/{field.id}",
             info={
-                "name": "New phone number",
-                "hint": "New contact number",
                 "required": "invalid value",
             },
         )
@@ -554,7 +549,7 @@ class UpdateCustomProfileFieldTest(CustomProfileFieldTestCase):
         field = CustomProfileField.objects.get(name="Favorite editor", realm=realm)
         result = self.client_patch(
             f"/json/realm/profile_fields/{field.id}",
-            info={"name": "Favorite editor", "field_data": "invalid"},
+            info={"field_data": "invalid"},
         )
         self.assert_json_error(result, 'Argument "field_data" is not valid JSON.')
 
@@ -566,7 +561,7 @@ class UpdateCustomProfileFieldTest(CustomProfileFieldTestCase):
         ).decode()
         result = self.client_patch(
             f"/json/realm/profile_fields/{field.id}",
-            info={"name": "Favorite editor", "field_data": field_data},
+            info={"field_data": field_data},
         )
         self.assert_json_error(result, "field_data is not a dict")
 
@@ -580,7 +575,6 @@ class UpdateCustomProfileFieldTest(CustomProfileFieldTestCase):
         result = self.client_patch(
             f"/json/realm/profile_fields/{field.id}",
             info={
-                "name": "Favorite editor",
                 "field_data": field_data,
                 "display_in_profile_summary": "true",
             },
@@ -591,14 +585,21 @@ class UpdateCustomProfileFieldTest(CustomProfileFieldTestCase):
         result = self.client_patch(
             f"/json/realm/profile_fields/{field.id}",
             info={
-                "name": field.name,
-                "hint": field.hint,
                 "display_in_profile_summary": "true",
             },
         )
         self.assert_json_error(
             result, "Only 2 custom profile fields can be displayed in the profile summary."
         )
+
+        # Empty string for hint should set it to an empty string
+        result = self.client_patch(
+            f"/json/realm/profile_fields/{field.id}",
+            info={"hint": ""},
+        )
+        self.assert_json_success(result)
+        field.refresh_from_db()
+        self.assertEqual(field.hint, "")
 
     def test_update_is_aware_of_uniqueness(self) -> None:
         self.login("iago")

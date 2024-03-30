@@ -101,14 +101,17 @@ def remove_custom_profile_field_value_if_required(
 def try_update_realm_custom_profile_field(
     realm: Realm,
     field: CustomProfileField,
-    name: str,
-    hint: str = "",
+    name: Optional[str] = None,
+    hint: Optional[str] = None,
     field_data: Optional[ProfileFieldData] = None,
     display_in_profile_summary: bool = False,
     required: bool = False,
 ) -> None:
-    field.name = name
-    field.hint = hint
+    if name is not None:
+        field.name = name
+    if hint is not None:
+        field.hint = hint
+
     field.display_in_profile_summary = display_in_profile_summary
     field.required = required
     if field.field_type in (CustomProfileField.SELECT, CustomProfileField.EXTERNAL_ACCOUNT):
