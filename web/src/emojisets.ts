@@ -4,6 +4,7 @@ import twitter_sheet from "emoji-datasource-twitter/img/twitter/sheets-256/64.pn
 
 import octopus_url from "../../static/generated/emoji/images-google-64/1f419.png";
 
+import * as blueslip from "./blueslip";
 import {user_settings} from "./user_settings";
 
 import google_blob_css from "!style-loader?injectType=lazyStyleTag!css-loader!../generated/emoji-styles/google-blob-sprite.css";
@@ -27,6 +28,28 @@ emojisets.set("text", emojisets.get("google")!);
 
 let current_emojiset: EmojiSet | undefined;
 
+async function fetch_emojiset(name: string, url: string): Promise<void> {
+    return new Promise((resolve, _reject) => {
+        const get_emojiset = (): void => {
+            const sheet = new Image();
+            sheet.addEventListener("load", () => {
+                window.removeEventListener("online", get_emojiset);
+                resolve();
+            });
+            sheet.addEventListener("error", () => {
+                // If there's an error, try again when the browser is online
+                window.addEventListener("online", get_emojiset);
+                blueslip.warn(
+                    `Failed to load emojiset ${name} from ${url}. A retry will be attempted when the browser is online.`,
+                );
+            });
+            sheet.src = url;
+        };
+
+        get_emojiset();
+    });
+}
+
 export async function select(name: string): Promise<void> {
     const new_emojiset = emojisets.get(name);
     if (new_emojiset === current_emojiset) {
@@ -37,17 +60,8 @@ export async function select(name: string): Promise<void> {
         throw new Error("Unknown emojiset " + name);
     }
 
-    await new Promise((resolve, reject) => {
-        const sheet = new Image();
-        sheet.addEventListener("load", resolve);
-        sheet.addEventListener("error", () => {
-            // Unfortunately, the "event" we get doesn't have any
-            // useful information on it, as it's not the window-level
-            // error handler.
-            reject(new Error("Failed to load emojiset " + name + " from " + sheet.src));
-        });
-        sheet.src = new_emojiset.sheet;
-    });
+    await fetch_emojiset(name, new_emojiset.sheet);
+
     if (current_emojiset) {
         current_emojiset.css.unuse();
     }
