@@ -31,11 +31,17 @@ function getTimestamp(): number {
     return Date.now();
 }
 
+const CURRENT_DRAFT_VERSION = 1;
+
 const draft_schema = z.intersection(
     z.object({
         content: z.string(),
         updatedAt: z.number(),
         is_sending_saving: z.boolean().default(false),
+        // `drafts_version` is 0 for drafts that aren't auto-restored
+        // and 1 for drafts created since that change, to avoid a flood
+        // of old drafts showing up when this feature was introduced.
+        drafts_version: z.number().default(0),
     }),
     z.discriminatedUnion("type", [
         z.object({
@@ -62,6 +68,7 @@ const possibly_buggy_draft_schema = z.intersection(
         content: z.string(),
         updatedAt: z.number(),
         is_sending_saving: z.boolean().default(false),
+        drafts_version: z.number().default(0),
     }),
     z.discriminatedUnion("type", [
         z.object({
@@ -306,6 +313,7 @@ export function snapshot_message(): LocalStorageDraft | undefined {
             reply_to: recipient,
             private_message_recipient: recipient,
             is_sending_saving: false,
+            drafts_version: CURRENT_DRAFT_VERSION,
         };
     }
     assert(message.type === "stream");
@@ -315,6 +323,7 @@ export function snapshot_message(): LocalStorageDraft | undefined {
         stream_id: compose_state.stream_id(),
         topic: compose_state.topic(),
         is_sending_saving: false,
+        drafts_version: CURRENT_DRAFT_VERSION,
     };
 }
 
@@ -404,6 +413,9 @@ export function update_draft(opts: UpdateDraftOptions = {}): string | undefined 
     } else {
         draft.is_sending_saving = old_draft ? old_draft.is_sending_saving : false;
     }
+
+    // Now that it's been updated, we consider it to be the most recent version.
+    draft.drafts_version = CURRENT_DRAFT_VERSION;
 
     if (draft_id !== undefined) {
         // We don't save multiple drafts of the same message;
@@ -509,7 +521,9 @@ export function filter_drafts_by_compose_box_and_recipient(
     return _.pick(drafts, narrow_drafts_ids);
 }
 
-export function get_last_draft_based_on_compose_state(): LocalStorageDraftWithId | undefined {
+export function get_last_restorable_draft_based_on_compose_state():
+    | LocalStorageDraftWithId
+    | undefined {
     const current_drafts = draft_model.get();
     const drafts_map_for_compose_state = filter_drafts_by_compose_box_and_recipient(current_drafts);
     const drafts_for_compose_state = Object.entries(drafts_map_for_compose_state).map(
@@ -520,7 +534,7 @@ export function get_last_draft_based_on_compose_state(): LocalStorageDraftWithId
     );
     return drafts_for_compose_state
         .sort((draft_a, draft_b) => draft_a.updatedAt - draft_b.updatedAt)
-        .filter((draft) => !draft.is_sending_saving)
+        .filter((draft) => !draft.is_sending_saving && draft.drafts_version >= 1)
         .pop();
 }
 
