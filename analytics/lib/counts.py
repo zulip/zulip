@@ -314,25 +314,34 @@ def do_increment_logging_stat(
     table = stat.data_collector.output_table
     if table == RealmCount:
         assert isinstance(model_object_for_bucket, Realm)
-        id_args: Dict[
-            str, Optional[Union[Realm, UserProfile, Stream, "RemoteRealm", "RemoteZulipServer"]]
-        ] = {"realm": model_object_for_bucket}
+        id_args = {"realm_id": model_object_for_bucket.id}
+        conflict_args = ["realm_id"]
     elif table == UserCount:
         assert isinstance(model_object_for_bucket, UserProfile)
-        id_args = {"realm": model_object_for_bucket.realm, "user": model_object_for_bucket}
+        id_args = {
+            "realm_id": model_object_for_bucket.realm_id,
+            "user_id": model_object_for_bucket.id,
+        }
+        conflict_args = ["user_id"]
     elif table == StreamCount:
         assert isinstance(model_object_for_bucket, Stream)
-        id_args = {"realm": model_object_for_bucket.realm, "stream": model_object_for_bucket}
+        id_args = {
+            "realm_id": model_object_for_bucket.realm_id,
+            "stream_id": model_object_for_bucket.id,
+        }
+        conflict_args = ["stream_id"]
     elif table == RemoteInstallationCount:
         assert isinstance(model_object_for_bucket, RemoteZulipServer)
-        id_args = {"server": model_object_for_bucket, "remote_id": None}
+        id_args = {"server_id": model_object_for_bucket.id, "remote_id": None}
+        conflict_args = ["server_id"]
     elif table == RemoteRealmCount:
         assert isinstance(model_object_for_bucket, RemoteRealm)
         id_args = {
-            "server": model_object_for_bucket.server,
-            "remote_realm": model_object_for_bucket,
+            "server_id": model_object_for_bucket.server_id,
+            "remote_realm_id": model_object_for_bucket.id,
             "remote_id": None,
         }
+        conflict_args = ["remote_realm_id"]
     else:
         raise AssertionError("Unsupported CountStat output_table")
 
@@ -343,16 +352,51 @@ def do_increment_logging_stat(
     else:
         raise AssertionError("Unsupported CountStat frequency")
 
-    row, created = table._default_manager.get_or_create(
-        property=stat.property,
-        subgroup=subgroup,
-        end_time=end_time,
-        defaults={"value": increment},
-        **id_args,
-    )
-    if not created:
-        row.value = F("value") + increment
-        row.save(update_fields=["value"])
+    if subgroup is not None:
+        with connection.cursor() as cursor:
+            cursor.execute(
+                """
+                INSERT INTO %(table)s (property, subgroup, end_time, value, %(id_args)s)
+                VALUES (%%s, %%s, %%s, %%s, %(id_values)s)
+                ON CONFLICT (property, subgroup, end_time, %(conflict_args)s)
+                DO UPDATE SET value = %(table)s.value + %%s
+                """
+                % {
+                    "table": table._meta.db_table,
+                    "id_args": ", ".join(id_args.keys()),
+                    "id_values": ", ".join(f"%({key})s" for key in id_args.keys()),
+                    "conflict_args": ", ".join(conflict_args),
+                },
+                [
+                    stat.property,
+                    subgroup,
+                    end_time,
+                    increment,
+                    *id_args.values(),
+                ],
+            )
+    else:
+        with connection.cursor() as cursor:
+            cursor.execute(
+                """
+                INSERT INTO %(table)s (property, end_time, value, %(id_args)s)
+                VALUES (%%s, %%s, %%s, %(id_values)s)
+                ON CONFLICT (property, end_time, %(conflict_args)s)
+                DO UPDATE SET value = %(table)s.value + %%s
+                """
+                % {
+                    "table": table._meta.db_table,
+                    "id_args": ", ".join(id_args.keys()),
+                    "id_values": ", ".join(f"%({key})s" for key in id_args.keys()),
+                    "conflict_args": ", ".join(conflict_args),
+                },
+                [
+                    stat.property,
+                    end_time,
+                    increment,
+                    *id_args.values(),
+                ],
+            )
 
 
 def do_drop_all_analytics_tables() -> None:
