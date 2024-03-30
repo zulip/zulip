@@ -178,7 +178,7 @@ const MENU_HTML = '<ul class="typeahead-menu"></ul>';
 const ITEM_HTML = "<li><a></a></li>";
 const MIN_LENGTH = 1;
 
-type InputElement =
+type TypeaheadInputElement =
     | {
           $element: JQuery;
           type: "contenteditable";
@@ -189,7 +189,7 @@ type InputElement =
       };
 
 class Typeahead<ItemType extends string | object> {
-    input_element: InputElement;
+    input_element: TypeaheadInputElement;
     items: number;
     matcher: (item: ItemType, query: string) => boolean;
     sorter: (items: ItemType[], query: string) => ItemType[];
@@ -197,13 +197,13 @@ class Typeahead<ItemType extends string | object> {
     updater: (
         item: ItemType,
         query: string,
-        input_element: InputElement,
+        input_element: TypeaheadInputElement,
         event?: JQuery.ClickEvent | JQuery.KeyUpEvent | JQuery.KeyDownEvent,
     ) => string | undefined;
     $container: JQuery;
     $menu: JQuery;
     $header: JQuery;
-    source: (query: string, input_element: InputElement) => ItemType[];
+    source: (query: string, input_element: TypeaheadInputElement) => ItemType[];
     dropup: boolean;
     fixed: boolean;
     automated: () => boolean;
@@ -226,7 +226,7 @@ class Typeahead<ItemType extends string | object> {
     advanceKeyCodes: number[];
     parentElement?: string;
 
-    constructor(input_element: InputElement, options: TypeaheadOptions<ItemType>) {
+    constructor(input_element: TypeaheadInputElement, options: TypeaheadOptions<ItemType>) {
         this.input_element = input_element;
         if (this.input_element.type === "contenteditable") {
             assert(this.input_element.$element.is("[contenteditable]"));
@@ -694,7 +694,7 @@ class Typeahead<ItemType extends string | object> {
 type TypeaheadOptions<ItemType> = {
     highlighter_html: (item: ItemType, query: string) => string | undefined;
     items: number;
-    source: (query: string, input_element: InputElement) => ItemType[];
+    source: (query: string, input_element: TypeaheadInputElement) => ItemType[];
     // optional options
     advanceKeyCodes?: number[];
     automated?: () => boolean;
@@ -716,13 +716,13 @@ type TypeaheadOptions<ItemType> = {
     updater: (
         item: ItemType,
         query: string,
-        input_element: InputElement,
+        input_element: TypeaheadInputElement,
         event?: JQuery.ClickEvent | JQuery.KeyUpEvent | JQuery.KeyDownEvent,
     ) => string | undefined;
 };
 
 export function create<ItemType extends string | object>(
-    input_element: InputElement,
+    input_element: TypeaheadInputElement,
     options: TypeaheadOptions<ItemType>,
 ): void {
     input_element.$element.data("typeahead", new Typeahead(input_element, options));
