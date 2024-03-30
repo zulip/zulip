@@ -872,11 +872,11 @@ export function content_highlighter_html(item) {
     }
 }
 
-export function content_typeahead_selected(item, query, event) {
-    const pieces = split_at_cursor(query, this.input_element.$element);
+export function content_typeahead_selected(item, query, input_element, event) {
+    const pieces = split_at_cursor(query, input_element.$element);
     let beginning = pieces[0];
     let rest = pieces[1];
-    const $textbox = this.input_element.$element;
+    const $textbox = input_element.$element;
     // Accepting some typeahead selections, like polls, will generate
     // placeholder text that is selected, in order to clarify for the
     // user what a given parameter is for. This object stores the
@@ -1018,11 +1018,7 @@ export function content_typeahead_selected(item, query, event) {
                 $textbox.caret(beginning.length, beginning.length);
                 compose_ui.autosize_textarea($textbox);
             };
-            flatpickr.show_flatpickr(
-                this.input_element.$element[0],
-                on_timestamp_selection,
-                timestamp,
-            );
+            flatpickr.show_flatpickr(input_element.$element[0], on_timestamp_selection, timestamp);
             return beginning + rest;
         }
     }
