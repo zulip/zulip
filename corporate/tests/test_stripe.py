@@ -884,6 +884,10 @@ class StripeTest(StripeTestCase):
             "plan": None,
             "proration": False,
             "quantity": self.seat_count,
+            "period": {
+                "start": datetime_to_timestamp(self.now),
+                "end": datetime_to_timestamp(add_months(self.now, 12)),
+            },
         }
         for key, value in line_item_params.items():
             self.assertEqual(item0.get(key), value)
@@ -1022,6 +1026,10 @@ class StripeTest(StripeTestCase):
             "plan": None,
             "proration": False,
             "quantity": 123,
+            "period": {
+                "start": datetime_to_timestamp(self.now),
+                "end": datetime_to_timestamp(add_months(self.now, 12)),
+            },
         }
         for key, value in line_item_params.items():
             self.assertEqual(item.get(key), value)

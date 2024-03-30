@@ -866,6 +866,7 @@ class BillingSession(ABC):
         plan_tier: int,
         billing_schedule: int,
         charge_automatically: bool,
+        invoice_period: Dict[str, int],
         license_management: Optional[str] = None,
     ) -> stripe.Invoice:
         plan_name = CustomerPlan.name_from_tier(plan_tier)
@@ -887,6 +888,7 @@ class BillingSession(ABC):
             customer=customer.stripe_customer_id,
             description=plan_name,
             discountable=False,
+            period=invoice_period,
             **price_args,
         )
 
@@ -903,6 +905,7 @@ class BillingSession(ABC):
                 description=f"${cents_to_dollar_string(customer.flat_discount)}/month new customer discount",
                 # Negative value to apply discount.
                 amount=(-1 * discount),
+                period=invoice_period,
             )
 
         if charge_automatically:
@@ -1162,6 +1165,7 @@ class BillingSession(ABC):
                 metadata["billing_schedule"],
                 charge_automatically=charge_automatically,
                 license_management=metadata["license_management"],
+                invoice_period=metadata["invoice_period"],
             )
             assert stripe_invoice.id is not None
             invoice = Invoice.objects.create(
@@ -1595,14 +1599,34 @@ class BillingSession(ABC):
             "type": "upgrade",
             "plan_tier": plan_tier,
         }
+        discount_for_plan = customer.get_discount_for_plan_tier(plan_tier)
+        (
+            invoice_period_start,
+            _,
+            invoice_period_end,
+            price_per_license,
+        ) = compute_plan_parameters(
+            plan_tier,
+            billing_schedule,
+            discount_for_plan,
+            # TODO: Use the correct value for free_trial when we switch behaviour to send invoice
+            # at the start of free trial.
+            False,
+            None,
+            not isinstance(self, RealmBillingSession),
+        )
         if fixed_price_plan_offer is None:
-            discount_for_plan = customer.get_discount_for_plan_tier(plan_tier)
-            price_per_license = get_price_per_license(
-                plan_tier, billing_schedule, discount_for_plan
-            )
             general_metadata["price_per_license"] = price_per_license
         else:
             general_metadata["fixed_price"] = fixed_price_plan_offer.fixed_price
+            invoice_period_end = add_months(
+                invoice_period_start, CustomerPlan.FIXED_PRICE_PLAN_DURATION_MONTHS
+            )
+
+        general_metadata["invoice_period"] = {
+            "start": datetime_to_timestamp(invoice_period_start),
+            "end": datetime_to_timestamp(invoice_period_end),
+        }
         updated_metadata = self.update_data_for_checkout_session_and_invoice_payment(
             general_metadata
         )
@@ -1778,9 +1802,10 @@ class BillingSession(ABC):
                 # Manual license management is not available for fixed price plan.
                 assert automanage_licenses is True
                 plan_params["fixed_price"] = fixed_price_plan_offer.fixed_price
-                plan_params["end_date"] = add_months(
+                period_end = add_months(
                     billing_cycle_anchor, CustomerPlan.FIXED_PRICE_PLAN_DURATION_MONTHS
                 )
+                plan_params["end_date"] = period_end
                 fixed_price_plan_offer.status = CustomerPlanOffer.PROCESSED
                 fixed_price_plan_offer.save(update_fields=["status"])
 
@@ -1841,6 +1866,10 @@ class BillingSession(ABC):
                 plan_tier=plan.tier,
                 billing_schedule=billing_schedule,
                 charge_automatically=False,
+                invoice_period={
+                    "start": datetime_to_timestamp(billing_cycle_anchor),
+                    "end": datetime_to_timestamp(period_end),
+                },
             )
 
     def do_upgrade(self, upgrade_request: UpgradeRequest) -> Dict[str, Any]:
@@ -2834,6 +2863,7 @@ class BillingSession(ABC):
                 invoiced_through_id = plan.invoiced_through.id
 
             invoice_item_created = False
+            invoice_period = None
             for ledger_entry in LicenseLedger.objects.filter(
                 plan=plan, id__gt=invoiced_through_id, event_time__lte=event_time
             ).order_by("id"):
@@ -2887,17 +2917,18 @@ class BillingSession(ABC):
                     plan.invoicing_status = CustomerPlan.INVOICING_STATUS_STARTED
                     plan.save(update_fields=["invoicing_status", "invoiced_through"])
                     assert plan.customer.stripe_customer_id is not None
+                    invoice_period = {
+                        "start": datetime_to_timestamp(ledger_entry.event_time),
+                        "end": datetime_to_timestamp(
+                            get_plan_renewal_or_end_date(plan, ledger_entry.event_time)
+                        ),
+                    }
                     stripe.InvoiceItem.create(
                         currency="usd",
                         customer=plan.customer.stripe_customer_id,
                         description=description,
                         discountable=False,
-                        period={
-                            "start": datetime_to_timestamp(ledger_entry.event_time),
-                            "end": datetime_to_timestamp(
-                                get_plan_renewal_or_end_date(plan, ledger_entry.event_time)
-                            ),
-                        },
+                        period=invoice_period,
                         idempotency_key=get_idempotency_key(ledger_entry),
                         **price_args,
                     )
@@ -2923,6 +2954,7 @@ class BillingSession(ABC):
                         description=f"${cents_to_dollar_string(flat_discount)}/month new customer discount",
                         # Negative value to apply discount.
                         amount=(-1 * discount),
+                        period=invoice_period,
                     )
 
                 if plan.charge_automatically:
