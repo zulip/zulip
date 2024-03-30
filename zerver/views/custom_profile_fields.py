@@ -247,7 +247,7 @@ def update_realm_custom_profile_field(
     field_data: Optional[ProfileFieldData] = REQ(
         default=None, json_validator=check_profile_field_data
     ),
-    required: bool = REQ(default=False, json_validator=check_bool),
+    required: Optional[bool] = REQ(default=None, json_validator=check_bool),
     display_in_profile_summary: Optional[bool] = REQ(default=None, json_validator=check_bool),
 ) -> HttpResponse:
     realm = user_profile.realm

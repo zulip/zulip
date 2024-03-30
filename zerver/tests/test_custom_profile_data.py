@@ -528,13 +528,24 @@ class UpdateCustomProfileFieldTest(CustomProfileFieldTestCase):
             },
         )
         self.assert_json_success(result)
-
-        field = CustomProfileField.objects.get(id=field.id, realm=realm)
+        field.refresh_from_db()
         self.assertEqual(CustomProfileField.objects.count(), self.original_count)
         self.assertEqual(field.name, "New phone number")
         self.assertEqual(field.hint, "New contact number")
         self.assertEqual(field.field_type, CustomProfileField.SHORT_TEXT)
         self.assertEqual(field.display_in_profile_summary, True)
+        self.assertEqual(field.required, True)
+
+        # Not sending required should not set it to false.
+        result = self.client_patch(
+            f"/json/realm/profile_fields/{field.id}",
+            info={
+                "hint": "New hint",
+            },
+        )
+        self.assert_json_success(result)
+        field.refresh_from_db()
+        self.assertEqual(field.hint, "New hint")
         self.assertEqual(field.required, True)
 
         result = self.client_patch(
