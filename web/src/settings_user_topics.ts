@@ -1,4 +1,5 @@
 import $ from "jquery";
+import assert from "minimalistic-assert";
 
 import render_user_topic_ui_row from "../templates/user_topic_ui_row.hbs";
 
@@ -6,10 +7,11 @@ import * as ListWidget from "./list_widget";
 import * as scroll_util from "./scroll_util";
 import * as settings_config from "./settings_config";
 import * as user_topics from "./user_topics";
+import type {UserTopic} from "./user_topics";
 
 export let loaded = false;
 
-export function populate_list() {
+export function populate_list(): void {
     const all_user_topics = [];
     const visibility_policies = Object.values(user_topics.all_visibility_policies);
     for (const visibility_policy of visibility_policies) {
@@ -21,9 +23,9 @@ export function populate_list() {
         all_user_topics.push(...user_topics_list);
     }
     const $user_topics_table = $("#user_topics_table");
-    const $search_input = $("#user_topics_search");
+    const $search_input = $<HTMLInputElement>("#user_topics_search");
 
-    ListWidget.create($user_topics_table, all_user_topics, {
+    ListWidget.create<UserTopic>($user_topics_table, all_user_topics, {
         name: "user-topics-list",
         get_item: ListWidget.default_get_item,
         modifier_html(user_topic) {
@@ -56,13 +58,16 @@ export function populate_list() {
     });
 }
 
-export function set_up() {
+export function set_up(): void {
     loaded = true;
 
     $("body").on("change", ".settings_user_topic_visibility_policy", function (e) {
         const $row = $(this).closest("tr");
-        const stream_id = Number.parseInt($row.attr("data-stream-id"), 10);
+        const stream_id_string = $row.attr("data-stream-id");
+        assert(stream_id_string !== undefined);
+        const stream_id = Number.parseInt(stream_id_string, 10);
         const topic = $row.attr("data-topic");
+        assert(topic !== undefined);
         const visibility_policy = this.value;
 
         e.stopPropagation();
@@ -80,6 +85,6 @@ export function set_up() {
     populate_list();
 }
 
-export function reset() {
+export function reset(): void {
     loaded = false;
 }
