@@ -23,6 +23,7 @@ stream_data.add_sub(frontend);
 run_test("settings", ({override, override_rewire}) => {
     user_topics.update_user_topics(
         frontend.stream_id,
+        frontend.name,
         "js",
         user_topics.all_visibility_policies.MUTED,
         1577836800,
