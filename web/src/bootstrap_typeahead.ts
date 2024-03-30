@@ -178,7 +178,7 @@ const MENU_HTML = '<ul class="typeahead-menu"></ul>';
 const ITEM_HTML = "<li><a></a></li>";
 const MIN_LENGTH = 1;
 
-type TypeaheadInputElement =
+export type TypeaheadInputElement =
     | {
           $element: JQuery;
           type: "contenteditable";
