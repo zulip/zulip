@@ -1,8 +1,12 @@
 <div class="search_list_item">
+    {{#if stream}}
+    {{t 'Stream' }} <strong>{{> inline_decorated_stream_name stream=stream show_colored_icon=true}}</strong>
+    {{ else }}
     <span>{{{ description_html }}}</span>
     {{#if is_person}}
     <span class="pill-container pill-container-btn">
         {{> input_pill user_pill_context}}
     </span>
+    {{/if}}
     {{/if}}
 </div>
