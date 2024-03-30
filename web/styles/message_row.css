@@ -32,10 +32,26 @@ $time_column_min_width: 42px; /* + padding */
 
     &.direct_mention {
         background-color: var(--color-background-direct-mention);
+
+        .message_embed .data-container::after {
+            background: linear-gradient(
+                0deg,
+                var(--color-background-direct-mention),
+                transparent 100%
+            );
+        }
     }
 
     &.group_mention {
         background-color: var(--color-background-group-mention);
+
+        .message_embed .data-container::after {
+            background: linear-gradient(
+                0deg,
+                var(--color-background-group-mention),
+                transparent 100%
+            );
+        }
     }
 
     .date_row {
