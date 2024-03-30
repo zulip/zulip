@@ -321,9 +321,15 @@ function do_hashchange_overlay(old_hash) {
         settings_hashes.has(base) && settings_hashes.has(old_base) && overlays.settings_open();
     if (is_hashchange_internal) {
         if (base === "settings") {
-            settings_panel_menu.normal_settings.activate_section_or_default(section);
+            settings_panel_menu.normal_settings.curr_section = section;
         } else {
-            settings_panel_menu.org_settings.activate_section_or_default(section);
+            let right_section;
+            if (section === "user-list-admin") {
+                const current_right_section = hash_parser.get_current_nth_hash_section(2);
+                right_section = handle_invalid_users_section_url(current_right_section);
+                settings_panel_menu.org_settings.curr_right_section = right_section;
+            }
+            settings_panel_menu.org_settings.curr_section = section;
         }
         settings_toggle.highlight_toggle(base);
         return;

@@ -49,6 +49,7 @@ export class SettingsPanelMenu {
         this.$main_elem = opts.$main_elem;
         this.hash_prefix = opts.hash_prefix;
         this.$curr_li = this.$main_elem.children("li").eq(0);
+        this.curr_section = this.$curr_li.data("section")
 
         this.$main_elem.on("click", "li[data-section]", (e) => {
             const section = $(e.currentTarget).attr("data-section");
@@ -77,7 +78,7 @@ export class SettingsPanelMenu {
     }
 
     current_tab() {
-        return this.$curr_li.data("section");
+        return this.curr_section;
     }
 
     li_for_section(section) {
@@ -150,6 +151,7 @@ export class SettingsPanelMenu {
 
         this.$main_elem.children("li").removeClass("active");
         this.$curr_li.addClass("active");
+        this.curr_section = section;
 
         const settings_section_hash = "#" + this.hash_prefix + section;
 
