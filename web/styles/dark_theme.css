@@ -346,14 +346,6 @@
         }
     }
 
-    .message_embed .data-container::after {
-        background: linear-gradient(
-            0deg,
-            hsl(212deg 28% 18%),
-            transparent 100%
-        );
-    }
-
     .stream_name_search_section,
     .group_name_search_section {
         border-color: hsl(0deg 0% 0% / 20%);

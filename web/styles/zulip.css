@@ -1367,6 +1367,14 @@ td.pointer {
     .date_row {
         background-color: var(--color-background-private-message-content);
     }
+
+    .data-container::after {
+        background: linear-gradient(
+            0deg,
+            var(--color-background-private-message-content),
+            transparent 100%
+        );
+    }
 }
 
 .selected_message {
