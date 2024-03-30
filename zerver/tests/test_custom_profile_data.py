@@ -581,6 +581,18 @@ class UpdateCustomProfileFieldTest(CustomProfileFieldTestCase):
         )
         self.assert_json_success(result)
 
+        # Not sending display_in_profile_summary should not set it to false.
+        result = self.client_patch(
+            f"/json/realm/profile_fields/{field.id}",
+            info={
+                "hint": "Fav editor",
+            },
+        )
+        field.refresh_from_db()
+        self.assertEqual(field.hint, "Fav editor")
+        self.assertEqual(field.display_in_profile_summary, True)
+        self.assert_json_success(result)
+
         field = CustomProfileField.objects.get(name="Birthday", realm=realm)
         result = self.client_patch(
             f"/json/realm/profile_fields/{field.id}",

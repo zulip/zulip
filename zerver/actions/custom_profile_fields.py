@@ -104,7 +104,7 @@ def try_update_realm_custom_profile_field(
     name: Optional[str] = None,
     hint: Optional[str] = None,
     field_data: Optional[ProfileFieldData] = None,
-    display_in_profile_summary: bool = False,
+    display_in_profile_summary: Optional[bool] = None,
     required: bool = False,
 ) -> None:
     if name is not None:
@@ -112,8 +112,9 @@ def try_update_realm_custom_profile_field(
     if hint is not None:
         field.hint = hint
 
-    field.display_in_profile_summary = display_in_profile_summary
     field.required = required
+    if display_in_profile_summary is not None:
+        field.display_in_profile_summary = display_in_profile_summary
 
     if field.field_type in (
         CustomProfileField.SELECT,

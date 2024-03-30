@@ -118,7 +118,7 @@ def validate_custom_profile_field(
 
 def validate_custom_profile_field_update(
     field: CustomProfileField,
-    display_in_profile_summary: bool,
+    display_in_profile_summary: Optional[bool] = None,
     field_data: Optional[ProfileFieldData] = None,
     name: Optional[str] = None,
     hint: Optional[str] = None,
@@ -134,6 +134,8 @@ def validate_custom_profile_field_update(
             field_data = {}
         else:
             field_data = orjson.loads(field.field_data)
+    if display_in_profile_summary is None:
+        display_in_profile_summary = field.display_in_profile_summary
 
     assert field_data is not None
     validate_custom_profile_field(
@@ -245,8 +247,8 @@ def update_realm_custom_profile_field(
     field_data: Optional[ProfileFieldData] = REQ(
         default=None, json_validator=check_profile_field_data
     ),
-    display_in_profile_summary: bool = REQ(default=False, json_validator=check_bool),
     required: bool = REQ(default=False, json_validator=check_bool),
+    display_in_profile_summary: Optional[bool] = REQ(default=None, json_validator=check_bool),
 ) -> HttpResponse:
     realm = user_profile.realm
     try:
