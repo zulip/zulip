@@ -197,6 +197,7 @@ class Typeahead<ItemType extends string | object> {
     updater: (
         item: ItemType,
         query: string,
+        input_element: InputElement,
         event?: JQuery.ClickEvent | JQuery.KeyUpEvent | JQuery.KeyDownEvent,
     ) => string | undefined;
     $container: JQuery;
@@ -272,13 +273,13 @@ class Typeahead<ItemType extends string | object> {
         const val = this.$menu.find(".active").data("typeahead-value");
         if (this.input_element.type === "contenteditable") {
             this.input_element.$element
-                .text(this.updater(val, this.query, e) ?? "")
+                .text(this.updater(val, this.query, this.input_element, e) ?? "")
                 .trigger("change");
             // Empty text after the change event handler
             // converts the input text to html elements.
             this.input_element.$element.text("");
         } else {
-            const after_text = this.updater(val, this.query, e) ?? "";
+            const after_text = this.updater(val, this.query, this.input_element, e) ?? "";
             const element_val = this.input_element.$element.val();
             assert(element_val !== undefined);
             const [from, to_before, to_after] = get_string_diff(element_val, after_text);
@@ -715,6 +716,7 @@ type TypeaheadOptions<ItemType> = {
     updater: (
         item: ItemType,
         query: string,
+        input_element: InputElement,
         event?: JQuery.ClickEvent | JQuery.KeyUpEvent | JQuery.KeyDownEvent,
     ) => string | undefined;
 };
