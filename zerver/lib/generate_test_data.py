@@ -35,6 +35,8 @@ def generate_topics(num_topics: int) -> List[str]:
         for _ in range(num_topics - num_single_word_topics)
     )
 
+    print("harmless")
+
     # Mark a small subset of topics as resolved in some streams, and
     # many topics in a few streams. Note that these don't have the
     # "Marked as resolved" messages, so don't match the normal user
