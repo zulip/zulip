@@ -119,6 +119,14 @@ export function get_posting_policy_error_message() {
     return "";
 }
 
+export function get_character_limit_error_message(text) {
+    const maxLength = realm.max_topic_length;
+
+    return "Character limit reached " + maxLength +
+        ". Exceeded by " + (text.length - maxLength) + " character" +((text.length - maxLength) > 1 ? "s" : "") +
+        ". The text has been truncated.";
+}
+
 export function check_posting_policy_for_compose_box() {
     const banner_text = get_posting_policy_error_message();
     if (banner_text === "") {
@@ -331,6 +339,25 @@ export function initialize() {
     $("#stream_message_recipient_topic,#private_message_recipient").on("change", () => {
         update_on_recipient_change();
         compose_state.set_recipient_edited_manually(true);
+    });
+
+    // Character limit in text input
+    $("#private_message_recipient").on("input", function() {
+        const maxLength = realm.max_topic_length; // Maximum characters allowed
+        const text = $(this).text(); // Gets the current text
+
+        if (text.length >= maxLength) {
+            const bannerClassname = "banner-error";
+            const errorMessage = get_character_limit_error_message(text);
+
+            compose_banner.show_error_message(errorMessage, bannerClassname, $("#compose_banners")); // Displays the error message
+
+            $(this).text(text.slice(0, maxLength)); // Truncates the text
+
+            setTimeout(function () { //Clears the error message after 5 seconds
+                compose_banner.clear_errors()
+            }, 5000);
+        }
     });
 }
 

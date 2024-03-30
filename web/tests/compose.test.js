@@ -128,6 +128,34 @@ function initialize_handlers({override}) {
     compose_setup.initialize();
 }
 
+async function waitForCondition(condition, interval = 10, timeout = 5000) {
+    return new Promise((resolve, reject) => {
+        const startTime = Date.now();
+        const checkCondition = () => {
+            if (condition()) {
+                resolve();
+            } else if (Date.now() - startTime > timeout) {
+                reject(new Error('Timeout exceeded'));
+            } else {
+                setTimeout(checkCondition, interval);
+            }
+        };
+        checkCondition();
+    });
+}
+
+test_ui("DM_character_limit_exceeded", async () => {
+    const max_length = realm.max_topic_length;
+
+    $("#private_message_recipient").text("a".repeat(max_length + 5));
+
+    $("#private_message_recipient").trigger("input");
+
+    await waitForCondition(() => $("#private_message_recipient").text().length === max_length);
+
+    assert.equal($("#private_message_recipient").text().length, max_length);
+});
+
 test_ui("send_message_success", ({override, override_rewire}) => {
     mock_banners();
 
