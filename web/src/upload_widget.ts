@@ -1,4 +1,4 @@
-import {$t} from "./i18n";
+import { $t } from "./i18n";
 
 export type UploadWidget = {
     clear: () => void;
@@ -45,6 +45,7 @@ export function build_widget(
         $upload_button.hide();
         if ($preview_text !== undefined && $preview_image !== undefined) {
             const image_blob = URL.createObjectURL(file);
+            // console.log(image_blob)
             $preview_image.attr("src", image_blob);
             $preview_image.addClass("upload_widget_image_preview");
             $preview_text.show();
@@ -86,21 +87,21 @@ export function build_widget(
             if (file.size > max_file_upload_size * 1024 * 1024) {
                 $input_error.text(
                     $t(
-                        {defaultMessage: "File size must be at most {max_file_size} MiB."},
-                        {max_file_size: max_file_upload_size},
+                        { defaultMessage: "File size must be at most {max_file_size} MiB." },
+                        { max_file_size: max_file_upload_size },
                     ),
                 );
                 $input_error.show();
                 clear();
             } else if (!is_image_format(file)) {
-                $input_error.text($t({defaultMessage: "File type is not supported."}));
+                $input_error.text($t({ defaultMessage: "File type is not supported." }));
                 $input_error.show();
                 clear();
             } else {
                 accept(file);
             }
         } else {
-            $input_error.text($t({defaultMessage: "Please just upload one file."}));
+            $input_error.text($t({ defaultMessage: "Please just upload one file." }));
         }
     });
 
@@ -174,21 +175,21 @@ export function build_direct_upload_widget(
             if (file.size > max_file_upload_size * 1024 * 1024) {
                 $input_error.text(
                     $t(
-                        {defaultMessage: "File size must be at most {max_file_size} MiB."},
-                        {max_file_size: max_file_upload_size},
+                        { defaultMessage: "File size must be at most {max_file_size} MiB." },
+                        { max_file_size: max_file_upload_size },
                     ),
                 );
                 $input_error.show();
                 clear();
             } else if (!is_image_format(file)) {
-                $input_error.text($t({defaultMessage: "File type is not supported."}));
+                $input_error.text($t({ defaultMessage: "File type is not supported." }));
                 $input_error.show();
                 clear();
             } else {
                 accept();
             }
         } else {
-            $input_error.text($t({defaultMessage: "Please just upload one file."}));
+            $input_error.text($t({ defaultMessage: "Please just upload one file." }));
         }
     });
 

@@ -12,7 +12,7 @@ import {
 
 import * as bulleted_numbered_list_util from "./bulleted_numbered_list_util";
 import * as common from "./common";
-import {$t} from "./i18n";
+import { $t } from "./i18n";
 import * as loading from "./loading";
 import * as markdown from "./markdown";
 import * as people from "./people";
@@ -78,13 +78,16 @@ export function insert_and_scroll_into_view(
     if (replace_all) {
         setFieldText($textarea[0], content);
     } else {
+        console.log("My task is to insert")
         insertTextIntoField($textarea[0], content);
+        console.log("Below my taks is to insert: " + content)
     }
     // Blurring and refocusing ensures the cursor / selection is in view
     // in chromium browsers.
     $textarea.trigger("blur");
     $textarea.trigger("focus");
     autosize_textarea($textarea);
+    console.log("Again content: " + content)
 }
 
 function get_focus_area(msg_type: messageType, opts: ComposeTriggeredOptions): string {
@@ -253,8 +256,10 @@ export function replace_syntax(
     // for details.
 
     const old_text = $textarea.val();
+    console.log("Old text: " + old_text);
     replaceFieldText($textarea[0], old_syntax, () => new_syntax, "after-replacement");
     const new_text = $textarea.val();
+    console.log("New text: " + new_text);
 
     // When replacing content in a textarea, we need to move the cursor
     // to preserve its logical position if and only if the content we
@@ -290,17 +295,17 @@ export function compute_placeholder_text(opts: ComposePlaceholderOptions): strin
 
         if (stream_name && opts.topic) {
             return $t(
-                {defaultMessage: "Message #{stream_name} > {topic_name}"},
-                {stream_name, topic_name: opts.topic},
+                { defaultMessage: "Message #{stream_name} > {topic_name}" },
+                { stream_name, topic_name: opts.topic },
             );
         } else if (stream_name) {
-            return $t({defaultMessage: "Message #{stream_name}"}, {stream_name});
+            return $t({ defaultMessage: "Message #{stream_name}" }, { stream_name });
         }
     } else if (opts.direct_message_user_ids.length > 0) {
         const users = people.get_users_from_ids(opts.direct_message_user_ids);
         const recipient_parts = users.map((user) => {
             if (people.should_add_guest_user_indicator(user.user_id)) {
-                return $t({defaultMessage: "{name} (guest)"}, {name: user.full_name});
+                return $t({ defaultMessage: "{name} (guest)" }, { name: user.full_name });
             }
             return user.full_name;
         });
@@ -312,14 +317,14 @@ export function compute_placeholder_text(opts: ComposePlaceholderOptions): strin
             const status = user_status.get_status_text(user.user_id);
             if (status) {
                 return $t(
-                    {defaultMessage: "Message {recipient_name} ({recipient_status})"},
-                    {recipient_name: recipient_names, recipient_status: status},
+                    { defaultMessage: "Message {recipient_name} ({recipient_status})" },
+                    { recipient_name: recipient_names, recipient_status: status },
                 );
             }
         }
-        return $t({defaultMessage: "Message {recipient_names}"}, {recipient_names});
+        return $t({ defaultMessage: "Message {recipient_names}" }, { recipient_names });
     }
-    return $t({defaultMessage: "Compose your message here"});
+    return $t({ defaultMessage: "Compose your message here" });
 }
 
 export function set_compose_box_top(set_top: boolean): void {
@@ -538,8 +543,8 @@ export function format_text(
         // We toggle complete lines even when they are partially selected (and just selecting the
         // newline character after a line counts as partial selection too).
         const sections = section_off_selected_lines();
-        let {before_lines, selected_lines, after_lines} = sections;
-        const {separating_new_line_before, separating_new_line_after} = sections;
+        let { before_lines, selected_lines, after_lines } = sections;
+        const { separating_new_line_before, separating_new_line_after } = sections;
         // If there is even a single unmarked line selected, we mark all.
         const should_mark = selected_lines.split("\n").some((line) => !is_marked(line));
         if (should_mark) {
@@ -660,6 +665,7 @@ export function format_text(
 
         // For when the entire spoiler block (with a header) is selected.
         if (is_inner_text_formatted(spoiler_syntax_start_without_break, spoiler_syntax_end)) {
+            console.log("Inner text formatted")
             text =
                 text.slice(0, range.start) +
                 text.slice(
@@ -712,7 +718,7 @@ export function format_text(
             text.slice(range.end, range.end + spoiler_syntax_end.length) === spoiler_syntax_end &&
             text[range.start - 1] === "\n" &&
             text.lastIndexOf(spoiler_syntax_start_without_break, range.start - 1) ===
-                text.lastIndexOf("\n", range.start - 2) + 1;
+            text.lastIndexOf("\n", range.start - 2) + 1;
 
         // For when only the text inside a spoiler block (with a header) is selected.
         if (is_inner_content_selected()) {
@@ -739,7 +745,7 @@ export function format_text(
         const is_header_selected = (): boolean =>
             range.start >= spoiler_syntax_start_without_break.length &&
             text.slice(range.start - spoiler_syntax_start_without_break.length, range.start) ===
-                spoiler_syntax_start_without_break &&
+            spoiler_syntax_start_without_break &&
             text.length - range.end >= spoiler_syntax_end.length &&
             text[range.end] === "\n";
 
@@ -823,9 +829,9 @@ export function format_text(
             field.setSelectionRange(
                 range.start - 3 + space_between_description_and_url(description, url).length,
                 range.start -
-                    3 +
-                    space_between_description_and_url(description, url).length +
-                    url.length,
+                3 +
+                space_between_description_and_url(description, url).length +
+                url.length,
             );
             return;
         }
@@ -880,9 +886,9 @@ export function format_text(
             field.setSelectionRange(
                 range.start,
                 range.start +
-                    description.length +
-                    space_between_description_and_url(description, url).length +
-                    url.length,
+                description.length +
+                space_between_description_and_url(description, url).length +
+                url.length,
             );
             return;
         }
@@ -927,9 +933,9 @@ export function format_text(
                         // If text is both bold and italic.
                         const has_bold_and_italic_syntax =
                             text.slice(range.start - bold_and_italic_syntax.length, range.start) ===
-                                bold_and_italic_syntax &&
+                            bold_and_italic_syntax &&
                             text.slice(range.end, range.end + bold_and_italic_syntax.length) ===
-                                bold_and_italic_syntax;
+                            bold_and_italic_syntax;
                         if (has_bold_and_italic_syntax) {
                             is_selected_text_italic = true;
                         }

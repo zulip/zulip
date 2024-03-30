@@ -15,7 +15,7 @@ import * as compose_ui from "./compose_ui";
 import * as compose_validate from "./compose_validate";
 import * as drafts from "./drafts";
 import * as echo from "./echo";
-import {$t_html} from "./i18n";
+import { $t_html } from "./i18n";
 import * as loading from "./loading";
 import * as markdown from "./markdown";
 import * as message_events from "./message_events";
@@ -25,9 +25,9 @@ import * as rendered_markdown from "./rendered_markdown";
 import * as scheduled_messages from "./scheduled_messages";
 import * as sent_messages from "./sent_messages";
 import * as server_events from "./server_events";
-import {current_user} from "./state_data";
+import { current_user } from "./state_data";
 import * as transmit from "./transmit";
-import {user_settings} from "./user_settings";
+import { user_settings } from "./user_settings";
 import * as util from "./util";
 import * as zcommand from "./zcommand";
 
@@ -179,7 +179,7 @@ export function send_message(request = create_message_object()) {
 
     // Silently save / update a draft to ensure the message is not lost in case send fails.
     // We delete the draft on successful send.
-    request.draft_id = drafts.update_draft({no_notify: true, update_count: false});
+    request.draft_id = drafts.update_draft({ no_notify: true, update_count: false });
 
     let local_id;
     let locally_echoed;
@@ -346,7 +346,7 @@ export function render_and_show_preview($preview_spinner, $preview_content_box, 
     }
 
     if (content.length === 0) {
-        show_preview($t_html({defaultMessage: "Nothing to preview"}));
+        show_preview($t_html({ defaultMessage: "Nothing to preview" }));
     } else {
         if (markdown.contains_backend_only_syntax(content)) {
             const $spinner = $preview_spinner.expectOne();
@@ -364,7 +364,7 @@ export function render_and_show_preview($preview_spinner, $preview_content_box, 
         }
         channel.post({
             url: "/json/messages/render",
-            data: {content},
+            data: { content },
             success(response_data) {
                 if (markdown.contains_backend_only_syntax(content)) {
                     loading.destroy_indicator($preview_spinner);
@@ -375,7 +375,7 @@ export function render_and_show_preview($preview_spinner, $preview_content_box, 
                 if (markdown.contains_backend_only_syntax(content)) {
                     loading.destroy_indicator($preview_spinner);
                 }
-                show_preview($t_html({defaultMessage: "Failed to generate preview"}));
+                show_preview($t_html({ defaultMessage: "Failed to generate preview" }));
             },
         });
     }
@@ -405,7 +405,7 @@ function schedule_message_to_custom_date() {
     };
 
     const $banner_container = $("#compose_banners");
-    const success = function (data) {
+    const success = function(data) {
         drafts.draft_model.deleteDraft($("textarea#compose-textarea").data("draft-id"));
         clear_compose_box();
         const new_row_html = render_success_message_scheduled_banner({
@@ -416,7 +416,7 @@ function schedule_message_to_custom_date() {
         compose_banner.append_compose_banner_to_banner_list($(new_row_html), $banner_container);
     };
 
-    const error = function (xhr) {
+    const error = function(xhr) {
         const response = channel.xhr_error_message("Error sending message", xhr);
         compose_ui.hide_compose_spinner();
         compose_banner.show_error_message(

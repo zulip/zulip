@@ -52,7 +52,7 @@ def sanitize_name(value: str) -> str:
     """
     value = unicodedata.normalize("NFKC", value)
     value = re.sub(r"[^\w\s.-]", "", value).strip()
-    value = re.sub(r"[-\s]+", "-", value)
+    # value = re.sub(r"[-\s]+", "-", value) # This is the cause for replacement of spaces with dash.
     if value in {"", ".", ".."}:
         return "uploaded-file"
     return value
