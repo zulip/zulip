@@ -38,12 +38,14 @@ stream_data.add_sub(muted);
 
 user_topics.update_user_topics(
     general.stream_id,
+    general.name,
     "muted topic",
     user_topics.all_visibility_policies.MUTED,
 );
 
 user_topics.update_user_topics(
     general.stream_id,
+    general.name,
     "followed topic",
     user_topics.all_visibility_policies.FOLLOWED,
 );
