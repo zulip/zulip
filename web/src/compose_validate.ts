@@ -692,6 +692,8 @@ export function check_overflow_text(): number {
     const remaining_length = max_length - text.length;
     const $indicator = $("#compose-limit-indicator");
 
+    $indicator.attr("title", "Maximum message length: " + max_length + " characters");
+
     if (text.length > max_length) {
         $indicator.addClass("over_limit");
         $("textarea#compose-textarea").addClass("over_limit");
@@ -700,7 +702,6 @@ export function check_overflow_text(): number {
                 remaining_length,
             }),
         );
-
         set_message_too_long(true);
     } else if (text.length > 0.9 * max_length) {
         $indicator.removeClass("over_limit");
