@@ -217,6 +217,18 @@ export function initialize() {
         $("#main_div").on("click", ".messagebox", select_message_function);
         // on the other hand, on mobile it should be done with a long tap.
     } else {
+        const show_reaction_button = () => {
+            // To get the current visibility of the reaction_button
+            const visibility = $(".reaction_button").css("visibility");
+
+            // To set the visibility of the reaction_button
+            if (visibility === "hidden") {
+                $(".reaction_button").css("visibility", "visible");
+            }
+        };
+
+        $("#main_div").on("click", ".messagebox", show_reaction_button);
+
         $("#main_div").on("longtap", ".messagebox", function (e) {
             const sel = window.getSelection();
             // if one matches, remove the current selections.
