@@ -22,7 +22,7 @@ link_regex = re.compile(
     r"\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})"  # ...or ip
     r"(?::\d+)?"  # optional port
     # r"(?:/?|[/?]\S+)$",  #original
-    r"(?:/[^\s]*)?$", # This is will help in preview of links with spaces
+    r"(?:/[^\s]*)?$",  # This is will help in preview of links with spaces
     re.IGNORECASE,
 )
 
