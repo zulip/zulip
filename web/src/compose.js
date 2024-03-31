@@ -1,436 +1,1115 @@
-/* Main compose box module for sending messages. */
+/* Compose box module responsible for manipulating the compose box
+   textarea correctly. */
 
-import autosize from "autosize";
-import $ from "jquery";
-import _ from "lodash";
-
-import render_success_message_scheduled_banner from "../templates/compose_banner/success_message_scheduled_banner.hbs";
-import render_wildcard_mention_not_allowed_error from "../templates/compose_banner/wildcard_mention_not_allowed_error.hbs";
-
-import * as channel from "./channel";
-import * as compose_banner from "./compose_banner";
-import * as compose_notifications from "./compose_notifications";
-import * as compose_state from "./compose_state";
-import * as compose_ui from "./compose_ui";
-import * as compose_validate from "./compose_validate";
-import * as drafts from "./drafts";
-import * as echo from "./echo";
-import { $t_html } from "./i18n";
-import * as loading from "./loading";
-import * as markdown from "./markdown";
-import * as message_events from "./message_events";
-import * as onboarding_steps from "./onboarding_steps";
-import * as people from "./people";
-import * as rendered_markdown from "./rendered_markdown";
-import * as scheduled_messages from "./scheduled_messages";
-import * as sent_messages from "./sent_messages";
-import * as server_events from "./server_events";
-import { current_user } from "./state_data";
-import * as transmit from "./transmit";
-import { user_settings } from "./user_settings";
-import * as util from "./util";
-import * as zcommand from "./zcommand";
-
-// Docs: https://zulip.readthedocs.io/en/latest/subsystems/sending-messages.html
-
-export function clear_invites() {
-    $(
-        `#compose_banners .${CSS.escape(compose_banner.CLASSNAMES.recipient_not_subscribed)}`,
-    ).remove();
-}
-
-export function clear_private_stream_alert() {
-    $(`#compose_banners .${CSS.escape(compose_banner.CLASSNAMES.private_stream_warning)}`).remove();
-}
-
-export function clear_preview_area() {
-    $("textarea#compose-textarea").show();
-    $("textarea#compose-textarea").trigger("focus");
-    $("#compose .undo_markdown_preview").hide();
-    $("#compose .preview_message_area").hide();
-    $("#compose .preview_content").empty();
-    $("#compose .markdown_preview").show();
-    autosize.update($("textarea#compose-textarea"));
-
-    // While in preview mode we disable unneeded compose_control_buttons,
-    // so here we are re-enabling those compose_control_buttons
-    $("#compose").removeClass("preview_mode");
-    $("#compose .preview_mode_disabled .compose_control_button").attr("tabindex", 0);
-}
-
-export function show_preview_area() {
-    // Disable unneeded compose_control_buttons as we don't
-    // need them in preview mode.
-    $("#compose").addClass("preview_mode");
-    $("#compose .preview_mode_disabled .compose_control_button").attr("tabindex", -1);
-
-    const content = $("textarea#compose-textarea").val();
-    $("textarea#compose-textarea").hide();
-    $("#compose .markdown_preview").hide();
-    $("#compose .undo_markdown_preview").show();
-    $("#compose .undo_markdown_preview").trigger("focus");
-    $("#compose .preview_message_area").show();
-
-    render_and_show_preview(
-        $("#compose .markdown_preview_spinner"),
-        $("#compose .preview_content"),
-        content,
-    );
-}
-
-export function create_message_object() {
-    // Topics are optional, and we provide a placeholder if one isn't given.
-    let topic = compose_state.topic();
-    if (topic === "") {
-        topic = compose_state.empty_topic_placeholder();
-    }
-
-    // Changes here must also be kept in sync with echo.try_deliver_locally
-    const message = {
-        type: compose_state.get_message_type(),
-        content: compose_state.message_content(),
-        sender_id: current_user.user_id,
-        queue_id: server_events.queue_id,
-        stream_id: undefined,
-    };
-    message.topic = "";
-
-    if (message.type === "private") {
-        // TODO: this should be collapsed with the code in composebox_typeahead.js
-        const recipient = compose_state.private_message_recipient();
-        const emails = util.extract_pm_recipients(recipient);
-        message.to = emails;
-        message.reply_to = recipient;
-        message.private_message_recipient = recipient;
-        message.to_user_ids = people.email_list_to_user_ids_string(emails);
-
-        // Note: The `undefined` case is for situations like
-        // the is_zephyr_mirror_realm case where users may
-        // be automatically created when you try to send a
-        // direct message to their email address.
-        if (message.to_user_ids !== undefined) {
-            message.to = people.user_ids_string_to_ids_array(message.to_user_ids);
-        }
-    } else {
-        message.topic = topic;
-        const stream_id = compose_state.stream_id();
-        message.stream_id = stream_id;
-        message.to = stream_id;
-    }
-    return message;
-}
-
-export function clear_compose_box() {
-    /* Before clearing the compose box, we reset it to the
-     * default/normal size. Note that for locally echoed messages, we
-     * will have already done this action before echoing the message
-     * to avoid the compose box triggering "new message out of view"
-     * notifications incorrectly. */
-    if (compose_ui.is_full_size()) {
-        compose_ui.make_compose_box_original_size();
-    }
-    $("textarea#compose-textarea").val("").trigger("focus");
-    compose_validate.check_overflow_text();
-    compose_validate.clear_topic_resolved_warning();
-    $("textarea#compose-textarea").removeData("draft-id");
-    compose_ui.autosize_textarea($("textarea#compose-textarea"));
-    compose_banner.clear_errors();
-    compose_banner.clear_warnings();
-    compose_banner.clear_uploads();
-    compose_ui.hide_compose_spinner();
-    scheduled_messages.reset_selected_schedule_timestamp();
-    $(".compose_control_button_container:has(.add-poll)").removeClass("disabled-on-hover");
-}
-
-export function send_message_success(request, data) {
-    if (!request.locally_echoed) {
-        clear_compose_box();
-    }
-
-    echo.reify_message_id(request.local_id, data.id);
-    drafts.draft_model.deleteDraft(request.draft_id);
-
-    if (request.type === "stream") {
-        if (data.automatic_new_visibility_policy) {
-            if (!onboarding_steps.ONE_TIME_NOTICES_TO_DISPLAY.has("visibility_policy_banner")) {
-                return;
-            }
-            // topic has been automatically unmuted or followed. No need to
-            // suggest the user to unmute. Show the banner and return.
-            compose_notifications.notify_automatic_new_visibility_policy(request, data);
-            onboarding_steps.post_onboarding_step_as_read("visibility_policy_banner");
-            return;
-        }
-
-        const muted_narrow = compose_notifications.get_muted_narrow(request);
-        if (muted_narrow) {
-            compose_notifications.notify_unmute(muted_narrow, request.stream_id, request.topic);
-        }
-    }
-}
-
-export function send_message(request = create_message_object()) {
-    compose_state.set_recipient_edited_manually(false);
-    if (request.type === "private") {
-        request.to = JSON.stringify(request.to);
-    } else {
-        request.to = JSON.stringify([request.to]);
-    }
-
-    // Silently save / update a draft to ensure the message is not lost in case send fails.
-    // We delete the draft on successful send.
-    request.draft_id = drafts.update_draft({ no_notify: true, update_count: false });
-
-    let local_id;
-    let locally_echoed;
-
-    const message = echo.try_deliver_locally(request, message_events.insert_new_messages);
-    if (message) {
-        // We are rendering this message locally with an id
-        // like 92l99.01 that corresponds to a reasonable
-        // approximation of the id we'll get from the server
-        // in terms of sorting messages.
-        local_id = message.local_id;
-        locally_echoed = true;
-    } else {
-        // We are not rendering this message locally, but we
-        // track the message's life cycle with an id like
-        // loc-1, loc-2, loc-3,etc.
-        locally_echoed = false;
-        local_id = sent_messages.get_new_local_id();
-    }
-
-    request.local_id = local_id;
-    request.locally_echoed = locally_echoed;
-    request.resend = false;
-
-    function success(data) {
-        send_message_success(request, data);
-    }
-
-    function error(response, server_error_code) {
-        // Error callback for failed message send attempts.
-        if (!locally_echoed) {
-            if (server_error_code === "TOPIC_WILDCARD_MENTION_NOT_ALLOWED") {
-                // The topic wildcard mention permission code path has
-                // a special error.
-                const new_row_html = render_wildcard_mention_not_allowed_error({
-                    banner_type: compose_banner.ERROR,
-                    classname: compose_banner.CLASSNAMES.wildcards_not_allowed,
-                });
-                compose_banner.append_compose_banner_to_banner_list(
-                    $(new_row_html),
-                    $("#compose_banners"),
-                );
-            } else {
-                compose_banner.show_error_message(
-                    response,
-                    compose_banner.CLASSNAMES.generic_compose_error,
-                    $("#compose_banners"),
-                    $("textarea#compose-textarea"),
-                );
-            }
-
-            // For messages that were not locally echoed, we're
-            // responsible for hiding the compose spinner to restore
-            // the compose box so one can send a next message.
-            //
-            // (Restoring this state is handled by clear_compose_box
-            // for locally echoed messages.)
-            compose_ui.hide_compose_spinner();
-            return;
-        }
-
-        echo.message_send_error(message.id, response);
-
-        // We might not have updated the draft count because we assumed the
-        // message would send. Ensure that the displayed count is correct.
-        drafts.sync_count();
-    }
-
-    transmit.send_message(request, success, error);
-    server_events.assert_get_events_running(
-        "Restarting get_events because it was not running during send",
-    );
-
-    if (locally_echoed) {
-        clear_compose_box();
-        // Schedule a timer to display a spinner when the message is
-        // taking a longtime to send.
-        setTimeout(() => echo.display_slow_send_loading_spinner(message), 5000);
-    }
-}
-
-export function enter_with_preview_open(ctrl_pressed = false) {
-    if (
-        (user_settings.enter_sends && !ctrl_pressed) ||
-        (!user_settings.enter_sends && ctrl_pressed)
-    ) {
-        // If this enter should send, we attempt to send the message.
-        finish();
-    } else {
-        // Otherwise, we return to the normal compose state.
-        clear_preview_area();
-    }
-}
-
-// Common entrypoint for asking the server to send the message
-// currently drafted in the compose box, including for scheduled
-// messages.
-export function finish(scheduling_message = false) {
-    if (compose_ui.compose_spinner_visible) {
-        // Avoid sending a message twice in parallel in races where
-        // the user clicks the `Send` button very quickly twice or
-        // presses enter and the send button simultaneously.
-        return undefined;
-    }
-
-    clear_preview_area();
-    clear_invites();
-    clear_private_stream_alert();
-    compose_banner.clear_message_sent_banners();
-
-    const message_content = compose_state.message_content();
-
-    // Skip normal validation for zcommands, since they aren't
-    // actual messages with recipients; users only send them
-    // from the compose box for convenience sake.
-    if (zcommand.process(message_content)) {
-        do_post_send_tasks();
-        clear_compose_box();
-        return undefined;
-    }
-
-    compose_ui.show_compose_spinner();
-
-    if (!compose_validate.validate(scheduling_message)) {
-        // If the message failed validation, hide compose spinner.
-        compose_ui.hide_compose_spinner();
-        return false;
-    }
-
-    if (scheduling_message) {
-        schedule_message_to_custom_date();
-    } else {
-        send_message();
-    }
-    do_post_send_tasks();
-    return true;
-}
-
-export function do_post_send_tasks() {
-    clear_preview_area();
-    // TODO: Do we want to fire the event even if the send failed due
-    // to a server-side error?
-    $(document).trigger("compose_finished.zulip");
-}
-
-export function render_and_show_preview($preview_spinner, $preview_content_box, content) {
-    function show_preview(rendered_content, raw_content) {
-        // content is passed to check for status messages ("/me ...")
-        // and will be undefined in case of errors
-        let rendered_preview_html;
-        if (raw_content !== undefined && markdown.is_status_message(raw_content)) {
-            // Handle previews of /me messages
-            rendered_preview_html =
-                "<p><strong>" +
-                _.escape(current_user.full_name) +
-                "</strong>" +
-                rendered_content.slice("<p>/me".length);
-        } else {
-            rendered_preview_html = rendered_content;
-        }
-
-        $preview_content_box.html(util.clean_user_content_links(rendered_preview_html));
-        rendered_markdown.update_elements($preview_content_box);
-    }
-
-    if (content.length === 0) {
-        show_preview($t_html({ defaultMessage: "Nothing to preview" }));
-    } else {
-        if (markdown.contains_backend_only_syntax(content)) {
-            const $spinner = $preview_spinner.expectOne();
-            loading.make_indicator($spinner);
-        } else {
-            // For messages that don't appear to contain syntax that
-            // is only supported by our backend Markdown processor, we
-            // render using the frontend Markdown processor (but still
-            // render server-side to ensure the preview is accurate;
-            // if the `markdown.contains_backend_only_syntax` logic is
-            // wrong, users will see a brief flicker of the locally
-            // echoed frontend rendering before receiving the
-            // authoritative backend rendering from the server).
-            markdown.render(content);
-        }
-        channel.post({
-            url: "/json/messages/render",
-            data: { content },
-            success(response_data) {
-                if (markdown.contains_backend_only_syntax(content)) {
-                    loading.destroy_indicator($preview_spinner);
-                }
-                show_preview(response_data.rendered, content);
-            },
-            error() {
-                if (markdown.contains_backend_only_syntax(content)) {
-                    loading.destroy_indicator($preview_spinner);
-                }
-                show_preview($t_html({ defaultMessage: "Failed to generate preview" }));
-            },
-        });
-    }
-}
-
-function schedule_message_to_custom_date() {
-    const compose_message_object = create_message_object();
-
-    const deliver_at = scheduled_messages.get_formatted_selected_send_later_time();
-    const scheduled_delivery_timestamp = scheduled_messages.get_selected_send_later_timestamp();
-
-    const message_type = compose_message_object.type;
-    let req_type;
-
-    if (message_type === "private") {
-        req_type = "direct";
-    } else {
-        req_type = message_type;
-    }
-
-    const scheduled_message_data = {
-        type: req_type,
-        to: JSON.stringify(compose_message_object.to),
-        topic: compose_message_object.topic,
-        content: compose_message_object.content,
-        scheduled_delivery_timestamp,
-    };
-
-    const $banner_container = $("#compose_banners");
-    const success = function(data) {
-        drafts.draft_model.deleteDraft($("textarea#compose-textarea").data("draft-id"));
-        clear_compose_box();
-        const new_row_html = render_success_message_scheduled_banner({
-            scheduled_message_id: data.scheduled_message_id,
-            deliver_at,
-        });
-        compose_banner.clear_message_sent_banners();
-        compose_banner.append_compose_banner_to_banner_list($(new_row_html), $banner_container);
-    };
-
-    const error = function(xhr) {
-        const response = channel.xhr_error_message("Error sending message", xhr);
-        compose_ui.hide_compose_spinner();
-        compose_banner.show_error_message(
-            response,
-            compose_banner.CLASSNAMES.generic_compose_error,
-            $banner_container,
-            $("textarea#compose-textarea"),
-        );
-    };
-
-    channel.post({
-        url: "/json/scheduled_messages",
-        data: scheduled_message_data,
-        success,
-        error,
-    });
-}
+   import autosize from "autosize";
+   import $ from "jquery";
+   import {
+       insertTextIntoField,
+       replaceFieldText,
+       setFieldText,
+       wrapFieldSelection,
+   } from "text-field-edit";
+   
+   import * as bulleted_numbered_list_util from "./bulleted_numbered_list_util";
+   import * as common from "./common";
+   import {$t} from "./i18n";
+   import * as loading from "./loading";
+   import * as markdown from "./markdown";
+   import * as people from "./people";
+   import * as popover_menus from "./popover_menus";
+   import * as rtl from "./rtl";
+   import * as stream_data from "./stream_data";
+   import * as user_status from "./user_status";
+   import * as util from "./util";
+   
+   // TODO: Refactor to push this into a field of ComposeTriggeredOptions.
+   type messageType = "stream" | "private";
+   type ComposeTriggeredOptions = {
+       trigger: string;
+       private_message_recipient: string;
+       topic: string;
+       stream_id: number;
+   };
+   type ComposePlaceholderOptions = {
+       direct_message_user_ids: number[];
+       message_type: messageType;
+       stream_id: number;
+       topic: string;
+   };
+   type SelectedLinesSections = {
+       before_lines: string;
+       separating_new_line_before: boolean;
+       selected_lines: string;
+       separating_new_line_after: boolean;
+       after_lines: string;
+   };
+   
+   export let compose_spinner_visible = false;
+   export let shift_pressed = false; // true or false
+   export let code_formatting_button_triggered = false; // true or false
+   let full_size_status = false; // true or false
+   
+   export function set_code_formatting_button_triggered(value: boolean): void {
+       code_formatting_button_triggered = value;
+   }
+   
+   // Some functions to handle the full size status explicitly
+   export function set_full_size(is_full: boolean): void {
+       full_size_status = is_full;
+   }
+   
+   export function is_full_size(): boolean {
+       return full_size_status;
+   }
+   
+   export function autosize_textarea($textarea: JQuery<HTMLTextAreaElement>): void {
+       // Since this supports both compose and file upload, one must pass
+       // in the text area to autosize.
+       if (!is_full_size()) {
+           autosize.update($textarea);
+       }
+   }
+   
+   export function insert_and_scroll_into_view(
+       content: string,
+       $textarea: JQuery<HTMLTextAreaElement>,
+       replace_all = false,
+   ): void {
+       if (replace_all) {
+           setFieldText($textarea[0], content);
+       } else {
+           insertTextIntoField($textarea[0], content);
+       }
+       // Blurring and refocusing ensures the cursor / selection is in view
+       // in chromium browsers.
+       $textarea.trigger("blur");
+       $textarea.trigger("focus");
+       autosize_textarea($textarea);
+   }
+   
+   function get_focus_area(msg_type: messageType, opts: ComposeTriggeredOptions): string {
+       // Set focus to "Topic" when narrowed to a stream+topic
+       // and "Start new conversation" button clicked.
+       if (msg_type === "stream" && opts.stream_id && !opts.topic) {
+           return "input#stream_message_recipient_topic";
+       } else if (
+           (msg_type === "stream" && opts.stream_id) ||
+           (msg_type === "private" && opts.private_message_recipient)
+       ) {
+           if (opts.trigger === "clear topic button") {
+               return "input#stream_message_recipient_topic";
+           }
+           return "textarea#compose-textarea";
+       }
+   
+       if (msg_type === "stream") {
+           return "#compose_select_recipient_widget_wrapper";
+       }
+       return "#private_message_recipient";
+   }
+   
+   // Export for testing
+   export const _get_focus_area = get_focus_area;
+   
+   export function set_focus(msg_type: messageType, opts: ComposeTriggeredOptions): void {
+       // Called mainly when opening the compose box or switching the
+       // message type to set the focus in the first empty input in the
+       // compose box.
+       if (window.getSelection()!.toString() === "" || opts.trigger !== "message click") {
+           const focus_area = get_focus_area(msg_type, opts);
+           $(focus_area).trigger("focus");
+       }
+   }
+   
+   export function smart_insert_inline($textarea: JQuery<HTMLTextAreaElement>, syntax: string): void {
+       function is_space(c: string): boolean {
+           return c === " " || c === "\t" || c === "\n";
+       }
+   
+       const pos = $textarea.caret();
+       const before_str = $textarea.val()!.slice(0, pos);
+       const after_str = $textarea.val()!.slice(pos);
+   
+       if (
+           pos > 0 &&
+           // If there isn't space either at the end of the content
+           // before the insert or (unlikely) at the start of the syntax,
+           // add one.
+           !is_space(before_str.slice(-1)) &&
+           !is_space(syntax[0])
+       ) {
+           syntax = " " + syntax;
+       }
+   
+       // If there isn't whitespace either at the end of the syntax or the
+       // start of the content after the syntax, add one.
+       if (
+           !(
+               (after_str.length > 0 && is_space(after_str[0])) ||
+               (syntax.length > 0 && is_space(syntax.slice(-1)))
+           )
+       ) {
+           syntax += " ";
+       }
+   
+       insert_and_scroll_into_view(syntax, $textarea);
+   }
+   
+   export function smart_insert_block(
+       $textarea: JQuery<HTMLTextAreaElement>,
+       syntax: string,
+       padding_newlines = 2,
+   ): void {
+       const pos = $textarea.caret();
+       const before_str = $textarea.val()!.slice(0, pos);
+       const after_str = $textarea.val()!.slice(pos);
+   
+       if (pos > 0) {
+           // Insert newline/s before the content block if there is
+           // already some content in the compose box and the content
+           // block is not being inserted at the beginning, such
+           // that there are at least padding_newlines number of new
+           // lines between the content and start of the content block.
+           let new_lines_before_count = 0;
+           let current_pos = pos - 1;
+           while (
+               current_pos >= 0 &&
+               before_str.charAt(current_pos) === "\n" &&
+               new_lines_before_count < padding_newlines
+           ) {
+               // count up to padding_newlines number of new lines before cursor
+               current_pos -= 1;
+               new_lines_before_count += 1;
+           }
+           const new_lines_needed_before_count = padding_newlines - new_lines_before_count;
+           syntax = "\n".repeat(new_lines_needed_before_count) + syntax;
+       }
+   
+       let new_lines_after_count = 0;
+       let current_pos = 0;
+       while (
+           current_pos < after_str.length &&
+           after_str.charAt(current_pos) === "\n" &&
+           new_lines_after_count < padding_newlines
+       ) {
+           // count up to padding_newlines number of new lines after cursor
+           current_pos += 1;
+           new_lines_after_count += 1;
+       }
+       // Insert newline/s after the content block, such that there
+       // are at least padding_newlines number of new lines between
+       // the content block and the content after the cursor, if any.
+       const new_lines_needed_after_count = padding_newlines - new_lines_after_count;
+       syntax = syntax + "\n".repeat(new_lines_needed_after_count);
+   
+       insert_and_scroll_into_view(syntax, $textarea);
+   }
+   
+   export function insert_syntax_and_focus(
+       syntax: string,
+       $textarea = $<HTMLTextAreaElement>("textarea#compose-textarea"),
+       mode = "inline",
+       padding_newlines: number,
+   ): void {
+       // Generic helper for inserting syntax into the main compose box
+       // where the cursor was and focusing the area.  Mostly a thin
+       // wrapper around smart_insert_inline and smart_inline_block.
+       //
+       // We focus the textarea first. In theory, we could let the
+       // `insert` function of text-area-edit take care of this, since it
+       // will focus the target element before manipulating it.
+       //
+       // But it unfortunately will blur it afterwards if the original
+       // focus was something else, which is not behavior we want, so we
+       // just focus the textarea in question ourselves before calling
+       // it.
+       $textarea.trigger("focus");
+   
+       if (mode === "inline") {
+           smart_insert_inline($textarea, syntax);
+       } else if (mode === "block") {
+           smart_insert_block($textarea, syntax, padding_newlines);
+       }
+   }
+   
+   export function replace_syntax(
+       old_syntax: string,
+       new_syntax: string,
+       $textarea = $<HTMLTextAreaElement>("textarea#compose-textarea"),
+   ): boolean {
+       // The following couple lines are needed to later restore the initial
+       // logical position of the cursor after the replacement
+       const prev_caret = $textarea.caret();
+       const replacement_offset = $textarea.val()!.indexOf(old_syntax);
+   
+       // Replaces `old_syntax` with `new_syntax` text in the compose box. Due to
+       // the way that JavaScript handles string replacements, if `old_syntax` is
+       // a string it will only replace the first instance. If `old_syntax` is
+       // a RegExp with a global flag, it will replace all instances.
+   
+       // We need use anonymous function for `new_syntax` to avoid JavaScript's
+       // replace() function treating `$`s in new_syntax as special syntax.  See
+       // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/replace#Description
+       // for details.
+   
+       const old_text = $textarea.val();
+       replaceFieldText($textarea[0], old_syntax, () => new_syntax, "after-replacement");
+       const new_text = $textarea.val();
+   
+       // When replacing content in a textarea, we need to move the cursor
+       // to preserve its logical position if and only if the content we
+       // just added was before the current cursor position. If it was,
+       // we need to move the cursor forward by the increase in the
+       // length of the content after the replacement.
+       if (prev_caret >= replacement_offset + old_syntax.length) {
+           $textarea.caret(prev_caret + new_syntax.length - old_syntax.length);
+       } else if (prev_caret > replacement_offset) {
+           // In the rare case that our cursor was inside the
+           // placeholder, we treat that as though the cursor was
+           // just after the placeholder.
+           $textarea.caret(replacement_offset + new_syntax.length + 1);
+       } else {
+           // Otherwise we simply restore it to it's original position
+           $textarea.caret(prev_caret);
+       }
+   
+       // Return if anything was actually replaced.
+       return old_text !== new_text;
+   }
+   
+   export function compute_placeholder_text(opts: ComposePlaceholderOptions): string {
+       // Computes clear placeholder text for the compose box, depending
+       // on what heading values have already been filled out.
+       //
+       // We return text with the stream and topic name unescaped,
+       // because the caller is expected to insert this into the
+       // placeholder field in a way that does HTML escaping.
+       if (opts.message_type === "stream") {
+           const stream = stream_data.get_sub_by_id(opts.stream_id);
+           const stream_name = stream ? stream.name : "";
+   
+           if (stream_name && opts.topic) {
+               return $t(
+                   {defaultMessage: "Message #{stream_name} > {topic_name}"},
+                   {stream_name, topic_name: opts.topic},
+               );
+           } else if (stream_name) {
+               return $t({defaultMessage: "Message #{stream_name}"}, {stream_name});
+           }
+       } else if (opts.direct_message_user_ids.length > 0) {
+           const users = people.get_users_from_ids(opts.direct_message_user_ids);
+           const recipient_parts = users.map((user) => {
+               if (people.should_add_guest_user_indicator(user.user_id)) {
+                   return $t({defaultMessage: "{name} (guest)"}, {name: user.full_name});
+               }
+               return user.full_name;
+           });
+           const recipient_names = util.format_array_as_list(recipient_parts, "long", "conjunction");
+   
+           if (users.length === 1) {
+               // If it's a single user, display status text if available
+               const user = users[0];
+               const status = user_status.get_status_text(user.user_id);
+               if (status) {
+                   return $t(
+                       {defaultMessage: "Message {recipient_name} ({recipient_status})"},
+                       {recipient_name: recipient_names, recipient_status: status},
+                   );
+               }
+           }
+           return $t({defaultMessage: "Message {recipient_names}"}, {recipient_names});
+       }
+       return $t({defaultMessage: "Compose your message here"});
+   }
+   
+   export function set_compose_box_top(set_top: boolean): void {
+       if (set_top) {
+           // As `#compose` has `position: fixed` property, we cannot
+           // make the compose-box to attain the correct height just by
+           // using CSS. If that wasn't the case, we could have somehow
+           // refactored the HTML so as to consider only the space below
+           // below the `#navbar_alerts` as `height: 100%` of `#compose`.
+           const compose_top = $("#navbar-fixed-container").height();
+           $("#compose").css("top", compose_top + "px");
+       } else {
+           $("#compose").css("top", "");
+       }
+   }
+   
+   export function make_compose_box_full_size(): void {
+       set_full_size(true);
+   
+       // The autosize should be destroyed for the full size compose
+       // box else it will interfere and shrink its size accordingly.
+       autosize.destroy($("textarea#compose-textarea"));
+   
+       $("#compose").addClass("compose-fullscreen");
+   
+       // Set the `top` property of compose-box.
+       set_compose_box_top(true);
+   
+       $(".collapse_composebox_button").show();
+       $(".expand_composebox_button").hide();
+       $("#scroll-to-bottom-button-container").removeClass("show");
+       $("textarea#compose-textarea").trigger("focus");
+   }
+   
+   export function make_compose_box_original_size(): void {
+       set_full_size(false);
+   
+       $("#compose").removeClass("compose-fullscreen");
+   
+       // Unset the `top` property of compose-box.
+       set_compose_box_top(false);
+   
+       // Again initialise the compose textarea as it was destroyed
+       // when compose box was made full screen
+       autosize($("textarea#compose-textarea"));
+   
+       $(".collapse_composebox_button").hide();
+       $(".expand_composebox_button").show();
+       $("textarea#compose-textarea").trigger("focus");
+   }
+   
+   export function handle_keydown(
+       event: JQuery.KeyboardEventBase,
+       $textarea: JQuery<HTMLTextAreaElement>,
+   ): void {
+       if (event.key === "Shift") {
+           shift_pressed = true;
+       }
+       // The event.key property will have uppercase letter if
+       // the "Shift + <key>" combo was used or the Caps Lock
+       // key was on. We turn to key to lowercase so the key bindings
+       // work regardless of whether Caps Lock was on or not.
+       const key = event.key.toLowerCase();
+       let type;
+       if (key === "b") {
+           type = "bold";
+       } else if (key === "i" && !event.shiftKey) {
+           type = "italic";
+       } else if (key === "l" && event.shiftKey) {
+           type = "link";
+       }
+   
+       // detect Cmd and Ctrl key
+       const isCmdOrCtrl = common.has_mac_keyboard() ? event.metaKey : event.ctrlKey;
+   
+       if (type && isCmdOrCtrl) {
+           format_text($textarea, type);
+           autosize_textarea($textarea);
+           event.preventDefault();
+       }
+   }
+   
+   export function handle_keyup(
+       _event: JQuery.KeyboardEventBase,
+       $textarea: JQuery<HTMLTextAreaElement>,
+   ): void {
+       if (_event?.key === "Shift") {
+           shift_pressed = false;
+       }
+       // Set the rtl class if the text has an rtl direction, remove it otherwise
+       rtl.set_rtl_class_for_textarea($textarea);
+   }
+   
+   export function cursor_inside_code_block($textarea: JQuery<HTMLTextAreaElement>): boolean {
+       // Returns whether the cursor is at a point that would be inside
+       // a code block on rendering the textarea content as markdown.
+       const cursor_position = $textarea.caret();
+       const current_content = $textarea.val()!;
+   
+       let unique_insert = "UNIQUEINSERT:" + Math.random();
+       while (current_content.includes(unique_insert)) {
+           unique_insert = "UNIQUEINSERT:" + Math.random();
+       }
+       const content =
+           current_content.slice(0, cursor_position) +
+           unique_insert +
+           current_content.slice(cursor_position);
+       const rendered_content = markdown.parse_non_message(content);
+       const rendered_html = new DOMParser().parseFromString(rendered_content, "text/html");
+       const code_blocks = rendered_html.querySelectorAll("pre > code");
+       return [...code_blocks].some((code_block) => code_block?.textContent?.includes(unique_insert));
+   }
+   
+   export function format_text(
+       $textarea: JQuery<HTMLTextAreaElement>,
+       type: string,
+       inserted_content = "",
+   ): void {
+       const italic_syntax = "*";
+       const bold_syntax = "**";
+       const bold_and_italic_syntax = "***";
+       let is_selected_text_italic = false;
+       let is_inner_text_italic = false;
+       const field = $textarea.get(0)!;
+       let range = $textarea.range();
+       let text = $textarea.val()!;
+       // Remove new line and space around selected text, except list formatting,
+       // where we want to especially preserve any selected new line character
+       // before the selected text, as it is conventionally depicted with a highlight
+       // at the end of the previous line, which we would like to format.
+       const TRIM_ONLY_END_TYPES = ["bulleted", "numbered"];
+   
+       let start_trim_length;
+       if (TRIM_ONLY_END_TYPES.includes(type)) {
+           start_trim_length = 0;
+       } else {
+           start_trim_length = range.text.length - range.text.trimStart().length;
+       }
+       const end_trim_length = range.text.length - range.text.trimEnd().length;
+       field.setSelectionRange(range.start + start_trim_length, range.end - end_trim_length);
+       range = $textarea.range();
+       const selected_text = range.text;
+   
+       // Check if the selection is already surrounded by syntax
+       const is_selection_formatted = (syntax_start: string, syntax_end = syntax_start): boolean =>
+           range.start >= syntax_start.length &&
+           text.length - range.end >= syntax_end.length &&
+           text.slice(range.start - syntax_start.length, range.start) === syntax_start &&
+           text.slice(range.end, range.end + syntax_end.length) === syntax_end;
+   
+       // Check if selected text itself has syntax inside it.
+       const is_inner_text_formatted = (syntax_start: string, syntax_end = syntax_start): boolean =>
+           range.length >= syntax_start.length + syntax_end.length &&
+           selected_text.startsWith(syntax_start) &&
+           selected_text.endsWith(syntax_end);
+   
+       const section_off_selected_lines = (): SelectedLinesSections => {
+           // Divide all lines of text (separated by `\n`) into those entirely or
+           // partially selected, and those before and after these selected lines.
+           const before = text.slice(0, range.start);
+           const after = text.slice(range.end);
+           let separating_new_line_before = false;
+           let closest_new_line_beginning_before_index;
+           if (before.includes("\n")) {
+               separating_new_line_before = true;
+               closest_new_line_beginning_before_index = before.lastIndexOf("\n");
+           } else {
+               separating_new_line_before = false;
+               // The beginning of the entire text acts as a new line.
+               closest_new_line_beginning_before_index = -1;
+           }
+           let separating_new_line_after = false;
+           let closest_new_line_char_after_index;
+           if (after.includes("\n")) {
+               separating_new_line_after = true;
+               closest_new_line_char_after_index =
+                   after.indexOf("\n") + before.length + selected_text.length;
+           } else {
+               separating_new_line_after = false;
+               // The end of the entire text acts as a new line.
+               closest_new_line_char_after_index = text.length;
+           }
+           // selected_lines neither includes the `\n` character that marks its
+           // beginning (which exists if there are before_lines) nor the one
+           // that marks its end (which exists if there are after_lines).
+           const selected_lines = text.slice(
+               closest_new_line_beginning_before_index + 1,
+               closest_new_line_char_after_index,
+           );
+           // before_lines excludes the `\n` character that separates it from selected_lines.
+           const before_lines = text.slice(0, Math.max(0, closest_new_line_beginning_before_index));
+           // after_lines excludes the `\n` character that separates it from selected_lines.
+           const after_lines = text.slice(closest_new_line_char_after_index + 1);
+           return {
+               before_lines,
+               separating_new_line_before,
+               selected_lines,
+               separating_new_line_after,
+               after_lines,
+           };
+       };
+   
+       const format_list = (type: string): void => {
+           let is_marked: (line: string) => boolean;
+           let mark: (line: string, i: number) => string;
+           let strip_marking: (line: string) => string;
+           if (type === "bulleted") {
+               is_marked = bulleted_numbered_list_util.is_bulleted;
+               mark = (line: string) => "- " + line;
+               strip_marking = bulleted_numbered_list_util.strip_bullet;
+           } else {
+               is_marked = bulleted_numbered_list_util.is_numbered;
+               mark = (line, i) => i + 1 + ". " + line;
+               strip_marking = bulleted_numbered_list_util.strip_numbering;
+           }
+           // We toggle complete lines even when they are partially selected (and just selecting the
+           // newline character after a line counts as partial selection too).
+           const sections = section_off_selected_lines();
+           let {before_lines, selected_lines, after_lines} = sections;
+           const {separating_new_line_before, separating_new_line_after} = sections;
+           // If there is even a single unmarked line selected, we mark all.
+           const should_mark = selected_lines.split("\n").some((line) => !is_marked(line));
+           if (should_mark) {
+               selected_lines = selected_lines
+                   .split("\n")
+                   .map((line, i) => mark(line, i))
+                   .join("\n");
+               // We always ensure a blank line before and after the list, as we want
+               // a clean separation between the list and the rest of the text, especially
+               // when the markdown is rendered.
+   
+               // Add blank line between text before and list if not already present.
+               if (before_lines.length && before_lines.at(-1) !== "\n") {
+                   before_lines += "\n";
+               }
+               // Add blank line between list and rest of text if not already present.
+               if (after_lines.length && after_lines.at(0) !== "\n") {
+                   after_lines = "\n" + after_lines;
+               }
+           } else {
+               // Unmark all marked lines by removing the marking syntax characters.
+               selected_lines = selected_lines
+                   .split("\n")
+                   .map((line) => strip_marking(line))
+                   .join("\n");
+           }
+           // Restore the separating newlines that were removed by section_off_selected_lines.
+           if (separating_new_line_before) {
+               before_lines += "\n";
+           }
+           if (separating_new_line_after) {
+               after_lines = "\n" + after_lines;
+           }
+           text = before_lines + selected_lines + after_lines;
+           insert_and_scroll_into_view(text, $textarea, true);
+           // If no text was selected, that is, marking was added to the line with the
+           // cursor, nothing will be selected and the cursor will remain as it was.
+           if (selected_text === "") {
+               field.setSelectionRange(
+                   before_lines.length + selected_lines.length,
+                   before_lines.length + selected_lines.length,
+               );
+           } else {
+               field.setSelectionRange(
+                   before_lines.length,
+                   before_lines.length + selected_lines.length,
+               );
+           }
+       };
+   
+       const format = (syntax_start: string, syntax_end = syntax_start): boolean => {
+           let linebreak_start = "";
+           let linebreak_end = "";
+           if (syntax_start.startsWith("\n")) {
+               linebreak_start = "\n";
+           }
+           if (syntax_end.endsWith("\n")) {
+               linebreak_end = "\n";
+           }
+           if (is_selection_formatted(syntax_start, syntax_end)) {
+               text =
+                   text.slice(0, range.start - syntax_start.length) +
+                   linebreak_start +
+                   text.slice(range.start, range.end) +
+                   linebreak_end +
+                   text.slice(range.end + syntax_end.length);
+               insert_and_scroll_into_view(text, $textarea, true);
+               field.setSelectionRange(
+                   range.start - syntax_start.length,
+                   range.end - syntax_start.length,
+               );
+               return false;
+           } else if (is_inner_text_formatted(syntax_start, syntax_end)) {
+               // Remove syntax inside the selection, if present.
+               text =
+                   text.slice(0, range.start) +
+                   linebreak_start +
+                   text.slice(range.start + syntax_start.length, range.end - syntax_end.length) +
+                   linebreak_end +
+                   text.slice(range.end);
+               insert_and_scroll_into_view(text, $textarea, true);
+               field.setSelectionRange(
+                   range.start,
+                   range.end - syntax_start.length - syntax_end.length,
+               );
+               return false;
+           }
+   
+           // Otherwise, we don't have syntax within or around, so we add it.
+           wrapFieldSelection(field, syntax_start, syntax_end);
+           return true;
+       };
+   
+       const format_spoiler = (): void => {
+           const spoiler_syntax_start = "```spoiler \n";
+           let spoiler_syntax_start_without_break = "```spoiler ";
+           let spoiler_syntax_end = "\n```";
+   
+           // For when the entire spoiler block (with no header) is selected.
+           if (is_inner_text_formatted(spoiler_syntax_start, spoiler_syntax_end)) {
+               text =
+                   text.slice(0, range.start) +
+                   text.slice(
+                       range.start + spoiler_syntax_start.length,
+                       range.end - spoiler_syntax_end.length,
+                   ) +
+                   text.slice(range.end);
+               if (text.startsWith("\n")) {
+                   text = text.slice(1);
+               }
+               insert_and_scroll_into_view(text, $textarea, true);
+               field.setSelectionRange(
+                   range.start,
+                   range.end - spoiler_syntax_start.length - spoiler_syntax_end.length,
+               );
+               return;
+           }
+   
+           // For when the entire spoiler block (with a header) is selected.
+           if (is_inner_text_formatted(spoiler_syntax_start_without_break, spoiler_syntax_end)) {
+               text =
+                   text.slice(0, range.start) +
+                   text.slice(
+                       range.start + spoiler_syntax_start_without_break.length,
+                       range.end - spoiler_syntax_end.length,
+                   ) +
+                   text.slice(range.end);
+               if (text.startsWith("\n")) {
+                   text = text.slice(1);
+               }
+               insert_and_scroll_into_view(text, $textarea, true);
+               field.setSelectionRange(
+                   range.start,
+                   range.end - spoiler_syntax_start_without_break.length - spoiler_syntax_end.length,
+               );
+               return;
+           }
+   
+           // For when the text (including the header) inside a spoiler block is selected.
+           if (is_selection_formatted(spoiler_syntax_start_without_break, spoiler_syntax_end)) {
+               text =
+                   text.slice(0, range.start - spoiler_syntax_start_without_break.length) +
+                   selected_text +
+                   text.slice(range.end + spoiler_syntax_end.length);
+               insert_and_scroll_into_view(text, $textarea, true);
+               field.setSelectionRange(
+                   range.start - spoiler_syntax_start_without_break.length,
+                   range.end - spoiler_syntax_start_without_break.length,
+               );
+               return;
+           }
+   
+           // For when only the text inside a spoiler block (without a header) is selected.
+           if (is_selection_formatted(spoiler_syntax_start, spoiler_syntax_end)) {
+               text =
+                   text.slice(0, range.start - spoiler_syntax_start.length) +
+                   selected_text +
+                   text.slice(range.end + spoiler_syntax_end.length);
+               insert_and_scroll_into_view(text, $textarea, true);
+               field.setSelectionRange(
+                   range.start - spoiler_syntax_start.length,
+                   range.end - spoiler_syntax_start.length,
+               );
+               return;
+           }
+   
+           const is_inner_content_selected = (): boolean =>
+               range.start >= spoiler_syntax_start.length &&
+               text.length - range.end >= spoiler_syntax_end.length &&
+               text.slice(range.end, range.end + spoiler_syntax_end.length) === spoiler_syntax_end &&
+               text[range.start - 1] === "\n" &&
+               text.lastIndexOf(spoiler_syntax_start_without_break, range.start - 1) ===
+                   text.lastIndexOf("\n", range.start - 2) + 1;
+   
+           // For when only the text inside a spoiler block (with a header) is selected.
+           if (is_inner_content_selected()) {
+               const new_selection_start = text.lastIndexOf(
+                   spoiler_syntax_start_without_break,
+                   range.start,
+               );
+               text =
+                   text.slice(0, new_selection_start) +
+                   text.slice(
+                       new_selection_start + spoiler_syntax_start_without_break.length,
+                       range.start,
+                   ) +
+                   selected_text +
+                   text.slice(range.end + spoiler_syntax_end.length);
+               insert_and_scroll_into_view(text, $textarea, true);
+               field.setSelectionRange(
+                   new_selection_start,
+                   range.end - spoiler_syntax_start_without_break.length,
+               );
+               return;
+           }
+   
+           const is_header_selected = (): boolean =>
+               range.start >= spoiler_syntax_start_without_break.length &&
+               text.slice(range.start - spoiler_syntax_start_without_break.length, range.start) ===
+                   spoiler_syntax_start_without_break &&
+               text.length - range.end >= spoiler_syntax_end.length &&
+               text[range.end] === "\n";
+   
+           // For when only the header of a spoiler block  is selected.
+           if (is_header_selected()) {
+               const header = range.text;
+               const new_range_end = text.indexOf(spoiler_syntax_end, range.start);
+               const new_range_start = header ? range.start : range.start + 1;
+               text =
+                   text.slice(0, range.start - spoiler_syntax_start_without_break.length) +
+                   text.slice(new_range_start, new_range_end) +
+                   text.slice(new_range_end + spoiler_syntax_end.length);
+               insert_and_scroll_into_view(text, $textarea, true);
+               field.setSelectionRange(
+                   new_range_start - spoiler_syntax_start_without_break.length - (header ? 0 : 1),
+                   new_range_end - spoiler_syntax_start_without_break.length - (header ? 0 : 1),
+               );
+               return;
+           }
+   
+           if (range.start > 0 && text[range.start - 1] !== "\n") {
+               spoiler_syntax_start_without_break = "\n" + spoiler_syntax_start_without_break;
+           }
+           if (range.end < text.length && text[range.end] !== "\n") {
+               spoiler_syntax_end = spoiler_syntax_end + "\n";
+           }
+   
+           const spoiler_syntax_start_with_header = spoiler_syntax_start_without_break + "Header\n";
+   
+           // Otherwise, we don't have spoiler syntax, so we add it.
+           wrapFieldSelection(field, spoiler_syntax_start_with_header, spoiler_syntax_end);
+   
+           field.setSelectionRange(
+               range.start + spoiler_syntax_start_without_break.length,
+               range.start + spoiler_syntax_start_with_header.length - 1,
+           );
+       };
+   
+       // Links have to be formatted differently because formatting is not only
+       // at the beginning and end of the text, but also in the middle
+       // Therefore more checks are necessary if selected text is already formatted
+       const format_link = (): void => {
+           const link_syntax_start = "[";
+           const link_syntax_end = "](url)";
+   
+           const space_between_description_and_url = (descr: string, url: string): string => {
+               if (descr === "" || url === "" || url === "url") {
+                   return "";
+               }
+               return " ";
+           };
+   
+           const url_to_retain = (url: string): string => {
+               if (url === "" || url === "url") {
+                   return "";
+               }
+               return url;
+           };
+   
+           // Captures:
+           // [<description>](<url>)
+           // with just <url> selected
+           const is_selection_url = (): boolean =>
+               range.start >= "[](".length &&
+               text.length - range.end >= ")".length &&
+               text.slice(range.start - 2, range.start) === "](" &&
+               text[range.end] === ")" &&
+               text.lastIndexOf("[", range.start - 3) < text.lastIndexOf("]", range.start - 2);
+   
+           if (is_selection_url()) {
+               const beginning = text.lastIndexOf("[", range.start);
+               const description = text.slice(beginning + 1, range.start - 2);
+               const url = url_to_retain(selected_text);
+               text =
+                   text.slice(0, beginning) +
+                   description +
+                   space_between_description_and_url(description, url) +
+                   url +
+                   text.slice(range.end + 1);
+               insert_and_scroll_into_view(text, $textarea, true);
+               field.setSelectionRange(
+                   range.start - 3 + space_between_description_and_url(description, url).length,
+                   range.start -
+                       3 +
+                       space_between_description_and_url(description, url).length +
+                       url.length,
+               );
+               return;
+           }
+   
+           // Captures:
+           // [<description>](<url>)
+           // with just <description> selected
+           const is_selection_description_of_link = (): boolean =>
+               range.start >= "[".length &&
+               text.length - range.end >= "]()".length &&
+               text.slice(range.start - 1, range.start) === "[" &&
+               text.slice(range.end, range.end + 2) === "](" &&
+               text.includes(")", range.end + 2) &&
+               (text.includes("(", range.end + 2)
+                   ? text.indexOf(")", range.end + 2) < text.indexOf("(", range.end + 2)
+                   : true);
+   
+           if (is_selection_description_of_link()) {
+               let url = text.slice(range.end + 2, text.indexOf(")", range.end));
+               url = url_to_retain(url);
+               text =
+                   text.slice(0, range.start - 1) +
+                   selected_text +
+                   space_between_description_and_url(selected_text, url) +
+                   url +
+                   text.slice(text.indexOf(")", range.end) + 1);
+               insert_and_scroll_into_view(text, $textarea, true);
+               field.setSelectionRange(range.start - 1, range.end - 1);
+               return;
+           }
+   
+           // Captures:
+           // [<description>](<url>)
+           // with [<description>](<url>) selected
+           const is_selection_link = (): boolean =>
+               range.length >= "[]()".length &&
+               text[range.start] === "[" &&
+               text[range.end - 1] === ")" &&
+               text.slice(range.start + 1, range.end - 1).includes("](");
+   
+           if (is_selection_link()) {
+               const description = selected_text.split("](")[0].slice(1);
+               let url = selected_text.split("](")[1].slice(0, -1);
+               url = url_to_retain(url);
+               text =
+                   text.slice(0, range.start) +
+                   description +
+                   space_between_description_and_url(description, url) +
+                   url +
+                   text.slice(range.end);
+               insert_and_scroll_into_view(text, $textarea, true);
+               field.setSelectionRange(
+                   range.start,
+                   range.start +
+                       description.length +
+                       space_between_description_and_url(description, url).length +
+                       url.length,
+               );
+               return;
+           }
+   
+           // Otherwise, we don't have link syntax, so we add it.
+           wrapFieldSelection(field, link_syntax_start, link_syntax_end);
+   
+           // Highlight the new `url` part of the syntax.
+           // If <text> marks the selected region, we're mapping:
+           // <text> => [text](<url>).
+           const new_start = range.end + "[](".length;
+           const new_end = new_start + "url".length;
+           field.setSelectionRange(new_start, new_end);
+       };
+   
+       switch (type) {
+           case "bold":
+               // Ctrl + B: Toggle bold syntax on selection.
+               format(bold_syntax);
+               break;
+           case "italic":
+               // Ctrl + I: Toggle italic syntax on selection. This is
+               // much more complex than toggling bold syntax, because of
+               // the following subtle detail: If our selection is
+               // **foo**, toggling italics should add italics, since in
+               // fact it's just bold syntax, even though with *foo* and
+               // ***foo*** should remove italics.
+   
+               // If the text is already italic, we remove the italic_syntax from text.
+               if (range.start >= 1 && text.length - range.end >= italic_syntax.length) {
+                   // If text has italic_syntax around it.
+                   const has_italic_syntax =
+                       text.slice(range.start - italic_syntax.length, range.start) === italic_syntax &&
+                       text.slice(range.end, range.end + italic_syntax.length) === italic_syntax;
+   
+                   if (is_selection_formatted(bold_syntax)) {
+                       // If text has bold_syntax around it.
+                       if (
+                           range.start > bold_syntax.length &&
+                           text.length - range.end >= bold_and_italic_syntax.length
+                       ) {
+                           // If text is both bold and italic.
+                           const has_bold_and_italic_syntax =
+                               text.slice(range.start - bold_and_italic_syntax.length, range.start) ===
+                                   bold_and_italic_syntax &&
+                               text.slice(range.end, range.end + bold_and_italic_syntax.length) ===
+                                   bold_and_italic_syntax;
+                           if (has_bold_and_italic_syntax) {
+                               is_selected_text_italic = true;
+                           }
+                       }
+                   } else if (has_italic_syntax) {
+                       // If text is only italic.
+                       is_selected_text_italic = true;
+                   }
+               }
+   
+               if (is_selected_text_italic) {
+                   // If text has italic syntax around it, we remove the italic syntax.
+                   text =
+                       text.slice(0, range.start - italic_syntax.length) +
+                       text.slice(range.start, range.end) +
+                       text.slice(range.end + italic_syntax.length);
+                   insert_and_scroll_into_view(text, $textarea, true);
+                   field.setSelectionRange(
+                       range.start - italic_syntax.length,
+                       range.end - italic_syntax.length,
+                   );
+                   break;
+               } else if (
+                   selected_text.length > italic_syntax.length * 2 &&
+                   // If the selected text contains italic syntax
+                   selected_text.startsWith(italic_syntax) &&
+                   selected_text.endsWith(italic_syntax)
+               ) {
+                   if (is_inner_text_formatted(bold_syntax)) {
+                       if (
+                           selected_text.length > bold_and_italic_syntax.length * 2 &&
+                           selected_text.startsWith(bold_and_italic_syntax) &&
+                           selected_text.endsWith(bold_and_italic_syntax)
+                       ) {
+                           // If selected text is both bold and italic.
+                           is_inner_text_italic = true;
+                       }
+                   } else {
+                       // If selected text is only italic.
+                       is_inner_text_italic = true;
+                   }
+               }
+   
+               if (is_inner_text_italic) {
+                   // We remove the italic_syntax from within the selected text.
+                   text =
+                       text.slice(0, range.start) +
+                       text.slice(
+                           range.start + italic_syntax.length,
+                           range.end - italic_syntax.length,
+                       ) +
+                       text.slice(range.end);
+                   insert_and_scroll_into_view(text, $textarea, true);
+                   field.setSelectionRange(range.start, range.end - italic_syntax.length * 2);
+                   break;
+               }
+   
+               wrapFieldSelection(field, italic_syntax);
+               break;
+           case "bulleted":
+           case "numbered":
+               format_list(type);
+               break;
+           case "strikethrough": {
+               const strikethrough_syntax = "~~";
+               format(strikethrough_syntax);
+               break;
+           }
+           case "code": {
+               const inline_code_syntax = "`";
+               let block_code_syntax_start = "```\n";
+               let block_code_syntax_end = "\n```";
+               // If there is no text selected or the selected text is either multiline or
+               // already using multiline code syntax, we use multiline code syntax.
+               if (
+                   selected_text === "" ||
+                   selected_text.includes("\n") ||
+                   is_selection_formatted(block_code_syntax_start, block_code_syntax_end)
+               ) {
+                   // Add newlines before and after, if not already present.
+                   if (range.start > 0 && text[range.start - 1] !== "\n") {
+                       block_code_syntax_start = "\n" + block_code_syntax_start;
+                   }
+                   if (range.end < text.length && text[range.end] !== "\n") {
+                       block_code_syntax_end = block_code_syntax_end + "\n";
+                   }
+                   const added_fence = format(block_code_syntax_start, block_code_syntax_end);
+                   if (added_fence) {
+                       const cursor_after_opening_fence =
+                           range.start + block_code_syntax_start.length - 1;
+                       field.setSelectionRange(cursor_after_opening_fence, cursor_after_opening_fence);
+                       set_code_formatting_button_triggered(true);
+                       // Trigger typeahead lookup with a click.
+                       field.click();
+                   }
+               } else {
+                   format(inline_code_syntax);
+               }
+               break;
+           }
+           case "link": {
+               // Ctrl + L: Insert a link to selected text
+               format_link();
+               break;
+           }
+           case "linked": {
+               // From a paste event with a URL as inserted content
+               wrapFieldSelection(field, "[", `](${inserted_content})`);
+               // Put the cursor at the end of the selection range
+               // and all wrapped material
+               $textarea.caret(range.end + `[](${inserted_content})`.length);
+               break;
+           }
+           case "quote": {
+               let quote_syntax_start = "```quote\n";
+               let quote_syntax_end = "\n```";
+               // Add newlines before and after, if not already present.
+               if (range.start > 0 && text[range.start - 1] !== "\n") {
+                   quote_syntax_start = "\n" + quote_syntax_start;
+               }
+               if (range.end < text.length && text[range.end] !== "\n") {
+                   quote_syntax_end = quote_syntax_end + "\n";
+               }
+               format(quote_syntax_start, quote_syntax_end);
+               break;
+           }
+           case "spoiler":
+               format_spoiler();
+               break;
+           case "latex": {
+               const inline_latex_syntax = "$$";
+               let block_latex_syntax_start = "```math\n";
+               let block_latex_syntax_end = "\n```";
+               // If there is no text selected or the selected text is either multiline or
+               // already using multiline math syntax, we use multiline math syntax.
+               if (
+                   selected_text === "" ||
+                   selected_text.includes("\n") ||
+                   is_selection_formatted(block_latex_syntax_start, block_latex_syntax_end)
+               ) {
+                   // Add newlines before and after, if not already present.
+                   if (range.start > 0 && text[range.start - 1] !== "\n") {
+                       block_latex_syntax_start = "\n" + block_latex_syntax_start;
+                   }
+                   if (range.end < text.length && text[range.end] !== "\n") {
+                       block_latex_syntax_end = block_latex_syntax_end + "\n";
+                   }
+                   format(block_latex_syntax_start, block_latex_syntax_end);
+               } else {
+                   format(inline_latex_syntax);
+               }
+               break;
+           }
+       }
+   }
+   
+   /* TODO: This functions don't belong in this module, as they have
+    * nothing to do with the compose textarea. */
+   export function hide_compose_spinner(): void {
+       compose_spinner_visible = false;
+       $(".compose-submit-button .loader").hide();
+       $(".compose-submit-button .zulip-icon-send").show();
+       $(".compose-submit-button").removeClass("disable-btn");
+   }
+   
+   export function show_compose_spinner(): void {
+       compose_spinner_visible = true;
+       // Always use white spinner.
+       loading.show_button_spinner($(".compose-submit-button .loader"), true);
+       $(".compose-submit-button .zulip-icon-send").hide();
+       $(".compose-submit-button").addClass("disable-btn");
+   }
+   
+   export function get_compose_click_target(e: JQuery.ClickEvent): Element {
+       const compose_control_buttons_popover = popover_menus.get_compose_control_buttons_popover();
+       if (
+           compose_control_buttons_popover &&
+           $(compose_control_buttons_popover.popper).has(e.target).length
+       ) {
+           return compose_control_buttons_popover.reference;
+       }
+       return e.target;
+   }
