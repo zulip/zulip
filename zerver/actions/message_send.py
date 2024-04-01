@@ -1997,9 +1997,16 @@ def internal_prep_huddle_message(
 
 
 def internal_send_huddle_message(
-    realm: Realm, sender: UserProfile, emails: List[str], content: str
+    realm: Realm,
+    sender: UserProfile,
+    content: str,
+    *,
+    emails: Optional[List[str]] = None,
+    recipient_users: Optional[List[UserProfile]] = None,
 ) -> Optional[int]:
-    message = internal_prep_huddle_message(realm, sender, content, emails=emails)
+    message = internal_prep_huddle_message(
+        realm, sender, content, emails=emails, recipient_users=recipient_users
+    )
 
     if message is None:
         return None
