@@ -1,4 +1,5 @@
 import $ from "jquery";
+import tippy from "tippy.js";
 
 import render_settings_custom_user_profile_field from "../templates/settings/custom_user_profile_field.hbs";
 
@@ -7,7 +8,7 @@ import {$t} from "./i18n";
 import * as people from "./people";
 import * as pill_typeahead from "./pill_typeahead";
 import {realm} from "./state_data";
-import * as typeahead_helper from "./typeahead_helper";
+import * as ui_util from "./ui_util";
 import * as user_pill from "./user_pill";
 
 export function append_custom_profile_fields(element_id, user_id) {
@@ -165,22 +166,23 @@ export function initialize_custom_pronouns_type_fields(element_id) {
         $t({defaultMessage: "she/her"}),
         $t({defaultMessage: "they/them"}),
     ];
-    const bootstrap_typeahead_input = {
-        $element: $(element_id).find(".pronouns_type_field"),
-        type: "input",
-    };
-    bootstrap_typeahead.create(bootstrap_typeahead_input, {
-        items: 3,
-        fixed: true,
-        helpOnEmptyStrings: true,
-        source() {
-            return commonly_used_pronouns;
-        },
-        sorter(items, query) {
-            return bootstrap_typeahead.defaultSorter(items, query);
-        },
-        highlighter_html(item) {
-            return typeahead_helper.render_typeahead_item({primary: item});
-        },
+
+    const $inputField = $(element_id).find(".pronouns_type_field");
+
+    const tooltipContent = ui_util.parse_html(`
+   <div>
+       <b>Commonly Used Pronouns:</b>
+       <ul>
+           <li>${commonly_used_pronouns[0]}</li>
+           <li>${commonly_used_pronouns[1]}</li>
+           <li>${commonly_used_pronouns[2]}</li>
+       </ul>
+   </div>
+`);
+
+    tippy($inputField.get(0), {
+        content: tooltipContent,
+        interactive: true,
+        trigger: "click",
     });
 }
