@@ -1849,13 +1849,17 @@ class ScrubRealmTest(ZulipTestCase):
             notification_bot, get_stream("Scotland", zulip), "test", "test"
         )
         internal_send_private_message(notification_bot, othello, "test")
-        internal_send_huddle_message(zulip, notification_bot, [othello.email, iago.email], "test")
+        internal_send_huddle_message(
+            zulip, notification_bot, "test", emails=[othello.email, iago.email]
+        )
 
         internal_send_stream_message(
             notification_bot, get_stream("Shakespeare", lear), "test", "test"
         )
         internal_send_private_message(notification_bot, king, "test")
-        internal_send_huddle_message(lear, notification_bot, [cordelia.email, king.email], "test")
+        internal_send_huddle_message(
+            lear, notification_bot, "test", emails=[cordelia.email, king.email]
+        )
 
         Attachment.objects.filter(realm=zulip).delete()
         Attachment.objects.filter(realm=lear).delete()

@@ -454,7 +454,7 @@ def process_missed_message(to: str, message: EmailMessage) -> None:
         display_recipient = get_display_recipient(recipient)
         emails = [user_dict["email"] for user_dict in display_recipient]
         recipient_str = ", ".join(emails)
-        internal_send_huddle_message(user_profile.realm, user_profile, emails, body)
+        internal_send_huddle_message(user_profile.realm, user_profile, body, emails=emails)
     else:
         raise AssertionError("Invalid recipient type!")
 
