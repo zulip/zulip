@@ -691,8 +691,8 @@ type setting_property_type =
 export function check_property_changed(
     elem: HTMLElement,
     for_realm_default_settings: boolean,
-    sub: StreamSubscription,
-    group: UserGroup,
+    sub: StreamSubscription | undefined,
+    group: UserGroup | undefined,
 ): boolean {
     const $elem = $(elem);
     // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
@@ -776,8 +776,8 @@ function switching_to_private(
 export function save_discard_widget_status_handler(
     $subsection: JQuery,
     for_realm_default_settings: boolean,
-    sub: StreamSubscription,
-    group: UserGroup,
+    sub: StreamSubscription | undefined,
+    group: UserGroup | undefined,
 ): void {
     $subsection.find(".subsection-failed-status p").hide();
     $subsection.find(".save-button").show();
