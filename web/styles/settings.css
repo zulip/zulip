@@ -540,18 +540,12 @@ input[type="checkbox"] {
     margin-top: 10px;
 }
 
-.language_selection_widget {
-    .title {
-        margin-bottom: var(--margin-bottom-field-description);
-    }
+.language_selection_widget .language_selection_button {
+    text-decoration: none;
+    color: hsl(0deg 0% 20%);
 
-    .language_selection_button {
-        text-decoration: none;
-        color: hsl(0deg 0% 20%);
-
-        .fa.fa-pencil {
-            margin-left: 5px;
-        }
+    .fa.fa-pencil {
+        margin-left: 5px;
     }
 }
 
