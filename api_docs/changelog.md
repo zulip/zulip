@@ -378,10 +378,11 @@ No changes; feature level used for Zulip 8.0 release.
   to create reusable invitation links. Previously, this endpoint was
   restricted to admin users only.
 
-* `GET /invites`: Endpoint response for non-admin users now includes both
-  email invitations and reusable invitation links that they have created.
-  Previously, non-admin users could only create email invitations, and
-  therefore the response did not include reusable invitation links for these users.
+* [`GET /invites`](/api/get-invites): Endpoint response for non-admin users now
+  includes both email invitations and reusable invitation links that they have
+  created. Previously, non-admin users could only create email invitations, and
+  therefore the response did not include reusable invitation links for these
+  users.
 
 * `DELETE /invites/multiuse/{invite_id}`: Non-admin users can now revoke
   reusable invitation links they have created. Previously, only admin users could
@@ -611,8 +612,8 @@ No changes; feature level used for Zulip 7.0 release.
 
 **Feature level 180**
 
-* `POST /invites`: Added support for invitations specifying the empty
-  list as the user's initial stream subscriptions. Previously, this
+* [`POST /invites`](/api/send-invites): Added support for invitations specifying
+  the empty list as the user's initial stream subscriptions. Previously, this
   returned an error. This change was also backported to Zulip 6.2, and
   is available at feature levels 157-158 as well.
 
@@ -848,8 +849,8 @@ releases.
 
 **Feature level 157**
 
-* `POST /invites`: Added support for invitations specifying the empty
-  list as the user's initial stream subscriptions. Previously, this
+* [`POST /invites`](/api/send-invites): Added support for invitations specifying
+  the empty list as the user's initial stream subscriptions. Previously, this
   returned an error. This change was backported from the Zulip 7.0
   branch, and thus is available at feature levels 157-158 and 180+.
 
@@ -1107,8 +1108,8 @@ user's profile.
 
 **Feature level 126**
 
-* `POST /invites`, `POST /invites/multiuse`: Replaced `invite_expires_in_days`
-  parameter with `invite_expires_in_minutes`.
+* [`POST /invites`](/api/send-invites), `POST /invites/multiuse`: Replaced
+  `invite_expires_in_days` parameter with `invite_expires_in_minutes`.
 
 **Feature level 125**
 
@@ -1167,9 +1168,9 @@ No changes; feature level used for Zulip 5.0 release.
 
 **Feature level 117**
 
-* `POST /invites`, `POST /invites/multiuse`: Added support for passing
-  `null` as the `invite_expires_in_days` parameter to request an
-  invitation that never expires.
+* [`POST /invites`](/api/send-invites), `POST /invites/multiuse`: Added
+  support for passing `null` as the `invite_expires_in_days` parameter
+  to request an invitation that never expires.
 
 **Feature level 116**
 
@@ -1327,7 +1328,7 @@ No changes; feature level used for Zulip 5.0 release.
 
 * [`PATCH /realm/user_settings_defaults`](/api/update-realm-user-settings-defaults):
   Added new endpoint to update default values of user settings in a realm.
-* `POST /invites`, `POST /invites/multiuse`: Added
+* [`POST /invites`](/api/send-invites), `POST /invites/multiuse`: Added
   `invite_expires_in_days` parameter encoding the number days before
   the invitation should expire.
 
@@ -1588,8 +1589,8 @@ No changes; feature level used for Zulip 4.0 release.
 
 **Feature level 61**
 
-* `POST /invites`, `POST /invites/multiuse`: Added support for
-  inviting users as moderators.
+* [`POST /invites`](/api/send-invites), `POST /invites/multiuse`: Added
+  support for inviting users as moderators.
 
 **Feature level 60**
 
@@ -1867,8 +1868,8 @@ No changes; feature level used for Zulip 3.0 release.
   encoded as integers; (previously the implementation could send
   floats incorrectly suggesting that microsecond precision is
   relevant).
-* `GET /invites`: Now encodes the user ID of the person who created
-   the invitation as `invited_by_user_id`, replacing the previous
+* [`GET /invites`](/api/get-invites): Now encodes the user ID of the person
+   who created the invitation as `invited_by_user_id`, replacing the previous
    `ref` field (which had that user's Zulip display email address).
 * [`POST /register`](/api/register-queue): The encoding of an
   unlimited `realm_message_retention_days` in the response was changed
