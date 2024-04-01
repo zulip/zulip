@@ -23,7 +23,7 @@ import * as user_status from "./user_status";
 import * as util from "./util";
 
 // TODO: Refactor to push this into a field of ComposeTriggeredOptions.
-type messageType = "stream" | "private";
+type MessageType = "stream" | "private";
 type ComposeTriggeredOptions = {
     trigger: string;
     private_message_recipient: string;
@@ -32,7 +32,7 @@ type ComposeTriggeredOptions = {
 };
 type ComposePlaceholderOptions = {
     direct_message_user_ids: number[];
-    message_type: messageType;
+    message_type: MessageType;
     stream_id: number;
     topic: string;
 };
@@ -87,7 +87,7 @@ export function insert_and_scroll_into_view(
     autosize_textarea($textarea);
 }
 
-function get_focus_area(msg_type: messageType, opts: ComposeTriggeredOptions): string {
+function get_focus_area(msg_type: MessageType, opts: ComposeTriggeredOptions): string {
     // Set focus to "Topic" when narrowed to a stream+topic
     // and "Start new conversation" button clicked.
     if (msg_type === "stream" && opts.stream_id && !opts.topic) {
@@ -111,7 +111,7 @@ function get_focus_area(msg_type: messageType, opts: ComposeTriggeredOptions): s
 // Export for testing
 export const _get_focus_area = get_focus_area;
 
-export function set_focus(msg_type: messageType, opts: ComposeTriggeredOptions): void {
+export function set_focus(msg_type: MessageType, opts: ComposeTriggeredOptions): void {
     // Called mainly when opening the compose box or switching the
     // message type to set the focus in the first empty input in the
     // compose box.
