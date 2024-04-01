@@ -7,7 +7,7 @@ import logging
 import re
 from dataclasses import dataclass
 from email.headerregistry import Address
-from functools import lru_cache
+from functools import cache
 from typing import (
     TYPE_CHECKING,
     Any,
@@ -162,7 +162,7 @@ def has_apns_credentials() -> bool:
     return settings.APNS_TOKEN_KEY_FILE is not None or settings.APNS_CERT_FILE is not None
 
 
-@lru_cache(maxsize=None)
+@cache
 def get_apns_context() -> Optional[APNsContext]:
     # We lazily do this import as part of optimizing Zulip's base
     # import time.
