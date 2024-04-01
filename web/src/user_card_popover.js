@@ -686,11 +686,11 @@ function register_click_handlers() {
     $("body").on("click", ".user-card-popover-actions .narrow_to_private_messages", (e) => {
         const user_id = elem_to_user_id($(e.target).parents("ul"));
         const email = people.get_by_user_id(user_id).email;
+        narrow.by("dm", email, {trigger: "user sidebar popover"});
         hide_all();
         if (overlays.any_active()) {
             overlays.close_active();
         }
-        narrow.by("dm", email, {trigger: "user sidebar popover"});
         e.stopPropagation();
         e.preventDefault();
     });
@@ -698,11 +698,11 @@ function register_click_handlers() {
     $("body").on("click", ".user-card-popover-actions .narrow_to_messages_sent", (e) => {
         const user_id = elem_to_user_id($(e.target).parents("ul"));
         const email = people.get_by_user_id(user_id).email;
+        narrow.by("sender", email, {trigger: "user sidebar popover"});
         hide_all();
         if (overlays.any_active()) {
             overlays.close_active();
         }
-        narrow.by("sender", email, {trigger: "user sidebar popover"});
         e.stopPropagation();
         e.preventDefault();
     });
