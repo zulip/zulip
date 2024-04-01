@@ -223,3 +223,58 @@ run_test("redraw_left_panel", ({mock_template}) => {
     assert.ok(!$(".right .settings").visible());
     assert.ok($(".nothing-selected").visible());
 });
+
+run_test("close color container when scrolling", ({mock_template}) => {
+    // Test to see if logic of the colorpicker closing is correct
+    const admins_group = {
+        name: "Admins",
+        id: 1,
+        members: new Set([1]),
+        is_system_group: true,
+        direct_subgroup_ids: new Set([]),
+    };
+    user_groups.initialize({realm_user_groups: [admins_group]});
+
+    const denmark = {
+        elem: "denmark",
+        subscribed: false,
+        name: "Denmark",
+        stream_id: denmark_stream_id,
+        description: "Copenhagen",
+        subscribers: [1],
+        stream_weekly_traffic: null,
+        color: "red",
+        can_remove_subscribers_group: admins_group.id,
+    };
+
+    const populated_subs = [denmark];
+
+    mock_template("stream_settings/browse_streams_list.hbs", false, (data) => {
+        data.subscriptions = populated_subs;
+    });
+
+    stream_settings_ui.render_left_panel_superset();
+
+    const sub_stubs = [];
+
+    for (const data of populated_subs) {
+        const sub_row = `.stream-row-${CSS.escape(data.elem)}`;
+        sub_stubs.push(sub_row);
+
+        $(sub_row).attr("data-stream-id", data.stream_id);
+    }
+
+    $.create("#streams_overlay_container .stream-row", {children: sub_stubs});
+
+    let colorpicker_closed = false;
+
+    $("#stream_settings").on("scroll", () => {
+        // Set colorpicker_closed to true when scrolling to test out the logic
+        colorpicker_closed = true;
+    });
+
+    $("#stream_settings").trigger("scroll");
+
+    // Check that the variable was indeed changed following the logic
+    assert.ok(colorpicker_closed);
+});

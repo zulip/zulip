@@ -133,6 +133,13 @@ function show_subscription_settings(sub) {
     const color = stream_data.get_color(sub.stream_id);
     stream_color.set_colorpicker_color($colorpicker, color);
     stream_ui_updates.update_add_subscriptions_elements(sub);
+    const $scroll_container = scroll_util.get_scroll_element($("#stream_settings"));
+
+    $scroll_container.on("scroll", () => {
+        $colorpicker.spectrum("destroy");
+        const color = stream_data.get_color(sub.stream_id);
+        stream_color.set_colorpicker_color($colorpicker, color);
+    });
 
     if (!sub.render_subscribers) {
         return;
