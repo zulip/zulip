@@ -111,6 +111,7 @@ def set_up_streams_for_new_human_user(
     user_profile: UserProfile,
     prereg_user: Optional[PreregistrationUser] = None,
     default_stream_groups: Sequence[DefaultStreamGroup] = [],
+    add_initial_stream_subscriptions: bool = True,
 ) -> None:
     realm = user_profile.realm
 
@@ -128,19 +129,22 @@ def set_up_streams_for_new_human_user(
         prereg_user.referred_by is not None or prereg_user.multiuse_invite is not None
     )
 
-    # If the Preregistration object didn't explicitly list some streams (it
-    # happens when user directly signs up without any invitation), we add the
-    # default streams for the realm. Note that we are fine with "slim" Stream
-    # objects for calling bulk_add_subscriptions and add_new_user_history,
-    # which we verify in StreamSetupTest tests that check query counts.
-    if len(streams) == 0 and not user_was_invited:
-        streams = get_slim_realm_default_streams(realm.id)
+    if add_initial_stream_subscriptions:
+        # If the Preregistration object didn't explicitly list some streams (it
+        # happens when user directly signs up without any invitation), we add the
+        # default streams for the realm. Note that we are fine with "slim" Stream
+        # objects for calling bulk_add_subscriptions and add_new_user_history,
+        # which we verify in StreamSetupTest tests that check query counts.
+        if len(streams) == 0 and not user_was_invited:
+            streams = get_slim_realm_default_streams(realm.id)
 
-    for default_stream_group in default_stream_groups:
-        default_stream_group_streams = default_stream_group.streams.all()
-        for stream in default_stream_group_streams:
-            if stream not in streams:
-                streams.append(stream)
+        for default_stream_group in default_stream_groups:
+            default_stream_group_streams = default_stream_group.streams.all()
+            for stream in default_stream_group_streams:
+                if stream not in streams:
+                    streams.append(stream)
+    else:
+        streams = []
 
     bulk_add_subscriptions(
         realm,
@@ -220,6 +224,7 @@ def process_new_human_user(
     prereg_user: Optional[PreregistrationUser] = None,
     default_stream_groups: Sequence[DefaultStreamGroup] = [],
     realm_creation: bool = False,
+    add_initial_stream_subscriptions: bool = True,
 ) -> None:
     # subscribe to default/invitation streams and
     # fill in some recent historical messages
@@ -227,6 +232,7 @@ def process_new_human_user(
         user_profile=user_profile,
         prereg_user=prereg_user,
         default_stream_groups=default_stream_groups,
+        add_initial_stream_subscriptions=add_initial_stream_subscriptions,
     )
 
     realm = user_profile.realm
@@ -447,6 +453,7 @@ def do_create_user(
     acting_user: Optional[UserProfile],
     enable_marketing_emails: bool = True,
     email_address_visibility: Optional[int] = None,
+    add_initial_stream_subscriptions: bool = True,
 ) -> UserProfile:
     with transaction.atomic():
         user_profile = create_user(
@@ -555,6 +562,7 @@ def do_create_user(
             prereg_user=prereg_user,
             default_stream_groups=default_stream_groups,
             realm_creation=realm_creation,
+            add_initial_stream_subscriptions=add_initial_stream_subscriptions,
         )
 
     if realm_creation:
