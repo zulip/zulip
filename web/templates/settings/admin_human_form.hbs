@@ -17,7 +17,7 @@
             <input type="text" autocomplete="off" name="user_id" class="modal_text_input" value="{{ user_id }}" readonly/>
         </div>
         <div class="input-group">
-            <label class="input-label" for="user-role-select">{{t 'User role' }}
+            <label for="user-role-select">{{t 'User role' }}
                 {{> ../help_link_widget link="/help/roles-and-permissions" }}
             </label>
             <select name="user-role-select" class="bootstrap-focus-style modal_select" id="user-role-select" data-setting-widget-type="number" {{#if disable_role_dropdown}}disabled{{/if}}>
