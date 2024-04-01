@@ -360,6 +360,10 @@
     }
 }
 
+.modal-field-label {
+    margin-bottom: var(--margin-bottom-field-description);
+}
+
 .dropdown-widget-button {
     width: 206px;
 }
