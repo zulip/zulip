@@ -148,7 +148,7 @@ function switch_message_type(message_type) {
     };
     update_compose_for_message_type(message_type, opts);
     update_placeholder_text();
-    compose_ui.set_focus(message_type, opts);
+    compose_ui.set_focus(opts);
 }
 
 function update_recipient_label(stream_id) {
