@@ -11,7 +11,11 @@ from django.utils.translation import override as override_language
 from analytics.lib.counts import COUNT_STATS, do_increment_logging_stat
 from confirmation import settings as confirmation_settings
 from zerver.actions.invites import notify_invites_changed
-from zerver.actions.message_send import internal_send_private_message, internal_send_stream_message
+from zerver.actions.message_send import (
+    internal_send_huddle_message,
+    internal_send_private_message,
+    internal_send_stream_message,
+)
 from zerver.actions.streams import bulk_add_subscriptions, send_peer_subscriber_events
 from zerver.actions.user_groups import do_send_user_group_members_update_event
 from zerver.actions.users import change_user_is_active, get_service_dicts_for_bot
@@ -81,6 +85,16 @@ def send_message_to_signup_notification_stream(
     internal_send_stream_message(sender, signup_announcements_stream, topic_name, message)
 
 
+def send_group_direct_message_to_admins(sender: UserProfile, realm: Realm, content: str) -> None:
+    administrators = list(realm.get_human_admin_users())
+    internal_send_huddle_message(
+        realm,
+        sender,
+        content,
+        recipient_users=administrators,
+    )
+
+
 def notify_new_user(user_profile: UserProfile) -> None:
     user_count = realm_user_count(user_profile.realm)
     sender_email = settings.NOTIFICATION_BOT
@@ -92,6 +106,7 @@ def notify_new_user(user_profile: UserProfile) -> None:
             message = _("{user} joined this organization.").format(
                 user=silent_mention_syntax_for_user(user_profile), user_count=user_count
             )
+            send_message_to_signup_notification_stream(sender, user_profile.realm, message)
 
         if settings.BILLING_ENABLED:
             from corporate.lib.registration import generate_licenses_low_warning_message_if_required
@@ -102,8 +117,7 @@ def notify_new_user(user_profile: UserProfile) -> None:
             if licenses_low_warning_message is not None:
                 message += "\n"
                 message += licenses_low_warning_message
-
-        send_message_to_signup_notification_stream(sender, user_profile.realm, message)
+                send_group_direct_message_to_admins(sender, user_profile.realm, message)
 
 
 def set_up_streams_for_new_human_user(

@@ -16,6 +16,8 @@ from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.timezone import canonicalize_timezone
 from zerver.models import Message, Realm, Recipient, Stream, UserProfile
 from zerver.models.realms import get_realm
+from zerver.models.recipients import get_huddle_user_ids
+from zerver.models.users import get_system_bot
 from zerver.signals import JUST_CREATED_THRESHOLD, get_device_browser, get_device_os
 
 
@@ -294,10 +296,14 @@ class TestNotifyNewUser(ZulipTestCase):
 
     def test_notify_realm_of_new_user_in_manual_license_management(self) -> None:
         realm = get_realm("zulip")
+        admin_user_ids = set(realm.get_human_admin_users().values_list("id", flat=True))
+        notification_bot = get_system_bot(settings.NOTIFICATION_BOT, realm.id)
+        expected_group_direct_message_user_ids = admin_user_ids | {notification_bot.id}
 
         user_count = get_latest_seat_count(realm)
+        extra_licenses = 5
         self.subscribe_realm_to_monthly_plan_on_manual_license_management(
-            realm, user_count + 5, user_count + 5
+            realm, user_count + extra_licenses, user_count + extra_licenses
         )
 
         user_no = 0
@@ -316,8 +322,24 @@ class TestNotifyNewUser(ZulipTestCase):
             notify_new_user(new_user)
 
             message = self.get_last_message()
-            actual_stream = Stream.objects.get(id=message.recipient.type_id)
-            self.assertEqual(actual_stream, realm.signup_announcements_stream)
+            if extra_licenses - user_no > 3:
+                # More than 3 licenses remaining. No group DM.
+                actual_stream = Stream.objects.get(id=message.recipient.type_id)
+                self.assertEqual(actual_stream, realm.signup_announcements_stream)
+            else:
+                # Stream message
+                second_to_last_message = self.get_second_to_last_message()
+                actual_stream = Stream.objects.get(id=second_to_last_message.recipient.type_id)
+                self.assertEqual(actual_stream, realm.signup_announcements_stream)
+                self.assertIn(
+                    f"@_**new user {user_no}|{new_user.id}** joined this organization.",
+                    second_to_last_message.content,
+                )
+                # Group DM
+                self.assertEqual(
+                    set(get_huddle_user_ids(message.recipient)),
+                    expected_group_direct_message_user_ids,
+                )
             self.assertIn(
                 f"@_**new user {user_no}|{new_user.id}** joined this organization.",
                 message.content,
