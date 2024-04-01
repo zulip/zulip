@@ -37,7 +37,8 @@ class OIDCIdPConfigDict(TypedDict, total=False):
     auto_signup: bool
 
 
-class SCIMConfigDict(TypedDict):
+class SCIMConfigDict(TypedDict, total=False):
     bearer_token: str
     scim_client_name: str
     name_formatted_included: bool
+    create_guests_without_streams: bool
