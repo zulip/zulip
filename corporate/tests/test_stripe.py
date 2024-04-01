@@ -1,3 +1,4 @@
+import itertools
 import json
 import operator
 import os
@@ -4599,11 +4600,11 @@ class BillingHelpersTest(ZulipTestCase):
         for i, boundary in enumerate(period_boundaries):
             self.assertEqual(add_months(anchor, i), boundary)
         # Test next_month for small values
-        for last, next_ in zip(period_boundaries[:-1], period_boundaries[1:]):
+        for last, next_ in itertools.pairwise(period_boundaries):
             self.assertEqual(next_month(anchor, last), next_)
         # Test next_month for large values
         period_boundaries = [dt.replace(year=dt.year + 100) for dt in period_boundaries]
-        for last, next_ in zip(period_boundaries[:-1], period_boundaries[1:]):
+        for last, next_ in itertools.pairwise(period_boundaries):
             self.assertEqual(next_month(anchor, last), next_)
 
     def test_compute_plan_parameters(self) -> None:
