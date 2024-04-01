@@ -14,7 +14,7 @@ import subprocess
 import tempfile
 from contextlib import suppress
 from datetime import datetime
-from functools import lru_cache
+from functools import cache
 from typing import Any, Callable, Dict, Iterable, List, Mapping, Optional, Set, Tuple, TypedDict
 
 import orjson
@@ -2232,7 +2232,7 @@ def chunkify(lst: List[int], chunk_size: int) -> List[List[int]]:
 def export_messages_single_user(
     user_profile: UserProfile, *, output_dir: Path, reaction_message_ids: Set[int]
 ) -> None:
-    @lru_cache(maxsize=None)
+    @cache
     def get_recipient(recipient_id: int) -> str:
         recipient = Recipient.objects.get(id=recipient_id)
 

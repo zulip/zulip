@@ -9,7 +9,7 @@ import traceback
 import uuid
 from collections import deque
 from contextlib import suppress
-from functools import lru_cache
+from functools import cache
 from typing import (
     AbstractSet,
     Any,
@@ -1110,7 +1110,7 @@ def process_message_event(
     recipient_type_name: str = wide_dict["type"]
     sending_client: str = wide_dict["client"]
 
-    @lru_cache(maxsize=None)
+    @cache
     def get_client_payload(
         apply_markdown: bool, client_gravatar: bool, can_access_sender: bool
     ) -> Dict[str, Any]:
