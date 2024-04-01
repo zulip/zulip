@@ -43,6 +43,8 @@ type SelectedLinesSections = {
     separating_new_line_after: boolean;
     after_lines: string;
 };
+const auto_surround_keys = ["[", "(", "{", '"', "'", "`"];
+type AutoSurroundKey = (typeof auto_surround_keys)[number];
 
 export let compose_spinner_visible = false;
 export let shift_pressed = false; // true or false
@@ -383,6 +385,7 @@ export function handle_keydown(
     // key was on. We turn to key to lowercase so the key bindings
     // work regardless of whether Caps Lock was on or not.
     const key = event.key.toLowerCase();
+    const is_empty_selection = $textarea.range().text.length === 0;
     let type;
     if (key === "b") {
         type = "bold";
@@ -390,6 +393,8 @@ export function handle_keydown(
         type = "italic";
     } else if (key === "l" && event.shiftKey) {
         type = "link";
+    } else if (auto_surround_keys.includes(key) && !is_empty_selection) {
+        type = "auto-surround";
     }
 
     // detect Cmd and Ctrl key
@@ -397,6 +402,10 @@ export function handle_keydown(
 
     if (type && isCmdOrCtrl) {
         format_text($textarea, type);
+        autosize_textarea($textarea);
+        event.preventDefault();
+    } else if (type === "auto-surround") {
+        format_text($textarea, "auto-surround", key);
         autosize_textarea($textarea);
         event.preventDefault();
     }
@@ -898,6 +907,18 @@ export function format_text(
         field.setSelectionRange(new_start, new_end);
     };
 
+    const get_auto_surround_syntax_end = (key: AutoSurroundKey): string => {
+        const auto_surround_endings: Record<AutoSurroundKey, string> = {
+            "[": "]",
+            "(": ")",
+            "{": "}",
+            "'": "'",
+            "`": "`",
+            '"': '"',
+        };
+        return auto_surround_endings[key];
+    };
+
     switch (type) {
         case "bold":
             // Ctrl + B: Toggle bold syntax on selection.
@@ -1081,6 +1102,12 @@ export function format_text(
             } else {
                 format(inline_latex_syntax);
             }
+            break;
+        }
+        case "auto-surround": {
+            const syntax_start = inserted_content;
+            const syntax_end = get_auto_surround_syntax_end(syntax_start);
+            format(syntax_start, syntax_end);
             break;
         }
     }

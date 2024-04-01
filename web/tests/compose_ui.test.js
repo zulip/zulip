@@ -1140,6 +1140,8 @@ run_test("markdown_shortcuts", ({override_rewire}) => {
     override_rewire(compose_ui, "format_text", (_$textarea, type) => {
         format_text_type = type;
     });
+    // Simulate text selection
+    $("textarea#compose-textarea").range = () => ({text: "Some text"});
 
     const event = {
         key: "b",
@@ -1178,6 +1180,14 @@ run_test("markdown_shortcuts", ({override_rewire}) => {
         event.shiftKey = true;
         compose_ui.handle_keydown(event, $("textarea#compose-textarea"));
         assert.equal(format_text_type, "link");
+        format_text_type = undefined;
+
+        // Test auto-surround:
+        // Auto-surround keys = ( [ { " ' `
+        event.key = "[";
+        event.shiftKey = false;
+        compose_ui.handle_keydown(event, $("textarea#compose-textarea"));
+        assert.equal(format_text_type, "auto-surround");
         format_text_type = undefined;
     }
 
