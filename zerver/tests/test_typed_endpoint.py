@@ -6,7 +6,7 @@ from django.http import HttpRequest, HttpResponse
 from pydantic import BaseModel, ConfigDict, Json, StringConstraints, ValidationInfo, WrapValidator
 from pydantic.dataclasses import dataclass
 from pydantic.functional_validators import ModelWrapValidatorHandler
-from typing_extensions import Annotated, override
+from typing_extensions import Annotated, TypeAlias, override
 
 from zerver.lib.exceptions import ApiParamValidationError, JsonableError
 from zerver.lib.request import RequestConfusingParamsError, RequestVariableMissingError
@@ -26,7 +26,7 @@ from zerver.lib.typed_endpoint import (
 from zerver.lib.validator import WildValue, check_bool
 from zerver.models import UserProfile
 
-ParamTypes = Literal["none", "json_only", "both"]
+ParamTypes: TypeAlias = Literal["none", "json_only", "both"]
 T = TypeVar("T")
 
 

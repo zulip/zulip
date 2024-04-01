@@ -15,6 +15,7 @@ from django.utils.translation import get_language
 from django.utils.translation import gettext as _
 from django.views.decorators.csrf import csrf_exempt
 from pydantic import Json
+from typing_extensions import TypeAlias
 
 from confirmation.models import (
     Confirmation,
@@ -71,7 +72,9 @@ billing_logger = logging.getLogger("corporate.stripe")
 
 
 VALID_NEXT_PAGES = [None, "sponsorship", "upgrade", "billing", "plans", "deactivate"]
-VALID_NEXT_PAGES_TYPE = Literal[None, "sponsorship", "upgrade", "billing", "plans", "deactivate"]
+VALID_NEXT_PAGES_TYPE: TypeAlias = Literal[
+    None, "sponsorship", "upgrade", "billing", "plans", "deactivate"
+]
 
 REMOTE_BILLING_SIGNED_ACCESS_TOKEN_VALIDITY_IN_SECONDS = 2 * 60 * 60
 # We use units of hours here so that we can pass this through to the
