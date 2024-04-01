@@ -1,8 +1,8 @@
-import sys
 from datetime import datetime, timedelta, timezone
 from typing import Sequence
 
 import time_machine
+import zoneinfo
 from django.conf import settings
 from django.core import mail
 from django.test import override_settings
@@ -17,11 +17,6 @@ from zerver.lib.timezone import canonicalize_timezone
 from zerver.models import Message, Realm, Recipient, Stream, UserProfile
 from zerver.models.realms import get_realm
 from zerver.signals import JUST_CREATED_THRESHOLD, get_device_browser, get_device_os
-
-if sys.version_info < (3, 9):  # nocoverage
-    from backports import zoneinfo
-else:  # nocoverage
-    import zoneinfo
 
 
 class SendLoginEmailTest(ZulipTestCase):
