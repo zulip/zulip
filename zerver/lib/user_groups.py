@@ -256,7 +256,7 @@ def user_groups_in_realm_serialized(realm: Realm) -> List[UserGroupDict]:
     Django's ORM doesn't properly support the left join between
     UserGroup and UserGroupMembership that we need.
     """
-    realm_groups = UserGroup.objects.filter(realm=realm)
+    realm_groups = NamedUserGroup.objects.filter(realm=realm)
     group_dicts: Dict[int, UserGroupDict] = {}
     for user_group in realm_groups:
         group_dicts[user_group.id] = dict(
@@ -403,7 +403,9 @@ def get_recursive_subgroups_for_groups(
 
 
 def get_role_based_system_groups_dict(realm: Realm) -> Dict[str, NamedUserGroup]:
-    system_groups = NamedUserGroup.objects.filter(realm=realm, is_system_group=True)
+    system_groups = NamedUserGroup.objects.filter(realm=realm, is_system_group=True).select_related(
+        "usergroup_ptr"
+    )
     system_groups_name_dict = {}
     for group in system_groups:
         system_groups_name_dict[group.name] = group
