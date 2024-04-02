@@ -215,6 +215,14 @@ def send_zulip_update_announcements() -> None:
                 if not is_group_direct_message_sent_to_admins_within_days(realm, days=7):
                     new_zulip_update_announcements_level = latest_zulip_update_announcements_level
             else:
+                # Wait for 24 hours after sending group DM to allow admins to change the
+                # stream for zulip update announcements from it's default value if desired.
+                if (
+                    realm_zulip_update_announcements_level == 0
+                    and is_group_direct_message_sent_to_admins_within_days(realm, days=1)
+                ):
+                    continue
+
                 if realm.zulip_update_announcements_stream is not None:
                     messages = internal_prep_zulip_update_announcements_stream_messages(
                         current_level=realm_zulip_update_announcements_level,

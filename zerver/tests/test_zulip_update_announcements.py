@@ -115,6 +115,74 @@ class ZulipUpdateAnnouncementsTest(ZulipTestCase):
         self.assertEqual(stream_messages[1].content, "Announcement message 4.")
         self.assertEqual(realm.zulip_update_announcements_level, 4)
 
+    @mock.patch(
+        "zerver.lib.zulip_update_announcements.zulip_update_announcements",
+        test_zulip_update_announcements,
+    )
+    def test_send_zulip_update_announcements_with_stream_configured(self) -> None:
+        realm = get_realm("zulip")
+
+        # realm predates the "zulip updates" feature with the
+        # zulip_update_announcements_stream configured.
+        realm.zulip_update_announcements_level = None
+        realm.zulip_update_announcements_stream = get_stream("verona", realm)
+        realm.save(
+            update_fields=["zulip_update_announcements_level", "zulip_update_announcements_stream"]
+        )
+
+        group_direct_messages = Message.objects.filter(
+            realm=realm, recipient__type=Recipient.DIRECT_MESSAGE_GROUP
+        )
+        self.assertFalse(group_direct_messages.exists())
+
+        now = timezone_now()
+        with time_machine.travel(now, tick=False):
+            send_zulip_update_announcements()
+
+        realm.refresh_from_db()
+        self.assertTrue(group_direct_messages.exists())
+        self.assertEqual(realm.zulip_update_announcements_level, 0)
+
+        # Wait for 24 hours before starting to send updates.
+        with time_machine.travel(now + timedelta(hours=10), tick=False):
+            send_zulip_update_announcements()
+        realm.refresh_from_db()
+        self.assertEqual(realm.zulip_update_announcements_level, 0)
+
+        with time_machine.travel(now + timedelta(days=1), tick=False):
+            send_zulip_update_announcements()
+        realm.refresh_from_db()
+        self.assertEqual(realm.zulip_update_announcements_level, 4)
+
+        # Two new updates added.
+        new_updates = [
+            ZulipUpdateAnnouncement(
+                level=5,
+                message="Announcement message 5.",
+            ),
+            ZulipUpdateAnnouncement(
+                level=6,
+                message="Announcement message 6.",
+            ),
+        ]
+        test_zulip_update_announcements.extend(new_updates)
+
+        # verify zulip update announcements sent to configured stream.
+        with time_machine.travel(now + timedelta(days=2), tick=False):
+            send_zulip_update_announcements()
+        realm.refresh_from_db()
+        notification_bot = get_system_bot(settings.NOTIFICATION_BOT, realm.id)
+        stream_messages = Message.objects.filter(
+            realm=realm,
+            sender=notification_bot,
+            recipient__type_id=realm.zulip_update_announcements_stream.id,
+            date_sent__gte=now + timedelta(days=2),
+        ).order_by("id")
+        self.assert_length(stream_messages, 2)
+        self.assertEqual(stream_messages[0].content, "Announcement message 5.")
+        self.assertEqual(stream_messages[1].content, "Announcement message 6.")
+        self.assertEqual(realm.zulip_update_announcements_level, 6)
+
     def test_group_direct_message_with_zulip_updates_stream_set(self) -> None:
         realm = get_realm("zulip")
 
