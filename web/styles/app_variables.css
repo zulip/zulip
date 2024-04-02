@@ -768,9 +768,8 @@
 
     /* Button colors on modals and message editing. */
     --color-exit-button-text: hsl(0deg 0% 100%);
-    --color-exit-button-border: hsl(0deg 0% 0% / 60%);
-    --color-exit-button-background: hsl(211deg 29% 14%);
-    --color-exit-button-background-interactive: hsl(211deg 29% 17%);
+    --color-exit-button-background: hsl(226deg 1% 30% / 50%);
+    --color-exit-button-background-interactive: hsl(226deg 1% 30% / 65%);
 
     /* Emoji-picker colors */
     --color-background-emoji-picker-popover: hsl(0deg 0% 0% / 20%);
