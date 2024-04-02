@@ -194,7 +194,7 @@ def fix_upload_links(data: TableData, message_table: TableName) -> None:
 
 def fix_streams_can_remove_subscribers_group_column(data: TableData, realm: Realm) -> None:
     table = get_db_table(Stream)
-    admins_group = UserGroup.objects.get(
+    admins_group = NamedUserGroup.objects.get(
         name=SystemGroups.ADMINISTRATORS, realm=realm, is_system_group=True
     )
     for stream in data[table]:
@@ -1781,7 +1781,7 @@ def add_users_to_system_user_groups(
     user_profiles: List[UserProfile],
     role_system_groups_dict: Dict[int, NamedUserGroup],
 ) -> None:
-    full_members_system_group = UserGroup.objects.get(
+    full_members_system_group = NamedUserGroup.objects.get(
         name=SystemGroups.FULL_MEMBERS,
         realm=realm,
         is_system_group=True,

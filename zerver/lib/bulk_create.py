@@ -7,13 +7,13 @@ from zerver.lib.create_user import create_user_profile, get_display_email_addres
 from zerver.lib.initial_password import initial_password
 from zerver.lib.streams import render_stream_description
 from zerver.models import (
+    NamedUserGroup,
     Realm,
     RealmAuditLog,
     RealmUserDefault,
     Recipient,
     Stream,
     Subscription,
-    UserGroup,
     UserGroupMembership,
     UserProfile,
 )
@@ -127,10 +127,10 @@ def bulk_create_users(
 
     Subscription.objects.bulk_create(subscriptions_to_create)
 
-    full_members_system_group = UserGroup.objects.get(
+    full_members_system_group = NamedUserGroup.objects.get(
         name=SystemGroups.FULL_MEMBERS, realm=realm, is_system_group=True
     )
-    members_system_group = UserGroup.objects.get(
+    members_system_group = NamedUserGroup.objects.get(
         name=SystemGroups.MEMBERS, realm=realm, is_system_group=True
     )
     group_memberships_to_create: List[UserGroupMembership] = []
@@ -198,7 +198,7 @@ def bulk_create_streams(realm: Realm, stream_dict: Dict[str, Dict[str, Any]]) ->
     existing_streams = {
         name.lower() for name in Stream.objects.filter(realm=realm).values_list("name", flat=True)
     }
-    administrators_user_group = UserGroup.objects.get(
+    administrators_user_group = NamedUserGroup.objects.get(
         name=SystemGroups.ADMINISTRATORS, is_system_group=True, realm=realm
     )
     streams_to_create: List[Stream] = []

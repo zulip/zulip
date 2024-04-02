@@ -126,7 +126,7 @@ def set_default_for_realm_permission_group_settings(realm: Realm) -> None:
 
     for setting_name, permission_configuration in Realm.REALM_PERMISSION_GROUP_SETTINGS.items():
         group_name = permission_configuration.default_group_name
-        setattr(realm, setting_name, system_groups_dict[group_name])
+        setattr(realm, setting_name, system_groups_dict[group_name].usergroup_ptr)
 
     realm.save(update_fields=list(Realm.REALM_PERMISSION_GROUP_SETTINGS.keys()))
 

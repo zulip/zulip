@@ -99,6 +99,7 @@ from zerver.lib.webhooks.common import (
 from zerver.models import (
     Client,
     Message,
+    NamedUserGroup,
     PushDeviceToken,
     Reaction,
     Realm,
@@ -106,7 +107,6 @@ from zerver.models import (
     Recipient,
     Stream,
     Subscription,
-    UserGroup,
     UserGroupMembership,
     UserMessage,
     UserProfile,
@@ -1364,7 +1364,7 @@ Output:
         history_public_to_subscribers = get_default_value_for_history_public_to_subscribers(
             realm, invite_only, history_public_to_subscribers
         )
-        administrators_user_group = UserGroup.objects.get(
+        administrators_user_group = NamedUserGroup.objects.get(
             name=SystemGroups.ADMINISTRATORS, realm=realm, is_system_group=True
         )
 
@@ -1972,7 +1972,7 @@ Output:
         self.send_personal_message(shiva, polonius)
         self.send_huddle_message(aaron, [polonius, zoe])
 
-        members_group = UserGroup.objects.get(name="role:members", realm=realm)
+        members_group = NamedUserGroup.objects.get(name="role:members", realm=realm)
         do_change_realm_permission_group_setting(
             realm, "can_access_all_users_group", members_group, acting_user=None
         )

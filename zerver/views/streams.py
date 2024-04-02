@@ -90,7 +90,7 @@ from zerver.lib.validator import (
     check_union,
     to_non_negative_int,
 )
-from zerver.models import Realm, Stream, UserGroup, UserProfile
+from zerver.models import NamedUserGroup, Realm, Stream, UserProfile
 from zerver.models.users import get_system_bot
 
 
@@ -580,7 +580,7 @@ def add_subscriptions_backend(
         can_remove_subscribers_group_default_name = Stream.stream_permission_group_settings[
             "can_remove_subscribers_group"
         ].default_group_name
-        can_remove_subscribers_group = UserGroup.objects.get(
+        can_remove_subscribers_group = NamedUserGroup.objects.get(
             name=can_remove_subscribers_group_default_name,
             realm=user_profile.realm,
             is_system_group=True,
