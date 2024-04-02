@@ -17,6 +17,9 @@ const stream_data = zrequire("stream_data");
 const people = zrequire("people");
 const {Filter} = zrequire("../src/filter");
 
+const stream_message = "stream";
+const direct_message = "private";
+
 const me = {
     email: "me@example.com",
     user_id: 30,
@@ -698,11 +701,11 @@ test("predicate_basics", () => {
         ["topic", "Bar"],
     ]);
 
-    assert.ok(predicate({type: "stream", stream_id, topic: "bar"}));
-    assert.ok(!predicate({type: "stream", stream_id, topic: "whatever"}));
+    assert.ok(predicate({type: stream_message, stream_id, topic: "bar"}));
+    assert.ok(!predicate({type: stream_message, stream_id, topic: "whatever"}));
     // 9999999 doesn't exist, testing no match
-    assert.ok(!predicate({type: "stream", stream_id: 9999999}));
-    assert.ok(!predicate({type: "private"}));
+    assert.ok(!predicate({type: stream_message, stream_id: 9999999}));
+    assert.ok(!predicate({type: direct_message}));
 
     // For old streams that we are no longer subscribed to, we may not have
     // a sub, but these should still match by stream name.
@@ -716,19 +719,19 @@ test("predicate_basics", () => {
         ["stream", "old-Stream"],
         ["topic", "Bar"],
     ]);
-    assert.ok(predicate({type: "stream", stream_id: 5, topic: "bar"}));
+    assert.ok(predicate({type: stream_message, stream_id: 5, topic: "bar"}));
     // 99999 doesn't exist, testing no match
-    assert.ok(!predicate({type: "stream", stream_id: 99999, topic: "whatever"}));
+    assert.ok(!predicate({type: stream_message, stream_id: 99999, topic: "whatever"}));
 
     predicate = get_predicate([["search", "emoji"]]);
     assert.ok(predicate({}));
 
     predicate = get_predicate([["topic", "Bar"]]);
-    assert.ok(!predicate({type: "private"}));
+    assert.ok(!predicate({type: direct_message}));
 
     predicate = get_predicate([["is", "dm"]]);
-    assert.ok(predicate({type: "private"}));
-    assert.ok(!predicate({type: "stream"}));
+    assert.ok(predicate({type: direct_message}));
+    assert.ok(!predicate({type: stream_message}));
 
     predicate = get_predicate([["streams", "public"]]);
     assert.ok(predicate({}));
@@ -755,14 +758,14 @@ test("predicate_basics", () => {
 
     predicate = get_predicate([["is", "resolved"]]);
     const resolved_topic_name = resolved_topic.resolve_name("foo");
-    assert.ok(predicate({type: "stream", topic: resolved_topic_name}));
+    assert.ok(predicate({type: stream_message, topic: resolved_topic_name}));
     assert.ok(!predicate({topic: resolved_topic_name}));
-    assert.ok(!predicate({type: "stream", topic: "foo"}));
+    assert.ok(!predicate({type: stream_message, topic: "foo"}));
 
     const unknown_stream_id = 999;
     predicate = get_predicate([["in", "home"]]);
     assert.ok(!predicate({stream_id: unknown_stream_id, stream: "unknown"}));
-    assert.ok(predicate({type: "private"}));
+    assert.ok(predicate({type: direct_message}));
 
     make_sub("kiosk", 1234);
     with_overrides(({override}) => {
@@ -781,8 +784,8 @@ test("predicate_basics", () => {
         ["id", 5],
         ["topic", "lunch"],
     ]);
-    assert.ok(predicate({type: "stream", id: 5, topic: "lunch"}));
-    assert.ok(!predicate({type: "stream", id: 5, topic: "dinner"}));
+    assert.ok(predicate({type: stream_message, id: 5, topic: "lunch"}));
+    assert.ok(!predicate({type: stream_message, id: 5, topic: "dinner"}));
 
     predicate = get_predicate([["sender", "Joe@example.com"]]);
     assert.ok(predicate({sender_id: joe.user_id}));
@@ -791,28 +794,28 @@ test("predicate_basics", () => {
     predicate = get_predicate([["dm", "Joe@example.com"]]);
     assert.ok(
         predicate({
-            type: "private",
+            type: direct_message,
             display_recipient: [{id: joe.user_id}],
         }),
     );
     assert.ok(
         !predicate({
-            type: "private",
+            type: direct_message,
             display_recipient: [{id: steve.user_id}],
         }),
     );
     assert.ok(
         !predicate({
-            type: "private",
+            type: direct_message,
             display_recipient: [{id: 999999}],
         }),
     );
-    assert.ok(!predicate({type: "stream"}));
+    assert.ok(!predicate({type: stream_message}));
 
     predicate = get_predicate([["dm", "Joe@example.com,steve@foo.com"]]);
     assert.ok(
         predicate({
-            type: "private",
+            type: direct_message,
             display_recipient: [{id: joe.user_id}, {id: steve.user_id}],
         }),
     );
@@ -821,7 +824,7 @@ test("predicate_basics", () => {
     predicate = get_predicate([["dm", "Joe@example.com,steve@foo.com,me@example.com"]]);
     assert.ok(
         predicate({
-            type: "private",
+            type: direct_message,
             display_recipient: [{id: joe.user_id}, {id: steve.user_id}],
         }),
     );
@@ -829,7 +832,7 @@ test("predicate_basics", () => {
     predicate = get_predicate([["dm", "nobody@example.com"]]);
     assert.ok(
         !predicate({
-            type: "private",
+            type: direct_message,
             display_recipient: [{id: joe.user_id}],
         }),
     );
@@ -837,7 +840,7 @@ test("predicate_basics", () => {
     predicate = get_predicate([["dm-including", "nobody@example.com"]]);
     assert.ok(
         !predicate({
-            type: "private",
+            type: direct_message,
             display_recipient: [{id: joe.user_id}, {id: me.user_id}],
         }),
     );
@@ -845,23 +848,23 @@ test("predicate_basics", () => {
     predicate = get_predicate([["dm-including", "Joe@example.com"]]);
     assert.ok(
         predicate({
-            type: "private",
+            type: direct_message,
             display_recipient: [{id: joe.user_id}, {id: steve.user_id}, {id: me.user_id}],
         }),
     );
     assert.ok(
         predicate({
-            type: "private",
+            type: direct_message,
             display_recipient: [{id: joe.user_id}, {id: me.user_id}],
         }),
     );
     assert.ok(
         !predicate({
-            type: "private",
+            type: direct_message,
             display_recipient: [{id: steve.user_id}, {id: me.user_id}],
         }),
     );
-    assert.ok(!predicate({type: "stream"}));
+    assert.ok(!predicate({type: stream_message}));
 
     const img_msg = {
         content:
@@ -933,8 +936,8 @@ test("negated_predicates", () => {
 
     narrow = [{operator: "stream", operand: "social", negated: true}];
     predicate = new Filter(narrow).predicate();
-    assert.ok(predicate({type: "stream", stream_id: 999999}));
-    assert.ok(!predicate({type: "stream", stream_id: social_stream_id}));
+    assert.ok(predicate({type: stream_message, stream_id: 999999}));
+    assert.ok(!predicate({type: stream_message, stream_id: social_stream_id}));
 
     narrow = [{operator: "streams", operand: "public", negated: true}];
     predicate = new Filter(narrow).predicate();
@@ -948,18 +951,18 @@ function test_mit_exceptions() {
         ["stream", "Foo"],
         ["topic", "personal"],
     ]);
-    assert.ok(predicate({type: "stream", stream_id: foo_stream_id, topic: "personal"}));
-    assert.ok(predicate({type: "stream", stream_id: foo_stream_id, topic: ""}));
+    assert.ok(predicate({type: stream_message, stream_id: foo_stream_id, topic: "personal"}));
+    assert.ok(predicate({type: stream_message, stream_id: foo_stream_id, topic: ""}));
     // 9999 doesn't correspond to any stream
-    assert.ok(!predicate({type: "stream", stream_id: 9999}));
-    assert.ok(!predicate({type: "stream", stream_id: foo_stream_id, topic: "whatever"}));
-    assert.ok(!predicate({type: "private"}));
+    assert.ok(!predicate({type: stream_message, stream_id: 9999}));
+    assert.ok(!predicate({type: stream_message, stream_id: foo_stream_id, topic: "whatever"}));
+    assert.ok(!predicate({type: direct_message}));
 
     predicate = get_predicate([
         ["stream", "Foo"],
         ["topic", "bar"],
     ]);
-    assert.ok(predicate({type: "stream", stream_id: foo_stream_id, topic: "bar.d"}));
+    assert.ok(predicate({type: stream_message, stream_id: foo_stream_id, topic: "bar.d"}));
 
     // Try to get the MIT regex to explode for an empty stream.
     let terms = [
@@ -967,7 +970,7 @@ function test_mit_exceptions() {
         {operator: "topic", operand: "bar"},
     ];
     predicate = new Filter(terms).predicate();
-    assert.ok(!predicate({type: "stream", stream_id: foo_stream_id, topic: "bar"}));
+    assert.ok(!predicate({type: stream_message, stream_id: foo_stream_id, topic: "bar"}));
 
     // Try to get the MIT regex to explode for an empty topic.
     terms = [
@@ -975,7 +978,7 @@ function test_mit_exceptions() {
         {operator: "topic", operand: ""},
     ];
     predicate = new Filter(terms).predicate();
-    assert.ok(!predicate({type: "stream", stream_id: foo_stream_id, topic: "bar"}));
+    assert.ok(!predicate({type: stream_message, stream_id: foo_stream_id, topic: "bar"}));
 }
 
 test("mit_exceptions", ({override}) => {
@@ -1012,7 +1015,7 @@ test("predicate_edge_cases", () => {
     const filter = new Filter(terms);
     filter.predicate();
     predicate = filter.predicate(); // get cached version
-    assert.ok(predicate({type: "stream", stream_id, topic: "Mars"}));
+    assert.ok(predicate({type: stream_message, stream_id, topic: "Mars"}));
 });
 
 test("parse", () => {
@@ -1445,7 +1448,7 @@ test("first_valid_id_from", ({override}) => {
         5: {id: 5, alerted: true},
         10: {id: 10},
         20: {id: 20, alerted: true},
-        30: {id: 30, type: "stream"},
+        30: {id: 30, type: stream_message},
         40: {id: 40, alerted: false},
     };
 
@@ -1859,7 +1862,7 @@ test("error_cases", () => {
 
     const predicate = get_predicate([["dm", "Joe@example.com"]]);
     blueslip.expect("error", "Empty recipient list in message");
-    assert.ok(!predicate({type: "private", display_recipient: []}));
+    assert.ok(!predicate({type: direct_message, display_recipient: []}));
 });
 
 run_test("is_spectator_compatible", () => {
