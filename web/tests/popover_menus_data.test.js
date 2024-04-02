@@ -215,7 +215,7 @@ test("not_my_message_view_actions", () => {
 
     const response = popover_menus_data.get_actions_popover_content_context(1);
 
-    assert.equal(response.view_source_menu_item, "translated: View message source");
+    assert.equal(response.view_source_menu_item, "translated: View original message");
     assert.equal(response.editability_menu_item, undefined);
     assert.equal(response.move_message_menu_item, undefined);
 });
@@ -256,7 +256,7 @@ test("not_my_message_view_source_and_move", () => {
     add_message_with_view(list, messages);
 
     const response = popover_menus_data.get_actions_popover_content_context(1);
-    assert.equal(response.view_source_menu_item, "translated: View message source");
+    assert.equal(response.view_source_menu_item, "translated: View original message");
     assert.equal(response.editability_menu_item, undefined);
     assert.equal(response.move_message_menu_item, "translated: Move messages");
 });
