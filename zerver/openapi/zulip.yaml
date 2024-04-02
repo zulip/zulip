@@ -10681,7 +10681,7 @@ paths:
 
                     - "recent_topics" - Recent conversations view
                     - "inbox" - Inbox view
-                    - "all_messages" - All messages view
+                    - "all_messages" - Combined feed view
 
                     **Changes**: New in Zulip 8.0 (feature level 219). Previously, this was
                     called `default_view`, which was new in Zulip 4.0 (feature level 42).
@@ -13464,7 +13464,7 @@ paths:
 
                               - "recent_topics" - Recent conversations view
                               - "inbox" - Inbox view
-                              - "all_messages" - All messages view
+                              - "all_messages" - Combined feed view
 
                               **Changes**: New in Zulip 8.0 (feature level 219). Previously, this was
                               called `default_view`, which was new in Zulip 4.0 (feature level 42).
@@ -15787,7 +15787,7 @@ paths:
 
                               - "recent_topics" - Recent conversations view
                               - "inbox" - Inbox view
-                              - "all_messages" - All messages view
+                              - "all_messages" - Combined feed view
 
                               **Changes**: New in Zulip 8.0 (feature level 219). Previously, this was
                               called `default_view`, which was new in Zulip 4.0 (feature level 42).
@@ -16922,7 +16922,7 @@ paths:
 
                     - "recent_topics" - Recent conversations view
                     - "inbox" - Inbox view
-                    - "all_messages" - All messages view
+                    - "all_messages" - Combined feed view
 
                     **Changes**: New in Zulip 8.0 (feature level 219). Previously, this was
                     called `default_view`, which was new in Zulip 4.0 (feature level 42).
@@ -19972,8 +19972,8 @@ components:
           type: boolean
           description: |
             Whether the user has muted the stream. Muted streams do
-            not count towards your total unread count and do not show up in
-            `All messages` view (previously known as `Home` view).
+            not count towards your total unread count and do not show
+            up in the `Combined feed` view (previously known as `All messages`).
 
             **Changes**: Prior to Zulip 2.1.0, this feature was
             represented by the more confusingly named `in_home_view` (with the

@@ -304,7 +304,7 @@ export function load_messages(opts, attempt = 1) {
         const web_public_narrow = {negated: false, operator: "channels", operand: "web-public"};
 
         if (!data.narrow) {
-            /* For the "All messages" feed, this will be the only operator. */
+            /* For the combined feed, this will be the only operator. */
             data.narrow = JSON.stringify([web_public_narrow]);
         } else {
             // Otherwise, we append the operator.  This logic is not

@@ -32,7 +32,7 @@ async function test_narrow_to_starred_messages(page: Page): Promise<void> {
     const message_list_id = await common.get_current_msg_list_id(page, true);
     await common.check_messages_sent(page, message_list_id, [["Verona > stars", [message]]]);
 
-    // Go back to all messages narrow.
+    // Go back to the combined feed view.
     await page.click("#left-sidebar-navigation-list .top_left_all_messages");
     await page.waitForSelector(".message-list .message_row", {visible: true});
 }

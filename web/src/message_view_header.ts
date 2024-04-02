@@ -49,7 +49,7 @@ function get_message_view_header_context(filter: Filter | undefined): MessageVie
     }
     if (filter === undefined) {
         return {
-            title: $t({defaultMessage: "All messages"}),
+            title: $t({defaultMessage: "Combined feed"}),
             zulip_icon: "all-messages",
         };
     }

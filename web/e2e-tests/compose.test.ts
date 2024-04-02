@@ -135,7 +135,7 @@ async function test_send_multirecipient_pm_from_cordelia_pm_narrow(page: Page): 
         content: multiple_recipients_pm,
     });
 
-    // Go back to all messages view and make sure all messages are loaded.
+    // Go back to the combined feed view and make sure all messages are loaded.
     await page.click("#left-sidebar-navigation-list .top_left_all_messages");
 
     await page.waitForSelector(".message-list .message_row", {visible: true});

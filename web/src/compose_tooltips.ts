@@ -162,7 +162,9 @@ export function initialize(): void {
             let display_current_view;
             if (narrow_state.is_message_feed_visible()) {
                 if (narrow_filter === undefined) {
-                    display_current_view = $t({defaultMessage: "Currently viewing all messages."});
+                    display_current_view = $t({
+                        defaultMessage: "Currently viewing your combined feed.",
+                    });
                 } else if (
                     _.isEqual(narrow_filter.sorted_term_types(), ["channel"]) &&
                     compose_state.get_message_type() === "stream" &&

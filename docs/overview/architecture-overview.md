@@ -280,7 +280,7 @@ self-explanatory names.
 
 - **ellipsis**: A small vertical three dot icon (technically called
   as ellipsis-v), present in sidebars as a menu icon.
-  It offers contextual options for global filters (All messages
+  It offers contextual options for global filters (Combined feed
   and Starred messages), stream filters and topics in left
   sidebar and users in right sidebar. To avoid visual clutter
   ellipsis only appears in the web UI upon hover.

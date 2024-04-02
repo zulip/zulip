@@ -574,7 +574,7 @@ export class Filter {
         const parts: Part[] = [];
 
         if (terms.length === 0) {
-            parts.push({type: "plain_text", content: "all messages"});
+            parts.push({type: "plain_text", content: "combined feed"});
             return parts;
         }
 
@@ -712,7 +712,7 @@ export class Filter {
     }
 
     is_in_home(): boolean {
-        // All messages view.
+        // Combined feed view
         return this._terms.length === 1 && this.has_operand("in", "home");
     }
 
@@ -852,7 +852,7 @@ export class Filter {
     // This is used to control the behaviour for "exiting search"
     // within a narrow (E.g. a stream/topic + search) to bring you to
     // the containing common narrow (stream/topic, in the example)
-    // rather than "All messages".
+    // rather than the "Combined feed" view.
     //
     // Note from tabbott: The slug-based approach may not be ideal; we
     // may be able to do better another way.
@@ -1023,7 +1023,7 @@ export class Filter {
         if (term_types.length === 1) {
             switch (term_types[0]) {
                 case "in-home":
-                    return $t({defaultMessage: "All messages"});
+                    return $t({defaultMessage: "Combined feed"});
                 case "in-all":
                     return $t({defaultMessage: "All messages including muted streams"});
                 case "channels-public":

@@ -137,9 +137,8 @@ export class TaskData {
             },
 
             inbound: (sender_id, data) => {
-                // All messages readers may add tasks.
-                // for legacy reasons, the inbound idx is
-                // called key in the event
+                // All readers may add tasks. For legacy reasons, the
+                // inbound idx is called key in the event.
                 const idx = data.key;
                 const task = data.task;
                 const desc = data.desc;

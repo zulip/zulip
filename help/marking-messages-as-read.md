@@ -69,7 +69,7 @@ stream or topic as read**.
 
 {tab|via-left-sidebar}
 
-1. Hover over a stream, topic, or **All messages** in the left sidebar.
+1. Hover over a stream, topic, or **Combined feed** in the left sidebar.
 
 1. Click on the **ellipsis** (<i class="zulip-icon zulip-icon-more-vertical"></i>).
 
@@ -100,7 +100,7 @@ stream or topic as read**.
 
 {tab|mobile}
 
-1. Tap a stream, topic, or the **All messages**
+1. Tap a stream, topic, or the **Combined feed**
    (<img src="/static/images/help/mobile-globe-icon.svg" alt="globe" class="help-center-icon"/>)
    tab.
 

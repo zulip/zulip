@@ -1360,7 +1360,7 @@ test("describe", ({mock_template}) => {
     assert.equal(Filter.search_description_as_html(narrow), string);
 
     narrow = [];
-    string = "all messages";
+    string = "combined feed";
     assert.equal(Filter.search_description_as_html(narrow), string);
 });
 
@@ -1682,7 +1682,7 @@ test("navbar_helpers", () => {
             terms: in_home,
             is_common_narrow: true,
             icon: "home",
-            title: "translated: All messages",
+            title: "translated: Combined feed",
             redirect_url_with_search: "#",
         },
         {

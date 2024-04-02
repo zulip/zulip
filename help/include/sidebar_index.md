@@ -96,7 +96,7 @@
 * [Reading strategies](/help/reading-strategies)
 * [Inbox](/help/inbox)
 * [Recent conversations](/help/recent-conversations)
-* [All messages](/help/all-messages)
+* [Combined feed](/help/all-messages)
 * [Message actions](/help/message-actions)
 * [Marking messages as read](/help/marking-messages-as-read)
 * [Marking messages as unread](/help/marking-messages-as-unread)
