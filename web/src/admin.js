@@ -189,7 +189,7 @@ export function build_page() {
         color_scheme_values: settings_config.color_scheme_values,
         web_home_view_values: settings_config.web_home_view_values,
         settings_object: realm_user_settings_defaults,
-        display_settings: settings_config.get_all_preferences(),
+        preferences: settings_config.get_all_preferences(),
         information_density_settings: settings_config.get_information_density_preferences(),
         settings_label: settings_config.realm_user_settings_defaults_labels,
         desktop_icon_count_display_values: settings_config.desktop_icon_count_display_values,

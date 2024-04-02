@@ -1380,7 +1380,7 @@ No changes; feature level used for Zulip 5.0 release.
 
 * [`GET /events`](/api/get-events): Introduced the `user_settings`
   event type, unifying and replacing the previous
-  `update_display_settings` and `update_global_notifications` event
+  `update_preferences` and `update_global_notifications` event
   types. The legacy event types are still supported for backwards
   compatibility, but will be removed in a future release.
 * [`POST /register`](/api/register-queue): Added `user_settings` field
@@ -1392,7 +1392,7 @@ No changes; feature level used for Zulip 5.0 release.
   `user_settings_object` property to supported `client_capabilities`.
   When enabled, the server will not include a duplicate copy of
   personal settings in the top-level response.
-* [`GET /events`](/api/get-events): `update_display_settings` and
+* [`GET /events`](/api/get-events): `update_preferences` and
   `update_global_notifications` events now only sent to clients that
   did not include `user_settings_object` in their
   `client_capabilities` when the event queue was created.
@@ -1415,7 +1415,7 @@ No changes; feature level used for Zulip 5.0 release.
 
 * [`GET /events`](/api/get-events), [`POST /register`](/api/register-queue):
   Added new `enable_drafts_synchronization` setting under
-  `update_display_settings`.
+  `update_preferences`.
 
 * [`GET /drafts`](/api/get-drafts): Added new endpoint to fetch user's
   synced drafts from the server.

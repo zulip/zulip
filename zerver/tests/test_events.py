@@ -185,11 +185,11 @@ from zerver.lib.event_schema import (
     check_subscription_update,
     check_typing_start,
     check_typing_stop,
-    check_update_display_settings,
     check_update_global_notifications,
     check_update_message,
     check_update_message_flags_add,
     check_update_message_flags_remove,
+    check_update_preferences,
     check_user_group_add,
     check_user_group_add_members,
     check_user_group_add_subgroups,
@@ -3865,10 +3865,10 @@ class UserDisplayActionTest(BaseAction):
         user_settings_object = True
         num_events = 1
 
-        legacy_setting = setting_name in UserProfile.display_settings_legacy
+        legacy_setting = setting_name in UserProfile.preferences_legacy
         if legacy_setting:
-            # Two events:`update_display_settings` and `user_settings`.
-            # `update_display_settings` is only sent for settings added
+            # Two events:`update_preferences` and `user_settings`.
+            # `update_preferences` is only sent for settings added
             # before feature level 89 which introduced `user_settings`.
             # We send both events so that older clients that do not
             # rely on `user_settings` don't break.
@@ -3918,7 +3918,7 @@ class UserDisplayActionTest(BaseAction):
                 # Only settings added before feature level 89
                 # generate this event.
                 self.assert_length(events, 2)
-                check_update_display_settings("events[1]", events[1])
+                check_update_preferences("events[1]", events[1])
 
     def test_change_user_settings(self) -> None:
         for prop in UserProfile.property_types:
@@ -3944,7 +3944,7 @@ class UserDisplayActionTest(BaseAction):
             )
 
             check_user_settings_update("events[0]", events[0])
-            check_update_display_settings("events[1]", events[1])
+            check_update_preferences("events[1]", events[1])
             check_realm_user_update("events[2]", events[2], "timezone")
 
     def test_delivery_email_events_on_changing_email_address_visibility(self) -> None:
