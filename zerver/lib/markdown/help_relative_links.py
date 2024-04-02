@@ -156,7 +156,7 @@ recent_instructions = """
 """
 
 all_instructions = """
-1. Click on <i class="fa fa-align-left"></i> **All messages** in the left
+1. Click on <i class="fa fa-align-left"></i> **Combined feed** in the left
    sidebar, or use the <kbd>A</kbd> keyboard shortcut.
 """
 
@@ -181,7 +181,7 @@ message_info = {
     "drafts": ["Drafts", "/#drafts", draft_instructions],
     "scheduled": ["Scheduled messages", "/#scheduled", scheduled_instructions],
     "recent": ["Recent conversations", "/#recent", recent_instructions],
-    "all": ["All messages", "/#all_messages", all_instructions],
+    "all": ["Combined feed", "/#all_messages", all_instructions],
     "starred": ["Starred messages", "/#narrow/is/starred", starred_instructions],
     "direct": ["All direct messages", "/#narrow/is/dm", direct_instructions],
     "inbox": ["Inbox", "/#inbox", inbox_instructions],

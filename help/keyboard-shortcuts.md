@@ -103,7 +103,7 @@ in the Zulip app to add more to your repertoire as needed.
 * **Cycle between stream views**: <kbd>Shift</kbd> + <kbd>A</kbd>
   (previous) and <kbd>Shift</kbd> + <kbd>D</kbd> (next)
 
-* **Go to All messages**: <kbd>A</kbd> — Shows all unmuted messages.
+* **Go to Combined feed**: <kbd>A</kbd> — Shows all unmuted messages.
 
 * **Go to the conversation you are composing to**: <kbd>Ctrl</kbd> + <kbd>.</kbd>
 

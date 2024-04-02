@@ -99,7 +99,7 @@ export const web_home_view_values = {
     },
     all_messages: {
         code: "all_messages",
-        description: $t({defaultMessage: "All messages"}),
+        description: $t({defaultMessage: "Combined feed"}),
     },
 };
 

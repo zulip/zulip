@@ -154,7 +154,7 @@ test("excludes_muted_topics", () => {
     let filter = set_filter([["stream", "devel"]]);
     assert.ok(filter.excludes_muted_topics());
 
-    // All messages view.
+    // Combined feed view.
     filter = set_filter([["in", "home"]]);
     assert.ok(filter.excludes_muted_topics());
 

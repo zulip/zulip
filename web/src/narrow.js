@@ -87,11 +87,9 @@ export function save_narrow(terms) {
 }
 
 export function activate(raw_terms, opts) {
-    /* Main entry point for switching to a new view / message list
-       (including all messages and home views).
+    /* Main entry point for switching to a new view / message list.
 
-       The name is based on "narrowing to a subset of the user's
-       messages.".  Supported parameters:
+       Supported parameters:
 
        raw_terms: Narrowing/search terms; used to construct
        a Filter object that decides which messages belong in the
@@ -120,7 +118,7 @@ export function activate(raw_terms, opts) {
          or rerendering due to server-side changes.
     */
 
-    // The empty narrow is the All messages view.
+    // No operators is an alias for the Combined Feed view.
     if (raw_terms.length === 0) {
         raw_terms = [{operator: "is", operand: "home"}];
     }
@@ -128,14 +126,13 @@ export function activate(raw_terms, opts) {
 
     const is_narrowed_to_all_messages_view = narrow_state.filter()?.is_in_home();
     if (has_visited_all_messages && is_narrowed_to_all_messages_view && filter.is_in_home()) {
-        // If we're already looking at the All messages view, exit without doing any work.
+        // If we're already looking at the combined feed, exit without doing any work.
         return;
     }
 
     if (filter.is_in_home() && message_scroll_state.actively_scrolling) {
-        // `All messages` narrow.
         // TODO: Figure out why puppeteer test for this fails when run for narrows
-        // other than `All messages`.
+        // other than `Combined feed`.
 
         // There is no way to intercept in-flight scroll events, and they will
         // cause you to end up in the wrong place if you are actively scrolling
@@ -146,7 +143,8 @@ export function activate(raw_terms, opts) {
         return;
     }
 
-    // Use to determine if user read any unread messages in non-All Messages narrow.
+    // Use to determine if user read any unread messages outside the combined feed.
+    // BUG: This doesn't check for the combined feed?
     const was_narrowed_already = narrow_state.filter() !== undefined;
 
     // Since narrow.activate is called directly from various
@@ -155,7 +153,9 @@ export function activate(raw_terms, opts) {
     if (
         page_params.is_spectator &&
         raw_terms.length &&
-        // Allow spectator to access all messages view.
+        // TODO: is:home is currently not permitted for spectators
+        // because they can't mute things; maybe that's the wrong
+        // policy?
         !filter.is_in_home() &&
         raw_terms.some(
             (raw_term) => !hash_parser.allowed_web_public_narrows.includes(raw_term.operator),
@@ -493,9 +493,11 @@ export function activate(raw_terms, opts) {
                 then_select_offset = message_lists.current.pre_narrow_offset;
                 id_info.final_select_id = message_lists.current.selected_id();
             }
-            // We are navigating to the All messages view from another narrow, so we reset the
-            // reading state to allow user to read messages again in All messages view if user has
-            // marked some messages as unread in the last All messages session and thus prevented reading.
+            // We are navigating to the combined feed from another
+            // narrow, so we reset the reading state to allow user to
+            // read messages again in the combined feed if user has
+            // marked some messages as unread in the last combined
+            // feed session and thus prevented reading.
             message_lists.current.resume_reading();
             // Reset the collapsed status of messages rows.
             condense.condense_and_collapse(message_lists.current.view.$list.find(".message_row"));
@@ -504,7 +506,7 @@ export function activate(raw_terms, opts) {
             message_feed_top_notices.update_top_of_narrow_notices(msg_list);
 
             // We may need to scroll to the selected message after swapping
-            // the currently displayed center panel to All messages.
+            // the currently displayed center panel to the combined feed.
             message_viewport.maybe_scroll_to_selected();
         } else {
             select_immediately = id_info.local_select_id !== undefined;

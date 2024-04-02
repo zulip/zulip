@@ -47,7 +47,7 @@ export function handle_topic_updates(user_topic_event) {
     }
 
     setTimeout(0, () => {
-        /* Rerender "all messages" if necessary, but defer until after
+        /* Rerender the combined feed view if necessary, but defer until after
          * the browser has rendered the DOM updates scheduled above. */
         if (message_lists.current !== message_lists.home) {
             message_lists.home.update_muting_and_rerender();

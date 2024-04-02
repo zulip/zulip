@@ -11,7 +11,7 @@ import * as unread from "./unread";
 export let has_shown_message_list_view = false;
 
 export function filter(): Filter | undefined {
-    // `All messages`, `Recent Conversations` and `Inbox` return undefined;
+    // `Combined feed`, `Recent Conversations` and `Inbox` return undefined;
     if (message_lists.current === undefined || message_lists.current.data.filter.is_in_home()) {
         return undefined;
     }

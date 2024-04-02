@@ -146,7 +146,7 @@ export function initialize() {
         },
     });
 
-    // All messages popover
+    // Combined feed popover
     popover_menus.register_popover_menu(".all-messages-sidebar-menu-icon", {
         ...popover_menus.left_sidebar_tippy_options,
         onMount(instance) {
