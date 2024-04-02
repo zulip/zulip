@@ -290,7 +290,7 @@ export function initialize() {
 
     // MESSAGE EDITING
 
-    $("body").on("click", ".edit_content_button, .view_source_button", function (e) {
+    $("body").on("click", ".edit_content_button", function (e) {
         assert(message_lists.current !== undefined);
         const $row = message_lists.current.get_row(rows.id($(this).closest(".message_row")));
         message_lists.current.select_id(rows.id($row));
