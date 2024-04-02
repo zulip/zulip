@@ -169,7 +169,11 @@ function get_last_active(user) {
     const last_active_date = presence.last_active_date(user.user_id);
 
     if (!last_active_date) {
+<<<<<<< Updated upstream
         return $t({defaultMessage: "Unknown"});
+=======
+        return $t({defaultMessage: "1+ year ago"});
+>>>>>>> Stashed changes
     }
     return timerender.render_now(last_active_date).time_str;
 }

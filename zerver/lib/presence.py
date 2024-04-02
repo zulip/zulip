@@ -155,10 +155,17 @@ def get_presence_for_user(
 def get_presence_dict_by_realm(
     realm: Realm, slim_presence: bool = False, requesting_user_profile: Optional[UserProfile] = None
 ) -> Dict[str, Dict[str, Any]]:
+<<<<<<< Updated upstream
     two_weeks_ago = timezone_now() - timedelta(weeks=2)
     query = UserPresence.objects.filter(
         realm_id=realm.id,
         last_connected_time__gte=two_weeks_ago,
+=======
+    fiftytwo_weeks_ago = timezone_now() - timedelta(weeks=52)
+    query = UserPresence.objects.filter(
+        realm_id=realm.id,
+        last_connected_time__gte=fiftytwo_weeks_ago,
+>>>>>>> Stashed changes
         user_profile__is_active=True,
         user_profile__is_bot=False,
     )
