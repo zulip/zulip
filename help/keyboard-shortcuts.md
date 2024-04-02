@@ -153,7 +153,7 @@ in the Zulip app to add more to your repertoire as needed.
 
 ### For a selected message (outlined in blue)
 
-* **Edit message or view message source**: <kbd>E</kbd>
+* **Edit message or view original message**: <kbd>E</kbd>
 
 * **Show message sender's user card**: <kbd>U</kbd>
 

@@ -44,7 +44,7 @@ export function get_actions_popover_content_context(message_id) {
     if (is_content_editable) {
         editability_menu_item = $t({defaultMessage: "Edit message"});
     } else {
-        view_source_menu_item = $t({defaultMessage: "View message source"});
+        view_source_menu_item = $t({defaultMessage: "View original message"});
     }
 
     if (can_move_message) {
