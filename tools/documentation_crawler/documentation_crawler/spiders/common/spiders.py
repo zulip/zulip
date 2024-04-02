@@ -80,11 +80,14 @@ class BaseDocumentationSpider(scrapy.Spider):
 
     def _is_external_link(self, url: str) -> bool:
         split_url = urlsplit(url)
-        if split_url.hostname == "chat.zulip.org":
+        if split_url.hostname in ("chat.zulip.org", "status.zulip.com"):
             # Since most chat.zulip.org URLs will be links to specific
             # logged-in content that the spider cannot verify, or the
             # homepage, there's no need to check those (which can
             # cause errors when chat.zulip.org is being updated).
+            #
+            # status.zulip.com is externally hosted and, in a peculiar twist of
+            # cosmic irony, often itself offline.
             return True
         if split_url.hostname == "zulip.readthedocs.io" or f".{split_url.hostname}".endswith(
             (".zulip.com", ".zulip.org")
