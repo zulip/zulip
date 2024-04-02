@@ -512,7 +512,6 @@
     .message_edit_close {
         color: var(--color-exit-button-text);
         background: var(--color-exit-button-background);
-        border: 1px solid var(--color-exit-button-border);
 
         &:hover {
             background: var(--color-exit-button-background-interactive);
