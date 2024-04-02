@@ -22,6 +22,7 @@ import * as emoji_picker from "./emoji_picker";
 import * as gear_menu from "./gear_menu";
 import * as giphy from "./giphy";
 import * as hotspots from "./hotspots";
+import * as information_density from "./information_density";
 import * as left_sidebar_navigation_area from "./left_sidebar_navigation_area";
 import * as linkifiers from "./linkifiers";
 import * as message_edit from "./message_edit";
@@ -772,6 +773,12 @@ export function dispatch_normal_event(event) {
             if (event.property === "dense_mode") {
                 $("body").toggleClass("less_dense_mode");
                 $("body").toggleClass("more_dense_mode");
+            }
+            if (
+                event.property === "web_font_size_px" ||
+                event.property === "web_line_height_percent"
+            ) {
+                information_density.set_base_typography_css_variables();
             }
             if (event.property === "web_mark_read_on_scroll_policy") {
                 unread_ui.update_unread_banner();

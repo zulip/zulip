@@ -49,6 +49,7 @@ import * as hotkey from "./hotkey";
 import * as hotspots from "./hotspots";
 import * as i18n from "./i18n";
 import * as inbox_ui from "./inbox_ui";
+import * as information_density from "./information_density";
 import * as invite from "./invite";
 import * as left_sidebar_navigation_area from "./left_sidebar_navigation_area";
 import * as left_sidebar_navigation_area_popovers from "./left_sidebar_navigation_area_popovers";
@@ -652,8 +653,10 @@ export function initialize_everything(state_data) {
     sentry.initialize();
 
     /* To store theme data for spectators, we need to initialize
-       user_settings before setting the theme. */
+       user_settings before setting the theme. Because information
+       density is so fundamental, we initialize that first, however. */
     initialize_user_settings(user_settings_params);
+    information_density.initialize();
     if (page_params.is_spectator) {
         const ls = localstorage();
         const preferred_theme = ls.get("spectator-theme-preference");

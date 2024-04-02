@@ -34,6 +34,7 @@ const dark_theme = mock_esm("../src/dark_theme");
 const emoji_picker = mock_esm("../src/emoji_picker");
 const gear_menu = mock_esm("../src/gear_menu");
 const hotspots = mock_esm("../src/hotspots");
+const information_density = mock_esm("../src/information_density");
 const linkifiers = mock_esm("../src/linkifiers");
 const message_events = mock_esm("../src/message_events");
 const message_lists = mock_esm("../src/message_lists");
@@ -931,6 +932,18 @@ run_test("user_settings", ({override}) => {
     dispatch(event);
     assert_same(user_settings.dense_mode, true);
     assert_same(toggled, ["less_dense_mode", "more_dense_mode"]);
+
+    event = event_fixtures.user_settings__web_font_size_px;
+    user_settings.web_font_size_px = 14;
+    override(information_density, "set_base_typography_css_variables", noop);
+    dispatch(event);
+    assert_same(user_settings.web_font_size_px, 16);
+
+    event = event_fixtures.user_settings__web_line_height_percent;
+    user_settings.web_font_size_px = 122;
+    override(information_density, "set_base_typography_css_variables", noop);
+    dispatch(event);
+    assert_same(user_settings.web_line_height_percent, 130);
 
     override(realm_logo, "render", noop);
 
