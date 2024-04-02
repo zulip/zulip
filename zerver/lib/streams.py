@@ -23,6 +23,7 @@ from zerver.lib.types import APIStreamDict
 from zerver.lib.user_groups import is_user_in_group
 from zerver.models import (
     DefaultStreamGroup,
+    NamedUserGroup,
     Realm,
     RealmAuditLog,
     Recipient,
@@ -142,7 +143,7 @@ def create_stream_if_needed(
     )
 
     if can_remove_subscribers_group is None:
-        can_remove_subscribers_group = UserGroup.objects.get(
+        can_remove_subscribers_group = NamedUserGroup.objects.get(
             name=SystemGroups.ADMINISTRATORS, is_system_group=True, realm=realm
         )
 
