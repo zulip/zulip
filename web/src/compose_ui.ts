@@ -22,7 +22,6 @@ import * as stream_data from "./stream_data";
 import * as user_status from "./user_status";
 import * as util from "./util";
 
-type MessageType = "stream" | "private";
 type ComposeTriggeredOptions = {
     trigger: string;
 } & (
@@ -36,12 +35,16 @@ type ComposeTriggeredOptions = {
           private_message_recipient: string;
       }
 );
-type ComposePlaceholderOptions = {
-    direct_message_user_ids: number[];
-    message_type: MessageType;
-    stream_id: number;
-    topic: string;
-};
+type ComposePlaceholderOptions =
+    | {
+          message_type: "stream";
+          stream_id: number;
+          topic: string;
+      }
+    | {
+          message_type: "private";
+          direct_message_user_ids: number[];
+      };
 type SelectedLinesSections = {
     before_lines: string;
     separating_new_line_before: boolean;
