@@ -5,7 +5,7 @@ from django.utils.translation import gettext as _
 
 from corporate.lib.stripe import LicenseLimitError, get_latest_seat_count, get_seat_count
 from corporate.models import get_current_plan_by_realm
-from zerver.actions.create_user import send_message_to_signup_notification_stream
+from zerver.actions.create_user import send_group_direct_message_to_admins
 from zerver.lib.exceptions import InvitationError
 from zerver.models import Realm, UserProfile
 from zerver.models.users import get_system_bot
@@ -51,7 +51,7 @@ def generate_licenses_low_warning_message_if_required(realm: Realm) -> Optional[
     }[licenses_remaining].format(**format_kwargs)
 
 
-def send_user_unable_to_signup_message_to_signup_notification_stream(
+def send_user_unable_to_signup_group_direct_message_to_admins(
     realm: Realm, user_email: str
 ) -> None:
     message = _(
@@ -64,7 +64,7 @@ def send_user_unable_to_signup_message_to_signup_notification_stream(
         deactivate_user_help_page_link="/help/deactivate-or-reactivate-a-user",
     )
 
-    send_message_to_signup_notification_stream(
+    send_group_direct_message_to_admins(
         get_system_bot(settings.NOTIFICATION_BOT, realm.id), realm, message
     )
 
@@ -93,7 +93,7 @@ def check_spare_licenses_available_for_registering_new_user(
         else:
             check_spare_licenses_available_for_adding_new_users(realm, extra_non_guests_count=1)
     except LicenseLimitError:
-        send_user_unable_to_signup_message_to_signup_notification_stream(realm, user_email_to_add)
+        send_user_unable_to_signup_group_direct_message_to_admins(realm, user_email_to_add)
         raise
 
 
