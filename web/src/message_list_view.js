@@ -1365,7 +1365,7 @@ export class MessageListView {
 
         // If this list not currently displayed, we don't need to select the message.
         if (was_selected && this.list === message_lists.current) {
-            this.list.reselect_selected_id(message_container.msg.id);
+            this.list.reselect_selected_id();
         }
     }
 
