@@ -8,12 +8,6 @@ class zulip::profile::rabbitmq {
     $erlang,
     'rabbitmq-server',
   ]
-  # Removed 2020-09 in version 4.0; these lines can be removed in
-  # Zulip version 5.0 and later.
-  file { ['/etc/cron.d/rabbitmq-queuesize', '/etc/cron.d/rabbitmq-numconsumers']:
-    ensure => absent,
-  }
-
 
   group { 'rabbitmq':
     ensure => present,
