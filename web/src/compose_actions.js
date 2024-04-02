@@ -93,13 +93,16 @@ function clear_box() {
     $(".compose_control_button_container:has(.add-poll)").removeClass("disabled-on-hover");
 }
 
+let autosize_callback_opts;
 export function autosize_message_content(opts) {
     if (!compose_ui.is_full_size()) {
-        autosize($("textarea#compose-textarea"), {
-            callback() {
-                maybe_scroll_up_selected_message(opts);
-            },
-        });
+        autosize_callback_opts = opts;
+        $("textarea#compose-textarea")
+            .off("autosize:resized")
+            .one("autosize:resized", () => {
+                maybe_scroll_up_selected_message(autosize_callback_opts);
+            });
+        autosize($("textarea#compose-textarea"));
     }
 }
 
