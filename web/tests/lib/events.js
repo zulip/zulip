@@ -1034,6 +1034,13 @@ exports.fixtures = {
         value: true,
     },
 
+    user_settings__web_font_size_px: {
+        type: "user_settings",
+        op: "update",
+        property: "web_font_size_px",
+        value: 16,
+    },
+
     user_settings__web_home_view_all_messages: {
         type: "user_settings",
         op: "update",
@@ -1053,6 +1060,13 @@ exports.fixtures = {
         op: "update",
         property: "web_home_view",
         value: "recent_topics",
+    },
+
+    user_settings__web_line_height_percent: {
+        type: "user_settings",
+        op: "update",
+        property: "web_line_height_percent",
+        value: 130,
     },
 
     user_settings__web_mark_read_on_scroll_policy: {

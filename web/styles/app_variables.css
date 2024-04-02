@@ -61,6 +61,11 @@
     /* Tippy popover related values */
     --popover-menu-min-width: 230px;
 
+    /* Information density and typography values */
+    /* The legacy values here are updated via JavaScript */
+    --base-font-size-px: 14px;
+    --base-line-height-unitless: calc(20 / 14);
+
     /*
     Message box elements and values.
     */
