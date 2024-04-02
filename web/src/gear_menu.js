@@ -145,13 +145,13 @@ export function initialize() {
                         });
                     },
                 );
-                instance.hide();
+                popover_menus.hide_current_popover_if_visible(instance);
                 e.preventDefault();
                 e.stopPropagation();
             });
 
             $popper.on("click", ".change-language-spectator", (e) => {
-                instance.hide();
+                popover_menus.hide_current_popover_if_visible(instance);
                 e.preventDefault();
                 e.stopPropagation();
                 settings_preferences.launch_default_language_setting_modal();
@@ -162,7 +162,7 @@ export function initialize() {
             // Also, since these buttons are only visible for spectators which doesn't have events,
             // if theme is changed in a different tab, the theme of this tab remains the same.
             $popper.on("click", "#gear-menu-dropdown .gear-menu-select-dark-theme", (e) => {
-                instance.hide();
+                popover_menus.hide_current_popover_if_visible(instance);
                 e.preventDefault();
                 e.stopPropagation();
                 requestAnimationFrame(() => {
@@ -172,7 +172,7 @@ export function initialize() {
             });
 
             $popper.on("click", "#gear-menu-dropdown .gear-menu-select-light-theme", (e) => {
-                instance.hide();
+                popover_menus.hide_current_popover_if_visible(instance);
                 e.preventDefault();
                 e.stopPropagation();
                 requestAnimationFrame(() => {

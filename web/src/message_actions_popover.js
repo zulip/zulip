@@ -123,7 +123,7 @@ export function initialize() {
                 });
                 e.preventDefault();
                 e.stopPropagation();
-                instance.hide();
+                popover_menus.hide_current_popover_if_visible(instance);
             });
 
             $popper.one("click", ".popover_edit_message, .popover_view_source", (e) => {
@@ -133,7 +133,7 @@ export function initialize() {
                 message_edit.start($row);
                 e.preventDefault();
                 e.stopPropagation();
-                instance.hide();
+                popover_menus.hide_current_popover_if_visible(instance);
             });
 
             $popper.one("click", ".popover_move_message", (e) => {
@@ -149,7 +149,7 @@ export function initialize() {
                 );
                 e.preventDefault();
                 e.stopPropagation();
-                instance.hide();
+                popover_menus.hide_current_popover_if_visible(instance);
             });
 
             $popper.one("click", ".mark_as_unread", (e) => {
@@ -157,7 +157,7 @@ export function initialize() {
                 unread_ops.mark_as_unread_from_here(message_id);
                 e.preventDefault();
                 e.stopPropagation();
-                instance.hide();
+                popover_menus.hide_current_popover_if_visible(instance);
             });
 
             $popper.one("click", ".popover_toggle_collapse", (e) => {
@@ -172,7 +172,7 @@ export function initialize() {
                 }
                 e.preventDefault();
                 e.stopPropagation();
-                instance.hide();
+                popover_menus.hide_current_popover_if_visible(instance);
             });
 
             $popper.one("click", ".rehide_muted_user_message", (e) => {
@@ -188,7 +188,7 @@ export function initialize() {
                 }
                 e.preventDefault();
                 e.stopPropagation();
-                instance.hide();
+                popover_menus.hide_current_popover_if_visible(instance);
             });
 
             $popper.one("click", ".view_read_receipts", (e) => {
@@ -196,7 +196,7 @@ export function initialize() {
                 read_receipts.show_user_list(message_id);
                 e.preventDefault();
                 e.stopPropagation();
-                instance.hide();
+                popover_menus.hide_current_popover_if_visible(instance);
             });
 
             $popper.one("click", ".delete_message", (e) => {
@@ -204,7 +204,7 @@ export function initialize() {
                 message_edit.delete_message(message_id);
                 e.preventDefault();
                 e.stopPropagation();
-                instance.hide();
+                popover_menus.hide_current_popover_if_visible(instance);
             });
 
             $popper.one("click", ".reaction_button", (e) => {
@@ -216,7 +216,7 @@ export function initialize() {
                 emoji_picker.toggle_emoji_popover(instance.reference.parentElement, message_id, {
                     placement: "bottom",
                 });
-                instance.hide();
+                popover_menus.hide_current_popover_if_visible(instance);
             });
 
             new ClipboardJS($popper.find(".copy_link")[0]).on("success", () => {
@@ -226,7 +226,7 @@ export function initialize() {
                     // We unfocus this so keyboard shortcuts, etc., will work again.
                     $(":focus").trigger("blur");
                 }, 0);
-                instance.hide();
+                popover_menus.hide_current_popover_if_visible(instance);
             });
         },
         onHidden(instance) {

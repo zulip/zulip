@@ -25,6 +25,7 @@ import * as narrow_state from "./narrow_state";
 import * as navigate from "./navigate";
 import {page_params} from "./page_params";
 import * as pm_list from "./pm_list";
+import * as popover_menus from "./popover_menus";
 import * as reactions from "./reactions";
 import * as recent_view_ui from "./recent_view_ui";
 import * as rows from "./rows";
@@ -542,7 +543,7 @@ export function initialize() {
                     for (const mutation of mutationsList) {
                         // Hide instance if reference is in the removed node list.
                         if (check_reference_removed(mutation, instance)) {
-                            instance.hide();
+                            popover_menus.hide_current_popover_if_visible(instance);
                         }
                     }
                 };

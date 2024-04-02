@@ -173,7 +173,7 @@ export function initialize() {
             $popper.one("click", ".send_later_selected_send_later_time", () => {
                 const send_at_timestamp = scheduled_messages.get_selected_send_later_timestamp();
                 do_schedule_message(send_at_timestamp);
-                instance.hide();
+                popover_menus.hide_current_popover_if_visible(instance);
             });
             // Handle clicks on Enter-to-send settings
             $popper.one("click", ".enter_sends_choice", (e) => {
@@ -195,13 +195,13 @@ export function initialize() {
                 });
                 e.stopPropagation();
                 setTimeout(() => {
-                    instance.hide();
+                    popover_menus.hide_current_popover_if_visible(instance);
                 }, ENTER_SENDS_SELECTION_DELAY);
             });
             // Handle Send later clicks
             $popper.one("click", ".open_send_later_modal", () => {
                 open_send_later_menu();
-                instance.hide();
+                popover_menus.hide_current_popover_if_visible(instance);
             });
         },
         onHidden(instance) {

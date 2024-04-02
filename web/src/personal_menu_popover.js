@@ -71,7 +71,7 @@ export function initialize() {
                     emoji_name: "",
                     emoji_code: "",
                     success() {
-                        instance.hide();
+                        popover_menus.hide_current_popover_if_visible(instance);
                     },
                 });
             });
