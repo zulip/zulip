@@ -2650,7 +2650,7 @@ class StreamAdminTest(ZulipTestCase):
         those you aren't on.
         """
         result = self.attempt_unsubscribe_of_principal(
-            query_count=17,
+            query_count=27,
             target_users=[self.example_user("cordelia")],
             is_realm_admin=True,
             is_subbed=True,
@@ -2677,8 +2677,8 @@ class StreamAdminTest(ZulipTestCase):
             for name in ["cordelia", "prospero", "iago", "hamlet", "outgoing_webhook_bot"]
         ]
         result = self.attempt_unsubscribe_of_principal(
-            query_count=28,
-            cache_count=8,
+            query_count=38,
+            cache_count=24,
             target_users=target_users,
             is_realm_admin=True,
             is_subbed=True,
@@ -2695,7 +2695,7 @@ class StreamAdminTest(ZulipTestCase):
         are on.
         """
         result = self.attempt_unsubscribe_of_principal(
-            query_count=17,
+            query_count=27,
             target_users=[self.example_user("cordelia")],
             is_realm_admin=True,
             is_subbed=True,
@@ -2712,7 +2712,7 @@ class StreamAdminTest(ZulipTestCase):
         streams you aren't on.
         """
         result = self.attempt_unsubscribe_of_principal(
-            query_count=17,
+            query_count=27,
             target_users=[self.example_user("cordelia")],
             is_realm_admin=True,
             is_subbed=False,
@@ -2738,7 +2738,7 @@ class StreamAdminTest(ZulipTestCase):
 
     def test_admin_remove_others_from_stream_legacy_emails(self) -> None:
         result = self.attempt_unsubscribe_of_principal(
-            query_count=17,
+            query_count=27,
             target_users=[self.example_user("cordelia")],
             is_realm_admin=True,
             is_subbed=True,
@@ -2752,7 +2752,7 @@ class StreamAdminTest(ZulipTestCase):
 
     def test_admin_remove_multiple_users_from_stream_legacy_emails(self) -> None:
         result = self.attempt_unsubscribe_of_principal(
-            query_count=20,
+            query_count=30,
             target_users=[self.example_user("cordelia"), self.example_user("prospero")],
             is_realm_admin=True,
             is_subbed=True,
@@ -2915,7 +2915,7 @@ class StreamAdminTest(ZulipTestCase):
         # Set up the principal to be unsubscribed.
         principals = [subbed_user.id]
 
-        with self.assert_database_query_count(23):
+        with self.assert_database_query_count(33):
             with cache_tries_captured() as cache_tries:
                 with self.captureOnCommitCallbacks(execute=True):
                     result = self.client_delete(
@@ -2925,12 +2925,74 @@ class StreamAdminTest(ZulipTestCase):
                             "principals": orjson.dumps(principals).decode(),
                         },
                     )
-        self.assert_length(cache_tries, 4)
+        self.assert_length(cache_tries, 12)
 
-        if result.status_code not in [400]:
+        if self.assert_json_success(result):
             for name in stream_names:
                 users_subbed_to_streams = self.users_subscribed_to_stream(name, subbed_user.realm)
             self.assertNotIn(subbed_user, users_subbed_to_streams)
+
+    def test_remove_subscription_user_notification(self) -> None:
+        admin = self.example_user("iago")
+        self.login_user(admin)
+        subbed_user = self.example_user("cordelia")
+
+        # Set up the stream.
+        stream_names = ["hümbüǵ"]
+        for name in stream_names:
+            self.subscribe(subbed_user, name)
+
+        # Set up the principal to be unsubscribed.
+        principals = [subbed_user.id]
+
+        self.client_delete(
+            "/json/users/me/subscriptions",
+            {
+                "subscriptions": orjson.dumps(stream_names).decode(),
+                "principals": orjson.dumps(principals).decode(),
+            },
+        )
+
+        msg = "@_**Iago|11** unsubscribed you from the stream #**hümbüǵ**."
+
+        GetSubscribersTest.assert_user_got_bot_message(GetSubscribersTest(), subbed_user, msg)
+
+    def test_remove_multiple_subscription_user_notification(self) -> None:
+        admin = self.example_user("iago")
+        self.login_user(admin)
+        subbed_user = self.example_user("cordelia")
+
+        # Set up the stream.
+        stream_names = ["hümbüǵ"] + [f"Stream {n}" for n in range(10)]
+        for name in stream_names:
+            self.subscribe(subbed_user, name)
+
+        # Set up the principal to be unsubscribed.
+        principals = [subbed_user.id]
+
+        self.client_delete(
+            "/json/users/me/subscriptions",
+            {
+                "subscriptions": orjson.dumps(stream_names).decode(),
+                "principals": orjson.dumps(principals).decode(),
+            },
+        )
+
+        msg = """@_**Iago|11** unsubscribed you from the following streams:
+        *#**Stream0**
+        *#**Stream1**
+        *#**Stream2**
+        *#**Stream3**
+        *#**Stream4**
+        *#**Stream5**
+        *#**Stream6**
+        *#**Stream7**
+        *#**Stream8**
+        *#**Stream9**
+        *#**hümbüǵ**
+        """
+
+        GetSubscribersTest.assert_user_got_bot_message(GetSubscribersTest(), subbed_user, msg)
 
 
 class DefaultStreamTest(ZulipTestCase):
@@ -6044,10 +6106,8 @@ class GetSubscribersTest(ZulipTestCase):
         for never_sub in sub_data.never_subscribed:
             self.assertEqual(set(never_sub), expected_fields)
 
-    def assert_user_got_subscription_notification(
-        self, user: UserProfile, expected_msg: str
-    ) -> None:
-        # verify that the user was sent a message informing them about the subscription
+    def assert_user_got_bot_message(self, user: UserProfile, expected_msg: str) -> None:
+        # verify that the user was sent a message from notification bot
         realm = user.realm
         msg = most_recent_message(user)
         self.assertEqual(msg.recipient.type, msg.recipient.PERSONAL)
@@ -6142,7 +6202,7 @@ class GetSubscribersTest(ZulipTestCase):
             """
 
         for user in [cordelia, othello, polonius]:
-            self.assert_user_got_subscription_notification(user, msg)
+            self.assert_user_got_bot_message(user, msg)
 
         # Subscribe ourself first.
         self.common_subscribe_to_streams(
@@ -6165,7 +6225,7 @@ class GetSubscribersTest(ZulipTestCase):
             @_**King Hamlet|{hamlet.id}** subscribed you to the stream #**stream_invite_only_1**.
             """
         for user in [cordelia, othello, polonius]:
-            self.assert_user_got_subscription_notification(user, msg)
+            self.assert_user_got_bot_message(user, msg)
 
         with self.assert_database_query_count(4):
             subscribed_streams, _ = gather_subscriptions(

@@ -1,6 +1,6 @@
 import time
 from collections import defaultdict
-from typing import Any, Callable, Dict, List, Mapping, Optional, Sequence, Set, Union
+from typing import Any, Callable, Dict, List, Mapping, Optional, Sequence, Set, Tuple, Union
 
 import orjson
 from django.conf import settings
@@ -45,7 +45,7 @@ from zerver.decorator import require_non_guest_user, require_realm_admin
 from zerver.lib.default_streams import get_default_stream_ids_for_realm
 from zerver.lib.email_mirror_helpers import encode_email_address
 from zerver.lib.exceptions import JsonableError, OrganizationOwnerRequiredError
-from zerver.lib.mention import MentionBackend, silent_mention_syntax_for_user
+from zerver.lib.mention import FullNameInfo, MentionBackend, silent_mention_syntax_for_user
 from zerver.lib.message import bulk_access_stream_messages_query
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
@@ -500,6 +500,8 @@ def remove_subscriptions_backend(
         realm, people_to_unsub, streams, acting_user=user_profile
     )
 
+    send_messages_for_removed_subscribers(removed, acting_user=user_profile)
+
     for subscriber, removed_stream in removed:
         result["removed"].append(removed_stream.name)
     for subscriber, not_subscribed_stream in not_subscribed:
@@ -527,6 +529,92 @@ def you_were_just_subscribed_message(
     for channel_name in subscriptions:
         message += f"* #**{channel_name}**\n"
     return message
+
+
+def you_were_just_unsubscribed_message(
+    acting_user: UserProfile,
+    recipient_user: UserProfile,
+    stream_names: Set[str],
+) -> str:
+    subscriptions = sorted(stream_names)
+    if len(subscriptions) == 1:
+        with override_language(recipient_user.default_language):
+            return _("{user_full_name} unsubscribed you from the stream {stream_name}.").format(
+                user_full_name=silent_mention_syntax_for_user(acting_user),
+                stream_name=f"#**{subscriptions[0]}**",
+            )
+
+    with override_language(recipient_user.default_language):
+        message = _("{user_full_name} unsubscribed you from the following streams:").format(
+            user_full_name=silent_mention_syntax_for_user(acting_user),
+        )
+    message += "\n\n"
+    for stream_name in subscriptions:
+        message += f"* #**{stream_name}**\n"
+    return message
+
+
+def send_messages_for_removed_subscribers(
+    removed_subscribers: List[Tuple[UserProfile, Stream]], acting_user: UserProfile
+) -> None:
+    if len(removed_subscribers) == 0:
+        return
+
+    user_id_to_unsubscribed_streams: Dict[int, Set[str]] = defaultdict(set)
+    user_id_to_user: Dict[int, UserProfile] = {}
+    user_id_to_user[acting_user.id] = acting_user
+    for user, stream in removed_subscribers:
+        # Our caller already filters deactivated users. We need to check for
+        # other cases where we shouldn't send notification message.
+        if user.id == acting_user.id:
+            continue
+        if user.is_bot:
+            continue
+
+        user_id_to_unsubscribed_streams[user.id].add(stream.name)
+        user_id_to_user[user.id] = user
+
+    if len(user_id_to_unsubscribed_streams.keys()) == 0:
+        return
+
+    mention_backend = MentionBackend(acting_user.realm_id)
+    mention_backend.user_cache[(acting_user.id, acting_user.full_name)] = FullNameInfo(
+        id=acting_user.id,
+        full_name=acting_user.full_name,
+        is_active=acting_user.is_active,
+    )
+    # sender: Optional[UserProfile] = None
+    sender = get_system_bot(settings.NOTIFICATION_BOT, acting_user.realm_id)
+    user_id_to_user[sender.id] = sender
+    message_requests = []
+    for user_id, stream_names in user_id_to_unsubscribed_streams.items():
+        # Our caller ensures that acting_user and all users that they unsubscribe are in
+        # the same realm. This allows us to only fetch this bot once and avoid having to
+        # fetch again with unsubscribed user's realm_id on every iteration of the loop.
+
+        message = you_were_just_unsubscribed_message(
+            acting_user=acting_user,
+            recipient_user=user_id_to_user[user_id],
+            stream_names=stream_names,
+        )
+
+        message_requests.append(
+            internal_prep_private_message(
+                sender=sender,
+                recipient_user=user_id_to_user[user_id],
+                content=message,
+                mention_backend=mention_backend,
+                user_profile_cache=user_id_to_user,
+            )
+        )
+
+    if len(message_requests) > 0:
+        do_send_messages(
+            message_requests,
+            mark_as_read=[acting_user.id],
+            is_channel_unsubscription_notification=True,
+            user_profile_cache=user_id_to_user,
+        )
 
 
 RETENTION_DEFAULT: Union[str, int] = "realm_default"
