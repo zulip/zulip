@@ -10,7 +10,7 @@ import {$t} from "./i18n";
 import * as people from "./people";
 import * as pill_typeahead from "./pill_typeahead";
 import * as settings_components from "./settings_components";
-import {realm} from "./state_data";
+import {current_user, realm} from "./state_data";
 import * as typeahead_helper from "./typeahead_helper";
 import type {UserPillWidget} from "./user_pill";
 import * as user_pill from "./user_pill";
@@ -38,6 +38,7 @@ export function append_custom_profile_fields(element_id: string, user_id: number
 
     for (const field of all_custom_fields) {
         let field_value = people.get_custom_profile_data(user_id, field.id);
+        const editable_by_user = current_user.is_admin || field.editable_by_user;
         const is_select_field = field.type === all_field_types.SELECT.id;
         const field_choices = [];
 
@@ -70,6 +71,7 @@ export function append_custom_profile_fields(element_id: string, user_id: number
             field_choices,
             for_manage_user_modal: element_id === "#edit-user-form .custom-profile-field-form",
             is_empty_required_field: field.required && !field_value.value,
+            editable_by_user,
         });
         $(element_id).append($(html));
     }

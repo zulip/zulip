@@ -34,6 +34,7 @@ export type NarrowTerm = z.output<typeof narrow_term_schema>;
 
 export const custom_profile_field_schema = z.object({
     display_in_profile_summary: z.optional(z.boolean()),
+    editable_by_user: z.boolean(),
     field_data: z.string(),
     hint: z.string(),
     id: z.number(),
