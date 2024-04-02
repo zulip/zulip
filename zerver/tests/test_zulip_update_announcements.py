@@ -180,3 +180,8 @@ class ZulipUpdateAnnouncementsTest(ZulipTestCase):
         input_text = "This is a sentence.\nThis is another sentence.\nThis is a third sentence.\nThis is a fourth sentence."
         expected_output = "This is a sentence. This is another sentence. This is a third sentence. This is a fourth sentence."
         self.assertEqual(remove_single_newlines(input_text), expected_output)
+
+        # Bulleted lists on lines.
+        input_text = "- This is a bullet.\n- This is another bullet.\n\n1. This is a list\n1. This is more list."
+        expected_output = "- This is a bullet.\n- This is another bullet.\n\n1. This is a list\n1. This is more list."
+        self.assertEqual(remove_single_newlines(input_text), expected_output)
