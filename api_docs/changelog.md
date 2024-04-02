@@ -20,6 +20,13 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 9.0
 
+**Feature level 249**
+
+* [`GET /messages`](/api/get-messages), [`GET
+  /messages/matches_narrow`](/api/check-messages-match-narrow): Added
+  new `has:reaction` search operator, matching messages with at least
+  one emoji reaction.
+
 **Feature level 248**
 
 * [`POST /typing`](/api/set-typing-status), [`POST /messages`](/api/send-message),

@@ -13,6 +13,7 @@ from typing_extensions import override
 from analytics.lib.counts import COUNT_STATS
 from analytics.models import RealmCount
 from zerver.actions.message_edit import do_update_message
+from zerver.actions.reactions import check_add_reaction
 from zerver.actions.realm_settings import do_set_realm_property
 from zerver.actions.uploads import do_claim_attachments
 from zerver.actions.user_settings import do_change_user_setting
@@ -490,6 +491,20 @@ class NarrowBuilderTest(ZulipTestCase):
     def test_add_term_using_has_operator_link_operand_and_negated(self) -> None:  # NEGATED
         term = dict(operator="has", operand="link", negated=True)
         self._do_add_term_test(term, "WHERE NOT has_link")
+
+    def test_add_term_using_has_operator_and_reaction_operand(self) -> None:
+        term = dict(operator="has", operand="reaction")
+        self._do_add_term_test(
+            term,
+            "EXISTS (SELECT 1 \nFROM zerver_reaction \nWHERE zerver_message.id = zerver_reaction.message_id)",
+        )
+
+    def test_add_term_using_has_operator_and_reaction_operand_and_negated(self) -> None:
+        term = dict(operator="has", operand="reaction", negated=True)
+        self._do_add_term_test(
+            term,
+            "NOT (EXISTS (SELECT 1 \nFROM zerver_reaction \nWHERE zerver_message.id = zerver_reaction.message_id))",
+        )
 
     def test_add_term_using_has_operator_non_supported_operand_should_raise_error(self) -> None:
         term = dict(operator="has", operand="non_supported")
@@ -4421,6 +4436,44 @@ class MessageHasKeywordsTest(ZulipTestCase):
             self.update_message(msg, f"[link](https://github.com/user_uploads/{dummy_path_ids[0]})")
             self.assertFalse(m.called)
             m.reset_mock()
+
+    def test_has_reaction(self) -> None:
+        self.login("iago")
+        has_reaction_narrow = orjson.dumps([dict(operator="has", operand="reaction")]).decode()
+
+        msg_id = self.send_stream_message(self.example_user("hamlet"), "Denmark", content="Hey")
+        result = self.client_get(
+            "/json/messages",
+            dict(narrow=has_reaction_narrow, anchor=msg_id, num_before=0, num_after=0),
+        )
+        messages = self.assert_json_success(result)["messages"]
+        self.assert_length(messages, 0)
+        check_add_reaction(
+            self.example_user("hamlet"), msg_id, "hamburger", "1f354", "unicode_emoji"
+        )
+        result = self.client_get(
+            "/json/messages",
+            dict(narrow=has_reaction_narrow, anchor=msg_id, num_before=0, num_after=0),
+        )
+        messages = self.assert_json_success(result)["messages"]
+        self.assert_length(messages, 1)
+
+        msg_id = self.send_personal_message(
+            self.example_user("iago"), self.example_user("cordelia"), "Hello Cordelia"
+        )
+        result = self.client_get(
+            "/json/messages",
+            dict(narrow=has_reaction_narrow, anchor=msg_id, num_before=0, num_after=0),
+        )
+        messages = self.assert_json_success(result)["messages"]
+        self.assert_length(messages, 0)
+        check_add_reaction(self.example_user("iago"), msg_id, "hamburger", "1f354", "unicode_emoji")
+        result = self.client_get(
+            "/json/messages",
+            dict(narrow=has_reaction_narrow, anchor=msg_id, num_before=0, num_after=0),
+        )
+        messages = self.assert_json_success(result)["messages"]
+        self.assert_length(messages, 1)
 
 
 class MessageVisibilityTest(ZulipTestCase):
