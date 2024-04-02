@@ -78,6 +78,7 @@ from zerver.models import (
     UserProfile,
 )
 from zerver.models.realms import get_realm
+from zerver.models.recipients import get_huddle_user_ids
 from zerver.models.streams import get_stream
 from zerver.models.users import get_system_bot, get_user, get_user_by_delivery_email
 from zerver.views.auth import redirect_and_log_into_subdomain, start_two_factor_auth
@@ -2868,9 +2869,9 @@ class UserSignUpTest(ZulipTestCase):
 
     def test_signup_to_realm_on_manual_license_plan(self) -> None:
         realm = get_realm("zulip")
-        denmark_stream = get_stream("Denmark", realm)
-        realm.signup_announcements_stream = denmark_stream
-        realm.save(update_fields=["signup_announcements_stream"])
+        admin_user_ids = set(realm.get_human_admin_users().values_list("id", flat=True))
+        notification_bot = get_system_bot(settings.NOTIFICATION_BOT, realm.id)
+        expected_group_direct_message_user_ids = admin_user_ids | {notification_bot.id}
 
         _, ledger = self.subscribe_realm_to_monthly_plan_on_manual_license_management(realm, 5, 5)
 
@@ -2886,7 +2887,10 @@ class UserSignUpTest(ZulipTestCase):
                 f"A new member ({self.nonreg_email('test')}) was unable to join your organization because all Zulip",
                 last_message.content,
             )
-            self.assertEqual(last_message.recipient.type_id, denmark_stream.id)
+            self.assertEqual(
+                set(get_huddle_user_ids(last_message.recipient)),
+                expected_group_direct_message_user_ids,
+            )
 
         ledger.licenses_at_next_renewal = 50
         ledger.save(update_fields=["licenses_at_next_renewal"])
