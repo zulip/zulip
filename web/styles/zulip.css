@@ -2430,6 +2430,10 @@ select.invite-as {
     @extend %hide-right-sidebar;
 }
 
+.hide-right-sidebar-by-visibility .app-main .column-right {
+    visibility: hidden;
+}
+
 @media (width < $xl_min) {
     .default-sidebar-behaviour {
         @extend %hide-right-sidebar;

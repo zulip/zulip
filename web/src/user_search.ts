@@ -115,7 +115,10 @@ export class UserSearch {
     initiate_search(): void {
         this.expand_column();
         this.show_widget();
-        this.$input.trigger("focus");
+        // Needs to be called when input is visible after fix_invite_user_button_flicker.
+        setTimeout(() => {
+            this.$input.trigger("focus");
+        }, 0);
     }
 
     toggle_filter_displayed(): void {
