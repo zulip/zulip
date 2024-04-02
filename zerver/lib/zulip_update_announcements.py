@@ -119,7 +119,7 @@ configuration change), or [turn this feature off]({organization_settings_url}) a
     )
 
 
-def is_group_direct_message_sent_to_admins_atleast_one_week_ago(realm: Realm) -> bool:
+def is_group_direct_message_sent_to_admins_within_days(realm: Realm, days: int) -> bool:
     level_none_to_zero_auditlog = RealmAuditLog.objects.filter(
         realm=realm,
         event_type=RealmAuditLog.REALM_PROPERTY_CHANGED,
@@ -131,7 +131,7 @@ def is_group_direct_message_sent_to_admins_atleast_one_week_ago(realm: Realm) ->
     ).first()
     assert level_none_to_zero_auditlog is not None
     group_direct_message_sent_on = level_none_to_zero_auditlog.event_time
-    return timezone_now() - group_direct_message_sent_on > timedelta(days=7)
+    return timezone_now() - group_direct_message_sent_on < timedelta(days=days)
 
 
 def internal_prep_zulip_update_announcements_stream_messages(
@@ -212,7 +212,7 @@ def send_zulip_update_announcements() -> None:
                 # We wait for a week after sending group DMs to let admins configure
                 # stream for zulip update announcements. After that, they miss updates
                 # until they don't configure.
-                if is_group_direct_message_sent_to_admins_atleast_one_week_ago(realm):
+                if not is_group_direct_message_sent_to_admins_within_days(realm, days=7):
                     new_zulip_update_announcements_level = latest_zulip_update_announcements_level
             else:
                 if realm.zulip_update_announcements_stream is not None:
