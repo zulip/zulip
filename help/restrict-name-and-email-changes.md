@@ -50,5 +50,24 @@ to manage user emails.
 
 {end_tabs}
 
+## Require unique names
+
+You can require users to choose unique names when joining your organization, or
+changing their name. This helps prevent accidental creation of duplicate
+accounts, and makes it harder to impersonate other users.
+
+When you turn on this setting, users who already have non-unique names are not
+required to change their name.
+
+{start_tabs}
+
+{settings_tab|organization-permissions}
+
+1. Under **User identity**, select **Require unique names**.
+
+{!save-changes.md!}
+
+{end_tabs}
+
 [change-email]: /help/change-your-email-address
 [ldap-sync-data]: https://zulip.readthedocs.io/en/stable/production/authentication-methods.html#synchronizing-data
