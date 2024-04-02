@@ -38,7 +38,7 @@ type ComposeTriggeredOptions = {
 type ComposePlaceholderOptions =
     | {
           message_type: "stream";
-          stream_id: number;
+          stream_id: number | undefined;
           topic: string;
       }
     | {
@@ -294,8 +294,13 @@ export function compute_placeholder_text(opts: ComposePlaceholderOptions): strin
     // because the caller is expected to insert this into the
     // placeholder field in a way that does HTML escaping.
     if (opts.message_type === "stream") {
-        const stream = stream_data.get_sub_by_id(opts.stream_id);
-        const stream_name = stream ? stream.name : "";
+        let stream_name = "";
+        if (opts.stream_id !== undefined) {
+            const stream = stream_data.get_sub_by_id(opts.stream_id);
+            if (stream !== undefined) {
+                stream_name = stream.name;
+            }
+        }
 
         if (stream_name && opts.topic) {
             return $t(
