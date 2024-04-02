@@ -36,6 +36,12 @@
         </div>
     </div>
     {{/if}}
+    {{> settings_checkbox
+      prefix="id-custom-profile-field-"
+      setting_name="editable-by-user"
+      is_checked=editable_by_user
+      label=(t "Users can edit this field")
+      }}
     {{#if valid_to_display_in_summary}}
         <div class="input-group">
             <label class="checkbox edit_profile_field_display_label" for="id-custom-profile-field-display-in-profile-summary">
