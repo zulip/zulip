@@ -79,7 +79,7 @@ run_test("t_tag", ({mock_template}) => {
 
     mock_template("popovers/actions_popover.hbs", true, (data, html) => {
         assert.equal(data, args);
-        assert.ok(html.indexOf("Citer et répondre") > 0);
+        assert.ok(html.includes("Citer et répondre"));
     });
 
     require("../templates/popovers/actions_popover.hbs")(args);
@@ -121,7 +121,7 @@ run_test("tr_tag", ({mock_template}) => {
 
     mock_template("settings_tab.hbs", true, (data, html) => {
         assert.equal(data, args);
-        assert.ok(html.indexOf("Déclencheurs de notification") > 0);
+        assert.ok(html.includes("Déclencheurs de notification"));
     });
     require("../templates/settings_tab.hbs")(args);
 });
