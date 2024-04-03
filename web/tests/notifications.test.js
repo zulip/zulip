@@ -341,7 +341,7 @@ test("message_is_notifiable", () => {
 });
 
 test("basic_notifications", () => {
-    $("<div>").set_find_results(".emoji", {replaceWith() {}});
+    $("<div>").set_find_results(".emoji", {text: () => ({contents: () => ({unwrap() {}})})});
     $("<div>").set_find_results("span.katex", {each() {}});
     $("<div>").children = () => [];
 
