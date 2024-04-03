@@ -257,7 +257,9 @@
 
         <div id="org-user-identity" class="settings-subsection-parent">
             <div class="subsection-header">
-                <h3>{{t "User identity" }}</h3>
+                <h3>{{t "User identity" }}
+                    {{> ../help_link_widget link="/help/restrict-name-and-email-changes" }}
+                </h3>
                 {{> settings_save_discard_widget section_name="user-identity" }}
             </div>
             <div class="inline-block organization-permissions-parent">
