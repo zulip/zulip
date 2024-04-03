@@ -565,6 +565,7 @@ test("sort_recipients dup alls direct message", () => {
 
 test("sort_recipients subscribers", () => {
     // b_user_2 is a subscriber and b_user_1 is not.
+    peer_data.add_subscriber(dev_sub.stream_id, b_user_2.user_id);
     const small_matches = [b_user_2, b_user_1];
     const recipients = th.sort_recipients({
         users: small_matches,
@@ -580,6 +581,7 @@ test("sort_recipients subscribers", () => {
 test("sort_recipients pm partners", () => {
     // b_user_3 is a pm partner and b_user_2 is not and
     // both are not subscribed to the stream Linux.
+    pm_conversations.set_partner(b_user_3.user_id);
     const small_matches = [b_user_3, b_user_2];
     const recipients = th.sort_recipients({
         users: small_matches,
