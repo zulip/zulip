@@ -313,7 +313,9 @@ export class MessageListView {
     _RENDER_THRESHOLD = 50;
 
     _add_message_list_to_DOM() {
-        $("#message-lists-container").append(render_message_list({message_list_id: this.list.id}));
+        $("#message-lists-container").append(
+            $(render_message_list({message_list_id: this.list.id})),
+        );
     }
 
     _get_msg_timestring(message_container) {

@@ -378,7 +378,7 @@ export function create<Key, Item = Key>(
 
             // At this point, we have asserted we have all the information to replace
             // the html now.
-            $html_item.replaceWith(html);
+            $html_item.replaceWith($(html));
         },
 
         clear() {

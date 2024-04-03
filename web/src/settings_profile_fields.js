@@ -681,23 +681,27 @@ export function do_populate_profile_fields(profile_fields_data) {
         const display_in_profile_summary = profile_field.display_in_profile_summary === true;
         const required = profile_field.required === true;
         $profile_fields_table.append(
-            render_admin_profile_field_list({
-                profile_field: {
-                    id: profile_field.id,
-                    name: profile_field.name,
-                    hint: profile_field.hint,
-                    type: field_type_id_to_string(profile_field.type),
-                    choices,
-                    is_select_field: profile_field.type === field_types.SELECT.id,
-                    is_external_account_field:
-                        profile_field.type === field_types.EXTERNAL_ACCOUNT.id,
-                    display_in_profile_summary,
-                    valid_to_display_in_summary: is_valid_to_display_in_summary(profile_field.type),
-                    required,
-                },
-                can_modify: current_user.is_admin,
-                realm_default_external_accounts: realm.realm_default_external_accounts,
-            }),
+            $(
+                render_admin_profile_field_list({
+                    profile_field: {
+                        id: profile_field.id,
+                        name: profile_field.name,
+                        hint: profile_field.hint,
+                        type: field_type_id_to_string(profile_field.type),
+                        choices,
+                        is_select_field: profile_field.type === field_types.SELECT.id,
+                        is_external_account_field:
+                            profile_field.type === field_types.EXTERNAL_ACCOUNT.id,
+                        display_in_profile_summary,
+                        valid_to_display_in_summary: is_valid_to_display_in_summary(
+                            profile_field.type,
+                        ),
+                        required,
+                    },
+                    can_modify: current_user.is_admin,
+                    realm_default_external_accounts: realm.realm_default_external_accounts,
+                }),
+            ),
         );
 
         // Keeping counts of all display_in_profile_summary profile fields, to keep track.

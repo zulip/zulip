@@ -8,7 +8,7 @@ import render_markdown_timestamp from "../templates/markdown_timestamp.hbs";
 
 import * as blueslip from "./blueslip";
 import {show_copied_confirmation} from "./copied_tooltip";
-import {$t, $t_html} from "./i18n";
+import {$t} from "./i18n";
 import * as message_store from "./message_store";
 import type {Message} from "./message_store";
 import * as people from "./people";
@@ -264,13 +264,13 @@ export const update_elements = ($content: JQuery): void => {
         // If a spoiler block has no header content, it should have a default header.
         // We do this client side to allow for i18n by the client.
         if ($(this).html().trim().length === 0) {
-            $(this).append(`<p>${$t_html({defaultMessage: "Spoiler"})}</p>`);
+            $(this).append($("<p>").text($t({defaultMessage: "Spoiler"})));
         }
 
         // Add the expand/collapse button to spoiler blocks
         const toggle_button_html =
             '<span class="spoiler-button" aria-expanded="false"><span class="spoiler-arrow"></span></span>';
-        $(this).prepend(toggle_button_html);
+        $(this).prepend($(toggle_button_html));
     });
 
     // Display the view-code-in-playground and the copy-to-clipboard button inside the div.codehilite element,

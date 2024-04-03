@@ -2,6 +2,7 @@
 
 const {strict: assert} = require("assert");
 
+const {$t} = require("./lib/i18n");
 const {mock_cjs, mock_esm, zrequire} = require("./lib/namespace");
 const {run_test, noop} = require("./lib/test");
 const blueslip = require("./lib/zblueslip");
@@ -489,6 +490,10 @@ run_test("spoiler-header", () => {
     const $content = get_content_element();
     const $header = $.create("div.spoiler-header");
     $content.set_find_results("div.spoiler-header", $array([$header]));
+    let $prepended;
+    $header.prepend = ($element) => {
+        $prepended = $element;
+    };
 
     // Test that the show/hide button gets added to a spoiler header.
     const label = "My spoiler header";
@@ -496,7 +501,8 @@ run_test("spoiler-header", () => {
         '<span class="spoiler-button" aria-expanded="false"><span class="spoiler-arrow"></span></span>';
     $header.html(label);
     rm.update_elements($content);
-    assert.equal(toggle_button_html + label, $header.html());
+    assert.equal(label, $header.html());
+    assert.equal($prepended.selector, toggle_button_html);
 });
 
 run_test("spoiler-header-empty-fill", () => {
@@ -504,13 +510,23 @@ run_test("spoiler-header-empty-fill", () => {
     const $content = get_content_element();
     const $header = $.create("div.spoiler-header");
     $content.set_find_results("div.spoiler-header", $array([$header]));
+    let $appended;
+    $header.append = ($element) => {
+        $appended = $element;
+    };
+    let $prepended;
+    $header.prepend = ($element) => {
+        $prepended = $element;
+    };
 
     // Test that an empty header gets the default text applied (through i18n filter).
     const toggle_button_html =
         '<span class="spoiler-button" aria-expanded="false"><span class="spoiler-arrow"></span></span>';
     $header.empty();
     rm.update_elements($content);
-    assert.equal(toggle_button_html + "<p>translated HTML: Spoiler</p>", $header.html());
+    assert.equal($appended.selector, "<p>");
+    assert.equal($appended.text(), $t({defaultMessage: "Spoiler"}));
+    assert.equal($prepended.selector, toggle_button_html);
 });
 
 function assert_clipboard_setup() {

@@ -62,15 +62,15 @@ run_test("basics", ({override, mock_template}) => {
     const buddy_list = new BuddyList();
     init_simulated_scrolling();
 
-    override(buddy_list, "items_to_html", () => "html-stub");
+    override(buddy_list, "items_to_html", () => "<html-stub>");
     override(message_viewport, "height", () => 550);
     override(padded_widget, "update_padding", noop);
     stub_buddy_list_elements();
-    mock_template("buddy_list/view_all_users.hbs", false, noop);
+    mock_template("buddy_list/view_all_users.hbs", false, () => "<view-all-users-stub>");
 
     let appended_to_users_matching_view;
-    $("#buddy-list-users-matching-view").append = (html) => {
-        assert.equal(html, "html-stub");
+    $("#buddy-list-users-matching-view").append = ($element) => {
+        assert.equal($element.selector, "<html-stub>");
         appended_to_users_matching_view = true;
     };
 
@@ -98,29 +98,29 @@ run_test("split list", ({override, override_rewire, mock_template}) => {
     const buddy_list = new BuddyList();
     init_simulated_scrolling();
     stub_buddy_list_elements();
-    mock_template("buddy_list/view_all_users.hbs", false, noop);
+    mock_template("buddy_list/view_all_users.hbs", false, () => "<view-all-users-stub>");
 
     override_rewire(buddy_data, "user_matches_narrow", override_user_matches_narrow);
 
     override(buddy_list, "items_to_html", (opts) => {
         if (opts.items.length > 0) {
-            return "html-stub";
+            return "<html-stub>";
         }
-        return "empty-list";
+        return "<empty-list-stub>";
     });
     override(message_viewport, "height", () => 550);
     override(padded_widget, "update_padding", noop);
 
     let appended_to_users_matching_view = false;
-    $("#buddy-list-users-matching-view").append = (html) => {
-        if (html === "html-stub") {
+    $("#buddy-list-users-matching-view").append = ($element) => {
+        if ($element.selector === "<html-stub>") {
             appended_to_users_matching_view = true;
         }
     };
 
     let appended_to_other_users = false;
-    $("#buddy-list-other-users").append = (html) => {
-        if (html === "html-stub") {
+    $("#buddy-list-other-users").append = ($element) => {
+        if ($element.selector === "<html-stub>") {
             appended_to_other_users = true;
         }
     };
@@ -159,7 +159,7 @@ run_test("find_li", ({override, mock_template}) => {
     const buddy_list = new BuddyList();
 
     override(buddy_list, "fill_screen_with_content", noop);
-    mock_template("buddy_list/view_all_users.hbs", false, noop);
+    mock_template("buddy_list/view_all_users.hbs", false, () => "<view-all-users-stub>");
     stub_buddy_list_elements();
 
     clear_buddy_list(buddy_list);
@@ -182,7 +182,7 @@ run_test("fill_screen_with_content early break on big list", ({override, mock_te
     const buddy_list = new BuddyList();
     const elem = init_simulated_scrolling();
     stub_buddy_list_elements();
-    mock_template("buddy_list/view_all_users.hbs", false, noop);
+    mock_template("buddy_list/view_all_users.hbs", false, () => "<view-all-users-stub>");
 
     let chunks_inserted = 0;
     override(buddy_list, "render_more", () => {
@@ -224,12 +224,12 @@ run_test("big_list", ({override, override_rewire, mock_template}) => {
     override(padded_widget, "update_padding", noop);
     override(message_viewport, "height", () => 550);
     override_rewire(buddy_data, "user_matches_narrow", override_user_matches_narrow);
-    mock_template("buddy_list/view_all_users.hbs", false, noop);
+    mock_template("buddy_list/view_all_users.hbs", false, () => "<view-all-users-stub>");
 
     let items_to_html_call_count = 0;
     override(buddy_list, "items_to_html", () => {
         items_to_html_call_count += 1;
-        return "html-stub";
+        return "<html-stub>";
     });
 
     const num_users = 300;
@@ -354,7 +354,7 @@ run_test("scrolling", ({override, mock_template}) => {
     override(buddy_list, "fill_screen_with_content", () => {
         tried_to_fill = true;
     });
-    mock_template("buddy_list/view_all_users.hbs", false, noop);
+    mock_template("buddy_list/view_all_users.hbs", false, () => "<view-all-users-stub>");
     stub_buddy_list_elements();
     init_simulated_scrolling();
     stub_buddy_list_elements();

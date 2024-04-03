@@ -87,7 +87,7 @@ run_test("populate_profile_fields", ({mock_template}) => {
     const template_data = [];
     mock_template("settings/admin_profile_field_list.hbs", false, (data) => {
         template_data.push(data);
-        return "whatever";
+        return "<admin-profile-field-list-stub>";
     });
 
     const fields_data = [
