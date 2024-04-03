@@ -477,10 +477,11 @@ run_test("emoji", () => {
     const $emoji = $.create("emoji-stub");
     $emoji.attr("title", "tada");
     let called = false;
-    $emoji.replaceWith = (f) => {
+    $emoji.text = (f) => {
         const text = f.call($emoji);
         assert.equal(":tada:", text);
         called = true;
+        return {contents: () => ({unwrap() {}})};
     };
     $content.set_find_results(".emoji", $emoji);
     user_settings.emojiset = "text";
