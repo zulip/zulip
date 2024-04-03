@@ -180,15 +180,15 @@ run_test("partial updates", () => {
         throw new Error("should not replace entire html");
     };
 
-    let patched_html;
+    let $patched;
 
     find = () => ({
         children: () => ({
             eq(i) {
                 assert.equal(i, 0);
                 return {
-                    replaceWith(html) {
-                        patched_html = html;
+                    replaceWith($element) {
+                        $patched = $element;
                     },
                 };
             },
@@ -206,7 +206,7 @@ run_test("partial updates", () => {
     const new_ul = vdom.ul(new_opts);
     vdom.update(replace_content, find, new_ul, ul);
 
-    assert.equal(patched_html, "<li>modified1</li>");
+    assert.equal($patched.selector, "<li>modified1</li>");
 });
 
 run_test("eq_array easy cases", () => {

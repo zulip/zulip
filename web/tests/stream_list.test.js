@@ -375,11 +375,11 @@ test_ui("zoom_in_and_zoom_out", ({mock_template}) => {
     };
     stream_list.initialize_stream_cursor();
 
-    mock_template("filter_topics.hbs", false, () => "filter-topics-stub");
+    mock_template("filter_topics.hbs", false, () => "<filter-topics-stub>");
     let filter_topics_appended = false;
     $stream_li1.children = () => ({
-        append(html) {
-            assert.equal(html, "filter-topics-stub");
+        append($element) {
+            assert.equal($element.selector, "<filter-topics-stub>");
             filter_topics_appended = true;
         },
     });
