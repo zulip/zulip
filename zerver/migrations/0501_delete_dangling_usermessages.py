@@ -196,7 +196,7 @@ class Migration(migrations.Migration):
     atomic = False
 
     dependencies = [
-        ("zerver", "0500_realm_zulip_update_announcements_stream"),
+        ("zerver", "0496_alter_scheduledmessage_read_by_sender"),
     ]
 
     operations = [
