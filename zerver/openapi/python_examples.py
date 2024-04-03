@@ -319,7 +319,7 @@ def send_invitations(client: Client) -> None:
     # Send invitations
     request = {
         "invitee_emails": "example@zulip.com, logan@zulip.com",
-        "invite_expires_in_minutes": 14400,
+        "invite_expires_in_minutes": 60 * 24 * 10,  # 10 days
         "invite_as": 400,
         "stream_ids": [1, 8, 9],
     }
