@@ -7,3 +7,8 @@ Pin-Priority: 501
 Package: nginx-common nginx-full
 Pin: version 1.24.0-2ubuntu4
 Pin-Priority: 501
+
+# https://bugs.launchpad.net/ubuntu/+source/file/+bug/2059723
+Package: libmagic1
+Pin: version 1:5.45-2
+Pin-Priority: -1
