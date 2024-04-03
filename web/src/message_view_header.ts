@@ -99,9 +99,7 @@ export function colorize_message_view_header(): void {
 
 function append_and_display_title_area(context: MessageViewHeaderContext): void {
     const $message_view_header_elem = $("#message_view_header");
-    $message_view_header_elem.empty();
-    const rendered = render_message_view_header(context);
-    $message_view_header_elem.append(rendered);
+    $message_view_header_elem.html(render_message_view_header(context));
     if (context.stream_settings_link) {
         colorize_message_view_header();
     }

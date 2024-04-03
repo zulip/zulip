@@ -158,11 +158,13 @@ export default function render_tabs(contributors: Contributor[]): void {
 
     $("#tab-total .contributors-grid").html(total_tab_html);
     $("#tab-total").prepend(
-        total_count_template({
-            contributor_count: contributors_list.length,
-            tab_name: "total",
-            hundred_plus_contributor_count: hundred_plus_total_contributors.length,
-        }),
+        $(
+            total_count_template({
+                contributor_count: contributors_list.length,
+                tab_name: "total",
+                hundred_plus_contributor_count: hundred_plus_total_contributors.length,
+            }),
+        ),
     );
 
     for (const tab_name of all_tab_names) {
@@ -215,12 +217,14 @@ export default function render_tabs(contributors: Contributor[]): void {
                     (repo_name) => `https://github.com/zulip/${repo_name}`,
                 );
                 $(`#tab-${CSS.escape(tab_name)}`).prepend(
-                    count_template({
-                        contributor_count,
-                        repo_list,
-                        repo_url_list,
-                        hundred_plus_contributor_count,
-                    }),
+                    $(
+                        count_template({
+                            contributor_count,
+                            repo_list,
+                            repo_url_list,
+                            hundred_plus_contributor_count,
+                        }),
+                    ),
                 );
 
                 loaded_tabs.push(tab_name);

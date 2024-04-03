@@ -292,20 +292,18 @@ export class BuddyList extends BuddyListConf {
             matching_view_empty_list_message,
         );
         if ($("#buddy-list-users-matching-view .empty-list-message").length) {
-            const empty_list_widget = render_empty_list_widget_for_list({
+            const empty_list_widget_html = render_empty_list_widget_for_list({
                 matching_view_empty_list_message,
             });
-            $("#buddy-list-users-matching-view").empty();
-            $("#buddy-list-users-matching-view").append(empty_list_widget);
+            $("#buddy-list-users-matching-view").html(empty_list_widget_html);
         }
 
         $("#buddy-list-other-users").data("search-results-empty", other_users_empty_list_message);
         if ($("#buddy-list-other-users .empty-list-message").length) {
-            const empty_list_widget = render_empty_list_widget_for_list({
+            const empty_list_widget_html = render_empty_list_widget_for_list({
                 other_users_empty_list_message,
             });
-            $("#buddy-list-other-users").empty();
-            $("#buddy-list-other-users").append(empty_list_widget);
+            $("#buddy-list-other-users").html(empty_list_widget_html);
         }
     }
 
@@ -336,23 +334,27 @@ export class BuddyList extends BuddyListConf {
         }
 
         $("#buddy-list-users-matching-view-container .buddy-list-subsection-header").append(
-            render_section_header({
-                id: "buddy-list-users-matching-view-section-heading",
-                header_text,
-                user_count: get_formatted_sub_count(subscriber_count),
-                toggle_class: "toggle-users-matching-view",
-                is_collapsed: this.users_matching_view_is_collapsed,
-            }),
+            $(
+                render_section_header({
+                    id: "buddy-list-users-matching-view-section-heading",
+                    header_text,
+                    user_count: get_formatted_sub_count(subscriber_count),
+                    toggle_class: "toggle-users-matching-view",
+                    is_collapsed: this.users_matching_view_is_collapsed,
+                }),
+            ),
         );
 
         $("#buddy-list-other-users-container .buddy-list-subsection-header").append(
-            render_section_header({
-                id: "buddy-list-other-users-section-heading",
-                header_text: $t({defaultMessage: "Others"}),
-                user_count: get_formatted_sub_count(other_users_count),
-                toggle_class: "toggle-other-users",
-                is_collapsed: this.other_users_is_collapsed,
-            }),
+            $(
+                render_section_header({
+                    id: "buddy-list-other-users-section-heading",
+                    header_text: $t({defaultMessage: "Others"}),
+                    user_count: get_formatted_sub_count(other_users_count),
+                    toggle_class: "toggle-other-users",
+                    is_collapsed: this.other_users_is_collapsed,
+                }),
+            ),
         );
     }
 

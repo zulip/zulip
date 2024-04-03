@@ -161,7 +161,7 @@ export function launch() {
             draft_lifetime: drafts.DRAFT_LIFETIME,
         });
         const $drafts_table = $("#drafts_table");
-        $drafts_table.append(rendered);
+        $drafts_table.append($(rendered));
         if ($("#drafts_table .overlay-message-row").length > 0) {
             $("#drafts_table .no-drafts").hide();
             // Update possible dynamic elements.

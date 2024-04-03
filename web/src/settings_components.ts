@@ -818,7 +818,7 @@ export function save_discard_widget_status_handler(
             stream_id: sub.stream_id,
         };
         $("#stream_permission_settings .stream-permissions-warning-banner").append(
-            render_compose_banner(context),
+            $(render_compose_banner(context)),
         );
     } else {
         $("#stream_permission_settings .stream-permissions-warning-banner").empty();

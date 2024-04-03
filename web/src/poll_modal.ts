@@ -4,9 +4,9 @@ import SortableJS from "sortablejs";
 import render_poll_modal_option from "../templates/poll_modal_option.hbs";
 
 function create_option_row($last_option_row_input: JQuery): void {
-    const row = render_poll_modal_option();
+    const row_html = render_poll_modal_option();
     const $row_container = $last_option_row_input.closest(".simplebar-content");
-    $row_container.append(row);
+    $row_container.append($(row_html));
 }
 
 function add_option_row(e: JQuery.TriggeredEvent): void {

@@ -36,7 +36,7 @@ export function open_send_later_menu() {
     // Only show send later options that are possible today.
     const date = new Date();
     const filtered_send_opts = scheduled_messages.get_filtered_send_opts(date);
-    $("body").append(render_send_later_modal(filtered_send_opts));
+    $("body").append($(render_send_later_modal(filtered_send_opts)));
     let interval;
 
     modals.open("send_later_modal", {
@@ -232,6 +232,8 @@ export function update_send_later_options() {
     const now = new Date();
     if (should_update_send_later_options(now)) {
         const filtered_send_opts = scheduled_messages.get_filtered_send_opts(now);
-        $("#send_later_options").replaceWith(render_send_later_modal_options(filtered_send_opts));
+        $("#send_later_options").replaceWith(
+            $(render_send_later_modal_options(filtered_send_opts)),
+        );
     }
 }

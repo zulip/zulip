@@ -158,8 +158,8 @@ function create_choice_row(container) {
         value: get_value_for_new_option(container),
         new_empty_choice_row: true,
     };
-    const row = render_settings_profile_field_choice(context);
-    $(container).append(row);
+    const row_html = render_settings_profile_field_choice(context);
+    $(container).append($(row_html));
 }
 
 function clear_form_data() {
@@ -417,10 +417,12 @@ function set_up_select_field_edit_form($profile_field_form, field_data) {
 
     for (const choice of choices_data) {
         $choice_list.append(
-            render_settings_profile_field_choice({
-                text: choice.text,
-                value: choice.value,
-            }),
+            $(
+                render_settings_profile_field_choice({
+                    text: choice.text,
+                    value: choice.value,
+                }),
+            ),
         );
     }
 

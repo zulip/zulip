@@ -238,7 +238,7 @@ class Typeahead<ItemType extends string | object> {
         this.sorter = options.sorter;
         this.highlighter_html = options.highlighter_html;
         this.updater = options.updater ?? ((items) => this.defaultUpdater(items));
-        this.$container = $(CONTAINER_HTML).appendTo(options.parentElement ?? "body");
+        this.$container = $(CONTAINER_HTML).appendTo($(options.parentElement ?? "body"));
         this.$menu = $(MENU_HTML).appendTo(this.$container);
         this.$header = $(HEADER_ELEMENT_HTML).appendTo(this.$container);
         this.source = options.source;
@@ -414,7 +414,7 @@ class Typeahead<ItemType extends string | object> {
             const option_label_html = this.option_label(matching_items, item);
 
             if (option_label_html) {
-                $item_html.append(option_label_html).addClass("typeahead-option-label");
+                $item_html.append($(option_label_html)).addClass("typeahead-option-label");
             }
             return $i;
         });
