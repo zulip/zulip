@@ -1150,6 +1150,12 @@ test_people("track_duplicate_full_names", () => {
 });
 
 test_people("get_mention_syntax", () => {
+    // blueslip warning is not raised for wildcard mentions without a user_id
+    assert.equal(people.get_mention_syntax("all"), "@**all**");
+    assert.equal(people.get_mention_syntax("everyone", undefined, true), "@_**everyone**");
+    assert.equal(people.get_mention_syntax("stream"), "@**stream**");
+    assert.equal(people.get_mention_syntax("topic"), "@**topic**");
+
     people.add_active_user(stephen1);
     people.add_active_user(stephen2);
     people.add_active_user(maria);
@@ -1161,7 +1167,7 @@ test_people("get_mention_syntax", () => {
     blueslip.reset();
 
     assert.equal(people.get_mention_syntax("Stephen King", 601), "@**Stephen King|601**");
-    assert.equal(people.get_mention_syntax("Stephen King", 602), "@**Stephen King|602**");
+    assert.equal(people.get_mention_syntax("Stephen King", 602, true), "@_**Stephen King|602**");
     assert.equal(people.get_mention_syntax("Maria Athens", 603), "@**Maria Athens**");
 
     // Following tests handle a special case when `full_name` matches with a wildcard.
@@ -1172,7 +1178,8 @@ test_people("get_mention_syntax", () => {
     assert.equal(people.get_mention_syntax("all", 1202), "@**all|1202**");
 
     people.add_active_user(all2);
-    assert.equal(people.get_mention_syntax("all", 1203), "@**all|1203**");
+    assert.ok(people.is_duplicate_full_name("all"));
+    assert.equal(people.get_mention_syntax("all", 1203, true), "@_**all|1203**");
 });
 
 test_people("initialize", () => {
