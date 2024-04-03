@@ -275,6 +275,19 @@ export function convert_message_topic(message: Message): void {
     }
 }
 
+// TODO: When "stream" is renamed to "channel", update these stream
+// synonym helper functions for the reverse logic.
+export function is_stream_synonym(text: string): boolean {
+    return text === "channel";
+}
+
+export function canonicalize_stream_synonym(text: string): string {
+    if (is_stream_synonym(text.toLowerCase())) {
+        return "stream";
+    }
+    return text;
+}
+
 let inertDocument: Document | undefined;
 
 export function clean_user_content_links(html: string): string {
