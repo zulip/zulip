@@ -146,7 +146,7 @@ function switch_message_type(message_type) {
         topic: compose_state.topic(),
         private_message_recipient: compose_state.private_message_recipient(),
     };
-    update_compose_for_message_type(message_type, opts);
+    update_compose_for_message_type(opts);
     update_placeholder_text();
     compose_ui.set_focus(opts);
 }
@@ -164,8 +164,8 @@ function update_recipient_label(stream_id) {
     }
 }
 
-export function update_compose_for_message_type(message_type, opts) {
-    if (message_type === "stream") {
+export function update_compose_for_message_type(opts) {
+    if (opts.message_type === "stream") {
         $("#compose-direct-recipient").hide();
         $("#compose_recipient_box").show();
         $("#stream_toggle").addClass("active");
