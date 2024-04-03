@@ -18,7 +18,7 @@
 
 {% else %}
 {% if corporate_enabled %}
-{{ _("You have requested a list of Zulip accounts for this email address.") }} {{ _("Unfortunately, no accounts in Zulip Cloud organizations were found.") }}
+{{ _("You have requested a list of Zulip accounts for this email address.") }} {{ _("Unfortunately, no Zulip Cloud accounts were found.") }}
 
 {% trans %}You can check for accounts with another email ({{ find_accounts_link }}), or try another way to find your account ({{ help_logging_in_link }}).{% endtrans %}
 
