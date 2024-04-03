@@ -8,6 +8,9 @@ overrides:
   source-map@^0.6: npm:source-map-js@1.0.1
 
 patchedDependencies:
+  eslint-plugin-no-jquery@2.7.0:
+    hash: 3o6vd4atcpz6wln5ovpbrt3cea
+    path: patches/eslint-plugin-no-jquery@2.7.0.patch
   source-sans@3.46.0:
     hash: 4n7ij66tzyhzaqnxsenbilrxr4
     path: patches/source-sans@3.46.0.patch
@@ -392,7 +395,7 @@ devDependencies:
     version: 2.29.1(@typescript-eslint/parser@7.4.0)(eslint-import-resolver-webpack@0.13.8)(eslint@8.57.0)
   eslint-plugin-no-jquery:
     specifier: ^2.7.0
-    version: 2.7.0(eslint@8.57.0)
+    version: 2.7.0(patch_hash=3o6vd4atcpz6wln5ovpbrt3cea)(eslint@8.57.0)
   eslint-plugin-unicorn:
     specifier: ^51.0.1
     version: 51.0.1(eslint@8.57.0)
@@ -6234,13 +6237,14 @@ packages:
       - supports-color
     dev: true
 
-  /eslint-plugin-no-jquery@2.7.0(eslint@8.57.0):
+  /eslint-plugin-no-jquery@2.7.0(patch_hash=3o6vd4atcpz6wln5ovpbrt3cea)(eslint@8.57.0):
     resolution: {integrity: sha512-Aeg7dA6GTH1AcWLlBtWNzOU9efK5KpNi7b0EhBO0o0M+awyzguUUo8gF6hXGjQ9n5h8/uRtYv9zOqQkeC5CG0w==}
     peerDependencies:
       eslint: '>=2.3.0'
     dependencies:
       eslint: 8.57.0
     dev: true
+    patched: true
 
   /eslint-plugin-unicorn@51.0.1(eslint@8.57.0):
     resolution: {integrity: sha512-MuR/+9VuB0fydoI0nIn2RDA5WISRn4AsJyNSaNKLVwie9/ONvQhxOBbkfSICBPnzKrB77Fh6CZZXjgTt/4Latw==}
