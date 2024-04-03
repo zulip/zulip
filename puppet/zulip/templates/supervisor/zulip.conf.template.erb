@@ -26,7 +26,7 @@ directory=/home/zulip/deployments/current/
 
 <% if @tornado_ports.length > 1 -%>
 [program:zulip-tornado]
-command=/home/zulip/deployments/current/manage.py runtornado 127.0.0.1:98%(process_num)02d
+command=/home/zulip/deployments/current/manage.py runtornado 127.0.0.1:98%(process_num)02d --skip-checks
 process_name=zulip-tornado-port-98%(process_num)02d
 environment=PYTHONUNBUFFERED=1,HTTP_proxy="<%= @proxy %>",HTTPS_proxy="<%= @proxy %>"
 priority=200                   ; the relative start priority (default 999)
@@ -43,7 +43,7 @@ directory=/home/zulip/deployments/current/
 numprocs=<%= @tornado_ports.length %>
 <% else -%>
 [program:zulip-tornado]
-command=/home/zulip/deployments/current/manage.py runtornado 127.0.0.1:9800
+command=/home/zulip/deployments/current/manage.py runtornado 127.0.0.1:9800 --skip-checks
 environment=PYTHONUNBUFFERED=1,HTTP_proxy="<%= @proxy %>",HTTPS_proxy="<%= @proxy %>"
 priority=200                   ; the relative start priority (default 999)
 autostart=true                 ; start at supervisord start (default: true)
@@ -61,7 +61,7 @@ directory=/home/zulip/deployments/current/
 <% if @queues_multiprocess %>
 <% @queues.each do |queue| -%>
 [program:zulip_events_<%= queue %>]
-command=nice -n10 /home/zulip/deployments/current/manage.py process_queue --queue_name=<%= queue %>
+command=nice -n10 /home/zulip/deployments/current/manage.py process_queue --queue_name=<%= queue %> --skip-checks
 environment=HTTP_proxy="<%= @proxy %>",HTTPS_proxy="<%= @proxy %>"
 priority=300                   ; the relative start priority (default 999)
 autostart=true                 ; start at supervisord start (default: true)
@@ -77,7 +77,7 @@ directory=/home/zulip/deployments/current/
 <% end -%>
 <% else %>
 [program:zulip_events]
-command=nice -n10 /home/zulip/deployments/current/manage.py process_queue --multi_threaded <%= @queues.join(' ') %>
+command=nice -n10 /home/zulip/deployments/current/manage.py process_queue --multi_threaded <%= @queues.join(' ') %> --skip-checks
 environment=HTTP_proxy="<%= @proxy %>",HTTPS_proxy="<%= @proxy %>"
 priority=300                   ; the relative start priority (default 999)
 autostart=true                 ; start at supervisord start (default: true)
