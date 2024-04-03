@@ -310,9 +310,13 @@ export const update_elements = ($content) => {
     // Display emoji (including realm emoji) as text if
     // user_settings.emojiset is 'text'.
     if (user_settings.emojiset === "text") {
-        $content.find(".emoji").replaceWith(function () {
-            const text = $(this).attr("title");
-            return ":" + text + ":";
-        });
+        $content
+            .find(".emoji")
+            .text(function () {
+                const text = $(this).attr("title");
+                return ":" + text + ":";
+            })
+            .contents()
+            .unwrap();
     }
 };
