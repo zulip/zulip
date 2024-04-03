@@ -11889,7 +11889,8 @@ paths:
                   description: |
                     The number of minutes before the invitation will expire. If `null`, the
                     invitation will never expire. If unspecified, the server will use a default
-                    value (`INVITATION_LINK_VALIDITY_MINUTES`) for when the invitation will expire.
+                    value (based on the `INVITATION_LINK_VALIDITY_MINUTES` server setting, which
+                    defaults to 10) for when the invitation will expire.
 
                     **Changes**: New in Zulip 6.0 (feature level 126). Previously, there was an
                     `invite_expires_in_days` parameter, which specified the duration in days instead
@@ -11901,6 +11902,13 @@ paths:
                   description: |
                     The [organization-level role](/api/roles-and-permissions) of the user that is
                     created when the invitation is accepted.
+                    Possible values are:
+
+                    - 100 = Organization owner
+                    - 200 = Organization administrator
+                    - 300 = Organization moderator
+                    - 400 = Member
+                    - 600 = Guest
 
                     Users can only send invitations for
                     [roles with equal or stricter restrictions](/api/roles-and-permissions#permission-levels)
