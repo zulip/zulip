@@ -280,6 +280,11 @@ DATABASES: Dict[str, Dict[str, Any]] = {
         "OPTIONS": {
             "connection_factory": TimeTrackingConnection,
             "cursor_factory": TimeTrackingCursor,
+            # The default is null, which means no timeout; 2 is the
+            # minimum allowed value.  We set this low, so we move on
+            # quickly, in the case that the server is running but
+            # unable to handle new connections for some reason.
+            "connect_timeout": 2,
         },
     }
 }
@@ -295,6 +300,8 @@ elif REMOTE_POSTGRES_HOST != "":
         HOST=REMOTE_POSTGRES_HOST,
         PORT=REMOTE_POSTGRES_PORT,
     )
+    if "," in REMOTE_POSTGRES_HOST:
+        DATABASES["default"]["OPTIONS"]["target_session_attrs"] = "read-write"
     if get_secret("postgres_password") is not None:
         DATABASES["default"].update(
             PASSWORD=get_secret("postgres_password"),
