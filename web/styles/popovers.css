@@ -535,35 +535,23 @@ ul {
 
     .user-profile-manage-own-edit-button,
     .user-profile-manage-others-edit-button {
-        width: 25px;
-        height: 14px;
-        text-align: center;
-        font-size: 18px;
-    }
-
-    .user-profile-manage-own-copy-link-button {
-        width: 20px;
-        height: 15px;
-        text-align: center;
+        text-decoration: none;
         font-size: 15px;
     }
 
-    #user_profile_manage_own_copy_link {
-        height: 25px;
-        margin-right: 8px;
+    .user-profile-manage-own-copy-link-button {
+        font-size: 19px;
+        text-decoration: none;
     }
 
-    #user_profile_manage_own_edit_link {
-        height: 25px;
+    .zulip-icon-link,
+    .zulip-icon-edit {
+        vertical-align: middle;
     }
 
     .deactivated-user-icon {
         margin: -1px;
         vertical-align: middle;
-    }
-
-    .user-profile-name {
-        margin: 0 10px;
     }
 
     .zulip-icon.zulip-icon-bot {
