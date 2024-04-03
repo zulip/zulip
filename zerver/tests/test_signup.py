@@ -4295,7 +4295,7 @@ class TestFindMyTeam(ZulipTestCase):
 
         self.assert_length(outbox, 1)
         message = outbox[0]
-        self.assertIn("Unfortunately, no accounts", message.body)
+        self.assertIn("Unfortunately, no Zulip Cloud accounts", message.body)
 
     def test_find_team_reject_invalid_email(self) -> None:
         result = self.client_post("/accounts/find/", dict(emails="invalid_string"))
@@ -4337,7 +4337,7 @@ class TestFindMyTeam(ZulipTestCase):
 
         self.assert_length(outbox, 1)
         message = outbox[0]
-        self.assertIn("Unfortunately, no accounts", message.body)
+        self.assertIn("Unfortunately, no Zulip Cloud accounts", message.body)
 
     def test_find_team_deactivated_realm(self) -> None:
         do_deactivate_realm(get_realm("zulip"), acting_user=None)
@@ -4348,7 +4348,7 @@ class TestFindMyTeam(ZulipTestCase):
 
         self.assert_length(outbox, 1)
         message = outbox[0]
-        self.assertIn("Unfortunately, no accounts", message.body)
+        self.assertIn("Unfortunately, no Zulip Cloud accounts", message.body)
 
     def test_find_team_bot_email(self) -> None:
         data = {"emails": self.example_email("webhook_bot")}
@@ -4358,7 +4358,7 @@ class TestFindMyTeam(ZulipTestCase):
 
         self.assert_length(outbox, 1)
         message = outbox[0]
-        self.assertIn("Unfortunately, no accounts", message.body)
+        self.assertIn("Unfortunately, no Zulip Cloud accounts", message.body)
 
     def test_find_team_more_than_ten_emails(self) -> None:
         data = {"emails": ",".join(f"hamlet-{i}@zulip.com" for i in range(11))}
