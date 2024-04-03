@@ -329,7 +329,7 @@ export function build_stream_list(force_rerender: boolean): void {
         add_sidebar_li(stream_id);
     }
 
-    $parent.append(elems);
+    $parent.append(elems); // eslint-disable-line no-jquery/no-append-html
 }
 
 export function get_stream_li(stream_id: number): JQuery | undefined {
