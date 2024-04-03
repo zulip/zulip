@@ -29,8 +29,8 @@ if [ "$(su "$POSTGRES_USER" -c "cd / && psql -v ON_ERROR_STOP=1 -Atc \"SELECT 1 
 fi
 
 # Shut down all services to ensure a quiescent state.
-if [ -e "/var/run/supervisor.sock" ]; then
-    su zulip -c "$(dirname "$0")/../stop-server"
+if [ -e "/home/zulip/deployments" ]; then
+    su zulip -c "/home/zulip/deployments/current/scripts/stop-server"
 fi
 
 # Drop any open connections to any old database.
@@ -54,6 +54,8 @@ EOF
 fi
 
 # Clear memcached to avoid contamination from previous database state
-"$(dirname "$0")/flush-memcached"
+if [ -e "/home/zulip/deployments" ]; then
+    /home/zulip/deployments/current/scripts/setup/flush-memcached
+fi
 
 echo "Database created"
