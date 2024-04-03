@@ -635,7 +635,7 @@ li,
     outline-color: hsl(0deg 0% 73%);
     height: 18px;
     width: 10px;
-    padding: 6px;
+    padding: 10px;
     display: block;
     /* The below two avoids the padded element from displaying
     its own border and background color */
@@ -649,13 +649,20 @@ li,
     &:hover svg path {
         fill: var(--color-fill-hover-copy-icon);
     }
+    backdrop-filter: blur(4px);
+
+    mask-image: radial-gradient(
+        farthest-corner,
+        hsl(0deg 0% 0% / 100%),
+        hsl(0deg 0% 0% / 90%)
+    );
 }
 
 .copy_message {
     float: right;
     position: relative;
     cursor: pointer;
-    top: 30px;
+    top: 31px;
     /* To make sure the svg doesn't occupy any vertical space. */
     margin-top: -30px;
     right: 2px;
