@@ -1,5 +1,4 @@
 import $ from "jquery";
-import tippy from "tippy.js";
 
 import render_announce_stream_checkbox from "../templates/stream_settings/announce_stream_checkbox.hbs";
 import render_stream_privacy_icon from "../templates/stream_settings/stream_privacy_icon.hbs";
@@ -7,6 +6,7 @@ import render_stream_settings_tip from "../templates/stream_settings/stream_sett
 
 import * as hash_parser from "./hash_parser";
 import {$t} from "./i18n";
+import * as settings_components from "./settings_components";
 import * as settings_config from "./settings_config";
 import * as settings_data from "./settings_data";
 import * as settings_org from "./settings_org";
@@ -114,24 +114,9 @@ export function update_private_stream_privacy_option_state($container, is_defaul
         .toggleClass("default_stream_private_tooltip", is_default_stream);
 }
 
-export function initialize_disable_btn_hint_popover($btn_wrapper, hint_text) {
-    const opts = {
-        animation: false,
-        hideOnClick: false,
-        placement: "bottom",
-    };
-
-    // If hint_text is undefined, we use the HTML content of a
-    // <template> whose id is given by data-tooltip-template-id
-    if (hint_text !== undefined) {
-        opts.content = hint_text;
-    }
-    tippy($btn_wrapper[0], opts);
-}
-
 export function initialize_cant_subscribe_popover() {
     const $button_wrapper = $(".settings .stream_settings_header .sub_unsub_button_wrapper");
-    initialize_disable_btn_hint_popover($button_wrapper);
+    settings_components.initialize_disable_btn_hint_popover($button_wrapper);
 }
 
 export function set_up_right_panel_section(sub) {
@@ -384,7 +369,10 @@ export function update_add_subscriptions_elements(sub) {
                 defaultMessage: "Only stream members can add users to a private stream.",
             });
         }
-        initialize_disable_btn_hint_popover($add_subscribers_container, tooltip_message);
+        settings_components.initialize_disable_btn_hint_popover(
+            $add_subscribers_container,
+            tooltip_message,
+        );
     }
 }
 
