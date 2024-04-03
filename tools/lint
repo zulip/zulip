@@ -168,7 +168,7 @@ def run() -> None:
     )
     linter_config.external_linter(
         "ruff-format",
-        ["ruff", "format"],
+        ["ruff", "format", "--quiet"],
         ["py", "pyi"],
         description="Reformats Python code",
         check_arg=["--check"],
