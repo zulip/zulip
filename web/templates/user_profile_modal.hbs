@@ -2,18 +2,18 @@
     <div class="modal__overlay" tabindex="-1">
         <div class="modal__container new-style" role="dialog" aria-modal="true" aria-labelledby="dialog_title">
             <div class="modal__header">
-                {{#unless is_bot}}
-                    {{#if is_active}}
-                        <div class="tippy-zulip-tooltip" data-tippy-content="{{last_seen}}">
-                            <span class="{{user_circle_class}} user_circle user_profile_presence"></span>
-                        </div>
-                    {{else}}
-                        <div>
-                            <i class="fa fa-ban deactivated-user-icon tippy-zulip-tooltip" data-tippy-content="Deactivated user"></i>
-                        </div>
-                    {{/if}}
-                {{/unless}}
                 <h1 class="modal__title user-profile-name-heading" id="name">
+                    {{#unless is_bot}}
+                        {{#if is_active}}
+                            <div class="tippy-zulip-tooltip" data-tippy-content="{{last_seen}}">
+                                <span class="{{user_circle_class}} user_circle user_profile_presence"></span>
+                            </div>
+                        {{else}}
+                            <div>
+                                <i class="fa fa-ban deactivated-user-icon tippy-zulip-tooltip" data-tippy-content="Deactivated user"></i>
+                            </div>
+                        {{/if}}
+                    {{/unless}}
                     {{#if is_bot}}
                         <i class="zulip-icon zulip-icon-bot" aria-hidden="true"></i>
                     {{/if}}
