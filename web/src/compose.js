@@ -78,7 +78,7 @@ export function show_preview_area() {
     );
 }
 
-export function create_message_object() {
+export function create_message_object(message_content = compose_state.message_content()) {
     // Topics are optional, and we provide a placeholder if one isn't given.
     let topic = compose_state.topic();
     if (topic === "") {
@@ -88,7 +88,7 @@ export function create_message_object() {
     // Changes here must also be kept in sync with echo.try_deliver_locally
     const message = {
         type: compose_state.get_message_type(),
-        content: compose_state.message_content(),
+        content: message_content,
         sender_id: current_user.user_id,
         queue_id: server_events.queue_id,
         stream_id: undefined,
