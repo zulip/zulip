@@ -37,11 +37,6 @@
                   is_checked=realm_message_content_allowed_in_email_notifications
                   label=admin_settings_label.realm_message_content_allowed_in_email_notifications}}
 
-                {{> settings_checkbox
-                  setting_name="realm_send_welcome_emails"
-                  prefix="id_"
-                  is_checked=realm_send_welcome_emails
-                  label=admin_settings_label.realm_send_welcome_emails}}
                 {{#if settings_send_digest_emails }}
                 {{> settings_checkbox
                   setting_name="realm_digest_emails_enabled"
@@ -64,6 +59,13 @@
                         <option value="6">{{t "Sunday" }}</option>
                     </select>
                 </div>
+
+                {{> settings_checkbox
+                  setting_name="realm_send_welcome_emails"
+                  prefix="id_"
+                  is_checked=realm_send_welcome_emails
+                  label=admin_settings_label.realm_send_welcome_emails}}
+
                 {{> settings_checkbox
                   setting_name="realm_custom_welcome_bot_message_enabled"
                   prefix="id_"
