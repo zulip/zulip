@@ -210,6 +210,20 @@ export function compare_by_pms(user_a: User, user_b: User): number {
         return 1;
     }
 
+    const a_is_partner = pm_conversations.is_partner(user_a.user_id);
+    const b_is_partner = pm_conversations.is_partner(user_b.user_id);
+
+    // This code will never run except in the rare case that one has no
+    // recent DM message history with a user, but does have some older
+    // message history that's outside the "recent messages only"
+    // data set powering people.get_recipient_count.
+    /* istanbul ignore next */
+    if (a_is_partner && !b_is_partner) {
+        return -1;
+    } else if (!a_is_partner && b_is_partner) {
+        return 1;
+    }
+
     if (!user_a.is_bot && user_b.is_bot) {
         return -1;
     } else if (user_a.is_bot && !user_b.is_bot) {
