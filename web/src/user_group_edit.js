@@ -278,7 +278,7 @@ export function show_settings_for(group) {
         initialize_tooltip_for_membership_button(group.id);
     }
 
-    $("#user_group_settings .tab-container").prepend(toggler.get());
+    toggler.get().prependTo("#user_group_settings .tab-container");
     const $edit_container = get_edit_container(group);
     $(".nothing-selected").hide();
 
@@ -712,7 +712,7 @@ export function setup_page(callback) {
             },
         });
 
-        $("#groups_overlay_container .list-toggler-container").prepend(group_list_toggler.get());
+        group_list_toggler.get().prependTo("#groups_overlay_container .list-toggler-container");
     }
 
     function populate_and_fill() {
@@ -721,13 +721,12 @@ export function setup_page(callback) {
             max_user_group_name_length,
         };
 
-        const rendered = render_user_group_settings_overlay(template_data);
+        const groups_overlay_html = render_user_group_settings_overlay(template_data);
 
         const $groups_overlay_container = scroll_util.get_content_element(
             $("#groups_overlay_container"),
         );
-        $groups_overlay_container.empty();
-        $groups_overlay_container.append(rendered);
+        $groups_overlay_container.html(groups_overlay_html);
 
         // Initially as the overlay is build with empty right panel,
         // active_group_id is undefined.

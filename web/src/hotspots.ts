@@ -259,9 +259,9 @@ function insert_hotspot_into_DOM(hotspot: Hotspot): void {
 
     setTimeout(() => {
         if (!hotspot.has_trigger) {
-            $("body").prepend(hotspot_icon_HTML);
+            $("body").prepend($(hotspot_icon_HTML));
         }
-        $("body").prepend(hotspot_overlay_HTML);
+        $("body").prepend($(hotspot_overlay_HTML));
         if (hotspot.has_trigger || place_icon(hotspot)) {
             place_popover(hotspot);
         }

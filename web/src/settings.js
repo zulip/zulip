@@ -174,7 +174,7 @@ export function initialize() {
         show_emoji_settings_lock: !settings_data.user_can_add_custom_emoji(),
         can_create_new_bots: settings_bots.can_create_new_bots(),
     });
-    $("#settings_overlay_container").append(rendered_settings_overlay);
+    $("#settings_overlay_container").append($(rendered_settings_overlay));
 
     $("#settings_overlay_container").on("click", (e) => {
         if (!modals.any_active()) {

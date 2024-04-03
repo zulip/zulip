@@ -121,10 +121,10 @@ export function show_generate_integration_url_modal(api_key: string): void {
                     };
                 });
                 events_with_ids?.sort((a, b) => a.event.localeCompare(b.event));
-                const events = render_integration_events({
+                const events_html = render_integration_events({
                     events: events_with_ids,
                 });
-                $("#integrations-event-options").empty().append(events);
+                $("#integrations-event-options").html(events_html);
             }
 
             const params = new URLSearchParams({api_key});

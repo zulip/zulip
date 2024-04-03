@@ -30,7 +30,7 @@ export function initialize() {
 
     settings_panel_menu.set_key_handlers(toggler);
 
-    $("#settings_overlay_container .tab-container").append(toggler.get());
+    toggler.get().appendTo("#settings_overlay_container .tab-container");
 }
 
 // Handles the collapse/reveal of some tabs in the org settings for non-admins.

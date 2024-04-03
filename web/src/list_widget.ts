@@ -224,7 +224,7 @@ export function render_empty_list_message_if_needed(
         return;
     }
 
-    let empty_list_widget;
+    let empty_list_widget_html;
 
     if ($container.is("table, tbody")) {
         let $table = $container;
@@ -233,17 +233,17 @@ export function render_empty_list_message_if_needed(
         }
 
         const column_count = get_column_count_for_table($table);
-        empty_list_widget = render_empty_list_widget_for_table({
+        empty_list_widget_html = render_empty_list_widget_for_table({
             empty_list_message,
             column_count,
         });
     } else {
-        empty_list_widget = render_empty_list_widget_for_list({
+        empty_list_widget_html = render_empty_list_widget_for_list({
             empty_list_message,
         });
     }
 
-    $container.append(empty_list_widget);
+    $container.append($(empty_list_widget_html));
 }
 
 // @params
@@ -512,10 +512,10 @@ export function create<Key, Item = Key>(
                 const rendered_row = opts.modifier_html(item, meta.filter_value);
                 if (insert_index === meta.filtered_list.length - 1) {
                     const $target_row = opts.html_selector!(meta.filtered_list[insert_index - 1]);
-                    $target_row.after(rendered_row);
+                    $target_row.after($(rendered_row));
                 } else {
                     const $target_row = opts.html_selector!(meta.filtered_list[insert_index + 1]);
-                    $target_row.before(rendered_row);
+                    $target_row.before($(rendered_row));
                 }
                 widget.increase_rendered_offset();
             }

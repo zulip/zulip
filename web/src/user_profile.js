@@ -351,7 +351,7 @@ function initialize_user_type_fields(user) {
 }
 
 export function show_user_profile_access_error_modal() {
-    $("body").append(render_profile_access_error_model());
+    $("body").append($(render_profile_access_error_model()));
 
     // This opens the model, referencing it by it's ID('profile_access_error_model)
     modals.open("profile_access_error_modal", {
@@ -526,7 +526,7 @@ export function show_edit_bot_info_modal(user_id, $container) {
         current_bot_owner: bot.bot_owner_id,
         is_incoming_webhook_bot: bot.bot_type === INCOMING_WEBHOOK_BOT_TYPE,
     });
-    $container.append(html_body);
+    $container.append($(html_body));
     let avatar_widget;
 
     const bot_type = bot.bot_type.toString();
@@ -638,17 +638,21 @@ export function show_edit_bot_info_modal(user_id, $container) {
 
         if (bot_type === OUTGOING_WEBHOOK_BOT_TYPE) {
             $("#service_data").append(
-                render_settings_edit_outgoing_webhook_service({
-                    service,
-                }),
+                $(
+                    render_settings_edit_outgoing_webhook_service({
+                        service,
+                    }),
+                ),
             );
             $("#edit_service_interface").val(service.interface);
         }
         if (bot_type === EMBEDDED_BOT_TYPE) {
             $("#service_data").append(
-                render_settings_edit_embedded_bot_service({
-                    service,
-                }),
+                $(
+                    render_settings_edit_embedded_bot_service({
+                        service,
+                    }),
+                ),
             );
         }
 
@@ -749,7 +753,7 @@ export function show_edit_user_info_modal(user_id, $container) {
         is_active,
     });
 
-    $container.append(html_body);
+    $container.append($(html_body));
     // Set role dropdown and fields user pills
     $("#user-role-select").val(person.role);
     if (!current_user.is_owner) {

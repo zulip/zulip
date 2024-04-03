@@ -305,11 +305,13 @@ export function update_stream_privacy_icon_in_settings(sub) {
     const $stream_settings = stream_settings_containers.get_edit_container(sub);
 
     $stream_settings.find(".general_settings .large-icon").replaceWith(
-        render_stream_privacy_icon({
-            invite_only: sub.invite_only,
-            color: sub.color,
-            is_web_public: sub.is_web_public,
-        }),
+        $(
+            render_stream_privacy_icon({
+                invite_only: sub.invite_only,
+                color: sub.color,
+                is_web_public: sub.is_web_public,
+            }),
+        ),
     );
 }
 

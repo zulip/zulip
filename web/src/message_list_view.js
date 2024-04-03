@@ -745,7 +745,7 @@ export class MessageListView {
             $message_rows.find(".message_inline_image img").on("error", (e) => {
                 $(e.target)
                     .closest(".message_inline_image")
-                    .replaceWith(render_login_to_view_image_button());
+                    .replaceWith($(render_login_to_view_image_button()));
             });
         }
     }

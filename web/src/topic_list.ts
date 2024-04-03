@@ -208,7 +208,7 @@ export class TopicListWidget {
 
         const replace_content = (html: string): void => {
             this.remove();
-            this.$parent_elem.append(html);
+            this.$parent_elem.append($(html));
         };
 
         const find = (): JQuery => this.$parent_elem.find(".topic-list");

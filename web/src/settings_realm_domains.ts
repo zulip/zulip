@@ -25,9 +25,7 @@ export function populate_realm_domains_table(realm_domains: RealmDomain[]): void
 
     for (const realm_domain of realm_domains) {
         $realm_domains_table_body.append(
-            render_settings_admin_realm_domains_list({
-                realm_domain,
-            }),
+            $(render_settings_admin_realm_domains_list({realm_domain})),
         );
     }
 }
