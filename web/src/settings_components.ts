@@ -60,13 +60,13 @@ export function get_sorted_options_list(
     return options_list;
 }
 
-type message_time_limit_settings =
+type MessageTimeLimitSetting =
     | "realm_message_content_edit_limit_seconds"
     | "realm_move_messages_between_streams_limit_seconds"
     | "realm_move_messages_within_stream_limit_seconds"
     | "realm_message_content_delete_limit_seconds";
 
-export function get_realm_time_limits_in_minutes(property: message_time_limit_settings): string {
+export function get_realm_time_limits_in_minutes(property: MessageTimeLimitSetting): string {
     const setting_value = realm[property];
     if (setting_value === null) {
         // This represents "Anytime" case.
@@ -265,7 +265,7 @@ function get_jitsi_server_url_setting_value(
     return JSON.stringify($custom_input_elem.val());
 }
 
-export function update_custom_value_input(property_name: message_time_limit_settings): void {
+export function update_custom_value_input(property_name: MessageTimeLimitSetting): void {
     const $dropdown_elem = $(`#id_${CSS.escape(property_name)}`);
     const custom_input_elem_id = $dropdown_elem
         .parent()
@@ -282,7 +282,7 @@ export function update_custom_value_input(property_name: message_time_limit_sett
 }
 
 export function get_time_limit_dropdown_setting_value(
-    property_name: message_time_limit_settings,
+    property_name: MessageTimeLimitSetting,
 ): string {
     const value = realm[property_name];
     if (value === null) {
@@ -297,7 +297,7 @@ export function get_time_limit_dropdown_setting_value(
     return "custom_period";
 }
 
-export function set_time_limit_setting(property_name: message_time_limit_settings): void {
+export function set_time_limit_setting(property_name: MessageTimeLimitSetting): void {
     const dropdown_elem_val = get_time_limit_dropdown_setting_value(property_name);
     $(`#id_${CSS.escape(property_name)}`).val(dropdown_elem_val);
 
