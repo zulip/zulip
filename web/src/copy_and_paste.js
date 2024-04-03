@@ -87,7 +87,11 @@ function construct_copy_div($div, start_id, end_id) {
         }
         const message = message_lists.current.get(rows.id($row));
         const $content = $(message.content);
-        $content.first().prepend(message.sender_full_name + ": ");
+        $content.first().prepend(
+            $("<span>")
+                .text(message.sender_full_name + ": ")
+                .contents(),
+        );
         $div.append($content);
     }
 
