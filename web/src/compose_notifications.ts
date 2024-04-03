@@ -2,6 +2,7 @@ import $ from "jquery";
 import assert from "minimalistic-assert";
 
 import render_automatic_new_visibility_policy_banner from "../templates/compose_banner/automatic_new_visibility_policy_banner.hbs";
+import render_jump_to_sent_message_conversation_banner from "../templates/compose_banner/jump_to_sent_message_conversation_banner.hbs";
 import render_message_sent_banner from "../templates/compose_banner/message_sent_banner.hbs";
 import render_unmute_topic_banner from "../templates/compose_banner/unmute_topic_banner.hbs";
 
@@ -12,6 +13,7 @@ import {$t} from "./i18n";
 import * as message_lists from "./message_lists";
 import type {Message} from "./message_store";
 import * as narrow_state from "./narrow_state";
+import * as onboarding_steps from "./onboarding_steps";
 import * as people from "./people";
 import * as stream_data from "./stream_data";
 import * as user_topics from "./user_topics";
@@ -191,6 +193,19 @@ export function notify_local_mixes(
         }
 
         narrow_to_recipient(link_msg_id);
+
+        if (onboarding_steps.ONE_TIME_NOTICES_TO_DISPLAY.has("jump_to_conversation_banner")) {
+            const new_row_html = render_jump_to_sent_message_conversation_banner({
+                banner_type: compose_banner.SUCCESS,
+                classname: compose_banner.CLASSNAMES.jump_to_sent_message_conversation,
+                hide_close_button: true,
+                is_onboarding_banner: true,
+            });
+            compose_banner.append_compose_banner_to_banner_list(
+                $(new_row_html),
+                $("#compose_banners"),
+            );
+        }
     }
 }
 

@@ -287,6 +287,17 @@ export function initialize() {
         },
     );
 
+    const jump_to_conversation_banner_selector = `.${CSS.escape(compose_banner.CLASSNAMES.jump_to_sent_message_conversation)}`;
+    $("body").on(
+        "click",
+        `${jump_to_conversation_banner_selector} .main-view-banner-action-button`,
+        (event) => {
+            event.preventDefault();
+            $(event.target).parents(`${jump_to_conversation_banner_selector}`).remove();
+            onboarding_steps.post_onboarding_step_as_read("jump_to_conversation_banner");
+        },
+    );
+
     for (const classname of Object.values(compose_banner.CLASSNAMES)) {
         const classname_selector = `.${CSS.escape(classname)}`;
         $("body").on("click", `${classname_selector} .main-view-banner-close-button`, (event) => {

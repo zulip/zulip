@@ -32,6 +32,9 @@ ONE_TIME_NOTICES: List[OneTimeNotice] = [
     OneTimeNotice(
         name="first_stream_created_banner",
     ),
+    OneTimeNotice(
+        name="jump_to_conversation_banner",
+    ),
 ]
 
 # We may introduce onboarding step of types other than 'one time notice'
