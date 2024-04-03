@@ -71,11 +71,11 @@ class zulip::profile::postgresql {
       mode    => '0644',
       content => '',
     }
-    }
+  }
 
-    exec { $zulip::postgresql_base::postgresql_restart:
-      require     => Package[$zulip::postgresql_base::postgresql],
-      refreshonly => true,
-      subscribe   => [ File[$postgresql_conf_file] ],
-    }
+  exec { $zulip::postgresql_base::postgresql_restart:
+    require     => Package[$zulip::postgresql_base::postgresql],
+    refreshonly => true,
+    subscribe   => [ File[$postgresql_conf_file] ],
+  }
 }
