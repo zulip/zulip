@@ -284,13 +284,14 @@ export function update_custom_value_input(property_name: message_time_limit_sett
 export function get_time_limit_dropdown_setting_value(
     property_name: message_time_limit_settings,
 ): string {
-    if (realm[property_name] === null) {
+    const value = realm[property_name];
+    if (value === null) {
         return "any_time";
     }
 
     const valid_limit_values = settings_config.time_limit_dropdown_values.map((x) => x.value);
-    if (valid_limit_values.includes(realm[property_name])) {
-        return realm[property_name].toString();
+    if (valid_limit_values.includes(value)) {
+        return value.toString();
     }
 
     return "custom_period";
