@@ -37,7 +37,7 @@ import magic
 import orjson
 from decorator import decorator
 from django.conf import settings
-from django.contrib.auth import authenticate, get_backends
+from django.contrib.auth import authenticate, get_backends, logout
 from django.contrib.auth.backends import RemoteUserBackend
 from django.contrib.staticfiles.storage import staticfiles_storage
 from django.core.exceptions import ValidationError
@@ -3160,8 +3160,6 @@ class SAMLSPInitiatedLogout:
         Validates the LogoutResponse and logs out the user if successful,
         finishing the SP-initiated logout flow.
         """
-        from django.contrib.auth.views import logout_then_login as django_logout_then_login
-
         idp = logout_response.backend.get_idp(idp_name)
         auth = logout_response.backend._create_saml_auth(idp)
         auth.process_slo(keep_local_session=True)
@@ -3172,8 +3170,8 @@ class SAMLSPInitiatedLogout:
             # They're informative but generic enough to not leak any sensitive information.
             raise JsonableError(f"LogoutResponse error: {errors}")
 
-        # We call Django's version of logout_then_login so that POST isn't required.
-        return django_logout_then_login(logout_response.backend.strategy.request)
+        logout(logout_response.backend.strategy.request)
+        return HttpResponseRedirect(settings.LOGIN_URL)
 
 
 def get_external_method_dicts(realm: Optional[Realm] = None) -> List[ExternalAuthMethodDictT]:
