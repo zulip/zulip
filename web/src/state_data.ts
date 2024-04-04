@@ -142,6 +142,14 @@ export const realm_schema = z.object({
         }),
     ),
     realm_edit_topic_policy: z.number(),
+    realm_playgrounds: z.array(
+        z.object({
+            id: z.number(),
+            name: z.string(),
+            pygments_language: z.string(),
+            url_template: z.string(),
+        }),
+    ),
     realm_email_changes_disabled: z.boolean(),
     realm_emails_restricted_to_domains: z.boolean(),
     realm_enable_guest_user_indicator: z.boolean(),
