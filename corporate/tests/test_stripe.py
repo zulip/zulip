@@ -31,7 +31,6 @@ from unittest.mock import MagicMock, Mock, patch
 import orjson
 import responses
 import stripe
-import stripe.util
 import time_machine
 from django.conf import settings
 from django.core import signing
