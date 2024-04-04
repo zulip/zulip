@@ -45,8 +45,9 @@ that include:
 - **`zulip::profile::app_frontend`**
 - **`zulip::profile::memcached`**
 - **`zulip::profile::postgresql`**
-- **`zulip::profile::redis`**
 - **`zulip::profile::rabbitmq`**
+- **`zulip::profile::redis`**
+- **`zulip::profile::smokescreen`**
 
 If you are using a [Apache as a single-sign-on
 authenticator](authentication-methods.md#apache-based-sso-with-remote_user),
