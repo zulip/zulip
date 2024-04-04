@@ -114,7 +114,7 @@ export function update_unread_counts(counts: FullUnreadCountsData): void {
     redraw_title();
 }
 
-export function update_narrow_title(filter: Filter): void {
+export function update_narrow_title(filter?: Filter): void {
     narrow_title = compute_narrow_title(filter);
     redraw_title();
 }
