@@ -183,18 +183,17 @@ If you are deploying Zulip from Git, you will also need to:
 
 ## Running Zulip's service dependencies on different machines
 
-Zulip has full support for each top-level service living on its own
-machine.
+Zulip has full support for each top-level service living on its own machine.
 
-You can configure remote servers for PostgreSQL, RabbitMQ, Redis,
-in `/etc/zulip/settings.py`; just search for the service name in that
-file and you'll find inline documentation in comments for how to
-configure it.
+You can configure remote servers for Memcached, PostgreSQL, RabbitMQ, Redis, and
+Smokescreen in `/etc/zulip/settings.py`; just search for the service name in
+that file and you'll find inline documentation in comments for how to configure
+it.
 
-Since some of these services require some configuration on the node
-itself (e.g. installing our PostgreSQL extensions), we have designed
-the Puppet configuration that Zulip uses for installing and upgrading
-configuration to be completely modular.
+Since some of these services require some configuration on the node itself
+(e.g. installing our PostgreSQL extensions), we have designed the Puppet
+configuration that Zulip uses for installing and upgrading configuration to be
+completely modular.
 
 For example, to install a Zulip Redis server on a machine, you can run
 the following after unpacking a Zulip production release tarball:
@@ -231,27 +230,15 @@ below.
 
 #### Step 1: Set up Zulip
 
-Follow the [standard instructions](install.md), with one
-change. When running the installer, pass the `--no-init-db`
-flag, e.g.:
+Follow the [standard instructions](install.md), with modified `install`
+arguments:
 
 ```bash
-sudo -s  # If not already root
+export PUPPET_CLASSES=zulip::profile::standalone_nodb
 ./zulip-server-*/scripts/setup/install --certbot \
     --email=YOUR_EMAIL --hostname=YOUR_HOSTNAME \
     --no-init-db --postgresql-missing-dictionaries
 ```
-
-The script also installs and starts PostgreSQL on the server by
-default. We don't need it, so run the following command to
-stop and disable the local PostgreSQL server.
-
-```bash
-sudo service postgresql stop
-sudo update-rc.d postgresql disable
-```
-
-This complication will be removed in a future version.
 
 #### Step 2: Create the PostgreSQL database
 
