@@ -151,7 +151,6 @@ read -r -a ADDITIONAL_PACKAGES <<<"${ADDITIONAL_PACKAGES:-}"
 # zulip::profile::docker for Docker.  Use
 # e.g. zulip::profile::app_frontend for a Zulip frontend server.
 PUPPET_CLASSES="${PUPPET_CLASSES:-zulip::profile::standalone}"
-VIRTUALENV_NEEDED="${VIRTUALENV_NEEDED:-yes}"
 POSTGRESQL_VERSION="${POSTGRESQL_VERSION:-16}"
 
 if [ -n "$SELF_SIGNED_CERT" ] && [ -n "$USE_CERTBOT" ]; then
@@ -400,11 +399,6 @@ if [ -n "$SELF_SIGNED_CERT" ] || [ -n "$USE_CERTBOT" ]; then
         --exists-ok "${EXTERNAL_HOST:-$(hostname)}"
 fi
 
-# Create and activate a virtualenv
-if [ "$VIRTUALENV_NEEDED" = "yes" ]; then
-    "$ZULIP_PATH"/scripts/lib/create-production-venv "$ZULIP_PATH"
-fi
-
 # Generate /etc/zulip/zulip.conf .
 mkdir -p /etc/zulip
 has_class() {
@@ -456,6 +450,9 @@ EOF
 fi
 
 if has_class "zulip::app_frontend_base"; then
+    # Create and activate a virtualenv
+    "$ZULIP_PATH"/scripts/lib/create-production-venv "$ZULIP_PATH"
+
     "$ZULIP_PATH"/scripts/lib/install-node
 
     if [ -z "$NO_OVERWRITE_SETTINGS" ] || ! [ -e "/etc/zulip/settings.py" ]; then
