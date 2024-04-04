@@ -511,7 +511,7 @@ class StripeTestCase(ZulipTestCase):
         )
         if stripe_session is None:
             [stripe_session] = iter(stripe.checkout.Session.list(limit=1))
-        stripe_session_dict = stripe_session.to_dict_recursive()
+        stripe_session_dict = orjson.loads(orjson.dumps(stripe_session))
         stripe_session_dict["setup_intent"] = stripe_setup_intent.id
 
         event_payload = {
@@ -529,7 +529,7 @@ class StripeTestCase(ZulipTestCase):
 
     def send_stripe_webhook_event(self, event: stripe.Event) -> None:
         response = self.client_post(
-            "/stripe/webhook/", event.to_dict_recursive(), content_type="application/json"
+            "/stripe/webhook/", orjson.loads(orjson.dumps(event)), content_type="application/json"
         )
         assert response.status_code == 200
 
