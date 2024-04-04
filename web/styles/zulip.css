@@ -2697,7 +2697,6 @@ select.invite-as {
 
     /* This prevents the popover from closing once the top/bottom is reached */
     overscroll-behavior: contain;
-    padding-bottom: 40px;
 }
 
 .dropdown-list-container {
