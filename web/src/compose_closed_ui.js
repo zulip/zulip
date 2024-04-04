@@ -32,7 +32,7 @@ export function get_recipient_label(message) {
                 };
             } else if (narrow_state.pm_ids_string()) {
                 // TODO: This is a total hack.  Ideally, we'd rework
-                // this to not duplicate the actual compose_actions.js
+                // this to not duplicate the actual compose_actions.ts
                 // logic for what happens when you click the button,
                 // and not call into random modules with hacky fake
                 // "message" objects.
