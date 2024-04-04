@@ -302,7 +302,8 @@ class Typeahead<ItemType extends string | object> {
         }
     }
 
-    defaultUpdater(item: ItemType): ItemType {
+    defaultUpdater(item: ItemType): string {
+        assert(typeof item === "string");
         return item;
     }
 
@@ -713,7 +714,7 @@ type TypeaheadOptions<ItemType> = {
     stopAdvance?: boolean;
     tabIsEnter?: boolean;
     trigger_selection?: (event: JQuery.KeyDownEvent) => boolean;
-    updater: (
+    updater?: (
         item: ItemType,
         query: string,
         input_element: TypeaheadInputElement,
