@@ -199,7 +199,7 @@ For example, to install a Zulip Redis server on a machine, you can run
 the following after unpacking a Zulip production release tarball:
 
 ```bash
-env PUPPET_CLASSES=zulip::profile::redis ./scripts/setup/install
+./scripts/setup/install --puppet-classes zulip::profile::redis
 ```
 
 All puppet modules under `zulip::profile` are allowed to be configured
@@ -234,10 +234,10 @@ Follow the [standard instructions](install.md), with modified `install`
 arguments:
 
 ```bash
-export PUPPET_CLASSES=zulip::profile::standalone_nodb
 ./zulip-server-*/scripts/setup/install --certbot \
     --email=YOUR_EMAIL --hostname=YOUR_HOSTNAME \
-    --no-init-db --postgresql-missing-dictionaries
+    --puppet-classes=zulip::profile::standalone_nodb \
+    --postgresql-missing-dictionaries
 ```
 
 #### Step 2: Create the PostgreSQL database
