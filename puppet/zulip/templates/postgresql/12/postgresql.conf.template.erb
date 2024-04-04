@@ -789,7 +789,6 @@ listen_addresses = <%= @listen_addresses %>
 
 <% if @s3_backups_bucket != '' -%>
 # Streaming backups and replication
-max_wal_senders = 5
 archive_mode = on
 archive_command = '/usr/bin/timeout 10m /usr/local/bin/env-wal-g wal-push %p'
 restore_command = '/usr/local/bin/env-wal-g wal-fetch "%f" "%p"'
