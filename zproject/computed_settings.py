@@ -415,20 +415,21 @@ LANGUAGE_COOKIE_SAMESITE: Final = "Lax"
 if DEVELOPMENT:
     # Use fast password hashing for creating testing users when not
     # PRODUCTION.  Saves a bunch of time.
-    PASSWORD_HASHERS = (
+    PASSWORD_HASHERS = [
+        "django.contrib.auth.hashers.MD5PasswordHasher",
         "django.contrib.auth.hashers.SHA1PasswordHasher",
         "django.contrib.auth.hashers.PBKDF2PasswordHasher",
-    )
+    ]
     # Also we auto-generate passwords for the default users which you
     # can query using ./manage.py print_initial_password
     INITIAL_PASSWORD_SALT = get_secret("initial_password_salt")
 else:
     # For production, use the best password hashing algorithm: Argon2
     # Zulip was originally on PBKDF2 so we need it for compatibility
-    PASSWORD_HASHERS = (
+    PASSWORD_HASHERS = [
         "django.contrib.auth.hashers.Argon2PasswordHasher",
         "django.contrib.auth.hashers.PBKDF2PasswordHasher",
-    )
+    ]
 
 ########################################################################
 # API/BOT SETTINGS
