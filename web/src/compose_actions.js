@@ -172,13 +172,13 @@ export function fill_in_opts_from_current_narrowed_view(msg_type, opts) {
     };
 }
 
-function same_recipient_as_before(msg_type, opts) {
+function same_recipient_as_before(opts) {
     return (
-        compose_state.get_message_type() === msg_type &&
-        ((msg_type === "stream" &&
+        compose_state.get_message_type() === opts.message_type &&
+        ((opts.message_type === "stream" &&
             opts.stream_id === compose_state.stream_id() &&
             opts.topic === compose_state.topic()) ||
-            (msg_type === "private" &&
+            (opts.message_type === "private" &&
                 opts.private_message_recipient === compose_state.private_message_recipient()))
     );
 }
@@ -235,7 +235,7 @@ export function start(msg_type, opts) {
     // with (like from a draft), save any existing content as a draft, and clear the compose box.
     if (
         compose_state.composing() &&
-        (!same_recipient_as_before(msg_type, opts) || opts.content !== undefined)
+        (!same_recipient_as_before({...opts, message_type: msg_type}) || opts.content !== undefined)
     ) {
         drafts.update_draft();
         clear_box();
