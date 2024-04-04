@@ -81,7 +81,7 @@
     }
 }
 
-.tippy-box[data-theme="navbar-dropdown-menu"] {
+.tippy-box[data-theme="popover-menu"] {
     border: 0;
     border-radius: 6px;
 
@@ -107,6 +107,10 @@
             color: var(--color-background-dropdown-menu);
         }
     }
+}
+
+.tippy-box[data-theme="popover-menu"]:has(#gear-menu-dropdown) {
+    --box-shadow-popover-menu: var(--box-shadow-gear-menu);
 }
 
 .user_full_name,
@@ -1194,7 +1198,7 @@ ul {
     }
 
     .user_circle_empty {
-        background-color: var(--color-background-dropdown-menu);
+        background-color: var(--color-background-popover-menu);
         border-color: hsl(0deg 0% 50%);
     }
 
@@ -1224,15 +1228,15 @@ ul {
     }
 }
 
-.navbar-dropdown-menu {
+.popover-menu {
     margin: 0;
-    border: solid 1px var(--color-border-dropdown-menu);
-    background-color: var(--color-background-dropdown-menu);
+    border: 1px solid var(--color-border-popover-menu);
+    background-color: var(--color-background-popover-menu);
     max-height: 85vh;
     overflow-x: hidden;
     user-select: none;
     border-radius: 6px;
-    box-shadow: var(--box-shadow-navbar-dropdown-menu);
+    box-shadow: var(--box-shadow-popover-menu);
 
     .simplebar-content {
         min-width: var(--popover-menu-min-width);
@@ -1242,13 +1246,13 @@ ul {
         width: min-content;
     }
 
-    .navbar-dropdown-menu-inner-list-item {
+    .popover-menu-inner-list-item {
         /*  This is necessary to keep long menu items on a single line. */
         white-space: nowrap;
     }
 
     .text-item,
-    .link-item .navbar-dropdown-menu-link {
+    .link-item .popover-menu-link {
         display: flex;
         flex-flow: row nowrap;
         align-items: center;
@@ -1258,7 +1262,7 @@ ul {
         line-height: 16px;
         height: 26px;
 
-        .navbar-dropdown-icon {
+        .popover-menu-icon {
             width: 16px;
             height: 16px;
             font-size: 16px;
@@ -1276,20 +1280,20 @@ ul {
         outline: none;
 
         &:focus-within {
-            background: var(--color-background-hover-dropdown-menu);
+            background: var(--color-background-hover-popover-menu);
         }
 
-        .navbar-dropdown-icon {
+        .popover-menu-icon {
             color: var(--color-icon-purple);
         }
 
-        .navbar-dropdown-menu-link {
-            color: var(--color-text-dropdown-menu) !important;
+        .popover-menu-link {
+            color: var(--color-text-popover-menu) !important;
             text-decoration: none;
             flex-grow: 1;
 
             &:hover {
-                background: var(--color-background-hover-dropdown-menu);
+                background: var(--color-background-hover-popover-menu);
                 outline: none;
             }
 
@@ -1301,7 +1305,7 @@ ul {
             }
 
             &:active {
-                background: var(--color-background-active-dropdown-menu);
+                background: var(--color-background-active-popover-menu);
             }
         }
     }
@@ -1353,7 +1357,6 @@ ul {
 
 #gear-menu-dropdown {
     padding: 5px 0;
-    box-shadow: var(--box-shadow-gear-menu);
 
     .org-info {
         padding: 4px 0 5px;
@@ -1368,16 +1371,16 @@ ul {
             letter-spacing: 0.28px;
 
             &:focus-within {
-                background: var(--color-background-hover-dropdown-menu);
+                background: var(--color-background-hover-popover-menu);
             }
 
-            .navbar-dropdown-menu-link {
+            .popover-menu-link {
                 padding: 2px 10px;
                 flex-grow: 1;
                 text-decoration: none;
 
                 &:hover {
-                    background: var(--color-background-hover-dropdown-menu);
+                    background: var(--color-background-hover-popover-menu);
                     outline: none;
                 }
 
@@ -1389,7 +1392,7 @@ ul {
                 }
 
                 &:active {
-                    background: var(--color-background-active-dropdown-menu);
+                    background: var(--color-background-active-popover-menu);
                 }
             }
         }
@@ -1400,8 +1403,8 @@ ul {
         }
 
         .org-name,
-        .org-plan .navbar-dropdown-menu-link {
-            color: var(--color-text-dropdown-menu);
+        .org-plan .popover-menu-link {
+            color: var(--color-text-popover-menu);
         }
 
         .org-name {
@@ -1439,22 +1442,22 @@ ul {
     padding-bottom: 5px;
 }
 
-ul.navbar-dropdown-menu-outer-list {
+ul.popover-menu-outer-list {
     list-style: none;
     margin: 0;
 
-    li.navbar-dropdown-menu-outer-list-item {
-        border-bottom: solid 1px var(--color-border-popover-menu);
+    li.popover-menu-outer-list-item {
+        border-bottom: solid 1px var(--color-border-popover-menu-separator);
 
         &:last-child {
             border-bottom: none;
 
-            ul.navbar-dropdown-menu-inner-list {
+            ul.popover-menu-inner-list {
                 padding-bottom: 0;
             }
         }
 
-        ul.navbar-dropdown-menu-inner-list {
+        ul.popover-menu-inner-list {
             margin: 0;
             padding: 4px 0;
             list-style: none;
@@ -1469,7 +1472,7 @@ ul.navbar-dropdown-menu-outer-list {
     }
 }
 
-.navbar-dropdown-hotkey-hint {
+.popover-menu-hotkey-hint {
     color: var(--color-hotkey-hint);
     text-align: center;
     font-size: 14px;

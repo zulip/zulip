@@ -183,12 +183,12 @@
     --color-search-dropdown-top-border: hsla(0deg 0% 0% / 10%);
     --color-background-image-loader: hsl(0deg 0% 0% / 10%);
     --color-icon-purple: hsl(240deg 35% 60%);
-    --color-background-dropdown-menu: hsl(0deg 0% 100%);
-    --color-border-popover-menu: hsl(0deg 0% 0% / 10%);
+    --color-background-popover-menu: hsl(0deg 0% 100%);
+    --color-border-popover-menu-separator: hsl(0deg 0% 0% / 10%);
     --color-hotkey-hint: hsl(227deg 78% 59%);
-    --color-background-hover-dropdown-menu: hsl(220deg 12% 5% / 5%);
-    --color-background-active-dropdown-menu: hsl(220deg 12% 5% / 7%);
-    --color-border-dropdown-menu: hsl(0deg 0% 0% / 40%);
+    --color-background-hover-popover-menu: hsl(220deg 12% 5% / 5%);
+    --color-background-active-popover-menu: hsl(220deg 12% 5% / 7%);
+    --color-border-popover-menu: hsl(0deg 0% 0% / 40%);
     --color-border-personal-menu-avatar: hsl(0deg 0% 0% / 10%);
     --color-background-unread-counter: hsl(105deg 2% 50%);
     /* There's no alpha channel here, but this keeps
@@ -255,7 +255,7 @@
     --color-text-search: hsl(0deg 0% 35%);
     --color-text-search-hover: hsl(0deg 0% 0%);
     --color-text-search-placeholder: hsl(0deg 0% 50%);
-    --color-text-dropdown-menu: hsl(0deg 0% 15%);
+    --color-text-popover-menu: hsl(0deg 0% 15%);
     --color-text-full-name: hsl(0deg 0% 15%);
     --color-text-item: hsl(0deg 0% 40%);
     --color-text-personal-menu-no-status: hsl(0deg 0% 50%);
@@ -366,7 +366,7 @@
     --color-background-icon-close-hover: hsl(0deg 0% 0% / 5%);
 
     /* Navbar dropdown menu constants - Values from Figma design */
-    --box-shadow-navbar-dropdown-menu: 0 2.78px 4.11px 0 hsl(0deg 0% 0% / 6%),
+    --box-shadow-popover-menu: 0 2.78px 4.11px 0 hsl(0deg 0% 0% / 6%),
         0 5.5113px 8.5783px 0 hsl(0deg 0% 0% / 7%),
         0 8.438px 13.9271px 0 hsl(0deg 0% 0% / 8%),
         0 12.177px 21.4737px 0 hsl(0deg 0% 0% / 9%),
@@ -482,12 +482,12 @@
     --color-search-box-hover-shadow: hsl(0deg 0% 0% / 30%);
     --color-search-dropdown-top-border: hsla(0deg 0% 0% / 35%);
     --color-background-image-loader: hsl(0deg 0% 100% / 10%);
-    --color-background-dropdown-menu: hsl(0deg 0% 17%);
-    --color-border-popover-menu: hsl(0deg 0% 0% / 40%);
+    --color-background-popover-menu: hsl(0deg 0% 17%);
+    --color-border-popover-menu-separator: hsl(0deg 0% 0% / 40%);
     --color-hotkey-hint: hsl(225deg 100% 84%);
-    --color-background-hover-dropdown-menu: hsl(220deg 12% 95% / 5%);
-    --color-background-active-dropdown-menu: hsl(220deg 12% 95% / 7%);
-    --color-border-dropdown-menu: hsl(0deg 0% 0%);
+    --color-background-hover-popover-menu: hsl(220deg 12% 95% / 5%);
+    --color-background-active-popover-menu: hsl(220deg 12% 95% / 7%);
+    --color-border-popover-menu: hsl(0deg 0% 0%);
     --color-border-personal-menu-avatar: hsl(0deg 0% 100% / 20%);
     --color-background-unread-counter: hsl(105deg 2% 50% / 50%);
     /* When unreads are hovered on the condensed
@@ -565,7 +565,7 @@
     --color-text-search-hover: hsl(0deg 0% 100%);
     --color-text-search-placeholder: hsl(0deg 0% 100% / 50%);
     --color-text-empty-list-message: hsl(0deg 0% 67%);
-    --color-text-dropdown-menu: hsl(0deg 0% 100% / 80%);
+    --color-text-popover-menu: hsl(0deg 0% 100% / 80%);
     --color-text-full-name: hsl(0deg 0% 100%);
     --color-text-item: hsl(0deg 0% 50%);
     --color-text-personal-menu-no-status: hsl(0deg 0% 100% 35%);
@@ -678,7 +678,7 @@
     --color-background-icon-close-hover: hsl(0deg 0% 100% / 5%);
 
     /* Navbar dropdown menu constants - Values from Figma design */
-    --box-shadow-navbar-dropdown-menu: 0 2.78px 4.12px 0 hsl(0deg 0% 0% / 10%),
+    --box-shadow-popover-menu: 0 2.78px 4.12px 0 hsl(0deg 0% 0% / 10%),
         0 5.5113px 8.5783px 0 hsl(0deg 0% 0% / 9%),
         0 8.4377px 13.9271px 0 hsl(0deg 0% 0% / 11%),
         0 12.177px 21.4737px 0 hsl(0deg 0% 0% / 11%),
