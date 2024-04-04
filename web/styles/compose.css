@@ -1320,7 +1320,7 @@ textarea.new_message_textarea,
        the 8px from the negative left margin. */
     max-width: calc(100% + 8px);
     display: flex;
-    gap: 1px;
+    gap: 2px;
 
     .compose-drafts-text {
         /* Set an ellipsis when the translated
@@ -1333,13 +1333,13 @@ textarea.new_message_textarea,
     }
 
     @media (width < $mc_min) {
-        margin-left: 0;
-        /* With no negative left margin,
-           hold the max width to 100%. */
-        max-width: 100%;
+        /* Reduce the padding on the sides so the
+        button's edge isn't too close to the textarea */
+        margin-left: -3px;
+        max-width: calc(100% + 3px);
         /* Align the `Drafts` text with the
            send icon below. */
-        padding: 0 5px;
+        padding: 0 3px;
     }
 }
 

@@ -537,15 +537,15 @@ test("insert_one_user_into_empty_list", ({override, mock_template}) => {
     buddy_list_add_user_matching_view(alice.user_id, $alice_stub);
     peer_data.set_subscribers(rome_sub.stream_id, [alice.user_id]);
     activity_ui.redraw_user(alice.user_id);
-    assert.ok(users_matching_view_appended_html.indexOf('data-user-id="1"') > 0);
-    assert.ok(users_matching_view_appended_html.indexOf("user_circle_green") > 0);
+    assert.ok(users_matching_view_appended_html.includes('data-user-id="1"'));
+    assert.ok(users_matching_view_appended_html.includes("user_circle_green"));
 
     clear_buddy_list(buddy_list);
     buddy_list_add_other_user(alice.user_id, $alice_stub);
     peer_data.set_subscribers(rome_sub.stream_id, []);
     activity_ui.redraw_user(alice.user_id);
-    assert.ok(other_users_appended_html.indexOf('data-user-id="1"') > 0);
-    assert.ok(other_users_appended_html.indexOf("user_circle_green") > 0);
+    assert.ok(other_users_appended_html.includes('data-user-id="1"'));
+    assert.ok(other_users_appended_html.includes("user_circle_green"));
 });
 
 test("insert_alice_then_fred", ({override, mock_template}) => {
@@ -558,12 +558,12 @@ test("insert_alice_then_fred", ({override, mock_template}) => {
     override(padded_widget, "update_padding", noop);
 
     activity_ui.redraw_user(alice.user_id);
-    assert.ok(other_users_appended_html.indexOf('data-user-id="1"') > 0);
-    assert.ok(other_users_appended_html.indexOf("user_circle_green") > 0);
+    assert.ok(other_users_appended_html.includes('data-user-id="1"'));
+    assert.ok(other_users_appended_html.includes("user_circle_green"));
 
     activity_ui.redraw_user(fred.user_id);
-    assert.ok(other_users_appended_html.indexOf('data-user-id="2"') > 0);
-    assert.ok(other_users_appended_html.indexOf("user_circle_green") > 0);
+    assert.ok(other_users_appended_html.includes('data-user-id="2"'));
+    assert.ok(other_users_appended_html.includes("user_circle_green"));
 });
 
 test("insert_fred_then_alice_then_rename, both as users matching view", ({
@@ -584,8 +584,8 @@ test("insert_fred_then_alice_then_rename, both as users matching view", ({
     buddy_list_add_user_matching_view(fred.user_id, $fred_stub);
 
     activity_ui.redraw_user(fred.user_id);
-    assert.ok(users_matching_view_appended_html.indexOf('data-user-id="2"') > 0);
-    assert.ok(users_matching_view_appended_html.indexOf("user_circle_green") > 0);
+    assert.ok(users_matching_view_appended_html.includes('data-user-id="2"'));
+    assert.ok(users_matching_view_appended_html.includes("user_circle_green"));
 
     let inserted_html;
     $fred_stub.before = (html) => {
@@ -598,8 +598,8 @@ test("insert_fred_then_alice_then_rename, both as users matching view", ({
     };
 
     activity_ui.redraw_user(alice.user_id);
-    assert.ok(inserted_html.indexOf('data-user-id="1"') > 0);
-    assert.ok(inserted_html.indexOf("user_circle_green") > 0);
+    assert.ok(inserted_html.includes('data-user-id="1"'));
+    assert.ok(inserted_html.includes("user_circle_green"));
 
     // Next rename fred to Aaron.
     const fred_with_new_name = {
@@ -615,7 +615,7 @@ test("insert_fred_then_alice_then_rename, both as users matching view", ({
 
     activity_ui.redraw_user(fred_with_new_name.user_id);
     assert.ok(fred_removed);
-    assert.ok(users_matching_view_appended_html.indexOf('data-user-id="2"') > 0);
+    assert.ok(users_matching_view_appended_html.includes('data-user-id="2"'));
 
     // restore old Fred data
     people.add_active_user(fred);
@@ -637,8 +637,8 @@ test("insert_fred_then_alice_then_rename, both as other users", ({override, mock
     buddy_list_add_other_user(fred.user_id, $fred_stub);
 
     activity_ui.redraw_user(fred.user_id);
-    assert.ok(other_users_appended_html.indexOf('data-user-id="2"') > 0);
-    assert.ok(other_users_appended_html.indexOf("user_circle_green") > 0);
+    assert.ok(other_users_appended_html.includes('data-user-id="2"'));
+    assert.ok(other_users_appended_html.includes("user_circle_green"));
 
     let inserted_html;
     $fred_stub.before = (html) => {
@@ -651,8 +651,8 @@ test("insert_fred_then_alice_then_rename, both as other users", ({override, mock
     };
 
     activity_ui.redraw_user(alice.user_id);
-    assert.ok(inserted_html.indexOf('data-user-id="1"') > 0);
-    assert.ok(inserted_html.indexOf("user_circle_green") > 0);
+    assert.ok(inserted_html.includes('data-user-id="1"'));
+    assert.ok(inserted_html.includes("user_circle_green"));
 
     // Next rename fred to Aaron.
     const fred_with_new_name = {
@@ -668,7 +668,7 @@ test("insert_fred_then_alice_then_rename, both as other users", ({override, mock
 
     activity_ui.redraw_user(fred_with_new_name.user_id);
     assert.ok(fred_removed);
-    assert.ok(other_users_appended_html.indexOf('data-user-id="2"') > 0);
+    assert.ok(other_users_appended_html.includes('data-user-id="2"'));
 
     // restore old Fred data
     people.add_active_user(fred);

@@ -5,9 +5,14 @@
 {% endblock %}
 
 {% block content %}
+{% if account_found %}
 <p>{{ _("Thanks for your request!") }}</p>
 
-<p>{% trans %}Your email address {{ email }} has accounts with the following Zulip organizations hosted by <a href="{{ external_host }}">{{ external_host }}</a>:{% endtrans %}</p>
+{% if corporate_enabled %}
+<p>{% trans %}Your email address {{ email }} has accounts with the following Zulip Cloud organizations:{% endtrans %}</p>
+{% else %}
+<p>{% trans %}Your email address {{ email }} has accounts with the following Zulip organizations hosted by {{ external_host }}:{% endtrans %}</p>
+{% endif %}
 
 <ul>
     {% for realm in realms %}
@@ -16,10 +21,21 @@
 </ul>
 
 <p>
-    {% trans help_url="https://zulip.com/help/change-your-password#if-youve-forgotten-or-never-had-a-password" %}
-    If you have trouble logging in, you can <a href="{{ help_url }}">reset your password</a>.
-    {% endtrans %}
+    {% trans %}If you have trouble logging in, you can <a href="{{ help_reset_password_link }}">reset your password</a>.{% endtrans %}
+</p>
+{% else %}
+<p>
+    {{ _("You have requested a list of Zulip accounts for this email address.") }}
+    {% if corporate_enabled %}
+    {{ _("Unfortunately, no Zulip Cloud accounts were found.") }}
+    {% else %}
+    {% trans%}Unfortunately, no accounts were found in Zulip organizations hosted by {{external_host}}.{% endtrans %}
+    {% endif %}
 </p>
 
-<p>{{ _("Thanks for using Zulip!") }}</p>
+<p>
+    {% trans %}You can <a href = "{{ find_accounts_link }}" >check for accounts</a> with another email, or <a href ="{{ help_logging_in_link }}">try another way</a> to find your account.{% endtrans %}
+    {{ _("If you do not recognize this request, you can safely ignore this email.") }}
+</p>
+{% endif %}
 {% endblock %}

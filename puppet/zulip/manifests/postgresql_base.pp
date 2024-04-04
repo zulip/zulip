@@ -75,13 +75,6 @@ class zulip::postgresql_base {
   $pgroonga = zulipconf('machine', 'pgroonga', false)
   if $pgroonga {
     # Needed for optional our full text search system
-
-    # Removed 2020-12 in version 4.0; these lines can be removed when
-    # we drop support for upgrading from Zulip 3 or older.
-    package{"${postgresql}-pgroonga":
-      ensure => purged,
-    }
-
     package{"${postgresql}-pgdg-pgroonga":
       ensure  => latest,
       require => [

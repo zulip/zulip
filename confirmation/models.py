@@ -76,7 +76,7 @@ ZilencerConfirmationObjT: TypeAlias = Union[
     "PreregistrationRemoteRealmBillingUser",
 ]
 
-ConfirmationObjT = Union[NoZilencerConfirmationObjT, ZilencerConfirmationObjT]
+ConfirmationObjT: TypeAlias = Union[NoZilencerConfirmationObjT, ZilencerConfirmationObjT]
 
 
 def get_object_from_key(

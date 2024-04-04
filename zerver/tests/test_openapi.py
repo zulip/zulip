@@ -239,7 +239,6 @@ class OpenAPIArgumentsTest(ZulipTestCase):
         "/default_stream_groups/{group_id}",
         "/default_stream_groups/{group_id}/streams",
         # Administer invitations
-        "/invites",
         "/invites/multiuse",
         "/invites/{prereg_id}",
         "/invites/{prereg_id}/resend",
@@ -1023,6 +1022,7 @@ class OpenAPIAttributesTest(ZulipTestCase):
             "webhooks",
             "scheduled_messages",
             "mobile",
+            "invites",
         ]
         paths = OpenAPISpec(OPENAPI_SPEC_PATH).openapi()["paths"]
         for path, path_item in paths.items():

@@ -22,20 +22,29 @@ import * as stream_data from "./stream_data";
 import * as user_status from "./user_status";
 import * as util from "./util";
 
-// TODO: Refactor to push this into a field of ComposeTriggeredOptions.
-type messageType = "stream" | "private";
-type ComposeTriggeredOptions = {
+export type ComposeTriggeredOptions = {
     trigger: string;
-    private_message_recipient: string;
-    topic: string;
-    stream_id: number;
-};
-type ComposePlaceholderOptions = {
-    direct_message_user_ids: number[];
-    message_type: messageType;
-    stream_id: number;
-    topic: string;
-};
+} & (
+    | {
+          message_type: "stream";
+          topic: string;
+          stream_id: number;
+      }
+    | {
+          message_type: "private";
+          private_message_recipient: string;
+      }
+);
+export type ComposePlaceholderOptions =
+    | {
+          message_type: "stream";
+          stream_id: number | undefined;
+          topic: string;
+      }
+    | {
+          message_type: "private";
+          direct_message_user_ids: number[];
+      };
 type SelectedLinesSections = {
     before_lines: string;
     separating_new_line_before: boolean;
@@ -87,14 +96,14 @@ export function insert_and_scroll_into_view(
     autosize_textarea($textarea);
 }
 
-function get_focus_area(msg_type: messageType, opts: ComposeTriggeredOptions): string {
+function get_focus_area(opts: ComposeTriggeredOptions): string {
     // Set focus to "Topic" when narrowed to a stream+topic
     // and "Start new conversation" button clicked.
-    if (msg_type === "stream" && opts.stream_id && !opts.topic) {
+    if (opts.message_type === "stream" && opts.stream_id && !opts.topic) {
         return "input#stream_message_recipient_topic";
     } else if (
-        (msg_type === "stream" && opts.stream_id) ||
-        (msg_type === "private" && opts.private_message_recipient)
+        (opts.message_type === "stream" && opts.stream_id) ||
+        (opts.message_type === "private" && opts.private_message_recipient)
     ) {
         if (opts.trigger === "clear topic button") {
             return "input#stream_message_recipient_topic";
@@ -102,7 +111,7 @@ function get_focus_area(msg_type: messageType, opts: ComposeTriggeredOptions): s
         return "textarea#compose-textarea";
     }
 
-    if (msg_type === "stream") {
+    if (opts.message_type === "stream") {
         return "#compose_select_recipient_widget_wrapper";
     }
     return "#private_message_recipient";
@@ -111,12 +120,12 @@ function get_focus_area(msg_type: messageType, opts: ComposeTriggeredOptions): s
 // Export for testing
 export const _get_focus_area = get_focus_area;
 
-export function set_focus(msg_type: messageType, opts: ComposeTriggeredOptions): void {
+export function set_focus(opts: ComposeTriggeredOptions): void {
     // Called mainly when opening the compose box or switching the
     // message type to set the focus in the first empty input in the
     // compose box.
     if (window.getSelection()!.toString() === "" || opts.trigger !== "message click") {
-        const focus_area = get_focus_area(msg_type, opts);
+        const focus_area = get_focus_area(opts);
         $(focus_area).trigger("focus");
     }
 }
@@ -285,8 +294,13 @@ export function compute_placeholder_text(opts: ComposePlaceholderOptions): strin
     // because the caller is expected to insert this into the
     // placeholder field in a way that does HTML escaping.
     if (opts.message_type === "stream") {
-        const stream = stream_data.get_sub_by_id(opts.stream_id);
-        const stream_name = stream ? stream.name : "";
+        let stream_name = "";
+        if (opts.stream_id !== undefined) {
+            const stream = stream_data.get_sub_by_id(opts.stream_id);
+            if (stream !== undefined) {
+                stream_name = stream.name;
+            }
+        }
 
         if (stream_name && opts.topic) {
             return $t(

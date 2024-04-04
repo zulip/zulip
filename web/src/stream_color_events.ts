@@ -6,8 +6,13 @@ import * as message_view_header from "./message_view_header";
 import * as overlays from "./overlays";
 import * as stream_color from "./stream_color";
 import * as stream_data from "./stream_data";
+import type {StreamSubscription} from "./sub_store";
 
-function update_table_message_recipient_stream_color(table, stream_name, recipient_bar_color) {
+function update_table_message_recipient_stream_color(
+    table: JQuery,
+    stream_name: string,
+    recipient_bar_color: string,
+): void {
     const $stream_labels = table.find(".stream_label");
     for (const label of $stream_labels) {
         const $label = $(label);
@@ -19,14 +24,14 @@ function update_table_message_recipient_stream_color(table, stream_name, recipie
     }
 }
 
-function update_stream_privacy_color(id, color) {
+function update_stream_privacy_color(id: string, color: string): void {
     $(`.stream-privacy-original-color-${CSS.escape(id)}`).css("color", color);
     color = stream_color.get_stream_privacy_icon_color(color);
     // `modified-color` is only used in recipient bars.
     $(`.stream-privacy-modified-color-${CSS.escape(id)}`).css("color", color);
 }
 
-function update_message_recipient_color(stream_name, color) {
+function update_message_recipient_color(stream_name: string, color: string): void {
     const recipient_color = stream_color.get_recipient_bar_color(color);
     for (const msg_list of message_lists.all_rendered_message_lists()) {
         update_table_message_recipient_stream_color(
@@ -51,9 +56,9 @@ function update_message_recipient_color(stream_name, color) {
     }
 }
 
-export function update_stream_color(sub, color) {
+export function update_stream_color(sub: StreamSubscription, color: string): void {
     sub.color = color;
-    const stream_id = sub.stream_id;
+    const stream_id = sub.stream_id.toString();
     // The swatch in the subscription row header.
     $(`.stream-row[data-stream-id='${CSS.escape(stream_id)}'] .icon`).css(
         "background-color",

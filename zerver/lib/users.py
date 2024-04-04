@@ -38,7 +38,7 @@ from zerver.models import (
     UserProfile,
 )
 from zerver.models.groups import SystemGroups
-from zerver.models.realms import get_fake_email_domain
+from zerver.models.realms import get_fake_email_domain, require_unique_names
 from zerver.models.users import (
     active_non_guest_user_ids,
     active_user_ids,
@@ -50,7 +50,9 @@ from zerver.models.users import (
 )
 
 
-def check_full_name(full_name_raw: str) -> str:
+def check_full_name(
+    full_name_raw: str, *, user_profile: Optional[UserProfile], realm: Optional[Realm]
+) -> str:
     full_name = full_name_raw.strip()
     if len(full_name) > UserProfile.MAX_NAME_LENGTH:
         raise JsonableError(_("Name too long!"))
@@ -65,6 +67,26 @@ def check_full_name(full_name_raw: str) -> str:
     # ban them.
     if re.search(r"\|\d+$", full_name_raw):
         raise JsonableError(_("Invalid format!"))
+
+    if require_unique_names(realm):
+        normalized_user_full_name = unicodedata.normalize("NFKC", full_name).casefold()
+        users_query = UserProfile.objects.filter(realm=realm)
+        # We want to exclude the user's full name while checking for
+        # uniqueness.
+        if user_profile is not None:
+            existing_names = users_query.exclude(id=user_profile.id).values_list(
+                "full_name", flat=True
+            )
+        else:
+            existing_names = users_query.values_list("full_name", flat=True)
+
+        normalized_existing_names = [
+            unicodedata.normalize("NFKC", full_name).casefold() for full_name in existing_names
+        ]
+
+        if normalized_user_full_name in normalized_existing_names:
+            raise JsonableError(_("Unique names required in this organization."))
+
     return full_name
 
 

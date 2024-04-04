@@ -19,6 +19,8 @@ from datetime import datetime, timedelta
 from typing import IO, Any, Dict, List, Optional, Sequence, Set, Union, overload
 from urllib.parse import SplitResult
 
+import zoneinfo
+
 DEPLOYMENTS_DIR = "/home/zulip/deployments"
 LOCK_DIR = os.path.join(DEPLOYMENTS_DIR, "lock")
 TIMESTAMP_FORMAT = "%Y-%m-%d-%H-%M-%S"
@@ -470,11 +472,6 @@ def os_families() -> Set[str]:
 
 
 def get_tzdata_zi() -> IO[str]:
-    if sys.version_info < (3, 9):  # nocoverage
-        from backports import zoneinfo
-    else:  # nocoverage
-        import zoneinfo
-
     for path in zoneinfo.TZPATH:
         filename = os.path.join(path, "tzdata.zi")
         if os.path.exists(filename):

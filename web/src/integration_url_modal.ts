@@ -3,6 +3,7 @@ import $ from "jquery";
 import type {Instance} from "tippy.js";
 
 import render_generate_integration_url_modal from "../templates/settings/generate_integration_url_modal.hbs";
+import render_integration_events from "../templates/settings/integration_events.hbs";
 
 import {show_copied_confirmation} from "./copied_tooltip";
 import * as dialog_widget from "./dialog_widget";
@@ -34,13 +35,16 @@ export function show_generate_integration_url_modal(api_key: string): void {
         let selected_integration = "";
         let stream_input_dropdown_widget: DropdownWidget;
         let integration_input_dropdown_widget: DropdownWidget;
+        let previous_selected_integration = "";
 
         const $override_topic = $("#integration-url-override-topic");
         const $topic_input = $<HTMLInputElement>("input#integration-url-topic-input");
         const $integration_url = $("#generate-integration-url-modal .integration-url");
         const $dialog_submit_button = $("#generate-integration-url-modal .dialog_submit_button");
+        const $show_integration_events = $("#show-integration-events");
 
         $dialog_submit_button.prop("disabled", true);
+        $("#integration-url-stream_widget").prop("disabled", true);
 
         const clipboard = new ClipboardJS("#generate-integration-url-modal .dialog_submit_button", {
             text() {
@@ -56,35 +60,91 @@ export function show_generate_integration_url_modal(api_key: string): void {
             $topic_input.parent().toggleClass("hide", !checked);
         });
 
+        $show_integration_events.on("change", () => {
+            $("#integrations-event-container").toggleClass(
+                "hide",
+                !$show_integration_events.prop("checked"),
+            );
+            update_url(true);
+        });
+
+        $(document).on("change", "#integrations-event-container .integration-event", () => {
+            update_url();
+        });
+
+        $("#add-all-integration-events").on("click", () => {
+            $("#integrations-event-container .integration-event").prop("checked", true);
+            update_url();
+        });
+
+        $("#remove-all-integration-events").on("click", () => {
+            $("#integrations-event-container .integration-event").prop("checked", false);
+            update_url();
+        });
+
         $("#generate-integration-url-modal .integration-url-parameter").on("change input", () => {
             update_url();
         });
 
-        function update_url(): void {
+        function update_url(render_events = false): void {
             selected_integration = integration_input_dropdown_widget.value()!.toString();
+            if (previous_selected_integration !== selected_integration) {
+                reset_to_blank_state();
+            }
             if (selected_integration === default_integration_option.unique_id) {
+                $("#integration-url-stream_widget").prop("disabled", true);
                 $integration_url.text(default_url_message);
                 $dialog_submit_button.prop("disabled", true);
                 return;
             }
+            $("#integration-url-stream_widget").prop("disabled", false);
+            previous_selected_integration = selected_integration;
 
             const stream_id = stream_input_dropdown_widget.value();
             const topic_name = $topic_input.val()!;
 
+            const selected_integration_data = realm.realm_incoming_webhook_bots.find(
+                (bot) => bot.name === selected_integration,
+            );
+            const all_event_types = selected_integration_data?.all_event_types;
+
+            if (all_event_types !== null) {
+                $("#integration-events-parameter").removeClass("hide");
+            }
+
+            if ($show_integration_events.prop("checked") && render_events) {
+                const events_with_ids = all_event_types?.map((event) => {
+                    const event_id = event.replaceAll(/\s+/g, "-");
+                    return {
+                        event,
+                        event_id,
+                    };
+                });
+                events_with_ids?.sort((a, b) => a.event.localeCompare(b.event));
+                const events = render_integration_events({
+                    events: events_with_ids,
+                });
+                $("#integrations-event-options").empty().append(events);
+            }
+
             const params = new URLSearchParams({api_key});
             if (stream_id !== -1) {
                 params.set("stream", stream_id!.toString());
-                if (topic_name !== "") {
+                if ($override_topic.prop("checked") && topic_name !== "") {
                     params.set("topic", topic_name);
                 }
             }
+            const selected_events = set_events_param(params);
 
             const realm_url = realm.realm_uri;
             const base_url = `${realm_url}/api/v1/external/`;
             $integration_url.text(`${base_url}${selected_integration}?${params.toString()}`);
             $dialog_submit_button.prop("disabled", false);
 
-            if ($override_topic.prop("checked") && topic_name === "") {
+            if (
+                ($override_topic.prop("checked") && topic_name === "") ||
+                ($show_integration_events.prop("checked") && !selected_events)
+            ) {
                 $dialog_submit_button.prop("disabled", true);
             }
         }
@@ -171,6 +231,41 @@ export function show_generate_integration_url_modal(api_key: string): void {
             dropdown.hide();
             event.preventDefault();
             event.stopPropagation();
+        }
+
+        function set_events_param(params: URLSearchParams): boolean {
+            if (!$show_integration_events.prop("checked")) {
+                return false;
+            }
+            const $selected_integration_events = $(
+                "#integrations-event-container .integration-event:checked",
+            );
+
+            const selected_events = $selected_integration_events
+                .map(function () {
+                    return $(this).val();
+                })
+                .get();
+            if (selected_events.length > 0) {
+                params.set("only_events", JSON.stringify(selected_events));
+                return true;
+            }
+            return false;
+        }
+
+        function reset_to_blank_state(): void {
+            $("#integration-events-parameter").addClass("hide");
+            $("#integrations-event-container").addClass("hide");
+            $("#integrations-event-options").empty();
+            $("#integrations-event-container .integration-event").prop("checked", false);
+            $show_integration_events.prop("checked", false);
+
+            $override_topic.prop("checked", false).prop("disabled", true);
+            $override_topic.closest(".input-group").addClass("control-label-disabled");
+            $topic_input.val("");
+            $topic_input.parent().addClass("hide");
+
+            stream_input_dropdown_widget.render(direct_messages_option.unique_id);
         }
     }
 

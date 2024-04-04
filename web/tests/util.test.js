@@ -170,6 +170,8 @@ run_test("wildcard_mentions_regexp", () => {
         "@**everyone**",
         '"@**everyone**"',
         "@**everyone**: Look at this!",
+        "The <@**everyone**> channel",
+        'I have to say "@**everyone**" to ding the bell',
         "some text before @**everyone** some text after",
         "@**everyone** some text after only",
         "some text before only @**everyone**",

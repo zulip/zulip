@@ -1250,24 +1250,29 @@ run_test("right-to-left", () => {
 
 const get_focus_area = compose_ui._get_focus_area;
 run_test("get_focus_area", () => {
-    assert.equal(get_focus_area("private", {}), "#private_message_recipient");
+    assert.equal(get_focus_area({message_type: "private"}), "#private_message_recipient");
     assert.equal(
-        get_focus_area("private", {
+        get_focus_area({
+            message_type: "private",
             private_message_recipient: "bob@example.com",
         }),
         "textarea#compose-textarea",
     );
-    assert.equal(get_focus_area("stream", {}), "#compose_select_recipient_widget_wrapper");
     assert.equal(
-        get_focus_area("stream", {stream_name: "fun", stream_id: 4}),
+        get_focus_area({message_type: "stream"}),
+        "#compose_select_recipient_widget_wrapper",
+    );
+    assert.equal(
+        get_focus_area({message_type: "stream", stream_name: "fun", stream_id: 4}),
         "input#stream_message_recipient_topic",
     );
     assert.equal(
-        get_focus_area("stream", {stream_name: "fun", stream_id: 4, topic: "more"}),
+        get_focus_area({message_type: "stream", stream_name: "fun", stream_id: 4, topic: "more"}),
         "textarea#compose-textarea",
     );
     assert.equal(
-        get_focus_area("stream", {
+        get_focus_area({
+            message_type: "stream",
             stream_id: 4,
             topic: "more",
             trigger: "clear topic button",

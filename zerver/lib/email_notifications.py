@@ -12,6 +12,7 @@ from email.headerregistry import Address
 from typing import Any, Dict, List, Optional, Tuple, Union
 
 import lxml.html
+import zoneinfo
 from bs4 import BeautifulSoup
 from django.conf import settings
 from django.contrib.auth import get_backends
@@ -41,11 +42,6 @@ from zerver.models import Message, Realm, Recipient, Stream, UserMessage, UserPr
 from zerver.models.messages import get_context_for_message
 from zerver.models.scheduled_jobs import NotificationTriggers
 from zerver.models.users import get_user_profile_by_id
-
-if sys.version_info < (3, 9):  # nocoverage
-    from backports import zoneinfo
-else:  # nocoverage
-    import zoneinfo
 
 logger = logging.getLogger(__name__)
 

@@ -58,12 +58,15 @@ function hide_box() {
     $("#compose_controls").show();
 }
 
-function show_compose_box(msg_type, opts) {
-    compose_recipient.update_compose_for_message_type(msg_type, opts);
+function show_compose_box(message_type, opts) {
+    compose_recipient.update_compose_for_message_type({...opts, message_type});
     $("#compose").css({visibility: "visible"});
     // When changing this, edit the 42px in _maybe_autoscroll
     $(".new_message_textarea").css("min-height", "3em");
-    compose_ui.set_focus(msg_type, opts);
+    compose_ui.set_focus({
+        ...opts,
+        message_type,
+    });
 }
 
 export function clear_textarea() {

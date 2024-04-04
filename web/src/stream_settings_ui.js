@@ -585,8 +585,8 @@ export function setup_page(callback) {
         });
 
         if (should_list_all_streams()) {
-            const toggler_elem = toggler.get();
-            $("#streams_overlay_container .list-toggler-container").prepend(toggler_elem);
+            const $toggler_elem = toggler.get();
+            $("#streams_overlay_container .list-toggler-container").prepend($toggler_elem);
         }
         if (current_user.is_guest) {
             toggler.disable_tab("all-streams");

@@ -1,1 +1,5 @@
-{{ _("Your Zulip accounts") }}
+{% if account_found %}
+    {{ _("Your Zulip accounts") }}
+{% else %}
+    {{ _("No Zulip accounts found") }}
+{% endif %}

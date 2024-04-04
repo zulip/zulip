@@ -151,7 +151,12 @@ run_test("muting", () => {
         {id: 9, type: "private", to_user_ids: "9", sender_id: 11},
     ];
 
-    user_topics.update_user_topics(1, "muted", user_topics.all_visibility_policies.MUTED);
+    user_topics.update_user_topics(
+        1,
+        "random stream name",
+        "muted",
+        user_topics.all_visibility_policies.MUTED,
+    );
     muted_users.add_muted_user(10);
 
     // `messages_filtered_for_topic_mutes` should skip filtering

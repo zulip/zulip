@@ -1458,3 +1458,14 @@ button#register_auth_button_gitlab {
         max-width: 800px;
     }
 }
+
+#registration #how-realm-creator-found-zulip label {
+    top: -5px;
+}
+
+#how-realm-creator-found-zulip-where-ad,
+#how-realm-creator-found-zulip-other,
+#how-realm-creator-found-zulip-which-organization {
+    margin-top: 5px;
+    display: none;
+}

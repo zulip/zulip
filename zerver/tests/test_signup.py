@@ -78,6 +78,7 @@ from zerver.models import (
     UserProfile,
 )
 from zerver.models.realms import get_realm
+from zerver.models.recipients import get_huddle_user_ids
 from zerver.models.streams import get_stream
 from zerver.models.users import get_system_bot, get_user, get_user_by_delivery_email
 from zerver.views.auth import redirect_and_log_into_subdomain, start_two_factor_auth
@@ -2421,6 +2422,25 @@ class UserSignUpTest(ZulipTestCase):
         # Verify that the user is asked for name and password
         self.assert_in_success_response(["id_password", "id_full_name"], result)
 
+    def test_signup_with_existing_name(self) -> None:
+        """
+        Check if signing up with an existing name when organization
+        has set "Require Unique Names"is handled properly.
+        """
+
+        iago = self.example_user("iago")
+        email = "newguy@zulip.com"
+        password = "newpassword"
+
+        do_set_realm_property(iago.realm, "require_unique_names", True, acting_user=None)
+        result = self.verify_signup(email=email, password=password, full_name="IaGo")
+        assert not isinstance(result, UserProfile)
+        self.assert_in_success_response(["Unique names required in this organization."], result)
+
+        do_set_realm_property(iago.realm, "require_unique_names", False, acting_user=None)
+        result = self.verify_signup(email=email, password=password, full_name="IaGo")
+        assert isinstance(result, UserProfile)
+
     def test_signup_without_password(self) -> None:
         """
         Check if signing up without a password works properly when
@@ -2849,9 +2869,9 @@ class UserSignUpTest(ZulipTestCase):
 
     def test_signup_to_realm_on_manual_license_plan(self) -> None:
         realm = get_realm("zulip")
-        denmark_stream = get_stream("Denmark", realm)
-        realm.signup_announcements_stream = denmark_stream
-        realm.save(update_fields=["signup_announcements_stream"])
+        admin_user_ids = set(realm.get_human_admin_users().values_list("id", flat=True))
+        notification_bot = get_system_bot(settings.NOTIFICATION_BOT, realm.id)
+        expected_group_direct_message_user_ids = admin_user_ids | {notification_bot.id}
 
         _, ledger = self.subscribe_realm_to_monthly_plan_on_manual_license_management(realm, 5, 5)
 
@@ -2867,7 +2887,10 @@ class UserSignUpTest(ZulipTestCase):
                 f"A new member ({self.nonreg_email('test')}) was unable to join your organization because all Zulip",
                 last_message.content,
             )
-            self.assertEqual(last_message.recipient.type_id, denmark_stream.id)
+            self.assertEqual(
+                set(get_huddle_user_ids(last_message.recipient)),
+                expected_group_direct_message_user_ids,
+            )
 
         ledger.licenses_at_next_renewal = 50
         ledger.save(update_fields=["licenses_at_next_renewal"])
@@ -4253,7 +4276,7 @@ class TestFindMyTeam(ZulipTestCase):
         )
         self.assertEqual(result.status_code, 200)
         content = result.content.decode()
-        self.assertIn("Emails sent! You will only receive emails", content)
+        self.assertIn("Emails sent! The addresses entered on", content)
         self.assertIn("iago@zulip.com", content)
         self.assertIn("cordeliA@zulip.com", content)
         from django.core.mail import outbox
@@ -4266,18 +4289,17 @@ class TestFindMyTeam(ZulipTestCase):
         self.assertIn("Zulip Dev", cordelia_message.body)
         self.assertIn("Lear & Co", cordelia_message.body)
 
-    def test_find_team_ignore_invalid_email(self) -> None:
-        result = self.client_post(
-            "/accounts/find/", dict(emails="iago@zulip.com,invalid_email@zulip.com")
-        )
+    def test_find_team_email_with_no_account(self) -> None:
+        result = self.client_post("/accounts/find/", dict(emails="no_account_email@zulip.com"))
         self.assertEqual(result.status_code, 200)
         content = result.content.decode()
-        self.assertIn("Emails sent! You will only receive emails", content)
-        self.assertIn(self.example_email("iago"), content)
-        self.assertIn("invalid_email@", content)
+        self.assertIn("Emails sent! The addresses entered on", content)
+        self.assertIn("no_account_email@", content)
         from django.core.mail import outbox
 
         self.assert_length(outbox, 1)
+        message = outbox[0]
+        self.assertIn("Unfortunately, no Zulip Cloud accounts", message.body)
 
     def test_find_team_reject_invalid_email(self) -> None:
         result = self.client_post("/accounts/find/", dict(emails="invalid_string"))
@@ -4307,6 +4329,8 @@ class TestFindMyTeam(ZulipTestCase):
         from django.core.mail import outbox
 
         self.assert_length(outbox, 1)
+        message = outbox[0]
+        self.assertIn("Zulip Dev", message.body)
 
     def test_find_team_deactivated_user(self) -> None:
         do_deactivate_user(self.example_user("hamlet"), acting_user=None)
@@ -4315,7 +4339,9 @@ class TestFindMyTeam(ZulipTestCase):
         self.assertEqual(result.status_code, 200)
         from django.core.mail import outbox
 
-        self.assert_length(outbox, 0)
+        self.assert_length(outbox, 1)
+        message = outbox[0]
+        self.assertIn("Unfortunately, no Zulip Cloud accounts", message.body)
 
     def test_find_team_deactivated_realm(self) -> None:
         do_deactivate_realm(get_realm("zulip"), acting_user=None)
@@ -4324,7 +4350,9 @@ class TestFindMyTeam(ZulipTestCase):
         self.assertEqual(result.status_code, 200)
         from django.core.mail import outbox
 
-        self.assert_length(outbox, 0)
+        self.assert_length(outbox, 1)
+        message = outbox[0]
+        self.assertIn("Unfortunately, no Zulip Cloud accounts", message.body)
 
     def test_find_team_bot_email(self) -> None:
         data = {"emails": self.example_email("webhook_bot")}
@@ -4332,7 +4360,9 @@ class TestFindMyTeam(ZulipTestCase):
         self.assertEqual(result.status_code, 200)
         from django.core.mail import outbox
 
-        self.assert_length(outbox, 0)
+        self.assert_length(outbox, 1)
+        message = outbox[0]
+        self.assertIn("Unfortunately, no Zulip Cloud accounts", message.body)
 
     def test_find_team_more_than_ten_emails(self) -> None:
         data = {"emails": ",".join(f"hamlet-{i}@zulip.com" for i in range(11))}

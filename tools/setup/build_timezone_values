@@ -3,10 +3,7 @@ import json
 import os
 import sys
 
-if sys.version_info < (3, 9):
-    from backports import zoneinfo
-else:
-    import zoneinfo
+import zoneinfo
 
 ZULIP_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../../")
 sys.path.insert(0, ZULIP_PATH)

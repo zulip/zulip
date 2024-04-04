@@ -1,5 +1,5 @@
 [program:zulip_deliver_scheduled_emails]
-command=nice -n15 /home/zulip/deployments/current/manage.py deliver_scheduled_emails
+command=nice -n15 /home/zulip/deployments/current/manage.py deliver_scheduled_emails --skip-checks
 environment=HTTP_proxy="<%= @proxy %>",HTTPS_proxy="<%= @proxy %>"
 priority=350                   ; the relative start priority (default 999)
 autostart=true                 ; start at supervisord start (default: true)
@@ -14,7 +14,7 @@ stdout_logfile_backups=3     ; # of stdout logfile backups (default 10)
 directory=/home/zulip/deployments/current/
 
 [program:zulip_deliver_scheduled_messages]
-command=nice -n15 /home/zulip/deployments/current/manage.py deliver_scheduled_messages
+command=nice -n15 /home/zulip/deployments/current/manage.py deliver_scheduled_messages --skip-checks
 environment=HTTP_proxy="<%= @proxy %>",HTTPS_proxy="<%= @proxy %>"
 priority=350                   ; the relative start priority (default 999)
 autostart=true                 ; start at supervisord start (default: true)

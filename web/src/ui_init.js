@@ -611,6 +611,7 @@ export function initialize_everything(state_data) {
         "realm_private_message_policy",
         "realm_push_notifications_enabled",
         "realm_push_notifications_enabled_end_timestamp",
+        "realm_require_unique_names",
         "realm_send_welcome_emails",
         "realm_signup_announcements_stream_id",
         "realm_upload_quota_mib",

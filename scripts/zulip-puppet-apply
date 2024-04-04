@@ -63,10 +63,6 @@ puppet_env = os.environ.copy()
 puppet_env["FACTER_zulip_conf_path"] = args.config
 puppet_env["FACTER_zulip_scripts_path"] = scripts_path
 
-# This is to suppress Puppet warnings with ruby 2.7.
-if (distro_info["ID"], distro_info["VERSION_ID"]) in [("ubuntu", "20.04")]:
-    puppet_env["RUBYOPT"] = "-W0"
-
 
 def noop_would_change(puppet_cmd: List[str]) -> bool:
     # --noop does not work with --detailed-exitcodes; see
