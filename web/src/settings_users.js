@@ -468,7 +468,7 @@ function handle_bot_deactivation($tbody) {
 
         function handle_confirm() {
             const url = "/json/bots/" + encodeURIComponent(bot_id);
-            dialog_widget.submit_api_request(channel.del, url);
+            dialog_widget.submit_api_request(channel.del, url, {});
         }
 
         user_deactivation_ui.confirm_bot_deactivation(bot_id, handle_confirm, true);

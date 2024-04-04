@@ -100,7 +100,7 @@ function delete_attachments(attachment: string, file_name: string): void {
         id: "confirm_delete_file_modal",
         focus_submit_on_open: true,
         on_click() {
-            dialog_widget.submit_api_request(channel.del, "/json/attachments/" + attachment);
+            dialog_widget.submit_api_request(channel.del, "/json/attachments/" + attachment, {});
         },
         loading_spinner: true,
     });

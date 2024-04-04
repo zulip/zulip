@@ -673,7 +673,7 @@ export function show_edit_bot_info_modal(user_id, $container) {
             const bot_id = $("#bot-edit-form").data("user-id");
             function handle_confirm() {
                 const url = "/json/bots/" + encodeURIComponent(bot_id);
-                dialog_widget.submit_api_request(channel.del, url);
+                dialog_widget.submit_api_request(channel.del, url, {});
             }
             user_deactivation_ui.confirm_bot_deactivation(bot_id, handle_confirm, true);
         });
@@ -685,7 +685,7 @@ export function show_edit_bot_info_modal(user_id, $container) {
             const user_id = $("#bot-edit-form").data("user-id");
             function handle_confirm() {
                 const url = "/json/users/" + encodeURIComponent(user_id) + "/reactivate";
-                dialog_widget.submit_api_request(channel.post, url);
+                dialog_widget.submit_api_request(channel.post, url, {});
             }
             user_deactivation_ui.confirm_reactivation(user_id, handle_confirm, true);
         });
@@ -785,7 +785,7 @@ export function show_edit_user_info_modal(user_id, $container) {
         const user_id = $("#edit-user-form").data("user-id");
         function handle_confirm() {
             const url = "/json/users/" + encodeURIComponent(user_id);
-            dialog_widget.submit_api_request(channel.del, url);
+            dialog_widget.submit_api_request(channel.del, url, {});
         }
         user_deactivation_ui.confirm_deactivation(user_id, handle_confirm, true);
     });
@@ -797,7 +797,7 @@ export function show_edit_user_info_modal(user_id, $container) {
         const user_id = $("#edit-user-form").data("user-id");
         function handle_confirm() {
             const url = "/json/users/" + encodeURIComponent(user_id) + "/reactivate";
-            dialog_widget.submit_api_request(channel.post, url);
+            dialog_widget.submit_api_request(channel.post, url, {});
         }
         user_deactivation_ui.confirm_reactivation(user_id, handle_confirm, true);
     });
