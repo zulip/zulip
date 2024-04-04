@@ -192,7 +192,7 @@ export function build_page() {
             html_heading: $t_html({defaultMessage: "Delete linkifier?"}),
             html_body,
             id: "confirm_delete_linkifiers_modal",
-            on_click: () => dialog_widget.submit_api_request(channel.del, url),
+            on_click: () => dialog_widget.submit_api_request(channel.del, url, {}),
             loading_spinner: true,
         });
     });

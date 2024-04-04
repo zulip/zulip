@@ -229,7 +229,7 @@ export function launch(conf: DialogWidgetConfig): void {
 export function submit_api_request(
     request_method: AjaxRequestHandler,
     url: string,
-    data: Parameters<AjaxRequestHandler>[0]["data"] = {},
+    data: Omit<Parameters<AjaxRequestHandler>[0]["data"], "undefined">,
     {
         failure_msg_html = $t_html({defaultMessage: "Failed"}),
         success_continuation,
