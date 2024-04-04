@@ -1141,7 +1141,7 @@ div.settings-radio-input-parent {
         height: calc(100% - 45px) !important;
         border-left: 1px solid hsl(0deg 0% 0% / 20%) !important;
     }
-    
+
     .user-groups-container .left,
     .subscriptions-container .left {
         position: absolute !important;
