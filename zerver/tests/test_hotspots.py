@@ -39,11 +39,12 @@ class TestGetNextOnboardingSteps(ZulipTestCase):
         do_mark_onboarding_step_as_read(self.user, "intro_streams")
         do_mark_onboarding_step_as_read(self.user, "intro_compose")
         onboarding_steps = get_next_onboarding_steps(self.user)
-        self.assert_length(onboarding_steps, 4)
+        self.assert_length(onboarding_steps, 5)
         self.assertEqual(onboarding_steps[0]["name"], "visibility_policy_banner")
         self.assertEqual(onboarding_steps[1]["name"], "intro_inbox_view_modal")
         self.assertEqual(onboarding_steps[2]["name"], "intro_recent_view_modal")
-        self.assertEqual(onboarding_steps[3]["name"], "intro_topics")
+        self.assertEqual(onboarding_steps[3]["name"], "first_stream_created_banner")
+        self.assertEqual(onboarding_steps[4]["name"], "intro_topics")
 
     def test_all_onboarding_steps_done(self) -> None:
         with self.settings(TUTORIAL_ENABLED=True):

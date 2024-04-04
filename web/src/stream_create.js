@@ -9,6 +9,7 @@ import * as confirm_dialog from "./confirm_dialog";
 import {$t, $t_html} from "./i18n";
 import * as keydown_util from "./keydown_util";
 import * as loading from "./loading";
+import * as onboarding_steps from "./onboarding_steps";
 import * as people from "./people";
 import * as settings_data from "./settings_data";
 import {current_user, realm} from "./state_data";
@@ -31,6 +32,14 @@ export function set_name(stream) {
 
 export function get_name() {
     return created_stream;
+}
+
+export function set_first_stream_created_modal_shown() {
+    onboarding_steps.post_onboarding_step_as_read("first_stream_created_banner");
+}
+
+export function should_show_first_stream_created_modal() {
+    return onboarding_steps.ONE_TIME_NOTICES_TO_DISPLAY.has("first_stream_created_banner");
 }
 
 class StreamSubscriptionError {
