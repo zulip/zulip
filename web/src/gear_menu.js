@@ -94,7 +94,7 @@ function render(instance) {
 
 export function initialize() {
     popover_menus.register_popover_menu("#gear-menu", {
-        theme: "navbar-dropdown-menu",
+        theme: "popover-menu",
         placement: "bottom",
         offset: [-50, 0],
         popperOptions: {
