@@ -39,6 +39,10 @@
 
     .messagebox-content {
         display: block !important;
+
+        .message_content {
+            cursor: default !important;
+        }
     }
 
     #message-history-error {
