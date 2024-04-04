@@ -183,9 +183,6 @@ export function get_sub(stream_name: string): StreamSubscription | undefined {
 }
 
 export function get_sub_by_id(stream_id: number): StreamSubscription | undefined {
-    if (!stream_id) {
-        return undefined;
-    }
     return stream_info.get(stream_id);
 }
 
