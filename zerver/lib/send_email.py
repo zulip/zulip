@@ -5,6 +5,7 @@ import smtplib
 from contextlib import suppress
 from datetime import timedelta
 from email.headerregistry import Address
+from email.message import Message
 from email.parser import Parser
 from email.policy import default
 from email.utils import formataddr, parseaddr
@@ -514,6 +515,14 @@ def get_header(option: Optional[str], header: Optional[str], name: str) -> str:
     return str(option or header)
 
 
+def parse_email_template(template: str) -> Tuple[Message, str]:
+    with open(template) as f:
+        text = f.read()
+        message = Parser(policy=default).parsestr(text)
+        hash_code = hashlib.sha256(text.encode()).hexdigest()[0:32]
+        return message, hash_code
+
+
 def custom_email_sender(
     markdown_template_path: str,
     dry_run: bool,
@@ -523,11 +532,7 @@ def custom_email_sender(
     reply_to: Optional[str] = None,
     **kwargs: Any,
 ) -> Callable[..., None]:
-    with open(markdown_template_path) as f:
-        text = f.read()
-        parsed_email_template = Parser(policy=default).parsestr(text)
-        email_template_hash = hashlib.sha256(text.encode()).hexdigest()[0:32]
-
+    parsed_email_template, email_template_hash = parse_email_template(markdown_template_path)
     email_id = f"zerver/emails/custom/custom_email_{email_template_hash}"
     markdown_email_base_template_path = "templates/zerver/emails/custom_email_base.pre.html"
     html_template_path = f"templates/{email_id}.html"
