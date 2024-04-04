@@ -781,7 +781,7 @@ export function get_external_account_link(field) {
     } else {
         field_url_pattern = realm.realm_default_external_accounts[field_subtype].url_pattern;
     }
-    return field_url_pattern.replace("%(username)s", field.value);
+    return field_url_pattern.replace("%(username)s", () => field.value);
 }
 
 export function set_up() {
