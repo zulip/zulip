@@ -752,7 +752,10 @@ function register_click_handlers() {
     });
     $("body").on("click", ".user-card-popover-root .mention_user", (e) => {
         if (!compose_state.composing()) {
-            compose_actions.start("stream", {trigger: "sidebar user actions"});
+            compose_actions.start({
+                message_type: "stream",
+                trigger: "sidebar user actions",
+            });
         }
         const user_id = elem_to_user_id($(e.target).parents("ul"));
         const name = people.get_by_user_id(user_id).full_name;
@@ -848,7 +851,8 @@ function register_click_handlers() {
     $("body").on("click", ".respond_personal_button, .compose_private_message", (e) => {
         const user_id = elem_to_user_id($(e.target).parents("ul"));
         const email = people.get_by_user_id(user_id).email;
-        compose_actions.start("private", {
+        compose_actions.start({
+            message_type: "private",
             trigger: "popover send private",
             private_message_recipient: email,
         });

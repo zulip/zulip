@@ -485,8 +485,7 @@ test_ui("initialize", ({override}) => {
     let compose_actions_expected_opts;
     let compose_actions_start_checked;
 
-    override(compose_actions, "start", (msg_type, opts) => {
-        assert.equal(msg_type, "stream");
+    override(compose_actions, "start", (opts) => {
         assert.deepEqual(opts, compose_actions_expected_opts);
         compose_actions_start_checked = true;
     });
@@ -518,7 +517,10 @@ test_ui("initialize", ({override}) => {
 
     function set_up_compose_start_mock(expected_opts) {
         compose_actions_start_checked = false;
-        compose_actions_expected_opts = expected_opts;
+        compose_actions_expected_opts = {
+            ...expected_opts,
+            message_type: "stream",
+        };
     }
 
     (function test_page_params_narrow_path() {

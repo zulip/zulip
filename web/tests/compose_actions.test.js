@@ -131,8 +131,10 @@ test("start", ({override, override_rewire, mock_template}) => {
         topic: "topic1",
     };
 
-    let opts = {};
-    start("stream", opts);
+    let opts = {
+        message_type: "stream",
+    };
+    start(opts);
 
     assert_visible("#compose_recipient_box");
     assert_hidden("#compose-direct-recipient");
@@ -155,8 +157,10 @@ test("start", ({override, override_rewire, mock_template}) => {
         trigger: "clear topic button",
     };
 
-    opts = {};
-    start("stream", opts);
+    opts = {
+        message_type: "stream",
+    };
+    start(opts);
     assert.equal(compose_state.stream_name(), "Denmark");
     assert.equal(compose_state.topic(), "");
 
@@ -164,8 +168,10 @@ test("start", ({override, override_rewire, mock_template}) => {
         trigger: "compose_hotkey",
     };
 
-    opts = {};
-    start("stream", opts);
+    opts = {
+        message_type: "stream",
+    };
+    start(opts);
     assert.equal(compose_state.stream_name(), "Denmark");
     assert.equal(compose_state.topic(), "");
 
@@ -179,8 +185,10 @@ test("start", ({override, override_rewire, mock_template}) => {
 
     compose_state.set_stream_id("");
     // More than 1 subscription, do not autofill
-    opts = {};
-    start("stream", opts);
+    opts = {
+        message_type: "stream",
+    };
+    start(opts);
     assert.equal(compose_state.stream_name(), "");
     assert.equal(compose_state.topic(), "");
     stream_data.clear_subscriptions();
@@ -191,10 +199,11 @@ test("start", ({override, override_rewire, mock_template}) => {
     };
 
     opts = {
+        message_type: "private",
         content: "hello",
     };
 
-    start("private", opts);
+    start(opts);
 
     assert_hidden("input#stream_message_recipient_topic");
     assert_visible("#compose-direct-recipient");
@@ -206,10 +215,11 @@ test("start", ({override, override_rewire, mock_template}) => {
 
     // Triggered by new direct message
     opts = {
+        message_type: "private",
         trigger: "new direct message",
     };
 
-    start("private", opts);
+    start(opts);
 
     assert.equal(compose_state.private_message_recipient(), "");
     assert.equal(compose_state.get_message_type(), "private");

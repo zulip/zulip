@@ -478,9 +478,12 @@ export function initialize() {
 
     if (page_params.narrow !== undefined) {
         if (page_params.narrow_topic !== undefined) {
-            compose_actions.start("stream", {topic: page_params.narrow_topic});
+            compose_actions.start({
+                message_type: "stream",
+                topic: page_params.narrow_topic,
+            });
         } else {
-            compose_actions.start("stream", {});
+            compose_actions.start({message_type: "stream"});
         }
     }
 }

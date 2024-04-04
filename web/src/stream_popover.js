@@ -156,7 +156,8 @@ function build_stream_popover(opts) {
                 const sub = stream_popover_sub(e);
                 hide_stream_popover();
 
-                compose_actions.start("stream", {
+                compose_actions.start({
+                    message_type: "stream",
                     trigger: "popover new topic button",
                     stream_id: sub.stream_id,
                     topic: "",

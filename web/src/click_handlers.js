@@ -703,11 +703,17 @@ export function initialize() {
     // COMPOSE
 
     $("body").on("click", ".empty_feed_compose_stream", (e) => {
-        compose_actions.start("stream", {trigger: "empty feed message"});
+        compose_actions.start({
+            message_type: "stream",
+            trigger: "empty feed message",
+        });
         e.preventDefault();
     });
     $("body").on("click", ".empty_feed_compose_private", (e) => {
-        compose_actions.start("private", {trigger: "empty feed message"});
+        compose_actions.start({
+            message_type: "private",
+            trigger: "empty feed message",
+        });
         e.preventDefault();
     });
 

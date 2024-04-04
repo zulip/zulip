@@ -540,7 +540,10 @@ export function initialize() {
             upload_files(compose_upload_object, {mode: "compose"}, files);
         } else {
             // Start a new message in other views.
-            compose_actions.start("stream", {trigger: "drag_drop_file"});
+            compose_actions.start({
+                message_type: "stream",
+                trigger: "drag_drop_file",
+            });
             upload_files(compose_upload_object, {mode: "compose"}, files);
         }
     });

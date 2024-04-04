@@ -183,18 +183,18 @@ function same_recipient_as_before(opts) {
     );
 }
 
-export function start(msg_type, opts) {
+export function start(opts) {
     if (page_params.is_spectator) {
         spectators.login_to_access();
         return;
     }
 
-    if (!msg_type) {
+    if (!opts.message_type) {
         // We prefer callers to be explicit about the message type, but
         // we if we don't know, we open a stream compose box by default,
         // which opens stream selection dropdown.
-        // Also, msg_type is used to check if compose box is open in compose_state.composing().
-        msg_type = "stream";
+        // Also, message_type is used to check if compose box is open in compose_state.composing().
+        opts.message_type = "stream";
         blueslip.warn("Empty message type in compose.start");
     }
 
@@ -207,7 +207,7 @@ export function start(msg_type, opts) {
     compose_banner.clear_message_sent_banners();
     expand_compose_box();
 
-    opts = fill_in_opts_from_current_narrowed_view(msg_type, opts);
+    opts = fill_in_opts_from_current_narrowed_view(opts.message_type, opts);
     const is_clear_topic_button_triggered = opts.trigger === "clear topic button";
 
     // If we are invoked by a compose hotkey (c or x) or new topic
@@ -226,7 +226,7 @@ export function start(msg_type, opts) {
     if (
         subbed_streams.length === 1 &&
         (is_clear_topic_button_triggered ||
-            (opts.trigger === "compose_hotkey" && msg_type === "stream"))
+            (opts.trigger === "compose_hotkey" && opts.message_type === "stream"))
     ) {
         opts.stream_id = subbed_streams[0].stream_id;
     }
@@ -235,13 +235,13 @@ export function start(msg_type, opts) {
     // with (like from a draft), save any existing content as a draft, and clear the compose box.
     if (
         compose_state.composing() &&
-        (!same_recipient_as_before({...opts, message_type: msg_type}) || opts.content !== undefined)
+        (!same_recipient_as_before(opts) || opts.content !== undefined)
     ) {
         drafts.update_draft();
         clear_box();
     }
 
-    if (msg_type === "private") {
+    if (opts.message_type === "private") {
         compose_state.set_compose_recipient_id(compose_state.DIRECT_MESSAGE_ID);
         compose_recipient.on_compose_select_recipient_update();
     } else if (opts.stream_id) {
@@ -266,13 +266,10 @@ export function start(msg_type, opts) {
         $(".compose_control_button_container:has(.add-poll)").addClass("disabled-on-hover");
     }
 
-    compose_state.set_message_type(msg_type);
+    compose_state.set_message_type(opts.message_type);
 
     // Show either stream/topic fields or "You and" field.
-    show_compose_box({
-        ...opts,
-        message_type: msg_type,
-    });
+    show_compose_box(opts);
 
     if (opts.draft_id) {
         $("textarea#compose-textarea").data("draft-id", opts.draft_id);
@@ -307,7 +304,7 @@ export function start(msg_type, opts) {
     // while writing a long message.
     resize.reset_compose_message_max_height();
 
-    complete_starting_tasks(msg_type, opts);
+    complete_starting_tasks(opts.message_type, opts);
 }
 
 export function cancel() {
@@ -466,7 +463,10 @@ export function on_narrow(opts) {
         // the view's scroll position. recenter_view is responsible
         // for taking the open compose box into account when placing
         // the selecting message.
-        start("private", {skip_scrolling_selected_message: true});
+        start({
+            message_type: "private",
+            skip_scrolling_selected_message: true,
+        });
         return;
     }
 

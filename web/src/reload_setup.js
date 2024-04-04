@@ -50,7 +50,8 @@ export function initialize() {
         const send_now = Number.parseInt(vars.send_after_reload, 10);
 
         try {
-            compose_actions.start(vars.msg_type, {
+            compose_actions.start({
+                message_type: vars.msg_type,
                 stream_id: Number.parseInt(vars.stream_id, 10) || undefined,
                 topic: vars.topic || "",
                 private_message_recipient: vars.recipient || "",
