@@ -1128,28 +1128,28 @@ div.settings-radio-input-parent {
 @media ($md_min < width < 881px) {
     .user-groups-container .right,
     .subscriptions-container .right {
-      position: absolute !important;
-      left: 50% !important;
-      top: 45px !important;
-      background-color: var(--color-background-modal) !important;
-      border-top: none !important;
-      transition: all 0.3s ease !important;
-      z-index: 10 !important;
-      width: 50% !important;
-      display: block !important;
-      margin: 0 !important;
-      height: calc(100% - 45px) !important;
-      border-left: 1px solid hsl(0deg 0% 0% / 20%) !important;
+        position: absolute !important;
+        left: 50% !important;
+        top: 45px !important;
+        background-color: var(--color-background-modal) !important;
+        border-top: none !important;
+        transition: all 0.3s ease !important;
+        z-index: 10 !important;
+        width: 50% !important;
+        display: block !important;
+        margin: 0 !important;
+        height: calc(100% - 45px) !important;
+        border-left: 1px solid hsl(0deg 0% 0% / 20%) !important;
     }
     
     .user-groups-container .left,
     .subscriptions-container .left {
-      position: absolute !important;
-      display: block !important;
-      margin: 0 !important;
-      width: 50% !important;
-      height: calc(100% - 45px) !important;
-      border-right: 1px solid hsl(0deg 0% 0% / 20%) !important;
+        position: absolute !important;
+        display: block !important;
+        margin: 0 !important;
+        width: 50% !important;
+        height: calc(100% - 45px) !important;
+        border-right: 1px solid hsl(0deg 0% 0% / 20%) !important;
     }
 }
 
