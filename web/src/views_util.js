@@ -33,19 +33,19 @@ export const COMMON_DROPDOWN_WIDGET_PARAMS = {
     disable_for_spectators: true,
 };
 
-export function filters_dropdown_options() {
+export function filters_dropdown_options(current_value) {
     return [
         {
             unique_id: FILTERS.FOLLOWED_TOPICS,
             name: $t({defaultMessage: "Followed topics"}),
             description: $t({defaultMessage: "Only topics you follow"}),
-            bold_current_selection: this.current_value === FILTERS.FOLLOWED_TOPICS,
+            bold_current_selection: current_value === FILTERS.FOLLOWED_TOPICS,
         },
         {
             unique_id: FILTERS.UNMUTED_TOPICS,
             name: $t({defaultMessage: "Standard view"}),
             description: $t({defaultMessage: "All unmuted topics"}),
-            bold_current_selection: this.current_value === FILTERS.UNMUTED_TOPICS,
+            bold_current_selection: current_value === FILTERS.UNMUTED_TOPICS,
         },
         {
             unique_id: FILTERS.ALL_TOPICS,
@@ -53,7 +53,7 @@ export function filters_dropdown_options() {
             description: $t({
                 defaultMessage: "Includes muted streams and topics",
             }),
-            bold_current_selection: this.current_value === FILTERS.ALL_TOPICS,
+            bold_current_selection: current_value === FILTERS.ALL_TOPICS,
         },
     ];
 }
