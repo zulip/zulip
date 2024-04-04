@@ -155,9 +155,8 @@ export function maybe_scroll_up_selected_message(opts) {
     }
 }
 
-export function fill_in_opts_from_current_narrowed_view(msg_type, opts) {
+export function fill_in_opts_from_current_narrowed_view(opts) {
     return {
-        message_type: msg_type,
         stream_id: undefined,
         topic: "",
         private_message_recipient: "",
@@ -207,7 +206,7 @@ export function start(opts) {
     compose_banner.clear_message_sent_banners();
     expand_compose_box();
 
-    opts = fill_in_opts_from_current_narrowed_view(opts.message_type, opts);
+    opts = fill_in_opts_from_current_narrowed_view(opts);
     const is_clear_topic_button_triggered = opts.trigger === "clear topic button";
 
     // If we are invoked by a compose hotkey (c or x) or new topic
@@ -431,7 +430,10 @@ export function on_narrow(opts) {
     }
 
     if (narrow_state.narrowed_by_pm_reply()) {
-        opts = fill_in_opts_from_current_narrowed_view("private", opts);
+        opts = fill_in_opts_from_current_narrowed_view({
+            ...opts,
+            message_type: "private",
+        });
         // Do not open compose box if an invalid recipient is present.
         if (!opts.private_message_recipient) {
             if (compose_state.composing()) {

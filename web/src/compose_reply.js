@@ -86,10 +86,10 @@ export function respond_to_message(opts) {
                 msg_type = "private";
             }
 
-            const new_opts = compose_actions.fill_in_opts_from_current_narrowed_view(
-                msg_type,
-                opts,
-            );
+            const new_opts = compose_actions.fill_in_opts_from_current_narrowed_view({
+                ...opts,
+                message_type: msg_type,
+            });
             compose_actions.start(new_opts);
             return;
         }
