@@ -110,13 +110,13 @@ export function expand_compose_box() {
     $(".message_comp").show();
 }
 
-export function complete_starting_tasks(msg_type, opts) {
+export function complete_starting_tasks(opts) {
     // This is sort of a kitchen sink function, and it's called only
     // by compose.start() for now.  Having this as a separate function
     // makes testing a bit easier.
 
     maybe_scroll_up_selected_message(opts);
-    compose_fade.start_compose(msg_type);
+    compose_fade.start_compose(opts.message_type);
     $(document).trigger(new $.Event("compose_started.zulip", opts));
     compose_recipient.update_placeholder_text();
     compose_recipient.update_narrow_to_recipient_visibility();
@@ -304,7 +304,7 @@ export function start(opts) {
     // while writing a long message.
     resize.reset_compose_message_max_height();
 
-    complete_starting_tasks(opts.message_type, opts);
+    complete_starting_tasks(opts);
 }
 
 export function cancel() {
