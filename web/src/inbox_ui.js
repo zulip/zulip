@@ -952,12 +952,15 @@ export function change_focused_element(input_key) {
         }
     } else if (is_filters_dropdown_focused()) {
         switch (input_key) {
+            case "vim_down":
             case "down_arrow":
                 set_list_focus();
                 return true;
+            case "vim_left":
             case "left_arrow":
                 focus_inbox_search();
                 return true;
+            case "vim_right":
             case "right_arrow":
             case "tab":
                 focus_inbox_search();
@@ -966,6 +969,12 @@ export function change_focused_element(input_key) {
                 // Let user focus outside inbox view.
                 current_focus_id = "";
                 return false;
+            case "escape":
+                if (get_all_rows().length === 0) {
+                    return false;
+                }
+                set_list_focus();
+                return true;
         }
     } else {
         switch (input_key) {
