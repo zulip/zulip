@@ -76,14 +76,16 @@ function insert_tip_box() {
     if (current_user.is_admin) {
         return;
     }
-    const tip_box = render_settings_organization_settings_tip({is_admin: current_user.is_admin});
+    const tip_box_html = render_settings_organization_settings_tip({
+        is_admin: current_user.is_admin,
+    });
     $(".organization-box")
         .find(".settings-section")
         .not("#emoji-settings")
         .not("#organization-auth-settings")
         .not("#admin-bot-list")
         .not("#admin-invites-list")
-        .prepend(tip_box);
+        .prepend($(tip_box_html));
 }
 
 function get_realm_level_notification_settings(options) {

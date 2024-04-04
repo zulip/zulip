@@ -329,7 +329,7 @@ export function build_stream_list(force_rerender: boolean): void {
         add_sidebar_li(stream_id);
     }
 
-    $parent.append(elems);
+    $parent.append(elems); // eslint-disable-line no-jquery/no-append-html
 }
 
 export function get_stream_li(stream_id: number): JQuery | undefined {
@@ -402,7 +402,7 @@ export function zoom_in_topics(options: {stream_id: number | undefined}): void {
         if (stream_id_for_elt($elt) === stream_id) {
             $elt.show();
             // Add search box for topics list.
-            $elt.children("div.bottom_left_row").append(render_filter_topics());
+            $elt.children("div.bottom_left_row").append($(render_filter_topics()));
             $("#filter-topic-input").trigger("focus");
             $("#clear_search_topic_button").hide();
         } else {

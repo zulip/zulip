@@ -352,11 +352,13 @@ function show_user_card_popover(
 
                 $popover.addClass(get_popover_classname(template_class));
                 $popover_title.append(
-                    render_user_card_popover_avatar({
-                        // See the load_medium_avatar comment for important background.
-                        user_avatar: people.small_avatar_url_for_person(user),
-                        user_is_guest: user.is_guest,
-                    }),
+                    $(
+                        render_user_card_popover_avatar({
+                            // See the load_medium_avatar comment for important background.
+                            user_avatar: people.small_avatar_url_for_person(user),
+                            user_is_guest: user.is_guest,
+                        }),
+                    ),
                 );
             },
             onHidden() {

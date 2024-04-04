@@ -89,8 +89,8 @@ export function render_empty_user_list_message_if_needed($container: JQuery): vo
         return;
     }
 
-    const empty_list_widget = render_empty_list_widget_for_list({empty_list_message});
-    $container.append(empty_list_widget);
+    const empty_list_widget_html = render_empty_list_widget_for_list({empty_list_message});
+    $container.append($(empty_list_widget_html));
 }
 
 export function build_user_sidebar(): number[] | undefined {

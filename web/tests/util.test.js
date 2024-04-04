@@ -184,6 +184,13 @@ run_test("wildcard_mentions_regexp", () => {
         "some text before only @**stream**",
     ];
 
+    const messages_with_channel_mentions = [
+        "@**channel**",
+        "some text before @**channel** some text after",
+        "@**channel** some text after only",
+        "some text before only @**channel**",
+    ];
+
     const messages_with_topic_mentions = [
         "@**topic**",
         "some text before @**topic** some text after",
@@ -218,6 +225,15 @@ run_test("wildcard_mentions_regexp", () => {
         "some_email@**stream**.com",
     ];
 
+    const messages_without_channel_mentions = [
+        "some text before @channel some text after",
+        "@channel",
+        "`@channel`",
+        "some_email@channel.com",
+        "`@**channel**`",
+        "some_email@**channel**.com",
+    ];
+
     let i;
     for (i = 0; i < messages_with_all_mentions.length; i += 1) {
         assert.ok(util.find_stream_wildcard_mentions(messages_with_all_mentions[i]));
@@ -229,6 +245,10 @@ run_test("wildcard_mentions_regexp", () => {
 
     for (i = 0; i < messages_with_stream_mentions.length; i += 1) {
         assert.ok(util.find_stream_wildcard_mentions(messages_with_stream_mentions[i]));
+    }
+
+    for (i = 0; i < messages_with_channel_mentions.length; i += 1) {
+        assert.ok(util.find_stream_wildcard_mentions(messages_with_channel_mentions[i]));
     }
 
     for (i = 0; i < messages_with_topic_mentions.length; i += 1) {
@@ -245,6 +265,10 @@ run_test("wildcard_mentions_regexp", () => {
 
     for (i = 0; i < messages_without_stream_mentions.length; i += 1) {
         assert.ok(!util.find_stream_wildcard_mentions(messages_without_stream_mentions[i]));
+    }
+
+    for (i = 0; i < messages_without_channel_mentions.length; i += 1) {
+        assert.ok(!util.find_stream_wildcard_mentions(messages_without_channel_mentions[i]));
     }
 });
 

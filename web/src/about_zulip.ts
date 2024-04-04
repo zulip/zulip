@@ -34,5 +34,5 @@ export function initialize(): void {
         zulip_merge_base: realm.zulip_merge_base,
         is_fork: realm.zulip_merge_base && realm.zulip_merge_base !== realm.zulip_version,
     });
-    $("#about-zulip-modal-container").append(rendered_about_zulip);
+    $("#about-zulip-modal-container").append($(rendered_about_zulip));
 }

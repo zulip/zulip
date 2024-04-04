@@ -65,7 +65,7 @@ export function adjust_mac_kbd_tags(kbd_elem_class: string): void {
         let key_text = $(this).text();
 
         if (fn_shortcuts.has(key_text)) {
-            $(this).before("<kbd>Fn</kbd> + ");
+            $(this).before($("<kbd>").text("Fn"), $("<span>").text(" + ").contents());
             $(this).addClass("arrow-key");
         }
 
@@ -88,7 +88,7 @@ export function adjust_mac_kbd_tags(kbd_elem_class: string): void {
         const following_key = $(this).attr("data-mac-following-key");
         if (following_key !== undefined) {
             const $kbd_elem = $("<kbd>").text(following_key);
-            $(this).after(" + ", $kbd_elem);
+            $(this).after($("<span>").text(" + ").contents(), $kbd_elem);
         }
     });
 }

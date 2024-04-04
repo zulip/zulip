@@ -33,12 +33,14 @@ export function login_to_access(empty_narrow?: boolean): void {
     const realm_name = realm.realm_name;
 
     $("body").append(
-        render_login_to_access_modal({
-            signup_link: "/register/",
-            login_link,
-            empty_narrow,
-            realm_name,
-        }),
+        $(
+            render_login_to_access_modal({
+                signup_link: "/register/",
+                login_link,
+                empty_narrow,
+                realm_name,
+            }),
+        ),
     );
 
     modals.open("login_to_access_modal", {

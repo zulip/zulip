@@ -39,15 +39,17 @@ function rerender_ui() {
 
     for (const stream of unmatched_streams) {
         $unmatched_streams_table.append(
-            render_stream_specific_notification_row({
-                stream,
-                stream_specific_notification_settings:
-                    settings_config.stream_specific_notification_settings,
-                is_disabled:
-                    settings_config.all_notifications(user_settings)
-                        .show_push_notifications_tooltip,
-                muted: muted_stream_ids.includes(stream.stream_id),
-            }),
+            $(
+                render_stream_specific_notification_row({
+                    stream,
+                    stream_specific_notification_settings:
+                        settings_config.stream_specific_notification_settings,
+                    is_disabled:
+                        settings_config.all_notifications(user_settings)
+                            .show_push_notifications_tooltip,
+                    muted: muted_stream_ids.includes(stream.stream_id),
+                }),
+            ),
         );
     }
 

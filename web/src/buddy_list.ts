@@ -292,20 +292,18 @@ export class BuddyList extends BuddyListConf {
             matching_view_empty_list_message,
         );
         if ($("#buddy-list-users-matching-view .empty-list-message").length) {
-            const empty_list_widget = render_empty_list_widget_for_list({
+            const empty_list_widget_html = render_empty_list_widget_for_list({
                 matching_view_empty_list_message,
             });
-            $("#buddy-list-users-matching-view").empty();
-            $("#buddy-list-users-matching-view").append(empty_list_widget);
+            $("#buddy-list-users-matching-view").html(empty_list_widget_html);
         }
 
         $("#buddy-list-other-users").data("search-results-empty", other_users_empty_list_message);
         if ($("#buddy-list-other-users .empty-list-message").length) {
-            const empty_list_widget = render_empty_list_widget_for_list({
+            const empty_list_widget_html = render_empty_list_widget_for_list({
                 other_users_empty_list_message,
             });
-            $("#buddy-list-other-users").empty();
-            $("#buddy-list-other-users").append(empty_list_widget);
+            $("#buddy-list-other-users").html(empty_list_widget_html);
         }
     }
 
@@ -336,23 +334,27 @@ export class BuddyList extends BuddyListConf {
         }
 
         $("#buddy-list-users-matching-view-container .buddy-list-subsection-header").append(
-            render_section_header({
-                id: "buddy-list-users-matching-view-section-heading",
-                header_text,
-                user_count: get_formatted_sub_count(subscriber_count),
-                toggle_class: "toggle-users-matching-view",
-                is_collapsed: this.users_matching_view_is_collapsed,
-            }),
+            $(
+                render_section_header({
+                    id: "buddy-list-users-matching-view-section-heading",
+                    header_text,
+                    user_count: get_formatted_sub_count(subscriber_count),
+                    toggle_class: "toggle-users-matching-view",
+                    is_collapsed: this.users_matching_view_is_collapsed,
+                }),
+            ),
         );
 
         $("#buddy-list-other-users-container .buddy-list-subsection-header").append(
-            render_section_header({
-                id: "buddy-list-other-users-section-heading",
-                header_text: $t({defaultMessage: "Others"}),
-                user_count: get_formatted_sub_count(other_users_count),
-                toggle_class: "toggle-other-users",
-                is_collapsed: this.other_users_is_collapsed,
-            }),
+            $(
+                render_section_header({
+                    id: "buddy-list-other-users-section-heading",
+                    header_text: $t({defaultMessage: "Others"}),
+                    user_count: get_formatted_sub_count(other_users_count),
+                    toggle_class: "toggle-other-users",
+                    is_collapsed: this.other_users_is_collapsed,
+                }),
+            ),
         );
     }
 
@@ -435,7 +437,7 @@ export class BuddyList extends BuddyListConf {
             items: subscribed_users,
         });
         this.$users_matching_view_container = $(this.matching_view_list_selector);
-        this.$users_matching_view_container.append(subscribed_users_html);
+        this.$users_matching_view_container.append($(subscribed_users_html));
 
         // Remove the empty list message before adding users
         if (
@@ -448,7 +450,7 @@ export class BuddyList extends BuddyListConf {
             items: other_users,
         });
         this.$other_users_container = $(this.other_user_list_selector);
-        this.$other_users_container.append(other_users_html);
+        this.$other_users_container.append($(other_users_html));
 
         // Invariant: more_user_ids.length >= items.length.
         // (Usually they're the same, but occasionally user ids
@@ -475,16 +477,18 @@ export class BuddyList extends BuddyListConf {
         ) {
             const stream_edit_hash = hash_util.stream_edit_url(current_sub, "subscribers");
             $("#buddy-list-users-matching-view-container").append(
-                render_view_all_subscribers({
-                    stream_edit_hash,
-                }),
+                $(
+                    render_view_all_subscribers({
+                        stream_edit_hash,
+                    }),
+                ),
             );
         }
 
         // We give a link to view the list of all users to help reduce confusion about
         // there being hidden (inactive) "other" users.
         if (has_inactive_other_users) {
-            $("#buddy-list-other-users-container").append(render_view_all_users());
+            $("#buddy-list-other-users-container").append($(render_view_all_users()));
         }
     }
 
@@ -687,9 +691,9 @@ export class BuddyList extends BuddyListConf {
             if (new_pos_in_all_users === this.render_count) {
                 this.render_count += 1;
                 if (is_subscribed_user) {
-                    this.$users_matching_view_container.append(html);
+                    this.$users_matching_view_container.append($(html));
                 } else {
-                    this.$other_users_container.append(html);
+                    this.$other_users_container.append($(html));
                 }
                 this.update_padding();
             }
@@ -700,7 +704,7 @@ export class BuddyList extends BuddyListConf {
             this.render_count += 1;
             const $li = this.find_li({key: user_id_following_insertion});
             assert($li !== undefined);
-            $li.before(html);
+            $li.before($(html));
             this.update_padding();
         }
     }

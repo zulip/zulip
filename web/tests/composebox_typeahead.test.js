@@ -65,19 +65,23 @@ run_test("verify wildcard mentions typeahead for stream message", () => {
     const mention_all = ct.broadcast_mentions()[0];
     const mention_everyone = ct.broadcast_mentions()[1];
     const mention_stream = ct.broadcast_mentions()[2];
-    const mention_topic = ct.broadcast_mentions()[3];
+    const mention_channel = ct.broadcast_mentions()[3];
+    const mention_topic = ct.broadcast_mentions()[4];
     assert.equal(mention_all.email, "all");
     assert.equal(mention_all.full_name, "all");
     assert.equal(mention_everyone.email, "everyone");
     assert.equal(mention_everyone.full_name, "everyone");
     assert.equal(mention_stream.email, "stream");
     assert.equal(mention_stream.full_name, "stream");
+    assert.equal(mention_channel.email, "channel");
+    assert.equal(mention_channel.full_name, "channel");
     assert.equal(mention_topic.email, "topic");
     assert.equal(mention_topic.full_name, "topic");
 
     assert.equal(mention_all.special_item_text, "all (translated: Notify stream)");
     assert.equal(mention_everyone.special_item_text, "everyone (translated: Notify stream)");
     assert.equal(mention_stream.special_item_text, "stream (translated: Notify stream)");
+    assert.equal(mention_channel.special_item_text, "channel (translated: Notify stream)");
     assert.equal(mention_topic.special_item_text, "topic (translated: Notify topic)");
 
     compose_validate.stream_wildcard_mention_allowed = () => false;
@@ -1788,7 +1792,7 @@ test("typeahead_results", () => {
 
     // Verify we suggest both 'the first matching stream wildcard' and
     // 'topic wildcard' mentions. Not only one matching wildcard mention.
-    const mention_topic = ct.broadcast_mentions()[3];
+    const mention_topic = ct.broadcast_mentions()[4];
     // Here, we suggest both "everyone" and "topic".
     assert_mentions_matches("o", [othello, mention_everyone, mention_topic, cordelia]);
 

@@ -98,9 +98,9 @@ run_test("adjust_mac_kbd_tags mac", ({override}) => {
     ]);
 
     const fn_shortcuts = new Set(["Home", "End", "PgUp", "PgDn"]);
-    const inserted_fn_key = "<kbd>Fn</kbd> + ";
 
     override(navigator, "platform", "MacIntel");
+    $("<span>").contents = () => $("<contents-stub>");
 
     const test_items = [];
     let key_no = 1;
@@ -112,13 +112,13 @@ run_test("adjust_mac_kbd_tags mac", ({override}) => {
         assert.equal($stub.hasClass("arrow-key"), false);
         if (fn_shortcuts.has(old_key)) {
             $stub.before = ($elem) => {
-                assert.equal($elem, inserted_fn_key);
+                assert.equal($elem.selector, "<kbd>");
             };
         }
         if (old_key === "data-mac-following-key") {
             $stub.attr("data-mac-following-key", "⌥");
-            $stub.after = (plus, $elem) => {
-                assert.equal(plus, " + ");
+            $stub.after = ($plus, $elem) => {
+                assert.equal($plus.selector, "<contents-stub>");
                 assert.equal($elem.selector, "<kbd>");
                 assert.equal($elem.text(), $stub.attr("data-mac-following-key"));
             };

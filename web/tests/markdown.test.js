@@ -781,6 +781,17 @@ test("message_flags", () => {
     assert.equal(message.flags.includes("topic_wildcard_mentioned"), false);
     assert.equal(message.flags.includes("mentioned"), false);
 
+    input = "test @**channel**";
+    message = {topic: "No links here", raw_content: input};
+    message = {
+        ...message,
+        ...markdown.render(message.raw_content),
+    };
+    assert.equal(message.is_me_message, false);
+    assert.equal(message.flags.includes("stream_wildcard_mentioned"), true);
+    assert.equal(message.flags.includes("topic_wildcard_mentioned"), false);
+    assert.equal(message.flags.includes("mentioned"), false);
+
     input = "test @**topic**";
     message = {topic: "No links here", raw_content: input};
     message = {

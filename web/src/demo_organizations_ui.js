@@ -20,7 +20,7 @@ export function insert_demo_organization_warning() {
         is_owner: current_user.is_owner,
         days_remaining,
     });
-    $(".organization-box").find(".settings-section").prepend(rendered_demo_organization_warning);
+    $(".organization-box").find(".settings-section").prepend($(rendered_demo_organization_warning));
 }
 
 export function handle_demo_organization_conversion() {

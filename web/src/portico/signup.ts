@@ -141,7 +141,7 @@ $(() => {
         errorPlacement($error: JQuery) {
             $(".email-frontend-error").empty();
             $("#send_confirm .alert.email-backend-error").remove();
-            $error.appendTo(".email-frontend-error").addClass("text-error");
+            $error.appendTo($(".email-frontend-error")).addClass("text-error");
         },
         success() {
             $("#errors").empty();

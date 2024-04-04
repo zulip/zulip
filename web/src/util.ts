@@ -195,10 +195,12 @@ export class CachedValue<T> {
 }
 
 export function find_stream_wildcard_mentions(message_content: string): string | null {
-    // We cannot use the exact same regex as the server side users (in zerver/lib/mention.py)
+    // We cannot use the exact same regex as the server side uses (in zerver/lib/mention.py)
     // because Safari < 16.4 does not support look-behind assertions.  Reframe the lookbehind of a
     // negative character class as a start-of-string or positive character class.
-    const mention = message_content.match(/(?:^|[\s"'(/<[{])(@\*{2}(all|everyone|stream)\*{2})/);
+    const mention = message_content.match(
+        /(?:^|[\s"'(/<[{])(@\*{2}(all|everyone|stream|channel)\*{2})/,
+    );
     if (mention === null) {
         return null;
     }
@@ -271,6 +273,19 @@ export function convert_message_topic(message: Message): void {
     if (message.type === "stream" && message.topic === undefined) {
         message.topic = message.subject;
     }
+}
+
+// TODO: When "stream" is renamed to "channel", update these stream
+// synonym helper functions for the reverse logic.
+export function is_stream_synonym(text: string): boolean {
+    return text === "channel";
+}
+
+export function canonicalize_stream_synonym(text: string): string {
+    if (is_stream_synonym(text.toLowerCase())) {
+        return "stream";
+    }
+    return text;
 }
 
 let inertDocument: Document | undefined;

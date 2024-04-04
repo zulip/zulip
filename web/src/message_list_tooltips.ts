@@ -10,6 +10,7 @@ import render_narrow_tooltip from "../templates/narrow_tooltip.hbs";
 
 import {$t} from "./i18n";
 import * as message_lists from "./message_lists";
+import * as popover_menus from "./popover_menus";
 import * as reactions from "./reactions";
 import * as rows from "./rows";
 import {realm} from "./state_data";
@@ -83,7 +84,7 @@ function hide_tooltip_if_reference_removed(
         // We have to be smart about hiding the instance, so we hide it as soon
         // as it is displayed.
         setTimeout(() => {
-            instance.hide();
+            popover_menus.hide_current_popover_if_visible(instance);
         }, 0);
         return;
     }
@@ -92,11 +93,11 @@ function hide_tooltip_if_reference_removed(
             for (const node of nodes_to_check_for_removal) {
                 // Hide instance if reference's class changes.
                 if (mutation.type === "attributes" && mutation.attributeName === "class") {
-                    instance.hide();
+                    popover_menus.hide_current_popover_if_visible(instance);
                 }
                 // Hide instance if reference is in the removed node list.
                 if (Array.prototype.includes.call(mutation.removedNodes, node)) {
-                    instance.hide();
+                    popover_menus.hide_current_popover_if_visible(instance);
                 }
             }
         }

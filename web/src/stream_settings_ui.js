@@ -568,7 +568,7 @@ export function setup_page(callback) {
             },
         });
 
-        $("#streams_overlay_container .list-toggler-container").prepend(sort_toggler.get());
+        sort_toggler.get().prependTo("#streams_overlay_container .list-toggler-container");
 
         // Reset our internal state to reflect that we're initially in
         // the "Subscribed" tab if we're reopening "Stream settings".
@@ -633,7 +633,7 @@ export function setup_page(callback) {
         };
 
         const rendered = render_stream_settings_overlay(template_data);
-        $("#streams_overlay_container").append(rendered);
+        $("#streams_overlay_container").append($(rendered));
 
         render_left_panel_superset();
         initialize_components();

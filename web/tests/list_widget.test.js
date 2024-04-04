@@ -686,8 +686,8 @@ run_test("render item", () => {
             // Return a JQuery stub for the original HTML.
             // We want this to be called when we replace
             // the existing HTML with newly rendered HTML.
-            replaceWith(html) {
-                assert.equal(new_html, html);
+            replaceWith($element) {
+                assert.equal(new_html, $element.html());
                 called = true;
                 $container.$appended_data.replace(regex, new_html);
             },

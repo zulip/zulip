@@ -1,3 +1,4 @@
+import $ from "jquery";
 import _ from "lodash";
 
 import * as blueslip from "./blueslip";
@@ -202,7 +203,7 @@ export function update<T>(
             continue;
         }
         const rendered_dom = new_node.render();
-        $child_elems.eq(i).replaceWith(rendered_dom);
+        $child_elems.eq(i).replaceWith($(rendered_dom));
     }
 
     update_attrs(find(), new_opts.attrs, old_opts.attrs);

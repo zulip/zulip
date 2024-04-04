@@ -1154,6 +1154,7 @@ test_people("get_mention_syntax", () => {
     assert.equal(people.get_mention_syntax("all"), "@**all**");
     assert.equal(people.get_mention_syntax("everyone", undefined, true), "@_**everyone**");
     assert.equal(people.get_mention_syntax("stream"), "@**stream**");
+    assert.equal(people.get_mention_syntax("channel"), "@**stream**");
     assert.equal(people.get_mention_syntax("topic"), "@**topic**");
 
     people.add_active_user(stephen1);

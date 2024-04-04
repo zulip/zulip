@@ -94,8 +94,7 @@ function get_display_stream_name(stream_id: number): string {
 }
 
 export function fetch_and_render_message_history(message: Message): void {
-    $("#message-edit-history-overlay-container").empty();
-    $("#message-edit-history-overlay-container").append(render_message_history_overlay());
+    $("#message-edit-history-overlay-container").html(render_message_history_overlay());
     open_overlay();
     void channel.get({
         url: "/json/messages/" + message.id + "/history",
@@ -211,11 +210,11 @@ export function fetch_and_render_message_history(message: Message): void {
                     }
                 }
             }
-            const rendered_list: string = render_message_edit_history({
+            const rendered_list_html = render_message_edit_history({
                 edited_messages: content_edit_history,
             });
             $("#message-history-overlay").attr("data-message-id", message.id);
-            $("#message-history-overlay .overlay-messages-list").append(rendered_list);
+            $("#message-history-overlay .overlay-messages-list").append($(rendered_list_html));
 
             // Pass the history through rendered_markdown.ts
             // to update dynamic_elements in the content.

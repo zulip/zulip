@@ -1360,8 +1360,13 @@ export function get_mention_syntax(full_name: string, user_id?: number, silent =
     } else {
         mention += "@**";
     }
-    mention += full_name;
     const wildcard_match = full_name_matches_wildcard_mention(full_name);
+    if (wildcard_match && user_id === undefined) {
+        mention += util.canonicalize_stream_synonym(full_name);
+    } else {
+        mention += full_name;
+    }
+
     if (user_id === undefined && !wildcard_match) {
         blueslip.warn("get_mention_syntax called without user_id.");
     }
@@ -1373,7 +1378,7 @@ export function get_mention_syntax(full_name: string, user_id?: number, silent =
 }
 
 function full_name_matches_wildcard_mention(full_name: string): boolean {
-    return ["all", "everyone", "stream", "topic"].includes(full_name);
+    return ["all", "everyone", "stream", "channel", "topic"].includes(full_name);
 }
 
 export function _add_user(person: User): void {

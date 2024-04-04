@@ -260,7 +260,7 @@ export function show_settings_for(node) {
     });
     scroll_util.get_content_element($("#stream_settings")).html(html);
 
-    $("#stream_settings .tab-container").prepend(stream_edit_toggler.toggler.get());
+    stream_edit_toggler.toggler.get().prependTo("#stream_settings .tab-container");
     stream_ui_updates.set_up_right_panel_section(sub);
 
     const $edit_container = stream_settings_containers.get_edit_container(sub);

@@ -43,7 +43,7 @@ export function initialize() {
             const {stream_id, topic_name} = instance.context;
 
             if (!stream_id) {
-                instance.hide();
+                popover_menus.hide_current_popover_if_visible(instance);
                 return;
             }
 
@@ -58,7 +58,7 @@ export function initialize() {
                     topic_name,
                     visibility_policy,
                 );
-                instance.hide();
+                popover_menus.hide_current_popover_if_visible(instance);
             });
         },
         onHidden(instance) {

@@ -313,7 +313,9 @@ export class MessageListView {
     _RENDER_THRESHOLD = 50;
 
     _add_message_list_to_DOM() {
-        $("#message-lists-container").append(render_message_list({message_list_id: this.list.id}));
+        $("#message-lists-container").append(
+            $(render_message_list({message_list_id: this.list.id})),
+        );
     }
 
     _get_msg_timestring(message_container) {
@@ -745,7 +747,7 @@ export class MessageListView {
             $message_rows.find(".message_inline_image img").on("error", (e) => {
                 $(e.target)
                     .closest(".message_inline_image")
-                    .replaceWith(render_login_to_view_image_button());
+                    .replaceWith($(render_login_to_view_image_button()));
             });
         }
     }

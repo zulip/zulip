@@ -36,7 +36,7 @@ export function open_send_later_menu() {
     // Only show send later options that are possible today.
     const date = new Date();
     const filtered_send_opts = scheduled_messages.get_filtered_send_opts(date);
-    $("body").append(render_send_later_modal(filtered_send_opts));
+    $("body").append($(render_send_later_modal(filtered_send_opts)));
     let interval;
 
     modals.open("send_later_modal", {
@@ -173,7 +173,7 @@ export function initialize() {
             $popper.one("click", ".send_later_selected_send_later_time", () => {
                 const send_at_timestamp = scheduled_messages.get_selected_send_later_timestamp();
                 do_schedule_message(send_at_timestamp);
-                instance.hide();
+                popover_menus.hide_current_popover_if_visible(instance);
             });
             // Handle clicks on Enter-to-send settings
             $popper.one("click", ".enter_sends_choice", (e) => {
@@ -195,13 +195,13 @@ export function initialize() {
                 });
                 e.stopPropagation();
                 setTimeout(() => {
-                    instance.hide();
+                    popover_menus.hide_current_popover_if_visible(instance);
                 }, ENTER_SENDS_SELECTION_DELAY);
             });
             // Handle Send later clicks
             $popper.one("click", ".open_send_later_modal", () => {
                 open_send_later_menu();
-                instance.hide();
+                popover_menus.hide_current_popover_if_visible(instance);
             });
         },
         onHidden(instance) {
@@ -232,6 +232,8 @@ export function update_send_later_options() {
     const now = new Date();
     if (should_update_send_later_options(now)) {
         const filtered_send_opts = scheduled_messages.get_filtered_send_opts(now);
-        $("#send_later_options").replaceWith(render_send_later_modal_options(filtered_send_opts));
+        $("#send_later_options").replaceWith(
+            $(render_send_later_modal_options(filtered_send_opts)),
+        );
     }
 }

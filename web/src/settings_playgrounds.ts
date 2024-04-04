@@ -4,12 +4,14 @@ import render_confirm_delete_playground from "../templates/confirm_dialog/confir
 import render_admin_playground_list from "../templates/settings/admin_playground_list.hbs";
 
 import * as bootstrap_typeahead from "./bootstrap_typeahead";
+import type {TypeaheadInputElement} from "./bootstrap_typeahead";
 import * as channel from "./channel";
 import * as confirm_dialog from "./confirm_dialog";
 import * as dialog_widget from "./dialog_widget";
 import {$t_html} from "./i18n";
 import * as ListWidget from "./list_widget";
 import * as realm_playground from "./realm_playground";
+import type {RealmPlayground} from "./realm_playground";
 import * as scroll_util from "./scroll_util";
 import {current_user, realm} from "./state_data";
 import {render_typeahead_item} from "./typeahead_helper";
@@ -19,23 +21,22 @@ const meta = {
     loaded: false,
 };
 
-export function reset() {
+export function reset(): void {
     meta.loaded = false;
 }
 
-export function maybe_disable_widgets() {
+export function maybe_disable_widgets(): void {
     if (current_user.is_admin) {
         return;
     }
 }
 
-export function populate_playgrounds(playgrounds_data) {
+export function populate_playgrounds(playgrounds_data: RealmPlayground[]): void {
     if (!meta.loaded) {
         return;
     }
-
     const $playgrounds_table = $("#admin_playgrounds_table").expectOne();
-    ListWidget.create($playgrounds_table, playgrounds_data, {
+    ListWidget.create<RealmPlayground>($playgrounds_table, playgrounds_data, {
         name: "playgrounds_list",
         get_item: ListWidget.default_get_item,
         modifier_html(playground) {
@@ -50,7 +51,9 @@ export function populate_playgrounds(playgrounds_data) {
             });
         },
         filter: {
-            $element: $playgrounds_table.closest(".settings-section").find(".search"),
+            $element: $playgrounds_table
+                .closest(".settings-section")
+                .find<HTMLInputElement>("input.search"),
             predicate(item, value) {
                 return (
                     item.name.toLowerCase().includes(value) ||
@@ -74,28 +77,29 @@ export function populate_playgrounds(playgrounds_data) {
     });
 }
 
-export function set_up() {
+export function set_up(): void {
     build_page();
     maybe_disable_widgets();
 }
 
-function build_page() {
+function build_page(): void {
     meta.loaded = true;
     populate_playgrounds(realm.realm_playgrounds);
-
     $(".admin_playgrounds_table").on("click", ".delete", function (e) {
         e.preventDefault();
         e.stopPropagation();
         const $btn = $(this);
         const url =
-            "/json/realm/playgrounds/" + encodeURIComponent($btn.attr("data-playground-id"));
+            "/json/realm/playgrounds/" + encodeURIComponent($btn.attr("data-playground-id")!);
         const html_body = render_confirm_delete_playground();
 
         confirm_dialog.launch({
             html_heading: $t_html({defaultMessage: "Delete code playground?"}),
             html_body,
             id: "confirm_delete_code_playgrounds_modal",
-            on_click: () => dialog_widget.submit_api_request(channel.del, url),
+            on_click() {
+                dialog_widget.submit_api_request(channel.del, url);
+            },
             loading_spinner: true,
         });
     });
@@ -114,7 +118,7 @@ function build_page() {
                 pygments_language: $("#playground_pygments_language").val(),
                 url_template: $("#playground_url_template").val(),
             };
-            channel.post({
+            void channel.post({
                 url: "/json/realm/playgrounds",
                 data,
                 success() {
@@ -149,28 +153,29 @@ function build_page() {
             });
         });
 
-    const $search_pygments_box = $("#playground_pygments_language");
-    let language_labels = new Map();
+    const $search_pygments_box = $<HTMLInputElement>("input#playground_pygments_language");
+    let language_labels = new Map<string, string>();
 
-    const bootstrap_typeahead_input = {
+    const bootstrap_typeahead_input: TypeaheadInputElement = {
         $element: $search_pygments_box,
         type: "input",
     };
 
     bootstrap_typeahead.create(bootstrap_typeahead_input, {
-        source(query) {
+        source(query: string): string[] {
             language_labels = realm_playground.get_pygments_typeahead_list_for_settings(query);
             return [...language_labels.keys()];
         },
         items: 5,
         fixed: true,
         helpOnEmptyStrings: true,
-        highlighter_html: (item) => render_typeahead_item({primary: language_labels.get(item)}),
-        matcher(item, query) {
+        highlighter_html: (item: string): string =>
+            render_typeahead_item({primary: language_labels.get(item)}),
+        matcher(item: string, query: string): boolean {
             const q = query.trim().toLowerCase();
             return item.toLowerCase().startsWith(q);
         },
-        sorter(items, query) {
+        sorter(items: string[], query: string): string[] {
             return bootstrap_typeahead.defaultSorter(items, query);
         },
     });

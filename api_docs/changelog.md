@@ -20,6 +20,12 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 9.0
 
+**Feature level 247**
+
+* [Markdown message formatting](/api/message-formatting#mentions):
+  Added `channel` to the supported options for [wildcard
+  mentions](/help/mention-a-user-or-group#mention-everyone-on-a-stream).
+
 **Feature level 246**
 
 * [`POST /register`](/api/register-queue), [`POST
@@ -1795,10 +1801,10 @@ field with an integer field `invite_to_realm_policy`.
 
 **Feature level 33**
 
-* Markdown code blocks now have a `data-code-language` attribute
-  attached to the outer `div` element, recording the programming
-  language that was selecting for syntax highlighting.  This field
-  supports the upcoming "view in playground" feature for code blocks.
+* [Markdown message formatting](/api/message-formatting#code-blocks):
+  [Code blocks](/help/code-blocks) now have a `data-code-language`
+  attribute attached to the outer HTML `div` element, recording the
+  programming language that was selected for syntax highlighting.
 
 **Feature level 32**
 
@@ -1854,9 +1860,9 @@ No changes; feature level used for Zulip 3.0 release.
 
 **Feature level 24**
 
-* The `!avatar()` and `!gravatar()` Markdown syntax, which was never
-  documented, had inconsistent syntax, and was rarely used, was
-  removed.
+* [Markdown message formatting](/api/message-formatting#removed-features):
+  The rarely used `!avatar()` and `!gravatar()` markup syntax, which
+  was never documented and had inconsistent syntax, was removed.
 
 **Feature level 23**
 
@@ -1921,8 +1927,8 @@ No changes; feature level used for Zulip 3.0 release.
 
 **Feature level 15**
 
-* Added [spoilers](/help/format-your-message-using-markdown#spoilers)
-  to supported Markdown features.
+* [Markdown message formatting](/api/message-formatting#spoilers): Added
+  [spoilers](/help/spoilers) to supported message formatting features.
 
 **Feature level 14**
 
@@ -1984,8 +1990,9 @@ No changes; feature level used for Zulip 3.0 release.
 * [`GET /users`](/api/get-users), [`GET /users/{user_id}`](/api/get-user)
   and [`GET /users/me`](/api/get-own-user): User objects now contain the
   `is_owner` field as well.
-* Added [time mentions](/help/format-your-message-using-markdown#mention-a-time)
-  to supported Markdown features.
+* [Markdown message formatting](/api/message-formatting#global-times):
+  Added [global times](/help/global-times) to supported message
+  formatting features.
 
 **Feature level 7**
 

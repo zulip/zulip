@@ -252,10 +252,9 @@ function display_image(payload: Payload): void {
     $(".image-preview, .media-actions, .media-description, .download, .lightbox-zoom-reset").show();
 
     const $img_container = $("#lightbox_overlay .image-preview > .zoom-element");
-    const img = new Image();
-    img.src = payload.source;
+    const $img = $("<img>").attr("src", payload.source);
     $img_container.empty();
-    $img_container.append(img).show();
+    $img_container.append($img).show();
 
     const filename = payload.url?.split("/").pop();
     $(".media-description .title")
@@ -561,7 +560,7 @@ function remove_video_players(): void {
 export function initialize(): void {
     // Renders the DOM for the lightbox.
     const rendered_lightbox_overlay = render_lightbox_overlay();
-    $("body").append(rendered_lightbox_overlay);
+    $("body").append($(rendered_lightbox_overlay));
 
     // Bind the pan/zoom control the newly created element.
     const pan_zoom_control = new PanZoomControl(

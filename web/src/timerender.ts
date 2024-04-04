@@ -7,7 +7,6 @@ import {
     parseISO,
 } from "date-fns";
 import $ from "jquery";
-import _ from "lodash";
 
 import render_markdown_time_tooltip from "../templates/markdown_time_tooltip.hbs";
 
@@ -343,8 +342,7 @@ function maybe_add_update_list_entry(entry: UpdateEntry): void {
 }
 
 function render_date_span($elem: JQuery, rendered_time: TimeRender): JQuery {
-    $elem.text("");
-    $elem.append(_.escape(rendered_time.time_str));
+    $elem.text(rendered_time.time_str);
     return $elem.attr("data-tippy-content", rendered_time.formal_time_str);
 }
 

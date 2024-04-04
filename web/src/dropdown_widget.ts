@@ -12,7 +12,7 @@ import * as blueslip from "./blueslip";
 import * as ListWidget from "./list_widget";
 import type {ListWidget as ListWidgetType} from "./list_widget";
 import {page_params} from "./page_params";
-import {default_popover_props} from "./popover_menus";
+import * as popover_menus from "./popover_menus";
 import type {StreamSubscription} from "./sub_store";
 import {parse_html} from "./ui_util";
 
@@ -180,7 +180,7 @@ export class DropdownWidget {
             return;
         }
         this.instance = tippy.delegate(delegate_container, {
-            ...default_popover_props,
+            ...popover_menus.default_popover_props,
             target: this.widget_selector,
             // Custom theme defined in popovers.css
             theme: "dropdown-widget",
@@ -286,7 +286,7 @@ export class DropdownWidget {
                             break;
 
                         case "Escape":
-                            instance.hide();
+                            popover_menus.hide_current_popover_if_visible(instance);
                             this.on_exit_with_escape_callback();
                             e.stopPropagation();
                             e.preventDefault();
