@@ -241,7 +241,7 @@ export function initialize(): void {
         },
     });
 
-    message_list_tooltip(".message-list .message_time", {
+    message_list_tooltip(".message-list .message-time", {
         onShow(instance) {
             const $time_elem = $(instance.reference);
             // eslint-disable-next-line @typescript-eslint/consistent-type-assertions

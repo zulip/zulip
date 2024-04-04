@@ -2,6 +2,12 @@
     --color-background-modal: hsl(0deg 0% 98%);
 }
 
+[data-tippy-root] .tippy-box .tippy-content {
+    font-size: 14px;
+    font-weight: normal;
+    color: hsl(0deg 0% 100%);
+}
+
 body {
     background-color: hsl(0deg 0% 98%);
     font-family: "Source Sans 3 VF", sans-serif;

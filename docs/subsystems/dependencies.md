@@ -120,8 +120,8 @@ extension, used by our [full-text search](full-text-search.md).
 ## Python packages
 
 Zulip uses the version of Python itself provided by the host OS for
-the Zulip server. We currently support Python 3.8 and newer, with
-Ubuntu 20.04 being the platform requiring 3.8 support. The comments
+the Zulip server. We currently support Python 3.10 and newer, with
+Ubuntu 22.04 being the platform requiring 3.10 support. The comments
 in `.github/workflows/zulip-ci.yml` document the Python versions used
 by each supported platform.
 

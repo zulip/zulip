@@ -152,12 +152,6 @@
             & > ul {
                 margin-bottom: 5px;
             }
-
-            .warn,
-            .tip,
-            .keyboard_tip {
-                margin: 5px 25px;
-            }
         }
 
         @media (width <= 500px) {

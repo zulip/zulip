@@ -1,3 +1,13 @@
+# Temporary workaround for
+# https://discourse.ubuntu.com/t/whats-happening-in-noble-repositories/43729/7
+Package: gnupg
+Pin: version 2.4.4-2ubuntu7
+Pin-Priority: 501
+
+Package: nginx-common nginx-full
+Pin: version 1.24.0-2ubuntu4
+Pin-Priority: 501
+
 # https://bugs.launchpad.net/ubuntu/+source/file/+bug/2059723
 Package: libmagic1
 Pin: version 1:5.45-2

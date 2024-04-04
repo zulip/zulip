@@ -23,12 +23,16 @@ export function place_caret_at_end(el: HTMLElement): void {
 }
 
 export function replace_emoji_with_text($element: JQuery): void {
-    $element.find(".emoji").replaceWith(function () {
-        if ($(this).is("img")) {
-            return $(this).attr("alt") ?? "";
-        }
-        return $(this).text();
-    });
+    $element
+        .find(".emoji")
+        .text(function () {
+            if ($(this).is("img")) {
+                return $(this).attr("alt") ?? "";
+            }
+            return $(this).text();
+        })
+        .contents()
+        .unwrap();
 }
 
 export function change_katex_to_raw_latex($element: JQuery): void {

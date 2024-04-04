@@ -118,16 +118,6 @@ class zulip::app_frontend_base {
     source  => 'puppet:///modules/zulip/nginx/zulip-include-frontend/uploads-internal.conf',
   }
 
-  file { [
-    # TODO/compatibility: Removed 2021-04 in Zulip 4.0; these lines can
-    # be removed once one must have upgraded through Zulip 4.0 or higher
-    # to get to the next release.
-    '/etc/nginx/zulip-include/uploads.route',
-    '/etc/nginx/zulip-include/app.d/thumbor.conf',
-  ]:
-    ensure => absent,
-  }
-
   # This determines whether we run queue processors multithreaded or
   # multiprocess.  Multiprocess scales much better, but requires more
   # RAM; we just auto-detect based on available system RAM.

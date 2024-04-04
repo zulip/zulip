@@ -74,20 +74,12 @@ except OSError:
 distro_info = parse_os_release()
 vendor = distro_info["ID"]
 os_version = distro_info["VERSION_ID"]
-if vendor == "debian" and os_version == "11":  # bullseye
-    POSTGRESQL_VERSION = "13"
-elif vendor == "debian" and os_version == "12":  # bookworm
+if vendor == "debian" and os_version == "12":  # bookworm
     POSTGRESQL_VERSION = "15"
-elif vendor == "ubuntu" and os_version == "20.04":  # focal
-    POSTGRESQL_VERSION = "12"
-elif vendor == "ubuntu" and os_version == "21.10":  # impish
-    POSTGRESQL_VERSION = "13"
 elif vendor == "ubuntu" and os_version == "22.04":  # jammy
     POSTGRESQL_VERSION = "14"
 elif vendor == "ubuntu" and os_version == "24.04":  # noble
     POSTGRESQL_VERSION = "16"
-elif vendor == "neon" and os_version == "20.04":  # KDE Neon
-    POSTGRESQL_VERSION = "12"
 elif vendor == "fedora" and os_version == "38":
     POSTGRESQL_VERSION = "15"
 elif vendor == "rhel" and os_version.startswith("7."):

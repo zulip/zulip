@@ -56,9 +56,7 @@ class EmailTranslationTestCase(ZulipTestCase):
             {"email": "new-email@zulip.com"},
             HTTP_ACCEPT_LANGUAGE="pt",
         )
-        check_translation(
-            "Danke, dass du", "post", "/accounts/find/", {"emails": hamlet.delivery_email}
-        )
+        check_translation("Danke für", "post", "/accounts/find/", {"emails": hamlet.delivery_email})
         check_translation(
             "Hallo",
             "post",

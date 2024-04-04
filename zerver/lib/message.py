@@ -1444,4 +1444,4 @@ def set_visibility_policy_possible(user_profile: UserProfile, message: Message) 
 
 def remove_single_newlines(content: str) -> str:
     content = content.strip("\n")
-    return re.sub(r"(?<!\n)\n(?!\n)", " ", content)
+    return re.sub(r"(?<!\n)\n(?![\n0-9*-])", " ", content)

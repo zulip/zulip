@@ -1,7 +1,7 @@
 The first time you run this command it will take some time because Vagrant
 does the following:
 
-- downloads the base Ubuntu 20.04 virtual machine/Docker image
+- downloads the base Ubuntu 22.04 virtual machine/Docker image
 - configures this virtual machine/container for use with Zulip,
 - creates a shared directory mapping your clone of the Zulip code inside the
   virtual machine/container at `~/zulip`

@@ -85,6 +85,8 @@ def register_development_realm(request: HttpRequest) -> HttpResponse:
         password="test",
         realm_subdomain=realm_subdomain,
         terms="true",
+        how_realm_creator_found_zulip="ad",
+        how_realm_creator_found_zulip_extra_context="test",
     )
 
     return accounts_register(request)
@@ -120,6 +122,8 @@ def register_demo_development_realm(request: HttpRequest) -> HttpResponse:
         realm_subdomain=realm_subdomain,
         terms="true",
         is_demo_organization="true",
+        how_realm_creator_found_zulip="existing_user",
+        how_realm_creator_found_zulip_extra_context="test",
     )
 
     return accounts_register(request)

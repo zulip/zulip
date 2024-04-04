@@ -1,10 +1,10 @@
-from functools import lru_cache
+from functools import cache
 from typing import Dict
 
 from scripts.lib.zulip_tools import get_tzdata_zi
 
 
-@lru_cache(maxsize=None)
+@cache
 def get_canonical_timezone_map() -> Dict[str, str]:
     canonical = {}
     with get_tzdata_zi() as f:

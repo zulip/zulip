@@ -195,7 +195,10 @@ export class CachedValue<T> {
 }
 
 export function find_stream_wildcard_mentions(message_content: string): string | null {
-    const mention = message_content.match(/(?<![^\s"'(/<[{])(@\*{2}(all|everyone|stream)\*{2})/);
+    // We cannot use the exact same regex as the server side users (in zerver/lib/mention.py)
+    // because Safari < 16.4 does not support look-behind assertions.  Reframe the lookbehind of a
+    // negative character class as a start-of-string or positive character class.
+    const mention = message_content.match(/(?:^|[\s"'(/<[{])(@\*{2}(all|everyone|stream)\*{2})/);
     if (mention === null) {
         return null;
     }

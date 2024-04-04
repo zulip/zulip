@@ -25,20 +25,6 @@ class zulip::supervisor {
     notify  => Service[$supervisor_service],
   }
 
-  # These files were moved from /etc/supervisor/conf.d/ into a zulip/
-  # subdirectory in 2020-10 in version 4.0; these lines can be removed
-  # in Zulip version 5.0 and later.
-  file { [
-    "${system_conf_dir}/cron.conf",
-    "${system_conf_dir}/nginx.conf",
-    "${system_conf_dir}/smokescreen.conf",
-    "${system_conf_dir}/thumbor.conf",
-    "${system_conf_dir}/zulip.conf",
-    "${system_conf_dir}/zulip_db.conf",
-    ]:
-    ensure => absent,
-  }
-
   # In the docker environment, we don't want/need supervisor to be
   # started/stopped /bin/true is used as a decoy command, to maintain
   # compatibility with other code using the supervisor service.

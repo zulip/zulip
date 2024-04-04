@@ -414,6 +414,45 @@ class PermissionTest(ZulipTestCase):
         result = self.client_patch("/json/users/{}".format(self.example_user("hamlet").id), req)
         self.assert_json_success(result)
 
+    def test_require_unique_names(self) -> None:
+        self.login("desdemona")
+        iago = self.example_user("iago")
+        hamlet = self.example_user("hamlet")
+
+        do_set_realm_property(hamlet.realm, "require_unique_names", True, acting_user=None)
+        req = dict(full_name="IaGo")
+        result = self.client_patch(f"/json/users/{hamlet.id}", req)
+        self.assert_json_error(result, "Unique names required in this organization.")
+
+        req = dict(full_name="𝕚𝕒𝕘𝕠")
+        result = self.client_patch(f"/json/users/{hamlet.id}", req)
+        self.assert_json_error(result, "Unique names required in this organization.")
+
+        req = dict(full_name="ｉａｇｏ")
+        result = self.client_patch(f"/json/users/{hamlet.id}", req)
+        self.assert_json_error(result, "Unique names required in this organization.")
+
+        req = dict(full_name="𝒾𝒶𝑔𝑜")
+        result = self.client_patch(f"/json/users/{hamlet.id}", req)
+        self.assert_json_error(result, "Unique names required in this organization.")
+
+        # check for uniqueness including imported users
+        iago.is_mirror_dummy = True
+        req = dict(full_name="iago")
+        result = self.client_patch(f"/json/users/{hamlet.id}", req)
+        self.assert_json_error(result, "Unique names required in this organization.")
+
+        # check for uniqueness including deactivated users
+        do_deactivate_user(iago, acting_user=None)
+        req = dict(full_name="iago")
+        result = self.client_patch(f"/json/users/{hamlet.id}", req)
+        self.assert_json_error(result, "Unique names required in this organization.")
+
+        do_set_realm_property(hamlet.realm, "require_unique_names", False, acting_user=None)
+        req = dict(full_name="iago")
+        result = self.client_patch(f"/json/users/{hamlet.id}", req)
+        self.assert_json_success(result)
+
     def test_not_allowed_format_complex(self) -> None:
         new_name = "Hello- 12iago|72"
         self.login("iago")

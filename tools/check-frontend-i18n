@@ -44,7 +44,7 @@ if __name__ == "__main__":
 
     print(
         WARNING
-        + "See https://zulip.readthedocs.io/en/latest/translating/translating.html#frontend-translations "
+        + "See https://zulip.readthedocs.io/en/latest/translating/internationalization.html#frontend-translations "
         "on how you can insert variables in the frontend translatable "
         "strings." + ENDC
     )

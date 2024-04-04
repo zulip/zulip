@@ -118,7 +118,10 @@ class kandra::profile::nagios inherits kandra::profile::base {
 
   file { "${zulip::common::supervisor_conf_dir}/autossh_tunnels.conf":
     ensure  => file,
-    require => Package['supervisor', 'autossh'],
+    require => [
+      Package['supervisor', 'autossh'],
+      Kandra::User_Dotfiles['nagios'],
+    ],
     mode    => '0644',
     owner   => 'root',
     group   => 'root',

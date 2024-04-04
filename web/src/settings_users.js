@@ -70,7 +70,6 @@ export function update_view_on_deactivate(user_id) {
 
     const $button = $row.find("button.deactivate");
     $button.prop("disabled", false);
-    $row.find("button.open-user-form").hide();
     $row.find("i.deactivated-user-icon").show();
     $button.addClass("btn-warning reactivate");
     $button.removeClass("deactivate btn-danger");
@@ -81,7 +80,6 @@ export function update_view_on_deactivate(user_id) {
 
 function update_view_on_reactivate($row) {
     const $button = $row.find("button.reactivate");
-    $row.find("button.open-user-form").show();
     $row.find("i.deactivated-user-icon").hide();
     $button.addClass("btn-danger deactivate");
     $button.removeClass("btn-warning reactivate");

@@ -18,6 +18,7 @@ function verify_selector_for_zulip(selector) {
         selector === "document-stub" ||
         selector === "body" ||
         selector === "html" ||
+        selector === ":root" ||
         selector.location ||
         selector.includes("#") ||
         selector.includes(".") ||

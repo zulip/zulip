@@ -5,8 +5,8 @@ versions. PostgreSQL 16 is the current default for new installations;
 PostgreSQL 12, 13, 14, 15, and 16 are all supported.
 
 Previous versions of Zulip used whatever version of PostgreSQL was
-included with the base operating system (E.g. PostgreSQL 12 on Ubuntu
-20.04). We recommend that installations currently using older
+included with the base operating system (E.g. PostgreSQL 14 on Ubuntu
+22.04). We recommend that installations currently using older
 PostgreSQL releases [upgrade to PostgreSQL 15][upgrade-postgresql], as
 we may drop support for older PostgreSQL in a future release.
 

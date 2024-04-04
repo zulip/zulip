@@ -1,7 +1,9 @@
 import $ from "jquery";
+import assert from "minimalistic-assert";
 
 import render_message_view_header from "../templates/message_view_header.hbs";
 
+import type {Filter} from "./filter";
 import {$t} from "./i18n";
 import * as inbox_util from "./inbox_util";
 import * as narrow_state from "./narrow_state";
@@ -11,8 +13,28 @@ import * as recent_view_util from "./recent_view_util";
 import * as rendered_markdown from "./rendered_markdown";
 import * as search from "./search";
 import {current_user} from "./state_data";
+import type {SettingsSubscription} from "./stream_settings_data";
+import type {StreamSubscription} from "./sub_store";
 
-function get_message_view_header_context(filter) {
+type MessageViewHeaderContext = {
+    title: string;
+    is_spectator?: boolean;
+    sub_count?: string | number;
+    formatted_sub_count?: string;
+    rendered_narrow_description?: string;
+    is_admin?: boolean;
+    stream?: StreamSubscription;
+    stream_settings_link?: string;
+} & (
+    | {
+          zulip_icon: string;
+      }
+    | {
+          icon: string | undefined;
+      }
+);
+
+function get_message_view_header_context(filter: Filter | undefined): MessageViewHeaderContext {
     if (recent_view_util.is_visible()) {
         return {
             title: $t({defaultMessage: "Recent conversations"}),
@@ -31,17 +53,21 @@ function get_message_view_header_context(filter) {
             zulip_icon: "all-messages",
         };
     }
-    const context = filter.add_icon_data({
-        title: filter.get_title(),
+    const title = filter.get_title();
+    assert(title !== undefined);
+    const icon_data = filter.add_icon_data({
+        title,
         is_spectator: page_params.is_spectator,
     });
     if (filter.has_operator("stream") && !filter._sub) {
-        context.sub_count = "0";
-        context.formatted_sub_count = "0";
-        context.rendered_narrow_description = $t({
-            defaultMessage: "This stream does not exist or is private.",
-        });
-        return context;
+        return {
+            ...icon_data,
+            sub_count: "0",
+            formatted_sub_count: "0",
+            rendered_narrow_description: $t({
+                defaultMessage: "This stream does not exist or is private.",
+            }),
+        };
     }
     if (filter._sub) {
         // We can now be certain that the narrow
@@ -49,17 +75,20 @@ function get_message_view_header_context(filter) {
         // the current user can access.
         const current_stream = filter._sub;
         const sub_count = peer_data.get_subscriber_count(current_stream.stream_id);
-        context.is_admin = current_user.is_admin;
-        context.rendered_narrow_description = current_stream.rendered_description;
-        context.sub_count = sub_count;
-        context.stream = current_stream;
-        context.stream_settings_link =
-            "#streams/" + current_stream.stream_id + "/" + current_stream.name + "/general";
+        return {
+            ...icon_data,
+            is_admin: current_user.is_admin,
+            rendered_narrow_description: current_stream.rendered_description,
+            sub_count,
+            stream: current_stream,
+            stream_settings_link:
+                "#streams/" + current_stream.stream_id + "/" + current_stream.name + "/general",
+        };
     }
-    return context;
+    return icon_data;
 }
 
-export function colorize_message_view_header() {
+export function colorize_message_view_header(): void {
     const filter = narrow_state.filter();
     if (filter === undefined || !filter._sub) {
         return;
@@ -68,7 +97,7 @@ export function colorize_message_view_header() {
     $("#message_view_header a.stream i").css("color", filter._sub.color);
 }
 
-function append_and_display_title_area(context) {
+function append_and_display_title_area(context: MessageViewHeaderContext): void {
     const $message_view_header_elem = $("#message_view_header");
     $message_view_header_elem.empty();
     const rendered = render_message_view_header(context);
@@ -84,7 +113,7 @@ function append_and_display_title_area(context) {
     }
 }
 
-function build_message_view_header(filter) {
+function build_message_view_header(filter: Filter | undefined): void {
     // This makes sure we don't waste time appending
     // message_view_header on a template where it's never used
     if (filter && !filter.is_common_narrow()) {
@@ -97,11 +126,11 @@ function build_message_view_header(filter) {
     }
 }
 
-export function initialize() {
+export function initialize(): void {
     render_title_area();
 }
 
-export function render_title_area() {
+export function render_title_area(): void {
     const filter = narrow_state.filter();
     build_message_view_header(filter);
 }
@@ -109,7 +138,7 @@ export function render_title_area() {
 // This function checks if "modified_sub" which is the stream whose values
 // have been updated is the same as the stream which is currently
 // narrowed (filter._sub) and rerenders if necessary
-export function maybe_rerender_title_area_for_stream(modified_sub) {
+export function maybe_rerender_title_area_for_stream(modified_sub: SettingsSubscription): void {
     const filter = narrow_state.filter();
     if (filter && filter._sub && filter._sub.stream_id === modified_sub.stream_id) {
         render_title_area();

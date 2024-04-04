@@ -185,11 +185,6 @@ backoff==2.2.1 \
     --hash=sha256:03f829f5bb1923180821643f8753b0502c3b682293992485b0eef2807afa5cba \
     --hash=sha256:63579f9a0628e06278f7e47b7d7d5b6ce20dc65c5e96a6f3ca99a6adca0396e8
     # via -r requirements/common.in
-https://github.com/zulip/zoneinfo/archive/f9687abaea8453be1c8d0e21544bd557d65af933.zip#egg=backports.zoneinfo==0.2.1+git ; python_version < "3.9" \
-    --hash=sha256:23938590401ee45d88f37a5caa538b410ffa827169965a0bcf387da13b695450
-    # via
-    #   -r requirements/common.in
-    #   django
 beautifulsoup4==4.12.3 \
     --hash=sha256:74e3d1928edc070d21748185c46e3fb33490f22f52a3addee9aee0f4f7781051 \
     --hash=sha256:b80878c9f40111313e55da8ba20bdba06d8fa3969fc68304167741bbf9e082ed
@@ -1148,23 +1143,6 @@ imagesize==1.4.1 \
     --hash=sha256:0d8d18d08f840c19d0ee7ca1fd82490fdc3729b7ac93f49870406ddde8ef8d8b \
     --hash=sha256:69150444affb9cb0d5cc5a92b3676f0b2fb7cd9ae39e947a5e11a36b4497cd4a
     # via sphinx
-importlib-metadata==7.1.0 ; python_version < "3.10" \
-    --hash=sha256:30962b96c0c223483ed6cc7280e7f0199feb01a0e40cfae4d4450fc6fab1f570 \
-    --hash=sha256:b78938b926ee8d5f020fc4772d487045805a55ddbad2ecf21c6d60938dc7fcd2
-    # via
-    #   -r requirements/common.in
-    #   -r requirements/mypy.in
-    #   markdown
-    #   sphinx
-    #   zulip-bots
-importlib-resources==6.3.2 ; python_version < "3.9" \
-    --hash=sha256:963eb79649252b0160c1afcfe5a1d3fe3ad66edd0a8b114beacffb70c0674223 \
-    --hash=sha256:f41f4098b16cd140a97d256137cfd943d958219007990b2afb00439fc623f580
-    # via
-    #   -r requirements/common.in
-    #   jsonschema
-    #   jsonschema-specifications
-    #   openapi-spec-validator
 incremental==22.10.0 \
     --hash=sha256:912feeb5e0f7e0188e6f42241d2f450002e11bbc0937c65865045854c24c0bd0 \
     --hash=sha256:b864a1f30885ee72c5ac2835a761b8fe8aa9c28b9395cacf27286602688d3e51
@@ -1933,10 +1911,6 @@ pip-tools==6.2.0 \
     --hash=sha256:77727ef7457d1865e61fe34c2b1439f9b971b570cc232616a22ce82ab89d357d \
     --hash=sha256:9ed38c73da4993e531694ea151f77048b4dbf2ba7b94c4a569daa39568cc6564
     # via -r requirements/dev.in
-pkgutil-resolve-name==1.3.10 \
-    --hash=sha256:357d6c9e6a755653cfd78893817c0853af365dd51ec97f3d358a819373bbd174 \
-    --hash=sha256:ca27cc078d25c5ad71a9de0a7a330146c4e014c2462d9af19c6b828280649c5e
-    # via jsonschema
 platformdirs==4.2.0 \
     --hash=sha256:0614df2a2f37e1a662acbd8e2b25b92ccf8632929bc6d43467e17fe89c75e068 \
     --hash=sha256:ef0cc731df711022c174543cb70a9b5bd22e5a9337c8624ef2c2ceb8ddad8768
@@ -2319,10 +2293,6 @@ python3-saml==1.16.0 \
     # via
     #   -r requirements/common.in
     #   social-auth-core
-pytz==2024.1 \
-    --hash=sha256:2a29735ea9c18baf14b448846bde5a48030ed267578472d8955cd0e7443a9812 \
-    --hash=sha256:328171f4e3623139da4983451950b28e95ac706e13f3f2630a879749e7a8b319
-    # via babel
 pyuca==1.2 \
     --hash=sha256:8a382fe74627f08c0d18908c0713ca4a20aad5385f077579e56208beea2893b2 \
     --hash=sha256:abaa12e1bd2c7c68ca8396ff8383bc0654a739cef3ae68fd7af58bf29af0a91e
@@ -3160,14 +3130,11 @@ typing-extensions==4.10.0 \
     --hash=sha256:b0abd7c89e8fb96f98db18d86106ff1d90ab692004eb746cf6eda2682f91b3cb
     # via
     #   -r requirements/common.in
-    #   annotated-types
     #   asgiref
     #   black
     #   boto3-stubs
-    #   botocore-stubs
     #   django-stubs
     #   django-stubs-ext
-    #   ipython
     #   libcst
     #   mypy
     #   mypy-boto3-s3
@@ -3180,7 +3147,6 @@ typing-extensions==4.10.0 \
     #   pyre-extensions
     #   qrcode
     #   returns
-    #   rich
     #   semgrep
     #   sqlalchemy2-stubs
     #   stripe
@@ -3366,12 +3332,6 @@ yarl==1.9.4 \
     --hash=sha256:f3bc6af6e2b8f92eced34ef6a96ffb248e863af20ef4fde9448cc8c9b858b749 \
     --hash=sha256:f7d6b36dd2e029b6bcb8a13cf19664c7b8e19ab3a58e0fefbb5b8461447ed5ec
     # via aiohttp
-zipp==3.18.1 \
-    --hash=sha256:206f5a15f2af3dbaee80769fb7dc6f249695e940acca08dfb2a4769fe61e538b \
-    --hash=sha256:2884ed22e7d8961de1c9a05142eb69a247f120291bc0206a00a7642f09b5b715
-    # via
-    #   importlib-metadata
-    #   importlib-resources
 zope-interface==6.2 \
     --hash=sha256:02adbab560683c4eca3789cc0ac487dcc5f5a81cc48695ec247f00803cafe2fe \
     --hash=sha256:14e02a6fc1772b458ebb6be1c276528b362041217b9ca37e52ecea2cbdce9fac \

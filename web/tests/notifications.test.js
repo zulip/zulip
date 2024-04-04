@@ -38,12 +38,14 @@ stream_data.add_sub(muted);
 
 user_topics.update_user_topics(
     general.stream_id,
+    general.name,
     "muted topic",
     user_topics.all_visibility_policies.MUTED,
 );
 
 user_topics.update_user_topics(
     general.stream_id,
+    general.name,
     "followed topic",
     user_topics.all_visibility_policies.FOLLOWED,
 );
@@ -339,7 +341,7 @@ test("message_is_notifiable", () => {
 });
 
 test("basic_notifications", () => {
-    $("<div>").set_find_results(".emoji", {replaceWith() {}});
+    $("<div>").set_find_results(".emoji", {text: () => ({contents: () => ({unwrap() {}})})});
     $("<div>").set_find_results("span.katex", {each() {}});
     $("<div>").children = () => [];
 

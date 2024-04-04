@@ -1,6 +1,6 @@
-import sys
 from typing import Any, Optional
 
+import zoneinfo
 from django.conf import settings
 from django.contrib.auth.signals import user_logged_in, user_logged_out
 from django.dispatch import receiver
@@ -13,11 +13,6 @@ from zerver.lib.queue import queue_json_publish
 from zerver.lib.send_email import FromAddress
 from zerver.lib.timezone import canonicalize_timezone
 from zerver.models import UserProfile
-
-if sys.version_info < (3, 9):  # nocoverage
-    from backports import zoneinfo
-else:  # nocoverage
-    import zoneinfo
 
 JUST_CREATED_THRESHOLD = 60
 

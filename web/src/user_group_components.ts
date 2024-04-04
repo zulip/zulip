@@ -3,13 +3,14 @@ import $ from "jquery";
 import * as dropdown_widget from "./dropdown_widget";
 import * as settings_components from "./settings_components";
 import * as user_groups from "./user_groups";
+import type {UserGroup} from "./user_groups";
 
-export function setup_permissions_dropdown(group, for_group_creation) {
-    let widget_name;
-    let default_id;
+export function setup_permissions_dropdown(group: UserGroup, for_group_creation: boolean): void {
+    let widget_name: string;
+    let default_id: number;
     if (for_group_creation) {
         widget_name = "new_group_can_mention_group";
-        default_id = user_groups.get_user_group_from_name("role:everyone").id;
+        default_id = user_groups.get_user_group_from_name("role:everyone")!.id;
     } else {
         widget_name = "can_mention_group";
         default_id = group.can_mention_group;

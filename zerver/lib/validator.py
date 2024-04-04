@@ -29,7 +29,6 @@ for any particular type of object.
 """
 
 import re
-import sys
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from decimal import Decimal
@@ -52,6 +51,7 @@ from typing import (
 )
 
 import orjson
+import zoneinfo
 from django.core.exceptions import ValidationError
 from django.core.validators import URLValidator, validate_email
 from django.utils.translation import gettext as _
@@ -62,11 +62,6 @@ from typing_extensions import override
 from zerver.lib.exceptions import InvalidJSONError, JsonableError
 from zerver.lib.timezone import canonicalize_timezone
 from zerver.lib.types import ProfileFieldData, Validator
-
-if sys.version_info < (3, 9):  # nocoverage
-    from backports import zoneinfo
-else:  # nocoverage
-    import zoneinfo
 
 ResultT = TypeVar("ResultT")
 

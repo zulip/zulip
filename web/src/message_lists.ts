@@ -5,6 +5,7 @@ import * as blueslip from "./blueslip";
 import * as inbox_util from "./inbox_util";
 import type {MessageListData} from "./message_list_data";
 import type {Message} from "./message_store";
+import {stringify_time} from "./timerender";
 import * as ui_util from "./ui_util";
 
 // TODO(typescript): Move this to message_list_view when it's
@@ -130,7 +131,44 @@ export function save_pre_narrow_offset_for_reload(): void {
     }
 }
 
+export function calculate_timestamp_widths(): void {
+    const $temp_time_div = $("<div>");
+    $temp_time_div.attr("id", "calculated-timestamp-widths");
+    // Size the div to the width of the largest timestamp,
+    // but the div out of the document flow with absolute positioning.
+    $temp_time_div.css({
+        width: "max-content",
+        visibility: "hidden",
+        position: "absolute",
+        top: "-100vh",
+    });
+    // We should get a reasonable max-width by looking only at
+    // the first and last minutes of AM and PM
+    const candidate_times = ["00:00", "11:59", "12:00", "23:59"];
+
+    for (const time of candidate_times) {
+        const $temp_time_element = $("<a>");
+        $temp_time_element.attr("class", "message-time");
+        // stringify_time only returns the time, so the date here is
+        // arbitrary and only required for creating a Date object
+        const candidate_timestamp = stringify_time(Date.parse(`1999-07-01T${time}`));
+        $temp_time_element.text(candidate_timestamp);
+        $temp_time_div.append($temp_time_element);
+    }
+
+    // Append the <div> element to calculate the maximum rendered width
+    $("body").append($temp_time_div);
+    const max_timestamp_width = $temp_time_div.width();
+    // Set the width as a CSS variable
+    $(":root").css("--message-box-timestamp-column-width", `${max_timestamp_width}px`);
+    // Clean up by removing the temporary <div> element
+    $temp_time_div.remove();
+}
+
 export function initialize(): void {
+    // We calculate the widths of a candidate set of timestamps,
+    // and use the largest to set `--message-box-timestamp-column-width`
+    calculate_timestamp_widths();
     // For users with automatic color scheme, we need to detect change
     // in `prefers-color-scheme` as it changes based on time.
     ui_util.listener_for_preferred_color_scheme_change(update_recipient_bar_background_color);

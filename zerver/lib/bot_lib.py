@@ -110,7 +110,7 @@ class EmbeddedBotHandler:
             )
         else:
             message_id = internal_send_huddle_message(
-                self.user_profile.realm, self.user_profile, recipients, message["content"]
+                self.user_profile.realm, self.user_profile, message["content"], emails=recipients
             )
         return {"id": message_id}
 

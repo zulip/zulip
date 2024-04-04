@@ -162,6 +162,18 @@ class AbstractRealmAuditLog(models.Model):
         REALM_IMPORTED,
     ]
 
+    HOW_REALM_CREATOR_FOUND_ZULIP_OPTIONS = {
+        "existing_user": "At an organization that's using it",
+        "search_engine": "Search engine",
+        "review_site": "Review site",
+        "personal_recommendation": "Personal recommendation",
+        "hacker_news": "Hacker News",
+        "ad": "Advertisement",
+        "other": "Other",
+        "forgot": "Don't remember",
+        "refuse_to_answer": "Prefer not to say",
+    }
+
     class Meta:
         abstract = True
 

@@ -888,21 +888,6 @@ td.pointer {
     transition: all 3s ease-in-out;
 }
 
-.messagebox-content .message_time {
-    display: block;
-    font-size: 13px;
-    font-weight: 350;
-    text-align: right;
-    opacity: 0.8;
-    color: var(--color-text-default);
-    letter-spacing: 0.02em;
-    /* Disable blue link styling for the message timestamp link. */
-    &:hover {
-        text-decoration: none;
-        color: var(--color-message-action-interactive);
-    }
-}
-
 .messagebox-content .slow-send-spinner {
     display: block;
     font-size: 12px;
@@ -910,10 +895,6 @@ td.pointer {
     opacity: 0.8;
     color: var(--color-text-default);
     animation: rotate 1s infinite linear;
-}
-
-.status-time {
-    top: 8px !important;
 }
 
 .message_controls {
@@ -1366,6 +1347,14 @@ td.pointer {
 
     .date_row {
         background-color: var(--color-background-private-message-content);
+    }
+
+    .data-container::after {
+        background: linear-gradient(
+            0deg,
+            var(--color-background-private-message-content),
+            transparent 100%
+        );
     }
 }
 
