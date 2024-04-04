@@ -403,8 +403,6 @@ if [ "$VIRTUALENV_NEEDED" = "yes" ]; then
     "$ZULIP_PATH"/scripts/lib/create-production-venv "$ZULIP_PATH"
 fi
 
-"$ZULIP_PATH"/scripts/lib/install-node
-
 # Generate /etc/zulip/zulip.conf .
 mkdir -p /etc/zulip
 has_class() {
@@ -456,6 +454,8 @@ EOF
 fi
 
 if has_class "zulip::app_frontend_base"; then
+    "$ZULIP_PATH"/scripts/lib/install-node
+
     if [ -z "$NO_OVERWRITE_SETTINGS" ] || ! [ -e "/etc/zulip/settings.py" ]; then
         cp -a "$ZULIP_PATH"/zproject/prod_settings_template.py /etc/zulip/settings.py
         if [ -n "$EXTERNAL_HOST" ]; then
