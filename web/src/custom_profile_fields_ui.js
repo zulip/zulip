@@ -3,7 +3,6 @@ import tippy from "tippy.js";
 
 import render_settings_custom_user_profile_field from "../templates/settings/custom_user_profile_field.hbs";
 
-import * as bootstrap_typeahead from "./bootstrap_typeahead";
 import {$t} from "./i18n";
 import * as people from "./people";
 import * as pill_typeahead from "./pill_typeahead";
