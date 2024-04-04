@@ -58,15 +58,12 @@ function hide_box() {
     $("#compose_controls").show();
 }
 
-function show_compose_box(message_type, opts) {
-    compose_recipient.update_compose_for_message_type({...opts, message_type});
+function show_compose_box(opts) {
+    compose_recipient.update_compose_for_message_type(opts);
     $("#compose").css({visibility: "visible"});
     // When changing this, edit the 42px in _maybe_autoscroll
     $(".new_message_textarea").css("min-height", "3em");
-    compose_ui.set_focus({
-        ...opts,
-        message_type,
-    });
+    compose_ui.set_focus(opts);
 }
 
 export function clear_textarea() {
@@ -272,7 +269,10 @@ export function start(msg_type, opts) {
     compose_state.set_message_type(msg_type);
 
     // Show either stream/topic fields or "You and" field.
-    show_compose_box(msg_type, opts);
+    show_compose_box({
+        ...opts,
+        message_type: msg_type,
+    });
 
     if (opts.draft_id) {
         $("textarea#compose-textarea").data("draft-id", opts.draft_id);
