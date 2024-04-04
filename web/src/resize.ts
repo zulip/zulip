@@ -80,7 +80,7 @@ export function watch_manual_resize(element: string): (() => void)[] | undefined
     return [box_handler, body_handler];
 }
 
-export function reset_compose_message_max_height(bottom_whitespace_height: number): void {
+export function reset_compose_message_max_height(bottom_whitespace_height?: number): void {
     // If the compose-box is open, we set the `max-height` property of
     // `compose-textarea` and `preview-textarea`, so that the
     // compose-box's maximum extent does not overlap the last message
