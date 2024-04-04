@@ -83,11 +83,8 @@ git clone "$REPO_URL" zulip -b "$BRANCH"
 git -C zulip checkout "$BRANCH"
 
 (
-    export PUPPET_CLASSES="$FULL_ROLES"
     export APT_OPTIONS="-o Dpkg::Options::=--force-confnew"
-    /root/zulip/scripts/setup/install \
-        --self-signed-cert \
-        --no-init-db
+    /root/zulip/scripts/setup/install --puppet-classes "$FULL_ROLES"
 )
 
 install_keys zulip
