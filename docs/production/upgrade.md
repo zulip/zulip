@@ -702,14 +702,9 @@ running Ubuntu 22.04.
 
 Not all versions of Zulip Server support all versions of PostgreSQL, however:
 
-| Zulip Server version | Supported versions of PostgreSQL |
-| -------------------- | -------------------------------- |
-| 3.x                  | 9.3, 9.5, 9.6, 10, 11, 12        |
-| 4.x                  | 9.3, 9.5, 9.6, 10, 11, 12, 13    |
-| 5.x                  | 10, 11, 12, 13, 14               |
-| 6.x                  | 11, 12, 13, 14                   |
-| 7.x                  | 12, 13, 14, 15                   |
-| 8.x                  | 12, 13, 14, 15, 16               |
+```{include} postgresql-support-table.md
+
+```
 
 To upgrade the version of PostgreSQL on the Zulip server:
 
