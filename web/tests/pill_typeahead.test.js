@@ -27,15 +27,9 @@ const $fake_rendered_stream = $.create("fake-rendered-stream");
 const $fake_rendered_group = $.create("fake-rendered-group");
 
 function override_typeahead_helper(override_rewire) {
-    override_rewire(typeahead_helper, "render_person", () => {
-        return $fake_rendered_person;
-    });
-    override_rewire(typeahead_helper, "render_user_group", () => {
-        return $fake_rendered_group;
-    });
-    override_rewire(typeahead_helper, "render_stream", () => {
-        return $fake_rendered_stream;
-    });
+    override_rewire(typeahead_helper, "render_person", () => $fake_rendered_person);
+    override_rewire(typeahead_helper, "render_user_group", () => $fake_rendered_group);
+    override_rewire(typeahead_helper, "render_stream", () => $fake_rendered_stream);
     override_rewire(typeahead_helper, "sort_streams", () => {
         sort_streams_called = true;
     });
@@ -254,7 +248,7 @@ run_test("set_up", ({mock_template, override, override_rewire}) => {
         (function test_sorter() {
             if (opts.stream) {
                 sort_streams_called = false;
-                config.sorter([], stream_query);
+                config.sorter([denmark_item], stream_query);
                 assert.ok(sort_streams_called);
             }
             if (opts.user_group) {
