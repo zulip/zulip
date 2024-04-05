@@ -798,6 +798,16 @@ export function show_edit_user_info_modal(user_id, $container) {
         user_deactivation_ui.confirm_reactivation(user_id, handle_confirm, true);
     });
 
+    $("#edit_user_full_name").on("input", () => {
+        const $full_name = $("input[name='full_name']");
+        const $submit_btn = $("#user-profile-modal .dialog_submit_button");
+
+        const full_name_empty = $full_name.val().trim() === "";
+
+        $full_name.toggleClass("invalid", full_name_empty);
+        $submit_btn.prop("disabled", full_name_empty);
+    });
+
     $("#user-profile-modal").on("click", ".dialog_submit_button", () => {
         const role = Number.parseInt($("#user-role-select").val().trim(), 10);
         const $full_name = $("#edit-user-form").find("input[name='full_name']");

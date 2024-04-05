@@ -1987,3 +1987,8 @@ $option_title_width: 180px;
         margin-top: -10px;
     }
 }
+
+#edit_user_full_name.invalid {
+    border: 1px solid hsl(3deg 73% 74%);
+    box-shadow: 0 0 2px hsl(3deg 73% 74%);
+}
