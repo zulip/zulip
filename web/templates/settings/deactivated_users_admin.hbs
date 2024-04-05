@@ -6,7 +6,10 @@
             {{> ../help_link_widget link="/help/deactivate-or-reactivate-a-user" }}
         </h3>
         <div class="alert-notification" id="deactivated-user-field-status"></div>
-        <input type="text" class="search filter_text_input" placeholder="{{t 'Filter deactivated users' }}" aria-label="{{t 'Filter deactivated users' }}"/>
+        <div class="user_filters">
+            {{> ../dropdown_widget widget_name=deactivated_user_list_dropdown_widget_name}}
+            <input type="text" class="search filter_text_input" placeholder="{{t 'Filter deactivated users' }}" aria-label="{{t 'Filter deactivated users' }}"/>
+        </div>
     </div>
 
     <div class="progressive-table-wrapper" data-simplebar>
@@ -20,7 +23,7 @@
                 {{/if}}
             </thead>
             <tbody id="admin_deactivated_users_table" class="admin_user_table"
-              data-empty="{{t 'There are no deactivated users.' }}" data-search-results-empty="{{t 'No users match your current filter.' }}"></tbody>
+              data-empty="{{t 'There are no deactivated users.' }}" data-search-results-empty="{{t 'No users match your filters.' }}"></tbody>
         </table>
     </div>
     <div id="admin_page_deactivated_users_loading_indicator"></div>

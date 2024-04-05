@@ -1595,9 +1595,25 @@ export function matches_user_settings_search(person: User, value: string): boole
     return safe_lower(person.full_name).includes(value) || safe_lower(email).includes(value);
 }
 
-export function filter_for_user_settings_search(persons: User[], query: string): User[] {
+function matches_user_settings_role(person: User, role_code: number): boolean {
+    if (role_code === 0 || role_code === person.role) {
+        return true;
+    }
+    return false;
+}
+
+type SettingsUsersFilterQuery = {
+    text_search: string;
+    role_code: number;
+};
+
+export function predicate_for_user_settings_filters(
+    person: User,
+    query: SettingsUsersFilterQuery,
+): boolean {
     /*
-        TODO: For large realms, we can optimize this a couple
+        TODO: For text_search:
+              For large realms, we can optimize this a couple
               different ways.  For realms that don't show
               emails, we can make a simpler filter predicate
               that works solely with full names.  And we can
@@ -1607,7 +1623,10 @@ export function filter_for_user_settings_search(persons: User[], query: string):
 
               See #13554 for more context.
     */
-    return persons.filter((person) => matches_user_settings_search(person, query));
+    return (
+        matches_user_settings_search(person, query.text_search) &&
+        matches_user_settings_role(person, query.role_code)
+    );
 }
 
 export function maybe_incr_recipient_count(

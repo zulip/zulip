@@ -1232,7 +1232,7 @@ test_people("initialize", () => {
     assert.equal(page_params.realm_non_active_users, undefined);
 });
 
-test_people("filter_for_user_settings_search", () => {
+test_people("predicate_for_user_settings_filters", () => {
     /*
         This function calls matches_user_settings_search,
         so that is where we do more thorough testing.
@@ -1240,18 +1240,41 @@ test_people("filter_for_user_settings_search", () => {
     */
     current_user.is_admin = false;
 
-    const fred_smith = {full_name: "Fred Smith"};
-    const alice_lee = {full_name: "Alice Lee"};
-    const jenny_franklin = {full_name: "Jenny Franklin"};
+    const fred_smith = {full_name: "Fred Smith", role: 100};
 
-    const persons = [fred_smith, alice_lee, jenny_franklin];
-
-    assert.deepEqual(people.filter_for_user_settings_search(persons, "fr"), [
-        fred_smith,
-        jenny_franklin,
-    ]);
-
-    assert.deepEqual(people.filter_for_user_settings_search(persons, "le"), [alice_lee]);
+    // Test only when text_search filter is true
+    assert.equal(
+        people.predicate_for_user_settings_filters(fred_smith, {text_search: "fr", role_code: 0}),
+        true,
+    );
+    // Test only when role_code filter is true
+    assert.equal(
+        people.predicate_for_user_settings_filters(fred_smith, {text_search: "", role_code: 100}),
+        true,
+    );
+    // Test only when text_search filter is false
+    assert.equal(
+        people.predicate_for_user_settings_filters(fred_smith, {text_search: "ab", role_code: 0}),
+        false,
+    );
+    // Test only when role_code filter is false
+    assert.equal(
+        people.predicate_for_user_settings_filters(fred_smith, {text_search: "", role_code: 200}),
+        false,
+    );
+    // Test when both text_search and role_code filter are true
+    assert.equal(
+        people.predicate_for_user_settings_filters(fred_smith, {
+            text_search: "smi",
+            role_code: 100,
+        }),
+        true,
+    );
+    // Test when both text_search and role_code filter are false
+    assert.equal(
+        people.predicate_for_user_settings_filters(fred_smith, {text_search: "de", role_code: 300}),
+        false,
+    );
 });
 
 test_people("matches_user_settings_search", () => {
