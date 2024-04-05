@@ -5,14 +5,12 @@ import type {Message} from "./message_store";
 import {page_params} from "./page_params";
 import * as people from "./people";
 import * as settings_data from "./settings_data";
+import type {NarrowTerm} from "./state_data";
 import * as stream_data from "./stream_data";
 import * as sub_store from "./sub_store";
 import type {StreamSubscription} from "./sub_store";
 import * as user_groups from "./user_groups";
 import type {UserGroup} from "./user_groups";
-
-// TODO(typescript): Move to filter.js when it's converted to typescript.
-type Term = {operator: string; operand: string; negated?: boolean};
 
 export function build_reload_url(): string {
     let hash = window.location.hash;
@@ -87,7 +85,7 @@ export function by_stream_topic_url(stream_id: number, topic: string): string {
 // Encodes a term list into the
 // corresponding hash: the # component
 // of the narrow URL
-export function search_terms_to_hash(terms?: Term[]): string {
+export function search_terms_to_hash(terms?: NarrowTerm[]): string {
     let hash = "#";
 
     if (terms !== undefined) {
@@ -156,12 +154,12 @@ export function group_edit_url(group: UserGroup, right_side_tab: string): string
     return hash;
 }
 
-export function search_public_streams_notice_url(terms: Term[]): string {
+export function search_public_streams_notice_url(terms: NarrowTerm[]): string {
     const public_operator = {operator: "streams", operand: "public"};
     return search_terms_to_hash([public_operator, ...terms]);
 }
 
-export function parse_narrow(hash: string): Term[] | undefined {
+export function parse_narrow(hash: string): NarrowTerm[] | undefined {
     // This will throw an exception when passed an invalid hash
     // at the decodeHashComponent call, handle appropriately.
     let i;
