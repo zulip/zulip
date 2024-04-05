@@ -1548,6 +1548,10 @@ export function initialize({
     });
 
     $("body").on("click", "td.recent_topic_stream", (e) => {
+        if (e.metaKey || e.ctrlKey) {
+            return;
+        }
+
         e.stopPropagation();
         const topic_row_index = $(e.target).closest("tr").index();
         focus_clicked_element(topic_row_index, COLUMNS.stream);
@@ -1555,6 +1559,10 @@ export function initialize({
     });
 
     $("body").on("click", "td.recent_topic_name", (e) => {
+        if (e.metaKey || e.ctrlKey) {
+            return;
+        }
+
         e.stopPropagation();
         // The element's parent may re-render while it is being passed to
         // other functions, so, we get topic_key first.
