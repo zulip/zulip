@@ -44,7 +44,10 @@ function restore_draft(draft_id) {
     }
 
     overlays.close_overlay("drafts");
-    compose_actions.start(compose_args.type, compose_args);
+    compose_actions.start({
+        ...compose_args,
+        message_type: compose_args.type,
+    });
 }
 
 function remove_draft($draft_row) {

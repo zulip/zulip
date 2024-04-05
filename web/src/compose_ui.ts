@@ -28,7 +28,7 @@ export type ComposeTriggeredOptions = {
     | {
           message_type: "stream";
           topic: string;
-          stream_id: number;
+          stream_id?: number;
       }
     | {
           message_type: "private";
@@ -102,7 +102,7 @@ function get_focus_area(opts: ComposeTriggeredOptions): string {
     if (opts.message_type === "stream" && opts.stream_id && !opts.topic) {
         return "input#stream_message_recipient_topic";
     } else if (
-        (opts.message_type === "stream" && opts.stream_id) ||
+        (opts.message_type === "stream" && opts.stream_id !== undefined) ||
         (opts.message_type === "private" && opts.private_message_recipient)
     ) {
         if (opts.trigger === "clear topic button") {

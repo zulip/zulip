@@ -10,12 +10,14 @@ Usage:
 
 Options:
   --hostname=zulip.example.com
-      The user-accessible domain name for this Zulip server, i.e., what users will type
-      in their web browser.  Required, unless --no-init-db is set and --certbot is not.
+      The user-accessible domain name for this Zulip server, i.e.,
+      what users will type in their web browser.  Required, unless
+      --no-init-db or --puppet-classes is set, and --certbot is not.
+
   --email=zulip-admin@example.com
-      The email address of the person or team who should get support and error emails
-      from this Zulip server.  Required, unless --no-init-db is set and --certbot is
-      not.
+      The email address of the person or team who should get support
+      and error emails from this Zulip server.  Required, unless
+      --no-init-db or --puppet-classes is set and --certbot is not.
 
   --certbot
       Obtains a free SSL certificate for the server using Certbot,
@@ -37,9 +39,13 @@ Options:
   --postgresql-missing-dictionaries
       Set postgresql.missing_dictionaries, which alters the initial database.  Use with
       cloud managed databases like RDS.  Conflicts with --no-overwrite-settings.
+
   --no-init-db
       Does not do any database initialization; use when you already have a Zulip
       database.
+  --puppet-classes
+      Comma-separated list of Puppet classes to install; defaults to
+      'zulip:::profile::standalone'.  Implies --no-init-db.
 
   --no-overwrite-settings
       Preserve existing `/etc/zulip` configuration files.
@@ -119,6 +125,12 @@ while true; do
             NO_INIT_DB=1
             shift
             ;;
+        --puppet-classes)
+            PUPPET_CLASSES="$2"
+            NO_INIT_DB=1
+            shift
+            shift
+            ;;
 
         --no-overwrite-settings)
             NO_OVERWRITE_SETTINGS=1
@@ -151,7 +163,6 @@ read -r -a ADDITIONAL_PACKAGES <<<"${ADDITIONAL_PACKAGES:-}"
 # zulip::profile::docker for Docker.  Use
 # e.g. zulip::profile::app_frontend for a Zulip frontend server.
 PUPPET_CLASSES="${PUPPET_CLASSES:-zulip::profile::standalone}"
-VIRTUALENV_NEEDED="${VIRTUALENV_NEEDED:-yes}"
 POSTGRESQL_VERSION="${POSTGRESQL_VERSION:-16}"
 
 if [ -n "$SELF_SIGNED_CERT" ] && [ -n "$USE_CERTBOT" ]; then
@@ -398,13 +409,6 @@ if [ -n "$SELF_SIGNED_CERT" ] || [ -n "$USE_CERTBOT" ]; then
         --exists-ok "${EXTERNAL_HOST:-$(hostname)}"
 fi
 
-# Create and activate a virtualenv
-if [ "$VIRTUALENV_NEEDED" = "yes" ]; then
-    "$ZULIP_PATH"/scripts/lib/create-production-venv "$ZULIP_PATH"
-fi
-
-"$ZULIP_PATH"/scripts/lib/install-node
-
 # Generate /etc/zulip/zulip.conf .
 mkdir -p /etc/zulip
 has_class() {
@@ -456,6 +460,11 @@ EOF
 fi
 
 if has_class "zulip::app_frontend_base"; then
+    # Create and activate a virtualenv
+    "$ZULIP_PATH"/scripts/lib/create-production-venv "$ZULIP_PATH"
+
+    "$ZULIP_PATH"/scripts/lib/install-node
+
     if [ -z "$NO_OVERWRITE_SETTINGS" ] || ! [ -e "/etc/zulip/settings.py" ]; then
         cp -a "$ZULIP_PATH"/zproject/prod_settings_template.py /etc/zulip/settings.py
         if [ -n "$EXTERNAL_HOST" ]; then

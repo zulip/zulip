@@ -32,7 +32,7 @@ export function get_recipient_label(message) {
                 };
             } else if (narrow_state.pm_ids_string()) {
                 // TODO: This is a total hack.  Ideally, we'd rework
-                // this to not duplicate the actual compose_actions.js
+                // this to not duplicate the actual compose_actions.ts
                 // logic for what happens when you click the button,
                 // and not call into random modules with hacky fake
                 // "message" objects.
@@ -183,10 +183,16 @@ export function initialize() {
 
     // Click handlers for buttons in the compose box.
     $("body").on("click", ".compose_new_conversation_button", () => {
-        compose_actions.start("stream", {trigger: "clear topic button"});
+        compose_actions.start({
+            message_type: "stream",
+            trigger: "clear topic button",
+        });
     });
 
     $("body").on("click", ".compose_new_direct_message_button", () => {
-        compose_actions.start("private", {trigger: "new direct message"});
+        compose_actions.start({
+            message_type: "private",
+            trigger: "new direct message",
+        });
     });
 }

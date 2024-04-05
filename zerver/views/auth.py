@@ -8,10 +8,9 @@ import jwt
 import orjson
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 from django.conf import settings
-from django.contrib.auth import authenticate
+from django.contrib.auth import authenticate, logout
 from django.contrib.auth.views import LoginView as DjangoLoginView
 from django.contrib.auth.views import PasswordResetView as DjangoPasswordResetView
-from django.contrib.auth.views import logout_then_login as django_logout_then_login
 from django.core.exceptions import ValidationError
 from django.core.validators import validate_email
 from django.forms import Form
@@ -1149,9 +1148,6 @@ def json_fetch_api_key(
     return json_success(request, data={"api_key": api_key, "email": user_profile.delivery_email})
 
 
-logout_then_login = require_post(django_logout_then_login)
-
-
 def should_do_saml_sp_initiated_logout(request: HttpRequest) -> bool:
     realm = RequestNotes.get_notes(request).realm
     assert realm is not None
@@ -1173,9 +1169,10 @@ def should_do_saml_sp_initiated_logout(request: HttpRequest) -> bool:
 
 
 @require_post
-def logout_view(request: HttpRequest, /, **kwargs: Any) -> HttpResponse:
+def logout_view(request: HttpRequest) -> HttpResponse:
     if not should_do_saml_sp_initiated_logout(request):
-        return logout_then_login(request, **kwargs)
+        logout(request)
+        return HttpResponseRedirect(settings.LOGIN_URL)
 
     # This will first redirect to the IdP with a LogoutRequest and if successful on the IdP side,
     # the user will be redirected to our SAMLResponse-handling endpoint with a success LogoutResponse,

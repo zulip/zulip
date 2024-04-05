@@ -840,17 +840,17 @@ listen_addresses = <%= @listen_addresses %>
 <% end -%>
 
 <% if @s3_backups_bucket != '' -%>
-# Streaming backups and replication
-max_wal_senders = 5
+# WAL backups to S3 (may also be used for replication)
 archive_mode = on
 archive_command = '/usr/bin/timeout 10m /usr/local/bin/env-wal-g wal-push %p'
 restore_command = '/usr/local/bin/env-wal-g wal-fetch "%f" "%p"'
+<% end -%>
 <% unless @replication_primary.nil? || @replication_user.nil? -%>
+# Streaming replication
 primary_conninfo = 'host=<%= @replication_primary %> user=<%= @replication_user -%>
 <% if @replication_password != '' %> password=<%= @replication_password %><% end -%>
 <% unless @ssl_mode.nil? %> sslmode=<%= @ssl_mode %><% end -%>
 '
-<% end -%>
 <% end -%>
 
 <% unless @ssl_cert_file.nil? -%>

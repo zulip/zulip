@@ -64,8 +64,10 @@ UNSUPPORTED_DISTROS = [
     ("ubuntu", "14.04"),
     ("ubuntu", "16.04"),
     ("ubuntu", "18.04"),
+    ("ubuntu", "20.04"),
     ("debian", "9"),
     ("debian", "10"),
+    ("debian", "11"),
 ]
 distro_info = parse_os_release()
 vendor = distro_info["ID"]

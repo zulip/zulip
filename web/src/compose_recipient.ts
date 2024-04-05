@@ -170,8 +170,8 @@ function switch_message_type(message_type: MessageType): void {
     compose_ui.set_focus(opts);
 }
 
-function update_recipient_label(stream_id: number): void {
-    const stream = stream_data.get_sub_by_id(stream_id);
+function update_recipient_label(stream_id?: number): void {
+    const stream = stream_id !== undefined ? stream_data.get_sub_by_id(stream_id) : undefined;
     if (stream === undefined) {
         $("#compose_select_recipient_widget .dropdown_widget_value").text(
             $t({defaultMessage: "Select a stream"}),

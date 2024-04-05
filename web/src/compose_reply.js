@@ -28,7 +28,10 @@ export function respond_to_message(opts) {
         if (message === undefined) {
             // Open empty compose with nothing pre-filled since
             // user is not focused on any table row.
-            compose_actions.start("stream", {trigger: "recent_view_nofocus"});
+            compose_actions.start({
+                message_type: "stream",
+                trigger: "recent_view_nofocus",
+            });
             return;
         }
     } else if (inbox_util.is_visible()) {
@@ -36,7 +39,8 @@ export function respond_to_message(opts) {
         if (message_opts.message === undefined) {
             // If the user is not focused on inbox header, msg_type
             // is not defined, so we open empty compose with nothing prefilled.
-            compose_actions.start(message_opts.msg_type ?? "stream", {
+            compose_actions.start({
+                message_type: message_opts.msg_type ?? "stream",
                 trigger: "inbox_nofocus",
                 ...message_opts,
             });
@@ -56,7 +60,10 @@ export function respond_to_message(opts) {
                 !narrow_state.narrowed_by_stream_reply() &&
                 !narrow_state.narrowed_by_topic_reply()
             ) {
-                compose_actions.start("stream", {trigger: "empty_narrow_compose"});
+                compose_actions.start({
+                    message_type: "stream",
+                    trigger: "empty_narrow_compose",
+                });
                 return;
             }
             const current_filter = narrow_state.filter();
@@ -65,7 +72,10 @@ export function respond_to_message(opts) {
             const first_operand = first_term.operand;
 
             if (first_operator === "stream" && !stream_data.is_subscribed_by_name(first_operand)) {
-                compose_actions.start("stream", {trigger: "empty_narrow_compose"});
+                compose_actions.start({
+                    message_type: "stream",
+                    trigger: "empty_narrow_compose",
+                });
                 return;
             }
 
@@ -76,11 +86,11 @@ export function respond_to_message(opts) {
                 msg_type = "private";
             }
 
-            const new_opts = compose_actions.fill_in_opts_from_current_narrowed_view(
-                msg_type,
-                opts,
-            );
-            compose_actions.start(new_opts.message_type, new_opts);
+            const new_opts = compose_actions.fill_in_opts_from_current_narrowed_view({
+                ...opts,
+                message_type: msg_type,
+            });
+            compose_actions.start(new_opts);
             return;
         }
 
@@ -113,7 +123,8 @@ export function respond_to_message(opts) {
         pm_recipient = people.pm_reply_to(message);
     }
 
-    compose_actions.start(msg_type, {
+    compose_actions.start({
+        message_type: msg_type,
         stream_id,
         topic,
         private_message_recipient: pm_recipient,

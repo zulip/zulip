@@ -18,7 +18,7 @@ export function hide_scheduled_message_success_compose_banner(scheduled_message_
 }
 
 function narrow_via_edit_scheduled_message(compose_args) {
-    if (compose_args.type === "stream") {
+    if (compose_args.message_type === "stream") {
         narrow.activate(
             [
                 {
@@ -40,7 +40,7 @@ export function open_scheduled_message_in_compose(scheduled_msg, should_narrow_t
     let compose_args;
     if (scheduled_msg.type === "stream") {
         compose_args = {
-            type: "stream",
+            message_type: "stream",
             stream_id: scheduled_msg.to,
             topic: scheduled_msg.topic,
             content: scheduled_msg.content,
@@ -56,7 +56,7 @@ export function open_scheduled_message_in_compose(scheduled_msg, should_narrow_t
             }
         }
         compose_args = {
-            type: scheduled_msg.type,
+            message_type: scheduled_msg.type,
             private_message_recipient: recipient_emails.join(","),
             content: scheduled_msg.content,
         };
@@ -66,7 +66,7 @@ export function open_scheduled_message_in_compose(scheduled_msg, should_narrow_t
         narrow_via_edit_scheduled_message(compose_args);
     }
 
-    compose_actions.start(compose_args.type, compose_args);
+    compose_actions.start(compose_args);
     scheduled_messages.set_selected_schedule_timestamp(scheduled_msg.scheduled_delivery_timestamp);
 }
 

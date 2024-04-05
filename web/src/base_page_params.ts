@@ -46,6 +46,7 @@ const home_params_schema = default_params_schema
         login_page: z.string(),
         narrow: z.optional(z.array(narrow_term_schema)),
         narrow_stream: z.optional(z.string()),
+        narrow_topic: z.optional(z.string()),
         needs_tutorial: z.boolean(),
         promote_sponsoring_zulip: z.boolean(),
         // `realm_rendered_description` is only sent for spectators, because
