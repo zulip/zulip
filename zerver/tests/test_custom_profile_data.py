@@ -453,6 +453,59 @@ class DeleteCustomProfileFieldTest(CustomProfileFieldTestCase):
         self.assertFalse(self.custom_field_exists_in_realm(field.id))
         self.assertEqual(user_profile.customprofilefieldvalue_set.count(), self.original_count - 1)
 
+    def test_delete_value_with_editable_by_user(self) -> None:
+        iago = self.example_user("iago")
+        hamlet = self.example_user("hamlet")
+        realm = iago.realm
+        self.login("hamlet")
+
+        biography = CustomProfileField.objects.get(name="Biography", realm=realm)
+        birthday = CustomProfileField.objects.get(name="Birthday", realm=realm)
+
+        # Set and assert our initial state.
+        data = {}
+        data["editable_by_user"] = "false"
+        result = self.api_patch(iago, f"/api/v1/realm/profile_fields/{birthday.id}", info=data)
+        self.assert_json_success(result)
+
+        birthday.refresh_from_db()
+        self.assertFalse(birthday.editable_by_user)
+        self.assertTrue(biography.editable_by_user)
+
+        iago_birthday = CustomProfileFieldValue.objects.get(user_profile=iago, field=birthday)
+        hamlet_birthday = CustomProfileFieldValue.objects.get(user_profile=hamlet, field=birthday)
+        iago_biography = CustomProfileFieldValue.objects.get(user_profile=iago, field=biography)
+        hamlet_biography = CustomProfileFieldValue.objects.get(user_profile=hamlet, field=biography)
+
+        self.assertIsNotNone(iago_birthday.value)
+        self.assertIsNotNone(hamlet_birthday.value)
+        self.assertIsNotNone(iago_biography.value)
+        self.assertIsNotNone(hamlet_biography.value)
+
+        # Users can only delete fields where editable_by_user is true.
+        result = self.client_delete(
+            "/json/users/me/profile_data", {"data": orjson.dumps([biography.id]).decode()}
+        )
+        self.assert_json_success(result)
+        with self.assertRaises(CustomProfileFieldValue.DoesNotExist):
+            hamlet_biography.refresh_from_db()
+
+        result = self.client_delete(
+            "/json/users/me/profile_data", {"data": orjson.dumps([birthday.id]).decode()}
+        )
+        self.assert_json_error(result, "User does not have permission to update the field.")
+        hamlet_birthday.refresh_from_db()
+        self.assertIsNotNone(hamlet_birthday.value)
+
+        # Admins can always delete fields for themselves and other users regardless of
+        # editable_by_user. We test them deleting for their own profile here.
+        result = self.api_delete(
+            iago, "/api/v1/users/me/profile_data", {"data": orjson.dumps([birthday.id]).decode()}
+        )
+        self.assert_json_success(result)
+        with self.assertRaises(CustomProfileFieldValue.DoesNotExist):
+            iago_birthday.refresh_from_db()
+
 
 class UpdateCustomProfileFieldTest(CustomProfileFieldTestCase):
     def test_update(self) -> None:
@@ -470,6 +523,20 @@ class UpdateCustomProfileFieldTest(CustomProfileFieldTestCase):
             info={"name": ""},
         )
         self.assert_json_error(result, "Label cannot be blank.")
+
+        self.assertEqual(CustomProfileField.objects.count(), self.original_count)
+        result = self.client_patch(
+            f"/json/realm/profile_fields/{field.id}",
+            info={"name": "New phone number"},
+        )
+        self.assert_json_success(result)
+        field = CustomProfileField.objects.get(id=field.id, realm=realm)
+        self.assertEqual(CustomProfileField.objects.count(), self.original_count)
+        self.assertEqual(field.name, "New phone number")
+        self.assertIs(field.hint, "")
+        self.assertEqual(field.field_type, CustomProfileField.SHORT_TEXT)
+        self.assertEqual(field.required, False)
+        self.assertEqual(field.editable_by_user, True)
 
         result = self.client_patch(
             f"/json/realm/profile_fields/{field.id}",
@@ -501,8 +568,20 @@ class UpdateCustomProfileFieldTest(CustomProfileFieldTestCase):
             info={
                 "name": "New phone number",
                 "hint": "New contact number",
+                "editable_by_user": "invalid value",
+            },
+        )
+        msg = "editable_by_user is not valid JSON"
+        self.assert_json_error(result, msg)
+
+        result = self.client_patch(
+            f"/json/realm/profile_fields/{field.id}",
+            info={
+                "name": "New phone number",
+                "hint": "New contact number",
                 "display_in_profile_summary": "true",
                 "required": "true",
+                "editable_by_user": "false",
             },
         )
         self.assert_json_success(result)
@@ -513,8 +592,9 @@ class UpdateCustomProfileFieldTest(CustomProfileFieldTestCase):
         self.assertEqual(field.field_type, CustomProfileField.SHORT_TEXT)
         self.assertEqual(field.display_in_profile_summary, True)
         self.assertEqual(field.required, True)
+        self.assertEqual(field.editable_by_user, False)
 
-        # Not sending required should not set it to false.
+        # Not sending required or editable_by_user should not reset their value to default.
         result = self.client_patch(
             f"/json/realm/profile_fields/{field.id}",
             info={
@@ -525,6 +605,7 @@ class UpdateCustomProfileFieldTest(CustomProfileFieldTestCase):
         field.refresh_from_db()
         self.assertEqual(field.hint, "New hint")
         self.assertEqual(field.required, True)
+        self.assertEqual(field.editable_by_user, False)
 
         result = self.client_patch(
             f"/json/realm/profile_fields/{field.id}",
@@ -941,6 +1022,75 @@ class UpdateCustomProfileFieldTest(CustomProfileFieldTestCase):
             },
         )
         self.assert_json_error(result, "Default custom field cannot be updated.")
+
+    def assert_profile_field_value(
+        self, user: UserProfile, field_id: int, field_value: Optional[str]
+    ) -> None:
+        for field_dict in user.profile_data():
+            if field_dict["id"] == field_id:
+                self.assertEqual(field_dict["value"], field_value)
+
+    def test_update_with_editable_by_user(self) -> None:
+        iago = self.example_user("iago")
+        aaron = self.example_user("aaron")
+        self.login("aaron")
+
+        # Create field with editable_by_user = false
+        realm_profile_field_data: Dict[str, Any] = {}
+        realm_profile_field_data["name"] = "Dummy field"
+        realm_profile_field_data["field_type"] = CustomProfileField.SHORT_TEXT
+        realm_profile_field_data["editable_by_user"] = "false"
+        result = self.api_post(iago, "/api/v1/realm/profile_fields", info=realm_profile_field_data)
+        result_json = self.assert_json_success(result)
+        restricted_field_id = result_json["id"]
+
+        field_data = [
+            {
+                "id": restricted_field_id,
+                "value": "test",
+            }
+        ]
+
+        # Admins can always change their own fields
+        self.assert_profile_field_value(iago, restricted_field_id, None)
+        result = self.api_patch(
+            iago, "/api/v1/users/me/profile_data", {"data": orjson.dumps(field_data).decode()}
+        )
+        self.assert_json_success(result)
+        self.assert_profile_field_value(iago, restricted_field_id, "test")
+
+        # Admins can always change fields of others
+        self.assert_profile_field_value(aaron, restricted_field_id, None)
+        result = self.api_patch(
+            iago, f"/api/v1/users/{aaron.id}", {"profile_data": orjson.dumps(field_data).decode()}
+        )
+        self.assert_json_success(result)
+        self.assert_profile_field_value(aaron, restricted_field_id, "test")
+
+        # Users cannot update field value when editable_by_user is false.
+        self.assert_profile_field_value(aaron, restricted_field_id, "test")
+        result = self.client_patch(
+            "/json/users/me/profile_data", {"data": orjson.dumps(field_data).decode()}
+        )
+        self.assert_json_error(result, "User does not have permission to update the field.")
+        self.assert_profile_field_value(aaron, restricted_field_id, "test")
+
+        # Change editable_by_user to true.
+        data = {}
+        data["editable_by_user"] = "true"
+        result = self.api_patch(
+            iago, f"/api/v1/realm/profile_fields/{restricted_field_id}", info=data
+        )
+        self.assert_json_success(result)
+
+        # Users can update field value when editable_by_user is true
+        self.assert_profile_field_value(aaron, restricted_field_id, "test")
+        field_data[0]["value"] = "test2"
+        result = self.client_patch(
+            "/json/users/me/profile_data", {"data": orjson.dumps(field_data).decode()}
+        )
+        self.assert_json_success(result)
+        self.assert_profile_field_value(aaron, restricted_field_id, "test2")
 
 
 class ListCustomProfileFieldTest(CustomProfileFieldTestCase):
