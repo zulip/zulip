@@ -15,4 +15,7 @@ class Command(ZulipBaseCommand):
     @override
     def handle(self, *args: Any, **options: Any) -> None:
         if settings.BILLING_ENABLED:
+            # Uncomment to test with a specific date.
+            # from datetime import datetime, timezone
+            # date = datetime(2024, 5, 7, tzinfo=timezone.utc)
             invoice_plans_as_needed()
