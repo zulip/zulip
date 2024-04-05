@@ -59,7 +59,7 @@ test("stream", () => {
     assert.ok(narrow_state.is_for_stream_id(test_stream.stream_id));
 
     const expected_terms = [
-        {negated: false, operator: "stream", operand: "Test"},
+        {negated: false, operator: "channel", operand: "Test"},
         {negated: false, operator: "topic", operand: "Bar"},
         {negated: false, operator: "search", operand: "yo"},
     ];
@@ -130,7 +130,7 @@ test("terms", () => {
     ]);
     let result = narrow_state.search_terms();
     assert.equal(result.length, 3);
-    assert.equal(result[0].operator, "stream");
+    assert.equal(result[0].operator, "channel");
     assert.equal(result[0].operand, "Foo");
 
     assert.equal(result[1].operator, "topic");
@@ -146,7 +146,7 @@ test("terms", () => {
     page_params.narrow = [{operator: "stream", operand: "Foo"}];
     result = narrow_state.search_terms();
     assert.equal(result.length, 1);
-    assert.equal(result[0].operator, "stream");
+    assert.equal(result[0].operator, "channel");
     assert.equal(result[0].operand, "Foo");
 });
 
@@ -243,7 +243,7 @@ test("update_email", () => {
     const filter = narrow_state.filter();
     assert.deepEqual(filter.operands("dm"), ["showell@foo.com"]);
     assert.deepEqual(filter.operands("sender"), ["showell@foo.com"]);
-    assert.deepEqual(filter.operands("stream"), ["steve@foo.com"]);
+    assert.deepEqual(filter.operands("channel"), ["steve@foo.com"]);
 });
 
 test("topic", () => {
