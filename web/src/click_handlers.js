@@ -483,6 +483,10 @@ export function initialize() {
 
     // SIDEBARS
     $(".buddy-list-section").on("click", ".selectable_sidebar_block", (e) => {
+        if (e.metaKey || e.ctrlKey) {
+            return;
+        }
+
         const $li = $(e.target).parents("li");
 
         activity_ui.narrow_for_user({$li});
@@ -841,6 +845,10 @@ export function initialize() {
     });
 
     $("body").on("click", "#header-container .brand", (e) => {
+        if (e.metaKey || e.ctrlKey) {
+            return;
+        }
+
         e.preventDefault();
         e.stopPropagation();
 

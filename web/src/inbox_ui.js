@@ -1270,6 +1270,10 @@ export function initialize() {
     );
 
     $("body").on("keydown", ".inbox-header", (e) => {
+        if (e.metaKey || e.ctrlKey) {
+            return;
+        }
+
         if (keydown_util.is_enter_event(e)) {
             e.preventDefault();
             e.stopPropagation();
@@ -1289,6 +1293,10 @@ export function initialize() {
     });
 
     $("body").on("keydown", ".inbox-row", (e) => {
+        if (e.metaKey || e.ctrlKey) {
+            return;
+        }
+
         if (keydown_util.is_enter_event(e)) {
             e.preventDefault();
             e.stopPropagation();
@@ -1299,6 +1307,10 @@ export function initialize() {
     });
 
     $("body").on("click", "#inbox-list .inbox-left-part-wrapper", (e) => {
+        if (e.metaKey || e.ctrlKey) {
+            return;
+        }
+
         const $elt = $(e.currentTarget);
         col_focus = COLUMNS.RECIPIENT;
         focus_clicked_list_element($elt);
