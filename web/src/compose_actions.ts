@@ -407,6 +407,7 @@ export function cancel(): void {
     hide_box();
     clear_box();
     compose_banner.clear_message_sent_banners();
+    compose_banner.clear_non_interleaved_view_messages_fading_banner();
     call_hooks(compose_cancel_hooks);
     compose_state.set_message_type(undefined);
     compose_pm_pill.clear();

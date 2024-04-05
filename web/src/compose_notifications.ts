@@ -2,6 +2,7 @@ import $ from "jquery";
 import assert from "minimalistic-assert";
 
 import render_automatic_new_visibility_policy_banner from "../templates/compose_banner/automatic_new_visibility_policy_banner.hbs";
+import render_compose_banner from "../templates/compose_banner/compose_banner.hbs";
 import render_jump_to_sent_message_conversation_banner from "../templates/compose_banner/jump_to_sent_message_conversation_banner.hbs";
 import render_message_sent_banner from "../templates/compose_banner/message_sent_banner.hbs";
 import render_unmute_topic_banner from "../templates/compose_banner/unmute_topic_banner.hbs";
@@ -302,6 +303,35 @@ export function notify_messages_outside_current_search(messages: Message[]): voi
             link_text,
         );
     }
+}
+
+export function maybe_show_one_time_non_interleaved_view_messages_fading_banner(): void {
+    // Remove message fading banner if exists. Helps in live-updating banner.
+    compose_banner.clear_non_interleaved_view_messages_fading_banner();
+
+    if (!onboarding_steps.ONE_TIME_NOTICES_TO_DISPLAY.has("non_interleaved_view_messages_fading")) {
+        return;
+    }
+
+    // Wait to display the banner the first time until there's actually fading.
+    const faded_messages_exist = $(".focused-message-list .recipient_row").hasClass("message-fade");
+    if (!faded_messages_exist) {
+        return;
+    }
+
+    const context = {
+        banner_type: compose_banner.INFO,
+        classname: compose_banner.CLASSNAMES.non_interleaved_view_messages_fading,
+        banner_text: $t({
+            defaultMessage:
+                "Messages in your view are faded to remind you that you are viewing a different conversation from the one you are composing to.",
+        }),
+        button_text: $t({defaultMessage: "Got it"}),
+        hide_close_button: true,
+    };
+    const new_row_html = render_compose_banner(context);
+
+    compose_banner.append_compose_banner_to_banner_list($(new_row_html), $("#compose_banners"));
 }
 
 export function reify_message_id(opts: {old_id: number; new_id: number}): void {
