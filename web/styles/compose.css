@@ -204,6 +204,8 @@
 
     #compose-direct-recipient {
         flex-grow: 1;
+        position: relative;
+        overflow: hidden;
     }
 
     .message_header {
@@ -831,6 +833,8 @@ textarea.new_message_textarea,
 
 #private_message_recipient.recipient_box {
     width: 100%;
+    height: auto;
+    overflow: hidden;
 }
 
 .compose-send-or-save-button {
