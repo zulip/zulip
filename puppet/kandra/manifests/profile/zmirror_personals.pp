@@ -20,7 +20,7 @@ class kandra::profile::zmirror_personals inherits kandra::profile::base {
     'restricted-ssh-commands',
   ]
   package { $zmirror_packages:
-    ensure  => installed,
+    ensure => installed,
   }
 
   # The production-write-ccache key uses
