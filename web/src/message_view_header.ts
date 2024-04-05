@@ -59,7 +59,7 @@ function get_message_view_header_context(filter: Filter | undefined): MessageVie
         title,
         is_spectator: page_params.is_spectator,
     });
-    if (filter.has_operator("stream") && !filter._sub) {
+    if (filter.has_operator("channel") && !filter._sub) {
         return {
             ...icon_data,
             sub_count: "0",

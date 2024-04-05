@@ -220,7 +220,7 @@ export function activate(raw_terms, opts) {
         // message in case the message was moved after the link was
         // created. This ensures near / id links work and will redirect
         // correctly if the topic was moved (including being resolved).
-        if (id_info.target_id && filter.has_operator("stream") && filter.has_operator("topic")) {
+        if (id_info.target_id && filter.has_operator("channel") && filter.has_operator("topic")) {
             const target_message = message_store.get(id_info.target_id);
 
             function adjusted_terms_if_moved(terms, message) {
@@ -230,7 +230,7 @@ export function activate(raw_terms, opts) {
                 for (const term of terms) {
                     const adjusted_term = {...term};
                     if (
-                        term.operator === "stream" &&
+                        term.operator === "channel" &&
                         !util.lower_same(term.operand, message.display_recipient)
                     ) {
                         adjusted_term.operand = message.display_recipient;
@@ -262,7 +262,7 @@ export function activate(raw_terms, opts) {
                 // location, then we should retarget this narrow operation
                 // to where the message is located now.
                 const narrow_topic = filter.operands("topic")[0];
-                const narrow_stream_name = filter.operands("stream")[0];
+                const narrow_stream_name = filter.operands("channel")[0];
                 const narrow_stream_data = stream_data.get_sub(narrow_stream_name);
                 if (!narrow_stream_data) {
                     // The id of the target message is correct but the stream name is

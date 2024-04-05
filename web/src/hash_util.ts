@@ -11,6 +11,7 @@ import * as sub_store from "./sub_store";
 import type {StreamSubscription} from "./sub_store";
 import * as user_groups from "./user_groups";
 import type {UserGroup} from "./user_groups";
+import * as util from "./util";
 
 export function build_reload_url(): string {
     let hash = window.location.hash;
@@ -93,7 +94,7 @@ export function search_terms_to_hash(terms?: NarrowTerm[]): string {
 
         for (const term of terms) {
             // Support legacy tuples.
-            const operator = term.operator;
+            const operator = util.canonicalize_stream_synonym(term.operator);
             const operand = term.operand;
 
             const sign = term.negated ? "-" : "";

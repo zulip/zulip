@@ -164,9 +164,9 @@ export function initialize(): void {
                 if (narrow_filter === undefined) {
                     display_current_view = $t({defaultMessage: "Currently viewing all messages."});
                 } else if (
-                    _.isEqual(narrow_filter.sorted_term_types(), ["stream"]) &&
+                    _.isEqual(narrow_filter.sorted_term_types(), ["channel"]) &&
                     compose_state.get_message_type() === "stream" &&
-                    narrow_filter.operands("stream")[0] === compose_state.stream_name()
+                    narrow_filter.operands("channel")[0] === compose_state.stream_name()
                 ) {
                     display_current_view = $t({
                         defaultMessage: "Currently viewing the entire stream.",

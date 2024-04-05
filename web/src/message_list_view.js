@@ -472,7 +472,7 @@ export class MessageListView {
         // we can infer that whenever the historical flag flips
         // between adjacent messages, the current user must have
         // (un)subscribed in between those messages.
-        if (!this.list.data.filter.has_operator("stream")) {
+        if (!this.list.data.filter.has_operator("channel")) {
             return;
         }
         if (last_msg_container === undefined) {

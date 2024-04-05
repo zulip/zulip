@@ -33,7 +33,7 @@ export function compute_narrow_title(filter?: Filter): string {
         return $t({defaultMessage: "Search results"});
     }
 
-    if (filter.has_operator("stream")) {
+    if (filter.has_operator("channel")) {
         if (!filter._sub) {
             // The stream is not set because it does not currently
             // exist (possibly due to a stream name change), or it

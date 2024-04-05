@@ -56,6 +56,11 @@ type Part =
           operand: string;
       };
 
+// TODO: When "stream" is renamed to "channel", this placeholder
+// should be removed, or replaced with helper functions similar
+// to util.is_topic_synonym.
+const CHANNEL_SYNONYM = "stream";
+
 function zephyr_stream_name_match(message: Message & {type: "stream"}, operand: string): boolean {
     // Zephyr users expect narrowing to "social" to also show messages to /^(un)*social(.d)*$/
     // (unsocial, ununsocial, social.d, etc)
@@ -172,7 +177,7 @@ function message_matches_search_term(message: Message, operator: string, operand
         case "id":
             return message.id.toString() === operand;
 
-        case "stream": {
+        case "channel": {
             if (message.type !== "stream") {
                 return false;
             }
@@ -244,8 +249,8 @@ export class Filter {
 
     constructor(terms: NarrowTerm[]) {
         this._terms = this.fix_terms(terms);
-        if (this.has_operator("stream")) {
-            this._sub = stream_data.get_sub_by_name(this.operands("stream")[0]);
+        if (this.has_operator("channel")) {
+            this._sub = stream_data.get_sub_by_name(this.operands("channel")[0]);
         }
     }
 
@@ -269,6 +274,10 @@ export class Filter {
         if (util.is_topic_synonym(operator)) {
             return "topic";
         }
+
+        if (operator === CHANNEL_SYNONYM) {
+            return "channel";
+        }
         return operator;
     }
 
@@ -289,7 +298,7 @@ export class Filter {
                 operand = operand.replace(/s$/, "");
                 break;
 
-            case "stream":
+            case "channel":
                 operand = stream_data.get_name(operand);
                 break;
             case "topic":
@@ -397,6 +406,9 @@ export class Filter {
                     negated = true;
                     operator = operator.slice(1);
                 }
+                if (operator === CHANNEL_SYNONYM) {
+                    operator = "channel";
+                }
                 operand = Filter.decodeOperand(parts.join(":"), operator);
 
                 // We use Filter.operator_to_prefix() to check if the
@@ -442,7 +454,8 @@ export class Filter {
             if (term.operator === "") {
                 return term.operand;
             }
-            return sign + term.operator + ":" + Filter.encodeOperand(term.operand.toString());
+            const operator = util.canonicalize_stream_synonym(term.operator);
+            return sign + operator + ":" + Filter.encodeOperand(term.operand.toString());
         });
         return term_strings.join(" ");
     }
@@ -467,7 +480,7 @@ export class Filter {
         const levels = [
             "in",
             "streams-public",
-            "stream",
+            "channel",
             "topic",
             "dm",
             "dm-including",
@@ -515,8 +528,8 @@ export class Filter {
         const verb = negated ? "exclude " : "";
 
         switch (operator) {
-            case "stream":
-                return verb + "stream";
+            case "channel":
+                return verb + CHANNEL_SYNONYM;
             case "streams":
                 return verb + "streams";
             case "near":
@@ -562,9 +575,9 @@ export class Filter {
 
         if (terms.length >= 2) {
             const is = (term: NarrowTerm, expected: string): boolean =>
-                term.operator === expected && !term.negated;
+                Filter.canonicalize_operator(term.operator) === expected && !term.negated;
 
-            if (is(terms[0], "stream") && is(terms[1], "topic")) {
+            if (is(terms[0], "channel") && is(terms[1], "topic")) {
                 const stream = terms[0].operand;
                 const topic = terms[1].operand;
                 parts.push({
@@ -659,7 +672,7 @@ export class Filter {
             (term) =>
                 !(
                     page_params.narrow_stream !== undefined &&
-                    term.operator === "stream" &&
+                    term.operator === "channel" &&
                     term.operand.toLowerCase() === page_params.narrow_stream.toLowerCase()
                 ),
         );
@@ -717,8 +730,8 @@ export class Filter {
         // message sharing its recipient (stream/topic or direct
         // message recipient) must also be present in the view.
         const valid_term_types = new Set([
-            "stream",
-            "not-stream",
+            "channel",
+            "not-channel",
             "topic",
             "not-topic",
             "dm",
@@ -766,10 +779,10 @@ export class Filter {
         const term_types = this.sorted_term_types();
 
         // "topic" alone cannot guarantee all messages of a conversation because
-        // it is limited by the user's message history. Therefore, we check "stream"
+        // it is limited by the user's message history. Therefore, we check "channel"
         // and "topic" together to ensure that the current filter will return all the
         // messages of a conversation.
-        if (_.isEqual(term_types, ["stream", "topic"])) {
+        if (_.isEqual(term_types, ["channel", "topic"])) {
             return true;
         }
 
@@ -777,7 +790,7 @@ export class Filter {
             return true;
         }
 
-        if (_.isEqual(term_types, ["stream"])) {
+        if (_.isEqual(term_types, ["channel"])) {
             return true;
         }
 
@@ -842,14 +855,16 @@ export class Filter {
         const term_types = this.sorted_term_types();
 
         // this comes first because it has 3 term_types but is not a "complex filter"
-        if (_.isEqual(term_types, ["stream", "topic", "search"])) {
+        if (_.isEqual(term_types, ["channel", "topic", "search"])) {
             // if stream does not exist, redirect to All
             if (!this._sub) {
                 return "#";
             }
             return (
-                "/#narrow/stream/" +
-                stream_data.name_to_slug(this.operands("stream")[0]) +
+                "/#narrow/" +
+                CHANNEL_SYNONYM +
+                "/" +
+                stream_data.name_to_slug(this.operands("channel")[0]) +
                 "/topic/" +
                 this.operands("topic")[0]
             );
@@ -862,13 +877,16 @@ export class Filter {
 
         if (term_types[1] === "search") {
             switch (term_types[0]) {
-                case "stream":
+                case "channel":
                     // if stream does not exist, redirect to All
                     if (!this._sub) {
                         return "#";
                     }
                     return (
-                        "/#narrow/stream/" + stream_data.name_to_slug(this.operands("stream")[0])
+                        "/#narrow/" +
+                        CHANNEL_SYNONYM +
+                        "/" +
+                        stream_data.name_to_slug(this.operands("channel")[0])
                     );
                 case "is-dm":
                     return "/#narrow/is/dm";
@@ -902,7 +920,7 @@ export class Filter {
             case "in-all":
                 icon = "home";
                 break;
-            case "stream":
+            case "channel":
                 if (!this._sub) {
                     icon = "question-circle-o";
                     break;
@@ -946,12 +964,12 @@ export class Filter {
         // Nice explanatory titles for common views.
         const term_types = this.sorted_term_types();
         if (
-            (term_types.length === 3 && _.isEqual(term_types, ["stream", "topic", "near"])) ||
-            (term_types.length === 2 && _.isEqual(term_types, ["stream", "topic"])) ||
-            (term_types.length === 1 && _.isEqual(term_types, ["stream"]))
+            (term_types.length === 3 && _.isEqual(term_types, ["channel", "topic", "near"])) ||
+            (term_types.length === 2 && _.isEqual(term_types, ["channel", "topic"])) ||
+            (term_types.length === 1 && _.isEqual(term_types, ["channel"]))
         ) {
             if (!this._sub) {
-                const search_text = this.operands("stream")[0];
+                const search_text = this.operands("channel")[0];
                 return $t({defaultMessage: "Unknown stream #{search_text}"}, {search_text});
             }
             return this._sub.name;
@@ -1039,7 +1057,7 @@ export class Filter {
     }
 
     includes_full_stream_history(): boolean {
-        return this.has_operator("stream") || this.has_operator("streams");
+        return this.has_operator("channel") || this.has_operator("streams");
     }
 
     is_personal_filter(): boolean {
@@ -1112,7 +1130,7 @@ export class Filter {
     }
 
     has_topic(stream_name: string, topic: string): boolean {
-        return this.has_operand("stream", stream_name) && this.has_operand("topic", topic);
+        return this.has_operand("channel", stream_name) && this.has_operand("topic", topic);
     }
 
     sorted_term_types(): string[] {
@@ -1131,7 +1149,7 @@ export class Filter {
 
     can_bucket_by(...wanted_term_types: string[]): boolean {
         // Examples call:
-        //     filter.can_bucket_by('stream', 'topic')
+        //     filter.can_bucket_by('channel', 'topic')
         //
         // The use case of this function is that we want
         // to know if a filter can start with a bucketing
@@ -1204,7 +1222,7 @@ export class Filter {
 
     is_conversation_view(): boolean {
         const term_type = this.sorted_term_types();
-        if (_.isEqual(term_type, ["stream", "topic"]) || _.isEqual(term_type, ["dm"])) {
+        if (_.isEqual(term_type, ["channel", "topic"]) || _.isEqual(term_type, ["dm"])) {
             return true;
         }
         return false;
@@ -1213,7 +1231,7 @@ export class Filter {
     excludes_muted_topics(): boolean {
         return (
             // not narrowed to a topic
-            !(this.has_operator("stream") && this.has_operator("topic")) &&
+            !(this.has_operator("channel") && this.has_operator("topic")) &&
             // not narrowed to search
             !this.is_keyword_search() &&
             // not narrowed to dms
