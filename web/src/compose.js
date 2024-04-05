@@ -349,7 +349,10 @@ export function render_and_show_preview($preview_spinner, $preview_content_box, 
             rendered_preview_html = rendered_content;
         }
 
-        $preview_content_box.html(util.clean_user_content_links(rendered_preview_html));
+        rendered_preview_html = util.make_inline_images_lightbox_previewable(rendered_preview_html);
+        rendered_preview_html = util.clean_user_content_links(rendered_preview_html);
+
+        $preview_content_box.html(rendered_preview_html);
         rendered_markdown.update_elements($preview_content_box);
     }
 

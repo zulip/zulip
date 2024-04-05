@@ -392,6 +392,10 @@
         }
     }
 
+    .message_inline_image.true_inline {
+        margin-bottom: unset;
+    }
+
     &.rtl .twitter-image,
     &.rtl .message_inline_image {
         margin-left: unset;
@@ -404,7 +408,8 @@
        timestamp when the first child of the rendered
        markdown is a media element or KaTeX. */
     &:has(> .message_inline_image:first-child),
-    &:has(> p:first-child > .katex-display) {
+    &:has(> p:first-child > .katex-display),
+    &:has(> p:first-child > .message_inline_image) {
         align-self: center;
     }
 
