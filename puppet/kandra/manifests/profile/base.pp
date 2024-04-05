@@ -73,7 +73,7 @@ class kandra::profile::base {
   }
 
   service { 'ssh':
-    ensure     => running,
+    ensure => running,
   }
 
   include kandra::aws_tools
