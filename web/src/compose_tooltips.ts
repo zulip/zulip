@@ -1,5 +1,6 @@
 import $ from "jquery";
 import _ from "lodash";
+import assert from "minimalistic-assert";
 import {delegate} from "tippy.js";
 
 import render_drafts_tooltip from "../templates/drafts_tooltip.hbs";
@@ -15,7 +16,7 @@ import {EXTRA_LONG_HOVER_DELAY, INSTANT_HOVER_DELAY, LONG_HOVER_DELAY} from "./t
 import {parse_html} from "./ui_util";
 import {user_settings} from "./user_settings";
 
-export function initialize() {
+export function initialize(): void {
     delegate("body", {
         target: [
             // Ideally this would be `#compose_buttons .button`, but the
@@ -23,7 +24,7 @@ export function initialize() {
             "#compose_buttons .compose-reply-button-wrapper",
             "#left_bar_compose_mobile_button_big",
             "#new_direct_message_button",
-        ],
+        ].join(","),
         delay: EXTRA_LONG_HOVER_DELAY,
         // Only show on mouseenter since for spectators, clicking on these
         // buttons opens login modal, and Micromodal returns focus to the
@@ -50,18 +51,19 @@ export function initialize() {
                 instance.setContent(
                     parse_html($("#new_direct_message_button_tooltip_template").html()),
                 );
-                return;
+                return undefined;
             } else if (conversation_type === "stream") {
                 instance.setContent(
                     parse_html($("#new_topic_message_button_tooltip_template").html()),
                 );
-                return;
+                return undefined;
             }
             // Use new_stream_message_button_tooltip_template when the
             // conversation_type is equal to "non-specific" and also as a default fallback.
             instance.setContent(
                 parse_html($("#new_stream_message_button_tooltip_template").html()),
             );
+            return undefined;
         },
         onHidden(instance) {
             instance.destroy();
@@ -93,6 +95,7 @@ export function initialize() {
         // tooltip instantly, to make it clear to the user that the button
         // is disabled, and why.
         onTrigger(instance, event) {
+            assert(event.currentTarget instanceof HTMLElement);
             if (event.currentTarget.classList.contains("disabled-on-hover")) {
                 instance.setProps({delay: INSTANT_HOVER_DELAY});
             } else {
@@ -112,7 +115,7 @@ export function initialize() {
             }
             if (instance.reference.id === "compose-drafts-button") {
                 const count =
-                    instance.reference.querySelector(".compose-drafts-count").textContent || 0;
+                    instance.reference.querySelector(".compose-drafts-count")!.textContent ?? 0;
                 // Explain that the number in brackets is the number of drafts for this conversation.
                 const draft_count_msg = $t(
                     {
@@ -123,7 +126,7 @@ export function initialize() {
                 );
                 instance.setContent(parse_html(render_drafts_tooltip({draft_count_msg})));
             }
-            return true;
+            return undefined;
         },
         appendTo: () => document.body,
     });
@@ -146,7 +149,7 @@ export function initialize() {
             } else {
                 instance.setContent(parse_html($("#send-ctrl-enter-tooltip-template").html()));
             }
-            return true;
+            return undefined;
         },
     });
 
@@ -188,7 +191,7 @@ export function initialize() {
     delegate("body", {
         // TODO: Might need to target just the Send button itself
         // in the new design
-        target: [".disabled-message-send-controls"],
+        target: ".disabled-message-send-controls",
         maxWidth: 350,
         content: () =>
             compose_recipient.get_posting_policy_error_message() ||
