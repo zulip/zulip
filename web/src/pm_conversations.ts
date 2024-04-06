@@ -19,7 +19,7 @@ export function is_partner(user_id: number): boolean {
 }
 
 function filter_muted_pms(conversation: PMConversation): boolean {
-    // We hide muted users from the top left corner, as well as those huddles
+    // We hide muted users from the top left corner, as well as those direct_message_groups
     // in which all participants are muted.
     const recipients = people.split_to_ints(conversation.user_ids_string);
 

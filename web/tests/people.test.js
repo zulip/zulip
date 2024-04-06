@@ -808,10 +808,10 @@ test_people("emails_to_full_names_string", () => {
     );
 });
 
-test_people("concat_huddle", () => {
+test_people("concat_direct_message_group", () => {
     /*
         We assume that user_ids passed in
-        to concat_huddle have already been
+        to concat_direct_message_group have already been
         validated, so we don't need actual
         people for these tests to pass.
 
@@ -820,11 +820,11 @@ test_people("concat_huddle", () => {
 
     const user_ids = [303, 301, 302];
 
-    assert.equal(people.concat_huddle(user_ids, 304), "301,302,303,304");
+    assert.equal(people.concat_direct_message_group(user_ids, 304), "301,302,303,304");
 
     // IMPORTANT: we always want to sort
-    // ids numerically to create huddle strings.
-    assert.equal(people.concat_huddle(user_ids, 99), "99,301,302,303");
+    // ids numerically to create direct_message_group strings.
+    assert.equal(people.concat_direct_message_group(user_ids, 99), "99,301,302,303");
 });
 
 test_people("message_methods", () => {
@@ -1332,11 +1332,11 @@ test_people("get_active_message_people", () => {
     assert.deepEqual(active_message_people, [steven, maria]);
 });
 
-test_people("huddle_string", () => {
-    assert.equal(people.huddle_string({type: "stream"}), undefined);
+test_people("direct_message_group_string", () => {
+    assert.equal(people.direct_message_group_string({type: "stream"}), undefined);
 
-    function huddle(user_ids) {
-        return people.huddle_string({
+    function direct_message_group(user_ids) {
+        return people.direct_message_group_string({
             type: "private",
             display_recipient: user_ids.map((id) => ({id})),
         });
@@ -1345,9 +1345,9 @@ test_people("huddle_string", () => {
     people.add_active_user(maria);
     people.add_active_user(bob);
 
-    assert.equal(huddle([]), undefined);
-    assert.equal(huddle([me.user_id, maria.user_id]), undefined);
-    assert.equal(huddle([me.user_id, maria.user_id, bob.user_id]), "203,302");
+    assert.equal(direct_message_group([]), undefined);
+    assert.equal(direct_message_group([me.user_id, maria.user_id]), undefined);
+    assert.equal(direct_message_group([me.user_id, maria.user_id, bob.user_id]), "203,302");
 });
 
 test_people("get_realm_active_human_users", () => {

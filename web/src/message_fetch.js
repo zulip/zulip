@@ -3,8 +3,8 @@ import $ from "jquery";
 import {all_messages_data} from "./all_messages_data";
 import * as blueslip from "./blueslip";
 import * as channel from "./channel";
+import * as direct_message_group_data from "./direct_message_group_data";
 import {Filter} from "./filter";
-import * as huddle_data from "./huddle_data";
 import * as message_feed_loading from "./message_feed_loading";
 import * as message_feed_top_notices from "./message_feed_top_notices";
 import * as message_helper from "./message_helper";
@@ -86,7 +86,7 @@ function process_result(data, opts) {
         }
     }
 
-    huddle_data.process_loaded_messages(messages);
+    direct_message_group_data.process_loaded_messages(messages);
     stream_list.update_streams_sidebar();
     stream_list.maybe_scroll_narrow_into_view();
 

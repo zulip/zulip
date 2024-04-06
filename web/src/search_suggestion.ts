@@ -2,8 +2,8 @@ import Handlebars from "handlebars/runtime";
 import assert from "minimalistic-assert";
 
 import * as common from "./common";
+import * as direct_message_group_data from "./direct_message_group_data";
 import {Filter} from "./filter";
-import * as huddle_data from "./huddle_data";
 import * as narrow_state from "./narrow_state";
 import {page_params} from "./page_params";
 import * as people from "./people";
@@ -92,24 +92,30 @@ function format_as_suggestion(terms: NarrowTerm[]): Suggestion {
     };
 }
 
-function compare_by_huddle(huddle_emails: string[]): (person1: User, person2: User) => number {
-    const user_ids = huddle_emails.slice(0, -1).flatMap((person) => {
+function compare_by_direct_message_group(
+    direct_message_group_emails: string[],
+): (person1: User, person2: User) => number {
+    const user_ids = direct_message_group_emails.slice(0, -1).flatMap((person) => {
         const user = people.get_by_email(person);
         return user?.user_id ?? [];
     });
-    // Construct dict for all huddles, so we can look up each's recency
-    const huddles = huddle_data.get_huddles();
-    const huddle_dict = new Map<string, number>();
-    for (const [i, huddle] of huddles.entries()) {
-        huddle_dict.set(huddle, i + 1);
+    // Construct dict for all direct_message_groups, so we can look up each's recency
+    const direct_message_groups = direct_message_group_data.get_direct_message_groups();
+    const direct_message_group_dict = new Map<string, number>();
+    for (const [i, direct_message_group] of direct_message_groups.entries()) {
+        direct_message_group_dict.set(direct_message_group, i + 1);
     }
 
     return function (person1: User, person2: User): number {
-        const huddle1 = people.concat_huddle(user_ids, person1.user_id);
-        const huddle2 = people.concat_huddle(user_ids, person2.user_id);
+        const direct_message_group1 = people.concat_direct_message_group(user_ids, person1.user_id);
+        const direct_message_group2 = people.concat_direct_message_group(user_ids, person2.user_id);
         // If not in the dict, assign an arbitrarily high index
-        const score1 = huddle_dict.get(huddle1) ?? huddles.length + 1;
-        const score2 = huddle_dict.get(huddle2) ?? huddles.length + 1;
+        const score1 =
+            direct_message_group_dict.get(direct_message_group1) ??
+            direct_message_groups.length + 1;
+        const score2 =
+            direct_message_group_dict.get(direct_message_group2) ??
+            direct_message_groups.length + 1;
         const diff = score1 - score2;
 
         if (diff !== 0) {
@@ -196,7 +202,7 @@ function get_group_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Suggestio
         return last_part === "" || person_matcher(person);
     });
 
-    persons.sort(compare_by_huddle(parts));
+    persons.sort(compare_by_direct_message_group(parts));
 
     // Take top 15 persons, since they're ordered by pm_recipient_count.
     persons = persons.slice(0, 15);

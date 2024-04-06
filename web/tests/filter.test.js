@@ -240,7 +240,7 @@ test("basics", () => {
 
     terms = [{operator: "dm", operand: "joe@example.com"}];
     filter = new Filter(terms);
-    assert.ok(filter.is_non_huddle_pm());
+    assert.ok(filter.is_non_direct_message_group_pm());
     assert.ok(filter.contains_only_private_messages());
     assert.ok(filter.can_mark_messages_read());
     assert.ok(filter.supports_collapsing_recipients());
@@ -251,7 +251,7 @@ test("basics", () => {
 
     terms = [{operator: "dm", operand: "joe@example.com,jack@example.com"}];
     filter = new Filter(terms);
-    assert.ok(!filter.is_non_huddle_pm());
+    assert.ok(!filter.is_non_direct_message_group_pm());
     assert.ok(filter.contains_only_private_messages());
     assert.ok(filter.can_mark_messages_read());
     assert.ok(filter.supports_collapsing_recipients());
@@ -267,7 +267,7 @@ test("basics", () => {
 
     terms = [{operator: "dm-including", operand: "joe@example.com"}];
     filter = new Filter(terms);
-    assert.ok(!filter.is_non_huddle_pm());
+    assert.ok(!filter.is_non_direct_message_group_pm());
     assert.ok(filter.contains_only_private_messages());
     assert.ok(!filter.has_operator("search"));
     assert.ok(!filter.can_mark_messages_read());

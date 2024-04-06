@@ -128,7 +128,7 @@ async function test_narrow_to_private_messages_with_cordelia(page: Page): Promis
 
 async function test_send_multirecipient_pm_from_cordelia_pm_narrow(page: Page): Promise<void> {
     const recipients = ["cordelia@zulip.com", "othello@zulip.com"];
-    const multiple_recipients_pm = "A huddle to check spaces";
+    const multiple_recipients_pm = "A direct_message_group to check spaces";
     await common.send_message(page, "private", {
         recipient: recipients.join(", "),
         outside_view: true,

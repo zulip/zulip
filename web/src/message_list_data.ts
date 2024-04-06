@@ -250,7 +250,7 @@ export class MessageListData {
     }
 
     messages_filtered_for_user_mutes(messages: Message[]): Message[] {
-        if (this.filter.is_non_huddle_pm()) {
+        if (this.filter.is_non_direct_message_group_pm()) {
             // We are in a 1:1 direct message narrow, so do not do any filtering.
             return [...messages];
         }
@@ -261,7 +261,7 @@ export class MessageListData {
             }
             const recipients = util.extract_pm_recipients(message.to_user_ids);
             if (recipients.length > 1) {
-                // Huddle message
+                // direct_message_group message
                 return true;
             }
 
