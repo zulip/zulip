@@ -829,7 +829,8 @@ EVENT_FUNCTION_MAPPER: Dict[str, Callable[[Helper], str]] = {
     "issues": get_issue_body,
     "member": get_member_body,
     "membership": get_membership_body,
-    "opened_or_update_pull_request": get_opened_or_update_pull_request_body,
+    "opened_pull_request": get_opened_or_update_pull_request_body,
+    "updated_pull_request": get_opened_or_update_pull_request_body,
     "assigned_or_unassigned_pull_request": get_assigned_or_unassigned_pull_request_body,
     "page_build": get_page_build_body,
     "ping": get_ping_body,
@@ -951,8 +952,10 @@ def get_zulip_event_name(
     """
     if header_event == "pull_request":
         action = payload["action"].tame(check_string)
-        if action in ("opened", "synchronize", "reopened", "edited"):
-            return "opened_or_update_pull_request"
+        if action in ("opened", "reopened"):
+            return "opened_pull_request"
+        elif action in ("synchronize", "edited"):
+            return "updated_pull_request"
         if action in ("assigned", "unassigned"):
             return "assigned_or_unassigned_pull_request"
         if action == "closed":
