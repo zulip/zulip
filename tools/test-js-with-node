@@ -78,7 +78,7 @@ EXEMPT_FILES = make_set(
         "web/src/compose_setup.js",
         "web/src/compose_state.ts",
         "web/src/compose_textarea.ts",
-        "web/src/compose_tooltips.js",
+        "web/src/compose_tooltips.ts",
         "web/src/compose_ui.ts",
         "web/src/compose_validate.ts",
         "web/src/composebox_typeahead.js",
