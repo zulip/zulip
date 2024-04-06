@@ -1,10 +1,12 @@
 New Relic can send messages to a Zulip stream for incidents.
 
+{start_tabs}
+
 1. {!create-stream.md!}
 
 1. {!create-an-incoming-webhook.md!}
 
-1. {!generate-integration-url.md!}
+1. {!generate-webhook-url-basic.md!}
 
 1. On [New Relic](https://one.newrelic.com),
   select **Alerts & AI**.
@@ -20,8 +22,14 @@ New Relic can send messages to a Zulip stream for incidents.
 
 1. After creating the channel send a test notification to make sure it works.
 
+{start_tabs}
+
 {!congrats.md!}
 
 ![](/static/images/integrations/newrelic/001.png)
 ![](/static/images/integrations/newrelic/002.png)
 ![](/static/images/integrations/newrelic/003.png)
+
+### Related documentation
+
+{!webhooks-url-specification.md!}

@@ -1,14 +1,12 @@
 Get Patreon notifications in Zulip!
 
- 1. {!create-stream.md!}
+{start_tabs}
+
+1. {!create-stream.md!}
 
 1. {!create-an-incoming-webhook.md!}
 
-1. {!generate-integration-url.md!}
-
-    You can refer to Patreons's documentation for
-    [triggers](https://docs.patreon.com/#triggers-v2) and
-    [webhook events](https://docs.patreon.com/#webhooks).
+1. {!generate-webhook-url-basic.md!}
 
 1. Login to your Patreon developer account, navigate to your Patreon Portal, and
    click on [My Webhooks](https://www.patreon.com/portal/registration/register-webhooks).
@@ -17,6 +15,12 @@ Get Patreon notifications in Zulip!
    **plus** (**+**) button. Enable the events you would like to receive
    notifications for, and click **Send Test**.
 
- {!congrats.md!}
+{start_tabs}
 
- ![](/static/images/integrations/patreon/001.png)
+{!congrats.md!}
+
+![](/static/images/integrations/patreon/001.png)
+
+### Related documentation
+
+{!webhooks-url-specification.md!}

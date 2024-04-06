@@ -1,11 +1,13 @@
 Zulip supports integration with Codeship and can notify you of
 your build statuses.
 
+{start_tabs}
+
 1. {!create-stream.md!}
 
 1. {!create-an-incoming-webhook.md!}
 
-1. {!generate-integration-url.md!}
+1. {!generate-webhook-url-basic.md!}
 
 1. On your project's webpage, click on **Project Settings** in
    the top right corner. Click on the **Notifications** tab, and click on
@@ -15,6 +17,12 @@ your build statuses.
    an optional description or a specific branch you would like to be
    notified about. Click **Save**.
 
+{end_tabs}
+
 {!congrats.md!}
 
 ![](/static/images/integrations/codeship/001.png)
+
+### Related documentation
+
+{!webhooks-url-specification.md!}

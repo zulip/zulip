@@ -1,10 +1,12 @@
 Get Zulip notifications for your PagerDuty services!
 
+{start_tabs}
+
 1. {!create-stream.md!}
 
 1. {!create-an-incoming-webhook.md!}
 
-1. {!generate-integration-url.md!}
+1. {!generate-webhook-url-basic.md!}
 
 1. Open the **Integrations** tab, and click **Generic Webhooks (v3)**.
 
@@ -15,6 +17,12 @@ Get Zulip notifications for your PagerDuty services!
    select the events you want to send under **Events to Send**,
    and click **Add Webhook**.
 
+{end_tabs}
+
 {!congrats.md!}
 
 ![](/static/images/integrations/pagerduty/001.png)
+
+### Related documentation
+
+{!webhooks-url-specification.md!}

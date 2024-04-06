@@ -4,14 +4,13 @@ This integration supports Sentry's Node, Python, and Go
 [platforms](https://sentry.io/platforms/).  [Contact
 us](/help/contact-support) if a platform you care about is missing.
 
+{start_tabs}
+
 1. {!create-stream.md!}
 
 1. {!create-an-incoming-webhook.md!}
 
-1. {!generate-integration-url.md!}
-
-    The default topic, if not set in the URL, will be the title of the
-    issue or event.
+1. {!generate-webhook-url-basic.md!}
 
 1. In Sentry, go to your organization's **Settings**, and then go to
     **Developer Settings**. Click on the **Create New Integration** button,
@@ -42,7 +41,13 @@ us](/help/contact-support) if a platform you care about is missing.
     **Send a notification via an integration**, and set it to the internal
     integration you created in the previous step.
 
+{end_tabs}
+
 {!congrats.md!}
 
 ![](/static/images/integrations/sentry/001.png)
 ![](/static/images/integrations/sentry/002.png)
+
+### Related documentation
+
+{!webhooks-url-specification.md!}

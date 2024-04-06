@@ -5,11 +5,13 @@ Receive Zabbix notifications in Zulip!
     **Note:** This guide is for Zabbix 5.4 and above; some older Zabbix versions have a
     different workflow for creating an outgoing webhook.
 
+{start_tabs}
+
 1. {!create-stream.md!}
 
 1. {!create-an-incoming-webhook.md!}
 
-1. {!generate-integration-url.md!}
+1. {!generate-webhook-url-basic.md!}
 
 1. Go to your Zabbix web interface, and click **Administration**. Click on
    **General** and then select **Macros** from the dropdown. Click **Add** and set the
@@ -113,6 +115,12 @@ Receive Zabbix notifications in Zulip!
    you added the alert to and click **Select**. Under **Send only to**,
    select **Zulip** or the name of your media type. Click **Add**  twice.
 
+{end_tabs}
+
 {!congrats.md!}
 
 ![](/static/images/integrations/zabbix/001.png)
+
+### Related documentation
+
+{!webhooks-url-specification.md!}

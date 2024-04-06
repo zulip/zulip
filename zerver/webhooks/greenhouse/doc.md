@@ -1,10 +1,12 @@
 Receive Greenhouse notifications in Zulip!
 
+{start_tabs}
+
 1. {!create-stream.md!}
 
 1. {!create-an-incoming-webhook.md!}
 
-1. {!generate-integration-url.md!}
+1. {!generate-webhook-url-basic.md!}
 
 1. On your Greenhouse **Dashboard**, click on the
    **gear** (<i class="fa fa-cog"></i>) icon in the upper right
@@ -19,6 +21,12 @@ Receive Greenhouse notifications in Zulip!
    doesn't expect any particular value. Set **Secret key** to any
    random value, and click **Create Web hook**.
 
+{end_tabs}
+
 {!congrats.md!}
 
 ![](/static/images/integrations/greenhouse/000.png)
+
+### Related documentation
+
+{!webhooks-url-specification.md!}

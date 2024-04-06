@@ -3,11 +3,13 @@ Get Zulip notifications for your Jira projects!
 These instructions apply to Atlassian Cloud's hosted Jira, and Jira Server version
 5.2 or greater. For older installs, you'll need our [Jira plugin](./jira-plugin).
 
+{start_tabs}
+
 1. {!create-stream.md!}
 
 1. {!create-an-incoming-webhook.md!}
 
-1. {!generate-integration-url.md!}
+1. {!generate-webhook-url-basic.md!}
 
 1. Go to your Jira **Site administration** page. Click **Jira** on the left.
    On the left sidebar, scroll down, and under **Advanced**, click **WebHooks**.
@@ -24,6 +26,12 @@ These instructions apply to Atlassian Cloud's hosted Jira, and Jira Server versi
     * when a comment is updated
     * when a comment is deleted
 
+{end_tabs}
+
 {!congrats.md!}
 
 ![](/static/images/integrations/jira/001.png)
+
+### Related documentation
+
+{!webhooks-url-specification.md!}
