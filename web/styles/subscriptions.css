@@ -1125,7 +1125,7 @@ div.settings-radio-input-parent {
 
    Longer-term we should extract this logic two-column-overlay class
    to read more naturally. */
-   @media (calc($md_min - 1px) < width < calc($md_min + 113px)) {
+@media (calc($md_min - 1px) < width < calc($md_min + 113px)) {
     .user-groups-container .right,
     .subscriptions-container .right {
         position: absolute;
