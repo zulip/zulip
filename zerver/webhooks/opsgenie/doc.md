@@ -15,7 +15,7 @@ Get Zulip notifications for your Opsgenie events!
    **Webhook URL** to the URL constructed above, and click on
    **Save Integration**.
 
-{start_tabs}
+{end_tabs}
 
 {!congrats.md!}
 

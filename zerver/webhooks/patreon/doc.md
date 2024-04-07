@@ -15,7 +15,7 @@ Get Patreon notifications in Zulip!
    **plus** (**+**) button. Enable the events you would like to receive
    notifications for, and click **Send Test**.
 
-{start_tabs}
+{end_tabs}
 
 {!congrats.md!}
 

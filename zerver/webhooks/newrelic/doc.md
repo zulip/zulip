@@ -22,7 +22,7 @@ New Relic can send messages to a Zulip stream for incidents.
 
 1. After creating the channel send a test notification to make sure it works.
 
-{start_tabs}
+{end_tabs}
 
 {!congrats.md!}
 
