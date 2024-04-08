@@ -1,10 +1,12 @@
 Receive Radarr notifications in Zulip!
 
+{start_tabs}
+
 1. {!create-stream.md!}
 
 1. {!create-an-incoming-webhook.md!}
 
-1. {!generate-integration-url.md!}
+1. {!generate-webhook-url-basic.md!}
 
 1. Go to your Radarr dashboard. Click **Settings** and click **Connect**.
     Click the **+** icon.
@@ -19,6 +21,12 @@ Receive Radarr notifications in Zulip!
 
 1. Click **Save** and you should receive a test message.
 
+{end_tabs}
+
 {!congrats.md!}
 
 ![](/static/images/integrations/radarr/001.png)
+
+### Related documentation
+
+{!webhooks-url-specification.md!}

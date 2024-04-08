@@ -1,10 +1,12 @@
 Receive GoSquared notifications in Zulip!
 
+{start_tabs}
+
 1. {!create-stream.md!}
 
 1. {!create-an-incoming-webhook.md!}
 
-1. {!generate-integration-url.md!}
+1. {!generate-webhook-url-basic.md!}
 
 1. Go to your project's **Settings** and click on **Services**.
    Scroll down and next to **Webhook**, click on **Connect**. Click
@@ -18,6 +20,12 @@ Receive GoSquared notifications in Zulip!
    notifications are triggered. Under **Delivery**, check the **Webhook**
    checkbox, and click **Add**.
 
+{end_tabs}
+
 {!congrats.md!}
 
 ![](/static/images/integrations/gosquared/000.png)
+
+### Related documentation
+
+{!webhooks-url-specification.md!}

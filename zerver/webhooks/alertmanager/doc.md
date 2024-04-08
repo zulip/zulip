@@ -1,10 +1,12 @@
 Get Zulip notifications from Alertmanager!
 
+{start_tabs}
+
 1. {!create-stream.md!}
 
 1. {!create-an-incoming-webhook.md!}
 
-1. {!generate-integration-url.md!}
+1. {!generate-webhook-url-basic.md!}
 
     Additionally, you may specify URL parameters named `name` and `desc` to specify which labels
     or annotations will be used to construct the alert message. This allows you to use arbitrary labels
@@ -19,6 +21,8 @@ Get Zulip notifications from Alertmanager!
       webhook_configs:
         - url: "<the URL constructed above>"
     ```
+
+{end_tabs}
 
 {!congrats.md!}
 

@@ -1,10 +1,12 @@
 Get Zulip notifications for your Groove events!
 
+{start_tabs}
+
 1. {!create-stream.md!}
 
 1. {!create-an-incoming-webhook.md!}
 
-1. {!generate-integration-url.md!}
+1. {!generate-webhook-url-basic.md!}
 
 1. On your Groove dashboard, click on **Settings**. Under **Company**,
    click on **API**. Open the **Add Webhook** dropdown and select an
@@ -24,6 +26,12 @@ Get Zulip notifications for your Groove events!
 1. Repeat the last two steps (using the same URL) for every event you'd like
    to be notified about.
 
+{end_tabs}
+
 {!congrats.md!}
 
 ![](/static/images/integrations/groove/001.png)
+
+### Related documentation
+
+{!webhooks-url-specification.md!}

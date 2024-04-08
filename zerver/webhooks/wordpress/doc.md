@@ -4,15 +4,13 @@ If you're hosting your WordPress blog yourself (i.e., not on WordPress.com),
 first install the
 [HookPress plugin](https://wordpress.org/plugins/hookpress/) (experimental).
 
+{start_tabs}
+
 1. {!create-stream.md!}
 
 1. {!create-an-incoming-webhook.md!}
 
-1. {!generate-integration-url.md!}
-
-    **Important:** The HookPress plugin requires URL parameters to
-    be delimited by semicolons instead of ampersands. If you have a
-    self-hosted blog, replace every `&` with `;` in the URL above.
+1. {!generate-webhook-url-basic.md!}
 
 1. Go to
    `https://YOUR-WORDPRESS-BLOG/wp-admin/options-general.php?page=webhooks`,
@@ -28,6 +26,12 @@ first install the
 
 1. Set **URL** to the URL constructed above, and click **Add new webhook**.
 
+{end_tabs}
+
 {!congrats.md!}
 
 ![](/static/images/integrations/wordpress/wordpress_post_created.png)
+
+### Related documentation
+
+{!webhooks-url-specification.md!}

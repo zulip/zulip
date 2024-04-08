@@ -1,10 +1,12 @@
 Receive Freshstatus notifications in Zulip!
 
+{start_tabs}
+
 1. {!create-stream.md!}
 
 1. {!create-an-incoming-webhook.md!}
 
-1. {!generate-integration-url.md!}
+1. {!generate-webhook-url-basic.md!}
 
 1. On your Freshstatus dashboard, click **Settings** and click **Integrations**.
    Go to **Webhooks** and click **Manage**. Click **New Webhook**
@@ -76,6 +78,12 @@ Receive Freshstatus notifications in Zulip!
 1. Finally, click **Save**. Optionally, you may click **Test** to check if
    the webhook was configured correctly.
 
+{end_tabs}
+
 {!congrats.md!}
 
 ![](/static/images/integrations/freshstatus/001.png)
+
+### Related documentation
+
+{!webhooks-url-specification.md!}

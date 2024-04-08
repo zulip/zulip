@@ -2,11 +2,13 @@ See your Thinkst Canarytoken alerts in Zulip! This integration works with Canary
 [canarytokens.org][canarytokens], not Thinkst's paid product - see the
 [Thinkst](/integrations/doc/thinkst) integration for those!
 
+{start_tabs}
+
 1. {!create-stream.md!}
 
 1. {!create-an-incoming-webhook.md!}
 
-1. {!generate-integration-url.md!}
+1. {!generate-webhook-url-basic.md!}
 
 1. Go to [canarytokens.org][canarytokens], and select the type of
    webhook that you want to create and add a reminder note.
@@ -14,8 +16,14 @@ See your Thinkst Canarytoken alerts in Zulip! This integration works with Canary
    URL above.
    Finally, click **Create my canarytoken**.
 
+{end_tabs}
+
 {!congrats.md!}
 
 ![](/static/images/integrations/canarytoken/001.png)
 
 [canarytokens]: https://canarytokens.org
+
+### Related documentation
+
+{!webhooks-url-specification.md!}

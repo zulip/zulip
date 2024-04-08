@@ -1,11 +1,13 @@
 See customer support interactions in Zulip with our Freshdesk
 integration!
 
+{start_tabs}
+
 1. {!create-stream.md!}
 
 1. {!create-an-incoming-webhook.md!}
 
-1. {!generate-integration-url.md!}
+1. {!generate-webhook-url-basic.md!}
 
 ### Add notifications for new Freshdesk tickets
 
@@ -98,6 +100,12 @@ integration!
 
     Click **Save**.
 
+{end_tabs}
+
 {!congrats.md!}
 
 ![](/static/images/integrations/freshdesk/004.png)
+
+### Related documentation
+
+{!webhooks-url-specification.md!}
