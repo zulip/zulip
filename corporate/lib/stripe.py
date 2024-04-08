@@ -4989,7 +4989,12 @@ def invoice_plans_as_needed(event_time: Optional[datetime] = None) -> None:
                     plan.save(update_fields=["invoice_overdue_email_sent"])
                 continue
 
-        billing_session.invoice_plan(plan, plan.next_invoice_date)
+        while (
+            plan.next_invoice_date is not None  # type: ignore[redundant-expr] # plan.next_invoice_date can be None after calling invoice_plan.
+            and plan.next_invoice_date <= event_time
+        ):
+            billing_session.invoice_plan(plan, plan.next_invoice_date)
+            plan.refresh_from_db()
 
 
 def is_realm_on_free_trial(realm: Realm) -> bool:

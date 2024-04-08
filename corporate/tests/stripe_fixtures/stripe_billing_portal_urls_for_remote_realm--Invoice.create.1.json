@@ -59,15 +59,15 @@
         "discount_amounts": [],
         "discountable": false,
         "discounts": [],
-        "id": "il_NORMALIZED00000000000001",
+        "id": "il_NORMALIZED00000000000003",
         "invoice": "in_NORMALIZED00000000000001",
-        "invoice_item": "ii_NORMALIZED00000000000001",
+        "invoice_item": "ii_NORMALIZED00000000000003",
         "livemode": false,
         "metadata": {},
         "object": "line_item",
         "period": {
-          "end": 1000000000,
-          "start": 1000000000
+          "end": 1357095845,
+          "start": 1325473445
         },
         "plan": null,
         "price": {
@@ -110,15 +110,15 @@
         "discount_amounts": [],
         "discountable": false,
         "discounts": [],
-        "id": "il_NORMALIZED00000000000002",
+        "id": "il_NORMALIZED00000000000004",
         "invoice": "in_NORMALIZED00000000000001",
-        "invoice_item": "ii_NORMALIZED00000000000002",
+        "invoice_item": "ii_NORMALIZED00000000000004",
         "livemode": false,
         "metadata": {},
         "object": "line_item",
         "period": {
-          "end": 1000000000,
-          "start": 1000000000
+          "end": 1357095845,
+          "start": 1325473445
         },
         "plan": null,
         "price": {

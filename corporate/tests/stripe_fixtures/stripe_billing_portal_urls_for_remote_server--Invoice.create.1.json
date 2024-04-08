@@ -42,7 +42,7 @@
   "footer": null,
   "from_invoice": null,
   "hosted_invoice_url": null,
-  "id": "in_NORMALIZED00000000000001",
+  "id": "in_NORMALIZED00000000000002",
   "invoice_pdf": null,
   "issuer": {
     "type": "self"
@@ -60,14 +60,14 @@
         "discountable": false,
         "discounts": [],
         "id": "il_NORMALIZED00000000000001",
-        "invoice": "in_NORMALIZED00000000000001",
+        "invoice": "in_NORMALIZED00000000000002",
         "invoice_item": "ii_NORMALIZED00000000000001",
         "livemode": false,
         "metadata": {},
         "object": "line_item",
         "period": {
-          "end": 1000000000,
-          "start": 1000000000
+          "end": 1357095845,
+          "start": 1325473445
         },
         "plan": null,
         "price": {
@@ -111,14 +111,14 @@
         "discountable": false,
         "discounts": [],
         "id": "il_NORMALIZED00000000000002",
-        "invoice": "in_NORMALIZED00000000000001",
+        "invoice": "in_NORMALIZED00000000000002",
         "invoice_item": "ii_NORMALIZED00000000000002",
         "livemode": false,
         "metadata": {},
         "object": "line_item",
         "period": {
-          "end": 1000000000,
-          "start": 1000000000
+          "end": 1357095845,
+          "start": 1325473445
         },
         "plan": null,
         "price": {
@@ -157,7 +157,7 @@
     "has_more": false,
     "object": "list",
     "total_count": 2,
-    "url": "/v1/invoices/in_NORMALIZED00000000000001/lines"
+    "url": "/v1/invoices/in_NORMALIZED00000000000002/lines"
   },
   "livemode": false,
   "metadata": {

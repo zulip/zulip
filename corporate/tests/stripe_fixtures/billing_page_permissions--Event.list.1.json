@@ -5,53 +5,49 @@
       "created": 1000000000,
       "data": {
         "object": {
-          "address": null,
-          "balance": 0,
+          "application": null,
+          "automatic_payment_methods": null,
+          "cancellation_reason": null,
+          "client_secret": "seti_1P3qrQDEQaroqDjsIp9IJNaj_secret_Pte9sWyl57z3u5rg3cy1akCDLjnvc7x",
           "created": 1000000000,
-          "currency": null,
-          "default_currency": null,
-          "default_source": null,
-          "delinquent": false,
-          "description": "zulip (Zulip Dev)",
-          "discount": null,
-          "email": "othello@zulip.com",
-          "id": "cus_NORMALIZED0001",
-          "invoice_prefix": "NORMA01",
-          "invoice_settings": {
-            "custom_fields": null,
-            "default_payment_method": "pm_1OqSj6DEQaroqDjsIT8fDv3h",
-            "footer": null,
-            "rendering_options": null
-          },
+          "customer": "cus_NORMALIZED0002",
+          "description": null,
+          "flow_directions": null,
+          "id": "seti_1P3qrQDEQaroqDjsIp9IJNaj",
+          "last_setup_error": null,
+          "latest_attempt": "setatt_1P3qrQDEQaroqDjsUaZ2GDA7",
           "livemode": false,
-          "metadata": {
-            "realm_id": "1",
-            "realm_str": "zulip"
+          "mandate": null,
+          "metadata": {},
+          "next_action": null,
+          "object": "setup_intent",
+          "on_behalf_of": null,
+          "payment_method": "pm_1P3qrQDEQaroqDjsGhWSunU8",
+          "payment_method_configuration_details": null,
+          "payment_method_options": {
+            "card": {
+              "mandate_options": null,
+              "network": null,
+              "request_three_d_secure": "automatic"
+            }
           },
-          "name": null,
-          "next_invoice_sequence": 1,
-          "object": "customer",
-          "phone": null,
-          "preferred_locales": [],
-          "shipping": null,
-          "tax_exempt": "none",
-          "test_clock": null
-        },
-        "previous_attributes": {
-          "invoice_settings": {
-            "default_payment_method": null
-          }
+          "payment_method_types": [
+            "card"
+          ],
+          "single_use_mandate": null,
+          "status": "succeeded",
+          "usage": "off_session"
         }
       },
-      "id": "evt_1OqSj8DEQaroqDjsn3WDx4oe",
+      "id": "evt_1P3qrRDEQaroqDjsJU9SSjtM",
       "livemode": false,
       "object": "event",
       "pending_webhooks": 0,
       "request": {
         "id": "req_NORMALIZED0001",
-        "idempotency_key": "421aa86a-9cb1-47b2-80fa-f324266dda82"
+        "idempotency_key": "57c21105-311c-423c-b78d-f7d8d87399a3"
       },
-      "type": "customer.updated"
+      "type": "setup_intent.succeeded"
     }
   ],
   "has_more": true,
