@@ -302,11 +302,12 @@ export function start(raw_opts: ComposeActionsStartOpts): void {
         opts.private_message_recipient.replaceAll(/,\s*/g, ", "),
     );
 
-    // If the user opens the compose box, types some text, and then clicks on a
-    // different stream/topic, we want to keep the text in the compose box
     if (opts.content !== undefined) {
         compose_ui.insert_and_scroll_into_view(opts.content, $("textarea#compose-textarea"), true);
         $(".compose_control_button_container:has(.add-poll)").addClass("disabled-on-hover");
+        // If we were provided with message content, we might need to
+        // display that it's too long.
+        compose_validate.check_overflow_text();
     }
 
     compose_state.set_message_type(opts.message_type);
@@ -316,12 +317,6 @@ export function start(raw_opts: ComposeActionsStartOpts): void {
 
     if (opts.draft_id) {
         $("textarea#compose-textarea").data("draft-id", opts.draft_id);
-    }
-
-    if (opts.content !== undefined) {
-        // If we were provided with message content, we might need to
-        // display that it's too long.
-        compose_validate.check_overflow_text();
     }
 
     const $clear_topic_button = $("#recipient_box_clear_topic_button");
