@@ -5,83 +5,49 @@
       "created": 1000000000,
       "data": {
         "object": {
-          "amount": 984000,
-          "amount_capturable": 0,
-          "amount_details": {
-            "tip": {}
-          },
-          "amount_received": 0,
           "application": null,
-          "application_fee_amount": null,
           "automatic_payment_methods": null,
-          "canceled_at": 1000000000,
-          "cancellation_reason": "requested_by_customer",
-          "capture_method": "automatic",
-          "charges": {
-            "data": [],
-            "has_more": false,
-            "object": "list",
-            "total_count": 0,
-            "url": "/v1/charges?payment_intent=pi_NORMALIZED00000000000001"
-          },
-          "client_secret": "pi_NORMALIZED00000000000001_secret_oMk0Ho123xtHUhCG5keK2uTCc",
-          "confirmation_method": "automatic",
+          "cancellation_reason": null,
+          "client_secret": "seti_1P41kDDEQaroqDjsGdHYtHUq_secret_PtpP8qBbZHhq9JQlxasQBqmBoAv6Fc7",
           "created": 1000000000,
-          "currency": "usd",
           "customer": "cus_NORMALIZED0002",
-          "description": "Payment for Invoice",
-          "id": "pi_NORMALIZED00000000000001",
-          "invoice": "in_NORMALIZED00000000000001",
-          "last_payment_error": null,
-          "latest_charge": null,
+          "description": null,
+          "flow_directions": null,
+          "id": "seti_1P41kDDEQaroqDjsGdHYtHUq",
+          "last_setup_error": null,
+          "latest_attempt": "setatt_1P41kDDEQaroqDjsZzmDp0we",
           "livemode": false,
+          "mandate": null,
           "metadata": {},
           "next_action": null,
-          "object": "payment_intent",
+          "object": "setup_intent",
           "on_behalf_of": null,
-          "payment_method": null,
+          "payment_method": "pm_1P41kCDEQaroqDjslhJv9aor",
           "payment_method_configuration_details": null,
           "payment_method_options": {
             "card": {
-              "installments": null,
               "mandate_options": null,
               "network": null,
               "request_three_d_secure": "automatic"
-            },
-            "cashapp": {},
-            "wechat_pay": {
-              "app_id": null,
-              "client": null
             }
           },
           "payment_method_types": [
-            "ach_credit_transfer",
-            "card",
-            "cashapp",
-            "wechat_pay"
+            "card"
           ],
-          "processing": null,
-          "receipt_email": "hamlet@zulip.com",
-          "review": null,
-          "setup_future_usage": null,
-          "shipping": null,
-          "source": null,
-          "statement_descriptor": "Zulip Cloud Standard",
-          "statement_descriptor_suffix": null,
-          "status": "canceled",
-          "transfer_data": null,
-          "transfer_group": null
+          "single_use_mandate": null,
+          "status": "succeeded",
+          "usage": "off_session"
         }
       },
-      "id": "evt_3P3xoxDEQaroqDjs01EidiKz",
+      "id": "evt_1P41kEDEQaroqDjs8EPXGE75",
       "livemode": false,
       "object": "event",
       "pending_webhooks": 0,
       "request": {
         "id": "req_NORMALIZED0001",
-        "idempotency_key": "979d3da2-415a-4add-b166-ece48f43deda"
+        "idempotency_key": "ad02c108-718a-4aa3-aeb4-f1709653ed1b"
       },
-      "type": "payment_intent.canceled"
+      "type": "setup_intent.succeeded"
     }
   ],
   "has_more": true,

@@ -42,7 +42,7 @@
   "footer": null,
   "from_invoice": null,
   "hosted_invoice_url": null,
-  "id": "in_NORMALIZED00000000000002",
+  "id": "in_NORMALIZED00000000000003",
   "invoice_pdf": null,
   "issuer": {
     "type": "self"
@@ -59,8 +59,8 @@
         "discount_amounts": [],
         "discountable": false,
         "discounts": [],
-        "id": "il_NORMALIZED00000000000001",
-        "invoice": "in_NORMALIZED00000000000002",
+        "id": "il_NORMALIZED00000000000003",
+        "invoice": "in_NORMALIZED00000000000003",
         "invoice_item": "ii_NORMALIZED00000000000001",
         "livemode": false,
         "metadata": {},
@@ -110,8 +110,8 @@
         "discount_amounts": [],
         "discountable": false,
         "discounts": [],
-        "id": "il_NORMALIZED00000000000002",
-        "invoice": "in_NORMALIZED00000000000002",
+        "id": "il_NORMALIZED00000000000004",
+        "invoice": "in_NORMALIZED00000000000003",
         "invoice_item": "ii_NORMALIZED00000000000002",
         "livemode": false,
         "metadata": {},
@@ -157,7 +157,7 @@
     "has_more": false,
     "object": "list",
     "total_count": 2,
-    "url": "/v1/invoices/in_NORMALIZED00000000000002/lines"
+    "url": "/v1/invoices/in_NORMALIZED00000000000003/lines"
   },
   "livemode": false,
   "metadata": {
@@ -216,5 +216,5 @@
   "total_excluding_tax": 176000,
   "total_tax_amounts": [],
   "transfer_data": null,
-  "webhooks_delivered_at": 1000000000
+  "webhooks_delivered_at": null
 }

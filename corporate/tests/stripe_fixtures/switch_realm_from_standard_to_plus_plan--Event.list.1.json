@@ -5,63 +5,48 @@
       "created": 1000000000,
       "data": {
         "object": {
-          "billing_details": {
-            "address": {
-              "city": "San Francisco",
-              "country": "US",
-              "line1": "123 Main St",
-              "line2": null,
-              "postal_code": "94105",
-              "state": "CA"
-            },
-            "email": null,
-            "name": "John Doe",
-            "phone": null
-          },
-          "card": {
-            "brand": "visa",
-            "checks": {
-              "address_line1_check": null,
-              "address_postal_code_check": null,
-              "cvc_check": "pass"
-            },
-            "country": "US",
-            "display_brand": "visa",
-            "exp_month": 4,
-            "exp_year": 2025,
-            "fingerprint": "NORMALIZED000001",
-            "funding": "credit",
-            "generated_from": null,
-            "last4": "4242",
-            "networks": {
-              "available": [
-                "visa"
-              ],
-              "preferred": null
-            },
-            "three_d_secure_usage": {
-              "supported": true
-            },
-            "wallet": null
-          },
+          "address": null,
+          "balance": 0,
           "created": 1000000000,
-          "customer": "cus_NORMALIZED0002",
-          "id": "pm_1P3xp8DEQaroqDjsxssC1Dyh",
+          "currency": null,
+          "default_currency": null,
+          "default_source": null,
+          "delinquent": false,
+          "description": "test-realm-2 (test-realm-2)",
+          "discount": null,
+          "email": "user-0-test-realm-2@zulip.com",
+          "id": "cus_NORMALIZED0002",
+          "invoice_prefix": "NORMA02",
+          "invoice_settings": {
+            "custom_fields": null,
+            "default_payment_method": null,
+            "footer": null,
+            "rendering_options": null
+          },
           "livemode": false,
-          "metadata": {},
-          "object": "payment_method",
-          "type": "card"
+          "metadata": {
+            "realm_id": "2",
+            "realm_str": "test-realm-2"
+          },
+          "name": null,
+          "next_invoice_sequence": 1,
+          "object": "customer",
+          "phone": null,
+          "preferred_locales": [],
+          "shipping": null,
+          "tax_exempt": "none",
+          "test_clock": null
         }
       },
-      "id": "evt_1P3xpADEQaroqDjs3iHANhsf",
+      "id": "evt_1P41kXDEQaroqDjsCZ2aTSzW",
       "livemode": false,
       "object": "event",
       "pending_webhooks": 0,
       "request": {
         "id": "req_NORMALIZED0001",
-        "idempotency_key": "be62bd2b-ab22-4fe0-90e7-33d306c85fa5"
+        "idempotency_key": "3c327c5e-e0de-4e49-8c04-02b7e3f7dc63"
       },
-      "type": "payment_method.attached"
+      "type": "customer.created"
     }
   ],
   "has_more": true,

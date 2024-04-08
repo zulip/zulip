@@ -762,31 +762,19 @@ class BillingSession(ABC):
     def org_name(self) -> str:
         pass
 
-    def is_legacy_customer(self) -> bool:
-        if isinstance(self, RealmBillingSession):
-            return False
+    def customer_plan_exists(self) -> bool:
+        # Checks if the realm / server had a plan anytime in the past.
+        customer = self.get_customer()
 
-        customers_to_check = []
+        if customer is not None and CustomerPlan.objects.filter(customer=customer).exists():
+            return True
+
         if isinstance(self, RemoteRealmBillingSession):
-            customer = self.get_customer()
-            if customer is not None:
-                customers_to_check.append(customer)
+            return CustomerPlan.objects.filter(
+                customer=get_customer_by_remote_server(self.remote_realm.server)
+            ).exists()
 
-            # Also, check if server for a remote realm was ever on a legacy plan.
-            # We don't migrate ENDED legacy plans from server to remote realm, so we can end
-            # in this state if the first time they registered with us was after the legacy plan.
-            server_customer = get_customer_by_remote_server(self.remote_realm.server)
-            if server_customer is not None:
-                customers_to_check.append(server_customer)
-
-        if isinstance(self, RemoteServerBillingSession):
-            customer = self.get_customer()
-            if customer is not None:
-                customers_to_check.append(customer)
-
-        return CustomerPlan.objects.filter(
-            customer__in=customers_to_check, tier=CustomerPlan.TIER_SELF_HOSTED_LEGACY
-        ).exists()
+        return False
 
     def get_past_invoices_session_url(self) -> str:
         headline = "List of past invoices"
@@ -1962,8 +1950,8 @@ class BillingSession(ABC):
             if fixed_price_plan_offer is not None:
                 free_trial = False
 
-        if self.is_legacy_customer():
-            # Free trial is not available for legacy customers.
+        if self.customer_plan_exists():
+            # Free trial is not available for existing customers.
             free_trial = False
 
         remote_server_legacy_plan = self.get_remote_server_legacy_plan(customer)
@@ -2611,8 +2599,8 @@ class BillingSession(ABC):
         is_self_hosted_billing = not isinstance(self, RealmBillingSession)
         if fixed_price is None and remote_server_legacy_plan_end_date is None:
             free_trial_days = get_free_trial_days(is_self_hosted_billing, tier)
-            if self.is_legacy_customer():
-                # Free trial is not available for legacy customers.
+            if self.customer_plan_exists():
+                # Free trial is not available for existing customers.
                 free_trial_days = None
             if free_trial_days is not None:
                 _, _, free_trial_end, _ = compute_plan_parameters(

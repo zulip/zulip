@@ -1,0 +1,109 @@
+{
+  "data": [
+    {
+      "api_version": "2020-08-27",
+      "created": 1000000000,
+      "data": {
+        "object": {
+          "address": null,
+          "balance": 0,
+          "created": 1000000000,
+          "currency": null,
+          "default_currency": null,
+          "default_source": null,
+          "delinquent": false,
+          "description": "zulip (Zulip Dev)",
+          "discount": null,
+          "email": "hamlet@zulip.com",
+          "id": "cus_NORMALIZED0006",
+          "invoice_prefix": "NORMA04",
+          "invoice_settings": {
+            "custom_fields": null,
+            "default_payment_method": "pm_1P41jcDEQaroqDjsHNtzJ3O2",
+            "footer": null,
+            "rendering_options": null
+          },
+          "livemode": false,
+          "metadata": {
+            "realm_id": "1",
+            "realm_str": "zulip"
+          },
+          "name": null,
+          "next_invoice_sequence": 1,
+          "object": "customer",
+          "phone": null,
+          "preferred_locales": [],
+          "shipping": null,
+          "tax_exempt": "none",
+          "test_clock": null
+        },
+        "previous_attributes": {
+          "invoice_settings": {
+            "default_payment_method": null
+          }
+        }
+      },
+      "id": "evt_1P41jeDEQaroqDjsPzlzda9H",
+      "livemode": false,
+      "object": "event",
+      "pending_webhooks": 2,
+      "request": {
+        "id": "req_NORMALIZED0022",
+        "idempotency_key": "3eaf7c66-47fd-4f46-9087-e7bf3ecc60c5"
+      },
+      "type": "customer.updated"
+    },
+    {
+      "api_version": "2020-08-27",
+      "created": 1000000000,
+      "data": {
+        "object": {
+          "application": null,
+          "automatic_payment_methods": null,
+          "cancellation_reason": null,
+          "client_secret": "seti_1P41jdDEQaroqDjsW0xj15eN_secret_PtpOtXKjP1IImzTQiOHRYZFNsTKf7mr",
+          "created": 1000000000,
+          "customer": "cus_NORMALIZED0004",
+          "description": null,
+          "flow_directions": null,
+          "id": "seti_1P41jdDEQaroqDjsW0xj15eN",
+          "last_setup_error": null,
+          "latest_attempt": "setatt_1P41jdDEQaroqDjsnh7kkAon",
+          "livemode": false,
+          "mandate": null,
+          "metadata": {},
+          "next_action": null,
+          "object": "setup_intent",
+          "on_behalf_of": null,
+          "payment_method": "pm_1P41jcDEQaroqDjsv12o0iu2",
+          "payment_method_configuration_details": null,
+          "payment_method_options": {
+            "card": {
+              "mandate_options": null,
+              "network": null,
+              "request_three_d_secure": "automatic"
+            }
+          },
+          "payment_method_types": [
+            "card"
+          ],
+          "single_use_mandate": null,
+          "status": "succeeded",
+          "usage": "off_session"
+        }
+      },
+      "id": "evt_1P41jeDEQaroqDjsfSa2Hx19",
+      "livemode": false,
+      "object": "event",
+      "pending_webhooks": 0,
+      "request": {
+        "id": "req_NORMALIZED0021",
+        "idempotency_key": "25f4c423-5885-4524-a28b-c2ecd6bf511e"
+      },
+      "type": "setup_intent.succeeded"
+    }
+  ],
+  "has_more": false,
+  "object": "list",
+  "url": "/v1/events"
+}

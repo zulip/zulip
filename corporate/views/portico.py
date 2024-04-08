@@ -188,8 +188,8 @@ def remote_realm_plans_page(
                     status=CustomerPlan.NEVER_STARTED,
                 )
 
-    if billing_session.is_legacy_customer():
-        # Free trial is disabled for legacy customers.
+    if billing_session.customer_plan_exists():
+        # Free trial is disabled for existing customers.
         context.free_trial_days = None
 
     context.is_new_customer = (
@@ -251,8 +251,8 @@ def remote_server_plans_page(
                     status=CustomerPlan.NEVER_STARTED,
                 )
 
-        if billing_session.is_legacy_customer():
-            # Free trial is disabled for legacy customers.
+        if billing_session.customer_plan_exists():
+            # Free trial is disabled for existing customers.
             context.free_trial_days = None
 
     context.is_new_customer = (
