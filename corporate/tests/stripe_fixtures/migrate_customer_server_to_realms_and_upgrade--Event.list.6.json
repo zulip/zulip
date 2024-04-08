@@ -5,55 +5,6 @@
       "created": 1000000000,
       "data": {
         "object": {
-          "application": null,
-          "automatic_payment_methods": null,
-          "cancellation_reason": null,
-          "client_secret": "seti_1P3xoqDEQaroqDjsc8Uzpbs8_secret_PtlL3CxJSbEJqQooCwMaaC4tKwySwvd",
-          "created": 1000000000,
-          "customer": "cus_NORMALIZED0004",
-          "description": null,
-          "flow_directions": null,
-          "id": "seti_1P3xoqDEQaroqDjsc8Uzpbs8",
-          "last_setup_error": null,
-          "latest_attempt": "setatt_1P3xoqDEQaroqDjsZBOEpADv",
-          "livemode": false,
-          "mandate": null,
-          "metadata": {},
-          "next_action": null,
-          "object": "setup_intent",
-          "on_behalf_of": null,
-          "payment_method": "pm_1P3xoqDEQaroqDjsiAz2lSjJ",
-          "payment_method_configuration_details": null,
-          "payment_method_options": {
-            "card": {
-              "mandate_options": null,
-              "network": null,
-              "request_three_d_secure": "automatic"
-            }
-          },
-          "payment_method_types": [
-            "card"
-          ],
-          "single_use_mandate": null,
-          "status": "succeeded",
-          "usage": "off_session"
-        }
-      },
-      "id": "evt_1P3xorDEQaroqDjsIjFK972i",
-      "livemode": false,
-      "object": "event",
-      "pending_webhooks": 0,
-      "request": {
-        "id": "req_NORMALIZED0017",
-        "idempotency_key": "d156384c-c958-4436-9854-a97831b1c436"
-      },
-      "type": "setup_intent.succeeded"
-    },
-    {
-      "api_version": "2020-08-27",
-      "created": 1000000000,
-      "data": {
-        "object": {
           "billing_details": {
             "address": {
               "city": "San Francisco",
@@ -95,20 +46,20 @@
           },
           "created": 1000000000,
           "customer": "cus_NORMALIZED0004",
-          "id": "pm_1P3xoqDEQaroqDjsiAz2lSjJ",
+          "id": "pm_1P41k5DEQaroqDjsP3pNb011",
           "livemode": false,
           "metadata": {},
           "object": "payment_method",
           "type": "card"
         }
       },
-      "id": "evt_1P3xorDEQaroqDjsbTxOwHjx",
+      "id": "evt_1P41k6DEQaroqDjs5zUDTu9S",
       "livemode": false,
       "object": "event",
       "pending_webhooks": 0,
       "request": {
-        "id": "req_NORMALIZED0017",
-        "idempotency_key": "d156384c-c958-4436-9854-a97831b1c436"
+        "id": "req_NORMALIZED0018",
+        "idempotency_key": "3cd82441-a1b4-46c4-b7a1-f87837677f19"
       },
       "type": "payment_method.attached"
     },
@@ -120,21 +71,21 @@
           "application": null,
           "automatic_payment_methods": null,
           "cancellation_reason": null,
-          "client_secret": "seti_1P3xoqDEQaroqDjsc8Uzpbs8_secret_PtlL3CxJSbEJqQooCwMaaC4tKwySwvd",
+          "client_secret": "seti_1P41k5DEQaroqDjspnWOhKEU_secret_PtpOPzATBOajAdSuLC1DcNbLZpYEqjV",
           "created": 1000000000,
           "customer": "cus_NORMALIZED0004",
           "description": null,
           "flow_directions": null,
-          "id": "seti_1P3xoqDEQaroqDjsc8Uzpbs8",
+          "id": "seti_1P41k5DEQaroqDjspnWOhKEU",
           "last_setup_error": null,
-          "latest_attempt": "setatt_1P3xoqDEQaroqDjsZBOEpADv",
+          "latest_attempt": "setatt_1P41k5DEQaroqDjsJSoTiK0q",
           "livemode": false,
           "mandate": null,
           "metadata": {},
           "next_action": null,
           "object": "setup_intent",
           "on_behalf_of": null,
-          "payment_method": "pm_1P3xoqDEQaroqDjsiAz2lSjJ",
+          "payment_method": "pm_1P41k5DEQaroqDjsP3pNb011",
           "payment_method_configuration_details": null,
           "payment_method_options": {
             "card": {
@@ -151,13 +102,13 @@
           "usage": "off_session"
         }
       },
-      "id": "evt_1P3xorDEQaroqDjsSHsabIOu",
+      "id": "evt_1P41k6DEQaroqDjsWaPOcI2z",
       "livemode": false,
       "object": "event",
-      "pending_webhooks": 0,
+      "pending_webhooks": 2,
       "request": {
-        "id": "req_NORMALIZED0017",
-        "idempotency_key": "d156384c-c958-4436-9854-a97831b1c436"
+        "id": "req_NORMALIZED0018",
+        "idempotency_key": "3cd82441-a1b4-46c4-b7a1-f87837677f19"
       },
       "type": "setup_intent.created"
     }

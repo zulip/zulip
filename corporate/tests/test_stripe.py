@@ -648,6 +648,7 @@ class StripeTestCase(ZulipTestCase):
         if talk_to_stripe:
             [last_event] = iter(stripe.Event.list(limit=1))
 
+        existing_customer = self.billing_session.customer_plan_exists()
         upgrade_json_response = self.client_billing_post("/billing/upgrade", params)
 
         if upgrade_json_response.status_code != 200 or dont_confirm_payment:
@@ -660,8 +661,8 @@ class StripeTestCase(ZulipTestCase):
         if not talk_to_stripe or (
             is_free_trial_offer_enabled(is_self_hosted_billing)
             and
-            # Free trial is not applicable for legacy customers.
-            not self.billing_session.is_legacy_customer()
+            # Free trial is not applicable for existing customers.
+            not existing_customer
         ):
             # Upgrade already happened for free trial, invoice realms or schedule
             # upgrade for legacy remote servers.
