@@ -159,5 +159,5 @@
   "total_excluding_tax": 6400,
   "total_tax_amounts": [],
   "transfer_data": null,
-  "webhooks_delivered_at": 1000000000
+  "webhooks_delivered_at": null
 }

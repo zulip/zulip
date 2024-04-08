@@ -23,7 +23,7 @@
     "realm_str": "zulip"
   },
   "name": null,
-  "next_invoice_sequence": 3,
+  "next_invoice_sequence": 4,
   "object": "customer",
   "phone": null,
   "preferred_locales": [],

@@ -43,9 +43,9 @@
       "ending_balance": 0,
       "footer": null,
       "from_invoice": null,
-      "hosted_invoice_url": "https://invoice.stripe.com/i/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QZm9YcW83Uk1hY05EMXVPTWw5UEdwbE41U3NOSlR1LDEwMDA2NjQxMw0200279GDsEC?s=ap",
+      "hosted_invoice_url": "https://invoice.stripe.com/i/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9Qc3ZaS2d6cTNjeGpYMTdxNEZuTDJFOU5ablhWczZYLDEwMzA5MDkzMw0200bUTUCSPE?s=ap",
       "id": "in_NORMALIZED00000000000002",
-      "invoice_pdf": "https://pay.stripe.com/invoice/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QZm9YcW83Uk1hY05EMXVPTWw5UEdwbE41U3NOSlR1LDEwMDA2NjQxMw0200279GDsEC/pdf?s=ap",
+      "invoice_pdf": "https://pay.stripe.com/invoice/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9Qc3ZaS2d6cTNjeGpYMTdxNEZuTDJFOU5ablhWczZYLDEwMzA5MDkzMw0200bUTUCSPE/pdf?s=ap",
       "issuer": {
         "type": "self"
       },
@@ -68,8 +68,8 @@
             "metadata": {},
             "object": "line_item",
             "period": {
-              "end": 1000000000,
-              "start": 1000000000
+              "end": 1357095845,
+              "start": 1325473445
             },
             "plan": null,
             "price": {
@@ -212,9 +212,9 @@
       "ending_balance": 0,
       "footer": null,
       "from_invoice": null,
-      "hosted_invoice_url": "https://invoice.stripe.com/i/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QZm9Xc0t3MzY2amEzMG9BWVdSdDhSdVJaVlBPWXN5LDEwMDA2NjQxMw0200xfi7BJbO?s=ap",
+      "hosted_invoice_url": "https://invoice.stripe.com/i/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9Qc3ZaMGVkZWFpSkdMeFF1Qzd6dFRYaDQ5RmVzajhnLDEwMzA5MDkzMw0200mtTHjcIR?s=ap",
       "id": "in_NORMALIZED00000000000001",
-      "invoice_pdf": "https://pay.stripe.com/invoice/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QZm9Xc0t3MzY2amEzMG9BWVdSdDhSdVJaVlBPWXN5LDEwMDA2NjQxMw0200xfi7BJbO/pdf?s=ap",
+      "invoice_pdf": "https://pay.stripe.com/invoice/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9Qc3ZaMGVkZWFpSkdMeFF1Qzd6dFRYaDQ5RmVzajhnLDEwMzA5MDkzMw0200mtTHjcIR/pdf?s=ap",
       "issuer": {
         "type": "self"
       },
@@ -237,8 +237,8 @@
             "metadata": {},
             "object": "line_item",
             "period": {
-              "end": 1000000000,
-              "start": 1000000000
+              "end": 1357095845,
+              "start": 1325473445
             },
             "plan": null,
             "price": {

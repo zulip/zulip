@@ -43,9 +43,9 @@
       "ending_balance": 0,
       "footer": null,
       "from_invoice": null,
-      "hosted_invoice_url": "https://invoice.stripe.com/i/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QZm9PanZHQ2s5NXRRRHdteDZnZUVVT3BSR2xJZmFMLDEwMDA2NTg4NA0200tURDZIXi?s=ap",
+      "hosted_invoice_url": "https://invoice.stripe.com/i/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9Qc3ZQRXNsc0lCcVZrOE53NGo2dlVCSmU2SzlJclRSLDEwMzA5MDM0OA0200jYGkN0U1?s=ap",
       "id": "in_NORMALIZED00000000000002",
-      "invoice_pdf": "https://pay.stripe.com/invoice/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QZm9PanZHQ2s5NXRRRHdteDZnZUVVT3BSR2xJZmFMLDEwMDA2NTg4NA0200tURDZIXi/pdf?s=ap",
+      "invoice_pdf": "https://pay.stripe.com/invoice/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9Qc3ZQRXNsc0lCcVZrOE53NGo2dlVCSmU2SzlJclRSLDEwMzA5MDM0OA0200jYGkN0U1/pdf?s=ap",
       "issuer": {
         "type": "self"
       },
@@ -206,9 +206,9 @@
       "ending_balance": 0,
       "footer": null,
       "from_invoice": null,
-      "hosted_invoice_url": "https://invoice.stripe.com/i/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QZm9PaENBUDRtNzU3WlpZbDBBWW0zRnhEUk1VNWRILDEwMDA2NTg4NA0200dEkd5qxR?s=ap",
+      "hosted_invoice_url": "https://invoice.stripe.com/i/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9Qc3ZQZW9jRkRSYW14TE9ROU1URktvMXZYdjN1OFJ4LDEwMzA5MDM0OA0200FFnwbCRl?s=ap",
       "id": "in_NORMALIZED00000000000001",
-      "invoice_pdf": "https://pay.stripe.com/invoice/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QZm9PaENBUDRtNzU3WlpZbDBBWW0zRnhEUk1VNWRILDEwMDA2NTg4NA0200dEkd5qxR/pdf?s=ap",
+      "invoice_pdf": "https://pay.stripe.com/invoice/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9Qc3ZQZW9jRkRSYW14TE9ROU1URktvMXZYdjN1OFJ4LDEwMzA5MDM0OA0200FFnwbCRl/pdf?s=ap",
       "issuer": {
         "type": "self"
       },
@@ -231,8 +231,8 @@
             "metadata": {},
             "object": "line_item",
             "period": {
-              "end": 1000000000,
-              "start": 1000000000
+              "end": 1357095845,
+              "start": 1325473445
             },
             "plan": null,
             "price": {

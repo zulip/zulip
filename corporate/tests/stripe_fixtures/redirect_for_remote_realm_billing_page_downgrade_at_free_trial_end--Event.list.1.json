@@ -12,21 +12,21 @@
           "default_currency": null,
           "default_source": null,
           "delinquent": false,
-          "description": "zulip.testserver 66c64ff1-94c",
+          "description": "zulip.testserver 8f222752-60e",
           "discount": null,
           "email": "hamlet@zulip.com",
           "id": "cus_NORMALIZED0001",
           "invoice_prefix": "NORMA01",
           "invoice_settings": {
             "custom_fields": null,
-            "default_payment_method": "pm_1Ow3lpDEQaroqDjsK2hHcrKn",
+            "default_payment_method": "pm_1P39dADEQaroqDjslIZ6yFlC",
             "footer": null,
             "rendering_options": null
           },
           "livemode": false,
           "metadata": {
             "remote_realm_host": "zulip.testserver",
-            "remote_realm_uuid": "66c64ff1-94c6-48d0-b6f6-d1fbce7f2b1e"
+            "remote_realm_uuid": "8f222752-60e0-4d35-b592-6567ff5e8e19"
           },
           "name": null,
           "next_invoice_sequence": 1,
@@ -43,13 +43,13 @@
           }
         }
       },
-      "id": "evt_1Ow3lrDEQaroqDjs3HG4bgvV",
+      "id": "evt_1P39dDDEQaroqDjsqxfRL2zm",
       "livemode": false,
       "object": "event",
       "pending_webhooks": 0,
       "request": {
         "id": "req_NORMALIZED0001",
-        "idempotency_key": "77fe86a8-7b74-4a46-9619-f3ce57d1e86b"
+        "idempotency_key": "a59c06b8-962b-489d-875f-7ab8b1ddebbe"
       },
       "type": "customer.updated"
     }

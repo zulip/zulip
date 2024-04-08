@@ -43,9 +43,9 @@
       "ending_balance": 0,
       "footer": null,
       "from_invoice": null,
-      "hosted_invoice_url": "https://invoice.stripe.com/i/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QZm9OZzFjZm52QUdNSzlFRUJVcE9uQ3BnVFhoQXRsLDEwMDA2NTgzOA02002ms2FNrj?s=ap",
+      "hosted_invoice_url": "https://invoice.stripe.com/i/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9Qc3ZPZnVqbzlXU2pHQnc5VHBsZGJKYlpwMloyWUVGLDEwMzA5MDI4MA02003Q9E907X?s=ap",
       "id": "in_NORMALIZED00000000000003",
-      "invoice_pdf": "https://pay.stripe.com/invoice/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QZm9OZzFjZm52QUdNSzlFRUJVcE9uQ3BnVFhoQXRsLDEwMDA2NTgzOA02002ms2FNrj/pdf?s=ap",
+      "invoice_pdf": "https://pay.stripe.com/invoice/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9Qc3ZPZnVqbzlXU2pHQnc5VHBsZGJKYlpwMloyWUVGLDEwMzA5MDI4MA02003Q9E907X/pdf?s=ap",
       "issuer": {
         "type": "self"
       },
@@ -161,7 +161,7 @@
       "total_excluding_tax": 5172,
       "total_tax_amounts": [],
       "transfer_data": null,
-      "webhooks_delivered_at": 1000000000
+      "webhooks_delivered_at": null
     },
     {
       "account_country": "US",
@@ -206,9 +206,9 @@
       "ending_balance": 0,
       "footer": null,
       "from_invoice": null,
-      "hosted_invoice_url": "https://invoice.stripe.com/i/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QZm9OZU9MUE45eHp4aFFTaUt5UGVLN0k2OXFUazc2LDEwMDA2NTgzOA0200Y39K06vq?s=ap",
+      "hosted_invoice_url": "https://invoice.stripe.com/i/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9Qc3ZPcFowWjhrMmRGRkxSRmdiUk4ycUxxcUpIMDhoLDEwMzA5MDI4MA0200ixiSNuEg?s=ap",
       "id": "in_NORMALIZED00000000000002",
-      "invoice_pdf": "https://pay.stripe.com/invoice/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QZm9OZU9MUE45eHp4aFFTaUt5UGVLN0k2OXFUazc2LDEwMDA2NTgzOA0200Y39K06vq/pdf?s=ap",
+      "invoice_pdf": "https://pay.stripe.com/invoice/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9Qc3ZPcFowWjhrMmRGRkxSRmdiUk4ycUxxcUpIMDhoLDEwMzA5MDI4MA0200ixiSNuEg/pdf?s=ap",
       "issuer": {
         "type": "self"
       },

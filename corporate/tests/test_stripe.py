@@ -450,7 +450,7 @@ class StripeTestCase(ZulipTestCase):
         match = re.search(r"name=\"salt\" value=\"(\w+)\"", response.content.decode())
         return match.group(1) if match else None
 
-    def get_test_card_string(
+    def get_test_card_token(
         self,
         attaches_to_customer: bool,
         charge_succeeds: Optional[bool] = None,
@@ -460,14 +460,14 @@ class StripeTestCase(ZulipTestCase):
             assert charge_succeeds is not None
             if charge_succeeds:
                 if card_provider == "visa":
-                    return "pm_card_visa"
+                    return "tok_visa"
                 if card_provider == "mastercard":
-                    return "pm_card_mastercard"
+                    return "tok_mastercard"
                 raise AssertionError("Unreachable code path")
             else:
-                return "pm_card_chargeCustomerFail"
+                return "tok_chargeCustomerFail"
         else:
-            return "pm_card_visa_chargeDeclined"
+            return "tok_visa_chargeDeclined"
 
     def assert_details_of_valid_session_from_event_status_endpoint(
         self, stripe_session_id: str, expected_details: Dict[str, Any]
@@ -497,12 +497,30 @@ class StripeTestCase(ZulipTestCase):
 
     def trigger_stripe_checkout_session_completed_webhook(
         self,
-        payment_method: str,
+        token: str,
         stripe_session: Optional[stripe.checkout.Session] = None,
     ) -> None:
         [checkout_setup_intent] = iter(stripe.SetupIntent.list(limit=1))
+
+        # Create a PaymentMethod using the token
+        payment_method = stripe.PaymentMethod.create(
+            type="card",
+            card={
+                "token": token,
+            },
+            billing_details={
+                "name": "John Doe",
+                "address": {
+                    "line1": "123 Main St",
+                    "city": "San Francisco",
+                    "state": "CA",
+                    "postal_code": "94105",
+                    "country": "US",
+                },
+            },
+        )
         stripe_setup_intent = stripe.SetupIntent.create(
-            payment_method=payment_method,
+            payment_method=payment_method.id,
             confirm=True,
             payment_method_types=checkout_setup_intent.payment_method_types,
             customer=checkout_setup_intent.customer,
@@ -550,8 +568,9 @@ class StripeTestCase(ZulipTestCase):
             },
         )
         response_dict = self.assert_json_success(start_session_json_response)
+        stripe_session_id = response_dict["stripe_session_id"]
         self.assert_details_of_valid_session_from_event_status_endpoint(
-            response_dict["stripe_session_id"],
+            stripe_session_id,
             {
                 "type": "card_update_from_upgrade_page",
                 "status": "created",
@@ -560,15 +579,14 @@ class StripeTestCase(ZulipTestCase):
             },
         )
         self.trigger_stripe_checkout_session_completed_webhook(
-            self.get_test_card_string(
+            self.get_test_card_token(
                 attaches_to_customer=True,
                 charge_succeeds=charge_succeeds,
                 card_provider="visa",
             )
         )
-        response_dict = self.assert_json_success(start_session_json_response)
         self.assert_details_of_valid_session_from_event_status_endpoint(
-            response_dict["stripe_session_id"],
+            stripe_session_id,
             {
                 "type": "card_update_from_upgrade_page",
                 "status": "completed",
@@ -2300,7 +2318,7 @@ class StripeTest(StripeTestCase):
             # emulates what happens in the Stripe Checkout page. Adding this check mostly for coverage of
             # create_payment_method.
             self.trigger_stripe_checkout_session_completed_webhook(
-                self.get_test_card_string(attaches_to_customer=False)
+                self.get_test_card_token(attaches_to_customer=False)
             )
 
         start_session_json_response = self.client_billing_post(
@@ -2318,7 +2336,7 @@ class StripeTest(StripeTestCase):
         )
         with self.assertLogs("corporate.stripe", "INFO") as m:
             self.trigger_stripe_checkout_session_completed_webhook(
-                self.get_test_card_string(attaches_to_customer=True, charge_succeeds=False)
+                self.get_test_card_token(attaches_to_customer=True, charge_succeeds=False)
             )
             self.assertEqual(
                 m.output[0],
@@ -2355,7 +2373,7 @@ class StripeTest(StripeTestCase):
         )
         self.assert_json_success(start_session_json_response)
         self.trigger_stripe_checkout_session_completed_webhook(
-            self.get_test_card_string(
+            self.get_test_card_token(
                 attaches_to_customer=True, charge_succeeds=True, card_provider="mastercard"
             )
         )
@@ -2813,11 +2831,6 @@ class StripeTest(StripeTestCase):
         }
         for key, value in annual_plan_invoice_item_params.items():
             self.assertEqual(invoice_item[key], value)
-
-        with patch("corporate.lib.stripe.BillingSession.invoice_plan") as m:
-            invoice_plans_as_needed(add_months(self.now, 2))
-            # Even annual plans get invoiced monthly for additional licenses.
-            m.assert_called_once()
 
         invoice_plans_as_needed(add_months(self.now, 13))
 
@@ -3548,20 +3561,25 @@ class StripeTest(StripeTestCase):
         stripe_customer = stripe_get_customer(
             assert_is_not_none(Customer.objects.get(realm=user.realm).stripe_customer_id)
         )
-        [invoice, _] = iter(stripe.Invoice.list(customer=stripe_customer.id))
+
+        [renewal_invoice, additional_licenses_invoice, _old_renewal_invoice] = iter(
+            stripe.Invoice.list(customer=stripe_customer.id)
+        )
+
         invoice_params = {
-            "amount_due": 8000 * 150 + 8000 * 50,
+            "amount_due": 8000 * 150,
             "amount_paid": 0,
             "attempt_count": 0,
             "auto_advance": True,
             "collection_method": "send_invoice",
             "statement_descriptor": "Zulip Cloud Standard",
             "status": "open",
-            "total": 8000 * 150 + 8000 * 50,
+            "total": 8000 * 150,
         }
         for key, value in invoice_params.items():
-            self.assertEqual(invoice.get(key), value)
-        [renewal_item, extra_license_item] = iter(invoice.lines)
+            self.assertEqual(renewal_invoice.get(key), value)
+        [renewal_item] = iter(renewal_invoice.lines)
+
         line_item_params = {
             "amount": 8000 * 150,
             "description": "Zulip Cloud Standard - renewal",
@@ -3576,6 +3594,21 @@ class StripeTest(StripeTestCase):
         }
         for key, value in line_item_params.items():
             self.assertEqual(renewal_item.get(key), value)
+
+        invoice_params = {
+            "amount_due": 8000 * 50,
+            "amount_paid": 0,
+            "attempt_count": 0,
+            "auto_advance": True,
+            "collection_method": "send_invoice",
+            "statement_descriptor": "Zulip Cloud Standard",
+            "status": "open",
+            "total": 8000 * 50,
+        }
+        for key, value in invoice_params.items():
+            self.assertEqual(additional_licenses_invoice.get(key), value)
+        [extra_license_item] = iter(additional_licenses_invoice.lines)
+
         line_item_params = {
             "amount": 8000 * 50,
             "description": "Additional license (Jan 2, 2012 - Jan 2, 2013)",
@@ -3598,10 +3631,8 @@ class StripeTest(StripeTestCase):
             )
             self.assert_json_success(result)
         invoice_plans_as_needed(self.next_year + timedelta(days=365))
-        stripe_customer = stripe_get_customer(
-            assert_is_not_none(Customer.objects.get(realm=user.realm).stripe_customer_id)
-        )
-        [invoice, _, _] = iter(stripe.Invoice.list(customer=stripe_customer.id))
+        [renewal_invoice, _, _, _] = iter(stripe.Invoice.list(customer=stripe_customer.id))
+
         invoice_params = {
             "amount_due": 8000 * 120,
             "amount_paid": 0,
@@ -3613,8 +3644,9 @@ class StripeTest(StripeTestCase):
             "total": 8000 * 120,
         }
         for key, value in invoice_params.items():
-            self.assertEqual(invoice.get(key), value)
-        [renewal_item] = iter(invoice.lines)
+            self.assertEqual(renewal_invoice.get(key), value)
+        [renewal_item] = iter(renewal_invoice.lines)
+
         line_item_params = {
             "amount": 8000 * 120,
             "description": "Zulip Cloud Standard - renewal",
@@ -9154,7 +9186,7 @@ class TestRemoteServerBillingFlow(StripeTestCase, RemoteServerTestCase):
         )
         licenses = max(min_licenses, server_user_count)
 
-        with mock.patch("stripe.Invoice.create") as invoice_create, mock.patch(
+        with mock.patch("stripe.Invoice.finalize_invoice") as invoice_create, mock.patch(
             "corporate.lib.stripe.send_email"
         ) as send_email, time_machine.travel(end_date, tick=False):
             invoice_plans_as_needed()

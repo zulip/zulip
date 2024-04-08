@@ -66,8 +66,8 @@
         "metadata": {},
         "object": "line_item",
         "period": {
-          "end": 1000000000,
-          "start": 1000000000
+          "end": 1330657445,
+          "start": 1328151845
         },
         "plan": null,
         "price": {
@@ -261,5 +261,5 @@
   "total_excluding_tax": 5235,
   "total_tax_amounts": [],
   "transfer_data": null,
-  "webhooks_delivered_at": 1000000000
+  "webhooks_delivered_at": null
 }
