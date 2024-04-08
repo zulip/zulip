@@ -6,27 +6,27 @@
       "data": {
         "object": {
           "address": null,
-          "balance": 0,
+          "balance": -7200,
           "created": 1000000000,
-          "currency": null,
-          "default_currency": null,
+          "currency": "usd",
+          "default_currency": "usd",
           "default_source": null,
           "delinquent": false,
-          "description": "zulip (Zulip Dev)",
+          "description": "lear (Lear & Co.)",
           "discount": null,
-          "email": "hamlet@zulip.com",
-          "id": "cus_NORMALIZED0001",
-          "invoice_prefix": "NORMA01",
+          "email": "king@lear.org",
+          "id": "cus_NORMALIZED0002",
+          "invoice_prefix": "NORMA02",
           "invoice_settings": {
             "custom_fields": null,
-            "default_payment_method": "pm_1OqSipDEQaroqDjsYERSX0N3",
+            "default_payment_method": null,
             "footer": null,
             "rendering_options": null
           },
           "livemode": false,
           "metadata": {
-            "realm_id": "1",
-            "realm_str": "zulip"
+            "realm_id": "2",
+            "realm_str": "lear"
           },
           "name": null,
           "next_invoice_sequence": 1,
@@ -38,18 +38,18 @@
           "test_clock": null
         },
         "previous_attributes": {
-          "invoice_settings": {
-            "default_payment_method": null
-          }
+          "balance": 0,
+          "currency": null,
+          "default_currency": null
         }
       },
-      "id": "evt_1OqSirDEQaroqDjsHdxoXGsU",
+      "id": "evt_1P3qrZDEQaroqDjsOYsZc6OF",
       "livemode": false,
       "object": "event",
       "pending_webhooks": 0,
       "request": {
         "id": "req_NORMALIZED0001",
-        "idempotency_key": "742c9b10-22da-4b31-8d93-b9b4e92db87c"
+        "idempotency_key": "7f8dcf96-6cd5-41e1-b0e2-cb9f56d4db95"
       },
       "type": "customer.updated"
     }

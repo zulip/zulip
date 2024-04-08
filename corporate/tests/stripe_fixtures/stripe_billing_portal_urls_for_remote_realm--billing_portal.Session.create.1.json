@@ -1,13 +1,13 @@
 {
-  "configuration": "bpc_1OqSqKDEQaroqDjsaVHYnBRs",
+  "configuration": "bpc_1P3qtcDEQaroqDjs1cJCBfOG",
   "created": 1000000000,
   "customer": "cus_NORMALIZED0001",
   "flow": null,
-  "id": "bps_1OqSqKDEQaroqDjs3BARnFxx",
+  "id": "bps_1P3qtdDEQaroqDjsSg46bbd1",
   "livemode": false,
   "locale": null,
   "object": "billing_portal.session",
   "on_behalf_of": null,
-  "return_url": "http://selfhosting.testserver/realm/332b5af0-59bf-4285-8447-23fb3a302c86/billing/",
-  "url": "https://billing.stripe.com/p/session/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QZm9UY2k0bG85VWVrNDhZUFUzdjBWQzl3SEpiWkFx0100WTKPpAjB"
+  "return_url": "http://selfhosting.testserver/realm/b295e764-9ad6-4b87-80a6-d989edf084da/billing/",
+  "url": "https://billing.stripe.com/p/session/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QdGVDVUtrak0zRldhQzF0N1g0VWRsRlBiUFhSRjNF0100XVg5Idh4"
 }

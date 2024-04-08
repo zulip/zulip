@@ -17,7 +17,7 @@
     "status": null
   },
   "billing_reason": "manual",
-  "charge": "ch_NORMALIZED00000000000001",
+  "charge": "ch_NORMALIZED00000000000002",
   "collection_method": "charge_automatically",
   "created": 1000000000,
   "currency": "usd",
@@ -41,9 +41,9 @@
   "ending_balance": 0,
   "footer": null,
   "from_invoice": null,
-  "hosted_invoice_url": "https://invoice.stripe.com/i/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QZm9UcHZ4WjRzWFZ5TnZwVEdwT05RYVFpdHIwbHg3LDEwMDA2NjE3NA0200K19gQtDy?s=ap",
+  "hosted_invoice_url": "https://invoice.stripe.com/i/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QdGVCM1RkdHM4VHRvNzhvd09jdVh0RmN6SFJEWlhlLDEwMzI1Njg5Nw020003lXke3h?s=ap",
   "id": "in_NORMALIZED00000000000001",
-  "invoice_pdf": "https://pay.stripe.com/invoice/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QZm9UcHZ4WjRzWFZ5TnZwVEdwT05RYVFpdHIwbHg3LDEwMDA2NjE3NA0200K19gQtDy/pdf?s=ap",
+  "invoice_pdf": "https://pay.stripe.com/invoice/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QdGVCM1RkdHM4VHRvNzhvd09jdVh0RmN6SFJEWlhlLDEwMzI1Njg5Nw020003lXke3h/pdf?s=ap",
   "issuer": {
     "type": "self"
   },
@@ -59,15 +59,15 @@
         "discount_amounts": [],
         "discountable": false,
         "discounts": [],
-        "id": "il_NORMALIZED00000000000001",
+        "id": "il_NORMALIZED00000000000003",
         "invoice": "in_NORMALIZED00000000000001",
-        "invoice_item": "ii_NORMALIZED00000000000001",
+        "invoice_item": "ii_NORMALIZED00000000000003",
         "livemode": false,
         "metadata": {},
         "object": "line_item",
         "period": {
-          "end": 1000000000,
-          "start": 1000000000
+          "end": 1357095845,
+          "start": 1325473445
         },
         "plan": null,
         "price": {
@@ -110,15 +110,15 @@
         "discount_amounts": [],
         "discountable": false,
         "discounts": [],
-        "id": "il_NORMALIZED00000000000002",
+        "id": "il_NORMALIZED00000000000004",
         "invoice": "in_NORMALIZED00000000000001",
-        "invoice_item": "ii_NORMALIZED00000000000002",
+        "invoice_item": "ii_NORMALIZED00000000000004",
         "livemode": false,
         "metadata": {},
         "object": "line_item",
         "period": {
-          "end": 1000000000,
-          "start": 1000000000
+          "end": 1357095845,
+          "start": 1325473445
         },
         "plan": null,
         "price": {
@@ -167,7 +167,7 @@
     "plan_tier": "104"
   },
   "next_payment_attempt": null,
-  "number": "NORMALI-0002",
+  "number": "NORMALI-0003",
   "object": "invoice",
   "on_behalf_of": null,
   "paid": true,

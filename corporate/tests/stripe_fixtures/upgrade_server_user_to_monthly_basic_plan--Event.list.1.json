@@ -5,53 +5,66 @@
       "created": 1000000000,
       "data": {
         "object": {
-          "address": null,
-          "balance": 0,
+          "billing_details": {
+            "address": {
+              "city": "San Francisco",
+              "country": "US",
+              "line1": "123 Main St",
+              "line2": null,
+              "postal_code": "94105",
+              "state": "CA"
+            },
+            "email": null,
+            "name": "John Doe",
+            "phone": null
+          },
+          "card": {
+            "brand": "visa",
+            "checks": {
+              "address_line1_check": null,
+              "address_postal_code_check": null,
+              "cvc_check": "pass"
+            },
+            "country": "US",
+            "display_brand": "visa",
+            "exp_month": 4,
+            "exp_year": 2025,
+            "fingerprint": "NORMALIZED000002",
+            "funding": "credit",
+            "generated_from": null,
+            "last4": "0341",
+            "networks": {
+              "available": [
+                "visa"
+              ],
+              "preferred": null
+            },
+            "three_d_secure_usage": {
+              "supported": true
+            },
+            "wallet": null
+          },
           "created": 1000000000,
-          "currency": null,
-          "default_currency": null,
-          "default_source": null,
-          "delinquent": false,
-          "description": "demo.example.com 6cde5f7a-1f7",
-          "discount": null,
-          "email": "hamlet@zulip.com",
-          "id": "cus_NORMALIZED0001",
-          "invoice_prefix": "NORMA01",
-          "invoice_settings": {
-            "custom_fields": null,
-            "default_payment_method": "pm_1OqStKDEQaroqDjs9VAoMbO7",
-            "footer": null,
-            "rendering_options": null
-          },
+          "customer": null,
+          "id": "pm_1P3qtyDEQaroqDjshD8xXIke",
           "livemode": false,
-          "metadata": {
-            "remote_server_str": "demo.example.com 6cde5f7a-1f7",
-            "remote_server_uuid": "6cde5f7a-1f7e-4978-9716-49f69ebfc9fe"
-          },
-          "name": null,
-          "next_invoice_sequence": 1,
-          "object": "customer",
-          "phone": null,
-          "preferred_locales": [],
-          "shipping": null,
-          "tax_exempt": "none",
-          "test_clock": null
+          "metadata": {},
+          "object": "payment_method",
+          "type": "card"
         },
         "previous_attributes": {
-          "invoice_settings": {
-            "default_payment_method": null
-          }
+          "customer": "cus_NORMALIZED0002"
         }
       },
-      "id": "evt_1OqStMDEQaroqDjs4FG9bVZD",
+      "id": "evt_1P3qu4DEQaroqDjsxoMi36Ix",
       "livemode": false,
       "object": "event",
       "pending_webhooks": 0,
       "request": {
         "id": "req_NORMALIZED0001",
-        "idempotency_key": "90385117-5b25-406d-9767-8ecdd56b70b5"
+        "idempotency_key": "7c07cbad-7657-4929-bb2d-976a4ca0b402"
       },
-      "type": "customer.updated"
+      "type": "payment_method.detached"
     }
   ],
   "has_more": true,

@@ -43,9 +43,9 @@
       "ending_balance": 0,
       "footer": null,
       "from_invoice": null,
-      "hosted_invoice_url": "https://invoice.stripe.com/i/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QZm9MaFZUMmR2a2VmTFBnYTNrcGU0MDI5c2c4bmxFLDEwMDA2NTcwOQ02002sW1yK2n?s=ap",
+      "hosted_invoice_url": "https://invoice.stripe.com/i/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QdGU5WHgzdU1IaWwyRGhEYVp5YjE0dmhXWWhOSjRyLDEwMzI1Njc2OA0200S1AlGWJa?s=ap",
       "id": "in_NORMALIZED00000000000003",
-      "invoice_pdf": "https://pay.stripe.com/invoice/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QZm9MaFZUMmR2a2VmTFBnYTNrcGU0MDI5c2c4bmxFLDEwMDA2NTcwOQ02002sW1yK2n/pdf?s=ap",
+      "invoice_pdf": "https://pay.stripe.com/invoice/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QdGU5WHgzdU1IaWwyRGhEYVp5YjE0dmhXWWhOSjRyLDEwMzI1Njc2OA0200S1AlGWJa/pdf?s=ap",
       "issuer": {
         "type": "self"
       },
@@ -84,7 +84,7 @@
               "metadata": {},
               "nickname": null,
               "object": "price",
-              "product": "prod_NORMALIZED0001",
+              "product": "prod_NORMALIZED0003",
               "recurring": null,
               "tax_behavior": "unspecified",
               "tiers_mode": null,
@@ -206,9 +206,9 @@
       "ending_balance": 0,
       "footer": null,
       "from_invoice": null,
-      "hosted_invoice_url": "https://invoice.stripe.com/i/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QZm9MR3ZlQXFQWUJwT1k4QkVNb1pVNHFtYURSQkdFLDEwMDA2NTcwOQ0200KCiPzavz?s=ap",
+      "hosted_invoice_url": "https://invoice.stripe.com/i/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QdGU5ZkJmSXZ6ZDRMVkdsaDEzR1g1V2ozZ0lXTG1OLDEwMzI1Njc2OA020015GwWzTf?s=ap",
       "id": "in_NORMALIZED00000000000002",
-      "invoice_pdf": "https://pay.stripe.com/invoice/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QZm9MR3ZlQXFQWUJwT1k4QkVNb1pVNHFtYURSQkdFLDEwMDA2NTcwOQ0200KCiPzavz/pdf?s=ap",
+      "invoice_pdf": "https://pay.stripe.com/invoice/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QdGU5ZkJmSXZ6ZDRMVkdsaDEzR1g1V2ozZ0lXTG1OLDEwMzI1Njc2OA020015GwWzTf/pdf?s=ap",
       "issuer": {
         "type": "self"
       },
@@ -231,8 +231,8 @@
             "metadata": {},
             "object": "line_item",
             "period": {
-              "end": 1000000000,
-              "start": 1000000000
+              "end": 1357095845,
+              "start": 1325473445
             },
             "plan": null,
             "price": {

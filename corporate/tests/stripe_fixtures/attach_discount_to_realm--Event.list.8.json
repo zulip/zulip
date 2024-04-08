@@ -1,6 +1,56 @@
 {
-  "data": [],
-  "has_more": false,
+  "data": [
+    {
+      "api_version": "2020-08-27",
+      "created": 1000000000,
+      "data": {
+        "object": {
+          "application": null,
+          "automatic_payment_methods": null,
+          "cancellation_reason": null,
+          "client_secret": "seti_1P3qsCDEQaroqDjs59rGQPRX_secret_PteAvXsHSgZ01So1nmRzjCD1L7xnnk7",
+          "created": 1000000000,
+          "customer": "cus_NORMALIZED0006",
+          "description": null,
+          "flow_directions": null,
+          "id": "seti_1P3qsCDEQaroqDjs59rGQPRX",
+          "last_setup_error": null,
+          "latest_attempt": "setatt_1P3qsCDEQaroqDjsV06s2dv2",
+          "livemode": false,
+          "mandate": null,
+          "metadata": {},
+          "next_action": null,
+          "object": "setup_intent",
+          "on_behalf_of": null,
+          "payment_method": "pm_1P3qsCDEQaroqDjseZ5fwa6h",
+          "payment_method_configuration_details": null,
+          "payment_method_options": {
+            "card": {
+              "mandate_options": null,
+              "network": null,
+              "request_three_d_secure": "automatic"
+            }
+          },
+          "payment_method_types": [
+            "card"
+          ],
+          "single_use_mandate": null,
+          "status": "succeeded",
+          "usage": "off_session"
+        }
+      },
+      "id": "evt_1P3qsDDEQaroqDjsxKuZgbRJ",
+      "livemode": false,
+      "object": "event",
+      "pending_webhooks": 0,
+      "request": {
+        "id": "req_NORMALIZED0029",
+        "idempotency_key": "70e57fca-40d1-4196-b1ba-2a551b01d4ad"
+      },
+      "type": "setup_intent.succeeded"
+    }
+  ],
+  "has_more": true,
   "object": "list",
   "url": "/v1/events"
 }
