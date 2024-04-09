@@ -182,7 +182,7 @@ def send_messages_and_update_level(
     realm.save(update_fields=["zulip_update_announcements_level"])
 
 
-def send_zulip_update_announcements() -> None:
+def send_zulip_update_announcements(skip_delay: bool) -> None:
     latest_zulip_update_announcements_level = get_latest_zulip_update_announcements_level()
 
     realms = get_realms_behind_zulip_update_announcements_level(
@@ -220,6 +220,7 @@ def send_zulip_update_announcements() -> None:
                 if (
                     realm_zulip_update_announcements_level == 0
                     and is_group_direct_message_sent_to_admins_within_days(realm, days=1)
+                    and not skip_delay
                 ):
                     continue
 

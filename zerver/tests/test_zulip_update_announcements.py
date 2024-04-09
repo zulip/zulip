@@ -64,7 +64,7 @@ class ZulipUpdateAnnouncementsTest(ZulipTestCase):
 
             now = timezone_now()
             with time_machine.travel(now, tick=False):
-                send_zulip_update_announcements()
+                send_zulip_update_announcements(skip_delay=False)
 
             realm.refresh_from_db()
             group_direct_message = group_direct_messages.first()
@@ -83,12 +83,12 @@ class ZulipUpdateAnnouncementsTest(ZulipTestCase):
 
             # Wait for one week before starting to skip sending updates.
             with time_machine.travel(now + timedelta(days=2), tick=False):
-                send_zulip_update_announcements()
+                send_zulip_update_announcements(skip_delay=False)
             realm.refresh_from_db()
             self.assertEqual(realm.zulip_update_announcements_level, 0)
 
             with time_machine.travel(now + timedelta(days=8), tick=False):
-                send_zulip_update_announcements()
+                send_zulip_update_announcements(skip_delay=False)
             realm.refresh_from_db()
             self.assertEqual(realm.zulip_update_announcements_level, 2)
 
@@ -110,7 +110,7 @@ class ZulipUpdateAnnouncementsTest(ZulipTestCase):
 
             # verify zulip update announcements sent to configured stream.
             with time_machine.travel(now + timedelta(days=10), tick=False):
-                send_zulip_update_announcements()
+                send_zulip_update_announcements(skip_delay=False)
             realm.refresh_from_db()
             stream_messages = Message.objects.filter(
                 realm=realm,
@@ -148,7 +148,7 @@ class ZulipUpdateAnnouncementsTest(ZulipTestCase):
 
             now = timezone_now()
             with time_machine.travel(now, tick=False):
-                send_zulip_update_announcements()
+                send_zulip_update_announcements(skip_delay=False)
 
             realm.refresh_from_db()
             self.assertTrue(group_direct_messages.exists())
@@ -156,12 +156,12 @@ class ZulipUpdateAnnouncementsTest(ZulipTestCase):
 
             # Wait for 24 hours before starting to send updates.
             with time_machine.travel(now + timedelta(hours=10), tick=False):
-                send_zulip_update_announcements()
+                send_zulip_update_announcements(skip_delay=False)
             realm.refresh_from_db()
             self.assertEqual(realm.zulip_update_announcements_level, 0)
 
             with time_machine.travel(now + timedelta(days=1), tick=False):
-                send_zulip_update_announcements()
+                send_zulip_update_announcements(skip_delay=False)
             realm.refresh_from_db()
             self.assertEqual(realm.zulip_update_announcements_level, 2)
 
@@ -180,7 +180,7 @@ class ZulipUpdateAnnouncementsTest(ZulipTestCase):
 
             # verify zulip update announcements sent to configured stream.
             with time_machine.travel(now + timedelta(days=2), tick=False):
-                send_zulip_update_announcements()
+                send_zulip_update_announcements(skip_delay=False)
             realm.refresh_from_db()
             notification_bot = get_system_bot(settings.NOTIFICATION_BOT, realm.id)
             stream_messages = Message.objects.filter(
@@ -193,6 +193,48 @@ class ZulipUpdateAnnouncementsTest(ZulipTestCase):
             self.assertEqual(stream_messages[0].content, "Announcement message 3.")
             self.assertEqual(stream_messages[1].content, "Announcement message 4.")
             self.assertEqual(realm.zulip_update_announcements_level, 4)
+
+    def test_send_zulip_update_announcements_skip_delay(self) -> None:
+        with mock.patch(
+            "zerver.lib.zulip_update_announcements.zulip_update_announcements",
+            self.zulip_update_announcements,
+        ):
+            realm = get_realm("zulip")
+
+            # realm predates the "zulip updates" feature with the
+            # zulip_update_announcements_stream configured.
+            realm.zulip_update_announcements_level = None
+            realm.zulip_update_announcements_stream = get_stream("verona", realm)
+            realm.save(
+                update_fields=[
+                    "zulip_update_announcements_level",
+                    "zulip_update_announcements_stream",
+                ]
+            )
+
+            group_direct_messages = Message.objects.filter(
+                realm=realm, recipient__type=Recipient.DIRECT_MESSAGE_GROUP
+            )
+            self.assertFalse(group_direct_messages.exists())
+
+            # post-upgrade hook sends a group DM.
+            now = timezone_now()
+            with time_machine.travel(now, tick=False):
+                send_zulip_update_announcements(skip_delay=False)
+
+            realm.refresh_from_db()
+            self.assertTrue(group_direct_messages.exists())
+            self.assertEqual(realm.zulip_update_announcements_level, 0)
+
+            # For self-hosted servers, 9.0 upgrade notes suggests to run
+            # 'send_zulip_update_announcements' management command with
+            # '--skip-delay' argument to immediately send update messages.
+            # 'zulip_update_announcements_stream' should be configured.
+            with time_machine.travel(now, tick=False):
+                send_zulip_update_announcements(skip_delay=True)
+
+            realm.refresh_from_db()
+            self.assertEqual(realm.zulip_update_announcements_level, 2)
 
     def test_group_direct_message_with_zulip_updates_stream_set(self) -> None:
         realm = get_realm("zulip")
@@ -214,7 +256,7 @@ class ZulipUpdateAnnouncementsTest(ZulipTestCase):
 
         now = timezone_now()
         with time_machine.travel(now, tick=False):
-            send_zulip_update_announcements()
+            send_zulip_update_announcements(skip_delay=False)
 
         realm.refresh_from_db()
         group_direct_message = group_direct_messages.first()
