@@ -13,7 +13,15 @@ log][commit-log] for an up-to-date list of all changes.
 
 #### Upgrade notes for 9.0
 
-- None yet.
+- This release introduces a new [Zulip updates](https://zulip.com/help/configure-automated-notices#zulip-update-announcements) feature, which
+  announces significant product changes and new features via automated
+  messages to a configurable stream. Generally, these announcements will
+  be sent automatically when upgrading to the new release. However, when
+  you first upgrade to the 9.x series, they will be sent with a delay
+  (explained in an automated direct message to organization administrators)
+  to give time to potentially reconfigure which stream to use. You can
+  override the delay by running `./manage.py send_zulip_update_announcements --skip-delay`
+  once you've done any necessary configuration updates.
 
 ## Zulip Server 8.x series
 
