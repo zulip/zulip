@@ -494,6 +494,7 @@ function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void
         loading_spinner: true,
         on_click: invite_users,
         post_render: invite_user_modal_post_render,
+        always_visible_scrollbar: true,
     });
 }
 
