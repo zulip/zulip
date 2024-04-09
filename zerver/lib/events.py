@@ -1093,10 +1093,17 @@ def apply_event(
                     p["email"] = person["new_email"]
 
                 if "is_active" in person and not person["is_active"] and include_subscribers:
-                    for sub in state["subscriptions"]:
-                        sub["subscribers"] = [
-                            user_id for user_id in sub["subscribers"] if user_id != person_user_id
-                        ]
+                    for sub_dict in [
+                        state["subscriptions"],
+                        state["unsubscribed"],
+                        state["never_subscribed"],
+                    ]:
+                        for sub in sub_dict:
+                            sub["subscribers"] = [
+                                user_id
+                                for user_id in sub["subscribers"]
+                                if user_id != person_user_id
+                            ]
         elif event["op"] == "remove":
             if person_user_id in state["raw_users"]:
                 if user_list_incomplete:
@@ -1108,10 +1115,15 @@ def apply_event(
                     state["raw_users"][person_user_id] = inaccessible_user_dict
 
             if include_subscribers:
-                for sub in state["subscriptions"]:
-                    sub["subscribers"] = [
-                        user_id for user_id in sub["subscribers"] if user_id != person_user_id
-                    ]
+                for sub_dict in [
+                    state["subscriptions"],
+                    state["unsubscribed"],
+                    state["never_subscribed"],
+                ]:
+                    for sub in sub_dict:
+                        sub["subscribers"] = [
+                            user_id for user_id in sub["subscribers"] if user_id != person_user_id
+                        ]
         else:
             raise AssertionError("Unexpected event type {type}/{op}".format(**event))
     elif event["type"] == "realm_bot":
