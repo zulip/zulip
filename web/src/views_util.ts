@@ -4,6 +4,7 @@ import * as activity_ui from "./activity_ui";
 import * as compose_actions from "./compose_actions";
 import * as compose_recipient from "./compose_recipient";
 import * as dropdown_widget from "./dropdown_widget";
+import type {DropdownWidget} from "./dropdown_widget";
 import {$t} from "./i18n";
 import * as message_lists from "./message_lists";
 import * as message_view_header from "./message_view_header";
@@ -14,6 +15,23 @@ import * as pm_list from "./pm_list";
 import * as resize from "./resize";
 import * as stream_list from "./stream_list";
 import * as unread_ui from "./unread_ui";
+
+type ShowOptions = {
+    is_visible: () => boolean;
+    $view: JQuery;
+    set_visible: (visible: boolean) => void;
+    highlight_view_in_left_sidebar: () => void;
+    update_compose: () => void;
+    complete_rerender: () => void;
+    is_recent_view?: boolean;
+};
+
+type Option = {
+    unique_id: string;
+    name: string;
+    description?: string;
+    bold_current_selection?: boolean;
+};
 
 export const FILTERS = {
     ALL_TOPICS: "all_topics",
@@ -33,7 +51,7 @@ export const COMMON_DROPDOWN_WIDGET_PARAMS = {
     disable_for_spectators: true,
 };
 
-export function filters_dropdown_options() {
+export function filters_dropdown_options(this: DropdownWidget): Option[] {
     return [
         {
             unique_id: FILTERS.FOLLOWED_TOPICS,
@@ -58,7 +76,7 @@ export function filters_dropdown_options() {
     ];
 }
 
-export function show(opts) {
+export function show(opts: ShowOptions): void {
     if (narrow_state.has_shown_message_list_view) {
         message_lists.save_pre_narrow_offset_for_reload();
     }
@@ -83,7 +101,7 @@ export function show(opts) {
 
     unread_ui.hide_unread_banner();
     opts.update_compose();
-    narrow_title.update_narrow_title(narrow_state.filter());
+    narrow_title.update_narrow_title(narrow_state.filter()!);
     message_view_header.render_title_area();
     compose_recipient.handle_middle_pane_transition();
     opts.complete_rerender();
@@ -99,9 +117,10 @@ export function show(opts) {
     }
 }
 
-export function hide(opts) {
-    const $focused_element = $(document.activeElement);
-    if (opts.$view.has($focused_element)) {
+export function hide(opts: ShowOptions): void {
+    const $focused_element = $(document.activeElement!);
+    const focusedElement = $focused_element[0];
+    if (opts.$view.has(focusedElement)) {
         $focused_element.trigger("blur");
     }
 
