@@ -161,11 +161,18 @@ export function initialize(): void {
         new_user_input = true;
     });
 
-    $(window).on("focus", mark_client_active);
+    $(window).on("focus", () => {
+        mark_client_active();
+    });
     $(window).idle({
         idle: DEFAULT_IDLE_TIMEOUT_MS,
         onIdle: mark_client_idle,
-        onActive: mark_client_active,
+        onActive() {
+            // Trigger the "client_activity_updatedz.zulip" event with status true
+            $(document).trigger(new $.Event("client_activity_updated.zulip", { status: true }));
+            // Calling the mark_client_active function
+            mark_client_active();
+        },
         keepTracking: true,
     });
 }

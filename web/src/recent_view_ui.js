@@ -1428,6 +1428,26 @@ function load_filters() {
     }
 }
 
+// Function to run when client_is_active evaluates to true
+function update_recent_view_rendered_time() {
+    // Since we render relative time in recent view, it needs to be
+    // updated otherwise it will show stale time. But, we don't want
+    // to update it every minute due to performance reasons. So, we
+    // only update it when the user comes back from idle which has
+    // maximum chance of user seeing incorrect rendered time.
+    for (const conversation_data of topics_widget.get_rendered_list()) {
+        const last_msg = message_store.get(conversation_data.last_msg_id);
+        const time = new Date(last_msg.timestamp * 1000);
+        const updated_time = timerender.relative_time_string_from_date(time);
+        const $row = get_topic_row(conversation_data);
+        const rendered_time = $row.find(".recent_topic_timestamp").text().trim();
+        if (updated_time === rendered_time) {
+            continue;
+        }
+        $row.find(".recent_topic_timestamp a").text(updated_time);
+    }
+}
+
 export function initialize({
     on_click_participant,
     on_mark_pm_as_read,
@@ -1589,6 +1609,13 @@ export function initialize({
             $(".recent-view-load-more-container .fetch-messages-button .loading-indicator"),
             {width: 20},
         );
+    });
+
+    $(document).on("client_activity_updated.zulip", (event) => {
+        if (event.status === true) {
+            // Call the function to update time when user comes back from being idle.
+            update_recent_view_rendered_time();
+        }
     });
 
     $(document).on("compose_canceled.zulip", () => {

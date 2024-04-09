@@ -61,6 +61,7 @@ type BaseListWidget = {
 
 export type ListWidget<Key, Item = Key> = BaseListWidget & {
     get_current_list: () => Item[];
+    get_rendered_list: () => Item[];
     filter_and_sort: () => void;
     retain_selected_items: () => void;
     all_rendered: () => boolean;
@@ -275,6 +276,10 @@ export function create<Key, Item = Key>(
     const widget: ListWidget<Key, Item> = {
         get_current_list() {
             return meta.filtered_list;
+        },
+
+        get_rendered_list() {
+            return meta.filtered_list.slice(0, meta.offset);
         },
 
         filter_and_sort() {
