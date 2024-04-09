@@ -41,23 +41,6 @@ methods][authentication-production] documentation for details.
 
 {end_tabs}
 
-## Profile field types
-
-Choose the profile field type that's most appropriate for the requested information.
-
-* **Date**: For dates (e.g., birthdays or work anniversaries).
-* **Link**: For links to websites, including company-internal pages.
-* **External account**: For linking to an account on GitHub, X (Twitter), etc.
-* **List of options**: A dropdown with a list of predefined options (e.g.,
-  office location).
-* **Pronouns**: What pronouns should people use to refer to the user? Pronouns
-  are displayed in [user mention](/help/mention-a-user-or-group) autocomplete
-  suggestions.
-* **Text (long)**: For multiline responses (e.g., a user's intro message).
-* **Text (short)**: For one-line responses up to 50 characters (e.g., team
-  name or role in your organization).
-* **Users**: For selecting one or more users (e.g., manager or direct reports).
-
 ## Display custom fields on user card
 
 Organizations may find it useful to display additional fields on the
@@ -107,6 +90,23 @@ if syncing profile fields from an employee directory.
 4. Click **Save changes**.
 
 {end_tabs}
+
+## Profile field types
+
+Choose the profile field type that's most appropriate for the requested information.
+
+* **Date**: For dates (e.g., birthdays or work anniversaries).
+* **Link**: For links to websites, including company-internal pages.
+* **External account**: For linking to an account on GitHub, X (Twitter), etc.
+* **List of options**: A dropdown with a list of predefined options (e.g.,
+  office location).
+* **Pronouns**: What pronouns should people use to refer to the user? Pronouns
+  are displayed in [user mention](/help/mention-a-user-or-group) autocomplete
+  suggestions.
+* **Text (long)**: For multiline responses (e.g., a user's intro message).
+* **Text (short)**: For one-line responses up to 50 characters (e.g., team
+  name or role in your organization).
+* **Users**: For selecting one or more users (e.g., manager or direct reports).
 
 ## Related articles
 
