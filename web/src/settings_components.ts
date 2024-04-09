@@ -531,12 +531,20 @@ export function change_save_button_state($element: JQuery, state: string): void 
     assert(data_status !== undefined);
     $saveBtn.attr("data-status", data_status);
     if (state === "unsaved") {
-        // Ensure the save button is visible when the state is "unsaved",
-        // so the user does not miss saving their changes.
-        scroll_util.scroll_element_into_container(
-            $element.parent(".subsection-header"),
-            $("#settings_content"),
-        );
+        // Do not scroll if the currently focused element is a textarea or an input
+        // of type text, to not interrupt the user's typing flow. Scrolling will happen
+        // anyway when the field loses focus (via the change event) if necessary.
+        if (
+            !document.activeElement ||
+            !$(document.activeElement).is('textarea, input[type="text"]')
+        ) {
+            // Ensure the save button is visible when the state is "unsaved",
+            // so the user does not miss saving their changes.
+            scroll_util.scroll_element_into_container(
+                $element.parent(".subsection-header"),
+                $("#settings_content"),
+            );
+        }
         enable_or_disable_save_button($element.closest(".settings-subsection-parent"));
     }
     assert(is_show !== undefined);
