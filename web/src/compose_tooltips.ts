@@ -21,7 +21,6 @@ export function initialize(): void {
         target: [
             // Ideally this would be `#compose_buttons .button`, but the
             // reply button's actual area is its containing span.
-            "#compose_buttons .compose-reply-button-wrapper",
             "#left_bar_compose_mobile_button_big",
             "#new_direct_message_button",
         ].join(","),
@@ -31,6 +30,52 @@ export function initialize(): void {
         // trigger after it closes, which results in tooltip being displayed.
         trigger: "mouseenter",
         appendTo: () => document.body,
+        onHidden(instance) {
+            instance.destroy();
+        },
+    });
+    delegate("body", {
+        target: "#compose_buttons .compose-reply-button-wrapper",
+        delay: EXTRA_LONG_HOVER_DELAY,
+        // Only show on mouseenter since for spectators, clicking on these
+        // buttons opens login modal, and Micromodal returns focus to the
+        // trigger after it closes, which results in tooltip being displayed.
+        trigger: "mouseenter",
+        appendTo: () => document.body,
+        onShow(instance) {
+            const $elem = $(instance.reference);
+            const button_type = $elem.attr("data-reply-button-type");
+            switch (button_type) {
+                case "direct_disabled": {
+                    instance.setContent(
+                        parse_html(
+                            $("#compose_reply_direct_disabled_button_tooltip_template").html(),
+                        ),
+                    );
+                    return;
+                }
+                case "selected_message": {
+                    instance.setContent(
+                        parse_html($("#compose_reply_message_button_tooltip_template").html()),
+                    );
+                    return;
+                }
+                case "selected_conversation": {
+                    instance.setContent(
+                        parse_html(
+                            $("#compose_reply_selected_topic_button_tooltip_template").html(),
+                        ),
+                    );
+                    return;
+                }
+                default: {
+                    instance.setContent(
+                        parse_html($("#compose_reply_message_button_tooltip_template").html()),
+                    );
+                    return;
+                }
+            }
+        },
         onHidden(instance) {
             instance.destroy();
         },
