@@ -67,20 +67,20 @@ function update_reply_button_state(disable = false) {
     $(".compose_reply_button").attr("disabled", disable);
     if (disable) {
         $("#compose_buttons .compose-reply-button-wrapper").attr(
-            "data-tooltip-template-id",
-            "compose_reply_direct_disabled_button_tooltip_template",
+            "data-reply-button-type",
+            "direct_disabled",
         );
         return;
     }
     if (narrow_state.is_message_feed_visible()) {
         $("#compose_buttons .compose-reply-button-wrapper").attr(
-            "data-tooltip-template-id",
-            "compose_reply_message_button_tooltip_template",
+            "data-reply-button-type",
+            "selected_message",
         );
     } else {
         $("#compose_buttons .compose-reply-button-wrapper").attr(
-            "data-tooltip-template-id",
-            "compose_reply_selected_topic_button_tooltip_template",
+            "data-reply-button-type",
+            "selected_conversation",
         );
     }
 }
