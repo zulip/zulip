@@ -11857,7 +11857,7 @@ paths:
                               invited_as: 400,
                               invited_by_user_id: 9,
                               is_multiuse: true,
-                              link_url: "http://localhost:9991/join/6i4324pzbtyvmwv5nwyghoof/",
+                              link_url: "https://example.zulipchat.com/join/yddhtzk4jgl7rsmazc5fyyyy/",
                             },
                           ],
                       }
@@ -11891,46 +11891,9 @@ paths:
                   type: string
                   example: example@zulip.com, logan@zulip.com
                 invite_expires_in_minutes:
-                  description: |
-                    The number of minutes before the invitation will expire. If `null`, the
-                    invitation will never expire. If unspecified, the server will use a default
-                    value (based on the `INVITATION_LINK_VALIDITY_MINUTES` server setting, which
-                    defaults to 10) for when the invitation will expire.
-
-                    **Changes**: New in Zulip 6.0 (feature level 126). Previously, there was an
-                    `invite_expires_in_days` parameter, which specified the duration in days instead
-                    of minutes.
-                  type: integer
-                  nullable: true
-                  example: 14400
+                  $ref: "#/components/schemas/InviteExpirationParameter"
                 invite_as:
-                  description: |
-                    The [organization-level role](/api/roles-and-permissions) of the user that is
-                    created when the invitation is accepted.
-                    Possible values are:
-
-                    - 100 = Organization owner
-                    - 200 = Organization administrator
-                    - 300 = Organization moderator
-                    - 400 = Member
-                    - 600 = Guest
-
-                    Users can only send invitations for
-                    [roles with equal or stricter restrictions](/api/roles-and-permissions#permission-levels)
-                    as their own. For example, a moderator cannot invite someone to be an owner
-                    or administrator, but they can invite them to be a moderator or member.
-
-                    **Changes**: In Zulip 4.0 (feature level 61), added support for inviting
-                    users as moderators.
-                  type: integer
-                  enum:
-                    - 100
-                    - 200
-                    - 300
-                    - 400
-                    - 600
-                  default: 400
-                  example: 600
+                  $ref: "#/components/schemas/InviteRoleParameter"
                 stream_ids:
                   description: |
                     A list containing the [IDs of the streams](/api/get-stream-id) that the
@@ -12021,6 +11984,119 @@ paths:
                           {
                             "code": "BAD_REQUEST",
                             "msg": "Stream does not exist with id: 11. No invites were sent.",
+                            "result": "error",
+                          }
+                        description: |
+                          An example JSON error response for when any of the specified streams
+                          does not exist or the user does not have permission to access one of
+                          the targeted streams.
+                  - allOf:
+                      - $ref: "#/components/schemas/CodedError"
+                      - example:
+                          {
+                            "code": "BAD_REQUEST",
+                            "msg": "You do not have permission to subscribe other users to streams.",
+                            "result": "error",
+                          }
+                        description: |
+                          An example JSON error response for when the user doesn't have permission
+                          to subscribe other users to streams and `stream_ids` is not empty.
+  /invites/multiuse:
+    post:
+      operationId: create-invite-link
+      summary: Create reusable invitation link
+      tags: ["invites"]
+      description: |
+        Create a [reusable invitation link](/help/invite-new-users#create-a-reusable-invitation-link)
+        which can be used to invite new users to the organization.
+
+        **Changes**: In Zulip 8.0 (feature level 209), added support for non-admin
+        users [with permission](/help/restrict-account-creation#change-who-can-send-invitations)
+        to use this endpoint. Previously, it was restricted to administrators only.
+
+        In Zulip 6.0 (feature level 126), the `invite_expires_in_days`
+        parameter was removed and replaced by `invite_expires_in_minutes`.
+
+        In Zulip 5.0 (feature level 117), added support for passing `null` as
+        the `invite_expires_in_days` parameter to request an invitation that never
+        expires.
+
+        In Zulip 5.0 (feature level 96), the `invite_expires_in_days` parameter was
+        added which specified the number of days before the invitation would expire.
+      requestBody:
+        required: false
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                invite_expires_in_minutes:
+                  $ref: "#/components/schemas/InviteExpirationParameter"
+                invite_as:
+                  $ref: "#/components/schemas/InviteRoleParameter"
+                stream_ids:
+                  description: |
+                    A list containing the [IDs of the streams](/api/get-stream-id) that the
+                    newly created user will be automatically subscribed to if the invitation
+                    is accepted. If unspecified, it will be set to empty list. If the list is
+                    empty, then the new user will not be subscribed to any streams.
+                  type: array
+                  items:
+                    type: integer
+                  default: []
+                  example: [1, 2]
+            encoding:
+              invite_expires_in_minutes:
+                contentType: application/json
+              stream_ids:
+                contentType: application/json
+      responses:
+        "200":
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
+                      ignored_parameters_unsupported: {}
+                      invite_link:
+                        type: string
+                        description: |
+                          The URL of the [reusable invitation link](/help/invite-new-users#create-a-reusable-invitation-link)
+                          that was created by this request.
+                    example:
+                      {
+                        "result": "success",
+                        "msg": "",
+                        "invite_link": "https://example.zulipchat.com/join/yddhtzk4jgl7rsmazc5fyyyy/",
+                      }
+        "400":
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - allOf:
+                      - $ref: "#/components/schemas/CodedError"
+                      - example:
+                          {
+                            "code": "BAD_REQUEST",
+                            "msg": "Insufficient permission",
+                            "result": "error",
+                          }
+                        description: |
+                          An example JSON error response for when the user doesn't have permission
+                          to send invitations.
+                  - allOf:
+                      - $ref: "#/components/schemas/CodedError"
+                      - example:
+                          {
+                            "code": "BAD_REQUEST",
+                            "msg": "Invalid stream ID 11. No invites were sent.",
                             "result": "error",
                           }
                         description: |
@@ -19618,6 +19694,13 @@ components:
           description: |
             The [organization-level role](/api/roles-and-permissions) of the user that
             is created when the invitation is accepted.
+            Possible values are:
+
+            - 100 = Organization owner
+            - 200 = Organization administrator
+            - 300 = Organization moderator
+            - 400 = Member
+            - 600 = Guest
         email:
           type: string
           description: |
@@ -19633,6 +19716,47 @@ components:
           description: |
             A boolean specifying whether the [invitation](/help/invite-new-users) is a
             reusable invitation link or an email invitation.
+    InviteExpirationParameter:
+      description: |
+        The number of minutes before the invitation will expire. If `null`, the
+        invitation will never expire. If unspecified, the server will use a default
+        value (based on the `INVITATION_LINK_VALIDITY_MINUTES` server setting, which
+        defaults to 14400, i.e. 10 days) for when the invitation will expire.
+
+        **Changes**: New in Zulip 6.0 (feature level 126). Previously, there was an
+        `invite_expires_in_days` parameter, which specified the duration in days instead
+        of minutes.
+      type: integer
+      nullable: true
+      example: 14400
+    InviteRoleParameter:
+      description: |
+        The [organization-level role](/api/roles-and-permissions) of the user that is
+        created when the invitation is accepted.
+        Possible values are:
+
+        - 100 = Organization owner
+        - 200 = Organization administrator
+        - 300 = Organization moderator
+        - 400 = Member
+        - 600 = Guest
+
+        Users can only create invitation links for
+        [roles with equal or stricter restrictions](/api/roles-and-permissions#permission-levels)
+        as their own. For example, a moderator cannot invite someone to be an owner
+        or administrator, but they can invite them to be a moderator or member.
+
+        **Changes**: In Zulip 4.0 (feature level 61), added support for inviting
+        users as moderators.
+      type: integer
+      enum:
+        - 100
+        - 200
+        - 300
+        - 400
+        - 600
+      default: 400
+      example: 600
     Subscriptions:
       type: object
       additionalProperties: false

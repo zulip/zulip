@@ -92,6 +92,7 @@
 
 * [Get all invitations](/api/get-invites)
 * [Send invitations](/api/send-invites)
+* [Create reusable invitation link](/api/create-invite-link)
 
 #### Server & organizations
 

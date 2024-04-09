@@ -329,6 +329,21 @@ def send_invitations(client: Client) -> None:
     validate_against_openapi_schema(result, "/invites", "post", "200")
 
 
+@openapi_test_function("/invites/multiuse:post")
+def create_reusable_invitation_link(client: Client) -> None:
+    # {code_example|start}
+    # Create reusable invitation link
+    request = {
+        "invite_expires_in_minutes": 60 * 24 * 10,  # 10 days
+        "invite_as": 400,
+        "stream_ids": [1, 8, 9],
+    }
+    result = client.call_endpoint(url="/invites/multiuse", method="POST", request=request)
+    # {code_example|end}
+
+    validate_against_openapi_schema(result, "/invites/multiuse", "post", "200")
+
+
 @openapi_test_function("/users/{user_id}:get")
 def get_single_user(client: Client) -> None:
     ensure_users([8], ["cordelia"])
@@ -1686,6 +1701,7 @@ def test_errors(client: Client) -> None:
 
 def test_invitations(client: Client) -> None:
     send_invitations(client)
+    create_reusable_invitation_link(client)
     get_invitations(client)
 
 

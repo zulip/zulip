@@ -386,9 +386,9 @@ No changes; feature level used for Zulip 8.0 release.
   to an organization. Previously, only admin users could create these
   links.
 
-* `POST /invites/multiuse`: Non-admin users can now use this endpoint
-  to create reusable invitation links. Previously, this endpoint was
-  restricted to admin users only.
+* [`POST /invites/multiuse`](/api/create-invite-link): Non-admin users can
+  now use this endpoint to create reusable invitation links. Previously,
+  this endpoint was restricted to admin users only.
 
 * [`GET /invites`](/api/get-invites): Endpoint response for non-admin users now
   includes both email invitations and reusable invitation links that they have
@@ -1120,7 +1120,8 @@ user's profile.
 
 **Feature level 126**
 
-* [`POST /invites`](/api/send-invites), `POST /invites/multiuse`: Replaced
+* [`POST /invites`](/api/send-invites),
+  [`POST /invites/multiuse`](/api/create-invite-link): Replaced
   `invite_expires_in_days` parameter with `invite_expires_in_minutes`.
 
 **Feature level 125**
@@ -1180,9 +1181,10 @@ No changes; feature level used for Zulip 5.0 release.
 
 **Feature level 117**
 
-* [`POST /invites`](/api/send-invites), `POST /invites/multiuse`: Added
-  support for passing `null` as the `invite_expires_in_days` parameter
-  to request an invitation that never expires.
+* [`POST /invites`](/api/send-invites),
+  [`POST /invites/multiuse`](/api/create-invite-link): Added support
+  for passing `null` as the `invite_expires_in_days` parameter to
+  request an invitation that never expires.
 
 **Feature level 116**
 
@@ -1340,7 +1342,8 @@ No changes; feature level used for Zulip 5.0 release.
 
 * [`PATCH /realm/user_settings_defaults`](/api/update-realm-user-settings-defaults):
   Added new endpoint to update default values of user settings in a realm.
-* [`POST /invites`](/api/send-invites), `POST /invites/multiuse`: Added
+* [`POST /invites`](/api/send-invites),
+  [`POST /invites/multiuse`](/api/create-invite-link): Added
   `invite_expires_in_days` parameter encoding the number days before
   the invitation should expire.
 
@@ -1601,8 +1604,9 @@ No changes; feature level used for Zulip 4.0 release.
 
 **Feature level 61**
 
-* [`POST /invites`](/api/send-invites), `POST /invites/multiuse`: Added
-  support for inviting users as moderators.
+* [`POST /invites`](/api/send-invites),
+  [`POST /invites/multiuse`](/api/create-invite-link): Added support
+  for inviting users as moderators.
 
 **Feature level 60**
 
