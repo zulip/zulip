@@ -43,6 +43,10 @@ class Command(ZulipBaseCommand):
 
         if options["stream_id"] is not None:
             stream = Stream.objects.get(id=options["stream_id"])
+            if stream.realm_id != realm.id:
+                raise CommandError(
+                    f"Stream id {stream.id}, named '{stream.name}', is in realm '{stream.realm.string_id}', not '{realm.string_id}'"
+                )
             if not stream.deactivated:
                 raise CommandError(
                     f"Stream id {stream.id}, named '{stream.name}', is not deactivated"
