@@ -84,34 +84,40 @@ class MessagePOSTTest(ZulipTestCase):
         Sending a message to a stream to which you are subscribed is
         successful.
         """
+        recipient_type_name = ["stream", "channel"]
         self.login("hamlet")
-        result = self.client_post(
-            "/json/messages",
-            {
-                "type": "stream",
-                "to": orjson.dumps("Verona").decode(),
-                "content": "Test message",
-                "topic": "Test topic",
-            },
-        )
-        self.assert_json_success(result)
+
+        for recipient_type in recipient_type_name:
+            result = self.client_post(
+                "/json/messages",
+                {
+                    "type": recipient_type,
+                    "to": orjson.dumps("Verona").decode(),
+                    "content": "Test message",
+                    "topic": "Test topic",
+                },
+            )
+            self.assert_json_success(result)
 
     def test_api_message_to_stream_by_name(self) -> None:
         """
         Same as above, but for the API view
         """
+        recipient_type_name = ["stream", "channel"]
         user = self.example_user("hamlet")
-        result = self.api_post(
-            user,
-            "/api/v1/messages",
-            {
-                "type": "stream",
-                "to": orjson.dumps("Verona").decode(),
-                "content": "Test message",
-                "topic": "Test topic",
-            },
-        )
-        self.assert_json_success(result)
+
+        for recipient_type in recipient_type_name:
+            result = self.api_post(
+                user,
+                "/api/v1/messages",
+                {
+                    "type": recipient_type,
+                    "to": orjson.dumps("Verona").decode(),
+                    "content": "Test message",
+                    "topic": "Test topic",
+                },
+            )
+            self.assert_json_success(result)
 
     def test_message_to_stream_with_nonexistent_id(self) -> None:
         cordelia = self.example_user("cordelia")
@@ -123,7 +129,7 @@ class MessagePOSTTest(ZulipTestCase):
             bot,
             "/api/v1/messages",
             {
-                "type": "stream",
+                "type": "channel",
                 "to": orjson.dumps([99999]).decode(),
                 "content": "Stream message by ID.",
                 "topic": "Test topic for stream ID message",
@@ -154,7 +160,7 @@ class MessagePOSTTest(ZulipTestCase):
             bot,
             "/api/v1/messages",
             {
-                "type": "stream",
+                "type": "channel",
                 "to": orjson.dumps(stream.name).decode(),
                 "content": "Stream message to an empty stream by name.",
                 "topic": "Test topic for empty stream name message",
@@ -189,7 +195,7 @@ class MessagePOSTTest(ZulipTestCase):
             bot,
             "/api/v1/messages",
             {
-                "type": "stream",
+                "type": "channel",
                 "to": orjson.dumps([stream.id]).decode(),
                 "content": "Stream message to an empty stream by id.",
                 "topic": "Test topic for empty stream id message",
@@ -213,21 +219,25 @@ class MessagePOSTTest(ZulipTestCase):
         Sending a message to a stream (by stream ID) to which you are
         subscribed is successful.
         """
+        recipient_type_name = ["stream", "channel"]
         self.login("hamlet")
         realm = get_realm("zulip")
         stream = get_stream("Verona", realm)
-        result = self.client_post(
-            "/json/messages",
-            {
-                "type": "stream",
-                "to": orjson.dumps([stream.id]).decode(),
-                "content": "Stream message by ID.",
-                "topic": "Test topic for stream ID message",
-            },
-        )
-        self.assert_json_success(result)
-        sent_message = self.get_last_message()
-        self.assertEqual(sent_message.content, "Stream message by ID.")
+
+        for recipient_type in recipient_type_name:
+            content = f"Stream message by ID, type parameter: {recipient_type}."
+            result = self.client_post(
+                "/json/messages",
+                {
+                    "type": recipient_type,
+                    "to": orjson.dumps([stream.id]).decode(),
+                    "content": content,
+                    "topic": "Test topic for stream ID message",
+                },
+            )
+            self.assert_json_success(result)
+            sent_message = self.get_last_message()
+            self.assertEqual(sent_message.content, content)
 
     def test_sending_message_as_stream_post_policy_admins(self) -> None:
         """
@@ -522,7 +532,7 @@ class MessagePOSTTest(ZulipTestCase):
             user,
             "/api/v1/messages",
             {
-                "type": "stream",
+                "type": "channel",
                 "content": "Test message no to",
                 "topic": "Test topic",
             },
@@ -542,7 +552,7 @@ class MessagePOSTTest(ZulipTestCase):
         result = self.client_post(
             "/json/messages",
             {
-                "type": "stream",
+                "type": "channel",
                 "to": "nonexistent_stream",
                 "content": "Test message",
                 "topic": "Test topic",
@@ -559,7 +569,7 @@ class MessagePOSTTest(ZulipTestCase):
         result = self.client_post(
             "/json/messages",
             {
-                "type": "stream",
+                "type": "channel",
                 "to": """&<"'><non-existent>""",
                 "content": "Test message",
                 "topic": "Test topic",
@@ -585,7 +595,7 @@ class MessagePOSTTest(ZulipTestCase):
             user,
             "/api/v1/messages",
             {
-                "type": "stream",
+                "type": "channel",
                 "to": orjson.dumps("Verona").decode(),
                 "content": "Test message",
                 "topic": "Test topic",
@@ -601,7 +611,7 @@ class MessagePOSTTest(ZulipTestCase):
             user,
             "/api/v1/messages",
             {
-                "type": "stream",
+                "type": "channel",
                 "to": orjson.dumps("Verona").decode(),
                 "content": "Another Test message",
                 "topic": "Test topic",
@@ -882,7 +892,7 @@ class MessagePOSTTest(ZulipTestCase):
         result = self.client_post(
             "/json/messages",
             {
-                "type": "stream",
+                "type": "channel",
                 "to": "Verona",
                 "content": "Test message",
                 "topic": "",
@@ -897,7 +907,7 @@ class MessagePOSTTest(ZulipTestCase):
         self.login("hamlet")
         result = self.client_post(
             "/json/messages",
-            {"type": "stream", "to": "Verona", "content": "Test message"},
+            {"type": "channel", "to": "Verona", "content": "Test message"},
         )
         self.assert_json_error(result, "Missing topic")
 
@@ -910,7 +920,7 @@ class MessagePOSTTest(ZulipTestCase):
         result = self.client_post(
             "/json/messages",
             {
-                "type": "stream",
+                "type": "channel",
                 "to": "Verona",
                 "topic": "Test\n\rTopic",
                 "content": "Test message",
@@ -922,7 +932,7 @@ class MessagePOSTTest(ZulipTestCase):
         result = self.client_post(
             "/json/messages",
             {
-                "type": "stream",
+                "type": "channel",
                 "to": "Verona",
                 "topic": "Test\ufffeTopic",
                 "content": "Test message",
@@ -932,7 +942,7 @@ class MessagePOSTTest(ZulipTestCase):
 
     def test_invalid_recipient_type(self) -> None:
         """
-        Messages other than the type of "direct", "private" or "stream" are invalid.
+        Messages other than the type of "direct", "private", "channel" or "stream" are invalid.
         """
         self.login("hamlet")
         result = self.client_post(
@@ -1072,7 +1082,7 @@ class MessagePOSTTest(ZulipTestCase):
         """
         self.login("hamlet")
         post_data = {
-            "type": "stream",
+            "type": "channel",
             "to": "Verona",
             "content": "  I like null bytes \x00 in my content",
             "topic": "Test topic",
@@ -1086,7 +1096,7 @@ class MessagePOSTTest(ZulipTestCase):
         """
         self.login("hamlet")
         post_data = {
-            "type": "stream",
+            "type": "channel",
             "to": orjson.dumps("Verona").decode(),
             "content": "  I like whitespace at the end! \n\n \n",
             "topic": "Test topic",
@@ -1098,7 +1108,7 @@ class MessagePOSTTest(ZulipTestCase):
 
         # Test if it removes the new line from the beginning of the message.
         post_data = {
-            "type": "stream",
+            "type": "channel",
             "to": orjson.dumps("Verona").decode(),
             "content": "\nAvoid the new line at the beginning of the message.",
             "topic": "Test topic",
@@ -1120,7 +1130,7 @@ class MessagePOSTTest(ZulipTestCase):
         MAX_MESSAGE_LENGTH = settings.MAX_MESSAGE_LENGTH
         long_message = "A" * (MAX_MESSAGE_LENGTH + 1)
         post_data = {
-            "type": "stream",
+            "type": "channel",
             "to": orjson.dumps("Verona").decode(),
             "content": long_message,
             "topic": "Test topic",
@@ -1141,7 +1151,7 @@ class MessagePOSTTest(ZulipTestCase):
         self.login("hamlet")
         long_topic_name = "A" * (MAX_TOPIC_NAME_LENGTH + 1)
         post_data = {
-            "type": "stream",
+            "type": "channel",
             "to": orjson.dumps("Verona").decode(),
             "content": "test content",
             "topic": long_topic_name,
@@ -1157,7 +1167,7 @@ class MessagePOSTTest(ZulipTestCase):
         result = self.client_post(
             "/json/messages",
             {
-                "type": "stream",
+                "type": "channel",
                 "to": "Verona",
                 "content": "Test message",
                 "topic": "Test topic",
@@ -1185,7 +1195,7 @@ class MessagePOSTTest(ZulipTestCase):
             self.mit_user("starnine"),
             "/api/v1/messages",
             {
-                "type": "stream",
+                "type": "channel",
                 "sender": self.mit_email("sipbtest"),
                 "content": "Test message",
                 "client": "zephyr_mirror",
@@ -1282,7 +1292,7 @@ class MessagePOSTTest(ZulipTestCase):
             user,
             "/api/v1/messages",
             {
-                "type": "stream",
+                "type": "channel",
                 "forged": "true",
                 "time": fake_timestamp,
                 "sender": "irc-user@irc.zulip.com",
@@ -1305,7 +1315,7 @@ class MessagePOSTTest(ZulipTestCase):
             user,
             "/api/v1/messages",
             {
-                "type": "stream",
+                "type": "channel",
                 "forged": "yes",
                 "time": fake_timestamp,
                 "sender": "irc-user@irc.zulip.com",
@@ -1335,7 +1345,7 @@ class MessagePOSTTest(ZulipTestCase):
 
         def test_with(sender_email: str, client: str, forged: bool) -> None:
             payload = dict(
-                type="stream",
+                type="channel",
                 to=orjson.dumps(stream_name).decode(),
                 client=client,
                 topic="whatever",
@@ -1382,7 +1392,7 @@ class MessagePOSTTest(ZulipTestCase):
         self.make_stream(stream_name, invite_only=True)
 
         payload = dict(
-            type="stream",
+            type="channel",
             to=orjson.dumps(stream_name).decode(),
             topic="whatever",
             content="whatever",
@@ -1408,7 +1418,7 @@ class MessagePOSTTest(ZulipTestCase):
             notification_bot,
             "/api/v1/messages",
             {
-                "type": "stream",
+                "type": "channel",
                 "to": orjson.dumps("notify_channel").decode(),
                 "content": "Test message",
                 "topic": "Test topic",
@@ -1429,7 +1439,7 @@ class MessagePOSTTest(ZulipTestCase):
         stream_name = "public stream"
         self.make_stream(stream_name, invite_only=False)
         payload = dict(
-            type="stream",
+            type="channel",
             to=orjson.dumps(stream_name).decode(),
             topic="whatever",
             content="whatever",
@@ -2211,7 +2221,7 @@ class StreamMessagesTest(ZulipTestCase):
             user,
             "/api/v1/messages",
             {
-                "type": "stream",
+                "type": "channel",
                 "to": orjson.dumps("Verona").decode(),
                 "sender": self.mit_email("sipbtest"),
                 "client": "zephyr_mirror",
@@ -2228,7 +2238,7 @@ class StreamMessagesTest(ZulipTestCase):
             user,
             "/api/v1/messages",
             {
-                "type": "stream",
+                "type": "channel",
                 "to": "Verona",
                 "sender": self.mit_email("sipbtest"),
                 "client": "zephyr_mirror",

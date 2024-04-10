@@ -20,6 +20,14 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 9.0
 
+**Feature level 248**
+
+* [`POST /typing`](/api/set-typing-status), [`POST /messages`](/api/send-message),
+  [`POST /scheduled_messages`](/api/create-scheduled-message),
+  [`PATCH /scheduled_messages/<int:scheduled_message_id>`](/api/update-scheduled-message):
+  Added `"channel"` as an additional value for the `type` parameter to
+  indicate a stream message.
+
 **Feature level 247**
 
 * [Markdown message formatting](/api/message-formatting#mentions):

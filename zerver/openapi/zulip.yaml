@@ -5677,17 +5677,20 @@ paths:
                 type:
                   description: |
                     The type of scheduled message to be sent. `"direct"` for a direct
-                    message and `"stream"` for a stream message.
+                    message and `"stream"` or `"channel"` for a stream message.
 
-                    In Zulip 7.0 (feature level 174), `"direct"` was added as the
-                    preferred way to indicate the type of a direct message, deprecating
-                    the original `"private"`. While `"private"` is supported for
-                    scheduling direct messages, clients are encouraged to use to the
-                    modern convention because support for `"private"` may eventually
-                    be removed.
+                    Note that, while `"private"` is supported for scheduling direct
+                    messages, clients are encouraged to use to the modern convention of
+                    `"direct"` to indicate this message type, because support for
+                    `"private"` may eventually be removed.
+
+                    **Changes**: In Zulip 9.0 (feature level 248), `"channel"` was added as
+                    an additional value for this parameter to indicate the type of a stream
+                    message.
                   type: string
                   enum:
                     - direct
+                    - channel
                     - stream
                     - private
                   example: direct
@@ -5822,21 +5825,24 @@ paths:
                 type:
                   description: |
                     The type of scheduled message to be sent. `"direct"` for a direct
-                    message and `"stream"` for a stream message.
+                    message and `"stream"` or `"channel"` for a stream message.
 
                     When updating the type of the scheduled message, the `to` parameter
                     is required. And, if updating the type of the scheduled message to
-                    `"stream"`, then the `topic` parameter is also required.
+                    `"stream"`/`"channel"`, then the `topic` parameter is also required.
 
-                    In Zulip 7.0 (feature level 174), `"direct"` was added as the
-                    preferred way to indicate the type of a direct message, deprecating
-                    the original `"private"`. While `"private"` is supported for
-                    scheduling direct messages, clients are encouraged to use to the
-                    modern convention because support for `"private"` may eventually
-                    be removed.
+                    Note that, while `"private"` is supported for scheduling direct
+                    messages, clients are encouraged to use to the modern convention of
+                    `"direct"` to indicate this message type, because support for
+                    `"private"` may eventually be removed.
+
+                    **Changes**: In Zulip 9.0 (feature level 248), `"channel"` was added as
+                    an additional value for this parameter to indicate the type of a stream
+                    message.
                   type: string
                   enum:
                     - direct
+                    - channel
                     - stream
                     - private
                   example: stream
@@ -6452,9 +6458,13 @@ paths:
                   description: |
                     The type of message to be sent.
 
-                    `"direct"` for a direct message and `"stream"` for a stream message.
+                    `"direct"` for a direct message and `"stream"` or `"channel"` for a
+                    stream message.
 
-                    **Changes**: In Zulip 7.0 (feature level 174), `"direct"` was added as
+                    **Changes**: In Zulip 9.0 (feature level 248), `"channel"` was added as
+                    an additional value for this parameter to request a stream message.
+
+                    In Zulip 7.0 (feature level 174), `"direct"` was added as
                     the preferred way to request a direct message, deprecating the original
                     `"private"`. While `"private"` is still supported for requesting direct
                     messages, clients are encouraged to use to the modern convention with
@@ -6463,6 +6473,7 @@ paths:
                   type: string
                   enum:
                     - direct
+                    - channel
                     - stream
                     - private
                   example: direct
@@ -18069,7 +18080,11 @@ paths:
                   description: |
                     Type of the message being composed.
 
-                    **Changes**: In Zulip 8.0 (feature level 215), stopped supporting
+                    **Changes**: In Zulip 9.0 (feature level 248), `"channel"` was added as
+                    an additional value for this parameter to indicate a stream message is
+                    being composed.
+
+                    In Zulip 8.0 (feature level 215), stopped supporting
                     `"private"` as a valid value for this parameter.
 
                     In Zulip 7.0 (feature level 174), `"direct"` was added
@@ -18083,6 +18098,7 @@ paths:
                   enum:
                     - direct
                     - stream
+                    - channel
                   default: direct
                   example: direct
                 op:
