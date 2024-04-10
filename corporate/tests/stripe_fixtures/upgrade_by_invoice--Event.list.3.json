@@ -5,6 +5,116 @@
       "created": 1010000005,
       "data": {
         "object": {
+          "ach_credit_transfer": {
+            "account_number": "test_NORMALIZED03",
+            "bank_name": "TEST BANK",
+            "fingerprint": "NORMALIZED000001",
+            "refund_account_holder_name": null,
+            "refund_account_holder_type": null,
+            "refund_routing_number": null,
+            "routing_number": "110000000",
+            "swift_code": "TSTEZ122"
+          },
+          "amount": null,
+          "client_secret": "src_client_secret_NORMALIZED00000000000001",
+          "created": 1010000005,
+          "currency": "usd",
+          "customer": "cus_NORMALIZED0001",
+          "flow": "receiver",
+          "id": "src_NORMALIZED00000000000001",
+          "livemode": false,
+          "metadata": {},
+          "object": "source",
+          "owner": {
+            "address": null,
+            "email": "amount_0@stripe.com",
+            "name": null,
+            "phone": null,
+            "verified_address": null,
+            "verified_email": null,
+            "verified_name": null,
+            "verified_phone": null
+          },
+          "receiver": {
+            "address": "000000000-test_NORMALIZED01",
+            "amount_charged": 0,
+            "amount_received": 0,
+            "amount_returned": 0,
+            "refund_attributes_method": "email",
+            "refund_attributes_status": "missing"
+          },
+          "statement_descriptor": null,
+          "status": "pending",
+          "type": "ach_credit_transfer",
+          "usage": "reusable"
+        }
+      },
+      "id": "evt_1P3xtDDEQaroqDjsxh30fZXu",
+      "livemode": false,
+      "object": "event",
+      "pending_webhooks": 0,
+      "request": {
+        "id": null,
+        "idempotency_key": "cf53a164-958e-44be-a8d0-4e738ff39e1e"
+      },
+      "type": "customer.source.created"
+    },
+    {
+      "api_version": "2020-08-27",
+      "created": 1010000005,
+      "data": {
+        "object": {
+          "address": null,
+          "balance": 0,
+          "created": 1010000001,
+          "currency": "usd",
+          "default_currency": "usd",
+          "default_source": "src_NORMALIZED00000000000001",
+          "delinquent": false,
+          "description": "zulip (Zulip Dev)",
+          "discount": null,
+          "email": "hamlet@zulip.com",
+          "id": "cus_NORMALIZED0001",
+          "invoice_prefix": "NORMA01",
+          "invoice_settings": {
+            "custom_fields": null,
+            "default_payment_method": null,
+            "footer": null,
+            "rendering_options": null
+          },
+          "livemode": false,
+          "metadata": {
+            "realm_id": "1",
+            "realm_str": "zulip"
+          },
+          "name": null,
+          "next_invoice_sequence": 2,
+          "object": "customer",
+          "phone": null,
+          "preferred_locales": [],
+          "shipping": null,
+          "tax_exempt": "none",
+          "test_clock": null
+        },
+        "previous_attributes": {
+          "default_source": null
+        }
+      },
+      "id": "evt_1P3xtDDEQaroqDjs68MHkkCw",
+      "livemode": false,
+      "object": "event",
+      "pending_webhooks": 0,
+      "request": {
+        "id": null,
+        "idempotency_key": "cf53a164-958e-44be-a8d0-4e738ff39e1e"
+      },
+      "type": "customer.updated"
+    },
+    {
+      "api_version": "2020-08-27",
+      "created": 1010000005,
+      "data": {
+        "object": {
           "account_country": "US",
           "account_name": "Kandra Labs, Inc.",
           "account_tax_ids": null,
@@ -47,9 +157,9 @@
           "ending_balance": 0,
           "footer": null,
           "from_invoice": null,
-          "hosted_invoice_url": "https://invoice.stripe.com/i/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QdGVFMVhMUmMweFBwRDJScmxSUUMxSTlLNmVVU28wLDEwMzI1NzA1OQ0200hEChWe9J?s=ap",
+          "hosted_invoice_url": "https://invoice.stripe.com/i/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QdGxRZWthSXpHbDM3bUhkaUlZa0lOQW5EZ0laQlBHLDEwMzI4Mzc4Mw020047r5jsfi?s=ap",
           "id": "in_NORMALIZED00000000000002",
-          "invoice_pdf": "https://pay.stripe.com/invoice/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QdGVFMVhMUmMweFBwRDJScmxSUUMxSTlLNmVVU28wLDEwMzI1NzA1OQ0200hEChWe9J/pdf?s=ap",
+          "invoice_pdf": "https://pay.stripe.com/invoice/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QdGxRZWthSXpHbDM3bUhkaUlZa0lOQW5EZ0laQlBHLDEwMzI4Mzc4Mw020047r5jsfi/pdf?s=ap",
           "issuer": {
             "type": "self"
           },
@@ -119,11 +229,12 @@
             "billing_schedule": "1",
             "license_management": "manual",
             "licenses": "123",
+            "on_free_trial": "False",
             "plan_tier": "1",
             "user_id": "10"
           },
           "next_payment_attempt": null,
-          "number": "NORMALI-0003",
+          "number": "NORMALI-0002",
           "object": "invoice",
           "on_behalf_of": null,
           "paid": true,
@@ -174,13 +285,13 @@
           "webhooks_delivered_at": 1000000000
         }
       },
-      "id": "evt_1P3qwBDEQaroqDjstCQPykBy",
+      "id": "evt_1P3xtDDEQaroqDjsMkZHE3l2",
       "livemode": false,
       "object": "event",
       "pending_webhooks": 0,
       "request": {
         "id": "req_NORMALIZED0002",
-        "idempotency_key": "d189e6dc-5f12-4a7a-9f63-133cad11c5e6"
+        "idempotency_key": "1afa75e9-9cbc-45de-8275-dcb5bbc80d54"
       },
       "type": "invoice.paid"
     }

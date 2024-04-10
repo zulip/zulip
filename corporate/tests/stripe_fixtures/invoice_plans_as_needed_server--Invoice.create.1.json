@@ -164,6 +164,7 @@
     "billing_schedule": "2",
     "license_management": "automatic",
     "licenses": "18",
+    "on_free_trial": "False",
     "plan_tier": "103"
   },
   "next_payment_attempt": null,

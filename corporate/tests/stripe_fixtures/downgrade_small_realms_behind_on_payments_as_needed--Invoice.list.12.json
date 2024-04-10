@@ -43,9 +43,9 @@
       "ending_balance": 0,
       "footer": null,
       "from_invoice": null,
-      "hosted_invoice_url": "https://invoice.stripe.com/i/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QdGVBSnpnMzRnMjdDNEJnR0p0NVRxZU1HRjRrTThLLDEwMzI1Njg1NQ0200lDYzdHoj?s=ap",
+      "hosted_invoice_url": "https://invoice.stripe.com/i/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QdGxNcXBGVVZMajg1RTcwVlBoVHFjTjFBQjRrbm9ILDEwMzI4MzU2MQ0200zEh7vhhs?s=ap",
       "id": "in_NORMALIZED00000000000002",
-      "invoice_pdf": "https://pay.stripe.com/invoice/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QdGVBSnpnMzRnMjdDNEJnR0p0NVRxZU1HRjRrTThLLDEwMzI1Njg1NQ0200lDYzdHoj/pdf?s=ap",
+      "invoice_pdf": "https://pay.stripe.com/invoice/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QdGxNcXBGVVZMajg1RTcwVlBoVHFjTjFBQjRrbm9ILDEwMzI4MzU2MQ0200zEh7vhhs/pdf?s=ap",
       "issuer": {
         "type": "self"
       },

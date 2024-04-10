@@ -43,9 +43,9 @@
       "ending_balance": 0,
       "footer": null,
       "from_invoice": null,
-      "hosted_invoice_url": "https://invoice.stripe.com/i/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QdGVEUFo3RWR1TlVmZU5pRWtxVWJQRDF3NnFuOVJCLDEwMzI1NzAwOQ0200tI5lTVNa?s=ap",
+      "hosted_invoice_url": "https://invoice.stripe.com/i/acct_NORMALIZED000001/test_NORMALIZED02a3dERVFhcm9xRGpzLF9QdGxQV2xieFpXQzRoc1JLcW5TNGZocXV5YURKdWxxLDEwMzI4MzcyNQ0200KHOTfp4f?s=ap",
       "id": "in_NORMALIZED00000000000002",
-      "invoice_pdf": "https://pay.stripe.com/invoice/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QdGVEUFo3RWR1TlVmZU5pRWtxVWJQRDF3NnFuOVJCLDEwMzI1NzAwOQ0200tI5lTVNa/pdf?s=ap",
+      "invoice_pdf": "https://pay.stripe.com/invoice/acct_NORMALIZED000001/test_NORMALIZED02a3dERVFhcm9xRGpzLF9QdGxQV2xieFpXQzRoc1JLcW5TNGZocXV5YURKdWxxLDEwMzI4MzcyNQ0200KHOTfp4f/pdf?s=ap",
       "issuer": {
         "type": "self"
       },
@@ -206,9 +206,9 @@
       "ending_balance": 0,
       "footer": null,
       "from_invoice": null,
-      "hosted_invoice_url": "https://invoice.stripe.com/i/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QdGVEWEI4eWRxU29WakpzQlhMMkt3TzFNQmg4NWtrLDEwMzI1NzAwOQ0200tcS5JfB5?s=ap",
+      "hosted_invoice_url": "https://invoice.stripe.com/i/acct_NORMALIZED000001/test_NORMALIZED02a3dERVFhcm9xRGpzLF9QdGxPNHpzTVNxaGl2R3puRjdGcmp0Tml2RzlTUko5LDEwMzI4MzcyNQ0200E5pmyFWK?s=ap",
       "id": "in_NORMALIZED00000000000001",
-      "invoice_pdf": "https://pay.stripe.com/invoice/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QdGVEWEI4eWRxU29WakpzQlhMMkt3TzFNQmg4NWtrLDEwMzI1NzAwOQ0200tcS5JfB5/pdf?s=ap",
+      "invoice_pdf": "https://pay.stripe.com/invoice/acct_NORMALIZED000001/test_NORMALIZED02a3dERVFhcm9xRGpzLF9QdGxPNHpzTVNxaGl2R3puRjdGcmp0Tml2RzlTUko5LDEwMzI4MzcyNQ0200E5pmyFWK/pdf?s=ap",
       "issuer": {
         "type": "self"
       },
@@ -278,6 +278,7 @@
         "billing_schedule": "2",
         "license_management": "manual",
         "licenses": "35",
+        "on_free_trial": "False",
         "plan_tier": "1",
         "user_id": "10"
       },

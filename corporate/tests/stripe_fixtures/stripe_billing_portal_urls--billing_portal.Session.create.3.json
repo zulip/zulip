@@ -1,13 +1,13 @@
 {
-  "configuration": "bpc_1P3quaDEQaroqDjsvMQWTief",
+  "configuration": "bpc_1P3xrVDEQaroqDjsihTnT55W",
   "created": 1000000000,
   "customer": "cus_NORMALIZED0001",
   "flow": null,
-  "id": "bps_1P3quaDEQaroqDjsYEU8ukta",
+  "id": "bps_1P3xrVDEQaroqDjsf67HoV3a",
   "livemode": false,
   "locale": null,
   "object": "billing_portal.session",
   "on_behalf_of": null,
   "return_url": "http://zulip.testserver/billing/",
-  "url": "https://billing.stripe.com/p/session/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QdGVERmZtWDh3WU9aY29Vc042bm9sRHlvTDJXeEdZ0100YHsBKkwP"
+  "url": "https://billing.stripe.com/p/session/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QdGxPNk51UW5OYXdtcXRrM3J4ZHUya2JMZE5CMWYw0100WlhG5ERt"
 }

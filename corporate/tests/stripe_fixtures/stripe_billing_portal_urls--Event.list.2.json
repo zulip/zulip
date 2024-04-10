@@ -5,59 +5,51 @@
       "created": 1000000000,
       "data": {
         "object": {
-          "ach_credit_transfer": {
-            "account_number": "test_NORMALIZED02",
-            "bank_name": "TEST BANK",
-            "fingerprint": "NORMALIZED000002",
-            "refund_account_holder_name": null,
-            "refund_account_holder_type": null,
-            "refund_routing_number": null,
-            "routing_number": "110000000",
-            "swift_code": "TSTEZ122"
-          },
-          "amount": null,
-          "client_secret": "src_client_secret_NORMALIZED00000000000001",
+          "address": null,
+          "balance": 0,
           "created": 1000000000,
           "currency": "usd",
-          "customer": "cus_NORMALIZED0001",
-          "flow": "receiver",
-          "id": "src_NORMALIZED00000000000001",
+          "default_currency": "usd",
+          "default_source": "src_NORMALIZED00000000000001",
+          "delinquent": false,
+          "description": "zulip (Zulip Dev)",
+          "discount": null,
+          "email": "hamlet@zulip.com",
+          "id": "cus_NORMALIZED0001",
+          "invoice_prefix": "NORMA01",
+          "invoice_settings": {
+            "custom_fields": null,
+            "default_payment_method": "pm_1P3xrLDEQaroqDjsEZUaz9lN",
+            "footer": null,
+            "rendering_options": null
+          },
           "livemode": false,
-          "metadata": {},
-          "object": "source",
-          "owner": {
-            "address": null,
-            "email": "amount_0@stripe.com",
-            "name": null,
-            "phone": null,
-            "verified_address": null,
-            "verified_email": null,
-            "verified_name": null,
-            "verified_phone": null
+          "metadata": {
+            "realm_id": "1",
+            "realm_str": "zulip"
           },
-          "receiver": {
-            "address": "000000000-test_NORMALIZED01",
-            "amount_charged": 0,
-            "amount_received": 0,
-            "amount_returned": 0,
-            "refund_attributes_method": "email",
-            "refund_attributes_status": "missing"
-          },
-          "statement_descriptor": null,
-          "status": "pending",
-          "type": "ach_credit_transfer",
-          "usage": "reusable"
+          "name": null,
+          "next_invoice_sequence": 2,
+          "object": "customer",
+          "phone": null,
+          "preferred_locales": [],
+          "shipping": null,
+          "tax_exempt": "none",
+          "test_clock": null
+        },
+        "previous_attributes": {
+          "default_source": null
         }
       },
-      "id": "evt_1P3quYDEQaroqDjspdnfe9Sf",
+      "id": "evt_1P3xrTDEQaroqDjsNHM7uTdM",
       "livemode": false,
       "object": "event",
       "pending_webhooks": 0,
       "request": {
         "id": null,
-        "idempotency_key": "3a86a325-a373-4933-9d47-6150074ab82b"
+        "idempotency_key": "d5a404f8-0c18-408e-b296-822e05c07f33"
       },
-      "type": "customer.source.created"
+      "type": "customer.updated"
     },
     {
       "api_version": "2020-08-27",
@@ -106,9 +98,9 @@
           "ending_balance": 0,
           "footer": null,
           "from_invoice": null,
-          "hosted_invoice_url": "https://invoice.stripe.com/i/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QdGVDakZqM21WeEx4VUhBTDUwcG5qS1p0NXhiRU54LDEwMzI1Njk1OA0200IoOcMIaF?s=ap",
+          "hosted_invoice_url": "https://invoice.stripe.com/i/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QdGxPRk1LcEJSeHFhd1hQYU9wT090STZBQ25OaEVrLDEwMzI4MzY3NQ0200ksfYS1IY?s=ap",
           "id": "in_NORMALIZED00000000000001",
-          "invoice_pdf": "https://pay.stripe.com/invoice/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QdGVDakZqM21WeEx4VUhBTDUwcG5qS1p0NXhiRU54LDEwMzI1Njk1OA0200IoOcMIaF/pdf?s=ap",
+          "invoice_pdf": "https://pay.stripe.com/invoice/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QdGxPRk1LcEJSeHFhd1hQYU9wT090STZBQ25OaEVrLDEwMzI4MzY3NQ0200ksfYS1IY/pdf?s=ap",
           "issuer": {
             "type": "self"
           },
@@ -178,6 +170,7 @@
             "billing_schedule": "1",
             "license_management": "manual",
             "licenses": "123",
+            "on_free_trial": "False",
             "plan_tier": "1",
             "user_id": "10"
           },
@@ -243,13 +236,13 @@
           }
         }
       },
-      "id": "evt_1P3quYDEQaroqDjs3T7Wsd8P",
+      "id": "evt_1P3xrTDEQaroqDjsdeWgfmx8",
       "livemode": false,
       "object": "event",
       "pending_webhooks": 0,
       "request": {
         "id": "req_NORMALIZED0002",
-        "idempotency_key": "7d637c06-d2c8-471e-a6be-51f0f0f14b6f"
+        "idempotency_key": "fd93ca3f-5a49-4267-b51e-e239b1f39b5a"
       },
       "type": "invoice.updated"
     },
@@ -277,7 +270,7 @@
             "total_count": 0,
             "url": "/v1/charges?payment_intent=pi_NORMALIZED00000000000001"
           },
-          "client_secret": "pi_NORMALIZED00000000000001_secret_MjEZRO3jiGv0vuaTwAbxclOB8",
+          "client_secret": "pi_NORMALIZED00000000000001_secret_Vxj1moQqpPBNM5TQjnVObwjQZ",
           "confirmation_method": "automatic",
           "created": 1000000000,
           "currency": "usd",
@@ -292,7 +285,7 @@
           "next_action": null,
           "object": "payment_intent",
           "on_behalf_of": null,
-          "payment_method": "pm_1P3quQDEQaroqDjseIfw9DlL",
+          "payment_method": "pm_1P3xrLDEQaroqDjsEZUaz9lN",
           "payment_method_configuration_details": null,
           "payment_method_options": {
             "card": {
@@ -326,15 +319,109 @@
           "transfer_group": null
         }
       },
-      "id": "evt_3P3quWDEQaroqDjs0HbGiQ3j",
+      "id": "evt_3P3xrRDEQaroqDjs0iGJPlwZ",
       "livemode": false,
       "object": "event",
       "pending_webhooks": 0,
       "request": {
         "id": "req_NORMALIZED0002",
-        "idempotency_key": "7d637c06-d2c8-471e-a6be-51f0f0f14b6f"
+        "idempotency_key": "fd93ca3f-5a49-4267-b51e-e239b1f39b5a"
       },
       "type": "payment_intent.canceled"
+    },
+    {
+      "api_version": "2020-08-27",
+      "created": 1000000000,
+      "data": {
+        "object": {
+          "after_expiration": null,
+          "allow_promotion_codes": null,
+          "amount_subtotal": null,
+          "amount_total": null,
+          "automatic_tax": {
+            "enabled": false,
+            "liability": null,
+            "status": null
+          },
+          "billing_address_collection": "required",
+          "cancel_url": "http://zulip.testserver/upgrade/?manual_license_management=false&tier=1",
+          "client_reference_id": null,
+          "client_secret": null,
+          "consent": null,
+          "consent_collection": null,
+          "created": 1000000000,
+          "currency": null,
+          "currency_conversion": null,
+          "custom_fields": [],
+          "custom_text": {
+            "after_submit": null,
+            "shipping_address": null,
+            "submit": null,
+            "terms_of_service_acceptance": null
+          },
+          "customer": "cus_NORMALIZED0002",
+          "customer_creation": null,
+          "customer_details": {
+            "address": null,
+            "email": "hamlet@zulip.com",
+            "name": null,
+            "phone": null,
+            "tax_exempt": null,
+            "tax_ids": null
+          },
+          "customer_email": null,
+          "expires_at": 1000000000,
+          "id": "cs_test_NORMALIZED02PscwJV8eKlXua6phqINCZI9jujenIVJ4eUUi4n7Yh0Z7XD",
+          "invoice": null,
+          "invoice_creation": null,
+          "livemode": false,
+          "locale": null,
+          "metadata": {
+            "type": "card_update",
+            "user_id": "10"
+          },
+          "mode": "setup",
+          "object": "checkout.session",
+          "payment_intent": null,
+          "payment_link": null,
+          "payment_method_collection": "always",
+          "payment_method_configuration_details": null,
+          "payment_method_options": {
+            "card": {
+              "request_three_d_secure": "automatic"
+            }
+          },
+          "payment_method_types": [
+            "card"
+          ],
+          "payment_status": "no_payment_required",
+          "phone_number_collection": {
+            "enabled": false
+          },
+          "recovered_from": null,
+          "setup_intent": "seti_1P3bNuDEQaroqDjsIu6cdT08",
+          "shipping": null,
+          "shipping_address_collection": null,
+          "shipping_options": [],
+          "shipping_rate": null,
+          "status": "expired",
+          "submit_type": null,
+          "subscription": null,
+          "success_url": "http://zulip.testserver/billing/event_status/?stripe_session_id={CHECKOUT_SESSION_ID}",
+          "total_details": null,
+          "ui_mode": "hosted",
+          "url": null
+        }
+      },
+      "id": "evt_1P3xrSDEQaroqDjsBhlvEkKn",
+      "livemode": false,
+      "object": "event",
+      "pending_webhooks": 0,
+      "request": {
+        "id": null,
+        "idempotency_key": null
+      },
+      "type": "checkout.session.expired"
     },
     {
       "api_version": "2020-08-27",
@@ -383,9 +470,9 @@
           "ending_balance": 0,
           "footer": null,
           "from_invoice": null,
-          "hosted_invoice_url": "https://invoice.stripe.com/i/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QdGVDakZqM21WeEx4VUhBTDUwcG5qS1p0NXhiRU54LDEwMzI1Njk1Nw0200CfcRoymp?s=ap",
+          "hosted_invoice_url": "https://invoice.stripe.com/i/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QdGxPRk1LcEJSeHFhd1hQYU9wT090STZBQ25OaEVrLDEwMzI4MzY3NA02004kUJHboG?s=ap",
           "id": "in_NORMALIZED00000000000001",
-          "invoice_pdf": "https://pay.stripe.com/invoice/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QdGVDakZqM21WeEx4VUhBTDUwcG5qS1p0NXhiRU54LDEwMzI1Njk1Nw0200CfcRoymp/pdf?s=ap",
+          "invoice_pdf": "https://pay.stripe.com/invoice/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QdGxPRk1LcEJSeHFhd1hQYU9wT090STZBQ25OaEVrLDEwMzI4MzY3NA02004kUJHboG/pdf?s=ap",
           "issuer": {
             "type": "self"
           },
@@ -455,6 +542,7 @@
             "billing_schedule": "1",
             "license_management": "manual",
             "licenses": "123",
+            "on_free_trial": "False",
             "plan_tier": "1",
             "user_id": "10"
           },
@@ -510,13 +598,13 @@
           "webhooks_delivered_at": 1000000000
         }
       },
-      "id": "evt_1P3quXDEQaroqDjsf5PNet5W",
+      "id": "evt_1P3xrSDEQaroqDjsoLWJVk8r",
       "livemode": false,
       "object": "event",
       "pending_webhooks": 0,
       "request": {
         "id": "req_NORMALIZED0003",
-        "idempotency_key": "517c9634-7f56-492d-bf3c-1043f18d620d"
+        "idempotency_key": "1a794676-9ed1-42d7-ad9b-1b5705b23f5f"
       },
       "type": "invoice.finalized"
     },
@@ -567,9 +655,9 @@
           "ending_balance": 0,
           "footer": null,
           "from_invoice": null,
-          "hosted_invoice_url": "https://invoice.stripe.com/i/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QdGVDakZqM21WeEx4VUhBTDUwcG5qS1p0NXhiRU54LDEwMzI1Njk1Nw0200CfcRoymp?s=ap",
+          "hosted_invoice_url": "https://invoice.stripe.com/i/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QdGxPRk1LcEJSeHFhd1hQYU9wT090STZBQ25OaEVrLDEwMzI4MzY3NA02004kUJHboG?s=ap",
           "id": "in_NORMALIZED00000000000001",
-          "invoice_pdf": "https://pay.stripe.com/invoice/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QdGVDakZqM21WeEx4VUhBTDUwcG5qS1p0NXhiRU54LDEwMzI1Njk1Nw0200CfcRoymp/pdf?s=ap",
+          "invoice_pdf": "https://pay.stripe.com/invoice/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QdGxPRk1LcEJSeHFhd1hQYU9wT090STZBQ25OaEVrLDEwMzI4MzY3NA02004kUJHboG/pdf?s=ap",
           "issuer": {
             "type": "self"
           },
@@ -639,6 +727,7 @@
             "billing_schedule": "1",
             "license_management": "manual",
             "licenses": "123",
+            "on_free_trial": "False",
             "plan_tier": "1",
             "user_id": "10"
           },
@@ -711,13 +800,13 @@
           }
         }
       },
-      "id": "evt_1P3quXDEQaroqDjsbJNHUfC7",
+      "id": "evt_1P3xrSDEQaroqDjsEywJwvLJ",
       "livemode": false,
       "object": "event",
       "pending_webhooks": 0,
       "request": {
         "id": "req_NORMALIZED0003",
-        "idempotency_key": "517c9634-7f56-492d-bf3c-1043f18d620d"
+        "idempotency_key": "1a794676-9ed1-42d7-ad9b-1b5705b23f5f"
       },
       "type": "invoice.updated"
     },
@@ -745,7 +834,7 @@
             "total_count": 0,
             "url": "/v1/charges?payment_intent=pi_NORMALIZED00000000000001"
           },
-          "client_secret": "pi_NORMALIZED00000000000001_secret_MjEZRO3jiGv0vuaTwAbxclOB8",
+          "client_secret": "pi_NORMALIZED00000000000001_secret_Vxj1moQqpPBNM5TQjnVObwjQZ",
           "confirmation_method": "automatic",
           "created": 1000000000,
           "currency": "usd",
@@ -794,13 +883,13 @@
           "transfer_group": null
         }
       },
-      "id": "evt_3P3quWDEQaroqDjs059Gzsab",
+      "id": "evt_3P3xrRDEQaroqDjs0xhsyNMm",
       "livemode": false,
       "object": "event",
       "pending_webhooks": 0,
       "request": {
         "id": "req_NORMALIZED0003",
-        "idempotency_key": "517c9634-7f56-492d-bf3c-1043f18d620d"
+        "idempotency_key": "1a794676-9ed1-42d7-ad9b-1b5705b23f5f"
       },
       "type": "payment_intent.created"
     },
@@ -923,6 +1012,7 @@
             "billing_schedule": "1",
             "license_management": "manual",
             "licenses": "123",
+            "on_free_trial": "False",
             "plan_tier": "1",
             "user_id": "10"
           },
@@ -978,13 +1068,13 @@
           "webhooks_delivered_at": 1000000000
         }
       },
-      "id": "evt_1P3quWDEQaroqDjs9sJObrGT",
+      "id": "evt_1P3xrRDEQaroqDjsUYtozzYw",
       "livemode": false,
       "object": "event",
       "pending_webhooks": 0,
       "request": {
         "id": "req_NORMALIZED0004",
-        "idempotency_key": "4bf112b3-f71d-4043-8101-4cdb37fb0cf0"
+        "idempotency_key": "6e6cf7f7-f6b9-450f-82c3-5991d22ec593"
       },
       "type": "invoice.created"
     },
@@ -1040,13 +1130,13 @@
           "unit_amount_decimal": "8000"
         }
       },
-      "id": "evt_1P3quVDEQaroqDjsbuXUdts2",
+      "id": "evt_1P3xrQDEQaroqDjsCJVTAvoX",
       "livemode": false,
       "object": "event",
       "pending_webhooks": 0,
       "request": {
         "id": "req_NORMALIZED0005",
-        "idempotency_key": "502db9d0-968c-4aa3-b1c8-87e0cbf8ce7a"
+        "idempotency_key": "ff32a4bc-ee34-481e-bed3-d69d0322b5b8"
       },
       "type": "invoiceitem.created"
     },
@@ -1069,7 +1159,7 @@
           "invoice_prefix": "NORMA01",
           "invoice_settings": {
             "custom_fields": null,
-            "default_payment_method": "pm_1P3quQDEQaroqDjseIfw9DlL",
+            "default_payment_method": "pm_1P3xrLDEQaroqDjsEZUaz9lN",
             "footer": null,
             "rendering_options": null
           },
@@ -1092,18 +1182,18 @@
           "default_currency": null
         }
       },
-      "id": "evt_1P3quVDEQaroqDjsCrLVZtDS",
+      "id": "evt_1P3xrQDEQaroqDjssYzgZxh2",
       "livemode": false,
       "object": "event",
       "pending_webhooks": 0,
       "request": {
         "id": "req_NORMALIZED0005",
-        "idempotency_key": "502db9d0-968c-4aa3-b1c8-87e0cbf8ce7a"
+        "idempotency_key": "ff32a4bc-ee34-481e-bed3-d69d0322b5b8"
       },
       "type": "customer.updated"
     }
   ],
-  "has_more": false,
+  "has_more": true,
   "object": "list",
   "url": "/v1/events"
 }

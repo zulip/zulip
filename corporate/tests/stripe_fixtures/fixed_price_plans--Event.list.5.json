@@ -5,49 +5,94 @@
       "created": 1000000000,
       "data": {
         "object": {
-          "application": null,
-          "automatic_payment_methods": null,
-          "cancellation_reason": null,
-          "client_secret": "seti_1P3qrQDEQaroqDjsIp9IJNaj_secret_Pte9sWyl57z3u5rg3cy1akCDLjnvc7x",
+          "after_expiration": null,
+          "allow_promotion_codes": null,
+          "amount_subtotal": null,
+          "amount_total": null,
+          "automatic_tax": {
+            "enabled": false,
+            "liability": null,
+            "status": null
+          },
+          "billing_address_collection": "required",
+          "cancel_url": "http://zulip.testserver/upgrade/?manual_license_management=true&tier=1",
+          "client_reference_id": null,
+          "client_secret": null,
+          "consent": null,
+          "consent_collection": null,
           "created": 1000000000,
-          "customer": "cus_NORMALIZED0005",
-          "description": null,
-          "flow_directions": null,
-          "id": "seti_1P3qrQDEQaroqDjsIp9IJNaj",
-          "last_setup_error": null,
-          "latest_attempt": "setatt_1P3qrQDEQaroqDjsUaZ2GDA7",
+          "currency": null,
+          "currency_conversion": null,
+          "custom_fields": [],
+          "custom_text": {
+            "after_submit": null,
+            "shipping_address": null,
+            "submit": null,
+            "terms_of_service_acceptance": null
+          },
+          "customer": "cus_NORMALIZED0002",
+          "customer_creation": null,
+          "customer_details": {
+            "address": null,
+            "email": "hamlet@zulip.com",
+            "name": null,
+            "phone": null,
+            "tax_exempt": null,
+            "tax_ids": null
+          },
+          "customer_email": null,
+          "expires_at": 1000000000,
+          "id": "cs_test_NORMALIZED04NFqwvyk22wjGr9hpxIRxBbgihLrwAhg7oh9NGRm5rJKkJk",
+          "invoice": null,
+          "invoice_creation": null,
           "livemode": false,
-          "mandate": null,
-          "metadata": {},
-          "next_action": null,
-          "object": "setup_intent",
-          "on_behalf_of": null,
-          "payment_method": "pm_1P3qrQDEQaroqDjsGhWSunU8",
+          "locale": null,
+          "metadata": {
+            "type": "card_update",
+            "user_id": "10"
+          },
+          "mode": "setup",
+          "object": "checkout.session",
+          "payment_intent": null,
+          "payment_link": null,
+          "payment_method_collection": "always",
           "payment_method_configuration_details": null,
           "payment_method_options": {
             "card": {
-              "mandate_options": null,
-              "network": null,
               "request_three_d_secure": "automatic"
             }
           },
           "payment_method_types": [
             "card"
           ],
-          "single_use_mandate": null,
-          "status": "succeeded",
-          "usage": "off_session"
+          "payment_status": "no_payment_required",
+          "phone_number_collection": {
+            "enabled": false
+          },
+          "recovered_from": null,
+          "setup_intent": "seti_1P3bKRDEQaroqDjs7dCxKw1m",
+          "shipping": null,
+          "shipping_address_collection": null,
+          "shipping_options": [],
+          "shipping_rate": null,
+          "status": "expired",
+          "submit_type": null,
+          "subscription": null,
+          "success_url": "http://zulip.testserver/billing/event_status/?stripe_session_id={CHECKOUT_SESSION_ID}",
+          "total_details": null,
+          "ui_mode": "hosted",
+          "url": null
         }
       },
-      "id": "evt_1P3qrRDEQaroqDjsJU9SSjtM",
+      "id": "evt_1P3xnzDEQaroqDjsOFIvBbeh",
       "livemode": false,
       "object": "event",
       "pending_webhooks": 0,
       "request": {
-        "id": "req_NORMALIZED0012",
-        "idempotency_key": "57c21105-311c-423c-b78d-f7d8d87399a3"
+        "id": null,
+        "idempotency_key": null
       },
-      "type": "setup_intent.succeeded"
+      "type": "checkout.session.expired"
     }
   ],
   "has_more": false,

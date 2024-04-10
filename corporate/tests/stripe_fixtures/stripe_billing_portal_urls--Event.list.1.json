@@ -5,26 +5,26 @@
       "created": 1000000000,
       "data": {
         "object": {
-          "configuration": "bpc_1P3quTDEQaroqDjseVal2syI",
+          "configuration": "bpc_1P3xrODEQaroqDjs4Nhel4Ps",
           "created": 1000000000,
           "customer": "cus_NORMALIZED0001",
           "flow": null,
-          "id": "bps_1P3quTDEQaroqDjsWsShVShr",
+          "id": "bps_1P3xrPDEQaroqDjs4yB1nb0d",
           "livemode": false,
           "locale": null,
           "object": "billing_portal.session",
           "on_behalf_of": null,
           "return_url": "http://zulip.testserver/upgrade/?manual_license_management=false&tier=1&setup_payment_by_invoice=false",
-          "url": "https://billing.stripe.com/p/session/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QdGVDVnNFa0N6YkJ2R2ZxTGJPREtMd25JMFBmOUVr0100PDRajmQv"
+          "url": "https://billing.stripe.com/p/session/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QdGxPMzR1REx0ZjRybDZFaHlTYzhucTVycUxNbWlw0100EjNHaxH8"
         }
       },
-      "id": "evt_1P3quTDEQaroqDjsneRm2XNn",
+      "id": "evt_1P3xrPDEQaroqDjsDQnzMc5d",
       "livemode": false,
       "object": "event",
       "pending_webhooks": 0,
       "request": {
         "id": "req_NORMALIZED0001",
-        "idempotency_key": "1cc14833-56f4-401c-b47d-b3fd46bac348"
+        "idempotency_key": "81a5e3db-d464-436d-96d7-db6c42d8ba01"
       },
       "type": "billing_portal.session.created"
     }

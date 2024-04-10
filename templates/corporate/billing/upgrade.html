@@ -39,6 +39,13 @@
                 {% if pay_by_invoice_payments_page %}
                 <div class="input-box top-of-page-notice upgrade-page-field">
                     <div class="not-editable-realm-field">
+                        {% if is_free_trial_invoice_expired_notice %}
+                        Your free trial of {{ free_trial_invoice_expired_notice_page_plan_name }} has expired.
+                        <a href="{{ pay_by_invoice_payments_page }}" target="_blank" rel="noopener noreferrer">An invoice</a>
+                        for ${{ scheduled_upgrade_invoice_amount_due }} has been sent to <b>{{email}}</b>.
+                        To reactivate your {{ free_trial_invoice_expired_notice_page_plan_name }} plan, please pay the amount due.
+                        Once the invoice has been paid, reload this page to see billing details.
+                        {% else %}
                         <a href="{{ pay_by_invoice_payments_page }}" target="_blank" rel="noopener noreferrer">An invoice</a>
                         {% if fixed_price_plan %}
                         for $<span class="due-today-price"></span>
@@ -48,6 +55,7 @@
                         {% endif %}
                         has been sent to <b>{{email}}</b>.
                         To complete the plan upgrade process, please pay the amount due. Once the invoice has been paid, reload this page to see billing details.
+                        {% endif %}
                     </div>
                 </div>
                 {% else %}
@@ -66,9 +74,14 @@
                     <div id="free-trial-top-banner" class="input-box upgrade-page-field">
                         {% if page_params.free_trial_days %}
                         <div class="not-editable-realm-field">
+                            {% if page_params.setup_payment_by_invoice %}
+                            An invoice will immediately be sent to <b>{{email}}</b>. To ensure continuous access to Zulip Basic,
+                            please pay your invoice before your free trial ends on {{ free_trial_end_date }}.
+                            {% else %}
                             Add a credit card to start your <b>{{ page_params.free_trial_days }}-day free trial</b> of
                             {{ plan }}. Your card will not be charged if you
                             cancel in the first {{ page_params.free_trial_days }} days.
+                            {% endif %}
                         </div>
                         {% endif %}
 
@@ -173,7 +186,7 @@
                                 <span class="flat-discount-separator">$<span class="flat-discounted-price"></span>/month off</span> <i class="billing-page-discount">({{ page_params.flat_discounted_months }} {{ "month" if page_params.flat_discounted_months == 1 else "months" }} remaining)</i>
                                 {% endif %}
                                 <h1>$<span class="due-today-price"></span></h1>
-                                {% if page_params.free_trial_days %}
+                                {% if page_params.free_trial_days and not manual_license_management %}
                                 <i>Your actual bill will depend on the number of
                                 active users in your organization.</i>
                                 {% endif %}
@@ -320,7 +333,13 @@
                     <a href="{{ page_params.billing_base_url }}/customer_portal/?manual_license_management=true&tier={{ page_params.tier }}&setup_payment_by_invoice=true" target="_blank" rel="noopener noreferrer">configure</a>
                     your billing details if you have not done so already. This information will appear on your invoice and receipt.
                     <br />
+                    {% if page_params.free_trial_days %}
+                    <br />
+                    Starting free trial will immediately send an invoice to <b>{{email}}</b>.
+                    This is your last chance to update the billing information on your invoice.
+                    {% else %}
                     Your invoice will be sent to <b>{{email}}</b>.
+                    {% endif %}
                 </p>
             </main>
             <footer class="modal__footer">
@@ -328,7 +347,7 @@
                 <button class="modal__btn dialog_submit_button">
                     <span>
                         {% if page_params.free_trial_days %}
-                        {{ _('Start free trial') }}
+                        {{ _('Send invoice and start free trial') }}
                         {% else %}
                         {{ _('Send invoice') }}
                         {% endif %}

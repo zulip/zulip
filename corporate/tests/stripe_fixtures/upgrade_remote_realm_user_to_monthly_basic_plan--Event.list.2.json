@@ -5,237 +5,28 @@
       "created": 1000000000,
       "data": {
         "object": {
-          "billing_details": {
-            "address": {
-              "city": "San Francisco",
-              "country": "US",
-              "line1": "123 Main St",
-              "line2": null,
-              "postal_code": "94105",
-              "state": "CA"
-            },
-            "email": null,
-            "name": "John Doe",
-            "phone": null
-          },
-          "card": {
-            "brand": "visa",
-            "checks": {
-              "address_line1_check": null,
-              "address_postal_code_check": null,
-              "cvc_check": "pass"
-            },
-            "country": "US",
-            "display_brand": "visa",
-            "exp_month": 4,
-            "exp_year": 2025,
-            "fingerprint": "NORMALIZED000001",
-            "funding": "credit",
-            "generated_from": null,
-            "last4": "4242",
-            "networks": {
-              "available": [
-                "visa"
-              ],
-              "preferred": null
-            },
-            "three_d_secure_usage": {
-              "supported": true
-            },
-            "wallet": null
-          },
+          "configuration": "bpc_1P3xqKDEQaroqDjsN6BBBDIH",
           "created": 1000000000,
           "customer": "cus_NORMALIZED0003",
-          "id": "pm_1P3qtlDEQaroqDjs3NVTNgn0",
+          "flow": null,
+          "id": "bps_1P3xqKDEQaroqDjsEea3cmoh",
           "livemode": false,
-          "metadata": {},
-          "object": "payment_method",
-          "type": "card"
+          "locale": null,
+          "object": "billing_portal.session",
+          "on_behalf_of": null,
+          "return_url": "http://selfhosting.testserver/server/6cde5f7a-1f7e-4978-9716-49f69ebfc9fe/billing/",
+          "url": "https://billing.stripe.com/p/session/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QdGxOMzE0NHdFNnI3UXMzOGJyMXUzdnk3U2JxUGV50100aqKPlZh8"
         }
       },
-      "id": "evt_1P3qtmDEQaroqDjsmH13ztdr",
+      "id": "evt_1P3xqKDEQaroqDjsniZ37EZZ",
       "livemode": false,
       "object": "event",
       "pending_webhooks": 0,
       "request": {
         "id": "req_NORMALIZED0002",
-        "idempotency_key": "41a9b62c-9053-40ee-b45c-058db6eb8dbe"
+        "idempotency_key": "f694bc7a-402d-4658-a1df-690636926eb0"
       },
-      "type": "payment_method.attached"
-    },
-    {
-      "api_version": "2020-08-27",
-      "created": 1000000000,
-      "data": {
-        "object": {
-          "address": null,
-          "balance": 0,
-          "created": 1000000000,
-          "currency": null,
-          "default_currency": null,
-          "default_source": null,
-          "delinquent": false,
-          "description": "demo.example.com 6cde5f7a-1f7",
-          "discount": null,
-          "email": "hamlet@zulip.com",
-          "id": "cus_NORMALIZED0004",
-          "invoice_prefix": "NORMA03",
-          "invoice_settings": {
-            "custom_fields": null,
-            "default_payment_method": null,
-            "footer": null,
-            "rendering_options": null
-          },
-          "livemode": false,
-          "metadata": {
-            "remote_server_str": "demo.example.com 6cde5f7a-1f7",
-            "remote_server_uuid": "6cde5f7a-1f7e-4978-9716-49f69ebfc9fe"
-          },
-          "name": null,
-          "next_invoice_sequence": 1,
-          "object": "customer",
-          "phone": null,
-          "preferred_locales": [],
-          "shipping": null,
-          "tax_exempt": "none",
-          "test_clock": null
-        }
-      },
-      "id": "evt_1P3qtmDEQaroqDjsGJmbo1Vs",
-      "livemode": false,
-      "object": "event",
-      "pending_webhooks": 0,
-      "request": {
-        "id": "req_NORMALIZED0003",
-        "idempotency_key": "3590ecf5-4a01-462f-8fc6-6a2daefd2ab8"
-      },
-      "type": "customer.created"
-    },
-    {
-      "api_version": "2020-08-27",
-      "created": 1000000000,
-      "data": {
-        "object": {
-          "amount": 1850,
-          "amount_capturable": 0,
-          "amount_details": {
-            "tip": {}
-          },
-          "amount_received": 0,
-          "application": null,
-          "application_fee_amount": null,
-          "automatic_payment_methods": null,
-          "canceled_at": null,
-          "cancellation_reason": null,
-          "capture_method": "automatic",
-          "charges": {
-            "data": [],
-            "has_more": false,
-            "object": "list",
-            "total_count": 0,
-            "url": "/v1/charges?payment_intent=pi_NORMALIZED00000000000001"
-          },
-          "client_secret": "pi_NORMALIZED00000000000001_secret_3pLFvVQKeNBycjVRaPJAeiCV8",
-          "confirmation_method": "automatic",
-          "created": 1000000000,
-          "currency": "usd",
-          "customer": "cus_NORMALIZED0001",
-          "description": "Payment for Invoice",
-          "id": "pi_NORMALIZED00000000000001",
-          "invoice": "in_NORMALIZED00000000000001",
-          "last_payment_error": null,
-          "latest_charge": null,
-          "livemode": false,
-          "metadata": {},
-          "next_action": null,
-          "object": "payment_intent",
-          "on_behalf_of": null,
-          "payment_method": null,
-          "payment_method_configuration_details": null,
-          "payment_method_options": {
-            "card": {
-              "installments": null,
-              "mandate_options": null,
-              "network": null,
-              "request_three_d_secure": "automatic"
-            },
-            "cashapp": {}
-          },
-          "payment_method_types": [
-            "card",
-            "cashapp"
-          ],
-          "processing": null,
-          "receipt_email": "hamlet@zulip.com",
-          "review": null,
-          "setup_future_usage": null,
-          "shipping": null,
-          "source": null,
-          "statement_descriptor": "Zulip Basic",
-          "statement_descriptor_suffix": null,
-          "status": "requires_payment_method",
-          "transfer_data": null,
-          "transfer_group": null
-        }
-      },
-      "id": "evt_3P3qtlDEQaroqDjs02i7JqHX",
-      "livemode": false,
-      "object": "event",
-      "pending_webhooks": 0,
-      "request": {
-        "id": "req_NORMALIZED0004",
-        "idempotency_key": "2957d010-fab7-4415-b8dc-ba3f204a0688"
-      },
-      "type": "payment_intent.created"
-    },
-    {
-      "api_version": "2020-08-27",
-      "created": 1000000000,
-      "data": {
-        "object": {
-          "application": null,
-          "automatic_payment_methods": null,
-          "cancellation_reason": null,
-          "client_secret": "seti_1P3qtlDEQaroqDjssAFnwU8g_secret_PteChEguU8xnY59JAcPCnYz8NBwDE6D",
-          "created": 1000000000,
-          "customer": "cus_NORMALIZED0003",
-          "description": null,
-          "flow_directions": null,
-          "id": "seti_1P3qtlDEQaroqDjssAFnwU8g",
-          "last_setup_error": null,
-          "latest_attempt": "setatt_1P3qtlDEQaroqDjs5aVsKxfB",
-          "livemode": false,
-          "mandate": null,
-          "metadata": {},
-          "next_action": null,
-          "object": "setup_intent",
-          "on_behalf_of": null,
-          "payment_method": "pm_1P3qtlDEQaroqDjs3NVTNgn0",
-          "payment_method_configuration_details": null,
-          "payment_method_options": {
-            "card": {
-              "mandate_options": null,
-              "network": null,
-              "request_three_d_secure": "automatic"
-            }
-          },
-          "payment_method_types": [
-            "card"
-          ],
-          "single_use_mandate": null,
-          "status": "succeeded",
-          "usage": "off_session"
-        }
-      },
-      "id": "evt_1P3qtmDEQaroqDjsTAxlGm21",
-      "livemode": false,
-      "object": "event",
-      "pending_webhooks": 0,
-      "request": {
-        "id": "req_NORMALIZED0002",
-        "idempotency_key": "41a9b62c-9053-40ee-b45c-058db6eb8dbe"
-      },
-      "type": "setup_intent.created"
+      "type": "billing_portal.session.created"
     },
     {
       "api_version": "2020-08-27",
@@ -245,9 +36,9 @@
           "account_country": "US",
           "account_name": "Kandra Labs, Inc.",
           "account_tax_ids": null,
-          "amount_due": 1850,
+          "amount_due": 48000,
           "amount_paid": 0,
-          "amount_remaining": 1850,
+          "amount_remaining": 48000,
           "amount_shipping": 0,
           "application": null,
           "application_fee_amount": null,
@@ -265,7 +56,7 @@
           "created": 1000000000,
           "currency": "usd",
           "custom_fields": null,
-          "customer": "cus_NORMALIZED0001",
+          "customer": "cus_NORMALIZED0002",
           "customer_address": null,
           "customer_email": "hamlet@zulip.com",
           "customer_name": null,
@@ -280,13 +71,13 @@
           "discount": null,
           "discounts": [],
           "due_date": null,
-          "effective_at": null,
-          "ending_balance": null,
+          "effective_at": 1000000000,
+          "ending_balance": 0,
           "footer": null,
           "from_invoice": null,
-          "hosted_invoice_url": null,
+          "hosted_invoice_url": "https://invoice.stripe.com/i/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QdGxObEp5N05VZ0I0MXI3V3NNQzJoSjJCYk5YSks1LDEwMzI4MzYwNA0200nLeBKucE?s=ap",
           "id": "in_NORMALIZED00000000000001",
-          "invoice_pdf": null,
+          "invoice_pdf": "https://pay.stripe.com/invoice/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QdGxObEp5N05VZ0I0MXI3V3NNQzJoSjJCYk5YSks1LDEwMzI4MzYwNA0200nLeBKucE/pdf?s=ap",
           "issuer": {
             "type": "self"
           },
@@ -295,10 +86,10 @@
           "lines": {
             "data": [
               {
-                "amount": -2000,
-                "amount_excluding_tax": -2000,
+                "amount": 48000,
+                "amount_excluding_tax": 48000,
                 "currency": "usd",
-                "description": "$20.00/month new customer discount",
+                "description": "Zulip Cloud Standard",
                 "discount_amounts": [],
                 "discountable": false,
                 "discounts": [],
@@ -309,8 +100,8 @@
                 "metadata": {},
                 "object": "line_item",
                 "period": {
-                  "end": 1328151845,
-                  "start": 1325473445
+                  "end": 1000000000,
+                  "start": 1000000000
                 },
                 "plan": null,
                 "price": {
@@ -331,91 +122,42 @@
                   "tiers_mode": null,
                   "transform_quantity": null,
                   "type": "one_time",
-                  "unit_amount": -2000,
-                  "unit_amount_decimal": "-2000"
+                  "unit_amount": 8000,
+                  "unit_amount_decimal": "8000"
                 },
                 "proration": false,
                 "proration_details": {
                   "credited_items": null
                 },
-                "quantity": 1,
+                "quantity": 6,
                 "subscription": null,
                 "tax_amounts": [],
                 "tax_rates": [],
                 "type": "invoiceitem",
-                "unit_amount_excluding_tax": "-2000"
-              },
-              {
-                "amount": 3850,
-                "amount_excluding_tax": 3850,
-                "currency": "usd",
-                "description": "Zulip Basic",
-                "discount_amounts": [],
-                "discountable": false,
-                "discounts": [],
-                "id": "il_NORMALIZED00000000000002",
-                "invoice": "in_NORMALIZED00000000000001",
-                "invoice_item": "ii_NORMALIZED00000000000002",
-                "livemode": false,
-                "metadata": {},
-                "object": "line_item",
-                "period": {
-                  "end": 1328151845,
-                  "start": 1325473445
-                },
-                "plan": null,
-                "price": {
-                  "active": false,
-                  "billing_scheme": "per_unit",
-                  "created": 1000000000,
-                  "currency": "usd",
-                  "custom_unit_amount": null,
-                  "id": "price_NORMALIZED00000000000002",
-                  "livemode": false,
-                  "lookup_key": null,
-                  "metadata": {},
-                  "nickname": null,
-                  "object": "price",
-                  "product": "prod_NORMALIZED0002",
-                  "recurring": null,
-                  "tax_behavior": "unspecified",
-                  "tiers_mode": null,
-                  "transform_quantity": null,
-                  "type": "one_time",
-                  "unit_amount": 350,
-                  "unit_amount_decimal": "350"
-                },
-                "proration": false,
-                "proration_details": {
-                  "credited_items": null
-                },
-                "quantity": 11,
-                "subscription": null,
-                "tax_amounts": [],
-                "tax_rates": [],
-                "type": "invoiceitem",
-                "unit_amount_excluding_tax": "350"
+                "unit_amount_excluding_tax": "8000"
               }
             ],
             "has_more": false,
             "object": "list",
-            "total_count": 2,
+            "total_count": 1,
             "url": "/v1/invoices/in_NORMALIZED00000000000001/lines"
           },
           "livemode": false,
           "metadata": {
-            "billing_schedule": "2",
+            "billing_schedule": "1",
             "license_management": "automatic",
-            "licenses": "11",
-            "plan_tier": "103"
+            "licenses": "6",
+            "on_free_trial": "False",
+            "plan_tier": "1",
+            "user_id": "10"
           },
           "next_payment_attempt": null,
-          "number": null,
+          "number": "NORMALI-0001",
           "object": "invoice",
           "on_behalf_of": null,
           "paid": false,
           "paid_out_of_band": false,
-          "payment_intent": null,
+          "payment_intent": "pi_NORMALIZED00000000000001",
           "payment_settings": {
             "default_mandate": null,
             "payment_method_options": null,
@@ -430,17 +172,17 @@
           "rendering": {
             "amount_tax_display": null,
             "pdf": {
-              "page_size": "auto"
+              "page_size": "letter"
             }
           },
           "rendering_options": null,
           "shipping_cost": null,
           "shipping_details": null,
           "starting_balance": 0,
-          "statement_descriptor": "Zulip Basic",
-          "status": "draft",
+          "statement_descriptor": "Zulip Cloud Standard",
+          "status": "open",
           "status_transitions": {
-            "finalized_at": null,
+            "finalized_at": 1000000000,
             "marked_uncollectible_at": null,
             "paid_at": null,
             "voided_at": null
@@ -449,89 +191,229 @@
           "subscription_details": {
             "metadata": null
           },
-          "subtotal": 1850,
-          "subtotal_excluding_tax": 1850,
+          "subtotal": 48000,
+          "subtotal_excluding_tax": 48000,
           "tax": null,
           "test_clock": null,
-          "total": 1850,
+          "total": 48000,
           "total_discount_amounts": [],
-          "total_excluding_tax": 1850,
+          "total_excluding_tax": 48000,
           "total_tax_amounts": [],
           "transfer_data": null,
           "webhooks_delivered_at": 1000000000
         }
       },
-      "id": "evt_1P3qtlDEQaroqDjsukAia2UO",
+      "id": "evt_1P3xqKDEQaroqDjsu4mNnvAA",
       "livemode": false,
       "object": "event",
       "pending_webhooks": 0,
       "request": {
-        "id": "req_NORMALIZED0005",
-        "idempotency_key": "9195e9ad-4945-46f9-abe0-a403bef8d52a"
+        "id": "req_NORMALIZED0003",
+        "idempotency_key": "9158d911-b59e-4b6d-9c60-9f01c15695b2"
       },
-      "type": "invoice.created"
+      "type": "invoice.finalized"
     },
     {
       "api_version": "2020-08-27",
       "created": 1000000000,
       "data": {
         "object": {
-          "amount": -2000,
+          "account_country": "US",
+          "account_name": "Kandra Labs, Inc.",
+          "account_tax_ids": null,
+          "amount_due": 48000,
+          "amount_paid": 0,
+          "amount_remaining": 48000,
+          "amount_shipping": 0,
+          "application": null,
+          "application_fee_amount": null,
+          "attempt_count": 0,
+          "attempted": false,
+          "auto_advance": false,
+          "automatic_tax": {
+            "enabled": false,
+            "liability": null,
+            "status": null
+          },
+          "billing_reason": "manual",
+          "charge": null,
+          "collection_method": "charge_automatically",
+          "created": 1000000000,
           "currency": "usd",
-          "customer": "cus_NORMALIZED0001",
-          "date": 1000000000,
-          "description": "$20.00/month new customer discount",
-          "discountable": false,
+          "custom_fields": null,
+          "customer": "cus_NORMALIZED0002",
+          "customer_address": null,
+          "customer_email": "hamlet@zulip.com",
+          "customer_name": null,
+          "customer_phone": null,
+          "customer_shipping": null,
+          "customer_tax_exempt": "none",
+          "customer_tax_ids": [],
+          "default_payment_method": null,
+          "default_source": null,
+          "default_tax_rates": [],
+          "description": null,
+          "discount": null,
           "discounts": [],
-          "id": "ii_NORMALIZED00000000000001",
-          "invoice": null,
+          "due_date": null,
+          "effective_at": 1000000000,
+          "ending_balance": 0,
+          "footer": null,
+          "from_invoice": null,
+          "hosted_invoice_url": "https://invoice.stripe.com/i/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QdGxObEp5N05VZ0I0MXI3V3NNQzJoSjJCYk5YSks1LDEwMzI4MzYwNA0200nLeBKucE?s=ap",
+          "id": "in_NORMALIZED00000000000001",
+          "invoice_pdf": "https://pay.stripe.com/invoice/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QdGxObEp5N05VZ0I0MXI3V3NNQzJoSjJCYk5YSks1LDEwMzI4MzYwNA0200nLeBKucE/pdf?s=ap",
+          "issuer": {
+            "type": "self"
+          },
+          "last_finalization_error": null,
+          "latest_revision": null,
+          "lines": {
+            "data": [
+              {
+                "amount": 48000,
+                "amount_excluding_tax": 48000,
+                "currency": "usd",
+                "description": "Zulip Cloud Standard",
+                "discount_amounts": [],
+                "discountable": false,
+                "discounts": [],
+                "id": "il_NORMALIZED00000000000001",
+                "invoice": "in_NORMALIZED00000000000001",
+                "invoice_item": "ii_NORMALIZED00000000000001",
+                "livemode": false,
+                "metadata": {},
+                "object": "line_item",
+                "period": {
+                  "end": 1000000000,
+                  "start": 1000000000
+                },
+                "plan": null,
+                "price": {
+                  "active": false,
+                  "billing_scheme": "per_unit",
+                  "created": 1000000000,
+                  "currency": "usd",
+                  "custom_unit_amount": null,
+                  "id": "price_NORMALIZED00000000000001",
+                  "livemode": false,
+                  "lookup_key": null,
+                  "metadata": {},
+                  "nickname": null,
+                  "object": "price",
+                  "product": "prod_NORMALIZED0001",
+                  "recurring": null,
+                  "tax_behavior": "unspecified",
+                  "tiers_mode": null,
+                  "transform_quantity": null,
+                  "type": "one_time",
+                  "unit_amount": 8000,
+                  "unit_amount_decimal": "8000"
+                },
+                "proration": false,
+                "proration_details": {
+                  "credited_items": null
+                },
+                "quantity": 6,
+                "subscription": null,
+                "tax_amounts": [],
+                "tax_rates": [],
+                "type": "invoiceitem",
+                "unit_amount_excluding_tax": "8000"
+              }
+            ],
+            "has_more": false,
+            "object": "list",
+            "total_count": 1,
+            "url": "/v1/invoices/in_NORMALIZED00000000000001/lines"
+          },
           "livemode": false,
-          "metadata": {},
-          "object": "invoiceitem",
-          "period": {
-            "end": 1328151845,
-            "start": 1325473445
+          "metadata": {
+            "billing_schedule": "1",
+            "license_management": "automatic",
+            "licenses": "6",
+            "on_free_trial": "False",
+            "plan_tier": "1",
+            "user_id": "10"
           },
-          "plan": null,
-          "price": {
-            "active": false,
-            "billing_scheme": "per_unit",
-            "created": 1000000000,
-            "currency": "usd",
-            "custom_unit_amount": null,
-            "id": "price_NORMALIZED00000000000001",
-            "livemode": false,
-            "lookup_key": null,
-            "metadata": {},
-            "nickname": null,
-            "object": "price",
-            "product": "prod_NORMALIZED0001",
-            "recurring": null,
-            "tax_behavior": "unspecified",
-            "tiers_mode": null,
-            "transform_quantity": null,
-            "type": "one_time",
-            "unit_amount": -2000,
-            "unit_amount_decimal": "-2000"
+          "next_payment_attempt": null,
+          "number": "NORMALI-0001",
+          "object": "invoice",
+          "on_behalf_of": null,
+          "paid": false,
+          "paid_out_of_band": false,
+          "payment_intent": "pi_NORMALIZED00000000000001",
+          "payment_settings": {
+            "default_mandate": null,
+            "payment_method_options": null,
+            "payment_method_types": null
           },
-          "proration": false,
-          "quantity": 1,
+          "period_end": 1000000000,
+          "period_start": 1000000000,
+          "post_payment_credit_notes_amount": 0,
+          "pre_payment_credit_notes_amount": 0,
+          "quote": null,
+          "receipt_number": null,
+          "rendering": {
+            "amount_tax_display": null,
+            "pdf": {
+              "page_size": "letter"
+            }
+          },
+          "rendering_options": null,
+          "shipping_cost": null,
+          "shipping_details": null,
+          "starting_balance": 0,
+          "statement_descriptor": "Zulip Cloud Standard",
+          "status": "open",
+          "status_transitions": {
+            "finalized_at": 1000000000,
+            "marked_uncollectible_at": null,
+            "paid_at": null,
+            "voided_at": null
+          },
           "subscription": null,
-          "tax_rates": [],
+          "subscription_details": {
+            "metadata": null
+          },
+          "subtotal": 48000,
+          "subtotal_excluding_tax": 48000,
+          "tax": null,
           "test_clock": null,
-          "unit_amount": -2000,
-          "unit_amount_decimal": "-2000"
+          "total": 48000,
+          "total_discount_amounts": [],
+          "total_excluding_tax": 48000,
+          "total_tax_amounts": [],
+          "transfer_data": null,
+          "webhooks_delivered_at": 1000000000
+        },
+        "previous_attributes": {
+          "effective_at": null,
+          "ending_balance": null,
+          "hosted_invoice_url": null,
+          "invoice_pdf": null,
+          "number": null,
+          "payment_intent": null,
+          "rendering": {
+            "pdf": {
+              "page_size": "auto"
+            }
+          },
+          "status": "draft",
+          "status_transitions": {
+            "finalized_at": null
+          }
         }
       },
-      "id": "evt_1P3qtkDEQaroqDjsKOEX2bPO",
+      "id": "evt_1P3xqKDEQaroqDjsyVLI0Qyd",
       "livemode": false,
       "object": "event",
       "pending_webhooks": 0,
       "request": {
-        "id": "req_NORMALIZED0006",
-        "idempotency_key": "d42ae236-df26-403d-a4b6-e7cffbd3d801"
+        "id": "req_NORMALIZED0003",
+        "idempotency_key": "9158d911-b59e-4b6d-9c60-9f01c15695b2"
       },
-      "type": "invoiceitem.created"
+      "type": "invoice.updated"
     },
     {
       "api_version": "2020-08-27",
@@ -585,13 +467,13 @@
           "unit_amount_decimal": "350"
         }
       },
-      "id": "evt_1P3qtkDEQaroqDjsDD0bsz2P",
+      "id": "evt_1P3xqKDEQaroqDjsDpjCEiwT",
       "livemode": false,
       "object": "event",
       "pending_webhooks": 0,
       "request": {
-        "id": "req_NORMALIZED0007",
-        "idempotency_key": "d7bcbcdc-68ef-454a-8393-60a2150c2f72"
+        "id": "req_NORMALIZED0004",
+        "idempotency_key": "297b85ab-f137-45ad-b853-1fe434c2e0c5"
       },
       "type": "invoiceitem.created"
     },
@@ -607,21 +489,21 @@
           "default_currency": "usd",
           "default_source": null,
           "delinquent": false,
-          "description": "zulip.testserver b295e764-9ad",
+          "description": "zulip.testserver f27ccad7-fd5",
           "discount": null,
           "email": "hamlet@zulip.com",
           "id": "cus_NORMALIZED0001",
           "invoice_prefix": "NORMA01",
           "invoice_settings": {
             "custom_fields": null,
-            "default_payment_method": "pm_1P3qtgDEQaroqDjs1dcMaIKK",
+            "default_payment_method": "pm_1P3xqFDEQaroqDjsffCHxOKF",
             "footer": null,
             "rendering_options": null
           },
           "livemode": false,
           "metadata": {
             "remote_realm_host": "zulip.testserver",
-            "remote_realm_uuid": "b295e764-9ad6-4b87-80a6-d989edf084da"
+            "remote_realm_uuid": "f27ccad7-fd5b-42cf-947a-3763c39673b7"
           },
           "name": null,
           "next_invoice_sequence": 1,
@@ -637,13 +519,13 @@
           "default_currency": null
         }
       },
-      "id": "evt_1P3qtkDEQaroqDjsS3evTQHX",
+      "id": "evt_1P3xqKDEQaroqDjsQOEzz3ph",
       "livemode": false,
       "object": "event",
       "pending_webhooks": 0,
       "request": {
-        "id": "req_NORMALIZED0007",
-        "idempotency_key": "d7bcbcdc-68ef-454a-8393-60a2150c2f72"
+        "id": "req_NORMALIZED0004",
+        "idempotency_key": "297b85ab-f137-45ad-b853-1fe434c2e0c5"
       },
       "type": "customer.updated"
     },
@@ -652,97 +534,435 @@
       "created": 1000000000,
       "data": {
         "object": {
+          "active": true,
           "application": null,
-          "automatic_payment_methods": null,
-          "cancellation_reason": null,
-          "client_secret": "seti_1P3qtkDEQaroqDjssZEjyOEl_secret_PteCjgeb5uvddZJb4dE9OzBUuF2N6QS",
+          "business_profile": {
+            "headline": "Invoice and receipt billing information",
+            "privacy_policy_url": null,
+            "terms_of_service_url": null
+          },
           "created": 1000000000,
-          "customer": "cus_NORMALIZED0003",
-          "description": null,
-          "flow_directions": null,
-          "id": "seti_1P3qtkDEQaroqDjssZEjyOEl",
-          "last_setup_error": null,
-          "latest_attempt": null,
-          "livemode": false,
-          "mandate": null,
-          "metadata": {},
-          "next_action": null,
-          "object": "setup_intent",
-          "on_behalf_of": null,
-          "payment_method": null,
-          "payment_method_configuration_details": null,
-          "payment_method_options": {
-            "card": {
-              "mandate_options": null,
-              "network": null,
-              "request_three_d_secure": "automatic"
+          "default_return_url": null,
+          "features": {
+            "customer_update": {
+              "allowed_updates": [
+                "address",
+                "name"
+              ],
+              "enabled": true
+            },
+            "invoice_history": {
+              "enabled": false
+            },
+            "payment_method_update": {
+              "enabled": false
+            },
+            "subscription_cancel": {
+              "cancellation_reason": {
+                "enabled": false,
+                "options": [
+                  "too_expensive",
+                  "missing_features",
+                  "switched_service",
+                  "unused",
+                  "other"
+                ]
+              },
+              "enabled": false,
+              "mode": "at_period_end",
+              "proration_behavior": "none"
+            },
+            "subscription_pause": {
+              "enabled": false
+            },
+            "subscription_update": {
+              "default_allowed_updates": [],
+              "enabled": false,
+              "proration_behavior": "none"
             }
           },
-          "payment_method_types": [
-            "card"
-          ],
-          "single_use_mandate": null,
-          "status": "requires_payment_method",
-          "usage": "off_session"
+          "id": "bpc_1P3xqKDEQaroqDjsN6BBBDIH",
+          "is_default": false,
+          "livemode": false,
+          "login_page": {
+            "enabled": false,
+            "url": null
+          },
+          "metadata": {},
+          "object": "billing_portal.configuration",
+          "updated": 1000000000
         }
       },
-      "id": "evt_1P3qtkDEQaroqDjszpRl1zm0",
+      "id": "evt_1P3xqKDEQaroqDjsPUJmRifF",
       "livemode": false,
       "object": "event",
       "pending_webhooks": 0,
       "request": {
-        "id": "req_NORMALIZED0008",
-        "idempotency_key": "6db89246-5dc0-4f2e-a1fa-3e27e6640c2a"
+        "id": "req_NORMALIZED0005",
+        "idempotency_key": "e00649bf-f9c3-4530-853c-13490d8b6b0e"
       },
-      "type": "setup_intent.created"
+      "type": "billing_portal.configuration.created"
     },
     {
       "api_version": "2020-08-27",
       "created": 1000000000,
       "data": {
         "object": {
-          "address": null,
-          "balance": 0,
+          "amount": 48000,
+          "amount_capturable": 0,
+          "amount_details": {
+            "tip": {}
+          },
+          "amount_received": 0,
+          "application": null,
+          "application_fee_amount": null,
+          "automatic_payment_methods": null,
+          "canceled_at": null,
+          "cancellation_reason": null,
+          "capture_method": "automatic",
+          "charges": {
+            "data": [],
+            "has_more": false,
+            "object": "list",
+            "total_count": 0,
+            "url": "/v1/charges?payment_intent=pi_NORMALIZED00000000000001"
+          },
+          "client_secret": "pi_NORMALIZED00000000000001_secret_go0IohJlXqYKlIA1xqRnvcg02",
+          "confirmation_method": "automatic",
           "created": 1000000000,
-          "currency": null,
-          "default_currency": null,
-          "default_source": null,
-          "delinquent": false,
-          "description": "zulip (Zulip Dev)",
-          "discount": null,
-          "email": "hamlet@zulip.com",
-          "id": "cus_NORMALIZED0003",
-          "invoice_prefix": "NORMA04",
-          "invoice_settings": {
-            "custom_fields": null,
-            "default_payment_method": null,
-            "footer": null,
-            "rendering_options": null
-          },
+          "currency": "usd",
+          "customer": "cus_NORMALIZED0002",
+          "description": "Payment for Invoice",
+          "id": "pi_NORMALIZED00000000000001",
+          "invoice": "in_NORMALIZED00000000000001",
+          "last_payment_error": null,
+          "latest_charge": null,
           "livemode": false,
-          "metadata": {
-            "realm_id": "1",
-            "realm_str": "zulip"
+          "metadata": {},
+          "next_action": null,
+          "object": "payment_intent",
+          "on_behalf_of": null,
+          "payment_method": null,
+          "payment_method_configuration_details": null,
+          "payment_method_options": {
+            "card": {
+              "installments": null,
+              "mandate_options": null,
+              "network": null,
+              "request_three_d_secure": "automatic"
+            },
+            "cashapp": {}
           },
-          "name": null,
-          "next_invoice_sequence": 1,
-          "object": "customer",
-          "phone": null,
-          "preferred_locales": [],
+          "payment_method_types": [
+            "card",
+            "cashapp"
+          ],
+          "processing": null,
+          "receipt_email": "hamlet@zulip.com",
+          "review": null,
+          "setup_future_usage": null,
           "shipping": null,
-          "tax_exempt": "none",
-          "test_clock": null
+          "source": null,
+          "statement_descriptor": "Zulip Cloud Standard",
+          "statement_descriptor_suffix": null,
+          "status": "requires_payment_method",
+          "transfer_data": null,
+          "transfer_group": null
         }
       },
-      "id": "evt_1P3qtkDEQaroqDjsWruiIRMC",
+      "id": "evt_3P3xqJDEQaroqDjs08Aqw4pv",
       "livemode": false,
       "object": "event",
       "pending_webhooks": 0,
       "request": {
-        "id": "req_NORMALIZED0009",
-        "idempotency_key": "6132ac40-a133-4940-a69f-d121dc28dd51"
+        "id": "req_NORMALIZED0003",
+        "idempotency_key": "9158d911-b59e-4b6d-9c60-9f01c15695b2"
       },
-      "type": "customer.created"
+      "type": "payment_intent.created"
+    },
+    {
+      "api_version": "2020-08-27",
+      "created": 1000000000,
+      "data": {
+        "object": {
+          "configuration": "bpc_1P3xqJDEQaroqDjs5I8WxDdj",
+          "created": 1000000000,
+          "customer": "cus_NORMALIZED0003",
+          "flow": null,
+          "id": "bps_1P3xqJDEQaroqDjsUn0hPpwx",
+          "livemode": false,
+          "locale": null,
+          "object": "billing_portal.session",
+          "on_behalf_of": null,
+          "return_url": "http://selfhosting.testserver/server/6cde5f7a-1f7e-4978-9716-49f69ebfc9fe/billing/",
+          "url": "https://billing.stripe.com/p/session/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QdGxOUFZvVDJOTHpRakVsNXdzakxWZXRJZ1paUzFq0100YyrzvrEi"
+        }
+      },
+      "id": "evt_1P3xqJDEQaroqDjswGM8dK5H",
+      "livemode": false,
+      "object": "event",
+      "pending_webhooks": 0,
+      "request": {
+        "id": "req_NORMALIZED0006",
+        "idempotency_key": "36519b1f-1914-4030-9c65-ecb205e3a7df"
+      },
+      "type": "billing_portal.session.created"
+    },
+    {
+      "api_version": "2020-08-27",
+      "created": 1000000000,
+      "data": {
+        "object": {
+          "account_country": "US",
+          "account_name": "Kandra Labs, Inc.",
+          "account_tax_ids": null,
+          "amount_due": 48000,
+          "amount_paid": 0,
+          "amount_remaining": 48000,
+          "amount_shipping": 0,
+          "application": null,
+          "application_fee_amount": null,
+          "attempt_count": 0,
+          "attempted": false,
+          "auto_advance": false,
+          "automatic_tax": {
+            "enabled": false,
+            "liability": null,
+            "status": null
+          },
+          "billing_reason": "manual",
+          "charge": null,
+          "collection_method": "charge_automatically",
+          "created": 1000000000,
+          "currency": "usd",
+          "custom_fields": null,
+          "customer": "cus_NORMALIZED0002",
+          "customer_address": null,
+          "customer_email": "hamlet@zulip.com",
+          "customer_name": null,
+          "customer_phone": null,
+          "customer_shipping": null,
+          "customer_tax_exempt": "none",
+          "customer_tax_ids": [],
+          "default_payment_method": null,
+          "default_source": null,
+          "default_tax_rates": [],
+          "description": null,
+          "discount": null,
+          "discounts": [],
+          "due_date": null,
+          "effective_at": null,
+          "ending_balance": null,
+          "footer": null,
+          "from_invoice": null,
+          "hosted_invoice_url": null,
+          "id": "in_NORMALIZED00000000000001",
+          "invoice_pdf": null,
+          "issuer": {
+            "type": "self"
+          },
+          "last_finalization_error": null,
+          "latest_revision": null,
+          "lines": {
+            "data": [
+              {
+                "amount": 48000,
+                "amount_excluding_tax": 48000,
+                "currency": "usd",
+                "description": "Zulip Cloud Standard",
+                "discount_amounts": [],
+                "discountable": false,
+                "discounts": [],
+                "id": "il_NORMALIZED00000000000001",
+                "invoice": "in_NORMALIZED00000000000001",
+                "invoice_item": "ii_NORMALIZED00000000000001",
+                "livemode": false,
+                "metadata": {},
+                "object": "line_item",
+                "period": {
+                  "end": 1000000000,
+                  "start": 1000000000
+                },
+                "plan": null,
+                "price": {
+                  "active": false,
+                  "billing_scheme": "per_unit",
+                  "created": 1000000000,
+                  "currency": "usd",
+                  "custom_unit_amount": null,
+                  "id": "price_NORMALIZED00000000000001",
+                  "livemode": false,
+                  "lookup_key": null,
+                  "metadata": {},
+                  "nickname": null,
+                  "object": "price",
+                  "product": "prod_NORMALIZED0001",
+                  "recurring": null,
+                  "tax_behavior": "unspecified",
+                  "tiers_mode": null,
+                  "transform_quantity": null,
+                  "type": "one_time",
+                  "unit_amount": 8000,
+                  "unit_amount_decimal": "8000"
+                },
+                "proration": false,
+                "proration_details": {
+                  "credited_items": null
+                },
+                "quantity": 6,
+                "subscription": null,
+                "tax_amounts": [],
+                "tax_rates": [],
+                "type": "invoiceitem",
+                "unit_amount_excluding_tax": "8000"
+              }
+            ],
+            "has_more": false,
+            "object": "list",
+            "total_count": 1,
+            "url": "/v1/invoices/in_NORMALIZED00000000000001/lines"
+          },
+          "livemode": false,
+          "metadata": {
+            "billing_schedule": "1",
+            "license_management": "automatic",
+            "licenses": "6",
+            "on_free_trial": "False",
+            "plan_tier": "1",
+            "user_id": "10"
+          },
+          "next_payment_attempt": null,
+          "number": null,
+          "object": "invoice",
+          "on_behalf_of": null,
+          "paid": false,
+          "paid_out_of_band": false,
+          "payment_intent": null,
+          "payment_settings": {
+            "default_mandate": null,
+            "payment_method_options": null,
+            "payment_method_types": null
+          },
+          "period_end": 1000000000,
+          "period_start": 1000000000,
+          "post_payment_credit_notes_amount": 0,
+          "pre_payment_credit_notes_amount": 0,
+          "quote": null,
+          "receipt_number": null,
+          "rendering": {
+            "amount_tax_display": null,
+            "pdf": {
+              "page_size": "auto"
+            }
+          },
+          "rendering_options": null,
+          "shipping_cost": null,
+          "shipping_details": null,
+          "starting_balance": 0,
+          "statement_descriptor": "Zulip Cloud Standard",
+          "status": "draft",
+          "status_transitions": {
+            "finalized_at": null,
+            "marked_uncollectible_at": null,
+            "paid_at": null,
+            "voided_at": null
+          },
+          "subscription": null,
+          "subscription_details": {
+            "metadata": null
+          },
+          "subtotal": 48000,
+          "subtotal_excluding_tax": 48000,
+          "tax": null,
+          "test_clock": null,
+          "total": 48000,
+          "total_discount_amounts": [],
+          "total_excluding_tax": 48000,
+          "total_tax_amounts": [],
+          "transfer_data": null,
+          "webhooks_delivered_at": 1000000000
+        }
+      },
+      "id": "evt_1P3xqJDEQaroqDjsOaM8sac0",
+      "livemode": false,
+      "object": "event",
+      "pending_webhooks": 0,
+      "request": {
+        "id": "req_NORMALIZED0007",
+        "idempotency_key": "c4c45570-60d5-4bf0-b55c-3c1f65ff2dbf"
+      },
+      "type": "invoice.created"
+    },
+    {
+      "api_version": "2020-08-27",
+      "created": 1000000000,
+      "data": {
+        "object": {
+          "active": true,
+          "application": null,
+          "business_profile": {
+            "headline": "List of past invoices",
+            "privacy_policy_url": null,
+            "terms_of_service_url": null
+          },
+          "created": 1000000000,
+          "default_return_url": null,
+          "features": {
+            "customer_update": {
+              "allowed_updates": [],
+              "enabled": false
+            },
+            "invoice_history": {
+              "enabled": true
+            },
+            "payment_method_update": {
+              "enabled": false
+            },
+            "subscription_cancel": {
+              "cancellation_reason": {
+                "enabled": false,
+                "options": [
+                  "too_expensive",
+                  "missing_features",
+                  "switched_service",
+                  "unused",
+                  "other"
+                ]
+              },
+              "enabled": false,
+              "mode": "at_period_end",
+              "proration_behavior": "none"
+            },
+            "subscription_pause": {
+              "enabled": false
+            },
+            "subscription_update": {
+              "default_allowed_updates": [],
+              "enabled": false,
+              "proration_behavior": "none"
+            }
+          },
+          "id": "bpc_1P3xqJDEQaroqDjs5I8WxDdj",
+          "is_default": false,
+          "livemode": false,
+          "login_page": {
+            "enabled": false,
+            "url": null
+          },
+          "metadata": {},
+          "object": "billing_portal.configuration",
+          "updated": 1000000000
+        }
+      },
+      "id": "evt_1P3xqJDEQaroqDjsdMisWHsB",
+      "livemode": false,
+      "object": "event",
+      "pending_webhooks": 0,
+      "request": {
+        "id": "req_NORMALIZED0008",
+        "idempotency_key": "cc0fc059-9c9e-4068-9504-64dbc1e5f45c"
+      },
+      "type": "billing_portal.configuration.created"
     }
   ],
   "has_more": true,

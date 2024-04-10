@@ -41,9 +41,9 @@
   "ending_balance": 0,
   "footer": null,
   "from_invoice": null,
-  "hosted_invoice_url": "https://invoice.stripe.com/i/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QdGVBVWdlU1VkSmJYRmEyN2ZMT2ZmYXB0WHlBZDRQLDEwMzI1NjgyMQ0200t4h7JxLa?s=ap",
+  "hosted_invoice_url": "https://invoice.stripe.com/i/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QdGxMVWI0MHZUZlk5TG00ck50SlNuZ3NYNkxGSGtPLDEwMzI4MzUxNg0200GQibeaku?s=ap",
   "id": "in_NORMALIZED00000000000006",
-  "invoice_pdf": "https://pay.stripe.com/invoice/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QdGVBVWdlU1VkSmJYRmEyN2ZMT2ZmYXB0WHlBZDRQLDEwMzI1NjgyMQ0200t4h7JxLa/pdf?s=ap",
+  "invoice_pdf": "https://pay.stripe.com/invoice/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QdGxMVWI0MHZUZlk5TG00ck50SlNuZ3NYNkxGSGtPLDEwMzI4MzUxNg0200GQibeaku/pdf?s=ap",
   "issuer": {
     "type": "self"
   },
@@ -111,7 +111,7 @@
   "livemode": false,
   "metadata": {},
   "next_payment_attempt": 1000000000,
-  "number": "NORMALI-0006",
+  "number": "NORMALI-0007",
   "object": "invoice",
   "on_behalf_of": null,
   "paid": false,

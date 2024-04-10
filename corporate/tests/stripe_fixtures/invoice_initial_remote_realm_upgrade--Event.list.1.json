@@ -5,62 +5,48 @@
       "created": 1000000000,
       "data": {
         "object": {
-          "amount": 48000,
-          "currency": "usd",
-          "customer": "cus_NORMALIZED0002",
-          "date": 1000000000,
-          "description": "Zulip Cloud Standard",
-          "discountable": false,
-          "discounts": [],
-          "id": "ii_NORMALIZED00000000000001",
-          "invoice": null,
+          "address": null,
+          "balance": 0,
+          "created": 1000000000,
+          "currency": null,
+          "default_currency": null,
+          "default_source": null,
+          "delinquent": false,
+          "description": "zulip (Zulip Dev)",
+          "discount": null,
+          "email": "hamlet@zulip.com",
+          "id": "cus_NORMALIZED0002",
+          "invoice_prefix": "NORMA02",
+          "invoice_settings": {
+            "custom_fields": null,
+            "default_payment_method": null,
+            "footer": null,
+            "rendering_options": null
+          },
           "livemode": false,
-          "metadata": {},
-          "object": "invoiceitem",
-          "period": {
-            "end": 1000000000,
-            "start": 1000000000
+          "metadata": {
+            "realm_id": "1",
+            "realm_str": "zulip"
           },
-          "plan": null,
-          "price": {
-            "active": false,
-            "billing_scheme": "per_unit",
-            "created": 1000000000,
-            "currency": "usd",
-            "custom_unit_amount": null,
-            "id": "price_NORMALIZED00000000000001",
-            "livemode": false,
-            "lookup_key": null,
-            "metadata": {},
-            "nickname": null,
-            "object": "price",
-            "product": "prod_NORMALIZED0001",
-            "recurring": null,
-            "tax_behavior": "unspecified",
-            "tiers_mode": null,
-            "transform_quantity": null,
-            "type": "one_time",
-            "unit_amount": 8000,
-            "unit_amount_decimal": "8000"
-          },
-          "proration": false,
-          "quantity": 6,
-          "subscription": null,
-          "tax_rates": [],
-          "test_clock": null,
-          "unit_amount": 8000,
-          "unit_amount_decimal": "8000"
+          "name": null,
+          "next_invoice_sequence": 1,
+          "object": "customer",
+          "phone": null,
+          "preferred_locales": [],
+          "shipping": null,
+          "tax_exempt": "none",
+          "test_clock": null
         }
       },
-      "id": "evt_1P3qrUDEQaroqDjsHZGBZ1nT",
+      "id": "evt_1P3xo2DEQaroqDjsnSFHHJa1",
       "livemode": false,
       "object": "event",
       "pending_webhooks": 0,
       "request": {
         "id": "req_NORMALIZED0001",
-        "idempotency_key": "47263dec-1138-4207-be80-2b2129d000c6"
+        "idempotency_key": "aa584a5f-a735-45c1-9b64-6064b148e760"
       },
-      "type": "invoiceitem.created"
+      "type": "customer.created"
     }
   ],
   "has_more": true,

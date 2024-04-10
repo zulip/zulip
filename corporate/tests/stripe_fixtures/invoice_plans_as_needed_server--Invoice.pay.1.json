@@ -17,7 +17,7 @@
     "status": null
   },
   "billing_reason": "manual",
-  "charge": "ch_NORMALIZED00000000000002",
+  "charge": "ch_NORMALIZED00000000000001",
   "collection_method": "charge_automatically",
   "created": 1000000000,
   "currency": "usd",
@@ -41,9 +41,9 @@
   "ending_balance": 0,
   "footer": null,
   "from_invoice": null,
-  "hosted_invoice_url": "https://invoice.stripe.com/i/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QdGVBUXl0ekhGdENiUW9xSUU0b3UzUGFPNmt2VVVmLDEwMzI1NjgyNw02001GcWp4yK?s=ap",
+  "hosted_invoice_url": "https://invoice.stripe.com/i/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QdGxMMWk3NndGeHd3VUJxQ0FodE5YdGw1bEZkQnplLDEwMzI4MzUyMw0200h7COF2bY?s=ap",
   "id": "in_NORMALIZED00000000000002",
-  "invoice_pdf": "https://pay.stripe.com/invoice/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QdGVBUXl0ekhGdENiUW9xSUU0b3UzUGFPNmt2VVVmLDEwMzI1NjgyNw02001GcWp4yK/pdf?s=ap",
+  "invoice_pdf": "https://pay.stripe.com/invoice/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QdGxMMWk3NndGeHd3VUJxQ0FodE5YdGw1bEZkQnplLDEwMzI4MzUyMw0200h7COF2bY/pdf?s=ap",
   "issuer": {
     "type": "self"
   },
@@ -164,6 +164,7 @@
     "billing_schedule": "2",
     "license_management": "automatic",
     "licenses": "18",
+    "on_free_trial": "False",
     "plan_tier": "103"
   },
   "next_payment_attempt": null,

@@ -5,49 +5,110 @@
       "created": 1000000000,
       "data": {
         "object": {
-          "application": null,
-          "automatic_payment_methods": null,
-          "cancellation_reason": null,
-          "client_secret": "seti_1P3qsQDEQaroqDjsLLmJKRXb_secret_PteAZ2z8sAThaFh4ozD9Ib992q0QGGA",
-          "created": 1000000000,
-          "customer": "cus_NORMALIZED0006",
-          "description": null,
-          "flow_directions": null,
-          "id": "seti_1P3qsQDEQaroqDjsLLmJKRXb",
-          "last_setup_error": null,
-          "latest_attempt": null,
+          "amount": 8050,
+          "currency": "usd",
+          "customer": "cus_NORMALIZED0003",
+          "date": 1000000000,
+          "description": "Zulip Basic - renewal",
+          "discountable": false,
+          "discounts": [],
+          "id": "ii_NORMALIZED00000000000007",
+          "invoice": null,
           "livemode": false,
-          "mandate": null,
           "metadata": {},
-          "next_action": null,
-          "object": "setup_intent",
-          "on_behalf_of": null,
-          "payment_method": null,
-          "payment_method_configuration_details": null,
-          "payment_method_options": {
-            "card": {
-              "mandate_options": null,
-              "network": null,
-              "request_three_d_secure": "automatic"
-            }
+          "object": "invoiceitem",
+          "period": {
+            "end": 1330657445,
+            "start": 1328151845
           },
-          "payment_method_types": [
-            "card"
-          ],
-          "single_use_mandate": null,
-          "status": "requires_payment_method",
-          "usage": "off_session"
+          "plan": null,
+          "price": {
+            "active": false,
+            "billing_scheme": "per_unit",
+            "created": 1000000000,
+            "currency": "usd",
+            "custom_unit_amount": null,
+            "id": "price_NORMALIZED00000000000006",
+            "livemode": false,
+            "lookup_key": null,
+            "metadata": {},
+            "nickname": null,
+            "object": "price",
+            "product": "prod_NORMALIZED0006",
+            "recurring": null,
+            "tax_behavior": "unspecified",
+            "tiers_mode": null,
+            "transform_quantity": null,
+            "type": "one_time",
+            "unit_amount": 350,
+            "unit_amount_decimal": "350"
+          },
+          "proration": false,
+          "quantity": 23,
+          "subscription": null,
+          "tax_rates": [],
+          "test_clock": null,
+          "unit_amount": 350,
+          "unit_amount_decimal": "350"
         }
       },
-      "id": "evt_1P3qsQDEQaroqDjs3DnzFxxA",
+      "id": "evt_1P3xp5DEQaroqDjsGWanJ0Sm",
       "livemode": false,
       "object": "event",
       "pending_webhooks": 0,
       "request": {
-        "id": "req_NORMALIZED0020",
-        "idempotency_key": "f89f8535-68ad-43c5-9f4c-4e04a809909e"
+        "id": "req_NORMALIZED0016",
+        "idempotency_key": "66553b07-2516-45cb-a133-07b5e77105db"
       },
-      "type": "setup_intent.created"
+      "type": "invoiceitem.created"
+    },
+    {
+      "api_version": "2020-08-27",
+      "created": 1000000000,
+      "data": {
+        "object": {
+          "address": null,
+          "balance": 0,
+          "created": 1000000000,
+          "currency": null,
+          "default_currency": null,
+          "default_source": null,
+          "delinquent": false,
+          "description": "zulip (Zulip Dev)",
+          "discount": null,
+          "email": "hamlet@zulip.com",
+          "id": "cus_NORMALIZED0005",
+          "invoice_prefix": "NORMA04",
+          "invoice_settings": {
+            "custom_fields": null,
+            "default_payment_method": null,
+            "footer": null,
+            "rendering_options": null
+          },
+          "livemode": false,
+          "metadata": {
+            "realm_id": "1",
+            "realm_str": "zulip"
+          },
+          "name": null,
+          "next_invoice_sequence": 1,
+          "object": "customer",
+          "phone": null,
+          "preferred_locales": [],
+          "shipping": null,
+          "tax_exempt": "none",
+          "test_clock": null
+        }
+      },
+      "id": "evt_1P3xp5DEQaroqDjs5O6eI6sH",
+      "livemode": false,
+      "object": "event",
+      "pending_webhooks": 0,
+      "request": {
+        "id": "req_NORMALIZED0017",
+        "idempotency_key": "76a79d41-5533-4052-8512-fa2e28e17092"
+      },
+      "type": "customer.created"
     }
   ],
   "has_more": false,

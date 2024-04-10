@@ -51,23 +51,23 @@
       },
       "created": 1000000000,
       "customer": null,
-      "id": "pm_1P3qtwDEQaroqDjsa5yLlpbr",
+      "id": "pm_1P3xqtDEQaroqDjsNtRBvF5V",
       "livemode": false,
       "metadata": {},
       "object": "payment_method",
       "type": "card"
     },
-    "request_log_url": "https://dashboard.stripe.com/test/logs/req_NORMALIZED0013?t=1712716121",
+    "request_log_url": "https://dashboard.stripe.com/test/logs/req_NORMALIZED0012?t=1712742839",
     "setup_intent": {
       "application": null,
       "automatic_payment_methods": null,
       "cancellation_reason": null,
-      "client_secret": "seti_1P3qtxDEQaroqDjstuVphwkG_secret_PteC88Z2536irdjDULTie42zqp29VQy",
+      "client_secret": "seti_1P3xqtDEQaroqDjs6b1BtcYZ_secret_PtlNUuuvboNvnuG9rOHbG4VhOz3lkNS",
       "created": 1000000000,
       "customer": "cus_NORMALIZED0001",
       "description": null,
       "flow_directions": null,
-      "id": "seti_1P3qtxDEQaroqDjstuVphwkG",
+      "id": "seti_1P3xqtDEQaroqDjs6b1BtcYZ",
       "last_setup_error": {
         "code": "card_declined",
         "decline_code": "generic_decline",
@@ -115,7 +115,7 @@
           },
           "created": 1000000000,
           "customer": null,
-          "id": "pm_1P3qtwDEQaroqDjsa5yLlpbr",
+          "id": "pm_1P3xqtDEQaroqDjsNtRBvF5V",
           "livemode": false,
           "metadata": {},
           "object": "payment_method",
@@ -123,7 +123,7 @@
         },
         "type": "card_error"
       },
-      "latest_attempt": "setatt_1P3qtxDEQaroqDjsNePqheC8",
+      "latest_attempt": "setatt_1P3xqtDEQaroqDjsBryuFCEf",
       "livemode": false,
       "mandate": null,
       "metadata": {},
@@ -162,11 +162,11 @@
     "Content-Type": "application/json",
     "Cross-Origin-Opener-Policy-Report-Only": "same-origin; report-to=\"coop\"",
     "Date": "NORMALIZED DATETIME",
-    "Idempotency-Key": "c4a5e0f5-cb36-44a0-a525-54d466963bc1",
-    "Original-Request": "req_NORMALIZED0013",
+    "Idempotency-Key": "316da6ad-4de5-442d-9ab7-24108071b83d",
+    "Original-Request": "req_NORMALIZED0012",
     "Report-To": "{\"group\": \"coop\",\"max_age\": 8640,\"endpoints\": [{\"url\": \"https://q.stripe.com/coop-report\"}],\"include_subdomains\": true}",
-    "Reporting-Endpoints":  "coop=\"https://q.stripe.com/coop-report\"",
-    "Request-Id":  "req_NORMALIZED0013",
+    "Reporting-Endpoints": "coop=\"https://q.stripe.com/coop-report\"",
+    "Request-Id": "req_NORMALIZED0012",
     "Server": "nginx",
     "Strict-Transport-Security": "max-age=63072000; includeSubDomains; preload",
     "Stripe-Should-Retry": "false",
@@ -174,7 +174,7 @@
     "Vary": "Origin",
     "X-Stripe-Routing-Context-Priority-Tier": "api-testmode"
   },
-  "http_body": "{\"error\": {\"code\": \"card_declined\", \"decline_code\": \"generic_decline\", \"doc_url\": \"https://stripe.com/docs/error-codes/card-declined\", \"message\": \"Your card was declined.\", \"payment_method\": {\"id\": \"pm_1P3qtwDEQaroqDjsa5yLlpbr\", \"object\": \"payment_method\", \"billing_details\": {\"address\": {\"city\": \"San Francisco\", \"country\": \"US\", \"line1\": \"123 Main St\", \"line2\": null, \"postal_code\": \"94105\", \"state\": \"CA\"}, \"email\": null, \"name\": \"John Doe\", \"phone\": null}, \"card\": {\"brand\": \"visa\", \"checks\": {\"address_line1_check\": null, \"address_postal_code_check\": null, \"cvc_check\": \"pass\"}, \"country\": \"US\", \"display_brand\": \"visa\", \"exp_month\": 4, \"exp_year\": 2025, \"fingerprint\": \"NORMALIZED000004\", \"funding\": \"credit\", \"generated_from\": null, \"last4\": \"0002\", \"networks\": {\"available\": [\"visa\"], \"preferred\": null}, \"three_d_secure_usage\": {\"supported\": true}, \"wallet\": null}, \"created\": 1000000000, \"customer\": null, \"livemode\": false, \"metadata\": {}, \"type\": \"card\"}, \"request_log_url\": \"https://dashboard.stripe.com/test/logs/req_NORMALIZED0013?t=1712716121\", \"setup_intent\": {\"id\": \"seti_1P3qtxDEQaroqDjstuVphwkG\", \"object\": \"setup_intent\", \"application\": null, \"automatic_payment_methods\": null, \"cancellation_reason\": null, \"client_secret\": \"seti_1P3qtxDEQaroqDjstuVphwkG_secret_PteC88Z2536irdjDULTie42zqp29VQy\", \"created\": 1000000000, \"customer\": \"cus_NORMALIZED0001\", \"description\": null, \"flow_directions\": null, \"last_setup_error\": {\"code\": \"card_declined\", \"decline_code\": \"generic_decline\", \"doc_url\": \"https://stripe.com/docs/error-codes/card-declined\", \"message\": \"Your card was declined.\", \"payment_method\": {\"id\": \"pm_1P3qtwDEQaroqDjsa5yLlpbr\", \"object\": \"payment_method\", \"billing_details\": {\"address\": {\"city\": \"San Francisco\", \"country\": \"US\", \"line1\": \"123 Main St\", \"line2\": null, \"postal_code\": \"94105\", \"state\": \"CA\"}, \"email\": null, \"name\": \"John Doe\", \"phone\": null}, \"card\": {\"brand\": \"visa\", \"checks\": {\"address_line1_check\": null, \"address_postal_code_check\": null, \"cvc_check\": \"pass\"}, \"country\": \"US\", \"display_brand\": \"visa\", \"exp_month\": 4, \"exp_year\": 2025, \"fingerprint\": \"NORMALIZED000004\", \"funding\": \"credit\", \"generated_from\": null, \"last4\": \"0002\", \"networks\": {\"available\": [\"visa\"], \"preferred\": null}, \"three_d_secure_usage\": {\"supported\": true}, \"wallet\": null}, \"created\": 1000000000, \"customer\": null, \"livemode\": false, \"metadata\": {}, \"type\": \"card\"}, \"type\": \"card_error\"}, \"latest_attempt\": \"setatt_1P3qtxDEQaroqDjsNePqheC8\", \"livemode\": false, \"mandate\": null, \"metadata\": {}, \"next_action\": null, \"on_behalf_of\": null, \"payment_method\": null, \"payment_method_configuration_details\": null, \"payment_method_options\": {\"card\": {\"mandate_options\": null, \"network\": null, \"request_three_d_secure\": \"automatic\"}}, \"payment_method_types\": [\"card\"], \"single_use_mandate\": null, \"status\": \"requires_payment_method\", \"usage\": \"off_session\"}, \"type\": \"card_error\"}}",
+  "http_body": "{\"error\": {\"code\": \"card_declined\", \"decline_code\": \"generic_decline\", \"doc_url\": \"https://stripe.com/docs/error-codes/card-declined\", \"message\": \"Your card was declined.\", \"payment_method\": {\"id\": \"pm_1P3xqtDEQaroqDjsNtRBvF5V\", \"object\": \"payment_method\", \"billing_details\": {\"address\": {\"city\": \"San Francisco\", \"country\": \"US\", \"line1\": \"123 Main St\", \"line2\": null, \"postal_code\": \"94105\", \"state\": \"CA\"}, \"email\": null, \"name\": \"John Doe\", \"phone\": null}, \"card\": {\"brand\": \"visa\", \"checks\": {\"address_line1_check\": null, \"address_postal_code_check\": null, \"cvc_check\": \"pass\"}, \"country\": \"US\", \"display_brand\": \"visa\", \"exp_month\": 4, \"exp_year\": 2025, \"fingerprint\": \"NORMALIZED000004\", \"funding\": \"credit\", \"generated_from\": null, \"last4\": \"0002\", \"networks\": {\"available\": [\"visa\"], \"preferred\": null}, \"three_d_secure_usage\": {\"supported\": true}, \"wallet\": null}, \"created\": 1000000000, \"customer\": null, \"livemode\": false, \"metadata\": {}, \"type\": \"card\"}, \"request_log_url\": \"https://dashboard.stripe.com/test/logs/req_NORMALIZED0012?t=1712742839\", \"setup_intent\": {\"id\": \"seti_1P3xqtDEQaroqDjs6b1BtcYZ\", \"object\": \"setup_intent\", \"application\": null, \"automatic_payment_methods\": null, \"cancellation_reason\": null, \"client_secret\": \"seti_1P3xqtDEQaroqDjs6b1BtcYZ_secret_PtlNUuuvboNvnuG9rOHbG4VhOz3lkNS\", \"created\": 1000000000, \"customer\": \"cus_NORMALIZED0001\", \"description\": null, \"flow_directions\": null, \"last_setup_error\": {\"code\": \"card_declined\", \"decline_code\": \"generic_decline\", \"doc_url\": \"https://stripe.com/docs/error-codes/card-declined\", \"message\": \"Your card was declined.\", \"payment_method\": {\"id\": \"pm_1P3xqtDEQaroqDjsNtRBvF5V\", \"object\": \"payment_method\", \"billing_details\": {\"address\": {\"city\": \"San Francisco\", \"country\": \"US\", \"line1\": \"123 Main St\", \"line2\": null, \"postal_code\": \"94105\", \"state\": \"CA\"}, \"email\": null, \"name\": \"John Doe\", \"phone\": null}, \"card\": {\"brand\": \"visa\", \"checks\": {\"address_line1_check\": null, \"address_postal_code_check\": null, \"cvc_check\": \"pass\"}, \"country\": \"US\", \"display_brand\": \"visa\", \"exp_month\": 4, \"exp_year\": 2025, \"fingerprint\": \"NORMALIZED000004\", \"funding\": \"credit\", \"generated_from\": null, \"last4\": \"0002\", \"networks\": {\"available\": [\"visa\"], \"preferred\": null}, \"three_d_secure_usage\": {\"supported\": true}, \"wallet\": null}, \"created\": 1000000000, \"customer\": null, \"livemode\": false, \"metadata\": {}, \"type\": \"card\"}, \"type\": \"card_error\"}, \"latest_attempt\": \"setatt_1P3xqtDEQaroqDjsBryuFCEf\", \"livemode\": false, \"mandate\": null, \"metadata\": {}, \"next_action\": null, \"on_behalf_of\": null, \"payment_method\": null, \"payment_method_configuration_details\": null, \"payment_method_options\": {\"card\": {\"mandate_options\": null, \"network\": null, \"request_three_d_secure\": \"automatic\"}}, \"payment_method_types\": [\"card\"], \"single_use_mandate\": null, \"status\": \"requires_payment_method\", \"usage\": \"off_session\"}, \"type\": \"card_error\"}}",
   "http_status": 402,
   "json_body": {
     "error": {
@@ -224,23 +224,23 @@
         },
         "created": 1000000000,
         "customer": null,
-        "id": "pm_1P3qtwDEQaroqDjsa5yLlpbr",
+        "id": "pm_1P3xqtDEQaroqDjsNtRBvF5V",
         "livemode": false,
         "metadata": {},
         "object": "payment_method",
         "type": "card"
       },
-      "request_log_url": "https://dashboard.stripe.com/test/logs/req_NORMALIZED0013?t=1712716121",
+      "request_log_url": "https://dashboard.stripe.com/test/logs/req_NORMALIZED0012?t=1712742839",
       "setup_intent": {
         "application": null,
         "automatic_payment_methods": null,
         "cancellation_reason": null,
-        "client_secret": "seti_1P3qtxDEQaroqDjstuVphwkG_secret_PteC88Z2536irdjDULTie42zqp29VQy",
+        "client_secret": "seti_1P3xqtDEQaroqDjs6b1BtcYZ_secret_PtlNUuuvboNvnuG9rOHbG4VhOz3lkNS",
         "created": 1000000000,
         "customer": "cus_NORMALIZED0001",
         "description": null,
         "flow_directions": null,
-        "id": "seti_1P3qtxDEQaroqDjstuVphwkG",
+        "id": "seti_1P3xqtDEQaroqDjs6b1BtcYZ",
         "last_setup_error": {
           "code": "card_declined",
           "decline_code": "generic_decline",
@@ -288,7 +288,7 @@
             },
             "created": 1000000000,
             "customer": null,
-            "id": "pm_1P3qtwDEQaroqDjsa5yLlpbr",
+            "id": "pm_1P3xqtDEQaroqDjsNtRBvF5V",
             "livemode": false,
             "metadata": {},
             "object": "payment_method",
@@ -296,7 +296,7 @@
           },
           "type": "card_error"
         },
-        "latest_attempt": "setatt_1P3qtxDEQaroqDjsNePqheC8",
+        "latest_attempt": "setatt_1P3xqtDEQaroqDjsBryuFCEf",
         "livemode": false,
         "mandate": null,
         "metadata": {},
@@ -323,5 +323,5 @@
     }
   },
   "param": null,
-  "request_id": "req_NORMALIZED0013"
+  "request_id": "req_NORMALIZED0012"
 }
