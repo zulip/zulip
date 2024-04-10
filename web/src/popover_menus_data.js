@@ -11,6 +11,7 @@ import * as hash_util from "./hash_util";
 import {$t} from "./i18n";
 import * as message_edit from "./message_edit";
 import * as message_lists from "./message_lists";
+import {get_messages_in_topic} from "./message_util";
 import * as muted_users from "./muted_users";
 import {page_params} from "./page_params";
 import * as people from "./people";
@@ -121,11 +122,12 @@ export function get_actions_popover_content_context(message_id) {
 
 export function get_topic_popover_content_context({stream_id, topic_name, url}) {
     const sub = sub_store.get(stream_id);
+    const message = get_messages_in_topic(stream_id, topic_name)[0];
     const topic_unmuted = user_topics.is_topic_unmuted(sub.stream_id, topic_name);
     const has_starred_messages = starred_messages.get_count_in_topic(sub.stream_id, topic_name) > 0;
     const has_unread_messages = num_unread_for_topic(sub.stream_id, topic_name) > 0;
     const can_move_topic = settings_data.user_can_move_messages_between_streams();
-    const can_rename_topic = settings_data.user_can_move_messages_to_another_topic();
+    const can_rename_topic = message_edit.is_topic_editable(message);
     const visibility_policy = user_topics.get_topic_visibility_policy(sub.stream_id, topic_name);
     const all_visibility_policies = user_topics.all_visibility_policies;
     return {
