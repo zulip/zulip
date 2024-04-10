@@ -129,7 +129,7 @@ class Message(AbstractMessage):
     #   deprecating the original "private" and becoming the
     #   preferred way to indicate a personal or huddle
     #   Recipient type via the API.
-    API_RECIPIENT_TYPES = ["direct", "private", "stream"]
+    API_RECIPIENT_TYPES = ["direct", "private", "stream", "channel"]
 
     search_tsvector = SearchVectorField(null=True)
 

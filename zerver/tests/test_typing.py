@@ -367,6 +367,26 @@ class TypingHappyPathTestDirectMessages(ZulipTestCase):
 
 
 class TypingHappyPathTestStreams(ZulipTestCase):
+    def test_valid_type_and_op_parameters(self) -> None:
+        recipient_type_name = ["channel", "stream"]
+        operator_type = ["start", "stop"]
+        sender = self.example_user("hamlet")
+        stream_name = self.get_streams(sender)[0]
+        stream_id = self.get_stream_id(stream_name)
+        topic_name = "Some topic"
+
+        for recipient_type in recipient_type_name:
+            for operator in operator_type:
+                params = dict(
+                    type=recipient_type,
+                    op=operator,
+                    stream_id=str(stream_id),
+                    topic=topic_name,
+                )
+
+                result = self.api_post(sender, "/api/v1/typing", params)
+                self.assert_json_success(result)
+
     def test_start(self) -> None:
         sender = self.example_user("hamlet")
         stream_name = self.get_streams(sender)[0]
