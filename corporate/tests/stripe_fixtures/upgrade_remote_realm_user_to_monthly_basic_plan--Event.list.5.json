@@ -19,7 +19,7 @@
           "invoice_prefix": "NORMA03",
           "invoice_settings": {
             "custom_fields": null,
-            "default_payment_method": "pm_1P3qtnDEQaroqDjsVMjO7vWz",
+            "default_payment_method": "pm_1P3xqNDEQaroqDjsWFdcdK9s",
             "footer": null,
             "rendering_options": null
           },
@@ -43,15 +43,113 @@
           }
         }
       },
-      "id": "evt_1P3qtpDEQaroqDjslPt5Pwxs",
+      "id": "evt_1P3xqPDEQaroqDjsq8GRor6c",
       "livemode": false,
       "object": "event",
       "pending_webhooks": 0,
       "request": {
-        "id": "req_NORMALIZED0014",
-        "idempotency_key": "060932f6-e8f3-4d6e-880b-e73282f4d04d"
+        "id": "req_NORMALIZED0018",
+        "idempotency_key": "086ac442-9f29-4f0b-98cb-ab57df64fc1e"
       },
       "type": "customer.updated"
+    },
+    {
+      "api_version": "2020-08-27",
+      "created": 1000000000,
+      "data": {
+        "object": {
+          "application": null,
+          "automatic_payment_methods": null,
+          "cancellation_reason": null,
+          "client_secret": "seti_1P3xqODEQaroqDjsS0j7fhyD_secret_PtlNzum6pP4NRhqTSjXIHjmiItTD1lw",
+          "created": 1000000000,
+          "customer": "cus_NORMALIZED0005",
+          "description": null,
+          "flow_directions": null,
+          "id": "seti_1P3xqODEQaroqDjsS0j7fhyD",
+          "last_setup_error": null,
+          "latest_attempt": null,
+          "livemode": false,
+          "mandate": null,
+          "metadata": {},
+          "next_action": null,
+          "object": "setup_intent",
+          "on_behalf_of": null,
+          "payment_method": null,
+          "payment_method_configuration_details": null,
+          "payment_method_options": {
+            "card": {
+              "mandate_options": null,
+              "network": null,
+              "request_three_d_secure": "automatic"
+            }
+          },
+          "payment_method_types": [
+            "card"
+          ],
+          "single_use_mandate": null,
+          "status": "requires_payment_method",
+          "usage": "off_session"
+        }
+      },
+      "id": "evt_1P3xqODEQaroqDjs89BTWb9g",
+      "livemode": false,
+      "object": "event",
+      "pending_webhooks": 0,
+      "request": {
+        "id": "req_NORMALIZED0019",
+        "idempotency_key": "f80121e1-497d-4b87-a098-6982fa297ead"
+      },
+      "type": "setup_intent.created"
+    },
+    {
+      "api_version": "2020-08-27",
+      "created": 1000000000,
+      "data": {
+        "object": {
+          "application": null,
+          "automatic_payment_methods": null,
+          "cancellation_reason": null,
+          "client_secret": "seti_1P3xqNDEQaroqDjsUxgW0slu_secret_PtlNA9SQ2GvknnRoSFBouBAsKaV6UgW",
+          "created": 1000000000,
+          "customer": "cus_NORMALIZED0004",
+          "description": null,
+          "flow_directions": null,
+          "id": "seti_1P3xqNDEQaroqDjsUxgW0slu",
+          "last_setup_error": null,
+          "latest_attempt": "setatt_1P3xqNDEQaroqDjsriEznZ6o",
+          "livemode": false,
+          "mandate": null,
+          "metadata": {},
+          "next_action": null,
+          "object": "setup_intent",
+          "on_behalf_of": null,
+          "payment_method": "pm_1P3xqNDEQaroqDjsWFdcdK9s",
+          "payment_method_configuration_details": null,
+          "payment_method_options": {
+            "card": {
+              "mandate_options": null,
+              "network": null,
+              "request_three_d_secure": "automatic"
+            }
+          },
+          "payment_method_types": [
+            "card"
+          ],
+          "single_use_mandate": null,
+          "status": "succeeded",
+          "usage": "off_session"
+        }
+      },
+      "id": "evt_1P3xqODEQaroqDjs88cKnIqO",
+      "livemode": false,
+      "object": "event",
+      "pending_webhooks": 0,
+      "request": {
+        "id": "req_NORMALIZED0013",
+        "idempotency_key": "6dfe5a02-f0fe-42c0-9e0a-f9ea630c6c66"
+      },
+      "type": "setup_intent.succeeded"
     }
   ],
   "has_more": false,

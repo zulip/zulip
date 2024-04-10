@@ -51,7 +51,7 @@
       },
       "paid": true,
       "payment_intent": "pi_NORMALIZED00000000000001",
-      "payment_method": "pm_1P3qvwDEQaroqDjsBaznxL49",
+      "payment_method": "pm_1P3xsyDEQaroqDjsDsKnxGwM",
       "payment_method_details": {
         "card": {
           "amount_authorized": 48000,
@@ -94,7 +94,7 @@
       "radar_options": {},
       "receipt_email": "hamlet@zulip.com",
       "receipt_number": null,
-      "receipt_url": "https://pay.stripe.com/receipts/invoices/CAcaFwoVYWNjdF8xN3ZUa3dERVFhcm9xRGpzKN_z17AGMgYlElHPXyc6LBZAkNOUDqy809yjNfk4kAnyBFWenLtswnK8ynKBvfAeInCSUpStoKlvW4if?s=ap",
+      "receipt_url": "https://pay.stripe.com/receipts/invoices/CAcaFwoVYWNjdF8xN3ZUa3dERVFhcm9xRGpzKMPE2bAGMgaEOAHJebY6LBbCa_0U1aVKi_c2icqu7J2KG1WAc-YQ_uCfYhUAIrLEs5X5V7OhLNW4B6IM?s=ap",
       "refunded": false,
       "refunds": {
         "data": [],

@@ -5,66 +5,62 @@
       "created": 1000000000,
       "data": {
         "object": {
-          "billing_details": {
-            "address": {
-              "city": "San Francisco",
-              "country": "US",
-              "line1": "123 Main St",
-              "line2": null,
-              "postal_code": "94105",
-              "state": "CA"
-            },
-            "email": null,
-            "name": "John Doe",
-            "phone": null
-          },
-          "card": {
-            "brand": "visa",
-            "checks": {
-              "address_line1_check": null,
-              "address_postal_code_check": null,
-              "cvc_check": "pass"
-            },
-            "country": "US",
-            "display_brand": "visa",
-            "exp_month": 4,
-            "exp_year": 2025,
-            "fingerprint": "NORMALIZED000002",
-            "funding": "credit",
-            "generated_from": null,
-            "last4": "0341",
-            "networks": {
-              "available": [
-                "visa"
-              ],
-              "preferred": null
-            },
-            "three_d_secure_usage": {
-              "supported": true
-            },
-            "wallet": null
-          },
-          "created": 1000000000,
-          "customer": null,
-          "id": "pm_1P3qtyDEQaroqDjshD8xXIke",
+          "amount": 48000,
+          "currency": "usd",
+          "customer": "cus_NORMALIZED0002",
+          "date": 1000000000,
+          "description": "Zulip Cloud Standard",
+          "discountable": false,
+          "discounts": [],
+          "id": "ii_NORMALIZED00000000000001",
+          "invoice": null,
           "livemode": false,
           "metadata": {},
-          "object": "payment_method",
-          "type": "card"
-        },
-        "previous_attributes": {
-          "customer": "cus_NORMALIZED0002"
+          "object": "invoiceitem",
+          "period": {
+            "end": 1357095845,
+            "start": 1325473445
+          },
+          "plan": null,
+          "price": {
+            "active": false,
+            "billing_scheme": "per_unit",
+            "created": 1000000000,
+            "currency": "usd",
+            "custom_unit_amount": null,
+            "id": "price_NORMALIZED00000000000001",
+            "livemode": false,
+            "lookup_key": null,
+            "metadata": {},
+            "nickname": null,
+            "object": "price",
+            "product": "prod_NORMALIZED0001",
+            "recurring": null,
+            "tax_behavior": "unspecified",
+            "tiers_mode": null,
+            "transform_quantity": null,
+            "type": "one_time",
+            "unit_amount": 8000,
+            "unit_amount_decimal": "8000"
+          },
+          "proration": false,
+          "quantity": 6,
+          "subscription": null,
+          "tax_rates": [],
+          "test_clock": null,
+          "unit_amount": 8000,
+          "unit_amount_decimal": "8000"
         }
       },
-      "id": "evt_1P3qu4DEQaroqDjsxoMi36Ix",
+      "id": "evt_1P3xqlDEQaroqDjsvqp0Sq3G",
       "livemode": false,
       "object": "event",
       "pending_webhooks": 0,
       "request": {
         "id": "req_NORMALIZED0001",
-        "idempotency_key": "7c07cbad-7657-4929-bb2d-976a4ca0b402"
+        "idempotency_key": "25c3f40f-40f4-4c14-9990-a522a600f798"
       },
-      "type": "payment_method.detached"
+      "type": "invoiceitem.created"
     }
   ],
   "has_more": true,

@@ -5,53 +5,94 @@
       "created": 1000000000,
       "data": {
         "object": {
-          "address": null,
-          "balance": 0,
+          "after_expiration": null,
+          "allow_promotion_codes": null,
+          "amount_subtotal": null,
+          "amount_total": null,
+          "automatic_tax": {
+            "enabled": false,
+            "liability": null,
+            "status": null
+          },
+          "billing_address_collection": "required",
+          "cancel_url": "http://zulip.testserver/upgrade/?manual_license_management=false&tier=1",
+          "client_reference_id": null,
+          "client_secret": null,
+          "consent": null,
+          "consent_collection": null,
           "created": 1000000000,
           "currency": null,
-          "default_currency": null,
-          "default_source": null,
-          "delinquent": false,
-          "description": "zulip (Zulip Dev)",
-          "discount": null,
-          "email": "hamlet@zulip.com",
-          "id": "cus_NORMALIZED0001",
-          "invoice_prefix": "NORMA01",
-          "invoice_settings": {
-            "custom_fields": null,
-            "default_payment_method": "pm_1P3qvBDEQaroqDjsIt6bfsln",
-            "footer": null,
-            "rendering_options": null
+          "currency_conversion": null,
+          "custom_fields": [],
+          "custom_text": {
+            "after_submit": null,
+            "shipping_address": null,
+            "submit": null,
+            "terms_of_service_acceptance": null
           },
+          "customer": "cus_NORMALIZED0002",
+          "customer_creation": null,
+          "customer_details": {
+            "address": null,
+            "email": "hamlet@zulip.com",
+            "name": null,
+            "phone": null,
+            "tax_exempt": null,
+            "tax_ids": null
+          },
+          "customer_email": null,
+          "expires_at": 1000000000,
+          "id": "cs_test_NORMALIZED012KFeqqUnP3c4RkLDftgZ64qjMocqBXxkJ4Zrbl9xMzSaIx",
+          "invoice": null,
+          "invoice_creation": null,
           "livemode": false,
+          "locale": null,
           "metadata": {
-            "realm_id": "1",
-            "realm_str": "zulip"
+            "type": "card_update",
+            "user_id": "10"
           },
-          "name": null,
-          "next_invoice_sequence": 1,
-          "object": "customer",
-          "phone": null,
-          "preferred_locales": [],
+          "mode": "setup",
+          "object": "checkout.session",
+          "payment_intent": null,
+          "payment_link": null,
+          "payment_method_collection": "always",
+          "payment_method_configuration_details": null,
+          "payment_method_options": {
+            "card": {
+              "request_three_d_secure": "automatic"
+            }
+          },
+          "payment_method_types": [
+            "card"
+          ],
+          "payment_status": "no_payment_required",
+          "phone_number_collection": {
+            "enabled": false
+          },
+          "recovered_from": null,
+          "setup_intent": "seti_1P3bObDEQaroqDjs47hIRThV",
           "shipping": null,
-          "tax_exempt": "none",
-          "test_clock": null
-        },
-        "previous_attributes": {
-          "invoice_settings": {
-            "default_payment_method": null
-          }
+          "shipping_address_collection": null,
+          "shipping_options": [],
+          "shipping_rate": null,
+          "status": "expired",
+          "submit_type": null,
+          "subscription": null,
+          "success_url": "http://zulip.testserver/billing/event_status/?stripe_session_id={CHECKOUT_SESSION_ID}",
+          "total_details": null,
+          "ui_mode": "hosted",
+          "url": null
         }
       },
-      "id": "evt_1P3qvDDEQaroqDjsVCmXoBDc",
+      "id": "evt_1P3xs9DEQaroqDjsUmqAa2tI",
       "livemode": false,
       "object": "event",
       "pending_webhooks": 0,
       "request": {
-        "id": "req_NORMALIZED0001",
-        "idempotency_key": "72933ab2-1731-45bb-bb3e-4cb6c4e871fd"
+        "id": null,
+        "idempotency_key": null
       },
-      "type": "customer.updated"
+      "type": "checkout.session.expired"
     }
   ],
   "has_more": true,

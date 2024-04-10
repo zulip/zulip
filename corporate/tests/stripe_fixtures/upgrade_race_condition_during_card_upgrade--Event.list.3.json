@@ -47,9 +47,9 @@
           "ending_balance": 0,
           "footer": null,
           "from_invoice": null,
-          "hosted_invoice_url": "https://invoice.stripe.com/i/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QdGVGQWl2TzNOTU9xWTRseEtobFlKczBpNk5IU0VZLDEwMzI1NzA4OQ0200W4Fz6CcS?s=ap",
+          "hosted_invoice_url": "https://invoice.stripe.com/i/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QdGxRYkdPVVJBMFlKRUduVDUxZnIyelJuR0R0REdGLDEwMzI4MzgxMw0200OVobs3fC?s=ap",
           "id": "in_NORMALIZED00000000000001",
-          "invoice_pdf": "https://pay.stripe.com/invoice/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QdGVGQWl2TzNOTU9xWTRseEtobFlKczBpNk5IU0VZLDEwMzI1NzA4OQ0200W4Fz6CcS/pdf?s=ap",
+          "invoice_pdf": "https://pay.stripe.com/invoice/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QdGxRYkdPVVJBMFlKRUduVDUxZnIyelJuR0R0REdGLDEwMzI4MzgxMw0200OVobs3fC/pdf?s=ap",
           "issuer": {
             "type": "self"
           },
@@ -119,6 +119,7 @@
             "billing_schedule": "1",
             "license_management": "automatic",
             "licenses": "6",
+            "on_free_trial": "False",
             "plan_tier": "1",
             "user_id": "10"
           },
@@ -174,13 +175,13 @@
           "webhooks_delivered_at": 1000000000
         }
       },
-      "id": "evt_1P3qwfDEQaroqDjssilIt03C",
+      "id": "evt_1P3xthDEQaroqDjsoSJzMvs2",
       "livemode": false,
       "object": "event",
       "pending_webhooks": 0,
       "request": {
         "id": "req_NORMALIZED0002",
-        "idempotency_key": "bf9c4120-6e9a-4f92-a542-210e4e9778ed"
+        "idempotency_key": "b9c017da-e1c5-4745-8539-fc14b89ee687"
       },
       "type": "invoice.payment_succeeded"
     }

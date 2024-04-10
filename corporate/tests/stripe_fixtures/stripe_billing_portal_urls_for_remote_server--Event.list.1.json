@@ -5,49 +5,28 @@
       "created": 1000000000,
       "data": {
         "object": {
-          "application": null,
-          "automatic_payment_methods": null,
-          "cancellation_reason": null,
-          "client_secret": "seti_1P3qtUDEQaroqDjs7XuCNoAK_secret_PteB05AqBchSp0nqLQpfJhUHrTzd0jQ",
+          "configuration": "bpc_1P3xqBDEQaroqDjsezxJEDxX",
           "created": 1000000000,
           "customer": "cus_NORMALIZED0002",
-          "description": null,
-          "flow_directions": null,
-          "id": "seti_1P3qtUDEQaroqDjs7XuCNoAK",
-          "last_setup_error": null,
-          "latest_attempt": "setatt_1P3qtUDEQaroqDjsNmPgltBi",
+          "flow": null,
+          "id": "bps_1P3xqCDEQaroqDjslgJK0kGI",
           "livemode": false,
-          "mandate": null,
-          "metadata": {},
-          "next_action": null,
-          "object": "setup_intent",
+          "locale": null,
+          "object": "billing_portal.session",
           "on_behalf_of": null,
-          "payment_method": "pm_1P3qtTDEQaroqDjsYS7KlflH",
-          "payment_method_configuration_details": null,
-          "payment_method_options": {
-            "card": {
-              "mandate_options": null,
-              "network": null,
-              "request_three_d_secure": "automatic"
-            }
-          },
-          "payment_method_types": [
-            "card"
-          ],
-          "single_use_mandate": null,
-          "status": "succeeded",
-          "usage": "off_session"
+          "return_url": "http://selfhosting.testserver/realm/f27ccad7-fd5b-42cf-947a-3763c39673b7/billing/",
+          "url": "https://billing.stripe.com/p/session/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QdGxNYnZmUWNxM2g1M3dqTWpCZnRKaXFjcmJvQTM00100kjDkWxwX"
         }
       },
-      "id": "evt_1P3qtVDEQaroqDjsOV4oXMkM",
+      "id": "evt_1P3xqCDEQaroqDjsifoEmozw",
       "livemode": false,
       "object": "event",
       "pending_webhooks": 0,
       "request": {
         "id": "req_NORMALIZED0001",
-        "idempotency_key": "1dfca815-0d6e-4667-8bca-789d551dc36a"
+        "idempotency_key": "85071769-5530-407b-a3db-71b0679f753d"
       },
-      "type": "setup_intent.succeeded"
+      "type": "billing_portal.session.created"
     }
   ],
   "has_more": true,
