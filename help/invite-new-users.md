@@ -51,9 +51,10 @@ permission to invite users.
 {end_tabs}
 
 !!! warn ""
-    **Warning**: Creating an account using a personal invitation link does
-    not require the user to authenticate using a [configured
-    authentication method](/help/configure-authentication-methods).
+    **Warning**: When an account is created by accepting an email
+    invitation, the user is immediately logged in to their new account.
+    Any restrictions on [allowed authentication
+    methods](/help/configure-authentication-methods) are not applied.
 
 ## Create a reusable invitation link
 
