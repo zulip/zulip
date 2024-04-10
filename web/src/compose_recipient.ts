@@ -226,7 +226,6 @@ export function on_compose_select_recipient_update(): void {
     if (curr_message_type === "stream") {
         // Update stream name in the recipient box.
         const stream_id = compose_state.stream_id();
-        assert(stream_id !== undefined);
         update_recipient_label(stream_id);
     }
 
