@@ -3,7 +3,7 @@ import $ from "jquery";
 import * as blueslip from "./blueslip";
 import * as message_lists from "./message_lists";
 import type {Message} from "./message_store";
-import type {Event, ExtraData as PollWidgetExtraData} from "./poll_widget";
+import type {Event, PollWidgetExtraData} from "./poll_widget";
 
 // TODO: This ZFormExtraData type should be moved to web/src/zform.js when it will be migrated
 type ZFormExtraData = {
