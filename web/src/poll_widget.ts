@@ -18,7 +18,7 @@ import * as people from "./people";
 
 export type Event = {sender_id: number; data: InboundData};
 
-export type ExtraData = {
+export type PollWidgetExtraData = {
     question?: string;
     options?: string[];
 };
@@ -40,7 +40,7 @@ export function activate({
     callback: (
         data: NewOptionOutboundData | QuestionOutboundData | VoteOutboundData | undefined,
     ) => void;
-    extra_data: ExtraData;
+    extra_data: PollWidgetExtraData;
     message: Message;
 }): void {
     const is_my_poll = people.is_my_user_id(message.sender_id);
