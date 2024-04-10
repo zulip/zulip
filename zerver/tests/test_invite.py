@@ -2656,6 +2656,184 @@ class MultiuseInviteTest(ZulipTestCase):
         invite_link = self.assert_json_success(result)["invite_link"]
         self.check_user_able_to_register(self.nonreg_email("test"), invite_link)
 
+    def test_multiuse_invite_edits_with_malformed_parameters(self) -> None:
+        """
+        For a successful edit to a multiuse_invite, it is essential
+        that the following parameters are correct.
+        * stream_ids - IDs of the streams the invite applies to
+        * id - ID of the multiuse_invite
+        """
+        self.user_profile = self.example_user("iago")
+
+        initial_invited_as = PreregistrationUser.INVITE_AS["REALM_ADMIN"]
+        modified_invited_as = PreregistrationUser.INVITE_AS["MODERATOR"]
+        initial_streams = [get_stream("Denmark", self.user_profile.realm)]
+        modified_streams = [
+            get_stream(stream_name, self.user_profile.realm).id
+            for stream_name in ["Denmark", "Verona"]
+        ]
+
+        self.login("iago")
+        invite_expires_in_minutes = 2 * 24 * 60
+        do_create_multiuse_invite_link(
+            self.user_profile,
+            initial_invited_as,
+            invite_expires_in_minutes,
+            include_realm_default_subscriptions=False,
+            streams=initial_streams,
+        )
+        initial_multiuse_object = MultiuseInvite.objects.get()
+
+        # Try to patch the invite with a non-existent stream IDs
+        result = self.client_patch(
+            f"/json/invites/multiuse/{initial_multiuse_object.id}",
+            {
+                "invite_as": modified_invited_as,
+                "stream_ids": [1000],
+            },
+        )
+        self.assert_json_error(result, f"Stream does not exist with id: {1000}.")
+
+        # Try to patch the invite with a non-existent invite ID
+        result = self.client_patch(
+            f"/json/invites/multiuse/{initial_multiuse_object.id + 10}",
+            {
+                "invite_as": modified_invited_as,
+                "stream_ids": modified_streams,
+            },
+        )
+        self.assert_json_error(
+            result,
+            f"Invite does not exist with id: {initial_multiuse_object.id + 10}.",
+        )
+
+    def test_non_previleged_multiuse_invite_edits(self) -> None:
+        """
+        For a successful edit to a multiuse invite, it is essential
+        that the following situations occur:
+        * The editing permission depends on the organization's 'Who can create reusable invitation links' settings.
+        * If the link invites users as owners, the editing user must be an owner themselves.
+        """
+        realm = get_realm("zulip")
+        self.user_profile = self.example_user("iago")
+
+        initial_invited_as = PreregistrationUser.INVITE_AS["REALM_ADMIN"]
+        initial_streams = [get_stream("Denmark", self.user_profile.realm)]
+        modified_streams = [
+            get_stream(stream_name, self.user_profile.realm).id
+            for stream_name in ["Denmark", "Verona"]
+        ]
+
+        self.login("iago")
+        invite_expires_in_minutes = 2 * 24 * 60
+        do_create_multiuse_invite_link(
+            self.user_profile,
+            initial_invited_as,
+            invite_expires_in_minutes,
+            include_realm_default_subscriptions=False,
+            streams=initial_streams,
+        )
+        initial_multiuse_object = MultiuseInvite.objects.get()
+
+        admin_moderator = NamedUserGroup.objects.get(
+            name=SystemGroups.MEMBERS, realm=realm, is_system_group=True
+        )
+        do_change_realm_permission_group_setting(
+            realm, "create_multiuse_invite_group", admin_moderator, acting_user=None
+        )
+
+        # Try to patch the invite as a non-admin user with
+        # members having permission to create reusable invite
+        self.login("hamlet")
+        result = self.client_patch(
+            f"/json/invites/multiuse/{initial_multiuse_object.id}",
+            {
+                "invite_as": PreregistrationUser.INVITE_AS["MEMBER"],
+                "stream_ids": modified_streams,
+                "include_realm_default_subscriptions": orjson.dumps(False).decode(),
+            },
+        )
+        self.assertEqual(result.status_code, 200)
+
+        admin_moderator_member = NamedUserGroup.objects.get(
+            name=SystemGroups.MODERATORS, realm=realm, is_system_group=True
+        )
+        do_change_realm_permission_group_setting(
+            realm, "create_multiuse_invite_group", admin_moderator_member, acting_user=None
+        )
+
+        # Try to patch the invite as a non-admin user without
+        # members having permission to create reusable invite
+        self.login("hamlet")
+        result = self.client_patch(
+            f"/json/invites/multiuse/{initial_multiuse_object.id}",
+            {
+                "invite_as": PreregistrationUser.INVITE_AS["MEMBER"],
+                "stream_ids": modified_streams,
+                "include_realm_default_subscriptions": orjson.dumps(False).decode(),
+            },
+        )
+        self.assert_json_error(result, "Insufficient permission")
+
+        # Try to patch the invite as a non-owner while
+        # setting invited_as to "REALM_OWNER"
+        self.login("iago")
+        result = self.client_patch(
+            f"/json/invites/multiuse/{initial_multiuse_object.id}",
+            {
+                "invite_as": PreregistrationUser.INVITE_AS["REALM_OWNER"],
+                "stream_ids": modified_streams,
+                "include_realm_default_subscriptions": orjson.dumps(False).decode(),
+            },
+        )
+        self.assert_json_error(result, "Must be an organization owner")
+
+    def test_admin_can_edit_multiuse_invite(self) -> None:
+        """
+        This is a sanity check test that occurs in the best-case scenario,
+        taken from the two tests above.
+        """
+        self.user_profile = self.example_user("iago")
+        self.login("iago")
+
+        initial_invited_as = PreregistrationUser.INVITE_AS["REALM_ADMIN"]
+        modified_invited_as = PreregistrationUser.INVITE_AS["MEMBER"]
+        initial_streams = [get_stream("Denmark", self.user_profile.realm)]
+        modified_streams = [
+            get_stream(stream_name, self.user_profile.realm).id
+            for stream_name in ["Denmark", "Verona"]
+        ]
+        modified_multiuse_object_params = {
+            "invite_as": modified_invited_as,
+            "stream_ids": modified_streams,
+            "include_realm_default_subscriptions": orjson.dumps(False).decode(),
+        }
+
+        invite_expires_in_minutes = 2 * 24 * 60
+        do_create_multiuse_invite_link(
+            self.user_profile,
+            initial_invited_as,
+            invite_expires_in_minutes,
+            include_realm_default_subscriptions=False,
+            streams=initial_streams,
+        )
+
+        initial_multiuse_object = MultiuseInvite.objects.get()
+        result = self.client_patch(
+            f"/json/invites/multiuse/{initial_multiuse_object.id}",
+            modified_multiuse_object_params,
+        )
+
+        self.assert_json_success(result)
+
+        # Check if the patch succeeds
+        modified_multiuse_object = MultiuseInvite.objects.get(id=initial_multiuse_object.id)
+        self.assertEqual(modified_multiuse_object.invited_as, modified_invited_as)
+        self.assertEqual(
+            set(modified_multiuse_object.streams.values_list("id", flat=True)),
+            set(modified_streams),
+        )
+
     def test_create_multiuse_link_with_specified_streams_api_call(self) -> None:
         self.login("iago")
         stream_names = ["Rome", "Scotland", "Venice"]
@@ -2730,6 +2908,81 @@ class MultiuseInviteTest(ZulipTestCase):
         # User is not subscribed to default streams as well.
         self.assert_length(get_default_streams_for_realm_as_dicts(self.realm.id), 3)
         self.check_user_subscribed_only_to_streams("alice", [])
+
+    def test_edit_multiuse_invite_without_permission_to_subscribe_others(self) -> None:
+        realm = get_realm("zulip")
+
+        # Creating multiuse invite link
+        stream_names = ["Denmark", "Scotland"]
+        streams = [get_stream(stream_name, realm) for stream_name in stream_names]
+
+        stream_ids = [stream.id for stream in streams]
+        multiuse_invite_1 = MultiuseInvite.objects.create(
+            referred_by=self.example_user("iago"),
+            realm=realm,
+        )
+        multiuse_invite_1.streams.set(stream_ids)
+
+        members_group = NamedUserGroup.objects.get(
+            name=SystemGroups.MEMBERS, realm=realm, is_system_group=True
+        )
+        do_change_realm_permission_group_setting(
+            realm, "create_multiuse_invite_group", members_group, acting_user=None
+        )
+        do_set_realm_property(
+            realm, "invite_to_stream_policy", Realm.POLICY_ADMINS_ONLY, acting_user=None
+        )
+
+        self.login("hamlet")
+        stream_names = ["Rome", "Scotland", "Venice"]
+        streams = [get_stream(stream_name, self.realm) for stream_name in stream_names]
+        stream_ids = [stream.id for stream in streams]
+        result = self.client_patch(
+            f"/json/invites/multiuse/{multiuse_invite_1.id}",
+            {
+                "stream_ids": orjson.dumps(stream_ids).decode(),
+                "invite_as": PreregistrationUser.INVITE_AS["MEMBER"],
+                "include_realm_default_subscriptions": orjson.dumps(False).decode(),
+            },
+        )
+        self.assert_json_error(
+            result, "You do not have permission to subscribe other users to channels."
+        )
+
+        result = self.client_patch(
+            f"/json/invites/multiuse/{multiuse_invite_1.id}",
+            {
+                "stream_ids": orjson.dumps([]).decode(),
+                "invite_as": PreregistrationUser.INVITE_AS["MEMBER"],
+                "include_realm_default_subscriptions": orjson.dumps(False).decode(),
+            },
+        )
+        self.assert_json_success(result)
+
+        self.login("iago")
+        result = self.client_patch(
+            f"/json/invites/multiuse/{multiuse_invite_1.id}",
+            {
+                "stream_ids": orjson.dumps(stream_ids).decode(),
+                "invite_as": PreregistrationUser.INVITE_AS["MEMBER"],
+                "include_realm_default_subscriptions": orjson.dumps(False).decode(),
+            },
+        )
+        self.assert_json_success(result)
+
+        do_set_realm_property(
+            realm, "invite_to_stream_policy", Realm.POLICY_MEMBERS_ONLY, acting_user=None
+        )
+        self.login("hamlet")
+        result = self.client_patch(
+            f"/json/invites/multiuse/{multiuse_invite_1.id}",
+            {
+                "stream_ids": orjson.dumps(stream_ids).decode(),
+                "invite_as": PreregistrationUser.INVITE_AS["MEMBER"],
+                "include_realm_default_subscriptions": orjson.dumps(False).decode(),
+            },
+        )
+        self.assert_json_success(result)
 
     def test_multiuse_invite_without_permission_to_subscribe_others(self) -> None:
         realm = get_realm("zulip")
