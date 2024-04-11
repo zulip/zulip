@@ -423,6 +423,17 @@ def dump_emojis(cache_path: str) -> None:
     EMOJI_DATA_FILE_PATH = os.path.join(NODE_MODULES_PATH, "emoji-datasource-google", "emoji.json")
     with open(EMOJI_DATA_FILE_PATH, "rb") as emoji_data_file:
         emoji_data = orjson.loads(emoji_data_file.read())
+
+    # These are the codes that we'll be able to show Google Modern
+    # emoji for. (For other emoji sets, we fall back to Google Modern.)
+    supported_codes = {get_emoji_code(emoji) for emoji in emoji_data if emoji_is_supported(emoji)}
+    # These are in the emoji dropdown so we should make sure they're supported.
+    for code in EMOJI_NAME_MAPS:
+        # If an assertion here fails, we either need to find an image for Google Modern
+        # to display for that emoji, or we need to remove that emoji as an option for users,
+        # by removing it from emoji_names.py through a change to `generate_emoji_names`.
+        assert code in supported_codes
+
     emoji_catalog = generate_emoji_catalog(emoji_data, EMOJI_NAME_MAPS)
 
     # Set up emoji farms.
