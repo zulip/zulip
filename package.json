@@ -160,7 +160,8 @@
     },
     "patchedDependencies": {
       "source-sans@3.46.0": "patches/source-sans@3.46.0.patch",
-      "eslint-plugin-no-jquery@2.7.0": "patches/eslint-plugin-no-jquery@2.7.0.patch"
+      "eslint-plugin-no-jquery@2.7.0": "patches/eslint-plugin-no-jquery@2.7.0.patch",
+      "@sentry/utils@7.109.0": "patches/@sentry__utils@7.109.0.patch"
     }
   },
   "nyc": {
