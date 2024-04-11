@@ -1,0 +1,14 @@
+diff --git a/esm/object.js b/esm/object.js
+index c63c1777dca0efb8b0e615da57dd9e8f2017ed32..bc57d870811e8af591f966a87b02f319d8bd13ac 100644
+--- a/esm/object.js
++++ b/esm/object.js
+@@ -133,6 +133,9 @@ function convertToPlainObject(
+ /** Creates a string representation of the target of an `Event` object */
+ function serializeEventTarget(target) {
+   try {
++    if (target instanceof Text) {
++      return htmlTreeAsString(target.parentElement) + " > ::text";
++    }
+     return isElement(target) ? htmlTreeAsString(target) : Object.prototype.toString.call(target);
+   } catch (_oO) {
+     return '<unknown>';
