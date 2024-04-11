@@ -13,10 +13,10 @@ export type MatchedMessage = {
 export type MessageReactionType = "unicode_emoji" | "realm_emoji" | "zulip_extra_emoji";
 
 export type DisplayRecipientUser = {
-    email: string;
-    full_name: string;
+    email?: string;
+    full_name?: string;
     id: number;
-    is_mirror_dummy: boolean;
+    is_mirror_dummy?: boolean;
     unknown_local_echo_user?: boolean;
 };
 
@@ -144,6 +144,15 @@ export type Message = (
           }
     );
 
+export type PrivateMessage = {
+    display_recipient: DisplayRecipient;
+} & (
+    | Message
+    | {
+          type: "private";
+      }
+);
+
 export function update_message_cache(message: Message): void {
     // You should only call this from message_helper (or in tests).
     stored_messages.set(message.id, message);
@@ -179,7 +188,7 @@ export function get_pm_emails(message: Message): string {
     return emails.join(", ");
 }
 
-export function get_pm_full_names(message: Message): string {
+export function get_pm_full_names(message: PrivateMessage): string {
     const user_ids = people.pm_with_user_ids(message) ?? [];
     const names = people.get_display_full_names(user_ids).sort();
 

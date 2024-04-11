@@ -6,7 +6,12 @@ import * as typeahead from "../shared/src/typeahead";
 import * as blueslip from "./blueslip";
 import {FoldDict} from "./fold_dict";
 import {$t} from "./i18n";
-import type {DisplayRecipientUser, Message, MessageWithBooleans} from "./message_store";
+import type {
+    DisplayRecipientUser,
+    Message,
+    MessageWithBooleans,
+    PrivateMessage,
+} from "./message_store";
 import * as message_user_ids from "./message_user_ids";
 import * as muted_users from "./muted_users";
 import {page_params} from "./page_params";
@@ -579,7 +584,7 @@ export function all_user_ids_in_pm(message: Message): number[] | undefined {
 }
 
 export function pm_with_user_ids(
-    message: Message & {reply_to?: string; url?: string},
+    message: PrivateMessage & {reply_to?: string; url?: string},
 ): number[] | undefined {
     if (message.type !== "private") {
         return undefined;
@@ -1578,9 +1583,9 @@ export function extract_people_from_message(message: MessageWithBooleans): void 
             continue;
         }
 
-        report_late_add(user_id, person.email);
+        report_late_add(user_id, person.email!);
 
-        _add_user(make_user(user_id, person.email, person.full_name));
+        _add_user(make_user(user_id, person.email!, person.full_name!));
     }
 }
 

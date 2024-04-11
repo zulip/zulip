@@ -19,7 +19,7 @@ export function get_recipient_label(message) {
     }
 
     if (message === undefined) {
-        if (message_lists.current.visibly_empty()) {
+        if (message_lists.current.data.visibly_empty()) {
             // For empty narrows where there's a clear reply target,
             // i.e. stream+topic or a single direct message conversation,
             // we label the button as replying to the thread.
@@ -46,7 +46,7 @@ export function get_recipient_label(message) {
                 };
             }
         } else {
-            message = message_lists.current.selected_message();
+            message = message_lists.current.data.selected_message();
         }
     }
 

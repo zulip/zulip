@@ -211,6 +211,10 @@ export class MessageListData {
         return this._lower_bound(this._selected_id);
     }
 
+    selected_message(): Message | undefined {
+        return this.get(this.selected_id());
+    }
+
     reset_select_to_closest(): void {
         this._selected_id = this.closest_id(this._selected_id);
     }
