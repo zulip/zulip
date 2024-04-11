@@ -65,9 +65,9 @@ export function get_or_set_completing_for_tests(val) {
     return completing;
 }
 
-export function update_emoji_data() {
+export function update_emoji_data(initial_emojis) {
     emoji_collection = [];
-    for (const emoji_dict of emoji.emojis_by_name.values()) {
+    for (const emoji_dict of initial_emojis) {
         const {reaction_type} = emoji.get_emoji_details_by_name(emoji_dict.name);
         if (emoji_dict.is_realm_emoji === true) {
             emoji_collection.push({
@@ -1184,8 +1184,6 @@ export function initialize_compose_typeahead(selector) {
 }
 
 export function initialize({on_enter_send}) {
-    update_emoji_data();
-
     // These handlers are at the "form" level so that they are called after typeahead
     $("form#send_message_form").on("keydown", (e) => handle_keydown(e, {on_enter_send}));
     $("form#send_message_form").on("keyup", handle_keyup);
