@@ -138,10 +138,12 @@ function role_selected_handler(event, dropdown, widget) {
 function get_roles() {
     return [
         {unique_id: "0", name: $t({defaultMessage: "All roles"})},
-        ...Object.values(settings_config.user_role_values).map((user_role_value) => ({
-            unique_id: user_role_value.code.toString(),
-            name: user_role_value.description,
-        })),
+        ...Object.values(settings_config.user_role_values)
+            .map((user_role_value) => ({
+                unique_id: user_role_value.code.toString(),
+                name: user_role_value.description,
+            }))
+            .reverse(),
     ];
 }
 
