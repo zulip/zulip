@@ -8,6 +8,9 @@ overrides:
   source-map@^0.6: npm:source-map-js@1.0.1
 
 patchedDependencies:
+  '@sentry/utils@7.109.0':
+    hash: xofr2od4ulavwwqsugbh54paga
+    path: patches/@sentry__utils@7.109.0.patch
   eslint-plugin-no-jquery@2.7.0:
     hash: 3o6vd4atcpz6wln5ovpbrt3cea
     path: patches/eslint-plugin-no-jquery@2.7.0.patch
@@ -2830,7 +2833,7 @@ packages:
     dependencies:
       '@sentry/core': 7.109.0
       '@sentry/types': 7.109.0
-      '@sentry/utils': 7.109.0
+      '@sentry/utils': 7.109.0(patch_hash=xofr2od4ulavwwqsugbh54paga)
     dev: false
 
   /@sentry-internal/replay-canvas@7.109.0:
@@ -2840,7 +2843,7 @@ packages:
       '@sentry/core': 7.109.0
       '@sentry/replay': 7.109.0
       '@sentry/types': 7.109.0
-      '@sentry/utils': 7.109.0
+      '@sentry/utils': 7.109.0(patch_hash=xofr2od4ulavwwqsugbh54paga)
     dev: false
 
   /@sentry-internal/tracing@7.109.0:
@@ -2849,7 +2852,7 @@ packages:
     dependencies:
       '@sentry/core': 7.109.0
       '@sentry/types': 7.109.0
-      '@sentry/utils': 7.109.0
+      '@sentry/utils': 7.109.0(patch_hash=xofr2od4ulavwwqsugbh54paga)
     dev: false
 
   /@sentry/browser@7.109.0:
@@ -2862,7 +2865,7 @@ packages:
       '@sentry/core': 7.109.0
       '@sentry/replay': 7.109.0
       '@sentry/types': 7.109.0
-      '@sentry/utils': 7.109.0
+      '@sentry/utils': 7.109.0(patch_hash=xofr2od4ulavwwqsugbh54paga)
     dev: false
 
   /@sentry/core@7.109.0:
@@ -2870,7 +2873,7 @@ packages:
     engines: {node: '>=8'}
     dependencies:
       '@sentry/types': 7.109.0
-      '@sentry/utils': 7.109.0
+      '@sentry/utils': 7.109.0(patch_hash=xofr2od4ulavwwqsugbh54paga)
     dev: false
 
   /@sentry/integrations@7.109.0:
@@ -2879,7 +2882,7 @@ packages:
     dependencies:
       '@sentry/core': 7.109.0
       '@sentry/types': 7.109.0
-      '@sentry/utils': 7.109.0
+      '@sentry/utils': 7.109.0(patch_hash=xofr2od4ulavwwqsugbh54paga)
       localforage: 1.10.0
     dev: false
 
@@ -2890,7 +2893,7 @@ packages:
       '@sentry-internal/tracing': 7.109.0
       '@sentry/core': 7.109.0
       '@sentry/types': 7.109.0
-      '@sentry/utils': 7.109.0
+      '@sentry/utils': 7.109.0(patch_hash=xofr2od4ulavwwqsugbh54paga)
     dev: false
 
   /@sentry/types@7.109.0:
@@ -2898,12 +2901,13 @@ packages:
     engines: {node: '>=8'}
     dev: false
 
-  /@sentry/utils@7.109.0:
+  /@sentry/utils@7.109.0(patch_hash=xofr2od4ulavwwqsugbh54paga):
     resolution: {integrity: sha512-3RjxMOLMBwZ5VSiH84+o/3NY2An4Zldjz0EbfEQNRY9yffRiCPJSQiCJID8EoylCFOh/PAhPimBhqbtWJxX6iw==}
     engines: {node: '>=8'}
     dependencies:
       '@sentry/types': 7.109.0
     dev: false
+    patched: true
 
   /@sinclair/typebox@0.27.8:
     resolution: {integrity: sha512-+Fj43pSMwJs4KRrH/938Uf+uAELIgVBmQzg/q1YG10djyfA3TnrU8N8XzqCh/okZdszqBQTZf96idMfE5lnwTA==}
