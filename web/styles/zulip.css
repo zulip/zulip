@@ -1377,6 +1377,19 @@ td.pointer {
     }
 }
 
+.selected_msg_for_touchscreen {
+    @media (hover: none) {
+        .message_reactions {
+            .message_reaction {
+                + .reaction_button {
+                    visibility: visible;
+                    pointer-events: all;
+                }
+            }
+        }
+    }
+}
+
 .message_sender {
     & i.zulip-icon.zulip-icon-bot {
         font-size: 12px;
