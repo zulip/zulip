@@ -516,11 +516,22 @@ export function discard_property_element_changes(elem, for_realm_default_setting
             break;
         case "emojiset":
         case "user_list_style":
-        case "stream_privacy":
             // Because this widget has a radio button structure, it
             // needs custom reset code.
             $elem.find(`input[value='${CSS.escape(property_value)}']`).prop("checked", true);
             break;
+        case "stream_privacy": {
+            $elem.find(`input[value='${CSS.escape(property_value)}']`).prop("checked", true);
+
+            // Hide stream privacy warning banner
+            const $stream_permissions_warning_banner = $(
+                "#stream_permission_settings .stream-permissions-warning-banner",
+            );
+            if (!$stream_permissions_warning_banner.is(":empty")) {
+                $stream_permissions_warning_banner.empty();
+            }
+            break;
+        }
         case "email_notifications_batching_period_seconds":
         case "email_notification_batching_period_edit_minutes":
             settings_notifications.set_notification_batching_ui(
