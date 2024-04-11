@@ -9,6 +9,7 @@ import render_emoji_showcase from "../templates/popovers/emoji/emoji_showcase.hb
 
 import * as blueslip from "./blueslip";
 import * as compose_ui from "./compose_ui";
+import * as composebox_typeahead from "./composebox_typeahead";
 import * as emoji from "./emoji";
 import * as keydown_util from "./keydown_util";
 import * as message_store from "./message_store";
@@ -157,6 +158,14 @@ export function rebuild_catalog() {
         icon: category.icon,
         emojis: catalog.get(category.name),
     }));
+    const emojis_by_category = complete_emoji_catalog.flatMap((category) => {
+        if (category.name === "Popular") {
+            // popular category has repeated emojis in the catalog so we skip it
+            return [];
+        }
+        return category.emojis;
+    });
+    composebox_typeahead.update_emoji_data(emojis_by_category);
 }
 
 const generate_emoji_picker_content = function (id) {

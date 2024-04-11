@@ -41,6 +41,7 @@ const typeahead = zrequire("../shared/src/typeahead");
 const stream_topic_history = zrequire("stream_topic_history");
 const compose_state = zrequire("compose_state");
 const emoji = zrequire("emoji");
+const emoji_picker = zrequire("emoji_picker");
 const typeahead_helper = zrequire("typeahead_helper");
 const muted_users = zrequire("muted_users");
 const people = zrequire("people");
@@ -185,12 +186,6 @@ const emojis_by_name = new Map(
         headphones: emoji_headphones,
     }),
 );
-const emoji_list = [...emojis_by_name.values()].map((emoji_dict) => ({
-    emoji_name: emoji_dict.name,
-    emoji_code: emoji_dict.emoji_code,
-    reaction_type: "unicode_emoji",
-    is_realm_emoji: false,
-}));
 
 const me_slash = {
     name: "me",
@@ -259,12 +254,17 @@ for (const [key, val] of emojis_by_name.entries()) {
     name_to_codepoint[key] = val.emoji_code;
 }
 
+const codepoint_to_name = {};
+for (const [key, val] of emojis_by_name.entries()) {
+    codepoint_to_name[val.emoji_code] = key;
+}
+
 const emoji_codes = {
     name_to_codepoint,
     names: [...emojis_by_name.keys()],
     emoji_catalog: {},
     emoticon_conversions: {},
-    codepoint_to_name: {},
+    codepoint_to_name,
 };
 
 emoji.initialize({
@@ -276,6 +276,8 @@ emoji.emojis_by_name.clear();
 for (const [key, val] of emojis_by_name.entries()) {
     emoji.emojis_by_name.set(key, val);
 }
+emoji_picker.rebuild_catalog();
+const emoji_list = composebox_typeahead.emoji_collection;
 
 const ali = {
     email: "ali@zulip.com",
@@ -1696,14 +1698,14 @@ test("typeahead_results", () => {
     }
     assert_emoji_matches("da", [
         {
-            emoji_name: "tada",
-            emoji_code: "1f389",
+            emoji_name: "panda_face",
+            emoji_code: "1f43c",
             reaction_type: "unicode_emoji",
             is_realm_emoji: false,
         },
         {
-            emoji_name: "panda_face",
-            emoji_code: "1f43c",
+            emoji_name: "tada",
+            emoji_code: "1f389",
             reaction_type: "unicode_emoji",
             is_realm_emoji: false,
         },

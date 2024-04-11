@@ -15,7 +15,6 @@ import * as compose_call_ui from "./compose_call_ui";
 import * as compose_pm_pill from "./compose_pm_pill";
 import * as compose_recipient from "./compose_recipient";
 import * as compose_state from "./compose_state";
-import * as composebox_typeahead from "./composebox_typeahead";
 import * as dark_theme from "./dark_theme";
 import * as emoji from "./emoji";
 import * as emoji_picker from "./emoji_picker";
@@ -391,7 +390,6 @@ export function dispatch_normal_event(event) {
             // And then let other widgets know.
             settings_emoji.populate_emoji();
             emoji_picker.rebuild_catalog();
-            composebox_typeahead.update_emoji_data();
             break;
 
         case "realm_export":

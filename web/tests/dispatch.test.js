@@ -29,7 +29,6 @@ const attachments_ui = mock_esm("../src/attachments_ui");
 const audible_notifications = mock_esm("../src/audible_notifications");
 const bot_data = mock_esm("../src/bot_data");
 const compose_pm_pill = mock_esm("../src/compose_pm_pill");
-const composebox_typeahead = mock_esm("../src/composebox_typeahead");
 const dark_theme = mock_esm("../src/dark_theme");
 const emoji_picker = mock_esm("../src/emoji_picker");
 const gear_menu = mock_esm("../src/gear_menu");
@@ -661,7 +660,6 @@ run_test("realm_emoji", ({override}) => {
     const ui_func_names = [
         [settings_emoji, "populate_emoji"],
         [emoji_picker, "rebuild_catalog"],
-        [composebox_typeahead, "update_emoji_data"],
     ];
 
     const ui_stubs = [];
