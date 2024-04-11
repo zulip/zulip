@@ -45,14 +45,16 @@ announcements, they can be disabled. [Learn more]({zulip_update_announcements_he
     ZulipUpdateAnnouncement(
         level=2,
         message="""
+**Web and desktop updates**
+
 - When you paste content into the compose box, Zulip will now do its best to preserve
-  the formatting, including links, bulleted lists, bold, italics, and more.
-  Pasting as plain text remains an alternative option. [Learn
-  more]({keyboard_shortcuts_basics_help_url}).
+the formatting, including links, bulleted lists, bold, italics, and more.
+Pasting as plain text remains an alternative option. [Learn
+more]({keyboard_shortcuts_basics_help_url}).
 - To [quote and reply]({quote_and_reply_help_url}) to part of a message, you can
-  now select the part that you want to quote.
+now select the part that you want to quote.
 - You can now hide the user list in the right sidebar to reduce distraction.
-  [Learn more]({user_list_help_url}).
+[Learn more]({user_list_help_url}).
 """.format(
             keyboard_shortcuts_basics_help_url="/help/keyboard-shortcuts#the-basics",
             user_list_help_url="/help/user-list",
