@@ -38,7 +38,7 @@ type DropdownWidgetOptions = {
     widget_name: string;
     // You can bold the selected `option` by setting `option.bold_current_selection` to `true`.
     // Currently, not implemented for stream names.
-    get_options: () => Option[];
+    get_options: (current_value: string | number | undefined) => Option[];
     item_click_callback: (
         event: JQuery.ClickEvent,
         instance: tippy.Instance,
