@@ -4,7 +4,7 @@ from zerver.actions.user_topics import do_set_user_topic_visibility_policy
 from zerver.lib.emoji import check_emoji_request, get_emoji_data
 from zerver.lib.exceptions import ReactionExistsError
 from zerver.lib.message import (
-    access_message,
+    access_message_and_usermessage,
     set_visibility_policy_possible,
     should_change_visibility_policy,
     visibility_policy_for_participation,
@@ -126,8 +126,8 @@ def check_add_reaction(
     emoji_code: Optional[str],
     reaction_type: Optional[str],
 ) -> None:
-    message, has_user_message = access_message(
-        user_profile, message_id, lock_message=True, get_user_message="exists"
+    message, user_message = access_message_and_usermessage(
+        user_profile, message_id, lock_message=True
     )
 
     if emoji_code is None or reaction_type is None:
@@ -181,7 +181,7 @@ def check_add_reaction(
         # realm emoji).
         check_emoji_request(user_profile.realm, emoji_name, emoji_code, reaction_type)
 
-    if not has_user_message:
+    if user_message is None:
         # See called function for more context.
         create_historical_user_messages(user_id=user_profile.id, message_ids=[message.id])
 
