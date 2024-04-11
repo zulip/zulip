@@ -219,10 +219,11 @@
     /* LaTeX styling */
     .katex-display {
         /* KaTeX sometimes overdraws its bounding box by a little, so we
-           enlarge its scrolling area by stealing 3px from the margin
-           of the enclosing <p>. */
-        margin: -3px 0;
+           enlarge its scrolling area by adding 3px of padding to its top
+           and bottom. To prevent what will appear as extra whitespace,
+           we reduce surrounding margins by the same 3px. */
         padding: 3px 0;
+        margin: -3px 0;
         overflow: auto hidden;
     }
 
