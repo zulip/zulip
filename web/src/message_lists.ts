@@ -49,6 +49,8 @@ export type MessageList = {
         append_opts: {messages_are_new: boolean},
     ) => RenderInfo | undefined;
     last: () => Message | undefined;
+    visibly_empty: () => boolean;
+    selected_message: () => Message;
 };
 
 export let current: MessageList | undefined;
