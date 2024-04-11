@@ -42,7 +42,7 @@ from zerver.lib.avatar import absolute_avatar_url, get_avatar_for_inaccessible_u
 from zerver.lib.display_recipient import get_display_recipient
 from zerver.lib.emoji_utils import hex_codepoint_to_emoji
 from zerver.lib.exceptions import ErrorCode, JsonableError
-from zerver.lib.message import access_message, huddle_users
+from zerver.lib.message import access_message_and_usermessage, huddle_users
 from zerver.lib.outgoing_http import OutgoingSession
 from zerver.lib.remote_server import (
     send_json_to_push_bouncer,
@@ -1292,11 +1292,8 @@ def handle_push_notification(user_profile_id: int, missed_message: Dict[str, Any
 
     with transaction.atomic(savepoint=False):
         try:
-            (message, user_message) = access_message(
-                user_profile,
-                missed_message["message_id"],
-                lock_message=True,
-                get_user_message="object",
+            (message, user_message) = access_message_and_usermessage(
+                user_profile, missed_message["message_id"], lock_message=True
             )
         except JsonableError:
             if ArchivedMessage.objects.filter(id=missed_message["message_id"]).exists():
