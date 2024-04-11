@@ -1,4 +1,5 @@
 import $ from "jquery";
+import assert from "minimalistic-assert";
 
 import * as compose_actions from "./compose_actions";
 import {$t} from "./i18n";
@@ -8,7 +9,7 @@ import * as narrow_state from "./narrow_state";
 import * as people from "./people";
 import * as stream_data from "./stream_data";
 
-function format_stream_recipient_label(stream_id, topic) {
+function format_stream_recipient_label(stream_id: number, topic: string): string {
     const stream = stream_data.get_sub_by_id(stream_id);
     if (stream) {
         return "#" + stream.name + " > " + topic;
@@ -16,7 +17,13 @@ function format_stream_recipient_label(stream_id, topic) {
     return "";
 }
 
-export function get_recipient_label(message) {
+type ComposeClosedMessage = {
+    stream_id?: number;
+    topic?: string;
+    display_reply_to?: string;
+};
+
+export function get_recipient_label(message?: ComposeClosedMessage): string {
     // TODO: This code path is bit of a type-checking disaster; we mix
     // actual message objects with fake objects containing just a
     // couple fields, both those constructed here and potentially
@@ -33,11 +40,13 @@ export function get_recipient_label(message) {
             // we label the button as replying to the thread.
             if (narrow_state.narrowed_to_topic()) {
                 const stream = narrow_state.stream_sub();
+                assert(stream !== undefined);
                 const stream_id = stream.stream_id;
                 const topic = narrow_state.topic();
+                assert(topic !== undefined);
                 return format_stream_recipient_label(stream_id, topic);
             } else if (narrow_state.pm_ids_string()) {
-                const user_ids = people.user_ids_string_to_ids_array(narrow_state.pm_ids_string());
+                const user_ids = people.user_ids_string_to_ids_array(narrow_state.pm_ids_string()!);
                 return message_store.get_pm_full_names(user_ids);
             }
         } else {
@@ -55,8 +64,8 @@ export function get_recipient_label(message) {
     return "";
 }
 
-function update_reply_button_state(disable = false) {
-    $(".compose_reply_button").attr("disabled", disable);
+function update_reply_button_state(disable = false): void {
+    $(".compose_reply_button").attr("disabled", disable ? "disabled" : null);
     if (disable) {
         $("#compose_buttons .compose-reply-button-wrapper").attr(
             "data-reply-button-type",
@@ -77,7 +86,10 @@ function update_reply_button_state(disable = false) {
     }
 }
 
-function update_new_conversation_button(btn_text, is_direct_message_narrow) {
+function update_new_conversation_button(
+    btn_text: string,
+    is_direct_message_narrow?: boolean,
+): void {
     const $new_conversation_button = $("#new_conversation_button");
     $new_conversation_button.text(btn_text);
     // In a direct-message narrow, the new conversation button should act
@@ -93,11 +105,11 @@ function update_new_conversation_button(btn_text, is_direct_message_narrow) {
     }
 }
 
-function update_new_direct_message_button(btn_text) {
+function update_new_direct_message_button(btn_text: string): void {
     $("#new_direct_message_button").text(btn_text);
 }
 
-function toggle_direct_message_button_visibility(is_direct_message_narrow) {
+function toggle_direct_message_button_visibility(is_direct_message_narrow?: boolean): void {
     const $new_direct_message_button_container = $(".new_direct_message_button_container");
     if (is_direct_message_narrow) {
         $new_direct_message_button_container.hide();
@@ -106,7 +118,11 @@ function toggle_direct_message_button_visibility(is_direct_message_narrow) {
     }
 }
 
-function update_buttons(text_stream, is_direct_message_narrow, disable_reply) {
+function update_buttons(
+    text_stream: string,
+    is_direct_message_narrow?: boolean,
+    disable_reply?: boolean,
+): void {
     const text_conversation = $t({defaultMessage: "New direct message"});
     update_new_conversation_button(text_stream, is_direct_message_narrow);
     update_new_direct_message_button(text_conversation);
@@ -114,13 +130,11 @@ function update_buttons(text_stream, is_direct_message_narrow, disable_reply) {
     toggle_direct_message_button_visibility(is_direct_message_narrow);
 }
 
-export function update_buttons_for_private() {
+export function update_buttons_for_private(): void {
     const text_stream = $t({defaultMessage: "Start new conversation"});
     const is_direct_message_narrow = true;
-    if (
-        !narrow_state.pm_ids_string() ||
-        people.user_can_direct_message(narrow_state.pm_ids_string())
-    ) {
+    const pm_ids_string = narrow_state.pm_ids_string();
+    if (!pm_ids_string || people.user_can_direct_message(pm_ids_string)) {
         $("#new_conversation_button").attr("data-conversation-type", "direct");
         update_buttons(text_stream, is_direct_message_narrow);
         return;
@@ -131,27 +145,27 @@ export function update_buttons_for_private() {
     update_buttons(text_stream, is_direct_message_narrow, disable_reply);
 }
 
-export function update_buttons_for_stream_views() {
+export function update_buttons_for_stream_views(): void {
     const text_stream = $t({defaultMessage: "Start new conversation"});
     $("#new_conversation_button").attr("data-conversation-type", "stream");
     update_buttons(text_stream);
 }
 
-export function update_buttons_for_non_specific_views() {
+export function update_buttons_for_non_specific_views(): void {
     const text_stream = $t({defaultMessage: "Start new conversation"});
     $("#new_conversation_button").attr("data-conversation-type", "non-specific");
     update_buttons(text_stream);
 }
 
-function set_reply_button_label(label) {
+function set_reply_button_label(label: string): void {
     $("#left_bar_compose_reply_button_big").text(label);
 }
 
-export function set_standard_text_for_reply_button() {
+export function set_standard_text_for_reply_button(): void {
     set_reply_button_label($t({defaultMessage: "Compose message"}));
 }
 
-export function update_reply_recipient_label(message) {
+export function update_reply_recipient_label(message?: ComposeClosedMessage): void {
     const recipient_label = get_recipient_label(message);
     if (recipient_label) {
         set_reply_button_label(
@@ -162,7 +176,7 @@ export function update_reply_recipient_label(message) {
     }
 }
 
-export function initialize() {
+export function initialize(): void {
     // When the message selection changes, change the label on the Reply button.
     $(document).on("message_selected.zulip", () => {
         if (narrow_state.is_message_feed_visible()) {
