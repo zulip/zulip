@@ -181,9 +181,40 @@ function get_channel_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Suggest
 }
 
 function get_group_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Suggestion[] {
+    // We only suggest groups once a term with a valid user already exists
+    if (terms.length === 0) {
+        return [];
+    }
+    const last_complete_term = terms.at(-1)!;
     // For users with "pm-with" in their muscle memory, still
     // have group direct message suggestions with "dm:" operator.
-    if (!check_validity(last, terms, ["dm", "pm-with"], [{operator: "channel"}])) {
+    if (
+        !check_validity(
+            last_complete_term,
+            terms.slice(-1),
+            ["dm", "pm-with"],
+            [{operator: "channel"}],
+        )
+    ) {
+        return [];
+    }
+
+    // If they started typing since a user pill, we'll parse that as "search"
+    // but they might actually want to parse that as a user instead to add to
+    // the most recent pill. So we shuffle some things around to support that.
+    if (last.operator === "search") {
+        const text_input = last.operand;
+        const operand = `${last_complete_term.operand},${text_input}`;
+        last = {
+            ...last_complete_term,
+            operand,
+        };
+        terms = terms.slice(-1);
+    } else if (last.operator === "") {
+        last = last_complete_term;
+    } else {
+        // If they already started another term with an other operator, we're
+        // no longer dealing with a group DM situation.
         return [];
     }
 
@@ -197,13 +228,16 @@ function get_group_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Suggestio
     // we only use the last part to generate suggestions.
 
     const last_comma_index = operand.lastIndexOf(",");
+    let all_but_last_part;
+    let last_part;
     if (last_comma_index < 0) {
-        return [];
+        all_but_last_part = operand;
+        last_part = "";
+    } else {
+        // Neither all_but_last_part nor last_part include the final comma.
+        all_but_last_part = operand.slice(0, last_comma_index);
+        last_part = operand.slice(last_comma_index + 1);
     }
-
-    // Neither all_but_last_part nor last_part include the final comma.
-    const all_but_last_part = operand.slice(0, last_comma_index);
-    const last_part = operand.slice(last_comma_index + 1);
 
     // We don't suggest a person if their email is already present in the
     // operand (not including the last part).
@@ -827,7 +861,24 @@ class Attacher {
 
     attach_many(suggestions: Suggestion[]): void {
         for (const suggestion of suggestions) {
-            const suggestion_line = [...this.base, suggestion];
+            let suggestion_line;
+            if (this.base.length === 0) {
+                suggestion_line = [suggestion];
+            } else {
+                // When we add a user to a user group, we
+                // replace the last pill.
+                const last_base_term = this.base.at(-1)!;
+                const last_base_string = last_base_term.search_string;
+                const new_search_string = suggestion.search_string;
+                if (
+                    new_search_string.startsWith("dm:") &&
+                    new_search_string.includes(last_base_string)
+                ) {
+                    suggestion_line = [...this.base.slice(0, -1), suggestion];
+                } else {
+                    suggestion_line = [...this.base, suggestion];
+                }
+            }
             this.push(suggestion_line);
         }
     }
@@ -949,15 +1000,19 @@ export function get_search_result(query_from_pills: string, query_from_text: str
 
     // Remember to update the spectator list when changing this.
     let filterers = [
+        // This should show before other `get_people` suggestions
+        // because both are valid suggestions for typing a user's
+        // name, and if there's already has a DM pill then the
+        // searching user probably is looking to make a group DM.
+        get_group_suggestions,
         get_channels_filter_suggestions,
         get_is_filter_suggestions,
         get_sent_by_me_suggestions,
         get_channel_suggestions,
-        get_people("sender"),
         get_people("dm"),
+        get_people("sender"),
         get_people("dm-including"),
         get_people("from"),
-        get_group_suggestions,
         get_topic_suggestions,
         get_operator_suggestions,
         get_has_filter_suggestions,

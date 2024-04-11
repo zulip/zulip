@@ -4,6 +4,7 @@ import $ from "jquery";
 import assert from "minimalistic-assert";
 
 import render_input_pill from "../templates/input_pill.hbs";
+import render_search_user_pill from "../templates/search_user_pill.hbs";
 
 import * as blueslip from "./blueslip";
 import type {EmojiRenderingDetails} from "./emoji";
@@ -21,6 +22,8 @@ export type InputPillItem<T> = {
     should_add_guest_user_indicator?: boolean;
     user_id?: number;
     group_id?: number;
+    // Used for search pills
+    operator?: string;
 } & T;
 
 export type InputPillConfig = {
@@ -158,36 +161,39 @@ export function create<T>(opts: InputPillCreateOptions<T>): InputPillContainer<T
                 blueslip.error("no type defined for the item");
                 return;
             }
+            let pill_html;
+            if (item.type === "search_user") {
+                pill_html = render_search_user_pill(item);
+            } else {
+                const has_image = item.img_src !== undefined;
 
-            const has_image = item.img_src !== undefined;
+                const opts: InputPillRenderingDetails = {
+                    display_value: item.display_value,
+                    has_image,
+                    deactivated: item.deactivated,
+                    should_add_guest_user_indicator: item.should_add_guest_user_indicator,
+                };
 
-            const opts: InputPillRenderingDetails = {
-                display_value: item.display_value,
-                has_image,
-                deactivated: item.deactivated,
-                should_add_guest_user_indicator: item.should_add_guest_user_indicator,
-            };
-
-            if (item.user_id) {
-                opts.user_id = item.user_id;
-            }
-            if (item.group_id) {
-                opts.group_id = item.group_id;
-            }
-
-            if (has_image) {
-                opts.img_src = item.img_src;
-            }
-
-            if (store.pill_config?.show_user_status_emoji === true) {
-                const has_status = item.status_emoji_info !== undefined;
-                if (has_status) {
-                    opts.status_emoji_info = item.status_emoji_info;
+                if (item.user_id) {
+                    opts.user_id = item.user_id;
                 }
-                opts.has_status = has_status;
-            }
+                if (item.group_id) {
+                    opts.group_id = item.group_id;
+                }
 
-            const pill_html = render_input_pill(opts);
+                if (has_image) {
+                    opts.img_src = item.img_src;
+                }
+
+                if (store.pill_config?.show_user_status_emoji === true) {
+                    const has_status = item.status_emoji_info !== undefined;
+                    if (has_status) {
+                        opts.status_emoji_info = item.status_emoji_info;
+                    }
+                    opts.has_status = has_status;
+                }
+                pill_html = render_input_pill(opts);
+            }
             const payload: InputPill<T> = {
                 item,
                 $element: $(pill_html),

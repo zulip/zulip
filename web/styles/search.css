@@ -68,7 +68,7 @@
     .search-input-and-pills {
         grid-area: search-pills;
         display: flex;
-        padding: 3px 0;
+        padding: 0;
         flex-wrap: wrap;
         gap: 2px 2px;
         align-self: center;
@@ -218,6 +218,7 @@
         .pill {
             margin: 0;
             min-width: unset;
+            height: 26px;
         }
 
         &:not(.focused) {
@@ -227,6 +228,33 @@
             .search-input-and-pills {
                 flex-wrap: nowrap;
                 overflow: hidden;
+            }
+        }
+
+        .user-pill-container {
+            padding: 2px;
+            height: 22px;
+            min-width: fit-content;
+
+            > .pill-label {
+                min-width: fit-content;
+                white-space: nowrap;
+                width: fit-content;
+            }
+
+            .pill {
+                height: 22px;
+                margin: 2px;
+                border: none;
+
+                &:not(.deactivated-pill) {
+                    background-color: var(--color-background-user-pill);
+                }
+            }
+
+            .pill-image {
+                width: 22px;
+                height: 22px;
             }
         }
     }
