@@ -94,11 +94,6 @@
         padding-left: 5px;
         margin: 5px 0 6px 10px;
         border-left: 5px solid hsl(0deg 0% 87%);
-
-        & p {
-            line-height: inherit;
-            font-size: inherit;
-        }
     }
 
     &.rtl blockquote {
