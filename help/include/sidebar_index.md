@@ -122,6 +122,7 @@
 * [View someone's profile](/help/view-someones-profile)
 * [Direct messages](/help/direct-messages)
 * [User groups](/help/user-groups)
+* [Find administrators](/help/find-administrators)
 
 ## Streams & topics
 * [Streams and topics](/help/streams-and-topics)

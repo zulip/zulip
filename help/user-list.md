@@ -57,3 +57,4 @@ show it.
 - [View someone's profile](/help/view-someones-profile)
 - [Status and availability](/help/status-and-availability)
 - [Searching for messages](/help/search-for-messages)
+- [Find administrators](/help/find-administrators)
