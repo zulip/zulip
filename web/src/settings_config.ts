@@ -149,6 +149,7 @@ export const get_all_preferences = (): DisplaySettings => ({
             "dense_mode",
             "high_contrast_mode",
             "starred_message_counts",
+            "receives_typing_notifications",
             "fluid_layout_width",
         ],
     },
@@ -563,6 +564,7 @@ export const preferences_settings_labels = {
     ),
     fluid_layout_width: $t({defaultMessage: "Use full width on wide screens"}),
     high_contrast_mode: $t({defaultMessage: "High contrast mode"}),
+    receives_typing_notifications: $t({defaultMessage: "Show when other users are typing"}),
     starred_message_counts: $t({defaultMessage: "Show counts for starred messages"}),
     twenty_four_hour_time: $t({defaultMessage: "Time format"}),
     translate_emoticons: new Handlebars.SafeString(

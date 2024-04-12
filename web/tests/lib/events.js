@@ -999,6 +999,20 @@ exports.fixtures = {
         value: true,
     },
 
+    user_settings__receives_typing_notifications: {
+        type: "user_settings",
+        op: "update",
+        property: "receives_typing_notifications",
+        value: true,
+    },
+
+    user_settings__receives_typing_notifications_disabled: {
+        type: "user_settings",
+        op: "update",
+        property: "receives_typing_notifications",
+        value: false,
+    },
+
     user_settings__starred_message_counts: {
         type: "user_settings",
         op: "update",

@@ -585,3 +585,36 @@ class TestSendTypingNotificationsSettings(ZulipTestCase):
             result = self.api_post(sender, "/api/v1/typing", params)
         self.assert_json_error(result, "User has disabled typing notifications for stream messages")
         self.assertEqual(events, [])
+
+    def test_typing_notifications_disabled(self) -> None:
+        sender = self.example_user("hamlet")
+        stream_name = self.get_streams(sender)[0]
+        stream_id = self.get_stream_id(stream_name)
+        topic_name = "Some topic"
+
+        aaron = self.example_user("aaron")
+        iago = self.example_user("iago")
+        for user in [aaron, iago]:
+            self.subscribe(user, stream_name)
+
+        aaron.receives_typing_notifications = False
+        aaron.save()
+
+        params = dict(
+            type="stream",
+            op="start",
+            stream_id=str(stream_id),
+            topic=topic_name,
+        )
+
+        with self.capture_send_event_calls(expected_num_events=1) as events:
+            result = self.api_post(sender, "/api/v1/typing", params)
+        self.assert_json_success(result)
+        self.assert_length(events, 1)
+
+        event_user_ids = set(events[0]["users"])
+
+        # Only users who have typing notifications enabled would receive
+        # notifications.
+        self.assertNotIn(aaron.id, event_user_ids)
+        self.assertIn(iago.id, event_user_ids)

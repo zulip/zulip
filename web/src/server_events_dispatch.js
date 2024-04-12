@@ -706,6 +706,7 @@ export function dispatch_normal_event(event) {
                 "web_escape_navigates_to_home_view",
                 "fluid_layout_width",
                 "high_contrast_mode",
+                "receives_typing_notifications",
                 "timezone",
                 "twenty_four_hour_time",
                 "translate_emoticons",
@@ -800,6 +801,12 @@ export function dispatch_normal_event(event) {
             }
             if (event.property === "starred_message_counts") {
                 starred_messages_ui.rerender_ui();
+            }
+            if (
+                event.property === "receives_typing_notifications" &&
+                !user_settings.receives_typing_notifications
+            ) {
+                typing_events.disable_typing_notification();
             }
             if (event.property === "fluid_layout_width") {
                 scroll_bar.set_layout_width();

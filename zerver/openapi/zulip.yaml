@@ -10570,6 +10570,16 @@ paths:
                     messages](/help/star-a-message#display-the-number-of-starred-messages).
                   type: boolean
                   example: true
+                receives_typing_notifications:
+                  description: |
+                    Whether the user is configured to receive typing notifications from other users.
+                    The server will only deliver typing notifications events to users who for whom this
+                    is enabled.
+
+                    **Changes**: New in Zulip 9.0 (feature level 253). Previously, there were
+                    only options to disable sending typing notifications.
+                  type: boolean
+                  example: true
                 fluid_layout_width:
                   description: |
                     Whether to use the [maximum available screen width](/help/enable-full-width-display)
@@ -11016,6 +11026,8 @@ paths:
               dense_mode:
                 contentType: application/json
               starred_message_counts:
+                contentType: application/json
+              receives_typing_notifications:
                 contentType: application/json
               fluid_layout_width:
                 contentType: application/json
@@ -13368,6 +13380,15 @@ paths:
                             description: |
                               Whether clients should display the [number of starred
                               messages](/help/star-a-message#display-the-number-of-starred-messages).
+                          receives_typing_notifications:
+                            type: boolean
+                            description: |
+                              Whether the user is configured to receive typing notifications from
+                              other users. The server will only deliver typing notifications events
+                              to users who for whom this is enabled.
+
+                              **Changes**: New in Zulip 9.0 (feature level 253). Previously, there were
+                              only options to disable sending typing notifications.
                           fluid_layout_width:
                             type: boolean
                             description: |
@@ -14442,6 +14463,15 @@ paths:
                           client capability and access the `user_settings` object instead.
 
                           [capabilities]: /api/register-queue#parameter-client_capabilities
+                      receives_typing_notifications:
+                        type: boolean
+                        description: |
+                          Whether the user is configured to receive typing notifications from other
+                          users. The server will only deliver typing notifications events to users who
+                          for whom this is enabled.
+
+                          **Changes**: New in Zulip 9.0 (feature level 253). Previously, there were
+                          only options to disable sending typing notifications.
                       enter_sends:
                         deprecated: true
                         type: boolean
@@ -15673,6 +15703,15 @@ paths:
                             description: |
                               Whether clients should display the [number of starred
                               messages](/help/star-a-message#display-the-number-of-starred-messages).
+                          receives_typing_notifications:
+                            type: boolean
+                            description: |
+                              Whether the user is configured to receive typing notifications from
+                              other users. The server will only deliver typing notifications events
+                              to users who for whom this is enabled.
+
+                              **Changes**: New in Zulip 9.0 (feature level 253). Previously, there were
+                              only options to disable sending typing notifications.
                           fluid_layout_width:
                             type: boolean
                             description: |
@@ -16758,6 +16797,19 @@ paths:
                     the `PATCH /settings/display` endpoint.
                   type: boolean
                   example: true
+                receives_typing_notifications:
+                  description: |
+                    Whether the user is configured to receive typing notifications from other users.
+                    The server will only deliver typing notifications events to users who for whom this
+                    is enabled.
+
+                    By default, this is set to true, enabling user to receive typing
+                    notifications from other users.
+
+                    **Changes**: New in Zulip 9.0 (feature level 253). Previously, there were only
+                    options to disable sending typing notifications.
+                  type: boolean
+                  example: true
                 fluid_layout_width:
                   description: |
                     Whether to use the [maximum available screen width](/help/enable-full-width-display)
@@ -17312,6 +17364,8 @@ paths:
               web_mark_read_on_scroll_policy:
                 contentType: application/json
               starred_message_counts:
+                contentType: application/json
+              receives_typing_notifications:
                 contentType: application/json
               fluid_layout_width:
                 contentType: application/json

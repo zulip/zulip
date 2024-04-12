@@ -1016,6 +1016,17 @@ run_test("user_settings", ({override}) => {
     dispatch(event);
     assert_same(user_settings.starred_message_counts, true);
 
+    event = event_fixtures.user_settings__receives_typing_notifications;
+    user_settings.receives_typing_notifications = false;
+    dispatch(event);
+    assert_same(user_settings.receives_typing_notifications, true);
+
+    event = event_fixtures.user_settings__receives_typing_notifications_disabled;
+    override(typing_events, "disable_typing_notification", noop);
+    user_settings.receives_typing_notifications = true;
+    dispatch(event);
+    assert_same(user_settings.receives_typing_notifications, false);
+
     override(scroll_bar, "set_layout_width", noop);
     event = event_fixtures.user_settings__fluid_layout_width;
     user_settings.fluid_layout_width = false;

@@ -20,6 +20,13 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 9.0
 
+**Feature level 253**
+
+* [`PATCH /realm/user_settings_defaults`](/api/update-realm-user-settings-defaults),
+  [`POST /register`](/api/register-queue), [`PATCH /settings`](/api/update-settings):
+  Added new `receives_typing_notifications` option to allow users to decide whether
+  to receive typing notification events from other users.
+
 **Feature level 252**
 
 * `PATCH /realm/profile_fields/{field_id}`: `name`, `hint`, `display_in_profile_summary`,
