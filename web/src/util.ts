@@ -281,9 +281,19 @@ export function is_stream_synonym(text: string): boolean {
     return text === "channel";
 }
 
-export function canonicalize_stream_synonym(text: string): string {
+export function is_streams_synonym(text: string): boolean {
+    return text === "channels";
+}
+
+// For parts of the codebase that have been converted to use
+// channel/channels internally, this is used to convert those
+// back into stream/streams for external presentation.
+export function canonicalize_stream_synonyms(text: string): string {
     if (is_stream_synonym(text.toLowerCase())) {
         return "stream";
+    }
+    if (is_streams_synonym(text.toLowerCase())) {
+        return "streams";
     }
     return text;
 }

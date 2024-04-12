@@ -56,10 +56,11 @@ type Part =
           operand: string;
       };
 
-// TODO: When "stream" is renamed to "channel", this placeholder
+// TODO: When "stream" is renamed to "channel", these placeholders
 // should be removed, or replaced with helper functions similar
 // to util.is_topic_synonym.
 const CHANNEL_SYNONYM = "stream";
+const CHANNELS_SYNONYM = "streams";
 
 function zephyr_stream_name_match(message: Message & {type: "stream"}, operand: string): boolean {
     // Zephyr users expect narrowing to "social" to also show messages to /^(un)*social(.d)*$/
@@ -278,6 +279,10 @@ export class Filter {
         if (operator === CHANNEL_SYNONYM) {
             return "channel";
         }
+
+        if (operator === CHANNELS_SYNONYM) {
+            return "channels";
+        }
         return operator;
     }
 
@@ -454,7 +459,7 @@ export class Filter {
             if (term.operator === "") {
                 return term.operand;
             }
-            const operator = util.canonicalize_stream_synonym(term.operator);
+            const operator = util.canonicalize_stream_synonyms(term.operator);
             return sign + operator + ":" + Filter.encodeOperand(term.operand.toString());
         });
         return term_strings.join(" ");
@@ -469,7 +474,7 @@ export class Filter {
 
         result += operator;
 
-        if (["is", "has", "in", "streams"].includes(operator)) {
+        if (["is", "has", "in", "channels"].includes(operator)) {
             result += "-" + operand;
         }
 
@@ -479,7 +484,7 @@ export class Filter {
     static sorted_term_types(term_types: string[]): string[] {
         const levels = [
             "in",
-            "streams-public",
+            "channels-public",
             "channel",
             "topic",
             "dm",
@@ -530,8 +535,8 @@ export class Filter {
         switch (operator) {
             case "channel":
                 return verb + CHANNEL_SYNONYM;
-            case "streams":
-                return verb + "streams";
+            case "channels":
+                return verb + CHANNELS_SYNONYM;
             case "near":
                 return verb + "messages around";
 
@@ -743,10 +748,10 @@ export class Filter {
             "not-is-resolved",
             "in-home",
             "in-all",
-            "streams-public",
-            "not-streams-public",
-            "streams-web-public",
-            "not-streams-web-public",
+            "channels-public",
+            "not-channels-public",
+            "channels-web-public",
+            "not-channels-web-public",
             "near",
         ]);
 
@@ -835,7 +840,7 @@ export class Filter {
         if (_.isEqual(term_types, ["is-starred"])) {
             return true;
         }
-        if (_.isEqual(term_types, ["streams-public"])) {
+        if (_.isEqual(term_types, ["channels-public"])) {
             return true;
         }
         if (_.isEqual(term_types, ["sender"])) {
@@ -894,8 +899,8 @@ export class Filter {
                     return "/#narrow/is/starred";
                 case "is-mentioned":
                     return "/#narrow/is/mentioned";
-                case "streams-public":
-                    return "/#narrow/streams/public";
+                case "channels-public":
+                    return "/#narrow/" + CHANNELS_SYNONYM + "/public";
                 case "dm":
                     return "/#narrow/dm/" + people.emails_to_slug(this.operands("dm").join(","));
                 case "is-resolved":
@@ -1021,7 +1026,7 @@ export class Filter {
                     return $t({defaultMessage: "All messages"});
                 case "in-all":
                     return $t({defaultMessage: "All messages including muted streams"});
-                case "streams-public":
+                case "channels-public":
                     return $t({defaultMessage: "Messages in all public streams"});
                 case "is-starred":
                     return $t({defaultMessage: "Starred messages"});
@@ -1057,14 +1062,14 @@ export class Filter {
     }
 
     includes_full_stream_history(): boolean {
-        return this.has_operator("channel") || this.has_operator("streams");
+        return this.has_operator("channel") || this.has_operator("channels");
     }
 
     is_personal_filter(): boolean {
         // Whether the filter filters for user-specific data in the
         // UserMessage table, such as stars or mentions.
         //
-        // Such filters should not advertise "streams:public" as it
+        // Such filters should not advertise "channels:public" as it
         // will never add additional results.
         return this.has_operand("is", "mentioned") || this.has_operand("is", "starred");
     }
@@ -1089,9 +1094,9 @@ export class Filter {
             return false;
         }
 
-        // TODO: It's not clear why `streams:` filters would not be
+        // TODO: It's not clear why `channels:` filters would not be
         // applicable locally.
-        if (this.has_operator("streams") || this.has_negated_operand("streams", "public")) {
+        if (this.has_operator("channels") || this.has_negated_operand("channels", "public")) {
             return false;
         }
 

@@ -214,10 +214,10 @@ test("basics", () => {
     terms = [{operator: "streams", operand: "public", negated: true}];
     filter = new Filter(terms);
     assert.ok(!filter.contains_only_private_messages());
-    assert.ok(!filter.has_operator("streams"));
+    assert.ok(!filter.has_operator("channels"));
     assert.ok(!filter.can_mark_messages_read());
     assert.ok(filter.supports_collapsing_recipients());
-    assert.ok(filter.has_negated_operand("streams", "public"));
+    assert.ok(filter.has_negated_operand("channels", "public"));
     assert.ok(!filter.can_apply_locally());
     assert.ok(!filter.is_personal_filter());
     assert.ok(!filter.is_conversation_view());
@@ -225,10 +225,22 @@ test("basics", () => {
     terms = [{operator: "streams", operand: "public"}];
     filter = new Filter(terms);
     assert.ok(!filter.contains_only_private_messages());
-    assert.ok(filter.has_operator("streams"));
+    assert.ok(filter.has_operator("channels"));
     assert.ok(!filter.can_mark_messages_read());
     assert.ok(filter.supports_collapsing_recipients());
-    assert.ok(!filter.has_negated_operand("streams", "public"));
+    assert.ok(!filter.has_negated_operand("channels", "public"));
+    assert.ok(!filter.can_apply_locally());
+    assert.ok(filter.includes_full_stream_history());
+    assert.ok(!filter.is_personal_filter());
+    assert.ok(!filter.is_conversation_view());
+
+    terms = [{operator: "channels", operand: "public"}];
+    filter = new Filter(terms);
+    assert.ok(!filter.contains_only_private_messages());
+    assert.ok(filter.has_operator("channels"));
+    assert.ok(!filter.can_mark_messages_read());
+    assert.ok(filter.supports_collapsing_recipients());
+    assert.ok(!filter.has_negated_operand("channels", "public"));
     assert.ok(!filter.can_apply_locally());
     assert.ok(filter.includes_full_stream_history());
     assert.ok(!filter.is_personal_filter());
@@ -1442,7 +1454,7 @@ test("term_type", () => {
         };
     }
 
-    assert_term_type(term("streams", "public"), "streams-public");
+    assert_term_type(term("channels", "public"), "channels-public");
     assert_term_type(term("channel", "whatever"), "channel");
     assert_term_type(term("dm", "whomever"), "dm");
     assert_term_type(term("dm", "whomever", true), "not-dm");
@@ -1466,7 +1478,7 @@ test("term_type", () => {
     assert_term_sort(["bogus", "channel", "topic"], ["channel", "topic", "bogus"]);
     assert_term_sort(["channel", "topic", "channel"], ["channel", "channel", "topic"]);
 
-    assert_term_sort(["search", "streams-public"], ["streams-public", "search"]);
+    assert_term_sort(["search", "channels-public"], ["channels-public", "search"]);
 
     const terms = [
         {operator: "topic", operand: "lunch"},

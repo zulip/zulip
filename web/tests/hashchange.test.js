@@ -33,6 +33,7 @@ const hash_util = zrequire("hash_util");
 const hashchange = zrequire("hashchange");
 const narrow = zrequire("../src/narrow");
 const stream_data = zrequire("stream_data");
+const {Filter} = zrequire("../src/filter");
 
 run_test("terms_round_trip", () => {
     let terms;
@@ -76,6 +77,29 @@ run_test("terms_round_trip", () => {
     assert.equal(hash, "#narrow/stream/987-Florida.2C-USA");
     narrow = hash_util.parse_narrow(hash.split("/"));
     assert.deepEqual(narrow, [{operator: "stream", operand: "Florida, USA", negated: false}]);
+});
+
+run_test("stream_to_channel_rename", () => {
+    let terms;
+    let hash;
+    let narrow;
+    let filter;
+
+    terms = [{operator: "channel", operand: "devel"}];
+    hash = hash_util.search_terms_to_hash(terms);
+    assert.equal(hash, "#narrow/stream/devel");
+    narrow = hash_util.parse_narrow(hash.split("/"));
+    assert.deepEqual(narrow, [{operator: "stream", operand: "devel", negated: false}]);
+    filter = new Filter(narrow);
+    assert.deepEqual(filter.terms(), [{operator: "channel", operand: "devel", negated: false}]);
+
+    terms = [{operator: "channels", operand: "public"}];
+    hash = hash_util.search_terms_to_hash(terms);
+    assert.equal(hash, "#narrow/streams/public");
+    narrow = hash_util.parse_narrow(hash.split("/"));
+    assert.deepEqual(narrow, [{operator: "streams", operand: "public", negated: false}]);
+    filter = new Filter(narrow);
+    assert.deepEqual(filter.terms(), [{operator: "channels", operand: "public", negated: false}]);
 });
 
 run_test("terms_trailing_slash", () => {

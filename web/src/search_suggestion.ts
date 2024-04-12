@@ -123,7 +123,7 @@ function get_stream_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Suggesti
     const valid = ["channel", "search", ""];
     const incompatible_patterns = [
         {operator: "channel"},
-        {operator: "streams"},
+        {operator: "channels"},
         {operator: "is", operand: "dm"},
         {operator: "dm"},
         {operator: "dm-including"},
@@ -557,7 +557,7 @@ function get_streams_filter_suggestions(last: NarrowTerm, terms: NarrowTerm[]): 
                 {operator: "dm-including"},
                 {operator: "dm"},
                 {operator: "in"},
-                {operator: "streams"},
+                {operator: "channels"},
             ],
         },
     ];

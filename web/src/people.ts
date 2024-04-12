@@ -1362,7 +1362,7 @@ export function get_mention_syntax(full_name: string, user_id?: number, silent =
     }
     const wildcard_match = full_name_matches_wildcard_mention(full_name);
     if (wildcard_match && user_id === undefined) {
-        mention += util.canonicalize_stream_synonym(full_name);
+        mention += util.canonicalize_stream_synonyms(full_name);
     } else {
         mention += full_name;
     }

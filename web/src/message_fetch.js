@@ -301,7 +301,7 @@ export function load_messages(opts, attempt = 1) {
         // This is a bit of a hack; ideally we'd unify this logic in
         // some way with the above logic, and not need to do JSON
         // parsing/stringifying here.
-        const web_public_narrow = {negated: false, operator: "streams", operand: "web-public"};
+        const web_public_narrow = {negated: false, operator: "channels", operand: "web-public"};
 
         if (!data.narrow) {
             /* For the "All messages" feed, this will be the only operator. */
