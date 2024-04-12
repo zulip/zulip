@@ -232,8 +232,8 @@ run_test("show_empty_narrow_message", ({mock_template}) => {
     assert.equal(
         $(".empty_feed_notice_main").html(),
         empty_narrow_html(
-            "translated: You aren't subscribed to this stream and nobody has talked about that yet!",
-            'translated HTML: <button class="button white rounded stream_sub_unsub_button sea-green" type="button" name="subscription">Subscribe</button>',
+            "translated: There are no messages here.",
+            'translated HTML: Why not <a href="#" class="empty_feed_compose_stream">start the conversation</a>? <div class="sub_button_row new-style"><button class="button white rounded stream_sub_unsub_button sea-green" type="button" name="subscription">Subscribe</button></div>',
         ),
     );
 
