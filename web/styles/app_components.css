@@ -281,7 +281,7 @@ input::placeholder {
             }
 
             &.disabled {
-                pointer-events: none;
+                cursor: default;
                 color: hsl(0deg 0% 80%);
                 border-color: hsl(0deg 0% 87%);
             }
