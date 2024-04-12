@@ -1100,10 +1100,11 @@ export class Filter {
     }
 
     filter_with_new_params(params: NarrowTerm): Filter {
+        const new_params = this.fix_terms([params])[0];
         const terms = this._terms.map((term) => {
             const new_term = {...term};
-            if (new_term.operator === params.operator && !new_term.negated) {
-                new_term.operand = params.operand;
+            if (new_term.operator === new_params.operator && !new_term.negated) {
+                new_term.operand = new_params.operand;
             }
             return new_term;
         });
