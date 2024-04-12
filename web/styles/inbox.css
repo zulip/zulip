@@ -442,6 +442,10 @@
 
         .inbox-row-visibility-policy-inherit {
             opacity: 0;
+
+            &.visibility-policy-popover-visible {
+                opacity: 1;
+            }
         }
 
         .inbox-action-button {
