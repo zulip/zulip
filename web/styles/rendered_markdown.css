@@ -252,8 +252,23 @@
         margin: 5px 0 15px;
 
         .spoiler-header {
-            padding: 5px;
+            /* We use flexbox to display the spoiler message
+               and button. */
+            display: flex;
+            align-items: center;
+            padding: 8px 5px;
             font-weight: bold;
+
+            > p {
+                /* Disallow margin from ordinary rendered-markdown
+                   paragraphs. The header's vertical space is handled
+                   independently by padding on .spoiler-header. */
+                margin: 0;
+                /* Message grows to push the arrow to the right,
+                   but shrinks so as to allow long multi-line
+                   spoiler messages to wrap. */
+                flex: 1 1 auto;
+            }
         }
 
         .spoiler-content {
@@ -278,9 +293,8 @@
         }
 
         .spoiler-button {
-            float: right;
-            width: 25px;
-            height: 25px;
+            /* Keep the button to a consistent right-hand edge. */
+            padding-right: 3px;
 
             &:hover .spoiler-arrow {
                 &::before,
@@ -292,15 +306,9 @@
 
         .spoiler-arrow {
             float: right;
-            width: 13px;
-            height: 13px;
-            position: relative;
-            bottom: -5px;
-            left: -10px;
+            width: 15px;
             cursor: pointer;
             transition: 0.4s ease;
-            margin-top: 2px;
-            text-align: left;
             transform: rotate(45deg);
 
             &::before,
