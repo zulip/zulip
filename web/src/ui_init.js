@@ -14,6 +14,7 @@ import * as activity from "./activity";
 import * as activity_ui from "./activity_ui";
 import * as add_stream_options_popover from "./add_stream_options_popover";
 import * as alert_words from "./alert_words";
+import {all_messages_data} from "./all_messages_data";
 import * as audible_notifications from "./audible_notifications";
 import * as blueslip from "./blueslip";
 import * as bot_data from "./bot_data";
@@ -733,7 +734,7 @@ export function initialize_everything(state_data) {
         on_mark_topic_as_read: unread_ops.mark_topic_as_read,
         maybe_load_older_messages() {
             message_fetch.maybe_load_older_messages({
-                msg_list: message_lists.home,
+                msg_list_data: all_messages_data,
                 recent_view: true,
             });
         },
@@ -795,7 +796,7 @@ export function initialize_everything(state_data) {
     reload_setup.initialize();
     unread.initialize(unread_params);
     bot_data.initialize(bot_params); // Must happen after people.initialize()
-    message_fetch.initialize(server_events.home_view_loaded);
+    message_fetch.initialize(server_events.finished_initial_fetch);
     message_scroll.initialize();
     markdown.initialize(markdown_config.get_helpers());
     linkifiers.initialize(realm.realm_linkifiers);

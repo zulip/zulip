@@ -18,6 +18,7 @@ export class MessageListData {
     _local_only: Set<number>;
     _selected_id: number;
     predicate?: (message: Message) => boolean;
+    add_messages_callback?: (messages: Message[]) => void;
 
     // MessageListData is a core data structure for keeping track of a
     // contiguous block of messages matching a given narrow that can
@@ -64,6 +65,10 @@ export class MessageListData {
         // there is no selected message. A common situation is when
         // there are no messages matching the current filter.
         this._selected_id = -1;
+    }
+
+    set_add_messages_callback(callback: () => void): void {
+        this.add_messages_callback = callback;
     }
 
     all_messages(): Message[] {
@@ -337,6 +342,10 @@ export class MessageListData {
 
         if (bottom_messages.length > 0) {
             bottom_messages = this.append(bottom_messages);
+        }
+
+        if (this.add_messages_callback) {
+            this.add_messages_callback(messages);
         }
 
         const info = {

@@ -5,7 +5,6 @@ import * as blueslip from "./blueslip";
 import * as channel from "./channel";
 import * as echo from "./echo";
 import * as message_events from "./message_events";
-import * as message_lists from "./message_lists";
 import {page_params} from "./page_params";
 import * as reload from "./reload";
 import * as reload_state from "./reload_state";
@@ -20,7 +19,7 @@ export let queue_id;
 let last_event_id;
 let event_queue_longpoll_timeout_seconds;
 
-let waiting_on_homeview_load = true;
+let waiting_on_initial_fetch = true;
 
 let events_stored_while_loading = [];
 
@@ -49,7 +48,7 @@ function get_events_success(events) {
         }
     }
 
-    if (waiting_on_homeview_load) {
+    if (waiting_on_initial_fetch) {
         events_stored_while_loading = [...events_stored_while_loading, ...events];
         return;
     }
@@ -126,10 +125,6 @@ function get_events_success(events) {
         } catch (error) {
             blueslip.error("Failed to insert new messages", undefined, error);
         }
-    }
-
-    if (message_lists.home.selected_id() === -1 && !message_lists.home.visibly_empty()) {
-        message_lists.home.select_id(message_lists.home.first().id, {then_scroll: false});
     }
 
     if (update_message_events.length !== 0) {
@@ -221,7 +216,6 @@ function get_events({dont_block = false} = {}) {
                     event_queue_expired = true;
                     reload.initiate({
                         immediate: true,
-                        save_pointer: false,
                         save_compose: true,
                     });
                     return;
@@ -285,8 +279,8 @@ export function force_get_events() {
     get_events_timeout = setTimeout(get_events, 0);
 }
 
-export function home_view_loaded() {
-    waiting_on_homeview_load = false;
+export function finished_initial_fetch() {
+    waiting_on_initial_fetch = false;
     get_events_success([]);
 }
 

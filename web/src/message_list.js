@@ -72,6 +72,10 @@ export class MessageList {
         // the user. Possibly this can be unified in some nice way.
         this.reading_prevented = false;
 
+        // Used to determine whether to preserve the rendered state
+        // when this message list is not the current message list.
+        this.preserve_rendered_state = user_settings.web_home_view === "all_messages" && !this.narrowed;
+
         return this;
     }
 

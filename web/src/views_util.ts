@@ -72,9 +72,10 @@ export function show(opts: {
     complete_rerender: () => void;
     is_recent_view?: boolean;
 }): void {
-    if (narrow_state.has_shown_message_list_view) {
-        message_lists.save_pre_narrow_offset_for_reload();
-    }
+    // NOTE: Uncomment when we start tracking multiple message lists.
+    // if (narrow_state.has_shown_message_list_view) {
+    //     message_lists.save_pre_narrow_offset_for_reload();
+    // }
 
     if (opts.is_visible()) {
         // If we're already visible, E.g. because the user hit Esc

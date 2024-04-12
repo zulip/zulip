@@ -1,5 +1,4 @@
 import $ from "jquery";
-import assert from "minimalistic-assert";
 
 import * as blueslip from "./blueslip";
 import * as inbox_util from "./inbox_util";
@@ -33,6 +32,7 @@ export type SelectIdOpts = {
 
 export type MessageList = {
     id: number;
+    preserve_rendered_state: boolean;
     view: MessageListView;
     selected_id: () => number;
     selected_row: () => JQuery;
@@ -52,39 +52,31 @@ export type MessageList = {
     ) => RenderInfo | undefined;
 };
 
-export let home: MessageList | undefined;
 export let current: MessageList | undefined;
-
-export function set_current(msg_list: MessageList | undefined): void {
-    // NOTE: Use update_current_message_list instead of this function.
-    current = msg_list;
-}
+export const rendered_message_lists = new Map<number, MessageList>();
 
 export function update_current_message_list(msg_list: MessageList | undefined): void {
-    if (msg_list !== home) {
-        home?.view.$list.removeClass("focused-message-list");
+    if (current && !current.preserve_rendered_state) {
+        // Remove the current message list from the DOM.
+        current.view.$list.remove();
+        rendered_message_lists.delete(current.id);
+    } else {
+        current?.view.$list.removeClass("focused-message-list");
     }
 
-    if (current !== home) {
-        // Remove old msg list from DOM.
-        current?.view.$list.remove();
+    current = msg_list;
+    if (current !== undefined) {
+        rendered_message_lists.set(current.id, current);
+        current.view.$list.addClass("focused-message-list");
     }
-
-    set_current(msg_list);
-    current?.view.$list.addClass("focused-message-list");
-}
-
-export function set_home(msg_list: MessageList): void {
-    home = msg_list;
 }
 
 export function all_rendered_message_lists(): MessageList[] {
-    assert(home !== undefined);
-    const rendered_message_lists = [home];
-    if (current !== undefined && current !== home) {
-        rendered_message_lists.push(current);
-    }
-    return rendered_message_lists;
+    return [...rendered_message_lists.values()];
+}
+
+export function add_rendered_message_list(msg_list: MessageList): void {
+    rendered_message_lists.set(msg_list.id, msg_list);
 }
 
 export function all_rendered_row_for_message_id(message_id: number): JQuery {

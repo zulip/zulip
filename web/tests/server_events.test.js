@@ -55,7 +55,7 @@ const message_events = mock_esm("../src/message_events", {
 
 const server_events = zrequire("server_events");
 
-server_events.home_view_loaded();
+server_events.finished_initial_fetch();
 
 run_test("message_event", ({override}) => {
     const event = {
@@ -79,7 +79,7 @@ run_test("message_event", ({override}) => {
 // Start blueslip tests here
 
 const setup = () => {
-    server_events.home_view_loaded();
+    server_events.finished_initial_fetch();
 };
 
 run_test("event_dispatch_error", () => {

@@ -161,18 +161,18 @@ export function initialize(): void {
             const narrow_filter = narrow_state.filter();
             let display_current_view;
             if (narrow_state.is_message_feed_visible()) {
-                if (narrow_filter === undefined) {
+                if (narrow_filter?.is_in_home()) {
                     display_current_view = $t({defaultMessage: "Currently viewing all messages."});
                 } else if (
-                    _.isEqual(narrow_filter.sorted_term_types(), ["stream"]) &&
+                    _.isEqual(narrow_filter?.sorted_term_types(), ["stream"]) &&
                     compose_state.get_message_type() === "stream" &&
-                    narrow_filter.operands("stream")[0] === compose_state.stream_name()
+                    narrow_filter?.operands("stream")[0] === compose_state.stream_name()
                 ) {
                     display_current_view = $t({
                         defaultMessage: "Currently viewing the entire stream.",
                     });
                 } else if (
-                    _.isEqual(narrow_filter.sorted_term_types(), ["is-dm"]) &&
+                    _.isEqual(narrow_filter?.sorted_term_types(), ["is-dm"]) &&
                     compose_state.get_message_type() === "private"
                 ) {
                     display_current_view = $t({

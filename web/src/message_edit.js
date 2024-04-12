@@ -1237,16 +1237,6 @@ export function delete_topic(stream_id, topic_name, failures = 0) {
     });
 }
 
-export function handle_narrow_deactivated() {
-    assert(message_lists.current !== undefined);
-    for (const [idx, elem] of currently_editing_messages) {
-        if (message_lists.current.get(idx) !== undefined) {
-            const $row = message_lists.current.get_row(idx);
-            message_lists.current.show_edit_message($row, elem);
-        }
-    }
-}
-
 function handle_message_move_failure_due_to_time_limit(xhr, handle_confirm, on_hide_callback) {
     const total_messages_allowed_to_move = xhr.responseJSON.total_messages_allowed_to_move;
     const messages_allowed_to_move_text = $t(

@@ -45,14 +45,6 @@ export function handle_topic_updates(user_topic_event) {
             settings_user_topics.populate_list();
         }
     }
-
-    setTimeout(0, () => {
-        /* Rerender "all messages" if necessary, but defer until after
-         * the browser has rendered the DOM updates scheduled above. */
-        if (message_lists.current !== message_lists.home) {
-            message_lists.home.update_muting_and_rerender();
-        }
-    });
 }
 
 export function toggle_topic_visibility_policy(message) {

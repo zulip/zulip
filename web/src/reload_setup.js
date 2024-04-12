@@ -68,13 +68,10 @@ export function initialize() {
         }
     }
 
-    const pointer = Number.parseInt(vars.pointer, 10);
-    const offset = Number.parseInt(vars.offset, 10);
     const narrow_pointer = Number.parseInt(vars.narrow_pointer, 10);
     const narrow_offset = Number.parseInt(vars.narrow_offset, 10);
+
     message_fetch.set_initial_pointer_and_offset({
-        pointer: Number.isNaN(pointer) ? undefined : pointer,
-        offset: Number.isNaN(offset) ? undefined : offset,
         narrow_pointer: Number.isNaN(narrow_pointer) ? undefined : narrow_pointer,
         narrow_offset: Number.isNaN(narrow_offset) ? undefined : narrow_offset,
     });
