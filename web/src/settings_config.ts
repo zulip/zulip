@@ -148,8 +148,8 @@ export const get_all_preferences = (): DisplaySettings => ({
         user_display_settings: [
             "dense_mode",
             "high_contrast_mode",
-            "fluid_layout_width",
             "starred_message_counts",
+            "fluid_layout_width",
         ],
     },
     render_only: {
