@@ -51,6 +51,13 @@ important optimization when fetching messages in certain cases (e.g.
 when [adding the `read` flag to a user's personal
 messages](/api/update-message-flags-for-narrow)).
 
+**Changes**: In Zulip 9.0 (feature level 250), support was added for
+two filters related to stream messages: `channel` and `channels`. The
+`channel` operator is an alias for the `stream` operator. The `channels`
+operator is an alias for the `streams` operator. Both `channel` and
+`channels` return the same exact results as `stream` and `streams`
+respectively.
+
 **Changes**: In Zulip 9.0 (feature level 249), narrows gained support
 for a new filter `has:reaction`. This allows clients to retrieve only
 messages that have at least one reaction.

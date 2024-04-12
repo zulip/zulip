@@ -6189,7 +6189,12 @@ paths:
             subscribed to appropriate streams or use a shared history
             search narrow with this endpoint.
 
-            **Changes**: In Zulip 9.0 (feature level 249), added new `has:reaction`
+            **Changes**: In Zulip 9.0 (feature level 250), narrows gained support
+            for two new filters related to stream messages: `channel` and `channels`;
+            which are aliases for (and return the same results as) the `stream` and
+            `streams` filters respectively.
+
+            In Zulip 9.0 (feature level 249), added new `has:reaction`
             filter, matching messages with at least one emoji reaction.
 
             In Zulip 7.0 (feature level 177), narrows gained support
@@ -7062,7 +7067,12 @@ paths:
                     optimization. Including that filter takes advantage of the fact that
                     the server has a database index for unread messages.
 
-                    **Changes**: In Zulip 9.0 (feature level 249), added new `has:reaction`
+                    **Changes**: In Zulip 9.0 (feature level 250), narrows gained support
+                    for two new filters related to stream messages: `channel` and `channels`;
+                    which are aliases for (and return the same results as) the `stream` and
+                    `streams` filters respectively.
+
+                    In Zulip 9.0 (feature level 249), added new `has:reaction`
                     filter, matching messages with at least one emoji reaction.
 
                     In Zulip 7.0 (feature level 177), narrows gained support
@@ -7489,7 +7499,12 @@ paths:
             A structure defining the narrow to check against. See how to
             [construct a narrow](/api/construct-narrow).
 
-            **Changes**: In Zulip 9.0 (feature level 249), added new `has:reaction`
+            **Changes**: In Zulip 9.0 (feature level 250), narrows gained support
+            for two new filters related to stream messages: `channel` and `channels`;
+            which are aliases for (and return the same results as) the `stream` and
+            `streams` filters respectively.
+
+            In Zulip 9.0 (feature level 249), added new `has:reaction`
             filter, matching messages with at least one emoji reaction.
 
             In Zulip 7.0 (feature level 177), narrows gained support
@@ -21368,9 +21383,12 @@ components:
         See the `all_public_streams` parameter for how to process all
         public stream messages in an organization.
 
-        Defaults to `[]`.
+        **Changes**: In Zulip 9.0 (feature level 250), narrows gained support
+        for two new filters related to stream messages: `channel` and `channels`;
+        which are aliases for (and return the same results as) the `stream` and
+        `streams` filters respectively.
 
-        **Changes**: In Zulip 9.0 (feature level 249), added new `has:reaction`
+        In Zulip 9.0 (feature level 249), added new `has:reaction`
         filter, matching messages with at least one emoji reaction.
 
         In Zulip 7.0 (feature level 177), narrows gained support

@@ -20,6 +20,17 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 9.0
 
+**Feature level 250**
+
+* [`GET /messages`](/api/get-messages),
+  [`GET /messages/matches_narrow`](/api/check-messages-match-narrow),
+  [`POST /messages/flags/narrow`](/api/update-message-flags-for-narrow),
+  [`POST /register`](/api/register-queue):
+  Added support for two [search/narrow filters](/api/construct-narrow)
+  related to stream messages: `channel` and `channels`. The `channel`
+  operator is an alias for the `stream` operator. The `channels`
+  operator is an alias for the `streams` operator.
+
 **Feature level 249**
 
 * [`GET /messages`](/api/get-messages), [`GET
