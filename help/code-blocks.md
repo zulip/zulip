@@ -22,10 +22,10 @@ formatting:
 
 1. _(optional)_ Select the text you want to format.
 
-1. Click the **Code** (<i class="zulip-icon zulip-icon-code"></i>) icon at the
+2. Click the **Code** (<i class="zulip-icon zulip-icon-code"></i>) icon at the
    bottom of the compose box to insert code formatting.
 
-1. _(optional)_ To enable syntax highlighting in a code bock, start typing the
+3. _(optional)_ To enable syntax highlighting in a code bock, start typing the
    name of the desired programming language directly after the initial ` ``` `.
    Select the language from the auto-complete suggestions.
 
@@ -33,6 +33,11 @@ formatting:
 
     You can also use the **Code** (<i class="zulip-icon zulip-icon-code"></i>)
     icon to remove existing code formatting from the selected text.
+
+!!! keyboard_tip ""
+
+    You can also use <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>C</kbd>
+    to insert code formatting.
 
 {tab|via-markdown}
 
@@ -63,6 +68,11 @@ formatting:
 
     You can also use `~~~` to start code blocks, or just indent the code 4 or more
     spaces.
+
+!!! keyboard_tip ""
+
+    You can also use <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>C</kbd>
+    to insert code formatting.
 
 {end_tabs}
 

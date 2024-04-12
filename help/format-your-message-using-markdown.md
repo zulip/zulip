@@ -94,8 +94,8 @@ below.
 !!! tip ""
 
     You can also use the **Code** (<i class="zulip-icon zulip-icon-code"></i>)
-    button in the compose box to insert code formatting.
-    [Learn more](/help/code-blocks).
+    button or a keyboard shortcut (<kbd>Ctrl</kbd> + <kbd>Shift</kbd> +
+    <kbd>C</kbd>) to insert code formatting. [Learn more](/help/code-blocks).
 
 ## LaTeX
 
