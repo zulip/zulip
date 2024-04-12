@@ -3,7 +3,6 @@ class kandra::app_frontend {
   include zulip::profile::memcached
   include zulip::profile::rabbitmq
   include zulip::postfix_localmail
-  include zulip::static_asset_compiler
   include zulip::hooks::sentry
   include kandra::app_frontend_monitoring
 
