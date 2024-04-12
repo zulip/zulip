@@ -116,7 +116,9 @@ def too_many_recent_realm_invites(realm: Realm, num_invitees: int) -> bool:
     if realm.date_created >= timezone_now() - timedelta(hours=1):
         warning_flags.append("realm-created-in-last-hour")
 
-    current_user_count = len(UserProfile.objects.filter(realm=realm, is_bot=False, is_active=True))
+    current_user_count = UserProfile.objects.filter(
+        realm=realm, is_bot=False, is_active=True
+    ).count()
     if current_user_count == 1:
         warning_flags.append("only-one-user")
 
