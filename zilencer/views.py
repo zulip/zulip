@@ -745,7 +745,7 @@ def batch_create_table_data(
     row_objects: List[ModelT],
 ) -> None:
     # We ignore previously-existing data, in case it was truncated and
-    # re-created on the remote server.  `ignore_concflicts=True`
+    # re-created on the remote server.  `ignore_conflicts=True`
     # cannot return the ids, or count thereof, of the new inserts,
     # (see https://code.djangoproject.com/ticket/0138) so we rely on
     # having a lock to accurately count them before and after.  This
