@@ -20,7 +20,6 @@ import * as email_pill from "./email_pill";
 import {$t, $t_html} from "./i18n";
 import * as input_pill from "./input_pill";
 import {page_params} from "./page_params";
-import * as scroll_util from "./scroll_util";
 import * as settings_config from "./settings_config";
 import * as settings_data from "./settings_data";
 import {current_user, realm} from "./state_data";
@@ -195,7 +194,7 @@ function submit_invitation_form(): void {
             $("#invite-user-modal .dialog_submit_button").prop("disabled", false);
             $("#invite-user-modal .dialog_exit_button").prop("disabled", false);
             $<HTMLTextAreaElement>("textarea#invitee_emails").trigger("focus");
-            scroll_util.get_scroll_element($("#invite-user-modal"))[0].scrollTop = 0;
+            $invite_status[0].scrollIntoView();
         },
     });
 }
@@ -232,7 +231,7 @@ function generate_multiuse_invite(): void {
             );
             $("#invite-user-modal .dialog_submit_button").prop("disabled", false);
             $("#invite-user-modal .dialog_exit_button").prop("disabled", false);
-            scroll_util.get_scroll_element($("#invite-user-modal"))[0].scrollTop = 0;
+            $invite_status[0].scrollIntoView();
         },
     });
 }
