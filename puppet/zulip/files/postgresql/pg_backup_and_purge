@@ -67,7 +67,7 @@ backups = {}
 lines = subprocess.check_output(["env-wal-g", "backup-list"], text=True).split("\n")
 for line in lines[1:]:
     if line:
-        backup_name, date_str, _ = line.split()
+        backup_name, date_str = line.split()[0:2]
         backups[dateutil.parser.parse(date_str)] = backup_name
 
 one_month_ago = now - timedelta(days=30)
