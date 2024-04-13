@@ -486,6 +486,10 @@ def get_realm_used_upload_space_cache_key(realm_id: int) -> str:
     return f"realm_used_upload_space:{realm_id}"
 
 
+def get_realm_seat_count_cache_key(realm_id: int) -> str:
+    return f"realm_seat_count:{realm_id}"
+
+
 def active_user_ids_cache_key(realm_id: int) -> str:
     return f"active_user_ids:{realm_id}"
 

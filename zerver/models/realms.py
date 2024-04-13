@@ -847,11 +847,11 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
         elif plan_type == Realm.PLAN_TYPE_STANDARD_FREE:
             return Realm.UPLOAD_QUOTA_STANDARD_FREE
         elif plan_type in [Realm.PLAN_TYPE_STANDARD, Realm.PLAN_TYPE_PLUS]:
-            from corporate.lib.stripe import get_seat_count
+            from corporate.lib.stripe import get_cached_seat_count
 
             # Paying customers with few users should get a reasonable minimum quota.
             return max(
-                get_seat_count(self) * settings.UPLOAD_QUOTA_PER_USER_GB,
+                get_cached_seat_count(self) * settings.UPLOAD_QUOTA_PER_USER_GB,
                 Realm.UPLOAD_QUOTA_STANDARD_FREE,
             )
         else:
