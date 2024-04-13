@@ -38,17 +38,17 @@
             <th>Created (green if ≤12wk)</th>
             {% if billing_enabled %}
             <th>Plan type</th>
-            <th>Org type</th>
             <th>ARR</th>
             <th>Rate (%)</th>
             {% endif %}
+            <th>Org type</th>
+            <th>Referrer</th>
             <th>DAU</th>
             <th>WAU</th>
             <th>Total users</th>
             <th>Bots</th>
             <th></th>
             <th colspan=8>Human messages sent, last 8 UTC days (today-so-far first)</th>
-            <th>Referrer</th>
         </tr>
     </thead>
 
@@ -76,13 +76,7 @@
             <td>
                 {{ row.plan_type_string }}
             </td>
-            {% endif %}
 
-            <td>
-                {{ row.org_type_string }}
-            </td>
-
-            {% if billing_enabled %}
             <td class="number">
                 {% if row.arr %}
                 {{ row.arr }}
@@ -95,6 +89,14 @@
                 {% endif %}
             </td>
             {% endif %}
+
+            <td>
+                {{ row.org_type_string }}
+            </td>
+
+            <td>
+                {{ row.how_realm_creator_found_zulip }}
+            </td>
 
             <td class="number">
                 {{ row.dau_count }}
@@ -119,10 +121,6 @@
             {% else %}
             <td colspan=8></td>
             {% endif %}
-
-            <td>
-                {{ row.how_realm_creator_found_zulip }}
-            </td>
         </tr>
         {% endfor %}
     </tbody>
