@@ -241,10 +241,8 @@ if [ -f /etc/os-release ]; then
     esac
 fi
 
-case "$os_id $os_version_id" in
-    'debian 12' | 'ubuntu 22.04' | 'ubuntu 24.04') ;;
-    *)
-        system_requirements_failure <<EOF
+if ! "$ZULIP_PATH/scripts/lib/supported-os"; then
+    system_requirements_failure <<EOF
 Unsupported OS release: $os_id $os_version_id
 
 Zulip in production is supported only on:
@@ -252,8 +250,7 @@ Zulip in production is supported only on:
  - Ubuntu 22.04 LTS
  - Ubuntu 24.04 LTS
 EOF
-        ;;
-esac
+fi
 
 machine="$(uname -m)"
 if [ "$machine" != x86_64 ] && [ "$machine" != aarch64 ]; then
