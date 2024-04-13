@@ -9,6 +9,8 @@ type UserGroupPill = {
 
 type UserGroupPillWidget = InputPillContainer<UserGroupPill>;
 
+export type UserGroupPillData = UserGroup & {type: "user_group"};
+
 function display_pill(group: UserGroup): string {
     return `${group.name}: ${group.members.size} users`;
 }
@@ -86,7 +88,10 @@ export function filter_taken_groups(
     return items;
 }
 
-export function typeahead_source(pill_widget: UserGroupPillWidget): UserGroup[] {
+export function typeahead_source(pill_widget: UserGroupPillWidget): UserGroupPillData[] {
     const groups = user_groups.get_realm_user_groups();
-    return filter_taken_groups(groups, pill_widget);
+    return filter_taken_groups(groups, pill_widget).map((user_group) => ({
+        ...user_group,
+        type: "user_group",
+    }));
 }

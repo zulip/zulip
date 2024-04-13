@@ -521,8 +521,16 @@ export function get_person_suggestions(query, opts) {
         if (opts.want_broadcast) {
             persons = [...persons, ...broadcast_mentions()];
         }
+        // `sort_recipients` and other functions like `user_pill.get_user_ids`
+        // are shared with the pill typeahead which has only users, and we
+        // need a way to differentiate these mentons-or-users from just users,
+        // to help with typing.
+        const person_items = persons.map((person) => ({
+            ...person,
+            type: "user_or_mention",
+        }));
 
-        return persons.filter((item) => typeahead_helper.query_matches_person(query, item));
+        return person_items.filter((item) => typeahead_helper.query_matches_person(query, item));
     }
 
     let groups;

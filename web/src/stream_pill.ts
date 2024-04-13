@@ -10,6 +10,8 @@ type StreamPill = {
 
 type StreamPillWidget = InputPillContainer<StreamPill>;
 
+export type StreamPillData = StreamSubscription & {type: "stream"};
+
 function display_pill(sub: StreamSubscription): string {
     const sub_count = peer_data.get_subscriber_count(sub.stream_id);
     return "#" + sub.name + ": " + sub_count + " users";
@@ -97,7 +99,10 @@ export function filter_taken_streams(
     return items;
 }
 
-export function typeahead_source(pill_widget: StreamPillWidget): StreamSubscription[] {
+export function typeahead_source(pill_widget: StreamPillWidget): StreamPillData[] {
     const potential_streams = stream_data.get_unsorted_subs();
-    return filter_taken_streams(potential_streams, pill_widget);
+    return filter_taken_streams(potential_streams, pill_widget).map((stream) => ({
+        ...stream,
+        type: "stream",
+    }));
 }

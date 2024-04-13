@@ -57,7 +57,11 @@ export function set_up($input, pills, opts) {
                     // If user_source is specified in opts, it
                     // is given priority. Otherwise we use
                     // default user_pill.typeahead_source.
-                    source = [...source, ...opts.user_source()];
+                    const users = opts.user_source().map((user) => ({
+                        ...user,
+                        type: "user",
+                    }));
+                    source = [...source, ...users];
                 } else {
                     source = [...source, ...user_pill.typeahead_source(pills, exclude_bots)];
                 }
@@ -65,11 +69,11 @@ export function set_up($input, pills, opts) {
             return source;
         },
         highlighter_html(item, query) {
-            if (include_streams(query)) {
+            if (include_streams(query) && item.type === "stream") {
                 return typeahead_helper.render_stream(item);
             }
 
-            if (include_user_groups && user_groups.is_user_group(item)) {
+            if (include_user_groups && item.type === "user_group") {
                 return typeahead_helper.render_user_group(item);
             }
 
@@ -83,17 +87,17 @@ export function set_up($input, pills, opts) {
             query = query.toLowerCase();
             query = query.replaceAll("\u00A0", " ");
 
-            if (include_streams(query)) {
+            if (include_streams(query) && item.type === "stream") {
                 query = query.trim().slice(1);
                 return item.name.toLowerCase().includes(query);
             }
 
             let matches = false;
-            if (include_user_groups) {
+            if (include_user_groups && item.type === "user_group") {
                 matches = matches || group_matcher(query, item);
             }
 
-            if (include_users) {
+            if (include_users && item.type === "user") {
                 matches = matches || person_matcher(query, item);
             }
             return matches;
@@ -103,15 +107,24 @@ export function set_up($input, pills, opts) {
                 return typeahead_helper.sort_streams(matches, query.trim().slice(1));
             }
 
-            let users = [];
+            const users = [];
             if (include_users) {
-                users = matches.filter((ele) => people.is_known_user(ele));
+                for (const match of matches) {
+                    if (match.type === "user" && people.is_known_user(match)) {
+                        users.push(match);
+                    }
+                }
             }
 
-            let groups;
+            const groups = [];
             if (include_user_groups) {
-                groups = matches.filter((ele) => user_groups.is_user_group(ele));
+                for (const match of matches) {
+                    if (match.type === "user_group") {
+                        groups.push(match);
+                    }
+                }
             }
+
             return typeahead_helper.sort_recipients({
                 users,
                 query,
@@ -122,11 +135,11 @@ export function set_up($input, pills, opts) {
             });
         },
         updater(item, query) {
-            if (include_streams(query)) {
+            if (include_streams(query) && item.type === "stream") {
                 stream_pill.append_stream(item, pills);
-            } else if (include_user_groups && user_groups.is_user_group(item)) {
+            } else if (include_user_groups && item.type === "user_group") {
                 user_group_pill.append_user_group(item, pills);
-            } else if (include_users && people.is_known_user(item)) {
+            } else if (include_users && item.type === "user" && people.is_known_user(item)) {
                 user_pill.append_user(item, pills);
             }
 
