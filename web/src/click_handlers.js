@@ -464,7 +464,7 @@ export function initialize() {
     }
 
     $("#message_feed_container").on("click", ".narrows_by_recipient", function (e) {
-        if (e.metaKey || e.ctrlKey) {
+        if (e.metaKey || e.ctrlKey || e.shiftKey) {
             return;
         }
         e.preventDefault();
@@ -473,7 +473,7 @@ export function initialize() {
     });
 
     $("#message_feed_container").on("click", ".narrows_by_topic", function (e) {
-        if (e.metaKey || e.ctrlKey) {
+        if (e.metaKey || e.ctrlKey || e.shiftKey) {
             return;
         }
         e.preventDefault();
@@ -483,7 +483,7 @@ export function initialize() {
 
     // SIDEBARS
     $(".buddy-list-section").on("click", ".selectable_sidebar_block", (e) => {
-        if (e.metaKey || e.ctrlKey) {
+        if (e.metaKey || e.ctrlKey || e.shiftKey) {
             return;
         }
 
@@ -845,7 +845,7 @@ export function initialize() {
     });
 
     $("body").on("click", "#header-container .brand", (e) => {
-        if (e.metaKey || e.ctrlKey) {
+        if (e.metaKey || e.ctrlKey || e.shiftKey) {
             return;
         }
 

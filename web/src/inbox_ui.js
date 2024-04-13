@@ -1307,7 +1307,7 @@ export function initialize() {
     });
 
     $("body").on("click", "#inbox-list .inbox-left-part-wrapper", (e) => {
-        if (e.metaKey || e.ctrlKey) {
+        if (e.metaKey || e.ctrlKey || e.shiftKey) {
             return;
         }
 

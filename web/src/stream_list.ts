@@ -823,7 +823,7 @@ export function set_event_handlers({
     on_stream_click: (stream_id: number, trigger: string) => void;
 }): void {
     $("#stream_filters").on("click", "li .subscription_block", (e) => {
-        if (e.metaKey || e.ctrlKey) {
+        if (e.metaKey || e.ctrlKey || e.shiftKey) {
             return;
         }
         const stream_id = stream_id_for_elt($(e.target).parents("li"));
