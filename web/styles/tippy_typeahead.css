@@ -1,0 +1,9 @@
+.tippy-typeahead-suggestion:hover {
+    background-color: hsl(200deg 100% 50%);
+    color: hsl(0deg 0% 100%);
+    cursor: pointer;
+}
+
+.tippy-typeahead-suggestion {
+    padding: 0.15rem;
+}
