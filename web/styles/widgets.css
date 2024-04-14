@@ -32,11 +32,25 @@
         position: relative;
         vertical-align: top;
 
+        .task,
+        .task_desc,
+        .description {
+            display: inline-block;
+        }
+
+        .task_complete,
+        .task_desc_complete,
+        .description_complete {
+            display: inline-block;
+            text-decoration: line-through;
+        }
+
         & input[type="checkbox"] {
             ~ span {
                 height: 12px;
                 width: 12px;
                 border: 2px solid hsl(156deg 28% 70%);
+                top: 2px;
 
                 border-radius: 4px;
                 filter: brightness(1);
@@ -84,6 +98,7 @@
     & li {
         list-style: none;
         margin: 2px 2px 6px 0;
+        display: flex;
     }
 
     & ul {
@@ -122,6 +137,8 @@
     .poll-option {
         font-weight: 400;
         font-size: 14px;
+        padding-top: 3px;
+        display: inline;
     }
 
     /* For the box-shadow to be visible on the left */
@@ -131,7 +148,6 @@
 
     & span.poll-option {
         font-weight: 600;
-        padding-top: 28px;
     }
 
     .poll-vote {
@@ -166,8 +182,13 @@
     .poll-names {
         color: hsl(0deg 0% 45%);
         padding-left: 4px;
-        padding-top: 28px;
+        padding-top: 3px;
         font-size: 14px;
+        display: inline;
+    }
+
+    .poll-option p {
+        display: inline;
     }
 }
 

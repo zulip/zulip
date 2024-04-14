@@ -40,6 +40,7 @@ from zerver.lib.markdown import (
     get_tweet_id,
     image_preview_enabled,
     markdown_convert,
+    markdown_convert_inline,
     maybe_update_markdown_engines,
     possible_linked_stream_names,
     render_message_markdown,
@@ -203,6 +204,13 @@ class FencedBlockPreprocessorTest(ZulipTestCase):
 
 def markdown_convert_wrapper(content: str) -> str:
     return markdown_convert(
+        content=content,
+        message_realm=get_realm("zulip"),
+    ).rendered_content
+
+
+def markdown_convert_inline_wrapper(content: str) -> str:
+    return markdown_convert_inline(
         content=content,
         message_realm=get_realm("zulip"),
     ).rendered_content
@@ -532,12 +540,13 @@ class MarkdownTest(ZulipTestCase):
         for name, test in format_tests.items():
             with self.subTest(markdown_test_case=name):
                 # Check that there aren't any unexpected keys as those are often typos
-                self.assert_length(set(test.keys()) - valid_keys, 0)
+                if not test.get("markdown", False):
+                    self.assert_length(set(test.keys()) - valid_keys, 0)
                 # Ignore tests if specified
                 if test.get("ignore", False):
                     continue  # nocoverage
 
-                if test.get("translate_emoticons", False):
+                if test.get("translate_emoticons", False) and not test.get("markdown", False):
                     # Create a userprofile and send message with it.
                     user_profile = self.example_user("othello")
                     do_change_user_setting(
@@ -551,7 +560,11 @@ class MarkdownTest(ZulipTestCase):
                     rendering_result = render_message_markdown(msg, test["input"])
                     converted = rendering_result.rendered_content
                 else:
-                    converted = markdown_convert_wrapper(test["input"])
+                    if test.get("markdown", False):
+                        converted = markdown_convert_inline_wrapper(test["input"])
+
+                    else:
+                        converted = markdown_convert_wrapper(test["input"])
 
                 self.assertEqual(converted, test["expected_output"])
 
