@@ -799,6 +799,9 @@ export function save_discard_widget_status_handler(
     const button_state = show_change_process_button ? "unsaved" : "discarded";
     change_save_button_state($save_btn_controls, button_state);
 
+    const isChangingToPrivate = switching_to_private(properties_elements, for_realm_default_settings);
+    const isPrivateAndUnsubscribing = sub && sub.invite_only && !sub.subscribed;
+
     // If this widget is for a stream, and the stream isn't currently private
     // but being changed to private, and the user changing this setting isn't
     // subscribed, we show a warning that they won't be able to access the
@@ -806,12 +809,7 @@ export function save_discard_widget_status_handler(
     if (!sub) {
         return;
     }
-    if (
-        button_state === "unsaved" &&
-        !sub.invite_only &&
-        !sub.subscribed &&
-        switching_to_private(properties_elements, for_realm_default_settings)
-    ) {
+    if (sub && (button_state === "unsaved" && isChangingToPrivate || isPrivateAndUnsubscribing)) {
         if ($("#stream_permission_settings .stream_privacy_warning").length > 0) {
             return;
         }
@@ -831,6 +829,31 @@ export function save_discard_widget_status_handler(
     } else {
         $("#stream_permission_settings .stream-permissions-warning-banner").empty();
     }
+    // if (
+    //     button_state === "unsaved" &&
+    //     !sub.invite_only &&
+    //     !sub.subscribed &&
+    //     switching_to_private(properties_elements, for_realm_default_settings)
+    // ) {
+    //     if ($("#stream_permission_settings .stream_privacy_warning").length > 0) {
+    //         return;
+    //     }
+    //     const context = {
+    //         banner_type: compose_banner.WARNING,
+    //         banner_text: $t({
+    //             defaultMessage:
+    //                 "Only subscribers can access or join private streams, so you will lose access to this stream if you convert it to a private stream while not subscribed to it.",
+    //         }),
+    //         button_text: $t({defaultMessage: "Subscribe"}),
+    //         classname: "stream_privacy_warning",
+    //         stream_id: sub.stream_id,
+    //     };
+    //     $("#stream_permission_settings .stream-permissions-warning-banner").append(
+    //         $(render_compose_banner(context)),
+    //     );
+    // } else {
+    //     $("#stream_permission_settings .stream-permissions-warning-banner").empty();
+    // }
 }
 
 function check_maximum_valid_value(
