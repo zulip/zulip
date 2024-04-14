@@ -1548,7 +1548,7 @@ export function initialize({
     });
 
     $("body").on("click", "td.recent_topic_stream", (e) => {
-        if (e.metaKey || e.ctrlKey) {
+        if (e.metaKey || e.ctrlKey || e.shiftKey) {
             return;
         }
 
@@ -1559,7 +1559,7 @@ export function initialize({
     });
 
     $("body").on("click", "td.recent_topic_name", (e) => {
-        if (e.metaKey || e.ctrlKey) {
+        if (e.metaKey || e.ctrlKey || e.shiftKey) {
             return;
         }
 

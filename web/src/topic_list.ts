@@ -339,7 +339,7 @@ export function initialize({
         "click",
         ".sidebar-topic-check, .topic-name, .topic-markers-and-controls",
         (e) => {
-            if (e.metaKey || e.ctrlKey) {
+            if (e.metaKey || e.ctrlKey || e.shiftKey) {
                 return;
             }
             if ($(e.target).closest(".show-more-topics").length > 0) {
