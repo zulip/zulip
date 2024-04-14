@@ -829,6 +829,7 @@ export function save_discard_widget_status_handler(
     } else {
         $("#stream_permission_settings .stream-permissions-warning-banner").empty();
     }
+    
     // if (
     //     button_state === "unsaved" &&
     //     !sub.invite_only &&
