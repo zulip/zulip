@@ -2240,9 +2240,7 @@ social-auth-core[azuread,openidconnect,saml]==4.5.3 \
 soupsieve==2.5 \
     --hash=sha256:5663d5a7b3bfaeee0bc4372e7fc48f9cff4940b3eec54a6451cc5299f1097690 \
     --hash=sha256:eaa337ff55a1579b6549dc679565eac1e3d000563bcb1c8ab0d0fefbc0c2cdc7
-    # via
-    #   -r requirements/common.in
-    #   beautifulsoup4
+    # via beautifulsoup4
 sqlalchemy==1.4.52 \
     --hash=sha256:1296f2cdd6db09b98ceb3c93025f0da4835303b8ac46c15c2136e27ee4d18d94 \
     --hash=sha256:1e135fff2e84103bc15c07edd8569612ce317d64bdb391f49ce57124a73f45c5 \
