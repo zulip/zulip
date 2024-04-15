@@ -129,6 +129,7 @@
 
     &:disabled {
         cursor: not-allowed;
+        opacity: 0.5;
     }
 }
 
@@ -151,10 +152,6 @@
     margin-left: 12px;
     background-color: hsl(240deg 96% 68%);
     color: hsl(0deg 0% 100%) !important;
-
-    &:disabled {
-        background-color: hsl(0deg 0% 65%);
-    }
 }
 
 #read_receipts_error,

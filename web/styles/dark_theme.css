@@ -104,11 +104,6 @@
         }
     }
 
-    .modal__btn:disabled {
-        opacity: 1;
-        background-color: hsl(0deg 0% 83% / 50%);
-    }
-
     & table.table-striped thead.table-sticky-headers th {
         background-color: hsl(0deg 0% 0%);
 
