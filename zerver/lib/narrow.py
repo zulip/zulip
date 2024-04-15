@@ -58,10 +58,9 @@ from zerver.lib.streams import (
     get_stream_by_narrow_operand_access_unchecked,
     get_web_public_streams_queryset,
 )
-from zerver.lib.topic import (
-    RESOLVED_TOPIC_PREFIX,
+from zerver.lib.topic import RESOLVED_TOPIC_PREFIX, get_topic_from_message_info
+from zerver.lib.topic_sqlalchemy import (
     get_resolved_topic_condition_sa,
-    get_topic_from_message_info,
     topic_column_sa,
     topic_match_sa,
 )
