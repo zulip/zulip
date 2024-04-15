@@ -31,6 +31,7 @@ from sqlalchemy.sql import (
     Select,
     and_,
     column,
+    false,
     func,
     join,
     literal,
@@ -75,7 +76,7 @@ from zerver.lib.validator import (
     check_string_or_int,
     check_string_or_int_list,
 )
-from zerver.models import Realm, Recipient, Stream, Subscription, UserMessage, UserProfile
+from zerver.models import Huddle, Realm, Recipient, Stream, Subscription, UserMessage, UserProfile
 from zerver.models.streams import get_active_streams
 from zerver.models.users import (
     get_user_by_id_in_realm_including_cross_realm,
@@ -613,9 +614,13 @@ class NarrowBuilder:
                 forwarder_user_profile=None,
                 sender=self.user_profile,
                 allow_deactivated=True,
+                create=False,
             )
         except (JsonableError, ValidationError):
             raise BadNarrowOperatorError("unknown user in " + str(operand))
+        except Huddle.DoesNotExist:
+            # Group DM where huddle doesn't exist
+            return query.where(maybe_negate(false()))
 
         # Group direct message
         if recipient.type == Recipient.DIRECT_MESSAGE_GROUP:
