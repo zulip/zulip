@@ -26,6 +26,7 @@ import * as narrow_state from "./narrow_state";
 import {page_params} from "./page_params";
 import * as people from "./people";
 import * as popovers from "./popovers";
+import * as reactions from "./reactions";
 import * as rendered_markdown from "./rendered_markdown";
 import * as rows from "./rows";
 import * as sidebar_ui from "./sidebar_ui";
@@ -524,6 +525,8 @@ export class MessageListView {
         };
 
         for (const message_container of message_containers) {
+            const message_reactions = reactions.get_message_reactions(message_container.msg);
+            message_container.msg.message_reactions = message_reactions;
             message_container.include_recipient = false;
 
             if (
@@ -775,6 +778,8 @@ export class MessageListView {
     }
 
     _get_message_template(message_container) {
+        const msg_reactions = reactions.get_message_reactions(message_container.msg);
+        message_container.msg.message_reactions = msg_reactions;
         const msg_to_render = {
             ...message_container,
             message_list_id: this.list.id,

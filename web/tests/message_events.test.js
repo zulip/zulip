@@ -124,7 +124,6 @@ run_test("update_messages", () => {
         {
             alerted: false,
             collapsed: false,
-            clean_reactions: new Map(),
             content: "<b>new content</b>",
             display_recipient: denmark.name,
             historical: false,
@@ -135,8 +134,8 @@ run_test("update_messages", () => {
             stream_wildcard_mentioned: false,
             topic_wildcard_mentioned: false,
             mentioned_me_directly: false,
-            message_reactions: [],
             raw_content: "**new content**",
+            reactions: [],
             reply_to: alice.email,
             sender_email: alice.email,
             sender_full_name: alice.full_name,
