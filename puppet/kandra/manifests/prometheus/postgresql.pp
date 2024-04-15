@@ -32,19 +32,20 @@ class kandra::prometheus::postgresql {
     require     => [
       Zulip::External_Dep['golang'],
       Zulip::External_Dep['postgres_exporter-src'],
-    ]
+    ],
+    notify      => Exec['Cleanup postgres_exporter'],
   }
-  # This resource exists purely so it doesn't get tidied; it is
-  # created by the 'compile postgres_exporter' step.
+  # This resource is created by the 'compile postgres_exporter' step.
   file { $bin:
     ensure  => file,
     require => Exec['compile postgres_exporter'],
   }
-  tidy { '/usr/local/bin/postgres_exporter-*':
-    path    => '/usr/local/bin',
-    recurse => 1,
-    matches => 'postgres_exporter-*',
-    require => Exec['compile postgres_exporter'],
+  exec { 'Cleanup postgres_exporter':
+    refreshonly => true,
+    provider    => shell,
+    onlyif      => "ls /usr/local/bin/postgres_exporter-* | grep -xv '${bin}'",
+    command     => "ls /usr/local/bin/postgres_exporter-* | grep -xv '${bin}' | xargs rm -r",
+    require     => [File[$bin], Service[supervisor]],
   }
 
   if false {

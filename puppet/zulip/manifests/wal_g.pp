@@ -19,7 +19,8 @@ class zulip::wal_g {
   file { '/usr/local/bin/wal-g':
     ensure  => link,
     target  => $bin,
-    require => Zulip::External_Dep['wal-g'],
+    require => File[$bin],
+    before  => Exec['Cleanup wal-g'],
   }
   # We used to install versions into /usr/local/bin/wal-g-VERSION,
   # until we moved to using Zulip::External_Dep which places them in

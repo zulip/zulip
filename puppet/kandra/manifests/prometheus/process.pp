@@ -13,6 +13,8 @@ class kandra::prometheus::process {
     version        => $version,
     url            => "https://github.com/ncabatoff/process-exporter/releases/download/v${version}/process-exporter-${version}.linux-${zulip::common::goarch}.tar.gz",
     tarball_prefix => "process-exporter-${version}.linux-${zulip::common::goarch}",
+    bin            => [$bin],
+    cleanup_after  => [Service[supervisor]],
   }
 
   kandra::firewall_allow { 'process_exporter': port => '9256' }
@@ -29,7 +31,7 @@ class kandra::prometheus::process {
     require => [
       User[zulip],
       Package[supervisor],
-      Zulip::External_Dep['process_exporter'],
+      File[$bin],
       File[$conf],
     ],
     owner   => 'root',
