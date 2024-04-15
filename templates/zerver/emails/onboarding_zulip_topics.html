@@ -10,19 +10,19 @@
 </p>
 
 <p>
-    {{ _("In Zulip, <b>streams</b> determine who gets a message. <b>Topics</b> tell you what the message is about.")}} {{ _("Using topics, you can read Zulip one conversation at a time. You'll see each message in context, no matter how many different discussions are going on.") }}
+    {{ _("In Zulip, <b>channels</b> determine who gets a message. <b>Topics</b> tell you what the message is about.")}} {{ _("Using topics, you can read Zulip one conversation at a time. You'll see each message in context, no matter how many different discussions are going on.") }}
 </p>
 
-<img class="responsive-width" src="{{ email_images_base_url }}/streams-and-topics.png" alt="{{ _('Streams and topics in the Zulip app') }}"/>
+<img class="responsive-width" src="{{ email_images_base_url }}/streams-and-topics.png" alt="{{ _('Channels and topics in the Zulip app') }}"/>
 
 <p>
-    {{ _("To kick off a new conversation, just pick a stream and start a new topic. This way, the new conversation thread won't interrupt ongoing discussions. For a good topic name, think about finishing the sentence: “Hey, can we chat about…?”") }}
+    {{ _("To kick off a new conversation, just pick a channel and start a new topic. This way, the new conversation thread won't interrupt ongoing discussions. For a good topic name, think about finishing the sentence: “Hey, can we chat about…?”") }}
 </p>
 
 <img class="responsive-width" src="{{ email_images_base_url }}/day2_2.png" alt="{{ _('Examples of short topics') }}"/>
 
 <p>
-    {% trans %}Don't stress about picking the perfect name for your topic. If anything is out of place, it's easy to <a href="{{ move_messages_link }}">move messages</a>, <a href="{{ rename_topics_link }}">rename topics</a>, or even <a href="{{ move_topic_to_different_stream_link }}">move a topic to a different stream</a>.{% endtrans %}
+    {% trans %}Don't stress about picking the perfect name for your topic. If anything is out of place, it's easy to <a href="{{ move_messages_link }}">move messages</a>, <a href="{{ rename_topics_link }}">rename topics</a>, or even <a href="{{ move_channels_link }}">move a topic to a different channel</a>.{% endtrans %}
 </p>
 
 <a class="button" href="{{ realm_uri }}">{{ _("Go to Zulip") }}</a>

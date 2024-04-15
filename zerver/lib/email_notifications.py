@@ -527,7 +527,7 @@ def do_send_missedmessage_events_reply_in_zulip(
         context.update(narrow_url=narrow_url)
         topic_resolved, topic_name = get_topic_resolution_and_bare_name(message.topic_name())
         context.update(
-            stream_name=stream.name,
+            channel_name=stream.name,
             topic_name=topic_name,
             topic_resolved=topic_resolved,
         )
@@ -852,7 +852,7 @@ def enqueue_welcome_emails(user: UserProfile, realm_creation: bool = False) -> N
             unsubscribe_link=unsubscribe_link,
             move_messages_link=realm_url + "/help/move-content-to-another-topic",
             rename_topics_link=realm_url + "/help/rename-a-topic",
-            move_topic_to_different_stream_link=realm_url + "/help/move-content-to-another-stream",
+            move_channels_link=realm_url + "/help/move-content-to-another-stream",
         )
 
         send_future_email(
