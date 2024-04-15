@@ -1110,14 +1110,7 @@ textarea.new_message_textarea,
 
         & button {
             pointer-events: none;
-        }
-
-        #compose-send-button {
-            background-color: hsl(0deg 0% 65%);
-        }
-
-        #send_later {
-            color: hsl(0deg 0% 65%);
+            opacity: 0.5;
         }
     }
 }
