@@ -107,7 +107,8 @@ class Command(BaseCommand):
 
                 # We pass display_num_errors=False, since Django will
                 # likely display similar output anyway.
-                self.check(display_num_errors=False)
+                if not options["skip_checks"]:
+                    self.check(display_num_errors=False)
                 print(f"Tornado server (re)started on port {port}")
 
                 if settings.USING_RABBITMQ:
