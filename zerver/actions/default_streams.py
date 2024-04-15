@@ -93,8 +93,8 @@ def do_create_default_stream_group(
         if stream.id in default_stream_ids:
             raise JsonableError(
                 _(
-                    "'{stream_name}' is a default stream and cannot be added to '{group_name}'",
-                ).format(stream_name=stream.name, group_name=group_name)
+                    "'{channel_name}' is a default stream and cannot be added to '{group_name}'",
+                ).format(channel_name=stream.name, group_name=group_name)
             )
 
     check_default_stream_group_name(group_name)
@@ -120,14 +120,14 @@ def do_add_streams_to_default_stream_group(
         if stream.id in default_stream_ids:
             raise JsonableError(
                 _(
-                    "'{stream_name}' is a default stream and cannot be added to '{group_name}'",
-                ).format(stream_name=stream.name, group_name=group.name)
+                    "'{channel_name}' is a default stream and cannot be added to '{group_name}'",
+                ).format(channel_name=stream.name, group_name=group.name)
             )
         if stream in group.streams.all():
             raise JsonableError(
                 _(
-                    "Stream '{stream_name}' is already present in default stream group '{group_name}'",
-                ).format(stream_name=stream.name, group_name=group.name)
+                    "Stream '{channel_name}' is already present in default stream group '{group_name}'",
+                ).format(channel_name=stream.name, group_name=group.name)
             )
         group.streams.add(stream)
 
@@ -143,8 +143,8 @@ def do_remove_streams_from_default_stream_group(
         if stream.id not in group_stream_ids:
             raise JsonableError(
                 _(
-                    "Stream '{stream_name}' is not present in default stream group '{group_name}'",
-                ).format(stream_name=stream.name, group_name=group.name)
+                    "Stream '{channel_name}' is not present in default stream group '{group_name}'",
+                ).format(channel_name=stream.name, group_name=group.name)
             )
 
     delete_stream_ids = {stream.id for stream in streams}

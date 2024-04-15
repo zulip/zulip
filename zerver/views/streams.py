@@ -514,9 +514,9 @@ def you_were_just_subscribed_message(
     subscriptions = sorted(stream_names)
     if len(subscriptions) == 1:
         with override_language(recipient_user.default_language):
-            return _("{user_full_name} subscribed you to the stream {stream_name}.").format(
+            return _("{user_full_name} subscribed you to the stream {channel_name}.").format(
                 user_full_name=f"@**{acting_user.full_name}|{acting_user.id}**",
-                stream_name=f"#**{subscriptions[0]}**",
+                channel_name=f"#**{subscriptions[0]}**",
             )
 
     with override_language(recipient_user.default_language):
@@ -524,8 +524,8 @@ def you_were_just_subscribed_message(
             user_full_name=f"@**{acting_user.full_name}|{acting_user.id}**",
         )
     message += "\n\n"
-    for stream_name in subscriptions:
-        message += f"* #**{stream_name}**\n"
+    for channel_name in subscriptions:
+        message += f"* #**{channel_name}**\n"
     return message
 
 
@@ -636,8 +636,8 @@ def add_subscriptions_backend(
     )
     if len(unauthorized_streams) > 0 and authorization_errors_fatal:
         raise JsonableError(
-            _("Unable to access stream ({stream_name}).").format(
-                stream_name=unauthorized_streams[0].name,
+            _("Unable to access stream ({channel_name}).").format(
+                channel_name=unauthorized_streams[0].name,
             )
         )
     # Newly created streams are also authorized for the creator
@@ -761,14 +761,14 @@ def send_messages_for_new_subscribers(
         if new_stream_announcements_stream is not None:
             with override_language(new_stream_announcements_stream.realm.default_language):
                 if len(created_streams) > 1:
-                    content = _("{user_name} created the following streams: {stream_str}.")
+                    content = _("{user_name} created the following streams: {new_channels}.")
                 else:
-                    content = _("{user_name} created a new stream {stream_str}.")
+                    content = _("{user_name} created a new stream {new_channels}.")
                 topic_name = _("new streams")
 
             content = content.format(
                 user_name=silent_mention_syntax_for_user(user_profile),
-                stream_str=", ".join(f"#**{s.name}**" for s in created_streams),
+                new_channels=", ".join(f"#**{s.name}**" for s in created_streams),
             )
 
             sender = get_system_bot(
@@ -1016,7 +1016,7 @@ def update_subscription_properties_backend(
         (stream, sub) = access_stream_by_id(user_profile, stream_id)
         if sub is None:
             raise JsonableError(
-                _("Not subscribed to stream id {stream_id}").format(stream_id=stream_id)
+                _("Not subscribed to stream id {channel_id}").format(channel_id=stream_id)
             )
 
         try:
