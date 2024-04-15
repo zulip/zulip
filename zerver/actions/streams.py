@@ -241,7 +241,7 @@ def do_unarchive_stream(
         raise JsonableError(_("Stream is not currently deactivated"))
     if Stream.objects.filter(realm=realm, name=new_name).exists():
         raise JsonableError(
-            _("Stream named {stream_name} already exists").format(stream_name=new_name)
+            _("Stream named {channel_name} already exists").format(channel_name=new_name)
         )
     assert stream.recipient_id is not None
 
@@ -312,7 +312,7 @@ def do_unarchive_stream(
             sender,
             stream,
             str(Realm.STREAM_EVENTS_NOTIFICATION_TOPIC_NAME),
-            _("Stream {stream_name} un-archived.").format(stream_name=new_name),
+            _("Stream {channel_name} un-archived.").format(channel_name=new_name),
         )
 
 
@@ -1467,10 +1467,10 @@ def do_rename_stream(stream: Stream, new_name: str, user_profile: UserProfile) -
             sender,
             stream,
             str(Realm.STREAM_EVENTS_NOTIFICATION_TOPIC_NAME),
-            _("{user_name} renamed stream {old_stream_name} to {new_stream_name}.").format(
+            _("{user_name} renamed stream {old_channel_name} to {new_channel_name}.").format(
                 user_name=silent_mention_syntax_for_user(user_profile),
-                old_stream_name=f"**{old_name}**",
-                new_stream_name=f"**{new_name}**",
+                old_channel_name=f"**{old_name}**",
+                new_channel_name=f"**{new_name}**",
             ),
         )
 

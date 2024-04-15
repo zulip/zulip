@@ -1460,34 +1460,34 @@ def send_pm_if_empty_stream(
                 if stream_id is not None:
                     arg_dict = {
                         **arg_dict,
-                        "stream_id": stream_id,
+                        "channel_id": stream_id,
                     }
                     content = _(
                         "Your bot {bot_identity} tried to send a message to stream ID "
-                        "{stream_id}, but there is no stream with that ID."
+                        "{channel_id}, but there is no stream with that ID."
                     ).format(**arg_dict)
                 else:
                     assert stream_name is not None
                     arg_dict = {
                         **arg_dict,
-                        "stream_name": f"#**{stream_name}**",
-                        "new_stream_link": "#streams/new",
+                        "channel_name": f"#**{stream_name}**",
+                        "new_channel_link": "#streams/new",
                     }
                     content = _(
                         "Your bot {bot_identity} tried to send a message to stream "
-                        "{stream_name}, but that stream does not exist. "
-                        "Click [here]({new_stream_link}) to create it."
+                        "{channel_name}, but that stream does not exist. "
+                        "Click [here]({new_channel_link}) to create it."
                     ).format(**arg_dict)
             else:
                 if num_subscribers_for_stream_id(stream.id) > 0:
                     return
                 arg_dict = {
                     **arg_dict,
-                    "stream_name": f"#**{stream.name}**",
+                    "channel_name": f"#**{stream.name}**",
                 }
                 content = _(
                     "Your bot {bot_identity} tried to send a message to "
-                    "stream {stream_name}. The stream exists but "
+                    "stream {channel_name}. The stream exists but "
                     "does not have any subscribers."
                 ).format(**arg_dict)
 

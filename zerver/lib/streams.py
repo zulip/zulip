@@ -313,7 +313,7 @@ def access_stream_for_send_message(
 
     # All other cases are an error.
     raise JsonableError(
-        _("Not authorized to send to stream '{stream_name}'").format(stream_name=stream.name)
+        _("Not authorized to send to stream '{channel_name}'").format(channel_name=stream.name)
     )
 
 
@@ -473,7 +473,7 @@ def check_stream_name_available(realm: Realm, name: str) -> None:
     try:
         get_stream(name, realm)
         raise JsonableError(
-            _("Stream name '{stream_name}' is already taken.").format(stream_name=name)
+            _("Stream name '{channel_name}' is already taken.").format(channel_name=name)
         )
     except Stream.DoesNotExist:
         pass
@@ -482,7 +482,7 @@ def check_stream_name_available(realm: Realm, name: str) -> None:
 def access_stream_by_name(
     user_profile: UserProfile, stream_name: str, allow_realm_admin: bool = False
 ) -> Tuple[Stream, Optional[Subscription]]:
-    error = _("Invalid stream name '{stream_name}'").format(stream_name=stream_name)
+    error = _("Invalid stream name '{channel_name}'").format(channel_name=stream_name)
     try:
         stream = get_realm_stream(stream_name, user_profile.realm_id)
     except Stream.DoesNotExist:
@@ -602,7 +602,7 @@ def can_access_stream_history(user_profile: UserProfile, stream: Stream) -> bool
 
     if stream.is_history_public_to_subscribers():
         # In this case, we check if the user is subscribed.
-        error = _("Invalid stream name '{stream_name}'").format(stream_name=stream.name)
+        error = _("Invalid stream name '{channel_name}'").format(channel_name=stream.name)
         try:
             access_stream_common(user_profile, stream, error)
         except JsonableError:
@@ -751,8 +751,8 @@ def list_to_streams(
 
         if not autocreate:
             raise JsonableError(
-                _("Stream(s) ({stream_names}) do not exist").format(
-                    stream_names=", ".join(
+                _("Stream(s) ({channel_names}) do not exist").format(
+                    channel_names=", ".join(
                         stream_dict["name"] for stream_dict in missing_stream_dicts
                     ),
                 )
