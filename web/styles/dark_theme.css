@@ -104,8 +104,7 @@
         }
     }
 
-    .modal__btn:disabled,
-    .disabled-message-send-controls button {
+    .modal__btn:disabled {
         opacity: 1;
         background-color: hsl(0deg 0% 83% / 50%);
     }
