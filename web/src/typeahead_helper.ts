@@ -7,6 +7,7 @@ import render_typeahead_list_item from "../templates/typeahead_list_item.hbs";
 
 import * as buddy_data from "./buddy_data";
 import * as compose_state from "./compose_state";
+import type {InputPillContainer} from "./input_pill";
 import * as people from "./people";
 import type {PseudoMentionUser, User} from "./people";
 import * as pm_conversations from "./pm_conversations";
@@ -15,18 +16,20 @@ import * as recent_senders from "./recent_senders";
 import {realm} from "./state_data";
 import * as stream_data from "./stream_data";
 import * as stream_list_sort from "./stream_list_sort";
-import type {StreamPillData} from "./stream_pill";
+import type {StreamPill, StreamPillData} from "./stream_pill";
 import type {StreamSubscription} from "./sub_store";
-import type {UserGroupPillData} from "./user_group_pill";
+import type {UserGroupPill, UserGroupPillData} from "./user_group_pill";
 import * as user_groups from "./user_groups";
 import type {UserGroup} from "./user_groups";
-import type {UserPillData} from "./user_pill";
+import type {UserPill, UserPillData} from "./user_pill";
 import * as user_status from "./user_status";
 import type {UserStatusEmojiInfo} from "./user_status";
 import * as util from "./util";
 
 export type UserOrMention = PseudoMentionUser | (User & {is_broadcast: undefined});
 export type UserOrMentionPillData = UserOrMention & {type: "user_or_mention"};
+
+export type CombinedPillContainer = InputPillContainer<StreamPill | UserGroupPill | UserPill>;
 
 // Returns an array of direct message recipients, removing empty elements.
 // For example, "a,,b, " => ["a", "b"]
