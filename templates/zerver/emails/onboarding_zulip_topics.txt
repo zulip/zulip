@@ -1,10 +1,10 @@
 {{ _("Here are some tips for keeping your Zulip conversations organized with topics.") }}
 
-{{ _("In Zulip, streams determine who gets a message. Topics tell you what the message is about.") }} {{ _("Using topics, you can read Zulip one conversation at a time. You'll see each message in context, no matter how many different discussions are going on.") }}
+{{ _("In Zulip, channels determine who gets a message. Topics tell you what the message is about.") }} {{ _("Using topics, you can read Zulip one conversation at a time. You'll see each message in context, no matter how many different discussions are going on.") }}
 
-{{ _("To kick off a new conversation, just pick a stream and start a new topic. This way, the new conversation thread won't interrupt ongoing discussions. For a good topic name, think about finishing the sentence: “Hey, can we chat about…?”") }}
+{{ _("To kick off a new conversation, just pick a channel and start a new topic. This way, the new conversation thread won't interrupt ongoing discussions. For a good topic name, think about finishing the sentence: “Hey, can we chat about…?”") }}
 
-{% trans %}Don't stress about picking the perfect name for your topic. If anything is out of place, it's easy to move messages ({{ move_messages_link }}), rename topics ({{ rename_topics_link }}), or even move a topic to a different stream ({{ move_topic_to_different_stream_link }}).{% endtrans %}
+{% trans %}Don't stress about picking the perfect name for your topic. If anything is out of place, it's easy to move messages ({{ move_messages_link }}), rename topics ({{ rename_topics_link }}), or even move a topic to a different channel ({{ move_channels_link }}).{% endtrans %}
 
 
 {{ _("Go to Zulip") }}:
