@@ -503,7 +503,6 @@
             /* Replicate the `.new-style` disabled values,
                without any color shifts. */
             cursor: not-allowed;
-            filter: saturate(0);
             opacity: 0.5;
         }
     }
