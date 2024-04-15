@@ -528,6 +528,36 @@ test("update_vote_text_on_message", ({override_rewire}) => {
             }),
         ),
         id: 1001,
+        message_reactions: [
+            {
+                class: "message_reaction reacted",
+                count: 2,
+                emoji_alt_code: false,
+                emoji_code: "1f44b",
+                emoji_name: "wave",
+                is_realm_emoji: false,
+                label: "translated: You (click to remove) and Bob van Roberts reacted with :wave:",
+                local_id: "unicode_emoji,1f44b",
+                reaction_type: "unicode_emoji",
+                user_ids: [5, 6],
+                vote_text: "translated: You, Bob van Roberts",
+            },
+            {
+                class: "message_reaction reacted",
+                count: 1,
+                emoji_alt_code: false,
+                emoji_code: "992",
+                emoji_name: "inactive_realm_emoji",
+                is_realm_emoji: true,
+                label: "translated: You (click to remove) reacted with :inactive_realm_emoji:",
+                local_id: "realm_emoji,992",
+                reaction_type: "realm_emoji",
+                still_url: "/still/url/for/992",
+                url: "/url/for/992",
+                user_ids: [5],
+                vote_text: "translated: You",
+            },
+        ],
     };
     // message.reactions is deleted too.
     assert.deepEqual(message, updated_message);

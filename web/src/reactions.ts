@@ -678,7 +678,7 @@ export function update_vote_text_on_message(message: Message): void {
     // users depends on total reactions on the message, we need to
     // recalculate this whenever adjusting reaction rendering on a
     // message.
-    set_clean_reactions(message);
+    message.message_reactions = get_message_reactions(message);
     const reaction_counts_and_user_ids = get_reaction_counts_and_user_ids(message);
     const should_display_reactors = check_should_display_reactors(reaction_counts_and_user_ids);
     for (const [reaction, clean_reaction] of message.clean_reactions.entries()) {
