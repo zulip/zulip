@@ -24,11 +24,14 @@ class kandra::profile::prometheus_server inherits kandra::profile::base {
     version        => $version,
     url            => "https://github.com/prometheus/prometheus/releases/download/v${version}/prometheus-${version}.linux-${zulip::common::goarch}.tar.gz",
     tarball_prefix => "prometheus-${version}.linux-${zulip::common::goarch}",
+    bin            => [$bin, "${dir}/promtool"],
+    cleanup_after  => [Service[supervisor]],
   }
   file { '/usr/local/bin/promtool':
     ensure  => link,
     target  => "${dir}/promtool",
-    require => Zulip::External_Dep['prometheus'],
+    require => File["${dir}/promtool"],
+    before  => Exec['Cleanup prometheus'],
   }
 
   file { $data_dir:
@@ -56,7 +59,7 @@ class kandra::profile::prometheus_server inherits kandra::profile::base {
     ensure  => file,
     require => [
       Package[supervisor],
-      Zulip::External_Dep['prometheus'],
+      File[$bin],
       File[$data_dir],
       File['/etc/prometheus/prometheus.yaml'],
     ],

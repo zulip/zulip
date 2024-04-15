@@ -12,6 +12,8 @@ class kandra::prometheus::redis {
     version        => $version,
     url            => "https://github.com/oliver006/redis_exporter/releases/download/v${version}/redis_exporter-v${version}.linux-${zulip::common::goarch}.tar.gz",
     tarball_prefix => "redis_exporter-v${version}.linux-${zulip::common::goarch}",
+    bin            => [$bin],
+    cleanup_after  => [Service[supervisor]],
   }
 
   kandra::firewall_allow { 'redis_exporter': port => '9121' }
@@ -20,7 +22,7 @@ class kandra::prometheus::redis {
     require => [
       User[zulip],
       Package[supervisor],
-      Zulip::External_Dep['redis_exporter'],
+      File[$bin],
     ],
     owner   => 'root',
     group   => 'root',
