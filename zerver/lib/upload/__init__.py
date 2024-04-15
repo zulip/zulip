@@ -12,8 +12,6 @@ from django.utils.translation import gettext as _
 from zerver.lib.exceptions import ErrorCode, JsonableError
 from zerver.lib.outgoing_http import OutgoingSession
 from zerver.lib.upload.base import ZulipUploadBackend
-from zerver.lib.upload.local import LocalUploadBackend
-from zerver.lib.upload.s3 import S3UploadBackend
 from zerver.models import Attachment, Message, Realm, RealmEmoji, ScheduledMessage, UserProfile
 
 
@@ -53,9 +51,13 @@ def get_file_info(user_file: UploadedFile) -> Tuple[str, str]:
 
 # Common and wrappers
 if settings.LOCAL_UPLOADS_DIR is not None:
+    from zerver.lib.upload.local import LocalUploadBackend
+
     upload_backend: ZulipUploadBackend = LocalUploadBackend()
-else:
-    upload_backend = S3UploadBackend()  # nocoverage
+else:  # nocoverage
+    from zerver.lib.upload.s3 import S3UploadBackend
+
+    upload_backend = S3UploadBackend()
 
 # Message attachment uploads
 
