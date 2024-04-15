@@ -225,6 +225,7 @@ test("upload_files", async ({mock_template, override_rewire}) => {
         assert.equal(event, "click");
         on_click_close_button_callback = callback;
     };
+    $("textarea#compose-textarea").caret = () => 0;
     let compose_ui_insert_syntax_and_focus_called = false;
     override_rewire(compose_ui, "insert_syntax_and_focus", () => {
         compose_ui_insert_syntax_and_focus_called = true;

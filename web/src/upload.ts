@@ -204,13 +204,23 @@ export function upload_files(uppy: Uppy, config: Config, files: File[] | FileLis
         config.markdown_preview_hide_button().trigger("click");
     }
 
+    const multiple_images = files.length > 1 && [...files].every((file) => is_image(file.name));
+    const individual_insert_mode = multiple_images ? "inline" : "block";
+
+    if (multiple_images) {
+        // Insert an empty block into which files are inserted inline.
+        compose_ui.insert_syntax_and_focus("", config.textarea(), "block", 1);
+        // Move the cursor back by 1 character inside the block.
+        config.textarea().caret(config.textarea().caret() - 1);
+    }
+
     for (const file of files) {
         let file_id;
         try {
             compose_ui.insert_syntax_and_focus(
                 get_translated_status(file),
                 config.textarea(),
-                "block",
+                individual_insert_mode,
                 1,
             );
             compose_ui.autosize_textarea(config.textarea());
@@ -248,6 +258,11 @@ export function upload_files(uppy: Uppy, config: Config, files: File[] | FileLis
         config.upload_banner_hide_button(file_id).one("click", () => {
             hide_upload_banner(uppy, config, file_id);
         });
+    }
+
+    if (multiple_images) {
+        // Move the cursor forward by 1 character back outside the block.
+        config.textarea().caret(config.textarea().caret() + 1);
     }
 }
 
