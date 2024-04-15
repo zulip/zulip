@@ -33,7 +33,6 @@ from zerver.lib.narrow import (
     LARGER_THAN_MAX_MESSAGE_ID,
     BadNarrowOperatorError,
     NarrowBuilder,
-    build_narrow_predicate,
     exclude_muting_conditions,
     find_first_unread_anchor,
     is_spectator_compatible,
@@ -41,6 +40,7 @@ from zerver.lib.narrow import (
     post_process_limited_query,
 )
 from zerver.lib.narrow_helpers import NarrowTerm
+from zerver.lib.narrow_predicate import build_narrow_predicate
 from zerver.lib.sqlalchemy_utils import get_sqlalchemy_connection
 from zerver.lib.streams import StreamDict, create_streams_if_needed, get_public_streams_queryset
 from zerver.lib.test_classes import ZulipTestCase
