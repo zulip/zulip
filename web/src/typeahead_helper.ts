@@ -1,5 +1,6 @@
 import Handlebars from "handlebars/runtime";
 import _ from "lodash";
+import assert from "minimalistic-assert";
 
 import * as typeahead from "../shared/src/typeahead";
 import render_typeahead_list_item from "../templates/typeahead_list_item.hbs";
@@ -295,8 +296,8 @@ export function compare_people_for_relevance(
 
 export function sort_people_for_relevance(
     objs: UserOrMention[],
-    current_stream_id: number,
-    current_topic: string,
+    current_stream_id?: number,
+    current_topic?: string,
 ): UserOrMention[] {
     // If sorting for recipientbox typeahead and not viewing a stream / topic, then current_stream = ""
     let current_stream = null;
@@ -306,6 +307,8 @@ export function sort_people_for_relevance(
     if (!current_stream) {
         objs.sort((person_a, person_b) => compare_people_for_relevance(person_a, person_b));
     } else {
+        assert(current_stream_id !== undefined);
+        assert(current_topic !== undefined);
         objs.sort((person_a, person_b) =>
             compare_people_for_relevance(
                 person_a,
@@ -420,10 +423,10 @@ export function sort_recipients({
 }: {
     users: UserOrMention[];
     query: string;
-    current_stream_id: number;
-    current_topic: string;
-    groups: UserGroup[];
-    max_num_items: number;
+    current_stream_id?: number;
+    current_topic?: string;
+    groups?: UserGroup[];
+    max_num_items?: number;
 }): (UserOrMention | UserGroup)[] {
     function sort_relevance(items: UserOrMention[]): UserOrMention[] {
         return sort_people_for_relevance(items, current_stream_id, current_topic);
