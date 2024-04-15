@@ -283,67 +283,80 @@ const ali = {
     email: "ali@zulip.com",
     user_id: 98,
     full_name: "Ali",
+    is_moderator: false,
 };
 
 const alice = {
     email: "alice@zulip.com",
     user_id: 99,
     full_name: "Alice",
+    is_moderator: false,
 };
 
 const hamlet = {
     email: "hamlet@zulip.com",
     user_id: 100,
     full_name: "King Hamlet",
+    is_moderator: false,
 };
 
 const othello = {
     email: "othello@zulip.com",
     user_id: 101,
     full_name: "Othello, the Moor of Venice",
+    is_moderator: false,
+    delivery_email: null,
 };
 const cordelia = {
     email: "cordelia@zulip.com",
     user_id: 102,
     full_name: "Cordelia, Lear's daughter",
+    is_moderator: false,
 };
 const deactivated_user = {
     email: "other@zulip.com",
     user_id: 103,
     full_name: "Deactivated User",
+    is_moderator: false,
 };
 const lear = {
     email: "lear@zulip.com",
     user_id: 104,
     full_name: "King Lear",
+    is_moderator: false,
 };
 
 const twin1 = {
     full_name: "Mark Twin",
+    is_moderator: false,
     user_id: 105,
     email: "twin1@zulip.com",
 };
 
 const twin2 = {
     full_name: "Mark Twin",
+    is_moderator: false,
     user_id: 106,
     email: "twin2@zulip.com",
 };
 
 const gael = {
     full_name: "Gaël Twin",
+    is_moderator: false,
     user_id: 107,
     email: "twin3@zulip.com",
 };
 
 const hal = {
     full_name: "Earl Hal",
+    is_moderator: false,
     user_id: 108,
     email: "hal@zulip.com",
 };
 
 const harry = {
     full_name: "Harry",
+    is_moderator: false,
     user_id: 109,
     email: "harry@zulip.com",
 };
