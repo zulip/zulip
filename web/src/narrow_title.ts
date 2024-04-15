@@ -83,9 +83,9 @@ export function redraw_title(): void {
     // Update window title to reflect unread messages in current view
     const new_title =
         (unread_count ? "(" + unread_count + ") " : "") +
-        narrow_title +
-        " - " +
         realm.realm_name +
+        " - " +
+        narrow_title +
         " - " +
         "Zulip";
 
