@@ -3871,9 +3871,7 @@ class RealmBillingSession(BillingSession):
             plan_type = Realm.PLAN_TYPE_STANDARD_FREE
         elif tier == CustomerPlan.TIER_CLOUD_STANDARD:
             plan_type = Realm.PLAN_TYPE_STANDARD
-        elif (
-            tier == CustomerPlan.TIER_CLOUD_PLUS
-        ):  # nocoverage # Plus plan doesn't use this code path yet.
+        elif tier == CustomerPlan.TIER_CLOUD_PLUS:
             plan_type = Realm.PLAN_TYPE_PLUS
         else:
             raise AssertionError("Unexpected tier")
@@ -4976,7 +4974,7 @@ def get_price_per_license(
 ) -> int:
     price_map: Dict[int, Dict[str, int]] = {
         CustomerPlan.TIER_CLOUD_STANDARD: {"Annual": 8000, "Monthly": 800},
-        CustomerPlan.TIER_CLOUD_PLUS: {"Annual": 16000, "Monthly": 1600},
+        CustomerPlan.TIER_CLOUD_PLUS: {"Annual": 12000, "Monthly": 1200},
         CustomerPlan.TIER_SELF_HOSTED_BASIC: {"Annual": 4200, "Monthly": 350},
         CustomerPlan.TIER_SELF_HOSTED_BUSINESS: {"Annual": 8000, "Monthly": 800},
         # To help with processing discount request on support page.

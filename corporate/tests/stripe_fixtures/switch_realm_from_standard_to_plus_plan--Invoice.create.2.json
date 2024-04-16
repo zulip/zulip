@@ -2,9 +2,9 @@
   "account_country": "US",
   "account_name": "Kandra Labs, Inc.",
   "account_tax_ids": null,
-  "amount_due": 93305,
+  "amount_due": 69364,
   "amount_paid": 0,
-  "amount_remaining": 93305,
+  "amount_remaining": 69364,
   "amount_shipping": 0,
   "application": null,
   "application_fee_amount": null,
@@ -42,7 +42,7 @@
   "footer": null,
   "from_invoice": null,
   "hosted_invoice_url": null,
-  "id": "in_NORMALIZED00000000000011",
+  "id": "in_NORMALIZED00000000000002",
   "invoice_pdf": null,
   "issuer": {
     "type": "self"
@@ -52,16 +52,16 @@
   "lines": {
     "data": [
       {
-        "amount": 96000,
-        "amount_excluding_tax": 96000,
+        "amount": 72000,
+        "amount_excluding_tax": 72000,
         "currency": "usd",
         "description": "Zulip Cloud Plus - renewal",
         "discount_amounts": [],
         "discountable": false,
         "discounts": [],
-        "id": "il_NORMALIZED00000000000012",
-        "invoice": "in_NORMALIZED00000000000011",
-        "invoice_item": "ii_NORMALIZED00000000000013",
+        "id": "il_NORMALIZED00000000000002",
+        "invoice": "in_NORMALIZED00000000000002",
+        "invoice_item": "ii_NORMALIZED00000000000002",
         "livemode": false,
         "metadata": {},
         "object": "line_item",
@@ -76,20 +76,20 @@
           "created": 1000000000,
           "currency": "usd",
           "custom_unit_amount": null,
-          "id": "price_NORMALIZED00000000000006",
+          "id": "price_NORMALIZED00000000000002",
           "livemode": false,
           "lookup_key": null,
           "metadata": {},
           "nickname": null,
           "object": "price",
-          "product": "prod_NORMALIZED0005",
+          "product": "prod_NORMALIZED0002",
           "recurring": null,
           "tax_behavior": "unspecified",
           "tiers_mode": null,
           "transform_quantity": null,
           "type": "one_time",
-          "unit_amount": 16000,
-          "unit_amount_decimal": "16000"
+          "unit_amount": 12000,
+          "unit_amount_decimal": "12000"
         },
         "proration": false,
         "proration_details": {
@@ -100,13 +100,13 @@
         "tax_amounts": [],
         "tax_rates": [],
         "type": "invoiceitem",
-        "unit_amount_excluding_tax": "16000"
+        "unit_amount_excluding_tax": "12000"
       }
     ],
     "has_more": false,
     "object": "list",
     "total_count": 1,
-    "url": "/v1/invoices/in_NORMALIZED00000000000011/lines"
+    "url": "/v1/invoices/in_NORMALIZED00000000000002/lines"
   },
   "livemode": false,
   "metadata": {},
@@ -137,7 +137,7 @@
   "rendering_options": null,
   "shipping_cost": null,
   "shipping_details": null,
-  "starting_balance": -2695,
+  "starting_balance": -2636,
   "statement_descriptor": "Zulip Cloud Plus",
   "status": "draft",
   "status_transitions": {
@@ -150,13 +150,13 @@
   "subscription_details": {
     "metadata": null
   },
-  "subtotal": 96000,
-  "subtotal_excluding_tax": 96000,
+  "subtotal": 72000,
+  "subtotal_excluding_tax": 72000,
   "tax": null,
   "test_clock": null,
-  "total": 96000,
+  "total": 72000,
   "total_discount_amounts": [],
-  "total_excluding_tax": 96000,
+  "total_excluding_tax": 72000,
   "total_tax_amounts": [],
   "transfer_data": null,
   "webhooks_delivered_at": null
