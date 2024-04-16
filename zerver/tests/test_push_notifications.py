@@ -1297,9 +1297,9 @@ class PushBouncerNotificationTest(BouncerTestCase):
         # Now we want to remove them using the bouncer after an API key change.
         # First we test error handling in case of issues with the bouncer:
         with mock.patch(
-            "zerver.worker.queue_processors.clear_push_device_tokens",
+            "zerver.worker.deferred_work.clear_push_device_tokens",
             side_effect=PushNotificationBouncerRetryLaterError("test"),
-        ), mock.patch("zerver.worker.queue_processors.retry_event") as mock_retry:
+        ), mock.patch("zerver.worker.deferred_work.retry_event") as mock_retry:
             do_regenerate_api_key(user, user)
             mock_retry.assert_called()
 

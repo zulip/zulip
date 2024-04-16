@@ -371,11 +371,8 @@ python_rules = RuleList(
             "pattern": "[^a-z]Message.objects.get",
             "exclude": {
                 "zerver/tests",
-                "zerver/lib/onboarding.py",
                 "zilencer/management/commands/add_mock_conversation.py",
-                "zerver/worker/queue_processors.py",
                 "zerver/management/commands/export.py",
-                "zerver/lib/export.py",
             },
             "description": "Please use access_message() to fetch Message objects",
         },

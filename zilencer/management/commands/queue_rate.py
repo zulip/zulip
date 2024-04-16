@@ -6,7 +6,7 @@ from django.core.management.base import BaseCommand, CommandParser
 from typing_extensions import override
 
 from zerver.lib.queue import SimpleQueueClient, queue_json_publish
-from zerver.worker.queue_processors import BatchNoopWorker, NoopWorker
+from zerver.worker.test import BatchNoopWorker, NoopWorker
 
 
 class Command(BaseCommand):

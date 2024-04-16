@@ -87,7 +87,7 @@ class DigestTopic:
 
 
 # Changes to this should also be reflected in
-# zerver/worker/queue_processors.py:DigestWorker.consume()
+# zerver/worker/digest_emails.py:DigestWorker.consume()
 def queue_digest_user_ids(user_ids: List[int], cutoff: datetime) -> None:
     # Convert cutoff to epoch seconds for transit.
     event = {"user_ids": user_ids, "cutoff": cutoff.strftime("%s")}

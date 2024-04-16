@@ -1263,7 +1263,7 @@ def handle_remove_push_notification(user_profile_id: int, message_ids: List[int]
 def handle_push_notification(user_profile_id: int, missed_message: Dict[str, Any]) -> None:
     """
     missed_message is the event received by the
-    zerver.worker.queue_processors.PushNotificationWorker.consume function.
+    zerver.worker.missedmessage_mobile_notifications.PushNotificationWorker.consume function.
     """
     if not push_notifications_configured():
         return
