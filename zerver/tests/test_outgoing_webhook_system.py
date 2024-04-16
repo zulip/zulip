@@ -635,7 +635,7 @@ class TestOutgoingWebhookMessaging(ZulipTestCase):
 
         prev_message = self.get_second_to_last_message()
         self.assertIn(
-            "tried to send a message to stream #**Denmark**, but that stream does not exist",
+            "tried to send a message to channel #**Denmark**, but that channel does not exist",
             prev_message.content,
         )
 
