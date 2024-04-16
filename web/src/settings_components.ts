@@ -894,6 +894,7 @@ export function save_discard_widget_status_handler(
     change_save_button_state($save_btn_controls, button_state);
 
 <<<<<<< HEAD
+<<<<<<< HEAD
     // const $subBtn = $element.find(".subscribe-button");
 
     // if (state !== "saving") {
@@ -911,6 +912,8 @@ export function save_discard_widget_status_handler(
 
 =======
 >>>>>>> parent of 09e53b0686 (if priv and unsub)
+=======
+>>>>>>> parent of 09e53b0686 (if priv and unsub)
     // If this widget is for a stream, and the stream isn't currently private
     // but being changed to private, and the user changing this setting isn't
     // subscribed, we show a warning that they won't be able to access the
@@ -918,6 +921,7 @@ export function save_discard_widget_status_handler(
     if (!sub) {
         return;
     }
+<<<<<<< HEAD
 <<<<<<< HEAD
     if (!sub.subscribed){
         if ($("#stream_permission_settings .stream_privacy_warning").length > 0) {
@@ -937,6 +941,8 @@ export function save_discard_widget_status_handler(
             $(render_compose_banner(context)),
         );
     }
+=======
+>>>>>>> parent of 09e53b0686 (if priv and unsub)
 =======
 >>>>>>> parent of 09e53b0686 (if priv and unsub)
     if (
