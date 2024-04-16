@@ -21,21 +21,21 @@ class ExtraConsoleOutputFinder:
     def __init__(self) -> None:
         valid_line_patterns = [
             # Example: Running zerver.tests.test_attachments.AttachmentsTests.test_delete_unauthenticated
-            b"^Running ",
-            b"^----------------------------------------------------------------------",
+            rb"^Running ",
+            rb"^----------------------------------------------------------------------",
             # Example: INFO: URL coverage report is in var/url_coverage.txt
-            b"^INFO: URL coverage report is in",
+            rb"^INFO: URL coverage report is in",
             # Example: -- Running tests in parallel mode with 4 processes
-            b"^-- Running tests in",
-            b"^OK",
+            rb"^-- Running tests in",
+            rb"^OK",
             # Example: Ran 2139 tests in 115.659s
-            b"^Ran [0-9]+ tests in",
+            rb"^Ran [0-9]+ tests in",
             # Destroying test database for alias 'default'...
-            b"^Destroying test database for alias ",
-            b"^Using existing clone",
-            b"^\\*\\* Skipping ",
+            rb"^Destroying test database for alias ",
+            rb"^Using existing clone",
+            rb"^\*\* Skipping ",
         ]
-        self.compiled_line_pattern = re.compile(b"|".join(valid_line_patterns))
+        self.compiled_line_pattern = re.compile(rb"|".join(valid_line_patterns))
         self.partial_line = b""
         self.full_extra_output = bytearray()
 
