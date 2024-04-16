@@ -1167,7 +1167,7 @@ class TestRealmAuditLog(ZulipTestCase):
         )
         self.assert_length(audit_log_entries, 1)
         self.assertIsNone(audit_log_entries[0].modified_user)
-        self.assertEqual(audit_log_entries[0].modified_user_group, user_group)
+        self.assertEqual(audit_log_entries[0].modified_user_group, user_group.usergroup_ptr)
 
         audit_log_entries = RealmAuditLog.objects.filter(
             acting_user=hamlet,
@@ -1212,19 +1212,21 @@ class TestRealmAuditLog(ZulipTestCase):
         hamlet = self.example_user("hamlet")
         user_group = check_add_user_group(hamlet.realm, "main", [], acting_user=None)
         subgroups = [
-            check_add_user_group(hamlet.realm, f"subgroup{num}", [], acting_user=hamlet)
+            check_add_user_group(
+                hamlet.realm, f"subgroup{num}", [], acting_user=hamlet
+            ).usergroup_ptr
             for num in range(3)
         ]
 
         now = timezone_now()
-        add_subgroups_to_user_group(user_group, subgroups, acting_user=hamlet)
+        add_subgroups_to_user_group(user_group.usergroup_ptr, subgroups, acting_user=hamlet)
         # Only one audit log entry for the subgroup membership is expected.
         audit_log_entry = RealmAuditLog.objects.get(
             realm=hamlet.realm,
             event_time__gte=now,
             event_type=RealmAuditLog.USER_GROUP_DIRECT_SUBGROUP_MEMBERSHIP_ADDED,
         )
-        self.assertEqual(audit_log_entry.modified_user_group, user_group)
+        self.assertEqual(audit_log_entry.modified_user_group, user_group.usergroup_ptr)
         self.assertEqual(audit_log_entry.acting_user, hamlet)
         self.assertDictEqual(
             audit_log_entry.extra_data,
@@ -1244,13 +1246,15 @@ class TestRealmAuditLog(ZulipTestCase):
                 {"supergroup_ids": [user_group.id]},
             )
 
-        remove_subgroups_from_user_group(user_group, subgroups[:2], acting_user=hamlet)
+        remove_subgroups_from_user_group(
+            user_group.usergroup_ptr, subgroups[:2], acting_user=hamlet
+        )
         audit_log_entry = RealmAuditLog.objects.get(
             realm=hamlet.realm,
             event_time__gte=now,
             event_type=RealmAuditLog.USER_GROUP_DIRECT_SUBGROUP_MEMBERSHIP_REMOVED,
         )
-        self.assertEqual(audit_log_entry.modified_user_group, user_group)
+        self.assertEqual(audit_log_entry.modified_user_group, user_group.usergroup_ptr)
         self.assertEqual(audit_log_entry.acting_user, hamlet)
         self.assertDictEqual(
             audit_log_entry.extra_data,

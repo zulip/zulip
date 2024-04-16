@@ -52,6 +52,7 @@ from zerver.models import (
     Huddle,
     Message,
     MutedUser,
+    NamedUserGroup,
     OnboardingStep,
     Reaction,
     Realm,
@@ -1040,7 +1041,7 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
 
         # We expect Zulip server exports to contain these system groups,
         # this logic here is needed to handle the imports from other services.
-        role_system_groups_dict: Optional[Dict[int, UserGroup]] = None
+        role_system_groups_dict: Optional[Dict[int, NamedUserGroup]] = None
         if "zerver_usergroup" not in data:
             role_system_groups_dict = create_system_user_groups_for_realm(realm)
 
@@ -1736,7 +1737,9 @@ def import_analytics_data(realm: Realm, import_dir: Path, crossrealm_user_ids: S
 
 
 def add_users_to_system_user_groups(
-    realm: Realm, user_profiles: List[UserProfile], role_system_groups_dict: Dict[int, UserGroup]
+    realm: Realm,
+    user_profiles: List[UserProfile],
+    role_system_groups_dict: Dict[int, NamedUserGroup],
 ) -> None:
     full_members_system_group = UserGroup.objects.get(
         name=SystemGroups.FULL_MEMBERS,

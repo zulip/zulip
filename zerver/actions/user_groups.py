@@ -13,6 +13,7 @@ from zerver.lib.user_groups import (
 )
 from zerver.models import (
     GroupGroupMembership,
+    NamedUserGroup,
     Realm,
     RealmAuditLog,
     UserGroup,
@@ -40,13 +41,22 @@ def create_user_group_in_database(
     description: str = "",
     group_settings_map: Mapping[str, UserGroup] = {},
     is_system_group: bool = False,
-) -> UserGroup:
-    user_group = UserGroup(
-        name=name, realm=realm, description=description, is_system_group=is_system_group
+) -> NamedUserGroup:
+    user_group = NamedUserGroup(
+        name=name,
+        realm=realm,
+        description=description,
+        is_system_group=is_system_group,
+        named_group_name=name,
+        named_group_description=description,
+        named_group_is_system_group=is_system_group,
+        realm_for_sharding=realm,
     )
 
     for setting_name, setting_value in group_settings_map.items():
         setattr(user_group, setting_name, setting_value)
+        named_group_setting_name = "named_group_" + setting_name
+        setattr(user_group, named_group_setting_name, setting_value)
 
     system_groups_name_dict = get_role_based_system_groups_dict(realm)
     user_group = set_defaults_for_group_settings(
@@ -156,7 +166,9 @@ def promote_new_full_members() -> None:
 
 
 def do_send_create_user_group_event(
-    user_group: UserGroup, members: List[UserProfile], direct_subgroups: Sequence[UserGroup] = []
+    user_group: NamedUserGroup,
+    members: List[UserProfile],
+    direct_subgroups: Sequence[UserGroup] = [],
 ) -> None:
     event = dict(
         type="user_group",
@@ -182,7 +194,7 @@ def check_add_user_group(
     group_settings_map: Mapping[str, UserGroup] = {},
     *,
     acting_user: Optional[UserProfile],
-) -> UserGroup:
+) -> NamedUserGroup:
     try:
         user_group = create_user_group_in_database(
             name,
