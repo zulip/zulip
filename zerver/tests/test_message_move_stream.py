@@ -76,7 +76,7 @@ class MessageMoveStreamTest(ZulipTestCase):
             },
         )
 
-        self.assert_json_error(result, "Direct messages cannot be moved to streams.")
+        self.assert_json_error(result, "Direct messages cannot be moved to channels.")
 
     def test_move_message_to_stream_with_content(self) -> None:
         (user_profile, old_stream, new_stream, msg_id, msg_id_later) = self.prepare_move_topics(
@@ -91,7 +91,7 @@ class MessageMoveStreamTest(ZulipTestCase):
                 "content": "Not allowed",
             },
         )
-        self.assert_json_error(result, "Cannot change message content while changing stream")
+        self.assert_json_error(result, "Cannot change message content while changing channel")
 
         messages = get_topic_messages(user_profile, old_stream, "test")
         self.assert_length(messages, 3)
@@ -943,7 +943,7 @@ class MessageMoveStreamTest(ZulipTestCase):
             cordelia,
             test_stream_1,
             test_stream_2,
-            expect_error_message="The time limit for editing this message's stream has passed",
+            expect_error_message="The time limit for editing this message's channel has passed",
         )
 
         # admins and moderators can move messages irrespective of time limit.

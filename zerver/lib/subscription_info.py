@@ -329,14 +329,14 @@ def validate_user_access_to_subscribers_helper(
         # Adding an `else` would ensure better code coverage.
 
     if not user_profile.can_access_public_streams() and not stream_dict["invite_only"]:
-        raise JsonableError(_("Subscriber data is not available for this stream"))
+        raise JsonableError(_("Subscriber data is not available for this channel"))
 
     # Organization administrators can view subscribers for all streams.
     if user_profile.is_realm_admin:
         return
 
     if stream_dict["invite_only"] and not check_user_subscribed(user_profile):
-        raise JsonableError(_("Unable to retrieve subscribers for private stream"))
+        raise JsonableError(_("Unable to retrieve subscribers for private channel"))
 
 
 def bulk_get_subscriber_user_ids(

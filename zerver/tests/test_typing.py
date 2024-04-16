@@ -105,7 +105,7 @@ class TypingValidateStreamIdTopicArgumentsTest(ZulipTestCase):
             "/api/v1/typing",
             {"type": "stream", "op": "start", "topic": "test"},
         )
-        self.assert_json_error(result, "Missing stream_id")
+        self.assert_json_error(result, "Missing 'stream_id' argument")
 
     def test_invalid_stream_id(self) -> None:
         """
@@ -583,7 +583,9 @@ class TestSendTypingNotificationsSettings(ZulipTestCase):
         # No events should be sent now
         with self.capture_send_event_calls(expected_num_events=0) as events:
             result = self.api_post(sender, "/api/v1/typing", params)
-        self.assert_json_error(result, "User has disabled typing notifications for stream messages")
+        self.assert_json_error(
+            result, "User has disabled typing notifications for channel messages"
+        )
         self.assertEqual(events, [])
 
     def test_typing_notifications_disabled(self) -> None:
