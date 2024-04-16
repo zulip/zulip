@@ -3071,7 +3071,7 @@ class DefaultStreamGroupTest(ZulipTestCase):
         # Test creating a default stream group which contains a default stream
         do_add_default_stream(remaining_streams[0])
         with self.assertRaisesRegex(
-            JsonableError, "'stream1' is a default stream and cannot be added to 'new group1'"
+            JsonableError, "'stream1' is a default channel and cannot be added to 'new group1'"
         ):
             do_create_default_stream_group(
                 realm, new_group_name, "This is group1", remaining_streams
@@ -3118,7 +3118,7 @@ class DefaultStreamGroupTest(ZulipTestCase):
                 "stream_names": orjson.dumps(stream_names).decode(),
             },
         )
-        self.assert_json_error(result, "Default stream group 'group1' already exists")
+        self.assert_json_error(result, "Default channel group 'group1' already exists")
 
         # Test adding streams to existing default stream group
         group_id = default_stream_groups[0].id
@@ -3156,7 +3156,7 @@ class DefaultStreamGroupTest(ZulipTestCase):
             {"op": "add", "stream_names": orjson.dumps(new_stream_names).decode()},
         )
         self.assert_json_error(
-            result, "'stream4' is a default stream and cannot be added to 'group1'"
+            result, "'stream4' is a default channel and cannot be added to 'group1'"
         )
 
         do_remove_default_stream(new_streams[0])
@@ -3175,7 +3175,7 @@ class DefaultStreamGroupTest(ZulipTestCase):
             {"op": "add", "stream_names": orjson.dumps(new_stream_names).decode()},
         )
         self.assert_json_error(
-            result, "Stream 'stream4' is already present in default stream group 'group1'"
+            result, "Channel 'stream4' is already present in default channel group 'group1'"
         )
 
         # Test removing streams from default stream group
@@ -3207,7 +3207,7 @@ class DefaultStreamGroupTest(ZulipTestCase):
             {"op": "remove", "stream_names": orjson.dumps(new_stream_names).decode()},
         )
         self.assert_json_error(
-            result, "Stream 'stream4' is not present in default stream group 'group1'"
+            result, "Channel 'stream4' is not present in default channel group 'group1'"
         )
 
         # Test changing description of default stream group
@@ -3239,7 +3239,7 @@ class DefaultStreamGroupTest(ZulipTestCase):
             f"/json/default_stream_groups/{group_id}",
             {"new_group_name": "group2"},
         )
-        self.assert_json_error(result, "Default stream group 'group2' already exists")
+        self.assert_json_error(result, "Default channel group 'group2' already exists")
         new_group = lookup_default_stream_groups(["group2"], realm)[0]
         do_remove_default_stream_group(realm, new_group)
 
@@ -3247,7 +3247,7 @@ class DefaultStreamGroupTest(ZulipTestCase):
             f"/json/default_stream_groups/{group_id}",
             {"new_group_name": group_name},
         )
-        self.assert_json_error(result, "This default stream group is already named 'group1'")
+        self.assert_json_error(result, "This default channel group is already named 'group1'")
 
         result = self.client_patch(
             f"/json/default_stream_groups/{group_id}",
@@ -3288,7 +3288,7 @@ class DefaultStreamGroupTest(ZulipTestCase):
                 "stream_names": orjson.dumps(stream_names).decode(),
             },
         )
-        self.assert_json_error(result, "Invalid default stream group name ''")
+        self.assert_json_error(result, "Invalid default channel group name ''")
 
         result = self.client_post(
             "/json/default_stream_groups/create",
@@ -3300,7 +3300,7 @@ class DefaultStreamGroupTest(ZulipTestCase):
         )
         self.assert_json_error(
             result,
-            f"Default stream group name too long (limit: {DefaultStreamGroup.MAX_NAME_LENGTH} characters)",
+            f"Default channel group name too long (limit: {DefaultStreamGroup.MAX_NAME_LENGTH} characters)",
         )
 
         result = self.client_post(
@@ -3312,14 +3312,14 @@ class DefaultStreamGroupTest(ZulipTestCase):
             },
         )
         self.assert_json_error(
-            result, "Default stream group name 'abc\000' contains NULL (0x00) characters."
+            result, "Default channel group name 'abc\000' contains NULL (0x00) characters."
         )
 
         # Also test that lookup_default_stream_groups raises an
         # error if we pass it a bad name.  This function is used
         # during registration, but it's a bit heavy to do a full
         # test of that.
-        with self.assertRaisesRegex(JsonableError, "Invalid default stream group invalid-name"):
+        with self.assertRaisesRegex(JsonableError, "Invalid default channel group invalid-name"):
             lookup_default_stream_groups(["invalid-name"], realm)
 
 
@@ -3917,7 +3917,7 @@ class SubscriptionRestApiTest(ZulipTestCase):
             "delete": orjson.dumps([invalid_stream_name]).decode(),
         }
         result = self.api_patch(user, "/api/v1/users/me/subscriptions", request)
-        self.assert_json_error(result, "Stream name can't be empty!")
+        self.assert_json_error(result, "Channel name can't be empty.")
 
     def test_stream_name_too_long(self) -> None:
         user = self.example_user("hamlet")
@@ -3928,7 +3928,7 @@ class SubscriptionRestApiTest(ZulipTestCase):
             "delete": orjson.dumps([long_stream_name]).decode(),
         }
         result = self.api_patch(user, "/api/v1/users/me/subscriptions", request)
-        self.assert_json_error(result, "Stream name too long (limit: 60 characters).")
+        self.assert_json_error(result, "Channel name too long (limit: 60 characters).")
 
     def test_stream_name_contains_null(self) -> None:
         user = self.example_user("hamlet")
@@ -3939,7 +3939,7 @@ class SubscriptionRestApiTest(ZulipTestCase):
             "delete": orjson.dumps([stream_name]).decode(),
         }
         result = self.api_patch(user, "/api/v1/users/me/subscriptions", request)
-        self.assert_json_error(result, "Invalid character in stream name, at position 4!")
+        self.assert_json_error(result, "Invalid character in channel name, at position 4.")
 
     def test_compose_views_rollback(self) -> None:
         """
@@ -4015,7 +4015,7 @@ class SubscriptionAPITest(ZulipTestCase):
         result = self.api_post(
             user, "/api/v1/users/me/subscriptions", post_data_cc, subdomain="zulip"
         )
-        self.assert_json_error(result, "Invalid character in stream name, at position 4!")
+        self.assert_json_error(result, "Invalid character in channel name, at position 4.")
 
         # For Cn category
         post_data_cn = {
@@ -4027,7 +4027,7 @@ class SubscriptionAPITest(ZulipTestCase):
         result = self.api_post(
             user, "/api/v1/users/me/subscriptions", post_data_cn, subdomain="zulip"
         )
-        self.assert_json_error(result, "Invalid character in stream name, at position 4!")
+        self.assert_json_error(result, "Invalid character in channel name, at position 4.")
 
     def test_invalid_stream_rename(self) -> None:
         """
@@ -4039,16 +4039,16 @@ class SubscriptionAPITest(ZulipTestCase):
         do_change_user_role(user_profile, UserProfile.ROLE_REALM_ADMINISTRATOR, acting_user=None)
         # Check for empty name
         result = self.client_patch(f"/json/streams/{stream.id}", {"new_name": ""})
-        self.assert_json_error(result, "Stream name can't be empty!")
+        self.assert_json_error(result, "Channel name can't be empty.")
         # Check for long name
         result = self.client_patch(f"/json/streams/{stream.id}", {"new_name": "a" * 61})
-        self.assert_json_error(result, "Stream name too long (limit: 60 characters).")
+        self.assert_json_error(result, "Channel name too long (limit: 60 characters).")
         # Check for Cc characters
         result = self.client_patch(f"/json/streams/{stream.id}", {"new_name": "test\n\rname"})
-        self.assert_json_error(result, "Invalid character in stream name, at position 5!")
+        self.assert_json_error(result, "Invalid character in channel name, at position 5.")
         # Check for Cn characters
         result = self.client_patch(f"/json/streams/{stream.id}", {"new_name": "test\ufffeame"})
-        self.assert_json_error(result, "Invalid character in stream name, at position 5!")
+        self.assert_json_error(result, "Invalid character in channel name, at position 5.")
 
     def test_successful_subscriptions_list(self) -> None:
         """
@@ -4329,7 +4329,7 @@ class SubscriptionAPITest(ZulipTestCase):
         result = self.common_subscribe_to_streams(
             self.test_user, [long_stream_name], allow_fail=True
         )
-        self.assert_json_error(result, "Stream name too long (limit: 60 characters).")
+        self.assert_json_error(result, "Channel name too long (limit: 60 characters).")
 
     def test_subscriptions_add_stream_with_null(self) -> None:
         """
@@ -4338,7 +4338,7 @@ class SubscriptionAPITest(ZulipTestCase):
         """
         stream_name = "abc\000"
         result = self.common_subscribe_to_streams(self.test_user, [stream_name], allow_fail=True)
-        self.assert_json_error(result, "Invalid character in stream name, at position 4!")
+        self.assert_json_error(result, "Invalid character in channel name, at position 4.")
 
     def _test_user_settings_for_creating_streams(
         self,
@@ -4594,7 +4594,7 @@ class SubscriptionAPITest(ZulipTestCase):
         result = self.common_subscribe_to_streams(
             self.test_user, [invalid_stream_name], allow_fail=True
         )
-        self.assert_json_error(result, "Stream name can't be empty!")
+        self.assert_json_error(result, "Channel name can't be empty.")
 
     def assert_adding_subscriptions_for_principal(
         self,

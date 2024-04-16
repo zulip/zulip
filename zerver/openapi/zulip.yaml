@@ -5517,7 +5517,7 @@ paths:
                     example:
                       {
                         "code": "BAD_REQUEST",
-                        "msg": "Must specify exactly 1 stream ID for stream messages",
+                        "msg": "Must specify exactly 1 channel ID for channel messages",
                         "result": "error",
                       }
   /drafts/{draft_id}:
@@ -18321,7 +18321,7 @@ paths:
                   - example:
                       {
                         "code": "BAD_REQUEST",
-                        "msg": "Missing stream_id",
+                        "msg": "Missing channel ID",
                         "result": "error",
                       }
                     description: |

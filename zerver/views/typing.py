@@ -38,13 +38,13 @@ def send_notification_backend(
 
     if recipient_type_name == "stream":
         if stream_id is None:
-            raise JsonableError(_("Missing stream_id"))
+            raise JsonableError(_("Missing '{var_name}' argument").format(var_name="stream_id"))
 
         if topic is None:
             raise JsonableError(_("Missing topic"))
 
         if not user_profile.send_stream_typing_notifications:
-            raise JsonableError(_("User has disabled typing notifications for stream messages"))
+            raise JsonableError(_("User has disabled typing notifications for channel messages"))
 
         # Verify that the user has access to the stream and has
         # permission to send messages to it.

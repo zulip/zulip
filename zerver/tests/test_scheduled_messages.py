@@ -505,7 +505,7 @@ class ScheduledMessageTest(ZulipTestCase):
         }
         result = self.client_patch(f"/json/scheduled_messages/{scheduled_message_id}", payload)
         self.assert_json_error(
-            result, "Topic required when updating scheduled message type to stream."
+            result, "Topic required when updating scheduled message type to channel."
         )
 
         # Edit message `type` to stream with valid `to` and `topic` succeeds
