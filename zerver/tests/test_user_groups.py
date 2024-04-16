@@ -113,20 +113,29 @@ class UserGroupTestCase(ZulipTestCase):
         everyone_group = check_add_user_group(realm, "Everyone", [shiva], acting_user=None)
         GroupGroupMembership.objects.create(supergroup=everyone_group, subgroup=staff_group)
 
-        self.assertCountEqual(list(get_recursive_subgroups(leadership_group)), [leadership_group])
         self.assertCountEqual(
-            list(get_recursive_subgroups(staff_group)), [leadership_group, staff_group]
+            list(get_recursive_subgroups(leadership_group)), [leadership_group.usergroup_ptr]
+        )
+        self.assertCountEqual(
+            list(get_recursive_subgroups(staff_group)),
+            [leadership_group.usergroup_ptr, staff_group.usergroup_ptr],
         )
         self.assertCountEqual(
             list(get_recursive_subgroups(everyone_group)),
-            [leadership_group, staff_group, everyone_group],
+            [
+                leadership_group.usergroup_ptr,
+                staff_group.usergroup_ptr,
+                everyone_group.usergroup_ptr,
+            ],
         )
 
         self.assertCountEqual(list(get_recursive_strict_subgroups(leadership_group)), [])
-        self.assertCountEqual(list(get_recursive_strict_subgroups(staff_group)), [leadership_group])
+        self.assertCountEqual(
+            list(get_recursive_strict_subgroups(staff_group)), [leadership_group.usergroup_ptr]
+        )
         self.assertCountEqual(
             list(get_recursive_strict_subgroups(everyone_group)),
-            [leadership_group, staff_group],
+            [leadership_group.usergroup_ptr, staff_group.usergroup_ptr],
         )
 
         self.assertCountEqual(list(get_recursive_group_members(leadership_group)), [desdemona])
@@ -135,14 +144,14 @@ class UserGroupTestCase(ZulipTestCase):
             list(get_recursive_group_members(everyone_group)), [desdemona, iago, shiva]
         )
 
-        self.assertIn(leadership_group, get_recursive_membership_groups(desdemona))
-        self.assertIn(staff_group, get_recursive_membership_groups(desdemona))
-        self.assertIn(everyone_group, get_recursive_membership_groups(desdemona))
+        self.assertIn(leadership_group.usergroup_ptr, get_recursive_membership_groups(desdemona))
+        self.assertIn(staff_group.usergroup_ptr, get_recursive_membership_groups(desdemona))
+        self.assertIn(everyone_group.usergroup_ptr, get_recursive_membership_groups(desdemona))
 
-        self.assertIn(staff_group, get_recursive_membership_groups(iago))
-        self.assertIn(everyone_group, get_recursive_membership_groups(iago))
+        self.assertIn(staff_group.usergroup_ptr, get_recursive_membership_groups(iago))
+        self.assertIn(everyone_group.usergroup_ptr, get_recursive_membership_groups(iago))
 
-        self.assertIn(everyone_group, get_recursive_membership_groups(shiva))
+        self.assertIn(everyone_group.usergroup_ptr, get_recursive_membership_groups(shiva))
 
     def test_subgroups_of_role_based_system_groups(self) -> None:
         realm = get_realm("zulip")
@@ -368,7 +377,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
         result = self.client_post("/json/user_groups/create", info=params)
         self.assert_json_success(result)
         test_group = UserGroup.objects.get(name="test", realm=hamlet.realm)
-        self.assertEqual(test_group.can_mention_group, leadership_group)
+        self.assertEqual(test_group.can_mention_group, leadership_group.usergroup_ptr)
 
         nobody_group = UserGroup.objects.get(
             name="role:nobody", realm=hamlet.realm, is_system_group=True
@@ -538,7 +547,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
         result = self.client_patch(f"/json/user_groups/{support_group.id}", info=params)
         self.assert_json_success(result)
         support_group = UserGroup.objects.get(name="support", realm=hamlet.realm)
-        self.assertEqual(support_group.can_mention_group, marketing_group)
+        self.assertEqual(support_group.can_mention_group, marketing_group.usergroup_ptr)
 
         nobody_group = UserGroup.objects.get(
             name="role:nobody", realm=hamlet.realm, is_system_group=True
@@ -640,7 +649,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
             for i in range(50)
         ]
 
-        with self.assert_database_query_count(4):
+        with self.assert_database_query_count(5):
             user_group = create_user_group_in_database(
                 name="support",
                 members=[hamlet, cordelia, *original_users],
