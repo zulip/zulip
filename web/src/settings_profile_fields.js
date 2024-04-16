@@ -581,19 +581,9 @@ function update_profile_fields_checkboxes() {
 
 function toggle_display_in_profile_summary_profile_field(e) {
     const field_id = Number.parseInt($(e.currentTarget).attr("data-profile-field-id"), 10);
-    const field = get_profile_field(field_id);
-
-    let field_data;
-    if (field.field_data) {
-        field_data = field.field_data;
-    }
 
     const data = {
-        name: field.name,
-        hint: field.hint,
-        field_data,
-        display_in_profile_summary: !field.display_in_profile_summary,
-        required: field.required,
+        display_in_profile_summary: $(e.currentTarget).prop("checked"),
     };
     const $profile_field_status = $("#admin-profile-field-status").expectOne();
 
