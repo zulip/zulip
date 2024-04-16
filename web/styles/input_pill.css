@@ -162,6 +162,8 @@
     }
 }
 
+/* These pill are similar to .not-editable, but are meant to show
+   profile cards when clicked. */
 .panel_user_list > .pill-container {
     background-color: hsl(0deg 0% 0% / 7%);
 
@@ -178,9 +180,13 @@
             color: inherit;
         }
 
-        > .pill-value {
-            padding: 5px;
-            max-width: 165px;
+        > .pill-label {
+            margin: 0;
+
+            > .pill-value {
+                padding: 5px;
+                max-width: 165px;
+            }
         }
     }
 }
