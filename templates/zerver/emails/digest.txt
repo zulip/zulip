@@ -5,8 +5,8 @@
 {% endfor %}{% endfor %}
 {% if convo.count > 0 %}+ {{ convo.count }} more message{{ convo.count|pluralize }} by {{ convo.participants|display_list(4) }}.{% endif %}{% endfor %}{% endfor %}{% endif %}
 
-{% if new_streams.plain %}** New streams **
-    {{ new_streams.plain|display_list(1000) }}.
+{% if new_channels.plain %}** {% trans %}New channels{% endtrans %} **
+    {{ new_channels.plain|display_list(1000) }}.
 {% endif %}
 
 {% trans organization_url=realm_uri %}Click here to log in to Zulip and catch up: {{ organization_url }}.{% endtrans %}
