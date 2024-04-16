@@ -235,10 +235,9 @@
         border: hsl(0deg 0% 50%) 1px solid;
         padding: 2px 8px 2px 10px;
         border-radius: 10px;
-        position: relative;
-        top: 1px;
-        display: block;
-        margin: 5px 0 15px;
+        /* Space any subsequent Markdown content the same
+           distance as adjacent paragraphs are spaced. */
+        margin: 0 0 10px;
 
         .spoiler-header {
             /* We use flexbox to display the spoiler message
@@ -330,6 +329,13 @@
                 }
             }
         }
+    }
+
+    & > .spoiler-block:last-child {
+        /* A spoiler block at the end of a message, or as
+           a message's only content, gets the same bottom
+           margin as other elements. */
+        margin-bottom: 5px;
     }
 
     /* embedded link previews */

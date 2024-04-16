@@ -1,3 +1,9 @@
+.widget-content {
+    /* TODO: Coordinate this value with other Markdown
+       element spacing, as a variable. */
+    margin-bottom: 5px;
+}
+
 .widget-choices {
     & ul {
         padding: 3px;
@@ -66,10 +72,6 @@
                 outline-color: hsl(0deg 0% 100% / 0%);
             }
         }
-    }
-
-    .add-task-bar {
-        margin-bottom: 5px;
     }
 }
 
