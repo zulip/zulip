@@ -66,6 +66,7 @@ from zerver.models import (
     Huddle,
     Message,
     MutedUser,
+    NamedUserGroup,
     OnboardingStep,
     Reaction,
     Realm,
@@ -456,6 +457,15 @@ class RealmImportExportTest(ExportFile):
         self.assertEqual(exported_usergroups[2]["name"], "role:administrators")
         self.assertFalse("direct_members" in exported_usergroups[2])
         self.assertFalse("direct_subgroups" in exported_usergroups[2])
+
+        exported_namedusergroups = data["zerver_namedusergroup"]
+        self.assert_length(exported_namedusergroups, 9)
+        self.assertEqual(exported_namedusergroups[2]["named_group_name"], "role:administrators")
+        self.assertTrue("usergroup_ptr" in exported_namedusergroups[2])
+        self.assertTrue("realm_for_sharding" in exported_namedusergroups[2])
+        self.assertFalse("realm" in exported_namedusergroups[2])
+        self.assertFalse("direct_members" in exported_namedusergroups[2])
+        self.assertFalse("direct_subgroups" in exported_namedusergroups[2])
 
         data = read_json("messages-000001.json")
         um = UserMessage.objects.all()[0]
@@ -1224,6 +1234,10 @@ class RealmImportExportTest(ExportFile):
             return {group.name for group in UserGroup.objects.filter(realm=r)}
 
         @getter
+        def get_named_user_group_names(r: Realm) -> Set[str]:
+            return {group.name for group in NamedUserGroup.objects.filter(realm=r)}
+
+        @getter
         def get_user_membership(r: Realm) -> Set[str]:
             usergroup = UserGroup.objects.get(realm=r, name="hamletcharacters")
             usergroup_membership = UserGroupMembership.objects.filter(user_group=usergroup)
@@ -1669,6 +1683,7 @@ class RealmImportExportTest(ExportFile):
         # Simulate an external export where user groups are missing.
         data = read_json("realm.json")
         data.pop("zerver_usergroup")
+        data.pop("zerver_namedusergroup")
         data.pop("zerver_realmauditlog")
 
         # User groups data is missing. So, all the realm group based settings
