@@ -186,7 +186,7 @@ class TestDigestEmailMessages(ZulipTestCase):
         kwargs = mock_send_future_email.call_args[1]
         self.assertEqual(kwargs["to_user_ids"], [polonius.id])
 
-        new_stream_names = kwargs["context"]["new_streams"]["plain"]
+        new_stream_names = kwargs["context"]["new_channels"]["plain"]
         self.assertTrue("web_public_stream" in new_stream_names)
 
     def test_no_logging(self) -> None:
