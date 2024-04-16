@@ -229,8 +229,8 @@ run_test("basics", ({override}) => {
     helper.assert_events([
         [message_feed_top_notices, "hide_top_of_narrow_notices"],
         [message_feed_loading, "hide_indicators"],
-        [message_lists, "save_pre_narrow_offset_for_reload"],
         [compose_banner, "clear_message_sent_banners"],
+        [message_lists, "save_pre_narrow_offset_for_reload"],
         [compose_actions, "on_narrow"],
         [unread_ops, "process_visible"],
         [narrow_history, "save_narrow_state_and_flush"],

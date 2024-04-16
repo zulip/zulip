@@ -70,6 +70,9 @@ export function reset_ui_state() {
     unread_ui.reset_unread_banner();
     // We sometimes prevent draft restoring until the narrow resets.
     compose_state.allow_draft_restoring();
+    // Most users aren't going to send a bunch of a out-of-narrow messages
+    // and expect to visit a list of narrows, so let's get these out of the way.
+    compose_banner.clear_message_sent_banners();
 }
 
 export function changehash(newhash) {
@@ -371,10 +374,6 @@ export function activate(raw_terms, opts) {
             // we can restore it if/when we later navigate back to that view.
             message_lists.save_pre_narrow_offset_for_reload();
         }
-
-        // most users aren't going to send a bunch of a out-of-narrow messages
-        // and expect to visit a list of narrows, so let's get these out of the way.
-        compose_banner.clear_message_sent_banners();
 
         // Open tooltips are only interesting for current narrow,
         // so hide them when activating a new one.
