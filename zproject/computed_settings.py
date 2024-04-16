@@ -178,8 +178,6 @@ MIDDLEWARE = [
     # Make sure 2FA middlewares come after authentication middleware.
     "django_otp.middleware.OTPMiddleware",  # Required by two factor auth.
     "two_factor.middleware.threadlocals.ThreadLocals",  # Required by Twilio
-    # Needs to be after CommonMiddleware, which sets Content-Length
-    "zerver.middleware.FinalizeOpenGraphDescription",
 ]
 
 AUTH_USER_MODEL = "zerver.UserProfile"
