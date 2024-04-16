@@ -41,9 +41,9 @@
   "ending_balance": 0,
   "footer": null,
   "from_invoice": null,
-  "hosted_invoice_url": "https://invoice.stripe.com/i/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QdHBQVFpoUHlFUUpQSkUwc3ZDekVwc2tnRXhaSFJSLDEwMzI5ODYyMw02004QaAPaaq?s=ap",
-  "id": "in_NORMALIZED00000000000004",
-  "invoice_pdf": "https://pay.stripe.com/invoice/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QdHBQVFpoUHlFUUpQSkUwc3ZDekVwc2tnRXhaSFJSLDEwMzI5ODYyMw02004QaAPaaq/pdf?s=ap",
+  "hosted_invoice_url": "https://invoice.stripe.com/i/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9Qdnl0QUh2SjFEVzY5UGl5elAzNFpwS0JJY1NEWFV4LDEwMzc5NTE4OQ0200Uy5W6a5Z?s=ap",
+  "id": "in_NORMALIZED00000000000001",
+  "invoice_pdf": "https://pay.stripe.com/invoice/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9Qdnl0QUh2SjFEVzY5UGl5elAzNFpwS0JJY1NEWFV4LDEwMzc5NTE4OQ0200Uy5W6a5Z/pdf?s=ap",
   "issuer": {
     "type": "self"
   },
@@ -59,8 +59,8 @@
         "discount_amounts": [],
         "discountable": false,
         "discounts": [],
-        "id": "il_NORMALIZED00000000000006",
-        "invoice": "in_NORMALIZED00000000000004",
+        "id": "il_NORMALIZED00000000000001",
+        "invoice": "in_NORMALIZED00000000000001",
         "invoice_item": "ii_NORMALIZED00000000000001",
         "livemode": false,
         "metadata": {},
@@ -106,7 +106,7 @@
     "has_more": false,
     "object": "list",
     "total_count": 1,
-    "url": "/v1/invoices/in_NORMALIZED00000000000004/lines"
+    "url": "/v1/invoices/in_NORMALIZED00000000000001/lines"
   },
   "livemode": false,
   "metadata": {
@@ -118,12 +118,12 @@
     "user_id": "10"
   },
   "next_payment_attempt": null,
-  "number": "NORMALI-0005",
+  "number": "NORMALI-0002",
   "object": "invoice",
   "on_behalf_of": null,
   "paid": false,
   "paid_out_of_band": false,
-  "payment_intent": "pi_NORMALIZED00000000000003",
+  "payment_intent": "pi_NORMALIZED00000000000001",
   "payment_settings": {
     "default_mandate": null,
     "payment_method_options": null,

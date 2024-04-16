@@ -1,5 +1,5 @@
 {
-  "amount": 14400,
+  "amount": 10800,
   "currency": "usd",
   "customer": "cus_NORMALIZED0001",
   "date": 1000000000,
@@ -34,14 +34,14 @@
     "tiers_mode": null,
     "transform_quantity": null,
     "type": "one_time",
-    "unit_amount": 1600,
-    "unit_amount_decimal": "1600"
+    "unit_amount": 1200,
+    "unit_amount_decimal": "1200"
   },
   "proration": false,
   "quantity": 9,
   "subscription": null,
   "tax_rates": [],
   "test_clock": null,
-  "unit_amount": 1600,
-  "unit_amount_decimal": "1600"
+  "unit_amount": 1200,
+  "unit_amount_decimal": "1200"
 }
