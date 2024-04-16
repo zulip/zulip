@@ -140,7 +140,7 @@ class MessagePOSTTest(ZulipTestCase):
         msg = self.get_last_message()
         expected = (
             "Your bot `whatever-bot@zulip.testserver` tried to send a message to "
-            "stream ID 99999, but there is no stream with that ID."
+            "channel ID 99999, but there is no channel with that ID."
         )
         self.assertEqual(msg.content, expected)
 
@@ -175,7 +175,7 @@ class MessagePOSTTest(ZulipTestCase):
         msg = self.get_second_to_last_message()
         expected = (
             "Your bot `whatever-bot@zulip.testserver` tried to send a message to "
-            "stream #**Acropolis**. The stream exists but does not have any subscribers."
+            "channel #**Acropolis**. The channel exists but does not have any subscribers."
         )
         self.assertEqual(msg.content, expected)
 
@@ -210,7 +210,7 @@ class MessagePOSTTest(ZulipTestCase):
         msg = self.get_second_to_last_message()
         expected = (
             "Your bot `whatever-bot@zulip.testserver` tried to send a message to "
-            "stream #**Acropolis**. The stream exists but does not have any subscribers."
+            "channel #**Acropolis**. The channel exists but does not have any subscribers."
         )
         self.assertEqual(msg.content, expected)
 
@@ -2428,13 +2428,13 @@ class ExtractTest(ZulipTestCase):
             123,
         )
 
-        with self.assertRaisesRegex(JsonableError, "Invalid data type for stream"):
+        with self.assertRaisesRegex(JsonableError, "Invalid data type for channel"):
             extract_stream_indicator("{}")
 
-        with self.assertRaisesRegex(JsonableError, "Invalid data type for stream"):
+        with self.assertRaisesRegex(JsonableError, "Invalid data type for channel"):
             extract_stream_indicator("[{}]")
 
-        with self.assertRaisesRegex(JsonableError, "Expected exactly one stream"):
+        with self.assertRaisesRegex(JsonableError, "Expected exactly one channel"):
             extract_stream_indicator('[1,2,"general"]')
 
     def test_extract_private_recipients_emails(self) -> None:
@@ -3053,7 +3053,7 @@ class CheckMessageTest(ZulipTestCase):
 
         new_count = message_stream_count(parent)
         self.assertEqual(new_count, old_count + 1)
-        self.assertIn("that stream does not exist.", most_recent_message(parent).content)
+        self.assertIn("that channel does not exist.", most_recent_message(parent).content)
 
         # Try sending to stream that exists with no subscribers soon
         # after; due to rate-limiting, this should send nothing.
