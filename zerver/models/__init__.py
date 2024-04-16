@@ -8,6 +8,7 @@ from zerver.models.custom_profile_fields import CustomProfileField as CustomProf
 from zerver.models.custom_profile_fields import CustomProfileFieldValue as CustomProfileFieldValue
 from zerver.models.drafts import Draft as Draft
 from zerver.models.groups import GroupGroupMembership as GroupGroupMembership
+from zerver.models.groups import NamedUserGroup as NamedUserGroup
 from zerver.models.groups import UserGroup as UserGroup
 from zerver.models.groups import UserGroupMembership as UserGroupMembership
 from zerver.models.linkifiers import RealmFilter as RealmFilter
