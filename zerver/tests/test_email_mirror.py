@@ -41,7 +41,7 @@ from zerver.models import Attachment, Recipient, Stream, UserProfile
 from zerver.models.realms import get_realm
 from zerver.models.streams import get_stream
 from zerver.models.users import get_system_bot
-from zerver.worker.queue_processors import MirrorWorker
+from zerver.worker.email_mirror import MirrorWorker
 
 if TYPE_CHECKING:
     from django.test.client import _MonkeyPatchedWSGIResponse as TestHttpResponse

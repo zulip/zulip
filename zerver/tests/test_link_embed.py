@@ -22,7 +22,7 @@ from zerver.lib.url_preview.parsers import GenericParser, OpenGraphParser
 from zerver.lib.url_preview.preview import get_link_embed_data
 from zerver.lib.url_preview.types import UrlEmbedData, UrlOEmbedData
 from zerver.models import Message, Realm, UserProfile
-from zerver.worker.queue_processors import FetchLinksEmbedData
+from zerver.worker.embed_links import FetchLinksEmbedData
 
 
 def reconstruct_url(url: str, maxwidth: int = 640, maxheight: int = 480) -> str:
@@ -981,7 +981,7 @@ class PreviewTestCase(ZulipTestCase):
         with self.settings(TEST_SUITE=False):
             with self.assertLogs(level="INFO") as info_logs:
                 with mock.patch(
-                    "zerver.worker.queue_processors.url_preview.get_link_embed_data",
+                    "zerver.worker.embed_links.url_preview.get_link_embed_data",
                     lambda *args, **kwargs: mocked_data,
                 ):
                     FetchLinksEmbedData().consume(event)
@@ -1019,7 +1019,7 @@ class PreviewTestCase(ZulipTestCase):
         with self.settings(TEST_SUITE=False):
             with self.assertLogs(level="INFO") as info_logs:
                 with mock.patch(
-                    "zerver.worker.queue_processors.url_preview.get_link_embed_data",
+                    "zerver.worker.embed_links.url_preview.get_link_embed_data",
                     lambda *args, **kwargs: mocked_data,
                 ):
                     FetchLinksEmbedData().consume(event)
