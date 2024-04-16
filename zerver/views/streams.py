@@ -514,13 +514,13 @@ def you_were_just_subscribed_message(
     subscriptions = sorted(stream_names)
     if len(subscriptions) == 1:
         with override_language(recipient_user.default_language):
-            return _("{user_full_name} subscribed you to the stream {channel_name}.").format(
+            return _("{user_full_name} subscribed you to the channel {channel_name}.").format(
                 user_full_name=f"@**{acting_user.full_name}|{acting_user.id}**",
                 channel_name=f"#**{subscriptions[0]}**",
             )
 
     with override_language(recipient_user.default_language):
-        message = _("{user_full_name} subscribed you to the following streams:").format(
+        message = _("{user_full_name} subscribed you to the following channels:").format(
             user_full_name=f"@**{acting_user.full_name}|{acting_user.id}**",
         )
     message += "\n\n"
@@ -761,10 +761,10 @@ def send_messages_for_new_subscribers(
         if new_stream_announcements_stream is not None:
             with override_language(new_stream_announcements_stream.realm.default_language):
                 if len(created_streams) > 1:
-                    content = _("{user_name} created the following streams: {new_channels}.")
+                    content = _("{user_name} created the following channels: {new_channels}.")
                 else:
-                    content = _("{user_name} created a new stream {new_channels}.")
-                topic_name = _("new streams")
+                    content = _("{user_name} created a new channel {new_channels}.")
+                topic_name = _("new channels")
 
             content = content.format(
                 user_name=silent_mention_syntax_for_user(user_profile),
@@ -798,7 +798,7 @@ def send_messages_for_new_subscribers(
                         stream=stream,
                         topic_name=str(Realm.STREAM_EVENTS_NOTIFICATION_TOPIC_NAME),
                         content=_(
-                            "**{policy}** stream created by {user_name}. **Description:**"
+                            "**{policy}** channel created by {user_name}. **Description:**"
                         ).format(
                             user_name=silent_mention_syntax_for_user(user_profile),
                             policy=get_stream_permission_policy_name(
