@@ -306,7 +306,7 @@ class TestGetChartData(ZulipTestCase):
             },
             subdomain="zephyr",
         )
-        self.assert_json_error(result, "Invalid stream ID")
+        self.assert_json_error(result, "Invalid channel ID")
 
     def test_include_empty_subgroups(self) -> None:
         FillState.objects.create(

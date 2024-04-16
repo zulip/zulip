@@ -130,7 +130,7 @@ def add_default_stream(
 ) -> HttpResponse:
     (stream, sub) = access_stream_by_id(user_profile, stream_id)
     if stream.invite_only:
-        raise JsonableError(_("Private streams cannot be made default."))
+        raise JsonableError(_("Private channels cannot be made default."))
     do_add_default_stream(stream)
     return json_success(request)
 
@@ -296,7 +296,7 @@ def update_stream_backend(
 
     # Ensure that a stream cannot be both a default stream for new users and private
     if proposed_is_private and proposed_is_default_stream:
-        raise JsonableError(_("A default stream cannot be private."))
+        raise JsonableError(_("A default channel cannot be private."))
 
     if is_private is not None:
         # We require even realm administrators to be actually
@@ -309,7 +309,7 @@ def update_stream_backend(
     # web-public, we don't use an "is not None" check.
     if is_web_public:
         if not user_profile.realm.web_public_streams_enabled():
-            raise JsonableError(_("Web-public streams are not enabled."))
+            raise JsonableError(_("Web-public channels are not enabled."))
         if not user_profile.can_create_web_public_streams():
             raise JsonableError(_("Insufficient permission"))
 
@@ -351,7 +351,7 @@ def update_stream_backend(
     if new_name is not None:
         new_name = new_name.strip()
         if stream.name == new_name:
-            raise JsonableError(_("Stream already has that name!"))
+            raise JsonableError(_("Channel already has that name."))
         if stream.name.lower() != new_name.lower():
             # Check that the stream name is available (unless we are
             # are only changing the casing of the stream name).
@@ -380,7 +380,7 @@ def update_stream_backend(
         ] != getattr(stream, setting_group_id_name):
             if sub is None and stream.invite_only:
                 # Admins cannot change this setting for unsubscribed private streams.
-                raise JsonableError(_("Invalid stream ID"))
+                raise JsonableError(_("Invalid channel ID"))
 
             user_group_id = request_settings_dict[setting_group_id_name]
             user_group = access_user_group_for_setting(
@@ -636,7 +636,7 @@ def add_subscriptions_backend(
     )
     if len(unauthorized_streams) > 0 and authorization_errors_fatal:
         raise JsonableError(
-            _("Unable to access stream ({channel_name}).").format(
+            _("Unable to access channel ({channel_name}).").format(
                 channel_name=unauthorized_streams[0].name,
             )
         )
@@ -649,7 +649,7 @@ def add_subscriptions_backend(
         and not all(stream.invite_only for stream in streams)
     ):
         raise JsonableError(
-            _("You can only invite other Zephyr mirroring users to private streams.")
+            _("You can only invite other Zephyr mirroring users to private channels.")
         )
 
     if is_default_stream:
@@ -1016,7 +1016,7 @@ def update_subscription_properties_backend(
         (stream, sub) = access_stream_by_id(user_profile, stream_id)
         if sub is None:
             raise JsonableError(
-                _("Not subscribed to stream id {channel_id}").format(channel_id=stream_id)
+                _("Not subscribed to channel ID {channel_id}").format(channel_id=stream_id)
             )
 
         try:

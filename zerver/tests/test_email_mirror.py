@@ -1174,7 +1174,7 @@ class TestMissedMessageEmailMessages(ZulipTestCase):
 
         self.assertEqual(
             message.content,
-            "Error sending message to stream announce via message notification email reply:\nOnly organization administrators can send to this stream.",
+            "Error sending message to channel announce via message notification email reply:\nOnly organization administrators can send to this channel.",
         )
         self.assertEqual(
             message.sender,

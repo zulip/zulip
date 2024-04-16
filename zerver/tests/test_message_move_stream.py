@@ -394,7 +394,7 @@ class MessageMoveStreamTest(ZulipTestCase):
             },
         )
 
-        self.assert_json_error(result, "Invalid stream ID")
+        self.assert_json_error(result, "Invalid channel ID")
 
     def test_move_message_realm_admin_cant_move_to_private_stream_without_subscription(
         self,
@@ -414,7 +414,7 @@ class MessageMoveStreamTest(ZulipTestCase):
             },
         )
 
-        self.assert_json_error(result, "Invalid stream ID")
+        self.assert_json_error(result, "Invalid channel ID")
 
     def test_move_message_realm_admin_cant_move_from_private_stream_without_subscription(
         self,
@@ -1000,7 +1000,7 @@ class MessageMoveStreamTest(ZulipTestCase):
         do_change_stream_post_policy(
             new_stream, Stream.STREAM_POST_POLICY_ADMINS, acting_user=user_profile
         )
-        error_msg = "Only organization administrators can send to this stream."
+        error_msg = "Only organization administrators can send to this channel."
         check_move_message_to_stream(UserProfile.ROLE_MODERATOR, error_msg)
         check_move_message_to_stream(UserProfile.ROLE_REALM_ADMINISTRATOR)
 
@@ -1012,7 +1012,7 @@ class MessageMoveStreamTest(ZulipTestCase):
         do_change_stream_post_policy(
             new_stream, Stream.STREAM_POST_POLICY_MODERATORS, acting_user=user_profile
         )
-        error_msg = "Only organization administrators and moderators can send to this stream."
+        error_msg = "Only organization administrators and moderators can send to this channel."
         check_move_message_to_stream(UserProfile.ROLE_MEMBER, error_msg)
         check_move_message_to_stream(UserProfile.ROLE_MODERATOR)
 
@@ -1024,7 +1024,7 @@ class MessageMoveStreamTest(ZulipTestCase):
         do_change_stream_post_policy(
             new_stream, Stream.STREAM_POST_POLICY_RESTRICT_NEW_MEMBERS, acting_user=user_profile
         )
-        error_msg = "New members cannot send to this stream."
+        error_msg = "New members cannot send to this channel."
 
         do_set_realm_property(
             user_profile.realm, "waiting_period_threshold", 100000, acting_user=None
