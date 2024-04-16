@@ -137,6 +137,7 @@ ALL_ZULIP_TABLES = {
     "zerver_missedmessageemailaddress",
     "zerver_multiuseinvite",
     "zerver_multiuseinvite_streams",
+    "zerver_namedusergroup",
     "zerver_onboardingstep",
     "zerver_preregistrationrealm",
     "zerver_preregistrationuser",
@@ -243,6 +244,8 @@ NON_EXPORTED_TABLES = {
     "zerver_submessage",
     # Drafts don't need to be exported as they are supposed to be more ephemeral.
     "zerver_draft",
+    # NamedUserGroup is not exported temporarily, will be done in the next few commits.
+    "zerver_namedusergroup",
     # For any tables listed below here, it's a bug that they are not present in the export.
 }
 
