@@ -689,6 +689,29 @@ def bulk_import_model(data: TableData, model: Any, dump_file_id: Optional[str] =
         logging.info("Successfully imported %s from %s[%s].", model, table, dump_file_id)
 
 
+def bulk_import_named_user_groups(data: TableData) -> None:
+    vals = [
+        (
+            group["usergroup_ptr_id"],
+            group["realm_for_sharding_id"],
+            group["named_group_name"],
+            group["named_group_description"],
+            group["named_group_is_system_group"],
+            group["named_group_can_mention_group_id"],
+        )
+        for group in data["zerver_namedusergroup"]
+    ]
+
+    query = SQL(
+        """
+        INSERT INTO zerver_namedusergroup (usergroup_ptr_id, realm_id, name, description, is_system_group, can_mention_group_id)
+        VALUES %s
+        """
+    )
+    with connection.cursor() as cursor:
+        execute_values(cursor.cursor, query, vals)
+
+
 # Client is a table shared by multiple realms, so in order to
 # correctly import multiple realms into the same server, we need to
 # check if a Client object already exists, and so we need to support
@@ -1038,6 +1061,23 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
                     data, "zerver_usergroup", setting_name, related_table="usergroup"
                 )
             bulk_import_model(data, UserGroup)
+
+            if "zerver_namedusergroup" in data:
+                re_map_foreign_keys(
+                    data, "zerver_namedusergroup", "usergroup_ptr", related_table="usergroup"
+                )
+                re_map_foreign_keys(
+                    data, "zerver_namedusergroup", "realm_for_sharding", related_table="realm"
+                )
+                for setting_name in UserGroup.GROUP_PERMISSION_SETTINGS:
+                    named_group_setting_name = "named_group_" + setting_name
+                    re_map_foreign_keys(
+                        data,
+                        "zerver_namedusergroup",
+                        named_group_setting_name,
+                        related_table="usergroup",
+                    )
+                bulk_import_named_user_groups(data)
 
         # We expect Zulip server exports to contain these system groups,
         # this logic here is needed to handle the imports from other services.

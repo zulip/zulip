@@ -45,6 +45,7 @@ from zerver.models import (
     Huddle,
     Message,
     MutedUser,
+    NamedUserGroup,
     OnboardingStep,
     Reaction,
     Realm,
@@ -244,8 +245,6 @@ NON_EXPORTED_TABLES = {
     "zerver_submessage",
     # Drafts don't need to be exported as they are supposed to be more ephemeral.
     "zerver_draft",
-    # NamedUserGroup is not exported temporarily, will be done in the next few commits.
-    "zerver_namedusergroup",
     # For any tables listed below here, it's a bug that they are not present in the export.
 }
 
@@ -777,6 +776,14 @@ def get_realm_config() -> Config:
         normal_parent=realm_config,
         include_rows="realm_id__in",
         exclude=["direct_members", "direct_subgroups"],
+    )
+
+    Config(
+        table="zerver_namedusergroup",
+        model=NamedUserGroup,
+        normal_parent=realm_config,
+        include_rows="realm_for_sharding_id__in",
+        exclude=["realm", "direct_members", "direct_subgroups"],
     )
 
     Config(
