@@ -145,7 +145,7 @@ class TypingValidateStreamIdTopicArgumentsTest(ZulipTestCase):
                 "topic": topic_name,
             },
         )
-        self.assert_json_error(result, "Invalid stream ID")
+        self.assert_json_error(result, "Invalid channel ID")
 
 
 class TypingHappyPathTestDirectMessages(ZulipTestCase):

@@ -520,7 +520,7 @@ class RealmTest(ZulipTestCase):
             new_stream_announcements_stream_id=orjson.dumps(invalid_notif_stream_id).decode()
         )
         result = self.client_patch("/json/realm", req)
-        self.assert_json_error(result, "Invalid stream ID")
+        self.assert_json_error(result, "Invalid channel ID")
         realm = get_realm("zulip")
         assert realm.new_stream_announcements_stream is not None
         self.assertNotEqual(realm.new_stream_announcements_stream.id, invalid_notif_stream_id)
@@ -605,7 +605,7 @@ class RealmTest(ZulipTestCase):
             ).decode()
         )
         result = self.client_patch("/json/realm", req)
-        self.assert_json_error(result, "Invalid stream ID")
+        self.assert_json_error(result, "Invalid channel ID")
         realm = get_realm("zulip")
         assert realm.signup_announcements_stream is not None
         self.assertNotEqual(
@@ -679,7 +679,7 @@ class RealmTest(ZulipTestCase):
             ).decode()
         )
         result = self.client_patch("/json/realm", req)
-        self.assert_json_error(result, "Invalid stream ID")
+        self.assert_json_error(result, "Invalid channel ID")
         realm = get_realm("zulip")
         assert realm.zulip_update_announcements_stream is not None
         self.assertNotEqual(

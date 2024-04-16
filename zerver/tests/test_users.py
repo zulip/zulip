@@ -1492,7 +1492,7 @@ class UserProfileTest(ZulipTestCase):
 
         # Invalid stream ID.
         result = self.client_get(f"/json/users/{iago.id}/subscriptions/25")
-        self.assert_json_error(result, "Invalid stream ID")
+        self.assert_json_error(result, "Invalid channel ID")
 
         result = orjson.loads(
             self.client_get(f"/json/users/{iago.id}/subscriptions/{stream.id}").content
@@ -1541,7 +1541,7 @@ class UserProfileTest(ZulipTestCase):
         # Unsubscribed non-admins cannot check subscription status in a private stream.
         self.login("shiva")
         result = self.client_get(f"/json/users/{iago.id}/subscriptions/{stream.id}")
-        self.assert_json_error(result, "Invalid stream ID")
+        self.assert_json_error(result, "Invalid channel ID")
 
         # Subscribed non-admins can check subscription status in a private stream
         self.subscribe(self.example_user("shiva"), stream.name)

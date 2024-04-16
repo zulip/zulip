@@ -5139,7 +5139,7 @@ paths:
                   - example:
                       {
                         "code": "BAD_REQUEST",
-                        "msg": "Invalid stream name 'nonexistent'",
+                        "msg": "Invalid channel name 'nonexistent'",
                         "result": "error",
                       }
                     description: |
@@ -6041,7 +6041,7 @@ paths:
                       - example:
                           {
                             "code": "BAD_REQUEST",
-                            "msg": "Private streams cannot be made default.",
+                            "msg": "Private channels cannot be made default.",
                             "result": "error",
                           }
                         description: |
@@ -9469,7 +9469,7 @@ paths:
                   - $ref: "#/components/schemas/CodedError"
                   - example:
                       {
-                        "msg": "Unable to access stream (private_stream).",
+                        "msg": "Unable to access channel (private).",
                         "result": "error",
                         "code": "BAD_REQUEST",
                       }
@@ -21281,7 +21281,7 @@ components:
             code: {}
           example:
             {
-              "msg": "Invalid stream ID",
+              "msg": "Invalid channel ID",
               "code": "BAD_REQUEST",
               "result": "error",
             }

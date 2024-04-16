@@ -114,7 +114,7 @@ def send_user_remove_events_on_stream_deactivation(
 def do_deactivate_stream(stream: Stream, *, acting_user: Optional[UserProfile]) -> None:
     # If the stream is already deactivated, this is a no-op
     if stream.deactivated is True:
-        raise JsonableError(_("Stream is already deactivated"))
+        raise JsonableError(_("Channel is already deactivated"))
 
     # We want to mark all messages in the to-be-deactivated stream as
     # read for all users; otherwise they will pollute queries like
@@ -238,10 +238,10 @@ def do_unarchive_stream(
 ) -> None:
     realm = stream.realm
     if not stream.deactivated:
-        raise JsonableError(_("Stream is not currently deactivated"))
+        raise JsonableError(_("Channel is not currently deactivated"))
     if Stream.objects.filter(realm=realm, name=new_name).exists():
         raise JsonableError(
-            _("Stream named {channel_name} already exists").format(channel_name=new_name)
+            _("Channel named {channel_name} already exists").format(channel_name=new_name)
         )
     assert stream.recipient_id is not None
 

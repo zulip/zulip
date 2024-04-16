@@ -268,7 +268,7 @@ class MessagePOSTTest(ZulipTestCase):
         self._send_and_verify_message(
             non_admin_profile,
             stream_name,
-            "Only organization administrators can send to this stream.",
+            "Only organization administrators can send to this channel.",
         )
         non_admin_owned_bot = self.create_test_bot(
             short_name="whatever2",
@@ -278,7 +278,7 @@ class MessagePOSTTest(ZulipTestCase):
         self._send_and_verify_message(
             non_admin_owned_bot,
             stream_name,
-            "Only organization administrators can send to this stream.",
+            "Only organization administrators can send to this channel.",
         )
 
         moderator_profile = self.example_user("shiva")
@@ -288,7 +288,7 @@ class MessagePOSTTest(ZulipTestCase):
         self._send_and_verify_message(
             moderator_profile,
             stream_name,
-            "Only organization administrators can send to this stream.",
+            "Only organization administrators can send to this channel.",
         )
         moderator_owned_bot = self.create_test_bot(
             short_name="whatever3",
@@ -298,7 +298,7 @@ class MessagePOSTTest(ZulipTestCase):
         self._send_and_verify_message(
             moderator_owned_bot,
             stream_name,
-            "Only organization administrators can send to this stream.",
+            "Only organization administrators can send to this channel.",
         )
 
         # Bots without owner (except cross realm bot) cannot send to announcement only streams
@@ -313,7 +313,7 @@ class MessagePOSTTest(ZulipTestCase):
         self._send_and_verify_message(
             bot_without_owner,
             stream_name,
-            "Only organization administrators can send to this stream.",
+            "Only organization administrators can send to this channel.",
         )
 
         # Cross realm bots should be allowed
@@ -326,7 +326,7 @@ class MessagePOSTTest(ZulipTestCase):
         guest_profile = self.example_user("polonius")
         # Guests cannot send to non-STREAM_POST_POLICY_EVERYONE streams
         self._send_and_verify_message(
-            guest_profile, stream_name, "Only organization administrators can send to this stream."
+            guest_profile, stream_name, "Only organization administrators can send to this channel."
         )
 
     def test_sending_message_as_stream_post_policy_moderators(self) -> None:
@@ -370,7 +370,7 @@ class MessagePOSTTest(ZulipTestCase):
         self._send_and_verify_message(
             non_admin_profile,
             stream_name,
-            "Only organization administrators and moderators can send to this stream.",
+            "Only organization administrators and moderators can send to this channel.",
         )
         non_admin_owned_bot = self.create_test_bot(
             short_name="whatever3",
@@ -380,7 +380,7 @@ class MessagePOSTTest(ZulipTestCase):
         self._send_and_verify_message(
             non_admin_owned_bot,
             stream_name,
-            "Only organization administrators and moderators can send to this stream.",
+            "Only organization administrators and moderators can send to this channel.",
         )
 
         # Bots without owner (except cross realm bot) cannot send to STREAM_POST_POLICY_MODERATORS streams.
@@ -395,7 +395,7 @@ class MessagePOSTTest(ZulipTestCase):
         self._send_and_verify_message(
             bot_without_owner,
             stream_name,
-            "Only organization administrators and moderators can send to this stream.",
+            "Only organization administrators and moderators can send to this channel.",
         )
 
         # System bots should be allowed
@@ -410,7 +410,7 @@ class MessagePOSTTest(ZulipTestCase):
         self._send_and_verify_message(
             guest_profile,
             stream_name,
-            "Only organization administrators and moderators can send to this stream.",
+            "Only organization administrators and moderators can send to this channel.",
         )
 
     def test_sending_message_as_stream_post_policy_restrict_new_members(self) -> None:
@@ -453,7 +453,7 @@ class MessagePOSTTest(ZulipTestCase):
         # Non admins and their owned bots can send to STREAM_POST_POLICY_RESTRICT_NEW_MEMBERS streams,
         # if the user is not a new member
         self._send_and_verify_message(
-            non_admin_profile, stream_name, "New members cannot send to this stream."
+            non_admin_profile, stream_name, "New members cannot send to this channel."
         )
         non_admin_owned_bot = self.create_test_bot(
             short_name="whatever2",
@@ -461,7 +461,7 @@ class MessagePOSTTest(ZulipTestCase):
             user_profile=non_admin_profile,
         )
         self._send_and_verify_message(
-            non_admin_owned_bot, stream_name, "New members cannot send to this stream."
+            non_admin_owned_bot, stream_name, "New members cannot send to this channel."
         )
 
         non_admin_profile.date_joined = timezone_now() - timedelta(days=11)
@@ -485,7 +485,7 @@ class MessagePOSTTest(ZulipTestCase):
             acting_user=None,
         )
         self._send_and_verify_message(
-            bot_without_owner, stream_name, "New members cannot send to this stream."
+            bot_without_owner, stream_name, "New members cannot send to this channel."
         )
 
         moderator_profile = self.example_user("shiva")
@@ -516,7 +516,7 @@ class MessagePOSTTest(ZulipTestCase):
         guest_profile = self.example_user("polonius")
         # Guests cannot send to non-STREAM_POST_POLICY_EVERYONE streams
         self._send_and_verify_message(
-            guest_profile, stream_name, "Guests cannot send to this stream."
+            guest_profile, stream_name, "Guests cannot send to this channel."
         )
 
     def test_api_message_with_default_to(self) -> None:
@@ -1447,7 +1447,7 @@ class MessagePOSTTest(ZulipTestCase):
 
         # Guest user can't send message to unsubscribed public streams
         result = self.api_post(sender, "/api/v1/messages", payload)
-        self.assert_json_error(result, "Not authorized to send to stream 'public stream'")
+        self.assert_json_error(result, "Not authorized to send to channel 'public stream'")
 
         self.subscribe(sender, stream_name)
         # Guest user can send message to subscribed public streams
