@@ -312,7 +312,7 @@ def do_unarchive_stream(
             sender,
             stream,
             str(Realm.STREAM_EVENTS_NOTIFICATION_TOPIC_NAME),
-            _("Stream {channel_name} un-archived.").format(channel_name=new_name),
+            _("Channel {channel_name} un-archived.").format(channel_name=new_name),
         )
 
 
@@ -1176,11 +1176,12 @@ def send_change_stream_permission_notification(
 
     with override_language(stream.realm.default_language):
         notification_string = _(
-            "{user} changed the [access permissions](/help/stream-permissions) "
-            "for this stream from **{old_policy}** to **{new_policy}**."
+            "{user} changed the [access permissions]({help_link}) "
+            "for this channel from **{old_policy}** to **{new_policy}**."
         )
         notification_string = notification_string.format(
             user=user_mention,
+            help_link="/help/stream-permissions",
             old_policy=old_policy_name,
             new_policy=new_policy_name,
         )
@@ -1351,13 +1352,14 @@ def send_change_stream_post_policy_notification(
 
     with override_language(stream.realm.default_language):
         notification_string = _(
-            "{user} changed the [posting permissions](/help/stream-sending-policy) "
-            "for this stream:\n\n"
+            "{user} changed the [posting permissions]({help_link}) "
+            "for this channel:\n\n"
             "* **Old permissions**: {old_policy}.\n"
             "* **New permissions**: {new_policy}.\n"
         )
         notification_string = notification_string.format(
             user=user_mention,
+            help_link="/help/stream-sending-policy",
             old_policy=Stream.POST_POLICIES[old_post_policy],
             new_policy=Stream.POST_POLICIES[new_post_policy],
         )
@@ -1467,7 +1469,7 @@ def do_rename_stream(stream: Stream, new_name: str, user_profile: UserProfile) -
             sender,
             stream,
             str(Realm.STREAM_EVENTS_NOTIFICATION_TOPIC_NAME),
-            _("{user_name} renamed stream {old_channel_name} to {new_channel_name}.").format(
+            _("{user_name} renamed channel {old_channel_name} to {new_channel_name}.").format(
                 user_name=silent_mention_syntax_for_user(user_profile),
                 old_channel_name=f"**{old_name}**",
                 new_channel_name=f"**{new_name}**",
@@ -1488,7 +1490,7 @@ def send_change_stream_description_notification(
             old_description = "*" + _("No description.") + "*"
 
         notification_string = (
-            _("{user} changed the description for this stream.").format(user=user_mention)
+            _("{user} changed the description for this channel.").format(user=user_mention)
             + "\n\n* **"
             + _("Old description")
             + ":**"
@@ -1561,24 +1563,29 @@ def send_change_stream_message_retention_days_notification(
     with override_language(stream.realm.default_language):
         if old_value == Stream.MESSAGE_RETENTION_SPECIAL_VALUES_MAP["unlimited"]:
             old_retention_period = _("Forever")
-            new_retention_period = f"{new_value} days"
-            summary_line = f"Messages in this stream will now be automatically deleted {new_value} days after they are sent."
+            new_retention_period = _("{number_of_days} days").format(number_of_days=new_value)
+            summary_line = _(
+                "Messages in this channel will now be automatically deleted {number_of_days} days after they are sent."
+            ).format(number_of_days=new_value)
         elif new_value == Stream.MESSAGE_RETENTION_SPECIAL_VALUES_MAP["unlimited"]:
-            old_retention_period = f"{old_value} days"
+            old_retention_period = _("{number_of_days} days").format(number_of_days=old_value)
             new_retention_period = _("Forever")
-            summary_line = _("Messages in this stream will now be retained forever.")
+            summary_line = _("Messages in this channel will now be retained forever.")
         else:
-            old_retention_period = f"{old_value} days"
-            new_retention_period = f"{new_value} days"
-            summary_line = f"Messages in this stream will now be automatically deleted {new_value} days after they are sent."
+            old_retention_period = _("{number_of_days} days").format(number_of_days=old_value)
+            new_retention_period = _("{number_of_days} days").format(number_of_days=new_value)
+            summary_line = _(
+                "Messages in this channel will now be automatically deleted {number_of_days} days after they are sent."
+            ).format(number_of_days=new_value)
         notification_string = _(
-            "{user} has changed the [message retention period](/help/message-retention-policy) for this stream:\n"
+            "{user} has changed the [message retention period]({help_link}) for this channel:\n"
             "* **Old retention period**: {old_retention_period}\n"
             "* **New retention period**: {new_retention_period}\n\n"
             "{summary_line}"
         )
         notification_string = notification_string.format(
             user=user_mention,
+            help_link="/help/message-retention-policy",
             old_retention_period=old_retention_period,
             new_retention_period=new_retention_period,
             summary_line=summary_line,

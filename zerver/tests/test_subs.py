@@ -675,7 +675,7 @@ class StreamAdminTest(ZulipTestCase):
         self.assert_length(messages, 1)
         expected_notification = (
             f"@_**King Hamlet|{user_profile.id}** changed the [access permissions](/help/stream-permissions) "
-            "for this stream from **Private, protected history** to **Public**."
+            "for this channel from **Private, protected history** to **Public**."
         )
         self.assertEqual(messages[0].content, expected_notification)
 
@@ -736,7 +736,7 @@ class StreamAdminTest(ZulipTestCase):
         self.assert_length(messages, 1)
         expected_notification = (
             f"@_**King Hamlet|{user_profile.id}** changed the [access permissions](/help/stream-permissions) "
-            "for this stream from **Public** to **Private, protected history**."
+            "for this channel from **Public** to **Private, protected history**."
         )
         self.assertEqual(messages[0].content, expected_notification)
 
@@ -853,7 +853,7 @@ class StreamAdminTest(ZulipTestCase):
         self.assert_length(messages, 1)
         expected_notification = (
             f"@_**{user_profile.full_name}|{user_profile.id}** changed the [access permissions](/help/stream-permissions) "
-            "for this stream from **Private, protected history** to **Public, protected history**."
+            "for this channel from **Private, protected history** to **Public, protected history**."
         )
         self.assertEqual(messages[0].content, expected_notification)
 
@@ -892,7 +892,7 @@ class StreamAdminTest(ZulipTestCase):
         self.assert_length(messages, 1)
         expected_notification = (
             f"@_**King Hamlet|{user_profile.id}** changed the [access permissions](/help/stream-permissions) "
-            "for this stream from **Public** to **Private, shared history**."
+            "for this channel from **Public** to **Private, shared history**."
         )
         self.assertEqual(messages[0].content, expected_notification)
 
@@ -931,7 +931,7 @@ class StreamAdminTest(ZulipTestCase):
         self.assert_length(messages, 1)
         expected_notification = (
             f"@_**King Hamlet|{user_profile.id}** changed the [access permissions](/help/stream-permissions) "
-            "for this stream from **Private, protected history** to **Private, shared history**."
+            "for this channel from **Private, protected history** to **Private, shared history**."
         )
         self.assertEqual(messages[0].content, expected_notification)
 
@@ -1014,7 +1014,7 @@ class StreamAdminTest(ZulipTestCase):
         self.assert_length(messages, 1)
         expected_notification = (
             f"@_**King Hamlet|{user_profile.id}** changed the [access permissions](/help/stream-permissions) "
-            "for this stream from **Public** to **Web-public**."
+            "for this channel from **Public** to **Web-public**."
         )
         self.assertEqual(messages[0].content, expected_notification)
 
@@ -1051,7 +1051,7 @@ class StreamAdminTest(ZulipTestCase):
         self.assert_length(messages, 1)
         expected_notification = (
             f"@_**Iago|{user_profile.id}** changed the [access permissions](/help/stream-permissions) "
-            "for this stream from **Private, protected history** to **Private, shared history**."
+            "for this channel from **Private, protected history** to **Private, shared history**."
         )
         self.assertEqual(messages[0].content, expected_notification)
 
@@ -1081,7 +1081,7 @@ class StreamAdminTest(ZulipTestCase):
         self.assert_length(messages, 2)
         expected_notification = (
             f"@_**Iago|{user_profile.id}** changed the [access permissions](/help/stream-permissions) "
-            "for this stream from **Private, shared history** to **Private, protected history**."
+            "for this channel from **Private, shared history** to **Private, protected history**."
         )
         self.assertEqual(messages[1].content, expected_notification)
 
@@ -1746,7 +1746,7 @@ class StreamAdminTest(ZulipTestCase):
         # Inspect the notification message sent
         message = self.get_last_message()
         actual_stream = Stream.objects.get(id=message.recipient.type_id)
-        message_content = f"@_**King Hamlet|{user_profile.id}** renamed stream **stream_name1** to **stream_name2**."
+        message_content = f"@_**King Hamlet|{user_profile.id}** renamed channel **stream_name1** to **stream_name2**."
         self.assertEqual(actual_stream.name, "stream_name2")
         self.assertEqual(actual_stream.realm_id, user_profile.realm_id)
         self.assertEqual(message.recipient.type, Recipient.STREAM)
@@ -1873,7 +1873,7 @@ class StreamAdminTest(ZulipTestCase):
 
         messages = get_topic_messages(user_profile, stream, "stream events")
         expected_notification = (
-            f"@_**{user_profile.full_name}|{user_profile.id}** changed the description for this stream.\n\n"
+            f"@_**{user_profile.full_name}|{user_profile.id}** changed the description for this channel.\n\n"
             "* **Old description:**\n"
             "```` quote\n"
             "Test description\n"
@@ -1895,7 +1895,7 @@ class StreamAdminTest(ZulipTestCase):
 
         messages = get_topic_messages(user_profile, stream, "stream events")
         expected_notification = (
-            f"@_**{user_profile.full_name}|{user_profile.id}** changed the description for this stream.\n\n"
+            f"@_**{user_profile.full_name}|{user_profile.id}** changed the description for this channel.\n\n"
             "* **Old description:**\n"
             "```` quote\n"
             "*No description.*\n"
@@ -1917,7 +1917,7 @@ class StreamAdminTest(ZulipTestCase):
 
         messages = get_topic_messages(user_profile, stream, "stream events")
         expected_notification = (
-            f"@_**{user_profile.full_name}|{user_profile.id}** changed the description for this stream.\n\n"
+            f"@_**{user_profile.full_name}|{user_profile.id}** changed the description for this channel.\n\n"
             "* **Old description:**\n"
             "```` quote\n"
             "Test description\n"
@@ -1985,7 +1985,7 @@ class StreamAdminTest(ZulipTestCase):
         messages = get_topic_messages(user_profile, stream, "stream events")
         expected_notification = (
             f"@_**{user_profile.full_name}|{user_profile.id}** changed the "
-            "[posting permissions](/help/stream-sending-policy) for this stream:\n\n"
+            "[posting permissions](/help/stream-sending-policy) for this channel:\n\n"
             "* **Old permissions**: All stream members can post.\n"
             "* **New permissions**: Only organization administrators can post."
         )
@@ -2048,7 +2048,7 @@ class StreamAdminTest(ZulipTestCase):
             messages = get_topic_messages(user_profile, stream, "stream events")
             expected_notification = (
                 f"@_**{user_profile.full_name}|{user_profile.id}** changed the "
-                "[posting permissions](/help/stream-sending-policy) for this stream:\n\n"
+                "[posting permissions](/help/stream-sending-policy) for this channel:\n\n"
                 f"* **Old permissions**: {Stream.POST_POLICIES[old_post_policy]}.\n"
                 f"* **New permissions**: {Stream.POST_POLICIES[policy]}."
             )
@@ -2082,10 +2082,10 @@ class StreamAdminTest(ZulipTestCase):
         messages = get_topic_messages(user_profile, stream, "stream events")
         self.assert_length(messages, 1)
         expected_notification = (
-            f"@_**Desdemona|{user_profile.id}** has changed the [message retention period](/help/message-retention-policy) for this stream:\n"
+            f"@_**Desdemona|{user_profile.id}** has changed the [message retention period](/help/message-retention-policy) for this channel:\n"
             "* **Old retention period**: Forever\n"
             "* **New retention period**: 2 days\n\n"
-            "Messages in this stream will now be automatically deleted 2 days after they are sent."
+            "Messages in this channel will now be automatically deleted 2 days after they are sent."
         )
         self.assertEqual(messages[0].content, expected_notification)
         realm_audit_log = RealmAuditLog.objects.filter(
@@ -2103,10 +2103,10 @@ class StreamAdminTest(ZulipTestCase):
         messages = get_topic_messages(user_profile, stream, "stream events")
         self.assert_length(messages, 2)
         expected_notification = (
-            f"@_**Desdemona|{user_profile.id}** has changed the [message retention period](/help/message-retention-policy) for this stream:\n"
+            f"@_**Desdemona|{user_profile.id}** has changed the [message retention period](/help/message-retention-policy) for this channel:\n"
             "* **Old retention period**: 2 days\n"
             "* **New retention period**: 8 days\n\n"
-            "Messages in this stream will now be automatically deleted 8 days after they are sent."
+            "Messages in this channel will now be automatically deleted 8 days after they are sent."
         )
         self.assertEqual(messages[1].content, expected_notification)
         realm_audit_log = RealmAuditLog.objects.filter(
@@ -2125,10 +2125,10 @@ class StreamAdminTest(ZulipTestCase):
         messages = get_topic_messages(user_profile, stream, "stream events")
         self.assert_length(messages, 3)
         expected_notification = (
-            f"@_**Desdemona|{user_profile.id}** has changed the [message retention period](/help/message-retention-policy) for this stream:\n"
+            f"@_**Desdemona|{user_profile.id}** has changed the [message retention period](/help/message-retention-policy) for this channel:\n"
             "* **Old retention period**: 8 days\n"
             "* **New retention period**: Forever\n\n"
-            "Messages in this stream will now be retained forever."
+            "Messages in this channel will now be retained forever."
         )
         self.assertEqual(messages[2].content, expected_notification)
         realm_audit_log = RealmAuditLog.objects.filter(
@@ -4229,9 +4229,7 @@ class SubscriptionAPITest(ZulipTestCase):
         self.assertEqual(msg.recipient.type, Recipient.STREAM)
         self.assertEqual(msg.recipient.type_id, new_stream_announcements_stream.id)
         self.assertEqual(msg.sender_id, self.notification_bot(self.test_realm).id)
-        expected_msg = (
-            f"@_**{invitee_full_name}|{invitee.id}** created a new stream #**{invite_streams[0]}**."
-        )
+        expected_msg = f"@_**{invitee_full_name}|{invitee.id}** created a new channel #**{invite_streams[0]}**."
         self.assertEqual(msg.content, expected_msg)
 
         msg = self.get_last_message()
@@ -4239,7 +4237,7 @@ class SubscriptionAPITest(ZulipTestCase):
         self.assertEqual(msg.recipient.type_id, target_stream.id)
         self.assertEqual(msg.sender_id, self.notification_bot(self.test_realm).id)
         expected_msg = (
-            f"**Public** stream created by @_**{invitee_full_name}|{invitee.id}**. **Description:**\n"
+            f"**Public** channel created by @_**{invitee_full_name}|{invitee.id}**. **Description:**\n"
             "```` quote\n*No description.*\n````"
         )
         self.assertEqual(msg.content, expected_msg)
@@ -4275,7 +4273,7 @@ class SubscriptionAPITest(ZulipTestCase):
         self.assertEqual(msg.recipient.type_id, new_stream_announcements_stream.id)
         self.assertEqual(msg.sender_id, self.notification_bot(realm).id)
         stream_id = Stream.objects.latest("id").id
-        expected_rendered_msg = f'<p><span class="user-mention silent" data-user-id="{user.id}">{user.full_name}</span> created a new stream <a class="stream" data-stream-id="{stream_id}" href="/#narrow/stream/{stream_id}-{invite_streams[0]}">#{invite_streams[0]}</a>.</p>'
+        expected_rendered_msg = f'<p><span class="user-mention silent" data-user-id="{user.id}">{user.full_name}</span> created a new channel <a class="stream" data-stream-id="{stream_id}" href="/#narrow/stream/{stream_id}-{invite_streams[0]}">#{invite_streams[0]}</a>.</p>'
         self.assertEqual(msg.rendered_content, expected_rendered_msg)
 
     def test_successful_subscriptions_notifies_with_escaping(self) -> None:
@@ -4304,9 +4302,7 @@ class SubscriptionAPITest(ZulipTestCase):
         self.assertEqual(
             msg.sender_id, self.notification_bot(new_stream_announcements_stream.realm).id
         )
-        expected_msg = (
-            f"@_**{invitee_full_name}|{invitee.id}** created a new stream #**{invite_streams[0]}**."
-        )
+        expected_msg = f"@_**{invitee_full_name}|{invitee.id}** created a new channel #**{invite_streams[0]}**."
         self.assertEqual(msg.content, expected_msg)
 
     def test_non_ascii_stream_subscription(self) -> None:
@@ -4641,7 +4637,7 @@ class SubscriptionAPITest(ZulipTestCase):
         self.assertEqual(msg.topic_name(), "stream events")
         self.assertEqual(msg.sender.email, settings.NOTIFICATION_BOT)
         self.assertIn(
-            f"**{policy_name}** stream created by @_**{self.test_user.full_name}|{self.test_user.id}**. **Description:**\n"
+            f"**{policy_name}** channel created by @_**{self.test_user.full_name}|{self.test_user.id}**. **Description:**\n"
             "```` quote",
             msg.content,
         )
@@ -5973,7 +5969,7 @@ class GetSubscribersTest(ZulipTestCase):
             )
 
         msg = f"""
-            @**King Hamlet|{hamlet.id}** subscribed you to the following streams:
+            @**King Hamlet|{hamlet.id}** subscribed you to the following channels:
 
             * #**stream_0**
             * #**stream_1**
@@ -6008,7 +6004,7 @@ class GetSubscribersTest(ZulipTestCase):
         )
 
         msg = f"""
-            @**King Hamlet|{hamlet.id}** subscribed you to the stream #**stream_invite_only_1**.
+            @**King Hamlet|{hamlet.id}** subscribed you to the channel #**stream_invite_only_1**.
             """
         for user in [cordelia, othello, polonius]:
             self.assert_user_got_subscription_notification(user, msg)
