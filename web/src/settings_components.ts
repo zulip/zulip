@@ -782,6 +782,100 @@ function switching_to_private(
     return false;
 }
 
+export function change_sub_button_state($element: JQuery, state: string): void {
+    function show_hide_element(
+        $element: JQuery,
+        show: boolean,
+        fadeout_delay: number,
+        fadeout_callback: (this: HTMLElement) => void,
+    ): void {
+        if (show) {
+            $element.removeClass("hide").addClass(".show").fadeIn(300);
+            return;
+        }
+        setTimeout(() => {
+            $element.fadeOut(300, fadeout_callback);
+        }, fadeout_delay);
+    }
+
+    const $saveBtn = $element.find(".subscribe-button");
+    // const $textEl = $saveBtn.find(".save-discard-widget-button-text");
+
+    if (state !== "Subscribe") {
+        $saveBtn.removeClass("saving");
+    }
+
+    if (state === "discarded") {
+        show_hide_element($element, false, 0, () => {
+            enable_or_disable_save_button($element.closest(".settings-subsection-parent"));
+        });
+        return;
+    }
+
+    let button_text;
+    let data_status;
+    let is_show;
+    switch (state) {
+        case "unsaved":
+            button_text = $t({defaultMessage: "Save changes"});
+            data_status = "unsaved";
+            is_show = true;
+
+            $element.find(".discard-button").show();
+            break;
+        case "saved":
+            button_text = $t({defaultMessage: "Save changes"});
+            data_status = "";
+            is_show = false;
+            break;
+        case "saving":
+            button_text = $t({defaultMessage: "Saving"});
+            data_status = "saving";
+            is_show = true;
+
+            $element.find(".discard-button").hide();
+            $saveBtn.addClass("saving");
+            break;
+        case "failed":
+            button_text = $t({defaultMessage: "Save changes"});
+            data_status = "failed";
+            is_show = true;
+            break;
+        case "succeeded":
+            button_text = $t({defaultMessage: "Saved"});
+            data_status = "saved";
+            is_show = false;
+            break;
+    }
+
+    assert(button_text !== undefined);
+    $textEl.text(button_text);
+    assert(data_status !== undefined);
+    $saveBtn.attr("data-status", data_status);
+    if (state === "unsaved") {
+        // Do not scroll if the currently focused element is a textarea or an input
+        // of type text, to not interrupt the user's typing flow. Scrolling will happen
+        // anyway when the field loses focus (via the change event) if necessary.
+        if (
+            !document.activeElement ||
+            !$(document.activeElement).is('textarea, input[type="text"]')
+        ) {
+            // Ensure the save button is visible when the state is "unsaved",
+            // so the user does not miss saving their changes.
+            scroll_util.scroll_element_into_container(
+                $element.parent(".subsection-header"),
+                $("#settings_content"),
+            );
+        }
+        enable_or_disable_save_button($element.closest(".settings-subsection-parent"));
+    }
+    assert(is_show !== undefined);
+    show_hide_element($element, is_show, 800, () => {
+        // There is no need for a callback here since we have already
+        // called the function to enable or disable save button.
+    });
+}
+
 export function save_discard_widget_status_handler(
     $subsection: JQuery,
     for_realm_default_settings: boolean,
@@ -799,8 +893,20 @@ export function save_discard_widget_status_handler(
     const button_state = show_change_process_button ? "unsaved" : "discarded";
     change_save_button_state($save_btn_controls, button_state);
 
-    const isChangingToPrivate = switching_to_private(properties_elements, for_realm_default_settings);
-    const isPrivateAndUnsubscribing = sub && sub.invite_only && !sub.subscribed;
+    // const $subBtn = $element.find(".subscribe-button");
+
+    // if (state !== "saving") {
+    //     $saveBtn.removeClass("saving");
+    // }
+
+    // if (state === "discarded") {
+    //     show_hide_element($element, false, 0, () => {
+    //         enable_or_disable_save_button($element.closest(".settings-subsection-parent"));
+    //     });
+    //     return;
+    // }
+
+    // sub_button 
 
     // If this widget is for a stream, and the stream isn't currently private
     // but being changed to private, and the user changing this setting isn't
@@ -809,7 +915,30 @@ export function save_discard_widget_status_handler(
     if (!sub) {
         return;
     }
-    if (sub && (button_state === "unsaved" && isChangingToPrivate || isPrivateAndUnsubscribing)) {
+    if (!sub.subscribed){
+        if ($("#stream_permission_settings .stream_privacy_warning").length > 0) {
+            return;
+        }
+        const context = {
+            banner_type: compose_banner.WARNING,
+            banner_text: $t({
+                defaultMessage:
+                    "Only subscribers can access or join private streams, so you will lose access to this stream if you convert it to a private stream while not subscribed to it.",
+            }),
+            button_text: $t({defaultMessage: "Subscribe"}),
+            classname: "stream_privacy_warning",
+            stream_id: sub.stream_id,
+        };
+        $("#stream_permission_settings .stream-permissions-warning-banner").append(
+            $(render_compose_banner(context)),
+        );
+    }
+    if (
+        button_state === "unsaved" &&
+        !sub.invite_only &&
+        !sub.subscribed &&
+        switching_to_private(properties_elements, for_realm_default_settings)
+    ) {
         if ($("#stream_permission_settings .stream_privacy_warning").length > 0) {
             return;
         }
@@ -829,32 +958,6 @@ export function save_discard_widget_status_handler(
     } else {
         $("#stream_permission_settings .stream-permissions-warning-banner").empty();
     }
-    
-    // if (
-    //     button_state === "unsaved" &&
-    //     !sub.invite_only &&
-    //     !sub.subscribed &&
-    //     switching_to_private(properties_elements, for_realm_default_settings)
-    // ) {
-    //     if ($("#stream_permission_settings .stream_privacy_warning").length > 0) {
-    //         return;
-    //     }
-    //     const context = {
-    //         banner_type: compose_banner.WARNING,
-    //         banner_text: $t({
-    //             defaultMessage:
-    //                 "Only subscribers can access or join private streams, so you will lose access to this stream if you convert it to a private stream while not subscribed to it.",
-    //         }),
-    //         button_text: $t({defaultMessage: "Subscribe"}),
-    //         classname: "stream_privacy_warning",
-    //         stream_id: sub.stream_id,
-    //     };
-    //     $("#stream_permission_settings .stream-permissions-warning-banner").append(
-    //         $(render_compose_banner(context)),
-    //     );
-    // } else {
-    //     $("#stream_permission_settings .stream-permissions-warning-banner").empty();
-    // }
 }
 
 function check_maximum_valid_value(
