@@ -135,7 +135,7 @@ class MessagePOSTTest(ZulipTestCase):
                 "topic": "Test topic for stream ID message",
             },
         )
-        self.assert_json_error(result, "Stream with ID '99999' does not exist")
+        self.assert_json_error(result, "Channel with ID '99999' does not exist")
 
         msg = self.get_last_message()
         expected = (
@@ -558,7 +558,7 @@ class MessagePOSTTest(ZulipTestCase):
                 "topic": "Test topic",
             },
         )
-        self.assert_json_error(result, "Stream 'nonexistent_stream' does not exist")
+        self.assert_json_error(result, "Channel 'nonexistent_stream' does not exist")
 
     def test_message_to_nonexistent_stream_with_bad_characters(self) -> None:
         """
@@ -576,7 +576,7 @@ class MessagePOSTTest(ZulipTestCase):
             },
         )
         self.assert_json_error(
-            result, "Stream '&amp;&lt;&quot;&#x27;&gt;&lt;non-existent&gt;' does not exist"
+            result, "Channel '&amp;&lt;&quot;&#x27;&gt;&lt;non-existent&gt;' does not exist"
         )
 
     def test_message_to_stream_with_automatically_change_visibility_policy(self) -> None:
@@ -1961,7 +1961,7 @@ class StreamMessagesTest(ZulipTestCase):
             else:
                 with self.assertRaisesRegex(
                     JsonableError,
-                    "You do not have permission to use stream wildcard mentions in this stream.",
+                    "You do not have permission to use channel wildcard mentions in this channel.",
                 ):
                     self.send_stream_message(sender, "test_stream", content)
 

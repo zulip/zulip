@@ -1423,7 +1423,7 @@ class EditMessageTest(ZulipTestCase):
                 },
             )
         self.assert_json_error(
-            result, "You do not have permission to use stream wildcard mentions in this stream."
+            result, "You do not have permission to use channel wildcard mentions in this channel."
         )
 
         with mock.patch("zerver.lib.message.num_subscribers_for_stream_id", return_value=14):
