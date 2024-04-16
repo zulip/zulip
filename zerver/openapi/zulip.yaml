@@ -6653,7 +6653,7 @@ paths:
                       - example:
                           {
                             "result": "error",
-                            "msg": "You do not have permission to use stream wildcard mentions in this stream.",
+                            "msg": "You do not have permission to use channel wildcard mentions in this channel.",
                             "code": "STREAM_WILDCARD_MENTION_NOT_ALLOWED",
                           }
                         description: |
@@ -8010,7 +8010,7 @@ paths:
                       - example:
                           {
                             "result": "error",
-                            "msg": "You do not have permission to use stream wildcard mentions in this stream.",
+                            "msg": "You do not have permission to use channel wildcard mentions in this channel.",
                             "code": "STREAM_WILDCARD_MENTION_NOT_ALLOWED",
                           }
                         description: |
@@ -21300,9 +21300,9 @@ components:
           example:
             {
               "code": "STREAM_DOES_NOT_EXIST",
-              "msg": "Stream 'nonexistent_stream' does not exist",
+              "msg": "Channel 'nonexistent' does not exist",
               "result": "error",
-              "stream": "nonexistent_stream",
+              "stream": "nonexistent",
             }
     NonExistingStreamIdError:
       allOf:
@@ -21319,7 +21319,7 @@ components:
           example:
             {
               "code": "STREAM_DOES_NOT_EXIST",
-              "msg": "Stream with ID '9' does not exist",
+              "msg": "Channel with ID '9' does not exist",
               "result": "error",
               "stream_id": 9,
             }
