@@ -407,8 +407,9 @@
        `.rendered_markdown` out of the baseline group
        formed with EDITED/MOVED markers and the
        timestamp when the first child of the rendered
-       markdown is a media element. */
-    &:has(> .message_inline_image:first-child) {
+       markdown is a media element or KaTeX. */
+    &:has(> .message_inline_image:first-child),
+    &:has(> p:first-child > .katex-display) {
         align-self: center;
     }
 
@@ -416,6 +417,13 @@
        we provide a small layout hack using an
        inline grid. */
     @supports not selector(:has(*)) {
+        p:first-child > .katex-display {
+            /* KaTeX should take up 100% of the message box,
+               so that KaTeX's own CSS for centering still works. */
+            width: 100%;
+        }
+
+        p:first-child > .katex-display,
         .message_inline_image {
             /* We'll display this bit of media as
                an inline grid. That will allow us
@@ -437,6 +445,7 @@
             grid-template: "media" minmax(0, auto) / minmax(0, auto);
         }
 
+        p:first-child > .katex-display > .katex,
         .message_inline_image a,
         .message_inline_image video {
             /* We explicitly place the containing
@@ -444,6 +453,7 @@
             grid-area: media;
         }
 
+        p:first-child > .katex-display::before,
         .message_inline_image::before {
             /* We generate a single . here to create
                text content enough for a baseline.
