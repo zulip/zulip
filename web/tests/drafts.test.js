@@ -252,6 +252,7 @@ test("initialize", ({override_rewire}) => {
     $(".top_left_drafts").set_find_results(".unread_count", $unread_count);
 
     drafts.initialize();
+    drafts.initialize_ui();
     drafts_overlay_ui.initialize();
 });
 
