@@ -25,7 +25,7 @@ from sentry_sdk import set_tag
 from typing_extensions import Annotated, Concatenate, ParamSpec, override
 
 from zerver.lib.cache import get_remote_cache_requests, get_remote_cache_time
-from zerver.lib.db import reset_queries
+from zerver.lib.db_connections import reset_queries
 from zerver.lib.debug import maybe_tracemalloc_listen
 from zerver.lib.exceptions import ErrorCode, JsonableError, MissingAuthenticationError, WebhookError
 from zerver.lib.markdown import get_markdown_requests, get_markdown_time
