@@ -420,7 +420,10 @@ def has_message_access(
 
 
 def bulk_access_messages(
-    user_profile: UserProfile, messages: Collection[Message], *, stream: Optional[Stream] = None
+    user_profile: UserProfile,
+    messages: Collection[Message] | QuerySet[Message],
+    *,
+    stream: Optional[Stream] = None,
 ) -> List[Message]:
     """This function does the full has_message_access check for each
     message.  If stream is provided, it is used to avoid unnecessary
