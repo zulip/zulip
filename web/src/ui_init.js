@@ -798,7 +798,7 @@ export function initialize_everything(state_data) {
     reload_setup.initialize();
     unread.initialize(unread_params);
     bot_data.initialize(bot_params); // Must happen after people.initialize()
-    message_fetch.initialize(server_events.home_view_loaded);
+    message_fetch.initialize(server_events.finished_initial_fetch);
     message_scroll.initialize();
     markdown.initialize(markdown_config.get_helpers());
     linkifiers.initialize(realm.realm_linkifiers);
