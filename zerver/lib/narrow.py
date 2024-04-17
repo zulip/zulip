@@ -20,6 +20,7 @@ from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import connection
 from django.utils.translation import gettext as _
+from pydantic import BaseModel, model_validator
 from sqlalchemy.dialects import postgresql
 from sqlalchemy.engine import Connection, Row
 from sqlalchemy.sql import (
@@ -77,6 +78,68 @@ from zerver.models.users import (
     get_user_by_id_in_realm_including_cross_realm,
     get_user_including_cross_realm,
 )
+
+
+class NarrowParameter(BaseModel):
+    operator: str
+    operand: Any
+    negated: bool = False
+
+    @model_validator(mode="before")
+    @classmethod
+    def convert_term(cls, elem: Union[Dict[str, Any], List[str]]) -> Dict[str, Any]:
+        # We have to support a legacy tuple format.
+        if isinstance(elem, list):
+            if len(elem) != 2 or any(not isinstance(x, str) for x in elem):
+                raise ValueError("element is not a string pair")
+            return dict(operator=elem[0], operand=elem[1])
+
+        elif isinstance(elem, dict):
+            if "operand" not in elem or elem["operand"] is None:
+                raise ValueError("operand is missing")
+
+            if "operator" not in elem or elem["operator"] is None:
+                raise ValueError("operator is missing")
+            return elem
+        else:
+            raise ValueError("dict or list required")
+
+    @model_validator(mode="after")
+    def validate_terms(self) -> "NarrowParameter":
+        # Make sure to sync this list to frontend also when adding a new operator that
+        # supports integer IDs. Relevant code is located in web/src/message_fetch.js
+        # in handle_operators_supporting_id_based_api function where you will need to
+        # update operators_supporting_id, or operators_supporting_ids array.
+        operators_supporting_id = [
+            *channel_operators,
+            "id",
+            "sender",
+            "group-pm-with",
+            "dm-including",
+        ]
+        operators_supporting_ids = ["pm-with", "dm"]
+        operators_non_empty_operand = {"search"}
+
+        operator = self.operator
+        if operator in operators_supporting_id:
+            operand_validator: Validator[object] = check_string_or_int
+        elif operator in operators_supporting_ids:
+            operand_validator = check_string_or_int_list
+        elif operator in operators_non_empty_operand:
+            operand_validator = check_required_string
+        else:
+            operand_validator = check_string
+
+        try:
+            self.operand = operand_validator("operand", self.operand)
+            self.operator = check_string("operator", self.operator)
+            if self.negated is not None:
+                self.negated = check_bool("negated", self.negated)
+        except ValidationError as error:
+            raise JsonableError(error.message)
+
+        # whitelist the fields we care about for now
+        return self
 
 
 def is_spectator_compatible(narrow: Iterable[Dict[str, Any]]) -> bool:

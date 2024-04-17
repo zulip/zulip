@@ -395,9 +395,128 @@ class UnreadCountTests(ZulipTestCase):
             .values_list("message_id", flat=True),
             message_ids[5::2],
         )
+        response = self.assert_json_success(
+            self.client_post(
+                "/json/messages/flags/narrow",
+                {
+                    "anchor": message_ids[3],
+                    "include_anchor": "false",
+                    "num_before": 0,
+                    "num_after": 5,
+                    "narrow": orjson.dumps([["stream", "Verona"], ["topic", "topic 1"]]).decode(),
+                    "op": "add",
+                    "flag": "starred",
+                },
+            )
+        )
+        cordelia = self.example_user("cordelia")
+        response = self.assert_json_success(
+            self.client_post(
+                "/json/messages/flags/narrow",
+                {
+                    "anchor": message_ids[3],
+                    "include_anchor": "false",
+                    "num_before": 0,
+                    "num_after": 5,
+                    "narrow": orjson.dumps([{"operator": "dm", "operand": [cordelia.id]}]).decode(),
+                    "op": "add",
+                    "flag": "starred",
+                },
+            )
+        )
 
     def test_update_flags_for_narrow_misuse(self) -> None:
         self.login("hamlet")
+
+        self.assert_json_error(
+            self.client_post(
+                "/json/messages/flags/narrow",
+                {
+                    "anchor": "1",
+                    "include_anchor": "false",
+                    "num_before": "1",
+                    "num_after": "1",
+                    "narrow": "[[],[]]",
+                    "op": "add",
+                    "flag": "read",
+                },
+            ),
+            "Invalid narrow[0]: Value error, element is not a string pair",
+        )
+
+        self.assert_json_error(
+            self.client_post(
+                "/json/messages/flags/narrow",
+                {
+                    "anchor": "1",
+                    "include_anchor": "false",
+                    "num_before": "1",
+                    "num_after": "1",
+                    "narrow": orjson.dumps(
+                        [
+                            {"operator": None, "operand": "Verona"},
+                            {"operator": "topic", "operand": "topic 1"},
+                        ]
+                    ).decode(),
+                    "op": "add",
+                    "flag": "read",
+                },
+            ),
+            "Invalid narrow[0]: Value error, operator is missing",
+        )
+
+        self.assert_json_error(
+            self.client_post(
+                "/json/messages/flags/narrow",
+                {
+                    "anchor": "1",
+                    "include_anchor": "false",
+                    "num_before": "1",
+                    "num_after": "1",
+                    "narrow": orjson.dumps(
+                        [
+                            {"operator": "stream", "operand": None},
+                            {"operator": "topic", "operand": "topic 1"},
+                        ]
+                    ).decode(),
+                    "op": "add",
+                    "flag": "read",
+                },
+            ),
+            "Invalid narrow[0]: Value error, operand is missing",
+        )
+
+        self.assert_json_error(
+            self.client_post(
+                "/json/messages/flags/narrow",
+                {
+                    "anchor": "1",
+                    "include_anchor": "false",
+                    "num_before": "1",
+                    "num_after": "1",
+                    "narrow": orjson.dumps(["asadasd"]).decode(),
+                    "op": "add",
+                    "flag": "read",
+                },
+            ),
+            "Invalid narrow[0]: Value error, dict or list required",
+        )
+
+        self.assert_json_error(
+            self.client_post(
+                "/json/messages/flags/narrow",
+                {
+                    "anchor": "1",
+                    "include_anchor": "false",
+                    "num_before": "1",
+                    "num_after": "1",
+                    "narrow": orjson.dumps([{"operator": "search", "operand": ""}]).decode(),
+                    "op": "add",
+                    "flag": "read",
+                },
+            ),
+            "operand cannot be blank.",
+        )
 
         response = self.client_post(
             "/json/messages/flags/narrow",
