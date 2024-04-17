@@ -110,6 +110,7 @@ from zerver.models import (
     CustomProfileField,
     CustomProfileFieldValue,
     MultiuseInvite,
+    NamedUserGroup,
     PreregistrationUser,
     Realm,
     RealmDomain,
@@ -7505,7 +7506,7 @@ class LDAPGroupSyncTest(ZulipTestCase):
 
             self.assertTrue(UserGroup.objects.filter(realm=realm, name="cool_test_group").exists())
 
-            user_group = UserGroup.objects.get(realm=realm, name="cool_test_group")
+            user_group = NamedUserGroup.objects.get(realm=realm, name="cool_test_group")
 
             self.assertFalse(
                 is_user_in_group(
