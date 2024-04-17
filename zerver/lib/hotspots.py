@@ -31,10 +31,10 @@ class Hotspot:
 INTRO_HOTSPOTS: List[Hotspot] = [
     Hotspot(
         name="intro_streams",
-        title=gettext_lazy("Catch up on a stream"),
+        title=gettext_lazy("Catch up on a channel"),
         description=gettext_lazy(
-            "Messages sent to a stream are seen by everyone subscribed "
-            "to that stream. Try clicking on one of the stream links below."
+            "Messages sent to a channel are seen by everyone subscribed "
+            "to that channel. Try clicking on one of the channel links below."
         ),
     ),
     Hotspot(
