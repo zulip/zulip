@@ -221,6 +221,7 @@ from zerver.models import (
     CustomProfileField,
     Message,
     MultiuseInvite,
+    NamedUserGroup,
     PreregistrationUser,
     Realm,
     RealmAuditLog,
@@ -1825,7 +1826,7 @@ class NormalActionsTest(BaseAction):
         check_user_group_add("events[0]", events[0])
 
         # Test name update
-        backend = UserGroup.objects.get(name="backend")
+        backend = NamedUserGroup.objects.get(name="backend")
         events = self.verify_action(
             lambda: do_update_user_group_name(backend, "backendteam", acting_user=None)
         )

@@ -42,6 +42,7 @@ from zerver.lib.users import (
 from zerver.models import (
     DefaultStreamGroup,
     Message,
+    NamedUserGroup,
     PreregistrationRealm,
     PreregistrationUser,
     Realm,
@@ -49,7 +50,6 @@ from zerver.models import (
     Recipient,
     Stream,
     Subscription,
-    UserGroup,
     UserGroupMembership,
     UserMessage,
     UserProfile,
@@ -539,7 +539,7 @@ def do_create_user(
         )
 
         if user_profile.role == UserProfile.ROLE_MEMBER and not user_profile.is_provisional_member:
-            full_members_system_group = UserGroup.objects.get(
+            full_members_system_group = NamedUserGroup.objects.get(
                 name=SystemGroups.FULL_MEMBERS,
                 realm=user_profile.realm,
                 is_system_group=True,
