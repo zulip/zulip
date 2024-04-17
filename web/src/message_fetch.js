@@ -548,7 +548,7 @@ export function set_initial_pointer_and_offset({pointer, offset, narrow_pointer,
     initial_narrow_offset = narrow_offset;
 }
 
-export function initialize(home_view_loaded) {
+export function initialize(finished_initial_fetch) {
     // get the initial message list
     function load_more(data) {
         // If we haven't selected a message in the home view yet, and
@@ -579,7 +579,7 @@ export function initialize(home_view_loaded) {
             }
 
             // See server_events.js for this callback.
-            home_view_loaded();
+            finished_initial_fetch();
 
             start_backfilling_messages();
             return;
