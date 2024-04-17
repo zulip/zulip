@@ -3171,7 +3171,7 @@ class NormalActionsTest(BaseAction):
                 client="Internal",
             )
 
-            fields[TOPIC_NAME] = "stream events"
+            fields[TOPIC_NAME] = "channel events"
 
             msg = events[1]["message"]
             for k, v in fields.items():
