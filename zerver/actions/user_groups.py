@@ -96,10 +96,10 @@ def create_user_group_in_database(
 def update_users_in_full_members_system_group(
     realm: Realm, affected_user_ids: Sequence[int] = [], *, acting_user: Optional[UserProfile]
 ) -> None:
-    full_members_system_group = UserGroup.objects.get(
+    full_members_system_group = NamedUserGroup.objects.get(
         realm=realm, name=SystemGroups.FULL_MEMBERS, is_system_group=True
     )
-    members_system_group = UserGroup.objects.get(
+    members_system_group = NamedUserGroup.objects.get(
         realm=realm, name=SystemGroups.MEMBERS, is_system_group=True
     )
 

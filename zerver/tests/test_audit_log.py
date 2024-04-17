@@ -1167,7 +1167,7 @@ class TestRealmAuditLog(ZulipTestCase):
         )
         self.assert_length(audit_log_entries, 1)
         self.assertIsNone(audit_log_entries[0].modified_user)
-        self.assertEqual(audit_log_entries[0].modified_user_group, user_group.usergroup_ptr)
+        self.assertEqual(audit_log_entries[0].modified_user_group, user_group)
 
         audit_log_entries = RealmAuditLog.objects.filter(
             acting_user=hamlet,
@@ -1224,7 +1224,7 @@ class TestRealmAuditLog(ZulipTestCase):
             event_time__gte=now,
             event_type=RealmAuditLog.USER_GROUP_DIRECT_SUBGROUP_MEMBERSHIP_ADDED,
         )
-        self.assertEqual(audit_log_entry.modified_user_group, user_group.usergroup_ptr)
+        self.assertEqual(audit_log_entry.modified_user_group, user_group)
         self.assertEqual(audit_log_entry.acting_user, hamlet)
         self.assertDictEqual(
             audit_log_entry.extra_data,
@@ -1237,7 +1237,7 @@ class TestRealmAuditLog(ZulipTestCase):
         ).order_by("id")
         self.assert_length(audit_log_entries, 3)
         for i in range(3):
-            self.assertEqual(audit_log_entries[i].modified_user_group, subgroups[i].usergroup_ptr)
+            self.assertEqual(audit_log_entries[i].modified_user_group, subgroups[i])
             self.assertEqual(audit_log_entries[i].acting_user, hamlet)
             self.assertDictEqual(
                 audit_log_entries[i].extra_data,
@@ -1250,7 +1250,7 @@ class TestRealmAuditLog(ZulipTestCase):
             event_time__gte=now,
             event_type=RealmAuditLog.USER_GROUP_DIRECT_SUBGROUP_MEMBERSHIP_REMOVED,
         )
-        self.assertEqual(audit_log_entry.modified_user_group, user_group.usergroup_ptr)
+        self.assertEqual(audit_log_entry.modified_user_group, user_group)
         self.assertEqual(audit_log_entry.acting_user, hamlet)
         self.assertDictEqual(
             audit_log_entry.extra_data,
@@ -1263,7 +1263,7 @@ class TestRealmAuditLog(ZulipTestCase):
         ).order_by("id")
         self.assert_length(audit_log_entries, 2)
         for i in range(2):
-            self.assertEqual(audit_log_entries[i].modified_user_group, subgroups[i].usergroup_ptr)
+            self.assertEqual(audit_log_entries[i].modified_user_group, subgroups[i])
             self.assertEqual(audit_log_entries[i].acting_user, hamlet)
             self.assertDictEqual(
                 audit_log_entries[i].extra_data,
