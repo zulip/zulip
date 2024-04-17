@@ -265,10 +265,6 @@ export function is_known_user_id(user_id: number): boolean {
     return true;
 }
 
-export function is_known_user(user: User): boolean {
-    return user && is_known_user_id(user.user_id);
-}
-
 function sort_numerically(user_ids: number[]): number[] {
     user_ids.sort((a, b) => a - b);
 

@@ -17,7 +17,7 @@ import type {UserPillData} from "./user_pill";
 
 function person_matcher(query: string, item: User): boolean {
     return (
-        people.is_known_user(item) && typeahead_helper.query_matches_person(query, item)
+        people.is_known_user_id(item.user_id) && typeahead_helper.query_matches_person(query, item)
     );
 }
 
@@ -137,7 +137,7 @@ export function set_up(
             const users: UserPillData[] = [];
             if (include_users) {
                 for (const match of matches) {
-                    if (match.type === "user" && people.is_known_user(match)) {
+                    if (match.type === "user" && people.is_known_user_id(match.user_id)) {
                         users.push(match);
                     }
                 }
@@ -166,7 +166,11 @@ export function set_up(
                 stream_pill.append_stream(item, pills);
             } else if (include_user_groups && item.type === "user_group") {
                 user_group_pill.append_user_group(item, pills);
-            } else if (include_users && item.type === "user" && people.is_known_user(item)) {
+            } else if (
+                include_users &&
+                item.type === "user" &&
+                people.is_known_user_id(item.user_id)
+            ) {
                 user_pill.append_user(item, pills);
             }
 
