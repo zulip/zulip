@@ -426,8 +426,8 @@ distro==1.9.0 \
     --hash=sha256:2fa77c6fd8940f116ee1d6b94a2f90b13b5ea8d019b98bc8bafdcabcdd9bdbed \
     --hash=sha256:7bffd925d65168f85027d8da9af6bddab658135b840670a223589bc0c8ef02b2
     # via zulip
-https://github.com/django/django/archive/27c32cc9916502132a57cd2a60b1402869e00537.zip#egg=Django[argon2]==4.2.12.dev+git \
-    --hash=sha256:0a0bbbf1cb1aac3ad852a2947a9f9b63b2bd3eff1f9489c05ec838badb36ad9a
+https://github.com/django/django/archive/d36ecbd5306f98231c9f9cbfc78136052fde723a.zip#egg=Django[argon2]==5.0.5.dev+git \
+    --hash=sha256:9a5cdd46a35c332e254fe9ebd719217ce782f46ac92c4b5444f0ddfaca2e847b
     # via
     #   -r requirements/common.in
     #   django-auth-ldap
@@ -469,9 +469,8 @@ django-scim2==0.19.1 \
     --hash=sha256:8126111160e76a880f6699babc5259f0345c9316c8018ce5dcc3f7579ccb9e89 \
     --hash=sha256:845eaa64e72e4ddfe2aa54d21865721f8c1d59ecd9c06e72341eeb03ed6ba94e
     # via -r requirements/common.in
-django-stubs-ext==4.2.7 \
-    --hash=sha256:45a5d102417a412e3606e3c358adb4744988a92b7b58ccf3fd64bddd5d04d14c \
-    --hash=sha256:519342ac0849cda1559746c9a563f03ff99f636b0ebe7c14b75e816a00dfddc3
+https://github.com/typeddjango/django-stubs/archive/e11955f05994e196dcee004811ce2e05ff230462.zip#egg=django-stubs-ext==5.0.0.dev1+git&subdirectory=ext \
+    --hash=sha256:44ffd1e917b2b606b7efcfedd1d8123931d61ed54c39d98da17c75471bfa40e8
     # via -r requirements/common.in
 django-two-factor-auth[call,phonenumberslite,sms]==1.16.0 \
     --hash=sha256:662782a4ab9f59a06afe3be04540dc8dd04e63b06f52520386a546fcad8d2d41 \
