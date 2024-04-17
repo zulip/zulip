@@ -145,8 +145,11 @@ def is_group_direct_message_sent_to_admins_within_days(realm: Realm, days: int) 
         realm=realm,
         event_type=RealmAuditLog.REALM_PROPERTY_CHANGED,
         extra_data__contains={
+            # Note: We're looking for the transition away from None,
+            # which usually will be to level 0, but can be to a higher
+            # initial level if the organization was imported from
+            # another chat tool.
             RealmAuditLog.OLD_VALUE: None,
-            RealmAuditLog.NEW_VALUE: 0,
             "property": "zulip_update_announcements_level",
         },
     ).first()
@@ -204,12 +207,19 @@ def send_messages_and_update_level(
     realm.save(update_fields=["zulip_update_announcements_level"])
 
 
-def send_zulip_update_announcements(skip_delay: bool) -> None:
+def send_zulip_update_announcements(
+    skip_delay: bool, realm_imported_from_other_product: Optional[Realm] = None
+) -> None:
     latest_zulip_update_announcements_level = get_latest_zulip_update_announcements_level()
 
-    realms = get_realms_behind_zulip_update_announcements_level(
-        level=latest_zulip_update_announcements_level
-    )
+    if realm_imported_from_other_product:
+        realms = [realm_imported_from_other_product]
+    else:
+        realms = list(
+            get_realms_behind_zulip_update_announcements_level(
+                level=latest_zulip_update_announcements_level
+            )
+        )
 
     for realm in realms:
         # Refresh the realm from the database and check its
@@ -228,16 +238,17 @@ def send_zulip_update_announcements(skip_delay: bool) -> None:
         new_zulip_update_announcements_level = None
 
         if realm_zulip_update_announcements_level is None:
-            # realm predates the zulip update announcements feature.
+            # This realm predates the zulip update announcements feature, or
+            # was imported from another product (Slack, Mattermost, etc.).
             # Group DM the administrators to set or verify the stream for
             # zulip update announcements.
             group_direct_message = internal_prep_group_direct_message_for_old_realm(realm, sender)
             messages = [group_direct_message]
-            new_zulip_update_announcements_level = 0
-        elif (
-            realm_zulip_update_announcements_level == 0
-            and realm.zulip_update_announcements_stream is None
-        ):
+            if realm_imported_from_other_product:
+                new_zulip_update_announcements_level = latest_zulip_update_announcements_level
+            else:
+                new_zulip_update_announcements_level = 0
+        elif realm.zulip_update_announcements_stream is None:
             # We wait for a week after sending group DMs to let admins configure
             # stream for zulip update announcements. After that, they miss updates
             # until they don't configure.
@@ -253,13 +264,12 @@ def send_zulip_update_announcements(skip_delay: bool) -> None:
             ):
                 continue
 
-            if realm.zulip_update_announcements_stream is not None:
-                messages = internal_prep_zulip_update_announcements_stream_messages(
-                    current_level=realm_zulip_update_announcements_level,
-                    latest_level=latest_zulip_update_announcements_level,
-                    sender=sender,
-                    realm=realm,
-                )
+            messages = internal_prep_zulip_update_announcements_stream_messages(
+                current_level=realm_zulip_update_announcements_level,
+                latest_level=latest_zulip_update_announcements_level,
+                sender=sender,
+                realm=realm,
+            )
 
             new_zulip_update_announcements_level = latest_zulip_update_announcements_level
 

@@ -849,7 +849,7 @@ class MatterMostImporter(ZulipTestCase):
         messages = Message.objects.filter(realm=realm)
         for message in messages:
             self.assertIsNotNone(message.rendered_content)
-        self.assert_length(messages, 11)
+        self.assert_length(messages, 12)
 
         stream_messages = messages.filter(recipient__type=Recipient.STREAM).order_by("date_sent")
         stream_recipients = stream_messages.values_list("recipient", flat=True)
@@ -880,7 +880,7 @@ class MatterMostImporter(ZulipTestCase):
             "date_sent"
         )
         personal_recipients = personal_messages.values_list("recipient", flat=True)
-        self.assert_length(personal_messages, 4)
+        self.assert_length(personal_messages, 5)
         self.assert_length(set(personal_recipients), 3)
         self.assertEqual(personal_messages[0].sender.email, "ron@zulip.com")
         self.assertRegex(personal_messages[0].content, "hey harry\n\n\\[harry-ron.jpg\\]\\(.*\\)")

@@ -346,12 +346,24 @@ class RealmImportExportTest(ExportFile):
                 consent_message_id=consent_message_id,
             )
 
+    def export_realm_and_create_auditlog(
+        self,
+        original_realm: Realm,
+        exportable_user_ids: Optional[Set[int]] = None,
+        consent_message_id: Optional[int] = None,
+        public_only: bool = False,
+    ) -> None:
+        RealmAuditLog.objects.create(
+            realm=original_realm, event_type=RealmAuditLog.REALM_EXPORTED, event_time=timezone_now()
+        )
+        self.export_realm(original_realm, exportable_user_ids, consent_message_id, public_only)
+
     def test_export_files_from_local(self) -> None:
         user = self.example_user("hamlet")
         realm = user.realm
         self.upload_files_for_user(user)
         self.upload_files_for_realm(user)
-        self.export_realm(realm)
+        self.export_realm_and_create_auditlog(realm)
 
         self.verify_attachment_json(user)
         self.verify_uploads(user, is_s3=False)
@@ -382,7 +394,7 @@ class RealmImportExportTest(ExportFile):
             is_message_realm_public=True,
         )
 
-        self.export_realm(realm, public_only=True)
+        self.export_realm_and_create_auditlog(realm, public_only=True)
 
         # The attachment row shouldn't have been exported:
         self.assertEqual(read_json("attachment.json")["zerver_attachment"], [])
@@ -401,7 +413,7 @@ class RealmImportExportTest(ExportFile):
 
         self.upload_files_for_user(user)
         self.upload_files_for_realm(user)
-        self.export_realm(realm)
+        self.export_realm_and_create_auditlog(realm)
 
         self.verify_attachment_json(user)
         self.verify_uploads(user, is_s3=True)
@@ -423,7 +435,7 @@ class RealmImportExportTest(ExportFile):
         realm_user_default.default_language = "de"
         realm_user_default.save()
 
-        self.export_realm(realm)
+        self.export_realm_and_create_auditlog(realm)
 
         data = read_json("realm.json")
         self.assert_length(data["zerver_userprofile_crossrealm"], 3)
@@ -500,7 +512,7 @@ class RealmImportExportTest(ExportFile):
             self.example_user("iago"), self.example_user("hamlet")
         )
 
-        self.export_realm(realm, exportable_user_ids=user_ids)
+        self.export_realm_and_create_auditlog(realm, exportable_user_ids=user_ids)
 
         data = read_json("realm.json")
 
@@ -612,7 +624,7 @@ class RealmImportExportTest(ExportFile):
         )
 
         assert message is not None
-        self.export_realm(realm, consent_message_id=message.id)
+        self.export_realm_and_create_auditlog(realm, consent_message_id=message.id)
 
         data = read_json("realm.json")
 
@@ -894,6 +906,10 @@ class RealmImportExportTest(ExportFile):
         self.assertGreaterEqual(original_realm_emoji_count, 2)
         new_realm_emoji.author = None
         new_realm_emoji.save()
+
+        RealmAuditLog.objects.create(
+            realm=original_realm, event_type=RealmAuditLog.REALM_EXPORTED, event_time=timezone_now()
+        )
 
         getters = self.get_realm_getters()
 
@@ -1361,7 +1377,7 @@ class RealmImportExportTest(ExportFile):
     def test_import_realm_with_invalid_email_addresses_fails_validation(self) -> None:
         realm = get_realm("zulip")
 
-        self.export_realm(realm)
+        self.export_realm_and_create_auditlog(realm)
         data = read_json("realm.json")
 
         data["zerver_userprofile"][0]["delivery_email"] = "invalid_email_address"
@@ -1378,7 +1394,7 @@ class RealmImportExportTest(ExportFile):
         # Such data should never reasonably get generated, but we should still
         # be defensive against it (since it can still happen due to bugs or manual edition
         # of export files in an attempt to get us to import malformed data).
-        self.export_realm(realm)
+        self.export_realm_and_create_auditlog(realm)
         data = read_json("realm.json")
         data["zerver_userprofile"][0]["email"] = "invalid_email_address"
 
@@ -1394,7 +1410,7 @@ class RealmImportExportTest(ExportFile):
         original_realm = Realm.objects.get(string_id="zulip")
 
         RealmUserDefault.objects.get(realm=original_realm).delete()
-        self.export_realm(original_realm)
+        self.export_realm_and_create_auditlog(original_realm)
 
         with self.settings(BILLING_ENABLED=False), self.assertLogs(level="INFO"):
             do_import_realm(get_output_dir(), "test-zulip")
@@ -1414,7 +1430,7 @@ class RealmImportExportTest(ExportFile):
     def test_import_realm_notify_bouncer(self) -> None:
         original_realm = Realm.objects.get(string_id="zulip")
 
-        self.export_realm(original_realm)
+        self.export_realm_and_create_auditlog(original_realm)
 
         with self.settings(BILLING_ENABLED=False), self.assertLogs(level="INFO"), patch(
             "zerver.lib.remote_server.send_to_push_bouncer"
@@ -1451,7 +1467,7 @@ class RealmImportExportTest(ExportFile):
         self.upload_files_for_user(user)
         self.upload_files_for_realm(user)
 
-        self.export_realm(realm)
+        self.export_realm_and_create_auditlog(realm)
 
         with self.settings(BILLING_ENABLED=False), self.assertLogs(level="INFO"):
             do_import_realm(get_output_dir(), "test-zulip")
@@ -1516,7 +1532,7 @@ class RealmImportExportTest(ExportFile):
 
         self.upload_files_for_realm(user)
         self.upload_files_for_user(user)
-        self.export_realm(realm)
+        self.export_realm_and_create_auditlog(realm)
 
         with self.settings(BILLING_ENABLED=False), self.assertLogs(level="INFO"):
             do_import_realm(get_output_dir(), "test-zulip")
@@ -1610,7 +1626,7 @@ class RealmImportExportTest(ExportFile):
                 realm, authentication_methods_dict, acting_user=None
             )
 
-            self.export_realm(realm)
+            self.export_realm_and_create_auditlog(realm)
 
             with self.settings(BILLING_ENABLED=False), self.assertLogs(level="INFO"):
                 do_import_realm(get_output_dir(), "test-zulip")
@@ -1621,7 +1637,7 @@ class RealmImportExportTest(ExportFile):
                 imported_realm.authentication_methods_dict(),
             )
 
-            self.export_realm(realm)
+            self.export_realm_and_create_auditlog(realm)
 
             with self.settings(BILLING_ENABLED=True), self.assertLogs(level="WARN") as mock_warn:
                 do_import_realm(get_output_dir(), "test-zulip2")
@@ -1646,7 +1662,7 @@ class RealmImportExportTest(ExportFile):
         do_change_realm_plan_type(realm, Realm.PLAN_TYPE_LIMITED, acting_user=None)
 
         self.upload_files_for_user(user)
-        self.export_realm(realm)
+        self.export_realm_and_create_auditlog(realm)
 
         with self.settings(BILLING_ENABLED=True), self.assertLogs(level="INFO"):
             imported_realm = do_import_realm(get_output_dir(), "test-zulip-1")
@@ -1663,7 +1679,7 @@ class RealmImportExportTest(ExportFile):
         # Importing the same export data twice would cause conflict on unique fields,
         # so instead re-export the original realm via self.export_realm, which handles
         # this issue.
-        self.export_realm(realm)
+        self.export_realm_and_create_auditlog(realm)
 
         with self.settings(BILLING_ENABLED=False), self.assertLogs(level="INFO"):
             imported_realm = do_import_realm(get_output_dir(), "test-zulip-2")
@@ -1679,13 +1695,15 @@ class RealmImportExportTest(ExportFile):
 
     def test_system_usergroup_audit_logs(self) -> None:
         realm = get_realm("zulip")
-        self.export_realm(realm)
+        self.export_realm_and_create_auditlog(realm)
 
         # Simulate an external export where user groups are missing.
         data = read_json("realm.json")
         data.pop("zerver_usergroup")
         data.pop("zerver_namedusergroup")
         data.pop("zerver_realmauditlog")
+        data["zerver_realm"][0]["zulip_update_announcements_level"] = None
+        data["zerver_realm"][0]["zulip_update_announcements_stream"] = None
 
         # User groups data is missing. So, all the realm group based settings
         # should be None.
