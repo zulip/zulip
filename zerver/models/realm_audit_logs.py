@@ -228,6 +228,10 @@ class RealmAuditLog(AbstractRealmAuditLog):
     class Meta:
         indexes = [
             models.Index(
+                name="zerver_realmauditlog_realm__event_type__event_time",
+                fields=["realm", "event_type", "event_time"],
+            ),
+            models.Index(
                 name="zerver_realmauditlog_user_subscriptions_idx",
                 fields=["modified_user", "modified_stream"],
                 condition=Q(
@@ -237,7 +241,7 @@ class RealmAuditLog(AbstractRealmAuditLog):
                         AbstractRealmAuditLog.SUBSCRIPTION_DEACTIVATED,
                     ]
                 ),
-            )
+            ),
         ]
 
     @override
