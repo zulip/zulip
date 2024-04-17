@@ -77,5 +77,6 @@ class zulip::profile::postgresql {
     require     => $require,
     refreshonly => true,
     subscribe   => [ File[$postgresql_conf_file] ],
+    onlyif      => "test -d ${zulip::postgresql_base::postgresql_datadir}",
   }
 }
