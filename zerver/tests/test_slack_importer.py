@@ -1354,6 +1354,7 @@ class SlackImporter(ZulipTestCase):
             {
                 RealmAuditLog.SUBSCRIPTION_CREATED,
                 RealmAuditLog.REALM_PLAN_TYPE_CHANGED,
+                RealmAuditLog.REALM_PROPERTY_CHANGED,
                 RealmAuditLog.REALM_CREATED,
                 RealmAuditLog.REALM_IMPORTED,
                 RealmAuditLog.USER_GROUP_CREATED,
@@ -1363,7 +1364,7 @@ class SlackImporter(ZulipTestCase):
             },
         )
 
-        self.assertEqual(Message.objects.filter(realm=realm).count(), 82)
+        self.assertEqual(Message.objects.filter(realm=realm).count(), 83)
 
         # All auth backends are enabled initially.
         self.assertTrue(all(realm.authentication_methods_dict().values()))
