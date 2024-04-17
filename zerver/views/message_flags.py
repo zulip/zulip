@@ -11,7 +11,7 @@ from zerver.actions.message_flags import (
     do_update_message_flags,
 )
 from zerver.lib.exceptions import JsonableError
-from zerver.lib.narrow import OptionalNarrowListT, fetch_messages, parse_anchor_value
+from zerver.lib.narrow import NarrowParameter, fetch_messages, parse_anchor_value
 from zerver.lib.request import RequestNotes
 from zerver.lib.response import json_success
 from zerver.lib.streams import access_stream_by_id
@@ -78,7 +78,7 @@ def update_message_flags_for_narrow(
     include_anchor: Json[bool] = True,
     num_before: Json[NonNegativeInt],
     num_after: Json[NonNegativeInt],
-    narrow: Json[OptionalNarrowListT],
+    narrow: Json[Optional[List[NarrowParameter]]],
     operation: Annotated[str, ApiParamConfig("op")],
     flag: str,
 ) -> HttpResponse:
@@ -93,8 +93,13 @@ def update_message_flags_for_narrow(
     )
     num_after = min(num_after, MAX_MESSAGES_PER_UPDATE - num_before)
 
+    if narrow is not None and len(narrow) > 0:
+        narrow_dict = [x.model_dump() for x in narrow]
+    else:
+        narrow_dict = None
+
     query_info = fetch_messages(
-        narrow=narrow,
+        narrow=narrow_dict,
         user_profile=user_profile,
         realm=user_profile.realm,
         is_web_public_query=False,
