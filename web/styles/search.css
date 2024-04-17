@@ -14,7 +14,8 @@
         font-size: 17px;
         border: none;
         background-color: transparent;
-        color: hsl(0deg 0% 0%);
+/*      color: hsl(0deg 0% 0%);*/
+        color: hsl(0, 90%, 45%);
         opacity: 0.5;
         cursor: default;
 
