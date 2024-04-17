@@ -1,6 +1,6 @@
 from typing import Any, Collection, Dict, Iterable, List, Optional, Set, Tuple, Type, Union
 
-from django.db.models import Model
+from django.db.models import Model, QuerySet
 from django.utils.timezone import now as timezone_now
 
 from zerver.lib.create_user import create_user_profile, get_display_email_address
@@ -163,7 +163,9 @@ def bulk_create_users(
 
 def bulk_set_users_or_streams_recipient_fields(
     model: Type[Model],
-    objects: Union[Collection[UserProfile], Collection[Stream]],
+    objects: Union[
+        Collection[UserProfile], QuerySet[UserProfile], Collection[Stream], QuerySet[Stream]
+    ],
     recipients: Optional[Iterable[Recipient]] = None,
 ) -> None:
     assert model in [UserProfile, Stream]
