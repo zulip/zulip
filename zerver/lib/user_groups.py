@@ -45,13 +45,13 @@ class LockedUserGroupContext:
     recursive_subgroups include direct_subgroups and their descendants.
     """
 
-    supergroup: UserGroup
-    direct_subgroups: List[UserGroup]
-    recursive_subgroups: List[UserGroup]
+    supergroup: NamedUserGroup
+    direct_subgroups: List[NamedUserGroup]
+    recursive_subgroups: List[NamedUserGroup]
 
 
 def has_user_group_access(
-    user_group: UserGroup, user_profile: UserProfile, *, for_read: bool, as_subgroup: bool
+    user_group: NamedUserGroup, user_profile: UserProfile, *, for_read: bool, as_subgroup: bool
 ) -> bool:
     if user_group.realm_id != user_profile.realm_id:
         return False
@@ -84,15 +84,15 @@ def has_user_group_access(
 
 def access_user_group_by_id(
     user_group_id: int, user_profile: UserProfile, *, for_read: bool
-) -> UserGroup:
+) -> NamedUserGroup:
     try:
         if for_read:
-            user_group = UserGroup.objects.get(id=user_group_id, realm=user_profile.realm)
+            user_group = NamedUserGroup.objects.get(id=user_group_id, realm=user_profile.realm)
         else:
-            user_group = UserGroup.objects.select_for_update().get(
+            user_group = NamedUserGroup.objects.select_for_update().get(
                 id=user_group_id, realm=user_profile.realm
             )
-    except UserGroup.DoesNotExist:
+    except NamedUserGroup.DoesNotExist:
         raise JsonableError(_("Invalid user group"))
 
     if not has_user_group_access(user_group, user_profile, for_read=for_read, as_subgroup=False):
@@ -386,13 +386,15 @@ def get_subgroup_ids(user_group: UserGroup, *, direct_subgroup_only: bool = Fals
 
 def get_recursive_subgroups_for_groups(
     user_group_ids: Iterable[int], realm: Realm
-) -> QuerySet[UserGroup]:
+) -> QuerySet[NamedUserGroup]:
     cte = With.recursive(
-        lambda cte: UserGroup.objects.filter(id__in=user_group_ids, realm=realm)
+        lambda cte: NamedUserGroup.objects.filter(id__in=user_group_ids, realm=realm)
         .values(group_id=F("id"))
-        .union(cte.join(UserGroup, direct_supergroups=cte.col.group_id).values(group_id=F("id")))
+        .union(
+            cte.join(NamedUserGroup, direct_supergroups=cte.col.group_id).values(group_id=F("id"))
+        )
     )
-    recursive_subgroups = cte.join(UserGroup, id=cte.col.group_id).with_cte(cte)
+    recursive_subgroups = cte.join(NamedUserGroup, id=cte.col.group_id).with_cte(cte)
     return recursive_subgroups
 
 
@@ -589,10 +591,10 @@ def create_system_user_groups_for_realm(realm: Realm) -> Dict[int, NamedUserGrou
     return role_system_groups_dict
 
 
-def get_system_user_group_for_user(user_profile: UserProfile) -> UserGroup:
+def get_system_user_group_for_user(user_profile: UserProfile) -> NamedUserGroup:
     system_user_group_name = UserGroup.SYSTEM_USER_GROUP_ROLE_MAP[user_profile.role]["name"]
 
-    system_user_group = UserGroup.objects.get(
+    system_user_group = NamedUserGroup.objects.get(
         name=system_user_group_name, realm=user_profile.realm, is_system_group=True
     )
     return system_user_group
