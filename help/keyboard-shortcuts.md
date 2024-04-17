@@ -51,9 +51,9 @@ in the Zulip app to add more to your repertoire as needed.
 
 * **Toggle keyboard shortcuts view**: <kbd>?</kbd>
 
-* **Go to home view**: <kbd>Ctrl</kbd> + <kbd>[</kbd> (or
+* **Go to your home view**: <kbd>Ctrl</kbd> + <kbd>[</kbd> (or
   <kbd>Esc</kbd>, [if enabled][disable-escape])
-  until you are in the [home view](/help/configure-home-view).
+  until you are in your [home view](/help/configure-home-view).
 
 [disable-escape]: /help/configure-home-view#configure-whether-esc-navigates-to-the-home-view
 ## Search
