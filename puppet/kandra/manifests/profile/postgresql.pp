@@ -37,6 +37,7 @@ class kandra::profile::postgresql inherits kandra::profile::base {
   file { "${zulip::postgresql_base::postgresql_confdir}/pg_hba.conf":
     ensure  => file,
     require => Package["postgresql-${zulip::postgresql_common::version}"],
+    notify  => Exec[$zulip::postgresql_base::postgresql_restart],
     owner   => 'postgres',
     group   => 'postgres',
     mode    => '0640',
