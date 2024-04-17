@@ -6,7 +6,7 @@ from django.db import models
 from django.db.models import CASCADE, Q
 from typing_extensions import override
 
-from zerver.models.groups import UserGroup
+from zerver.models.groups import NamedUserGroup
 from zerver.models.realms import Realm
 from zerver.models.streams import Stream
 from zerver.models.users import UserProfile
@@ -219,7 +219,7 @@ class RealmAuditLog(AbstractRealmAuditLog):
         on_delete=CASCADE,
     )
     modified_user_group = models.ForeignKey(
-        UserGroup,
+        NamedUserGroup,
         null=True,
         on_delete=CASCADE,
     )
