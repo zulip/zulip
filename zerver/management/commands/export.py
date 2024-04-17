@@ -5,12 +5,13 @@ from typing import Any
 
 from django.conf import settings
 from django.core.management.base import CommandError
+from django.utils.timezone import now as timezone_now
 from typing_extensions import override
 
 from zerver.actions.realm_settings import do_deactivate_realm
 from zerver.lib.export import export_realm_wrapper
 from zerver.lib.management import ZulipBaseCommand
-from zerver.models import Message, Reaction, UserProfile
+from zerver.models import Message, Reaction, RealmAuditLog, UserProfile
 
 
 class Command(ZulipBaseCommand):
@@ -205,6 +206,13 @@ class Command(ZulipBaseCommand):
 
         def percent_callback(bytes_transferred: Any) -> None:
             print(end=".", flush=True)
+
+        RealmAuditLog.objects.create(
+            acting_user=None,
+            realm=realm,
+            event_type=RealmAuditLog.REALM_EXPORTED,
+            event_time=timezone_now(),
+        )
 
         # Allows us to trigger exports separately from command line argument parsing
         export_realm_wrapper(
