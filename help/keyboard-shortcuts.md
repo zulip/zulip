@@ -96,7 +96,7 @@ in the Zulip app to add more to your repertoire as needed.
 
 * **Go to stream from topic view**: <kbd>S</kbd>
 
-* **Go to all direct messages**: <kbd>Shift</kbd> + <kbd>P</kbd>
+* **Go to your direct message feed**: <kbd>Shift</kbd> + <kbd>P</kbd>
 
 * **Zoom to message in conversation context**: <kbd>Z</kbd> — This view does not mark messages as read.
 

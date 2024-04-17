@@ -166,7 +166,7 @@ starred_instructions = """
 """
 
 direct_instructions = """
-1. In the left sidebar, click the **All direct messages**
+1. In the left sidebar, click the **Direct message feed**
    (<i class="fa fa-align-right"></i>) icon to the right of the
    **Direct messages** label, or use the <kbd>Shift</kbd> + <kbd>P</kbd>
    keyboard shortcut.
@@ -183,7 +183,7 @@ message_info = {
     "recent": ["Recent conversations", "/#recent", recent_instructions],
     "all": ["Combined feed", "/#all_messages", all_instructions],
     "starred": ["Starred messages", "/#narrow/is/starred", starred_instructions],
-    "direct": ["All direct messages", "/#narrow/is/dm", direct_instructions],
+    "direct": ["Direct message feed", "/#narrow/is/dm", direct_instructions],
     "inbox": ["Inbox", "/#inbox", inbox_instructions],
 }
 

@@ -1033,7 +1033,7 @@ export class Filter {
                 case "is-mentioned":
                     return $t({defaultMessage: "Mentions"});
                 case "is-dm":
-                    return $t({defaultMessage: "All direct messages"});
+                    return $t({defaultMessage: "Direct message feed"});
                 case "is-resolved":
                     return $t({defaultMessage: "Topics marked as resolved"});
                 // These cases return false for is_common_narrow, and therefore are not

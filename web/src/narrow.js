@@ -1055,7 +1055,7 @@ export function to_compose_target() {
         const emails = util.extract_pm_recipients(recipient_string);
         const invalid = emails.filter((email) => !people.is_valid_email_for_compose(email));
         // If there are no recipients or any recipient is
-        // invalid, narrow to all direct messages.
+        // invalid, narrow to your direct message feed.
         if (emails.length === 0 || invalid.length > 0) {
             by("is", "dm", opts);
             return;
