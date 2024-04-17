@@ -90,7 +90,7 @@ class Stream(models.Model):
     POST_POLICIES: Dict[int, StrPromise] = {
         # These strings should match the strings in the
         # stream_post_policy_values object in stream_data.js.
-        STREAM_POST_POLICY_EVERYONE: gettext_lazy("All stream members can post"),
+        STREAM_POST_POLICY_EVERYONE: gettext_lazy("All channel members can post"),
         STREAM_POST_POLICY_ADMINS: gettext_lazy("Only organization administrators can post"),
         STREAM_POST_POLICY_MODERATORS: gettext_lazy(
             "Only organization administrators and moderators can post"
