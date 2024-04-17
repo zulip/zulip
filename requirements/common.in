@@ -6,7 +6,7 @@
 -r pip.in
 
 # Django itself
-https://github.com/django/django/archive/27c32cc9916502132a57cd2a60b1402869e00537.zip#egg=Django[argon2]==4.2.12.dev+git  # https://code.djangoproject.com/ticket/35361
+https://github.com/django/django/archive/d36ecbd5306f98231c9f9cbfc78136052fde723a.zip#egg=Django[argon2]==5.0.5.dev+git  # https://code.djangoproject.com/ticket/35361
 asgiref<3.8.0  # Breaks with https://github.com/django/asgiref/pull/367
 
 # needed for NotRequired, ParamSpec
@@ -190,7 +190,7 @@ django-scim2
 circuitbreaker
 
 # Runtime monkeypatching of django-stubs generics
-django-stubs-ext
+https://github.com/typeddjango/django-stubs/archive/e11955f05994e196dcee004811ce2e05ff230462.zip#egg=django-stubs-ext==5.0.0.dev1+git&subdirectory=ext  # https://github.com/typeddjango/django-stubs/issues/1493
 
 # Structured data representation with parsing.
 pydantic

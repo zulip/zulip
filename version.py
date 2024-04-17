@@ -48,4 +48,4 @@ API_FEATURE_LEVEL = 253
 #   historical commits sharing the same major version, in which case a
 #   minor version bump suffices.
 
-PROVISION_VERSION = (267, 2)  # last bumped 2024-04-10 for Python requirements upgrade
+PROVISION_VERSION = (268, 0)  # last bumped 2024-04-17 for Django upgrade
