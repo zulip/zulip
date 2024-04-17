@@ -900,3 +900,9 @@ test("compare_language", () => {
     // score, then alphabetical order is used to break the tie.
     assert.equal(th.compare_language("custom_a", "custom_b"), util.strcmp("custom_a", "custom_b"));
 });
+
+// TODO: This is incomplete for testing this function, and
+// should be filled out more. This case was added for codecov.
+test("compare_by_pms", () => {
+    assert.equal(th.compare_by_pms(a_user, a_user), 0);
+});
