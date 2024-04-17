@@ -622,6 +622,8 @@ export function initialize(): void {
     window.addEventListener("beforeunload", () => {
         update_draft();
     });
+}
 
-    set_count(Object.keys(draft_model.get()).length);
+export function initialize_ui(): void {
+    set_count(draft_model.getDraftCount());
 }

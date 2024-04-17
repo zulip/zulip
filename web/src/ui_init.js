@@ -795,6 +795,7 @@ export function initialize_everything(state_data) {
     });
     compose_closed_ui.initialize();
     compose_reply.initialize();
+    drafts.initialize(); // Must happen before reload_setup.initialize()
     reload_setup.initialize();
     unread.initialize(unread_params);
     bot_data.initialize(bot_params); // Must happen after people.initialize()
@@ -869,7 +870,7 @@ export function initialize_everything(state_data) {
             );
         },
     });
-    drafts.initialize();
+    drafts.initialize_ui();
     drafts_overlay_ui.initialize();
     onboarding_steps.initialize();
     hotspots.initialize();
