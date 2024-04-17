@@ -11,7 +11,7 @@ from django.db.utils import IntegrityError
 from django.utils.timezone import now as timezone_now
 from typing_extensions import override
 
-from zerver.lib.db import reset_queries
+from zerver.lib.db_connections import reset_queries
 from zerver.lib.email_notifications import MissedMessageData, handle_missedmessage_emails
 from zerver.lib.per_request_cache import flush_per_request_caches
 from zerver.models import ScheduledMessageNotificationEmail
