@@ -103,7 +103,7 @@ IGNORED_PHRASES = [
     r"in 3 hours",
     # these are used as topics
     r"^new channels$",
-    r"^stream events$",
+    r"^channel events$",
     # These are used as example short names (e.g. an uncapitalized context):
     r"^marketing$",
     r"^cookie$",
