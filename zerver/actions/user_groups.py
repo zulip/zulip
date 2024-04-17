@@ -211,7 +211,7 @@ def check_add_user_group(
 
 
 def do_send_user_group_update_event(
-    user_group: UserGroup, data: Dict[str, Union[str, int]]
+    user_group: NamedUserGroup, data: Dict[str, Union[str, int]]
 ) -> None:
     event = dict(type="user_group", op="update", group_id=user_group.id, data=data)
     send_event(user_group.realm, event, active_user_ids(user_group.realm_id))
@@ -219,12 +219,13 @@ def do_send_user_group_update_event(
 
 @transaction.atomic(savepoint=False)
 def do_update_user_group_name(
-    user_group: UserGroup, name: str, *, acting_user: Optional[UserProfile]
+    user_group: NamedUserGroup, name: str, *, acting_user: Optional[UserProfile]
 ) -> None:
     try:
         old_value = user_group.name
         user_group.name = name
-        user_group.save(update_fields=["name"])
+        user_group.named_group_name = name
+        user_group.save(update_fields=["name", "named_group_name"])
         RealmAuditLog.objects.create(
             realm=user_group.realm,
             modified_user_group=user_group,
@@ -243,11 +244,12 @@ def do_update_user_group_name(
 
 @transaction.atomic(savepoint=False)
 def do_update_user_group_description(
-    user_group: UserGroup, description: str, *, acting_user: Optional[UserProfile]
+    user_group: NamedUserGroup, description: str, *, acting_user: Optional[UserProfile]
 ) -> None:
     old_value = user_group.description
     user_group.description = description
-    user_group.save(update_fields=["description"])
+    user_group.named_group_description = description
+    user_group.save(update_fields=["description", "named_group_description"])
     RealmAuditLog.objects.create(
         realm=user_group.realm,
         modified_user_group=user_group,
@@ -263,7 +265,7 @@ def do_update_user_group_description(
 
 
 def do_send_user_group_members_update_event(
-    event_name: str, user_group: UserGroup, user_ids: List[int]
+    event_name: str, user_group: NamedUserGroup, user_ids: List[int]
 ) -> None:
     event = dict(type="user_group", op=event_name, group_id=user_group.id, user_ids=user_ids)
     send_event_on_commit(user_group.realm, event, active_user_ids(user_group.realm_id))
@@ -271,7 +273,7 @@ def do_send_user_group_members_update_event(
 
 @transaction.atomic(savepoint=False)
 def bulk_add_members_to_user_groups(
-    user_groups: List[UserGroup],
+    user_groups: List[NamedUserGroup],
     user_profile_ids: List[int],
     *,
     acting_user: Optional[UserProfile],
@@ -307,7 +309,7 @@ def bulk_add_members_to_user_groups(
 
 @transaction.atomic(savepoint=False)
 def bulk_remove_members_from_user_groups(
-    user_groups: List[UserGroup],
+    user_groups: List[NamedUserGroup],
     user_profile_ids: List[int],
     *,
     acting_user: Optional[UserProfile],
@@ -339,7 +341,7 @@ def bulk_remove_members_from_user_groups(
 
 
 def do_send_subgroups_update_event(
-    event_name: str, user_group: UserGroup, subgroup_ids: List[int]
+    event_name: str, user_group: NamedUserGroup, subgroup_ids: List[int]
 ) -> None:
     event = dict(
         type="user_group", op=event_name, group_id=user_group.id, direct_subgroup_ids=subgroup_ids
@@ -349,7 +351,10 @@ def do_send_subgroups_update_event(
 
 @transaction.atomic
 def add_subgroups_to_user_group(
-    user_group: UserGroup, subgroups: List[UserGroup], *, acting_user: Optional[UserProfile]
+    user_group: NamedUserGroup,
+    subgroups: List[NamedUserGroup],
+    *,
+    acting_user: Optional[UserProfile],
 ) -> None:
     group_memberships = [
         GroupGroupMembership(supergroup=user_group, subgroup=subgroup) for subgroup in subgroups
@@ -386,7 +391,10 @@ def add_subgroups_to_user_group(
 
 @transaction.atomic
 def remove_subgroups_from_user_group(
-    user_group: UserGroup, subgroups: List[UserGroup], *, acting_user: Optional[UserProfile]
+    user_group: NamedUserGroup,
+    subgroups: List[NamedUserGroup],
+    *,
+    acting_user: Optional[UserProfile],
 ) -> None:
     GroupGroupMembership.objects.filter(supergroup=user_group, subgroup__in=subgroups).delete()
 
@@ -423,7 +431,7 @@ def do_send_delete_user_group_event(realm: Realm, user_group_id: int, realm_id: 
     send_event(realm, event, active_user_ids(realm_id))
 
 
-def check_delete_user_group(user_group: UserGroup, *, acting_user: UserProfile) -> None:
+def check_delete_user_group(user_group: NamedUserGroup, *, acting_user: UserProfile) -> None:
     user_group_id = user_group.id
     user_group.delete()
     do_send_delete_user_group_event(acting_user.realm, user_group_id, acting_user.realm.id)
@@ -431,7 +439,7 @@ def check_delete_user_group(user_group: UserGroup, *, acting_user: UserProfile) 
 
 @transaction.atomic(savepoint=False)
 def do_change_user_group_permission_setting(
-    user_group: UserGroup,
+    user_group: NamedUserGroup,
     setting_name: str,
     setting_value_group: UserGroup,
     *,
@@ -439,6 +447,8 @@ def do_change_user_group_permission_setting(
 ) -> None:
     old_value = getattr(user_group, setting_name)
     setattr(user_group, setting_name, setting_value_group)
+    named_group_setting_name = "named_group_" + setting_name
+    setattr(user_group, named_group_setting_name, setting_value_group)
     user_group.save()
     RealmAuditLog.objects.create(
         realm=user_group.realm,
