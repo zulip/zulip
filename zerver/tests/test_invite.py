@@ -1044,7 +1044,7 @@ earl-test@zulip.com""",
         self.login("hamlet")
         self.assert_json_error(
             self.invite("iago-test@zulip.com", ["NotARealStream"]),
-            f"Stream does not exist with id: {self.INVALID_STREAM_ID}. No invites were sent.",
+            f"Invalid channel ID {self.INVALID_STREAM_ID}. No invites were sent.",
         )
         self.check_sent_emails([])
 
@@ -1293,7 +1293,7 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
         self.login("hamlet")
         result = self.invite(invitee, ["Denmark", "Scotland"])
         self.assert_json_error(
-            result, "You do not have permission to subscribe other users to streams."
+            result, "You do not have permission to subscribe other users to channels."
         )
 
         result = self.invite(invitee, [])
@@ -2487,7 +2487,7 @@ class MultiuseInviteTest(ZulipTestCase):
             },
         )
         self.assert_json_error(
-            result, "You do not have permission to subscribe other users to streams."
+            result, "You do not have permission to subscribe other users to channels."
         )
 
         result = self.client_post(
@@ -2682,7 +2682,7 @@ class MultiuseInviteTest(ZulipTestCase):
                 "invite_expires_in_minutes": 2 * 24 * 60,
             },
         )
-        self.assert_json_error(result, "Invalid stream ID 54321. No invites were sent.")
+        self.assert_json_error(result, "Invalid channel ID 54321. No invites were sent.")
 
     def test_create_multiuse_link_invalid_invite_as_api_call(self) -> None:
         self.login("iago")

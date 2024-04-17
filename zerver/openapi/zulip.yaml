@@ -12049,7 +12049,7 @@ paths:
                       - example:
                           {
                             "code": "BAD_REQUEST",
-                            "msg": "Stream does not exist with id: 11. No invites were sent.",
+                            "msg": "Invalid channel ID 11. No invites were sent.",
                             "result": "error",
                           }
                         description: |
@@ -12061,7 +12061,7 @@ paths:
                       - example:
                           {
                             "code": "BAD_REQUEST",
-                            "msg": "You do not have permission to subscribe other users to streams.",
+                            "msg": "You do not have permission to subscribe other users to channels.",
                             "result": "error",
                           }
                         description: |
@@ -12162,7 +12162,7 @@ paths:
                       - example:
                           {
                             "code": "BAD_REQUEST",
-                            "msg": "Invalid stream ID 11. No invites were sent.",
+                            "msg": "Invalid channel ID 11. No invites were sent.",
                             "result": "error",
                           }
                         description: |
@@ -12174,7 +12174,7 @@ paths:
                       - example:
                           {
                             "code": "BAD_REQUEST",
-                            "msg": "You do not have permission to subscribe other users to streams.",
+                            "msg": "You do not have permission to subscribe other users to channels.",
                             "result": "error",
                           }
                         description: |

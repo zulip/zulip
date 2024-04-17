@@ -84,14 +84,14 @@ def invite_users_backend(
             (stream, sub) = access_stream_by_id(user_profile, stream_id)
         except JsonableError:
             raise JsonableError(
-                _("Stream does not exist with id: {channel_id}. No invites were sent.").format(
+                _("Invalid channel ID {channel_id}. No invites were sent.").format(
                     channel_id=stream_id
                 )
             )
         streams.append(stream)
 
     if len(streams) and not user_profile.can_subscribe_other_users():
-        raise JsonableError(_("You do not have permission to subscribe other users to streams."))
+        raise JsonableError(_("You do not have permission to subscribe other users to channels."))
 
     do_invite_users(
         user_profile,
@@ -221,14 +221,14 @@ def generate_multiuse_invite_backend(
             (stream, sub) = access_stream_by_id(user_profile, stream_id)
         except JsonableError:
             raise JsonableError(
-                _("Invalid stream ID {channel_id}. No invites were sent.").format(
+                _("Invalid channel ID {channel_id}. No invites were sent.").format(
                     channel_id=stream_id
                 )
             )
         streams.append(stream)
 
     if len(streams) and not user_profile.can_subscribe_other_users():
-        raise JsonableError(_("You do not have permission to subscribe other users to streams."))
+        raise JsonableError(_("You do not have permission to subscribe other users to channels."))
 
     invite_link = do_create_multiuse_invite_link(
         user_profile, invite_as, invite_expires_in_minutes, streams
