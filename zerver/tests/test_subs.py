@@ -1986,7 +1986,7 @@ class StreamAdminTest(ZulipTestCase):
         expected_notification = (
             f"@_**{user_profile.full_name}|{user_profile.id}** changed the "
             "[posting permissions](/help/stream-sending-policy) for this channel:\n\n"
-            "* **Old permissions**: All stream members can post.\n"
+            "* **Old permissions**: All channel members can post.\n"
             "* **New permissions**: Only organization administrators can post."
         )
         self.assertEqual(messages[-1].content, expected_notification)
