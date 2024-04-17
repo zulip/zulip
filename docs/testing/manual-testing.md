@@ -185,7 +185,7 @@ through the following views for Cordelia (and have Hamlet send new
 messages after each narrow):
 
 - Go to Combined feed view.
-- Go to All direct messages view.
+- Go to Direct message feed view.
 - Go to Direct messages w/Hamlet.
 - Go to Direct messages w/Hamlet and Othello.
 - Go to Verona view.
@@ -217,9 +217,9 @@ populated and where the focus is placed.
 - Buttons
 
   - Narrow to a stream and click on "New topic"
-  - Narrow "All direct messages" and click on "New topic"
+  - Narrow to "Direct message feed" and click on "New topic"
   - Narrow to a stream and click on "New direct message"
-  - Narrow "All direct messages" and click on "New direct message"
+  - Narrow to "Direct message feed" and click on "New direct message"
 
 - Topics
 

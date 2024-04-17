@@ -1696,7 +1696,7 @@ test("navbar_helpers", () => {
             terms: is_dm,
             is_common_narrow: true,
             icon: "envelope",
-            title: "translated: All direct messages",
+            title: "translated: Direct message feed",
             redirect_url_with_search: "/#narrow/is/dm",
         },
         {
