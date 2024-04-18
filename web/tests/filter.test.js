@@ -1689,7 +1689,7 @@ test("navbar_helpers", () => {
             terms: in_all,
             is_common_narrow: true,
             icon: "home",
-            title: "translated: All messages including muted streams",
+            title: "translated: All messages including muted channels",
             redirect_url_with_search: "#",
         },
         {
@@ -1724,7 +1724,7 @@ test("navbar_helpers", () => {
             terms: streams_public,
             is_common_narrow: true,
             icon: undefined,
-            title: "translated: Messages in all public streams",
+            title: "translated: Messages in all public channels",
             redirect_url_with_search: "/#narrow/streams/public",
         },
         {
@@ -1738,14 +1738,14 @@ test("navbar_helpers", () => {
             terms: non_existent_stream,
             is_common_narrow: true,
             icon: "question-circle-o",
-            title: "translated: Unknown stream #Elephant",
+            title: "translated: Unknown channel #Elephant",
             redirect_url_with_search: "#",
         },
         {
             terms: non_existent_stream_topic,
             is_common_narrow: true,
             icon: "question-circle-o",
-            title: "translated: Unknown stream #Elephant",
+            title: "translated: Unknown channel #Elephant",
             redirect_url_with_search: "#",
         },
         {
