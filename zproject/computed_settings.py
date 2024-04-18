@@ -699,6 +699,9 @@ AUTH_LOG_PATH = zulip_path("/var/log/zulip/auth.log")
 SCIM_LOG_PATH = zulip_path("/var/log/zulip/scim.log")
 
 ZULIP_WORKER_TEST_FILE = zulip_path("/var/log/zulip/zulip-worker-test-file")
+ZULIP_UPDATE_ANNOUNCEMENTS_LOCK_FILE = zulip_path(
+    "/home/zulip/deployments/zulip_update_announcements.lock"
+)
 
 
 if IS_WORKER:
