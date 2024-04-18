@@ -18,11 +18,8 @@ class SystemGroups:
 
 
 class UserGroup(models.Model):  # type: ignore[django-manager-missing] # django-stubs cannot resolve the custom CTEManager yet https://github.com/typeddjango/django-stubs/issues/1023
-    MAX_NAME_LENGTH = 100
-    INVALID_NAME_PREFIXES = ["@", "role:", "user:", "stream:", "channel:"]
-
     objects: CTEManager = CTEManager()
-    name = models.CharField(max_length=MAX_NAME_LENGTH)
+    name = models.CharField(max_length=100)
     direct_members = models.ManyToManyField(
         UserProfile, through="zerver.UserGroupMembership", related_name="direct_groups"
     )
@@ -38,6 +35,38 @@ class UserGroup(models.Model):  # type: ignore[django-manager-missing] # django-
     is_system_group = models.BooleanField(default=False)
 
     can_mention_group = models.ForeignKey("self", on_delete=models.RESTRICT)
+
+    class Meta:
+        unique_together = (("realm", "name"),)
+
+
+class NamedUserGroup(UserGroup):  # type: ignore[django-manager-missing] # django-stubs cannot resolve the custom CTEManager yet https://github.com/typeddjango/django-stubs/issues/1023
+    MAX_NAME_LENGTH = 100
+    INVALID_NAME_PREFIXES = ["@", "role:", "user:", "stream:", "channel:"]
+
+    # This field is automatically created by django, but we still need
+    # to add this here to keep mypy happy when accessing usergroup_ptr.
+    usergroup_ptr = models.OneToOneField(
+        auto_created=True,
+        on_delete=CASCADE,
+        parent_link=True,
+        primary_key=True,
+        serialize=False,
+        to=UserGroup,
+        # We are not using the auto-generated name here to avoid
+        # duplicate backward relation name because "can_mention_group"
+        # setting also points to a UserGroup object.
+        related_name="named_user_group",
+    )
+    named_group_name = models.CharField(max_length=MAX_NAME_LENGTH, db_column="name")
+    named_group_description = models.TextField(default="", db_column="description")
+    named_group_is_system_group = models.BooleanField(default=False, db_column="is_system_group")
+
+    named_group_can_mention_group = models.ForeignKey(
+        UserGroup, on_delete=models.RESTRICT, db_column="can_mention_group_id"
+    )
+
+    realm_for_sharding = models.ForeignKey("zerver.Realm", on_delete=CASCADE, db_column="realm_id")
 
     # We do not have "Full members" and "Everyone on the internet"
     # group here since there isn't a separate role value for full
@@ -77,37 +106,6 @@ class UserGroup(models.Model):  # type: ignore[django-manager-missing] # django-
             id_field_name="can_mention_group_id",
         ),
     }
-
-    class Meta:
-        unique_together = (("realm", "name"),)
-
-
-class NamedUserGroup(UserGroup):  # type: ignore[django-manager-missing] # django-stubs cannot resolve the custom CTEManager yet https://github.com/typeddjango/django-stubs/issues/1023
-    MAX_NAME_LENGTH = 100
-
-    # This field is automatically created by django, but we still need
-    # to add this here to keep mypy happy when accessing usergroup_ptr.
-    usergroup_ptr = models.OneToOneField(
-        auto_created=True,
-        on_delete=CASCADE,
-        parent_link=True,
-        primary_key=True,
-        serialize=False,
-        to=UserGroup,
-        # We are not using the auto-generated name here to avoid
-        # duplicate backward relation name because "can_mention_group"
-        # setting also points to a UserGroup object.
-        related_name="named_user_group",
-    )
-    named_group_name = models.CharField(max_length=MAX_NAME_LENGTH, db_column="name")
-    named_group_description = models.TextField(default="", db_column="description")
-    named_group_is_system_group = models.BooleanField(default=False, db_column="is_system_group")
-
-    named_group_can_mention_group = models.ForeignKey(
-        UserGroup, on_delete=models.RESTRICT, db_column="can_mention_group_id"
-    )
-
-    realm_for_sharding = models.ForeignKey("zerver.Realm", on_delete=CASCADE, db_column="realm_id")
 
     class Meta:
         unique_together = (("realm_for_sharding", "named_group_name"),)

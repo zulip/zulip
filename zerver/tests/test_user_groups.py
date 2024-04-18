@@ -305,7 +305,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
 
         # Test we cannot create group with same name again
         params = {
-            "name": "a" * (UserGroup.MAX_NAME_LENGTH + 1),
+            "name": "a" * (NamedUserGroup.MAX_NAME_LENGTH + 1),
             "members": orjson.dumps([hamlet.id]).decode(),
             "description": "Test group",
         }
@@ -496,7 +496,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
         result = self.client_patch(f"/json/user_groups/{lear_test_group.id}", info=params)
         self.assert_json_error(result, "Invalid user group")
 
-        params = {"name": "a" * (UserGroup.MAX_NAME_LENGTH + 1)}
+        params = {"name": "a" * (NamedUserGroup.MAX_NAME_LENGTH + 1)}
         result = self.client_patch(f"/json/user_groups/{user_group.id}", info=params)
         self.assert_json_error(result, "User group name cannot exceed 100 characters.")
 
