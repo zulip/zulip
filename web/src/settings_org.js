@@ -673,7 +673,7 @@ export function init_dropdown_widgets() {
         },
         default_id: realm.realm_new_stream_announcements_stream_id,
         unique_id_type: dropdown_widget.DataTypes.NUMBER,
-        text_if_current_value_not_in_options: $t({defaultMessage: "Cannot view stream"}),
+        text_if_current_value_not_in_options: $t({defaultMessage: "Cannot view channel"}),
     });
     settings_components.set_new_stream_announcements_stream_widget(
         new_stream_announcements_stream_widget,
@@ -696,7 +696,7 @@ export function init_dropdown_widgets() {
         },
         default_id: realm.realm_signup_announcements_stream_id,
         unique_id_type: dropdown_widget.DataTypes.NUMBER,
-        text_if_current_value_not_in_options: $t({defaultMessage: "Cannot view stream"}),
+        text_if_current_value_not_in_options: $t({defaultMessage: "Cannot view channel"}),
     });
     settings_components.set_signup_announcements_stream_widget(signup_announcements_stream_widget);
     signup_announcements_stream_widget.setup();
@@ -717,7 +717,7 @@ export function init_dropdown_widgets() {
         },
         default_id: realm.realm_zulip_update_announcements_stream_id,
         unique_id_type: dropdown_widget.DataTypes.NUMBER,
-        text_if_current_value_not_in_options: $t({defaultMessage: "Cannot view stream"}),
+        text_if_current_value_not_in_options: $t({defaultMessage: "Cannot view channel"}),
     });
     settings_components.set_zulip_update_announcements_stream_widget(
         zulip_update_announcements_stream_widget,

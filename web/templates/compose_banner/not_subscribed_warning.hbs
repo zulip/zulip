@@ -2,15 +2,15 @@
     <p class="banner_message">
         {{#if can_subscribe_other_users}}
             {{#if should_add_guest_user_indicator}}
-            {{#tr}}<strong>{name}</strong> <i>(guest)</i> is not subscribed to this stream. They will not be notified unless you subscribe them.{{/tr}}
+            {{#tr}}<strong>{name}</strong> <i>(guest)</i> is not subscribed to this channel. They will not be notified unless you subscribe them.{{/tr}}
             {{else}}
-            {{#tr}}<strong>{name}</strong> is not subscribed to this stream. They will not be notified unless you subscribe them.{{/tr}}
+            {{#tr}}<strong>{name}</strong> is not subscribed to this channel. They will not be notified unless you subscribe them.{{/tr}}
             {{/if}}
         {{else}}
             {{#if should_add_guest_user_indicator}}
-            {{#tr}}<strong>{name}</strong> <i>(guest)</i> is not subscribed to this stream. They will not be notified if you mention them.{{/tr}}
+            {{#tr}}<strong>{name}</strong> <i>(guest)</i> is not subscribed to this channel. They will not be notified if you mention them.{{/tr}}
             {{else}}
-            {{#tr}}<strong>{name}</strong> is not subscribed to this stream. They will not be notified if you mention them.{{/tr}}
+            {{#tr}}<strong>{name}</strong> is not subscribed to this channel. They will not be notified if you mention them.{{/tr}}
             {{/if}}
         {{/if}}
     </p>

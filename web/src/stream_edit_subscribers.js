@@ -247,7 +247,7 @@ function remove_subscriber({stream_id, target_user_id, $list_entry}) {
 
     function removal_failure() {
         show_stream_subscription_request_result({
-            message: $t({defaultMessage: "Error removing user from this stream."}),
+            message: $t({defaultMessage: "Error removing user from this channel."}),
             add_class: "text-error",
             remove_class: "text-success",
         });

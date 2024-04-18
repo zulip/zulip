@@ -821,7 +821,7 @@ export function save_discard_widget_status_handler(
             banner_type: compose_banner.WARNING,
             banner_text: $t({
                 defaultMessage:
-                    "Only subscribers can access or join private streams, so you will lose access to this stream if you convert it to a private stream while not subscribed to it.",
+                    "Only subscribers can access or join private channels, so you will lose access to this channel if you convert it to a private channel while not subscribed to it.",
             }),
             button_text: $t({defaultMessage: "Subscribe"}),
             classname: "stream_privacy_warning",

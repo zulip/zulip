@@ -171,7 +171,7 @@ export function initialize(): void {
                     narrow_filter.operands("channel")[0] === compose_state.stream_name()
                 ) {
                     display_current_view = $t({
-                        defaultMessage: "Currently viewing the entire stream.",
+                        defaultMessage: "Currently viewing the entire channel.",
                     });
                 } else if (
                     _.isEqual(narrow_filter.sorted_term_types(), ["is-dm"]) &&

@@ -69,7 +69,7 @@ export function notify_automatic_new_visibility_policy(
             banner_type: compose_banner.SUCCESS,
             classname: compose_banner.CLASSNAMES.automatic_new_visibility_policy,
             link_msg_id: data.id,
-            stream_topic,
+            channel_topic: stream_topic,
             narrow_url,
             followed,
             button_text: $t({defaultMessage: "Change setting"}),

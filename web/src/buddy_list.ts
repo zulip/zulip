@@ -328,7 +328,7 @@ export class BuddyList extends BuddyListConf {
 
         let header_text;
         if (current_sub) {
-            header_text = $t({defaultMessage: "In this stream"});
+            header_text = $t({defaultMessage: "In this channel"});
         } else {
             header_text = $t({defaultMessage: "In this conversation"});
         }

@@ -83,7 +83,7 @@ IGNORED_PHRASES = [
     r"acme",
     # Fragments of larger strings
     r"is …",
-    r"your subscriptions on your Streams page",
+    r"your subscriptions on your Channels page",
     r"Add global time<br />Everyone sees global times in their own time zone\.",
     r"user",
     r"an unknown operating system",
