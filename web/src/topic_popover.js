@@ -20,6 +20,7 @@ export function initialize() {
     popover_menus.register_popover_menu(
         "#stream_filters .topic-sidebar-menu-icon, .inbox-row .inbox-topic-menu",
         {
+            theme: "popover-menu",
             ...popover_menus.left_sidebar_tippy_options,
             onShow(instance) {
                 popover_menus.popover_instances.topics_menu = instance;

@@ -1148,6 +1148,7 @@ div.overlay {
     align-items: center;
     box-sizing: border-box;
     padding: 1px;
+    margin: 0 10px;
     height: 33px;
     gap: 2px;
     background-color: var(--color-background-tab-picker-container);
