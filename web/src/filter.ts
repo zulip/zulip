@@ -975,7 +975,7 @@ export class Filter {
         ) {
             if (!this._sub) {
                 const search_text = this.operands("channel")[0];
-                return $t({defaultMessage: "Unknown stream #{search_text}"}, {search_text});
+                return $t({defaultMessage: "Unknown channel #{search_text}"}, {search_text});
             }
             return this._sub.name;
         }
@@ -1025,9 +1025,9 @@ export class Filter {
                 case "in-home":
                     return $t({defaultMessage: "Combined feed"});
                 case "in-all":
-                    return $t({defaultMessage: "All messages including muted streams"});
+                    return $t({defaultMessage: "All messages including muted channels"});
                 case "channels-public":
-                    return $t({defaultMessage: "Messages in all public streams"});
+                    return $t({defaultMessage: "Messages in all public channels"});
                 case "is-starred":
                     return $t({defaultMessage: "Starred messages"});
                 case "is-mentioned":

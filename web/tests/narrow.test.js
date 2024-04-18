@@ -815,7 +815,10 @@ run_test("narrow_compute_title", () => {
     assert.equal(narrow_title.compute_narrow_title(filter), "#Foo");
 
     filter = new Filter([{operator: "stream", operand: "Elephant"}]);
-    assert.equal(narrow_title.compute_narrow_title(filter), "translated: Unknown stream #Elephant");
+    assert.equal(
+        narrow_title.compute_narrow_title(filter),
+        "translated: Unknown channel #Elephant",
+    );
 
     // Direct messages with narrows
     const joe = {
