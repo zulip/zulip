@@ -1,8 +1,6 @@
 .rendered_markdown {
-    /* The default top/bottom margins for paragraphs are small, to make sure
-       they look nice next to blockquotes, lists, etc. */
     & p {
-        margin: 3px 0;
+        margin: 3px 0 5px;
     }
 
     /* The spacing between two paragraphs is significantly larger.  We
@@ -92,7 +90,7 @@
     /* Formatting for blockquotes */
     & blockquote {
         padding-left: 5px;
-        margin: 5px 0 6px 10px;
+        margin: 5px 0 5px 10px;
         border-left: 5px solid hsl(0deg 0% 87%);
     }
 
