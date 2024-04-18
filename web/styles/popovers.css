@@ -232,22 +232,16 @@
     z-index: 106;
 }
 
-.streams_popover {
-    width: min-content;
-
-    .stream-menu-item {
-        white-space: nowrap;
+#stream-actions-menu-popover {
+    .popover-stream-name {
+        font-weight: 600;
+        color: var(--color-text-popover-menu);
+        line-height: 1.1;
     }
 
-    .stream-name {
-        align-items: baseline;
-        color: var(--color-text-sidebar-popover-menu);
-        display: flex;
-        gap: 3px;
-        font-weight: 700;
-        line-height: 1.1;
-        margin: 6px 0;
-        white-space: normal;
+    .popover-stream-name,
+    .stream-privacy.filter-icon {
+        margin-top: 4px;
     }
 
     .colorpicker-container {
@@ -288,11 +282,6 @@
             }
         }
     }
-
-    .popover_sub_unsub_button {
-        margin-top: 0;
-        float: none;
-    }
 }
 
 .topics_popover {
@@ -314,7 +303,6 @@
 
 ul {
     &.user-card-popover-actions i,
-    &.streams_popover i,
     &.topics_popover i {
         display: inline-block;
         text-align: center;
