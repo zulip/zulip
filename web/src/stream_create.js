@@ -1,7 +1,5 @@
 import $ from "jquery";
-import tippy from "tippy.js";
 
-import render_announce_stream_docs from "../templates/announce_stream_docs.hbs";
 import render_subscription_invites_warning_modal from "../templates/confirm_dialog/confirm_subscription_invites_warning.hbs";
 
 import * as channel from "./channel";
@@ -18,7 +16,6 @@ import * as stream_data from "./stream_data";
 import * as stream_settings_components from "./stream_settings_components";
 import * as stream_ui_updates from "./stream_ui_updates";
 import * as ui_report from "./ui_report";
-import {parse_html} from "./ui_util";
 
 let created_stream;
 
@@ -452,16 +449,6 @@ export function set_up_handlers() {
 
         // This is an inexpensive check.
         stream_name_error.pre_validate(stream_name);
-    });
-
-    tippy("#announce-stream-docs", {
-        content: () =>
-            parse_html(
-                render_announce_stream_docs({
-                    new_stream_announcements_stream:
-                        stream_data.get_new_stream_announcements_stream(),
-                }),
-            ),
     });
 
     // Do not allow the user to enter newline characters while typing out the
