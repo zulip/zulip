@@ -355,7 +355,7 @@
         border-color: hsl(0deg 0% 100% / 40%);
     }
 
-    .streams_popover .sp-container {
+    #stream-actions-menu-popover .sp-container {
         background-color: transparent;
 
         & button {
