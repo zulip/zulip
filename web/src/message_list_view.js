@@ -1594,8 +1594,22 @@ export class MessageListView {
             /* No headers are present */
             return;
         }
-        /* Intentionally remove sticky headers class here to make calculations simpler. */
-        $(".sticky_header").removeClass("sticky_header");
+
+        const $current_sticky_header = $(".sticky_header");
+        if ($current_sticky_header.length === 1) {
+            // Reset the date on the header in case we changed it.
+            const message_group_id = rows
+                .get_message_recipient_row($current_sticky_header)
+                .attr("id");
+            const group = this._find_message_group(message_group_id);
+            if (group !== undefined) {
+                const rendered_date = group.date;
+                $current_sticky_header.find(".recipient_row_date").html(rendered_date);
+                /* Intentionally remove sticky headers class here to make calculations simpler. */
+            }
+            $current_sticky_header.removeClass("sticky_header");
+        }
+
         /* visible_top is navbar top position + height for us. */
         const visible_top = message_viewport.message_viewport_info().visible_top;
         /* We need date to be properly visible on the header, so partially visible headers
