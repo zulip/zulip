@@ -222,7 +222,7 @@ run_test("show_empty_narrow_message", ({mock_template}) => {
     narrow_banner.show_empty_narrow_message();
     assert.equal(
         $(".empty_feed_notice_main").html(),
-        empty_narrow_html("translated: This stream does not exist or is private."),
+        empty_narrow_html("translated: This channel does not exist or is private."),
     );
 
     // for non-subbed public stream
@@ -232,8 +232,8 @@ run_test("show_empty_narrow_message", ({mock_template}) => {
     assert.equal(
         $(".empty_feed_notice_main").html(),
         empty_narrow_html(
-            "translated: You aren't subscribed to this stream and nobody has talked about that yet!",
-            'translated HTML: <button class="button white rounded stream_sub_unsub_button sea-green" type="button" name="subscription">Subscribe</button>',
+            "translated: There are no messages here.",
+            'translated HTML: Why not <a href="#" class="empty_feed_compose_stream">start the conversation</a>?',
         ),
     );
 
@@ -524,7 +524,7 @@ run_test("show_empty_narrow_message", ({mock_template}) => {
     narrow_banner.show_empty_narrow_message();
     assert.equal(
         $(".empty_feed_notice_main").html(),
-        empty_narrow_html("translated: This stream does not exist or is private."),
+        empty_narrow_html("translated: This channel does not exist or is private."),
     );
 });
 
@@ -626,7 +626,7 @@ run_test("show_invalid_narrow_message", ({mock_template}) => {
         $(".empty_feed_notice_main").html(),
         empty_narrow_html(
             "translated: No search results.",
-            "translated HTML: <p>You are searching for messages that belong to more than one stream, which is not possible.</p>",
+            "translated HTML: <p>You are searching for messages that belong to more than one channel, which is not possible.</p>",
         ),
     );
 
