@@ -104,7 +104,7 @@ class UserGroupTestCase(ZulipTestCase):
         user_groups = get_direct_user_groups(othello)
         self.assert_length(user_groups, 3)
         # othello is a direct member of two role-based system groups also.
-        user_group_names = [group.name for group in user_groups]
+        user_group_names = [group.named_user_group.name for group in user_groups]
         self.assertEqual(
             set(user_group_names),
             {"support", SystemGroups.MEMBERS, SystemGroups.FULL_MEMBERS},

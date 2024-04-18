@@ -694,10 +694,10 @@ def bulk_import_named_user_groups(data: TableData) -> None:
         (
             group["usergroup_ptr_id"],
             group["realm_for_sharding_id"],
-            group["named_group_name"],
-            group["named_group_description"],
-            group["named_group_is_system_group"],
-            group["named_group_can_mention_group_id"],
+            group["name"],
+            group["description"],
+            group["is_system_group"],
+            group["can_mention_group_id"],
         )
         for group in data["zerver_namedusergroup"]
     ]
@@ -1056,10 +1056,6 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
 
         if "zerver_usergroup" in data:
             re_map_foreign_keys(data, "zerver_usergroup", "realm", related_table="realm")
-            for setting_name in NamedUserGroup.GROUP_PERMISSION_SETTINGS:
-                re_map_foreign_keys(
-                    data, "zerver_usergroup", setting_name, related_table="usergroup"
-                )
             bulk_import_model(data, UserGroup)
 
             if "zerver_namedusergroup" in data:
@@ -1070,11 +1066,10 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
                     data, "zerver_namedusergroup", "realm_for_sharding", related_table="realm"
                 )
                 for setting_name in NamedUserGroup.GROUP_PERMISSION_SETTINGS:
-                    named_group_setting_name = "named_group_" + setting_name
                     re_map_foreign_keys(
                         data,
                         "zerver_namedusergroup",
-                        named_group_setting_name,
+                        setting_name,
                         related_table="usergroup",
                     )
                 bulk_import_named_user_groups(data)
