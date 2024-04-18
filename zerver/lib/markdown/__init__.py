@@ -1417,7 +1417,15 @@ class Timestamp(markdown.inlinepatterns.Pattern):
         # Use HTML5 <time> element for valid timestamps.
         time_element = Element("time")
         if timestamp.tzinfo:
-            timestamp = timestamp.astimezone(timezone.utc)
+            try:
+                timestamp = timestamp.astimezone(timezone.utc)
+            except ValueError:
+                error_element = Element("span")
+                error_element.set("class", "timestamp-error")
+                error_element.text = markdown.util.AtomicString(
+                    f"Invalid time format: {time_input_string}"
+                )
+                return error_element
         else:
             timestamp = timestamp.replace(tzinfo=timezone.utc)
         time_element.set("datetime", timestamp.isoformat().replace("+00:00", "Z"))
