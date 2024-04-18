@@ -429,12 +429,12 @@ function filter_mention_name(current_token) {
         current_token = current_token.slice(1);
     }
     if (current_token.lastIndexOf("*") !== -1) {
-        return false;
+        return undefined;
     }
 
     // Don't autocomplete if there is a space following an '@'
     if (current_token[0] === " ") {
-        return false;
+        return undefined;
     }
     return current_token;
 }
@@ -758,7 +758,7 @@ export function get_candidates(query, input_element) {
             current_token = current_token.slice(1);
         }
         current_token = filter_mention_name(current_token);
-        if (!current_token && typeof current_token === "boolean") {
+        if (current_token === undefined) {
             completing = null;
             return false;
         }
