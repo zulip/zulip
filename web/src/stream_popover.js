@@ -414,6 +414,7 @@ export async function build_move_topic_to_stream_popover(
         send_notification_to_new_thread = send_notification_to_new_thread === "on";
         send_notification_to_old_thread = send_notification_to_old_thread === "on";
         current_stream_id = Number.parseInt(current_stream_id, 10);
+        select_stream_id = Number.parseInt(select_stream_id, 10);
 
         if (new_topic_name !== undefined) {
             // new_topic_name can be undefined when the new topic input is disabled when
