@@ -68,7 +68,7 @@ function update_reply_button_state(disable = false) {
     if (disable) {
         $("#compose_buttons .compose-reply-button-wrapper").attr(
             "data-tooltip-template-id",
-            "compose_reply_button_disabled_tooltip_template",
+            "compose_reply_direct_disabled_button_tooltip_template",
         );
         return;
     }
