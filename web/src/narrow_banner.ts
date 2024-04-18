@@ -112,7 +112,7 @@ function pick_empty_narrow_banner(): NarrowBannerData {
                 title: default_banner_for_multiple_filters,
                 html: $t_html({
                     defaultMessage:
-                        "<p>You are searching for messages that belong to more than one stream, which is not possible.</p>",
+                        "<p>You are searching for messages that belong to more than one channel, which is not possible.</p>",
                 }),
             };
         }
@@ -264,28 +264,11 @@ function pick_empty_narrow_banner(): NarrowBannerData {
                 }
 
                 if (can_toggle_narrowed_stream()) {
-                    return {
-                        title: $t({
-                            defaultMessage:
-                                "You aren't subscribed to this stream and nobody has talked about that yet!",
-                        }),
-                        // TODO: Consider moving the button to be its own option in the template.
-                        html: $t_html(
-                            {
-                                defaultMessage: "<z-button>Subscribe</z-button>",
-                            },
-                            {
-                                "z-button": (content_html) =>
-                                    `<button class="button white rounded stream_sub_unsub_button sea-green" type="button" name="subscription">${content_html.join(
-                                        "",
-                                    )}</button>`,
-                            },
-                        ),
-                    };
+                    return default_banner;
                 }
 
                 return {
-                    title: $t({defaultMessage: "This stream does not exist or is private."}),
+                    title: $t({defaultMessage: "This channel does not exist or is private."}),
                 };
             }
             // else fallthrough to default case
