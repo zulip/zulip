@@ -68,7 +68,7 @@ from zerver.lib.outgoing_http import OutgoingSession
 from zerver.lib.subdomains import is_static_or_current_realm_url
 from zerver.lib.tex import render_tex
 from zerver.lib.thumbnail import user_uploads_or_external
-from zerver.lib.timeout import timeout
+from zerver.lib.timeout import unsafe_timeout
 from zerver.lib.timezone import common_timezones
 from zerver.lib.types import LinkifierDict
 from zerver.lib.url_encoding import encode_stream, hash_util_encode
@@ -2667,7 +2667,7 @@ def do_convert(
         # extremely inefficient in corner cases) as well as user
         # errors (e.g. a linkifier that makes some syntax
         # infinite-loop).
-        rendering_result.rendered_content = timeout(5, lambda: _md_engine.convert(content))
+        rendering_result.rendered_content = unsafe_timeout(5, lambda: _md_engine.convert(content))
 
         # Throw an exception if the content is huge; this protects the
         # rest of the codebase from any bugs where we end up rendering
