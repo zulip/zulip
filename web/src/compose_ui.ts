@@ -304,11 +304,11 @@ export function compute_placeholder_text(opts: ComposePlaceholderOptions): strin
 
         if (stream_name && opts.topic) {
             return $t(
-                {defaultMessage: "Message #{stream_name} > {topic_name}"},
-                {stream_name, topic_name: opts.topic},
+                {defaultMessage: "Message #{channel_name} > {topic_name}"},
+                {channel_name: stream_name, topic_name: opts.topic},
             );
         } else if (stream_name) {
-            return $t({defaultMessage: "Message #{stream_name}"}, {stream_name});
+            return $t({defaultMessage: "Message #{channel_name}"}, {channel_name: stream_name});
         }
     } else if (opts.direct_message_user_ids.length > 0) {
         const users = people.get_users_from_ids(opts.direct_message_user_ids);

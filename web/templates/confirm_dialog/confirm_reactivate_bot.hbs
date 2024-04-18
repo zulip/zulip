@@ -1,7 +1,7 @@
 <p>
     {{#tr}}
     <z-user></z-user> will have the same properties as it did prior to deactivation,
-    including role, owner and stream subscriptions.
+    including role, owner and channel subscriptions.
     {{#*inline "z-user"}}<strong>{{username}}</strong>{{/inline}}
     {{/tr}}
 </p>
@@ -11,6 +11,6 @@
         Because the original owner of this bot <z-bot-owner></z-bot-owner> is deactivated, you will become the owner for this bot.
         {{#*inline "z-bot-owner"}}<strong>{{owner_name}}</strong>{{/inline}}
         {{/tr}}
-        {{t "However, it will no longer be subscribed to the private streams that you are not subscribed to." }}
+        {{t "However, it will no longer be subscribed to the private channels that you are not subscribed to." }}
     </p>
 {{/if}}

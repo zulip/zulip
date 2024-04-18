@@ -89,7 +89,7 @@ const keyboard_handling_context: messages_overlay_ui.Context = {
 function get_display_stream_name(stream_id: number): string {
     const stream_name = sub_store.maybe_get_stream_name(stream_id);
     if (stream_name === undefined) {
-        return $t({defaultMessage: "Unknown stream"});
+        return $t({defaultMessage: "Unknown channel"});
     }
     return stream_name;
 }

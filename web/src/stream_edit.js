@@ -388,7 +388,7 @@ function show_stream_email_address_modal(address) {
     });
 
     dialog_widget.launch({
-        html_heading: $t_html({defaultMessage: "Generate stream email address"}),
+        html_heading: $t_html({defaultMessage: "Generate channel email address"}),
         html_body: copy_email_address_modal_html,
         id: "copy_email_address_modal",
         html_submit_button: $t_html({defaultMessage: "Copy address"}),
@@ -452,8 +452,8 @@ export function initialize() {
         const change_stream_info_modal = render_change_stream_info_modal(template_data);
         dialog_widget.launch({
             html_heading: $t_html(
-                {defaultMessage: "Edit #{stream_name}"},
-                {stream_name: stream.name},
+                {defaultMessage: "Edit #{channel_name}"},
+                {channel_name: stream.name},
             ),
             html_body: change_stream_info_modal,
             id: "change_stream_info_modal",
@@ -592,7 +592,7 @@ export function initialize() {
         const stream_id = get_stream_id(e.target);
         if (!stream_id) {
             ui_report.client_error(
-                $t_html({defaultMessage: "Invalid stream ID"}),
+                $t_html({defaultMessage: "Invalid channel ID"}),
                 $(".stream_change_property_info"),
             );
             return;
@@ -602,7 +602,7 @@ export function initialize() {
             const stream_id = $(".dialog_submit_button").data("stream-id");
             if (!stream_id) {
                 ui_report.client_error(
-                    $t_html({defaultMessage: "Invalid stream ID"}),
+                    $t_html({defaultMessage: "Invalid channel ID"}),
                     $(".stream_change_property_info"),
                 );
                 return;

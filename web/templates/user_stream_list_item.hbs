@@ -8,7 +8,7 @@
     {{#if show_unsubscribe_button}}
     <td class="remove_subscription">
         <div class="subscription_list_remove">
-            <button type="button" name="unsubscribe" class="remove-subscription-button button small rounded btn-danger {{#if (or show_private_stream_unsub_tooltip show_last_user_in_private_stream_unsub_tooltip)}}tippy-zulip-tooltip{{/if}}" data-tippy-content='{{#if show_private_stream_unsub_tooltip}}{{t "Use stream settings to unsubscribe from private streams."}}{{else}}{{t "Use stream settings to unsubscribe the last user from a private stream."}}{{/if}}'>
+            <button type="button" name="unsubscribe" class="remove-subscription-button button small rounded btn-danger {{#if (or show_private_stream_unsub_tooltip show_last_user_in_private_stream_unsub_tooltip)}}tippy-zulip-tooltip{{/if}}" data-tippy-content='{{#if show_private_stream_unsub_tooltip}}{{t "Use channel settings to unsubscribe from private channels."}}{{else}}{{t "Use channel settings to unsubscribe the last user from a private channel."}}{{/if}}'>
                 {{t 'Unsubscribe' }}
             </button>
         </div>

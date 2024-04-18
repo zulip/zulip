@@ -53,13 +53,13 @@ const markdown_help_rows = [
         usage_html: format_usage_html("Ctrl", "Shift", "L"),
     },
     {
-        markdown: "#**stream name**",
-        output_html: "<p><a>#stream name</a></p>",
-        effect_html: "(links to a stream)",
+        markdown: "#**channel name**",
+        output_html: "<p><a>#channel name</a></p>",
+        effect_html: "(links to a channel)",
     },
     {
-        markdown: "#**stream name>topic name**",
-        output_html: "<p><a>#stream name > topic name</a></p>",
+        markdown: "#**channel name>topic name**",
+        output_html: "<p><a>#channel name > topic name</a></p>",
         effect_html: "(links to topic)",
     },
     {

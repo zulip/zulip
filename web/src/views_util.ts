@@ -56,7 +56,7 @@ export function filters_dropdown_options(current_value: string | number | undefi
             unique_id: FILTERS.ALL_TOPICS,
             name: $t({defaultMessage: "All topics"}),
             description: $t({
-                defaultMessage: "Includes muted streams and topics",
+                defaultMessage: "Includes muted channels and topics",
             }),
             bold_current_selection: current_value === FILTERS.ALL_TOPICS,
         },

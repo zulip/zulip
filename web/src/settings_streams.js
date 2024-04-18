@@ -187,7 +187,7 @@ function show_add_default_streams_modal() {
                 },
                 error(xhr) {
                     ui_report.error(
-                        $t_html({defaultMessage: "Failed adding one or more streams."}),
+                        $t_html({defaultMessage: "Failed adding one or more channels."}),
                         xhr,
                         $("#dialog_error"),
                     );
@@ -209,7 +209,7 @@ function show_add_default_streams_modal() {
     }
 
     dialog_widget.launch({
-        html_heading: $t_html({defaultMessage: "Add default streams"}),
+        html_heading: $t_html({defaultMessage: "Add default channels"}),
         html_body,
         html_submit_button: $t_html({defaultMessage: "Add"}),
         help_link: "/help/set-default-streams-for-new-users",
