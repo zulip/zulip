@@ -1543,7 +1543,7 @@ Output:
         markdown.__init__.do_convert.
         """
         with mock.patch(
-            "zerver.lib.markdown.timeout", side_effect=subprocess.CalledProcessError(1, [])
+            "zerver.lib.markdown.unsafe_timeout", side_effect=subprocess.CalledProcessError(1, [])
         ), self.assertLogs(level="ERROR"):  # For markdown_logger.exception
             yield
 

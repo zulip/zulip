@@ -4,7 +4,7 @@ import traceback
 from unittest import skipIf
 
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.lib.timeout import TimeoutExpiredError, timeout
+from zerver.lib.timeout import TimeoutExpiredError, unsafe_timeout
 
 
 class TimeoutTestCase(ZulipTestCase):
@@ -20,12 +20,12 @@ class TimeoutTestCase(ZulipTestCase):
         return 42  # nocoverage
 
     def test_timeout_returns(self) -> None:
-        ret = timeout(1, lambda: 42)
+        ret = unsafe_timeout(1, lambda: 42)
         self.assertEqual(ret, 42)
 
     def test_timeout_exceeded(self) -> None:
         try:
-            timeout(1, lambda: self.sleep_x_seconds_y_times(0.1, 50))
+            unsafe_timeout(1, lambda: self.sleep_x_seconds_y_times(0.1, 50))
             raise AssertionError("Failed to raise a timeout")
         except TimeoutExpiredError as exc:
             tb = traceback.format_tb(exc.__traceback__)
@@ -34,7 +34,7 @@ class TimeoutTestCase(ZulipTestCase):
 
     def test_timeout_raises(self) -> None:
         try:
-            timeout(1, self.something_exceptional)
+            unsafe_timeout(1, self.something_exceptional)
             raise AssertionError("Failed to raise an exception")
         except ValueError as exc:
             tb = traceback.format_tb(exc.__traceback__)
@@ -47,7 +47,7 @@ class TimeoutTestCase(ZulipTestCase):
         # kill it
         with self.assertLogs(level="WARNING") as m:
             try:
-                timeout(1, lambda: self.sleep_x_seconds_y_times(5, 1))
+                unsafe_timeout(1, lambda: self.sleep_x_seconds_y_times(5, 1))
                 raise AssertionError("Failed to raise a timeout")
             except TimeoutExpiredError as exc:
                 tb = traceback.format_tb(exc.__traceback__)
