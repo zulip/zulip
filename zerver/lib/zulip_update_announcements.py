@@ -193,7 +193,16 @@ def send_zulip_update_announcements(skip_delay: bool) -> None:
     )
 
     for realm in realms:
+        # Refresh the realm from the database and check its
+        # properties, to protect against racing with another copy of
+        # ourself.
+        realm.refresh_from_db()
         realm_zulip_update_announcements_level = realm.zulip_update_announcements_level
+        assert (
+            realm_zulip_update_announcements_level is None
+            or realm_zulip_update_announcements_level < latest_zulip_update_announcements_level
+        )
+
         sender = get_system_bot(settings.NOTIFICATION_BOT, realm.id)
 
         messages = []
