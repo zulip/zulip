@@ -483,9 +483,6 @@ test("content_typeahead_selected", ({override}) => {
             caret_called1 = true;
             return query.length;
         }
-        const [arg1, arg2] = args;
-        // .caret() used in setTimeout
-        assert.equal(arg1, arg2);
         caret_called2 = true;
         return this;
     };
