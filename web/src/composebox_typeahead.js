@@ -391,7 +391,7 @@ function get_wildcard_string(mention) {
     if (mention === "topic") {
         return $t({defaultMessage: "Notify topic"});
     }
-    return $t({defaultMessage: "Notify stream"});
+    return $t({defaultMessage: "Notify channel"});
 }
 
 export function broadcast_mentions() {
