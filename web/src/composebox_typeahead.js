@@ -1156,7 +1156,7 @@ function get_header_html() {
 export function initialize_compose_typeahead(selector) {
     const bootstrap_typeahead_input = {
         $element: $(selector),
-        type: "input",
+        type: "textarea",
     };
     new Typeahead(bootstrap_typeahead_input, {
         items: max_num_items,

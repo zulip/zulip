@@ -472,7 +472,7 @@ test("topics_seen_for", ({override, override_rewire}) => {
 test("content_typeahead_selected", ({override}) => {
     const input_element = {
         $element: {},
-        type: "input",
+        type: "textarea",
     };
     let caret_called1 = false;
     let caret_called2 = false;
