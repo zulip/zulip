@@ -47,16 +47,11 @@ def create_user_group_in_database(
         realm=realm,
         description=description,
         is_system_group=is_system_group,
-        named_group_name=name,
-        named_group_description=description,
-        named_group_is_system_group=is_system_group,
         realm_for_sharding=realm,
     )
 
     for setting_name, setting_value in group_settings_map.items():
         setattr(user_group, setting_name, setting_value)
-        named_group_setting_name = "named_group_" + setting_name
-        setattr(user_group, named_group_setting_name, setting_value)
 
     system_groups_name_dict = get_role_based_system_groups_dict(realm)
     user_group = set_defaults_for_group_settings(
@@ -224,8 +219,7 @@ def do_update_user_group_name(
     try:
         old_value = user_group.name
         user_group.name = name
-        user_group.named_group_name = name
-        user_group.save(update_fields=["name", "named_group_name"])
+        user_group.save(update_fields=["name"])
         RealmAuditLog.objects.create(
             realm=user_group.realm,
             modified_user_group=user_group,
@@ -248,8 +242,7 @@ def do_update_user_group_description(
 ) -> None:
     old_value = user_group.description
     user_group.description = description
-    user_group.named_group_description = description
-    user_group.save(update_fields=["description", "named_group_description"])
+    user_group.save(update_fields=["description"])
     RealmAuditLog.objects.create(
         realm=user_group.realm,
         modified_user_group=user_group,
@@ -447,8 +440,6 @@ def do_change_user_group_permission_setting(
 ) -> None:
     old_value = getattr(user_group, setting_name)
     setattr(user_group, setting_name, setting_value_group)
-    named_group_setting_name = "named_group_" + setting_name
-    setattr(user_group, named_group_setting_name, setting_value_group)
     user_group.save()
     RealmAuditLog.objects.create(
         realm=user_group.realm,
