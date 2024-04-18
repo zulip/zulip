@@ -201,12 +201,10 @@ $message_box_margin: 3px;
         .message_content {
             grid-area: message;
             /*
-            Space between two single line messages in a paragraph is 10px.
-            There is 3px margin above and below a message. So, having a 2px
-            padding above and below the message will make the space between
-            all single paragraphs the same.
+            Space between two single line messages is 10px, which is maintained
+            by setting 5px of padding above messages without a sender.
             */
-            padding: 2px 0;
+            padding: 5px 0 0;
             color: var(--color-text-message-default);
             line-height: var(--message-box-line-height);
             min-height: 17px;
@@ -378,7 +376,8 @@ $message_box_margin: 3px;
             }
 
             .message_content {
-                padding-top: 0;
+                /* Top padding is reduced when there is a sender line. */
+                padding-top: 3px;
                 grid-area: message;
             }
 
