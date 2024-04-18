@@ -5,6 +5,7 @@ import render_right_sidebar from "../templates/right_sidebar.hbs";
 
 import {buddy_list} from "./buddy_list";
 import {media_breakpoints_num} from "./css_variables";
+import * as navbar_help_menu from "./navbar_help_menu";
 import {page_params} from "./page_params";
 import * as rendered_markdown from "./rendered_markdown";
 import * as resize from "./resize";
@@ -13,7 +14,6 @@ import * as settings_data from "./settings_data";
 import * as spectators from "./spectators";
 import {current_user} from "./state_data";
 import {user_settings} from "./user_settings";
-import * as navbar_help_menu from "./navbar_help_menu";
 
 export let left_sidebar_expanded_as_overlay = false;
 export let right_sidebar_expanded_as_overlay = false;
