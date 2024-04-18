@@ -266,8 +266,6 @@ def get_temp_user_group_id() -> Dict[str, object]:
         name="temp",
         realm=get_realm("zulip"),
         can_mention_group_id=11,
-        named_group_name="temp",
-        named_group_can_mention_group_id=11,
         realm_for_sharding=get_realm("zulip"),
     )
     return {

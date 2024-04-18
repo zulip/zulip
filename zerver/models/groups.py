@@ -19,7 +19,6 @@ class SystemGroups:
 
 class UserGroup(models.Model):  # type: ignore[django-manager-missing] # django-stubs cannot resolve the custom CTEManager yet https://github.com/typeddjango/django-stubs/issues/1023
     objects: CTEManager = CTEManager()
-    name = models.CharField(max_length=100)
     direct_members = models.ManyToManyField(
         UserProfile, through="zerver.UserGroupMembership", related_name="direct_groups"
     )
@@ -31,13 +30,6 @@ class UserGroup(models.Model):  # type: ignore[django-manager-missing] # django-
         related_name="direct_supergroups",
     )
     realm = models.ForeignKey("zerver.Realm", on_delete=CASCADE)
-    description = models.TextField(default="")
-    is_system_group = models.BooleanField(default=False)
-
-    can_mention_group = models.ForeignKey("self", on_delete=models.RESTRICT)
-
-    class Meta:
-        unique_together = (("realm", "name"),)
 
 
 class NamedUserGroup(UserGroup):  # type: ignore[django-manager-missing] # django-stubs cannot resolve the custom CTEManager yet https://github.com/typeddjango/django-stubs/issues/1023
@@ -58,11 +50,11 @@ class NamedUserGroup(UserGroup):  # type: ignore[django-manager-missing] # djang
         # setting also points to a UserGroup object.
         related_name="named_user_group",
     )
-    named_group_name = models.CharField(max_length=MAX_NAME_LENGTH, db_column="name")
-    named_group_description = models.TextField(default="", db_column="description")
-    named_group_is_system_group = models.BooleanField(default=False, db_column="is_system_group")
+    name = models.CharField(max_length=MAX_NAME_LENGTH, db_column="name")
+    description = models.TextField(default="", db_column="description")
+    is_system_group = models.BooleanField(default=False, db_column="is_system_group")
 
-    named_group_can_mention_group = models.ForeignKey(
+    can_mention_group = models.ForeignKey(
         UserGroup, on_delete=models.RESTRICT, db_column="can_mention_group_id"
     )
 
@@ -108,7 +100,7 @@ class NamedUserGroup(UserGroup):  # type: ignore[django-manager-missing] # djang
     }
 
     class Meta:
-        unique_together = (("realm_for_sharding", "named_group_name"),)
+        unique_together = (("realm_for_sharding", "name"),)
 
 
 class UserGroupMembership(models.Model):

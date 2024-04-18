@@ -432,9 +432,6 @@ def set_defaults_for_group_settings(
         default_group = system_groups_name_dict[default_group_name].usergroup_ptr
         setattr(user_group, setting_name, default_group)
 
-        setting_name_for_named_object = "named_group_" + setting_name
-        setattr(user_group, setting_name_for_named_object, default_group)
-
     return user_group
 
 
@@ -443,20 +440,11 @@ def bulk_create_system_user_groups(groups: List[Dict[str, str]], realm: Realm) -
     # settings since we can only set them to the correct values after the groups
     # are created.
     initial_group_setting_value = -1
-    rows = [
-        SQL("({},{},{},{},{})").format(
-            Literal(realm.id),
-            Literal(group["name"]),
-            Literal(group["description"]),
-            Literal(True),
-            Literal(initial_group_setting_value),
-        )
-        for group in groups
-    ]
 
+    rows = [SQL("({})").format(Literal(realm.id))] * len(groups)
     query = SQL(
         """
-        INSERT INTO zerver_usergroup (realm_id, name, description, is_system_group, can_mention_group_id)
+        INSERT INTO zerver_usergroup (realm_id)
         VALUES {rows}
         RETURNING id
         """
@@ -559,9 +547,7 @@ def create_system_user_groups_for_realm(realm: Realm) -> Dict[int, NamedUserGrou
     for group in system_user_groups_list:
         user_group = set_defaults_for_group_settings(group, {}, system_groups_name_dict)
         groups_with_updated_settings.append(user_group)
-    NamedUserGroup.objects.bulk_update(
-        groups_with_updated_settings, ["can_mention_group", "named_group_can_mention_group"]
-    )
+    NamedUserGroup.objects.bulk_update(groups_with_updated_settings, ["can_mention_group"])
 
     subgroup_objects: List[GroupGroupMembership] = []
     # "Nobody" system group is not a subgroup of any user group, since it is already empty.
