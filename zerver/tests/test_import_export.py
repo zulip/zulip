@@ -1707,7 +1707,7 @@ class RealmImportExportTest(ExportFile):
         # Make sure that all users get logged as a member in their
         # corresponding system groups.
         for user in UserProfile.objects.filter(realm=imported_realm):
-            expected_group_names = {UserGroup.SYSTEM_USER_GROUP_ROLE_MAP[user.role]["name"]}
+            expected_group_names = {NamedUserGroup.SYSTEM_USER_GROUP_ROLE_MAP[user.role]["name"]}
             if SystemGroups.MEMBERS in expected_group_names:
                 expected_group_names.add(SystemGroups.FULL_MEMBERS)
             self.assertSetEqual(logged_membership_by_user_id[user.id], expected_group_names)

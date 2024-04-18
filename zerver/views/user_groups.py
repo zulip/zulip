@@ -37,7 +37,7 @@ from zerver.lib.user_groups import (
 )
 from zerver.lib.users import access_user_by_id, user_ids_to_users
 from zerver.lib.validator import check_bool, check_int, check_list
-from zerver.models import NamedUserGroup, UserGroup, UserProfile
+from zerver.models import NamedUserGroup, UserProfile
 from zerver.models.users import get_system_bot
 from zerver.views.streams import compose_views
 
@@ -59,7 +59,7 @@ def add_user_group(
 
     group_settings_map = {}
     request_settings_dict = locals()
-    for setting_name, permission_config in UserGroup.GROUP_PERMISSION_SETTINGS.items():
+    for setting_name, permission_config in NamedUserGroup.GROUP_PERMISSION_SETTINGS.items():
         setting_group_id_name = permission_config.id_field_name
 
         if setting_group_id_name not in request_settings_dict:  # nocoverage
@@ -119,7 +119,7 @@ def edit_user_group(
         do_update_user_group_description(user_group, description, acting_user=user_profile)
 
     request_settings_dict = locals()
-    for setting_name, permission_config in UserGroup.GROUP_PERMISSION_SETTINGS.items():
+    for setting_name, permission_config in NamedUserGroup.GROUP_PERMISSION_SETTINGS.items():
         setting_group_id_name = permission_config.id_field_name
 
         if setting_group_id_name not in request_settings_dict:  # nocoverage

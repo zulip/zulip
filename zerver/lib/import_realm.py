@@ -1056,7 +1056,7 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
 
         if "zerver_usergroup" in data:
             re_map_foreign_keys(data, "zerver_usergroup", "realm", related_table="realm")
-            for setting_name in UserGroup.GROUP_PERMISSION_SETTINGS:
+            for setting_name in NamedUserGroup.GROUP_PERMISSION_SETTINGS:
                 re_map_foreign_keys(
                     data, "zerver_usergroup", setting_name, related_table="usergroup"
                 )
@@ -1069,7 +1069,7 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
                 re_map_foreign_keys(
                     data, "zerver_namedusergroup", "realm_for_sharding", related_table="realm"
                 )
-                for setting_name in UserGroup.GROUP_PERMISSION_SETTINGS:
+                for setting_name in NamedUserGroup.GROUP_PERMISSION_SETTINGS:
                     named_group_setting_name = "named_group_" + setting_name
                     re_map_foreign_keys(
                         data,
