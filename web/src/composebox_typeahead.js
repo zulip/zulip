@@ -433,7 +433,7 @@ function filter_mention_name(current_token) {
     }
 
     // Don't autocomplete if there is a space following an '@'
-    if (current_token[0] === " ") {
+    if (current_token.startsWith(" ")) {
         return undefined;
     }
     return current_token;
@@ -714,7 +714,7 @@ export function get_candidates(query, input_element) {
         }
 
         // Trim the first whitespace if it is there
-        if (current_token[0] === " ") {
+        if (current_token.startsWith(" ")) {
             current_token = current_token.slice(1);
         }
         completing = "syntax";
@@ -730,7 +730,7 @@ export function get_candidates(query, input_element) {
 
     // Only start the emoji autocompleter if : is directly after one
     // of the whitespace or punctuation chars we split on.
-    if (ALLOWED_MARKDOWN_FEATURES.emoji && current_token[0] === ":") {
+    if (ALLOWED_MARKDOWN_FEATURES.emoji && current_token.startsWith(":")) {
         // We don't want to match non-emoji emoticons such
         // as :P or :-p
         // Also, if the user has only typed a colon and nothing after,
@@ -747,7 +747,7 @@ export function get_candidates(query, input_element) {
         return emoji_collection;
     }
 
-    if (ALLOWED_MARKDOWN_FEATURES.mention && current_token[0] === "@") {
+    if (ALLOWED_MARKDOWN_FEATURES.mention && current_token.startsWith("@")) {
         current_token = current_token.slice(1);
         completing = "mention";
         // Silent mentions
@@ -771,7 +771,7 @@ export function get_candidates(query, input_element) {
         return commands;
     }
 
-    if (ALLOWED_MARKDOWN_FEATURES.slash && current_token[0] === "/") {
+    if (ALLOWED_MARKDOWN_FEATURES.slash && current_token.startsWith("/")) {
         current_token = current_token.slice(1);
 
         completing = "slash";
@@ -779,7 +779,7 @@ export function get_candidates(query, input_element) {
         return get_slash_commands_data();
     }
 
-    if (ALLOWED_MARKDOWN_FEATURES.stream && current_token[0] === "#") {
+    if (ALLOWED_MARKDOWN_FEATURES.stream && current_token.startsWith("#")) {
         if (current_token.length === 1) {
             return false;
         }
@@ -790,7 +790,7 @@ export function get_candidates(query, input_element) {
         }
 
         // Don't autocomplete if there is a space following a '#'
-        if (current_token[0] === " ") {
+        if (current_token.startsWith(" ")) {
             return false;
         }
 
@@ -822,7 +822,7 @@ export function get_candidates(query, input_element) {
                 token = tokens[2] || "";
 
                 // Don't autocomplete if there is a space following '>'
-                if (token[0] === " ") {
+                if (token.startsWith(" ")) {
                     return false;
                 }
 
