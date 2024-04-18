@@ -86,10 +86,10 @@ run_test("verify wildcard mentions typeahead for stream message", () => {
     assert.equal(mention_topic.email, "topic");
     assert.equal(mention_topic.full_name, "topic");
 
-    assert.equal(mention_all.special_item_text, "all (translated: Notify stream)");
-    assert.equal(mention_everyone.special_item_text, "everyone (translated: Notify stream)");
-    assert.equal(mention_stream.special_item_text, "stream (translated: Notify stream)");
-    assert.equal(mention_channel.special_item_text, "channel (translated: Notify stream)");
+    assert.equal(mention_all.special_item_text, "all (translated: Notify channel)");
+    assert.equal(mention_everyone.special_item_text, "everyone (translated: Notify channel)");
+    assert.equal(mention_stream.special_item_text, "stream (translated: Notify channel)");
+    assert.equal(mention_channel.special_item_text, "channel (translated: Notify channel)");
     assert.equal(mention_topic.special_item_text, "topic (translated: Notify topic)");
 
     compose_validate.stream_wildcard_mention_allowed = () => false;
