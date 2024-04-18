@@ -104,6 +104,7 @@ function build_stream_popover(opts) {
         // `onShow` is called after `hideOnClick`.
         // See https://github.com/atomiks/tippyjs/issues/230 for more details.
         delay: [100, 0],
+        theme: "popover-menu",
         ...left_sidebar_tippy_options,
         onCreate(instance) {
             stream_popover_instance = instance;
@@ -177,7 +178,7 @@ function build_stream_popover(opts) {
 
             // Choose a different color.
             $popper.on("click", ".choose_stream_color", (e) => {
-                const $popover = $(e.target).closest(".streams_popover");
+                const $popover = $(instance.popper);
                 const $colorpicker = $popover.find(".colorpicker-container").find(".colorpicker");
                 $(".colorpicker-container").show();
                 $colorpicker.spectrum("destroy");
@@ -188,7 +189,7 @@ function build_stream_popover(opts) {
                 // have been hidden.  We work around this by just manually
                 // fixing it up here.
                 $colorpicker.parent().find(".sp-container").removeClass("sp-buttons-disabled");
-                $(e.target).hide();
+                $(e.currentTarget).hide();
                 e.stopPropagation();
             });
         },
