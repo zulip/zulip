@@ -47,6 +47,7 @@ function reset_error_messages(): void {
 function get_common_invitation_data(): {
     csrfmiddlewaretoken: string;
     invite_as: number;
+    notify_referrer_on_join: boolean;
     stream_ids: string;
     invite_expires_in_minutes: string;
     invitee_emails: string;
@@ -56,6 +57,7 @@ function get_common_invitation_data(): {
         $<HTMLSelectOneElement>("select:not([multiple])#invite_as").val()!,
         10,
     );
+    const notify_referrer_on_join = $("#receive-invite-acceptance-notification").is(":checked");
     const raw_expires_in = $<HTMLSelectOneElement>("select:not([multiple])#expires_in").val()!;
     // See settings_config.expires_in_values for why we do this conversion.
     let expires_in: number | null;
@@ -82,6 +84,7 @@ function get_common_invitation_data(): {
     const data = {
         csrfmiddlewaretoken: csrf_token,
         invite_as,
+        notify_referrer_on_join,
         stream_ids: JSON.stringify(stream_ids),
         invite_expires_in_minutes: JSON.stringify(expires_in),
         invitee_emails: pills
@@ -459,9 +462,11 @@ function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void
                 switch (key) {
                     case "invite-email-tab":
                         $("#invitee_emails_container").show();
+                        $("#receive-invite-acceptance-notification-container").show();
                         break;
                     case "invite-link-tab":
                         $("#invitee_emails_container").hide();
+                        $("#receive-invite-acceptance-notification-container").hide();
                         break;
                 }
                 toggle_invite_submit_button(key);

@@ -58,6 +58,9 @@ def invite_users_backend(
         ),
         default=PreregistrationUser.INVITE_AS["MEMBER"],
     ),
+    notify_referrer_on_join: bool = REQ(
+        "notify_referrer_on_join", json_validator=check_bool, default=True
+    ),
     stream_ids: List[int] = REQ(json_validator=check_list(check_int)),
     include_realm_default_subscriptions: bool = REQ(json_validator=check_bool, default=False),
 ) -> HttpResponse:
@@ -99,6 +102,7 @@ def invite_users_backend(
         user_profile,
         invitee_emails,
         streams,
+        notify_referrer_on_join,
         invite_expires_in_minutes=invite_expires_in_minutes,
         include_realm_default_subscriptions=include_realm_default_subscriptions,
         invite_as=invite_as,

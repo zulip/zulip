@@ -291,6 +291,7 @@ def process_new_human_user(
         and prereg_user is not None
         and prereg_user.referred_by is not None
         and prereg_user.referred_by.is_active
+        and prereg_user.notify_referrer_on_join
     ):
         # This is a cross-realm direct message.
         with override_language(prereg_user.referred_by.default_language):
