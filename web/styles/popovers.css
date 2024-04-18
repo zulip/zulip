@@ -284,26 +284,17 @@
     }
 }
 
-.topics_popover {
-    min-width: var(--popover-menu-min-width);
-    width: min-content;
-
-    .topic-menu-item {
-        white-space: nowrap;
-    }
-
-    .topic-name {
-        color: var(--color-text-sidebar-popover-menu);
-        font-weight: 700;
+#topic-actions-menu-popover {
+    .popover-topic-name {
+        font-weight: 600;
+        color: var(--color-text-popover-menu);
         line-height: 1.1;
-        margin: 6px 0;
-        white-space: normal;
+        margin-top: 4px;
     }
 }
 
 ul {
-    &.user-card-popover-actions i,
-    &.topics_popover i {
+    &.user-card-popover-actions i {
         display: inline-block;
         text-align: center;
 
