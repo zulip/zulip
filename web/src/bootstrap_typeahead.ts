@@ -186,6 +186,10 @@ export type TypeaheadInputElement =
     | {
           $element: JQuery<HTMLInputElement>;
           type: "input";
+      }
+    | {
+          $element: JQuery<HTMLTextAreaElement>;
+          type: "textarea";
       };
 
 export class Typeahead<ItemType extends string | object> {
