@@ -1,6 +1,6 @@
 .rendered_markdown {
     & p {
-        margin: 3px 0 5px;
+        margin: 0 0 5px;
     }
 
     /* The spacing between two paragraphs is significantly larger.  We
@@ -10,9 +10,8 @@
         margin-top: 10px;
     }
 
-    /* Ensure bulleted lists are nicely centered in 1-line messages */
     & ul {
-        margin: 2px 0 5px 20px;
+        margin: 0 0 5px 20px;
     }
 
     /* Swap the left and right margins of bullets for Right-To-Left languages */
@@ -21,9 +20,8 @@
         margin-left: 0;
     }
 
-    /* Ensure ordered lists are nicely centered in 1-line messages */
     & ol {
-        margin: 2px 0 5px 20px;
+        margin: 0 0 5px 20px;
     }
 
     /* Swap the left and right margins of ordered list for Right-To-Left languages */
@@ -46,6 +44,9 @@
     h6 {
         font-weight: 600;
         line-height: 1.4;
+        /* Headings take a margin-top because of the pronounced extra
+           space they require, but are zeroed out below when they open
+           a message. */
         margin-top: 15px;
         margin-bottom: 5px;
     }
@@ -90,7 +91,7 @@
     /* Formatting for blockquotes */
     & blockquote {
         padding-left: 5px;
-        margin: 5px 0 5px 10px;
+        margin: 0 0 5px 10px;
         border-left: 5px solid hsl(0deg 0% 87%);
     }
 
@@ -106,7 +107,7 @@
     /* Formatting for Markdown tables */
     & table {
         padding-right: 10px;
-        margin: 5px;
+        margin: 0 5px 5px;
         width: 99%;
         display: block;
         max-width: fit-content;
@@ -577,7 +578,7 @@
     .message_embed {
         display: block;
         position: relative;
-        margin: 5px 0;
+        margin: 0 0 5px;
         border: none;
         border-left: 3px solid hsl(0deg 0% 93%);
         height: 80px;
@@ -680,7 +681,7 @@
         overflow-x: auto;
         word-break: break-all;
         word-wrap: normal;
-        margin: 5px 0;
+        margin: 0 0 5px;
         padding: 5px 7px 3px;
         display: block;
         border-radius: 4px;
