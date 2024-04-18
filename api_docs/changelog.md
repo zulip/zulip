@@ -20,6 +20,13 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 9.0
 
+**Feature level 267**
+
+* [`GET /invites`](/api/get-invites),[`POST /invites`](/api/send-invites): Added
+  `notify_referrer_on_join` parameter, indicating whether the referrer has opted
+  to receive a direct message from the notification bot whenever a user joins
+  via this invitation.
+
 **Feature level 266**
 
 * `PATCH /realm`, [`POST /register`](/api/register-queue),

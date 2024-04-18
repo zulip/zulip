@@ -26,6 +26,7 @@ export const invite_schema = z.intersection(
         expiry_date: z.number().nullable(),
         id: z.number(),
         invited_as: z.number(),
+        notify_referrer_on_join: z.boolean(),
     }),
     z.discriminatedUnion("is_multiuse", [
         z.object({
@@ -46,6 +47,7 @@ type Invite = z.output<typeof invite_schema> & {
     disable_buttons?: boolean;
     referrer_name?: string;
     img_src?: string;
+    notify_referrer_on_join?: boolean;
 };
 
 const meta = {

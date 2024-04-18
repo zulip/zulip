@@ -12425,6 +12425,7 @@ paths:
                               invited: 1710606654,
                               invited_as: 200,
                               invited_by_user_id: 9,
+                              notify_referrer_on_join: true,
                               is_multiuse: false,
                             },
                             {
@@ -12434,6 +12435,7 @@ paths:
                               invited_as: 400,
                               invited_by_user_id: 9,
                               is_multiuse: true,
+                              notify_referrer_on_join: true,
                               link_url: "https://example.zulipchat.com/join/yddhtzk4jgl7rsmazc5fyyyy/",
                             },
                           ],
@@ -12511,6 +12513,18 @@ paths:
                   type: boolean
                   default: false
                   example: false
+                notify_referrer_on_join:
+                  description: |
+                    A boolean indicating whether the referrer would like to receive a
+                    direct message from [notification
+                    bot](/help/configure-automated-notices) when a user account is created
+                    using this invitation.
+
+                    **Changes**: New in Zulip 9.0 (feature level 267). Previously,
+                    referrers always received such direct messages.
+                  type: boolean
+                  example: false
+                  default: true
               required:
                 - invitee_emails
                 - stream_ids
@@ -20688,6 +20702,15 @@ components:
           description: |
             The email address the invitation was sent to. This will not be present when
             `is_multiuse` is `true` (i.e. the invitation is a reusable invitation link).
+        notify_referrer_on_join:
+          type: boolean
+          description: |
+            A boolean indicating whether the referrer has opted to receive a direct
+            message from [notification bot](/help/configure-automated-notices) when a user
+            account is created using this invitation.
+
+            **Changes**: New in Zulip 9.0 (feature level 267). Previously,
+            referrers always received such direct messages.
         link_url:
           type: string
           description: |
