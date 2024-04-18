@@ -111,7 +111,7 @@ run_test("tr_tag", ({mock_template}) => {
             twenty_four_hour_time: "Time format",
             automatically_follow_topics_policy: "Automatically follow topics",
             automatically_unmute_topics_in_muted_streams_policy:
-                "Automatically unmute topics in muted streams",
+                "Automatically unmute topics in muted channels",
             automatically_follow_topics_where_mentioned:
                 "Automatically follow topics where I'm mentioned",
         },

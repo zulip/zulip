@@ -1425,7 +1425,7 @@ li.topic-list-item {
             /* TODO: Rewrite the show-more and show-less
                buttons as grids alongside the left sidebar
                header rewrites. The 12px left padding here
-               aligns the "back to streams" text with the
+               aligns the "back to channels" text with the
                DIRECT MESSAGES heading above, which itself
                is offset -3 px to the left, but reserves
                15px for the arrow marker. 15px - 3px = 12px. */

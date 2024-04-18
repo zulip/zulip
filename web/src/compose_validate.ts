@@ -343,8 +343,8 @@ function show_stream_wildcard_warnings(opts: StreamWildcardOptions): void {
     const stream_wildcard_html = render_stream_wildcard_warning({
         banner_type: compose_banner.WARNING,
         subscriber_count,
-        stream_name,
-        stream_wildcard_mention: opts.stream_wildcard_mention,
+        channel_name: stream_name,
+        wildcard_mention: opts.stream_wildcard_mention,
         button_text,
         hide_close_button: true,
         classname,
@@ -553,7 +553,7 @@ function validate_stream_message(scheduling_message: boolean): boolean {
     const $banner_container = $("#compose_banners");
     if (stream_id === undefined) {
         compose_banner.show_error_message(
-            $t({defaultMessage: "Please specify a stream."}),
+            $t({defaultMessage: "Please specify a channel."}),
             compose_banner.CLASSNAMES.missing_stream,
             $banner_container,
             $("#compose_select_recipient_widget_wrapper"),
@@ -585,7 +585,7 @@ function validate_stream_message(scheduling_message: boolean): boolean {
     if (!stream_data.can_post_messages_in_stream(sub)) {
         compose_banner.show_error_message(
             $t({
-                defaultMessage: "You do not have permission to post in this stream.",
+                defaultMessage: "You do not have permission to post in this channel.",
             }),
             compose_banner.CLASSNAMES.no_post_permissions,
             $banner_container,

@@ -34,7 +34,7 @@ export function handle_topic_updates(user_topic_event) {
         if ($row.length) {
             // If the row exists, update the status only.
             // We don't call 'populate_list' in this case as it re-creates the panel (re-sorts by date updated +
-            // removes topics with status set to 'Default for stream'), making it hard to review the changes
+            // removes topics with status set to 'Default for channel'), making it hard to review the changes
             // and undo if needed.
             const $status = $row.find("select.settings_user_topic_visibility_policy");
             $status.val(visibility_policy);

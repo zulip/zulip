@@ -131,7 +131,7 @@ export function get_posting_policy_error_message(): string {
     const stream = sub_store.get(compose_state.selected_recipient_id);
     if (stream && !stream_data.can_post_messages_in_stream(stream)) {
         return $t({
-            defaultMessage: "You do not have permission to post in this stream.",
+            defaultMessage: "You do not have permission to post in this channel.",
         });
     }
     return "";
@@ -174,7 +174,7 @@ function update_recipient_label(stream_id?: number): void {
     const stream = stream_id !== undefined ? stream_data.get_sub_by_id(stream_id) : undefined;
     if (stream === undefined) {
         $("#compose_select_recipient_widget .dropdown_widget_value").text(
-            $t({defaultMessage: "Select a stream"}),
+            $t({defaultMessage: "Select a channel"}),
         );
     } else {
         $("#compose_select_recipient_widget .dropdown_widget_value").html(
