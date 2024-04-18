@@ -32,6 +32,7 @@ def get_caches_in_use(threshold_days: int) -> Set[str]:
         setups_to_check |= get_recent_deployments(threshold_days)
     if ENV == "dev":
         add_current_venv_cache("zulip-py3-venv")
+        add_current_venv_cache("zulip-thumbor-venv")
 
     for path in setups_to_check:
         reqs_dir = os.path.join(path, "requirements")

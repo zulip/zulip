@@ -1176,6 +1176,8 @@ CROSS_REALM_BOT_EMAILS = {
     "emailgateway@zulip.com",
 }
 
+THUMBOR_KEY = get_secret("thumbor_key")
+
 TWO_FACTOR_PATCH_ADMIN = False
 
 # Allow the environment to override the default DSN

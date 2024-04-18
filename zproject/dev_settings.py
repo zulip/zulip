@@ -182,6 +182,9 @@ if FAKE_LDAP_MODE:
         }
     AUTHENTICATION_BACKENDS += ("zproject.backends.ZulipLDAPAuthBackend",)
 
+THUMBOR_URL = "http://127.0.0.1:9995"
+THUMBNAIL_IMAGES = True
+
 BILLING_ENABLED = True
 LANDING_PAGE_NAVBAR_MESSAGE: Optional[str] = None
 

@@ -43,5 +43,14 @@ def backend_serve_thumbnail(
     if not validate_thumbnail_request(realm, maybe_user_profile, url):
         return HttpResponseForbidden(_("<p>You are not authorized to view this file.</p>"))
 
-    thumbnail_url = generate_thumbnail_url(url)
+    size = None
+    if size_requested == "thumbnail":
+        size = "0x300"
+    elif size_requested == "full":
+        size = "0x0"
+
+    if size is None:
+        return HttpResponseForbidden(_("<p>Invalid size.</p>"))
+
+    thumbnail_url = generate_thumbnail_url(url, size)
     return redirect(thumbnail_url)

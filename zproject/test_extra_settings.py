@@ -205,6 +205,10 @@ TWO_FACTOR_AUTHENTICATION_ENABLED = False
 PUSH_NOTIFICATION_BOUNCER_URL: Optional[str] = None
 DEVELOPMENT_DISABLE_PUSH_BOUNCER_DOMAIN_CHECK = False
 
+THUMBOR_URL = "http://127.0.0.1:9995"
+THUMBNAIL_IMAGES = True
+THUMBOR_SERVES_CAMO = True
+
 # Logging the emails while running the tests adds them
 # to /emails page.
 DEVELOPMENT_LOG_EMAILS = False

@@ -732,7 +732,7 @@ class MarkdownTest(ZulipTestCase):
         converted = render_message_markdown(msg, content)
         self.assertEqual(converted.rendered_content, without_preview)
 
-    @override_settings(EXTERNAL_URI_SCHEME="https://")
+    @override_settings(EXTERNAL_URI_SCHEME="https://", THUMBNAIL_IMAGES=False)
     def test_external_image_preview_use_camo(self) -> None:
         content = "https://example.com/thing.jpeg"
 
@@ -740,7 +740,7 @@ class MarkdownTest(ZulipTestCase):
         converted = markdown_convert_wrapper(content)
         self.assertIn(converted, thumbnail_img)
 
-    @override_settings(EXTERNAL_URI_SCHEME="https://")
+    @override_settings(EXTERNAL_URI_SCHEME="https://", THUMBNAIL_IMAGES=False)
     def test_static_image_preview_skip_camo(self) -> None:
         content = f"{ settings.STATIC_URL }/thing.jpeg"
 
@@ -754,7 +754,7 @@ class MarkdownTest(ZulipTestCase):
         converted = markdown_convert_wrapper(content)
         self.assertNotIn(converted, get_camo_url(content))
 
-    @override_settings(EXTERNAL_URI_SCHEME="https://")
+    @override_settings(EXTERNAL_URI_SCHEME="https://", THUMBNAIL_IMAGES=False)
     def test_cross_realm_image_preview_use_camo(self) -> None:
         content = f"https://otherrealm.{ settings.EXTERNAL_HOST }/thing.jpeg"
 

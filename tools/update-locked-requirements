@@ -2,7 +2,7 @@
 set -e
 
 # Make sure the Zulip dev virtualenv exists, and operate within it.
-if [ ! -d /srv/zulip-py3-venv ]; then
+if [ ! -d /srv/zulip-py3-venv ] || [ ! -d /srv/zulip-thumbor-venv ]; then
     ./tools/setup/setup_venvs.py
 fi
 
@@ -54,3 +54,7 @@ for name in pip prod docs; do
     cp "$OUTPUT_BASE_DIR/dev.txt" "$OUTPUT_BASE_DIR/$name.txt"
     compile_requirements "requirements/$name.in" "$OUTPUT_BASE_DIR/$name.txt"
 done
+
+# compile_requirements requirements/thumbor-dev.in "$OUTPUT_BASE_DIR/thumbor-dev.txt"
+# cp "$OUTPUT_BASE_DIR/thumbor-dev.txt" "$OUTPUT_BASE_DIR/thumbor.txt"
+# compile_requirements "requirements/thumbor.in" "$OUTPUT_BASE_DIR/thumbor.txt"

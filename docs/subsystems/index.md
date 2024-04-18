@@ -33,6 +33,7 @@ django-upgrades
 release-checklist
 api-release-checklist
 input-pills
+thumbnailing
 presence
 unread_messages
 billing

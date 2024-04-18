@@ -12,7 +12,6 @@ from django.views.static import serve
 
 from zerver.views.auth import login_page
 from zerver.views.development.cache import remove_caches
-from zerver.views.development.camo import handle_camo_url
 from zerver.views.development.dev_login import (
     api_dev_fetch_api_key,
     api_dev_list_users,
@@ -95,8 +94,6 @@ urls = [
     path("config-error/<error_name>", config_error, name="config_error"),
     # Special endpoint to remove all the server-side caches.
     path("flush_caches", remove_caches),
-    # Redirect camo URLs for development
-    path("external_content/<digest>/<received_url>", handle_camo_url),
 ]
 
 v1_api_mobile_patterns = [

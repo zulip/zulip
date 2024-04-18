@@ -36,7 +36,7 @@ SQLAlchemy==1.4.*
 greenlet
 
 # Needed for S3 file uploads and other AWS tools
-boto3
+boto3<1.34.70  # Compatibility with aiobotocore==2.12.3->thumbor-aws==0.8.0
 
 # The runtime-relevant part of boto3-stubs (see mypy.in)
 mypy-boto3-s3
@@ -144,6 +144,12 @@ disposable-email-domains
 
 # Needed for parsing YAML with JSON references from the REST API spec files
 jsonref
+
+# Needed for signing thumbnail requests so that they can be authenticated on the
+# other end.
+libthumbor
+thumbor
+thumbor-aws
 
 # Needed for string matching in AlertWordProcessor
 pyahocorasick

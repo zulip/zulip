@@ -245,6 +245,13 @@ development PostgreSQL user.
 `tools/provision` also invokes `tools/rebuild-dev-database`
 to create the actual database with its schema.
 
+### Thumbor and thumbnailing
+
+We use Thumbor, a popular open source thumbnailing server, to serve
+images (both for inline URL previews and serving uploaded image
+files).  See [our thumbnailing docs](../subsystems/thumbnailing.md)
+for more details on how this works.
+
 ### Nagios
 
 Nagios is an optional component used for notifications to the system

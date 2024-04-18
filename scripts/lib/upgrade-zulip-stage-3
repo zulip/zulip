@@ -241,6 +241,7 @@ class_renames = {
     "zulip::postgres_appdb_tuned": "zulip::profile::postgresql",
     "zulip::postgres_backups": "zulip::postgresql_backups",
     "zulip::rabbit": "zulip::profile::rabbitmq",
+    "zulip::thumbor": "zulip::profile::thumbor",
     "zulip::voyager": "zulip::profile::standalone",
 }
 classes = re.split(r"\s*,\s*", get_config(config_file, "machine", "puppet_classes", ""))

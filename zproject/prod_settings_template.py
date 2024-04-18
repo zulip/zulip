@@ -654,6 +654,18 @@ SOCIAL_AUTH_SAML_SUPPORT_CONTACT = {
 ## can also be disabled in a realm's organization settings.
 # INLINE_URL_EMBED_PREVIEW = True
 
+## By default, Zulip connects to the thumbor (the thumbnailing software
+## we use) service running locally on the machine.  If you're running
+## thumbor on a different server, you can configure that by setting
+## THUMBOR_URL here.  Setting THUMBOR_URL='' will let Zulip server know that
+## thumbor is not running or configured.
+# THUMBOR_URL = 'http://127.0.0.1:9995'
+##
+## This setting controls whether images shown in Zulip's inline image
+## previews should be thumbnailed by thumbor, which saves bandwidth but
+## can modify the image's appearance.
+# THUMBNAIL_IMAGES = True
+
 ########
 ## Twitter previews.
 ##

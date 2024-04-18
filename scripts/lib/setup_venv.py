@@ -65,6 +65,26 @@ FEDORA_VENV_DEPENDENCIES = [
     "virtualenv",  # see https://unix.stackexchange.com/questions/27877/install-virtualenv-on-fedora-16
 ]
 
+THUMBOR_VENV_DEPENDENCIES = [
+    "libcurl4-openssl-dev",
+    # Already in VENV_DEPENDENCIES
+    # "libjpeg-dev",
+    # "zlib1g-dev",
+    # "libfreetype6-dev",
+    "libpng-dev",
+    "gifsicle",
+]
+
+YUM_THUMBOR_VENV_DEPENDENCIES = [
+    "libcurl-devel",
+    # Already in COMMON VENV_DEPENDENCIES
+    # "libjpeg-turbo-devel",
+    # "zlib-devel",
+    # "freetype-devel",
+    "libpng-devel",
+    "gifsicle",
+]
+
 
 def get_venv_dependencies(vendor: str, os_version: str) -> List[str]:
     if "debian" in os_families():

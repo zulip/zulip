@@ -54,7 +54,7 @@ parser.add_argument(
     dest="clear_memcached",
     help="Do not clear memcached on startup",
 )
-parser.add_argument("--streamlined", action="store_true", help="Avoid process_queue, etc.")
+parser.add_argument("--streamlined", action="store_true", help="Avoid thumbor, etc.")
 parser.add_argument(
     "--behind-https-proxy",
     action="store_true",
@@ -113,6 +113,7 @@ proxy_port = base_port
 django_port = base_port + 1
 tornado_port = base_port + 2
 webpack_port = base_port + 3
+thumbor_port = base_port + 4
 
 os.chdir(os.path.join(os.path.dirname(__file__), ".."))
 
@@ -160,7 +161,7 @@ def server_processes() -> List[List[str]]:
 
     if options.streamlined:
         # The streamlined operation allows us to do many
-        # things, but search/etc. features won't work.
+        # things, but search/thumbor/etc. features won't work.
         return main_cmds
 
     other_cmds = [
@@ -172,6 +173,11 @@ def server_processes() -> List[List[str]]:
             "--quiet",
         ],
         ["./manage.py", "deliver_scheduled_messages"],
+        [
+            "/srv/zulip-py3-venv/bin/thumbor",
+            "--conf=./zthumbor/thumbor_settings.py",
+            f"--port={thumbor_port}",
+        ],
     ]
 
     # NORMAL (but slower) operation:
@@ -223,12 +229,28 @@ SKIP_AUTO_HEADERS = {
     hdrs.USER_AGENT,
 }
 
+# TODO: Check if this is needed
+# def transform_url(protocol: str, path: str, query: str, target_port: int, target_host: str) -> str:
+#     # generate url with target host
+#     host = ":".join((target_host, str(target_port)))
+#     # Here we are going to rewrite the path a bit so that it is in parity with
+#     # what we will have for production
+#     if path.startswith("/thumbor"):
+#         path = path[len("/thumbor") :]
+#     newpath = urlunparse((protocol, host, path, "", query, ""))
+#     return newpath
+
 
 async def forward(upstream_port: int, request: web.Request) -> web.StreamResponse:
     try:
+        url = request.url.with_host("127.0.0.1").with_port(upstream_port)
+        path = url.path
+        if path.startswith("/thumbor"):
+            url = url.with_path(path[len("/thumbor") :])
+
         upstream_response = await session.request(
             request.method,
-            request.url.with_host("127.0.0.1").with_port(upstream_port),
+            url,
             headers=[
                 (key, value)
                 for key, value in request.headers.items()
@@ -273,6 +295,8 @@ app.add_routes(
             hdrs.METH_ANY, r"/{path:json/events|api/v1/events}", partial(forward, tornado_port)
         ),
         web.route(hdrs.METH_ANY, r"/{path:webpack/.*}", partial(forward, webpack_port)),
+        # TODO: Disable when !options.streamlined
+        web.route(hdrs.METH_ANY, r"/{path:thumbor/.*}", partial(forward, thumbor_port)),
         web.route(hdrs.METH_ANY, r"/{path:.*}", partial(forward, django_port)),
     ]
 )
@@ -302,6 +326,9 @@ def print_listeners() -> None:
 
     if not options.test:
         ports.append((webpack_port, "webpack"))
+
+    if not options.streamlined:
+        ports.append((thumbor_port, "Thumbor"))
 
     for port, label in ports:
         print(f"   {port}: {label}")

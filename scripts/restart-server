@@ -104,6 +104,8 @@ if has_application_server():
     # This is an optional service, so may or may not exist
     workers.extend(list_supervisor_processes(["zulip-katex"]))
 
+if os.path.exists("/etc/supervisor/conf.d/zulip/thumbor.conf"):
+    workers.append("zulip-thumbor")
 if has_process_fts_updates():
     workers.append("process-fts-updates")
 

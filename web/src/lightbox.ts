@@ -509,6 +509,7 @@ export function parse_media_data(media: HTMLElement): Payload {
         source = $parent.attr("data-id");
     } else {
         type = "image";
+        // thumbor supplies the src as thumbnail, data-src-fullsize as full-sized.
         if ($media.attr("data-src-fullsize")) {
             source = $media.attr("data-src-fullsize");
         } else {

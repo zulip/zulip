@@ -45,6 +45,7 @@ from zerver.views.auth import (
     start_social_login,
     start_social_signup,
 )
+from zerver.views.camo import handle_camo_url
 from zerver.views.compatibility import check_global_compatibility
 from zerver.views.custom_profile_fields import (
     create_realm_custom_profile_field,
@@ -660,8 +661,8 @@ urls += [
         "user_uploads/<realm_id_str>/<path:filename>",
         GET=(serve_file_backend, {"override_api_url_scheme", "allow_anonymous_user_web"}),
     ),
-    # This endpoint redirects to camo; it requires an exception for the
-    # same reason.
+    # This endpoint serves thumbnailed versions of images using thumbor;
+    # it requires an exception for the same reason.
     rest_path(
         "thumbnail",
         GET=(backend_serve_thumbnail, {"override_api_url_scheme", "allow_anonymous_user_web"}),
@@ -690,6 +691,14 @@ urls += [
 # We use this endpoint to just log these reports.
 urls += [
     path("report/csp_violations", report_csp_violations),
+]
+
+# This URL serves as a way to provide backward compatibility to messages
+# rendered at the time Zulip used camo for doing http -> https conversion for
+# such links with images previews. Now thumbor can be used for serving such
+# images.
+urls += [
+    path("external_content/<digest>/<received_url>", handle_camo_url),
 ]
 
 # Incoming webhook URLs
