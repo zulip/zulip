@@ -645,7 +645,7 @@ export function get_sorted_filtered_items(query, input_element) {
     const big_results = get_candidates(query, input_element);
 
     if (!big_results) {
-        return false;
+        return [];
     }
 
     const opts = get_stream_topic_data(input_element);
