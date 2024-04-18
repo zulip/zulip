@@ -37,8 +37,7 @@ export function handle_keyboard_events(event_name) {
             show_userlist_sidebar();
         }
         return true;
-    }
-    if (right_sidebar_expanded_as_overlay && event_name === "right_arrow") {
+    } else if (right_sidebar_expanded_as_overlay) {
         hide_userlist_sidebar();
         navbar_help_menu.toggle();
         return true;

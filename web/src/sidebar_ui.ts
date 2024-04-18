@@ -13,6 +13,7 @@ import * as settings_data from "./settings_data";
 import * as spectators from "./spectators";
 import {current_user} from "./state_data";
 import {user_settings} from "./user_settings";
+import * as navbar_help_menu from "./navbar_help_menu";
 
 export let left_sidebar_expanded_as_overlay = false;
 export let right_sidebar_expanded_as_overlay = false;
@@ -20,12 +21,16 @@ export let right_sidebar_expanded_as_overlay = false;
 export function hide_userlist_sidebar(): void {
     $(".app-main .column-right").removeClass("expanded");
     right_sidebar_expanded_as_overlay = false;
+    // Remove focus from the user list toggle button
+    $("#userlist-toggle-button").trigger("blur");
 }
 
 export function show_userlist_sidebar(): void {
     $(".app-main .column-right").addClass("expanded");
     resize.resize_page_components();
     right_sidebar_expanded_as_overlay = true;
+    // Set focus on the user list toggle button
+    $("#userlist-toggle-button").trigger("focus");
 }
 
 export function show_streamlist_sidebar(): void {
@@ -80,6 +85,19 @@ export function initialize(): void {
             return;
         }
         show_userlist_sidebar();
+    });
+
+    $("#userlist-toggle-button").on("keydown", (e) => {
+        if (e.key === "ArrowRight" || e.key === "ArrowLeft") {
+            e.preventDefault();
+            e.stopPropagation();
+
+            if (e.key === "ArrowRight") {
+                // Handle right arrow key press
+                hide_userlist_sidebar();
+                navbar_help_menu.toggle();
+            }
+        }
     });
 
     $("#streamlist-toggle-button").on("click", (e) => {
