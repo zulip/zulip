@@ -235,7 +235,7 @@ test_ui("validate", ({mock_template}) => {
     let empty_stream_error_rendered = false;
     mock_template("compose_banner/compose_banner.hbs", false, (data) => {
         assert.equal(data.classname, compose_banner.CLASSNAMES.missing_stream);
-        assert.equal(data.banner_text, $t({defaultMessage: "Please specify a stream."}));
+        assert.equal(data.banner_text, $t({defaultMessage: "Please specify a channel."}));
         empty_stream_error_rendered = true;
         return "<banner-stub>";
     });
@@ -428,7 +428,7 @@ test_ui("test_validate_stream_message_post_policy_admin_only", ({mock_template})
         assert.equal(
             data.banner_text,
             $t({
-                defaultMessage: "You do not have permission to post in this stream.",
+                defaultMessage: "You do not have permission to post in this channel.",
             }),
         );
         banner_rendered = true;
@@ -473,7 +473,7 @@ test_ui("test_validate_stream_message_post_policy_moderators_only", ({mock_templ
         assert.equal(
             data.banner_text,
             $t({
-                defaultMessage: "You do not have permission to post in this stream.",
+                defaultMessage: "You do not have permission to post in this channel.",
             }),
         );
         banner_rendered = true;
@@ -509,7 +509,7 @@ test_ui("test_validate_stream_message_post_policy_full_members_only", ({mock_tem
         assert.equal(
             data.banner_text,
             $t({
-                defaultMessage: "You do not have permission to post in this stream.",
+                defaultMessage: "You do not have permission to post in this channel.",
             }),
         );
         banner_rendered = true;

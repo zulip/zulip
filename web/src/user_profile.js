@@ -144,10 +144,10 @@ function reset_subscribe_widget() {
     $("#user-profile-modal .add-subscription-button").prop("disabled", true);
     settings_components.initialize_disable_btn_hint_popover(
         $("#user-profile-modal .add-subscription-button-wrapper"),
-        $t({defaultMessage: "Select a stream to subscribe"}),
+        $t({defaultMessage: "Select a channel to subscribe"}),
     );
     $("#user_profile_subscribe_widget .dropdown_widget_value").text(
-        $t({defaultMessage: "Select a stream"}),
+        $t({defaultMessage: "Select a channel"}),
     );
     //  There are two cases when the subscribe widget is reset: when the user_profile
     //  is setup (the object is null), or after subscribing of a user in the dropdown.
@@ -435,7 +435,7 @@ export function show_user_profile(user, default_tab_key = "profile-tab") {
         child_wants_focus: true,
         values: [
             {label: $t({defaultMessage: "Profile"}), key: "profile-tab"},
-            {label: $t({defaultMessage: "Streams"}), key: "user-profile-streams-tab"},
+            {label: $t({defaultMessage: "Channels"}), key: "user-profile-streams-tab"},
             {label: $t({defaultMessage: "User groups"}), key: "user-profile-groups-tab"},
         ],
         callback(_name, key) {
@@ -909,13 +909,13 @@ export function initialize() {
             let error_message;
             if (people.is_my_user_id(target_user_id)) {
                 error_message = $t(
-                    {defaultMessage: "Error in unsubscribing from #{stream_name}"},
-                    {stream_name: sub.name},
+                    {defaultMessage: "Error in unsubscribing from #{channel_name}"},
+                    {channel_name: sub.name},
                 );
             } else {
                 error_message = $t(
-                    {defaultMessage: "Error removing user from #{stream_name}"},
-                    {stream_name: sub.name},
+                    {defaultMessage: "Error removing user from #{channel_name}"},
+                    {channel_name: sub.name},
                 );
             }
 
