@@ -234,14 +234,14 @@ def check_user_group_name(group_name: str) -> str:
     if group_name.strip() == "":
         raise JsonableError(_("User group name can't be empty!"))
 
-    if len(group_name) > UserGroup.MAX_NAME_LENGTH:
+    if len(group_name) > NamedUserGroup.MAX_NAME_LENGTH:
         raise JsonableError(
             _("User group name cannot exceed {max_length} characters.").format(
-                max_length=UserGroup.MAX_NAME_LENGTH
+                max_length=NamedUserGroup.MAX_NAME_LENGTH
             )
         )
 
-    for invalid_prefix in UserGroup.INVALID_NAME_PREFIXES:
+    for invalid_prefix in NamedUserGroup.INVALID_NAME_PREFIXES:
         if group_name.startswith(invalid_prefix):
             raise JsonableError(
                 _("User group name cannot start with '{prefix}'.").format(prefix=invalid_prefix)
@@ -416,7 +416,7 @@ def set_defaults_for_group_settings(
     group_settings_map: Mapping[str, UserGroup],
     system_groups_name_dict: Dict[str, NamedUserGroup],
 ) -> NamedUserGroup:
-    for setting_name, permission_config in UserGroup.GROUP_PERMISSION_SETTINGS.items():
+    for setting_name, permission_config in NamedUserGroup.GROUP_PERMISSION_SETTINGS.items():
         if setting_name in group_settings_map:
             # We skip the settings for which a value is passed
             # in user group creation API request.
@@ -511,20 +511,20 @@ def create_system_user_groups_for_realm(realm: Realm) -> Dict[int, NamedUserGrou
 
     system_groups_info_list = [
         nobody_group_info,
-        UserGroup.SYSTEM_USER_GROUP_ROLE_MAP[UserProfile.ROLE_REALM_OWNER],
-        UserGroup.SYSTEM_USER_GROUP_ROLE_MAP[UserProfile.ROLE_REALM_ADMINISTRATOR],
-        UserGroup.SYSTEM_USER_GROUP_ROLE_MAP[UserProfile.ROLE_MODERATOR],
+        NamedUserGroup.SYSTEM_USER_GROUP_ROLE_MAP[UserProfile.ROLE_REALM_OWNER],
+        NamedUserGroup.SYSTEM_USER_GROUP_ROLE_MAP[UserProfile.ROLE_REALM_ADMINISTRATOR],
+        NamedUserGroup.SYSTEM_USER_GROUP_ROLE_MAP[UserProfile.ROLE_MODERATOR],
         full_members_group_info,
-        UserGroup.SYSTEM_USER_GROUP_ROLE_MAP[UserProfile.ROLE_MEMBER],
-        UserGroup.SYSTEM_USER_GROUP_ROLE_MAP[UserProfile.ROLE_GUEST],
+        NamedUserGroup.SYSTEM_USER_GROUP_ROLE_MAP[UserProfile.ROLE_MEMBER],
+        NamedUserGroup.SYSTEM_USER_GROUP_ROLE_MAP[UserProfile.ROLE_GUEST],
         everyone_on_internet_group_info,
     ]
 
     bulk_create_system_user_groups(system_groups_info_list, realm)
 
     system_groups_name_dict: Dict[str, NamedUserGroup] = get_role_based_system_groups_dict(realm)
-    for role in UserGroup.SYSTEM_USER_GROUP_ROLE_MAP:
-        group_name = UserGroup.SYSTEM_USER_GROUP_ROLE_MAP[role]["name"]
+    for role in NamedUserGroup.SYSTEM_USER_GROUP_ROLE_MAP:
+        group_name = NamedUserGroup.SYSTEM_USER_GROUP_ROLE_MAP[role]["name"]
         role_system_groups_dict[role] = system_groups_name_dict[group_name]
 
     # Order of this list here is important to create correct GroupGroupMembership objects
@@ -596,7 +596,7 @@ def create_system_user_groups_for_realm(realm: Realm) -> Dict[int, NamedUserGrou
 
 
 def get_system_user_group_for_user(user_profile: UserProfile) -> NamedUserGroup:
-    system_user_group_name = UserGroup.SYSTEM_USER_GROUP_ROLE_MAP[user_profile.role]["name"]
+    system_user_group_name = NamedUserGroup.SYSTEM_USER_GROUP_ROLE_MAP[user_profile.role]["name"]
 
     system_user_group = NamedUserGroup.objects.get(
         name=system_user_group_name, realm=user_profile.realm, is_system_group=True
@@ -608,5 +608,5 @@ def get_server_supported_permission_settings() -> ServerSupportedPermissionSetti
     return ServerSupportedPermissionSettings(
         realm=Realm.REALM_PERMISSION_GROUP_SETTINGS,
         stream=Stream.stream_permission_group_settings,
-        group=UserGroup.GROUP_PERMISSION_SETTINGS,
+        group=NamedUserGroup.GROUP_PERMISSION_SETTINGS,
     )
