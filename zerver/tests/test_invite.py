@@ -175,6 +175,7 @@ class InviteUserBase(ZulipTestCase):
         self,
         invitee_emails: str,
         stream_names: Sequence[str],
+        notify_referrer_on_join: bool = True,
         invite_expires_in_minutes: Optional[int] = INVITATION_LINK_VALIDITY_MINUTES,
         body: str = "",
         invite_as: int = PreregistrationUser.INVITE_AS["MEMBER"],
@@ -206,6 +207,7 @@ class InviteUserBase(ZulipTestCase):
                     "include_realm_default_subscriptions": orjson.dumps(
                         include_realm_default_subscriptions
                     ).decode(),
+                    "notify_referrer_on_join": orjson.dumps(notify_referrer_on_join).decode(),
                 },
                 subdomain=realm.string_id if realm else "zulip",
             )
@@ -1044,6 +1046,51 @@ earl-test@zulip.com""",
                 "dave-test@zulip.com",
                 "earl-test@zulip.com",
             ]
+        )
+
+    def test_direct_notification_for_accepted_invitation(self) -> None:
+        """
+        New test to check if notification-bot message is sent to the referrer
+        when notify_referrer_on_join is false.
+        """
+
+        self.login("hamlet")
+        user_profile = self.example_user("hamlet")
+        invitee = self.nonreg_email("alice")
+        realm = get_realm("zulip")
+        self.assert_json_success(self.invite(invitee, ["Denmark"], False))
+        self.assertTrue(find_key_by_email(invitee))
+        self.submit_reg_form_for_user(invitee, "password")
+
+        assert user_profile.recipient_id is not None
+        invite_acceptance_notification_message = Message.objects.filter(
+            recipient_id=user_profile.recipient_id, realm=realm
+        ).last()
+
+        self.assertIsNone(
+            invite_acceptance_notification_message,
+            "Unexpected message found from notification-bot for accepted invitations.",
+        )
+
+        self.login("hamlet")
+        new_invitee = self.nonreg_email("bob")
+        self.assert_json_success(self.invite(new_invitee, ["Denmark"], True))
+        self.assertTrue(find_key_by_email(new_invitee))
+        self.submit_reg_form_for_user(new_invitee, "new_password")
+
+        new_invitee_profile = self.nonreg_user("bob")
+        new_invite_acceptance_notification_message = Message.objects.filter(
+            recipient_id=user_profile.recipient_id, realm=realm
+        ).last()
+
+        assert new_invite_acceptance_notification_message is not None
+        self.assertEqual(
+            new_invite_acceptance_notification_message.sender.email, "notification-bot@zulip.com"
+        )
+        self.assertTrue(
+            new_invite_acceptance_notification_message.content.startswith(
+                f"@_**{new_invitee_profile.full_name}|{new_invitee_profile.id}** accepted your",
+            )
         )
 
     def test_max_invites_model(self) -> None:
@@ -2302,7 +2349,7 @@ class InvitationsTestCase(InviteUserBase):
         self.login("iago")
         invitee = "resend@zulip.com"
 
-        self.assert_json_success(self.invite(invitee, ["Denmark"], None))
+        self.assert_json_success(self.invite(invitee, ["Denmark"], True, None))
         prereg_user = PreregistrationUser.objects.get(email=invitee)
 
         # Verify and then clear from the outbox the original invite email
