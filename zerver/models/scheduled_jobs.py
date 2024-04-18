@@ -13,7 +13,7 @@ from zerver.lib.display_recipient import get_recipient_ids
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.models.clients import Client
 from zerver.models.constants import MAX_TOPIC_NAME_LENGTH
-from zerver.models.groups import UserGroup
+from zerver.models.groups import NamedUserGroup
 from zerver.models.messages import Message
 from zerver.models.realms import Realm
 from zerver.models.recipients import Recipient
@@ -113,7 +113,7 @@ class ScheduledMessageNotificationEmail(models.Model):
     ]
 
     trigger = models.TextField(choices=EMAIL_NOTIFICATION_TRIGGER_CHOICES)
-    mentioned_user_group = models.ForeignKey(UserGroup, null=True, on_delete=CASCADE)
+    mentioned_user_group = models.ForeignKey(NamedUserGroup, null=True, on_delete=CASCADE)
 
     # Timestamp for when the notification should be processed and sent.
     # Calculated from the time the event was received and the batching period.

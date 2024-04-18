@@ -47,11 +47,11 @@ from zerver.lib.user_topics import build_get_topic_visibility_policy, get_topic_
 from zerver.lib.users import get_inaccessible_user_ids
 from zerver.models import (
     Message,
+    NamedUserGroup,
     Realm,
     Recipient,
     Stream,
     Subscription,
-    UserGroup,
     UserMessage,
     UserProfile,
     UserTopic,
@@ -1213,7 +1213,7 @@ def stream_wildcard_mention_allowed(sender: UserProfile, stream: Stream, realm: 
 
 
 def check_user_group_mention_allowed(sender: UserProfile, user_group_ids: List[int]) -> None:
-    user_groups = UserGroup.objects.filter(id__in=user_group_ids).select_related(
+    user_groups = NamedUserGroup.objects.filter(id__in=user_group_ids).select_related(
         "can_mention_group"
     )
     sender_is_system_bot = is_cross_realm_bot_email(sender.delivery_email)

@@ -17,4 +17,11 @@ class Migration(migrations.Migration):
                 null=True, on_delete=django.db.models.deletion.CASCADE, to="zerver.namedusergroup"
             ),
         ),
+        migrations.AlterField(
+            model_name="scheduledmessagenotificationemail",
+            name="mentioned_user_group",
+            field=models.ForeignKey(
+                null=True, on_delete=django.db.models.deletion.CASCADE, to="zerver.namedusergroup"
+            ),
+        ),
     ]

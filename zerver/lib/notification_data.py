@@ -4,7 +4,7 @@ from typing import Any, Collection, Dict, List, Optional, Set
 
 from zerver.lib.mention import MentionData
 from zerver.lib.user_groups import get_user_group_member_ids
-from zerver.models import UserGroup, UserProfile, UserTopic
+from zerver.models import NamedUserGroup, UserProfile, UserTopic
 from zerver.models.scheduled_jobs import NotificationTriggers
 
 
@@ -352,7 +352,7 @@ def get_mentioned_user_group(
     # all these messages.
     smallest_user_group_size = math.inf
     for user_group_id in mentioned_user_group_ids:
-        current_user_group = UserGroup.objects.get(id=user_group_id, realm=user_profile.realm)
+        current_user_group = NamedUserGroup.objects.get(id=user_group_id, realm=user_profile.realm)
         current_mentioned_user_group = MentionedUserGroup(
             id=current_user_group.id,
             name=current_user_group.name,
