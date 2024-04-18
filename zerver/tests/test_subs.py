@@ -100,6 +100,7 @@ from zerver.models import (
     DefaultStream,
     DefaultStreamGroup,
     Message,
+    NamedUserGroup,
     Realm,
     RealmAuditLog,
     Recipient,
@@ -277,7 +278,7 @@ class TestCreateStreams(ZulipTestCase):
         self.assertEqual(events[0]["event"]["streams"][0]["name"], "Private stream")
         self.assertEqual(events[0]["event"]["streams"][0]["stream_weekly_traffic"], None)
 
-        moderators_system_group = UserGroup.objects.get(
+        moderators_system_group = NamedUserGroup.objects.get(
             name="role:moderators", realm=realm, is_system_group=True
         )
         new_streams, existing_streams = create_streams_if_needed(
@@ -526,10 +527,10 @@ class TestCreateStreams(ZulipTestCase):
         user = self.example_user("hamlet")
         realm = user.realm
         self.login_user(user)
-        moderators_system_group = UserGroup.objects.get(
+        moderators_system_group = NamedUserGroup.objects.get(
             name="role:moderators", realm=realm, is_system_group=True
         )
-        admins_system_group = UserGroup.objects.get(
+        admins_system_group = NamedUserGroup.objects.get(
             name="role:administrators", realm=realm, is_system_group=True
         )
 
@@ -554,7 +555,7 @@ class TestCreateStreams(ZulipTestCase):
         stream = get_stream("new_stream2", realm)
         self.assertEqual(stream.can_remove_subscribers_group.id, admins_system_group.id)
 
-        hamletcharacters_group = UserGroup.objects.get(name="hamletcharacters", realm=realm)
+        hamletcharacters_group = NamedUserGroup.objects.get(name="hamletcharacters", realm=realm)
         post_data = {
             "subscriptions": orjson.dumps(
                 [{"name": "new_stream3", "description": "Third new stream"}]
@@ -566,7 +567,7 @@ class TestCreateStreams(ZulipTestCase):
             result, "'can_remove_subscribers_group' must be a system user group."
         )
 
-        internet_group = UserGroup.objects.get(
+        internet_group = NamedUserGroup.objects.get(
             name="role:internet", is_system_group=True, realm=realm
         )
         post_data = {
@@ -581,7 +582,9 @@ class TestCreateStreams(ZulipTestCase):
             "'can_remove_subscribers_group' setting cannot be set to 'role:internet' group.",
         )
 
-        owners_group = UserGroup.objects.get(name="role:owners", is_system_group=True, realm=realm)
+        owners_group = NamedUserGroup.objects.get(
+            name="role:owners", is_system_group=True, realm=realm
+        )
         post_data = {
             "subscriptions": orjson.dumps(
                 [{"name": "new_stream3", "description": "Third new stream"}]
@@ -594,7 +597,9 @@ class TestCreateStreams(ZulipTestCase):
             "'can_remove_subscribers_group' setting cannot be set to 'role:owners' group.",
         )
 
-        nobody_group = UserGroup.objects.get(name="role:nobody", is_system_group=True, realm=realm)
+        nobody_group = NamedUserGroup.objects.get(
+            name="role:nobody", is_system_group=True, realm=realm
+        )
         post_data = {
             "subscriptions": orjson.dumps(
                 [{"name": "new_stream3", "description": "Third new stream"}]
@@ -2264,7 +2269,7 @@ class StreamAdminTest(ZulipTestCase):
         realm = user_profile.realm
         stream = self.subscribe(user_profile, "stream_name1")
 
-        moderators_system_group = UserGroup.objects.get(
+        moderators_system_group = NamedUserGroup.objects.get(
             name="role:moderators", realm=realm, is_system_group=True
         )
         self.login("shiva")
@@ -2284,7 +2289,7 @@ class StreamAdminTest(ZulipTestCase):
         self.assertEqual(stream.can_remove_subscribers_group.id, moderators_system_group.id)
 
         # This setting can only be set to system groups.
-        hamletcharacters_group = UserGroup.objects.get(name="hamletcharacters", realm=realm)
+        hamletcharacters_group = NamedUserGroup.objects.get(name="hamletcharacters", realm=realm)
         result = self.client_patch(
             f"/json/streams/{stream.id}",
             {"can_remove_subscribers_group": orjson.dumps(hamletcharacters_group.id).decode()},
@@ -2293,7 +2298,7 @@ class StreamAdminTest(ZulipTestCase):
             result, "'can_remove_subscribers_group' must be a system user group."
         )
 
-        internet_group = UserGroup.objects.get(
+        internet_group = NamedUserGroup.objects.get(
             name="role:internet", is_system_group=True, realm=realm
         )
         result = self.client_patch(
@@ -2305,7 +2310,9 @@ class StreamAdminTest(ZulipTestCase):
             "'can_remove_subscribers_group' setting cannot be set to 'role:internet' group.",
         )
 
-        owners_group = UserGroup.objects.get(name="role:owners", is_system_group=True, realm=realm)
+        owners_group = NamedUserGroup.objects.get(
+            name="role:owners", is_system_group=True, realm=realm
+        )
         result = self.client_patch(
             f"/json/streams/{stream.id}",
             {"can_remove_subscribers_group": orjson.dumps(owners_group.id).decode()},
@@ -2315,7 +2322,9 @@ class StreamAdminTest(ZulipTestCase):
             "'can_remove_subscribers_group' setting cannot be set to 'role:owners' group.",
         )
 
-        nobody_group = UserGroup.objects.get(name="role:nobody", is_system_group=True, realm=realm)
+        nobody_group = NamedUserGroup.objects.get(
+            name="role:nobody", is_system_group=True, realm=realm
+        )
         result = self.client_patch(
             f"/json/streams/{stream.id}",
             {"can_remove_subscribers_group": orjson.dumps(nobody_group.id).decode()},

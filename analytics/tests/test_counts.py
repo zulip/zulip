@@ -68,13 +68,13 @@ from zerver.models import (
     Client,
     Huddle,
     Message,
+    NamedUserGroup,
     PreregistrationUser,
     Realm,
     RealmAuditLog,
     Recipient,
     Stream,
     UserActivityInterval,
-    UserGroup,
     UserProfile,
 )
 from zerver.models.clients import get_client
@@ -104,7 +104,7 @@ class AnalyticsTestCase(ZulipTestCase):
         self.default_realm = do_create_realm(
             string_id="realmtest", name="Realm Test", date_created=self.TIME_ZERO - 2 * self.DAY
         )
-        self.administrators_user_group = UserGroup.objects.get(
+        self.administrators_user_group = NamedUserGroup.objects.get(
             name=SystemGroups.ADMINISTRATORS,
             realm=self.default_realm,
             is_system_group=True,

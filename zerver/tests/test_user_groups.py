@@ -46,23 +46,25 @@ from zerver.models.realms import get_realm
 
 
 class UserGroupTestCase(ZulipTestCase):
-    def assert_user_membership(self, user_group: UserGroup, members: Iterable[UserProfile]) -> None:
+    def assert_user_membership(
+        self, user_group: NamedUserGroup, members: Iterable[UserProfile]
+    ) -> None:
         user_ids = get_user_group_member_ids(user_group, direct_member_only=True)
         self.assertSetEqual(set(user_ids), {member.id for member in members})
 
     def assert_subgroup_membership(
-        self, user_group: UserGroup, members: Iterable[UserGroup]
+        self, user_group: NamedUserGroup, members: Iterable[UserGroup]
     ) -> None:
         subgroup_ids = get_subgroup_ids(user_group, direct_subgroup_only=True)
         self.assertSetEqual(set(subgroup_ids), {member.id for member in members})
 
-    def create_user_group_for_test(self, group_name: str) -> UserGroup:
+    def create_user_group_for_test(self, group_name: str) -> NamedUserGroup:
         members = [self.example_user("othello")]
         return check_add_user_group(get_realm("zulip"), group_name, members, acting_user=None)
 
     def test_user_groups_in_realm_serialized(self) -> None:
         realm = get_realm("zulip")
-        user_group = UserGroup.objects.filter(realm=realm).first()
+        user_group = NamedUserGroup.objects.filter(realm=realm).first()
         assert user_group is not None
         empty_user_group = check_add_user_group(realm, "newgroup", [], acting_user=None)
 
@@ -74,7 +76,7 @@ class UserGroupTestCase(ZulipTestCase):
         self.assertEqual(user_groups[0]["members"], [])
         self.assertEqual(user_groups[0]["direct_subgroup_ids"], [])
 
-        owners_system_group = UserGroup.objects.get(name=SystemGroups.OWNERS, realm=realm)
+        owners_system_group = NamedUserGroup.objects.get(name=SystemGroups.OWNERS, realm=realm)
         membership = UserGroupMembership.objects.filter(user_group=owners_system_group).values_list(
             "user_profile_id", flat=True
         )
@@ -84,7 +86,9 @@ class UserGroupTestCase(ZulipTestCase):
         self.assertEqual(set(user_groups[1]["members"]), set(membership))
         self.assertEqual(user_groups[1]["direct_subgroup_ids"], [])
 
-        admins_system_group = UserGroup.objects.get(name=SystemGroups.ADMINISTRATORS, realm=realm)
+        admins_system_group = NamedUserGroup.objects.get(
+            name=SystemGroups.ADMINISTRATORS, realm=realm
+        )
         self.assertEqual(user_groups[2]["id"], admins_system_group.id)
         # Check that owners system group is present in "direct_subgroup_ids"
         self.assertEqual(user_groups[2]["direct_subgroup_ids"], [owners_system_group.id])
@@ -226,10 +230,10 @@ class UserGroupTestCase(ZulipTestCase):
         iago = self.example_user("iago")
         hamlet = self.example_user("hamlet")
 
-        moderators_group = UserGroup.objects.get(
+        moderators_group = NamedUserGroup.objects.get(
             name=SystemGroups.MODERATORS, realm=realm, is_system_group=True
         )
-        administrators_group = UserGroup.objects.get(
+        administrators_group = NamedUserGroup.objects.get(
             name=SystemGroups.ADMINISTRATORS, realm=realm, is_system_group=True
         )
 
@@ -247,7 +251,7 @@ class UserGroupTestCase(ZulipTestCase):
         iago = self.example_user("iago")
         zulip_realm = get_realm("zulip")
         zulip_group = check_add_user_group(zulip_realm, "zulip", [], acting_user=None)
-        moderators_group = UserGroup.objects.get(
+        moderators_group = NamedUserGroup.objects.get(
             name=SystemGroups.MODERATORS, realm=zulip_realm, is_system_group=True
         )
 
@@ -274,14 +278,14 @@ class UserGroupAPITestCase(UserGroupTestCase):
         }
         result = self.client_post("/json/user_groups/create", info=params)
         self.assert_json_success(result)
-        self.assert_length(UserGroup.objects.filter(realm=hamlet.realm), 10)
+        self.assert_length(NamedUserGroup.objects.filter(realm=hamlet.realm), 10)
 
         # Check default value of can_mention_group setting.
-        everyone_system_group = UserGroup.objects.get(
+        everyone_system_group = NamedUserGroup.objects.get(
             name="role:everyone", realm=hamlet.realm, is_system_group=True
         )
-        support_group = UserGroup.objects.get(name="support", realm=hamlet.realm)
-        self.assertEqual(support_group.can_mention_group, everyone_system_group)
+        support_group = NamedUserGroup.objects.get(name="support", realm=hamlet.realm)
+        self.assertEqual(support_group.can_mention_group, everyone_system_group.usergroup_ptr)
 
         # Test invalid member error
         params = {
@@ -291,7 +295,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
         }
         result = self.client_post("/json/user_groups/create", info=params)
         self.assert_json_error(result, "Invalid user ID: 1111")
-        self.assert_length(UserGroup.objects.filter(realm=hamlet.realm), 10)
+        self.assert_length(NamedUserGroup.objects.filter(realm=hamlet.realm), 10)
 
         # Test we cannot create group with same name again
         params = {
@@ -301,7 +305,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
         }
         result = self.client_post("/json/user_groups/create", info=params)
         self.assert_json_error(result, "User group 'support' already exists.")
-        self.assert_length(UserGroup.objects.filter(realm=hamlet.realm), 10)
+        self.assert_length(NamedUserGroup.objects.filter(realm=hamlet.realm), 10)
 
         # Test we cannot create group with same name again
         params = {
@@ -311,7 +315,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
         }
         result = self.client_post("/json/user_groups/create", info=params)
         self.assert_json_error(result, "User group name cannot exceed 100 characters.")
-        self.assert_length(UserGroup.objects.filter(realm=hamlet.realm), 10)
+        self.assert_length(NamedUserGroup.objects.filter(realm=hamlet.realm), 10)
 
         # Test emtpty group name.
         params = {
@@ -321,7 +325,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
         }
         result = self.client_post("/json/user_groups/create", info=params)
         self.assert_json_error(result, "User group name can't be empty!")
-        self.assert_length(UserGroup.objects.filter(realm=hamlet.realm), 10)
+        self.assert_length(NamedUserGroup.objects.filter(realm=hamlet.realm), 10)
 
         # Test invalid prefixes for user group name.
         params = {
@@ -331,27 +335,27 @@ class UserGroupAPITestCase(UserGroupTestCase):
         }
         result = self.client_post("/json/user_groups/create", info=params)
         self.assert_json_error(result, "User group name cannot start with '@'.")
-        self.assert_length(UserGroup.objects.filter(realm=hamlet.realm), 10)
+        self.assert_length(NamedUserGroup.objects.filter(realm=hamlet.realm), 10)
 
         params["name"] = "role:manager"
         result = self.client_post("/json/user_groups/create", info=params)
         self.assert_json_error(result, "User group name cannot start with 'role:'.")
-        self.assert_length(UserGroup.objects.filter(realm=hamlet.realm), 10)
+        self.assert_length(NamedUserGroup.objects.filter(realm=hamlet.realm), 10)
 
         params["name"] = "user:1"
         result = self.client_post("/json/user_groups/create", info=params)
         self.assert_json_error(result, "User group name cannot start with 'user:'.")
-        self.assert_length(UserGroup.objects.filter(realm=hamlet.realm), 10)
+        self.assert_length(NamedUserGroup.objects.filter(realm=hamlet.realm), 10)
 
         params["name"] = "stream:1"
         result = self.client_post("/json/user_groups/create", info=params)
         self.assert_json_error(result, "User group name cannot start with 'stream:'.")
-        self.assert_length(UserGroup.objects.filter(realm=hamlet.realm), 10)
+        self.assert_length(NamedUserGroup.objects.filter(realm=hamlet.realm), 10)
 
         params["name"] = "channel:1"
         result = self.client_post("/json/user_groups/create", info=params)
         self.assert_json_error(result, "User group name cannot start with 'channel:'.")
-        self.assert_length(UserGroup.objects.filter(realm=hamlet.realm), 10)
+        self.assert_length(NamedUserGroup.objects.filter(realm=hamlet.realm), 10)
 
     def test_can_mention_group_setting_during_user_group_creation(self) -> None:
         self.login("hamlet")
@@ -359,7 +363,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
         leadership_group = check_add_user_group(
             hamlet.realm, "leadership", [hamlet], acting_user=None
         )
-        moderators_group = UserGroup.objects.get(
+        moderators_group = NamedUserGroup.objects.get(
             name="role:moderators", realm=hamlet.realm, is_system_group=True
         )
         params = {
@@ -370,8 +374,8 @@ class UserGroupAPITestCase(UserGroupTestCase):
         }
         result = self.client_post("/json/user_groups/create", info=params)
         self.assert_json_success(result)
-        support_group = UserGroup.objects.get(name="support", realm=hamlet.realm)
-        self.assertEqual(support_group.can_mention_group, moderators_group)
+        support_group = NamedUserGroup.objects.get(name="support", realm=hamlet.realm)
+        self.assertEqual(support_group.can_mention_group, moderators_group.usergroup_ptr)
 
         params = {
             "name": "test",
@@ -381,10 +385,10 @@ class UserGroupAPITestCase(UserGroupTestCase):
         }
         result = self.client_post("/json/user_groups/create", info=params)
         self.assert_json_success(result)
-        test_group = UserGroup.objects.get(name="test", realm=hamlet.realm)
+        test_group = NamedUserGroup.objects.get(name="test", realm=hamlet.realm)
         self.assertEqual(test_group.can_mention_group, leadership_group.usergroup_ptr)
 
-        nobody_group = UserGroup.objects.get(
+        nobody_group = NamedUserGroup.objects.get(
             name="role:nobody", realm=hamlet.realm, is_system_group=True
         )
         params = {
@@ -395,10 +399,10 @@ class UserGroupAPITestCase(UserGroupTestCase):
         }
         result = self.client_post("/json/user_groups/create", info=params)
         self.assert_json_success(result)
-        marketing_group = UserGroup.objects.get(name="marketing", realm=hamlet.realm)
-        self.assertEqual(marketing_group.can_mention_group, nobody_group)
+        marketing_group = NamedUserGroup.objects.get(name="marketing", realm=hamlet.realm)
+        self.assertEqual(marketing_group.can_mention_group, nobody_group.usergroup_ptr)
 
-        internet_group = UserGroup.objects.get(
+        internet_group = NamedUserGroup.objects.get(
             name="role:internet", realm=hamlet.realm, is_system_group=True
         )
         params = {
@@ -412,7 +416,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
             result, "'can_mention_group' setting cannot be set to 'role:internet' group."
         )
 
-        owners_group = UserGroup.objects.get(
+        owners_group = NamedUserGroup.objects.get(
             name="role:owners", realm=hamlet.realm, is_system_group=True
         )
         params = {
@@ -442,7 +446,8 @@ class UserGroupAPITestCase(UserGroupTestCase):
         result = self.client_get("/json/user_groups")
         response_dict = self.assert_json_success(result)
         self.assert_length(
-            response_dict["user_groups"], UserGroup.objects.filter(realm=user_profile.realm).count()
+            response_dict["user_groups"],
+            NamedUserGroup.objects.filter(realm=user_profile.realm).count(),
         )
 
     def test_can_edit_user_groups(self) -> None:
@@ -460,7 +465,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
             "description": "Support team",
         }
         self.client_post("/json/user_groups/create", info=params)
-        user_group = UserGroup.objects.get(name="support")
+        user_group = NamedUserGroup.objects.get(name="support")
         # Test success
         params = {
             "name": "help",
@@ -468,7 +473,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
         }
         result = self.client_patch(f"/json/user_groups/{user_group.id}", info=params)
         self.assert_json_success(result)
-        user_group = UserGroup.objects.get(id=user_group.id)
+        user_group = NamedUserGroup.objects.get(id=user_group.id)
         self.assertEqual(user_group.name, "help")
         self.assertEqual(user_group.description, "Troubleshooting team")
 
@@ -480,7 +485,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
         params = {"name": "help team"}
         result = self.client_patch(f"/json/user_groups/{user_group.id}", info=params)
         self.assert_json_success(result)
-        user_group = UserGroup.objects.get(id=user_group.id)
+        user_group = NamedUserGroup.objects.get(id=user_group.id)
         self.assertEqual(user_group.name, "help team")
         self.assertEqual(user_group.description, "Troubleshooting team")
 
@@ -533,7 +538,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
             hamlet.realm, "marketing", [hamlet], acting_user=None
         )
 
-        moderators_group = UserGroup.objects.get(
+        moderators_group = NamedUserGroup.objects.get(
             name="role:moderators", realm=hamlet.realm, is_system_group=True
         )
 
@@ -543,18 +548,18 @@ class UserGroupAPITestCase(UserGroupTestCase):
         }
         result = self.client_patch(f"/json/user_groups/{support_group.id}", info=params)
         self.assert_json_success(result)
-        support_group = UserGroup.objects.get(name="support", realm=hamlet.realm)
-        self.assertEqual(support_group.can_mention_group, moderators_group)
+        support_group = NamedUserGroup.objects.get(name="support", realm=hamlet.realm)
+        self.assertEqual(support_group.can_mention_group, moderators_group.usergroup_ptr)
 
         params = {
             "can_mention_group": orjson.dumps(marketing_group.id).decode(),
         }
         result = self.client_patch(f"/json/user_groups/{support_group.id}", info=params)
         self.assert_json_success(result)
-        support_group = UserGroup.objects.get(name="support", realm=hamlet.realm)
+        support_group = NamedUserGroup.objects.get(name="support", realm=hamlet.realm)
         self.assertEqual(support_group.can_mention_group, marketing_group.usergroup_ptr)
 
-        nobody_group = UserGroup.objects.get(
+        nobody_group = NamedUserGroup.objects.get(
             name="role:nobody", realm=hamlet.realm, is_system_group=True
         )
         params = {
@@ -562,10 +567,10 @@ class UserGroupAPITestCase(UserGroupTestCase):
         }
         result = self.client_patch(f"/json/user_groups/{support_group.id}", info=params)
         self.assert_json_success(result)
-        support_group = UserGroup.objects.get(name="support", realm=hamlet.realm)
-        self.assertEqual(support_group.can_mention_group, nobody_group)
+        support_group = NamedUserGroup.objects.get(name="support", realm=hamlet.realm)
+        self.assertEqual(support_group.can_mention_group, nobody_group.usergroup_ptr)
 
-        owners_group = UserGroup.objects.get(
+        owners_group = NamedUserGroup.objects.get(
             name="role:owners", realm=hamlet.realm, is_system_group=True
         )
         params = {
@@ -576,7 +581,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
             result, "'can_mention_group' setting cannot be set to 'role:owners' group."
         )
 
-        internet_group = UserGroup.objects.get(
+        internet_group = NamedUserGroup.objects.get(
             name="role:internet", realm=hamlet.realm, is_system_group=True
         )
         params = {
@@ -615,16 +620,16 @@ class UserGroupAPITestCase(UserGroupTestCase):
             "description": "Support team",
         }
         self.client_post("/json/user_groups/create", info=params)
-        user_group = UserGroup.objects.get(name="support")
+        user_group = NamedUserGroup.objects.get(name="support")
         # Test success
-        self.assertEqual(UserGroup.objects.filter(realm=hamlet.realm).count(), 10)
+        self.assertEqual(NamedUserGroup.objects.filter(realm=hamlet.realm).count(), 10)
         self.assertEqual(UserGroupMembership.objects.count(), 45)
-        self.assertTrue(UserGroup.objects.filter(id=user_group.id).exists())
+        self.assertTrue(NamedUserGroup.objects.filter(id=user_group.id).exists())
         result = self.client_delete(f"/json/user_groups/{user_group.id}")
         self.assert_json_success(result)
-        self.assertEqual(UserGroup.objects.filter(realm=hamlet.realm).count(), 9)
+        self.assertEqual(NamedUserGroup.objects.filter(realm=hamlet.realm).count(), 9)
         self.assertEqual(UserGroupMembership.objects.count(), 44)
-        self.assertFalse(UserGroup.objects.filter(id=user_group.id).exists())
+        self.assertFalse(NamedUserGroup.objects.filter(id=user_group.id).exists())
         # Test when invalid user group is supplied; transaction needed for
         # error handling
         with transaction.atomic():
@@ -699,7 +704,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
             "description": "Support team",
         }
         self.client_post("/json/user_groups/create", info=params)
-        user_group = UserGroup.objects.get(name="support")
+        user_group = NamedUserGroup.objects.get(name="support")
         # Test add members
         self.assert_user_membership(user_group, [hamlet])
 
@@ -844,18 +849,18 @@ class UserGroupAPITestCase(UserGroupTestCase):
             if error_msg is None:
                 self.assert_json_success(result)
                 # One group already exists in the test database.
-                self.assert_length(UserGroup.objects.filter(realm=realm), 10)
+                self.assert_length(NamedUserGroup.objects.filter(realm=realm), 10)
             else:
                 self.assert_json_error(result, error_msg)
 
         def check_delete_user_group(acting_user: str, error_msg: Optional[str] = None) -> None:
             self.login(acting_user)
-            user_group = UserGroup.objects.get(name="support")
+            user_group = NamedUserGroup.objects.get(name="support")
             with transaction.atomic():
                 result = self.client_delete(f"/json/user_groups/{user_group.id}")
             if error_msg is None:
                 self.assert_json_success(result)
-                self.assert_length(UserGroup.objects.filter(realm=realm), 9)
+                self.assert_length(NamedUserGroup.objects.filter(realm=realm), 9)
             else:
                 self.assert_json_error(result, error_msg)
 
@@ -940,7 +945,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
             "description": "Support team",
         }
         self.client_post("/json/user_groups/create", info=params)
-        user_group = UserGroup.objects.get(name="support")
+        user_group = NamedUserGroup.objects.get(name="support")
 
         def check_update_user_group(
             new_name: str,
@@ -1149,7 +1154,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
         othello = self.example_user("othello")
         aaron = self.example_user("aaron")
 
-        user_group = UserGroup.objects.get(
+        user_group = NamedUserGroup.objects.get(
             realm=iago.realm, name=SystemGroups.FULL_MEMBERS, is_system_group=True
         )
 
@@ -1186,7 +1191,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
         hamlet.save()
 
         do_set_realm_property(realm, "waiting_period_threshold", 10, acting_user=None)
-        full_members_group = UserGroup.objects.get(
+        full_members_group = NamedUserGroup.objects.get(
             realm=realm, name=SystemGroups.FULL_MEMBERS, is_system_group=True
         )
 
@@ -1345,7 +1350,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
         desdemona = self.example_user("desdemona")
         iago = self.example_user("iago")
         othello = self.example_user("othello")
-        admins_group = UserGroup.objects.get(
+        admins_group = NamedUserGroup.objects.get(
             realm=realm, name=SystemGroups.ADMINISTRATORS, is_system_group=True
         )
 
@@ -1411,7 +1416,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
         iago = self.example_user("iago")
         desdemona = self.example_user("desdemona")
         shiva = self.example_user("shiva")
-        moderators_group = UserGroup.objects.get(
+        moderators_group = NamedUserGroup.objects.get(
             name=SystemGroups.MODERATORS, realm=realm, is_system_group=True
         )
         self.login("iago")
@@ -1453,13 +1458,13 @@ class UserGroupAPITestCase(UserGroupTestCase):
 
     def test_get_subgroups_of_user_group(self) -> None:
         realm = get_realm("zulip")
-        owners_group = UserGroup.objects.get(
+        owners_group = NamedUserGroup.objects.get(
             name=SystemGroups.OWNERS, realm=realm, is_system_group=True
         )
-        admins_group = UserGroup.objects.get(
+        admins_group = NamedUserGroup.objects.get(
             name=SystemGroups.ADMINISTRATORS, realm=realm, is_system_group=True
         )
-        moderators_group = UserGroup.objects.get(
+        moderators_group = NamedUserGroup.objects.get(
             name=SystemGroups.MODERATORS, realm=realm, is_system_group=True
         )
         self.login("iago")

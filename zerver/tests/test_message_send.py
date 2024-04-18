@@ -49,12 +49,12 @@ from zerver.lib.test_helpers import (
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.models import (
     Message,
+    NamedUserGroup,
     Realm,
     RealmDomain,
     Recipient,
     Stream,
     Subscription,
-    UserGroup,
     UserMessage,
     UserProfile,
 )
@@ -2115,7 +2115,7 @@ class StreamMessagesTest(ZulipTestCase):
         leadership = check_add_user_group(othello.realm, "leadership", [othello], acting_user=None)
         support = check_add_user_group(othello.realm, "support", [othello], acting_user=None)
 
-        moderators_system_group = UserGroup.objects.get(
+        moderators_system_group = NamedUserGroup.objects.get(
             realm=iago.realm, name=SystemGroups.MODERATORS, is_system_group=True
         )
 
@@ -2186,7 +2186,7 @@ class StreamMessagesTest(ZulipTestCase):
 
         # Test system bots.
         content = "Test mentioning user group @*support*"
-        members_group = UserGroup.objects.get(
+        members_group = NamedUserGroup.objects.get(
             name=SystemGroups.MEMBERS, realm=iago.realm, is_system_group=True
         )
         support.can_mention_group = members_group
@@ -2200,7 +2200,7 @@ class StreamMessagesTest(ZulipTestCase):
         ):
             self.send_stream_message(system_bot, "test_stream", content, recipient_realm=iago.realm)
 
-        everyone_group = UserGroup.objects.get(
+        everyone_group = NamedUserGroup.objects.get(
             name=SystemGroups.EVERYONE, realm=iago.realm, is_system_group=True
         )
         support.can_mention_group = everyone_group
