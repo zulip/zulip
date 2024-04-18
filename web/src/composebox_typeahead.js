@@ -1015,7 +1015,7 @@ export function content_typeahead_selected(item, query, input_element, event) {
                     rest = rest.slice(1);
                 }
                 $textbox.val(beginning + rest);
-                $textbox.caret(beginning.length, beginning.length);
+                $textbox.caret(beginning.length);
                 compose_ui.autosize_textarea($textbox);
             };
             flatpickr.show_flatpickr(input_element.$element[0], on_timestamp_selection, timestamp);
@@ -1031,7 +1031,7 @@ export function content_typeahead_selected(item, query, input_element, event) {
         if (highlight.start && highlight.end) {
             $textbox.range(highlight.start, highlight.end);
         } else {
-            $textbox.caret(beginning.length, beginning.length);
+            $textbox.caret(beginning.length);
         }
         // Also, trigger autosize to check if compose box needs to be resized.
         compose_ui.autosize_textarea($textbox);
