@@ -81,7 +81,6 @@ from zerver.models import (
     RealmPlayground,
     Recipient,
     Subscription,
-    UserGroup,
     UserProfile,
 )
 from zerver.models.groups import SystemGroups
@@ -1092,7 +1091,7 @@ class TestRealmAuditLog(ZulipTestCase):
         expected_system_user_group_count = len(NamedUserGroup.SYSTEM_USER_GROUP_ROLE_MAP) + 3
 
         system_user_group_ids = sorted(
-            UserGroup.objects.filter(
+            NamedUserGroup.objects.filter(
                 realm=realm,
                 is_system_group=True,
             ).values_list("id", flat=True)
@@ -1148,7 +1147,7 @@ class TestRealmAuditLog(ZulipTestCase):
         hamlet = self.example_user("hamlet")
         cordelia = self.example_user("cordelia")
         now = timezone_now()
-        public_group = UserGroup.objects.get(
+        public_group = NamedUserGroup.objects.get(
             name=SystemGroups.EVERYONE_ON_INTERNET, realm=hamlet.realm
         )
         user_group = check_add_user_group(
@@ -1313,7 +1312,7 @@ class TestRealmAuditLog(ZulipTestCase):
         )
 
         old_group = user_group.can_mention_group
-        new_group = UserGroup.objects.get(
+        new_group = NamedUserGroup.objects.get(
             name=SystemGroups.EVERYONE_ON_INTERNET, realm=user_group.realm
         )
         self.assertNotEqual(old_group.id, new_group.id)
