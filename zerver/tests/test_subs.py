@@ -290,6 +290,9 @@ class TestCreateStreams(ZulipTestCase):
         moderators_system_group = NamedUserGroup.objects.get(
             name="role:moderators", realm=realm, is_system_group=True
         )
+        admins_system_group = NamedUserGroup.objects.get(
+            name="role:administrators", realm=realm, is_system_group=True
+        )
         new_streams, existing_streams = create_streams_if_needed(
             realm,
             [
@@ -300,6 +303,7 @@ class TestCreateStreams(ZulipTestCase):
                     "stream_post_policy": Stream.STREAM_POST_POLICY_ADMINS,
                     "message_retention_days": -1,
                     "can_remove_subscribers_group": moderators_system_group,
+                    "stream_topic_access_group": admins_system_group,
                 }
                 for (stream_name, stream_description) in zip(stream_names, stream_descriptions)
             ],
@@ -317,6 +321,7 @@ class TestCreateStreams(ZulipTestCase):
             self.assertTrue(stream.stream_post_policy == Stream.STREAM_POST_POLICY_ADMINS)
             self.assertTrue(stream.message_retention_days == -1)
             self.assertEqual(stream.can_remove_subscribers_group.id, moderators_system_group.id)
+            self.assertEqual(stream.stream_topic_access_group.id, admins_system_group.id)
             # Streams created where acting_user is None have no creator
             self.assertIsNone(stream.creator_id)
 
@@ -619,6 +624,93 @@ class TestCreateStreams(ZulipTestCase):
         self.assert_json_error(
             result,
             "'can_remove_subscribers_group' setting cannot be set to 'role:nobody' group.",
+        )
+
+    def test_stream_topic_access_on_stream_creation(self) -> None:
+        user = self.example_user("hamlet")
+        realm = user.realm
+        self.login_user(user)
+        moderators_system_group = NamedUserGroup.objects.get(
+            name="role:moderators", realm=realm, is_system_group=True
+        )
+        everyone_system_group = NamedUserGroup.objects.get(
+            name="role:everyone", realm=realm, is_system_group=True
+        )
+
+        post_data = {
+            "subscriptions": orjson.dumps(
+                [{"name": "new_stream1", "description": "First new stream"}]
+            ).decode(),
+            "stream_topic_access_group": orjson.dumps(moderators_system_group.id).decode(),
+        }
+        result = self.api_post(user, "/api/v1/users/me/subscriptions", post_data, subdomain="zulip")
+        self.assert_json_success(result)
+        stream = get_stream("new_stream1", realm)
+        self.assertEqual(stream.stream_topic_access_group.id, moderators_system_group.id)
+
+        post_data = {
+            "subscriptions": orjson.dumps(
+                [{"name": "new_stream2", "description": "Second new stream"}]
+            ).decode(),
+        }
+        result = self.api_post(user, "/api/v1/users/me/subscriptions", post_data, subdomain="zulip")
+        self.assert_json_success(result)
+        stream = get_stream("new_stream2", realm)
+        self.assertEqual(stream.stream_topic_access_group.id, everyone_system_group.id)
+
+        hamletcharacters_group = NamedUserGroup.objects.get(name="hamletcharacters", realm=realm)
+        post_data = {
+            "subscriptions": orjson.dumps(
+                [{"name": "new_stream3", "description": "Third new stream"}]
+            ).decode(),
+            "stream_topic_access_group": orjson.dumps(hamletcharacters_group.id).decode(),
+        }
+        result = self.api_post(user, "/api/v1/users/me/subscriptions", post_data, subdomain="zulip")
+        self.assert_json_error(result, "'stream_topic_access_group' must be a system user group.")
+
+        internet_group = NamedUserGroup.objects.get(
+            name="role:internet", is_system_group=True, realm=realm
+        )
+        post_data = {
+            "subscriptions": orjson.dumps(
+                [{"name": "new_stream3", "description": "Third new stream"}]
+            ).decode(),
+            "stream_topic_access_group": orjson.dumps(internet_group.id).decode(),
+        }
+        result = self.api_post(user, "/api/v1/users/me/subscriptions", post_data, subdomain="zulip")
+        self.assert_json_error(
+            result,
+            "'stream_topic_access_group' setting cannot be set to 'role:internet' group.",
+        )
+
+        owners_group = NamedUserGroup.objects.get(
+            name="role:owners", is_system_group=True, realm=realm
+        )
+        post_data = {
+            "subscriptions": orjson.dumps(
+                [{"name": "new_stream3", "description": "Third new stream"}]
+            ).decode(),
+            "stream_topic_access_group": orjson.dumps(owners_group.id).decode(),
+        }
+        result = self.api_post(user, "/api/v1/users/me/subscriptions", post_data, subdomain="zulip")
+        self.assert_json_error(
+            result,
+            "'stream_topic_access_group' setting cannot be set to 'role:owners' group.",
+        )
+
+        nobody_group = NamedUserGroup.objects.get(
+            name="role:nobody", is_system_group=True, realm=realm
+        )
+        post_data = {
+            "subscriptions": orjson.dumps(
+                [{"name": "new_stream3", "description": "Third new stream"}]
+            ).decode(),
+            "stream_topic_access_group": orjson.dumps(nobody_group.id).decode(),
+        }
+        result = self.api_post(user, "/api/v1/users/me/subscriptions", post_data, subdomain="zulip")
+        self.assert_json_error(
+            result,
+            "'stream_topic_access_group' setting cannot be set to 'role:nobody' group.",
         )
 
     def test_acting_user_is_creator(self) -> None:

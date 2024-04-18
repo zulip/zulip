@@ -555,6 +555,9 @@ def add_subscriptions_backend(
     can_remove_subscribers_group_id: Optional[int] = REQ(
         "can_remove_subscribers_group", json_validator=check_int, default=None
     ),
+    stream_topic_access_group_id: Optional[int] = REQ(
+        "stream_topic_access_group", json_validator=check_int, default=None
+    ),
     announce: bool = REQ(json_validator=check_bool, default=False),
     principals: Union[Sequence[str], Sequence[int]] = REQ(
         json_validator=check_principals,
@@ -586,6 +589,26 @@ def add_subscriptions_backend(
             is_system_group=True,
         )
 
+    if stream_topic_access_group_id is not None:
+        permission_configuration = Stream.stream_permission_group_settings[
+            "stream_topic_access_group"
+        ]
+        stream_topic_access_group = access_user_group_for_setting(
+            stream_topic_access_group_id,
+            user_profile,
+            setting_name="stream_topic_access_group",
+            permission_configuration=permission_configuration,
+        )
+    else:
+        stream_topic_access_group_default_name = Stream.stream_permission_group_settings[
+            "stream_topic_access_group"
+        ].default_group_name
+        stream_topic_access_group = NamedUserGroup.objects.get(
+            name=stream_topic_access_group_default_name,
+            realm=user_profile.realm,
+            is_system_group=True,
+        )
+
     for stream_dict in streams_raw:
         # 'color' field is optional
         # check for its presence in the streams_raw first
@@ -607,6 +630,7 @@ def add_subscriptions_backend(
             message_retention_days, Stream.MESSAGE_RETENTION_SPECIAL_VALUES_MAP
         )
         stream_dict_copy["can_remove_subscribers_group"] = can_remove_subscribers_group
+        stream_dict_copy["stream_topic_access_group"] = stream_topic_access_group
 
         stream_dicts.append(stream_dict_copy)
 

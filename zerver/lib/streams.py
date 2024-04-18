@@ -139,6 +139,7 @@ def create_stream_if_needed(
     stream_description: str = "",
     message_retention_days: Optional[int] = None,
     can_remove_subscribers_group: Optional[UserGroup] = None,
+    stream_topic_access_group: Optional[UserGroup] = None,
     acting_user: Optional[UserProfile] = None,
 ) -> Tuple[Stream, bool]:
     history_public_to_subscribers = get_default_value_for_history_public_to_subscribers(
@@ -173,6 +174,7 @@ def create_stream_if_needed(
             is_in_zephyr_realm=realm.is_zephyr_mirror_realm,
             message_retention_days=message_retention_days,
             can_remove_subscribers_group=can_remove_subscribers_group,
+            stream_topic_access_group=stream_topic_access_group,
         ),
     )
 
@@ -226,6 +228,7 @@ def create_streams_if_needed(
             stream_description=stream_dict.get("description", ""),
             message_retention_days=stream_dict.get("message_retention_days", None),
             can_remove_subscribers_group=stream_dict.get("can_remove_subscribers_group", None),
+            stream_topic_access_group=stream_dict.get("stream_topic_access_group", None),
             acting_user=acting_user,
         )
 
