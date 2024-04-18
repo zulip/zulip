@@ -24,8 +24,7 @@ from zerver.lib.message import (
 )
 from zerver.lib.message_cache import MessageDict
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.lib.test_helpers import get_subscription, timeout_mock
-from zerver.lib.timeout import TimeoutExpiredError
+from zerver.lib.test_helpers import get_subscription
 from zerver.models import (
     Message,
     Recipient,
@@ -66,8 +65,7 @@ class FirstUnreadAnchorTests(ZulipTestCase):
         self.login("hamlet")
 
         # Mark all existing messages as read
-        with timeout_mock("zerver.views.message_flags"):
-            result = self.client_post("/json/mark_all_as_read")
+        result = self.client_post("/json/mark_all_as_read")
         result_dict = self.assert_json_success(result)
         self.assertTrue(result_dict["complete"])
 
@@ -127,8 +125,7 @@ class FirstUnreadAnchorTests(ZulipTestCase):
     def test_visible_messages_use_first_unread_anchor(self) -> None:
         self.login("hamlet")
 
-        with timeout_mock("zerver.views.message_flags"):
-            result = self.client_post("/json/mark_all_as_read")
+        result = self.client_post("/json/mark_all_as_read")
         result_dict = self.assert_json_success(result)
         self.assertTrue(result_dict["complete"])
 
@@ -659,8 +656,7 @@ class PushNotificationMarkReadFlowsTest(ZulipTestCase):
             [third_message_id, fourth_message_id],
         )
 
-        with timeout_mock("zerver.views.message_flags"):
-            result = self.client_post("/json/mark_all_as_read", {})
+        result = self.client_post("/json/mark_all_as_read", {})
         self.assertEqual(self.get_mobile_push_notification_ids(user_profile), [])
         mock_push_notifications.assert_called()
 
@@ -682,8 +678,7 @@ class MarkAllAsReadEndpointTest(ZulipTestCase):
             .count()
         )
         self.assertNotEqual(unread_count, 0)
-        with timeout_mock("zerver.views.message_flags"):
-            result = self.client_post("/json/mark_all_as_read", {})
+        result = self.client_post("/json/mark_all_as_read", {})
         result_dict = self.assert_json_success(result)
         self.assertTrue(result_dict["complete"])
 
@@ -696,7 +691,7 @@ class MarkAllAsReadEndpointTest(ZulipTestCase):
 
     def test_mark_all_as_read_timeout_response(self) -> None:
         self.login("hamlet")
-        with mock.patch("zerver.views.message_flags.timeout", side_effect=TimeoutExpiredError):
+        with mock.patch("time.monotonic", side_effect=[10000, 10051]):
             result = self.client_post("/json/mark_all_as_read", {})
             result_dict = self.assert_json_success(result)
             self.assertFalse(result_dict["complete"])

@@ -1,3 +1,4 @@
+import time
 from collections import defaultdict
 from dataclasses import asdict, dataclass, field
 from typing import List, Optional, Set
@@ -32,7 +33,11 @@ class ReadMessagesEvent:
     flag: str = field(default="read", init=False)
 
 
-def do_mark_all_as_read(user_profile: UserProfile) -> int:
+def do_mark_all_as_read(
+    user_profile: UserProfile, *, timeout: Optional[float] = None
+) -> Optional[int]:
+    start_time = time.monotonic()
+
     # First, we clear mobile push notifications.  This is safer in the
     # event that the below logic times out and we're killed.
     all_push_message_ids = (
@@ -49,6 +54,9 @@ def do_mark_all_as_read(user_profile: UserProfile) -> int:
     batch_size = 2000
     count = 0
     while True:
+        if timeout is not None and time.monotonic() >= start_time + timeout:
+            return None
+
         with transaction.atomic(savepoint=False):
             query = (
                 UserMessage.select_for_update_query()
