@@ -908,7 +908,7 @@ class QueryCountTest(ZulipTestCase):
 
         prereg_user = PreregistrationUser.objects.get(email="fred@zulip.com")
 
-        with self.assert_database_query_count(80):
+        with self.assert_database_query_count(90):
             with self.assert_memcached_count(19):
                 with self.capture_send_event_calls(expected_num_events=10) as events:
                     fred = do_create_user(
@@ -1994,8 +1994,9 @@ class RecipientInfoTest(ZulipTestCase):
         info = get_recipient_info(
             realm_id=realm.id,
             recipient=recipient,
-            sender_id=hamlet.id,
+            message_sender=hamlet,
             stream_topic=stream_topic,
+            stream=stream,
             possible_topic_wildcard_mention=False,
             possible_stream_wildcard_mention=False,
         )
@@ -2034,8 +2035,9 @@ class RecipientInfoTest(ZulipTestCase):
         info = get_recipient_info(
             realm_id=realm.id,
             recipient=recipient,
-            sender_id=hamlet.id,
+            message_sender=hamlet,
             stream_topic=stream_topic,
+            stream=stream,
             possible_stream_wildcard_mention=False,
         )
         self.assertEqual(info.dm_mention_email_disabled_user_ids, {hamlet.id})
@@ -2048,8 +2050,9 @@ class RecipientInfoTest(ZulipTestCase):
         info = get_recipient_info(
             realm_id=realm.id,
             recipient=recipient,
-            sender_id=hamlet.id,
+            message_sender=hamlet,
             stream_topic=stream_topic,
+            stream=stream,
             possible_stream_wildcard_mention=False,
         )
         self.assertEqual(info.stream_push_user_ids, {hamlet.id})
@@ -2058,8 +2061,9 @@ class RecipientInfoTest(ZulipTestCase):
         info = get_recipient_info(
             realm_id=realm.id,
             recipient=recipient,
-            sender_id=hamlet.id,
+            message_sender=hamlet,
             stream_topic=stream_topic,
+            stream=stream,
             possible_stream_wildcard_mention=True,
         )
         self.assertEqual(info.stream_wildcard_mention_user_ids, {hamlet.id, othello.id})
@@ -2073,8 +2077,9 @@ class RecipientInfoTest(ZulipTestCase):
         info = get_recipient_info(
             realm_id=realm.id,
             recipient=recipient,
-            sender_id=hamlet.id,
+            message_sender=hamlet,
             stream_topic=stream_topic,
+            stream=stream,
             possible_topic_wildcard_mention=True,
             possible_stream_wildcard_mention=False,
         )
@@ -2089,8 +2094,9 @@ class RecipientInfoTest(ZulipTestCase):
         info = get_recipient_info(
             realm_id=realm.id,
             recipient=recipient,
-            sender_id=hamlet.id,
+            message_sender=hamlet,
             stream_topic=stream_topic,
+            stream=stream,
             possible_topic_wildcard_mention=True,
             possible_stream_wildcard_mention=False,
         )
@@ -2100,8 +2106,9 @@ class RecipientInfoTest(ZulipTestCase):
         info = get_recipient_info(
             realm_id=realm.id,
             recipient=recipient,
-            sender_id=hamlet.id,
+            message_sender=hamlet,
             stream_topic=stream_topic,
+            stream=stream,
             possible_topic_wildcard_mention=False,
             possible_stream_wildcard_mention=True,
         )
@@ -2111,8 +2118,9 @@ class RecipientInfoTest(ZulipTestCase):
         info = get_recipient_info(
             realm_id=realm.id,
             recipient=recipient,
-            sender_id=hamlet.id,
+            message_sender=hamlet,
             stream_topic=stream_topic,
+            stream=stream,
             possible_topic_wildcard_mention=True,
             possible_stream_wildcard_mention=True,
         )
@@ -2125,8 +2133,9 @@ class RecipientInfoTest(ZulipTestCase):
         info = get_recipient_info(
             realm_id=realm.id,
             recipient=recipient,
-            sender_id=hamlet.id,
+            message_sender=hamlet,
             stream_topic=stream_topic,
+            stream=stream,
         )
         self.assertEqual(info.stream_push_user_ids, set())
 
@@ -2137,8 +2146,9 @@ class RecipientInfoTest(ZulipTestCase):
         info = get_recipient_info(
             realm_id=realm.id,
             recipient=recipient,
-            sender_id=hamlet.id,
+            message_sender=hamlet,
             stream_topic=stream_topic,
+            stream=stream,
         )
         self.assertEqual(info.stream_push_user_ids, {hamlet.id})
 
@@ -2157,8 +2167,9 @@ class RecipientInfoTest(ZulipTestCase):
         info = get_recipient_info(
             realm_id=realm.id,
             recipient=recipient,
-            sender_id=hamlet.id,
+            message_sender=hamlet,
             stream_topic=stream_topic,
+            stream=stream,
         )
         self.assertEqual(info.stream_push_user_ids, {hamlet.id})
 
@@ -2180,8 +2191,9 @@ class RecipientInfoTest(ZulipTestCase):
         info = get_recipient_info(
             realm_id=realm.id,
             recipient=recipient,
-            sender_id=hamlet.id,
+            message_sender=hamlet,
             stream_topic=stream_topic,
+            stream=stream,
             possible_stream_wildcard_mention=False,
         )
         self.assertEqual(info.stream_push_user_ids, set())
@@ -2190,8 +2202,9 @@ class RecipientInfoTest(ZulipTestCase):
         info = get_recipient_info(
             realm_id=realm.id,
             recipient=recipient,
-            sender_id=hamlet.id,
+            message_sender=hamlet,
             stream_topic=stream_topic,
+            stream=stream,
             possible_stream_wildcard_mention=True,
         )
         self.assertEqual(info.stream_push_user_ids, set())
@@ -2205,8 +2218,9 @@ class RecipientInfoTest(ZulipTestCase):
         info = get_recipient_info(
             realm_id=realm.id,
             recipient=recipient,
-            sender_id=cordelia.id,
+            message_sender=cordelia,
             stream_topic=stream_topic,
+            stream=stream,
             possible_stream_wildcard_mention=True,
         )
         self.assertTrue(hamlet.id in info.muted_sender_user_ids)
@@ -2218,8 +2232,9 @@ class RecipientInfoTest(ZulipTestCase):
         info = get_recipient_info(
             realm_id=realm.id,
             recipient=recipient,
-            sender_id=hamlet.id,
+            message_sender=hamlet,
             stream_topic=stream_topic,
+            stream=stream,
             possible_stream_wildcard_mention=True,
         )
         self.assertEqual(info.stream_push_user_ids, set())
@@ -2234,8 +2249,9 @@ class RecipientInfoTest(ZulipTestCase):
         info = get_recipient_info(
             realm_id=realm.id,
             recipient=recipient,
-            sender_id=hamlet.id,
+            message_sender=hamlet,
             stream_topic=stream_topic,
+            stream=stream,
             possible_stream_wildcard_mention=True,
         )
         self.assertEqual(info.stream_push_user_ids, set())
@@ -2254,8 +2270,9 @@ class RecipientInfoTest(ZulipTestCase):
         info = get_recipient_info(
             realm_id=realm.id,
             recipient=recipient,
-            sender_id=hamlet.id,
+            message_sender=hamlet,
             stream_topic=stream_topic,
+            stream=stream,
             possibly_mentioned_user_ids={service_bot.id},
         )
         self.assertEqual(
@@ -2278,8 +2295,9 @@ class RecipientInfoTest(ZulipTestCase):
         info = get_recipient_info(
             realm_id=realm.id,
             recipient=recipient,
-            sender_id=hamlet.id,
+            message_sender=hamlet,
             stream_topic=stream_topic,
+            stream=stream,
             possibly_mentioned_user_ids={service_bot.id, normal_bot.id},
         )
         self.assertEqual(info.default_bot_user_ids, {normal_bot.id})
@@ -2298,8 +2316,9 @@ class RecipientInfoTest(ZulipTestCase):
         info = get_recipient_info(
             realm_id=realm.id,
             recipient=recipient,
-            sender_id=hamlet.id,
+            message_sender=hamlet,
             stream_topic=stream_topic,
+            stream=stream,
         )
         self.assertEqual(info.followed_topic_email_user_ids, {hamlet.id})
         self.assertEqual(info.followed_topic_push_user_ids, {hamlet.id})
@@ -2330,8 +2349,9 @@ class RecipientInfoTest(ZulipTestCase):
         info = get_recipient_info(
             realm_id=realm.id,
             recipient=recipient,
-            sender_id=hamlet.id,
+            message_sender=hamlet,
             stream_topic=stream_topic,
+            stream=stream,
         )
         self.assertEqual(info.followed_topic_email_user_ids, set())
         self.assertEqual(info.followed_topic_push_user_ids, set())
@@ -2353,8 +2373,9 @@ class RecipientInfoTest(ZulipTestCase):
             get_recipient_info(
                 realm_id=realm.id,
                 recipient=invalid_recipient,
-                sender_id=hamlet.id,
+                message_sender=hamlet,
                 stream_topic=stream_topic,
+                stream=stream,
             )
 
 

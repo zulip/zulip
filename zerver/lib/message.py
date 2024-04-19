@@ -184,6 +184,7 @@ class SendMessageRequest:
     disable_external_notifications: bool = False
     automatic_new_visibility_policy: Optional[int] = None
     recipients_for_user_creation_events: Optional[Dict[UserProfile, Set[int]]] = None
+    is_support_stream: Optional[bool] = None
 
 
 # We won't try to fetch more unread message IDs from the database than

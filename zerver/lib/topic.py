@@ -8,6 +8,7 @@ from django.db.models.functions import Cast
 
 from zerver.lib.request import REQ
 from zerver.lib.types import EditHistoryEvent
+from zerver.lib.user_groups import is_user_in_group
 from zerver.lib.utils import assert_is_not_none
 from zerver.models import Message, Reaction, Stream, UserMessage, UserProfile
 
@@ -332,3 +333,30 @@ def participants_for_topic(realm_id: int, recipient_id: int, topic_name: str) ->
         ).values_list("id", flat=True)
     )
     return participants
+
+
+def get_topic_creator_user_id(realm_id: int, recipient_id: int, topic_name: str) -> int | None:
+    """
+    User who created the topic.
+    """
+    first_message_in_topic = (
+        Message.objects.filter(
+            # Uses index: zerver_message_realm_recipient_upper_subject
+            realm_id=realm_id,
+            recipient_id=recipient_id,
+            subject__iexact=topic_name,
+        )
+        .order_by("id")
+        .first()
+    )
+
+    if first_message_in_topic is None:
+        return None
+
+    return first_message_in_topic.sender_id
+
+
+def check_access_based_on_stream_topic_access_group(user_id: int, stream: Stream) -> bool:
+    group_allowed_to_access_topics = stream.stream_topic_access_group
+    assert group_allowed_to_access_topics is not None
+    return is_user_in_group(group_allowed_to_access_topics, user_id)

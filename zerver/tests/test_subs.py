@@ -3019,7 +3019,7 @@ class DefaultStreamTest(ZulipTestCase):
         self.assertEqual({dct["stream_id"] for dct in default_streams}, new_stream_ids)
 
         # Make sure our query isn't some bloated select_related query.
-        self.assertLess(len(queries[0].sql), 835)
+        self.assertLess(len(queries[0].sql), 1355)
 
         with queries_captured() as queries:
             default_stream_ids = get_default_stream_ids_for_realm(realm.id)
@@ -4859,7 +4859,7 @@ class SubscriptionAPITest(ZulipTestCase):
         realm = get_realm("zulip")
         streams_to_sub = ["multi_user_stream"]
         with self.capture_send_event_calls(expected_num_events=5) as events:
-            with self.assert_database_query_count(37):
+            with self.assert_database_query_count(39):
                 self.common_subscribe_to_streams(
                     self.test_user,
                     streams_to_sub,
@@ -4883,7 +4883,7 @@ class SubscriptionAPITest(ZulipTestCase):
 
         # Now add ourselves
         with self.capture_send_event_calls(expected_num_events=2) as events:
-            with self.assert_database_query_count(14):
+            with self.assert_database_query_count(15):
                 self.common_subscribe_to_streams(
                     self.test_user,
                     streams_to_sub,
@@ -5245,7 +5245,7 @@ class SubscriptionAPITest(ZulipTestCase):
         # Verify that peer_event events are never sent in Zephyr
         # realm. This does generate stream creation events from
         # send_stream_creation_events_for_previously_inaccessible_streams.
-        with self.assert_database_query_count(num_streams + 11):
+        with self.assert_database_query_count(num_streams + 12):
             with self.capture_send_event_calls(expected_num_events=num_streams + 1) as events:
                 self.common_subscribe_to_streams(
                     mit_user,
@@ -5328,7 +5328,7 @@ class SubscriptionAPITest(ZulipTestCase):
         # The only known O(N) behavior here is that we call
         # principal_to_user_profile for each of our users, but it
         # should be cached.
-        with self.assert_database_query_count(21):
+        with self.assert_database_query_count(22):
             with self.assert_memcached_count(3):
                 with mock.patch("zerver.views.streams.send_messages_for_new_subscribers"):
                     self.common_subscribe_to_streams(
@@ -5683,7 +5683,7 @@ class SubscriptionAPITest(ZulipTestCase):
         ]
 
         # Test creating a public stream when realm does not have a notification stream.
-        with self.assert_database_query_count(37):
+        with self.assert_database_query_count(39):
             self.common_subscribe_to_streams(
                 self.test_user,
                 [new_streams[0]],
@@ -5691,7 +5691,7 @@ class SubscriptionAPITest(ZulipTestCase):
             )
 
         # Test creating private stream.
-        with self.assert_database_query_count(38):
+        with self.assert_database_query_count(40):
             self.common_subscribe_to_streams(
                 self.test_user,
                 [new_streams[1]],
@@ -5703,7 +5703,7 @@ class SubscriptionAPITest(ZulipTestCase):
         new_stream_announcements_stream = get_stream(self.streams[0], self.test_realm)
         self.test_realm.new_stream_announcements_stream_id = new_stream_announcements_stream.id
         self.test_realm.save()
-        with self.assert_database_query_count(48):
+        with self.assert_database_query_count(52):
             self.common_subscribe_to_streams(
                 self.test_user,
                 [new_streams[2]],
@@ -6181,7 +6181,7 @@ class GetSubscribersTest(ZulipTestCase):
             polonius.id,
         ]
 
-        with self.assert_database_query_count(46):
+        with self.assert_database_query_count(47):
             self.common_subscribe_to_streams(
                 self.user_profile,
                 streams,
