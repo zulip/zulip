@@ -7,7 +7,20 @@ define zulip::cron(
   String $user = 'zulip',
   Optional[String] $command = undef,
   Optional[String] $manage = undef,
+  Boolean $use_proxy = true,
 ) {
+  if $use_proxy {
+    $proxy_host = zulipconf('http_proxy', 'host', 'localhost')
+    $proxy_port = zulipconf('http_proxy', 'port', '4750')
+    if $proxy_host != '' and $proxy_port != '' {
+      $proxy = "http://${proxy_host}:${proxy_port}"
+    } else {
+      $proxy = ''
+    }
+  } else {
+    $pxoy = ''
+  }
+
   $dsn = zulipconf('sentry', 'project_dsn', '')
   if $dsn != '' {
     include zulip::sentry_cli
