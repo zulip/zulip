@@ -1,5 +1,3 @@
-$message_box_margin: 3px;
-
 .message_row {
     display: grid;
     /* Prevent the messagebox column from overflowing the 1fr
@@ -318,17 +316,6 @@ $message_box_margin: 3px;
                 .message_sender {
                     /* Don't display message sender as flexbox for me-messages. */
                     display: block;
-                    /* This preserves a consistent bottom spacing on the me-message
-                       grid, which ordinarily benefits from the margin of <p>
-                       elements in the markdown--which single-line me-messages do
-                       not receive.
-
-                       It also ensures a uniform space-relationship between the top: of the avatar and the top of the sender_name line.
-
-                       However, this should all arguably be handled from the grid
-                       container or the grid definition itself. */
-                    margin: $message_box_margin 0;
-
                     /* Set the same line-height as on message content for
                        me-messages. */
                     line-height: var(--message-box-line-height);
@@ -380,13 +367,6 @@ $message_box_margin: 3px;
                 grid-area: message;
             }
 
-            .message-time {
-                /* Don't adjust the line-height for collapsed or
-                   edited/source messages when there's a sender,
-                   as the sender text is always visible. */
-                line-height: inherit;
-            }
-
             .slow-send-spinner {
                 align-self: center;
                 position: unset;
@@ -413,8 +393,6 @@ $message_box_margin: 3px;
                    message-box grid's baseline group, too. */
                 align-items: baseline;
 
-                margin-top: $message_box_margin;
-
                 .zulip-icon.zulip-icon-bot {
                     align-self: center;
                     padding: 0 0 0 5px;
@@ -424,10 +402,10 @@ $message_box_margin: 3px;
                     overflow: hidden;
                     text-overflow: ellipsis;
                     white-space: nowrap;
-                    /* It is important to use line-height `normal` here since user's name can
-                       be in any language and `line-height: 1` doesn't work to accommodate text
-                       from start and end vertically in all languages. */
-                    line-height: normal;
+                    /* A generous line-height on the sender name is necessary
+                       for internationalization and non-Western Latin character
+                       sets. */
+                    line-height: var(--message-box-sender-line-height);
                     outline: none;
                     align-self: baseline;
                 }
@@ -515,20 +493,8 @@ $message_box_margin: 3px;
        collapsed message, or source/edit view). This
        line-height also keeps EDITED/MOVED messages
        in place, care of their baseline-group participation
-       within the grid.
-
-       That said, 28px is a bit of a magical number.
-       In theory, this should be 27px. That's the height
-       of a single-message row without a sender. (See the
-       calculations for the height of a single-line,
-       sender-less message row in the message box grid.)
-       But when shifting into collapsed or source views,
-       28px is necessary to maintain the vertical alignment
-       of the EDITED messages, hover controls, and
-       timestamp. It's possible that this is also due to a
-       a rounding error, given how --message-box-line-height
-       is expressed as a unitless decimal. */
-    line-height: 28px;
+       within the grid. */
+    line-height: var(--message-box-sender-line-height);
     grid-area: time;
     display: block;
     font-size: 13px;
