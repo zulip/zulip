@@ -186,6 +186,9 @@ class Stream(models.Model):
     def is_history_public_to_subscribers(self) -> bool:
         return self.history_public_to_subscribers
 
+    def is_support_stream(self) -> bool:
+        return self.can_access_stream_topics_group.named_user_group.name != SystemGroups.EVERYONE
+
     # Stream fields included whenever a Stream object is provided to
     # Zulip clients via the API.  A few details worth noting:
     # * "id" is represented as "stream_id" in most API interfaces.
@@ -235,7 +238,9 @@ post_delete.connect(flush_stream, sender=Stream)
 
 
 def get_realm_stream(stream_name: str, realm_id: int) -> Stream:
-    return Stream.objects.get(name__iexact=stream_name.strip(), realm_id=realm_id)
+    return Stream.objects.select_related("can_access_stream_topics_group__named_user_group").get(
+        name__iexact=stream_name.strip(), realm_id=realm_id
+    )
 
 
 def get_active_streams(realm: Realm) -> QuerySet[Stream]:
@@ -265,7 +270,9 @@ def get_stream(stream_name: str, realm: Realm) -> Stream:
 
 
 def get_stream_by_id_in_realm(stream_id: int, realm: Realm) -> Stream:
-    return Stream.objects.select_related("realm", "recipient").get(id=stream_id, realm=realm)
+    return Stream.objects.select_related(
+        "realm", "recipient", "can_access_stream_topics_group__named_user_group"
+    ).get(id=stream_id, realm=realm)
 
 
 def bulk_get_streams(realm: Realm, stream_names: set[str]) -> dict[str, Any]:

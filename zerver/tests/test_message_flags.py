@@ -1844,7 +1844,7 @@ class MessageAccessTests(ZulipTestCase):
 
         # All public stream messages are always accessible
         filtered_messages = self.assert_bulk_access(
-            later_subscribed_user, message_ids, stream, 4, 1
+            later_subscribed_user, message_ids, stream, 5, 1
         )
         self.assert_length(filtered_messages, 2)
 

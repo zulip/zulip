@@ -4872,7 +4872,7 @@ class SubscriptionAPITest(ZulipTestCase):
         streams_to_sub = ["multi_user_stream"]
         with (
             self.capture_send_event_calls(expected_num_events=5) as events,
-            self.assert_database_query_count(39),
+            self.assert_database_query_count(40),
         ):
             self.common_subscribe_to_streams(
                 self.test_user,
@@ -4898,7 +4898,7 @@ class SubscriptionAPITest(ZulipTestCase):
         # Now add ourselves
         with (
             self.capture_send_event_calls(expected_num_events=2) as events,
-            self.assert_database_query_count(14),
+            self.assert_database_query_count(15),
         ):
             self.common_subscribe_to_streams(
                 self.test_user,
@@ -5347,7 +5347,7 @@ class SubscriptionAPITest(ZulipTestCase):
         # principal_to_user_profile for each of our users, but it
         # should be cached.
         with (
-            self.assert_database_query_count(21),
+            self.assert_database_query_count(22),
             self.assert_memcached_count(3),
             mock.patch("zerver.views.streams.send_messages_for_new_subscribers"),
         ):
@@ -5703,7 +5703,7 @@ class SubscriptionAPITest(ZulipTestCase):
         ]
 
         # Test creating a public stream when realm does not have a notification stream.
-        with self.assert_database_query_count(39):
+        with self.assert_database_query_count(40):
             self.common_subscribe_to_streams(
                 self.test_user,
                 [new_streams[0]],
@@ -5711,7 +5711,7 @@ class SubscriptionAPITest(ZulipTestCase):
             )
 
         # Test creating private stream.
-        with self.assert_database_query_count(41):
+        with self.assert_database_query_count(42):
             self.common_subscribe_to_streams(
                 self.test_user,
                 [new_streams[1]],
@@ -5723,7 +5723,7 @@ class SubscriptionAPITest(ZulipTestCase):
         new_stream_announcements_stream = get_stream(self.streams[0], self.test_realm)
         self.test_realm.new_stream_announcements_stream_id = new_stream_announcements_stream.id
         self.test_realm.save()
-        with self.assert_database_query_count(50):
+        with self.assert_database_query_count(53):
             self.common_subscribe_to_streams(
                 self.test_user,
                 [new_streams[2]],
@@ -6209,7 +6209,7 @@ class GetSubscribersTest(ZulipTestCase):
             polonius.id,
         ]
 
-        with self.assert_database_query_count(46):
+        with self.assert_database_query_count(47):
             self.common_subscribe_to_streams(
                 self.user_profile,
                 streams,
