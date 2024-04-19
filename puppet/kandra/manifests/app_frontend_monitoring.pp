@@ -12,6 +12,6 @@ class kandra::app_frontend_monitoring {
     owner   => 'root',
     group   => 'root',
     mode    => '0644',
-    source  => 'puppet:///modules/zulip/cron.d/rabbitmq-monitoring',
+    source  => 'puppet:///modules/kandra/cron.d/rabbitmq-monitoring',
   }
 }
