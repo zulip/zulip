@@ -485,6 +485,40 @@ def sql_data_collector(
     return DataCollector(output_table, pull_function)
 
 
+def count_upload_space_used_by_realm_query(realm: Optional[Realm]) -> QueryFn:
+    if realm is None:
+        realm_clause: Composable = SQL("")
+    else:
+        realm_clause = SQL("zerver_attachment.realm_id = {} AND").format(Literal(realm.id))
+
+    # Note: This query currently has to go through the entire table,
+    # summing all the sizes of attachments for every realm. This can be improved
+    # by having a query which looks at the latest CountStat for each realm,
+    # and sums it with only the new attachments.
+    # There'd be additional complexity added by the fact that attachments can
+    # also be deleted. Partially this can be accounted for by subtracting
+    # ArchivedAttachment sizes, but there's still the issue of attachments
+    # which can be directly deleted via the API.
+
+    return lambda kwargs: SQL(
+        """
+            INSERT INTO analytics_realmcount (realm_id, property, end_time, value)
+            SELECT
+                zerver_attachment.realm_id,
+                %(property)s,
+                %(time_end)s,
+                COALESCE(SUM(zerver_attachment.size), 0)
+            FROM
+                zerver_attachment
+            WHERE
+                {realm_clause}
+                zerver_attachment.create_time < %(time_end)s
+            GROUP BY
+                zerver_attachment.realm_id
+        """
+    ).format(**kwargs, realm_clause=realm_clause)
+
+
 def do_pull_minutes_active(
     property: str, start_time: datetime, end_time: datetime, realm: Optional[Realm] = None
 ) -> int:
@@ -862,6 +896,11 @@ def get_count_stats(realm: Optional[Realm] = None) -> Dict[str, CountStat]:
             ),
             CountStat.DAY,
             interval=TIMEDELTA_MAX,
+        ),
+        CountStat(
+            "upload_quota_used_bytes::day",
+            sql_data_collector(RealmCount, count_upload_space_used_by_realm_query(realm), None),
+            CountStat.DAY,
         ),
         # Messages read stats.  messages_read::hour is the total
         # number of messages read, whereas

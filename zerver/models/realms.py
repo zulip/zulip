@@ -870,12 +870,26 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
         lambda realm: get_realm_used_upload_space_cache_key(realm.id), timeout=3600 * 24 * 7
     )
     def currently_used_upload_space_bytes(realm) -> int:  # noqa: N805
+        from analytics.models import RealmCount, installation_epoch
         from zerver.models import Attachment
 
-        used_space = Attachment.objects.filter(realm=realm).aggregate(Sum("size"))["size__sum"]
-        if used_space is None:
-            return 0
-        return used_space
+        try:
+            latest_count_stat = RealmCount.objects.filter(
+                realm=realm, property="upload_quota_used_bytes::day"
+            ).latest("end_time")
+            last_recorded_used_space = latest_count_stat.value
+            last_recorded_date = latest_count_stat.end_time
+        except RealmCount.DoesNotExist:
+            last_recorded_used_space = 0
+            last_recorded_date = installation_epoch()
+
+        newly_used_space = Attachment.objects.filter(
+            realm=realm, create_time__gte=last_recorded_date
+        ).aggregate(Sum("size"))["size__sum"]
+
+        if newly_used_space is None:
+            return last_recorded_used_space
+        return last_recorded_used_space + newly_used_space
 
     def ensure_not_on_limited_plan(self) -> None:
         if self.plan_type == Realm.PLAN_TYPE_LIMITED:
