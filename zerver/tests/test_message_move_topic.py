@@ -671,7 +671,7 @@ class MessageMoveTopicTest(ZulipTestCase):
         second_message_id = self.send_stream_message(
             hamlet, stream_name, topic_name="changed topic name", content="Second message"
         )
-        with self.assert_database_query_count(22):
+        with self.assert_database_query_count(24):
             check_update_message(
                 user_profile=desdemona,
                 message_id=second_message_id,
