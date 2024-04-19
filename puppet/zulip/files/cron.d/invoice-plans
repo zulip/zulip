@@ -1,5 +1,0 @@
-SHELL=/bin/bash
-PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
-USER=zulip
-
-0 22 * * * zulip /home/zulip/deployments/current/manage.py invoice_plans

@@ -1,6 +1,0 @@
-SHELL=/bin/bash
-PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
-USER=zulip
-
-# Cron job to promote users to full members system group.
-35 * * * * zulip /home/zulip/deployments/current/manage.py promote_new_full_members
