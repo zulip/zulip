@@ -125,7 +125,13 @@ function get_messages_success(data, opts) {
     const update_loading_indicator =
         message_lists.current !== undefined && opts.msg_list === message_lists.current;
     const msg_list_data = opts.msg_list_data ?? opts.msg_list.data;
-    if (opts.num_before > 0) {
+    const has_found_newest = msg_list_data.fetch_status.has_found_newest();
+    const has_found_oldest = msg_list_data.fetch_status.has_found_oldest();
+
+    const current_fetch_found_oldest = !has_found_oldest && data.found_oldest;
+    const current_fetch_found_newest = !has_found_newest && data.found_newest;
+
+    if (opts.num_before > 0 || current_fetch_found_oldest) {
         msg_list_data.fetch_status.finish_older_batch({
             update_loading_indicator,
             found_oldest: data.found_oldest,
@@ -143,7 +149,7 @@ function get_messages_success(data, opts) {
         message_feed_top_notices.update_top_of_narrow_notices(opts.msg_list);
     }
 
-    if (opts.num_after > 0) {
+    if (opts.num_after > 0 || current_fetch_found_newest) {
         opts.fetch_again = msg_list_data.fetch_status.finish_newer_batch(data.messages, {
             update_loading_indicator,
             found_newest: data.found_newest,
