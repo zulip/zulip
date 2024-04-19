@@ -1,7 +1,7 @@
 {{#> compose_banner }}
     <p class="banner_message">
-        {{#if stream_wildcard_mention}}
-            {{#tr}}You do not have permission to use <b>@{stream_wildcard_mention}</b> mentions in this stream.{{/tr}}
+        {{#if wildcard_mention_string}}
+            {{#tr}}You do not have permission to use <b>@{wildcard_mention_string}</b> mentions in this channel.{{/tr}}
         {{else}}
             {{#tr}}You do not have permission to use <b>@topic</b> mentions in this topic.{{/tr}}
         {{/if}}

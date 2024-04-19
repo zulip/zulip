@@ -395,7 +395,7 @@ test_ui("validate_stream_message", ({override_rewire, mock_template}) => {
     let wildcards_not_allowed_rendered = false;
     mock_template("compose_banner/wildcard_mention_not_allowed_error.hbs", false, (data) => {
         assert.equal(data.classname, compose_banner.CLASSNAMES.wildcards_not_allowed);
-        assert.equal(data.stream_wildcard_mention, "all");
+        assert.equal(data.wildcard_mention_string, "all");
         wildcards_not_allowed_rendered = true;
         return "<banner-stub>";
     });
@@ -627,7 +627,7 @@ test_ui("warn_if_private_stream_is_linked", ({mock_template}) => {
     let banner_rendered = false;
     mock_template("compose_banner/private_stream_warning.hbs", false, (data) => {
         assert.equal(data.classname, compose_banner.CLASSNAMES.private_stream_warning);
-        assert.equal(data.stream_name, "Denmark");
+        assert.equal(data.channel_name, "Denmark");
         banner_rendered = true;
         return "<banner-stub>";
     });
