@@ -1,4 +1,3 @@
-$avatar_column_width: 46px;
 $distance_of_non_text_elements_from_message_box: 6px;
 $message_box_margin: 3px;
 
@@ -139,7 +138,7 @@ $message_box_margin: 3px;
             in the column. */
         grid-template:
             var(--message-box-icon-height) repeat(3, auto) /
-            $avatar_column_width minmax(0, 1fr) calc(
+            var(--message-box-avatar-column-width) minmax(0, 1fr) calc(
                 3 * var(--message-box-icon-width)
             )
             8px minmax(var(--message-box-timestamp-column-width), max-content);
@@ -155,7 +154,9 @@ $message_box_margin: 3px;
             cursor: default;
             /* Set the controls area to 0 to give more space
                to the edit/source view area. */
-            grid-template-columns: $avatar_column_width minmax(0, 1fr) 0 8px minmax(
+            grid-template-columns:
+                var(--message-box-avatar-column-width) minmax(0, 1fr)
+                0 8px minmax(
                     var(--message-box-timestamp-column-width),
                     max-content
                 );
@@ -163,7 +164,7 @@ $message_box_margin: 3px;
 
         @media (width < $sm_min), ((width >= $md_min) and (width < $mc_min)) {
             grid-template-columns:
-                $avatar_column_width minmax(0, 1fr) calc(
+                var(--message-box-avatar-column-width) minmax(0, 1fr) calc(
                     2 * var(--message-box-icon-width)
                 )
                 8px minmax(
