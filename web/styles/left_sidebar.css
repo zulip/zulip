@@ -193,7 +193,7 @@ li.show-more-topics {
         }
     }
 
-    .inactive_stream:not(.active-filter) {
+    .inactive_stream:not(.top-left-active-filter) {
         opacity: 0.5;
     }
 
@@ -386,11 +386,11 @@ li.show-more-topics {
 }
 
 #stream_filters .narrow-filter.highlighted_stream {
-    &.active-filter > .bottom_left_row {
+    &.top-left-active-filter > .bottom_left_row {
         background-color: var(--color-background-hover-narrow-filter);
     }
 
-    &.active-filter .topic-list .bottom_left_row {
+    &.top-left-active-filter .topic-list .bottom_left_row {
         background-color: var(--color-background-active-narrow-filter);
     }
 
@@ -522,7 +522,7 @@ ul.filters {
     }
 }
 
-li.active-filter,
+li.top-left-active-filter,
 li.active-sub-filter {
     font-weight: 600 !important;
     position: relative;
@@ -530,7 +530,7 @@ li.active-sub-filter {
     background-color: var(--color-background-active-narrow-filter);
 }
 
-#stream_filters .narrow-filter.active-filter {
+#stream_filters .narrow-filter.top-left-active-filter {
     .topic-list .filter-topics,
     > .bottom_left_row {
         background-color: var(--color-background-active-narrow-filter);
@@ -596,7 +596,7 @@ li.active-sub-filter {
         }
     }
 
-    .active-filter {
+    .top-left-active-filter {
         /* Don't display a background on condensed icons. */
         background: unset;
     }
@@ -835,7 +835,7 @@ li.top_left_scheduled_messages {
             }
             /* ...except when there is an active filter in place:
                that row should still be shown. */
-            & .top_left_row.active-filter {
+            & .top_left_row.top-left-active-filter {
                 display: grid;
             }
         }

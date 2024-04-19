@@ -77,7 +77,7 @@ export function update_dom_with_unread_counts(
 // We don't want to adjust class for all the buttons when switching narrows.
 
 function remove($elem: JQuery): void {
-    $elem.removeClass("active-filter active-sub-filter");
+    $elem.removeClass("top-left-active-filter");
 }
 
 function deselect_top_left_corner_items(): void {
@@ -108,10 +108,10 @@ export function handle_narrow_activated(filter: Filter): void {
         filter_name = ops[0];
         if (filter_name === "starred") {
             $filter_li = $(".top_left_starred_messages");
-            $filter_li.addClass("active-filter");
+            $filter_li.addClass("top-left-active-filter");
         } else if (filter_name === "mentioned") {
             $filter_li = $(".top_left_mentions");
-            $filter_li.addClass("active-filter");
+            $filter_li.addClass("top-left-active-filter");
         }
     }
 }
@@ -160,7 +160,7 @@ function do_new_messages_animation($li: JQuery): void {
 export function highlight_inbox_view(): void {
     deselect_top_left_corner_items();
 
-    $(".top_left_inbox").addClass("active-filter");
+    $(".top_left_inbox").addClass("top-left-active-filter");
     setTimeout(() => {
         resize.resize_stream_filters_container();
     }, 0);
@@ -169,7 +169,7 @@ export function highlight_inbox_view(): void {
 export function highlight_recent_view(): void {
     deselect_top_left_corner_items();
 
-    $(".top_left_recent_view").addClass("active-filter");
+    $(".top_left_recent_view").addClass("top-left-active-filter");
     setTimeout(() => {
         resize.resize_stream_filters_container();
     }, 0);
@@ -178,7 +178,7 @@ export function highlight_recent_view(): void {
 export function highlight_all_messages_view(): void {
     deselect_top_left_corner_items();
 
-    $(".top_left_all_messages").addClass("active-filter");
+    $(".top_left_all_messages").addClass("top-left-active-filter");
     setTimeout(() => {
         resize.resize_stream_filters_container();
     }, 0);
