@@ -68,8 +68,10 @@ from zerver.lib.streams import (
 )
 from zerver.lib.subscription_info import gather_subscriptions
 from zerver.lib.topic import (
+    check_access_based_on_can_access_stream_topics_group,
     get_topic_history_for_public_stream,
     get_topic_history_for_stream,
+    get_topic_history_for_support_stream,
     messages_for_topic,
 )
 from zerver.lib.typed_endpoint import ApiParamConfig, PathOnly, typed_endpoint
@@ -934,11 +936,22 @@ def get_topics_backend(
         (stream, sub) = access_stream_by_id(user_profile, stream_id)
 
         assert stream.recipient_id is not None
-        result = get_topic_history_for_stream(
-            user_profile=user_profile,
-            recipient_id=stream.recipient_id,
-            public_history=stream.is_history_public_to_subscribers(),
-        )
+
+        if stream.is_support_stream() and not check_access_based_on_can_access_stream_topics_group(
+            user_profile, stream
+        ):
+            result = get_topic_history_for_support_stream(
+                user_profile=user_profile,
+                recipient_id=stream.recipient_id,
+            )
+
+        else:
+            public_history = stream.is_history_public_to_subscribers()
+            result = get_topic_history_for_stream(
+                user_profile=user_profile,
+                recipient_id=stream.recipient_id,
+                public_history=public_history,
+            )
 
     return json_success(request, data=dict(topics=result))
 

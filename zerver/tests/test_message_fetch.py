@@ -17,6 +17,7 @@ from analytics.models import RealmCount
 from zerver.actions.message_edit import do_update_message
 from zerver.actions.reactions import check_add_reaction
 from zerver.actions.realm_settings import do_set_realm_property
+from zerver.actions.streams import do_change_stream_group_based_setting
 from zerver.actions.uploads import do_claim_attachments
 from zerver.actions.user_settings import do_change_user_setting
 from zerver.actions.users import do_deactivate_user
@@ -56,6 +57,7 @@ from zerver.lib.user_topics import set_topic_visibility_policy
 from zerver.models import (
     Attachment,
     Message,
+    NamedUserGroup,
     Realm,
     Recipient,
     Subscription,
@@ -63,6 +65,7 @@ from zerver.models import (
     UserProfile,
     UserTopic,
 )
+from zerver.models.groups import SystemGroups
 from zerver.models.realms import get_realm
 from zerver.models.recipients import get_or_create_direct_message_group
 from zerver.models.streams import get_stream
@@ -1209,6 +1212,28 @@ class IncludeHistoryTest(ZulipTestCase):
         ]
         self.assertTrue(ok_to_include_history(narrow, guest_user_profile, False))
         self.assertTrue(ok_to_include_history(narrow, subscribed_user_profile, False))
+
+        # Test for support stream
+        admin_user_profile = self.example_user("iago")
+        self.make_stream("support_channel", realm=admin_user_profile.realm)
+        administrators_user_group = NamedUserGroup.objects.get(
+            name=SystemGroups.ADMINISTRATORS, realm=admin_user_profile.realm, is_system_group=True
+        )
+        stream = get_stream("support_channel", admin_user_profile.realm)
+        do_change_stream_group_based_setting(
+            stream,
+            "can_access_stream_topics_group",
+            administrators_user_group,
+            acting_user=admin_user_profile,
+        )
+        narrow = [
+            NarrowParameter(operator="channel", operand="support_channel"),
+        ]
+        # Anyone not in stream_topic_user_group will not be able to access history
+        self.assertFalse(ok_to_include_history(narrow, user_profile, False))
+        self.assertFalse(ok_to_include_history(narrow, guest_user_profile, False))
+        self.assertFalse(ok_to_include_history(narrow, subscribed_user_profile, False))
+        self.assertTrue(ok_to_include_history(narrow, admin_user_profile, False))
 
 
 class PostProcessTest(ZulipTestCase):

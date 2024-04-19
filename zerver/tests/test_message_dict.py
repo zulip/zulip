@@ -3,6 +3,7 @@ from unittest import mock
 
 from django.utils.timezone import now as timezone_now
 
+from zerver.actions.streams import do_change_stream_group_based_setting
 from zerver.lib.cache import cache_delete, to_dict_cache_key_id
 from zerver.lib.display_recipient import get_display_recipient
 from zerver.lib.markdown import version as markdown_version
@@ -13,7 +14,17 @@ from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import make_client
 from zerver.lib.topic import TOPIC_LINKS
 from zerver.lib.types import DisplayRecipientT, UserDisplayRecipient
-from zerver.models import Message, Reaction, Realm, RealmFilter, Recipient, Stream, UserProfile
+from zerver.models import (
+    Message,
+    NamedUserGroup,
+    Reaction,
+    Realm,
+    RealmFilter,
+    Recipient,
+    Stream,
+    UserProfile,
+)
+from zerver.models.groups import SystemGroups
 from zerver.models.realms import get_realm
 from zerver.models.streams import get_stream
 
@@ -430,6 +441,43 @@ class MessageHydrationTest(ZulipTestCase):
 
         self.assertIn('class="user-mention"', new_message["content"])
         self.assertEqual(new_message["flags"], ["mentioned"])
+
+        stream_name = "support stream"
+        support_stream = self.make_stream(stream_name, invite_only=True)
+        administrators_user_group = NamedUserGroup.objects.get(
+            name=SystemGroups.ADMINISTRATORS, realm=cordelia.realm, is_system_group=True
+        )
+        do_change_stream_group_based_setting(
+            support_stream,
+            "can_access_stream_topics_group",
+            administrators_user_group,
+            acting_user=cordelia,
+        )
+        self.subscribe(cordelia, stream_name)
+
+        old_message_id = self.send_stream_message(cordelia, stream_name, content="foo")
+
+        self.subscribe(hamlet, stream_name)
+
+        content = "hello @**King Hamlet**"
+        new_message_id = self.send_stream_message(cordelia, stream_name, content=content)
+
+        user_message_flags = {
+            old_message_id: ["read", "historical"],
+            new_message_id: ["mentioned"],
+        }
+
+        messages = messages_for_ids(
+            message_ids=[old_message_id, new_message_id],
+            user_message_flags=user_message_flags,
+            search_fields={},
+            apply_markdown=True,
+            client_gravatar=True,
+            allow_edit_history=False,
+            user_profile=hamlet,
+            realm=hamlet.realm,
+        )
+        self.assert_length(messages, 0)
 
     def test_message_for_ids_for_restricted_user_access(self) -> None:
         self.set_up_db_for_testing_user_access()

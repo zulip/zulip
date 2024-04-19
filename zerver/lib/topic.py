@@ -286,6 +286,39 @@ def get_topic_history_for_stream(
     return generate_topic_history_from_db_rows(rows)
 
 
+def get_topic_history_for_support_stream(
+    user_profile: UserProfile, recipient_id: int
+) -> list[dict[str, Any]]:
+    cursor = connection.cursor()
+    # Query to get topics where the first message in the topic was sent by the user
+    query = """
+    SELECT DISTINCT ON ("zerver_message"."subject")
+        "zerver_message"."subject" AS topic,
+        "zerver_message".id AS first_message_id
+    FROM "zerver_message"
+    WHERE
+        "zerver_message"."realm_id" = %s AND
+        "zerver_message"."recipient_id" = %s AND
+        "zerver_message".id = (
+            SELECT MIN(inner_message.id)
+            FROM "zerver_message" AS inner_message
+            WHERE
+                inner_message.subject = "zerver_message".subject AND
+                inner_message.realm_id = "zerver_message".realm_id AND
+                inner_message.recipient_id = "zerver_message".recipient_id
+        ) AND
+        "zerver_message"."sender_id" = %s
+    ORDER BY
+        "zerver_message"."subject",
+        "zerver_message".id ASC
+    """
+    cursor.execute(query, [user_profile.id, user_profile.realm_id, recipient_id])
+    rows = cursor.fetchall()
+    cursor.close()
+
+    return generate_topic_history_from_db_rows(rows)
+
+
 def get_topic_resolution_and_bare_name(stored_name: str) -> tuple[bool, str]:
     """
     Resolved topics are denoted only by a title change, not by a boolean toggle in a database column. This

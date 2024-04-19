@@ -6,7 +6,7 @@ from django.db import connection
 from typing_extensions import override
 
 from zerver.actions.message_flags import do_update_message_flags
-from zerver.actions.streams import do_change_stream_permission
+from zerver.actions.streams import do_change_stream_group_based_setting, do_change_stream_permission
 from zerver.actions.user_topics import do_set_user_topic_visibility_policy
 from zerver.lib.fix_unreads import fix, fix_unsubscribed
 from zerver.lib.message import (
@@ -28,6 +28,7 @@ from zerver.lib.test_helpers import get_subscription
 from zerver.lib.user_message import DEFAULT_HISTORICAL_FLAGS, create_historical_user_messages
 from zerver.models import (
     Message,
+    NamedUserGroup,
     Recipient,
     Stream,
     Subscription,
@@ -35,6 +36,7 @@ from zerver.models import (
     UserProfile,
     UserTopic,
 )
+from zerver.models.groups import SystemGroups
 from zerver.models.realms import get_realm
 from zerver.models.streams import get_stream
 
@@ -1776,7 +1778,7 @@ class MessageAccessTests(ZulipTestCase):
         # Message sent before subscribing wouldn't be accessible by later
         # subscribed user as stream has protected history
         filtered_messages = self.assert_bulk_access(
-            later_subscribed_user, message_ids, stream, 5, 2
+            later_subscribed_user, message_ids, stream, 5, 3
         )
         self.assert_length(filtered_messages, 1)
         self.assertEqual(filtered_messages[0].id, message_two_id)
@@ -1792,13 +1794,13 @@ class MessageAccessTests(ZulipTestCase):
         # Message sent before subscribing are accessible by user as stream
         # now don't have protected history
         filtered_messages = self.assert_bulk_access(
-            later_subscribed_user, message_ids, stream, 4, 2
+            later_subscribed_user, message_ids, stream, 4, 3
         )
         self.assert_length(filtered_messages, 2)
 
         # Testing messages accessibility for an unsubscribed user
         unsubscribed_user = self.example_user("ZOE")
-        filtered_messages = self.assert_bulk_access(unsubscribed_user, message_ids, stream, 4, 1)
+        filtered_messages = self.assert_bulk_access(unsubscribed_user, message_ids, stream, 4, 2)
         self.assert_length(filtered_messages, 0)
 
         # Adding more message ids to the list increases the query size
@@ -1810,7 +1812,7 @@ class MessageAccessTests(ZulipTestCase):
             self.send_stream_message(user, stream_name, "Message four"),
         ]
         filtered_messages = self.assert_bulk_access(
-            later_subscribed_user, more_message_ids, stream, 6, 2
+            later_subscribed_user, more_message_ids, stream, 6, 3
         )
         self.assert_length(filtered_messages, 4)
 
@@ -1847,13 +1849,46 @@ class MessageAccessTests(ZulipTestCase):
 
         # All public stream messages are always accessible
         filtered_messages = self.assert_bulk_access(
-            later_subscribed_user, message_ids, stream, 5, 1
+            later_subscribed_user, message_ids, stream, 5, 2
         )
         self.assert_length(filtered_messages, 2)
 
         unsubscribed_user = self.example_user("ZOE")
-        filtered_messages = self.assert_bulk_access(unsubscribed_user, message_ids, stream, 4, 1)
+        filtered_messages = self.assert_bulk_access(unsubscribed_user, message_ids, stream, 4, 2)
         self.assert_length(filtered_messages, 2)
+
+    def test_bulk_access_messages_support_stream(self) -> None:
+        admin_user_profile = self.example_user("cordelia")
+        self.login_user(admin_user_profile)
+
+        stream_name = "support_channel"
+        stream = self.subscribe(admin_user_profile, stream_name)
+        administrators_user_group = NamedUserGroup.objects.get(
+            name=SystemGroups.ADMINISTRATORS, realm=admin_user_profile.realm, is_system_group=True
+        )
+        stream = get_stream("support_channel", admin_user_profile.realm)
+        do_change_stream_group_based_setting(
+            stream,
+            "can_access_stream_topics_group",
+            administrators_user_group,
+            acting_user=admin_user_profile,
+        )
+        message_one_id = self.send_stream_message(admin_user_profile, stream_name, "Message one")
+
+        second_admin_user = self.example_user("iago")
+        self.subscribe(second_admin_user, stream_name)
+        # Send a second message after subscribing
+        message_two_id = self.send_stream_message(second_admin_user, stream_name, "Message two")
+
+        message_ids = [message_one_id, message_two_id]
+
+        # All public stream messages are always accessible to those in `can_access_stream_topics_group`
+        filtered_messages = self.assert_bulk_access(second_admin_user, message_ids, stream, 7, 3)
+        self.assert_length(filtered_messages, 2)
+
+        non_admin_user = self.example_user("ZOE")
+        filtered_messages = self.assert_bulk_access(non_admin_user, message_ids, stream, 10, 4)
+        self.assert_length(filtered_messages, 0)
 
 
 class PersonalMessagesFlagTest(ZulipTestCase):
