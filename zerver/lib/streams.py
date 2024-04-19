@@ -20,6 +20,7 @@ from zerver.lib.stream_subscription import (
 from zerver.lib.stream_traffic import get_average_weekly_stream_traffic, get_streams_traffic
 from zerver.lib.string_validation import check_stream_name
 from zerver.lib.timestamp import datetime_to_timestamp
+from zerver.lib.topic import check_access_based_on_stream_topic_access_group
 from zerver.lib.types import APIStreamDict
 from zerver.lib.user_groups import is_user_in_group
 from zerver.models import (
@@ -611,6 +612,11 @@ def can_access_stream_history(user_profile: UserProfile, stream: Stream) -> bool
 
     if stream.is_web_public:
         return True
+
+    if stream.is_support_stream() and not check_access_based_on_stream_topic_access_group(
+        user_profile.id, stream
+    ):
+        return False
 
     if stream.is_history_realm_public() and not user_profile.is_guest:
         return True

@@ -409,7 +409,11 @@ def has_message_access(
             user_profile=user_profile, active=True, recipient=message.recipient
         ).exists()
 
-    if stream.is_public() and user_profile.can_access_public_streams():
+    if (
+        stream.is_public()
+        and not stream.is_support_stream()
+        and user_profile.can_access_public_streams()
+    ):
         return True
 
     if not stream.is_history_public_to_subscribers():
