@@ -71,6 +71,7 @@
     */
     --message-box-avatar-width: 35px;
     --message-box-avatar-height: var(--message-box-avatar-width);
+    --message-box-avatar-column-width: 46px;
     --message-box-line-height: 1.214;
     --message-box-icon-width: 26px;
     --message-box-icon-height: 25px;
