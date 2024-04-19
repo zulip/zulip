@@ -574,7 +574,8 @@ def update_message_content(
     info = get_recipient_info(
         realm_id=realm.id,
         recipient=target_message.recipient,
-        sender_id=target_message.sender_id,
+        message_sender=user_profile,
+        stream=None,
         stream_topic=stream_topic,
         possible_topic_wildcard_mention=mention_data.message_has_topic_wildcards(),
         possible_stream_wildcard_mention=mention_data.message_has_stream_wildcards(),

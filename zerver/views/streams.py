@@ -105,7 +105,6 @@ from zerver.lib.typed_endpoint_validators import (
 )
 from zerver.lib.types import UserGroupMembersData
 from zerver.lib.user_groups import (
-    AnonymousSettingGroupDict,
     GroupSettingChangeRequest,
     UserGroupMembershipDetails,
     access_user_group_for_setting,

@@ -10,6 +10,7 @@ import time_machine
 from django.conf import settings
 from django.core import mail
 from django.core.mail.message import EmailMultiAlternatives
+from django.db.models import Prefetch
 from django.http import HttpRequest
 from django.test import override_settings
 from django.urls import reverse
@@ -146,7 +147,14 @@ class StreamSetupTest(ZulipTestCase):
             invite_expires_in_minutes=1000,
         )
 
-        prereg_user = PreregistrationUser.objects.get(email=new_user_email)
+        streams_queryset = Stream.objects.select_related(
+            "can_access_stream_topics_group__named_user_group"
+        )
+
+        # Prefetch related Stream objects for the PreregistrationUser
+        prereg_user = PreregistrationUser.objects.prefetch_related(
+            Prefetch("streams", queryset=streams_queryset)
+        ).get(email=new_user_email)
 
         new_user = self.create_simple_new_user(realm, new_user_email)
 
