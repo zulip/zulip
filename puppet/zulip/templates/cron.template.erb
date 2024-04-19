@@ -2,9 +2,13 @@ MAILTO=zulip
 PATH=/usr/local/bin:/usr/bin:/bin
 SHELL=/bin/bash
 USER=<%= @user %>
-<% if @dsn != '' %>
+<% if @proxy != '' -%>
+HTTP_proxy="<%= @proxy %>"
+HTTPS_proxy="<%= @proxy %>"
+<% end -%>
+<% if @dsn != '' -%>
 SENTRY_DSN=<%= @dsn %>
-<% end %>
+<% end -%>
 
 <%= @minute %> <%= @hour %> * * <%= @dow %>    <%= @user %>    <%= @run %>
 

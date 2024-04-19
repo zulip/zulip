@@ -24,8 +24,9 @@ class kandra::prod_app_frontend_once {
     command => '/usr/lib/nagios/plugins/zulip_app_frontend/check_send_receive_time --site=https://$(/home/zulip/deployments/current/scripts/get-django-setting NAGIOS_BOT_HOST) >/dev/null',
   }
   zulip::cron { 'check_user_zephyr_mirror_liveness':
-    hour    => '*',
-    minute  => '*',
-    command => '/usr/lib/nagios/plugins/zulip_zephyr_mirror/check_user_zephyr_mirror_liveness >/dev/null',
+    hour      => '*',
+    minute    => '*',
+    command   => '/usr/lib/nagios/plugins/zulip_zephyr_mirror/check_user_zephyr_mirror_liveness >/dev/null',
+    use_proxy => false,
   }
 }
