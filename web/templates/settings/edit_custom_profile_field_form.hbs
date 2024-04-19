@@ -38,16 +38,16 @@
     {{/if}}
     {{#if valid_to_display_in_summary}}
         <div class="input-group">
-            <label class="checkbox edit_profile_field_display_label" for="edit_display_in_profile_summary_{{id}}">
-                <input class="edit_display_in_profile_summary" type="checkbox" id="edit_display_in_profile_summary_{{id}}" name="display_in_profile_summary" {{#if display_in_profile_summary}} checked="checked" {{/if}}/>
+            <label class="checkbox edit_profile_field_display_label" for="edit_display_in_profile_summary">
+                <input class="edit_display_in_profile_summary" type="checkbox" id="edit_display_in_profile_summary" name="display_in_profile_summary" {{#if display_in_profile_summary}} checked="checked" {{/if}}/>
                 <span></span>
                 {{t 'Display on user card' }}
             </label>
         </div>
     {{/if}}
     <div class="input-group">
-        <label class="checkbox" for="edit-required-{{id}}">
-            <input class="edit-required" type="checkbox" id="edit-required-{{id}}" name="required" {{#if required}} checked="checked" {{/if}}/>
+        <label class="checkbox" for="edit-required">
+            <input class="edit-required" type="checkbox" id="edit-required" name="required" {{#if required}} checked="checked" {{/if}}/>
             <span></span>
             {{t 'Required field' }}
         </label>
