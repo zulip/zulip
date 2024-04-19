@@ -46,6 +46,7 @@ export const stream_schema = z.object({
     can_resolve_topics_group: group_setting_value_schema,
     can_send_message_group: group_setting_value_schema,
     can_subscribe_group: group_setting_value_schema,
+    can_access_stream_topics_group: group_setting_value_schema,
     creator_id: z.nullable(z.number()),
     date_created: z.number(),
     description: z.string(),
