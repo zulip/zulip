@@ -569,7 +569,7 @@ def user_access_restricted_in_realm(target_user: UserProfile) -> bool:
         return False
 
     realm = target_user.realm
-    if realm.can_access_all_users_group.name == SystemGroups.EVERYONE:
+    if realm.can_access_all_users_group.named_user_group.name == SystemGroups.EVERYONE:
         return False
 
     return True

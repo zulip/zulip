@@ -1567,7 +1567,7 @@ def get_recipients_for_user_creation_events(
     if len(guest_recipients) == 0:
         return recipients_for_user_creation_events
 
-    if realm.can_access_all_users_group.name == SystemGroups.EVERYONE:
+    if realm.can_access_all_users_group.named_user_group.name == SystemGroups.EVERYONE:
         return recipients_for_user_creation_events
 
     if len(user_profiles) == 1:

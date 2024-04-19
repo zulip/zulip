@@ -1164,7 +1164,8 @@ class RealmTest(ZulipTestCase):
             permission_configuration,
         ) in Realm.REALM_PERMISSION_GROUP_SETTINGS.items():
             self.assertEqual(
-                getattr(realm, setting_name).name, permission_configuration.default_group_name
+                getattr(realm, setting_name).named_user_group.name,
+                permission_configuration.default_group_name,
             )
 
     def test_do_create_realm_with_keyword_arguments(self) -> None:
