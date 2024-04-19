@@ -187,7 +187,7 @@ export function warn_if_private_stream_is_linked(
         const new_row_html = render_private_stream_warning({
             stream_id: linked_stream.stream_id,
             banner_type: compose_banner.WARNING,
-            stream_name: linked_stream.name,
+            channel_name: linked_stream.name,
             classname: compose_banner.CLASSNAMES.private_stream_warning,
         });
         compose_banner.append_compose_banner_to_banner_list($(new_row_html), $banner_container);
@@ -514,7 +514,7 @@ export function validate_stream_message_mentions(opts: StreamWildcardOptions): b
             const new_row_html = render_wildcard_mention_not_allowed_error({
                 banner_type: compose_banner.ERROR,
                 classname: compose_banner.CLASSNAMES.wildcards_not_allowed,
-                stream_wildcard_mention: opts.stream_wildcard_mention,
+                wildcard_mention_string: opts.stream_wildcard_mention,
             });
             compose_banner.append_compose_banner_to_banner_list(
                 $(new_row_html),
