@@ -28,7 +28,13 @@ from zerver.lib.stream_subscription import (
     num_subscribers_for_stream_id,
 )
 from zerver.lib.streams import can_access_stream_history, get_web_public_streams_queryset
-from zerver.lib.topic import MESSAGE__TOPIC, TOPIC_NAME, messages_for_topic
+from zerver.lib.topic import (
+    MESSAGE__TOPIC,
+    TOPIC_NAME,
+    check_access_based_on_can_access_stream_topics_group,
+    get_topic_creator_user_id,
+    messages_for_topic,
+)
 from zerver.lib.types import UserDisplayRecipient
 from zerver.lib.user_groups import is_user_in_group
 from zerver.lib.user_topics import build_get_topic_visibility_policy, get_topic_visibility_policy
@@ -397,6 +403,15 @@ def has_message_access(
             user_profile=user_profile, active=True, recipient=message.recipient
         ).exists()
 
+    if stream.is_support_stream() and not check_access_based_on_can_access_stream_topics_group(
+        user_profile, stream
+    ):
+        topic_creator_user_id = get_topic_creator_user_id(
+            message.get_realm().id, message.recipient_id, message.topic_name()
+        )
+        if topic_creator_user_id and user_profile.id != topic_creator_user_id:
+            return False
+
     if stream.is_public() and user_profile.can_access_public_streams():
         return True
 
@@ -473,6 +488,20 @@ def bulk_access_stream_messages_query(
     """
 
     messages = messages.filter(realm_id=user_profile.realm_id, recipient_id=stream.recipient_id)
+
+    first_message = messages.first()
+    if (
+        stream.is_support_stream()
+        and not check_access_based_on_can_access_stream_topics_group(user_profile, stream)
+        and first_message is not None
+    ):
+        topic_creator_user_id = get_topic_creator_user_id(
+            first_message.get_realm().id,
+            first_message.recipient_id,
+            first_message.topic_name(),
+        )
+        if topic_creator_user_id and user_profile.id != topic_creator_user_id:
+            return Message.objects.none()
 
     if stream.is_public() and user_profile.can_access_public_streams():
         return messages
