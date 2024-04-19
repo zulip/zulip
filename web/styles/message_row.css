@@ -1,4 +1,3 @@
-$distance_of_non_text_elements_from_message_box: 6px;
 $message_box_margin: 3px;
 
 .message_row {
@@ -255,7 +254,7 @@ $message_box_margin: 3px;
               is preserved from the message itself--keeping the time,
               edit message, and controls at the same vertical alignment. */
             align-self: start;
-            margin-top: $distance_of_non_text_elements_from_message_box;
+            margin-top: var(--message-box-vertical-margin);
         }
 
         .message_length_controller {
@@ -356,7 +355,7 @@ $message_box_margin: 3px;
                     .message_edit {
                         /* Use the sender grid area for the me-message edit/view-source box */
                         grid-area: sender;
-                        margin-top: $distance_of_non_text_elements_from_message_box;
+                        margin-top: var(--message-box-vertical-margin);
                     }
                 }
             }
@@ -368,7 +367,7 @@ $message_box_margin: 3px;
                 /* Because the avatar may be the tallest element in a
                   single-line me message, this margin preserves the
                   overall height of the message box. */
-                margin: $distance_of_non_text_elements_from_message_box 0;
+                margin: var(--message-box-vertical-margin) 0;
             }
 
             .status-message {
