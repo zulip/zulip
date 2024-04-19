@@ -78,6 +78,10 @@
     --message-box-line-height: 1.214;
     --message-box-icon-width: 26px;
     --message-box-icon-height: 25px;
+    /* The line-height on the sender line should coordinate with the
+       height of the hover icons. The sender line never wraps, so this
+       just keeps the two in line with the grid definition. */
+    --message-box-sender-line-height: var(--message-box-icon-height);
     /* This width is updated with an exact pixel
        width upon UI initialization. */
     --message-box-timestamp-column-width: 0;
