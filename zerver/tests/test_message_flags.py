@@ -38,7 +38,7 @@ from zerver.models import (
     UserProfile,
     UserTopic,
 )
-from zerver.models.groups import NamedUserGroup
+from zerver.models.groups import NamedUserGroup, SystemGroups
 from zerver.models.realms import get_realm
 from zerver.models.streams import get_stream
 
@@ -1947,8 +1947,8 @@ class MessageAccessTests(ZulipTestCase):
             later_subscribed_user,
             message_ids,
             stream,
-            bulk_access_messages_query_count=4,
-            bulk_access_stream_messages_query_count=2,
+            bulk_access_messages_query_count=5,
+            bulk_access_stream_messages_query_count=3,
         )
         self.assert_length(filtered_messages, 1)
         self.assertEqual(filtered_messages[0].id, message_two_id)
@@ -1967,8 +1967,8 @@ class MessageAccessTests(ZulipTestCase):
             later_subscribed_user,
             message_ids,
             stream,
-            bulk_access_messages_query_count=4,
-            bulk_access_stream_messages_query_count=2,
+            bulk_access_messages_query_count=5,
+            bulk_access_stream_messages_query_count=3,
         )
         self.assert_length(filtered_messages, 2)
 
@@ -1979,8 +1979,8 @@ class MessageAccessTests(ZulipTestCase):
             unsubscribed_user,
             message_ids,
             stream,
-            bulk_access_messages_query_count=5,
-            bulk_access_stream_messages_query_count=2,
+            bulk_access_messages_query_count=6,
+            bulk_access_stream_messages_query_count=3,
         )
         self.assert_length(filtered_messages, 0)
 
@@ -2002,16 +2002,16 @@ class MessageAccessTests(ZulipTestCase):
             unsubscribed_user,
             message_ids,
             stream,
-            bulk_access_messages_query_count=5,
-            bulk_access_stream_messages_query_count=3,
+            bulk_access_messages_query_count=6,
+            bulk_access_stream_messages_query_count=4,
         )
         self.assert_length(filtered_messages, 2)
         filtered_messages = self.assert_bulk_access(
             unsubscribed_guest,
             message_ids,
             stream,
-            bulk_access_messages_query_count=4,
-            bulk_access_stream_messages_query_count=1,
+            bulk_access_messages_query_count=5,
+            bulk_access_stream_messages_query_count=2,
         )
         self.assert_length(filtered_messages, 0)
         nobody_group = NamedUserGroup.objects.get(
@@ -2036,8 +2036,8 @@ class MessageAccessTests(ZulipTestCase):
             later_subscribed_user,
             more_message_ids,
             stream,
-            bulk_access_messages_query_count=6,
-            bulk_access_stream_messages_query_count=2,
+            bulk_access_messages_query_count=7,
+            bulk_access_stream_messages_query_count=3,
         )
         self.assert_length(filtered_messages, 4)
 
@@ -2048,8 +2048,8 @@ class MessageAccessTests(ZulipTestCase):
             service_bot,
             more_message_ids,
             stream,
-            bulk_access_messages_query_count=6,
-            bulk_access_stream_messages_query_count=2,
+            bulk_access_messages_query_count=7,
+            bulk_access_stream_messages_query_count=3,
         )
         self.assert_length(filtered_messages, 4)
 
@@ -2091,8 +2091,8 @@ class MessageAccessTests(ZulipTestCase):
             later_subscribed_user,
             message_ids,
             stream,
-            bulk_access_messages_query_count=4,
-            bulk_access_stream_messages_query_count=1,
+            bulk_access_messages_query_count=5,
+            bulk_access_stream_messages_query_count=2,
         )
         self.assert_length(filtered_messages, 2)
 
@@ -2101,8 +2101,8 @@ class MessageAccessTests(ZulipTestCase):
             unsubscribed_user,
             message_ids,
             stream,
-            bulk_access_messages_query_count=4,
-            bulk_access_stream_messages_query_count=1,
+            bulk_access_messages_query_count=5,
+            bulk_access_stream_messages_query_count=2,
         )
         self.assert_length(filtered_messages, 2)
 
@@ -2113,10 +2113,91 @@ class MessageAccessTests(ZulipTestCase):
             service_bot,
             message_ids,
             stream,
-            bulk_access_messages_query_count=4,
-            bulk_access_stream_messages_query_count=1,
+            bulk_access_messages_query_count=5,
+            bulk_access_stream_messages_query_count=2,
         )
         self.assert_length(filtered_messages, 2)
+
+    def test_bulk_access_messages_support_stream(self) -> None:
+        admin_user_profile = self.example_user("cordelia")
+        self.login_user(admin_user_profile)
+
+        stream_name = "support_channel"
+        stream = self.subscribe(admin_user_profile, stream_name)
+        administrators_user_group = NamedUserGroup.objects.get(
+            name=SystemGroups.ADMINISTRATORS, realm=admin_user_profile.realm, is_system_group=True
+        )
+        stream = get_stream("support_channel", admin_user_profile.realm)
+        do_change_stream_group_based_setting(
+            stream,
+            "can_access_stream_topics_group",
+            administrators_user_group,
+            acting_user=admin_user_profile,
+        )
+        message_one_id = self.send_stream_message(admin_user_profile, stream_name, "Message one")
+
+        second_admin_user = self.example_user("iago")
+        self.subscribe(second_admin_user, stream_name)
+        # Send a second message after subscribing
+        message_two_id = self.send_stream_message(second_admin_user, stream_name, "Message two")
+
+        message_ids = [message_one_id, message_two_id]
+
+        # All public stream messages are always accessible to those in `can_access_stream_topics_group`
+        filtered_messages = self.assert_bulk_access(
+            second_admin_user,
+            message_ids,
+            stream,
+            bulk_access_messages_query_count=7,
+            bulk_access_stream_messages_query_count=3,
+        )
+        self.assert_length(filtered_messages, 2)
+
+        non_admin_user = self.example_user("ZOE")
+        filtered_messages = self.assert_bulk_access(
+            non_admin_user,
+            message_ids,
+            stream,
+            bulk_access_messages_query_count=11,
+            bulk_access_stream_messages_query_count=5,
+        )
+        self.assert_length(filtered_messages, 0)
+
+    def test_bulk_access_support_stream_multi_topic(self) -> None:
+        realm = get_realm("zulip")
+        admin = self.example_user("iago")
+        restricted = self.example_user("hamlet")
+
+        self.make_stream("support_multi", realm=realm)
+        administrators_user_group = NamedUserGroup.objects.get(
+            name=SystemGroups.ADMINISTRATORS, realm=realm, is_system_group=True
+        )
+        stream = get_stream("support_multi", realm)
+        do_change_stream_group_based_setting(
+            stream,
+            "can_access_stream_topics_group",
+            administrators_user_group,
+            acting_user=admin,
+        )
+        self.subscribe(admin, "support_multi")
+        self.subscribe(restricted, "support_multi")
+
+        # "topic A" is created by the restricted user; "topic B" is created by
+        # an admin.  A restricted user cannot post into a topic they did not
+        # create, so every "topic B" message is sent by the admin.
+        msg_a1 = self.send_stream_message(restricted, "support_multi", topic_name="topic A")
+        msg_a2 = self.send_stream_message(admin, "support_multi", topic_name="topic A")
+        msg_b1 = self.send_stream_message(admin, "support_multi", topic_name="topic B")
+        msg_b2 = self.send_stream_message(admin, "support_multi", topic_name="topic B")
+
+        accessible = bulk_access_stream_messages_query(
+            restricted,
+            Message.objects.filter(id__in=[msg_a1, msg_a2, msg_b1, msg_b2]),
+            stream,
+        )
+        accessible_ids = set(accessible.values_list("id", flat=True))
+
+        self.assertEqual(accessible_ids, {msg_a1, msg_a2})
 
 
 class PersonalMessagesFlagTest(ZulipTestCase):

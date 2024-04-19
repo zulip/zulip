@@ -5,13 +5,18 @@ import orjson
 from django.utils.timezone import now as timezone_now
 
 from zerver.actions.realm_settings import do_set_realm_property
-from zerver.actions.streams import do_change_stream_permission, do_deactivate_stream
+from zerver.actions.streams import (
+    do_change_stream_group_based_setting,
+    do_change_stream_permission,
+    do_deactivate_stream,
+)
 from zerver.actions.user_topics import do_set_user_topic_visibility_policy
 from zerver.lib.events import ClientCapabilities, do_events_register
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.user_topics import set_topic_visibility_policy, topic_has_visibility_policy
-from zerver.models import Message, Stream, UserMessage, UserTopic
+from zerver.models import Message, NamedUserGroup, Stream, UserMessage, UserTopic
 from zerver.models.clients import get_client
+from zerver.models.groups import SystemGroups
 from zerver.models.realms import get_realm
 from zerver.models.streams import get_stream
 from zerver.tornado.django_api import EventQueueData
@@ -140,6 +145,36 @@ class TopicHistoryTest(ZulipTestCase):
         self.assertNotIn("topic0", [topic["name"] for topic in history])
         self.assertNotIn("topic1", [topic["name"] for topic in history])
         self.assertNotIn("topic2", [topic["name"] for topic in history])
+
+        # Test for support stream.
+        stream_name = "support_stream"
+        support_stream = self.make_stream(stream_name)
+        self.subscribe(self.example_user("cordelia"), stream_name)
+        self.subscribe(self.example_user("hamlet"), stream_name)
+        support_stream = get_stream(stream_name, user_profile.realm)
+
+        administrators_user_group = NamedUserGroup.objects.get(
+            name=SystemGroups.ADMINISTRATORS,
+            realm=self.example_user("cordelia").realm,
+            is_system_group=True,
+        )
+        do_change_stream_group_based_setting(
+            support_stream,
+            "can_access_stream_topics_group",
+            administrators_user_group,
+            acting_user=self.example_user("cordelia"),
+        )
+
+        create_test_message("topic in support stream", support_stream)
+
+        endpoint = f"/json/users/me/{support_stream.id}/topics"
+        result = self.client_get(endpoint, {})
+        history = self.assert_json_success(result)["topics"]
+        history = history[:3]
+
+        # Cordelia doesn't have these recent history items
+        # as the topic was created by hamlet.
+        self.assertNotIn("topic in support stream", [topic["name"] for topic in history])
 
     def test_bad_stream_id(self) -> None:
         self.login("iago")

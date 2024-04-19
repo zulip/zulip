@@ -17,7 +17,7 @@ from analytics.models import RealmCount
 from zerver.actions.message_edit import build_message_edit_request, do_update_message
 from zerver.actions.reactions import check_add_reaction
 from zerver.actions.realm_settings import do_set_realm_property
-from zerver.actions.streams import do_deactivate_stream
+from zerver.actions.streams import do_change_stream_group_based_setting, do_deactivate_stream
 from zerver.actions.uploads import do_claim_attachments
 from zerver.actions.user_settings import do_change_avatar_fields, do_change_user_setting
 from zerver.actions.users import do_deactivate_user
@@ -64,6 +64,7 @@ from zerver.lib.user_topics import set_topic_visibility_policy
 from zerver.models import (
     Attachment,
     Message,
+    NamedUserGroup,
     Realm,
     Recipient,
     Subscription,
@@ -71,6 +72,7 @@ from zerver.models import (
     UserProfile,
     UserTopic,
 )
+from zerver.models.groups import SystemGroups
 from zerver.models.realms import get_realm
 from zerver.models.recipients import get_or_create_direct_message_group
 from zerver.models.streams import get_stream
@@ -1502,6 +1504,28 @@ class IncludeHistoryTest(ZulipTestCase):
         ]
         self.assertTrue(ok_to_include_history(narrow, guest_user_profile, False))
         self.assertTrue(ok_to_include_history(narrow, subscribed_user_profile, False))
+
+        # Test for support stream
+        admin_user_profile = self.example_user("iago")
+        self.make_stream("support_channel", realm=admin_user_profile.realm)
+        administrators_user_group = NamedUserGroup.objects.get(
+            name=SystemGroups.ADMINISTRATORS, realm=admin_user_profile.realm, is_system_group=True
+        )
+        stream = get_stream("support_channel", admin_user_profile.realm)
+        do_change_stream_group_based_setting(
+            stream,
+            "can_access_stream_topics_group",
+            administrators_user_group,
+            acting_user=admin_user_profile,
+        )
+        narrow = [
+            NarrowParameter(operator="channel", operand="support_channel"),
+        ]
+        # Anyone not in stream_topic_user_group will not be able to access history
+        self.assertFalse(ok_to_include_history(narrow, user_profile, False))
+        self.assertFalse(ok_to_include_history(narrow, guest_user_profile, False))
+        self.assertFalse(ok_to_include_history(narrow, subscribed_user_profile, False))
+        self.assertTrue(ok_to_include_history(narrow, admin_user_profile, False))
 
 
 class PostProcessTest(ZulipTestCase):
@@ -4716,7 +4740,7 @@ class GetOldMessagesTest(ZulipTestCase):
             "narrow": "[]",
         }
 
-        with self.assert_database_query_count(12):
+        with self.assert_database_query_count(14):
             result = self.get_and_check_messages(get_and_check_messages_options)
 
         self.assertEqual(result["anchor"], anchor_message_id)
@@ -4728,7 +4752,7 @@ class GetOldMessagesTest(ZulipTestCase):
         # we should choose the message sent first.
         first_message_with_same_timestamp_id = anchor_message_id
         Message.objects.filter(id=newer_message_id).update(date_sent=base_time)
-        with self.assert_database_query_count(12):
+        with self.assert_database_query_count(14):
             result = self.get_and_check_messages(get_and_check_messages_options)
         self.assertEqual(result["anchor"], first_message_with_same_timestamp_id)
         self.assert_length(result["messages"], 1)
@@ -4737,7 +4761,7 @@ class GetOldMessagesTest(ZulipTestCase):
 
         # In case of no message at or after the anchor date,
         # we should fall back to the newest message.
-        with self.assert_database_query_count(13):
+        with self.assert_database_query_count(15):
             result = self.get_and_check_messages(
                 {
                     **get_and_check_messages_options,
@@ -4752,7 +4776,7 @@ class GetOldMessagesTest(ZulipTestCase):
         # Narrow conditions should be respected when passing `anchor_date`.
         scotland_channel_message_id = self.send_stream_message(sender, "Scotland")
         Message.objects.filter(id=scotland_channel_message_id).update(date_sent=base_time)
-        with self.assert_database_query_count(16):
+        with self.assert_database_query_count(18):
             result = self.get_and_check_messages(
                 {
                     **get_and_check_messages_options,

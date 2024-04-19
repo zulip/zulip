@@ -91,8 +91,10 @@ from zerver.lib.streams import (
 )
 from zerver.lib.subscription_info import gather_subscriptions
 from zerver.lib.topic import (
+    check_access_based_on_can_access_stream_topics_group,
     get_topic_history_for_public_stream,
     get_topic_history_for_stream,
+    get_topic_history_for_support_stream,
     maybe_rename_general_chat_to_empty_topic,
     messages_for_topic,
 )
@@ -1220,12 +1222,23 @@ def get_topics_backend(
         (stream, _sub) = access_stream_by_id(user_profile, stream_id, require_active_channel=False)
 
         assert stream.recipient_id is not None
-        result = get_topic_history_for_stream(
-            user_profile=user_profile,
-            recipient_id=stream.recipient_id,
-            public_history=stream.is_history_public_to_subscribers(),
-            allow_empty_topic_name=allow_empty_topic_name,
-        )
+
+        if stream.is_support_stream() and not check_access_based_on_can_access_stream_topics_group(
+            user_profile, stream
+        ):
+            result = get_topic_history_for_support_stream(
+                user_profile=user_profile,
+                recipient_id=stream.recipient_id,
+                allow_empty_topic_name=allow_empty_topic_name,
+            )
+
+        else:
+            result = get_topic_history_for_stream(
+                user_profile=user_profile,
+                recipient_id=stream.recipient_id,
+                public_history=stream.is_history_public_to_subscribers(),
+                allow_empty_topic_name=allow_empty_topic_name,
+            )
 
     return json_success(request, data=dict(topics=result))
 

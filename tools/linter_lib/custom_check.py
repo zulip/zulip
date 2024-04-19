@@ -10,6 +10,7 @@ from zulint.custom_rules import Rule, RuleList
 
 FILES_WITH_LEGACY_SUBJECT = {
     # This basically requires a big DB migration:
+    "zerver/lib/message.py",
     "zerver/lib/topic.py",
     # This is tied to legacy events.
     "zerver/lib/event_types.py",
