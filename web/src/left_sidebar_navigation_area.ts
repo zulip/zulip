@@ -76,16 +76,21 @@ export function update_dom_with_unread_counts(
 // TODO: Rewrite how we handle activation of narrows when doing the redesign.
 // We don't want to adjust class for all the buttons when switching narrows.
 
-function remove($elem: JQuery): void {
+function deactivate_narrow($elem: JQuery): void {
     $elem.removeClass("top-left-active-filter");
 }
 
-function deselect_top_left_corner_items(): void {
-    remove($(".top_left_all_messages"));
-    remove($(".top_left_starred_messages"));
-    remove($(".top_left_mentions"));
-    remove($(".top_left_recent_view"));
-    remove($(".top_left_inbox"));
+/**
+ * Deselects narrows in the top left corner except the specified narrow if provided.
+ * If no narrow is provided, deselects all narrows.
+ * @param narrow_to_activate The narrow to exclude from deselection.
+ */
+function deselect_top_left_corner_items(narrow_to_activate = ""): void {
+    deactivate_narrow($(".top-left-active-filter"));
+
+    if (narrow_to_activate !== "") {
+        $(narrow_to_activate).addClass("top-left-active-filter");
+    }
 }
 
 export function handle_narrow_activated(filter: Filter): void {
@@ -158,27 +163,24 @@ function do_new_messages_animation($li: JQuery): void {
 }
 
 export function highlight_inbox_view(): void {
-    deselect_top_left_corner_items();
+    deselect_top_left_corner_items(".top_left_inbox");
 
-    $(".top_left_inbox").addClass("top-left-active-filter");
     setTimeout(() => {
         resize.resize_stream_filters_container();
     }, 0);
 }
 
 export function highlight_recent_view(): void {
-    deselect_top_left_corner_items();
+    deselect_top_left_corner_items(".top_left_recent_view");
 
-    $(".top_left_recent_view").addClass("top-left-active-filter");
     setTimeout(() => {
         resize.resize_stream_filters_container();
     }, 0);
 }
 
 export function highlight_all_messages_view(): void {
-    deselect_top_left_corner_items();
+    deselect_top_left_corner_items(".top_left_all_messages");
 
-    $(".top_left_all_messages").addClass("top-left-active-filter");
     setTimeout(() => {
         resize.resize_stream_filters_container();
     }, 0);
