@@ -7,7 +7,7 @@ from django_auth_ldap.config import GroupOfUniqueNamesType, LDAPGroupType
 from scripts.lib.zulip_tools import deport
 from zproject.settings_types import JwtAuthKey, OIDCIdPConfigDict, SAMLIdPConfigDict
 
-from .config import DEVELOPMENT, PRODUCTION, get_secret
+from .config import DEVELOPMENT, PRODUCTION, get_config, get_secret
 
 if TYPE_CHECKING:
     from django_auth_ldap.config import LDAPSearch
@@ -135,11 +135,11 @@ LOGGING_SHOW_MODULE = False
 LOGGING_SHOW_PID = False
 
 # Sentry.io error defaults to off
-SENTRY_DSN: Optional[str] = None
+SENTRY_DSN: Optional[str] = get_config("sentry", "project_dsn", None)
 SENTRY_TRACE_WORKER_RATE: Union[float, Dict[str, float]] = 0.0
 SENTRY_TRACE_RATE: float = 0.0
 SENTRY_PROFILE_RATE: float = 0.1
-SENTRY_FRONTEND_DSN: Optional[str] = None
+SENTRY_FRONTEND_DSN: Optional[str] = get_config("sentry", "frontend_project_dsn", None)
 SENTRY_FRONTEND_SAMPLE_RATE: float = 1.0
 SENTRY_FRONTEND_TRACE_RATE: float = 0.1
 
