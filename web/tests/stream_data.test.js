@@ -100,6 +100,7 @@ test("basics", () => {
         stream_id: 3,
         is_muted: true,
         invite_only: false,
+        stream_topic_access_group: moderators_group.id,
     };
     const web_public_stream = {
         subscribed: false,
@@ -171,6 +172,8 @@ test("basics", () => {
     assert.equal(stream_data.slug_to_name("2-whatever"), "social");
     assert.equal(stream_data.slug_to_name("2"), "social");
 
+    assert.equal(stream_data.is_support_stream(test), true);
+
     // legacy
     assert.equal(stream_data.slug_to_name("25-or-6-to-4"), "25-or-6-to-4");
     assert.equal(stream_data.slug_to_name("2something"), "2something");
@@ -207,6 +210,7 @@ test("basics", () => {
                 name: "test",
                 stream_id: 3,
                 subscribed: true,
+                stream_topic_access_group: moderators_group.id,
             },
             unique_id: 3,
         },
@@ -451,11 +455,13 @@ test("stream_settings", () => {
     stream_data.update_stream_post_policy(sub, 1);
     stream_data.update_message_retention_setting(sub, -1);
     stream_data.update_can_remove_subscribers_group_id(sub, moderators_group.id);
+    stream_data.update_stream_topic_access_group_id(sub, admins_group.id);
     assert.equal(sub.invite_only, false);
     assert.equal(sub.history_public_to_subscribers, false);
     assert.equal(sub.stream_post_policy, settings_config.stream_post_policy_values.everyone.code);
     assert.equal(sub.message_retention_days, -1);
     assert.equal(sub.can_remove_subscribers_group, moderators_group.id);
+    assert.equal(sub.stream_topic_access_group, admins_group.id);
 
     // For guest user only retrieve subscribed streams
     sub_rows = stream_settings_data.get_updated_unsorted_subs();
@@ -1004,6 +1010,77 @@ test("can_post_messages_in_stream", () => {
 
     page_params.is_spectator = true;
     assert.equal(stream_data.can_post_messages_in_stream(social), false);
+});
+
+test("can_access_topics_in_stream", () => {
+    const admin_user_id = 1;
+    const moderator_user_id = 2;
+    const member_user_id = 3;
+
+    const admins = {
+        name: "Admins",
+        id: 1,
+        members: new Set([admin_user_id]),
+        is_system_group: true,
+        direct_subgroup_ids: new Set([]),
+    };
+    const moderators = {
+        name: "Moderators",
+        id: 2,
+        members: new Set([moderator_user_id]),
+        is_system_group: true,
+        direct_subgroup_ids: new Set([1]),
+    };
+    const all = {
+        name: "Everyone",
+        id: 3,
+        members: new Set([member_user_id]),
+        is_system_group: true,
+        direct_subgroup_ids: new Set([2]),
+    };
+    const nobody = {
+        name: "Nobody",
+        id: 4,
+        members: new Set([]),
+        is_system_group: true,
+        direct_subgroup_ids: new Set([]),
+    };
+
+    user_groups.initialize({realm_user_groups: [admins, moderators, all, nobody]});
+
+    const sub = {
+        subscribed: true,
+        color: "red",
+        name: "social",
+        stream_id: 2,
+        is_muted: false,
+        stream_topic_access_group: admins.id,
+    };
+
+    people.initialize_current_user(admin_user_id);
+    assert.equal(stream_data.can_access_topics_in_stream(sub), true);
+    people.initialize_current_user(moderator_user_id);
+    assert.equal(stream_data.can_access_topics_in_stream(sub), false);
+
+    sub.stream_topic_access_group = moderators.id;
+    people.initialize_current_user(admin_user_id);
+    assert.equal(stream_data.can_access_topics_in_stream(sub), true);
+    people.initialize_current_user(moderator_user_id);
+    assert.equal(stream_data.can_access_topics_in_stream(sub), true);
+    people.initialize_current_user(member_user_id);
+    assert.equal(stream_data.can_access_topics_in_stream(sub), false);
+    current_user.is_admin = true;
+    assert.equal(stream_data.can_access_topics_in_stream(sub), true);
+
+    current_user.is_admin = false;
+
+    sub.stream_topic_access_group = all.id;
+    people.initialize_current_user(admin_user_id);
+    assert.equal(stream_data.can_access_topics_in_stream(sub), true);
+    people.initialize_current_user(moderator_user_id);
+    assert.equal(stream_data.can_access_topics_in_stream(sub), true);
+    people.initialize_current_user(member_user_id);
+    assert.equal(stream_data.can_access_topics_in_stream(sub), true);
 });
 
 test("can_unsubscribe_others", () => {
