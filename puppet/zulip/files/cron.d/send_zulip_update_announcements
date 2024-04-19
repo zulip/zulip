@@ -1,6 +1,0 @@
-SHELL=/bin/bash
-PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
-USER=zulip
-
-# Cron job to send zulip update announcements hourly, if there are any.
-47 * * * * zulip /home/zulip/deployments/current/manage.py send_zulip_update_announcements

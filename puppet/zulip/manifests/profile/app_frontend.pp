@@ -66,11 +66,10 @@ class zulip::profile::app_frontend {
   }
 
   # Restart the server regularly to avoid potential memory leak problems.
-  file { '/etc/cron.d/restart-zulip':
-    ensure => file,
-    owner  => 'root',
-    group  => 'root',
-    mode   => '0644',
-    source => 'puppet:///modules/zulip/cron.d/restart-zulip',
+  zulip::cron { 'restart-zulip':
+    hour    => '6',
+    minute  => '0',
+    dow     => '7',
+    command => '/home/zulip/deployments/current/scripts/restart-server --fill-cache',
   }
 }
