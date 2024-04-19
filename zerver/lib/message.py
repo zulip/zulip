@@ -171,6 +171,7 @@ class SendMessageRequest:
     disable_external_notifications: bool = False
     automatic_new_visibility_policy: int | None = None
     recipients_for_user_creation_events: dict[UserProfile, set[int]] | None = None
+    is_support_stream: bool | None = None
 
 
 # We won't try to fetch more unread message IDs from the database than
@@ -377,7 +378,9 @@ def has_message_access(
         return has_user_message()
 
     if stream is None:
-        stream = Stream.objects.get(id=message.recipient.type_id)
+        stream = Stream.objects.select_related(
+            "can_access_stream_topics_group__named_user_group"
+        ).get(id=message.recipient.type_id)
     else:
         assert stream.recipient_id == message.recipient_id
 

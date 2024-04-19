@@ -5,7 +5,7 @@ from typing import Any
 
 from django.conf import settings
 from django.db import transaction
-from django.db.models import F
+from django.db.models import F, Prefetch
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
 from django.utils.translation import override as override_language
@@ -135,7 +135,16 @@ def set_up_streams_for_new_human_user(
     realm = user_profile.realm
 
     if prereg_user is not None:
-        streams: list[Stream] = list(prereg_user.streams.all())
+        streams: list[Stream] = list(
+            Stream.objects.prefetch_related(
+                Prefetch(
+                    "can_access_stream_topics_group__named_user_group",
+                    queryset=NamedUserGroup.objects.all(),
+                    to_attr="named_user_groups",
+                )
+            ).filter(id__in=prereg_user.streams.values_list("id", flat=True))
+        )
+
         acting_user: UserProfile | None = prereg_user.referred_by
 
         # A PregistrationUser should not be used for another UserProfile

@@ -201,6 +201,7 @@ def add_missing_messages(user_profile: UserProfile) -> None:
                 # We are going to short circuit this iteration as its no use
                 # iterating since user unsubscribed before soft-deactivation
                 continue
+
         recipient_ids.append(sub["recipient_id"])
 
     new_stream_msgs = (

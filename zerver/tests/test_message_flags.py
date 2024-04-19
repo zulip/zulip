@@ -1776,7 +1776,7 @@ class MessageAccessTests(ZulipTestCase):
         # Message sent before subscribing wouldn't be accessible by later
         # subscribed user as stream has protected history
         filtered_messages = self.assert_bulk_access(
-            later_subscribed_user, message_ids, stream, 4, 2
+            later_subscribed_user, message_ids, stream, 5, 2
         )
         self.assert_length(filtered_messages, 1)
         self.assertEqual(filtered_messages[0].id, message_two_id)
@@ -1847,7 +1847,7 @@ class MessageAccessTests(ZulipTestCase):
 
         # All public stream messages are always accessible
         filtered_messages = self.assert_bulk_access(
-            later_subscribed_user, message_ids, stream, 4, 1
+            later_subscribed_user, message_ids, stream, 5, 1
         )
         self.assert_length(filtered_messages, 2)
 
