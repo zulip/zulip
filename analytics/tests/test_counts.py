@@ -76,6 +76,7 @@ from zerver.models import (
 )
 from zerver.models.clients import get_client
 from zerver.models.groups import SystemGroups
+from zerver.models.messages import Attachment
 from zerver.models.scheduled_jobs import NotificationTriggers
 from zerver.models.users import get_user, is_cross_realm_bot_email
 from zilencer.models import (
@@ -189,6 +190,18 @@ class AnalyticsTestCase(ZulipTestCase):
         for key, value in defaults.items():
             kwargs[key] = kwargs.get(key, value)
         return Message.objects.create(**kwargs)
+
+    def create_attachment(
+        self, user_profile: UserProfile, filename: str, size: int, create_time: datetime
+    ) -> Attachment:
+        return Attachment.objects.create(
+            file_name=filename,
+            path_id=f"foo/bar/{filename}",
+            owner=user_profile,
+            realm=user_profile.realm,
+            size=size,
+            create_time=create_time,
+        )
 
     # kwargs should only ever be a UserProfile or Stream.
     def assert_table_count(
@@ -545,6 +558,41 @@ class TestCountStats(AnalyticsTestCase):
         self.assertTableState(InstallationCount, ["value", "subgroup"], [[2, "true"], [5, "false"]])
         self.assertTableState(UserCount, [], [])
         self.assertTableState(StreamCount, [], [])
+
+    def test_upload_quota_used_bytes(self) -> None:
+        stat = COUNT_STATS["upload_quota_used_bytes::day"]
+        self.current_property = stat.property
+
+        user1 = self.create_user()
+        user2 = self.create_user()
+        user_second_realm = self.create_user(realm=self.second_realm)
+
+        self.create_attachment(user1, "file1", 100, self.TIME_LAST_HOUR)
+        attachment2 = self.create_attachment(user2, "file2", 200, self.TIME_LAST_HOUR)
+        self.create_attachment(user_second_realm, "file3", 10, self.TIME_LAST_HOUR)
+
+        do_fill_count_stat_at_hour(stat, self.TIME_ZERO)
+
+        self.assertTableState(
+            RealmCount,
+            ["value", "subgroup", "realm"],
+            [[300, None, self.default_realm], [10, None, self.second_realm]],
+        )
+
+        # Delete an attachment and run the CountStat job again the next day.
+        attachment2.delete()
+        do_fill_count_stat_at_hour(stat, self.TIME_ZERO + self.DAY)
+
+        self.assertTableState(
+            RealmCount,
+            ["value", "subgroup", "realm", "end_time"],
+            [
+                [300, None, self.default_realm, self.TIME_ZERO],
+                [10, None, self.second_realm, self.TIME_ZERO],
+                [100, None, self.default_realm, self.TIME_ZERO + self.DAY],
+                [10, None, self.second_realm, self.TIME_ZERO + self.DAY],
+            ],
+        )
 
     def test_active_users_by_is_bot_for_realm_constraint(self) -> None:
         # For single Realm

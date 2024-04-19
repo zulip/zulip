@@ -9,12 +9,14 @@ from urllib.parse import quote
 
 import orjson
 from django.conf import settings
+from django.utils.timezone import now as timezone_now
 from PIL import Image
 from typing_extensions import override
 from urllib3 import encode_multipart_formdata
 from urllib3.fields import RequestField
 
 import zerver.lib.upload
+from analytics.models import RealmCount
 from zerver.actions.create_realm import do_create_realm
 from zerver.actions.message_send import internal_send_private_message
 from zerver.actions.realm_icon import do_change_icon_source
@@ -23,7 +25,7 @@ from zerver.actions.realm_settings import do_change_realm_plan_type, do_set_real
 from zerver.actions.user_settings import do_delete_avatar_image
 from zerver.lib.attachments import validate_attachment_request
 from zerver.lib.avatar import avatar_url, get_avatar_field
-from zerver.lib.cache import cache_get, get_realm_used_upload_space_cache_key
+from zerver.lib.cache import cache_delete, cache_get, get_realm_used_upload_space_cache_key
 from zerver.lib.create_user import copy_default_settings
 from zerver.lib.initial_password import initial_password
 from zerver.lib.realm_icon import realm_icon_url
@@ -1843,6 +1845,22 @@ class UploadSpaceTests(UploadSerializeMixin, ZulipTestCase):
         attachment.delete()
         self.assertEqual(None, cache_get(get_realm_used_upload_space_cache_key(self.realm.id)))
         self.assert_length(data2, self.realm.currently_used_upload_space_bytes())
+
+        now = timezone_now()
+        RealmCount.objects.create(
+            realm=self.realm,
+            property="upload_quota_used_bytes::day",
+            end_time=now,
+            value=len(data2),
+        )
+        # Purge the cache since we want to actually execute the function.
+        cache_delete(get_realm_used_upload_space_cache_key(self.realm.id))
+
+        self.assert_length(data2, self.realm.currently_used_upload_space_bytes())
+
+        data3 = b"even-more-data!"
+        upload_message_attachment("dummy3.txt", len(data3), "text/plain", data3, self.user_profile)
+        self.assertEqual(len(data2) + len(data3), self.realm.currently_used_upload_space_bytes())
 
 
 class DecompressionBombTests(ZulipTestCase):
