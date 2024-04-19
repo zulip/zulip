@@ -195,7 +195,7 @@ def do_deactivate_stream(stream: Stream, *, acting_user: Optional[UserProfile]) 
     event = dict(type="stream", op="delete", streams=[stream_dict])
     send_event_on_commit(stream.realm, event, affected_user_ids)
 
-    if stream.realm.can_access_all_users_group.name != SystemGroups.EVERYONE:
+    if stream.realm.can_access_all_users_group.named_user_group.name != SystemGroups.EVERYONE:
         send_user_remove_events_on_stream_deactivation(stream, subscribed_users)
 
     event_time = timezone_now()
@@ -797,7 +797,7 @@ def bulk_add_subscriptions(
         if sub_info.user.is_guest:
             altered_guests.add(sub_info.user.id)
 
-    if realm.can_access_all_users_group.name != SystemGroups.EVERYONE:
+    if realm.can_access_all_users_group.named_user_group.name != SystemGroups.EVERYONE:
         altered_users = list(altered_streams_dict.keys())
         subscribers_of_altered_user_subscriptions = get_subscribers_of_target_user_subscriptions(
             altered_users
@@ -837,7 +837,7 @@ def bulk_add_subscriptions(
             subscriber_dict=subscriber_peer_info.subscribed_ids,
         )
 
-    if realm.can_access_all_users_group.name != SystemGroups.EVERYONE:
+    if realm.can_access_all_users_group.named_user_group.name != SystemGroups.EVERYONE:
         send_user_creation_events_on_adding_subscriptions(
             realm,
             altered_user_dict,
@@ -1082,7 +1082,7 @@ def bulk_remove_subscriptions(
     removed_sub_tuples = [(sub_info.user, sub_info.stream) for sub_info in subs_to_deactivate]
     send_subscription_remove_events(realm, users, streams, removed_sub_tuples)
 
-    if realm.can_access_all_users_group.name != SystemGroups.EVERYONE:
+    if realm.can_access_all_users_group.named_user_group.name != SystemGroups.EVERYONE:
         altered_user_dict: Dict[UserProfile, Set[int]] = defaultdict(set)
         for user, stream in removed_sub_tuples:
             altered_user_dict[user].add(stream.id)

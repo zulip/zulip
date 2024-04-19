@@ -986,11 +986,11 @@ class ZulipLDAPAuthBackendBase(ZulipAuthMixin, LDAPBackend):
             existing_group_name_set_for_user = set(
                 UserGroupMembership.objects.filter(
                     user_group__realm=user_profile.realm,
-                    user_group__name__in=set(
+                    user_group__named_user_group__name__in=set(
                         settings.LDAP_SYNCHRONIZED_GROUPS_BY_REALM[user_profile.realm.string_id]
                     ),
                     user_profile=user_profile,
-                ).values_list("user_group__name", flat=True)
+                ).values_list("user_group__named_user_group__name", flat=True)
             )
 
             ldap_logger.debug(
