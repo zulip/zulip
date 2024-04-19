@@ -25,6 +25,7 @@ export type Stream = {
     stream_id: number;
     stream_post_policy: StreamPostPolicy;
     can_remove_subscribers_group: number;
+    stream_topic_access_group: number;
 };
 
 export type StreamSpecificNotificationSettings = {
