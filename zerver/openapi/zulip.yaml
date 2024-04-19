@@ -18251,11 +18251,12 @@ paths:
                   - example:
                       {
                         "code": "BAD_REQUEST",
-                        "msg": "Cannot send to multiple streams",
+                        "msg": "Missing stream_id",
                         "result": "error",
                       }
                     description: |
-                      An example JSON error response for when user sends to multiple streams:
+                      An example JSON error response when the user composes a stream message
+                      and `stream_id` is not specified:
   /user_groups/create:
     post:
       operationId: create-user-group
