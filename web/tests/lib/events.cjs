@@ -214,8 +214,10 @@ exports.fixtures = {
             {
                 id: 1,
                 name: "teams",
+                rendered_name: "",
                 type: 1,
                 hint: "",
+                rendered_hint: "",
                 field_data: "",
                 order: 1,
                 display_in_profile_summary: false,
@@ -225,8 +227,10 @@ exports.fixtures = {
             {
                 id: 2,
                 name: "hobbies",
+                rendered_name: "",
                 type: 1,
                 hint: "",
+                rendered_hint: "",
                 field_data: "",
                 order: 2,
                 display_in_profile_summary: false,

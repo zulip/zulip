@@ -7,7 +7,8 @@ from typing import Any, Literal, TypedDict
 
 from django.conf import settings
 from django.db import connection
-from django.db.models import Exists, F, Max, OuterRef, QuerySet, Subquery, Sum
+from django.db.models import Exists, F, Max, Min, OuterRef, QuerySet, Subquery, Sum
+from django.db.models.functions import Upper
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
 from django_cte import CTE, with_cte
@@ -37,6 +38,8 @@ from zerver.lib.topic import (
     MESSAGE__TOPIC,
     RESOLVED_TOPIC_PREFIX,
     TOPIC_NAME,
+    check_access_based_on_can_access_stream_topics_group,
+    get_topic_creator_user_id,
     maybe_rename_general_chat_to_empty_topic,
     messages_for_topic,
 )
@@ -296,6 +299,68 @@ def topic_resolve_toggled(topic: str, prev_topic: str) -> bool:
     return False
 
 
+def get_inaccessible_message_ids_in_restricted_topics(
+    message_ids: list[int],
+    message_dicts: dict[int, dict[str, Any]],
+    user_profile: UserProfile | None,
+    realm: Realm,
+) -> set[int]:
+    """In a channel with restricted topic access (a "support" channel), a user
+    who is not in can_access_stream_topics_group may only see topics they
+    created.  Returns the ids among `message_ids` that must be withheld from
+    `user_profile` for that reason.
+
+    Everything here is resolved in bulk, since this runs on the main message
+    fetch path: doing the channel lookup, the group membership check, or the
+    topic creator lookup per message would each be a query per message.
+    """
+    if user_profile is None:
+        return set()
+
+    channel_ids = {
+        message_dicts[message_id]["recipient_type_id"]
+        for message_id in message_ids
+        if message_dicts[message_id]["recipient_type"] == Recipient.STREAM
+    }
+    if not channel_ids:
+        return set()
+
+    # is_support_stream() is answered from a cached per-realm map of system
+    # group ids, so the only query per channel is the group membership check,
+    # and a message fetch spans very few channels.
+    restricted_recipient_ids: set[int] = set()
+    for stream in Stream.objects.filter(id__in=channel_ids, realm=realm):
+        if stream.is_support_stream() and not check_access_based_on_can_access_stream_topics_group(
+            user_profile, stream
+        ):
+            assert stream.recipient_id is not None
+            restricted_recipient_ids.add(stream.recipient_id)
+
+    if not restricted_recipient_ids:
+        return set()
+
+    # Have the database compute each message's topic key, rather than
+    # uppercasing subjects in Python, so that case folding agrees with the
+    # Upper("subject") values used to identify topic creators.
+    message_topic_keys = list(
+        Message.objects.filter(id__in=message_ids, recipient_id__in=restricted_recipient_ids)
+        .annotate(topic_key=Upper("subject"))
+        .values_list("id", "recipient_id", "topic_key")
+    )
+
+    accessible_topic_keys = get_accessible_topic_keys_for_restricted_user(
+        user_profile,
+        restricted_recipient_ids,
+        {topic_key for _, _, topic_key in message_topic_keys},
+    )
+
+    return {
+        message_id
+        for message_id, recipient_id, topic_key in message_topic_keys
+        if (recipient_id, topic_key) not in accessible_topic_keys
+    }
+
+
 def messages_for_ids(
     message_ids: list[int],
     user_message_flags: dict[int, list[str]],
@@ -325,8 +390,15 @@ def messages_for_ids(
     sender_ids = [message_dicts[message_id]["sender_id"] for message_id in message_ids]
     inaccessible_sender_ids = get_inaccessible_user_ids(sender_ids, user_profile)
 
+    inaccessible_message_ids = get_inaccessible_message_ids_in_restricted_topics(
+        message_ids, message_dicts, user_profile, realm
+    )
+
     for message_id in message_ids:
         msg_dict = message_dicts[message_id]
+        if message_id in inaccessible_message_ids:
+            continue
+
         flags = user_message_flags[message_id]
         # TODO/compatibility: The `wildcard_mentioned` flag was deprecated in favor of
         # the `stream_wildcard_mentioned` and `topic_wildcard_mentioned` flags.  The
@@ -604,6 +676,17 @@ def has_message_access(
         # You can't access messages in deactivated streams
         return False
 
+    if stream.is_support_stream() and not check_access_based_on_can_access_stream_topics_group(
+        user_profile, stream
+    ):
+        # The message itself is in the topic, so the creator always resolves;
+        # deny access rather than fall open if it somehow does not.
+        topic_creator_user_id = get_topic_creator_user_id(
+            message.get_realm().id, message.recipient_id, message.topic_name()
+        )
+        if topic_creator_user_id != user_profile.id:
+            return False
+
     if stream.is_public() and user_profile.can_access_public_streams():
         return True
 
@@ -763,6 +846,42 @@ def bulk_access_messages(
     return filtered_messages
 
 
+def get_accessible_topic_keys_for_restricted_user(
+    user_profile: UserProfile, recipient_ids: set[int], topic_keys: set[str]
+) -> set[tuple[int, str]]:
+    """For channels with restricted topic access, returns the subset of
+    `topic_keys` whose topic was created by `user_profile`, as
+    (recipient_id, topic_key) pairs.  A topic's creator is the sender of its
+    oldest message.
+
+    `topic_keys` are uppercased topic names, matching the values computed by
+    Upper("subject") in the database; callers must obtain them from the
+    database rather than uppercasing in Python, so that case folding always
+    agrees with PostgreSQL's.
+
+    An empty `topic_keys` needs no special case: Django compiles the resulting
+    `IN ()` to an empty result without querying the database.
+    """
+    first_message_ids = (
+        Message.objects.filter(
+            # Uses index: zerver_message_realm_recipient_upper_subject
+            realm_id=user_profile.realm_id,
+            recipient_id__in=recipient_ids,
+        )
+        .annotate(topic_key=Upper("subject"))
+        .filter(topic_key__in=topic_keys)
+        .values("recipient_id", "topic_key")
+        .annotate(first_message_id=Min("id"))
+        .values_list("first_message_id", flat=True)
+    )
+
+    return set(
+        Message.objects.filter(id__in=list(first_message_ids), sender_id=user_profile.id)
+        .annotate(topic_key=Upper("subject"))
+        .values_list("recipient_id", "topic_key")
+    )
+
+
 def bulk_access_stream_messages_query(
     user_profile: UserProfile, messages: QuerySet[Message], stream: Stream
 ) -> QuerySet[Message]:
@@ -778,6 +897,21 @@ def bulk_access_stream_messages_query(
 
     assert stream.recipient_id is not None
     messages = messages.filter(realm_id=user_profile.realm_id, recipient_id=stream.recipient_id)
+
+    if stream.is_support_stream() and not check_access_based_on_can_access_stream_topics_group(
+        user_profile, stream
+    ):
+        topic_keys = set(
+            messages.annotate(topic_key=Upper("subject"))
+            .values_list("topic_key", flat=True)
+            .distinct()
+        )
+        accessible_topic_keys = get_accessible_topic_keys_for_restricted_user(
+            user_profile, {stream.recipient_id}, topic_keys
+        )
+        messages = messages.annotate(topic_key=Upper("subject")).filter(
+            topic_key__in={topic_key for _, topic_key in accessible_topic_keys}
+        )
 
     if stream.is_public() and user_profile.can_access_public_streams():
         return messages
