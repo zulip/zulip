@@ -101,7 +101,6 @@ from zerver.lib.typed_endpoint import ApiParamConfig, PathOnly, typed_endpoint
 from zerver.lib.typed_endpoint_validators import check_color, parse_enum_from_string_value
 from zerver.lib.types import UserGroupMembersData
 from zerver.lib.user_groups import (
-    AnonymousSettingGroupDict,
     GroupSettingChangeRequest,
     UserGroupMembershipDetails,
     access_user_group_api_value_for_setting,
