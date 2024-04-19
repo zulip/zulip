@@ -68,6 +68,7 @@ class ErrorCode(Enum):
     INTERNAL_SERVER_ERROR_ON_BOUNCER = auto()
     ADMIN_ACTION_REQUIRED = auto()
     PERMISSION_DENIED = auto()
+    UNAUTHORIZED_TOPIC_ACCESS = auto()
 
 
 class JsonableError(Exception):
@@ -860,6 +861,20 @@ class SlackImportInvalidFileError(Exception):
     def __init__(self, message: str) -> None:
         super().__init__(message)
         self.message = message
+
+
+class UnauthorizedTopicAccessError(JsonableError):
+    code: ErrorCode = ErrorCode.UNAUTHORIZED_TOPIC_ACCESS
+
+    def __init__(self) -> None:
+        pass
+
+    @staticmethod
+    @override
+    def msg_format() -> str:
+        return _(
+            "This topic already exists. You are only permitted to send messages in topics created by you."
+        )
 
 
 class InvalidBouncerPublicKeyError(JsonableError):
