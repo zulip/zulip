@@ -32,6 +32,9 @@ type MessageViewHeaderContext = {
     | {
           icon: string | undefined;
       }
+    | {
+          rendered_narrow_description: string | undefined;
+      }
 );
 
 function get_message_view_header_context(filter: Filter | undefined): MessageViewHeaderContext {
@@ -39,18 +42,27 @@ function get_message_view_header_context(filter: Filter | undefined): MessageVie
         return {
             title: $t({defaultMessage: "Recent conversations"}),
             zulip_icon: "recent",
+            rendered_narrow_description: $t({
+                defaultMessage: "Overview of your conversations with unread messages.",
+            }),
         };
     }
     if (inbox_util.is_visible()) {
         return {
             title: $t({defaultMessage: "Inbox"}),
             zulip_icon: "inbox",
+            rendered_narrow_description: $t({
+                defaultMessage: "Overview of ongoing conversations.",
+            }),
         };
     }
     if (filter === undefined) {
         return {
             title: $t({defaultMessage: "Combined feed"}),
             zulip_icon: "all-messages",
+            rendered_narrow_description: $t({
+                defaultMessage: "All your messages except those in muted channels and topics.",
+            }),
         };
     }
     const title = filter.get_title();
@@ -85,6 +97,20 @@ function get_message_view_header_context(filter: Filter | undefined): MessageVie
                 "#streams/" + current_stream.stream_id + "/" + current_stream.name + "/general",
         };
     }
+    if (title === "Mentions") {
+        return {
+            ...icon_data,
+            rendered_narrow_description: $t({defaultMessage: "Messages where you are mentioned."}),
+        };
+    } else if (title === "Starred messages") {
+        return {
+            ...icon_data,
+            rendered_narrow_description: $t({
+                defaultMessage: "Important messages, tasks, and other useful references.",
+            }),
+        };
+    }
+
     return icon_data;
 }
 

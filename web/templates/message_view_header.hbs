@@ -12,6 +12,11 @@
         {{/unless}}
     </div>
 </template>
+{{else}}
+<span class="navbar_title">
+    {{> navbar_icon_and_title }}
+</span>
+{{/if}}
 <span class="narrow_description rendered_markdown">
     {{#if rendered_narrow_description}}
     {{rendered_markdown rendered_narrow_description}}
@@ -23,8 +28,3 @@
     {{/if}}
     {{/if}}
 </span>
-{{else}}
-<span class="navbar_title">
-    {{> navbar_icon_and_title }}
-</span>
-{{/if}}

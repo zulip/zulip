@@ -1736,7 +1736,6 @@ div.focused-message-list {
        default that would otherwise run titles under the search box. */
     .navbar_title,
     .narrow_description {
-        flex: 1 1 0;
         margin: 0;
     }
 }
