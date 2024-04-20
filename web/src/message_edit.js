@@ -1178,9 +1178,16 @@ export function delete_message(msg_id) {
         currently_deleting_messages.push(msg_id);
         channel.del({
             url: "/json/messages/" + msg_id,
-            success() {
+            success: (data) => {
+                // show the suer who deleted the message
+                // supplied from zerver/actions/message_delete.py
+                // for the feature of displaying message deletion with specified user in chat history
+                const deleted_by = data.deleted_by;
+                const message_row = $(`#message-${msg_id}`);
+                message_row.find('.message_content').html(`<p><em>${deleted_by} deleted a message</em></p>`);
                 currently_deleting_messages = currently_deleting_messages.filter(
                     (id) => id !== msg_id,
+                    
                 );
                 dialog_widget.hide_dialog_spinner();
                 dialog_widget.close();
