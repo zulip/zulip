@@ -27,7 +27,7 @@ class UserGroup(models.Model):  # type: ignore[django-manager-missing] # django-
         UserProfile, through="zerver.UserGroupMembership", related_name="direct_groups"
     )
     direct_subgroups = models.ManyToManyField(
-        "self",
+        "zerver.NamedUserGroup",
         symmetrical=False,
         through="zerver.GroupGroupMembership",
         through_fields=("supergroup", "subgroup"),
@@ -123,7 +123,7 @@ class UserGroupMembership(models.Model):
 
 class GroupGroupMembership(models.Model):
     supergroup = models.ForeignKey(UserGroup, on_delete=CASCADE, related_name="+")
-    subgroup = models.ForeignKey(UserGroup, on_delete=CASCADE, related_name="+")
+    subgroup = models.ForeignKey(NamedUserGroup, on_delete=CASCADE, related_name="+")
 
     class Meta:
         constraints = [
