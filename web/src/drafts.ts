@@ -290,10 +290,7 @@ export function rename_stream_recipient(
 }
 
 export function snapshot_message(): LocalStorageDraft | undefined {
-    if (
-        !compose_state.composing() ||
-        compose_state.message_content().length <= compose_state.MINIMUM_MESSAGE_LENGTH_TO_SAVE_DRAFT
-    ) {
+    if (!compose_state.composing() || !compose_state.has_savable_message_content()) {
         // If you aren't in the middle of composing the body of a
         // message or the message is shorter than 2 characters long, don't try to snapshot.
         return undefined;
