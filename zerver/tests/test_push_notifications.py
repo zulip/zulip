@@ -1180,7 +1180,7 @@ class PushBouncerNotificationTest(BouncerTestCase):
                 result = self.client_post(
                     endpoint, {"token": token, "appid": "'; tables --"}, subdomain="zulip"
                 )
-                self.assert_json_error(result, "Invalid app ID")
+                self.assert_json_error(result, "appid has invalid format")
 
             # Try to remove a non-existent token...
             result = self.client_delete(endpoint, {"token": "abcd1234"}, subdomain="zulip")
@@ -4618,7 +4618,7 @@ class TestPushApi(BouncerTestCase):
                 self.assert_json_error(result, "Missing 'appid' argument")
 
                 result = self.client_post(endpoint, {"token": label, "appid": "'; tables --"})
-                self.assert_json_error(result, "Invalid app ID")
+                self.assert_json_error(result, "appid has invalid format")
 
             # Try to remove a non-existent token...
             result = self.client_delete(endpoint, {"token": "abcd1234"})
