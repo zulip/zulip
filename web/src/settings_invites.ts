@@ -124,7 +124,7 @@ function populate_invites(invites_data: {invites: Invite[]}): void {
         init_sort: sort_invitee,
         sort_fields: {
             invitee: sort_invitee,
-            ...ListWidget.generic_sort_functions("alphabetic", ["ref"]),
+            ...ListWidget.generic_sort_functions("alphabetic", ["referrer_name"]),
             ...ListWidget.generic_sort_functions("numeric", [
                 "invited",
                 "expiry_date",
