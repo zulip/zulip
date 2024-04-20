@@ -108,6 +108,7 @@ OptionalTopic: TypeAlias = Annotated[
     StringConstraints(strip_whitespace=True),
     ApiParamConfig(whence="topic", aliases=("subject",)),
 ]
+ApnsAppId: TypeAlias = Annotated[str, StringConstraints(pattern="^[.a-zA-Z0-9-]+$")]
 
 # Reusable annotation metadata for Annotated types
 
