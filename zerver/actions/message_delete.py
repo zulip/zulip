@@ -28,7 +28,7 @@ def do_delete_messages(realm: Realm, messages: Iterable[Message]) -> None:
     event: DeleteMessagesEvent = {
         "type": "delete_message",
         "message_ids": message_ids,
-        "deleted_by": UserProfile.objects.get(id=user_profile_id).email,
+        "deleted_by": UserMessage.objects.filter(message_id__in=message_ids)[0].user_profile_id
     }
 
     sample_message = messages[0]
