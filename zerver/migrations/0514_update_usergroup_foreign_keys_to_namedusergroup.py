@@ -24,4 +24,22 @@ class Migration(migrations.Migration):
                 null=True, on_delete=django.db.models.deletion.CASCADE, to="zerver.namedusergroup"
             ),
         ),
+        migrations.AlterField(
+            model_name="groupgroupmembership",
+            name="subgroup",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="+",
+                to="zerver.namedusergroup",
+            ),
+        ),
+        migrations.AlterField(
+            model_name="usergroup",
+            name="direct_subgroups",
+            field=models.ManyToManyField(
+                related_name="direct_supergroups",
+                through="zerver.GroupGroupMembership",
+                to="zerver.namedusergroup",
+            ),
+        ),
     ]

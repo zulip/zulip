@@ -33,7 +33,14 @@ from zerver.lib.user_groups import (
     is_user_in_group,
     user_groups_in_realm_serialized,
 )
-from zerver.models import GroupGroupMembership, Realm, UserGroup, UserGroupMembership, UserProfile
+from zerver.models import (
+    GroupGroupMembership,
+    NamedUserGroup,
+    Realm,
+    UserGroup,
+    UserGroupMembership,
+    UserProfile,
+)
 from zerver.models.groups import SystemGroups
 from zerver.models.realms import get_realm
 
@@ -130,12 +137,10 @@ class UserGroupTestCase(ZulipTestCase):
         )
 
         self.assertCountEqual(list(get_recursive_strict_subgroups(leadership_group)), [])
-        self.assertCountEqual(
-            list(get_recursive_strict_subgroups(staff_group)), [leadership_group.usergroup_ptr]
-        )
+        self.assertCountEqual(list(get_recursive_strict_subgroups(staff_group)), [leadership_group])
         self.assertCountEqual(
             list(get_recursive_strict_subgroups(everyone_group)),
-            [leadership_group.usergroup_ptr, staff_group.usergroup_ptr],
+            [leadership_group, staff_group],
         )
 
         self.assertCountEqual(list(get_recursive_group_members(leadership_group)), [desdemona])
@@ -155,25 +160,25 @@ class UserGroupTestCase(ZulipTestCase):
 
     def test_subgroups_of_role_based_system_groups(self) -> None:
         realm = get_realm("zulip")
-        owners_group = UserGroup.objects.get(
+        owners_group = NamedUserGroup.objects.get(
             realm=realm, name=SystemGroups.OWNERS, is_system_group=True
         )
-        admins_group = UserGroup.objects.get(
+        admins_group = NamedUserGroup.objects.get(
             realm=realm, name=SystemGroups.ADMINISTRATORS, is_system_group=True
         )
-        moderators_group = UserGroup.objects.get(
+        moderators_group = NamedUserGroup.objects.get(
             realm=realm, name=SystemGroups.MODERATORS, is_system_group=True
         )
-        full_members_group = UserGroup.objects.get(
+        full_members_group = NamedUserGroup.objects.get(
             realm=realm, name=SystemGroups.FULL_MEMBERS, is_system_group=True
         )
-        members_group = UserGroup.objects.get(
+        members_group = NamedUserGroup.objects.get(
             realm=realm, name=SystemGroups.MEMBERS, is_system_group=True
         )
-        everyone_group = UserGroup.objects.get(
+        everyone_group = NamedUserGroup.objects.get(
             realm=realm, name=SystemGroups.EVERYONE, is_system_group=True
         )
-        everyone_on_internet_group = UserGroup.objects.get(
+        everyone_on_internet_group = NamedUserGroup.objects.get(
             realm=realm,
             name=SystemGroups.EVERYONE_ON_INTERNET,
             is_system_group=True,
