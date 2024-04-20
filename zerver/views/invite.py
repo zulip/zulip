@@ -123,10 +123,10 @@ def get_user_invites(request: HttpRequest, user_profile: UserProfile) -> HttpRes
 @require_member_or_admin
 @has_request_variables
 def revoke_user_invite(
-    request: HttpRequest, user_profile: UserProfile, prereg_id: int
+    request: HttpRequest, user_profile: UserProfile, invite_id: int
 ) -> HttpResponse:
     try:
-        prereg_user = PreregistrationUser.objects.get(id=prereg_id)
+        prereg_user = PreregistrationUser.objects.get(id=invite_id)
     except PreregistrationUser.DoesNotExist:
         raise JsonableError(_("No such invitation"))
 
