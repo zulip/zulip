@@ -12125,6 +12125,44 @@ paths:
                         description: |
                           An example JSON error response for when the user doesn't have permission
                           to subscribe other users to streams and `stream_ids` is not empty.
+  /invites/{invite_id}:
+    delete:
+      operationId: revoke-email-invite
+      summary: Revoke an email invitation
+      tags: ["invites"]
+      description: |
+        Revoke an [email invitation](/help/invite-new-users#send-email-invitations).
+
+        A user can only revoke [invitations that they can
+        manage](/help/invite-new-users#manage-pending-invitations).
+      parameters:
+        - name: invite_id
+          in: path
+          description: |
+            The ID of the email invitation to be revoked.
+          schema:
+            type: integer
+          example: 1
+          required: true
+      responses:
+        "200":
+          $ref: "#/components/responses/SimpleSuccess"
+        "400":
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - allOf:
+                      - $ref: "#/components/schemas/CodedError"
+                      - example:
+                          {
+                            "result": "error",
+                            "msg": "No such invitation",
+                            "code": "BAD_REQUEST",
+                          }
+                        description: |
+                          A typical failed JSON response for an invalid `invite_id`:
   /register:
     post:
       operationId: register-queue
