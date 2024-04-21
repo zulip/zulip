@@ -359,6 +359,71 @@ function get_message_retention_setting_value(
     return check_valid_number_input(custom_input_val);
 }
 
+type FieldData = Record<string, Record<string, string> | string>;
+
+function read_select_field_data_from_form(
+    $profile_field_form: JQuery,
+    old_field_data: FieldData,
+): FieldData {
+    const field_data: FieldData = {};
+    let field_order = 1;
+
+    const old_option_value_map = new Map();
+    if (old_field_data !== undefined) {
+        for (const [value, choice] of Object.entries(old_field_data)) {
+            assert(typeof choice !== "string");
+            old_option_value_map.set(choice.text, value);
+        }
+    }
+    $profile_field_form.find("div.choice-row").each(function (this: HTMLElement) {
+        const text = $(this).find("input")[0].value;
+        if (text) {
+            if (old_option_value_map.get(text) !== undefined) {
+                // Resetting the data-value in the form is
+                // important if the user removed an option string
+                // and then added it back again before saving
+                // changes.
+                $(this).attr("data-value", old_option_value_map.get(text));
+            }
+            const value = $(this).attr("data-value")!;
+            field_data[value] = {text, order: field_order.toString()};
+            field_order += 1;
+        }
+    });
+
+    return field_data;
+}
+
+function read_external_account_field_data($profile_field_form: JQuery): FieldData {
+    const field_data: FieldData = {};
+    field_data.subtype = $profile_field_form
+        .find<HTMLSelectElement & {type: "select-one"}>("select[name=external_acc_field_type]")
+        .val()!;
+    if (field_data.subtype === "custom") {
+        field_data.url_pattern = $profile_field_form
+            .find<HTMLInputElement>("input[name=url_pattern]")
+            .val()!;
+    }
+    return field_data;
+}
+
+export function read_field_data_from_form(
+    field_type_id: number,
+    $profile_field_form: JQuery,
+    old_field_data: FieldData,
+): FieldData | undefined {
+    const field_types = realm.custom_profile_field_types;
+
+    // Only read field data if we are creating a select field
+    // or external account field.
+    if (field_type_id === field_types.SELECT.id) {
+        return read_select_field_data_from_form($profile_field_form, old_field_data);
+    } else if (field_type_id === field_types.EXTERNAL_ACCOUNT.id) {
+        return read_external_account_field_data($profile_field_form);
+    }
+    return undefined;
+}
+
 export function sort_object_by_key(obj: Record<string, boolean>): Record<string, boolean> {
     const keys = Object.keys(obj).sort();
     const new_obj: Record<string, boolean> = {};

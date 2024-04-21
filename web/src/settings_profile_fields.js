@@ -14,6 +14,7 @@ import * as dialog_widget from "./dialog_widget";
 import {$t, $t_html} from "./i18n";
 import * as loading from "./loading";
 import * as people from "./people";
+import {read_field_data_from_form} from "./settings_components";
 import * as settings_ui from "./settings_ui";
 import {current_user, realm} from "./state_data";
 import * as ui_report from "./ui_report";
@@ -105,45 +106,6 @@ function delete_profile_field(e) {
     });
 }
 
-function read_select_field_data_from_form($profile_field_form, old_field_data) {
-    const field_data = {};
-    let field_order = 1;
-
-    const old_option_value_map = new Map();
-    if (old_field_data !== undefined) {
-        for (const [value, choice] of Object.entries(old_field_data)) {
-            old_option_value_map.set(choice.text, value);
-        }
-    }
-
-    $profile_field_form.find("div.choice-row").each(function () {
-        const text = $(this).find("input")[0].value;
-        if (text) {
-            if (old_option_value_map.get(text) !== undefined) {
-                // Resetting the data-value in the form is
-                // important if the user removed an option string
-                // and then added it back again before saving
-                // changes.
-                $(this).attr("data-value", old_option_value_map.get(text));
-            }
-            const value = $(this).attr("data-value");
-            field_data[value] = {text, order: field_order.toString()};
-            field_order += 1;
-        }
-    });
-
-    return field_data;
-}
-
-function read_external_account_field_data($profile_field_form) {
-    const field_data = {};
-    field_data.subtype = $profile_field_form.find("select[name=external_acc_field_type]").val();
-    if (field_data.subtype === "custom") {
-        field_data.url_pattern = $profile_field_form.find("input[name=url_pattern]").val();
-    }
-    return field_data;
-}
-
 export function get_value_for_new_option(container) {
     let value = 0;
     for (const row of $(container).find(".choice-row")) {
@@ -233,19 +195,6 @@ function set_up_create_field_form() {
         $("#profile_field_display_in_profile_summary").closest(".input-group").hide();
         $("#profile_field_display_in_profile_summary").prop("checked", false);
     }
-}
-
-function read_field_data_from_form(field_type_id, $profile_field_form, old_field_data) {
-    const field_types = realm.custom_profile_field_types;
-
-    // Only read field data if we are creating a select field
-    // or external account field.
-    if (field_type_id === field_types.SELECT.id) {
-        return read_select_field_data_from_form($profile_field_form, old_field_data);
-    } else if (field_type_id === field_types.EXTERNAL_ACCOUNT.id) {
-        return read_external_account_field_data($profile_field_form);
-    }
-    return undefined;
 }
 
 function open_custom_profile_field_form_modal() {
