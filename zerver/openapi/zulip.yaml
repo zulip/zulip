@@ -19235,9 +19235,9 @@ components:
           description: |
             The ID of the user who created this stream.
 
-            Is `null` for streams with no recorded creator, often because they are very
-            old, or were created via a data import tool or [management
-            command][management-commands].
+            A `null` value means the stream has no recorded creator, which is often
+            because the stream is very old, or because it was created via a data
+            import tool or [management command][management-commands].
 
             **Changes**: New in Zulip 9.0 (feature level 254).
 
@@ -19974,9 +19974,9 @@ components:
           description: |
             The ID of the user who created this stream.
 
-            Is `null` for streams with no recorded creator, often because they are very
-            old, or were created via a data import tool or [management
-            command][management-commands].
+            A `null` value means the stream has no recorded creator, which is often
+            because the stream is very old, or because it was created via a data
+            import tool or [management command][management-commands].
 
             **Changes**: New in Zulip 9.0 (feature level 254).
 
