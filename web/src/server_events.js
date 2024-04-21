@@ -5,7 +5,6 @@ import * as blueslip from "./blueslip";
 import * as channel from "./channel";
 import * as echo from "./echo";
 import * as message_events from "./message_events";
-import * as message_lists from "./message_lists";
 import {page_params} from "./page_params";
 import * as reload from "./reload";
 import * as reload_state from "./reload_state";
@@ -128,10 +127,6 @@ function get_events_success(events) {
         }
     }
 
-    if (message_lists.home.selected_id() === -1 && !message_lists.home.visibly_empty()) {
-        message_lists.home.select_id(message_lists.home.first().id, {then_scroll: false});
-    }
-
     if (update_message_events.length !== 0) {
         try {
             message_events.update_messages(update_message_events);
@@ -221,7 +216,6 @@ function get_events({dont_block = false} = {}) {
                     event_queue_expired = true;
                     reload.initiate({
                         immediate: true,
-                        save_pointer: false,
                         save_compose: true,
                     });
                     return;

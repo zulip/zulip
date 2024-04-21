@@ -206,7 +206,8 @@ export function initialize(): void {
             const narrow_filter = narrow_state.filter();
             let display_current_view;
             if (narrow_state.is_message_feed_visible()) {
-                if (narrow_filter === undefined) {
+                assert(narrow_filter !== undefined);
+                if (narrow_filter.is_in_home()) {
                     display_current_view = $t({
                         defaultMessage: "Currently viewing your combined feed.",
                     });

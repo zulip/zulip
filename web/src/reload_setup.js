@@ -68,13 +68,15 @@ export function initialize() {
         }
     }
 
-    const pointer = Number.parseInt(vars.pointer, 10);
-    const offset = Number.parseInt(vars.offset, 10);
+    // We only restore pointer and offset for the current narrow, even if there are narrows that
+    // were cached before the reload, they are no longer cached after the reload. We could possibly
+    // store the pointer and offset for these narrows but it might lead to a confusing experience if
+    // user gets back to these narrow much later (maybe days) and finds them at a random position in
+    // narrow which they didn't navigate to while they were trying to just get to the latest unread
+    // message in that narrow which will now take more effort to find.
     const narrow_pointer = Number.parseInt(vars.narrow_pointer, 10);
     const narrow_offset = Number.parseInt(vars.narrow_offset, 10);
     message_fetch.set_initial_pointer_and_offset({
-        pointer: Number.isNaN(pointer) ? undefined : pointer,
-        offset: Number.isNaN(offset) ? undefined : offset,
         narrow_pointer: Number.isNaN(narrow_pointer) ? undefined : narrow_pointer,
         narrow_offset: Number.isNaN(narrow_offset) ? undefined : narrow_offset,
     });
