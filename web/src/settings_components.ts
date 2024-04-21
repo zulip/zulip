@@ -12,6 +12,7 @@ import {$t} from "./i18n";
 import {realm_user_settings_defaults} from "./realm_user_settings_defaults";
 import * as scroll_util from "./scroll_util";
 import * as settings_config from "./settings_config";
+import type {CustomProfileField} from "./state_data";
 import {realm} from "./state_data";
 import * as stream_data from "./stream_data";
 import type {StreamSubscription} from "./sub_store";
@@ -98,14 +99,17 @@ export function get_property_value(
         | RealmSettingProperties
         | StreamSettingProperties
         | keyof UserGroup
+        | keyof CustomProfileField
         | RealmUserSettingDefaultProperties,
     for_realm_default_settings?: boolean,
     sub?: StreamSubscription,
     group?: UserGroup,
+    custom_profile_field?: CustomProfileField,
 ):
     | valueof<RealmSetting>
     | valueof<StreamSubscription>
     | valueof<UserGroup>
+    | valueof<CustomProfileField>
     | valueof<RealmUserSettingDefaultType> {
     if (for_realm_default_settings) {
         // realm_user_default_settings are stored in a separate object.
@@ -136,6 +140,15 @@ export function get_property_value(
     if (group) {
         // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
         return group[property_name as keyof UserGroup];
+    }
+
+    if (custom_profile_field) {
+        // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+        const value = custom_profile_field[property_name as keyof CustomProfileField];
+        if (property_name === "display_in_profile_summary" && value === undefined) {
+            return false;
+        }
+        return value;
     }
 
     if (property_name === "realm_org_join_restrictions") {
@@ -182,6 +195,10 @@ export function extract_property_name($elem: JQuery, for_realm_default_settings?
         // We assume it's not an empty string and can contain only digits and lowercase ASCII letters,
         // this is ensured by a respective allowlist-based filter in populate_auth_methods().
         return /^id_authmethod[\da-z]+_(.*)$/.exec(elem_id)![1];
+    }
+
+    if (elem_id.startsWith("id-custom-profile-field")) {
+        return /^id_custom_profile_field_(.*)$/.exec(elem_id.replaceAll("-", "_"))![1];
     }
 
     return /^id_(.*)$/.exec(elem_id.replaceAll("-", "_"))![1];
@@ -422,6 +439,22 @@ export function read_field_data_from_form(
         return read_external_account_field_data($profile_field_form);
     }
     return undefined;
+}
+
+function get_field_data_input_value($input_elem: JQuery): string | undefined {
+    const $profile_field_form = $input_elem.closest(".profile-field-form");
+    const profile_field_id = Number.parseInt(
+        $($profile_field_form).attr("data-profile-field-id")!,
+        10,
+    );
+    const field = realm.custom_profile_fields.find((field) => field.id === profile_field_id)!;
+
+    const proposed_value = read_field_data_from_form(
+        field.type,
+        $profile_field_form,
+        JSON.parse(field.field_data),
+    );
+    return JSON.stringify(proposed_value);
 }
 
 export function sort_object_by_key(obj: Record<string, boolean>): Record<string, boolean> {
@@ -672,6 +705,8 @@ export function get_input_element_value(
             return get_message_retention_setting_value($(input_elem));
         case "dropdown-list-widget":
             return get_dropdown_list_widget_setting_value($input_elem);
+        case "field-data-setting":
+            return get_field_data_input_value($input_elem);
         default:
             return undefined;
     }
@@ -762,6 +797,7 @@ type setting_property_type =
     | RealmSettingProperties
     | StreamSettingProperties
     | keyof UserGroup
+    | keyof CustomProfileField
     | RealmUserSettingDefaultProperties;
 
 export function check_property_changed(
@@ -769,6 +805,7 @@ export function check_property_changed(
     for_realm_default_settings: boolean,
     sub: StreamSubscription | undefined,
     group: UserGroup | undefined,
+    custom_profile_field: CustomProfileField | undefined,
 ): boolean {
     const $elem = $(elem);
     // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
@@ -776,7 +813,14 @@ export function check_property_changed(
         $elem,
         for_realm_default_settings,
     ) as setting_property_type;
-    let current_val = get_property_value(property_name, for_realm_default_settings, sub, group);
+    let current_val = get_property_value(
+        property_name,
+        for_realm_default_settings,
+        sub,
+        group,
+        custom_profile_field,
+    );
+
     let proposed_val;
 
     switch (property_name) {
@@ -823,6 +867,9 @@ export function check_property_changed(
         case "stream_privacy":
             proposed_val = get_input_element_value(elem, "radio-group");
             break;
+        case "field_data":
+            proposed_val = get_input_element_value(elem, "field-data-setting");
+            break;
         default:
             if (current_val !== undefined) {
                 proposed_val = get_input_element_value(elem, typeof current_val);
@@ -859,7 +906,7 @@ export function save_discard_widget_status_handler(
     $subsection.find(".save-button").show();
     const properties_elements = get_subsection_property_elements($subsection);
     const show_change_process_button = properties_elements.some((elem) =>
-        check_property_changed(elem, for_realm_default_settings, sub, group),
+        check_property_changed(elem, for_realm_default_settings, sub, group, undefined),
     );
 
     const $save_btn_controls = $subsection.find(".subsection-header .save-button-controls");
