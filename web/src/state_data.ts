@@ -67,6 +67,19 @@ const onboarding_step_schema = z.union([one_time_notice_schema, raw_hotspot_sche
 
 export type OnboardingStep = z.output<typeof onboarding_step_schema>;
 
+export const custom_profile_field_schema = z.object({
+    display_in_profile_summary: z.optional(z.boolean()),
+    field_data: z.string(),
+    hint: z.string(),
+    id: z.number(),
+    name: z.string(),
+    order: z.number(),
+    required: z.boolean(),
+    type: z.number(),
+});
+
+export type CustomProfileField = z.output<typeof custom_profile_field_schema>;
+
 export const current_user_schema = z.object({
     avatar_source: z.string(),
     delivery_email: z.string(),
@@ -81,18 +94,7 @@ export const current_user_schema = z.object({
 // Sync this with zerver.lib.events.do_events_register.
 
 export const realm_schema = z.object({
-    custom_profile_fields: z.array(
-        z.object({
-            display_in_profile_summary: z.optional(z.boolean()),
-            field_data: z.string(),
-            hint: z.string(),
-            id: z.number(),
-            name: z.string(),
-            order: z.number(),
-            required: z.boolean(),
-            type: z.number(),
-        }),
-    ),
+    custom_profile_fields: z.array(custom_profile_field_schema),
     custom_profile_field_types: z.object({
         SHORT_TEXT: z.object({id: z.number(), name: z.string()}),
         LONG_TEXT: z.object({id: z.number(), name: z.string()}),

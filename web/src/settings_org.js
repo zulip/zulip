@@ -826,7 +826,13 @@ export function init_dropdown_widgets() {
     can_access_all_users_group_widget.setup();
 }
 
-export function populate_data_for_request(subsection, for_realm_default_settings, sub, group) {
+export function populate_data_for_request(
+    subsection,
+    for_realm_default_settings,
+    sub,
+    group,
+    custom_profile_field = undefined,
+) {
     let data = {};
     const properties_elements = settings_components.get_subsection_property_elements(subsection);
 
@@ -838,12 +844,13 @@ export function populate_data_for_request(subsection, for_realm_default_settings
                 for_realm_default_settings,
                 sub,
                 group,
+                custom_profile_field,
             )
         ) {
             const input_value = settings_components.get_input_element_value(input_elem);
             if (input_value !== undefined) {
                 let property_name;
-                if (for_realm_default_settings || sub || group) {
+                if (for_realm_default_settings || sub || group || custom_profile_field) {
                     property_name = settings_components.extract_property_name(
                         $input_elem,
                         for_realm_default_settings,

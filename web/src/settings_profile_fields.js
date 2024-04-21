@@ -15,6 +15,7 @@ import {$t, $t_html} from "./i18n";
 import * as loading from "./loading";
 import * as people from "./people";
 import {read_field_data_from_form} from "./settings_components";
+import {populate_data_for_request} from "./settings_org";
 import * as settings_ui from "./settings_ui";
 import {current_user, realm} from "./state_data";
 import * as ui_report from "./ui_report";
@@ -454,23 +455,21 @@ function open_edit_form_modal(e) {
     function submit_form() {
         const $profile_field_form = $("#edit-custom-profile-field-form-" + field_id);
 
-        // For some reason jQuery's serialize() is not working with
-        // channel.patch even though it is supported by $.ajax.
-        const data = {};
-
-        data.name = $profile_field_form.find("input[name=name]").val();
-        data.hint = $profile_field_form.find("input[name=hint]").val();
-        data.display_in_profile_summary = $profile_field_form
-            .find("input[name=display_in_profile_summary]")
-            .is(":checked");
-        data.required = $profile_field_form.find("input[name=required]").is(":checked");
-
-        const new_field_data = read_field_data_from_form(
-            Number.parseInt(field.type, 10),
+        const data = populate_data_for_request(
             $profile_field_form,
-            field_data,
+            false,
+            undefined,
+            undefined,
+            field,
         );
-        data.field_data = JSON.stringify(new_field_data);
+
+        // If there is no data to be changed, we display our success status
+        // since save changes button is always enabled.
+        if (Object.keys(data).length === 0) {
+            dialog_widget.close();
+            display_success_status();
+            return;
+        }
 
         function update_profile_field() {
             const url = "/json/realm/profile_fields/" + field_id;
@@ -482,8 +481,8 @@ function open_edit_form_modal(e) {
             dialog_widget.submit_api_request(channel.patch, url, data, opts);
         }
 
-        if (field.type === field_types.SELECT.id) {
-            const new_values = new Set(Object.keys(new_field_data));
+        if (field.type === field_types.SELECT.id && data.field_data !== undefined) {
+            const new_values = new Set(Object.keys(JSON.parse(data.field_data)));
             const deleted_values = {};
             for (const [value, option] of Object.entries(field_data)) {
                 if (!new_values.has(value)) {
