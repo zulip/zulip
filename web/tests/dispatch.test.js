@@ -92,6 +92,7 @@ const user_groups = mock_esm("../src/user_groups");
 const user_group_edit = mock_esm("../src/user_group_edit");
 const overlays = mock_esm("../src/overlays");
 mock_esm("../src/giphy");
+const {Filter} = zrequire("filter");
 
 const electron_bridge = set_global("electron_bridge", {});
 
@@ -101,19 +102,17 @@ message_lists.current = {
     rerender_view: noop,
     data: {
         get_messages_sent_by_user: () => [],
-        filter: {
-            is_in_home: () => true,
-        },
+        filter: new Filter([]),
     },
 };
-message_lists.home = {
+const cached_message_list = {
     get_row: noop,
     rerender_view: noop,
     data: {
         get_messages_sent_by_user: () => [],
     },
 };
-message_lists.all_rendered_message_lists = () => [message_lists.home, message_lists.current];
+message_lists.all_rendered_message_lists = () => [cached_message_list, message_lists.current];
 
 // page_params is highly coupled to dispatching now
 page_params.test_suite = false;
@@ -783,7 +782,6 @@ run_test("web_reload_client", ({override}) => {
     dispatch(event);
     assert.equal(stub.num_calls, 1);
     const args = stub.get_args("options");
-    assert.equal(args.options.save_pointer, true);
     assert.equal(args.options.immediate, true);
 });
 
@@ -890,13 +888,16 @@ run_test("user_settings", ({override}) => {
     message_lists.current.rerender = () => {
         called = true;
     };
-
-    override(message_lists.home, "rerender", noop);
+    let called_for_cached_msg_list = false;
+    cached_message_list.rerender = () => {
+        called_for_cached_msg_list = true;
+    };
     event = event_fixtures.user_settings__twenty_four_hour_time;
     user_settings.twenty_four_hour_time = false;
     dispatch(event);
     assert_same(user_settings.twenty_four_hour_time, true);
     assert_same(called, true);
+    assert_same(called_for_cached_msg_list, true);
 
     event = event_fixtures.user_settings__translate_emoticons;
     user_settings.translate_emoticons = false;

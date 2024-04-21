@@ -8,15 +8,9 @@ import * as stream_data from "./stream_data";
 import type {StreamSubscription} from "./sub_store";
 import * as unread from "./unread";
 
-export let has_shown_message_list_view = false;
-
 export function filter(): Filter | undefined {
-    // `Combined feed`, `Recent Conversations` and `Inbox` return undefined;
-    if (message_lists.current === undefined || message_lists.current.data.filter.is_in_home()) {
-        return undefined;
-    }
-
-    return message_lists.current.data.filter;
+    // `Recent Conversations` and `Inbox` return undefined;
+    return message_lists.current?.data.filter;
 }
 
 export function search_terms(current_filter: Filter | undefined = filter()): NarrowTerm[] {
@@ -380,8 +374,4 @@ export function is_for_stream_id(stream_id: number, filter?: Filter): boolean {
     }
 
     return stream_id === narrow_sub.stream_id;
-}
-
-export function set_has_shown_message_list_view(): void {
-    has_shown_message_list_view = true;
 }

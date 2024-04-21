@@ -10,18 +10,11 @@ const {page_params} = require("./lib/zpage_params");
 set_global("addEventListener", noop);
 
 const channel = mock_esm("../src/channel");
-const message_lists = mock_esm("../src/message_lists");
 mock_esm("../src/reload_state", {
     is_in_progress() {
         return false;
     },
 });
-message_lists.home = {
-    select_id: noop,
-    selected_id() {
-        return 1;
-    },
-};
 page_params.test_suite = false;
 
 // we also directly write to pointer

@@ -41,6 +41,8 @@ export class MessageListData {
     // there are no messages matching the current filter.
     _selected_id: number;
     predicate?: (message: Message) => boolean;
+    // This is a callback that is called when messages are added to the message list.
+    add_messages_callback?: (messages: Message[]) => void;
 
     // MessageListData is a core data structure for keeping track of a
     // contiguous block of messages matching a given narrow that can
@@ -58,6 +60,10 @@ export class MessageListData {
         this.excludes_muted_topics = excludes_muted_topics;
         this._local_only = new Set();
         this._selected_id = -1;
+    }
+
+    set_add_messages_callback(callback: () => void): void {
+        this.add_messages_callback = callback;
     }
 
     all_messages(): Message[] {
@@ -331,6 +337,10 @@ export class MessageListData {
 
         if (bottom_messages.length > 0) {
             bottom_messages = this.append(bottom_messages);
+        }
+
+        if (this.add_messages_callback) {
+            this.add_messages_callback(messages);
         }
 
         const info = {

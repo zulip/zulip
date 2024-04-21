@@ -1241,7 +1241,7 @@ export function delete_topic(stream_id, topic_name, failures = 0) {
     });
 }
 
-export function handle_narrow_deactivated() {
+export function restore_edit_state_after_message_view_change() {
     assert(message_lists.current !== undefined);
     for (const [idx, elem] of currently_editing_messages) {
         if (message_lists.current.get(idx) !== undefined) {
