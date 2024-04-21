@@ -66,7 +66,12 @@ from zerver.lib.request import RequestNotes, has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.send_email import FromAddress
 from zerver.lib.timestamp import timestamp_to_datetime
-from zerver.lib.typed_endpoint import JsonBodyPayload, RequiredStringConstraint, typed_endpoint
+from zerver.lib.typed_endpoint import (
+    ApnsAppId,
+    JsonBodyPayload,
+    RequiredStringConstraint,
+    typed_endpoint,
+)
 from zerver.lib.typed_endpoint_validators import check_string_fixed_length
 from zerver.lib.types import RemoteRealmDictValue
 from zerver.models.realms import DisposableEmailError
@@ -239,7 +244,7 @@ def register_remote_push_device(
     realm_uuid: Optional[str] = None,
     token: Annotated[str, RequiredStringConstraint],
     token_kind: Json[int],
-    ios_app_id: Annotated[Optional[str], StringConstraints(pattern="^[.a-zA-Z0-9-]+$")] = None,
+    ios_app_id: Optional[ApnsAppId] = None,
 ) -> HttpResponse:
     validate_bouncer_token_request(token, token_kind)
     if token_kind == RemotePushDeviceToken.APNS and ios_app_id is None:
