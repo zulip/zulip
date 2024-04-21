@@ -131,7 +131,9 @@ function clear_box(): void {
     compose_banner.clear_errors();
     compose_banner.clear_warnings();
     compose_banner.clear_uploads();
-    $(".compose_control_button_container:has(.add-poll)").removeClass("disabled-on-hover");
+    $(".compose_control_button_container:has(.needs-empty-compose)").removeClass(
+        "disabled-on-hover",
+    );
 }
 
 let autosize_callback_opts: ComposeActionsStartOpts;
@@ -341,7 +343,9 @@ export function start(raw_opts: ComposeActionsStartOpts): void {
 
     if (opts.content !== undefined) {
         compose_ui.insert_and_scroll_into_view(opts.content, $("textarea#compose-textarea"), true);
-        $(".compose_control_button_container:has(.add-poll)").addClass("disabled-on-hover");
+        $(".compose_control_button_container:has(.needs-empty-compose)").addClass(
+            "disabled-on-hover",
+        );
         // If we were provided with message content, we might need to
         // display that it's too long.
         compose_validate.check_overflow_text();

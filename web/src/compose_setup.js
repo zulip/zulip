@@ -2,6 +2,7 @@ import $ from "jquery";
 
 import {unresolve_name} from "../shared/src/resolved_topic";
 import render_add_poll_modal from "../templates/add_poll_modal.hbs";
+import render_add_todo_list_modal from "../templates/add_todo_list_modal.hbs";
 
 import * as compose from "./compose";
 import * as compose_actions from "./compose_actions";
@@ -21,7 +22,6 @@ import * as message_view from "./message_view";
 import * as narrow_state from "./narrow_state";
 import * as onboarding_steps from "./onboarding_steps";
 import {page_params} from "./page_params";
-import * as poll_modal from "./poll_modal";
 import * as popovers from "./popovers";
 import * as resize from "./resize";
 import * as rows from "./rows";
@@ -34,6 +34,7 @@ import {get_timestamp_for_flatpickr} from "./timerender";
 import * as ui_report from "./ui_report";
 import * as upload from "./upload";
 import * as user_topics from "./user_topics";
+import * as widget_modal from "./widget_modal";
 
 export function abort_xhr() {
     $("#compose-send-button").prop("disabled", false);
@@ -86,9 +87,9 @@ export function initialize() {
 
         // The poll widget requires an empty compose box.
         if (compose_text_length > 0) {
-            $(".add-poll").parent().addClass("disabled-on-hover");
+            $(".needs-empty-compose").parent().addClass("disabled-on-hover");
         } else {
-            $(".add-poll").parent().removeClass("disabled-on-hover");
+            $(".needs-empty-compose").parent().removeClass("disabled-on-hover");
         }
 
         if (compose_state.get_is_content_unedited_restored_draft()) {
@@ -425,16 +426,83 @@ export function initialize() {
                 // frame a message using data input in modal, then populate the compose textarea with it
                 e.preventDefault();
                 e.stopPropagation();
-                const poll_message_content = poll_modal.frame_poll_message_content();
+                const poll_message_content = widget_modal.frame_poll_message_content();
                 compose_ui.insert_syntax_and_focus(poll_message_content);
             },
             validate_input,
             form_id: "add-poll-form",
             id: "add-poll-modal",
-            post_render: poll_modal.poll_options_setup,
+            post_render: widget_modal.poll_options_setup,
             help_link: "https://zulip.com/help/create-a-poll",
         });
     });
+
+    $("body").on("input", "#add-todo-modal .todo-input", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+
+        $(".option-row").each(function () {
+            const todo_name = $(this).find(".todo-input").val();
+            const $todo_description = $(this).find(".todo-description-input");
+            if (todo_name) {
+                $todo_description.prop("disabled", false);
+            } else {
+                $todo_description.prop("disabled", true);
+            }
+        });
+    });
+
+    $("body").on(
+        "click",
+        ".compose_control_button_container:not(.disabled) .add-todo-list",
+        (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+
+            function validate_input(e) {
+                let is_valid = true;
+                e.preventDefault();
+                e.stopPropagation();
+                $(".option-row").each(function () {
+                    const todo_name = $(this).find(".todo-input").val();
+                    const todo_description = $(this).find(".todo-description-input").val();
+                    if (!todo_name && todo_description) {
+                        ui_report.error(
+                            $t_html({defaultMessage: "Please enter task title."}),
+                            undefined,
+                            $("#dialog_error"),
+                        );
+                        is_valid = false;
+                    }
+                });
+                return is_valid;
+            }
+
+            dialog_widget.launch({
+                html_heading: $t_html({defaultMessage: "Create a collaborative to-do list"}),
+                html_body: render_add_todo_list_modal(),
+                html_submit_button: $t_html({defaultMessage: "Create to-do list"}),
+                close_on_submit: true,
+                on_click(e) {
+                    // frame a message using data input in modal, then populate the compose textarea with it
+                    e.preventDefault();
+                    e.stopPropagation();
+                    const todo_message_content = widget_modal.frame_todo_message_content();
+                    compose_ui.insert_syntax_and_focus(todo_message_content);
+                },
+                on_show() {
+                    setTimeout(() => {
+                        $("#todo-title-input").trigger("select");
+                    }, 50);
+                },
+                form_id: "add-todo-form",
+                validate_input,
+                id: "add-todo-modal",
+                post_render: widget_modal.todo_list_tasks_setup,
+                help_link: "https://zulip.com/help/collaborative-to-do-lists",
+            });
+        },
+    );
 
     $("#compose").on("click", ".markdown_preview", (e) => {
         e.preventDefault();
