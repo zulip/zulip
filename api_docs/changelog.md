@@ -26,8 +26,8 @@ format used by the Zulip server that they are interacting with.
   [`GET /streams`](/api/get-streams),
   [`GET /streams/{stream_id}`](/api/get-stream-by-id),
   [`GET /users/me/subscriptions`](/api/get-subscriptions): Added a new
-  field `creator_id`, on stream and subscription objects, containing the
-  user id of the stream creator.
+  field `creator_id` to stream and subscription objects, which contains the
+  user ID of the stream's creator.
 
 **Feature level 253**
 
