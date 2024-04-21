@@ -12060,7 +12060,7 @@ paths:
   /invites/multiuse:
     post:
       operationId: create-invite-link
-      summary: Create reusable invitation link
+      summary: Create a reusable invitation link
       tags: ["invites"]
       description: |
         Create a [reusable invitation link](/help/invite-new-users#create-a-reusable-invitation-link)
@@ -12207,7 +12207,7 @@ paths:
                             "code": "BAD_REQUEST",
                           }
                         description: |
-                          A typical failed JSON response for an invalid `invite_id`:
+                          A typical failed JSON response for an invalid email invitation ID:
   /register:
     post:
       operationId: register-queue
@@ -19836,7 +19836,13 @@ components:
         id:
           type: integer
           description: |
-            The unique ID of the invitation.
+            The ID of the invitation.
+
+            Note that email invitations and reusable invitation links are stored
+            in different database tables on the server, so each ID is guaranteed
+            to be unique in combination with the boolean value of `is_multiuse`,
+            e.g. there can only be one invitation with `id: 1` and `is_multiuse:
+            true`.
         invited_by_user_id:
           type: integer
           description: |
