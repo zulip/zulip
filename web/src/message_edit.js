@@ -1184,7 +1184,9 @@ export function delete_message(msg_id) {
                 // for the feature of displaying message deletion with specified user in chat history
                 const deleted_by = data.deleted_by;
                 const message_row = $(`#message-${msg_id}`);
-                message_row.find('.message_content').html(`<p><em>${deleted_by} deleted a message</em></p>`);
+                const end_product = message_row.find('.message_content').html(`<p><em>${deleted_by} deleted a message</em></p>`);
+                console.log("ELENA:           deletor", deleted_by);
+                console.log("ELENA:           end product", end_product);
                 currently_deleting_messages = currently_deleting_messages.filter(
                     (id) => id !== msg_id,
                     

@@ -28,8 +28,10 @@ def do_delete_messages(realm: Realm, messages: Iterable[Message]) -> None:
     event: DeleteMessagesEvent = {
         "type": "delete_message",
         "message_ids": message_ids,
-        "deleted_by": UserMessage.objects.filter(message_id__in=message_ids)[0].user_profile_id
+        "deleted_by": UserMessage.objects.filter(message_id__in=message_ids)[0].user_profile.full_name
     }
+
+    print("ELENA backend deleted_by", event["deleted_by"])
 
     sample_message = messages[0]
     message_type = "stream"
