@@ -6208,8 +6208,9 @@ paths:
             which are aliases for (and return the same results as) the `stream` and
             `streams` filters respectively.
 
-            In Zulip 9.0 (feature level 249), added new `has:reaction`
-            filter, matching messages with at least one emoji reaction.
+            In Zulip 9.0 (feature level 249), narrows gained support for a new
+            filter, `has:reaction`, which returns messages with at least one
+            [emoji reaction](/help/emoji-reactions).
 
             In Zulip 7.0 (feature level 177), narrows gained support
             for three new filters related to direct messages: `is:dm`, `dm` and
@@ -7086,8 +7087,9 @@ paths:
                     which are aliases for (and return the same results as) the `stream` and
                     `streams` filters respectively.
 
-                    In Zulip 9.0 (feature level 249), added new `has:reaction`
-                    filter, matching messages with at least one emoji reaction.
+                    In Zulip 9.0 (feature level 249), narrows gained support for a new
+                    filter, `has:reaction`, which returns messages with at least one
+                    [emoji reaction](/help/emoji-reactions).
 
                     In Zulip 7.0 (feature level 177), narrows gained support
                     for three new filters related to direct messages: `is:dm`, `dm` and
@@ -7518,8 +7520,9 @@ paths:
             which are aliases for (and return the same results as) the `stream` and
             `streams` filters respectively.
 
-            In Zulip 9.0 (feature level 249), added new `has:reaction`
-            filter, matching messages with at least one emoji reaction.
+            In Zulip 9.0 (feature level 249), narrows gained support for a new
+            filter, `has:reaction`, which returns messages with at least one
+            [emoji reaction](/help/emoji-reactions).
 
             In Zulip 7.0 (feature level 177), narrows gained support
             for three new filters related to direct messages: `is:dm`, `dm` and
@@ -21557,8 +21560,9 @@ components:
         which are aliases for (and return the same results as) the `stream` and
         `streams` filters respectively.
 
-        In Zulip 9.0 (feature level 249), added new `has:reaction`
-        filter, matching messages with at least one emoji reaction.
+        In Zulip 9.0 (feature level 249), narrows gained support for a new
+        filter, `has:reaction`, which returns messages with at least one
+        [emoji reaction](/help/emoji-reactions).
 
         In Zulip 7.0 (feature level 177), narrows gained support
         for three new filters related to direct messages: `is:dm`, `dm` and

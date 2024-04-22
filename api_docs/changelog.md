@@ -61,10 +61,13 @@ format used by the Zulip server that they are interacting with.
 
 **Feature level 249**
 
-* [`GET /messages`](/api/get-messages), [`GET
-  /messages/matches_narrow`](/api/check-messages-match-narrow): Added
-  new `has:reaction` search operator, matching messages with at least
-  one emoji reaction.
+* [`GET /messages`](/api/get-messages),
+  [`GET /messages/matches_narrow`](/api/check-messages-match-narrow),
+  [`POST /messages/flags/narrow`](/api/update-message-flags-for-narrow),
+  [`POST /register`](/api/register-queue):
+  Added support for a new [search/narrow filter](/api/construct-narrow),
+  `has:reaction`, which returns messages with at least one [emoji
+  reaction](/help/emoji-reactions).
 
 **Feature level 248**
 
