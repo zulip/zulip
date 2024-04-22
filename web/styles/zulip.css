@@ -1417,6 +1417,9 @@ nav {
     .column-left {
         text-align: left;
         margin-left: 15px;
+        display: flex;
+        justify-content: space-between;
+        gap: 10px;
 
         .nav-logo {
             display: inline-block;
@@ -1427,6 +1430,15 @@ nav {
 
             @media (height < $short_navbar_cutoff_height) {
                 height: 15px;
+            }
+        }
+
+        .left-sidebar-toggle-button {
+            margin-right: 5px;
+
+            .left-sidebar-toggle-unreadcount {
+                top: 10px;
+                right: 14px;
             }
         }
     }
@@ -1946,6 +1958,41 @@ select.invite-as {
     visibility: hidden;
 }
 
+%hide-left-sidebar {
+    .app-main .column-left {
+        display: none;
+
+        &.expanded {
+            display: block;
+            position: absolute;
+            float: none;
+            left: 0;
+            top: 0;
+
+            .left-sidebar {
+                background-color: var(--color-background);
+                box-shadow: 0 2px 3px 0 hsl(0deg 0% 0% / 10%);
+                border-right: 1px solid var(--color-border-sidebar);
+                height: 100%;
+                padding-left: 10px;
+                width: var(--left-sidebar-width);
+            }
+        }
+    }
+}
+
+.hide-left-sidebar {
+    @extend %hide-left-sidebar;
+}
+
+body:not(.hide-left-sidebar) {
+    /* User can clearly see the unread count in the left sidebar. So,
+       we don't need an indicator here as it will only serve as a disctraction. */
+    #header-container .column-left .left-sidebar-toggle-unreadcount {
+        display: none !important;
+    }
+}
+
 @media (width < $xl_min) {
     .default-sidebar-behaviour {
         @extend %hide-right-sidebar;
@@ -1969,26 +2016,10 @@ select.invite-as {
 
 @media (width < $md_min) {
     .default-sidebar-behaviour {
-        .app-main .column-left,
+        @extend %hide-left-sidebar;
+
         .header-main .column-left {
             display: none;
-        }
-
-        .app-main .column-left.expanded {
-            display: block;
-            position: absolute;
-            float: none;
-            left: 0;
-            top: 0;
-
-            .left-sidebar {
-                background-color: var(--color-background);
-                box-shadow: 0 2px 3px 0 hsl(0deg 0% 0% / 10%);
-                border-right: 1px solid var(--color-border-sidebar);
-                height: 100%;
-                padding-left: 10px;
-                width: var(--left-sidebar-width);
-            }
         }
 
         .app-main .column-middle {

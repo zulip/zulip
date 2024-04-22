@@ -4,12 +4,16 @@
             <a href="" class="brand no-style">
                 <img id="realm-logo" src="" alt="" class="nav-logo no-drag"/>
             </a>
+            <a class="left-sidebar-toggle-button {{#if embedded}}hide-streamlist-toggle-visibility{{/if}}" tabindex="0" role="button">
+                <i class="fa fa-reorder" aria-hidden="true"></i>
+                <span class="left-sidebar-toggle-unreadcount">0</span>
+            </a>
         </div>
         <div class="column-middle" id="navbar-middle">
             <div class="column-middle-inner">
-                <div id="streamlist-toggle" class="tippy-zulip-delayed-tooltip {{#if embedded}}hide-streamlist-toggle-visibility{{/if}}" data-tooltip-template-id="streamlist-toggle-tooltip-template">
+                <div id="streamlist-toggle" class="tippy-zulip-delayed-tooltip {{#if embedded}}hide-streamlist-toggle-visibility{{/if}}" data-tooltip-template-id="show-left-sidebar-tooltip-template">
                     <a class="left-sidebar-toggle-button" role="button" tabindex="0"><i class="fa fa-reorder" aria-hidden="true"></i>
-                        <span id="streamlist-toggle-unreadcount">0</span>
+                        <span class="left-sidebar-toggle-unreadcount">0</span>
                     </a>
                 </div>
                 <div class="top-navbar-container">
