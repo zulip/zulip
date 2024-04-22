@@ -968,6 +968,8 @@ export function initiate_search(): void {
     ) {
         popovers.hide_all();
         sidebar_ui.show_streamlist_sidebar();
+    } else if (!sidebar_ui.left_sidebar_expanded_as_overlay) {
+        $("body").removeClass("hide-left-sidebar");
     }
     $filter.trigger("focus");
 

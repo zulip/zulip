@@ -114,6 +114,11 @@ export function initialize(): void {
         e.preventDefault();
         e.stopPropagation();
 
+        if (window.innerWidth >= media_breakpoints_num.md) {
+            $("body").toggleClass("hide-left-sidebar");
+            return;
+        }
+
         if (left_sidebar_expanded_as_overlay) {
             hide_streamlist_sidebar();
             return;
