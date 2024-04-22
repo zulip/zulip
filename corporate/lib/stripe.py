@@ -419,7 +419,6 @@ class BillingError(JsonableError):
     CONTACT_SUPPORT = gettext_lazy("Something went wrong. Please contact {email}.")
     TRY_RELOADING = gettext_lazy("Something went wrong. Please reload the page.")
 
-    # description is used only for tests
     def __init__(self, description: str, message: Optional[str] = None) -> None:
         self.error_description = description
         if message is None:
