@@ -263,25 +263,7 @@ function open_custom_profile_field_form_modal() {
     });
 }
 
-function disable_submit_btn_if_empty_choices() {
-    const $choice_text_rows = $("#edit-custom-profile-field-form-modal .choice-row").find(
-        ".modal_text_input",
-    );
-    let non_empty_choice_present = false;
-    for (const text_row of $choice_text_rows) {
-        if ($(text_row).val() !== "") {
-            non_empty_choice_present = true;
-            break;
-        }
-    }
-    $("#edit-custom-profile-field-form-modal .dialog_submit_button").prop(
-        "disabled",
-        !non_empty_choice_present,
-    );
-}
-
 function add_choice_row(e) {
-    disable_submit_btn_if_empty_choices();
     const $curr_choice_row = $(e.target).parent();
     if ($curr_choice_row.next().hasClass("choice-row")) {
         return;
@@ -296,7 +278,11 @@ function add_choice_row(e) {
 function delete_choice_row(e) {
     const $row = $(e.currentTarget).parent();
     $row.remove();
-    disable_submit_btn_if_empty_choices();
+}
+
+function delete_choice_row_for_edit(e, $profile_field_form, field) {
+    delete_choice_row(e);
+    disable_submit_btn_if_no_property_changed($profile_field_form, field);
 }
 
 function show_modal_for_deleting_options(field, deleted_values, update_profile_field) {
@@ -357,13 +343,25 @@ function set_up_external_account_field_edit_form($profile_field_form, url_patter
     }
 }
 
-function set_up_select_field_edit_form($profile_field_form, field_data) {
+function disable_submit_btn_if_no_property_changed($profile_field_form, field) {
+    const data = populate_data_for_request($profile_field_form, false, undefined, undefined, field);
+    let save_changes_button_disabled = false;
+    if (Object.keys(data).length === 0 || data.field_data === "{}") {
+        save_changes_button_disabled = true;
+    }
+    $("#edit-custom-profile-field-form-modal .dialog_submit_button").prop(
+        "disabled",
+        save_changes_button_disabled,
+    );
+}
+
+function set_up_select_field_edit_form($profile_field_form, field) {
     // Re-render field choices in edit form to load initial select data
     const $choice_list = $profile_field_form.find(".edit_profile_field_choices_container");
     $choice_list.off();
     $choice_list.empty();
 
-    const choices_data = parse_field_choices_from_field_data(field_data);
+    const choices_data = parse_field_choices_from_field_data(JSON.parse(field.field_data));
 
     for (const choice of choices_data) {
         $choice_list.append(
@@ -382,6 +380,9 @@ function set_up_select_field_edit_form($profile_field_form, field_data) {
         onUpdate() {},
         filter: "input",
         preventOnFilter: false,
+        onSort() {
+            disable_submit_btn_if_no_property_changed($profile_field_form, field);
+        },
     });
 }
 
@@ -430,7 +431,7 @@ function open_edit_form_modal(e) {
         }
 
         if (Number.parseInt(field.type, 10) === field_types.SELECT.id) {
-            set_up_select_field_edit_form($profile_field_form, field_data);
+            set_up_select_field_edit_form($profile_field_form, field);
         }
 
         if (Number.parseInt(field.type, 10) === field_types.EXTERNAL_ACCOUNT.id) {
@@ -449,7 +450,17 @@ function open_edit_form_modal(e) {
             .on("input", ".choice-row input", add_choice_row);
         $profile_field_form
             .find(".edit_profile_field_choices_container")
-            .on("click", "button.delete-choice", delete_choice_row);
+            .on("click", "button.delete-choice", (e) =>
+                delete_choice_row_for_edit(e, $profile_field_form, field),
+            );
+
+        $("#edit-custom-profile-field-form-modal .dialog_submit_button").prop("disabled", true);
+        // Setup onInput event listeners to disable/enable submit button,
+        // select field add/update/remove operations are covered in onSort and
+        // row delete button is separately covered in delete_choice_row_for_edit.
+        $profile_field_form.on("input", () =>
+            disable_submit_btn_if_no_property_changed($profile_field_form, field),
+        );
     }
 
     function submit_form() {
@@ -462,14 +473,6 @@ function open_edit_form_modal(e) {
             undefined,
             field,
         );
-
-        // If there is no data to be changed, we display our success status
-        // since save changes button is always enabled.
-        if (Object.keys(data).length === 0) {
-            dialog_widget.close();
-            display_success_status();
-            return;
-        }
 
         function update_profile_field() {
             const url = "/json/realm/profile_fields/" + field_id;
