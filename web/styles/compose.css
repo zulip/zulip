@@ -246,9 +246,10 @@
            TODO: get this value into a CSS variable. */
         grid-template: minmax(0, 1fr) 32px / minmax(0, 1fr) 112px;
         grid-template-areas:
-            "compose-textarea message-send-controls-container"
+            "message-content-container message-send-controls-container"
             "message-formatting-controls-container . ";
         gap: 4px 6px;
+        margin-top: 5px;
 
         @media ((width >= $sm_min) and (width < $mc_min)) {
             /* Drop to a 62px wide send column. */
@@ -266,14 +267,10 @@
     }
 }
 
-#compose-textarea,
-#preview-message-area-container {
-    grid-area: compose-textarea;
-    /* When the compose box is full screen, this
-       auto height will kick in and make sure that
-       the textarea opens to fill its whole grid
-       area. */
-    height: auto;
+#message-content-container {
+    grid-area: message-content-container;
+    display: grid;
+    grid-template: minmax(0, 1fr) / minmax(0, 1fr);
 }
 
 #preview-message-area-container {
@@ -709,13 +706,11 @@
 
 textarea.new_message_textarea {
     display: table-cell;
-    width: calc(100% - 12px);
     padding: 5px;
     height: 1.5em;
     max-height: 22em;
-    margin-bottom: 0;
+    margin: 0;
     resize: vertical !important;
-    margin-top: 5px;
     border-radius: 4px;
     color: hsl(0deg 0% 33%);
     background-color: hsl(0deg 0% 100%);
@@ -1129,8 +1124,6 @@ textarea.new_message_textarea,
 }
 
 .preview_message_area {
-    /* minus 5px padding. */
-    width: calc(100% - 12px);
     padding: 5px;
     /* the maximum height the textarea gets to. */
     max-height: 308px;
@@ -1380,9 +1373,6 @@ textarea.new_message_textarea,
 
 .preview_mode {
     #preview-message-area-container {
-        /* Maintain same top alignment as the
-           compose textarea. */
-        margin-top: 5px;
         /* When in preview mode, we display the
            preview container as a columnar flexbox.
            This containing element is necessary

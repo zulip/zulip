@@ -78,14 +78,16 @@
                     </div>
                     <div class="messagebox-wrapper">
                         <div class="messagebox">
-                            <textarea class="new_message_textarea" name="content" id='compose-textarea' placeholder="{{t 'Compose your message here' }}" tabindex="0" aria-label="{{t 'Compose your message here...' }}"></textarea>
-                            <div id="preview-message-area-container">
-                                <div class="scrolling_list preview_message_area" data-simplebar id="preview_message_area" style="display:none;">
-                                    <div class="markdown_preview_spinner"></div>
-                                    <div class="preview_content rendered_markdown"></div>
+                            <div id="message-content-container">
+                                <textarea class="new_message_textarea" name="content" id='compose-textarea' placeholder="{{t 'Compose your message here' }}" tabindex="0" aria-label="{{t 'Compose your message here...' }}"></textarea>
+                                <div id="preview-message-area-container">
+                                    <div class="scrolling_list preview_message_area" data-simplebar id="preview_message_area" style="display:none;">
+                                        <div class="markdown_preview_spinner"></div>
+                                        <div class="preview_content rendered_markdown"></div>
+                                    </div>
                                 </div>
+                                <div class="drag"></div>
                             </div>
-                            <div class="drag"></div>
 
                             <div id="message-send-controls-container">
                                 <a id="compose-drafts-button" role="button" class="send-control-button hide-sm" tabindex=0 href="#drafts">
