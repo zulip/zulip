@@ -612,8 +612,6 @@
     }
 
     .narrow_to_compose_recipients,
-    .expand_composebox_button,
-    .collapse_composebox_button,
     .clear_search_button,
     .clear_search_button:focus,
     .clear_search_button:active,

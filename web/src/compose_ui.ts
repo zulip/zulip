@@ -375,8 +375,6 @@ export function make_compose_box_full_size(): void {
     // Set the `top` property of compose-box.
     set_compose_box_top(true);
 
-    $(".collapse_composebox_button").show();
-    $(".expand_composebox_button").hide();
     $("#scroll-to-bottom-button-container").removeClass("show");
     $("textarea#compose-textarea").trigger("focus");
 }
@@ -393,8 +391,6 @@ export function make_compose_box_original_size(): void {
     // when compose box was made full screen
     autosize($("textarea#compose-textarea"));
 
-    $(".collapse_composebox_button").hide();
-    $(".expand_composebox_button").show();
     $("textarea#compose-textarea").trigger("focus");
 }
 

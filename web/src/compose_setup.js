@@ -431,7 +431,7 @@ export function initialize() {
         compose.clear_preview_area();
     });
 
-    $("#compose").on("click", ".expand_composebox_button", (e) => {
+    $("#compose").on("click", ".expand-composebox-button", (e) => {
         e.preventDefault();
         e.stopPropagation();
 
@@ -443,7 +443,7 @@ export function initialize() {
         narrow.to_compose_target();
     });
 
-    $("#compose").on("click", ".collapse_composebox_button", (e) => {
+    $("#compose").on("click", ".collapse-composebox-button", (e) => {
         e.preventDefault();
         e.stopPropagation();
 
