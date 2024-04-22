@@ -295,7 +295,7 @@ function open_custom_profile_field_form_modal() {
             "disabled_label",
             display_in_profile_summary_fields_limit_reached,
         );
-        $("#add-new-custom-profile-field-form .checkbox").toggleClass(
+        $("#add-new-custom-profile-field-form .profile_field_display_label").toggleClass(
             "display_in_profile_summary_tooltip",
             display_in_profile_summary_fields_limit_reached,
         );
@@ -475,7 +475,7 @@ function open_edit_form_modal(e) {
                 .find("input[name=display_in_profile_summary]")
                 .prop("disabled", true);
             $profile_field_form
-                .find(".checkbox")
+                .find(".edit_profile_field_display_label")
                 .addClass("display_in_profile_summary_tooltip disabled_label");
         }
 
