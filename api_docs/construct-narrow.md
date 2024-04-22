@@ -58,9 +58,9 @@ operator is an alias for the `streams` operator. Both `channel` and
 `channels` return the same exact results as `stream` and `streams`
 respectively.
 
-In Zulip 9.0 (feature level 249), narrows gained support
-for a new filter `has:reaction`. This allows clients to retrieve only
-messages that have at least one reaction.
+In Zulip 9.0 (feature level 249), support was added for a new filter,
+`has:reaction`, which returns messages that have at least one [emoji
+reaction](/help/emoji-reactions).
 
 In Zulip 7.0 (feature level 177), support was added
 for three filters related to direct messages: `is:dm`, `dm` and
