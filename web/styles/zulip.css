@@ -1322,7 +1322,7 @@ div.focused-message-list {
     &:hover {
         background-color: var(--color-header-button-hover);
 
-        #streamlist-toggle-unreadcount {
+        .left-sidebar-toggle-unreadcount {
             border-color: var(--color-header-button-hover-no-alpha);
         }
     }
@@ -1342,13 +1342,13 @@ div.focused-message-list {
 
     &:active,
     &:focus-visible {
-        #streamlist-toggle-unreadcount {
+        .left-sidebar-toggle-unreadcount {
             border-color: var(--color-header-button-focus-no-alpha);
         }
     }
 }
 
-#streamlist-toggle-unreadcount {
+.left-sidebar-toggle-unreadcount {
     position: absolute;
     display: none;
     height: 6px;
@@ -2076,7 +2076,7 @@ select.invite-as {
         height: var(--header-height);
     }
 
-    #streamlist-toggle-unreadcount {
+    .left-sidebar-toggle-unreadcount {
         /* Adjust in response to shorter navbar. */
         top: 5px;
     }

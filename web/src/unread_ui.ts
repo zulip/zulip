@@ -88,7 +88,7 @@ export function update_unread_counts(skip_animations = false): void {
     }
 
     // Set the unread indicator on the toggle for the left sidebar
-    set_count_toggle_button($("#streamlist-toggle-unreadcount"), res.home_unread_messages);
+    set_count_toggle_button($(".left-sidebar-toggle-unreadcount"), res.home_unread_messages);
 }
 
 export function should_display_bankruptcy_banner(): boolean {
