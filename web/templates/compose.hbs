@@ -50,8 +50,6 @@
                 <div class="compose_table">
                     <div id="compose_top">
                         <div id="compose_top_right" class="order-2">
-                            <button type="button" class="expand_composebox_button fa fa-chevron-up" aria-label="{{t 'Expand compose' }}" data-tippy-content="{{t 'Expand compose' }}"></button>
-                            <button type="button" class="collapse_composebox_button fa fa-chevron-down" aria-label="{{t 'Collapse compose' }}" data-tippy-content="{{t 'Collapse compose' }}"></button>
                             <button type="button" class="close fa fa-times" id='compose_close' data-tooltip-template-id="compose_close_tooltip_template"></button>
                         </div>
                         <div id="compose-recipient" class="order-1">
@@ -82,6 +80,10 @@
                                         <div class="markdown_preview_spinner"></div>
                                         <div class="preview_content rendered_markdown"></div>
                                     </div>
+                                </div>
+                                <div class="composebox-buttons">
+                                    <button type="button" class="expand-composebox-button zulip-icon zulip-icon-expand-diagonal" aria-label="{{t 'Expand compose box' }}" data-tippy-content="{{t 'Expand compose box' }}"></button>
+                                    <button type="button" class="collapse-composebox-button zulip-icon zulip-icon-collapse-diagonal" aria-label="{{t 'Collapse compose box' }}" data-tippy-content="{{t 'Collapse compose box' }}"></button>
                                 </div>
                                 <div class="drag"></div>
                             </div>

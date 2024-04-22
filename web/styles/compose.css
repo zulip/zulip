@@ -127,6 +127,12 @@
     display: flex;
     flex-flow: column;
     box-sizing: border-box;
+
+    &:hover {
+        .composebox-buttons > button {
+            opacity: 1;
+        }
+    }
 }
 
 .message_comp {
@@ -282,7 +288,65 @@
 #message-content-container {
     grid-area: message-content-container;
     display: grid;
-    grid-template: minmax(0, 1fr) / minmax(0, 1fr);
+    grid-template: minmax(0, 1fr) / minmax(0, 1fr) var(
+            --composebox-buttons-width
+        );
+    grid-template-areas: "message-content composebox-buttons";
+}
+
+#message-content-container .composebox-buttons {
+    grid-area: composebox-buttons;
+    /* z-index is needed to avoid flickering of cursor and the
+    button when hovering it in preview mode. */
+    z-index: 1;
+    padding-top: 1px;
+    padding-right: 1px;
+    height: max-content;
+
+    button {
+        width: 24px;
+        border: none;
+        aspect-ratio: 1 / 1;
+        background-color: var(--color-composebox-button-background);
+        color: var(--color-composebox-button);
+        border-radius: 3px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        transition:
+            opacity 0.4s ease-in,
+            color 0.1s ease-in,
+            background-color 0.1s ease-in;
+
+        &:hover {
+            background-color: var(--color-composebox-button-background-hover);
+            color: var(--color-composebox-button-hover);
+        }
+
+        &:focus {
+            outline: 0;
+        }
+
+        &:focus-visible {
+            outline: 2px solid var(--color-outline-focus);
+        }
+    }
+
+    .collapse-composebox-button {
+        display: none;
+    }
+}
+
+#compose-textarea,
+#preview-message-area-container {
+    grid-area: message-content;
+}
+
+#compose-textarea,
+#preview_message_area {
+    margin-right: calc(var(--composebox-buttons-width) * -1);
+    padding-right: var(--composebox-buttons-width);
 }
 
 #preview-message-area-container {
@@ -403,7 +467,6 @@
     }
 }
 
-.collapse_composebox_button,
 #compose_close {
     display: none;
 }
@@ -749,6 +812,8 @@ textarea.new_message_textarea {
     border-radius: 4px;
     color: hsl(0deg 0% 33%);
     background-color: hsl(0deg 0% 100%);
+    scrollbar-width: thin;
+    scrollbar-color: hsl(0deg 0% 50%) transparent;
 
     &.over_limit,
     &.over_limit:focus {
@@ -1424,6 +1489,14 @@ textarea.new_message_textarea,
            controls offscreen when previewing a very tall message. */
         height: 0;
         flex: 1;
+    }
+
+    .expand-composebox-button {
+        display: none;
+    }
+
+    .collapse-composebox-button {
+        display: flex;
     }
 }
 
