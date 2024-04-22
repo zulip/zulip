@@ -1265,12 +1265,11 @@ export class MessageListView {
     }
 
     _find_message_group(message_group_id) {
-        // Ideally, we'd maintain this data structure with a hash
-        // table or at least a pointer from the message containers (in
-        // either case, updating the data structure when message
-        // groups are merged etc.), but we only call this from flows
-        // like message editing, so it's not a big performance
-        // problem.
+        // Finds the message group with a given message group ID.
+        //
+        // This function does a linear search, so be careful to avoid
+        // calling it in a loop. If you need that, we'll need to add a
+        // hash table to make this O(1) runtime.
         return this._message_groups.find(
             // Since we don't have a way to get a message group from
             // the containing message container, we just do a search
