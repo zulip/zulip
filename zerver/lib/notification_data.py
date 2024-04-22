@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from typing import Any, Collection, Dict, List, Optional, Set
 
 from zerver.lib.mention import MentionData
-from zerver.lib.user_groups import get_user_group_direct_member_ids
+from zerver.lib.user_groups import get_user_group_member_ids
 from zerver.models import UserGroup, UserProfile, UserTopic
 from zerver.models.scheduled_jobs import NotificationTriggers
 
@@ -344,7 +344,7 @@ def get_mentioned_user_group_name(
     smallest_user_group_name = None
     for user_group_id in mentioned_user_group_ids:
         current_user_group = UserGroup.objects.get(id=user_group_id, realm=user_profile.realm)
-        current_user_group_size = len(get_user_group_direct_member_ids(current_user_group))
+        current_user_group_size = len(get_user_group_member_ids(current_user_group))
 
         if current_user_group_size < smallest_user_group_size:
             # If multiple user groups are mentioned, we prefer the
