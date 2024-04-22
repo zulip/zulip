@@ -110,7 +110,7 @@ export function initialize(): void {
         show_userlist_sidebar();
     });
 
-    $("#streamlist-toggle-button").on("click", (e) => {
+    $(".left-sidebar-toggle-button").on("click", (e) => {
         e.preventDefault();
         e.stopPropagation();
 
@@ -136,7 +136,7 @@ export function initialize(): void {
             const $elt = $(e.target);
             // Since sidebar toggle buttons have their own click handlers, don't handle them here.
             if (
-                $elt.closest("#streamlist-toggle-button").length ||
+                $elt.closest(".left-sidebar-toggle-button").length ||
                 $elt.closest("#userlist-toggle-button").length
             ) {
                 return;
