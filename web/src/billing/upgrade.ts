@@ -165,7 +165,7 @@ export const initialize = (): void => {
                 const response_data = upgrade_response_schema.parse(response);
                 if (response_data.stripe_invoice_id) {
                     window.location.replace(
-                        `${page_params.billing_base_url}/billing/event_status?stripe_invoice_id=${response_data.stripe_invoice_id}`,
+                        `${page_params.billing_base_url}/billing/event_status/?stripe_invoice_id=${response_data.stripe_invoice_id}`,
                     );
                 } else if (response_data.organization_upgrade_successful) {
                     helpers.redirect_to_billing_with_successful_upgrade(
