@@ -4,6 +4,9 @@ import tippy from "tippy.js";
 import render_announce_stream_checkbox from "../templates/stream_settings/announce_stream_checkbox.hbs";
 import render_stream_privacy_icon from "../templates/stream_settings/stream_privacy_icon.hbs";
 import render_stream_settings_tip from "../templates/stream_settings/stream_settings_tip.hbs";
+import render_compose_banner from "../templates/compose_banner/compose_banner.hbs";
+import * as compose_banner from "./compose_banner";
+import { save_discard_widget_status_handler } from './settings_components';
 
 import * as hash_parser from "./hash_parser";
 import {$t} from "./i18n";
@@ -135,10 +138,30 @@ export function initialize_cant_subscribe_popover() {
 }
 
 export function set_up_right_panel_section(sub) {
+
     if (sub.subscribed) {
         stream_edit_toggler.toggler.enable_tab("personal");
         stream_edit_toggler.toggler.goto(stream_edit_toggler.select_tab);
+        // $("#stream_permission_settings .stream-permissions-warning-banner").empty();
     } else {
+        // if (!sub.invite_only) {
+        //     if ($("#stream_permission_settings .stream_privacy_warning").length > 0) {
+        //         return;
+        //     }
+        //     const context = {
+        //         banner_type: compose_banner.WARNING,
+        //         banner_text: $t({
+        //             defaultMessage:
+        //                 "Only subscribers can access or join private streams, so you will lose access to this stream if you convert it to a private stream while not subscribed to it.",
+        //         }),
+        //         button_text: $t({defaultMessage: "Subscribe"}),
+        //         classname: "stream_privacy_warning",
+        //         stream_id: sub.stream_id,
+        //     };
+        //     $("#stream_permission_settings .stream-permissions-warning-banner").append(
+        //         $(render_compose_banner(context)),
+        //     );
+        // }
         if (stream_edit_toggler.select_tab === "personal") {
             // Go to the general settings tab, if the user is not
             // subscribed. Also preserve the previous selected tab,
@@ -156,7 +179,29 @@ export function update_toggler_for_sub(sub) {
     if (!hash_parser.is_editing_stream(sub.stream_id)) {
         return;
     }
-
+    if (sub) {
+        if (!sub.subscribed &&
+            !sub.invite_only) {
+            if ($("#stream_permission_settings .stream_privacy_warning").length > 0) {
+                return;
+            }
+            const context = {
+                banner_type: compose_banner.WARNING,
+                banner_text: $t({
+                    defaultMessage:
+                        "Only subscribers can access or join private streams, so you will lose access to this stream if you convert it to a private stream while not subscribed to it.",
+                }),
+                button_text: $t({defaultMessage: "Subscribe"}),
+                classname: "stream_privacy_warning",
+                stream_id: sub.stream_id,
+            };
+            $("#stream_permission_settings .stream-permissions-warning-banner").append(
+                $(render_compose_banner(context)),
+            );
+        } else {
+            $("#stream_permission_settings .stream-permissions-warning-banner").empty();
+        }
+    }
     set_up_right_panel_section(sub);
 }
 

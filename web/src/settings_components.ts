@@ -127,6 +127,9 @@ export function get_property_value(
         if (property_name === "is_default_stream") {
             return stream_data.is_default_stream_id(sub.stream_id);
         }
+        // if (property_name === "subscribed") {
+        //     return true;
+        // }
         // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
         return sub[property_name as keyof StreamSubscription];
     }
@@ -711,6 +714,19 @@ export function check_property_changed(
     ) as setting_property_type;
     let current_val = get_property_value(property_name, for_realm_default_settings, sub, group);
     let proposed_val;
+    
+    if (sub) {
+        if (!sub.subscribed) {
+            return true;
+        }
+    }
+    
+
+    // const currentSubscribed = sub ? sub.subscribed : false;
+
+    // if (!prevSubscribed) {
+    //     return true;  // Return true if subscription status changes
+    // }
 
     switch (property_name) {
         case "realm_authentication_methods":
@@ -757,13 +773,18 @@ export function check_property_changed(
             proposed_val = get_input_element_value(elem, "radio-group");
             break;
         default:
-            if (current_val !== undefined) {
-                proposed_val = get_input_element_value(elem, typeof current_val);
-            } else {
-                blueslip.error("Element refers to unknown property", {property_name});
+            // if (current_val !== undefined) {
+            //     proposed_val = get_input_element_value(elem, typeof current_val);
+            // } else {
+            //     blueslip.error("Element refers to unknown property", {property_name});
+            // }
+            proposed_val = get_input_element_value(elem, typeof current_val);
+            if (current_val !== proposed_val) {
+                return true;
             }
     }
-    return current_val !== proposed_val;
+    // return current_val !== proposed_val;
+    return false;
 }
 
 function switching_to_private(
@@ -780,6 +801,133 @@ function switching_to_private(
         return proposed_val === "invite-only-public-history" || proposed_val === "invite-only";
     }
     return false;
+}
+
+function checkIfUnsubscribed(properties_elements: HTMLElement[], for_realm_default_settings: boolean, sub: StreamSubscription | undefined): boolean {
+    // Early exit if the subscription object is undefined or already unsubscribed
+    if (!sub || !sub.subscribed) {
+        return true;  // Indicates that the user is not subscribed
+    }
+
+    // Assuming there's an element or way to determine the 'active' subscription state
+    // This loop might not be necessary if you're directly checking `sub.subscribed`
+    for (const elem of properties_elements) {
+        const $elem = $(elem);
+        const property_name = extract_property_name($elem, for_realm_default_settings);
+        if (property_name === "subscribed") {
+            const currentSubscribed = get_input_element_value(elem, "checkbox"); // Assuming subscription status is a checkbox
+            return !currentSubscribed;  // Check if the checkbox is unchecked
+        }
+    }
+    return false;
+
+    // const $saveBtn = $element.find(".subscribe-button");
+}
+
+function isUnsubscribed($element: JQuery): boolean {
+    const $subscribeButton = $element.find(".subscribe-button");
+    if ($subscribeButton.hasClass("unsubscribed")) {
+    // if (state === "Subscribe") {
+        // If the state is "Subscribe", the user is unsubscribed.
+        return true;
+    } else {
+        return false;
+    }
+}
+
+
+export function change_sub_button_state($element: JQuery, state: string): void {
+    function show_hide_element(
+        $element: JQuery,
+        show: boolean,
+        fadeout_delay: number,
+        fadeout_callback: (this: HTMLElement) => void,
+    ): void {
+        if (show) {
+            $element.removeClass("hide").addClass(".show").fadeIn(300);
+            return;
+        }
+        setTimeout(() => {
+            $element.fadeOut(300, fadeout_callback);
+        }, fadeout_delay);
+    }
+
+    const $saveBtn = $element.find(".subscribe-button");
+    // const $textEl = $saveBtn.find(".save-discard-widget-button-text");
+
+    if (state !== "Subscribe") {
+        $saveBtn.removeClass("saving");
+    }
+
+    if (state === "discarded") {
+        show_hide_element($element, false, 0, () => {
+            enable_or_disable_save_button($element.closest(".settings-subsection-parent"));
+        });
+        return;
+    }
+
+    let button_text;
+    let data_status;
+    let is_show;
+    switch (state) {
+        case "unsaved":
+            button_text = $t({defaultMessage: "Save changes"});
+            data_status = "unsaved";
+            is_show = true;
+
+            $element.find(".discard-button").show();
+            break;
+        case "saved":
+            button_text = $t({defaultMessage: "Save changes"});
+            data_status = "";
+            is_show = false;
+            break;
+        case "saving":
+            button_text = $t({defaultMessage: "Saving"});
+            data_status = "saving";
+            is_show = true;
+
+            $element.find(".discard-button").hide();
+            $saveBtn.addClass("saving");
+            break;
+        case "failed":
+            button_text = $t({defaultMessage: "Save changes"});
+            data_status = "failed";
+            is_show = true;
+            break;
+        case "succeeded":
+            button_text = $t({defaultMessage: "Saved"});
+            data_status = "saved";
+            is_show = false;
+            break;
+    }
+
+    assert(button_text !== undefined);
+    $textEl.text(button_text);
+    assert(data_status !== undefined);
+    $saveBtn.attr("data-status", data_status);
+    if (state === "unsaved") {
+        // Do not scroll if the currently focused element is a textarea or an input
+        // of type text, to not interrupt the user's typing flow. Scrolling will happen
+        // anyway when the field loses focus (via the change event) if necessary.
+        if (
+            !document.activeElement ||
+            !$(document.activeElement).is('textarea, input[type="text"]')
+        ) {
+            // Ensure the save button is visible when the state is "unsaved",
+            // so the user does not miss saving their changes.
+            scroll_util.scroll_element_into_container(
+                $element.parent(".subsection-header"),
+                $("#settings_content"),
+            );
+        }
+        enable_or_disable_save_button($element.closest(".settings-subsection-parent"));
+    }
+    assert(is_show !== undefined);
+    show_hide_element($element, is_show, 800, () => {
+        // There is no need for a callback here since we have already
+        // called the function to enable or disable save button.
+    });
 }
 
 export function save_discard_widget_status_handler(
@@ -799,6 +947,21 @@ export function save_discard_widget_status_handler(
     const button_state = show_change_process_button ? "unsaved" : "discarded";
     change_save_button_state($save_btn_controls, button_state);
 
+    // const $subBtn = $element.find(".subscribe-button");
+
+    // if (state !== "saving") {
+    //     $saveBtn.removeClass("saving");
+    // }
+
+    // if (state === "discarded") {
+    //     show_hide_element($element, false, 0, () => {
+    //         enable_or_disable_save_button($element.closest(".settings-subsection-parent"));
+    //     });
+    //     return;
+    // }
+
+    // sub_button 
+
     // If this widget is for a stream, and the stream isn't currently private
     // but being changed to private, and the user changing this setting isn't
     // subscribed, we show a warning that they won't be able to access the
@@ -806,11 +969,34 @@ export function save_discard_widget_status_handler(
     if (!sub) {
         return;
     }
+    
+    // const $sub_btn_controls = $subsection.find(".stream_settings_header .button-group");
+
+    // if (isUnsubscribed($sub_btn_controls)){
+    // if (!sub.subscribed){    
+    //     if ($("#stream_permission_settings .stream_privacy_warning").length > 0) {
+    //         return;
+    //     }
+    //     const context = {
+    //         banner_type: compose_banner.WARNING,
+    //         banner_text: $t({
+    //             defaultMessage:
+    //                 "Only subscribers can access or join private streams, so you will lose access to this stream if you convert it to a private stream while not subscribed to it.",
+    //         }),
+    //         button_text: $t({defaultMessage: "Subscribe"}),
+    //         classname: "stream_privacy_warning",
+    //         stream_id: sub.stream_id,
+    //     };
+    //     $("#stream_permission_settings .stream-permissions-warning-banner").append(
+    //         $(render_compose_banner(context)),
+    //     );
+    // // }
     if (
         button_state === "unsaved" &&
         !sub.invite_only &&
         !sub.subscribed &&
         switching_to_private(properties_elements, for_realm_default_settings)
+        // !sub.subscribed
     ) {
         if ($("#stream_permission_settings .stream_privacy_warning").length > 0) {
             return;

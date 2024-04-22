@@ -879,7 +879,11 @@ export function register_save_discard_widget_handlers(
         // they do, we transition to the "unsaved" state showing the
         // save/discard widget; otherwise, we hide that widget (the
         // "discarded" state).
-
+        if (sub) {
+            if (!sub.subscribed) {
+                return true;
+            }
+        }
         if ($(e.target).hasClass("no-input-change-detection")) {
             // This is to prevent input changes detection in elements
             // within a subsection whose changes should not affect the
