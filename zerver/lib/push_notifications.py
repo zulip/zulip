@@ -43,6 +43,7 @@ from zerver.lib.display_recipient import get_display_recipient
 from zerver.lib.emoji_utils import hex_codepoint_to_emoji
 from zerver.lib.exceptions import ErrorCode, JsonableError
 from zerver.lib.message import access_message_and_usermessage, huddle_users
+from zerver.lib.notification_data import get_mentioned_user_group
 from zerver.lib.outgoing_http import OutgoingSession
 from zerver.lib.remote_server import (
     record_push_notifications_recently_working,
@@ -62,7 +63,6 @@ from zerver.models import (
     Realm,
     Recipient,
     Stream,
-    UserGroup,
     UserMessage,
     UserProfile,
 )
@@ -1351,17 +1351,15 @@ def handle_push_notification(user_profile_id: int, missed_message: Dict[str, Any
     if trigger == "private_message":
         trigger = NotificationTriggers.DIRECT_MESSAGE  # nocoverage
 
-    mentioned_user_group_name = None
-    # mentioned_user_group_id will be None if the user is personally mentioned
+    # mentioned_user_group will be None if the user is personally mentioned
     # regardless whether they are a member of the mentioned user group in the
     # message or not.
-    mentioned_user_group_id = missed_message.get("mentioned_user_group_id")
-
-    if mentioned_user_group_id is not None:
-        user_group = UserGroup.objects.get(
-            id=mentioned_user_group_id, realm_id=user_profile.realm_id
-        )
-        mentioned_user_group_name = user_group.name
+    mentioned_user_group_id = None
+    mentioned_user_group_name = None
+    mentioned_user_group = get_mentioned_user_group([missed_message], user_profile)
+    if mentioned_user_group is not None:
+        mentioned_user_group_id = mentioned_user_group.id
+        mentioned_user_group_name = mentioned_user_group.name
 
     # Soft reactivate if pushing to a long_term_idle user that is personally mentioned
     soft_reactivate_if_personal_notification(user_profile, {trigger}, mentioned_user_group_name)
