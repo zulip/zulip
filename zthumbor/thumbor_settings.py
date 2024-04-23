@@ -6,6 +6,7 @@ ZULIP_PATH = os.getcwd()  # Thumbor doesn’t set __file__ when loading this
 sys.path.append(ZULIP_PATH)
 
 import contextlib
+from typing import Optional
 
 from zproject.config import get_secret
 
@@ -17,6 +18,7 @@ config_file.read("/etc/zulip/zulip.conf")
 
 # Whether this instance of Zulip is running in a production environment.
 PRODUCTION = config_file.has_option("machine", "deploy_type")
+LOCAL_UPLOADS_DIR: Optional[str]
 if PRODUCTION:
     try:
         from zproject.prod_settings import LOCAL_UPLOADS_DIR
