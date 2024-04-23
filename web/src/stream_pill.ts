@@ -2,7 +2,7 @@ import type {InputPillContainer, InputPillItem} from "./input_pill";
 import * as peer_data from "./peer_data";
 import * as stream_data from "./stream_data";
 import type {StreamSubscription} from "./sub_store";
-import type {CombinedPillContainer} from "./typeahead_helper";
+import type {CombinedPillContainer, CombinedPillItem} from "./typeahead_helper";
 
 export type StreamPill = {
     type: "stream";
@@ -21,7 +21,7 @@ function display_pill(sub: StreamSubscription): string {
 
 export function create_item_from_stream_name(
     stream_name: string,
-    current_items: InputPillItem<StreamPill>[],
+    current_items: CombinedPillItem[],
 ): InputPillItem<StreamPill> | undefined {
     stream_name = stream_name.trim();
     if (!stream_name.startsWith("#")) {
@@ -34,7 +34,9 @@ export function create_item_from_stream_name(
         return undefined;
     }
 
-    const existing_ids = current_items.map((item) => item.stream_id);
+    const existing_ids = current_items
+        .flatMap((item) => (item.type === "stream" ? item : []))
+        .map((item) => item.stream_id);
     if (existing_ids.includes(sub.stream_id)) {
         return undefined;
     }
@@ -62,8 +64,8 @@ function get_user_ids_from_subs(items: InputPillItem<StreamPill>[]): number[] {
     return user_ids;
 }
 
-export function get_user_ids(pill_widget: StreamPillWidget): number[] {
-    const items = pill_widget.items();
+export function get_user_ids(pill_widget: StreamPillWidget | CombinedPillContainer): number[] {
+    const items = pill_widget.items().flatMap((item) => (item.type === "stream" ? item : []));
     let user_ids = get_user_ids_from_subs(items);
     user_ids = [...new Set(user_ids)];
 
