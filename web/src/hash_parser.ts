@@ -119,7 +119,11 @@ export function is_spectator_compatible(hash: string): boolean {
         "keyboard-shortcuts",
         "message-formatting",
         "search-operators",
+        // TODO/compatibility: #all_messages was renamed to #feed
+        // in 2024. We should support the old URL fragment at least
+        // until one cannot directly upgrade from Zulip 8.x.
         "all_messages",
+        "feed",
         "about-zulip",
     ];
 
