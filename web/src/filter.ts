@@ -912,7 +912,12 @@ export class Filter {
         return "#"; // redirect to All
     }
 
-    add_icon_data(context: {title: string; is_spectator: boolean}): IconData {
+    add_icon_data(context: {
+        title: string;
+        description?: string;
+        link?: string;
+        is_spectator: boolean;
+    }): IconData {
         // We have special icons for the simple narrows available for the via sidebars.
         const term_types = this.sorted_term_types();
         let icon;
@@ -1043,6 +1048,25 @@ export class Filter {
             }
         }
         /* istanbul ignore next */
+        return undefined;
+    }
+
+    get_description(): {description: string; link: string} | undefined {
+        const term_types = this.sorted_term_types();
+        switch (term_types[0]) {
+            case "is-mentioned":
+                return {
+                    description: $t({defaultMessage: "Messages where you are mentioned."}),
+                    link: "/help/view-your-mentions",
+                };
+            case "is-starred":
+                return {
+                    description: $t({
+                        defaultMessage: "Important messages, tasks, and other useful references.",
+                    }),
+                    link: "/help/star-a-message#view-your-starred-messages",
+                };
+        }
         return undefined;
     }
 

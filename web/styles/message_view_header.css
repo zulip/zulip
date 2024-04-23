@@ -94,6 +94,11 @@
         padding-left: 10px;
         overflow: hidden;
         text-overflow: ellipsis;
+
+        .help_link_widget,
+        .fa {
+            margin: 0;
+        }
     }
 
     /* The very last element in the navbar is the search icon, the second
