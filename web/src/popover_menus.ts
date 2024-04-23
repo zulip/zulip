@@ -396,6 +396,7 @@ export function toggle_popover_menu(
         showOnCreate: true,
         ...popover_props,
         ...mobile_popover_props,
+        placement: popover_props.placement,
     });
 }
 
