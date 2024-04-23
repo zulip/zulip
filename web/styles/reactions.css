@@ -101,8 +101,7 @@
         pointer-events: none;
         /* Set top/bottom padding to accommodate borders
            and padding around reaction pills. */
-        padding: 4.5px 6px;
-        height: 13px;
+        padding: 4px 6px;
         border-radius: 21px;
         color: var(--color-message-reaction-button-text);
         background-color: var(--color-message-reaction-button-background);
@@ -147,6 +146,7 @@
             font-weight: 700;
             color: var(--color-message-reaction-button-text);
             margin-right: 0;
+            line-height: 14px;
         }
 
         &:hover .message_reaction_count {
