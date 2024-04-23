@@ -220,7 +220,7 @@ async function search_tests(page: Page): Promise<void> {
     await search_and_check(
         page,
         "Verona",
-        "Stream",
+        "Channel",
         expect_verona_stream,
         "#Verona - Zulip Dev - Zulip",
     );
