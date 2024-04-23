@@ -331,6 +331,17 @@ export function initialize() {
         },
     );
 
+    const interleaved_view_messages_fading_banner_selector = `.${CSS.escape(compose_banner.CLASSNAMES.interleaved_view_messages_fading)}`;
+    $("body").on(
+        "click",
+        `${interleaved_view_messages_fading_banner_selector} .main-view-banner-action-button`,
+        (event) => {
+            event.preventDefault();
+            $(event.target).parents(`${interleaved_view_messages_fading_banner_selector}`).remove();
+            onboarding_steps.post_onboarding_step_as_read("interleaved_view_messages_fading");
+        },
+    );
+
     for (const classname of Object.values(compose_banner.CLASSNAMES)) {
         const classname_selector = `.${CSS.escape(classname)}`;
         $("body").on("click", `${classname_selector} .main-view-banner-close-button`, (event) => {
@@ -492,7 +503,11 @@ export function initialize() {
 
     $("textarea#compose-textarea").on("focus", () => {
         compose_recipient.update_placeholder_text();
-        compose_notifications.maybe_show_one_time_non_interleaved_view_messages_fading_banner();
+        if (narrow_state.narrowed_by_reply()) {
+            compose_notifications.maybe_show_one_time_non_interleaved_view_messages_fading_banner();
+        } else {
+            compose_notifications.maybe_show_one_time_interleaved_view_messages_fading_banner();
+        }
     });
 
     $("#compose_recipient_box").on("click", "#recipient_box_clear_topic_button", () => {

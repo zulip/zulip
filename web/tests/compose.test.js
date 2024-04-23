@@ -796,6 +796,7 @@ test_ui("on_events", ({override, override_rewire}) => {
         };
 
         override_rewire(compose_recipient, "update_placeholder_text", noop);
+        override(narrow_state, "narrowed_by_reply", () => true);
         override(
             compose_notifications,
             "maybe_show_one_time_non_interleaved_view_messages_fading_banner",

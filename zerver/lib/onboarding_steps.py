@@ -38,6 +38,9 @@ ONE_TIME_NOTICES: list[OneTimeNotice] = [
     OneTimeNotice(
         name="non_interleaved_view_messages_fading",
     ),
+    OneTimeNotice(
+        name="interleaved_view_messages_fading",
+    ),
 ]
 
 # We may introduce onboarding step of types other than 'one time notice'

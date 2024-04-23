@@ -10,6 +10,7 @@ import * as channel from "./channel";
 import * as compose_actions from "./compose_actions";
 import * as compose_banner from "./compose_banner";
 import * as compose_closed_ui from "./compose_closed_ui";
+import * as compose_notifications from "./compose_notifications";
 import * as compose_recipient from "./compose_recipient";
 import * as compose_state from "./compose_state";
 import * as condense from "./condense";
@@ -1277,6 +1278,13 @@ export function to_compose_target() {
 
 function handle_post_view_change(msg_list, opts) {
     const filter = msg_list.data.filter;
+
+    if (narrow_state.narrowed_by_reply()) {
+        compose_notifications.maybe_show_one_time_non_interleaved_view_messages_fading_banner();
+    } else {
+        compose_notifications.maybe_show_one_time_interleaved_view_messages_fading_banner();
+    }
+
     scheduled_messages_feed_ui.update_schedule_message_indicator();
     typing_events.render_notifications_for_narrow();
 

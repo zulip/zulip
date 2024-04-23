@@ -6,6 +6,7 @@ import $ from "jquery";
 import * as blueslip from "./blueslip";
 import * as compose_banner from "./compose_banner";
 import * as compose_fade from "./compose_fade";
+import * as compose_notifications from "./compose_notifications";
 import * as compose_pm_pill from "./compose_pm_pill";
 import * as compose_recipient from "./compose_recipient";
 import * as compose_state from "./compose_state";
@@ -174,6 +175,13 @@ export function complete_starting_tasks(opts: ComposeActionsOpts): void {
     $(document).trigger(new $.Event("compose_started.zulip", opts));
     compose_recipient.update_placeholder_text();
     compose_recipient.update_narrow_to_recipient_visibility();
+    // We explicitly call this function here apart from compose_setup.js
+    // as this helps to show banner when responding in an interleaved view.
+    // While responding, the compose box opens before fading resulting in
+    // the function call in compose_setup.js not displaying banner.
+    if (!narrow_state.narrowed_by_reply()) {
+        compose_notifications.maybe_show_one_time_interleaved_view_messages_fading_banner();
+    }
 }
 
 export function maybe_scroll_up_selected_message(opts: ComposeActionsStartOpts): void {
@@ -408,6 +416,7 @@ export function cancel(): void {
     clear_box();
     compose_banner.clear_message_sent_banners();
     compose_banner.clear_non_interleaved_view_messages_fading_banner();
+    compose_banner.clear_interleaved_view_messages_fading_banner();
     call_hooks(compose_cancel_hooks);
     compose_state.set_message_type(undefined);
     compose_pm_pill.clear();
