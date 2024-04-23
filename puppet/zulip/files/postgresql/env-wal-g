@@ -10,7 +10,7 @@ export WALG_DELTA_MAX_STEPS
 
 s3_backups_bucket=$(crudini --get "$ZULIP_SECRETS_CONF" secrets s3_backups_bucket 2>/dev/null)
 
-if [ "$s3_backups_bucket" != "" ]; then
+if [ "$s3_backups_bucket" != "" ] || [ -n "$WALG_S3_PREFIX" ]; then
     AWS_REGION=$(crudini --get "$ZULIP_SECRETS_CONF" secrets s3_region 2>/dev/null)
     if [ "$AWS_REGION" = "" ]; then
         # Fall back to the current region, if possible
@@ -24,7 +24,8 @@ if [ "$s3_backups_bucket" != "" ]; then
     export AWS_ACCESS_KEY_ID
     AWS_SECRET_ACCESS_KEY=$(crudini --get "$ZULIP_SECRETS_CONF" secrets s3_backups_secret_key 2>/dev/null)
     export AWS_SECRET_ACCESS_KEY
-    export WALG_S3_PREFIX="s3://$s3_backups_bucket"
+    : "${WALG_S3_PREFIX:=s3://$s3_backups_bucket}"
+    export WALG_S3_PREFIX
 
     if storage_class=$(crudini --get /etc/zulip/zulip.conf postgresql backups_storage_class 2>&1); then
         export WALG_S3_STORAGE_CLASS="$storage_class"
