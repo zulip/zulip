@@ -97,7 +97,6 @@
         pointer-events: all;
     }
 
-    .reaction_button,
     .emoji-message-control-button-container {
         display: flex;
         align-items: center;
