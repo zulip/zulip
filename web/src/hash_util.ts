@@ -156,7 +156,7 @@ export function group_edit_url(group: UserGroup, right_side_tab: string): string
 }
 
 export function search_public_streams_notice_url(terms: NarrowTerm[]): string {
-    const public_operator = {operator: "streams", operand: "public"};
+    const public_operator = {operator: "channels", operand: "public"};
     return search_terms_to_hash([public_operator, ...terms]);
 }
 

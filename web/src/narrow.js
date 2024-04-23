@@ -843,7 +843,7 @@ export function render_message_list_with_selected_message(opts) {
 
 export function activate_stream_for_cycle_hotkey(stream_name) {
     // This is the common code for A/D hotkeys.
-    const filter_expr = [{operator: "stream", operand: stream_name}];
+    const filter_expr = [{operator: "channel", operand: stream_name}];
     activate(filter_expr, {});
 }
 
@@ -914,7 +914,7 @@ export function narrow_to_next_topic(opts = {}) {
     }
 
     const filter_expr = [
-        {operator: "stream", operand: next_narrow.stream},
+        {operator: "channel", operand: next_narrow.stream},
         {operator: "topic", operand: next_narrow.topic},
     ];
 
@@ -980,7 +980,7 @@ export function by_topic(target_id, opts) {
 
     const stream_name = stream_data.get_stream_name_from_id(original.stream_id);
     const search_terms = [
-        {operator: "stream", operand: stream_name},
+        {operator: "channel", operand: stream_name},
         {operator: "topic", operand: original.topic},
     ];
     opts = {then_select_id: target_id, ...opts};
@@ -1042,7 +1042,7 @@ export function to_compose_target() {
         const stream_name = stream_data.get_sub_by_id(stream_id).name;
         // If we are composing to a new topic, we narrow to the stream but
         // grey-out the message view instead of narrowing to an empty view.
-        const terms = [{operator: "stream", operand: stream_name}];
+        const terms = [{operator: "channel", operand: stream_name}];
         const topic = compose_state.topic();
         if (topic !== "") {
             terms.push({operator: "topic", operand: topic});

@@ -1209,7 +1209,7 @@ export function process_hotkey(e, hotkey) {
                     narrow.activate(
                         [
                             {
-                                operator: "stream",
+                                operator: "channel",
                                 operand: stream_data.get_stream_name_from_id(msg.stream_id),
                             },
                             {operator: "topic", operand: msg.topic},
