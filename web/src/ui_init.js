@@ -863,7 +863,7 @@ export function initialize_everything(state_data) {
             const sub = sub_store.get(stream_id);
             narrow.activate(
                 [
-                    {operator: "stream", operand: sub.name},
+                    {operator: "channel", operand: sub.name},
                     {operator: "topic", operand: topic},
                 ],
                 {trigger: "sidebar"},
