@@ -687,7 +687,6 @@ QUEUE_ERROR_DIR = zulip_path("/var/log/zulip/queue_error")
 QUEUE_STATS_DIR = zulip_path("/var/log/zulip/queue_stats")
 DIGEST_LOG_PATH = zulip_path("/var/log/zulip/digest.log")
 ANALYTICS_LOG_PATH = zulip_path("/var/log/zulip/analytics.log")
-ANALYTICS_LOCK_FILE = zulip_path("/home/zulip/deployments/analytics-lock.lock")
 WEBHOOK_LOG_PATH = zulip_path("/var/log/zulip/webhooks_errors.log")
 WEBHOOK_ANOMALOUS_PAYLOADS_LOG_PATH = zulip_path("/var/log/zulip/webhooks_anomalous_payloads.log")
 WEBHOOK_UNSUPPORTED_EVENTS_LOG_PATH = zulip_path("/var/log/zulip/webhooks_unsupported_events.log")
@@ -699,8 +698,9 @@ AUTH_LOG_PATH = zulip_path("/var/log/zulip/auth.log")
 SCIM_LOG_PATH = zulip_path("/var/log/zulip/scim.log")
 
 ZULIP_WORKER_TEST_FILE = zulip_path("/var/log/zulip/zulip-worker-test-file")
-ZULIP_UPDATE_ANNOUNCEMENTS_LOCK_FILE = zulip_path(
-    "/home/zulip/deployments/zulip_update_announcements.lock"
+
+LOCKFILE_DIRECTORY = (
+    "/srv/zulip-locks" if not DEVELOPMENT else os.path.join(os.path.join(DEPLOY_ROOT, "var/locks"))
 )
 
 

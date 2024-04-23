@@ -11,8 +11,7 @@ from django.utils.timezone import now as timezone_now
 from typing_extensions import override
 
 from analytics.lib.counts import ALL_COUNT_STATS, logger, process_count_stat
-from scripts.lib.zulip_tools import ENDC, WARNING
-from zerver.lib.context_managers import lockfile_nonblocking
+from zerver.lib.management import abort_unless_locked
 from zerver.lib.remote_server import send_server_data_to_push_bouncer
 from zerver.lib.timestamp import floor_to_hour
 from zerver.models import Realm
@@ -41,17 +40,9 @@ class Command(BaseCommand):
         )
 
     @override
+    @abort_unless_locked
     def handle(self, *args: Any, **options: Any) -> None:
-        with lockfile_nonblocking(
-            settings.ANALYTICS_LOCK_FILE,
-        ) as lock_acquired:
-            if lock_acquired:
-                self.run_update_analytics_counts(options)
-            else:
-                print(
-                    f"{WARNING}Analytics lock {settings.ANALYTICS_LOCK_FILE} is unavailable;"
-                    f" exiting.{ENDC}"
-                )
+        self.run_update_analytics_counts(options)
 
     def run_update_analytics_counts(self, options: Dict[str, Any]) -> None:
         # installation_epoch relies on there being at least one realm; we
