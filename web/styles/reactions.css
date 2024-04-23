@@ -86,12 +86,6 @@
         color: var(--color-message-reaction-button-text-hover);
     }
 
-    & i {
-        font-size: 1.3em;
-        float: left;
-        color: var(--color-message-reaction-button-text);
-    }
-
     &:hover .reaction_button {
         visibility: visible;
         pointer-events: all;
@@ -120,6 +114,7 @@
 
         & i {
             font-size: 1em;
+            color: var(--color-message-reaction-button-text);
         }
 
         &:hover i {
