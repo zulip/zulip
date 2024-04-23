@@ -5,6 +5,8 @@ import sys
 ZULIP_PATH = os.getcwd()  # Thumbor doesn’t set __file__ when loading this
 sys.path.append(ZULIP_PATH)
 
+import contextlib
+
 from zproject.config import get_secret
 
 os.environ["AWS_ACCESS_KEY_ID"] = get_secret("s3_key", "")
@@ -698,7 +700,5 @@ TC_AWS_STORE_METADATA = False  # Store result with metadata (for instance conten
 
 
 # You can override settings in zthumbor/thumbor_local_settings.py
-try:
-    from zthumbor.thumbor_local_settings import *
-except ImportError:
-    pass
+with contextlib.suppress(ImportError):
+    from zthumbor.thumbor_local_settings import *  # type: ignore[reportMissingImport]  # noqa: F403
