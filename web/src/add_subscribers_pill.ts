@@ -1,11 +1,16 @@
 import * as input_pill from "./input_pill";
 import * as keydown_util from "./keydown_util";
+import type {User} from "./people";
 import * as pill_typeahead from "./pill_typeahead";
 import * as stream_pill from "./stream_pill";
+import type {CombinedPillContainer, CombinedPillItem} from "./typeahead_helper";
 import * as user_group_pill from "./user_group_pill";
 import * as user_pill from "./user_pill";
 
-function create_item_from_text(text, current_items) {
+function create_item_from_text(
+    text: string,
+    current_items: CombinedPillItem[],
+): CombinedPillItem | undefined {
     const funcs = [
         stream_pill.create_item_from_stream_name,
         user_group_pill.create_item_from_group_name,
@@ -20,22 +25,31 @@ function create_item_from_text(text, current_items) {
     return undefined;
 }
 
-function get_text_from_item(item) {
-    const funcs = [
-        stream_pill.get_stream_name_from_item,
-        user_group_pill.get_group_name_from_item,
-        user_pill.get_email_from_item,
-    ];
-    for (const func of funcs) {
-        const text = func(item);
-        if (text) {
-            return text;
-        }
+function get_text_from_item(item: CombinedPillItem): string {
+    let text: string;
+    switch (item.type) {
+        case "stream":
+            text = stream_pill.get_stream_name_from_item(item);
+            break;
+        case "user_group":
+            text = user_group_pill.get_group_name_from_item(item);
+            break;
+        case "user":
+            text = user_pill.get_email_from_item(item);
+            break;
     }
-    return undefined;
+    return text;
 }
 
-function set_up_pill_typeahead({pill_widget, $pill_container, get_users}) {
+function set_up_pill_typeahead({
+    pill_widget,
+    $pill_container,
+    get_users,
+}: {
+    pill_widget: CombinedPillContainer;
+    $pill_container: JQuery;
+    get_users: () => User[];
+}): void {
     const opts = {
         user_source: get_users,
         stream: true,
@@ -45,14 +59,19 @@ function set_up_pill_typeahead({pill_widget, $pill_container, get_users}) {
     pill_typeahead.set_up($pill_container.find(".input"), pill_widget, opts);
 }
 
-export function create({$pill_container, get_potential_subscribers}) {
-    const pill_widget = input_pill.create({
+export function create({
+    $pill_container,
+    get_potential_subscribers,
+}: {
+    $pill_container: JQuery;
+    get_potential_subscribers: () => User[];
+}): input_pill.InputPillContainer<CombinedPillItem> {
+    const pill_widget = input_pill.create<CombinedPillItem>({
         $container: $pill_container,
         create_item_from_text,
         get_text_from_item,
     });
-
-    function get_users() {
+    function get_users(): User[] {
         const potential_subscribers = get_potential_subscribers();
         return user_pill.filter_taken_users(potential_subscribers, pill_widget);
     }
@@ -80,7 +99,7 @@ export function create({$pill_container, get_potential_subscribers}) {
     return pill_widget;
 }
 
-function get_pill_user_ids(pill_widget) {
+function get_pill_user_ids(pill_widget: CombinedPillContainer): number[] {
     const user_ids = user_pill.get_user_ids(pill_widget);
     const stream_user_ids = stream_pill.get_user_ids(pill_widget);
     const group_user_ids = user_group_pill.get_user_ids(pill_widget);
@@ -93,7 +112,13 @@ export function set_up_handlers({
     pill_selector,
     button_selector,
     action,
-}) {
+}: {
+    get_pill_widget: () => CombinedPillContainer;
+    $parent_container: JQuery;
+    pill_selector: string;
+    button_selector: string;
+    action: ({pill_user_ids}: {pill_user_ids: number[]}) => void;
+}): void {
     /*
         This function handles events for any UI that looks like
         this:
@@ -121,7 +146,7 @@ export function set_up_handlers({
             * user group
             * stream (i.e. subscribed users for the stream)
     */
-    function callback() {
+    function callback(): void {
         const pill_widget = get_pill_widget();
         const pill_user_ids = get_pill_user_ids(pill_widget);
         action({pill_user_ids});
