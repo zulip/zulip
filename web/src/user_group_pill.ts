@@ -1,5 +1,5 @@
 import type {InputPillContainer, InputPillItem} from "./input_pill";
-import type {CombinedPillContainer} from "./typeahead_helper";
+import type {CombinedPillContainer, CombinedPillItem} from "./typeahead_helper";
 import type {UserGroup} from "./user_groups";
 import * as user_groups from "./user_groups";
 
@@ -19,7 +19,7 @@ function display_pill(group: UserGroup): string {
 
 export function create_item_from_group_name(
     group_name: string,
-    current_items: InputPillItem<UserGroupPill>[],
+    current_items: CombinedPillItem[],
 ): InputPillItem<UserGroupPill> | undefined {
     group_name = group_name.trim();
     const group = user_groups.get_user_group_from_name(group_name);
@@ -27,7 +27,9 @@ export function create_item_from_group_name(
         return undefined;
     }
 
-    const in_current_items = current_items.find((item) => item.id === group.id);
+    const in_current_items = current_items
+        .flatMap((item) => (item.type === "user_group" ? item : []))
+        .find((item) => item.id === group.id);
     if (in_current_items !== undefined) {
         return undefined;
     }
@@ -51,8 +53,8 @@ function get_user_ids_from_user_groups(items: InputPillItem<UserGroupPill>[]): n
     ]);
 }
 
-export function get_user_ids(pill_widget: UserGroupPillWidget): number[] {
-    const items = pill_widget.items();
+export function get_user_ids(pill_widget: UserGroupPillWidget | CombinedPillContainer): number[] {
+    const items = pill_widget.items().flatMap((item) => (item.type === "user_group" ? item : []));
     let user_ids = get_user_ids_from_user_groups(items);
     user_ids = [...new Set(user_ids)];
     user_ids.sort((a, b) => a - b);
