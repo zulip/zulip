@@ -361,19 +361,6 @@ $user_status_emoji_width: 24px;
     }
 }
 
-@media (width < $sm_min) {
-    #userlist-toggle {
-        height: 30px;
-        line-height: 30px;
-    }
-
-    #userlist-toggle-button {
-        height: 30px;
-        padding-top: 0;
-        padding-bottom: 0;
-    }
-}
-
 .right-sidebar-shortcuts .realm-description {
     display: flex;
     flex-direction: column;
