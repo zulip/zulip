@@ -1316,8 +1316,8 @@ div.focused-message-list {
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 40px;
-    height: 40px;
+    width: var(--header-height);
+    height: var(--header-height);
 
     &:hover {
         background-color: var(--color-header-button-hover);
@@ -2107,9 +2107,18 @@ body:not(.hide-left-sidebar) {
         height: var(--header-height);
     }
 
+    nav
+        .column-left
+        .left-sidebar-toggle-button
+        .left-sidebar-toggle-unreadcount {
+        top: 5px;
+        right: 9px;
+    }
+
     .left-sidebar-toggle-unreadcount {
         /* Adjust in response to shorter navbar. */
         top: 5px;
+        right: 4px;
     }
 
     #top_navbar .column-right #personal-menu .header-button-avatar {
