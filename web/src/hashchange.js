@@ -76,6 +76,10 @@ export function set_hash_to_home_view() {
         home_view_hash = "#recent";
     }
 
+    if (home_view_hash === "#all_messages") {
+        home_view_hash = "#feed";
+    }
+
     if (window.location.hash !== home_view_hash) {
         // We want to set URL with no hash here. It is not possible
         // to do so with `window.location.hash` since it will set an empty
@@ -197,6 +201,14 @@ function do_hashchange_normal(from_reload) {
             inbox_ui.show();
             break;
         case "#all_messages":
+            // "#all_messages" was renamed to "#feed" in 2024. Unlike
+            // the recent hash rename, there are likely few links that
+            // would break if this compatibility code was removed, but
+            // there's little cost to keeping it.
+            show_all_message_view();
+            window.location.replace("#feed");
+            break;
+        case "#feed":
             show_all_message_view();
             break;
         case "#keyboard-shortcuts":
