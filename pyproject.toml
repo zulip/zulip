@@ -71,6 +71,7 @@ module = [
     "gitlint.*",
     "jsonref.*",
     "ldap.*", # https://github.com/python-ldap/python-ldap/issues/368
+    "libthumbor.*",
     "moto.*", # https://github.com/spulec/moto/issues/4944
     "onelogin.*",
     "pyinotify.*",
@@ -84,6 +85,8 @@ module = [
     "social_django.*",
     "talon_core.*",
     "tlds.*",
+    "thumbor.*",
+    "thumbor_aws.*",
     "twitter.*",
     "two_factor.*",
 ]
