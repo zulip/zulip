@@ -208,6 +208,7 @@ class zulip::app_frontend_base {
     '/home/zulip/tornado',
     '/home/zulip/prod-static',
     '/home/zulip/deployments',
+    '/srv/zulip-locks',
     '/srv/zulip-emoji-cache',
     '/srv/zulip-uploaded-files-cache',
   ]:
