@@ -9,6 +9,7 @@ from typing_extensions import override
 
 from zerver.lib.digest import DIGEST_CUTOFF, enqueue_emails
 from zerver.lib.logging_util import log_to_file
+from zerver.lib.management import abort_unless_locked
 
 ## Logging setup ##
 logger = logging.getLogger(__name__)
@@ -21,6 +22,7 @@ in a while.
 """
 
     @override
+    @abort_unless_locked
     def handle(self, *args: Any, **options: Any) -> None:
         cutoff = timezone_now() - timedelta(days=DIGEST_CUTOFF)
         enqueue_emails(cutoff)
