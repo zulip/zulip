@@ -1628,11 +1628,26 @@ test("navbar_helpers", () => {
         assert.deepEqual(filter.get_title(), test_case.title);
     }
 
+    function test_get_description(test_case) {
+        const filter = new Filter(test_case.terms);
+        const description = filter.get_description();
+
+        if (test_case.description !== undefined && test_case.link !== undefined) {
+            assert.deepEqual(description, {
+                description: test_case.description,
+                link: test_case.link,
+            });
+        } else {
+            assert.strictEqual(description, undefined);
+        }
+    }
+
     function test_helpers(test_case) {
         // debugging tip: add a `console.log(test_case)` here
         test_common_narrow(test_case);
         test_add_icon_data(test_case);
         test_get_title(test_case);
+        test_get_description(test_case);
         test_redirect_url_with_search(test_case);
     }
 
@@ -1703,6 +1718,8 @@ test("navbar_helpers", () => {
             zulip_icon: "star-filled",
             title: "translated: Starred messages",
             redirect_url_with_search: "/#narrow/is/starred",
+            description: "translated: Important messages, tasks, and other useful references.",
+            link: "/help/star-a-message#view-your-starred-messages",
         },
         {
             terms: in_home,
@@ -1731,6 +1748,8 @@ test("navbar_helpers", () => {
             zulip_icon: "at-sign",
             title: "translated: Mentions",
             redirect_url_with_search: "/#narrow/is/mentioned",
+            description: "translated: Messages where you are mentioned.",
+            link: "/help/view-your-mentions",
         },
         {
             terms: is_resolved,
