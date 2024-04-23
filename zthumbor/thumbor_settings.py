@@ -33,6 +33,7 @@ IS_LOCAL_STORAGE = bool(LOCAL_UPLOADS_DIR)
 
 ## The root path where the File Loader will try to find images
 if IS_LOCAL_STORAGE:
+    assert LOCAL_UPLOADS_DIR is not None
     if os.path.isabs(LOCAL_UPLOADS_DIR):
         FILE_LOADER_ROOT_PATH = LOCAL_UPLOADS_DIR
     else:
@@ -703,4 +704,4 @@ TC_AWS_STORE_METADATA = False  # Store result with metadata (for instance conten
 
 # You can override settings in zthumbor/thumbor_local_settings.py
 with contextlib.suppress(ImportError):
-    from zthumbor.thumbor_local_settings import *  # noqa: F403
+    from zthumbor.thumbor_local_settings import *  # type: ignore[import] # noqa: F403
