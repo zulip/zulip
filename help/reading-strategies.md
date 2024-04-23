@@ -47,7 +47,7 @@ workflows:
 
 ### Combined feed
 
-{!all-messages.md!}
+{!combined-feed.md!}
 
 ### Direct message feed
 

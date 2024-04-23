@@ -7,7 +7,7 @@ keyboard shortcuts.
 The home views available in Zulip are
 [**Inbox**](/help/inbox),
 [Recent conversations](/help/recent-conversations), and
-[Combined feed](/help/all-messages). See
+[Combined feed](/help/combined-feed). See
 [Reading strategies](/help/reading-strategies) for recommendations
 on how to use these views.
 
@@ -22,7 +22,7 @@ Organization administrators can [configure the home view for their
 organization](/help/configure-default-new-user-settings) to
 [**Inbox**](/help/inbox),
 [**Recent conversations**](/help/recent-conversations), or
-[**Combined feed**](/help/all-messages).
+[**Combined feed**](/help/combined-feed).
 
 - The **Inbox** view works best if you regularly clear all unread messages in
 streams you follow.
@@ -80,5 +80,5 @@ shortcut.
 
 * [Reading strategies](/help/reading-strategies)
 * [Recent conversations](/help/recent-conversations)
-* [Combined feed](/help/all-messages)
+* [Combined feed](/help/combined-feed)
 * [Keyboard shortcuts](/help/keyboard-shortcuts)

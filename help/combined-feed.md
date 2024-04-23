@@ -1,6 +1,6 @@
 # Combined feed
 
-{!all-messages.md!}
+{!combined-feed.md!}
 
 !!! keyboard_tip ""
 

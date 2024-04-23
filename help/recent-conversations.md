@@ -37,5 +37,5 @@ containing the most recent messages.
 * [Reading conversations](/help/reading-conversations)
 * [Reading strategies](/help/reading-strategies)
 * [Inbox](/help/inbox)
-* [Combined feed](/help/all-messages)
+* [Combined feed](/help/combined-feed)
 * [Configure home view](/help/configure-home-view)
