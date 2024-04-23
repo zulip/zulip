@@ -1,12 +1,9 @@
 from argparse import ArgumentParser
 from typing import Any
 
-from django.conf import settings
 from typing_extensions import override
 
-from scripts.lib.zulip_tools import ENDC, WARNING
-from zerver.lib.context_managers import lockfile_nonblocking
-from zerver.lib.management import ZulipBaseCommand
+from zerver.lib.management import ZulipBaseCommand, abort_unless_locked
 from zerver.lib.zulip_update_announcements import send_zulip_update_announcements
 
 
@@ -22,14 +19,6 @@ class Command(ZulipBaseCommand):
         )
 
     @override
+    @abort_unless_locked
     def handle(self, *args: Any, **options: Any) -> None:
-        with lockfile_nonblocking(
-            settings.ZULIP_UPDATE_ANNOUNCEMENTS_LOCK_FILE,
-        ) as lock_acquired:
-            if lock_acquired:
-                send_zulip_update_announcements(skip_delay=options["skip_delay"])
-            else:
-                print(
-                    f"{WARNING}Update announcements lock {settings.ZULIP_UPDATE_ANNOUNCEMENTS_LOCK_FILE} is unavailable;"
-                    f" exiting.{ENDC}"
-                )
+        send_zulip_update_announcements(skip_delay=options["skip_delay"])
