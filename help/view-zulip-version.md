@@ -19,7 +19,7 @@ Zulip Cloud organizations are always updated to the latest version of Zulip.
 
 {tab|v6}
 
-1. Click on the **gear** (<i class="fa fa-cog"></i>) icon in the upper
+1. Click on the **gear** (<i class="zulip-icon zulip-icon-gear"></i>) icon in the upper
    right corner of the web or desktop app.
 
 1. View the version number or Zulip Cloud plan in the top section of the menu.

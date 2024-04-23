@@ -108,7 +108,7 @@ TAB_SECTION_LABELS = {
     "via-paste": "Via paste",
     "via-drag-and-drop": "Via drag-and-drop",
     "via-markdown": "Via Markdown",
-    "via-compose-box-buttons": "Via compose box buttons",
+    "via-compose-box-buttons": "Via compose box button",
     "stream-compose": "Compose to a stream",
     "dm-compose": "Compose a DM",
     "v8": "Zulip Server 8.0+",

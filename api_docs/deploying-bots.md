@@ -89,7 +89,7 @@ pip3 install zulip_botserver
 1. Register new bot users on the Zulip server's web interface.
 
     * Log in to the Zulip server.
-    * Navigate to *Personal settings (<i class="fa fa-cog"></i>)* -> *Bots* -> *Add a new bot*.
+    * Navigate to *Personal settings (<i class="zulip-icon zulip-icon-gear"></i>)* -> *Bots* -> *Add a new bot*.
       Select *Outgoing webhook* for bot type, fill out the form (using
       the URL from above) and click on *Create bot*.
     * A new bot user should appear in the *Active bots* panel.
