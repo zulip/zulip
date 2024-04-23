@@ -2,6 +2,10 @@
     overflow: hidden;
     user-select: none;
 
+    &:has(.message_reaction) {
+        padding-bottom: 5px;
+    }
+
     .message_reaction {
         display: flex;
         /* Set a pixel and half padding to maintain
@@ -106,10 +110,6 @@
         color: var(--color-message-reaction-button-text);
         background-color: var(--color-message-reaction-button-background);
         border: 1px solid var(--color-message-reaction-button-border);
-        /* TODO: Eventually this space will be set on the message
-           box, at least in part, but for now this preserves the
-           space beneath the reactions area. */
-        margin-bottom: 4px;
 
         & i {
             font-size: 1em;
