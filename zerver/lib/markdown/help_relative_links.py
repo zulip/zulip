@@ -181,7 +181,7 @@ message_info = {
     "drafts": ["Drafts", "/#drafts", draft_instructions],
     "scheduled": ["Scheduled messages", "/#scheduled", scheduled_instructions],
     "recent": ["Recent conversations", "/#recent", recent_instructions],
-    "all": ["Combined feed", "/#all_messages", all_instructions],
+    "all": ["Combined feed", "/#feed", all_instructions],
     "starred": ["Starred messages", "/#narrow/is/starred", starred_instructions],
     "direct": ["Direct message feed", "/#narrow/is/dm", direct_instructions],
     "inbox": ["Inbox", "/#inbox", inbox_instructions],
