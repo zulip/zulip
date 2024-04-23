@@ -44,14 +44,14 @@
                 {{#if has_unread_messages}}
                 <li class="link-item popover-menu-inner-list-item hidden-for-spectators">
                     <a class="sidebar-popover-mark-topic-read popover-menu-link" data-stream-id="{{ stream_id }}" data-topic-name="{{ topic_name }}" tabindex="0">
-                        <i class="popover-menu-icon fa fa-book" aria-hidden="true"></i>
+                        <i class="popover-menu-icon zulip-icon zulip-icon-mark-as-read" aria-hidden="true"></i>
                         <span class="popover-menu-label">{{t "Mark all messages as read" }}</span>
                     </a>
                 </li>
                 {{else}}
                 <li class="link-item popover-menu-inner-list-item hidden-for-spectators">
                     <a class="sidebar-popover-mark-topic-unread popover-menu-link" data-stream-id="{{ stream_id }}" data-topic-name="{{ topic_name }}" tabindex="0">
-                        <i class="popover-menu-icon fa fa-book" aria-hidden="true"></i>
+                        <i class="popover-menu-icon zulip-icon zulip-icon-mark-as-unread" aria-hidden="true"></i>
                         <span class="popover-menu-label">{{t "Mark all messages as unread" }}</span>
                     </a>
                 </li>
@@ -59,7 +59,7 @@
 
                 <li class="link-item popover-menu-inner-list-item">
                     <a class="sidebar-popover-copy-link-to-topic popover-menu-link" data-stream-id="{{ stream_id }}" data-topic-name="{{ topic_name }}" data-clipboard-text="{{ url }}" tabindex="0">
-                        <i class="popover-menu-icon fa fa-link" aria-hidden="true"></i>
+                        <i class="popover-menu-icon zulip-icon zulip-icon-link-alt" aria-hidden="true"></i>
                         <span class="popover-menu-label">{{t "Copy link to topic" }}</span>
                     </a>
                 </li>
@@ -71,14 +71,14 @@
                 {{#if can_move_topic}}
                 <li class="link-item popover-menu-inner-list-item">
                     <a class="sidebar-popover-move-topic-messages popover-menu-link" data-stream-id="{{ stream_id }}" data-topic-name="{{ topic_name }}" tabindex="0">
-                        <i class="popover-menu-icon fa fa-arrows" aria-hidden="true"></i>
+                        <i class="popover-menu-icon zulip-icon zulip-icon-move-alt" aria-hidden="true"></i>
                         <span class="popover-menu-label">{{t "Move topic" }}</span>
                     </a>
                 </li>
                 {{else if can_rename_topic}}
                 <li class="link-item popover-menu-inner-list-item">
                     <a class="sidebar-popover-rename-topic-messages popover-menu-link" data-stream-id="{{ stream_id }}" data-topic-name="{{ topic_name }}" tabindex="0">
-                        <i class="popover-menu-icon fa fa-pencil" aria-hidden="true"></i>
+                        <i class="popover-menu-icon zulip-icon zulip-icon-rename" aria-hidden="true"></i>
                         <span class="popover-menu-label">{{t "Rename topic" }}</span>
                     </a>
                 </li>
@@ -86,10 +86,11 @@
                 {{#if can_rename_topic}}
                 <li class="link-item popover-menu-inner-list-item">
                     <a class="sidebar-popover-toggle-resolved popover-menu-link" data-stream-id="{{ stream_id }}" data-topic-name="{{ topic_name }}" tabindex="0">
-                        <i class="popover-menu-icon fa fa-check" aria-hidden="true"></i>
                         {{# if topic_is_resolved }}
+                        <i class="popover-menu-icon zulip-icon zulip-icon-check-x" aria-hidden="true"></i>
                         <span class="popover-menu-label">{{t "Mark as unresolved"}}</span>
                         {{else}}
+                        <i class="popover-menu-icon zulip-icon zulip-icon-check" aria-hidden="true"></i>
                         <span class="popover-menu-label">{{t "Mark as resolved"}}</span>
                         {{/if}}
                     </a>
@@ -98,7 +99,7 @@
                 {{#if is_realm_admin}}
                 <li class="link-item popover-menu-inner-list-item">
                     <a class="sidebar-popover-delete-topic-messages popover-menu-link" data-stream-id="{{ stream_id }}" data-topic-name="{{ topic_name }}" tabindex="0">
-                        <i class="popover-menu-icon fa fa-trash" aria-hidden="true"></i>
+                        <i class="popover-menu-icon zulip-icon zulip-icon-trash" aria-hidden="true"></i>
                         <span class="popover-menu-label">{{t "Delete topic"}}</span>
                     </a>
                 </li>
