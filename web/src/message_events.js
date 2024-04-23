@@ -406,7 +406,7 @@ export function update_messages(events) {
                     // The fix is likely somewhat involved, so punting for now.
                     const new_stream_name = sub_store.get(new_stream_id).name;
                     new_filter = new_filter.filter_with_new_params({
-                        operator: "stream",
+                        operator: "channel",
                         operand: new_stream_name,
                     });
                     changed_narrow = true;

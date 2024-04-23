@@ -102,7 +102,7 @@ export function unstar_all_messages_in_topic(stream_id: number, topic: string): 
         num_before: 1000,
         num_after: 0,
         narrow: JSON.stringify([
-            {operator: "stream", operand: stream_id},
+            {operator: "channel", operand: stream_id},
             {operator: "topic", operand: topic},
             {operator: "is", operand: "starred"},
         ]),

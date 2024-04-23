@@ -479,7 +479,7 @@ export function mark_stream_as_read(stream_id) {
     bulk_update_read_flags_for_narrow(
         [
             {operator: "is", operand: "unread", negated: false},
-            {operator: "stream", operand: stream_id},
+            {operator: "channel", operand: stream_id},
         ],
         "add",
         {
@@ -492,7 +492,7 @@ export function mark_topic_as_read(stream_id, topic) {
     bulk_update_read_flags_for_narrow(
         [
             {operator: "is", operand: "unread", negated: false},
-            {operator: "stream", operand: stream_id},
+            {operator: "channel", operand: stream_id},
             {operator: "topic", operand: topic},
         ],
         "add",
@@ -506,7 +506,7 @@ export function mark_topic_as_read(stream_id, topic) {
 export function mark_topic_as_unread(stream_id, topic) {
     bulk_update_read_flags_for_narrow(
         [
-            {operator: "stream", operand: stream_id},
+            {operator: "channel", operand: stream_id},
             {operator: "topic", operand: topic},
         ],
         "remove",

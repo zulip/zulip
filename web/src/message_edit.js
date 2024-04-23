@@ -1393,7 +1393,7 @@ export function with_first_message_id(stream_id, topic_name, success_cb, error_c
         num_before: 1,
         num_after: 0,
         narrow: JSON.stringify([
-            {operator: "stream", operand: stream_id},
+            {operator: "channel", operand: stream_id},
             {operator: "topic", operand: topic_name},
         ]),
     };
@@ -1421,7 +1421,7 @@ export function is_message_oldest_or_newest(
         num_before: 1,
         num_after: 1,
         narrow: JSON.stringify([
-            {operator: "stream", operand: stream_id},
+            {operator: "channel", operand: stream_id},
             {operator: "topic", operand: topic_name},
         ]),
     };

@@ -692,7 +692,7 @@ run_test("narrow_to_compose_target streams", ({override_rewire}) => {
     assert.equal(args.called, true);
     assert.equal(args.opts.trigger, "narrow_to_compose_target");
     assert.deepEqual(args.terms, [
-        {operator: "stream", operand: "ROME"},
+        {operator: "channel", operand: "ROME"},
         {operator: "topic", operand: "one"},
     ]);
 
@@ -702,7 +702,7 @@ run_test("narrow_to_compose_target streams", ({override_rewire}) => {
     narrow.to_compose_target();
     assert.equal(args.called, true);
     assert.deepEqual(args.terms, [
-        {operator: "stream", operand: "ROME"},
+        {operator: "channel", operand: "ROME"},
         {operator: "topic", operand: "four"},
     ]);
 
@@ -711,14 +711,14 @@ run_test("narrow_to_compose_target streams", ({override_rewire}) => {
     args.called = false;
     narrow.to_compose_target();
     assert.equal(args.called, true);
-    assert.deepEqual(args.terms, [{operator: "stream", operand: "ROME"}]);
+    assert.deepEqual(args.terms, [{operator: "channel", operand: "ROME"}]);
 
     // Test with no topic
     compose_state.topic(undefined);
     args.called = false;
     narrow.to_compose_target();
     assert.equal(args.called, true);
-    assert.deepEqual(args.terms, [{operator: "stream", operand: "ROME"}]);
+    assert.deepEqual(args.terms, [{operator: "channel", operand: "ROME"}]);
 });
 
 run_test("narrow_to_compose_target direct messages", ({override, override_rewire}) => {

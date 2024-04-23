@@ -27,7 +27,7 @@ function restore_draft(draft_id) {
             narrow.activate(
                 [
                     {
-                        operator: "stream",
+                        operator: "channel",
                         operand: stream_data.get_stream_name_from_id(compose_args.stream_id),
                     },
                     {operator: "topic", operand: compose_args.topic},
