@@ -701,4 +701,4 @@ TC_AWS_STORE_METADATA = False  # Store result with metadata (for instance conten
 
 # You can override settings in zthumbor/thumbor_local_settings.py
 with contextlib.suppress(ImportError):
-    from zthumbor.thumbor_local_settings import *  # type: ignore[reportMissingImport]  # noqa: F403
+    from zthumbor.thumbor_local_settings import *  # noqa: F403
