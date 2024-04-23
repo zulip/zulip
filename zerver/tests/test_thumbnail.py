@@ -46,13 +46,13 @@ class ThumbnailTest(ZulipTestCase):
         result = self.client_get("/thumbnail", {"url": uri[1:], "size": "full"})
         self.assertEqual(result.status_code, 302, result)
         expected_part_url = get_file_path_urlpart(uri)
-        self.assertIn(expected_part_url, result.url)
+        self.assertIn(expected_part_url, result["Location"])
 
         # Test thumbnail size.
         result = self.client_get("/thumbnail", {"url": uri[1:], "size": "thumbnail"})
         self.assertEqual(result.status_code, 302, result)
         expected_part_url = get_file_path_urlpart(uri, "0x300")
-        self.assertIn(expected_part_url, result.url)
+        self.assertIn(expected_part_url, result["Location"])
 
         # Test custom emoji URLs in Zulip messages.
         user_profile = self.example_user("hamlet")
@@ -67,14 +67,14 @@ class ThumbnailTest(ZulipTestCase):
         # Test full size custom emoji image (for emoji link in messages case).
         result = self.client_get("/thumbnail", {"url": custom_emoji_url[1:], "size": "full"})
         self.assertEqual(result.status_code, 302, result)
-        self.assertIn(custom_emoji_url, result.url)
+        self.assertIn(custom_emoji_url, result["Location"])
 
         # Tests the /api/v1/thumbnail API endpoint with standard API auth
         self.logout()
         result = self.api_get(hamlet, "/thumbnail", {"url": uri[1:], "size": "full"})
         self.assertEqual(result.status_code, 302, result)
         expected_part_url = get_file_path_urlpart(uri)
-        self.assertIn(expected_part_url, result.url)
+        self.assertIn(expected_part_url, result["Location"])
 
         # Test with another user trying to access image using thumbor.
         self.login("iago")
@@ -92,7 +92,7 @@ class ThumbnailTest(ZulipTestCase):
             expected_part_url = (
                 "/smart/filters:no_upscale()/" + encoded_url + "/source_type/external"
             )
-            self.assertIn(expected_part_url, result.url)
+            self.assertIn(expected_part_url, result["Location"])
 
             # Test thumbnail size.
             result = self.client_get("/thumbnail", {"url": image_url, "size": "thumbnail"})
@@ -102,7 +102,7 @@ class ThumbnailTest(ZulipTestCase):
                 + encoded_url
                 + "/source_type/external"
             )
-            self.assertIn(expected_part_url, result.url)
+            self.assertIn(expected_part_url, result["Location"])
 
             # Test API endpoint with standard API authentication.
             self.logout()
@@ -116,7 +116,7 @@ class ThumbnailTest(ZulipTestCase):
                 + encoded_url
                 + "/source_type/external"
             )
-            self.assertIn(expected_part_url, result.url)
+            self.assertIn(expected_part_url, result["Location"])
 
             # Test API endpoint with legacy API authentication.
             user_profile = self.example_user("hamlet")
@@ -130,7 +130,7 @@ class ThumbnailTest(ZulipTestCase):
                 + encoded_url
                 + "/source_type/external"
             )
-            self.assertIn(expected_part_url, result.url)
+            self.assertIn(expected_part_url, result["Location"])
 
             # Test a second logged-in user; they should also be able to access it
             user_profile = self.example_user("iago")
@@ -144,7 +144,7 @@ class ThumbnailTest(ZulipTestCase):
                 + encoded_url
                 + "/source_type/external"
             )
-            self.assertIn(expected_part_url, result.url)
+            self.assertIn(expected_part_url, result["Location"])
 
             # Test with another user trying to access image using thumbor.
             # File should be always accessible to user in case of external source
@@ -154,7 +154,7 @@ class ThumbnailTest(ZulipTestCase):
             expected_part_url = (
                 "/smart/filters:no_upscale()/" + encoded_url + "/source_type/external"
             )
-            self.assertIn(expected_part_url, result.url)
+            self.assertIn(expected_part_url, result["Location"])
 
         image_url = "https://images.foobar.com/12345"
         run_test_with_image_url(image_url)
@@ -193,13 +193,13 @@ class ThumbnailTest(ZulipTestCase):
         result = self.client_get("/thumbnail", {"url": uri[1:], "size": "full"})
         self.assertEqual(result.status_code, 302, result)
         expected_part_url = get_file_path_urlpart(uri)
-        self.assertIn(expected_part_url, result.url)
+        self.assertIn(expected_part_url, result["Location"])
 
         # Test thumbnail size.
         result = self.client_get("/thumbnail", {"url": uri[1:], "size": "thumbnail"})
         self.assertEqual(result.status_code, 302, result)
         expected_part_url = get_file_path_urlpart(uri, "0x300")
-        self.assertIn(expected_part_url, result.url)
+        self.assertIn(expected_part_url, result["Location"])
 
         # Test with a Unicode filename.
         fp = StringIO("zulip!")
@@ -216,7 +216,7 @@ class ThumbnailTest(ZulipTestCase):
         result = self.client_get("/thumbnail", {"url": uri[1:], "size": "full"})
         self.assertEqual(result.status_code, 302, result)
         expected_part_url = get_file_path_urlpart(uri)
-        self.assertIn(expected_part_url, result.url)
+        self.assertIn(expected_part_url, result["Location"])
 
         # Test custom emoji urls in Zulip messages.
         user_profile = self.example_user("hamlet")
@@ -231,7 +231,7 @@ class ThumbnailTest(ZulipTestCase):
         # Test full size custom emoji image (for emoji link in messages case).
         result = self.client_get("/thumbnail", {"url": custom_emoji_url[1:], "size": "full"})
         self.assertEqual(result.status_code, 302, result)
-        self.assertIn(custom_emoji_url, result.url)
+        self.assertIn(custom_emoji_url, result["Location"])
 
         # Tests the /api/v1/thumbnail API endpoint with HTTP basic auth.
         self.logout()
@@ -239,7 +239,7 @@ class ThumbnailTest(ZulipTestCase):
         result = self.api_get(user_profile, "/thumbnail", {"url": uri[1:], "size": "full"})
         self.assertEqual(result.status_code, 302, result)
         expected_part_url = get_file_path_urlpart(uri)
-        self.assertIn(expected_part_url, result.url)
+        self.assertIn(expected_part_url, result["Location"])
 
         # Tests the /api/v1/thumbnail API endpoint with ?api_key
         # auth.
@@ -249,7 +249,7 @@ class ThumbnailTest(ZulipTestCase):
         )
         self.assertEqual(result.status_code, 302, result)
         expected_part_url = get_file_path_urlpart(uri)
-        self.assertIn(expected_part_url, result.url)
+        self.assertIn(expected_part_url, result["Location"])
 
         # Test with another user trying to access image using thumbor.
         self.login("iago")
@@ -263,7 +263,7 @@ class ThumbnailTest(ZulipTestCase):
         uri = "/static/images/cute/turtle.png"
         result = self.client_get("/thumbnail", {"url": uri[1:], "size": "full"})
         self.assertEqual(result.status_code, 302, result)
-        self.assertEqual(uri, result.url)
+        self.assertEqual(uri, result["Location"])
 
     def test_with_thumbor_disabled(self) -> None:
         self.login("hamlet")
@@ -281,28 +281,28 @@ class ThumbnailTest(ZulipTestCase):
         with self.settings(THUMBOR_URL=""):
             result = self.client_get("/thumbnail", {"url": uri[1:], "size": "full"})
         self.assertEqual(result.status_code, 302, result)
-        self.assertEqual(uri, result.url)
+        self.assertEqual(uri, result["Location"])
 
         uri = "https://www.google.com/images/srpr/logo4w.png"
         with self.settings(THUMBOR_URL=""):
             result = self.client_get("/thumbnail", {"url": uri, "size": "full"})
         self.assertEqual(result.status_code, 302, result)
         base = "https://external-content.zulipcdn.net/external_content/56c362a24201593891955ff526b3b412c0f9fcd2/68747470733a2f2f7777772e676f6f676c652e636f6d2f696d616765732f737270722f6c6f676f34772e706e67"
-        self.assertEqual(base, result.url)
+        self.assertEqual(base, result["Location"])
 
         uri = "http://www.google.com/images/srpr/logo4w.png"
         with self.settings(THUMBOR_URL=""):
             result = self.client_get("/thumbnail", {"url": uri, "size": "full"})
         self.assertEqual(result.status_code, 302, result)
         base = "https://external-content.zulipcdn.net/external_content/7b6552b60c635e41e8f6daeb36d88afc4eabde79/687474703a2f2f7777772e676f6f676c652e636f6d2f696d616765732f737270722f6c6f676f34772e706e67"
-        self.assertEqual(base, result.url)
+        self.assertEqual(base, result["Location"])
 
         uri = "//www.google.com/images/srpr/logo4w.png"
         with self.settings(THUMBOR_URL=""):
             result = self.client_get("/thumbnail", {"url": uri, "size": "full"})
         self.assertEqual(result.status_code, 302, result)
         base = "https://external-content.zulipcdn.net/external_content/676530cf4b101d56f56cc4a37c6ef4d4fd9b0c03/2f2f7777772e676f6f676c652e636f6d2f696d616765732f737270722f6c6f676f34772e706e67"
-        self.assertEqual(base, result.url)
+        self.assertEqual(base, result["Location"])
 
     def test_with_different_THUMBOR_URL(self) -> None:
         self.login("hamlet")
@@ -322,9 +322,9 @@ class ThumbnailTest(ZulipTestCase):
             result = self.client_get("/thumbnail", {"url": uri[1:], "size": "full"})
         self.assertEqual(result.status_code, 302, result)
         base = "http://test-thumborhost.com/"
-        self.assertEqual(base, result.url[: len(base)])
+        self.assertEqual(base, result["Location"][: len(base)])
         expected_part_url = "/smart/filters:no_upscale()/" + hex_uri + "/source_type/local_file"
-        self.assertIn(expected_part_url, result.url)
+        self.assertIn(expected_part_url, result["Location"])
 
     def test_with_different_sizes(self) -> None:
         def get_file_path_urlpart(uri: str, size: str = "") -> str:
@@ -354,12 +354,12 @@ class ThumbnailTest(ZulipTestCase):
         result = self.client_get("/thumbnail", {"url": uri[1:], "size": "thumbnail"})
         self.assertEqual(result.status_code, 302, result)
         expected_part_url = get_file_path_urlpart(uri, "0x300")
-        self.assertIn(expected_part_url, result.url)
+        self.assertIn(expected_part_url, result["Location"])
 
         result = self.client_get("/thumbnail", {"url": uri[1:], "size": "full"})
         self.assertEqual(result.status_code, 302, result)
         expected_part_url = get_file_path_urlpart(uri)
-        self.assertIn(expected_part_url, result.url)
+        self.assertIn(expected_part_url, result["Location"])
 
         # Test with size supplied as a query parameter where size is anything
         # else than 'full' or 'thumbnail'. Result should be an error message.
