@@ -3,14 +3,10 @@ from io import StringIO
 
 import orjson
 from django.conf import settings
+from django.test import override_settings
 
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.lib.test_helpers import (
-    create_s3_buckets,
-    get_test_image_file,
-    override_settings,
-    use_s3_backend,
-)
+from zerver.lib.test_helpers import create_s3_buckets, get_test_image_file, use_s3_backend
 from zerver.lib.upload import upload_backend, upload_emoji_image
 from zerver.lib.users import get_api_key
 
