@@ -249,7 +249,7 @@ to create the actual database with its schema.
 
 We use Thumbor, a popular open source thumbnailing server, to serve
 images (both for inline URL previews and serving uploaded image
-files).  See [our thumbnailing docs](../subsystems/thumbnailing.md)
+files). See [our thumbnailing docs](../subsystems/thumbnailing.md)
 for more details on how this works.
 
 ### Nagios
