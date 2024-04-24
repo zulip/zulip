@@ -4,14 +4,14 @@
 
 const path = require("path");
 
-const commander = require("commander");
+const {program} = require("commander");
 require("css.escape");
 const mkdirp = require("mkdirp");
 const puppeteer = require("puppeteer");
 
 const options = {};
 
-commander
+program
     .arguments("<message_id> <image_path> <realm_uri")
     .action((messageId, imagePath, realmUri) => {
         options.messageId = messageId;

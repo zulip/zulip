@@ -41,6 +41,7 @@ const typeahead = zrequire("../shared/src/typeahead");
 const stream_topic_history = zrequire("stream_topic_history");
 const compose_state = zrequire("compose_state");
 const emoji = zrequire("emoji");
+const emoji_picker = zrequire("emoji_picker");
 const typeahead_helper = zrequire("typeahead_helper");
 const muted_users = zrequire("muted_users");
 const people = zrequire("people");
@@ -59,6 +60,13 @@ const ct = composebox_typeahead;
 // to facilitate testing different combinations of
 // broadcast-mentions/persons/groups.
 ct.__Rewire__("max_num_items", 15);
+
+function user_or_mention_item(item) {
+    return {
+        ...item,
+        type: "user_or_mention",
+    };
+}
 
 run_test("verify wildcard mentions typeahead for stream message", () => {
     compose_state.set_message_type("stream");
@@ -185,12 +193,6 @@ const emojis_by_name = new Map(
         headphones: emoji_headphones,
     }),
 );
-const emoji_list = [...emojis_by_name.values()].map((emoji_dict) => ({
-    emoji_name: emoji_dict.name,
-    emoji_code: emoji_dict.emoji_code,
-    reaction_type: "unicode_emoji",
-    is_realm_emoji: false,
-}));
 
 const me_slash = {
     name: "me",
@@ -259,12 +261,17 @@ for (const [key, val] of emojis_by_name.entries()) {
     name_to_codepoint[key] = val.emoji_code;
 }
 
+const codepoint_to_name = {};
+for (const [key, val] of emojis_by_name.entries()) {
+    codepoint_to_name[val.emoji_code] = key;
+}
+
 const emoji_codes = {
     name_to_codepoint,
     names: [...emojis_by_name.keys()],
     emoji_catalog: {},
     emoticon_conversions: {},
-    codepoint_to_name: {},
+    codepoint_to_name,
 };
 
 emoji.initialize({
@@ -276,75 +283,105 @@ emoji.emojis_by_name.clear();
 for (const [key, val] of emojis_by_name.entries()) {
     emoji.emojis_by_name.set(key, val);
 }
+emoji_picker.rebuild_catalog();
+const emoji_list = composebox_typeahead.emoji_collection;
 
 const ali = {
     email: "ali@zulip.com",
     user_id: 98,
     full_name: "Ali",
+    is_moderator: false,
 };
+const ali_item = user_or_mention_item(ali);
 
 const alice = {
     email: "alice@zulip.com",
     user_id: 99,
     full_name: "Alice",
+    is_moderator: false,
 };
+const alice_item = user_or_mention_item(alice);
 
 const hamlet = {
     email: "hamlet@zulip.com",
     user_id: 100,
     full_name: "King Hamlet",
+    is_moderator: false,
 };
+const hamlet_item = user_or_mention_item(hamlet);
 
 const othello = {
     email: "othello@zulip.com",
     user_id: 101,
     full_name: "Othello, the Moor of Venice",
+    is_moderator: false,
+    delivery_email: null,
 };
+const othello_item = user_or_mention_item(othello);
+
 const cordelia = {
     email: "cordelia@zulip.com",
     user_id: 102,
     full_name: "Cordelia, Lear's daughter",
+    is_moderator: false,
 };
+const cordelia_item = user_or_mention_item(cordelia);
+
 const deactivated_user = {
     email: "other@zulip.com",
     user_id: 103,
     full_name: "Deactivated User",
+    is_moderator: false,
 };
+const deactivated_user_item = user_or_mention_item(deactivated_user);
+
 const lear = {
     email: "lear@zulip.com",
     user_id: 104,
     full_name: "King Lear",
+    is_moderator: false,
 };
+const lear_item = user_or_mention_item(lear);
 
 const twin1 = {
     full_name: "Mark Twin",
+    is_moderator: false,
     user_id: 105,
     email: "twin1@zulip.com",
 };
+const twin1_item = user_or_mention_item(twin1);
 
 const twin2 = {
     full_name: "Mark Twin",
+    is_moderator: false,
     user_id: 106,
     email: "twin2@zulip.com",
 };
+const twin2_item = user_or_mention_item(twin2);
 
 const gael = {
     full_name: "Gaël Twin",
+    is_moderator: false,
     user_id: 107,
     email: "twin3@zulip.com",
 };
+const gael_item = user_or_mention_item(gael);
 
 const hal = {
     full_name: "Earl Hal",
+    is_moderator: false,
     user_id: 108,
     email: "hal@zulip.com",
 };
+const hal_item = user_or_mention_item(hal);
 
 const harry = {
     full_name: "Harry",
+    is_moderator: false,
     user_id: 109,
     email: "harry@zulip.com",
 };
+const harry_item = user_or_mention_item(harry);
 
 const hamletcharacters = {
     name: "hamletcharacters",
@@ -836,17 +873,17 @@ test("initialize", ({override, override_rewire, mock_template}) => {
                 // This should match the users added at the beginning of this test file.
                 let actual_value = options.source("");
                 let expected_value = [
-                    ali,
-                    alice,
-                    cordelia,
-                    hal,
-                    gael,
-                    harry,
-                    hamlet,
-                    lear,
-                    twin1,
-                    twin2,
-                    othello,
+                    user_or_mention_item(ali),
+                    user_or_mention_item(alice),
+                    user_or_mention_item(cordelia),
+                    user_or_mention_item(hal),
+                    user_or_mention_item(gael),
+                    user_or_mention_item(harry),
+                    user_or_mention_item(hamlet),
+                    user_or_mention_item(lear),
+                    user_or_mention_item(twin1),
+                    user_or_mention_item(twin2),
+                    user_or_mention_item(othello),
                     hamletcharacters,
                     backend,
                     call_center,
@@ -857,7 +894,7 @@ test("initialize", ({override, override_rewire, mock_template}) => {
 
                 function matcher(query, person) {
                     query = typeahead.clean_query_lowercase(query);
-                    return ct.query_matches_person(query, person);
+                    return typeahead_helper.query_matches_person(query, person);
                 }
 
                 let query;
@@ -915,19 +952,19 @@ test("initialize", ({override, override_rewire, mock_template}) => {
                 // beginning first, and then the rest of them in REVERSE order of
                 // the input.
                 query = "othello";
-                actual_value = sorter(query, [othello]);
-                expected_value = [othello];
+                actual_value = sorter(query, [othello_item]);
+                expected_value = [othello_item];
                 assert.deepEqual(actual_value, expected_value);
 
                 query = "Ali";
-                actual_value = sorter(query, [alice, ali]);
-                expected_value = [ali, alice];
+                actual_value = sorter(query, [alice_item, ali_item]);
+                expected_value = [ali_item, alice_item];
                 assert.deepEqual(actual_value, expected_value);
 
                 // A literal match at the beginning of an element puts it at the top.
                 query = "co"; // Matches everything ("x@zulip.COm")
-                actual_value = sorter(query, [othello, deactivated_user, cordelia]);
-                expected_value = [cordelia, deactivated_user, othello];
+                actual_value = sorter(query, [othello_item, deactivated_user_item, cordelia_item]);
+                expected_value = [cordelia_item, deactivated_user_item, othello_item];
                 actual_value.sort((a, b) => a.user_id - b.user_id);
                 expected_value.sort((a, b) => a.user_id - b.user_id);
                 assert.deepEqual(actual_value, expected_value);
@@ -974,7 +1011,7 @@ test("initialize", ({override, override_rewire, mock_template}) => {
                 assert.deepEqual(appended_names, ["King Lear"]);
                 assert.ok(cleared);
 
-                pill_items = [{user_id: lear.user_id}];
+                pill_items = [{user_id: lear.user_id, type: "user"}];
                 appended_names = [];
                 cleared = false;
                 options.updater(hamletcharacters, event);
@@ -1628,20 +1665,21 @@ test("filter_and_sort_mentions (normal)", () => {
     let suggestions = ct.filter_and_sort_mentions(is_silent, "al");
 
     const mention_all = ct.broadcast_mentions()[0];
-    assert.deepEqual(suggestions, [mention_all, ali, alice, hal, call_center]);
+    const mention_all_item = user_or_mention_item(mention_all);
+    assert.deepEqual(suggestions, [mention_all_item, ali_item, alice_item, hal_item, call_center]);
 
     // call_center group is shown in typeahead even when user is member of
     // one of the subgroups of can_mention_group.
     current_user.user_id = 104;
     suggestions = ct.filter_and_sort_mentions(is_silent, "al");
-    assert.deepEqual(suggestions, [mention_all, ali, alice, hal, call_center]);
+    assert.deepEqual(suggestions, [mention_all_item, ali_item, alice_item, hal_item, call_center]);
 
     // call_center group is not shown in typeahead when user is neither
     // a direct member of can_mention_group nor a member of any of its
     // recursive subgroups.
     current_user.user_id = 102;
     suggestions = ct.filter_and_sort_mentions(is_silent, "al");
-    assert.deepEqual(suggestions, [mention_all, ali, alice, hal]);
+    assert.deepEqual(suggestions, [mention_all_item, ali_item, alice_item, hal_item]);
 });
 
 test("filter_and_sort_mentions (silent)", () => {
@@ -1649,14 +1687,14 @@ test("filter_and_sort_mentions (silent)", () => {
 
     let suggestions = ct.filter_and_sort_mentions(is_silent, "al");
 
-    assert.deepEqual(suggestions, [ali, alice, hal, call_center]);
+    assert.deepEqual(suggestions, [ali_item, alice_item, hal_item, call_center]);
 
     // call_center group is shown in typeahead irrespective of whether
     // user is member of can_mention_group or its subgroups for a
     // silent mention.
     current_user.user_id = 102;
     suggestions = ct.filter_and_sort_mentions(is_silent, "al");
-    assert.deepEqual(suggestions, [ali, alice, hal, call_center]);
+    assert.deepEqual(suggestions, [ali_item, alice_item, hal_item, call_center]);
 });
 
 test("typeahead_results", () => {
@@ -1696,14 +1734,14 @@ test("typeahead_results", () => {
     }
     assert_emoji_matches("da", [
         {
-            emoji_name: "tada",
-            emoji_code: "1f389",
+            emoji_name: "panda_face",
+            emoji_code: "1f43c",
             reaction_type: "unicode_emoji",
             is_realm_emoji: false,
         },
         {
-            emoji_name: "panda_face",
-            emoji_code: "1f43c",
+            emoji_name: "tada",
+            emoji_code: "1f389",
             reaction_type: "unicode_emoji",
             is_realm_emoji: false,
         },
@@ -1745,22 +1783,22 @@ test("typeahead_results", () => {
     assert_emoji_matches("notaemoji", []);
 
     // Autocomplete user mentions by user name.
-    assert_mentions_matches("cordelia", [cordelia]);
-    assert_mentions_matches("cordelia, le", [cordelia]);
+    assert_mentions_matches("cordelia", [cordelia_item]);
+    assert_mentions_matches("cordelia, le", [cordelia_item]);
     assert_mentions_matches("cordelia, le ", []);
-    assert_mentions_matches("moor", [othello]);
-    assert_mentions_matches("moor ", [othello]);
-    assert_mentions_matches("moor of", [othello]);
-    assert_mentions_matches("moor of ven", [othello]);
-    assert_mentions_matches("oor", [othello]);
+    assert_mentions_matches("moor", [othello_item]);
+    assert_mentions_matches("moor ", [othello_item]);
+    assert_mentions_matches("moor of", [othello_item]);
+    assert_mentions_matches("moor of ven", [othello_item]);
+    assert_mentions_matches("oor", [othello_item]);
     assert_mentions_matches("oor ", []);
     assert_mentions_matches("oor o", []);
     assert_mentions_matches("oor of venice", []);
-    assert_mentions_matches("King ", [hamlet, lear]);
-    assert_mentions_matches("King H", [hamlet]);
-    assert_mentions_matches("King L", [lear]);
+    assert_mentions_matches("King ", [hamlet_item, lear_item]);
+    assert_mentions_matches("King H", [hamlet_item]);
+    assert_mentions_matches("King L", [lear_item]);
     assert_mentions_matches("delia lear", []);
-    assert_mentions_matches("Mark Tw", [twin1, twin2]);
+    assert_mentions_matches("Mark Tw", [twin1_item, twin2_item]);
 
     // Earlier user group and stream mentions were autocompleted by their
     // description too. This is now removed as it often led to unexpected
@@ -1775,17 +1813,18 @@ test("typeahead_results", () => {
     // Verify we suggest only the first matching stream wildcard mention,
     // irrespective of how many equivalent stream wildcard mentions match.
     const mention_everyone = ct.broadcast_mentions()[1];
+    const mention_everyone_item = user_or_mention_item(mention_everyone);
     // Here, we suggest only "everyone" instead of both the matching
     // "everyone" and "stream" wildcard mentions.
     assert_mentions_matches("e", [
-        mention_everyone,
-        hal,
-        alice,
-        cordelia,
-        gael,
-        hamlet,
-        lear,
-        othello,
+        mention_everyone_item,
+        hal_item,
+        alice_item,
+        cordelia_item,
+        gael_item,
+        hamlet_item,
+        lear_item,
+        othello_item,
         hamletcharacters,
         call_center,
     ]);
@@ -1793,8 +1832,14 @@ test("typeahead_results", () => {
     // Verify we suggest both 'the first matching stream wildcard' and
     // 'topic wildcard' mentions. Not only one matching wildcard mention.
     const mention_topic = ct.broadcast_mentions()[4];
+    const mention_topic_item = user_or_mention_item(mention_topic);
     // Here, we suggest both "everyone" and "topic".
-    assert_mentions_matches("o", [othello, mention_everyone, mention_topic, cordelia]);
+    assert_mentions_matches("o", [
+        othello_item,
+        mention_everyone_item,
+        mention_topic_item,
+        cordelia_item,
+    ]);
 
     // Autocomplete by slash commands.
     assert_slash_matches("me", [me_slash]);
@@ -1836,20 +1881,20 @@ test("message people", ({override, override_rewire}) => {
     };
 
     results = ct.get_person_suggestions("Ha", opts);
-    assert.deepEqual(results, [harry, hal]);
+    assert.deepEqual(results, [harry_item, hal_item]);
 
     // Now let's exclude Hal and include King Hamlet.
     user_ids = [hamlet.user_id, harry.user_id];
 
     results = ct.get_person_suggestions("Ha", opts);
-    assert.deepEqual(results, [harry, hamlet]);
+    assert.deepEqual(results, [harry_item, hamlet_item]);
 
     // Reincluding Hal and deactivating harry
     user_ids = [hamlet.user_id, harry.user_id, hal.user_id];
     people.deactivate(harry);
     results = ct.get_person_suggestions("Ha", opts);
     // harry is excluded since it has been deactivated.
-    assert.deepEqual(results, [hal, hamlet]);
+    assert.deepEqual(results, [hal_item, hamlet_item]);
 });
 
 test("muted users excluded from results", () => {
@@ -1862,7 +1907,7 @@ test("muted users excluded from results", () => {
 
     // Nobody is muted
     results = ct.get_person_suggestions("corde", opts);
-    assert.deepEqual(results, [cordelia]);
+    assert.deepEqual(results, [cordelia_item]);
 
     // Mute Cordelia, and test that she's excluded from results.
     muted_users.add_muted_user(cordelia.user_id);
@@ -1873,7 +1918,8 @@ test("muted users excluded from results", () => {
     // or user group mentions.
     results = ct.get_person_suggestions("all", opts);
     const mention_all = ct.broadcast_mentions()[0];
-    assert.deepEqual(results, [mention_all, call_center]);
+    const mention_all_item = user_or_mention_item(mention_all);
+    assert.deepEqual(results, [mention_all_item, call_center]);
 });
 
 test("direct message recipients sorted according to stream / topic being viewed", ({
@@ -1897,12 +1943,12 @@ test("direct message recipients sorted according to stream / topic being viewed"
     // When viewing no stream, sorting is alphabetical
     compose_state.set_stream_id("");
     results = ct.get_pm_people("li");
-    assert.deepEqual(results, [ali, alice, cordelia]);
+    assert.deepEqual(results, [ali_item, alice_item, cordelia_item]);
 
     // When viewing denmark stream, subscriber cordelia is placed higher
     compose_state.set_stream_id(denmark_stream.stream_id);
     results = ct.get_pm_people("li");
-    assert.deepEqual(results, [cordelia, ali, alice]);
+    assert.deepEqual(results, [cordelia_item, ali_item, alice_item]);
 
     // Simulating just alice being subscribed to denmark.
     override_rewire(
@@ -1914,5 +1960,5 @@ test("direct message recipients sorted according to stream / topic being viewed"
     // When viewing denmark stream to which alice is subscribed, ali is not
     // 1st despite having an exact name match with the query.
     results = ct.get_pm_people("ali");
-    assert.deepEqual(results, [alice, ali]);
+    assert.deepEqual(results, [alice_item, ali_item]);
 });

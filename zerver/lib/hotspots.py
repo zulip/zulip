@@ -89,6 +89,9 @@ ONE_TIME_NOTICES: List[OneTimeNotice] = [
     OneTimeNotice(
         name="intro_recent_view_modal",
     ),
+    OneTimeNotice(
+        name="first_stream_created_banner",
+    ),
 ]
 
 # We would most likely implement new hotspots in the future that aren't

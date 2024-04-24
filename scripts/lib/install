@@ -69,7 +69,7 @@ EOF
 
 # Shell option parsing.  Over time, we'll want to move some of the
 # environment variables below into this self-documenting system.
-args="$(getopt -o '' --long help,hostname:,email:,certbot,self-signed-cert,cacert:,postgresql-database-name:,postgresql-database-user:,postgresql-version:,postgresql-missing-dictionaries,no-init-db,no-overwrite-settings,no-dist-upgrade -n "$0" -- "$@")"
+args="$(getopt -o '' --long help,hostname:,email:,certbot,self-signed-cert,cacert:,postgresql-database-name:,postgresql-database-user:,postgresql-version:,postgresql-missing-dictionaries,no-init-db,puppet-classes:,no-overwrite-settings,no-dist-upgrade -n "$0" -- "$@")"
 eval "set -- $args"
 while true; do
     case "$1" in
@@ -241,10 +241,8 @@ if [ -f /etc/os-release ]; then
     esac
 fi
 
-case "$os_id $os_version_id" in
-    'debian 12' | 'ubuntu 22.04' | 'ubuntu 24.04') ;;
-    *)
-        system_requirements_failure <<EOF
+if ! "$ZULIP_PATH/scripts/lib/supported-os"; then
+    system_requirements_failure <<EOF
 Unsupported OS release: $os_id $os_version_id
 
 Zulip in production is supported only on:
@@ -252,8 +250,7 @@ Zulip in production is supported only on:
  - Ubuntu 22.04 LTS
  - Ubuntu 24.04 LTS
 EOF
-        ;;
-esac
+fi
 
 machine="$(uname -m)"
 if [ "$machine" != x86_64 ] && [ "$machine" != aarch64 ]; then

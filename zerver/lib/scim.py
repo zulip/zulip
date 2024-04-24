@@ -296,6 +296,13 @@ class ZulipSCIMUser(SCIMUser):
 
         if self.is_new_user():
             assert full_name_new_value is not None
+            add_initial_stream_subscriptions = True
+            if (
+                self.config.get("create_guests_without_streams", False)
+                and role_new_value == UserProfile.ROLE_GUEST
+            ):
+                add_initial_stream_subscriptions = False
+
             self.obj = do_create_user(
                 email_new_value,
                 password,
@@ -303,6 +310,7 @@ class ZulipSCIMUser(SCIMUser):
                 full_name_new_value,
                 role=role_new_value,
                 tos_version=UserProfile.TOS_VERSION_BEFORE_FIRST_LOGIN,
+                add_initial_stream_subscriptions=add_initial_stream_subscriptions,
                 acting_user=None,
             )
             return

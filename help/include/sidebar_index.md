@@ -96,7 +96,7 @@
 * [Reading strategies](/help/reading-strategies)
 * [Inbox](/help/inbox)
 * [Recent conversations](/help/recent-conversations)
-* [All messages](/help/all-messages)
+* [Combined feed](/help/all-messages)
 * [Message actions](/help/message-actions)
 * [Marking messages as read](/help/marking-messages-as-read)
 * [Marking messages as unread](/help/marking-messages-as-unread)
@@ -122,6 +122,7 @@
 * [View someone's profile](/help/view-someones-profile)
 * [Direct messages](/help/direct-messages)
 * [User groups](/help/user-groups)
+* [Find administrators](/help/find-administrators)
 
 ## Streams & topics
 * [Streams and topics](/help/streams-and-topics)

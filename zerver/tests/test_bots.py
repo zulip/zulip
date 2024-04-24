@@ -669,6 +669,36 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         self.assert_json_error(result, "No such user")
         self.assert_num_bots_equal(1)
 
+    def test_activate_bot_with_duplicate_name(self) -> None:
+        self.login("iago")
+        # Create a bot and then deactivate it
+        original_name = "Hamlet"
+        bot_info = {
+            "full_name": original_name,
+            "short_name": "hambot",
+        }
+        result = self.client_post("/json/bots", bot_info)
+        self.assert_json_success(result)
+        bot_email = "hambot-bot@zulip.testserver"
+        bot = self.get_bot_user(bot_email)
+        do_deactivate_user(bot, False, acting_user=None)
+        self.assertFalse(
+            UserProfile.objects.filter(is_bot=True, id=bot.id, is_active=True).exists()
+        )
+
+        # Create another bot with the same name
+        bot_info2 = {
+            "full_name": original_name,
+            "short_name": "hambot2",
+        }
+        result = self.client_post("/json/bots", bot_info2)
+        self.assert_json_success(result)
+        result = self.client_post(f"/json/users/{bot.id}/reactivate")
+        self.assert_json_error(
+            result,
+            'There is already an active bot named "Hamlet" in this organization. To reactivate this bot, you must rename or deactivate the other one first.',
+        )
+
     def test_bot_permissions(self) -> None:
         self.login("hamlet")
         self.assert_num_bots_equal(0)

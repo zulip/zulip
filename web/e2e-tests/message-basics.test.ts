@@ -110,7 +110,7 @@ async function un_narrow(page: Page): Promise<void> {
     await page.waitForSelector(".message-list .message_row", {visible: true});
     // Assert that there is only one message list.
     assert.equal((await page.$$(".message-list")).length, 1);
-    assert.strictEqual(await page.title(), "All messages - Zulip Dev - Zulip");
+    assert.strictEqual(await page.title(), "Combined feed - Zulip Dev - Zulip");
 }
 
 async function un_narrow_by_clicking_org_icon(page: Page): Promise<void> {
@@ -304,7 +304,7 @@ async function expect_all_direct_messages(page: Page): Promise<void> {
         await common.get_text_from_selector(page, "#new_conversation_button"),
         "Start new conversation",
     );
-    assert.strictEqual(await page.title(), "All direct messages - Zulip Dev - Zulip");
+    assert.strictEqual(await page.title(), "Direct message feed - Zulip Dev - Zulip");
 }
 
 async function test_narrow_by_clicking_the_left_sidebar(page: Page): Promise<void> {

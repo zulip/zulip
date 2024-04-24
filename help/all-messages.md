@@ -1,4 +1,4 @@
-# All messages
+# Combined feed
 
 {!all-messages.md!}
 
@@ -6,7 +6,7 @@
 
     Use <kbd>S</kbd> (go to stream) or <kbd>Shift</kbd> +
     <kbd>S</kbd> (go to conversation) to zoom in, and <kbd>A</kbd> to
-    get back to **All messages**.
+    get back to **Combined feed**.
 
 
 ## Related articles

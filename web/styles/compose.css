@@ -963,6 +963,7 @@ textarea.new_message_textarea,
       `align-self: center` to center only
       themselves, where necessary. */
     min-height: var(--compose-recipient-box-min-height);
+    min-width: 0;
 }
 
 .compose-control-buttons-container {

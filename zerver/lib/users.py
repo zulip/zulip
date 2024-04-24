@@ -94,7 +94,7 @@ def check_full_name(
 # name (e.g. you can get there by reactivating a deactivated bot after
 # making a new bot with the same name).  This is just a check designed
 # to make it unlikely to happen by accident.
-def check_bot_name_available(realm_id: int, full_name: str) -> None:
+def check_bot_name_available(realm_id: int, full_name: str, *, is_activation: bool) -> None:
     dup_exists = UserProfile.objects.filter(
         realm_id=realm_id,
         full_name=full_name.strip(),
@@ -102,7 +102,12 @@ def check_bot_name_available(realm_id: int, full_name: str) -> None:
     ).exists()
 
     if dup_exists:
-        raise JsonableError(_("Name is already in use!"))
+        if is_activation:
+            raise JsonableError(
+                f'There is already an active bot named "{full_name}" in this organization. To reactivate this bot, you must rename or deactivate the other one first.'
+            )
+        else:
+            raise JsonableError(_("Name is already in use!"))
 
 
 def check_short_name(short_name_raw: str) -> str:

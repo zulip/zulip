@@ -1,4 +1,4 @@
-<div class="navbar-dropdown-menu" id="personal-menu-dropdown" data-simplebar>
+<div class="popover-menu" id="personal-menu-dropdown" data-simplebar>
     <nav class="personal-menu-nav">
         <header class="personal-menu-header">
             <div class="avatar">
@@ -15,21 +15,21 @@
             </div>
         </header>
         <section class="dropdown-menu-list-section personal-menu-actions" data-user-id="{{user_id}}">
-            <ul class="navbar-dropdown-menu-outer-list">
+            <ul class="popover-menu-outer-list">
                 {{#if user_time}}
-                <li class="navbar-dropdown-menu-outer-list-item">
-                    <ul class="navbar-dropdown-menu-inner-list">
-                        <li class="text-item hidden-for-spectators navbar-dropdown-menu-inner-list-item">
-                            <i class="navbar-dropdown-icon zulip-icon zulip-icon-clock"></i>
+                <li class="popover-menu-outer-list-item">
+                    <ul class="popover-menu-inner-list">
+                        <li class="text-item hidden-for-spectators popover-menu-inner-list-item">
+                            <i class="popover-menu-icon zulip-icon zulip-icon-clock"></i>
                             {{#tr}}{user_time} local time{{/tr}}
                         </li>
                     </ul>
                 </li>
                 {{/if}}
-                <li class="navbar-dropdown-menu-outer-list-item">
-                    <ul class="navbar-dropdown-menu-inner-list">
+                <li class="popover-menu-outer-list-item">
+                    <ul class="popover-menu-inner-list">
                         {{#if status_content_available}}
-                        <li class="text-item navbar-dropdown-menu-inner-list-item">
+                        <li class="text-item popover-menu-inner-list-item">
                             <span class="personal-menu-status-wrapper">
                                 {{#if status_emoji_info}}
                                     {{#if status_emoji_info.emoji_alt_code}}
@@ -48,45 +48,45 @@
                                     {{/if}}
                                 </span>
                             </span>
-                            <a tabindex="0" class="personal-menu-clear-status navbar-dropdown-menu-link" aria-label="{{t 'Clear status'}}" data-tippy-content="{{t 'Clear your status' }}">
-                                <i class="personal-menu-clear-status-icon navbar-dropdown-icon zulip-icon zulip-icon-x-circle"></i>
+                            <a tabindex="0" class="personal-menu-clear-status popover-menu-link" aria-label="{{t 'Clear status'}}" data-tippy-content="{{t 'Clear your status' }}">
+                                <i class="personal-menu-clear-status-icon popover-menu-icon zulip-icon zulip-icon-x-circle"></i>
                             </a>
                         </li>
-                        <li class="link-item navbar-dropdown-menu-inner-list-item">
-                            <a tabindex="0" class="update_status_text navbar-dropdown-menu-link">
-                                <i class="navbar-dropdown-icon zulip-icon zulip-icon-smile-smaller"></i>
-                                {{#tr}}Edit status{{/tr}}
+                        <li class="link-item popover-menu-inner-list-item">
+                            <a tabindex="0" class="update_status_text popover-menu-link">
+                                <i class="popover-menu-icon zulip-icon zulip-icon-smile-smaller"></i>
+                                <span class="popover-menu-label">{{t 'Edit status' }}</span>
                             </a>
                         </li>
                         {{else}}
-                        <li class="link-item hidden-for-spectators navbar-dropdown-menu-inner-list-item">
-                            <a tabindex="0" class="update_status_text navbar-dropdown-menu-link">
-                                <i class="navbar-dropdown-icon zulip-icon zulip-icon-smile-smaller"></i>
-                                {{#tr}}Set status{{/tr}}
+                        <li class="link-item hidden-for-spectators popover-menu-inner-list-item">
+                            <a tabindex="0" class="update_status_text popover-menu-link">
+                                <i class="popover-menu-icon zulip-icon zulip-icon-smile-smaller"></i>
+                                <span class="popover-menu-label">{{t 'Set status' }}</span>
                             </a>
                         </li>
                         {{/if}}
 
                         {{#if invisible_mode}}
-                        <li class="link-item hidden-for-spectators navbar-dropdown-menu-inner-list-item">
-                            <a tabindex="0" class="invisible_mode_turn_off navbar-dropdown-menu-link">
-                                <i class="navbar-dropdown-icon zulip-icon zulip-icon-play-circle"></i>
-                                {{#tr}}Turn off invisible mode{{/tr}}
+                        <li class="link-item hidden-for-spectators popover-menu-inner-list-item">
+                            <a tabindex="0" class="invisible_mode_turn_off popover-menu-link">
+                                <i class="popover-menu-icon zulip-icon zulip-icon-play-circle"></i>
+                                <span class="popover-menu-label">{{t 'Turn off invisible mode' }}</span>
                             </a>
                         </li>
                         {{else}}
-                        <li class="link-item hidden-for-spectators navbar-dropdown-menu-inner-list-item">
-                            <a tabindex="0" class="invisible_mode_turn_on navbar-dropdown-menu-link">
-                                <i class="navbar-dropdown-icon zulip-icon zulip-icon-stop-circle"></i>
-                                {{#tr}}Go invisible{{/tr}}
+                        <li class="link-item hidden-for-spectators popover-menu-inner-list-item">
+                            <a tabindex="0" class="invisible_mode_turn_on popover-menu-link">
+                                <i class="popover-menu-icon zulip-icon zulip-icon-stop-circle"></i>
+                                <span class="popover-menu-label">{{t 'Go invisible' }}</span>
                             </a>
                         </li>
                         {{/if}}
                     </ul>
                 </li>
-                <li class="navbar-dropdown-menu-outer-list-item">
-                    <ul class="navbar-dropdown-menu-inner-list">
-                        <li class="navbar-dropdown-menu-inner-list-item">
+                <li class="popover-menu-outer-list-item">
+                    <ul class="popover-menu-inner-list">
+                        <li class="popover-menu-inner-list-item">
                             <div id="theme-switcher" class="tab-picker">
                                 <input type="radio" id="select-automatic-theme" class="tab-option" name="theme-select" data-theme-code="{{color_scheme_values.automatic.code}}" {{#if (eq user_color_scheme color_scheme_values.automatic.code)}}checked{{/if}} />
                                 <label class="tab-option-content tippy-zulip-delayed-tooltip" for="select-automatic-theme" aria-label="{{t 'Select automatic theme' }}" data-tooltip-template-id="automatic-theme-template" tabindex="0">
@@ -105,44 +105,44 @@
                         </li>
                     </ul>
                 </li>
-                <li class="navbar-dropdown-menu-outer-list-item">
-                    <ul class="navbar-dropdown-menu-inner-list">
-                        <li class="link-item navbar-dropdown-menu-inner-list-item">
-                            <a href="#user/{{user_id}}" tabindex="0" class="view_full_user_profile navbar-dropdown-menu-link">
-                                <i class="navbar-dropdown-icon zulip-icon zulip-icon-account"></i>
-                                {{#tr}}View your profile{{/tr}}
+                <li class="popover-menu-outer-list-item">
+                    <ul class="popover-menu-inner-list">
+                        <li class="link-item popover-menu-inner-list-item">
+                            <a href="#user/{{user_id}}" tabindex="0" class="view_full_user_profile popover-menu-link">
+                                <i class="popover-menu-icon zulip-icon zulip-icon-account"></i>
+                                <span class="popover-menu-label">{{t 'View your profile' }}</span>
                             </a>
                         </li>
-                        <li class="link-item navbar-dropdown-menu-inner-list-item">
-                            <a tabindex="0" class="narrow-self-direct-message navbar-dropdown-menu-link">
-                                <i class="navbar-dropdown-icon zulip-icon zulip-icon-users"></i>
-                                {{#tr}}View messages with yourself{{/tr}}
+                        <li class="link-item popover-menu-inner-list-item">
+                            <a tabindex="0" class="narrow-self-direct-message popover-menu-link">
+                                <i class="popover-menu-icon zulip-icon zulip-icon-users"></i>
+                                <span class="popover-menu-label">{{t 'View messages with yourself' }}</span>
                             </a>
                         </li>
-                        <li class="link-item navbar-dropdown-menu-inner-list-item">
-                            <a tabindex="0" class="narrow-messages-sent navbar-dropdown-menu-link">
-                                <i class="navbar-dropdown-icon zulip-icon zulip-icon-message-square"></i>
-                                {{#tr}}View messages sent{{/tr}}
-                            </a>
-                        </li>
-                    </ul>
-                </li>
-                <li class="navbar-dropdown-menu-outer-list-item">
-                    <ul class="navbar-dropdown-menu-inner-list">
-                        <li class="link-item navbar-dropdown-menu-inner-list-item">
-                            <a href="#settings/profile" class="open-profile-settings navbar-dropdown-menu-link">
-                                <i class="navbar-dropdown-icon zulip-icon zulip-icon-tool"></i>
-                                {{#tr}}Settings{{/tr}}
+                        <li class="link-item popover-menu-inner-list-item">
+                            <a tabindex="0" class="narrow-messages-sent popover-menu-link">
+                                <i class="popover-menu-icon zulip-icon zulip-icon-message-square"></i>
+                                <span class="popover-menu-label">{{t 'View messages sent' }}</span>
                             </a>
                         </li>
                     </ul>
                 </li>
-                <li class="navbar-dropdown-menu-outer-list-item">
-                    <ul class="navbar-dropdown-menu-inner-list">
-                        <li class="link-item navbar-dropdown-menu-inner-list-item">
-                            <a class="logout_button hidden-for-spectators navbar-dropdown-menu-link" tabindex="0">
-                                <i class="navbar-dropdown-icon zulip-icon zulip-icon-log-out" aria-hidden="true"></i>
-                                {{t 'Log out' }}
+                <li class="popover-menu-outer-list-item">
+                    <ul class="popover-menu-inner-list">
+                        <li class="link-item popover-menu-inner-list-item">
+                            <a href="#settings/profile" class="open-profile-settings popover-menu-link">
+                                <i class="popover-menu-icon zulip-icon zulip-icon-tool"></i>
+                                <span class="popover-menu-label">{{t 'Settings' }}</span>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+                <li class="popover-menu-outer-list-item">
+                    <ul class="popover-menu-inner-list">
+                        <li class="link-item popover-menu-inner-list-item">
+                            <a class="logout_button hidden-for-spectators popover-menu-link" tabindex="0">
+                                <i class="popover-menu-icon zulip-icon zulip-icon-log-out" aria-hidden="true"></i>
+                                <span class="popover-menu-label">{{t 'Log out' }}</span>
                             </a>
                         </li>
                     </ul>

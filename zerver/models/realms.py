@@ -510,10 +510,9 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
         BOT_CREATION_ADMINS_ONLY,
     ]
 
-    # See upload_quota_bytes; don't interpret upload_quota_gb directly.
     UPLOAD_QUOTA_LIMITED = 5
-    UPLOAD_QUOTA_STANDARD = 50
-    upload_quota_gb = models.IntegerField(null=True)
+    UPLOAD_QUOTA_STANDARD_FREE = 50
+    custom_upload_quota_gb = models.IntegerField(null=True)
 
     VIDEO_CHAT_PROVIDERS = {
         "disabled": {
@@ -829,6 +828,34 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
     @max_invites.setter
     def max_invites(self, value: Optional[int]) -> None:
         self._max_invites = value
+
+    @property
+    def upload_quota_gb(self) -> Optional[int]:
+        # See upload_quota_bytes; don't interpret upload_quota_gb directly.
+
+        if self.custom_upload_quota_gb is not None:
+            return self.custom_upload_quota_gb
+
+        if not settings.CORPORATE_ENABLED:
+            return None
+
+        plan_type = self.plan_type
+        if plan_type == Realm.PLAN_TYPE_SELF_HOSTED:  # nocoverage
+            return None
+        if plan_type == Realm.PLAN_TYPE_LIMITED:
+            return Realm.UPLOAD_QUOTA_LIMITED
+        elif plan_type == Realm.PLAN_TYPE_STANDARD_FREE:
+            return Realm.UPLOAD_QUOTA_STANDARD_FREE
+        elif plan_type in [Realm.PLAN_TYPE_STANDARD, Realm.PLAN_TYPE_PLUS]:
+            from corporate.lib.stripe import get_cached_seat_count
+
+            # Paying customers with few users should get a reasonable minimum quota.
+            return max(
+                get_cached_seat_count(self) * settings.UPLOAD_QUOTA_PER_USER_GB,
+                Realm.UPLOAD_QUOTA_STANDARD_FREE,
+            )
+        else:
+            raise AssertionError("Invalid plan type")
 
     def upload_quota_bytes(self) -> Optional[int]:
         if self.upload_quota_gb is None:

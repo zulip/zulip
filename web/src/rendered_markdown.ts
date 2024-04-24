@@ -270,7 +270,7 @@ export const update_elements = ($content: JQuery): void => {
         // Add the expand/collapse button to spoiler blocks
         const toggle_button_html =
             '<span class="spoiler-button" aria-expanded="false"><span class="spoiler-arrow"></span></span>';
-        $(this).prepend($(toggle_button_html));
+        $(this).append($(toggle_button_html));
     });
 
     // Display the view-code-in-playground and the copy-to-clipboard button inside the div.codehilite element,

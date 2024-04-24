@@ -81,32 +81,39 @@
     }
 }
 
-.tippy-box[data-theme="navbar-dropdown-menu"] {
-    border: 0;
+.tippy-box[data-theme="popover-menu"] {
+    background-color: var(--color-background-popover-menu);
+    border: 1px solid var(--color-border-popover-menu);
     border-radius: 6px;
+    box-shadow: var(--box-shadow-popover-menu);
 
     > .tippy-content {
         padding: 0;
     }
 
     > .tippy-arrow {
-        top: -5.5px;
-        width: 16px;
-        height: 8px;
-        z-index: 1;
-        filter: drop-shadow(0 -1.25px 0 var(--color-border-dropdown-menu));
-
-        &::before {
-            content: "";
-            top: 0;
-            width: 100%;
-            height: 100%;
-            mask-image: url("../shared/icons/popover-arrow.svg");
-            mask-size: contain;
-            mask-repeat: no-repeat;
-            color: var(--color-background-dropdown-menu);
-        }
+        color: var(--color-background-popover-menu);
     }
+
+    &[data-placement^="top"] > .tippy-arrow::before {
+        bottom: var(--popover-tippy-arrow-before-offset);
+    }
+
+    &[data-placement^="bottom"] > .tippy-arrow::before {
+        top: var(--popover-tippy-arrow-before-offset);
+    }
+
+    &[data-placement^="left"] > .tippy-arrow::before {
+        right: var(--popover-tippy-arrow-before-offset);
+    }
+
+    &[data-placement^="right"] > .tippy-arrow::before {
+        left: var(--popover-tippy-arrow-before-offset);
+    }
+}
+
+.tippy-box[data-theme="popover-menu"]:has(#gear-menu-dropdown) {
+    --box-shadow-popover-menu: var(--box-shadow-gear-menu);
 }
 
 .user_full_name,
@@ -307,7 +314,6 @@
 
 ul {
     &.user-card-popover-actions i,
-    &.actions_popover i,
     &.streams_popover i,
     &.topics_popover i {
         display: inline-block;
@@ -341,30 +347,6 @@ ul {
 
     &.user-card-popover-actions i.fa-edit {
         vertical-align: middle;
-    }
-}
-
-.actions_popover {
-    .mark_as_unread {
-        .unread_count {
-            /* The icon for this menu item is in the form of an unread count from
-               the left sidebar. We reuse much of the shared styling,
-               but need to override some of the defaults set in app_components.css. */
-            display: inline;
-            float: unset;
-            line-height: 14px;
-            font-size: 11px;
-            font-weight: 600;
-            margin-right: 2px;
-            background-color: var(
-                --color-background-unread-counter-popover-menu
-            );
-            /* Override random undesired bootstrap style */
-            text-shadow: none;
-            /* Not center aligned but looks better. */
-            position: relative;
-            top: -1px;
-        }
     }
 }
 
@@ -1156,10 +1138,6 @@ ul {
     }
 }
 
-#personal-menu-dropdown {
-    padding-bottom: 5px;
-}
-
 .personal-menu-header {
     display: flex;
     flex-flow: row nowrap;
@@ -1194,7 +1172,7 @@ ul {
     }
 
     .user_circle_empty {
-        background-color: var(--color-background-dropdown-menu);
+        background-color: var(--color-background-popover-menu);
         border-color: hsl(0deg 0% 50%);
     }
 
@@ -1224,41 +1202,53 @@ ul {
     }
 }
 
-.navbar-dropdown-menu {
+.popover-menu {
     margin: 0;
-    border: solid 1px var(--color-border-dropdown-menu);
-    background-color: var(--color-background-dropdown-menu);
     max-height: 85vh;
     overflow-x: hidden;
     user-select: none;
     border-radius: 6px;
-    box-shadow: var(--box-shadow-navbar-dropdown-menu);
 
     .simplebar-content {
         min-width: var(--popover-menu-min-width);
-        /*  This is necessary to set the dropdown menu width equal to
-            the width of the longest menu item, thus letting the menu
-            items control the width of the menu. */
+        /* Set the popover menu width equal to the width of the
+        longest menu item, thus letting the menu items control
+        the width of the menu. */
         width: min-content;
+        /* Set `max-width` to the minimum of `97vw` and the value defined by
+        the `--popover-menu-max-width` custom property, which should be defined
+        as a local custom property in the scope of a particular popover where
+        we want apply a `max-width` limit.
+
+        When we don't define this local custom property, the fallback value of
+        `97vw` is considered and the `max-width` is then set to `min(97vw, 97vw)`
+        which is simply equivalent to `97vw`.
+
+        IMPORTANT: Setting `--popover-menu-max-width` in the `:root` scope
+        instead of the local scope, eliminates the fallback behavior and thus
+        prevents us from setting the max-width on a case-to-case basis. */
+        max-width: min(var(--popover-menu-max-width, 97vw), 97vw);
     }
 
-    .navbar-dropdown-menu-inner-list-item {
-        /*  This is necessary to keep long menu items on a single line. */
-        white-space: nowrap;
+    .popover-menu-label {
+        /* Keep menu items on a single line, unless forced to wrap
+        by a max-width on the popover. */
+        width: max-content;
     }
 
     .text-item,
-    .link-item .navbar-dropdown-menu-link {
+    .link-item .popover-menu-link {
+        box-sizing: border-box;
         display: flex;
         flex-flow: row nowrap;
-        align-items: center;
+        align-items: flex-start;
         gap: 5px;
-        padding: 0 10px;
+        padding: 3px 10px;
         font-size: 15px;
         line-height: 16px;
-        height: 26px;
+        min-height: 26px;
 
-        .navbar-dropdown-icon {
+        .popover-menu-icon {
             width: 16px;
             height: 16px;
             font-size: 16px;
@@ -1276,20 +1266,25 @@ ul {
         outline: none;
 
         &:focus-within {
-            background: var(--color-background-hover-dropdown-menu);
+            background: var(--color-background-hover-popover-menu);
         }
 
-        .navbar-dropdown-icon {
+        .popover-menu-label,
+        .popover-menu-icon {
+            margin-top: 2px;
+        }
+
+        .popover-menu-icon {
             color: var(--color-icon-purple);
         }
 
-        .navbar-dropdown-menu-link {
-            color: var(--color-text-dropdown-menu) !important;
+        .popover-menu-link {
+            color: var(--color-text-popover-menu) !important;
             text-decoration: none;
             flex-grow: 1;
 
             &:hover {
-                background: var(--color-background-hover-dropdown-menu);
+                background: var(--color-background-hover-popover-menu);
                 outline: none;
             }
 
@@ -1301,7 +1296,7 @@ ul {
             }
 
             &:active {
-                background: var(--color-background-active-dropdown-menu);
+                background: var(--color-background-active-popover-menu);
             }
         }
     }
@@ -1352,11 +1347,8 @@ ul {
 }
 
 #gear-menu-dropdown {
-    padding: 5px 0;
-    box-shadow: var(--box-shadow-gear-menu);
-
     .org-info {
-        padding: 4px 0 5px;
+        padding: 9px 0 5px;
 
         & li {
             display: flex;
@@ -1368,16 +1360,16 @@ ul {
             letter-spacing: 0.28px;
 
             &:focus-within {
-                background: var(--color-background-hover-dropdown-menu);
+                background: var(--color-background-hover-popover-menu);
             }
 
-            .navbar-dropdown-menu-link {
+            .popover-menu-link {
                 padding: 2px 10px;
                 flex-grow: 1;
                 text-decoration: none;
 
                 &:hover {
-                    background: var(--color-background-hover-dropdown-menu);
+                    background: var(--color-background-hover-popover-menu);
                     outline: none;
                 }
 
@@ -1389,7 +1381,7 @@ ul {
                 }
 
                 &:active {
-                    background: var(--color-background-active-dropdown-menu);
+                    background: var(--color-background-active-popover-menu);
                 }
             }
         }
@@ -1400,8 +1392,8 @@ ul {
         }
 
         .org-name,
-        .org-plan .navbar-dropdown-menu-link {
-            color: var(--color-text-dropdown-menu);
+        .org-plan .popover-menu-link {
+            color: var(--color-text-popover-menu);
         }
 
         .org-name {
@@ -1409,9 +1401,6 @@ ul {
             font-weight: 600;
             line-height: 22px;
             padding: 0 10px;
-            /* We set white-space to normal for the menu items
-               where we want to explicitly wrap. */
-            white-space: normal;
         }
 
         .org-upgrade {
@@ -1435,26 +1424,18 @@ ul {
     }
 }
 
-#help-menu-dropdown {
-    padding-bottom: 5px;
-}
-
-ul.navbar-dropdown-menu-outer-list {
+ul.popover-menu-outer-list {
     list-style: none;
     margin: 0;
 
-    li.navbar-dropdown-menu-outer-list-item {
-        border-bottom: solid 1px var(--color-border-popover-menu);
+    li.popover-menu-outer-list-item {
+        border-bottom: solid 1px var(--color-border-popover-menu-separator);
 
         &:last-child {
             border-bottom: none;
-
-            ul.navbar-dropdown-menu-inner-list {
-                padding-bottom: 0;
-            }
         }
 
-        ul.navbar-dropdown-menu-inner-list {
+        ul.popover-menu-inner-list {
             margin: 0;
             padding: 4px 0;
             list-style: none;
@@ -1469,17 +1450,25 @@ ul.navbar-dropdown-menu-outer-list {
     }
 }
 
-.navbar-dropdown-hotkey-hint {
-    color: var(--color-hotkey-hint);
-    text-align: center;
-    font-size: 14px;
-    font-style: normal;
-    font-weight: 500;
-    line-height: 14px;
-    padding: 2px 4px;
-    border-radius: 3px;
-    border: 1px solid var(--color-hotkey-hint);
+.popover-menu-hotkey-hints {
+    display: flex;
+    gap: 4px;
     margin-left: auto;
+    padding-left: 5px;
+
+    > .popover-menu-hotkey-hint {
+        box-sizing: border-box;
+        color: var(--color-popover-hotkey-hint);
+        text-align: center;
+        font-size: 14px;
+        font-style: normal;
+        font-weight: 500;
+        line-height: 14px;
+        min-width: 1.25rem;
+        padding: 2px 4px;
+        border-radius: 3px;
+        border: 1px solid var(--color-border-popover-hotkey-hint);
+    }
 }
 
 #theme-switcher {
@@ -1491,4 +1480,8 @@ ul.navbar-dropdown-menu-outer-list {
         outline: 1px solid var(--color-outline-focus) !important;
         outline-offset: -1px;
     }
+}
+
+#message-actions-menu-dropdown {
+    --popover-menu-max-width: 350px;
 }

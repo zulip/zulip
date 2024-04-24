@@ -12,7 +12,14 @@ from corporate.lib.stripe import (
     RemoteServerBillingSession,
     get_configured_fixed_price_plan_offer,
 )
-from corporate.models import Customer, CustomerPlan, Event, Invoice, Session
+from corporate.models import (
+    Customer,
+    CustomerPlan,
+    Event,
+    Invoice,
+    Session,
+    get_current_plan_by_customer,
+)
 from zerver.lib.send_email import FromAddress, send_email
 from zerver.models.users import get_active_user_profile_by_id_in_realm
 
@@ -126,7 +133,11 @@ def handle_invoice_paid_event(stripe_invoice: stripe.Invoice, invoice: Invoice) 
             customer, customer.required_plan_tier
         )
 
-    if stripe_invoice.collection_method == "send_invoice" and configured_fixed_price_plan:
+    if (
+        stripe_invoice.collection_method == "send_invoice"
+        and configured_fixed_price_plan
+        and configured_fixed_price_plan.sent_invoice_id == invoice.stripe_invoice_id
+    ):
         billing_session = get_billing_session_for_stripe_webhook(customer, user_id=None)
         remote_server_legacy_plan = billing_session.get_remote_server_legacy_plan(customer)
         assert customer.required_plan_tier is not None
@@ -172,14 +183,27 @@ def handle_invoice_paid_event(stripe_invoice: stripe.Invoice, invoice: Invoice) 
                 remote_server_legacy_plan=remote_server_legacy_plan,
                 stripe_invoice_paid=True,
             )
-        else:
-            billing_session.process_initial_upgrade(
-                plan_tier,
-                int(metadata["licenses"]),
-                metadata["license_management"] == "automatic",
-                billing_schedule=billing_schedule,
-                charge_automatically=charge_automatically,
-                free_trial=False,
-                remote_server_legacy_plan=remote_server_legacy_plan,
-                stripe_invoice_paid=True,
-            )
+            return
+        elif metadata.get("on_free_trial") and invoice.is_created_for_free_trial_upgrade:
+            free_trial_plan = invoice.plan
+            assert free_trial_plan is not None
+            if free_trial_plan.is_free_trial():
+                # We don't need to do anything here. When the free trial ends we will
+                # check if user has paid the invoice, if not we downgrade the user.
+                return
+
+            # If customer paid after end of free trial, we just upgrade via default method below.
+            assert free_trial_plan.status == CustomerPlan.ENDED
+            # Also check if customer is not on any other active plan.
+            assert get_current_plan_by_customer(customer) is None
+
+        billing_session.process_initial_upgrade(
+            plan_tier,
+            int(metadata["licenses"]),
+            metadata["license_management"] == "automatic",
+            billing_schedule=billing_schedule,
+            charge_automatically=charge_automatically,
+            free_trial=False,
+            remote_server_legacy_plan=remote_server_legacy_plan,
+            stripe_invoice_paid=True,
+        )

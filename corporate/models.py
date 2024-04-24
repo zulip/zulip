@@ -5,7 +5,7 @@ from typing import Any, Dict, Optional, Union
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
-from django.db.models import CASCADE, Q
+from django.db.models import CASCADE, SET_NULL, Q
 from typing_extensions import override
 
 from zerver.models import Realm, UserProfile
@@ -218,6 +218,8 @@ class PaymentIntent(models.Model):  # nocoverage
 class Invoice(models.Model):
     customer = models.ForeignKey(Customer, on_delete=CASCADE)
     stripe_invoice_id = models.CharField(max_length=255, unique=True)
+    plan = models.ForeignKey("CustomerPlan", null=True, default=None, on_delete=SET_NULL)
+    is_created_for_free_trial_upgrade = models.BooleanField(default=False)
 
     SENT = 1
     PAID = 2
@@ -474,7 +476,7 @@ class CustomerPlan(AbstractCustomerPlan):
     def is_free_trial(self) -> bool:
         return self.status == CustomerPlan.FREE_TRIAL
 
-    def is_paid(self) -> bool:
+    def is_a_paid_plan(self) -> bool:
         return self.tier in self.PAID_PLAN_TIERS
 
 

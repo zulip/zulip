@@ -1,0 +1,81 @@
+{
+  "data": [
+    {
+      "api_version": "2020-08-27",
+      "created": 1000000000,
+      "data": {
+        "object": {
+          "active": true,
+          "application": null,
+          "business_profile": {
+            "headline": "Invoice and receipt billing information",
+            "privacy_policy_url": null,
+            "terms_of_service_url": null
+          },
+          "created": 1000000000,
+          "default_return_url": null,
+          "features": {
+            "customer_update": {
+              "allowed_updates": [
+                "address",
+                "name"
+              ],
+              "enabled": true
+            },
+            "invoice_history": {
+              "enabled": false
+            },
+            "payment_method_update": {
+              "enabled": false
+            },
+            "subscription_cancel": {
+              "cancellation_reason": {
+                "enabled": false,
+                "options": [
+                  "too_expensive",
+                  "missing_features",
+                  "switched_service",
+                  "unused",
+                  "other"
+                ]
+              },
+              "enabled": false,
+              "mode": "at_period_end",
+              "proration_behavior": "none"
+            },
+            "subscription_pause": {
+              "enabled": false
+            },
+            "subscription_update": {
+              "default_allowed_updates": [],
+              "enabled": false,
+              "proration_behavior": "none"
+            }
+          },
+          "id": "bpc_1P41lUDEQaroqDjs8LdmQ76S",
+          "is_default": false,
+          "livemode": false,
+          "login_page": {
+            "enabled": false,
+            "url": null
+          },
+          "metadata": {},
+          "object": "billing_portal.configuration",
+          "updated": 1000000000
+        }
+      },
+      "id": "evt_1P41lVDEQaroqDjsmy6kaisA",
+      "livemode": false,
+      "object": "event",
+      "pending_webhooks": 2,
+      "request": {
+        "id": "req_NORMALIZED0002",
+        "idempotency_key": "93bd8460-0a3c-4fe5-ae5e-e9fe1cc215a7"
+      },
+      "type": "billing_portal.configuration.created"
+    }
+  ],
+  "has_more": true,
+  "object": "list",
+  "url": "/v1/events"
+}

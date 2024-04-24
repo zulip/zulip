@@ -54,11 +54,11 @@ streams.)
 ### Unnarrow: previous sequence
 
 When you unnarrow using e.g. the `a` key, you will automatically be
-taken to the same message that was selected in the All messages view before
+taken to the same message that was selected in the Combined feed view before
 you narrowed, unless in the narrow you read new messages, in which
 case you will be jumped forward to the first unread and non-muted
-message in the All messages view (or the bottom of the feed if there is
-none). This makes for a nice experience reading threads via the All messages
+message in the Combined feed view (or the bottom of the feed if there is
+none). This makes for a nice experience reading threads via the Combined feed
 view in sequence.
 
 ### Forced reload: state preservation

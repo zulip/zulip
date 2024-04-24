@@ -15,11 +15,11 @@
           "description": "zulip (Zulip Dev)",
           "discount": null,
           "email": "hamlet@zulip.com",
-          "id": "cus_NORMALIZED0001",
-          "invoice_prefix": "NORMA01",
+          "id": "cus_NORMALIZED0002",
+          "invoice_prefix": "NORMA02",
           "invoice_settings": {
             "custom_fields": null,
-            "default_payment_method": "pm_1OqStgDEQaroqDjsWwM9p7MO",
+            "default_payment_method": "pm_1P41jcDEQaroqDjsv12o0iu2",
             "footer": null,
             "rendering_options": null
           },
@@ -39,17 +39,17 @@
         },
         "previous_attributes": {
           "invoice_settings": {
-            "default_payment_method": null
+            "default_payment_method": "pm_1P41jYDEQaroqDjslxPvz2SK"
           }
         }
       },
-      "id": "evt_1OqSthDEQaroqDjs3FrenIgp",
+      "id": "evt_1P41jfDEQaroqDjsTK7b5j0M",
       "livemode": false,
       "object": "event",
       "pending_webhooks": 0,
       "request": {
         "id": "req_NORMALIZED0001",
-        "idempotency_key": "09a5780f-2bf1-4660-bf9c-f1aa4f18cd13"
+        "idempotency_key": "3d56b284-4c7c-47bb-99e9-89709fe59d02"
       },
       "type": "customer.updated"
     }

@@ -46,6 +46,7 @@ exports.test_streams = {
         invite_only: false,
         stream_id: 101,
         date_created: fake_now,
+        creator_id: null,
         first_message_id: 1,
         history_public_to_subscribers: false,
         is_announcement_only: false,
@@ -61,6 +62,7 @@ exports.test_streams = {
         invite_only: true,
         stream_id: 102,
         date_created: fake_then,
+        creator_id: null,
         first_message_id: 1,
         history_public_to_subscribers: false,
         is_web_public: false,
@@ -999,6 +1001,20 @@ exports.fixtures = {
         value: true,
     },
 
+    user_settings__receives_typing_notifications: {
+        type: "user_settings",
+        op: "update",
+        property: "receives_typing_notifications",
+        value: true,
+    },
+
+    user_settings__receives_typing_notifications_disabled: {
+        type: "user_settings",
+        op: "update",
+        property: "receives_typing_notifications",
+        value: false,
+    },
+
     user_settings__starred_message_counts: {
         type: "user_settings",
         op: "update",
@@ -1034,6 +1050,13 @@ exports.fixtures = {
         value: true,
     },
 
+    user_settings__web_font_size_px: {
+        type: "user_settings",
+        op: "update",
+        property: "web_font_size_px",
+        value: 16,
+    },
+
     user_settings__web_home_view_all_messages: {
         type: "user_settings",
         op: "update",
@@ -1053,6 +1076,13 @@ exports.fixtures = {
         op: "update",
         property: "web_home_view",
         value: "recent_topics",
+    },
+
+    user_settings__web_line_height_percent: {
+        type: "user_settings",
+        op: "update",
+        property: "web_line_height_percent",
+        value: 130,
     },
 
     user_settings__web_mark_read_on_scroll_policy: {

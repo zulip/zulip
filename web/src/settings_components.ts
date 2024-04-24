@@ -1,5 +1,7 @@
 import $ from "jquery";
 import assert from "minimalistic-assert";
+import type {PopperElement, Props} from "tippy.js";
+import tippy from "tippy.js";
 
 import render_compose_banner from "../templates/compose_banner/compose_banner.hbs";
 
@@ -531,12 +533,20 @@ export function change_save_button_state($element: JQuery, state: string): void 
     assert(data_status !== undefined);
     $saveBtn.attr("data-status", data_status);
     if (state === "unsaved") {
-        // Ensure the save button is visible when the state is "unsaved",
-        // so the user does not miss saving their changes.
-        scroll_util.scroll_element_into_container(
-            $element.parent(".subsection-header"),
-            $("#settings_content"),
-        );
+        // Do not scroll if the currently focused element is a textarea or an input
+        // of type text, to not interrupt the user's typing flow. Scrolling will happen
+        // anyway when the field loses focus (via the change event) if necessary.
+        if (
+            !document.activeElement ||
+            !$(document.activeElement).is('textarea, input[type="text"]')
+        ) {
+            // Ensure the save button is visible when the state is "unsaved",
+            // so the user does not miss saving their changes.
+            scroll_util.scroll_element_into_container(
+                $element.parent(".subsection-header"),
+                $("#settings_content"),
+            );
+        }
         enable_or_disable_save_button($element.closest(".settings-subsection-parent"));
     }
     assert(is_show !== undefined);
@@ -906,7 +916,44 @@ function enable_or_disable_save_button($subsection_elem: JQuery): void {
         disable_save_btn = should_disable_save_button_for_time_limit_settings(time_limit_settings);
     } else if ($subsection_elem.attr("id") === "org-other-settings") {
         disable_save_btn = should_disable_save_button_for_jitsi_server_url_setting();
+        const $button_wrapper = $subsection_elem.find<PopperElement>(".subsection-changes-save");
+        const tippy_instance = $button_wrapper[0]._tippy;
+        if (disable_save_btn) {
+            // avoid duplication of tippy
+            if (!tippy_instance) {
+                const opts: Partial<Props> = {placement: "top"};
+                initialize_disable_btn_hint_popover(
+                    $button_wrapper,
+                    $t({defaultMessage: "Cannot save invalid Jitsi server URL."}),
+                    opts,
+                );
+            }
+        } else {
+            if (tippy_instance) {
+                tippy_instance.destroy();
+            }
+        }
     }
 
     $subsection_elem.find(".subsection-changes-save button").prop("disabled", disable_save_btn);
+}
+
+export function initialize_disable_btn_hint_popover(
+    $btn_wrapper: JQuery,
+    hint_text: string | undefined,
+    opts: Partial<Props>,
+): void {
+    const tippy_opts: Partial<Props> = {
+        animation: false,
+        hideOnClick: false,
+        placement: "bottom",
+        ...opts,
+    };
+
+    // If hint_text is undefined, we use the HTML content of a
+    // <template> whose id is given by data-tooltip-template-id
+    if (hint_text !== undefined) {
+        tippy_opts.content = hint_text;
+    }
+    tippy($btn_wrapper[0], tippy_opts);
 }

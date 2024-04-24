@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+
+set -e
+
+/home/zulip/deployments/current/manage.py send_zulip_update_announcements

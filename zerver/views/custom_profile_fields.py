@@ -116,21 +116,55 @@ def validate_custom_profile_field(
     validate_display_in_profile_summary_field(field_type, display_in_profile_summary)
 
 
+def validate_custom_profile_field_update(
+    field: CustomProfileField,
+    display_in_profile_summary: Optional[bool] = None,
+    field_data: Optional[ProfileFieldData] = None,
+    name: Optional[str] = None,
+    hint: Optional[str] = None,
+) -> None:
+    if name is None:
+        name = field.name
+    if hint is None:
+        hint = field.hint
+    if field_data is None:
+        if field.field_data == "":
+            # We're passing this just for validation, sinec the function won't
+            # accept a string. This won't change the actual value.
+            field_data = {}
+        else:
+            field_data = orjson.loads(field.field_data)
+    if display_in_profile_summary is None:
+        display_in_profile_summary = field.display_in_profile_summary
+
+    assert field_data is not None
+    validate_custom_profile_field(
+        name,
+        hint,
+        field.field_type,
+        field_data,
+        display_in_profile_summary,
+    )
+
+
 check_profile_field_data: Validator[ProfileFieldData] = check_dict(
     value_validator=check_union([check_dict(value_validator=check_string), check_string])
 )
 
 
 def update_only_display_in_profile_summary(
-    requested_name: str,
-    requested_hint: str,
-    requested_field_data: ProfileFieldData,
     existing_field: CustomProfileField,
+    requested_field_data: Optional[ProfileFieldData] = None,
+    requested_name: Optional[str] = None,
+    requested_hint: Optional[str] = None,
 ) -> bool:
     if (
-        requested_name != existing_field.name
-        or requested_hint != existing_field.hint
-        or requested_field_data != orjson.loads(existing_field.field_data)
+        (requested_name is not None and requested_name != existing_field.name)
+        or (requested_hint is not None and requested_hint != existing_field.hint)
+        or (
+            requested_field_data is not None
+            and requested_field_data != orjson.loads(existing_field.field_data)
+        )
     ):
         return False
     return True
@@ -208,11 +242,13 @@ def update_realm_custom_profile_field(
     request: HttpRequest,
     user_profile: UserProfile,
     field_id: int,
-    name: str = REQ(default="", converter=lambda var_name, x: x.strip()),
-    hint: str = REQ(default=""),
-    field_data: ProfileFieldData = REQ(default={}, json_validator=check_profile_field_data),
-    display_in_profile_summary: bool = REQ(default=False, json_validator=check_bool),
-    required: bool = REQ(default=False, json_validator=check_bool),
+    name: Optional[str] = REQ(default=None, converter=lambda var_name, x: x.strip()),
+    hint: Optional[str] = REQ(default=None),
+    field_data: Optional[ProfileFieldData] = REQ(
+        default=None, json_validator=check_profile_field_data
+    ),
+    required: Optional[bool] = REQ(default=None, json_validator=check_bool),
+    display_in_profile_summary: Optional[bool] = REQ(default=None, json_validator=check_bool),
 ) -> HttpResponse:
     realm = user_profile.realm
     try:
@@ -233,20 +269,21 @@ def update_realm_custom_profile_field(
         # of default external account types, but not any others.
         #
         # TODO: Make the name/hint/field_data parameters optional, and
-        # just require that None was passed for all of them for this case.
+        # explicitly require that the client passes None for all of them for this case.
+        # Right now, for name/hint/field_data we allow the client to send the existing
+        # values for the respective fields. After this TODO is done, we will only allow
+        # the client to pass None values if the field is unchanged.
         and is_default_external_field(field.field_type, orjson.loads(field.field_data))
-        and not update_only_display_in_profile_summary(name, hint, field_data, field)
+        and not update_only_display_in_profile_summary(field, field_data, name, hint)
     ):
         raise JsonableError(_("Default custom field cannot be updated."))
 
-    validate_custom_profile_field(
-        name, hint, field.field_type, field_data, display_in_profile_summary
-    )
+    validate_custom_profile_field_update(field, display_in_profile_summary, field_data, name, hint)
     try:
         try_update_realm_custom_profile_field(
-            realm,
-            field,
-            name,
+            realm=realm,
+            field=field,
+            name=name,
             hint=hint,
             field_data=field_data,
             display_in_profile_summary=display_in_profile_summary,

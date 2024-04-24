@@ -75,6 +75,9 @@ from zerver.models.users import get_user, get_user_by_delivery_email, get_user_p
 from zilencer.models import RemoteRealm, RemoteZulipServer, RemoteZulipServerAuditLog
 from zilencer.views import update_remote_realm_data_for_server
 
+# Disable the push notifications bouncer to avoid enqueuing updates in
+# maybe_enqueue_audit_log_upload during early setup.
+settings.PUSH_NOTIFICATION_BOUNCER_URL = None
 settings.USING_TORNADO = False
 # Disable using memcached caches to avoid 'unsupported pickle
 # protocol' errors if `populate_db` is run with a different Python

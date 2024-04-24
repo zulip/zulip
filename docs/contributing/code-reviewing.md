@@ -266,7 +266,7 @@ Some scenarios to consider:
 
 - Try clicking on any interactive elements, multiple times, in a variety of orders.
 - If the feature affects the **message view**, try it out in different types of
-  narrows: topic, stream, All messages, direct messages.
+  narrows: topic, stream, Combined feed, direct messages.
 - If the feature affects the **compose box** in the web app, try both ways of
   [resizing the compose box](https://zulip.com/help/resize-the-compose-box).
   Test both stream messages and direct messages.

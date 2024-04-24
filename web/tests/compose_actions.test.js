@@ -45,6 +45,7 @@ mock_esm("../src/reload_state", {
 mock_esm("../src/drafts", {
     update_draft: noop,
     update_compose_draft_count: noop,
+    get_last_restorable_draft_based_on_compose_state: noop,
 });
 mock_esm("../src/unread_ops", {
     notify_server_message_read: noop,
@@ -124,6 +125,10 @@ test("start", ({override, override_rewire, mock_template}) => {
 
     let compose_defaults;
     override(narrow_state, "set_compose_defaults", () => compose_defaults);
+    override(compose_ui, "insert_and_scroll_into_view", (content, $textarea, replace_all) => {
+        $textarea.val(content);
+        assert.ok(replace_all);
+    });
 
     // Start stream message
     compose_defaults = {

@@ -145,6 +145,7 @@ export default (
                             "tr",
                             "rendered_markdown",
                             "tooltip_hotkey_hints",
+                            "popover_hotkey_hints",
                         ],
                         precompileOptions: {strict: true},
                         preventIndent: true,

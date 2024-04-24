@@ -3,7 +3,7 @@
 const {strict: assert} = require("assert");
 
 const {$t} = require("./lib/i18n");
-const {mock_esm, zrequire} = require("./lib/namespace");
+const {mock_esm, zrequire, set_global} = require("./lib/namespace");
 const {run_test, noop} = require("./lib/test");
 const blueslip = require("./lib/zblueslip");
 const $ = require("./lib/zjquery");
@@ -19,6 +19,7 @@ mock_esm("../src/loading", {
     destroy_indicator: noop,
 });
 mock_esm("../src/scroll_util", {scroll_element_into_container: noop});
+set_global("document", "document-stub");
 
 const settings_config = zrequire("settings_config");
 const settings_bots = zrequire("settings_bots");

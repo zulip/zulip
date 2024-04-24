@@ -265,10 +265,6 @@ export function is_known_user_id(user_id: number): boolean {
     return true;
 }
 
-export function is_known_user(user: User): boolean {
-    return user && is_known_user_id(user.user_id);
-}
-
 function sort_numerically(user_ids: number[]): number[] {
     user_ids.sort((a, b) => a - b);
 
@@ -1362,7 +1358,7 @@ export function get_mention_syntax(full_name: string, user_id?: number, silent =
     }
     const wildcard_match = full_name_matches_wildcard_mention(full_name);
     if (wildcard_match && user_id === undefined) {
-        mention += util.canonicalize_stream_synonym(full_name);
+        mention += util.canonicalize_stream_synonyms(full_name);
     } else {
         mention += full_name;
     }
@@ -1595,9 +1591,25 @@ export function matches_user_settings_search(person: User, value: string): boole
     return safe_lower(person.full_name).includes(value) || safe_lower(email).includes(value);
 }
 
-export function filter_for_user_settings_search(persons: User[], query: string): User[] {
+function matches_user_settings_role(person: User, role_code: number): boolean {
+    if (role_code === 0 || role_code === person.role) {
+        return true;
+    }
+    return false;
+}
+
+type SettingsUsersFilterQuery = {
+    text_search: string;
+    role_code: number;
+};
+
+export function predicate_for_user_settings_filters(
+    person: User,
+    query: SettingsUsersFilterQuery,
+): boolean {
     /*
-        TODO: For large realms, we can optimize this a couple
+        TODO: For text_search:
+              For large realms, we can optimize this a couple
               different ways.  For realms that don't show
               emails, we can make a simpler filter predicate
               that works solely with full names.  And we can
@@ -1607,7 +1619,10 @@ export function filter_for_user_settings_search(persons: User[], query: string):
 
               See #13554 for more context.
     */
-    return persons.filter((person) => matches_user_settings_search(person, query));
+    return (
+        matches_user_settings_search(person, query.text_search) &&
+        matches_user_settings_role(person, query.role_code)
+    );
 }
 
 export function maybe_incr_recipient_count(message: Message & {sent_by_me: boolean}): void {

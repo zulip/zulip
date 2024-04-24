@@ -7,7 +7,7 @@ from typing import Any, Collection, Dict, Iterator, List, Optional, Set, Tuple
 
 from django.conf import settings
 from django.db import transaction
-from django.db.models import Exists, OuterRef
+from django.db.models import Exists, OuterRef, QuerySet
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
 from typing_extensions import TypeAlias
@@ -87,7 +87,7 @@ class DigestTopic:
 
 
 # Changes to this should also be reflected in
-# zerver/worker/queue_processors.py:DigestWorker.consume()
+# zerver/worker/digest_emails.py:DigestWorker.consume()
 def queue_digest_user_ids(user_ids: List[int], cutoff: datetime) -> None:
     # Convert cutoff to epoch seconds for transit.
     event = {"user_ids": user_ids, "cutoff": cutoff.strftime("%s")}
@@ -331,7 +331,7 @@ def get_slim_stream_id_map(realm: Realm) -> Dict[int, Stream]:
 
 
 def bulk_get_digest_context(
-    users: Collection[UserProfile], cutoff: float
+    users: Collection[UserProfile] | QuerySet[UserProfile], cutoff: float
 ) -> Iterator[Tuple[UserProfile, Dict[str, Any]]]:
     # We expect a non-empty list of users all from the same realm.
     assert users

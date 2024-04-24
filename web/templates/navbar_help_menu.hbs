@@ -1,37 +1,43 @@
-<div class="navbar-dropdown-menu" id="help-menu-dropdown" aria-labelledby="help-menu" data-simplebar>
-    <ul class="navbar-dropdown-menu-outer-list">
-        <li class="navbar-dropdown-menu-outer-list-item">
-            <ul class="navbar-dropdown-menu-inner-list">
-                <li class="link-item navbar-dropdown-menu-inner-list-item">
-                    <a href="/help/" target="_blank" rel="noopener noreferrer" class="navigate-link-on-enter navbar-dropdown-menu-link">
-                        <i class="navbar-dropdown-icon zulip-icon zulip-icon-help" aria-hidden="true"></i> {{t 'Help center' }}
+<div class="popover-menu" id="help-menu-dropdown" aria-labelledby="help-menu" data-simplebar>
+    <ul class="popover-menu-outer-list">
+        <li class="popover-menu-outer-list-item">
+            <ul class="popover-menu-inner-list">
+                <li class="link-item popover-menu-inner-list-item">
+                    <a href="/help/" target="_blank" rel="noopener noreferrer" class="navigate-link-on-enter popover-menu-link">
+                        <i class="popover-menu-icon zulip-icon zulip-icon-help" aria-hidden="true"></i>
+                        <span class="popover-menu-label">{{t 'Help center' }}</span>
                     </a>
                 </li>
-                <li class="link-item navbar-dropdown-menu-inner-list-item">
-                    <a tabindex="0" class="navigate-link-on-enter navbar-dropdown-menu-link" data-overlay-trigger="keyboard-shortcuts">
-                        <i class="navbar-dropdown-icon zulip-icon zulip-icon-keyboard" aria-hidden="true"></i> {{t 'Keyboard shortcuts' }} <span class="navbar-dropdown-hotkey-hint">?</span>
+                <li class="link-item popover-menu-inner-list-item">
+                    <a tabindex="0" class="navigate-link-on-enter popover-menu-link" data-overlay-trigger="keyboard-shortcuts">
+                        <i class="popover-menu-icon zulip-icon zulip-icon-keyboard" aria-hidden="true"></i>
+                        <span class="popover-menu-label">{{t 'Keyboard shortcuts' }}</span>
+                        {{popover_hotkey_hints "?"}}
                     </a>
                 </li>
-                <li class="link-item navbar-dropdown-menu-inner-list-item hidden-for-spectators">
-                    <a tabindex="0" class="navigate-link-on-enter navbar-dropdown-menu-link" data-overlay-trigger="message-formatting">
-                        <i class="navbar-dropdown-icon zulip-icon zulip-icon-edit" aria-hidden="true"></i> {{t 'Message formatting' }}
+                <li class="link-item popover-menu-inner-list-item hidden-for-spectators">
+                    <a tabindex="0" class="navigate-link-on-enter popover-menu-link" data-overlay-trigger="message-formatting">
+                        <i class="popover-menu-icon zulip-icon zulip-icon-edit" aria-hidden="true"></i>
+                        <span class="popover-menu-label">{{t 'Message formatting' }}</span>
                     </a>
                 </li>
-                <li class="link-item navbar-dropdown-menu-inner-list-item">
-                    <a tabindex="0" class="navigate-link-on-enter navbar-dropdown-menu-link" data-overlay-trigger="search-operators">
-                        <i class="navbar-dropdown-icon zulip-icon zulip-icon-manage-search" aria-hidden="true"></i> {{t 'Search filters' }}
+                <li class="link-item popover-menu-inner-list-item">
+                    <a tabindex="0" class="navigate-link-on-enter popover-menu-link" data-overlay-trigger="search-operators">
+                        <i class="popover-menu-icon zulip-icon zulip-icon-manage-search" aria-hidden="true"></i>
+                        <span class="popover-menu-label">{{t 'Search filters' }}</span>
                     </a>
                 </li>
-                <li class="link-item navbar-dropdown-menu-inner-list-item" id="gear_menu_about_zulip">
-                    <a href="#about-zulip" class="navigate-link-on-enter navbar-dropdown-menu-link">
-                        <i class="navbar-dropdown-icon zulip-icon zulip-icon-info"></i>
-                        {{t "About Zulip" }}
+                <li class="link-item popover-menu-inner-list-item" id="gear_menu_about_zulip">
+                    <a href="#about-zulip" class="navigate-link-on-enter popover-menu-link">
+                        <i class="popover-menu-icon zulip-icon zulip-icon-info"></i>
+                        <span class="popover-menu-label">{{t "About Zulip" }}</span>
                     </a>
                 </li>
                 {{#if corporate_enabled}}
-                <li class="link-item navbar-dropdown-menu-inner-list-item">
-                    <a href="/help/contact-support" target="_blank" rel="noopener noreferrer" class="navigate-link-on-enter navbar-dropdown-menu-link">
-                        <i class="navbar-dropdown-icon zulip-icon zulip-icon-life-buoy" aria-hidden="true"></i> {{t 'Contact support' }}
+                <li class="link-item popover-menu-inner-list-item">
+                    <a href="/help/contact-support" target="_blank" rel="noopener noreferrer" class="navigate-link-on-enter popover-menu-link">
+                        <i class="popover-menu-icon zulip-icon zulip-icon-life-buoy" aria-hidden="true"></i>
+                        <span class="popover-menu-label">{{t 'Contact support' }}</span>
                     </a>
                 </li>
                 {{/if}}

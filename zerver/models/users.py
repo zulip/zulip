@@ -245,6 +245,9 @@ class UserBaseSettings(models.Model):
     send_private_typing_notifications = models.BooleanField(default=True)
     send_read_receipts = models.BooleanField(default=True)
 
+    # Whether the user wants to see typing notifications.
+    receives_typing_notifications = models.BooleanField(default=True)
+
     # Who in the organization has access to users' actual email
     # addresses.  Controls whether the UserProfile.email field is
     # the same as UserProfile.delivery_email, or is instead a fake
@@ -317,6 +320,7 @@ class UserBaseSettings(models.Model):
         display_emoji_reaction_users=bool,
         email_address_visibility=int,
         web_escape_navigates_to_home_view=bool,
+        receives_typing_notifications=bool,
         send_private_typing_notifications=bool,
         send_read_receipts=bool,
         send_stream_typing_notifications=bool,

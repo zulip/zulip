@@ -120,10 +120,10 @@ function compare_by_huddle(huddle_emails: string[]): (person1: User, person2: Us
 }
 
 function get_stream_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Suggestion[] {
-    const valid = ["stream", "search", ""];
+    const valid = ["channel", "search", ""];
     const incompatible_patterns = [
-        {operator: "stream"},
-        {operator: "streams"},
+        {operator: "channel"},
+        {operator: "channels"},
         {operator: "is", operand: "dm"},
         {operator: "dm"},
         {operator: "dm-including"},
@@ -148,7 +148,7 @@ function get_stream_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Suggesti
         const verb = last.negated ? "exclude " : "";
         const description_html = verb + prefix + " " + highlighted_stream;
         const term = {
-            operator: "stream",
+            operator: "channel",
             operand: stream,
             negated: last.negated,
         };
@@ -162,7 +162,7 @@ function get_stream_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Suggesti
 function get_group_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Suggestion[] {
     // For users with "pm-with" in their muscle memory, still
     // have group direct message suggestions with "dm:" operator.
-    if (!check_validity(last, terms, ["dm", "pm-with"], [{operator: "stream"}])) {
+    if (!check_validity(last, terms, ["dm", "pm-with"], [{operator: "channel"}])) {
         return [];
     }
 
@@ -286,14 +286,14 @@ function get_person_suggestions(
 
     switch (autocomplete_operator) {
         case "dm-including":
-            incompatible_patterns = [{operator: "stream"}, {operator: "is", operand: "resolved"}];
+            incompatible_patterns = [{operator: "channel"}, {operator: "is", operand: "resolved"}];
             break;
         case "dm":
         case "pm-with":
             incompatible_patterns = [
                 {operator: "dm"},
                 {operator: "pm-with"},
-                {operator: "stream"},
+                {operator: "channel"},
                 {operator: "is", operand: "resolved"},
             ];
             break;
@@ -397,7 +397,7 @@ function get_topic_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Suggestio
         {operator: "dm-including"},
         {operator: "topic"},
     ];
-    if (!check_validity(last, terms, ["stream", "topic", "search"], incompatible_patterns)) {
+    if (!check_validity(last, terms, ["channel", "topic", "search"], incompatible_patterns)) {
         return [];
     }
 
@@ -425,7 +425,7 @@ function get_topic_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Suggestio
     // in terms of telling us whether they provided the operator,
     // i.e. "foo" and "search:foo" both become [{operator: 'search', operand: 'foo'}].
     switch (operator) {
-        case "stream":
+        case "channel":
             guess = "";
             stream = operand;
             suggest_terms.push(last);
@@ -433,12 +433,12 @@ function get_topic_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Suggestio
         case "topic":
         case "search":
             guess = operand;
-            if (filter.has_operator("stream")) {
-                stream = filter.operands("stream")[0];
+            if (filter.has_operator("channel")) {
+                stream = filter.operands("channel")[0];
             } else {
                 stream = narrow_state.stream_name();
                 if (stream) {
-                    suggest_terms.push({operator: "stream", operand: stream});
+                    suggest_terms.push({operator: "channel", operand: stream});
                 }
             }
             break;
@@ -553,11 +553,11 @@ function get_streams_filter_suggestions(last: NarrowTerm, terms: NarrowTerm[]): 
             description_html: "All public streams in organization",
             incompatible_patterns: [
                 {operator: "is", operand: "dm"},
-                {operator: "stream"},
+                {operator: "channel"},
                 {operator: "dm-including"},
                 {operator: "dm"},
                 {operator: "in"},
-                {operator: "streams"},
+                {operator: "channels"},
             ],
         },
     ];
@@ -571,7 +571,7 @@ function get_is_filter_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Sugge
             incompatible_patterns: [
                 {operator: "is", operand: "dm"},
                 {operator: "is", operand: "resolved"},
-                {operator: "stream"},
+                {operator: "channel"},
                 {operator: "dm"},
                 {operator: "in"},
             ],

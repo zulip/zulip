@@ -11,6 +11,7 @@ import render_settings_dev_env_email_access from "../templates/settings/dev_env_
 
 import * as channel from "./channel";
 import * as common from "./common";
+import * as components from "./components";
 import * as compose_banner from "./compose_banner";
 import {show_copied_confirmation} from "./copied_tooltip";
 import {csrf_token} from "./csrf";
@@ -19,7 +20,6 @@ import * as email_pill from "./email_pill";
 import {$t, $t_html} from "./i18n";
 import * as input_pill from "./input_pill";
 import {page_params} from "./page_params";
-import * as scroll_util from "./scroll_util";
 import * as settings_config from "./settings_config";
 import * as settings_data from "./settings_data";
 import {current_user, realm} from "./state_data";
@@ -194,7 +194,7 @@ function submit_invitation_form(): void {
             $("#invite-user-modal .dialog_submit_button").prop("disabled", false);
             $("#invite-user-modal .dialog_exit_button").prop("disabled", false);
             $<HTMLTextAreaElement>("textarea#invitee_emails").trigger("focus");
-            scroll_util.get_scroll_element($("#invite-user-modal"))[0].scrollTop = 0;
+            $invite_status[0].scrollIntoView();
         },
     });
 }
@@ -231,7 +231,7 @@ function generate_multiuse_invite(): void {
             );
             $("#invite-user-modal .dialog_submit_button").prop("disabled", false);
             $("#invite-user-modal .dialog_exit_button").prop("disabled", false);
-            scroll_util.get_scroll_element($("#invite-user-modal"))[0].scrollTop = 0;
+            $invite_status[0].scrollIntoView();
         },
     });
 }
@@ -348,16 +348,8 @@ function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void
             get_text_from_item: email_pill.get_email_from_item,
         });
         const $pill_input = $("#invitee_emails_container .pill-container .input");
-        $pill_input.trigger("focus");
 
         $("#invite-user-modal .dialog_submit_button").prop("disabled", true);
-        $("#email_invite_radio").prop("checked", true);
-
-        if (!settings_data.user_can_create_multiuse_invite()) {
-            $("#generate_multiuse_invite_radio").prop("disabled", true);
-            $("#generate_multiuse_invite_radio_container").addClass("control-label-disabled");
-            $("#generate_multiuse_invite_radio_container").addClass("disabled_setting_tooltip");
-        }
 
         const user_has_email_set = !settings_data.user_email_not_configured();
 
@@ -375,12 +367,20 @@ function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void
         });
 
         function toggle_invite_submit_button(): void {
-            $("#invite-user-modal .dialog_submit_button").prop(
+            const $button = $("#invite-user-modal .dialog_submit_button");
+            $button.prop(
                 "disabled",
-                pills.items().length === 0 &&
-                    email_pill.get_current_email(pills) === null &&
-                    !$("#generate_multiuse_invite_radio").is(":checked"),
+                $pill_input.is(":visible") &&
+                    pills.items().length === 0 &&
+                    email_pill.get_current_email(pills) === null,
             );
+            if ($("#invitee_emails_container").is(":visible")) {
+                $button.text($t({defaultMessage: "Invite"}));
+                $button.data("loading-text", $t({defaultMessage: "Inviting..."}));
+            } else {
+                $button.text($t({defaultMessage: "Generate invite link"}));
+                $button.data("loading-text", $t({defaultMessage: "Generating link..."}));
+            }
         }
 
         pills.onPillCreate(toggle_invite_submit_button);
@@ -389,30 +389,6 @@ function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void
 
         $("#invite-user-modal").on("input", "input, textarea, select", () => {
             toggle_invite_submit_button();
-        });
-
-        $("#invite-user-modal").on("change", "#email_invite_radio", () => {
-            $("#invitee_emails_container").show();
-            $("#invite-user-modal .dialog_submit_button").text($t({defaultMessage: "Invite"}));
-            $("#invite-user-modal .dialog_submit_button").data(
-                "loading-text",
-                $t({defaultMessage: "Inviting..."}),
-            );
-            toggle_invite_submit_button();
-            reset_error_messages();
-        });
-
-        $("#invite-user-modal").on("change", "#generate_multiuse_invite_radio", () => {
-            $("#invitee_emails_container").hide();
-            $("#invite-user-modal .dialog_submit_button").text(
-                $t({defaultMessage: "Generate invite link"}),
-            );
-            $("#invite-user-modal .dialog_submit_button").data(
-                "loading-text",
-                $t({defaultMessage: "Generating link..."}),
-            );
-            $("#invite-user-modal .dialog_submit_button").prop("disabled", false);
-            reset_error_messages();
         });
 
         $expires_in.on("change", () => {
@@ -456,16 +432,6 @@ function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void
             $("#invite-user-form :input").prop("disabled", !user_has_email_set);
         }
 
-        if (!settings_data.user_can_invite_users_by_email()) {
-            $("#email_invite_radio").prop("disabled", true);
-            $("#email_invite_radio_container").addClass(
-                "control-label-disabled disabled_setting_tooltip",
-            );
-
-            $("#generate_multiuse_invite_radio").prop("checked", true);
-            $("#generate_multiuse_invite_radio").trigger("change");
-        }
-
         const invite_tips_data = generate_invite_tips_data();
 
         const context = {
@@ -475,10 +441,47 @@ function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void
         };
 
         $("#invite-user-form .setup-tips-container").html(render_invite_tips_banner(context));
+
+        const toggler = components.toggle({
+            html_class: "invite_users_option_tabs large allow-overflow",
+            selected: 0,
+            child_wants_focus: true,
+            values: [
+                {label: $t({defaultMessage: "Send invite email"}), key: "invite-email-tab"},
+                {label: $t({defaultMessage: "Create invite link"}), key: "invite-link-tab"},
+            ],
+            callback(_name, key) {
+                switch (key) {
+                    case "invite-email-tab":
+                        $("#invitee_emails_container").show();
+                        break;
+                    case "invite-link-tab":
+                        $("#invitee_emails_container").hide();
+                        break;
+                }
+                toggle_invite_submit_button();
+                reset_error_messages();
+            },
+        });
+        const $container = $("#invite_users_option_tabs_container");
+        if (!settings_data.user_can_invite_users_by_email()) {
+            toggler.disable_tab("invite-email-tab");
+            toggler.goto("invite-link-tab");
+        }
+        if (!settings_data.user_can_create_multiuse_invite()) {
+            toggler.disable_tab("invite-link-tab");
+        }
+        const $elem = toggler.get();
+        $container.append($elem);
+        setTimeout(() => {
+            $(".invite_users_option_tabs .ind-tab.selected").trigger("focus");
+        }, 0);
     }
 
     function invite_users(): void {
-        const is_generate_invite_link = $("#generate_multiuse_invite_radio").prop("checked");
+        const is_generate_invite_link =
+            $(".invite_users_option_tabs").find(".selected").attr("data-tab-key") ===
+            "invite-link-tab";
         if (is_generate_invite_link) {
             generate_multiuse_invite();
         } else {
@@ -494,6 +497,7 @@ function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void
         loading_spinner: true,
         on_click: invite_users,
         post_render: invite_user_modal_post_render,
+        always_visible_scrollbar: true,
     });
 }
 

@@ -24,8 +24,8 @@ your message.
 
 {!message-actions.md!}
 
-1. Click the **pencil** (<i class="fa fa-pencil"></i>) icon. If you do not see
-   the **pencil** (<i class="fa fa-pencil"></i>) icon, you do not have
+1. Click the **pencil** (<i class="zulip-icon zulip-icon-edit"></i>) icon. If you do not see
+   the **pencil** (<i class="zulip-icon zulip-icon-edit"></i>) icon, you do not have
    permission to delete the content of this message.
 
 1. Delete the content of the message.

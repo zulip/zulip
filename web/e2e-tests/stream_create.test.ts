@@ -81,6 +81,13 @@ async function create_stream(page: Page): Promise<void> {
         stream_description: "Everything Puppeteer",
     });
     await page.click("form#stream_creation_form .finalize_create_stream");
+    // an explanatory modal is shown for the first stream created
+    await common.wait_for_micromodal_to_open(page);
+    await page.click(".dialog_submit_button");
+    await common.wait_for_micromodal_to_close(page);
+    await page.waitForSelector(".message-header-stream-settings-button");
+    await page.click(".message-header-stream-settings-button");
+    await page.waitForSelector(".stream_section");
     await page.waitForSelector(
         `xpath///*[${common.has_class_x("stream-name")} and text()="Puppeteer"]`,
     );

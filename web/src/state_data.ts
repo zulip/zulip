@@ -142,14 +142,6 @@ export const realm_schema = z.object({
         }),
     ),
     realm_edit_topic_policy: z.number(),
-    realm_playgrounds: z.array(
-        z.object({
-            id: z.number(),
-            name: z.string(),
-            pygments_language: z.string(),
-            url_template: z.string(),
-        }),
-    ),
     realm_email_changes_disabled: z.boolean(),
     realm_emails_restricted_to_domains: z.boolean(),
     realm_enable_guest_user_indicator: z.boolean(),
@@ -168,6 +160,13 @@ export const realm_schema = z.object({
     realm_invite_to_stream_policy: z.number(),
     realm_is_zephyr_mirror_realm: z.boolean(),
     realm_jitsi_server_url: z.nullable(z.string()),
+    realm_linkifiers: z.array(
+        z.object({
+            pattern: z.string(),
+            url_template: z.string(),
+            id: z.number(),
+        }),
+    ),
     realm_logo_source: z.string(),
     realm_logo_url: z.string(),
     realm_mandatory_topics: z.boolean(),
@@ -184,6 +183,14 @@ export const realm_schema = z.object({
     realm_night_logo_url: z.string(),
     realm_org_type: z.number(),
     realm_plan_type: z.number(),
+    realm_playgrounds: z.array(
+        z.object({
+            id: z.number(),
+            name: z.string(),
+            pygments_language: z.string(),
+            url_template: z.string(),
+        }),
+    ),
     realm_presence_disabled: z.boolean(),
     realm_private_message_policy: z.number(),
     realm_push_notifications_enabled: z.boolean(),

@@ -1,5 +1,5 @@
 import assert from "minimalistic-assert";
-import z from "zod";
+import {z} from "zod";
 
 export type PollDataConfig = {
     message_sender_id: number;

@@ -291,7 +291,7 @@ export function initialize() {
 
     // MESSAGE EDITING
 
-    $("body").on("click", ".edit_content_button, .view_source_button", function (e) {
+    $("body").on("click", ".edit_content_button", function (e) {
         assert(message_lists.current !== undefined);
         const $row = message_lists.current.get_row(rows.id($(this).closest(".message_row")));
         message_lists.current.select_id(rows.id($row));
@@ -464,7 +464,7 @@ export function initialize() {
     }
 
     $("#message_feed_container").on("click", ".narrows_by_recipient", function (e) {
-        if (e.metaKey || e.ctrlKey) {
+        if (e.metaKey || e.ctrlKey || e.shiftKey) {
             return;
         }
         e.preventDefault();
@@ -473,7 +473,7 @@ export function initialize() {
     });
 
     $("#message_feed_container").on("click", ".narrows_by_topic", function (e) {
-        if (e.metaKey || e.ctrlKey) {
+        if (e.metaKey || e.ctrlKey || e.shiftKey) {
             return;
         }
         e.preventDefault();
@@ -483,6 +483,10 @@ export function initialize() {
 
     // SIDEBARS
     $(".buddy-list-section").on("click", ".selectable_sidebar_block", (e) => {
+        if (e.metaKey || e.ctrlKey || e.shiftKey) {
+            return;
+        }
+
         const $li = $(e.target).parents("li");
 
         activity_ui.narrow_for_user({$li});
@@ -773,7 +777,7 @@ export function initialize() {
         ".direct-messages-container.zoom-out #private_messages_section_header",
         (e) => {
             if ($(e.target).closest("#show_all_private_messages").length === 1) {
-                // Let the browser handle the "all direct messages" widget.
+                // Let the browser handle the "direct message feed" widget.
                 return;
             }
 
@@ -841,6 +845,10 @@ export function initialize() {
     });
 
     $("body").on("click", "#header-container .brand", (e) => {
+        if (e.metaKey || e.ctrlKey || e.shiftKey) {
+            return;
+        }
+
         e.preventDefault();
         e.stopPropagation();
 

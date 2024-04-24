@@ -72,7 +72,7 @@ git -C zulip checkout "$BRANCH"
 
 (
     export APT_OPTIONS="-o Dpkg::Options::=--force-confnew"
-    /root/zulip/scripts/setup/install --puppet-classes "$FULL_ROLES"
+    /root/zulip/scripts/setup/install --puppet-classes "$FULL_ROLES" --postgresql-version=14
 )
 
 # Delete the ubuntu user

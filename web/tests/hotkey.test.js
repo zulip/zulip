@@ -22,7 +22,7 @@ const $ = require("./lib/zjquery");
 // Future work includes making sure it actually does call `ui.foo()`.
 
 // Since all the tests here are based on narrow starting with all_messages.
-// We set our default narrow to all messages here.
+// We set our default narrow to the combined feed here.
 window.location.hash = "#all_messages";
 
 set_global("navigator", {

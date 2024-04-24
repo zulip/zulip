@@ -25,7 +25,7 @@ type PatchRequestData =
     | {processData: false; data: FormData}
     | {processData?: true; data: Record<string, unknown>};
 
-export type AjaxRequestHandler = typeof call;
+export type AjaxRequestHandler = typeof call | typeof patch;
 
 let password_change_in_progress = false;
 export let password_changes = 0;

@@ -45,6 +45,7 @@ type Invite = z.output<typeof invite_schema> & {
     is_admin?: boolean;
     disable_buttons?: boolean;
     referrer_name?: string;
+    img_src?: string;
 };
 
 const meta = {
@@ -101,6 +102,9 @@ function populate_invites(invites_data: {invites: Invite[]}): void {
                 item.invited_as === settings_config.user_role_values.owner.code &&
                 !current_user.is_owner;
             item.referrer_name = people.get_by_user_id(item.invited_by_user_id).full_name;
+            item.img_src = people.small_avatar_url_for_person(
+                people.get_by_user_id(item.invited_by_user_id),
+            );
             return render_admin_invites_list({invite: item});
         },
         filter: {
@@ -124,7 +128,7 @@ function populate_invites(invites_data: {invites: Invite[]}): void {
         init_sort: sort_invitee,
         sort_fields: {
             invitee: sort_invitee,
-            ...ListWidget.generic_sort_functions("alphabetic", ["ref"]),
+            ...ListWidget.generic_sort_functions("alphabetic", ["referrer_name"]),
             ...ListWidget.generic_sort_functions("numeric", [
                 "invited",
                 "expiry_date",

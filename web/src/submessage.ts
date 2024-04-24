@@ -1,4 +1,4 @@
-import z from "zod";
+import {z} from "zod";
 
 import * as blueslip from "./blueslip";
 import * as channel from "./channel";
@@ -7,32 +7,45 @@ import type {Message} from "./message_store";
 import type {Submessage} from "./types";
 import * as widgetize from "./widgetize";
 
-export const zform_widget_extra_data_schema = z.object({
-    choices: z.array(
-        z.object({
-            type: z.string(),
-            long_name: z.string(),
-            reply: z.string(),
-            short_name: z.string(),
-        }),
-    ),
-    heading: z.string(),
-    type: z.literal("choices"),
-});
+export const zform_widget_extra_data_schema = z
+    .object({
+        choices: z.array(
+            z.object({
+                type: z.string(),
+                long_name: z.string(),
+                reply: z.string(),
+                short_name: z.string(),
+            }),
+        ),
+        heading: z.string(),
+        type: z.literal("choices"),
+    })
+    .nullable();
 
-const poll_widget_extra_data_schema = z.object({
-    question: z.string().optional(),
-    options: z.array(z.string()).optional(),
-});
+const poll_widget_extra_data_schema = z
+    .object({
+        question: z.string().optional(),
+        options: z.array(z.string()).optional(),
+    })
+    .nullable();
+
+export const todo_widget_extra_data_schema = z
+    .object({
+        task_list_title: z.string().optional(),
+        tasks: z.array(z.object({task: z.string(), desc: z.string()})).optional(),
+    })
+    .nullable();
 
 const widget_data_event_schema = z.object({
     sender_id: z.number(),
-    data: z.object({
-        widget_type: z.string().optional(),
-        extra_data: z
-            .union([zform_widget_extra_data_schema, poll_widget_extra_data_schema])
-            .nullable(),
-    }),
+    data: z.discriminatedUnion("widget_type", [
+        z.object({widget_type: z.literal("poll"), extra_data: poll_widget_extra_data_schema}),
+        z.object({widget_type: z.literal("zform"), extra_data: zform_widget_extra_data_schema}),
+        z.object({
+            widget_type: z.literal("todo"),
+            extra_data: todo_widget_extra_data_schema,
+        }),
+    ]),
 });
 
 const inbound_data_event_schema = z.object({

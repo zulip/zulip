@@ -32,6 +32,20 @@ function assertSameEmails(lst1, lst2) {
     );
 }
 
+function user_item(user) {
+    return {
+        ...user,
+        type: "user",
+    };
+}
+
+function user_or_mention_item(user_or_mention) {
+    return {
+        ...user_or_mention,
+        type: "user_or_mention",
+    };
+}
+
 const a_bot = {
     email: "a_bot@zulip.com",
     full_name: "A Zulip test bot",
@@ -55,6 +69,7 @@ const b_user_1 = {
     is_bot: false,
     user_id: 3,
 };
+const b_user_1_item = user_item(b_user_1);
 
 const b_user_2 = {
     email: "b_user_2@zulip.net",
@@ -71,6 +86,7 @@ const b_user_3 = {
     is_bot: false,
     user_id: 5,
 };
+const b_user_3_item = user_item(b_user_3);
 
 const b_bot = {
     email: "b_bot@example.com",
@@ -87,6 +103,7 @@ const zman = {
     is_bot: false,
     user_id: 7,
 };
+const zman_item = user_item(zman);
 
 const matches = [a_bot, a_user, b_user_1, b_user_2, b_user_3, b_bot, zman];
 
@@ -337,8 +354,12 @@ test("sort_languages on actual data", () => {
 });
 
 function get_typeahead_result(query, current_stream_id, current_topic) {
+    const users = people.get_realm_users().map((user) => ({
+        ...user,
+        type: "user",
+    }));
     const result = th.sort_recipients({
-        users: people.get_realm_users(),
+        users,
         query,
         current_stream_id,
         current_topic,
@@ -447,9 +468,11 @@ test("sort_recipients all mention", () => {
 
     // Test person email is "all" or "everyone"
     const test_objs = [...matches, all_obj];
-
+    const user_and_mention_items = test_objs.map((user_or_mention) =>
+        user_or_mention_item(user_or_mention),
+    );
     const results = th.sort_recipients({
-        users: test_objs,
+        users: user_and_mention_items,
         query: "a",
         current_stream_id: linux_sub.stream_id,
         current_topic: "Linux topic",
@@ -497,20 +520,23 @@ test("sort_recipients pm counts", () => {
 
     // get some line coverage
     assert.equal(
-        th.compare_people_for_relevance(b_user_1, b_user_3, compare, linux_sub.stream_id),
+        th.compare_people_for_relevance(b_user_1_item, b_user_3_item, compare, linux_sub.stream_id),
         1,
     );
     assert.equal(
-        th.compare_people_for_relevance(b_user_3, b_user_1, compare, linux_sub.stream_id),
+        th.compare_people_for_relevance(b_user_3_item, b_user_1_item, compare, linux_sub.stream_id),
         -1,
     );
 });
 
 test("sort_recipients dup bots", () => {
     const dup_objects = [...matches, a_bot];
-
+    const user_items = dup_objects.map((user) => ({
+        ...user,
+        type: "user",
+    }));
     const recipients = th.sort_recipients({
-        users: dup_objects,
+        users: user_items,
         query: "b",
         current_stream_id: undefined,
         current_topic: "",
@@ -535,9 +561,11 @@ test("sort_recipients dup alls", () => {
 
     // full_name starts with same character but emails are 'all'
     const test_objs = [all_obj, a_user, all_obj];
-
+    const user_and_mention_items = test_objs.map((user_or_mention) =>
+        user_or_mention_item(user_or_mention),
+    );
     const recipients = th.sort_recipients({
-        users: test_objs,
+        users: user_and_mention_items,
         query: "a",
         current_stream_id: linux_sub.stream_id,
         current_topic: "Linux topic",
@@ -553,9 +581,11 @@ test("sort_recipients dup alls direct message", () => {
 
     // full_name starts with same character but emails are 'all'
     const test_objs = [all_obj, a_user, all_obj];
-
+    const user_and_mention_items = test_objs.map((user_or_mention) =>
+        user_or_mention_item(user_or_mention),
+    );
     const recipients = th.sort_recipients({
-        users: test_objs,
+        users: user_and_mention_items,
         query: "a",
     });
 
@@ -567,8 +597,12 @@ test("sort_recipients subscribers", () => {
     // b_user_2 is a subscriber and b_user_1 is not.
     peer_data.add_subscriber(dev_sub.stream_id, b_user_2.user_id);
     const small_matches = [b_user_2, b_user_1];
+    const user_items = small_matches.map((user) => ({
+        ...user,
+        type: "user",
+    }));
     const recipients = th.sort_recipients({
-        users: small_matches,
+        users: user_items,
         query: "b",
         current_stream_id: dev_sub.stream_id,
         current_topic: "Dev topic",
@@ -592,8 +626,12 @@ test("sort_recipients recent senders", () => {
         id: (next_id += 1),
     });
     pm_conversations.set_partner(b_user_3.user_id);
+    const user_items = small_matches.map((user) => ({
+        ...user,
+        type: "user",
+    }));
     const recipients = th.sort_recipients({
-        users: small_matches,
+        users: user_items,
         query: "b",
         current_stream_id: linux_sub.stream_id,
         current_topic: "Linux topic",
@@ -609,8 +647,12 @@ test("sort_recipients pm partners", () => {
     // both are not subscribed to the stream Linux.
     pm_conversations.set_partner(b_user_3.user_id);
     const small_matches = [b_user_3, b_user_2];
+    const user_items = small_matches.map((user) => ({
+        ...user,
+        type: "user",
+    }));
     const recipients = th.sort_recipients({
-        users: small_matches,
+        users: user_items,
         query: "b",
         current_stream_id: linux_sub.stream_id,
         current_topic: "Linux topic",
@@ -626,7 +668,9 @@ test("sort broadcast mentions for stream message type", () => {
     // actually had a bug where the sort would
     // randomly rearrange them)
     compose_state.set_message_type("stream");
-    const results = th.sort_people_for_relevance(ct.broadcast_mentions().reverse(), "", "");
+    const mentions = ct.broadcast_mentions().reverse();
+    const mention_items = mentions.map((mention) => user_or_mention_item(mention));
+    const results = th.sort_people_for_relevance(mention_items, "", "");
 
     assert.deepEqual(
         results.map((r) => r.email),
@@ -639,8 +683,10 @@ test("sort broadcast mentions for stream message type", () => {
     const test_objs = [...ct.broadcast_mentions()].reverse();
     test_objs.unshift(zman);
     test_objs.push(a_user);
-
-    const results2 = th.sort_people_for_relevance(test_objs, "", "");
+    const user_or_mention_items = test_objs.map((user_or_mention) =>
+        user_or_mention_item(user_or_mention),
+    );
+    const results2 = th.sort_people_for_relevance(user_or_mention_items, "", "");
 
     assert.deepEqual(
         results2.map((r) => r.email),
@@ -650,7 +696,9 @@ test("sort broadcast mentions for stream message type", () => {
 
 test("sort broadcast mentions for direct message type", () => {
     compose_state.set_message_type("private");
-    const results = th.sort_people_for_relevance(ct.broadcast_mentions().reverse(), "", "");
+    const mentions = ct.broadcast_mentions().reverse();
+    const mention_items = mentions.map((mention) => user_or_mention_item(mention));
+    const results = th.sort_people_for_relevance(mention_items, "", "");
 
     assert.deepEqual(
         results.map((r) => r.email),
@@ -660,8 +708,10 @@ test("sort broadcast mentions for direct message type", () => {
     const test_objs = [...ct.broadcast_mentions()].reverse();
     test_objs.unshift(zman);
     test_objs.push(a_user);
-
-    const results2 = th.sort_people_for_relevance(test_objs, "", "");
+    const user_or_mention_items = test_objs.map((user_or_mention) =>
+        user_or_mention_item(user_or_mention),
+    );
+    const results2 = th.sort_people_for_relevance(user_or_mention_items, "", "");
 
     assert.deepEqual(
         results2.map((r) => r.email),
@@ -675,19 +725,21 @@ test("test compare directly for stream message type", () => {
     // coverage is subject to the whims of how JS sorts.
     compose_state.set_message_type("stream");
     const all_obj = ct.broadcast_mentions()[0];
+    const all_obj_item = user_or_mention_item(all_obj);
 
-    assert.equal(th.compare_people_for_relevance(all_obj, all_obj), 0);
-    assert.equal(th.compare_people_for_relevance(all_obj, zman), -1);
-    assert.equal(th.compare_people_for_relevance(zman, all_obj), 1);
+    assert.equal(th.compare_people_for_relevance(all_obj_item, all_obj_item), 0);
+    assert.equal(th.compare_people_for_relevance(all_obj_item, zman_item), -1);
+    assert.equal(th.compare_people_for_relevance(zman_item, all_obj_item), 1);
 });
 
 test("test compare directly for direct message", () => {
     compose_state.set_message_type("private");
     const all_obj = ct.broadcast_mentions()[0];
+    const all_obj_item = user_or_mention_item(all_obj);
 
-    assert.equal(th.compare_people_for_relevance(all_obj, all_obj), 0);
-    assert.equal(th.compare_people_for_relevance(all_obj, zman), 1);
-    assert.equal(th.compare_people_for_relevance(zman, all_obj), -1);
+    assert.equal(th.compare_people_for_relevance(all_obj_item, all_obj_item), 0);
+    assert.equal(th.compare_people_for_relevance(all_obj_item, zman_item), 1);
+    assert.equal(th.compare_people_for_relevance(zman_item, all_obj_item), -1);
 });
 
 test("highlight_with_escaping", () => {
@@ -899,4 +951,10 @@ test("compare_language", () => {
     // Whenever there is a tie, even in the case neither have a popularity
     // score, then alphabetical order is used to break the tie.
     assert.equal(th.compare_language("custom_a", "custom_b"), util.strcmp("custom_a", "custom_b"));
+});
+
+// TODO: This is incomplete for testing this function, and
+// should be filled out more. This case was added for codecov.
+test("compare_by_pms", () => {
+    assert.equal(th.compare_by_pms(a_user, a_user), 0);
 });

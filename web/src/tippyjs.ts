@@ -400,10 +400,10 @@ export function initialize(): void {
     });
 
     delegate("body", {
-        target: "#generate_multiuse_invite_radio_container.disabled_setting_tooltip",
+        target: "[data-tab-key='invite-link-tab'].disabled",
         content: $t({
             defaultMessage:
-                "You do not have permissions to generate invite links in this organization.",
+                "You do not have permissions to create invite links in this organization.",
         }),
         appendTo: () => document.body,
         onHidden(instance) {
@@ -426,10 +426,10 @@ export function initialize(): void {
     });
 
     delegate("body", {
-        target: "#email_invite_radio_container.disabled_setting_tooltip",
+        target: "[data-tab-key='invite-email-tab'].disabled",
         content: $t({
             defaultMessage:
-                "You do not have permissions to send email invitations in this organization.",
+                "You do not have permissions to send invite emails in this organization.",
         }),
         appendTo: () => document.body,
         onHidden(instance) {
@@ -619,6 +619,21 @@ export function initialize(): void {
         appendTo: () => document.body,
         onHidden(instance) {
             instance.destroy();
+        },
+    });
+
+    delegate("body", {
+        target: ".popover-contains-shift-hotkey",
+        trigger: "mouseenter",
+        placement: "top",
+        appendTo: () => document.body,
+        onShow(instance) {
+            const hotkey_hints = $(instance.reference).attr("data-hotkey-hints");
+            if (hotkey_hints) {
+                instance.setContent(hotkey_hints.replace("⇧", "Shift").replaceAll(",", " + "));
+                return undefined;
+            }
+            return false;
         },
     });
 }

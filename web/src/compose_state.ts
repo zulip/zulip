@@ -190,6 +190,11 @@ export function has_message_content(): boolean {
     return message_content() !== "";
 }
 
+const MINIMUM_MESSAGE_LENGTH_TO_SAVE_DRAFT = 2;
+export function has_savable_message_content(): boolean {
+    return message_content().length > MINIMUM_MESSAGE_LENGTH_TO_SAVE_DRAFT;
+}
+
 export function has_full_recipient(): boolean {
     if (message_type === "stream") {
         return stream_id() !== undefined && topic() !== "";
@@ -207,4 +212,17 @@ export function update_email(user_id: number, new_email: string): void {
     reply_to = people.update_email_in_reply_to(reply_to, user_id, new_email);
 
     private_message_recipient(reply_to);
+}
+
+let _can_restore_drafts = true;
+export function prevent_draft_restoring(): void {
+    _can_restore_drafts = false;
+}
+
+export function allow_draft_restoring(): void {
+    _can_restore_drafts = true;
+}
+
+export function can_restore_drafts(): boolean {
+    return _can_restore_drafts;
 }

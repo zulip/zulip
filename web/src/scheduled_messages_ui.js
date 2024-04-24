@@ -59,6 +59,7 @@ export function open_scheduled_message_in_compose(scheduled_msg, should_narrow_t
             message_type: scheduled_msg.type,
             private_message_recipient: recipient_emails.join(","),
             content: scheduled_msg.content,
+            keep_composebox_empty: true,
         };
     }
 

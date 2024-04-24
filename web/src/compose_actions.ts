@@ -40,6 +40,7 @@ type ComposeActionsStartOpts = {
     draft_id?: string;
     skip_scrolling_selected_message?: boolean;
     is_reply?: boolean;
+    keep_composebox_empty?: boolean;
 };
 
 // An iteration on `ComposeActionsStartOpts` that enforces that
@@ -302,11 +303,33 @@ export function start(raw_opts: ComposeActionsStartOpts): void {
         opts.private_message_recipient.replaceAll(/,\s*/g, ", "),
     );
 
-    // If the user opens the compose box, types some text, and then clicks on a
-    // different stream/topic, we want to keep the text in the compose box
+    // If we're not explicitly opening a different draft, restore the last
+    // saved draft (if it exists).
+    if (
+        compose_state.can_restore_drafts() &&
+        !opts.content &&
+        opts.draft_id === undefined &&
+        compose_state.message_content().length === 0 &&
+        !opts.keep_composebox_empty
+    ) {
+        const possible_last_draft = drafts.get_last_restorable_draft_based_on_compose_state();
+        if (possible_last_draft !== undefined) {
+            opts.draft_id = possible_last_draft.id;
+            // Add a space at the end so that if the user starts typing
+            // as soon as the composebox opens, they have a bit of separation
+            // from the restored draft. This won't result in a long trail of
+            // spaces if a draft is restored several times, because we trim
+            // whitespace whenever we save drafts.
+            opts.content = possible_last_draft.content + " ";
+        }
+    }
+
     if (opts.content !== undefined) {
-        compose_state.message_content(opts.content);
+        compose_ui.insert_and_scroll_into_view(opts.content, $("textarea#compose-textarea"), true);
         $(".compose_control_button_container:has(.add-poll)").addClass("disabled-on-hover");
+        // If we were provided with message content, we might need to
+        // display that it's too long.
+        compose_validate.check_overflow_text();
     }
 
     compose_state.set_message_type(opts.message_type);
@@ -316,13 +339,6 @@ export function start(raw_opts: ComposeActionsStartOpts): void {
 
     if (opts.draft_id) {
         $("textarea#compose-textarea").data("draft-id", opts.draft_id);
-    }
-
-    if (opts.content !== undefined) {
-        // If we were provided with message content, we might need to
-        // resize the compose box, or display that it's too long.
-        compose_ui.autosize_textarea($("textarea#compose-textarea"));
-        compose_validate.check_overflow_text();
     }
 
     const $clear_topic_button = $("#recipient_box_clear_topic_button");

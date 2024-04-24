@@ -5,7 +5,10 @@
     <div class="settings_panel_list_header">
         <h3>{{t "Users"}}</h3>
         <div class="alert-notification" id="user-field-status"></div>
-        <input type="text" class="search filter_text_input" placeholder="{{t 'Filter users' }}" aria-label="{{t 'Filter users' }}"/>
+        <div class="user_filters">
+            {{> ../dropdown_widget widget_name=active_user_list_dropdown_widget_name}}
+            <input type="text" class="search filter_text_input" placeholder="{{t 'Filter users' }}" aria-label="{{t 'Filter users' }}"/>
+        </div>
     </div>
 
     <div class="progressive-table-wrapper" data-simplebar>
@@ -20,7 +23,7 @@
                 {{/if}}
             </thead>
             <tbody id="admin_users_table" class="admin_user_table"
-              data-empty="{{t 'No users match your current filter.' }}"></tbody>
+              data-empty="{{t 'No users match your filters.' }}"></tbody>
         </table>
     </div>
     <div id="admin_page_users_loading_indicator"></div>

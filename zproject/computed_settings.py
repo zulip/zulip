@@ -144,9 +144,6 @@ LANGUAGE_CODE = "en-us"
 # to load the internationalization machinery.
 USE_I18N = True
 
-# If you set this to False, Django will not use time-zone-aware datetimes.
-USE_TZ = True
-
 # this directory will be used to store logs for development environment
 DEVELOPMENT_LOG_DIRECTORY = os.path.join(DEPLOY_ROOT, "var", "log")
 
@@ -178,8 +175,6 @@ MIDDLEWARE = [
     # Make sure 2FA middlewares come after authentication middleware.
     "django_otp.middleware.OTPMiddleware",  # Required by two factor auth.
     "two_factor.middleware.threadlocals.ThreadLocals",  # Required by Twilio
-    # Needs to be after CommonMiddleware, which sets Content-Length
-    "zerver.middleware.FinalizeOpenGraphDescription",
 ]
 
 AUTH_USER_MODEL = "zerver.UserProfile"
@@ -704,6 +699,9 @@ AUTH_LOG_PATH = zulip_path("/var/log/zulip/auth.log")
 SCIM_LOG_PATH = zulip_path("/var/log/zulip/scim.log")
 
 ZULIP_WORKER_TEST_FILE = zulip_path("/var/log/zulip/zulip-worker-test-file")
+ZULIP_UPDATE_ANNOUNCEMENTS_LOCK_FILE = zulip_path(
+    "/home/zulip/deployments/zulip_update_announcements.lock"
+)
 
 
 if IS_WORKER:

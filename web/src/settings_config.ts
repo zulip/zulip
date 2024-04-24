@@ -99,7 +99,7 @@ export const web_home_view_values = {
     },
     all_messages: {
         code: "all_messages",
-        description: $t({defaultMessage: "All messages"}),
+        description: $t({defaultMessage: "Combined feed"}),
     },
 };
 
@@ -148,8 +148,9 @@ export const get_all_preferences = (): DisplaySettings => ({
         user_display_settings: [
             "dense_mode",
             "high_contrast_mode",
-            "fluid_layout_width",
             "starred_message_counts",
+            "receives_typing_notifications",
+            "fluid_layout_width",
         ],
     },
     render_only: {
@@ -563,6 +564,7 @@ export const preferences_settings_labels = {
     ),
     fluid_layout_width: $t({defaultMessage: "Use full width on wide screens"}),
     high_contrast_mode: $t({defaultMessage: "High contrast mode"}),
+    receives_typing_notifications: $t({defaultMessage: "Show when other users are typing"}),
     starred_message_counts: $t({defaultMessage: "Show counts for starred messages"}),
     twenty_four_hour_time: $t({defaultMessage: "Time format"}),
     translate_emoticons: new Handlebars.SafeString(

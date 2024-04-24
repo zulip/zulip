@@ -1,7 +1,9 @@
-{{t "Link:" }}
-<a href="{{ invite_link }}" id="multiuse_invite_link">{{ invite_link }}</a>
-&nbsp;
 <a class="btn copy_button_base" data-tippy-content="{{t 'Copy link' }}" data-tippy-placement="top" aria-label="{{t 'Copy link' }}"
   id='copy_generated_invite_link' data-clipboard-text="{{ invite_link }}">
     {{> copy_to_clipboard_svg }}
 </a>
+
+<div id="copy_generated_link_container">
+    <span>{{t "Link:" }}</span>
+    <a href="{{ invite_link }}" id="multiuse_invite_link">{{ invite_link }}</a>
+</div>

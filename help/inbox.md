@@ -51,7 +51,7 @@ In the web app, you can control whether the **Inbox** includes all topics, just
 
 * [Reading strategies](/help/reading-strategies)
 * [Recent conversations](/help/recent-conversations)
-* [All messages](/help/all-messages)
+* [Combined feed](/help/all-messages)
 * [Mute or unmute a stream](/help/mute-a-stream)
 * [Mute or unmute a topic](/help/mute-a-topic)
 * [Browse and subscribe to streams](/help/browse-and-subscribe-to-streams)

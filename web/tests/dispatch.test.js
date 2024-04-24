@@ -29,11 +29,11 @@ const attachments_ui = mock_esm("../src/attachments_ui");
 const audible_notifications = mock_esm("../src/audible_notifications");
 const bot_data = mock_esm("../src/bot_data");
 const compose_pm_pill = mock_esm("../src/compose_pm_pill");
-const composebox_typeahead = mock_esm("../src/composebox_typeahead");
 const dark_theme = mock_esm("../src/dark_theme");
 const emoji_picker = mock_esm("../src/emoji_picker");
 const gear_menu = mock_esm("../src/gear_menu");
 const hotspots = mock_esm("../src/hotspots");
+const information_density = mock_esm("../src/information_density");
 const linkifiers = mock_esm("../src/linkifiers");
 const message_events = mock_esm("../src/message_events");
 const message_lists = mock_esm("../src/message_lists");
@@ -660,7 +660,6 @@ run_test("realm_emoji", ({override}) => {
     const ui_func_names = [
         [settings_emoji, "populate_emoji"],
         [emoji_picker, "rebuild_catalog"],
-        [composebox_typeahead, "update_emoji_data"],
     ];
 
     const ui_stubs = [];
@@ -932,6 +931,18 @@ run_test("user_settings", ({override}) => {
     assert_same(user_settings.dense_mode, true);
     assert_same(toggled, ["less_dense_mode", "more_dense_mode"]);
 
+    event = event_fixtures.user_settings__web_font_size_px;
+    user_settings.web_font_size_px = 14;
+    override(information_density, "set_base_typography_css_variables", noop);
+    dispatch(event);
+    assert_same(user_settings.web_font_size_px, 16);
+
+    event = event_fixtures.user_settings__web_line_height_percent;
+    user_settings.web_font_size_px = 122;
+    override(information_density, "set_base_typography_css_variables", noop);
+    dispatch(event);
+    assert_same(user_settings.web_line_height_percent, 130);
+
     override(realm_logo, "render", noop);
 
     {
@@ -1002,6 +1013,17 @@ run_test("user_settings", ({override}) => {
     user_settings.starred_message_counts = false;
     dispatch(event);
     assert_same(user_settings.starred_message_counts, true);
+
+    event = event_fixtures.user_settings__receives_typing_notifications;
+    user_settings.receives_typing_notifications = false;
+    dispatch(event);
+    assert_same(user_settings.receives_typing_notifications, true);
+
+    event = event_fixtures.user_settings__receives_typing_notifications_disabled;
+    override(typing_events, "disable_typing_notification", noop);
+    user_settings.receives_typing_notifications = true;
+    dispatch(event);
+    assert_same(user_settings.receives_typing_notifications, false);
 
     override(scroll_bar, "set_layout_width", noop);
     event = event_fixtures.user_settings__fluid_layout_width;

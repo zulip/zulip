@@ -358,8 +358,11 @@ export function stop_auto_scrolling(): void {
     }
 }
 
-export function system_initiated_animate_scroll(scroll_amount: number): void {
-    message_scroll_state.set_update_selection_on_next_scroll(false);
+export function system_initiated_animate_scroll(
+    scroll_amount: number,
+    update_selection_on_scroll = false,
+): void {
+    message_scroll_state.set_update_selection_on_next_scroll(update_selection_on_scroll);
     const viewport_offset = scrollTop();
     in_stoppable_autoscroll = true;
     $scroll_container.animate({

@@ -5,7 +5,7 @@ from typing import Any, Collection, Dict, List, Optional, Sequence, Set, Tuple, 
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
 from django.db import transaction
-from django.db.models import Q, Sum
+from django.db.models import Q, QuerySet, Sum
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
 from zxcvbn import zxcvbn
@@ -70,7 +70,7 @@ def do_send_confirmation_email(
     return activation_url
 
 
-def estimate_recent_invites(realms: Collection[Realm], *, days: int) -> int:
+def estimate_recent_invites(realms: Collection[Realm] | QuerySet[Realm], *, days: int) -> int:
     """An upper bound on the number of invites sent in the last `days` days"""
     recent_invites = RealmCount.objects.filter(
         realm__in=realms,
@@ -116,7 +116,9 @@ def too_many_recent_realm_invites(realm: Realm, num_invitees: int) -> bool:
     if realm.date_created >= timezone_now() - timedelta(hours=1):
         warning_flags.append("realm-created-in-last-hour")
 
-    current_user_count = len(UserProfile.objects.filter(realm=realm, is_bot=False, is_active=True))
+    current_user_count = UserProfile.objects.filter(
+        realm=realm, is_bot=False, is_active=True
+    ).count()
     if current_user_count == 1:
         warning_flags.append("only-one-user")
 

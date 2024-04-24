@@ -1,7 +1,6 @@
 from typing import Mapping, Union
 
 from bs4 import BeautifulSoup
-from django.http import HttpRequest
 from django.utils.html import escape
 
 from zerver.lib.cache import cache_with_key, open_graph_description_cache_key
@@ -35,5 +34,5 @@ def html_to_text(content: Union[str, bytes], tags: Mapping[str, str] = {"p": " |
 
 
 @cache_with_key(open_graph_description_cache_key, timeout=3600 * 24)
-def get_content_description(content: bytes, request: HttpRequest) -> str:
+def get_content_description(content: bytes, request_url: str) -> str:
     return html_to_text(content)

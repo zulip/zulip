@@ -68,6 +68,11 @@ export function reset_ui_state() {
     message_feed_top_notices.hide_top_of_narrow_notices();
     message_feed_loading.hide_indicators();
     unread_ui.reset_unread_banner();
+    // We sometimes prevent draft restoring until the narrow resets.
+    compose_state.allow_draft_restoring();
+    // Most users aren't going to send a bunch of a out-of-narrow messages
+    // and expect to visit a list of narrows, so let's get these out of the way.
+    compose_banner.clear_message_sent_banners();
 }
 
 export function changehash(newhash) {
@@ -87,11 +92,9 @@ export function save_narrow(terms) {
 }
 
 export function activate(raw_terms, opts) {
-    /* Main entry point for switching to a new view / message list
-       (including all messages and home views).
+    /* Main entry point for switching to a new view / message list.
 
-       The name is based on "narrowing to a subset of the user's
-       messages.".  Supported parameters:
+       Supported parameters:
 
        raw_terms: Narrowing/search terms; used to construct
        a Filter object that decides which messages belong in the
@@ -120,7 +123,7 @@ export function activate(raw_terms, opts) {
          or rerendering due to server-side changes.
     */
 
-    // The empty narrow is the All messages view.
+    // No operators is an alias for the Combined Feed view.
     if (raw_terms.length === 0) {
         raw_terms = [{operator: "is", operand: "home"}];
     }
@@ -128,14 +131,13 @@ export function activate(raw_terms, opts) {
 
     const is_narrowed_to_all_messages_view = narrow_state.filter()?.is_in_home();
     if (has_visited_all_messages && is_narrowed_to_all_messages_view && filter.is_in_home()) {
-        // If we're already looking at the All messages view, exit without doing any work.
+        // If we're already looking at the combined feed, exit without doing any work.
         return;
     }
 
     if (filter.is_in_home() && message_scroll_state.actively_scrolling) {
-        // `All messages` narrow.
         // TODO: Figure out why puppeteer test for this fails when run for narrows
-        // other than `All messages`.
+        // other than `Combined feed`.
 
         // There is no way to intercept in-flight scroll events, and they will
         // cause you to end up in the wrong place if you are actively scrolling
@@ -146,7 +148,8 @@ export function activate(raw_terms, opts) {
         return;
     }
 
-    // Use to determine if user read any unread messages in non-All Messages narrow.
+    // Use to determine if user read any unread messages outside the combined feed.
+    // BUG: This doesn't check for the combined feed?
     const was_narrowed_already = narrow_state.filter() !== undefined;
 
     // Since narrow.activate is called directly from various
@@ -155,7 +158,9 @@ export function activate(raw_terms, opts) {
     if (
         page_params.is_spectator &&
         raw_terms.length &&
-        // Allow spectator to access all messages view.
+        // TODO: is:home is currently not permitted for spectators
+        // because they can't mute things; maybe that's the wrong
+        // policy?
         !filter.is_in_home() &&
         raw_terms.some(
             (raw_term) => !hash_parser.allowed_web_public_narrows.includes(raw_term.operator),
@@ -220,7 +225,7 @@ export function activate(raw_terms, opts) {
         // message in case the message was moved after the link was
         // created. This ensures near / id links work and will redirect
         // correctly if the topic was moved (including being resolved).
-        if (id_info.target_id && filter.has_operator("stream") && filter.has_operator("topic")) {
+        if (id_info.target_id && filter.has_operator("channel") && filter.has_operator("topic")) {
             const target_message = message_store.get(id_info.target_id);
 
             function adjusted_terms_if_moved(terms, message) {
@@ -230,7 +235,7 @@ export function activate(raw_terms, opts) {
                 for (const term of terms) {
                     const adjusted_term = {...term};
                     if (
-                        term.operator === "stream" &&
+                        term.operator === "channel" &&
                         !util.lower_same(term.operand, message.display_recipient)
                     ) {
                         adjusted_term.operand = message.display_recipient;
@@ -262,7 +267,7 @@ export function activate(raw_terms, opts) {
                 // location, then we should retarget this narrow operation
                 // to where the message is located now.
                 const narrow_topic = filter.operands("topic")[0];
-                const narrow_stream_name = filter.operands("stream")[0];
+                const narrow_stream_name = filter.operands("channel")[0];
                 const narrow_stream_data = stream_data.get_sub(narrow_stream_name);
                 if (!narrow_stream_data) {
                     // The id of the target message is correct but the stream name is
@@ -369,10 +374,6 @@ export function activate(raw_terms, opts) {
             // we can restore it if/when we later navigate back to that view.
             message_lists.save_pre_narrow_offset_for_reload();
         }
-
-        // most users aren't going to send a bunch of a out-of-narrow messages
-        // and expect to visit a list of narrows, so let's get these out of the way.
-        compose_banner.clear_message_sent_banners();
 
         // Open tooltips are only interesting for current narrow,
         // so hide them when activating a new one.
@@ -493,9 +494,11 @@ export function activate(raw_terms, opts) {
                 then_select_offset = message_lists.current.pre_narrow_offset;
                 id_info.final_select_id = message_lists.current.selected_id();
             }
-            // We are navigating to the All messages view from another narrow, so we reset the
-            // reading state to allow user to read messages again in All messages view if user has
-            // marked some messages as unread in the last All messages session and thus prevented reading.
+            // We are navigating to the combined feed from another
+            // narrow, so we reset the reading state to allow user to
+            // read messages again in the combined feed if user has
+            // marked some messages as unread in the last combined
+            // feed session and thus prevented reading.
             message_lists.current.resume_reading();
             // Reset the collapsed status of messages rows.
             condense.condense_and_collapse(message_lists.current.view.$list.find(".message_row"));
@@ -504,7 +507,7 @@ export function activate(raw_terms, opts) {
             message_feed_top_notices.update_top_of_narrow_notices(msg_list);
 
             // We may need to scroll to the selected message after swapping
-            // the currently displayed center panel to All messages.
+            // the currently displayed center panel to the combined feed.
             message_viewport.maybe_scroll_to_selected();
         } else {
             select_immediately = id_info.local_select_id !== undefined;
@@ -1053,7 +1056,7 @@ export function to_compose_target() {
         const emails = util.extract_pm_recipients(recipient_string);
         const invalid = emails.filter((email) => !people.is_valid_email_for_compose(email));
         // If there are no recipients or any recipient is
-        // invalid, narrow to all direct messages.
+        // invalid, narrow to your direct message feed.
         if (emails.length === 0 || invalid.length > 0) {
             by("is", "dm", opts);
             return;

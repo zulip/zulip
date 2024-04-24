@@ -12,8 +12,6 @@ from .config import DEVELOPMENT, PRODUCTION, get_secret
 if TYPE_CHECKING:
     from django_auth_ldap.config import LDAPSearch
 
-    from zerver.models.users import UserProfile
-
 if PRODUCTION:  # nocoverage
     from .prod_settings import EXTERNAL_HOST, ZULIP_ADMINISTRATOR
 else:
@@ -167,6 +165,9 @@ LOCAL_UPLOADS_DIR: Optional[str] = None
 LOCAL_AVATARS_DIR: Optional[str] = None
 LOCAL_FILES_DIR: Optional[str] = None
 MAX_FILE_UPLOAD_SIZE = 25
+# How many GB an organization on a paid plan can upload per user,
+# on zulipchat.com.
+UPLOAD_QUOTA_PER_USER_GB = 5
 
 # Jitsi Meet video call integration; set to None to disable integration.
 JITSI_SERVER_URL: Optional[str] = "https://meet.jit.si"
@@ -631,4 +632,4 @@ CAN_ACCESS_ALL_USERS_GROUP_LIMITS_PRESENCE = False
 # in some places through the codebase.
 SIGNED_ACCESS_TOKEN_VALIDITY_IN_SECONDS = 60
 
-CUSTOM_AUTHENTICATION_WRAPPER_FUNCTION: Optional[Callable[..., Optional["UserProfile"]]] = None
+CUSTOM_AUTHENTICATION_WRAPPER_FUNCTION: Optional[Callable[..., Any]] = None

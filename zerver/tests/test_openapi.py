@@ -239,8 +239,6 @@ class OpenAPIArgumentsTest(ZulipTestCase):
         "/default_stream_groups/{group_id}",
         "/default_stream_groups/{group_id}/streams",
         # Administer invitations
-        "/invites/multiuse",
-        "/invites/{prereg_id}",
         "/invites/{prereg_id}/resend",
         "/invites/multiuse/{invite_id}",
         # Single-stream settings alternative to the bulk endpoint

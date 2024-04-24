@@ -5,12 +5,14 @@ i = 0
 @hosts.each do |host|
 -%>
 [program:autossh-tunnel-<%= host %>]
-command=autossh -N -M <%= 20000 + 2 * i %> -o ControlMaster=yes nagios@<%= host %><% unless host.include?(".") %>.<%= @default_host_domain %><% end %>
+environment=AUTOSSH_DEBUG=1
+command=bash -c 'exec autossh -N -M <%= 20000 + 2 * i %> -o ControlMaster=yes nagios@<%= host %><% unless host.include?(".") %>.<%= @default_host_domain %><% end %> 2>&1 | ts "%%b %%d %%H:%%M:%%.S"'
 priority=200                   ; the relative start priority (default 999)
 autostart=true                 ; start at supervisord start (default: true)
 autorestart=true               ; whether/when to restart (default: unexpected)
 stopsignal=TERM                 ; signal used to kill process (default TERM)
 stopwaitsecs=30                ; max num secs to wait b4 SIGKILL (default 10)
+stopasgroup=true
 user=nagios                    ; setuid to this UNIX account to run the program
 redirect_stderr=true           ; redirect proc stderr to stdout (default false)
 stdout_logfile=/var/log/zulip/autossh.<%= host %>.log         ; stdout log path, NONE for none; default AUTO

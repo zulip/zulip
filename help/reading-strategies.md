@@ -45,11 +45,11 @@ workflows:
 
 ## Combined views
 
-### All messages
+### Combined feed
 
 {!all-messages.md!}
 
-### All direct messages
+### Direct message feed
 
 You can see all your direct messages in one place.
 
@@ -57,7 +57,7 @@ You can see all your direct messages in one place.
 
 {tab|desktop-web}
 
-1. Click on the **All direct messages** (<i class="fa fa-align-right"></i>)
+1. Click on the **Direct message feed** (<i class="fa fa-align-right"></i>)
    icon next to **DIRECT MESSAGES** in the left sidebar.
 
 1. Read your direct messages, starting from your first unread message. You can
@@ -69,7 +69,7 @@ You can see all your direct messages in one place.
 !!! keyboard_tip ""
 
     Use the <kbd>Shift</kbd> + <kbd>P</kbd> keyboard shortcut to go to
-    **All direct messages**.
+    **Direct message feed**.
 
 {end_tabs}
 

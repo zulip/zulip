@@ -1,9 +1,11 @@
 import $ from "jquery";
 import _ from "lodash";
 
+import render_inline_decorated_stream_name from "../templates/inline_decorated_stream_name.hbs";
 import render_stream_creation_confirmation_banner from "../templates/modal_banner/stream_creation_confirmation_banner.hbs";
 import render_browse_streams_list from "../templates/stream_settings/browse_streams_list.hbs";
 import render_browse_streams_list_item from "../templates/stream_settings/browse_streams_list_item.hbs";
+import render_first_stream_created_modal from "../templates/stream_settings/first_stream_created_modal.hbs";
 import render_stream_settings from "../templates/stream_settings/stream_settings.hbs";
 import render_stream_settings_overlay from "../templates/stream_settings/stream_settings_overlay.hbs";
 
@@ -13,9 +15,10 @@ import * as components from "./components";
 import * as compose_banner from "./compose_banner";
 import * as compose_recipient from "./compose_recipient";
 import * as compose_state from "./compose_state";
+import * as dialog_widget from "./dialog_widget";
 import * as hash_parser from "./hash_parser";
 import * as hash_util from "./hash_util";
-import {$t} from "./i18n";
+import {$t, $t_html} from "./i18n";
 import * as keydown_util from "./keydown_util";
 import * as message_lists from "./message_lists";
 import * as message_live_update from "./message_live_update";
@@ -244,8 +247,32 @@ export function add_sub_to_table(sub) {
             render_stream_creation_confirmation_banner(context),
         );
         stream_create.reset_created_stream();
+        // goto topic `stream events` of the newly created stream
+        browser_history.go_to_location(
+            hash_util.by_stream_topic_url(sub.stream_id, "stream events"),
+        );
+        if (stream_create.should_show_first_stream_created_modal()) {
+            stream_create.set_first_stream_created_modal_shown();
+            show_first_stream_created_modal(sub);
+        }
     }
     update_empty_left_panel_message();
+}
+function show_first_stream_created_modal(stream) {
+    dialog_widget.launch({
+        html_heading: $t_html(
+            {defaultMessage: "Stream <b><z-stream></z-stream></b> created!"},
+            {
+                "z-stream": () => render_inline_decorated_stream_name({stream}),
+            },
+        ),
+        html_body: render_first_stream_created_modal({stream}),
+        id: "first_stream_created_modal",
+        on_click() {},
+        html_submit_button: $t({defaultMessage: "Continue"}),
+        close_on_submit: true,
+        single_footer_button: true,
+    });
 }
 
 export function remove_stream(stream_id) {

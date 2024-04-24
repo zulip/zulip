@@ -8,11 +8,11 @@
 You can mute any user you do not wish to interact with. Muting someone will
 have the following effects:
 
-* All messages sent by a muted user will automatically be [marked as
+* Combined feed sent by a muted user will automatically be [marked as
   read](/help/marking-messages-as-read) for you, and will never
   generate any desktop, email, or mobile push notifications.
 
-* All messages sent by muted users, including the name, profile
+* Combined feed sent by muted users, including the name, profile
   picture, and message content, are hidden behind a **Click here to
   reveal** banner. A revealed message can later be [re-hidden](/help/mute-a-user#re-hide-a-message-that-has-been-revealed).
 

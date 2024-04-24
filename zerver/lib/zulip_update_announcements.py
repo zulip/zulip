@@ -45,14 +45,16 @@ announcements, they can be disabled. [Learn more]({zulip_update_announcements_he
     ZulipUpdateAnnouncement(
         level=2,
         message="""
+**Web and desktop updates**
+
 - When you paste content into the compose box, Zulip will now do its best to preserve
-  the formatting, including links, bulleted lists, bold, italics, and more.
-  Pasting as plain text remains an alternative option. [Learn
-  more]({keyboard_shortcuts_basics_help_url}).
+the formatting, including links, bulleted lists, bold, italics, and more.
+Pasting as plain text remains an alternative option. [Learn
+more]({keyboard_shortcuts_basics_help_url}).
 - To [quote and reply]({quote_and_reply_help_url}) to part of a message, you can
-  now select the part that you want to quote.
+now select the part that you want to quote.
 - You can now hide the user list in the right sidebar to reduce distraction.
-  [Learn more]({user_list_help_url}).
+[Learn more]({user_list_help_url}).
 """.format(
             keyboard_shortcuts_basics_help_url="/help/keyboard-shortcuts#the-basics",
             user_list_help_url="/help/user-list",
@@ -156,6 +158,7 @@ def internal_prep_zulip_update_announcements_stream_messages(
     return message_requests
 
 
+@transaction.atomic(savepoint=False)
 def send_messages_and_update_level(
     realm: Realm,
     new_zulip_update_announcements_level: int,
@@ -182,7 +185,7 @@ def send_messages_and_update_level(
     realm.save(update_fields=["zulip_update_announcements_level"])
 
 
-def send_zulip_update_announcements() -> None:
+def send_zulip_update_announcements(skip_delay: bool) -> None:
     latest_zulip_update_announcements_level = get_latest_zulip_update_announcements_level()
 
     realms = get_realms_behind_zulip_update_announcements_level(
@@ -190,50 +193,56 @@ def send_zulip_update_announcements() -> None:
     )
 
     for realm in realms:
+        # Refresh the realm from the database and check its
+        # properties, to protect against racing with another copy of
+        # ourself.
+        realm.refresh_from_db()
         realm_zulip_update_announcements_level = realm.zulip_update_announcements_level
+        assert (
+            realm_zulip_update_announcements_level is None
+            or realm_zulip_update_announcements_level < latest_zulip_update_announcements_level
+        )
+
         sender = get_system_bot(settings.NOTIFICATION_BOT, realm.id)
 
         messages = []
         new_zulip_update_announcements_level = None
-        with transaction.atomic(savepoint=False):
-            if realm_zulip_update_announcements_level is None:
-                # realm predates the zulip update announcements feature.
-                # Group DM the administrators to set or verify the stream for
-                # zulip update announcements.
-                group_direct_message = internal_prep_group_direct_message_for_old_realm(
-                    realm, sender
-                )
-                messages = [group_direct_message]
-                new_zulip_update_announcements_level = 0
-            elif (
-                realm_zulip_update_announcements_level == 0
-                and realm.zulip_update_announcements_stream is None
-            ):
-                # We wait for a week after sending group DMs to let admins configure
-                # stream for zulip update announcements. After that, they miss updates
-                # until they don't configure.
-                if not is_group_direct_message_sent_to_admins_within_days(realm, days=7):
-                    new_zulip_update_announcements_level = latest_zulip_update_announcements_level
-            else:
-                # Wait for 24 hours after sending group DM to allow admins to change the
-                # stream for zulip update announcements from it's default value if desired.
-                if (
-                    realm_zulip_update_announcements_level == 0
-                    and is_group_direct_message_sent_to_admins_within_days(realm, days=1)
-                ):
-                    continue
 
-                if realm.zulip_update_announcements_stream is not None:
-                    messages = internal_prep_zulip_update_announcements_stream_messages(
-                        current_level=realm_zulip_update_announcements_level,
-                        latest_level=latest_zulip_update_announcements_level,
-                        sender=sender,
-                        realm=realm,
-                    )
-
+        if realm_zulip_update_announcements_level is None:
+            # realm predates the zulip update announcements feature.
+            # Group DM the administrators to set or verify the stream for
+            # zulip update announcements.
+            group_direct_message = internal_prep_group_direct_message_for_old_realm(realm, sender)
+            messages = [group_direct_message]
+            new_zulip_update_announcements_level = 0
+        elif (
+            realm_zulip_update_announcements_level == 0
+            and realm.zulip_update_announcements_stream is None
+        ):
+            # We wait for a week after sending group DMs to let admins configure
+            # stream for zulip update announcements. After that, they miss updates
+            # until they don't configure.
+            if not is_group_direct_message_sent_to_admins_within_days(realm, days=7):
                 new_zulip_update_announcements_level = latest_zulip_update_announcements_level
+        else:
+            # Wait for 24 hours after sending group DM to allow admins to change the
+            # stream for zulip update announcements from it's default value if desired.
+            if (
+                realm_zulip_update_announcements_level == 0
+                and is_group_direct_message_sent_to_admins_within_days(realm, days=1)
+                and not skip_delay
+            ):
+                continue
 
-            if new_zulip_update_announcements_level is not None:
-                send_messages_and_update_level(
-                    realm, new_zulip_update_announcements_level, messages
+            if realm.zulip_update_announcements_stream is not None:
+                messages = internal_prep_zulip_update_announcements_stream_messages(
+                    current_level=realm_zulip_update_announcements_level,
+                    latest_level=latest_zulip_update_announcements_level,
+                    sender=sender,
+                    realm=realm,
                 )
+
+            new_zulip_update_announcements_level = latest_zulip_update_announcements_level
+
+        if new_zulip_update_announcements_level is not None:
+            send_messages_and_update_level(realm, new_zulip_update_announcements_level, messages)

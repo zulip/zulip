@@ -92,6 +92,8 @@ export function is_create_new_stream_narrow(): boolean {
 }
 
 export const allowed_web_public_narrows = [
+    "channels",
+    "channel",
     "streams",
     "stream",
     "topic",

@@ -93,7 +93,7 @@
 </template>
 <template id="all-message-tooltip-template">
     <div class="views-tooltip-container" data-view-code="all_messages">
-        <div>{{t 'All messages' }}</div>
+        <div>{{t 'Combined feed' }}</div>
         <div class="tooltip-inner-content views-tooltip-home-view-note italic hide">{{t 'This is your home view.' }}</div>
     </div>
     {{tooltip_hotkey_hints "A"}}
@@ -117,7 +117,7 @@
     {{tooltip_hotkey_hints "D"}}
 </template>
 <template id="show-all-pms-template">
-    {{t 'All direct messages' }}
+    {{t 'Direct message feed' }}
     {{tooltip_hotkey_hints "Shift" "P"}}
 </template>
 <template id="mentions-tooltip-template">
@@ -146,10 +146,6 @@
     {{t "Move message" }}
     {{tooltip_hotkey_hints "M"}}
 </template>
-<template id="view-source-tooltip-template">
-    {{t "View message source" }}
-    {{tooltip_hotkey_hints "E"}}
-</template>
 <template id="add-emoji-tooltip-template">
     {{t "Add emoji reaction" }}
     {{tooltip_hotkey_hints ":"}}
@@ -157,6 +153,22 @@
 <template id="message-actions-tooltip-template">
     {{t "Message actions" }}
     {{tooltip_hotkey_hints "I"}}
+</template>
+<template id="dismiss-failed-send-button-tooltip-template">
+    <div>
+        <div>{{t "Dismiss failed message" }}</div>
+        <div class="italic tooltip-inner-content">
+            {{t "This content remains saved in your drafts." }}
+        </div>
+    </div>
+</template>
+<template id="slow-send-spinner-tooltip-template">
+    <div>
+        <div>{{t "Sending…" }}</div>
+        <div class="italic">
+            {{t "This message will remain saved in your drafts until it is successfully sent." }}
+        </div>
+    </div>
 </template>
 <template id="star-message-tooltip-template">
     <div class="starred-status">{{t "Star this message" }}</div>

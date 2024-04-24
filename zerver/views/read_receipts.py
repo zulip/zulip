@@ -1,20 +1,21 @@
 from django.http.request import HttpRequest
 from django.http.response import HttpResponse
 from django.utils.translation import gettext as _
+from pydantic import NonNegativeInt
 
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.message import access_message
-from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
-from zerver.lib.validator import to_non_negative_int
+from zerver.lib.typed_endpoint import PathOnly, typed_endpoint
 from zerver.models import UserMessage, UserProfile
 
 
-@has_request_variables
+@typed_endpoint
 def read_receipts(
     request: HttpRequest,
     user_profile: UserProfile,
-    message_id: int = REQ(converter=to_non_negative_int, path_only=True),
+    *,
+    message_id: PathOnly[NonNegativeInt],
 ) -> HttpResponse:
     message = access_message(user_profile, message_id)
 

@@ -3,7 +3,7 @@ import $ from "jquery";
 import * as blueslip from "./blueslip";
 import * as message_lists from "./message_lists";
 import type {Message} from "./message_store";
-import type {Event, ExtraData as PollWidgetExtraData} from "./poll_widget";
+import type {Event, PollWidgetExtraData} from "./poll_widget";
 
 // TODO: This ZFormExtraData type should be moved to web/src/zform.js when it will be migrated
 type ZFormExtraData = {
@@ -12,7 +12,13 @@ type ZFormExtraData = {
     choices: {type: string; reply: string; long_name: string; short_name: string}[];
 };
 
-type WidgetExtraData = PollWidgetExtraData | ZFormExtraData | null;
+// TODO: This TodoWidgetExtraData type should be moved to web/src/todo_widget.js when it will be migrated
+type TodoWidgetExtraData = {
+    task_list_title?: string;
+    tasks?: {task: string; desc: string}[];
+};
+
+type WidgetExtraData = PollWidgetExtraData | TodoWidgetExtraData | ZFormExtraData | null;
 
 type WidgetOptions = {
     widget_type: string;
@@ -44,7 +50,7 @@ function set_widget_in_message($row: JQuery, $widget_elem: JQuery): void {
 
     // Avoid adding the $widget_elem if it already exists.
     // This can happen when the app loads in the "Recent Conversations"
-    // view and the user changes the view to "All messages".
+    // view and the user changes the view to "Combined feed".
     // This is important since jQuery removes all the event handlers
     // on `empty()`ing an element.
     if ($content_holder.find(".widget-content").length === 0) {

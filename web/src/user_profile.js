@@ -30,12 +30,12 @@ import * as loading from "./loading";
 import * as modals from "./modals";
 import * as peer_data from "./peer_data";
 import * as people from "./people";
+import * as settings_components from "./settings_components";
 import * as settings_config from "./settings_config";
 import * as settings_data from "./settings_data";
 import * as settings_profile_fields from "./settings_profile_fields";
 import {current_user, realm} from "./state_data";
 import * as stream_data from "./stream_data";
-import * as stream_ui_updates from "./stream_ui_updates";
 import * as sub_store from "./sub_store";
 import * as subscriber_api from "./subscriber_api";
 import * as timerender from "./timerender";
@@ -142,7 +142,7 @@ function change_state_of_subscribe_button(event, dropdown) {
 
 function reset_subscribe_widget() {
     $("#user-profile-modal .add-subscription-button").prop("disabled", true);
-    stream_ui_updates.initialize_disable_btn_hint_popover(
+    settings_components.initialize_disable_btn_hint_popover(
         $("#user-profile-modal .add-subscription-button-wrapper"),
         $t({defaultMessage: "Select a stream to subscribe"}),
     );
@@ -464,6 +464,11 @@ export function show_user_profile(user, default_tab_key = "profile-tab") {
                     render_manage_profile_content(user);
                     break;
             }
+            setTimeout(() => {
+                $(".modal__body .simplebar-content-wrapper").attr("tabindex", "-1");
+                $(".modal__container .ind-tab").attr("tabindex", "-1");
+                $(".modal__container .ind-tab.selected").attr("tabindex", "0");
+            }, 0);
         },
     };
 
@@ -673,7 +678,7 @@ export function show_edit_bot_info_modal(user_id, $container) {
             const bot_id = $("#bot-edit-form").data("user-id");
             function handle_confirm() {
                 const url = "/json/bots/" + encodeURIComponent(bot_id);
-                dialog_widget.submit_api_request(channel.del, url);
+                dialog_widget.submit_api_request(channel.del, url, {});
             }
             user_deactivation_ui.confirm_bot_deactivation(bot_id, handle_confirm, true);
         });
@@ -685,7 +690,7 @@ export function show_edit_bot_info_modal(user_id, $container) {
             const user_id = $("#bot-edit-form").data("user-id");
             function handle_confirm() {
                 const url = "/json/users/" + encodeURIComponent(user_id) + "/reactivate";
-                dialog_widget.submit_api_request(channel.post, url);
+                dialog_widget.submit_api_request(channel.post, url, {});
             }
             user_deactivation_ui.confirm_reactivation(user_id, handle_confirm, true);
         });
@@ -785,7 +790,7 @@ export function show_edit_user_info_modal(user_id, $container) {
         const user_id = $("#edit-user-form").data("user-id");
         function handle_confirm() {
             const url = "/json/users/" + encodeURIComponent(user_id);
-            dialog_widget.submit_api_request(channel.del, url);
+            dialog_widget.submit_api_request(channel.del, url, {});
         }
         user_deactivation_ui.confirm_deactivation(user_id, handle_confirm, true);
     });
@@ -797,7 +802,7 @@ export function show_edit_user_info_modal(user_id, $container) {
         const user_id = $("#edit-user-form").data("user-id");
         function handle_confirm() {
             const url = "/json/users/" + encodeURIComponent(user_id) + "/reactivate";
-            dialog_widget.submit_api_request(channel.post, url);
+            dialog_widget.submit_api_request(channel.post, url, {});
         }
         user_deactivation_ui.confirm_reactivation(user_id, handle_confirm, true);
     });

@@ -91,6 +91,7 @@ class PlansPageContext:
     tier_self_hosted_basic: int = CustomerPlan.TIER_SELF_HOSTED_BASIC
     tier_self_hosted_business: int = CustomerPlan.TIER_SELF_HOSTED_BUSINESS
     tier_cloud_standard: int = CustomerPlan.TIER_CLOUD_STANDARD
+    tier_cloud_plus: int = CustomerPlan.TIER_CLOUD_PLUS
 
 
 @add_google_analytics
@@ -188,8 +189,8 @@ def remote_realm_plans_page(
                     status=CustomerPlan.NEVER_STARTED,
                 )
 
-    if billing_session.is_legacy_customer():
-        # Free trial is disabled for legacy customers.
+    if billing_session.customer_plan_exists():
+        # Free trial is disabled for existing customers.
         context.free_trial_days = None
 
     context.is_new_customer = (
@@ -251,8 +252,8 @@ def remote_server_plans_page(
                     status=CustomerPlan.NEVER_STARTED,
                 )
 
-        if billing_session.is_legacy_customer():
-            # Free trial is disabled for legacy customers.
+        if billing_session.customer_plan_exists():
+            # Free trial is disabled for existing customers.
             context.free_trial_days = None
 
     context.is_new_customer = (
@@ -293,7 +294,14 @@ def team_view(request: HttpRequest) -> HttpResponse:
 @add_google_analytics
 def landing_view(request: HttpRequest, template_name: str) -> HttpResponse:
     context = latest_info_context()
-    context["billing_base_url"] = ""
+    context.update(
+        {
+            "billing_base_url": "",
+            "tier_cloud_standard": str(CustomerPlan.TIER_CLOUD_STANDARD),
+            "tier_cloud_plus": str(CustomerPlan.TIER_CLOUD_PLUS),
+        }
+    )
+
     return TemplateResponse(request, template_name, context)
 
 

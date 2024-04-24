@@ -175,7 +175,7 @@ export function initialize() {
     $(document).on("message_selected.zulip", () => {
         if (narrow_state.is_message_feed_visible()) {
             // message_selected events can occur with Recent Conversations
-            // open due to "All messages" loading in the background,
+            // open due to the combined feed view loading in the background,
             // so we only update if message feed is visible.
             update_reply_recipient_label();
         }
@@ -186,6 +186,7 @@ export function initialize() {
         compose_actions.start({
             message_type: "stream",
             trigger: "clear topic button",
+            keep_composebox_empty: true,
         });
     });
 
@@ -193,6 +194,7 @@ export function initialize() {
         compose_actions.start({
             message_type: "private",
             trigger: "new direct message",
+            keep_composebox_empty: true,
         });
     });
 }

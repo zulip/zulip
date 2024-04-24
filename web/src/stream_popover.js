@@ -397,7 +397,7 @@ export async function build_move_topic_to_stream_popover(
     function move_topic() {
         const params = get_params_from_form();
 
-        const {old_topic_name} = params;
+        const old_topic_name = params.old_topic_name.trim();
         let select_stream_id;
         if (only_topic_edit) {
             select_stream_id = undefined;
@@ -414,13 +414,14 @@ export async function build_move_topic_to_stream_popover(
         send_notification_to_new_thread = send_notification_to_new_thread === "on";
         send_notification_to_old_thread = send_notification_to_old_thread === "on";
         current_stream_id = Number.parseInt(current_stream_id, 10);
+        select_stream_id = Number.parseInt(select_stream_id, 10);
 
         if (new_topic_name !== undefined) {
             // new_topic_name can be undefined when the new topic input is disabled when
             // user does not have permission to edit topic.
             new_topic_name = new_topic_name.trim();
         }
-        if (old_topic_name.trim() === new_topic_name) {
+        if (old_topic_name === new_topic_name) {
             // We use `undefined` to tell the server that
             // there has been no change in the topic name.
             new_topic_name = undefined;
@@ -439,6 +440,13 @@ export async function build_move_topic_to_stream_popover(
             // We already have the message_id here which means that modal is opened using
             // message popover.
             propagate_mode = $("#move_topic_modal select.message_edit_topic_propagate").val();
+            const toast_params =
+                propagate_mode === "change_one"
+                    ? {
+                          new_stream_id: select_stream_id || current_stream_id,
+                          new_topic_name: new_topic_name ?? old_topic_name,
+                      }
+                    : undefined;
             message_edit.move_topic_containing_message_to_stream(
                 message.id,
                 select_stream_id,
@@ -446,6 +454,7 @@ export async function build_move_topic_to_stream_popover(
                 send_notification_to_new_thread,
                 send_notification_to_old_thread,
                 propagate_mode,
+                toast_params,
             );
             return;
         }

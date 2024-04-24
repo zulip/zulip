@@ -49,7 +49,7 @@ function get_message_view_header_context(filter: Filter | undefined): MessageVie
     }
     if (filter === undefined) {
         return {
-            title: $t({defaultMessage: "All messages"}),
+            title: $t({defaultMessage: "Combined feed"}),
             zulip_icon: "all-messages",
         };
     }
@@ -59,7 +59,7 @@ function get_message_view_header_context(filter: Filter | undefined): MessageVie
         title,
         is_spectator: page_params.is_spectator,
     });
-    if (filter.has_operator("stream") && !filter._sub) {
+    if (filter.has_operator("channel") && !filter._sub) {
         return {
             ...icon_data,
             sub_count: "0",

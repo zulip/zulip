@@ -490,9 +490,9 @@ run_test("spoiler-header", () => {
     const $content = get_content_element();
     const $header = $.create("div.spoiler-header");
     $content.set_find_results("div.spoiler-header", $array([$header]));
-    let $prepended;
-    $header.prepend = ($element) => {
-        $prepended = $element;
+    let $appended;
+    $header.append = ($element) => {
+        $appended = $element;
     };
 
     // Test that the show/hide button gets added to a spoiler header.
@@ -502,7 +502,7 @@ run_test("spoiler-header", () => {
     $header.html(label);
     rm.update_elements($content);
     assert.equal(label, $header.html());
-    assert.equal($prepended.selector, toggle_button_html);
+    assert.equal($appended.selector, toggle_button_html);
 });
 
 run_test("spoiler-header-empty-fill", () => {
@@ -510,13 +510,9 @@ run_test("spoiler-header-empty-fill", () => {
     const $content = get_content_element();
     const $header = $.create("div.spoiler-header");
     $content.set_find_results("div.spoiler-header", $array([$header]));
-    let $appended;
+    const $appended = [];
     $header.append = ($element) => {
-        $appended = $element;
-    };
-    let $prepended;
-    $header.prepend = ($element) => {
-        $prepended = $element;
+        $appended.push($element);
     };
 
     // Test that an empty header gets the default text applied (through i18n filter).
@@ -524,9 +520,9 @@ run_test("spoiler-header-empty-fill", () => {
         '<span class="spoiler-button" aria-expanded="false"><span class="spoiler-arrow"></span></span>';
     $header.empty();
     rm.update_elements($content);
-    assert.equal($appended.selector, "<p>");
-    assert.equal($appended.text(), $t({defaultMessage: "Spoiler"}));
-    assert.equal($prepended.selector, toggle_button_html);
+    assert.equal($appended[0].selector, "<p>");
+    assert.equal($appended[0].text(), $t({defaultMessage: "Spoiler"}));
+    assert.equal($appended[1].selector, toggle_button_html);
 });
 
 function assert_clipboard_setup() {

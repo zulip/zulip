@@ -680,6 +680,7 @@ paths:
                                       {
                                         "name": "test_stream",
                                         "stream_id": 9,
+                                        "creator_id": null,
                                         "description": "",
                                         "rendered_description": "",
                                         "invite_only": false,
@@ -1325,6 +1326,7 @@ paths:
                                         "description": "",
                                         "rendered_description": "",
                                         "date_created": 1691057093,
+                                        "creator_id": 11,
                                         "invite_only": true,
                                         "is_web_public": false,
                                         "stream_post_policy": 1,
@@ -1382,6 +1384,7 @@ paths:
                                         "description": "",
                                         "rendered_description": "",
                                         "date_created": 1691057093,
+                                        "creator_id": 11,
                                         "invite_only": true,
                                         "is_web_public": false,
                                         "stream_post_policy": 1,
@@ -1958,6 +1961,7 @@ paths:
                                               "description": "Located in the United Kingdom",
                                               "rendered_description": "<p>Located in the United Kingdom</p>",
                                               "date_created": 1691057093,
+                                              "creator_id": 8,
                                               "invite_only": false,
                                               "is_web_public": false,
                                               "stream_post_policy": 1,
@@ -1973,6 +1977,7 @@ paths:
                                               "description": "A Scandinavian country",
                                               "rendered_description": "<p>A Scandinavian country</p>",
                                               "date_created": 1691057093,
+                                              "creator_id": null,
                                               "invite_only": false,
                                               "is_web_public": false,
                                               "stream_post_policy": 1,
@@ -1988,6 +1993,7 @@ paths:
                                               "description": "A city in Italy",
                                               "rendered_description": "<p>A city in Italy</p>",
                                               "date_created": 1691057093,
+                                              "creator_id": 9,
                                               "invite_only": false,
                                               "is_web_public": false,
                                               "stream_post_policy": 1,
@@ -2034,6 +2040,7 @@ paths:
                                         "description": "Located in the United Kingdom",
                                         "rendered_description": "<p>Located in the United Kingdom</p>",
                                         "date_created": 1691057093,
+                                        "creator_id": 8,
                                         "invite_only": false,
                                         "is_web_public": false,
                                         "stream_post_policy": 1,
@@ -2284,14 +2291,15 @@ paths:
                             - type: object
                               additionalProperties: false
                               description: |
-                                Event sent when the set of onboarding steps to show for
-                                the current user have changed (E.g. because the user dismissed one).
+                                Event sent when the set of onboarding steps to show for the current user
+                                has changed (e.g. because the user dismissed one).
 
-                                Clients that feature a similar tutorial experience to the Zulip
-                                web app may want to handle these events.
+                                Clients that feature a similar tutorial experience to the Zulip web app
+                                may want to handle these events.
 
-                                **Changes**: Before Zulip 8.0 (feature level 233), this was named
-                                as `Hotspots`. One-time notice wasn't available earlier.
+                                **Changes**: Before Zulip 8.0 (feature level 233), this event was named
+                                `hotspots`. Prior to this feature level, one-time notice onboarding
+                                steps were not supported.
                               properties:
                                 id:
                                   $ref: "#/components/schemas/EventIdSchema"
@@ -2303,11 +2311,13 @@ paths:
                                 onboarding_steps:
                                   type: array
                                   description: |
-                                    An array of dictionaries where each
-                                    dictionary contains details about a single onboarding step.
+                                    An array of dictionaries where each dictionary contains details about a
+                                    single onboarding step.
 
-                                    **Changes**: Before Zulip 8.0 (feature level 233), this array
-                                    was named as `hotspots`. One-time notice wasn't available earlier.
+                                    **Changes**: Before Zulip 8.0 (feature level 233), this array was named
+                                    `hotspots`. Prior to this feature level, one-time notice onboarding
+                                    steps were not supported, and the `type` field in these objects did not
+                                    exist as all onboarding steps were implicitly hotspots.
                                   items:
                                     $ref: "#/components/schemas/OnboardingStep"
                               example:
@@ -2317,11 +2327,15 @@ paths:
                                     [
                                       {
                                         "type": "hotspot",
-                                        "name": "intro_streams",
-                                        "title": "Catch up on a stream",
-                                        "description": "Messages sent to a stream are seen by everyone subscribed to that stream. Try clicking on one of the stream links below.",
+                                        "name": "intro_compose",
+                                        "title": "Compose",
+                                        "description": "Click here to start a new conversation. Pick a topic (2-3 words is best), and give it a go!",
                                         "delay": 0.5,
                                         "has_trigger": false,
+                                      },
+                                      {
+                                        "type": "one_time_notice",
+                                        "name": "visibility_policy_banner",
                                       },
                                     ],
                                   "id": 0,
@@ -5677,17 +5691,20 @@ paths:
                 type:
                   description: |
                     The type of scheduled message to be sent. `"direct"` for a direct
-                    message and `"stream"` for a stream message.
+                    message and `"stream"` or `"channel"` for a stream message.
 
-                    In Zulip 7.0 (feature level 174), `"direct"` was added as the
-                    preferred way to indicate the type of a direct message, deprecating
-                    the original `"private"`. While `"private"` is supported for
-                    scheduling direct messages, clients are encouraged to use to the
-                    modern convention because support for `"private"` may eventually
-                    be removed.
+                    Note that, while `"private"` is supported for scheduling direct
+                    messages, clients are encouraged to use to the modern convention of
+                    `"direct"` to indicate this message type, because support for
+                    `"private"` may eventually be removed.
+
+                    **Changes**: In Zulip 9.0 (feature level 248), `"channel"` was added as
+                    an additional value for this parameter to indicate the type of a stream
+                    message.
                   type: string
                   enum:
                     - direct
+                    - channel
                     - stream
                     - private
                   example: direct
@@ -5822,21 +5839,24 @@ paths:
                 type:
                   description: |
                     The type of scheduled message to be sent. `"direct"` for a direct
-                    message and `"stream"` for a stream message.
+                    message and `"stream"` or `"channel"` for a stream message.
 
                     When updating the type of the scheduled message, the `to` parameter
                     is required. And, if updating the type of the scheduled message to
-                    `"stream"`, then the `topic` parameter is also required.
+                    `"stream"`/`"channel"`, then the `topic` parameter is also required.
 
-                    In Zulip 7.0 (feature level 174), `"direct"` was added as the
-                    preferred way to indicate the type of a direct message, deprecating
-                    the original `"private"`. While `"private"` is supported for
-                    scheduling direct messages, clients are encouraged to use to the
-                    modern convention because support for `"private"` may eventually
-                    be removed.
+                    Note that, while `"private"` is supported for scheduling direct
+                    messages, clients are encouraged to use to the modern convention of
+                    `"direct"` to indicate this message type, because support for
+                    `"private"` may eventually be removed.
+
+                    **Changes**: In Zulip 9.0 (feature level 248), `"channel"` was added as
+                    an additional value for this parameter to indicate the type of a stream
+                    message.
                   type: string
                   enum:
                     - direct
+                    - channel
                     - stream
                     - private
                   example: stream
@@ -6183,7 +6203,16 @@ paths:
             subscribed to appropriate streams or use a shared history
             search narrow with this endpoint.
 
-            **Changes**: In Zulip 7.0 (feature level 177), narrows gained support
+            **Changes**: In Zulip 9.0 (feature level 250), narrows gained support
+            for two new filters related to stream messages: `channel` and `channels`;
+            which are aliases for (and return the same results as) the `stream` and
+            `streams` filters respectively.
+
+            In Zulip 9.0 (feature level 249), narrows gained support for a new
+            filter, `has:reaction`, which returns messages with at least one
+            [emoji reaction](/help/emoji-reactions).
+
+            In Zulip 7.0 (feature level 177), narrows gained support
             for three new filters related to direct messages: `is:dm`, `dm` and
             `dm-including`; replacing and deprecating `is:private`, `pm-with` and
             `group-pm-with` respectively.
@@ -6452,9 +6481,13 @@ paths:
                   description: |
                     The type of message to be sent.
 
-                    `"direct"` for a direct message and `"stream"` for a stream message.
+                    `"direct"` for a direct message and `"stream"` or `"channel"` for a
+                    stream message.
 
-                    **Changes**: In Zulip 7.0 (feature level 174), `"direct"` was added as
+                    **Changes**: In Zulip 9.0 (feature level 248), `"channel"` was added as
+                    an additional value for this parameter to request a stream message.
+
+                    In Zulip 7.0 (feature level 174), `"direct"` was added as
                     the preferred way to request a direct message, deprecating the original
                     `"private"`. While `"private"` is still supported for requesting direct
                     messages, clients are encouraged to use to the modern convention with
@@ -6463,6 +6496,7 @@ paths:
                   type: string
                   enum:
                     - direct
+                    - channel
                     - stream
                     - private
                   example: direct
@@ -7048,7 +7082,16 @@ paths:
                     optimization. Including that filter takes advantage of the fact that
                     the server has a database index for unread messages.
 
-                    **Changes**: In Zulip 7.0 (feature level 177), narrows gained support
+                    **Changes**: In Zulip 9.0 (feature level 250), narrows gained support
+                    for two new filters related to stream messages: `channel` and `channels`;
+                    which are aliases for (and return the same results as) the `stream` and
+                    `streams` filters respectively.
+
+                    In Zulip 9.0 (feature level 249), narrows gained support for a new
+                    filter, `has:reaction`, which returns messages with at least one
+                    [emoji reaction](/help/emoji-reactions).
+
+                    In Zulip 7.0 (feature level 177), narrows gained support
                     for three new filters related to direct messages: `is:dm`, `dm` and
                     `dm-including`; replacing and deprecating `is:private`, `pm-with` and
                     `group-pm-with` respectively.
@@ -7472,7 +7515,16 @@ paths:
             A structure defining the narrow to check against. See how to
             [construct a narrow](/api/construct-narrow).
 
-            **Changes**: In Zulip 7.0 (feature level 177), narrows gained support
+            **Changes**: In Zulip 9.0 (feature level 250), narrows gained support
+            for two new filters related to stream messages: `channel` and `channels`;
+            which are aliases for (and return the same results as) the `stream` and
+            `streams` filters respectively.
+
+            In Zulip 9.0 (feature level 249), narrows gained support for a new
+            filter, `has:reaction`, which returns messages with at least one
+            [emoji reaction](/help/emoji-reactions).
+
+            In Zulip 7.0 (feature level 177), narrows gained support
             for three new filters related to direct messages: `is:dm`, `dm` and
             `dm-including`; replacing and deprecating `is:private`, `pm-with` and
             `group-pm-with` respectively.
@@ -9151,6 +9203,7 @@ paths:
                             {
                               "audible_notifications": true,
                               "color": "#e79ab5",
+                              "creator_id": null,
                               "description": "A Scandinavian country",
                               "desktop_notifications": true,
                               "is_muted": false,
@@ -9164,6 +9217,7 @@ paths:
                             {
                               "audible_notifications": true,
                               "color": "#e79ab5",
+                              "creator_id": 8,
                               "description": "Located in the United Kingdom",
                               "desktop_notifications": true,
                               "is_muted": false,
@@ -10535,6 +10589,16 @@ paths:
                     messages](/help/star-a-message#display-the-number-of-starred-messages).
                   type: boolean
                   example: true
+                receives_typing_notifications:
+                  description: |
+                    Whether the user is configured to receive typing notifications from other users.
+                    The server will only deliver typing notifications events to users who for whom this
+                    is enabled.
+
+                    **Changes**: New in Zulip 9.0 (feature level 253). Previously, there were
+                    only options to disable sending typing notifications.
+                  type: boolean
+                  example: true
                 fluid_layout_width:
                   description: |
                     Whether to use the [maximum available screen width](/help/enable-full-width-display)
@@ -10636,7 +10700,7 @@ paths:
 
                     - "recent_topics" - Recent conversations view
                     - "inbox" - Inbox view
-                    - "all_messages" - All messages view
+                    - "all_messages" - Combined feed view
 
                     **Changes**: New in Zulip 8.0 (feature level 219). Previously, this was
                     called `default_view`, which was new in Zulip 4.0 (feature level 42).
@@ -10981,6 +11045,8 @@ paths:
               dense_mode:
                 contentType: application/json
               starred_message_counts:
+                contentType: application/json
+              receives_typing_notifications:
                 contentType: application/json
               fluid_layout_width:
                 contentType: application/json
@@ -11857,7 +11923,7 @@ paths:
                               invited_as: 400,
                               invited_by_user_id: 9,
                               is_multiuse: true,
-                              link_url: "http://localhost:9991/join/6i4324pzbtyvmwv5nwyghoof/",
+                              link_url: "https://example.zulipchat.com/join/yddhtzk4jgl7rsmazc5fyyyy/",
                             },
                           ],
                       }
@@ -11891,46 +11957,9 @@ paths:
                   type: string
                   example: example@zulip.com, logan@zulip.com
                 invite_expires_in_minutes:
-                  description: |
-                    The number of minutes before the invitation will expire. If `null`, the
-                    invitation will never expire. If unspecified, the server will use a default
-                    value (based on the `INVITATION_LINK_VALIDITY_MINUTES` server setting, which
-                    defaults to 10) for when the invitation will expire.
-
-                    **Changes**: New in Zulip 6.0 (feature level 126). Previously, there was an
-                    `invite_expires_in_days` parameter, which specified the duration in days instead
-                    of minutes.
-                  type: integer
-                  nullable: true
-                  example: 14400
+                  $ref: "#/components/schemas/InviteExpirationParameter"
                 invite_as:
-                  description: |
-                    The [organization-level role](/api/roles-and-permissions) of the user that is
-                    created when the invitation is accepted.
-                    Possible values are:
-
-                    - 100 = Organization owner
-                    - 200 = Organization administrator
-                    - 300 = Organization moderator
-                    - 400 = Member
-                    - 600 = Guest
-
-                    Users can only send invitations for
-                    [roles with equal or stricter restrictions](/api/roles-and-permissions#permission-levels)
-                    as their own. For example, a moderator cannot invite someone to be an owner
-                    or administrator, but they can invite them to be a moderator or member.
-
-                    **Changes**: In Zulip 4.0 (feature level 61), added support for inviting
-                    users as moderators.
-                  type: integer
-                  enum:
-                    - 100
-                    - 200
-                    - 300
-                    - 400
-                    - 600
-                  default: 400
-                  example: 600
+                  $ref: "#/components/schemas/InviteRoleParameter"
                 stream_ids:
                   description: |
                     A list containing the [IDs of the streams](/api/get-stream-id) that the
@@ -12038,6 +12067,157 @@ paths:
                         description: |
                           An example JSON error response for when the user doesn't have permission
                           to subscribe other users to streams and `stream_ids` is not empty.
+  /invites/multiuse:
+    post:
+      operationId: create-invite-link
+      summary: Create a reusable invitation link
+      tags: ["invites"]
+      description: |
+        Create a [reusable invitation link](/help/invite-new-users#create-a-reusable-invitation-link)
+        which can be used to invite new users to the organization.
+
+        **Changes**: In Zulip 8.0 (feature level 209), added support for non-admin
+        users [with permission](/help/restrict-account-creation#change-who-can-send-invitations)
+        to use this endpoint. Previously, it was restricted to administrators only.
+
+        In Zulip 6.0 (feature level 126), the `invite_expires_in_days`
+        parameter was removed and replaced by `invite_expires_in_minutes`.
+
+        In Zulip 5.0 (feature level 117), added support for passing `null` as
+        the `invite_expires_in_days` parameter to request an invitation that never
+        expires.
+
+        In Zulip 5.0 (feature level 96), the `invite_expires_in_days` parameter was
+        added which specified the number of days before the invitation would expire.
+      requestBody:
+        required: false
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                invite_expires_in_minutes:
+                  $ref: "#/components/schemas/InviteExpirationParameter"
+                invite_as:
+                  $ref: "#/components/schemas/InviteRoleParameter"
+                stream_ids:
+                  description: |
+                    A list containing the [IDs of the streams](/api/get-stream-id) that the
+                    newly created user will be automatically subscribed to if the invitation
+                    is accepted. If unspecified, it will be set to empty list. If the list is
+                    empty, then the new user will not be subscribed to any streams.
+                  type: array
+                  items:
+                    type: integer
+                  default: []
+                  example: [1, 2]
+            encoding:
+              invite_expires_in_minutes:
+                contentType: application/json
+              stream_ids:
+                contentType: application/json
+      responses:
+        "200":
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
+                      ignored_parameters_unsupported: {}
+                      invite_link:
+                        type: string
+                        description: |
+                          The URL of the [reusable invitation link](/help/invite-new-users#create-a-reusable-invitation-link)
+                          that was created by this request.
+                    example:
+                      {
+                        "result": "success",
+                        "msg": "",
+                        "invite_link": "https://example.zulipchat.com/join/yddhtzk4jgl7rsmazc5fyyyy/",
+                      }
+        "400":
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - allOf:
+                      - $ref: "#/components/schemas/CodedError"
+                      - example:
+                          {
+                            "code": "BAD_REQUEST",
+                            "msg": "Insufficient permission",
+                            "result": "error",
+                          }
+                        description: |
+                          An example JSON error response for when the user doesn't have permission
+                          to send invitations.
+                  - allOf:
+                      - $ref: "#/components/schemas/CodedError"
+                      - example:
+                          {
+                            "code": "BAD_REQUEST",
+                            "msg": "Invalid stream ID 11. No invites were sent.",
+                            "result": "error",
+                          }
+                        description: |
+                          An example JSON error response for when any of the specified streams
+                          does not exist or the user does not have permission to access one of
+                          the targeted streams.
+                  - allOf:
+                      - $ref: "#/components/schemas/CodedError"
+                      - example:
+                          {
+                            "code": "BAD_REQUEST",
+                            "msg": "You do not have permission to subscribe other users to streams.",
+                            "result": "error",
+                          }
+                        description: |
+                          An example JSON error response for when the user doesn't have permission
+                          to subscribe other users to streams and `stream_ids` is not empty.
+  /invites/{invite_id}:
+    delete:
+      operationId: revoke-email-invite
+      summary: Revoke an email invitation
+      tags: ["invites"]
+      description: |
+        Revoke an [email invitation](/help/invite-new-users#send-email-invitations).
+
+        A user can only revoke [invitations that they can
+        manage](/help/invite-new-users#manage-pending-invitations).
+      parameters:
+        - name: invite_id
+          in: path
+          description: |
+            The ID of the email invitation to be revoked.
+          schema:
+            type: integer
+          example: 1
+          required: true
+      responses:
+        "200":
+          $ref: "#/components/responses/SimpleSuccess"
+        "400":
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - allOf:
+                      - $ref: "#/components/schemas/CodedError"
+                      - example:
+                          {
+                            "result": "error",
+                            "msg": "No such invitation",
+                            "code": "BAD_REQUEST",
+                          }
+                        description: |
+                          A typical failed JSON response for an invalid email invitation ID:
   /register:
     post:
       operationId: register-queue
@@ -12440,9 +12620,14 @@ paths:
                           Present if `onboarding_steps` is present in `fetch_event_types`.
 
                           An array of dictionaries, where each dictionary contains details about
-                          a single onboarding step that should be shown to new users.
+                          a single onboarding step that should be shown to the user.
 
-                          We expect that only official Zulip clients will interact with these data.
+                          We expect that only official Zulip clients will interact with this data.
+
+                          **Changes**: Before Zulip 8.0 (feature level 233), this array was named
+                          `hotspots`. Prior to this feature level, one-time notice onboarding
+                          steps were not supported, and the `type` field in these objects did not
+                          exist as all onboarding steps were implicitly hotspots.
                         items:
                           $ref: "#/components/schemas/OnboardingStep"
                       max_message_id:
@@ -12914,6 +13099,8 @@ paths:
                                 name: {}
                                 description: {}
                                 date_created: {}
+                                creator_id:
+                                  nullable: true
                                 invite_only: {}
                                 rendered_description: {}
                                 is_web_public: {}
@@ -13257,6 +13444,15 @@ paths:
                             description: |
                               Whether clients should display the [number of starred
                               messages](/help/star-a-message#display-the-number-of-starred-messages).
+                          receives_typing_notifications:
+                            type: boolean
+                            description: |
+                              Whether the user is configured to receive typing notifications from
+                              other users. The server will only deliver typing notifications events
+                              to users who for whom this is enabled.
+
+                              **Changes**: New in Zulip 9.0 (feature level 253). Previously, there were
+                              only options to disable sending typing notifications.
                           fluid_layout_width:
                             type: boolean
                             description: |
@@ -13332,7 +13528,7 @@ paths:
 
                               - "recent_topics" - Recent conversations view
                               - "inbox" - Inbox view
-                              - "all_messages" - All messages view
+                              - "all_messages" - Combined feed view
 
                               **Changes**: New in Zulip 8.0 (feature level 219). Previously, this was
                               called `default_view`, which was new in Zulip 4.0 (feature level 42).
@@ -14331,6 +14527,15 @@ paths:
                           client capability and access the `user_settings` object instead.
 
                           [capabilities]: /api/register-queue#parameter-client_capabilities
+                      receives_typing_notifications:
+                        type: boolean
+                        description: |
+                          Whether the user is configured to receive typing notifications from other
+                          users. The server will only deliver typing notifications events to users who
+                          for whom this is enabled.
+
+                          **Changes**: New in Zulip 9.0 (feature level 253). Previously, there were
+                          only options to disable sending typing notifications.
                       enter_sends:
                         deprecated: true
                         type: boolean
@@ -15166,7 +15371,10 @@ paths:
 
                           If `null`, there is no limit.
 
-                          **Changes**: New in Zulip 5.0 (feature level 72). Previously,
+                          **Changes**: Before Zulip 9.0 (feature level 251), this field
+                          was incorrectly measured in bytes, not MiB.
+
+                          New in Zulip 5.0 (feature level 72). Previously,
                           this was called `realm_upload_quota`.
                       realm_org_type:
                         type: integer
@@ -15559,6 +15767,15 @@ paths:
                             description: |
                               Whether clients should display the [number of starred
                               messages](/help/star-a-message#display-the-number-of-starred-messages).
+                          receives_typing_notifications:
+                            type: boolean
+                            description: |
+                              Whether the user is configured to receive typing notifications from
+                              other users. The server will only deliver typing notifications events
+                              to users who for whom this is enabled.
+
+                              **Changes**: New in Zulip 9.0 (feature level 253). Previously, there were
+                              only options to disable sending typing notifications.
                           fluid_layout_width:
                             type: boolean
                             description: |
@@ -15634,7 +15851,7 @@ paths:
 
                               - "recent_topics" - Recent conversations view
                               - "inbox" - Inbox view
-                              - "all_messages" - All messages view
+                              - "all_messages" - Combined feed view
 
                               **Changes**: New in Zulip 8.0 (feature level 219). Previously, this was
                               called `default_view`, which was new in Zulip 4.0 (feature level 42).
@@ -16644,6 +16861,19 @@ paths:
                     the `PATCH /settings/display` endpoint.
                   type: boolean
                   example: true
+                receives_typing_notifications:
+                  description: |
+                    Whether the user is configured to receive typing notifications from other users.
+                    The server will only deliver typing notifications events to users who for whom this
+                    is enabled.
+
+                    By default, this is set to true, enabling user to receive typing
+                    notifications from other users.
+
+                    **Changes**: New in Zulip 9.0 (feature level 253). Previously, there were only
+                    options to disable sending typing notifications.
+                  type: boolean
+                  example: true
                 fluid_layout_width:
                   description: |
                     Whether to use the [maximum available screen width](/help/enable-full-width-display)
@@ -16756,7 +16986,7 @@ paths:
 
                     - "recent_topics" - Recent conversations view
                     - "inbox" - Inbox view
-                    - "all_messages" - All messages view
+                    - "all_messages" - Combined feed view
 
                     **Changes**: New in Zulip 8.0 (feature level 219). Previously, this was
                     called `default_view`, which was new in Zulip 4.0 (feature level 42).
@@ -17199,6 +17429,8 @@ paths:
                 contentType: application/json
               starred_message_counts:
                 contentType: application/json
+              receives_typing_notifications:
+                contentType: application/json
               fluid_layout_width:
                 contentType: application/json
               high_contrast_mode:
@@ -17430,6 +17662,8 @@ paths:
                                 name: {}
                                 description: {}
                                 date_created: {}
+                                creator_id:
+                                  nullable: true
                                 invite_only: {}
                                 rendered_description: {}
                                 is_web_public: {}
@@ -17471,6 +17705,7 @@ paths:
                                 - name
                                 - description
                                 - date_created
+                                - creator_id
                                 - invite_only
                                 - rendered_description
                                 - is_web_public
@@ -17489,6 +17724,7 @@ paths:
                           [
                             {
                               "can_remove_subscribers_group": 10,
+                              "creator_id": null,
                               "date_created": 1691057093,
                               "description": "A private stream",
                               "first_message_id": 18,
@@ -17506,6 +17742,7 @@ paths:
                             },
                             {
                               "can_remove_subscribers_group": 9,
+                              "creator_id": 12,
                               "date_created": 1691057093,
                               "description": "A default public stream",
                               "first_message_id": 21,
@@ -17576,6 +17813,7 @@ paths:
                             "first_message_id": 1,
                             "history_public_to_subscribers": true,
                             "date_created": 1691057093,
+                            "creator_id": null,
                             "invite_only": false,
                             "is_announcement_only": false,
                             "is_web_public": false,
@@ -17993,7 +18231,11 @@ paths:
                   description: |
                     Type of the message being composed.
 
-                    **Changes**: In Zulip 8.0 (feature level 215), stopped supporting
+                    **Changes**: In Zulip 9.0 (feature level 248), `"channel"` was added as
+                    an additional value for this parameter to indicate a stream message is
+                    being composed.
+
+                    In Zulip 8.0 (feature level 215), stopped supporting
                     `"private"` as a valid value for this parameter.
 
                     In Zulip 7.0 (feature level 174), `"direct"` was added
@@ -18007,6 +18249,7 @@ paths:
                   enum:
                     - direct
                     - stream
+                    - channel
                   default: direct
                   example: direct
                 op:
@@ -18078,11 +18321,12 @@ paths:
                   - example:
                       {
                         "code": "BAD_REQUEST",
-                        "msg": "Cannot send to multiple streams",
+                        "msg": "Missing stream_id",
                         "result": "error",
                       }
                     description: |
-                      An example JSON error response for when user sends to multiple streams:
+                      An example JSON error response when the user composes a stream message
+                      and `stream_id` is not specified:
   /user_groups/create:
     post:
       operationId: create-user-group
@@ -18894,6 +19138,8 @@ components:
             name: {}
             description: {}
             date_created: {}
+            creator_id:
+              nullable: true
             invite_only: {}
             rendered_description: {}
             is_web_public: {}
@@ -18925,6 +19171,7 @@ components:
             - name
             - description
             - date_created
+            - creator_id
             - invite_only
             - rendered_description
             - is_web_public
@@ -18944,6 +19191,8 @@ components:
             name: {}
             description: {}
             date_created: {}
+            creator_id:
+              nullable: true
             invite_only: {}
             rendered_description: {}
             is_web_public: {}
@@ -18960,6 +19209,7 @@ components:
             - name
             - description
             - date_created
+            - creator_id
             - invite_only
             - rendered_description
             - is_web_public
@@ -18994,6 +19244,19 @@ components:
             The UNIX timestamp for when the stream was created, in UTC seconds.
 
             **Changes**: New in Zulip 4.0 (feature level 30).
+        creator_id:
+          type: integer
+          nullable: true
+          description: |
+            The ID of the user who created this stream.
+
+            A `null` value means the stream has no recorded creator, which is often
+            because the stream is very old, or because it was created via a data
+            import tool or [management command][management-commands].
+
+            **Changes**: New in Zulip 9.0 (feature level 254).
+
+            [management-commands]: https://zulip.readthedocs.io/en/latest/production/management-commands.html
         invite_only:
           type: boolean
           description: |
@@ -19326,39 +19589,45 @@ components:
       additionalProperties: false
       description: |
         Dictionary containing details of a single onboarding step.
-
-        **Changes**: Before Zulip 8.0 (feature level 233), this was
-        named as `Hotspot`. One-time notice wasn't available earlier.
       properties:
         type:
           type: string
           description: |
             The type of the onboarding step. Valid values are either
-            'hotspot' or 'one_time_notice'.
+            `"hotspot"` or `"one_time_notice"`.
 
             **Changes**: New in Zulip 8.0 (feature level 233).
         name:
           type: string
           description: |
-            The name of the hotspot.
+            The name of the onboarding step.
         title:
           type: string
           description: |
-            The title of the hotspot, as will be displayed to the user.
+            The title of the onboarding step, as displayed to the user.
+
+            Only present for onboarding steps with type `"hotspot"`.
         description:
           type: string
           description: |
-            The description of the hotspot, as will be displayed to the
+            The description of the onboarding step, as displayed to the
             user.
+
+            Only present for onboarding steps with type `"hotspot"`.
         delay:
           type: number
           description: |
-            The delay after which the user should be shown the hotspot.
+            The delay, in seconds, after which the user should be shown
+            the onboarding step.
+
+            Only present for onboarding steps with type `"hotspot"`.
         has_trigger:
           type: boolean
           description: |
-            The has_trigger is used to identify if the hotspot will activate
-            only when some specific event occurs.
+            Identifies if the onboarding step will activate only when some
+            specific event occurs.
+
+            Only present for onboarding steps with type `"hotspot"`.
 
             **Changes**: New in Zulip 8.0 (feature level 230).
     RealmAuthenticationMethod:
@@ -19588,7 +19857,13 @@ components:
         id:
           type: integer
           description: |
-            The unique ID of the invitation.
+            The ID of the invitation.
+
+            Note that email invitations and reusable invitation links are stored
+            in different database tables on the server, so each ID is guaranteed
+            to be unique in combination with the boolean value of `is_multiuse`,
+            e.g. there can only be one invitation with `id: 1` and `is_multiuse:
+            true`.
         invited_by_user_id:
           type: integer
           description: |
@@ -19618,6 +19893,13 @@ components:
           description: |
             The [organization-level role](/api/roles-and-permissions) of the user that
             is created when the invitation is accepted.
+            Possible values are:
+
+            - 100 = Organization owner
+            - 200 = Organization administrator
+            - 300 = Organization moderator
+            - 400 = Member
+            - 600 = Guest
         email:
           type: string
           description: |
@@ -19633,6 +19915,47 @@ components:
           description: |
             A boolean specifying whether the [invitation](/help/invite-new-users) is a
             reusable invitation link or an email invitation.
+    InviteExpirationParameter:
+      description: |
+        The number of minutes before the invitation will expire. If `null`, the
+        invitation will never expire. If unspecified, the server will use a default
+        value (based on the `INVITATION_LINK_VALIDITY_MINUTES` server setting, which
+        defaults to 14400, i.e. 10 days) for when the invitation will expire.
+
+        **Changes**: New in Zulip 6.0 (feature level 126). Previously, there was an
+        `invite_expires_in_days` parameter, which specified the duration in days instead
+        of minutes.
+      type: integer
+      nullable: true
+      example: 14400
+    InviteRoleParameter:
+      description: |
+        The [organization-level role](/api/roles-and-permissions) of the user that is
+        created when the invitation is accepted.
+        Possible values are:
+
+        - 100 = Organization owner
+        - 200 = Organization administrator
+        - 300 = Organization moderator
+        - 400 = Member
+        - 600 = Guest
+
+        Users can only create invitation links for
+        [roles with equal or stricter restrictions](/api/roles-and-permissions#permission-levels)
+        as their own. For example, a moderator cannot invite someone to be an owner
+        or administrator, but they can invite them to be a moderator or member.
+
+        **Changes**: In Zulip 4.0 (feature level 61), added support for inviting
+        users as moderators.
+      type: integer
+      enum:
+        - 100
+        - 200
+        - 300
+        - 400
+        - 600
+      default: 400
+      example: 600
     Subscriptions:
       type: object
       additionalProperties: false
@@ -19672,6 +19995,19 @@ components:
             The UNIX timestamp for when the stream was created, in UTC seconds.
 
             **Changes**: New in Zulip 4.0 (feature level 30).
+        creator_id:
+          type: integer
+          nullable: true
+          description: |
+            The ID of the user who created this stream.
+
+            A `null` value means the stream has no recorded creator, which is often
+            because the stream is very old, or because it was created via a data
+            import tool or [management command][management-commands].
+
+            **Changes**: New in Zulip 9.0 (feature level 254).
+
+            [management-commands]: https://zulip.readthedocs.io/en/latest/production/management-commands.html
         invite_only:
           type: boolean
           description: |
@@ -19751,8 +20087,8 @@ components:
           type: boolean
           description: |
             Whether the user has muted the stream. Muted streams do
-            not count towards your total unread count and do not show up in
-            `All messages` view (previously known as `Home` view).
+            not count towards your total unread count and do not show
+            up in the `Combined feed` view (previously known as `All messages`).
 
             **Changes**: Prior to Zulip 2.1.0, this feature was
             represented by the more confusingly named `in_home_view` (with the
@@ -21219,9 +21555,16 @@ components:
         See the `all_public_streams` parameter for how to process all
         public stream messages in an organization.
 
-        Defaults to `[]`.
+        **Changes**: In Zulip 9.0 (feature level 250), narrows gained support
+        for two new filters related to stream messages: `channel` and `channels`;
+        which are aliases for (and return the same results as) the `stream` and
+        `streams` filters respectively.
 
-        **Changes**: In Zulip 7.0 (feature level 177), narrows gained support
+        In Zulip 9.0 (feature level 249), narrows gained support for a new
+        filter, `has:reaction`, which returns messages with at least one
+        [emoji reaction](/help/emoji-reactions).
+
+        In Zulip 7.0 (feature level 177), narrows gained support
         for three new filters related to direct messages: `is:dm`, `dm` and
         `dm-including`; replacing and deprecating `is:private`, `pm-with` and
         `group-pm-with` respectively.

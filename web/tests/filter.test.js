@@ -17,6 +17,9 @@ const stream_data = zrequire("stream_data");
 const people = zrequire("people");
 const {Filter} = zrequire("../src/filter");
 
+const stream_message = "stream";
+const direct_message = "private";
+
 const me = {
     email: "me@example.com",
     user_id: 30,
@@ -80,21 +83,50 @@ function test(label, f) {
 
 test("basics", () => {
     let terms = [
-        {operator: "stream", operand: "foo"},
-        {operator: "stream", operand: "exclude_stream", negated: true},
+        {operator: "channel", operand: "foo"},
+        {operator: "channel", operand: "exclude_stream", negated: true},
         {operator: "topic", operand: "bar"},
     ];
     let filter = new Filter(terms);
 
     assert_same_terms(filter.terms(), terms);
-    assert.deepEqual(filter.operands("stream"), ["foo"]);
+    assert.deepEqual(filter.operands("channel"), ["foo"]);
 
-    assert.ok(filter.has_operator("stream"));
+    assert.ok(filter.has_operator("channel"));
     assert.ok(!filter.has_operator("search"));
 
-    assert.ok(filter.has_operand("stream", "foo"));
-    assert.ok(!filter.has_operand("stream", "exclude_stream"));
-    assert.ok(!filter.has_operand("stream", "nada"));
+    assert.ok(filter.has_operand("channel", "foo"));
+    assert.ok(!filter.has_operand("channel", "exclude_stream"));
+    assert.ok(!filter.has_operand("channel", "nada"));
+
+    assert.ok(!filter.is_keyword_search());
+    assert.ok(!filter.can_mark_messages_read());
+    assert.ok(filter.supports_collapsing_recipients());
+    assert.ok(!filter.contains_only_private_messages());
+    assert.ok(!filter.allow_use_first_unread_when_narrowing());
+    assert.ok(filter.includes_full_stream_history());
+    assert.ok(filter.can_apply_locally());
+    assert.ok(!filter.is_personal_filter());
+    assert.ok(!filter.is_conversation_view());
+
+    assert.ok(filter.can_bucket_by("channel"));
+    assert.ok(filter.can_bucket_by("channel", "topic"));
+
+    terms = [
+        {operator: "stream", operand: "foo"},
+        {operator: "stream", operand: "exclude_stream", negated: true},
+        {operator: "topic", operand: "bar"},
+    ];
+    filter = new Filter(terms);
+
+    assert.deepEqual(filter.operands("channel"), ["foo"]);
+
+    assert.ok(filter.has_operator("channel"));
+    assert.ok(!filter.has_operator("search"));
+
+    assert.ok(filter.has_operand("channel", "foo"));
+    assert.ok(!filter.has_operand("channel", "exclude_stream"));
+    assert.ok(!filter.has_operand("channel", "nada"));
 
     assert.ok(!filter.is_keyword_search());
     assert.ok(!filter.can_mark_messages_read());
@@ -120,8 +152,8 @@ test("basics", () => {
     assert.ok(!filter.allow_use_first_unread_when_narrowing());
     assert.ok(!filter.can_apply_locally());
     assert.ok(!filter.is_personal_filter());
-    assert.ok(filter.can_bucket_by("stream"));
-    assert.ok(filter.can_bucket_by("stream", "topic"));
+    assert.ok(filter.can_bucket_by("channel"));
+    assert.ok(filter.can_bucket_by("channel", "topic"));
     assert.ok(!filter.is_conversation_view());
 
     terms = [
@@ -138,8 +170,8 @@ test("basics", () => {
     assert.ok(!filter.allow_use_first_unread_when_narrowing());
     assert.ok(filter.can_apply_locally());
     assert.ok(!filter.is_personal_filter());
-    assert.ok(filter.can_bucket_by("stream"));
-    assert.ok(filter.can_bucket_by("stream", "topic"));
+    assert.ok(filter.can_bucket_by("channel"));
+    assert.ok(filter.can_bucket_by("channel", "topic"));
     assert.ok(!filter.is_conversation_view());
 
     // If our only stream operator is negated, then for all intents and purposes,
@@ -148,7 +180,7 @@ test("basics", () => {
     terms = [{operator: "stream", operand: "exclude", negated: true}];
     filter = new Filter(terms);
     assert.ok(!filter.contains_only_private_messages());
-    assert.ok(!filter.has_operator("stream"));
+    assert.ok(!filter.has_operator("channel"));
     assert.ok(!filter.can_mark_messages_read());
     assert.ok(filter.supports_collapsing_recipients());
     assert.ok(!filter.is_personal_filter());
@@ -182,10 +214,10 @@ test("basics", () => {
     terms = [{operator: "streams", operand: "public", negated: true}];
     filter = new Filter(terms);
     assert.ok(!filter.contains_only_private_messages());
-    assert.ok(!filter.has_operator("streams"));
+    assert.ok(!filter.has_operator("channels"));
     assert.ok(!filter.can_mark_messages_read());
     assert.ok(filter.supports_collapsing_recipients());
-    assert.ok(filter.has_negated_operand("streams", "public"));
+    assert.ok(filter.has_negated_operand("channels", "public"));
     assert.ok(!filter.can_apply_locally());
     assert.ok(!filter.is_personal_filter());
     assert.ok(!filter.is_conversation_view());
@@ -193,10 +225,22 @@ test("basics", () => {
     terms = [{operator: "streams", operand: "public"}];
     filter = new Filter(terms);
     assert.ok(!filter.contains_only_private_messages());
-    assert.ok(filter.has_operator("streams"));
+    assert.ok(filter.has_operator("channels"));
     assert.ok(!filter.can_mark_messages_read());
     assert.ok(filter.supports_collapsing_recipients());
-    assert.ok(!filter.has_negated_operand("streams", "public"));
+    assert.ok(!filter.has_negated_operand("channels", "public"));
+    assert.ok(!filter.can_apply_locally());
+    assert.ok(filter.includes_full_stream_history());
+    assert.ok(!filter.is_personal_filter());
+    assert.ok(!filter.is_conversation_view());
+
+    terms = [{operator: "channels", operand: "public"}];
+    filter = new Filter(terms);
+    assert.ok(!filter.contains_only_private_messages());
+    assert.ok(filter.has_operator("channels"));
+    assert.ok(!filter.can_mark_messages_read());
+    assert.ok(filter.supports_collapsing_recipients());
+    assert.ok(!filter.has_negated_operand("channels", "public"));
     assert.ok(!filter.can_apply_locally());
     assert.ok(filter.includes_full_stream_history());
     assert.ok(!filter.is_personal_filter());
@@ -316,6 +360,22 @@ test("basics", () => {
 
     terms = [
         {operator: "stream", operand: "foo"},
+        {operator: "topic", operand: "bar"},
+    ];
+    filter = new Filter(terms);
+
+    assert.ok(!filter.is_keyword_search());
+    assert.ok(filter.can_mark_messages_read());
+    assert.ok(filter.supports_collapsing_recipients());
+    assert.ok(!filter.contains_only_private_messages());
+    assert.ok(filter.allow_use_first_unread_when_narrowing());
+    assert.ok(filter.includes_full_stream_history());
+    assert.ok(filter.can_apply_locally());
+    assert.ok(!filter.is_personal_filter());
+    assert.ok(filter.is_conversation_view());
+
+    terms = [
+        {operator: "channel", operand: "foo"},
         {operator: "topic", operand: "bar"},
     ];
     filter = new Filter(terms);
@@ -554,7 +614,7 @@ test("filter_with_new_params_topic", () => {
         operand: "new topic",
     });
 
-    assert.deepEqual(new_filter.operands("stream"), ["foo"]);
+    assert.deepEqual(new_filter.operands("channel"), ["foo"]);
     assert.deepEqual(new_filter.operands("topic"), ["new topic"]);
 });
 
@@ -574,7 +634,7 @@ test("filter_with_new_params_stream", () => {
         operand: "new stream",
     });
 
-    assert.deepEqual(new_filter.operands("stream"), ["new stream"]);
+    assert.deepEqual(new_filter.operands("channel"), ["new stream"]);
     assert.deepEqual(new_filter.operands("topic"), ["old topic"]);
 });
 
@@ -586,8 +646,8 @@ test("new_style_terms", () => {
     const terms = [term];
     const filter = new Filter(terms);
 
-    assert.deepEqual(filter.operands("stream"), ["foo"]);
-    assert.ok(filter.can_bucket_by("stream"));
+    assert.deepEqual(filter.operands("channel"), ["foo"]);
+    assert.ok(filter.can_bucket_by("channel"));
 });
 
 test("public_terms", ({override}) => {
@@ -597,13 +657,17 @@ test("public_terms", ({override}) => {
         {operator: "in", operand: "all"},
         {operator: "topic", operand: "bar"},
     ];
-
     let filter = new Filter(terms);
+    const expected_terms = [
+        {operator: "channel", operand: "some_stream"},
+        {operator: "in", operand: "all"},
+        {operator: "topic", operand: "bar"},
+    ];
     override(page_params, "narrow_stream", undefined);
-    assert_same_terms(filter.public_terms(), terms);
-    assert.ok(filter.can_bucket_by("stream"));
+    assert_same_terms(filter.public_terms(), expected_terms);
+    assert.ok(filter.can_bucket_by("channel"));
 
-    terms = [{operator: "stream", operand: "default"}];
+    terms = [{operator: "channel", operand: "default"}];
     filter = new Filter(terms);
     override(page_params, "narrow_stream", "default");
     assert_same_terms(filter.public_terms(), []);
@@ -630,13 +694,17 @@ test("redundancies", () => {
 
 test("canonicalization", () => {
     assert.equal(Filter.canonicalize_operator("Is"), "is");
-    assert.equal(Filter.canonicalize_operator("Stream"), "stream");
+    assert.equal(Filter.canonicalize_operator("Stream"), "channel");
     assert.equal(Filter.canonicalize_operator("Subject"), "topic");
     assert.equal(Filter.canonicalize_operator("FROM"), "sender");
 
     let term;
     term = Filter.canonicalize_term({operator: "Stream", operand: "Denmark"});
-    assert.equal(term.operator, "stream");
+    assert.equal(term.operator, "channel");
+    assert.equal(term.operand, "Denmark");
+
+    term = Filter.canonicalize_term({operator: "Channel", operand: "Denmark"});
+    assert.equal(term.operator, "channel");
     assert.equal(term.operand, "Denmark");
 
     term = Filter.canonicalize_term({operator: "sender", operand: "me"});
@@ -698,11 +766,11 @@ test("predicate_basics", () => {
         ["topic", "Bar"],
     ]);
 
-    assert.ok(predicate({type: "stream", stream_id, topic: "bar"}));
-    assert.ok(!predicate({type: "stream", stream_id, topic: "whatever"}));
+    assert.ok(predicate({type: stream_message, stream_id, topic: "bar"}));
+    assert.ok(!predicate({type: stream_message, stream_id, topic: "whatever"}));
     // 9999999 doesn't exist, testing no match
-    assert.ok(!predicate({type: "stream", stream_id: 9999999}));
-    assert.ok(!predicate({type: "private"}));
+    assert.ok(!predicate({type: stream_message, stream_id: 9999999}));
+    assert.ok(!predicate({type: direct_message}));
 
     // For old streams that we are no longer subscribed to, we may not have
     // a sub, but these should still match by stream name.
@@ -716,19 +784,19 @@ test("predicate_basics", () => {
         ["stream", "old-Stream"],
         ["topic", "Bar"],
     ]);
-    assert.ok(predicate({type: "stream", stream_id: 5, topic: "bar"}));
+    assert.ok(predicate({type: stream_message, stream_id: 5, topic: "bar"}));
     // 99999 doesn't exist, testing no match
-    assert.ok(!predicate({type: "stream", stream_id: 99999, topic: "whatever"}));
+    assert.ok(!predicate({type: stream_message, stream_id: 99999, topic: "whatever"}));
 
     predicate = get_predicate([["search", "emoji"]]);
     assert.ok(predicate({}));
 
     predicate = get_predicate([["topic", "Bar"]]);
-    assert.ok(!predicate({type: "private"}));
+    assert.ok(!predicate({type: direct_message}));
 
     predicate = get_predicate([["is", "dm"]]);
-    assert.ok(predicate({type: "private"}));
-    assert.ok(!predicate({type: "stream"}));
+    assert.ok(predicate({type: direct_message}));
+    assert.ok(!predicate({type: stream_message}));
 
     predicate = get_predicate([["streams", "public"]]);
     assert.ok(predicate({}));
@@ -755,14 +823,14 @@ test("predicate_basics", () => {
 
     predicate = get_predicate([["is", "resolved"]]);
     const resolved_topic_name = resolved_topic.resolve_name("foo");
-    assert.ok(predicate({type: "stream", topic: resolved_topic_name}));
+    assert.ok(predicate({type: stream_message, topic: resolved_topic_name}));
     assert.ok(!predicate({topic: resolved_topic_name}));
-    assert.ok(!predicate({type: "stream", topic: "foo"}));
+    assert.ok(!predicate({type: stream_message, topic: "foo"}));
 
     const unknown_stream_id = 999;
     predicate = get_predicate([["in", "home"]]);
     assert.ok(!predicate({stream_id: unknown_stream_id, stream: "unknown"}));
-    assert.ok(predicate({type: "private"}));
+    assert.ok(predicate({type: direct_message}));
 
     make_sub("kiosk", 1234);
     with_overrides(({override}) => {
@@ -781,8 +849,8 @@ test("predicate_basics", () => {
         ["id", 5],
         ["topic", "lunch"],
     ]);
-    assert.ok(predicate({type: "stream", id: 5, topic: "lunch"}));
-    assert.ok(!predicate({type: "stream", id: 5, topic: "dinner"}));
+    assert.ok(predicate({type: stream_message, id: 5, topic: "lunch"}));
+    assert.ok(!predicate({type: stream_message, id: 5, topic: "dinner"}));
 
     predicate = get_predicate([["sender", "Joe@example.com"]]);
     assert.ok(predicate({sender_id: joe.user_id}));
@@ -791,28 +859,28 @@ test("predicate_basics", () => {
     predicate = get_predicate([["dm", "Joe@example.com"]]);
     assert.ok(
         predicate({
-            type: "private",
+            type: direct_message,
             display_recipient: [{id: joe.user_id}],
         }),
     );
     assert.ok(
         !predicate({
-            type: "private",
+            type: direct_message,
             display_recipient: [{id: steve.user_id}],
         }),
     );
     assert.ok(
         !predicate({
-            type: "private",
+            type: direct_message,
             display_recipient: [{id: 999999}],
         }),
     );
-    assert.ok(!predicate({type: "stream"}));
+    assert.ok(!predicate({type: stream_message}));
 
     predicate = get_predicate([["dm", "Joe@example.com,steve@foo.com"]]);
     assert.ok(
         predicate({
-            type: "private",
+            type: direct_message,
             display_recipient: [{id: joe.user_id}, {id: steve.user_id}],
         }),
     );
@@ -821,7 +889,7 @@ test("predicate_basics", () => {
     predicate = get_predicate([["dm", "Joe@example.com,steve@foo.com,me@example.com"]]);
     assert.ok(
         predicate({
-            type: "private",
+            type: direct_message,
             display_recipient: [{id: joe.user_id}, {id: steve.user_id}],
         }),
     );
@@ -829,7 +897,7 @@ test("predicate_basics", () => {
     predicate = get_predicate([["dm", "nobody@example.com"]]);
     assert.ok(
         !predicate({
-            type: "private",
+            type: direct_message,
             display_recipient: [{id: joe.user_id}],
         }),
     );
@@ -837,7 +905,7 @@ test("predicate_basics", () => {
     predicate = get_predicate([["dm-including", "nobody@example.com"]]);
     assert.ok(
         !predicate({
-            type: "private",
+            type: direct_message,
             display_recipient: [{id: joe.user_id}, {id: me.user_id}],
         }),
     );
@@ -845,23 +913,23 @@ test("predicate_basics", () => {
     predicate = get_predicate([["dm-including", "Joe@example.com"]]);
     assert.ok(
         predicate({
-            type: "private",
+            type: direct_message,
             display_recipient: [{id: joe.user_id}, {id: steve.user_id}, {id: me.user_id}],
         }),
     );
     assert.ok(
         predicate({
-            type: "private",
+            type: direct_message,
             display_recipient: [{id: joe.user_id}, {id: me.user_id}],
         }),
     );
     assert.ok(
         !predicate({
-            type: "private",
+            type: direct_message,
             display_recipient: [{id: steve.user_id}, {id: me.user_id}],
         }),
     );
-    assert.ok(!predicate({type: "stream"}));
+    assert.ok(!predicate({type: stream_message}));
 
     const img_msg = {
         content:
@@ -933,8 +1001,8 @@ test("negated_predicates", () => {
 
     narrow = [{operator: "stream", operand: "social", negated: true}];
     predicate = new Filter(narrow).predicate();
-    assert.ok(predicate({type: "stream", stream_id: 999999}));
-    assert.ok(!predicate({type: "stream", stream_id: social_stream_id}));
+    assert.ok(predicate({type: stream_message, stream_id: 999999}));
+    assert.ok(!predicate({type: stream_message, stream_id: social_stream_id}));
 
     narrow = [{operator: "streams", operand: "public", negated: true}];
     predicate = new Filter(narrow).predicate();
@@ -948,18 +1016,18 @@ function test_mit_exceptions() {
         ["stream", "Foo"],
         ["topic", "personal"],
     ]);
-    assert.ok(predicate({type: "stream", stream_id: foo_stream_id, topic: "personal"}));
-    assert.ok(predicate({type: "stream", stream_id: foo_stream_id, topic: ""}));
+    assert.ok(predicate({type: stream_message, stream_id: foo_stream_id, topic: "personal"}));
+    assert.ok(predicate({type: stream_message, stream_id: foo_stream_id, topic: ""}));
     // 9999 doesn't correspond to any stream
-    assert.ok(!predicate({type: "stream", stream_id: 9999}));
-    assert.ok(!predicate({type: "stream", stream_id: foo_stream_id, topic: "whatever"}));
-    assert.ok(!predicate({type: "private"}));
+    assert.ok(!predicate({type: stream_message, stream_id: 9999}));
+    assert.ok(!predicate({type: stream_message, stream_id: foo_stream_id, topic: "whatever"}));
+    assert.ok(!predicate({type: direct_message}));
 
     predicate = get_predicate([
         ["stream", "Foo"],
         ["topic", "bar"],
     ]);
-    assert.ok(predicate({type: "stream", stream_id: foo_stream_id, topic: "bar.d"}));
+    assert.ok(predicate({type: stream_message, stream_id: foo_stream_id, topic: "bar.d"}));
 
     // Try to get the MIT regex to explode for an empty stream.
     let terms = [
@@ -967,7 +1035,7 @@ function test_mit_exceptions() {
         {operator: "topic", operand: "bar"},
     ];
     predicate = new Filter(terms).predicate();
-    assert.ok(!predicate({type: "stream", stream_id: foo_stream_id, topic: "bar"}));
+    assert.ok(!predicate({type: stream_message, stream_id: foo_stream_id, topic: "bar"}));
 
     // Try to get the MIT regex to explode for an empty topic.
     terms = [
@@ -975,7 +1043,7 @@ function test_mit_exceptions() {
         {operator: "topic", operand: ""},
     ];
     predicate = new Filter(terms).predicate();
-    assert.ok(!predicate({type: "stream", stream_id: foo_stream_id, topic: "bar"}));
+    assert.ok(!predicate({type: stream_message, stream_id: foo_stream_id, topic: "bar"}));
 }
 
 test("mit_exceptions", ({override}) => {
@@ -1012,7 +1080,7 @@ test("predicate_edge_cases", () => {
     const filter = new Filter(terms);
     filter.predicate();
     predicate = filter.predicate(); // get cached version
-    assert.ok(predicate({type: "stream", stream_id, topic: "Mars"}));
+    assert.ok(predicate({type: stream_message, stream_id, topic: "Mars"}));
 });
 
 test("parse", () => {
@@ -1024,9 +1092,17 @@ test("parse", () => {
         assert_same_terms(result, terms);
     }
 
+    string = "channel:Foo topic:Bar yo";
+    terms = [
+        {operator: "channel", operand: "Foo"},
+        {operator: "topic", operand: "Bar"},
+        {operator: "search", operand: "yo"},
+    ];
+    _test();
+
     string = "stream:Foo topic:Bar yo";
     terms = [
-        {operator: "stream", operand: "Foo"},
+        {operator: "channel", operand: "Foo"},
         {operator: "topic", operand: "Bar"},
         {operator: "search", operand: "yo"},
     ];
@@ -1041,23 +1117,23 @@ test("parse", () => {
     _test();
 
     string = "stream:With+Space";
-    terms = [{operator: "stream", operand: "With Space"}];
+    terms = [{operator: "channel", operand: "With Space"}];
     _test();
 
     string = 'stream:"with quoted space" topic:and separate';
     terms = [
-        {operator: "stream", operand: "with quoted space"},
+        {operator: "channel", operand: "with quoted space"},
         {operator: "topic", operand: "and"},
         {operator: "search", operand: "separate"},
     ];
     _test();
 
     string = 'stream:"unclosed quote';
-    terms = [{operator: "stream", operand: "unclosed quote"}];
+    terms = [{operator: "channel", operand: "unclosed quote"}];
     _test();
 
     string = 'stream:""';
-    terms = [{operator: "stream", operand: ""}];
+    terms = [{operator: "channel", operand: ""}];
     _test();
 
     string = "https://www.google.com";
@@ -1066,15 +1142,15 @@ test("parse", () => {
 
     string = "stream:foo -stream:exclude";
     terms = [
-        {operator: "stream", operand: "foo"},
-        {operator: "stream", operand: "exclude", negated: true},
+        {operator: "channel", operand: "foo"},
+        {operator: "channel", operand: "exclude", negated: true},
     ];
     _test();
 
     string = "text stream:foo more text";
     terms = [
         {operator: "search", operand: "text"},
-        {operator: "stream", operand: "foo"},
+        {operator: "channel", operand: "foo"},
         {operator: "search", operand: "more text"},
     ];
     _test();
@@ -1097,7 +1173,7 @@ test("parse", () => {
 
     string = "stream:foo :emoji: are cool";
     terms = [
-        {operator: "stream", operand: "foo"},
+        {operator: "channel", operand: "foo"},
         {operator: "search", operand: ":emoji: are cool"},
     ];
     _test();
@@ -1105,7 +1181,7 @@ test("parse", () => {
     string = ":stream: stream:foo :emoji: are cool";
     terms = [
         {operator: "search", operand: ":stream:"},
-        {operator: "stream", operand: "foo"},
+        {operator: "channel", operand: "foo"},
         {operator: "search", operand: ":emoji: are cool"},
     ];
     _test();
@@ -1113,7 +1189,7 @@ test("parse", () => {
     string = ":stream: stream:foo -:emoji: are cool";
     terms = [
         {operator: "search", operand: ":stream:"},
-        {operator: "stream", operand: "foo"},
+        {operator: "channel", operand: "foo"},
         {operator: "search", operand: "-:emoji: are cool"},
     ];
     _test();
@@ -1124,7 +1200,7 @@ test("parse", () => {
 
     string = 'stream: separated topic: "with space"';
     terms = [
-        {operator: "stream", operand: "separated"},
+        {operator: "channel", operand: "separated"},
         {operator: "topic", operand: "with space"},
     ];
     _test();
@@ -1135,7 +1211,7 @@ test("unparse", () => {
     let terms;
 
     terms = [
-        {operator: "stream", operand: "Foo"},
+        {operator: "channel", operand: "Foo"},
         {operator: "topic", operand: "Bar", negated: true},
         {operator: "search", operand: "yo"},
     ];
@@ -1284,15 +1360,15 @@ test("describe", ({mock_template}) => {
     assert.equal(Filter.search_description_as_html(narrow), string);
 
     narrow = [];
-    string = "all messages";
+    string = "combined feed";
     assert.equal(Filter.search_description_as_html(narrow), string);
 });
 
 test("can_bucket_by", () => {
     let terms = [{operator: "stream", operand: "My stream"}];
     let filter = new Filter(terms);
-    assert.equal(filter.can_bucket_by("stream"), true);
-    assert.equal(filter.can_bucket_by("stream", "topic"), false);
+    assert.equal(filter.can_bucket_by("channel"), true);
+    assert.equal(filter.can_bucket_by("channel", "topic"), false);
     assert.equal(filter.can_bucket_by("dm"), false);
 
     terms = [
@@ -1301,8 +1377,8 @@ test("can_bucket_by", () => {
         {operator: "stream", operand: "My stream"},
     ];
     filter = new Filter(terms);
-    assert.equal(filter.can_bucket_by("stream"), true);
-    assert.equal(filter.can_bucket_by("stream", "topic"), true);
+    assert.equal(filter.can_bucket_by("channel"), true);
+    assert.equal(filter.can_bucket_by("channel", "topic"), true);
     assert.equal(filter.can_bucket_by("dm"), false);
 
     terms = [
@@ -1310,20 +1386,20 @@ test("can_bucket_by", () => {
         {operator: "topic", operand: "My topic"},
     ];
     filter = new Filter(terms);
-    assert.equal(filter.can_bucket_by("stream"), false);
-    assert.equal(filter.can_bucket_by("stream", "topic"), false);
+    assert.equal(filter.can_bucket_by("channel"), false);
+    assert.equal(filter.can_bucket_by("channel", "topic"), false);
     assert.equal(filter.can_bucket_by("dm"), false);
 
     terms = [{operator: "dm", operand: "foo@example.com", negated: true}];
     filter = new Filter(terms);
-    assert.equal(filter.can_bucket_by("stream"), false);
-    assert.equal(filter.can_bucket_by("stream", "topic"), false);
+    assert.equal(filter.can_bucket_by("channel"), false);
+    assert.equal(filter.can_bucket_by("channel", "topic"), false);
     assert.equal(filter.can_bucket_by("dm"), false);
 
     terms = [{operator: "dm", operand: "foo@example.com,bar@example.com"}];
     filter = new Filter(terms);
-    assert.equal(filter.can_bucket_by("stream"), false);
-    assert.equal(filter.can_bucket_by("stream", "topic"), false);
+    assert.equal(filter.can_bucket_by("channel"), false);
+    assert.equal(filter.can_bucket_by("channel", "topic"), false);
     assert.equal(filter.can_bucket_by("dm"), true);
     assert.equal(filter.can_bucket_by("is-mentioned"), false);
     assert.equal(filter.can_bucket_by("is-dm"), false);
@@ -1358,8 +1434,8 @@ test("can_bucket_by", () => {
 
     terms = [{operator: "is", operand: "resolved"}];
     filter = new Filter(terms);
-    assert.equal(filter.can_bucket_by("stream", "topic"), false);
-    assert.equal(filter.can_bucket_by("stream"), false);
+    assert.equal(filter.can_bucket_by("channel", "topic"), false);
+    assert.equal(filter.can_bucket_by("channel"), false);
     assert.equal(filter.can_bucket_by("dm"), false);
     assert.equal(filter.can_bucket_by("is-mentioned"), false);
     assert.equal(filter.can_bucket_by("is-dm"), false);
@@ -1378,8 +1454,8 @@ test("term_type", () => {
         };
     }
 
-    assert_term_type(term("streams", "public"), "streams-public");
-    assert_term_type(term("stream", "whatever"), "stream");
+    assert_term_type(term("channels", "public"), "channels-public");
+    assert_term_type(term("channel", "whatever"), "channel");
     assert_term_type(term("dm", "whomever"), "dm");
     assert_term_type(term("dm", "whomever", true), "not-dm");
     assert_term_type(term("is", "dm"), "is-dm");
@@ -1392,27 +1468,27 @@ test("term_type", () => {
         assert.deepEqual(sorted_terms, expected);
     }
 
-    assert_term_sort(["topic", "stream", "sender"], ["stream", "topic", "sender"]);
+    assert_term_sort(["topic", "channel", "sender"], ["channel", "topic", "sender"]);
 
     assert_term_sort(
         ["has-link", "near", "is-unread", "dm"],
         ["dm", "near", "is-unread", "has-link"],
     );
 
-    assert_term_sort(["bogus", "stream", "topic"], ["stream", "topic", "bogus"]);
-    assert_term_sort(["stream", "topic", "stream"], ["stream", "stream", "topic"]);
+    assert_term_sort(["bogus", "channel", "topic"], ["channel", "topic", "bogus"]);
+    assert_term_sort(["channel", "topic", "channel"], ["channel", "channel", "topic"]);
 
-    assert_term_sort(["search", "streams-public"], ["streams-public", "search"]);
+    assert_term_sort(["search", "channels-public"], ["channels-public", "search"]);
 
     const terms = [
         {operator: "topic", operand: "lunch"},
         {operator: "sender", operand: "steve@foo.com"},
-        {operator: "stream", operand: "Verona"},
+        {operator: "channel", operand: "Verona"},
     ];
     let filter = new Filter(terms);
     const term_types = filter.sorted_term_types();
 
-    assert.deepEqual(term_types, ["stream", "topic", "sender"]);
+    assert.deepEqual(term_types, ["channel", "topic", "sender"]);
 
     // test caching of term types
     // init and stub
@@ -1426,13 +1502,13 @@ test("term_type", () => {
     // uncached trial
     filter._build_sorted_term_types_called = false;
     const built_terms = filter.sorted_term_types();
-    assert.deepEqual(built_terms, ["stream", "topic", "sender"]);
+    assert.deepEqual(built_terms, ["channel", "topic", "sender"]);
     assert.ok(filter._build_sorted_term_types_called);
 
     // cached trial
     filter._build_sorted_term_types_called = false;
     const cached_terms = filter.sorted_term_types();
-    assert.deepEqual(cached_terms, ["stream", "topic", "sender"]);
+    assert.deepEqual(cached_terms, ["channel", "topic", "sender"]);
     assert.ok(!filter._build_sorted_term_types_called);
 });
 
@@ -1445,7 +1521,7 @@ test("first_valid_id_from", ({override}) => {
         5: {id: 5, alerted: true},
         10: {id: 10},
         20: {id: 20, alerted: true},
-        30: {id: 30, type: "stream"},
+        30: {id: 30, type: stream_message},
         40: {id: 40, alerted: false},
     };
 
@@ -1468,7 +1544,7 @@ test("update_email", () => {
     filter.update_email(steve.user_id, "showell@foo.com");
     assert.deepEqual(filter.operands("dm"), ["showell@foo.com"]);
     assert.deepEqual(filter.operands("sender"), ["showell@foo.com"]);
-    assert.deepEqual(filter.operands("stream"), ["steve@foo.com"]);
+    assert.deepEqual(filter.operands("channel"), ["steve@foo.com"]);
 });
 
 function make_private_sub(name, stream_id) {
@@ -1606,7 +1682,7 @@ test("navbar_helpers", () => {
             terms: in_home,
             is_common_narrow: true,
             icon: "home",
-            title: "translated: All messages",
+            title: "translated: Combined feed",
             redirect_url_with_search: "#",
         },
         {
@@ -1620,7 +1696,7 @@ test("navbar_helpers", () => {
             terms: is_dm,
             is_common_narrow: true,
             icon: "envelope",
-            title: "translated: All direct messages",
+            title: "translated: Direct message feed",
             redirect_url_with_search: "/#narrow/is/dm",
         },
         {
@@ -1859,7 +1935,7 @@ test("error_cases", () => {
 
     const predicate = get_predicate([["dm", "Joe@example.com"]]);
     blueslip.expect("error", "Empty recipient list in message");
-    assert.ok(!predicate({type: "private", display_recipient: []}));
+    assert.ok(!predicate({type: direct_message, display_recipient: []}));
 });
 
 run_test("is_spectator_compatible", () => {

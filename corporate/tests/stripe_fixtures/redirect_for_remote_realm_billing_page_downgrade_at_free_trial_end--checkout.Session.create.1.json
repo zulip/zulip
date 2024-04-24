@@ -9,7 +9,7 @@
     "status": null
   },
   "billing_address_collection": "required",
-  "cancel_url": "http://selfhosting.testserver/realm/66c64ff1-94c6-48d0-b6f6-d1fbce7f2b1e/upgrade/?manual_license_management=false&tier=1",
+  "cancel_url": "http://selfhosting.testserver/realm/f27ccad7-fd5b-42cf-947a-3763c39673b7/upgrade/?manual_license_management=false&tier=1",
   "client_reference_id": null,
   "client_secret": null,
   "consent": null,
@@ -36,13 +36,13 @@
   },
   "customer_email": null,
   "expires_at": 1000000000,
-  "id": "cs_test_NORMALIZED01mzSwMCFGHAds3lpuPuOQOX1JtdpEaRpBY6C8Gv1fNFNezN",
+  "id": "cs_test_NORMALIZED01gQwhtncZkjx0OgIjLScW0SbxYIx8i8S75xDomYDhVzfhAE",
   "invoice": null,
   "invoice_creation": null,
   "livemode": false,
   "locale": null,
   "metadata": {
-    "remote_realm_user_id": "1",
+    "remote_realm_user_id": "6",
     "type": "card_update"
   },
   "mode": "setup",
@@ -64,7 +64,7 @@
     "enabled": false
   },
   "recovered_from": null,
-  "setup_intent": "seti_1Ow3loDEQaroqDjsC8yb78W3",
+  "setup_intent": "seti_1P41kADEQaroqDjssb0VXUZK",
   "shipping": null,
   "shipping_address_collection": null,
   "shipping_options": [],
@@ -72,8 +72,8 @@
   "status": "open",
   "submit_type": null,
   "subscription": null,
-  "success_url": "http://selfhosting.testserver/realm/66c64ff1-94c6-48d0-b6f6-d1fbce7f2b1e/billing/event_status/?stripe_session_id={CHECKOUT_SESSION_ID}",
+  "success_url": "http://selfhosting.testserver/realm/f27ccad7-fd5b-42cf-947a-3763c39673b7/billing/event_status/?stripe_session_id={CHECKOUT_SESSION_ID}",
   "total_details": null,
   "ui_mode": "hosted",
-  "url": "https://checkout.stripe.com/c/pay/cs_test_NORMALIZED01mzSwMCFGHAds3lpuPuOQOX1JtdpEaRpBY6C8Gv1fNFNezN#fid1d2BpamRhQ2prcSc%2FJ1ZqcHdmYCVWZGt2JVV3aicpJ2R1bE5gfCc%2FJ3VuWnFgdnFaXVRmMU5zNkldQTY9SnNRY09XZml2UXNQJyknY3dqaFZgd3Ngdyc%2FcXdwYCknaWR8anBxUXx1YCc%2FJ3Zsa2JpYFpmamlwaGsnKSdga2RnaWBVaWRmYG1qaWFgd3YnP3F3cGB4JSUl"
+  "url": "https://checkout.stripe.com/c/pay/cs_test_NORMALIZED01gQwhtncZkjx0OgIjLScW0SbxYIx8i8S75xDomYDhVzfhAE#fid1d2BpamRhQ2prcSc%2FJ1ZqcHdmYCVWZGt2JVV3aicpJ2R1bE5gfCc%2FJ3VuWnFgdnFaXVRmMU5zNkldQTY9SnNRY09XZml2UXNQJyknY3dqaFZgd3Ngdyc%2FcXdwYCknaWR8anBxUXx1YCc%2FJ3Zsa2JpYFpmamlwaGsnKSdga2RnaWBVaWRmYG1qaWFgd3YnP3F3cGB4JSUl"
 }

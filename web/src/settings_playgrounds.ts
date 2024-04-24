@@ -98,7 +98,7 @@ function build_page(): void {
             html_body,
             id: "confirm_delete_code_playgrounds_modal",
             on_click() {
-                dialog_widget.submit_api_request(channel.del, url);
+                dialog_widget.submit_api_request(channel.del, url, {});
             },
             loading_spinner: true,
         });

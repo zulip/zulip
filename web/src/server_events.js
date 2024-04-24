@@ -20,7 +20,7 @@ export let queue_id;
 let last_event_id;
 let event_queue_longpoll_timeout_seconds;
 
-let waiting_on_homeview_load = true;
+let waiting_on_initial_fetch = true;
 
 let events_stored_while_loading = [];
 
@@ -49,7 +49,7 @@ function get_events_success(events) {
         }
     }
 
-    if (waiting_on_homeview_load) {
+    if (waiting_on_initial_fetch) {
         events_stored_while_loading = [...events_stored_while_loading, ...events];
         return;
     }
@@ -285,8 +285,8 @@ export function force_get_events() {
     get_events_timeout = setTimeout(get_events, 0);
 }
 
-export function home_view_loaded() {
-    waiting_on_homeview_load = false;
+export function finished_initial_fetch() {
+    waiting_on_initial_fetch = false;
     get_events_success([]);
 }
 

@@ -41,8 +41,8 @@ from typing_extensions import override
 from version import API_FEATURE_LEVEL, ZULIP_MERGE_BASE, ZULIP_VERSION
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.message_cache import MessageDict
-from zerver.lib.narrow import build_narrow_predicate
 from zerver.lib.narrow_helpers import narrow_dataclasses_from_tuples
+from zerver.lib.narrow_predicate import build_narrow_predicate
 from zerver.lib.notification_data import UserMessageNotificationsData
 from zerver.lib.queue import queue_json_publish, retry_event
 from zerver.middleware import async_request_timer_restart

@@ -38,8 +38,8 @@ from zerver.lib.message import (
     remove_message_id_from_unread_mgs,
 )
 from zerver.lib.muted_users import get_user_mutes
-from zerver.lib.narrow import check_narrow_for_events, read_stop_words
-from zerver.lib.narrow_helpers import NarrowTerm
+from zerver.lib.narrow_helpers import NarrowTerm, read_stop_words
+from zerver.lib.narrow_predicate import check_narrow_for_events
 from zerver.lib.presence import get_presence_for_user, get_presences_for_realm
 from zerver.lib.realm_icon import realm_icon_url
 from zerver.lib.realm_logo import get_realm_logo_source, get_realm_logo_url
@@ -69,6 +69,7 @@ from zerver.lib.users import (
     is_administrator_role,
     max_message_id_for_user,
 )
+from zerver.lib.utils import optional_bytes_to_mib
 from zerver.models import (
     Client,
     CustomProfileField,
@@ -301,7 +302,8 @@ def fetch_initial_state_data(
         state["max_avatar_file_size_mib"] = settings.MAX_AVATAR_FILE_SIZE_MIB
         state["max_file_upload_size_mib"] = settings.MAX_FILE_UPLOAD_SIZE
         state["max_icon_file_size_mib"] = settings.MAX_ICON_FILE_SIZE_MIB
-        state["realm_upload_quota_mib"] = realm.upload_quota_bytes()
+        upload_quota_bytes = realm.upload_quota_bytes()
+        state["realm_upload_quota_mib"] = optional_bytes_to_mib(upload_quota_bytes)
 
         state["realm_icon_url"] = realm_icon_url(realm)
         state["realm_icon_source"] = realm.icon_source
@@ -1157,7 +1159,9 @@ def apply_event(
             if event["property"] == "plan_type":
                 # Then there are some extra fields that also need to be set.
                 state["zulip_plan_is_not_limited"] = event["value"] != Realm.PLAN_TYPE_LIMITED
-                state["realm_upload_quota_mib"] = event["extra_data"]["upload_quota"]
+                # upload_quota is in bytes, so we need to convert it to MiB.
+                upload_quota_bytes = event["extra_data"]["upload_quota"]
+                state["realm_upload_quota_mib"] = optional_bytes_to_mib(upload_quota_bytes)
 
             if field == "realm_jitsi_server_url":
                 state["jitsi_server_url"] = (

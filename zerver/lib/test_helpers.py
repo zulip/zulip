@@ -737,18 +737,6 @@ def mock_queue_publish(
 
 
 @contextmanager
-def timeout_mock(mock_path: str) -> Iterator[None]:
-    # timeout() doesn't work in test environment with database operations
-    # and they don't get committed - so we need to replace it with a mock
-    # that just calls the function.
-    def mock_timeout(seconds: int, func: Callable[[], object]) -> object:
-        return func()
-
-    with mock.patch(f"{mock_path}.timeout", new=mock_timeout):
-        yield
-
-
-@contextmanager
 def ratelimit_rule(
     range_seconds: int,
     num_requests: int,

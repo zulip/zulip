@@ -23,7 +23,7 @@ types-python-dateutil
 types-PyYAML
 types-redis
 types-regex
-types-requests<2.31.0.7  # https://github.com/python/typeshed/issues/10825
+types-requests
 types-zxcvbn
 
-django-stubs
+https://github.com/typeddjango/django-stubs/archive/e11955f05994e196dcee004811ce2e05ff230462.zip#egg=django-stubs==5.0.0.dev1+git  # https://github.com/typeddjango/django-stubs/issues/1493

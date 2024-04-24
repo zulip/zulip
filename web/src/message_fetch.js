@@ -125,7 +125,13 @@ function get_messages_success(data, opts) {
     const update_loading_indicator =
         message_lists.current !== undefined && opts.msg_list === message_lists.current;
     const msg_list_data = opts.msg_list_data ?? opts.msg_list.data;
-    if (opts.num_before > 0) {
+    const has_found_newest = msg_list_data.fetch_status.has_found_newest();
+    const has_found_oldest = msg_list_data.fetch_status.has_found_oldest();
+
+    const current_fetch_found_oldest = !has_found_oldest && data.found_oldest;
+    const current_fetch_found_newest = !has_found_newest && data.found_newest;
+
+    if (opts.num_before > 0 || current_fetch_found_oldest) {
         msg_list_data.fetch_status.finish_older_batch({
             update_loading_indicator,
             found_oldest: data.found_oldest,
@@ -143,7 +149,7 @@ function get_messages_success(data, opts) {
         message_feed_top_notices.update_top_of_narrow_notices(opts.msg_list);
     }
 
-    if (opts.num_after > 0) {
+    if (opts.num_after > 0 || current_fetch_found_newest) {
         opts.fetch_again = msg_list_data.fetch_status.finish_newer_batch(data.messages, {
             update_loading_indicator,
             found_newest: data.found_newest,
@@ -301,10 +307,10 @@ export function load_messages(opts, attempt = 1) {
         // This is a bit of a hack; ideally we'd unify this logic in
         // some way with the above logic, and not need to do JSON
         // parsing/stringifying here.
-        const web_public_narrow = {negated: false, operator: "streams", operand: "web-public"};
+        const web_public_narrow = {negated: false, operator: "channels", operand: "web-public"};
 
         if (!data.narrow) {
-            /* For the "All messages" feed, this will be the only operator. */
+            /* For the combined feed, this will be the only operator. */
             data.narrow = JSON.stringify([web_public_narrow]);
         } else {
             // Otherwise, we append the operator.  This logic is not
@@ -548,7 +554,7 @@ export function set_initial_pointer_and_offset({pointer, offset, narrow_pointer,
     initial_narrow_offset = narrow_offset;
 }
 
-export function initialize(home_view_loaded) {
+export function initialize(finished_initial_fetch) {
     // get the initial message list
     function load_more(data) {
         // If we haven't selected a message in the home view yet, and
@@ -579,7 +585,7 @@ export function initialize(home_view_loaded) {
             }
 
             // See server_events.js for this callback.
-            home_view_loaded();
+            finished_initial_fetch();
 
             start_backfilling_messages();
             return;

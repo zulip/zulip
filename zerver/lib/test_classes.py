@@ -47,6 +47,7 @@ from django.urls import resolve
 from django.utils import translation
 from django.utils.module_loading import import_string
 from django.utils.timezone import now as timezone_now
+from django_stubs_ext import ValuesQuerySet
 from fakeldap import MockLDAP
 from openapi_core.contrib.django import DjangoOpenAPIRequest, DjangoOpenAPIResponse
 from requests import PreparedRequest
@@ -66,7 +67,7 @@ from zerver.lib.initial_password import initial_password
 from zerver.lib.message import access_message
 from zerver.lib.notification_data import UserMessageNotificationsData
 from zerver.lib.per_request_cache import flush_per_request_caches
-from zerver.lib.rate_limiter import bounce_redis_key_prefix_for_testing
+from zerver.lib.redis_utils import bounce_redis_key_prefix_for_testing
 from zerver.lib.sessions import get_session_dict_user
 from zerver.lib.soft_deactivation import do_soft_deactivate_users
 from zerver.lib.stream_subscription import get_subscribed_stream_ids_for_user
@@ -1245,7 +1246,7 @@ Output:
         """
         self.assertEqual(self.get_json_error(result, status_code=status_code), msg)
 
-    def assert_length(self, items: Collection[Any], count: int) -> None:
+    def assert_length(self, items: Collection[Any] | ValuesQuerySet[Any, Any], count: int) -> None:
         actual_count = len(items)
         if actual_count != count:  # nocoverage
             print("\nITEMS:\n")
@@ -1559,7 +1560,7 @@ Output:
         markdown.__init__.do_convert.
         """
         with mock.patch(
-            "zerver.lib.markdown.timeout", side_effect=subprocess.CalledProcessError(1, [])
+            "zerver.lib.markdown.unsafe_timeout", side_effect=subprocess.CalledProcessError(1, [])
         ), self.assertLogs(level="ERROR"):  # For markdown_logger.exception
             yield
 

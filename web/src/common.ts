@@ -95,7 +95,7 @@ export function adjust_mac_kbd_tags(kbd_elem_class: string): void {
 
 // We convert the hotkey hints used in the tooltips to mac equivalent
 // key combinations, when we detect that the user is using a mac-style keyboard.
-export function adjust_mac_tooltip_keys(hotkeys: string[]): void {
+export function adjust_mac_hotkey_hints(hotkeys: string[]): void {
     if (!has_mac_keyboard()) {
         return;
     }
@@ -111,6 +111,19 @@ export function adjust_mac_tooltip_keys(hotkeys: string[]): void {
             hotkeys.unshift("Fn");
         }
     }
+}
+
+// We convert the Shift key with ⇧ (Level 2 Select Symbol) in the
+// popover menu hotkey hints. This helps us reduce the width of
+// the popover menus.
+export function adjust_shift_hotkey(hotkeys: string[]): boolean {
+    for (const [index, hotkey] of hotkeys.entries()) {
+        if (hotkey === "Shift") {
+            hotkeys[index] = "⇧";
+            return true;
+        }
+    }
+    return false;
 }
 
 // See https://zulip.readthedocs.io/en/latest/development/authentication.html#password-form-implementation

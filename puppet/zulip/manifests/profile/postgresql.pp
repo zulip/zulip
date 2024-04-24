@@ -66,9 +66,17 @@ class zulip::profile::postgresql {
     }
   }
 
+  $backups_s3_bucket = zulipsecret('secrets', 's3_backups_bucket', '')
+  $backups_directory = zulipconf('postgresql', 'backups_directory', '')
+  if $backups_s3_bucket != '' or $backups_directory != '' {
+    $require = [File['/usr/local/bin/env-wal-g'], Package[$zulip::postgresql_base::postgresql]]
+  } else {
+    $require = [Package[$zulip::postgresql_base::postgresql]]
+  }
   exec { $zulip::postgresql_base::postgresql_restart:
-    require     => Package[$zulip::postgresql_base::postgresql],
+    require     => $require,
     refreshonly => true,
     subscribe   => [ File[$postgresql_conf_file] ],
+    onlyif      => "test -d ${zulip::postgresql_base::postgresql_datadir}",
   }
 }

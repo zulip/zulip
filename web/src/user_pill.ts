@@ -4,17 +4,21 @@ import * as input_pill from "./input_pill";
 import type {User} from "./people";
 import * as people from "./people";
 import {realm} from "./state_data";
+import type {CombinedPillContainer} from "./typeahead_helper";
 import * as user_status from "./user_status";
 
 // This will be used for pills for things like composing
 // direct messages or adding users to a stream/group.
 
-type UserPill = {
+export type UserPill = {
+    type: "user";
     user_id?: number;
     email: string;
 };
 
 export type UserPillWidget = InputPillContainer<UserPill>;
+
+export type UserPillData = User & {type: "user"};
 
 export function create_item_from_email(
     email: string,
@@ -90,13 +94,16 @@ export function get_email_from_item(item: InputPillItem<UserPill>): string {
     return item.email;
 }
 
-export function append_person(opts: {person: User; pill_widget: UserPillWidget}): void {
+export function append_person(opts: {
+    person: User;
+    pill_widget: UserPillWidget | CombinedPillContainer;
+}): void {
     const person = opts.person;
     const pill_widget = opts.pill_widget;
     const avatar_url = people.small_avatar_url_for_person(person);
     const status_emoji_info = user_status.get_status_emoji(opts.person.user_id);
 
-    const pill_data = {
+    const pill_data: InputPillItem<UserPill> = {
         type: "user",
         display_value: person.full_name,
         user_id: person.user_id,
@@ -110,9 +117,9 @@ export function append_person(opts: {person: User; pill_widget: UserPillWidget})
     pill_widget.clear_text();
 }
 
-export function get_user_ids(pill_widget: UserPillWidget): number[] {
+export function get_user_ids(pill_widget: UserPillWidget | CombinedPillContainer): number[] {
     const items = pill_widget.items();
-    return items.flatMap((item) => item.user_id ?? []); // be defensive about undefined users
+    return items.flatMap((item) => (item.type === "user" ? item.user_id ?? [] : [])); // be defensive about undefined users
 }
 
 export function has_unconverted_data(pill_widget: UserPillWidget): boolean {
@@ -128,18 +135,27 @@ export function has_unconverted_data(pill_widget: UserPillWidget): boolean {
     return has_unknown_items;
 }
 
-export function typeahead_source(pill_widget: UserPillWidget, exclude_bots?: boolean): User[] {
+export function typeahead_source(
+    pill_widget: CombinedPillContainer,
+    exclude_bots?: boolean,
+): UserPillData[] {
     const users = exclude_bots ? people.get_realm_active_human_users() : people.get_realm_users();
-    return filter_taken_users(users, pill_widget);
+    return filter_taken_users(users, pill_widget).map((user) => ({
+        ...user,
+        type: "user",
+    }));
 }
 
-export function filter_taken_users(items: User[], pill_widget: UserPillWidget): User[] {
+export function filter_taken_users(
+    items: User[],
+    pill_widget: UserPillWidget | CombinedPillContainer,
+): User[] {
     const taken_user_ids = get_user_ids(pill_widget);
     items = items.filter((item) => !taken_user_ids.includes(item.user_id));
     return items;
 }
 
-export function append_user(user: User, pills: UserPillWidget): void {
+export function append_user(user: User, pills: CombinedPillContainer): void {
     if (user) {
         append_person({
             pill_widget: pills,

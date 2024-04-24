@@ -25,7 +25,7 @@
           "billing_reason": "manual",
           "charge": "ch_NORMALIZED00000000000001",
           "collection_method": "charge_automatically",
-          "created": 1010000007,
+          "created": 1010000009,
           "currency": "usd",
           "custom_fields": null,
           "customer": "cus_NORMALIZED0001",
@@ -47,9 +47,9 @@
           "ending_balance": 0,
           "footer": null,
           "from_invoice": null,
-          "hosted_invoice_url": "https://invoice.stripe.com/i/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QZm9RSllHYmdnUUphSFlZVFo4anlJYWZUdGJMSWx5LDEwMDA2NjAwMw0200F7bBPUxX?s=ap",
+          "hosted_invoice_url": "https://invoice.stripe.com/i/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QdHBUc0dwaERlT1pjQkJmRzZvekFmVzREVG45WjJrLDEwMzI5ODg3Mw0200m3u2LZ9c?s=ap",
           "id": "in_NORMALIZED00000000000001",
-          "invoice_pdf": "https://pay.stripe.com/invoice/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QZm9RSllHYmdnUUphSFlZVFo4anlJYWZUdGJMSWx5LDEwMDA2NjAwMw0200F7bBPUxX/pdf?s=ap",
+          "invoice_pdf": "https://pay.stripe.com/invoice/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QdHBUc0dwaERlT1pjQkJmRzZvekFmVzREVG45WjJrLDEwMzI5ODg3Mw0200m3u2LZ9c/pdf?s=ap",
           "issuer": {
             "type": "self"
           },
@@ -65,30 +65,30 @@
                 "discount_amounts": [],
                 "discountable": false,
                 "discounts": [],
-                "id": "il_NORMALIZED00000000000001",
+                "id": "il_NORMALIZED00000000000002",
                 "invoice": "in_NORMALIZED00000000000001",
-                "invoice_item": "ii_NORMALIZED00000000000001",
+                "invoice_item": "ii_NORMALIZED00000000000002",
                 "livemode": false,
                 "metadata": {},
                 "object": "line_item",
                 "period": {
-                  "end": 1000000000,
-                  "start": 1000000000
+                  "end": 1357095845,
+                  "start": 1325473445
                 },
                 "plan": null,
                 "price": {
                   "active": false,
                   "billing_scheme": "per_unit",
-                  "created": 1010000008,
+                  "created": 1010000010,
                   "currency": "usd",
                   "custom_unit_amount": null,
-                  "id": "price_NORMALIZED00000000000001",
+                  "id": "price_NORMALIZED00000000000002",
                   "livemode": false,
                   "lookup_key": null,
                   "metadata": {},
                   "nickname": null,
                   "object": "price",
-                  "product": "prod_NORMALIZED0001",
+                  "product": "prod_NORMALIZED0002",
                   "recurring": null,
                   "tax_behavior": "unspecified",
                   "tiers_mode": null,
@@ -119,11 +119,12 @@
             "billing_schedule": "1",
             "license_management": "automatic",
             "licenses": "6",
+            "on_free_trial": "False",
             "plan_tier": "1",
             "user_id": "10"
           },
           "next_payment_attempt": null,
-          "number": "NORMALI-0002",
+          "number": "NORMALI-0003",
           "object": "invoice",
           "on_behalf_of": null,
           "paid": true,
@@ -174,13 +175,13 @@
           "webhooks_delivered_at": 1000000000
         }
       },
-      "id": "evt_1OqSnXDEQaroqDjsRkvKjf80",
+      "id": "evt_1P41obDEQaroqDjsSm06bl6h",
       "livemode": false,
       "object": "event",
-      "pending_webhooks": 0,
+      "pending_webhooks": 2,
       "request": {
         "id": "req_NORMALIZED0002",
-        "idempotency_key": "22bf0941-fd07-4395-85ab-57fc66e91e16"
+        "idempotency_key": "2b340669-822f-41b6-9eda-7a653b7671b5"
       },
       "type": "invoice.payment_succeeded"
     },
@@ -209,7 +210,7 @@
           "billing_reason": "manual",
           "charge": "ch_NORMALIZED00000000000001",
           "collection_method": "charge_automatically",
-          "created": 1010000007,
+          "created": 1010000009,
           "currency": "usd",
           "custom_fields": null,
           "customer": "cus_NORMALIZED0001",
@@ -231,9 +232,9 @@
           "ending_balance": 0,
           "footer": null,
           "from_invoice": null,
-          "hosted_invoice_url": "https://invoice.stripe.com/i/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QZm9RSllHYmdnUUphSFlZVFo4anlJYWZUdGJMSWx5LDEwMDA2NjAwMw0200F7bBPUxX?s=ap",
+          "hosted_invoice_url": "https://invoice.stripe.com/i/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QdHBUc0dwaERlT1pjQkJmRzZvekFmVzREVG45WjJrLDEwMzI5ODg3Mw0200m3u2LZ9c?s=ap",
           "id": "in_NORMALIZED00000000000001",
-          "invoice_pdf": "https://pay.stripe.com/invoice/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QZm9RSllHYmdnUUphSFlZVFo4anlJYWZUdGJMSWx5LDEwMDA2NjAwMw0200F7bBPUxX/pdf?s=ap",
+          "invoice_pdf": "https://pay.stripe.com/invoice/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QdHBUc0dwaERlT1pjQkJmRzZvekFmVzREVG45WjJrLDEwMzI5ODg3Mw0200m3u2LZ9c/pdf?s=ap",
           "issuer": {
             "type": "self"
           },
@@ -249,30 +250,30 @@
                 "discount_amounts": [],
                 "discountable": false,
                 "discounts": [],
-                "id": "il_NORMALIZED00000000000001",
+                "id": "il_NORMALIZED00000000000002",
                 "invoice": "in_NORMALIZED00000000000001",
-                "invoice_item": "ii_NORMALIZED00000000000001",
+                "invoice_item": "ii_NORMALIZED00000000000002",
                 "livemode": false,
                 "metadata": {},
                 "object": "line_item",
                 "period": {
-                  "end": 1000000000,
-                  "start": 1000000000
+                  "end": 1357095845,
+                  "start": 1325473445
                 },
                 "plan": null,
                 "price": {
                   "active": false,
                   "billing_scheme": "per_unit",
-                  "created": 1010000008,
+                  "created": 1010000010,
                   "currency": "usd",
                   "custom_unit_amount": null,
-                  "id": "price_NORMALIZED00000000000001",
+                  "id": "price_NORMALIZED00000000000002",
                   "livemode": false,
                   "lookup_key": null,
                   "metadata": {},
                   "nickname": null,
                   "object": "price",
-                  "product": "prod_NORMALIZED0001",
+                  "product": "prod_NORMALIZED0002",
                   "recurring": null,
                   "tax_behavior": "unspecified",
                   "tiers_mode": null,
@@ -303,11 +304,12 @@
             "billing_schedule": "1",
             "license_management": "automatic",
             "licenses": "6",
+            "on_free_trial": "False",
             "plan_tier": "1",
             "user_id": "10"
           },
           "next_payment_attempt": null,
-          "number": "NORMALI-0002",
+          "number": "NORMALI-0003",
           "object": "invoice",
           "on_behalf_of": null,
           "paid": true,
@@ -358,13 +360,13 @@
           "webhooks_delivered_at": 1000000000
         }
       },
-      "id": "evt_1OqSnXDEQaroqDjsLUtrepbY",
+      "id": "evt_1P41obDEQaroqDjsPMjfHLcf",
       "livemode": false,
       "object": "event",
       "pending_webhooks": 0,
       "request": {
         "id": "req_NORMALIZED0002",
-        "idempotency_key": "22bf0941-fd07-4395-85ab-57fc66e91e16"
+        "idempotency_key": "2b340669-822f-41b6-9eda-7a653b7671b5"
       },
       "type": "invoice.paid"
     },
@@ -393,7 +395,7 @@
           "billing_reason": "manual",
           "charge": "ch_NORMALIZED00000000000001",
           "collection_method": "charge_automatically",
-          "created": 1010000007,
+          "created": 1010000009,
           "currency": "usd",
           "custom_fields": null,
           "customer": "cus_NORMALIZED0001",
@@ -415,9 +417,9 @@
           "ending_balance": 0,
           "footer": null,
           "from_invoice": null,
-          "hosted_invoice_url": "https://invoice.stripe.com/i/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QZm9RSllHYmdnUUphSFlZVFo4anlJYWZUdGJMSWx5LDEwMDA2NjAwMg0200jkv4fuMA?s=ap",
+          "hosted_invoice_url": "https://invoice.stripe.com/i/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QdHBUc0dwaERlT1pjQkJmRzZvekFmVzREVG45WjJrLDEwMzI5ODg3Mw0200m3u2LZ9c?s=ap",
           "id": "in_NORMALIZED00000000000001",
-          "invoice_pdf": "https://pay.stripe.com/invoice/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QZm9RSllHYmdnUUphSFlZVFo4anlJYWZUdGJMSWx5LDEwMDA2NjAwMg0200jkv4fuMA/pdf?s=ap",
+          "invoice_pdf": "https://pay.stripe.com/invoice/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QdHBUc0dwaERlT1pjQkJmRzZvekFmVzREVG45WjJrLDEwMzI5ODg3Mw0200m3u2LZ9c/pdf?s=ap",
           "issuer": {
             "type": "self"
           },
@@ -433,30 +435,30 @@
                 "discount_amounts": [],
                 "discountable": false,
                 "discounts": [],
-                "id": "il_NORMALIZED00000000000001",
+                "id": "il_NORMALIZED00000000000002",
                 "invoice": "in_NORMALIZED00000000000001",
-                "invoice_item": "ii_NORMALIZED00000000000001",
+                "invoice_item": "ii_NORMALIZED00000000000002",
                 "livemode": false,
                 "metadata": {},
                 "object": "line_item",
                 "period": {
-                  "end": 1000000000,
-                  "start": 1000000000
+                  "end": 1357095845,
+                  "start": 1325473445
                 },
                 "plan": null,
                 "price": {
                   "active": false,
                   "billing_scheme": "per_unit",
-                  "created": 1010000008,
+                  "created": 1010000010,
                   "currency": "usd",
                   "custom_unit_amount": null,
-                  "id": "price_NORMALIZED00000000000001",
+                  "id": "price_NORMALIZED00000000000002",
                   "livemode": false,
                   "lookup_key": null,
                   "metadata": {},
                   "nickname": null,
                   "object": "price",
-                  "product": "prod_NORMALIZED0001",
+                  "product": "prod_NORMALIZED0002",
                   "recurring": null,
                   "tax_behavior": "unspecified",
                   "tiers_mode": null,
@@ -487,11 +489,12 @@
             "billing_schedule": "1",
             "license_management": "automatic",
             "licenses": "6",
+            "on_free_trial": "False",
             "plan_tier": "1",
             "user_id": "10"
           },
           "next_payment_attempt": null,
-          "number": "NORMALI-0002",
+          "number": "NORMALI-0003",
           "object": "invoice",
           "on_behalf_of": null,
           "paid": true,
@@ -554,13 +557,13 @@
           }
         }
       },
-      "id": "evt_1OqSnXDEQaroqDjsgftEg5Pl",
+      "id": "evt_1P41obDEQaroqDjslSgJQ4uR",
       "livemode": false,
       "object": "event",
       "pending_webhooks": 0,
       "request": {
         "id": "req_NORMALIZED0002",
-        "idempotency_key": "22bf0941-fd07-4395-85ab-57fc66e91e16"
+        "idempotency_key": "2b340669-822f-41b6-9eda-7a653b7671b5"
       },
       "type": "invoice.updated"
     }

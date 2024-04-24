@@ -238,8 +238,8 @@ def get_recipient_info(
     if recipient.type == Recipient.PERSONAL:
         # The sender and recipient may be the same id, so
         # de-duplicate using a set.
-        message_to_user_ids: Collection[int] = list({recipient.type_id, sender_id})
-        assert len(message_to_user_ids) in [1, 2]
+        message_to_user_id_set = {recipient.type_id, sender_id}
+        assert len(message_to_user_id_set) in [1, 2]
 
     elif recipient.type == Recipient.STREAM:
         # Anybody calling us w/r/t a stream message needs to supply
@@ -302,9 +302,9 @@ def get_recipient_info(
             .order_by("user_profile_id")
         )
 
-        message_to_user_ids = list()
+        message_to_user_id_set = set()
         for row in subscription_rows:
-            message_to_user_ids.append(row["user_profile_id"])
+            message_to_user_id_set.add(row["user_profile_id"])
             # We store the 'sender_muted_stream' information here to avoid db query at
             # a later stage when we perform automatically unmute topic in muted stream operation.
             if row["user_profile_id"] == sender_id:
@@ -373,21 +373,18 @@ def get_recipient_info(
             )
 
     elif recipient.type == Recipient.DIRECT_MESSAGE_GROUP:
-        message_to_user_ids = get_huddle_user_ids(recipient)
+        message_to_user_id_set = set(get_huddle_user_ids(recipient))
 
     else:
         raise ValueError("Bad recipient type")
 
-    message_to_user_id_set = set(message_to_user_ids)
-
-    user_ids = set(message_to_user_id_set)
     # Important note: Because we haven't rendered Markdown yet, we
     # don't yet know which of these possibly-mentioned users was
     # actually mentioned in the message (in other words, the
     # mention syntax might have been in a code block or otherwise
     # escaped).  `get_ids_for` will filter these extra user rows
     # for our data structures not related to bots
-    user_ids |= possibly_mentioned_user_ids
+    user_ids = message_to_user_id_set | possibly_mentioned_user_ids
 
     if user_ids:
         query: ValuesQuerySet[UserProfile, ActiveUserDict] = UserProfile.objects.filter(

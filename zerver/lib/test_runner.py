@@ -186,6 +186,7 @@ def init_worker(
     process_setup: Optional[Callable[..., None]] = None,
     process_setup_args: Optional[Tuple[Any, ...]] = None,
     debug_mode: Optional[bool] = None,
+    used_aliases: Optional[Set[str]] = None,
 ) -> None:
     """
     This function runs only under parallel mode. It initializes the
@@ -359,14 +360,13 @@ class Runner(DiscoverRunner):
     def run_tests(
         self,
         test_labels: List[str],
-        extra_tests: Optional[List[unittest.TestCase]] = None,
         failed_tests_path: Optional[str] = None,
         full_suite: bool = False,
         include_webhooks: bool = False,
         **kwargs: Any,
     ) -> int:
         self.setup_test_environment()
-        suite = self.build_suite(test_labels, extra_tests)
+        suite = self.build_suite(test_labels)
         self.test_imports(test_labels, suite)
         if self.parallel == 1:
             # We are running in serial mode so create the databases here.

@@ -1,11 +1,11 @@
 {
-  "amount": -3073,
+  "amount": -2636,
   "created": 1000000000,
   "credit_note": null,
   "currency": "usd",
   "customer": "cus_NORMALIZED0001",
   "description": "Credit from early termination of active plan",
-  "ending_balance": -3073,
+  "ending_balance": -2636,
   "id": "cbtxn_NORMALIZED00000000000001",
   "invoice": null,
   "livemode": false,

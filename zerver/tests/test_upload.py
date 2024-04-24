@@ -604,8 +604,8 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         d1_attachment = Attachment.objects.get(path_id=d1_path_id)
 
         realm = get_realm("zulip")
-        realm.upload_quota_gb = 1
-        realm.save(update_fields=["upload_quota_gb"])
+        realm.custom_upload_quota_gb = 1
+        realm.save(update_fields=["custom_upload_quota_gb"])
 
         # The size of StringIO("zulip!") is 6 bytes. Setting the size of
         # d1_attachment to realm.upload_quota_bytes() - 11 should allow
@@ -625,8 +625,8 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         result = self.client_post("/json/user_uploads", {"file": d3})
         self.assert_json_error(result, "Upload would exceed your organization's upload quota.")
 
-        realm.upload_quota_gb = None
-        realm.save(update_fields=["upload_quota_gb"])
+        realm.custom_upload_quota_gb = None
+        realm.save(update_fields=["custom_upload_quota_gb"])
         result = self.client_post("/json/user_uploads", {"file": d3})
         self.assert_json_success(result)
 

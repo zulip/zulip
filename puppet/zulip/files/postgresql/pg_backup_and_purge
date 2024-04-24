@@ -67,13 +67,20 @@ backups = {}
 lines = subprocess.check_output(["env-wal-g", "backup-list"], text=True).split("\n")
 for line in lines[1:]:
     if line:
-        backup_name, date_str, _ = line.split()
+        backup_name, date_str = line.split()[0:2]
         backups[dateutil.parser.parse(date_str)] = backup_name
 
 one_month_ago = now - timedelta(days=30)
 for date in sorted(backups.keys(), reverse=True):
     if date < one_month_ago:
-        subprocess.check_call(["env-wal-g", "delete", "--confirm", "before", backups[date]])
+        # We pass `FIND_FULL` such that if delta backups are being
+        # used, we keep the prior FULL backup and all of the deltas
+        # that we need.  In practice, this means that if we're doing
+        # weekly full backups (`backups_incremental = 6`), we only
+        # delete any data once a week.
+        subprocess.check_call(
+            ["env-wal-g", "delete", "--confirm", "before", "FIND_FULL", backups[date]]
+        )
         # Because we're going from most recent to least recent, we
         # only have to do one delete operation
         break

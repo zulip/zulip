@@ -74,7 +74,7 @@
                   {%if switch_to_monthly_at_end_of_cycle %}data-switch-to-monthly-eoc="true"{% endif %}
                   {%if switch_to_annual_at_end_of_cycle %}data-switch-to-annual-eoc="true"{% endif %}>
                     <label for="org-billing-frequency">Billing frequency</label>
-                    {% if downgrade_at_end_of_free_trial or downgrade_at_end_of_cycle or is_server_on_legacy_plan or fixed_price_plan %}
+                    {% if downgrade_at_end_of_free_trial or downgrade_at_end_of_cycle or is_server_on_legacy_plan or fixed_price_plan or (free_trial and not charge_automatically) %}
                     <div class="not-editable-realm-field">
                         {{ billing_frequency }}
                     </div>
@@ -198,7 +198,7 @@
                     {% endif %}
                     <br />
                     <div class="stripe-customer-billing-portal not-editable-realm-field">
-                        <a href="{{ billing_base_url }}/customer_portal/?return_to_billing_page=true">View and update</a> billing information that will be displayed on your invoice and receipt.
+                        <a href="{{ billing_base_url }}/customer_portal/?return_to_billing_page=true">View and update</a> billing information that will be displayed on your next invoice and receipt.
                     </div>
                 </div>
                 <div class="input-box billing-page-field no-validation">
@@ -241,9 +241,20 @@
                             Your plan will automatically renew on <strong>{{ renewal_date }}</strong>.
                             {% endif %}
                             {% else %}
+                            {% if free_trial %}
+                            {% if has_paid_invoice_for_free_trial %}
+                            You have no outstanding invoices. Your next plan renewal date is <b>{{ free_trial_next_renewal_date_after_invoice_paid }}</b>. An invoice will be sent to <b>user-23@zulip.com</b> on the same day.
+                            {% else %}
+                            To ensure continuous access to {{ plan_name }}, please pay your <a href="{{ billing_base_url }}/invoices/">invoice</a> before the end of your trial.
+                            Your free trial ends on <br /><strong>{{ renewal_date }}</strong>.
+                            {% endif %}
+                            {% else %}
                             Next invoice will be sent on <strong>{{ renewal_date }}</strong>.
                             {% endif %}
+                            {% endif %}
                             <br />
+                            {% if free_trial and not charge_automatically %}
+                            {% else %}
                             <div class="input-box billing-page-field">
                                 <label for="expected-charge">Expected next charge</label>
                                 {% if not fixed_price_plan %}
@@ -269,6 +280,7 @@
                                 {% endif %}
                             </div>
                             <h1>${{ renewal_amount }}</h1>
+                            {% endif %}
                             {% if not fixed_price_plan and using_min_licenses_for_plan %}
                             <i>Minimum purchase for this plan: {{ min_licenses_for_plan }} licenses</i>
                             {% endif %}
@@ -289,6 +301,12 @@
                         </a>
                     </div>
                 </div>
+                {% if free_trial and not charge_automatically %}
+                <!--
+                We don't show cancel plan button for free trial with invoice payments to avoid confusion about the current status.
+                Plan automatically downgrades anyway if user fails to pay the invoice.
+                -->
+                {% else %}
                 <div id="planchange-error" class="alert alert-danger"></div>
                 <div id="planchange-input-section">
                     {% if free_trial and not downgrade_at_end_of_free_trial %}
@@ -338,6 +356,7 @@
                     <input name="status" type="hidden" value="{{ CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE }}" />
                     {% endif %}
                 </form>
+                {% endif %}
             </div>
         </div>
         <hr />

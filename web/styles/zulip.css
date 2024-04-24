@@ -666,6 +666,14 @@ li,
     }
 }
 
+#copy_generated_link_container {
+    display: flex;
+    width: 100%;
+    margin-right: -32px;
+    gap: 4px;
+    align-items: center;
+}
+
 #copy_generated_invite_link {
     position: relative;
     margin-right: -32px;

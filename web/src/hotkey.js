@@ -10,6 +10,7 @@ import * as compose_actions from "./compose_actions";
 import * as compose_banner from "./compose_banner";
 import * as compose_recipient from "./compose_recipient";
 import * as compose_reply from "./compose_reply";
+import * as compose_send_menu_popover from "./compose_send_menu_popover";
 import * as compose_state from "./compose_state";
 import * as compose_textarea from "./compose_textarea";
 import * as condense from "./condense";
@@ -47,7 +48,6 @@ import * as read_receipts from "./read_receipts";
 import * as recent_view_ui from "./recent_view_ui";
 import * as recent_view_util from "./recent_view_util";
 import * as scheduled_messages_overlay_ui from "./scheduled_messages_overlay_ui";
-import * as scheduled_messages_popover from "./scheduled_messages_popover";
 import * as search from "./search";
 import * as settings_data from "./settings_data";
 import * as sidebar_ui from "./sidebar_ui";
@@ -503,7 +503,7 @@ export function process_enter_key(e) {
     // it since it is the trigger for the popover. <button> is already used
     // to trigger the tooltip so it cannot be used to trigger the popover.
     if (e.target.id === "send_later") {
-        scheduled_messages_popover.toggle();
+        compose_send_menu_popover.toggle();
         return true;
     }
 
@@ -1001,6 +1001,7 @@ export function process_hotkey(e, hotkey) {
                 compose_actions.start({
                     message_type: "stream",
                     trigger: "compose_hotkey",
+                    keep_composebox_empty: true,
                 });
             }
             return true;
@@ -1009,6 +1010,7 @@ export function process_hotkey(e, hotkey) {
                 compose_actions.start({
                     message_type: "private",
                     trigger: "compose_hotkey",
+                    keep_composebox_empty: true,
                 });
             }
             return true;

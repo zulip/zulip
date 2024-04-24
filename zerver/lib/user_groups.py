@@ -493,21 +493,7 @@ def create_system_user_groups_for_realm(realm: Realm) -> Dict[int, UserGroup]:
     system_groups_name_dict = get_role_based_system_groups_dict(realm)
     for group in system_user_groups_list:
         user_group = set_defaults_for_group_settings(group, {}, system_groups_name_dict)
-        groups_with_updated_settings.append(group)
-        realmauditlog_objects.append(
-            RealmAuditLog(
-                realm=realm,
-                acting_user=None,
-                event_type=RealmAuditLog.USER_GROUP_GROUP_BASED_SETTING_CHANGED,
-                event_time=creation_time,
-                modified_user_group=user_group,
-                extra_data={
-                    RealmAuditLog.OLD_VALUE: None,
-                    RealmAuditLog.NEW_VALUE: user_group.can_mention_group.id,
-                    "property": "can_mention_group",
-                },
-            )
-        )
+        groups_with_updated_settings.append(user_group)
     UserGroup.objects.bulk_update(groups_with_updated_settings, ["can_mention_group"])
 
     subgroup_objects: List[GroupGroupMembership] = []

@@ -52,7 +52,7 @@ explored all the leading open-source team chat products. They found that while
 Mattermost and Rocket.Chat were similar to Slack (but felt less polished), Zulip
 stood out. “Zulip had all the modern features we were looking for, like
 reliable, flexible notifications. At the same time, the [extensive keyboard
-shortcuts](/help/keyboard-shortcuts) and the ‘All messages’
+shortcuts](/help/keyboard-shortcuts) and the ‘Combined feed’
 view offered a UI that the IRC fans loved.”
 
 When End Point moved to Zulip, it was an immediate improvement over the
@@ -118,7 +118,7 @@ Jensen](https://www.endpointdev.com/team/jon-jensen/) has experienced them all.
 “It is amazing that companies would use Teams in its current state,” Jon says, a
 bit exasperated. “The UI is slow and inconsistent, and you have to do so much
 clicking to get anywhere. Compared to Zulip, it’s missing key features like the
-‘All messages’ view and topics.”
+‘Combined feed’ view and topics.”
 
 > “It is amazing that companies would use Teams in its current state. The UI is
 > slow and inconsistent, and compared to Zulip, it’s missing key features.”

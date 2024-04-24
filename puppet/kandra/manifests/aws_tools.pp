@@ -18,7 +18,7 @@ class kandra::aws_tools {
   }
 
   if ! $is_ec2 {
-    if $::os['architecture'] != 'amd64' {
+    if $facts['os']['architecture'] != 'amd64' {
       # We would need to build aws_signing_helper from source
       fail('Only amd64 hosts supported on non-EC2')
     }
@@ -32,9 +32,10 @@ class kandra::aws_tools {
       ensure  => link,
       target  => "/srv/zulip-aws_signing_helper-${helper_version}",
       require => [
-        Zulip::External_Dep['aws_signing_helper'],
+        File["/srv/zulip-aws_signing_helper-${helper_version}"],
         Exec['install-aws-cli'],
       ],
+      before  => Exec['Cleanup aws_signing_helper'],
     }
     package { 'sqlite3': ensure => installed }
     file { '/usr/local/bin/teleport-aws-credentials':

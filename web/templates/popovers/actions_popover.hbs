@@ -1,118 +1,132 @@
 {{! Contents of the "message actions" popup }}
-<ul class="nav nav-list actions_popover">
-    {{#if should_display_quote_and_reply}}
-    <li>
-        <a class="respond_button" data-message-id="{{message_id}}" tabindex="0">
-            <i class="fa fa-reply" aria-hidden="true"></i> {{t "Quote and reply" }}
-            <span class="hotkey-hint">(>)</span>
-        </a>
-    </li>
-    <hr />
-    {{/if}}
-
-    {{#if editability_menu_item}}
-    <li>
-        <a class="popover_edit_message" data-message-id="{{message_id}}" tabindex="0">
-            <i class="zulip-icon zulip-icon-edit" aria-hidden="true"></i> {{editability_menu_item}}
-            <span class="hotkey-hint">(e)</span>
-        </a>
-    </li>
-    {{/if}}
-
-    {{#if move_message_menu_item}}
-    <li>
-        <a class="popover_move_message" data-message-id="{{message_id}}" tabindex="0">
-            <i class="zulip-icon zulip-icon-move-alt" aria-hidden="true"></i> {{move_message_menu_item}}
-            <span class="hotkey-hint">(m)</span>
-        </a>
-    </li>
-    {{/if}}
-
-    {{#if should_display_delete_option}}
-    <li>
-        <a class="delete_message" data-message-id="{{message_id}}" tabindex="0">
-            <i class="fa fa-times" aria-hidden="true"></i>
-            {{t "Delete message" }}
-        </a>
-    </li>
-    {{/if}}
-
-    {{#if (or editability_menu_item move_message_menu_item should_display_delete_option)}}
-    <hr />
-    {{/if}}
-
-    {{#if should_display_add_reaction_option}}
-    <li>
-        <a class="reaction_button" data-message-id="{{message_id}}" tabindex="0">
-            <i class="zulip-icon zulip-icon-smile" aria-hidden="true"></i>
-            {{t "Add emoji reaction" }} <span class="hotkey-hint">(:)</span>
-        </a>
-    </li>
-    <hr />
-    {{/if}}
-
-    {{#if should_display_mark_as_unread}}
-        <li>
-            <a class="mark_as_unread" data-message-id="{{message_id}}" tabindex="0">
-                <span class="unread_count">1</span>
-                {{t "Mark as unread from here" }}
-                <span class="hotkey-hint">(U)</span>
-            </a>
+<div class="popover-menu" id="message-actions-menu-dropdown" data-simplebar>
+    <ul class="popover-menu-outer-list">
+        {{#if should_display_quote_and_reply}}
+        <li class="popover-menu-outer-list-item">
+            <ul class="popover-menu-inner-list">
+                <li class="link-item popover-menu-inner-list-item">
+                    <a data-message-id="{{message_id}}" class="respond_button popover-menu-link" tabindex="0">
+                        <i class="popover-menu-icon zulip-icon zulip-icon-quote-and-reply" aria-hidden="true"></i>
+                        <span class="popover-menu-label">{{t "Quote and reply" }}</span>
+                        {{popover_hotkey_hints ">"}}
+                    </a>
+                </li>
+            </ul>
         </li>
-    {{/if}}
-
-    {{#if should_display_hide_option}}
-    <li>
-        <a class="rehide_muted_user_message" data-message-id="{{message_id}}" tabindex="0">
-            <i class="fa fa-eye-slash" aria-hidden="true"></i>
-            {{t "Hide muted message again" }}
-        </a>
-    </li>
-    {{/if}}
-
-    {{#if should_display_collapse}}
-    <li>
-        <a class="popover_toggle_collapse" data-message-id="{{message_id}}" tabindex="0">
-            <i class="fa fa-minus" aria-hidden="true"></i>
-            {{t "Collapse message" }} <span class="hotkey-hint">(–)</span>
-        </a>
-    </li>
-    {{/if}}
-
-    {{#if should_display_uncollapse}}
-    <li>
-        <a class="popover_toggle_collapse" data-message-id="{{message_id}}" tabindex="0">
-            <i class="fa fa-plus" aria-hidden="true"></i>
-            {{t "Expand message" }} <span class="hotkey-hint">(–)</span>
-        </a>
-    </li>
-    {{/if}}
-
-    {{#if (or should_display_mark_as_unread should_display_reminder_option should_display_hide_option should_display_collapse should_display_uncollapse)}}
-    <hr />
-    {{/if}}
-
-    {{#if view_source_menu_item}}
-    <li>
-        <a class="popover_view_source" data-message-id="{{message_id}}" tabindex="0">
-            <i class="fa fa-file-code-o" aria-hidden="true"></i> {{view_source_menu_item}}
-            <span class="hotkey-hint">(e)</span>
-        </a>
-    </li>
-    {{/if}}
-
-    {{#if should_display_read_receipts_option}}
-    <li>
-        <a class="view_read_receipts" data-message-id="{{message_id}}" tabindex="0">
-            <i class="zulip-icon zulip-icon-readreceipts" aria-label="{{t 'View read receipts' }}"></i>
-            {{t "View read receipts" }} <span class="hotkey-hint">(V)</span>
-        </a>
-    </li>
-    {{/if}}
-
-    <li>
-        <a class="copy_link navigate-link-on-enter" data-message-id="{{message_id}}" data-clipboard-text="{{ conversation_time_url }}" tabindex="0">
-            <i class="fa fa-link" aria-hidden="true"></i> {{t "Copy link to message" }}
-        </a>
-    </li>
-</ul>
+        {{/if}}
+        {{#if (or editability_menu_item move_message_menu_item should_display_delete_option)}}
+        <li class="popover-menu-outer-list-item">
+            <ul class="popover-menu-inner-list">
+                {{#if editability_menu_item}}
+                <li class="link-item popover-menu-inner-list-item">
+                    <a data-message-id="{{message_id}}" class="popover_edit_message popover-menu-link" tabindex="0">
+                        <i class="popover-menu-icon zulip-icon zulip-icon-edit" aria-hidden="true"></i>
+                        <span class="popover-menu-label">{{editability_menu_item}}</span>
+                        {{popover_hotkey_hints "E"}}
+                    </a>
+                </li>
+                {{/if}}
+                {{#if move_message_menu_item}}
+                <li class="link-item popover-menu-inner-list-item">
+                    <a data-message-id="{{message_id}}" class="popover_move_message popover-menu-link" tabindex="0">
+                        <i class="popover-menu-icon zulip-icon zulip-icon-move-alt" aria-hidden="true"></i>
+                        <span class="popover-menu-label">{{move_message_menu_item}}</span>
+                        {{popover_hotkey_hints "M"}}
+                    </a>
+                </li>
+                {{/if}}
+                {{#if should_display_delete_option}}
+                <li class="link-item popover-menu-inner-list-item">
+                    <a data-message-id="{{message_id}}" class="delete_message popover-menu-link" tabindex="0">
+                        <i class="popover-menu-icon zulip-icon zulip-icon-trash" aria-hidden="true"></i>
+                        <span class="popover-menu-label">{{t "Delete message" }}</span>
+                    </a>
+                </li>
+                {{/if}}
+            </ul>
+        </li>
+        {{/if}}
+        {{#if should_display_add_reaction_option}}
+        <li class="popover-menu-outer-list-item">
+            <ul class="popover-menu-inner-list">
+                <li class="link-item popover-menu-inner-list-item">
+                    <a data-message-id="{{message_id}}" class="reaction_button popover-menu-link" tabindex="0">
+                        <i class="popover-menu-icon zulip-icon zulip-icon-smile" aria-hidden="true"></i>
+                        <span class="popover-menu-label">{{t "Add emoji reaction" }}</span>
+                        {{popover_hotkey_hints ":"}}
+                    </a>
+                </li>
+            </ul>
+        </li>
+        {{/if}}
+        {{#if (or should_display_mark_as_unread should_display_reminder_option should_display_hide_option should_display_collapse should_display_uncollapse)}}
+        <li class="popover-menu-outer-list-item">
+            <ul class="popover-menu-inner-list">
+                {{#if should_display_mark_as_unread}}
+                <li class="link-item popover-menu-inner-list-item">
+                    <a data-message-id="{{message_id}}" class="mark_as_unread popover-menu-link" tabindex="0">
+                        <i class="popover-menu-icon zulip-icon zulip-icon-mark-as-unread" aria-hidden="true"></i>
+                        <span class="popover-menu-label">{{t "Mark as unread from here" }}</span>
+                        {{popover_hotkey_hints "Shift" "U"}}
+                    </a>
+                </li>
+                {{/if}}
+                {{#if should_display_hide_option}}
+                <li class="link-item popover-menu-inner-list-item">
+                    <a data-message-id="{{message_id}}" class="rehide_muted_user_message popover-menu-link" tabindex="0">
+                        <i class="popover-menu-icon zulip-icon zulip-icon-hide" aria-hidden="true"></i>
+                        <span class="popover-menu-label">{{t "Hide muted message again" }}</span>
+                    </a>
+                </li>
+                {{/if}}
+                {{#if should_display_collapse}}
+                <li class="link-item popover-menu-inner-list-item">
+                    <a data-message-id="{{message_id}}" class="popover_toggle_collapse popover-menu-link" tabindex="0">
+                        <i class="popover-menu-icon zulip-icon zulip-icon-collapse" aria-hidden="true"></i>
+                        <span class="popover-menu-label">{{t "Collapse message" }}</span>
+                        {{popover_hotkey_hints "-"}}
+                    </a>
+                </li>
+                {{/if}}
+                {{#if should_display_uncollapse}}
+                <li class="link-item popover-menu-inner-list-item">
+                    <a data-message-id="{{message_id}}" class="popover_toggle_collapse popover-menu-link" tabindex="0">
+                        <i class="popover-menu-icon zulip-icon zulip-icon-expand" aria-hidden="true"></i>
+                        <span class="popover-menu-label">{{t "Expand message" }}</span>
+                        {{popover_hotkey_hints "-"}}
+                    </a>
+                </li>
+                {{/if}}
+            </ul>
+        </li>
+        {{/if}}
+        <li class="popover-menu-outer-list-item">
+            <ul class="popover-menu-inner-list">
+                {{#if view_source_menu_item}}
+                <li class="link-item popover-menu-inner-list-item">
+                    <a data-message-id="{{message_id}}" class="popover_view_source popover-menu-link" tabindex="0">
+                        <i class="popover-menu-icon zulip-icon zulip-icon-source" aria-hidden="true"></i>
+                        <span class="popover-menu-label">{{view_source_menu_item}}</span>
+                        {{popover_hotkey_hints "E"}}
+                    </a>
+                </li>
+                {{/if}}
+                {{#if should_display_read_receipts_option}}
+                <li class="link-item popover-menu-inner-list-item">
+                    <a data-message-id="{{message_id}}" class="view_read_receipts popover-menu-link" tabindex="0">
+                        <i class="popover-menu-icon zulip-icon zulip-icon-readreceipts" aria-hidden="true"></i>
+                        <span class="popover-menu-label">{{t "View read receipts" }}</span>
+                        {{popover_hotkey_hints "Shift" "V"}}
+                    </a>
+                </li>
+                {{/if}}
+                <li class="link-item popover-menu-inner-list-item">
+                    <a class="copy_link navigate-link-on-enter popover-menu-link" data-message-id="{{message_id}}" data-clipboard-text="{{ conversation_time_url }}" tabindex="0">
+                        <i class="popover-menu-icon zulip-icon zulip-icon-link-alt" aria-hidden="true"></i>
+                        <span class="popover-menu-label">{{t "Copy link to message" }}</span>
+                    </a>
+                </li>
+            </ul>
+        </li>
+    </ul>
+</div>

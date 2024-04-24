@@ -42,6 +42,10 @@ role](/help/roles-and-permissions#change-a-users-role) if needed.
   For example, someone from your billing department can be a **billing
   administrator**, but not an **administrator** for the organization.
 
+## View users by role
+
+{!view-users-by-role.md!}
+
 ## Change a user's role
 
 {!change-a-users-role.md!}
