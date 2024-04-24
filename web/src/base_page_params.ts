@@ -35,6 +35,8 @@ const home_params_schema = default_params_schema
         corporate_enabled: z.boolean(),
         furthest_read_time: z.nullable(z.number()),
         is_spectator: z.boolean(),
+        // `language_cookie_name` is only sent for spectators.
+        language_cookie_name: z.optional(z.string()),
         language_list: z.array(
             z.object({
                 code: z.string(),
