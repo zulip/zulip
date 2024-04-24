@@ -39,7 +39,7 @@ function change_display_setting(data, $status_el, success_msg_html, sticky) {
         sticky: status_is_sticky || sticky,
     };
 
-    if (sticky) {
+    if (sticky && success_msg_html) {
         $status_el.data("is_sticky", true);
         $status_el.data("sticky_msg_html", success_msg_html);
     }
