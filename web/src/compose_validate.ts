@@ -66,7 +66,10 @@ function update_send_button_status(): void {
 
 export function get_disabled_send_tooltip(): string {
     if (message_too_long) {
-        return $t({defaultMessage: "Message length shouldn't be greater than 10000 characters."});
+        return $t(
+            {defaultMessage: `Message length shouldn't be greater than {max_length} characters.`},
+            {max_length: realm.max_message_length},
+        );
     } else if (upload_in_progress) {
         return $t({defaultMessage: "Cannot send message while files are being uploaded."});
     }
@@ -689,6 +692,7 @@ export function check_overflow_text(): number {
     // expensive.
     const text = compose_state.message_content();
     const max_length = realm.max_message_length;
+    const remaining_characters = max_length - text.length;
     const $indicator = $("#compose-limit-indicator");
 
     if (text.length > max_length) {
@@ -696,8 +700,7 @@ export function check_overflow_text(): number {
         $("textarea#compose-textarea").addClass("over_limit");
         $indicator.html(
             render_compose_limit_indicator({
-                text_length: text.length,
-                max_length,
+                remaining_characters,
             }),
         );
         compose_banner.show_error_message(
@@ -712,13 +715,12 @@ export function check_overflow_text(): number {
             $("#compose_banners"),
         );
         set_message_too_long(true);
-    } else if (text.length > 0.9 * max_length) {
+    } else if (remaining_characters <= 900) {
         $indicator.removeClass("over_limit");
         $("textarea#compose-textarea").removeClass("over_limit");
         $indicator.html(
             render_compose_limit_indicator({
-                text_length: text.length,
-                max_length,
+                remaining_characters,
             }),
         );
         set_message_too_long(false);

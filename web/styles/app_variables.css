@@ -276,6 +276,8 @@
         231deg 100% 90% / 50%
     );
     --color-compose-chevron-arrow: hsl(0deg 0% 58%);
+    --color-limit-indicator: hsl(38deg 100% 36%);
+    --color-limit-indicator-over-limit: hsl(3deg 80% 40%);
 
     /* Text colors */
     --color-text-default: hsl(0deg 0% 20%);
@@ -585,6 +587,8 @@
         235deg 100% 70% / 11%
     );
     --color-background-popover: hsl(212deg 32% 14%);
+    --color-limit-indicator: hsl(38deg 100% 70%);
+    --color-limit-indicator-over-limit: hsl(3deg 80% 60%);
 
     /* Text colors */
     --color-text-default: hsl(0deg 0% 100% / 75%);

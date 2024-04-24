@@ -304,14 +304,16 @@
 
 #compose-limit-indicator {
     font-size: 12px;
-    color: hsl(39deg 100% 50%);
+    color: var(--color-limit-indicator);
+    width: max-content;
 
-    /* Keep the limit indicator
-       just above the send button */
+    /* Keep the limit indicator just above
+       and aligned with the send button */
     margin-top: auto;
+    padding: 3px 3px 3px 0;
 
     &.over_limit {
-        color: hsl(0deg 76% 65%);
+        color: var(--color-limit-indicator-over-limit);
         font-weight: bold;
     }
 }
