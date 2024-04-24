@@ -55,7 +55,6 @@ export function set_up(
     };
     new Typeahead(bootstrap_typeahead_input, {
         items: 5,
-        fixed: true,
         dropup: true,
         source(query: string): TypeaheadItem[] {
             let source: TypeaheadItem[] = [];

@@ -209,7 +209,6 @@ export class Typeahead<ItemType extends string | object> {
     $header: JQuery;
     source: (query: string, input_element: TypeaheadInputElement) => ItemType[];
     dropup: boolean;
-    fixed: boolean;
     automated: () => boolean;
     trigger_selection: (event: JQuery.KeyDownEvent) => boolean;
     on_escape?: () => void;
@@ -248,7 +247,6 @@ export class Typeahead<ItemType extends string | object> {
         this.$header = $(HEADER_ELEMENT_HTML).appendTo(this.$container);
         this.source = options.source;
         this.dropup = options.dropup ?? false;
-        this.fixed = options.fixed ?? false;
         this.automated = options.automated ?? (() => false);
         this.trigger_selection = options.trigger_selection ?? (() => false);
         this.on_escape = options.on_escape;
@@ -266,9 +264,6 @@ export class Typeahead<ItemType extends string | object> {
         this.parentElement = options.parentElement;
         this.values = new WeakMap();
 
-        if (this.fixed) {
-            this.$container.css("position", "fixed");
-        }
         // The naturalSearch option causes arrow keys to immediately
         // update the search box with the underlying values from the
         // search suggestions.
@@ -329,12 +324,7 @@ export class Typeahead<ItemType extends string | object> {
         if (this.parentElement === undefined) {
             let pos;
 
-            if (this.fixed) {
-                // Relative to screen instead of to page
-                pos = this.input_element.$element[0].getBoundingClientRect();
-            } else {
-                pos = this.input_element.$element.offset();
-            }
+            pos = this.input_element.$element[0].getBoundingClientRect();
 
             pos = $.extend({}, pos, {
                 height: this.input_element.$element[0].offsetHeight,
@@ -709,7 +699,6 @@ type TypeaheadOptions<ItemType> = {
     automated?: () => boolean;
     closeInputFieldOnHide?: () => void;
     dropup?: boolean;
-    fixed?: boolean;
     header_html?: () => string | false;
     helpOnEmptyStrings?: boolean;
     matcher?: (item: ItemType, query: string) => boolean;

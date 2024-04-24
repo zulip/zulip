@@ -1109,7 +1109,6 @@ export function initialize_topic_edit_typeahead(form_field, stream_name, dropup)
         type: "input",
     };
     return new Typeahead(bootstrap_typeahead_input, {
-        fixed: true,
         dropup,
         highlighter_html(item) {
             return typeahead_helper.render_typeahead_item({primary: item});
@@ -1161,7 +1160,6 @@ export function initialize_compose_typeahead(selector) {
     new Typeahead(bootstrap_typeahead_input, {
         items: max_num_items,
         dropup: true,
-        fixed: true,
         // Performance note: We have trivial matcher/sorters to do
         // matching and sorting inside the `source` field to avoid
         // O(n) behavior in the number of users in the organization
@@ -1196,7 +1194,6 @@ export function initialize({on_enter_send}) {
             return topics_seen_for(compose_state.stream_id());
         },
         items: 3,
-        fixed: true,
         highlighter_html(item) {
             return typeahead_helper.render_typeahead_item({primary: item});
         },
@@ -1224,7 +1221,6 @@ export function initialize({on_enter_send}) {
         source: get_pm_people,
         items: max_num_items,
         dropup: true,
-        fixed: true,
         highlighter_html(item) {
             return typeahead_helper.render_person_or_user_group(item);
         },
