@@ -25,6 +25,7 @@ from zerver.lib.user_groups import (
     get_direct_user_groups,
     get_recursive_group_members,
     get_recursive_membership_groups,
+    get_recursive_strict_subgroups,
     get_recursive_subgroups,
     get_subgroup_ids,
     get_user_group_member_ids,
@@ -121,6 +122,13 @@ class UserGroupTestCase(ZulipTestCase):
             [leadership_group, staff_group, everyone_group],
         )
 
+        self.assertCountEqual(list(get_recursive_strict_subgroups(leadership_group)), [])
+        self.assertCountEqual(list(get_recursive_strict_subgroups(staff_group)), [leadership_group])
+        self.assertCountEqual(
+            list(get_recursive_strict_subgroups(everyone_group)),
+            [leadership_group, staff_group],
+        )
+
         self.assertCountEqual(list(get_recursive_group_members(leadership_group)), [desdemona])
         self.assertCountEqual(list(get_recursive_group_members(staff_group)), [desdemona, iago])
         self.assertCountEqual(
@@ -162,35 +170,32 @@ class UserGroupTestCase(ZulipTestCase):
             is_system_group=True,
         )
 
-        self.assertCountEqual(list(get_recursive_subgroups(owners_group)), [owners_group])
+        self.assertCountEqual(list(get_recursive_strict_subgroups(owners_group)), [])
+        self.assertCountEqual(list(get_recursive_strict_subgroups(admins_group)), [owners_group])
         self.assertCountEqual(
-            list(get_recursive_subgroups(admins_group)), [owners_group, admins_group]
+            list(get_recursive_strict_subgroups(moderators_group)),
+            [owners_group, admins_group],
         )
         self.assertCountEqual(
-            list(get_recursive_subgroups(moderators_group)),
+            list(get_recursive_strict_subgroups(full_members_group)),
             [owners_group, admins_group, moderators_group],
         )
         self.assertCountEqual(
-            list(get_recursive_subgroups(full_members_group)),
+            list(get_recursive_strict_subgroups(members_group)),
             [owners_group, admins_group, moderators_group, full_members_group],
         )
         self.assertCountEqual(
-            list(get_recursive_subgroups(members_group)),
-            [owners_group, admins_group, moderators_group, full_members_group, members_group],
-        )
-        self.assertCountEqual(
-            list(get_recursive_subgroups(everyone_group)),
+            list(get_recursive_strict_subgroups(everyone_group)),
             [
                 owners_group,
                 admins_group,
                 moderators_group,
                 full_members_group,
                 members_group,
-                everyone_group,
             ],
         )
         self.assertCountEqual(
-            list(get_recursive_subgroups(everyone_on_internet_group)),
+            list(get_recursive_strict_subgroups(everyone_on_internet_group)),
             [
                 owners_group,
                 admins_group,
@@ -198,7 +203,6 @@ class UserGroupTestCase(ZulipTestCase):
                 full_members_group,
                 members_group,
                 everyone_group,
-                everyone_on_internet_group,
             ],
         )
 
