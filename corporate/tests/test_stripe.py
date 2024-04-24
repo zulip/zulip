@@ -2344,6 +2344,37 @@ class StripeTest(StripeTestCase):
             response,
         )
 
+    def test_demo_request(self) -> None:
+        result = self.client_get("/request-demo/")
+        self.assertEqual(result.status_code, 200)
+        self.assert_in_success_response(["Request a demo"], result)
+
+        data = {
+            "full_name": "King Hamlet",
+            "email": "test@zulip.com",
+            "role": "Manager",
+            "organization_name": "Zulip",
+            "organization_type": "Business",
+            "organization_website": "https://example.com",
+            "expected_user_count": "10 (2 unpaid members)",
+            "message": "Need help!",
+        }
+        result = self.client_post("/request-demo/", data)
+        self.assert_in_success_response(["Thanks for contacting us!"], result)
+
+        from django.core.mail import outbox
+
+        self.assert_length(outbox, 1)
+
+        for message in outbox:
+            self.assert_length(message.to, 1)
+            self.assertEqual(message.to[0], "desdemona+admin@zulip.com")
+            self.assertEqual(message.subject, "Demo request for Zulip")
+            self.assertEqual(message.reply_to, ["test@zulip.com"])
+            self.assertEqual(self.email_envelope_from(message), settings.NOREPLY_EMAIL_ADDRESS)
+            self.assertIn("Zulip demo request <noreply-", self.email_display_from(message))
+            self.assertIn("Full name: King Hamlet", message.body)
+
     def test_support_request(self) -> None:
         user = self.example_user("hamlet")
         self.assertIsNone(get_customer_by_realm(user.realm))
