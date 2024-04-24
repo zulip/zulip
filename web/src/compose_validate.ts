@@ -703,17 +703,6 @@ export function check_overflow_text(): number {
                 remaining_characters,
             }),
         );
-        compose_banner.show_error_message(
-            $t(
-                {
-                    defaultMessage:
-                        "Message length shouldn't be greater than {max_length} characters.",
-                },
-                {max_length},
-            ),
-            compose_banner.CLASSNAMES.message_too_long,
-            $("#compose_banners"),
-        );
         set_message_too_long(true);
     } else if (remaining_characters <= 900) {
         $indicator.removeClass("over_limit");
@@ -724,13 +713,11 @@ export function check_overflow_text(): number {
             }),
         );
         set_message_too_long(false);
-        $(`#compose_banners .${CSS.escape(compose_banner.CLASSNAMES.message_too_long)}`).remove();
     } else {
         $indicator.text("");
         $("textarea#compose-textarea").removeClass("over_limit");
 
         set_message_too_long(false);
-        $(`#compose_banners .${CSS.escape(compose_banner.CLASSNAMES.message_too_long)}`).remove();
     }
 
     return text.length;

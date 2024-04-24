@@ -520,23 +520,10 @@ test_ui("test_validate_stream_message_post_policy_full_members_only", ({mock_tem
 });
 
 test_ui("test_check_overflow_text", ({mock_template}) => {
-    mock_banners();
     realm.max_message_length = 10000;
 
     const $textarea = $("textarea#compose-textarea");
     const $indicator = $("#compose-limit-indicator");
-    let banner_rendered = false;
-    mock_template("compose_banner/compose_banner.hbs", false, (data) => {
-        assert.equal(data.classname, compose_banner.CLASSNAMES.message_too_long);
-        assert.equal(
-            data.banner_text,
-            $t({
-                defaultMessage: "Message length shouldn't be greater than 10000 characters.",
-            }),
-        );
-        banner_rendered = true;
-        return "<banner-stub>";
-    });
 
     // Indicator should show red colored text
     let limit_indicator_html;
@@ -548,27 +535,22 @@ test_ui("test_check_overflow_text", ({mock_template}) => {
     assert.ok($indicator.hasClass("over_limit"));
     assert.equal(limit_indicator_html, "-1\n");
     assert.ok($textarea.hasClass("over_limit"));
-    assert.ok(banner_rendered);
     assert.ok($(".message-send-controls").hasClass("disabled-message-send-controls"));
 
     // Indicator should show orange colored text
-    banner_rendered = false;
     $textarea.val("a".repeat(9100));
     compose_validate.check_overflow_text();
     assert.ok(!$indicator.hasClass("over_limit"));
     assert.equal(limit_indicator_html, "900\n");
     assert.ok(!$textarea.hasClass("over_limit"));
     assert.ok(!$(".message-send-controls").hasClass("disabled-message-send-controls"));
-    assert.ok(!banner_rendered);
 
     // Indicator must be empty
-    banner_rendered = false;
     $textarea.val("a".repeat(9100 - 1));
     compose_validate.check_overflow_text();
     assert.ok(!$indicator.hasClass("over_limit"));
     assert.equal($indicator.text(), "");
     assert.ok(!$textarea.hasClass("over_limit"));
-    assert.ok(!banner_rendered);
 });
 
 test_ui("needs_subscribe_warning", () => {
