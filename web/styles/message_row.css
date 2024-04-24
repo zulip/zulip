@@ -520,7 +520,6 @@
 /* Additional message-editing UI styles. */
 
 .message_edit_content {
-    line-height: 18px;
     max-height: 24em;
     width: 100%;
     min-width: 206px;
@@ -533,7 +532,9 @@
     border-radius: 4px;
     vertical-align: middle;
     border: 1px solid hsl(0deg 0% 80%);
-    padding: 4px 6px;
+    /* Match textarea padding to compose box and
+       message-edit preview area. */
+    padding: 5px;
     margin: 0 0 10px;
 
     box-shadow: inset 0 1px 1px hsl(0deg 0% 0% / 7.5%);
