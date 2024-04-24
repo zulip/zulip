@@ -32,7 +32,7 @@ import * as util from "./util";
 
 let custom_expiration_time_input = 10;
 let custom_expiration_time_unit = "days";
-let pills: email_pill.EmailPillWidget;
+let email_pills: email_pill.EmailPillWidget;
 
 function reset_error_messages(): void {
     $("#dialog_error").hide().text("").removeClass(common.status_classes);
@@ -85,15 +85,15 @@ function get_common_invitation_data(): {
         invite_as,
         stream_ids: JSON.stringify(stream_ids),
         invite_expires_in_minutes: JSON.stringify(expires_in),
-        invitee_emails: pills
+        invitee_emails: email_pills
             .items()
             .map((pill) => email_pill.get_email_from_item(pill))
             .join(","),
         include_realm_default_subscriptions: JSON.stringify(include_realm_default_subscriptions),
     };
-    const current_email = email_pill.get_current_email(pills);
+    const current_email = email_pill.get_current_email(email_pills);
     if (current_email) {
-        if (pills.items().length === 0) {
+        if (email_pills.items().length === 0) {
             data.invitee_emails = current_email;
         } else {
             data.invitee_emails += "," + current_email;
@@ -125,7 +125,7 @@ function submit_invitation_form(): void {
         data,
         beforeSend,
         success() {
-            const number_of_invites_sent = pills.items().length;
+            const number_of_invites_sent = email_pills.items().length;
             ui_report.success(
                 $t_html(
                     {
@@ -136,7 +136,7 @@ function submit_invitation_form(): void {
                 ),
                 $invite_status,
             );
-            pills.clear();
+            email_pills.clear();
 
             if (page_params.development_environment) {
                 const rendered_email_msg = render_settings_dev_env_email_access();
@@ -197,7 +197,7 @@ function submit_invitation_form(): void {
 
                 if (parsed.data.sent_invitations) {
                     for (const email of invitee_emails_errored) {
-                        pills.appendValue(email);
+                        email_pills.appendValue(email);
                     }
                 }
             }
@@ -351,9 +351,9 @@ function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void
 
     function invite_user_modal_post_render(): void {
         const $expires_in = $<HTMLSelectOneElement>("select:not([multiple])#expires_in");
-        const $pill_container = $("#invitee_emails_container .pill-container");
-        pills = input_pill.create({
-            $container: $pill_container,
+        const $email_pill_container = $("#invitee_emails_container .pill-container");
+        email_pills = input_pill.create({
+            $container: $email_pill_container,
             create_item_from_text: email_pill.create_item_from_email,
             get_text_from_item: email_pill.get_email_from_item,
         });
@@ -388,8 +388,8 @@ function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void
             $button.prop(
                 "disabled",
                 selected_tab === "invite-email-tab" &&
-                    pills.items().length === 0 &&
-                    email_pill.get_current_email(pills) === null,
+                    email_pills.items().length === 0 &&
+                    email_pill.get_current_email(email_pills) === null,
             );
             if (selected_tab === "invite-email-tab") {
                 $button.text($t({defaultMessage: "Invite"}));
@@ -400,11 +400,11 @@ function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void
             }
         }
 
-        pills.onPillCreate(toggle_invite_submit_button);
-        pills.onPillRemove(() => {
+        email_pills.onPillCreate(toggle_invite_submit_button);
+        email_pills.onPillRemove(() => {
             toggle_invite_submit_button();
         });
-        pills.onTextInputHook(toggle_invite_submit_button);
+        email_pills.onTextInputHook(toggle_invite_submit_button);
 
         $expires_in.on("change", () => {
             set_custom_time_inputs_visibility();
