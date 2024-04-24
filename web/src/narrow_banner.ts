@@ -1,6 +1,8 @@
 import $ from "jquery";
 import assert from "minimalistic-assert";
 
+import render_empty_view_messages from "../templates/empty_view_messages.hbs";
+
 import {$t, $t_html} from "./i18n";
 import type {NarrowBannerData, SearchData} from "./narrow_error";
 import {narrow_error} from "./narrow_error";
@@ -173,33 +175,14 @@ function pick_empty_narrow_banner(): NarrowBannerData {
                     // You currently have no starred messages.
                     return {
                         title: $t({defaultMessage: "You have no starred messages."}),
-                        html: $t_html(
-                            {
-                                defaultMessage:
-                                    "Learn more about starring messages <z-link>here</z-link>.",
-                            },
-                            {
-                                "z-link": (content_html) =>
-                                    `<a target="_blank" rel="noopener noreferrer" href="/help/star-a-message">${content_html.join(
-                                        "",
-                                    )}</a>`,
-                            },
-                        ),
+                        html: render_empty_view_messages({is_empty_starred: true}),
                     };
                 case "mentioned":
                     return {
-                        title: $t({defaultMessage: "You haven't been mentioned yet!"}),
-                        html: $t_html(
-                            {
-                                defaultMessage: "Learn more about mentions <z-link>here</z-link>.",
-                            },
-                            {
-                                "z-link": (content_html) =>
-                                    `<a target="_blank" rel="noopener noreferrer" href="/help/mention-a-user-or-group">${content_html.join(
-                                        "",
-                                    )}</a>`,
-                            },
-                        ),
+                        title: $t({
+                            defaultMessage: "This view will show messages where you are mentioned.",
+                        }),
+                        html: render_empty_view_messages({is_empty_mentioned: true}),
                     };
                 case "dm":
                     // You have no direct messages.

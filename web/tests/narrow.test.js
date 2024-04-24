@@ -38,6 +38,15 @@ function empty_narrow_html(title, html, search_data) {
     return require("../templates/empty_feed_notice.hbs")(opts);
 }
 
+function empty_view_messages_html(title, is_empty_starred, is_empty_mentioned) {
+    const opts = {
+        is_empty_starred,
+        is_empty_mentioned,
+    };
+    const html_body = require("../templates/empty_view_messages.hbs")(opts);
+    return empty_narrow_html(title, html_body);
+}
+
 function set_filter(terms) {
     terms = terms.map((op) => ({
         operator: op[0],
@@ -206,6 +215,7 @@ run_test("show_empty_narrow_message", ({mock_template}) => {
     realm.stop_words = [];
 
     mock_template("empty_feed_notice.hbs", true, (_data, html) => html);
+    mock_template("empty_view_messages.hbs", true, (_data, html) => html);
 
     message_lists.set_current(undefined);
     narrow_banner.show_empty_narrow_message();
@@ -279,19 +289,17 @@ run_test("show_empty_narrow_message", ({mock_template}) => {
     narrow_banner.show_empty_narrow_message();
     assert.equal(
         $(".empty_feed_notice_main").html(),
-        empty_narrow_html(
-            "translated: You have no starred messages.",
-            'translated HTML: Learn more about starring messages <a target="_blank" rel="noopener noreferrer" href="/help/star-a-message">here</a>.',
-        ),
+        empty_view_messages_html("translated: You have no starred messages.", true, false),
     );
 
     set_filter([["is", "mentioned"]]);
     narrow_banner.show_empty_narrow_message();
     assert.equal(
         $(".empty_feed_notice_main").html(),
-        empty_narrow_html(
-            "translated: You haven't been mentioned yet!",
-            'translated HTML: Learn more about mentions <a target="_blank" rel="noopener noreferrer" href="/help/mention-a-user-or-group">here</a>.',
+        empty_view_messages_html(
+            "translated: This view will show messages where you are mentioned.",
+            false,
+            true,
         ),
     );
 

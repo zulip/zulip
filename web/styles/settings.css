@@ -1972,6 +1972,13 @@ $option_title_width: 180px;
     }
 }
 
+.empty-view-message {
+    width: 100%; /* Ensures it takes the full width up to 800px */
+    .left {
+        text-align: left;
+    }
+}
+
 #generate-integration-url-modal {
     .inline {
         display: inline;

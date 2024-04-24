@@ -1,0 +1,22 @@
+<div class="empty-view-message">
+    <p class="left">
+        {{#if is_empty_starred}}
+            {{#tr}} Starring messages is a good way to keep track of important messages,
+                such as tasks you need to go back to, or useful references.
+                To star a message, click the <star-icon-link></star-icon-link> in its upper right.
+                <z-link>Learn more. </z-link>
+                {{#*inline "z-link"}}<a target="_blank" rel="noopener noreferrer" href="/help/star-a-message">{{> @partial-block}}</a>{{/inline}}
+                {{#*inline "star-icon-link"}}<i class="zulip-icon zulip-icon-star" aria-hidden="true"></i>{{/inline}}
+            {{/tr}}
+        {{else if is_empty_mentioned}}
+            {{#tr}}To call attention to a message, you can mention a user, a group, topic participants,
+            or all subscribers to a stream. Type <mention-icon-link></mention-icon-link> in the compose box,
+            and choose who you'd like to mention from the list of suggestions.
+                <z-link>Learn more. </z-link>
+                {{#*inline "z-link"}}<a target="_blank" rel="noopener noreferrer" href="/help/mention-a-user-or-group">{{> @partial-block}}</a>{{/inline}}
+                {{#*inline "mention-icon-link"}}<i class="fa fa-at"></i>{{/inline}}
+            {{/tr}}
+        {{/if}}
+    </p>
+</div>
+
