@@ -85,6 +85,8 @@ run_test("stream_to_channel_rename", () => {
     let narrow;
     let filter;
 
+    // Confirm the URLs generated from search terms use "stream" and "streams"
+    // and that the new Filter has the new "channel" and "channels" operators.
     terms = [{operator: "channel", operand: "devel"}];
     hash = hash_util.search_terms_to_hash(terms);
     assert.equal(hash, "#narrow/stream/devel");
@@ -100,6 +102,19 @@ run_test("stream_to_channel_rename", () => {
     assert.deepEqual(narrow, [{operator: "streams", operand: "public", negated: false}]);
     filter = new Filter(narrow);
     assert.deepEqual(filter.terms(), [{operator: "channels", operand: "public", negated: false}]);
+
+    // Confirm that a narrow URL with "channel" and an enocoded stream/channel ID,
+    // will be decoded correctly.
+    const test_channel = {
+        name: "decode",
+        stream_id: 34,
+    };
+    stream_data.add_sub(test_channel);
+    hash = "#narrow/channel/34-decode";
+    narrow = hash_util.parse_narrow(hash.split("/"));
+    assert.deepEqual(narrow, [{operator: "channel", operand: "decode", negated: false}]);
+    filter = new Filter(narrow);
+    assert.deepEqual(filter.terms(), [{operator: "channel", operand: "decode", negated: false}]);
 });
 
 run_test("terms_trailing_slash", () => {
