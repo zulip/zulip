@@ -825,7 +825,7 @@ export function process_hotkey(e, hotkey) {
 
     // Handle hotkeys for active popovers here which can handle keys other than `menu_dropdown_hotkeys`.
     if (
-        navbar_menus.is_navbar_menus_displayed() &&
+        (navbar_menus.is_navbar_menus_displayed() || navbar_menus.can_handle_navigation_hotkey()) &&
         navbar_menus.handle_keyboard_events(event_name)
     ) {
         return true;
