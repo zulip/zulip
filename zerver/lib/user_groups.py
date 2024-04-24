@@ -328,6 +328,18 @@ def get_recursive_subgroups(user_group: UserGroup) -> QuerySet[UserGroup]:
     return cte.join(UserGroup, id=cte.col.group_id).with_cte(cte)
 
 
+def get_recursive_strict_subgroups(user_group: UserGroup) -> QuerySet[UserGroup]:
+    # Same as get_recursive_subgroups but does not include the
+    # user_group passed.
+    direct_subgroup_ids = user_group.direct_subgroups.all().values("id")
+    cte = With.recursive(
+        lambda cte: UserGroup.objects.filter(id__in=direct_subgroup_ids)
+        .values(group_id=F("id"))
+        .union(cte.join(UserGroup, direct_supergroups=cte.col.group_id).values(group_id=F("id")))
+    )
+    return cte.join(UserGroup, id=cte.col.group_id).with_cte(cte)
+
+
 def get_recursive_group_members(user_group: UserGroup) -> QuerySet[UserProfile]:
     return UserProfile.objects.filter(direct_groups__in=get_recursive_subgroups(user_group))
 
@@ -365,11 +377,7 @@ def get_subgroup_ids(user_group: UserGroup, *, direct_subgroup_only: bool = Fals
     if direct_subgroup_only:
         subgroup_ids = user_group.direct_subgroups.all().values_list("id", flat=True)
     else:
-        subgroup_ids = (
-            get_recursive_subgroups(user_group)
-            .exclude(id=user_group.id)
-            .values_list("id", flat=True)
-        )
+        subgroup_ids = get_recursive_strict_subgroups(user_group).values_list("id", flat=True)
 
     return list(subgroup_ids)
 
