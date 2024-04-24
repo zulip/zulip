@@ -172,7 +172,6 @@ export function initialize_custom_pronouns_type_fields(element_id) {
     };
     new Typeahead(bootstrap_typeahead_input, {
         items: 3,
-        fixed: true,
         helpOnEmptyStrings: true,
         source() {
             return commonly_used_pronouns;

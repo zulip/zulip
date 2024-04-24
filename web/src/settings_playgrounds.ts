@@ -170,7 +170,6 @@ function build_page(): void {
             return [...language_labels.keys()];
         },
         items: 5,
-        fixed: true,
         helpOnEmptyStrings: true,
         highlighter_html: (item: string): string =>
             render_typeahead_item({primary: language_labels.get(item)}),
