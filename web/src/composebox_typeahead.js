@@ -399,6 +399,8 @@ export function broadcast_mentions() {
     if (compose_state.get_message_type() === "private") {
         wildcard_mention_array = ["all", "everyone"];
     } else if (compose_validate.stream_wildcard_mention_allowed()) {
+        // TODO: Eventually remove "stream" wildcard from typeahead suggestions
+        // once the rename of stream to channel has settled for users.
         wildcard_mention_array = ["all", "everyone", "stream", "channel", "topic"];
     } else if (compose_validate.topic_wildcard_mention_allowed()) {
         wildcard_mention_array = ["topic"];
