@@ -534,7 +534,7 @@
     vertical-align: middle;
     border: 1px solid hsl(0deg 0% 80%);
     padding: 4px 6px;
-    margin-bottom: 10px;
+    margin: 0 0 10px;
 
     box-shadow: inset 0 1px 1px hsl(0deg 0% 0% / 7.5%);
     transition:
