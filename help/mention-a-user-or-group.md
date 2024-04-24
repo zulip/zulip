@@ -73,13 +73,13 @@ streams](/help/stream-notifications).
 ## Mention everyone on a stream
 
 You can mention everyone on a stream with the `@**all**` mention (or,
-equivalently, `@**everyone**` or `@**stream**`). It's best to use these mentions
+equivalently, `@**everyone**` or `@**channel**`). It's best to use these mentions
 only when your message requires timely attention from many stream subscribers.
 An organization can be configured to
 [restrict](/help/restrict-wildcard-mentions) wildcard mentions in large streams.
 
 Users can disable notifications for `@**all**`, `@**everyone**`, and
-`@**stream**` mentions by:
+`@**channel**` mentions by:
 
 - Disabling notifications for wildcard mentions
 [globally](/help/dm-mention-alert-notifications) or for [individual
