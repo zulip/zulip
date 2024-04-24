@@ -527,6 +527,7 @@ html {
         input[type="email"],
         input[type="password"],
         input[type="number"],
+        input[type="url"],
         textarea,
         select {
             padding: 10px 32px 10px 12px;
