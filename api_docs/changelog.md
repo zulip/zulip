@@ -20,6 +20,15 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 9.0
 
+**Feature level 255**
+
+* "Stream" was renamed to "Channel" across strings in the Zulip API
+  and UI. Clients supporting a range of server versions are encouraged
+  to use different strings based on the server's API feature level for
+  consistency. Note that feature level marks the strings transition
+  only: Actual API changes related to this transition have their own
+  API changelog entries.
+
 **Feature level 254**
 
 * [`POST /register`](/api/register-queue), [`GET /events`](/api/get-events),
