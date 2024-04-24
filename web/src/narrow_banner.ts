@@ -266,19 +266,23 @@ function pick_empty_narrow_banner(): NarrowBannerData {
                 if (can_toggle_narrowed_stream()) {
                     return {
                         title: $t({
-                            defaultMessage:
-                                "You aren't subscribed to this stream and nobody has talked about that yet!",
+                            defaultMessage: "There are no messages here.",
                         }),
                         // TODO: Consider moving the button to be its own option in the template.
                         html: $t_html(
                             {
-                                defaultMessage: "<z-button>Subscribe</z-button>",
+                                defaultMessage:
+                                    "Why not <z-link>start the conversation</z-link>? <z-button>Subscribe</z-button>",
                             },
                             {
-                                "z-button": (content_html) =>
-                                    `<button class="button white rounded stream_sub_unsub_button sea-green" type="button" name="subscription">${content_html.join(
+                                "z-link": (content_html) =>
+                                    `<a href="#" class="empty_feed_compose_stream">${content_html.join(
                                         "",
-                                    )}</button>`,
+                                    )}</a>`,
+                                "z-button": (content_html) =>
+                                    `<div class="sub_button_row new-style"><button class="button white rounded stream_sub_unsub_button sea-green" type="button" name="subscription">${content_html.join(
+                                        "",
+                                    )}</button></div>`,
                             },
                         ),
                     };
