@@ -95,6 +95,21 @@ class SupportRequestForm(forms.Form):
     request_message = forms.CharField(widget=forms.Textarea)
 
 
+class DemoRequestForm(forms.Form):
+    MAX_INPUT_LENGTH = 50
+    SORTED_ORG_TYPE_NAMES = sorted(
+        ([org_type["name"] for org_type in Realm.ORG_TYPES.values() if not org_type["hidden"]]),
+    )
+    full_name = forms.CharField(max_length=MAX_INPUT_LENGTH)
+    email = forms.EmailField()
+    role = forms.CharField(max_length=MAX_INPUT_LENGTH)
+    organization_name = forms.CharField(max_length=MAX_INPUT_LENGTH)
+    organization_type = forms.CharField()
+    organization_website = forms.URLField(required=True)
+    expected_user_count = forms.CharField(max_length=MAX_INPUT_LENGTH)
+    message = forms.CharField(widget=forms.Textarea)
+
+
 @zulip_login_required
 @has_request_variables
 def support_request(request: HttpRequest) -> HttpResponse:
@@ -136,6 +151,47 @@ def support_request(request: HttpRequest) -> HttpResponse:
             return response
 
     response = render(request, "corporate/support/support_request.html", context=context)
+    return response
+
+
+@has_request_variables
+def demo_request(request: HttpRequest) -> HttpResponse:
+    context = {
+        "MAX_INPUT_LENGTH": DemoRequestForm.MAX_INPUT_LENGTH,
+        "SORTED_ORG_TYPE_NAMES": DemoRequestForm.SORTED_ORG_TYPE_NAMES,
+    }
+
+    if request.POST:
+        post_data = request.POST.copy()
+        form = DemoRequestForm(post_data)
+
+        if form.is_valid():
+            email_context = {
+                "full_name": form.cleaned_data["full_name"],
+                "email": form.cleaned_data["email"],
+                "role": form.cleaned_data["role"],
+                "organization_name": form.cleaned_data["organization_name"],
+                "organization_type": form.cleaned_data["organization_type"],
+                "organization_website": form.cleaned_data["organization_website"],
+                "expected_user_count": form.cleaned_data["expected_user_count"],
+                "message": form.cleaned_data["message"],
+            }
+            # Sent to the server's support team, so this email is not user-facing.
+            send_email(
+                "zerver/emails/demo_request",
+                to_emails=[FromAddress.SUPPORT],
+                from_name="Zulip demo request",
+                from_address=FromAddress.tokenized_no_reply_address(),
+                reply_to_email=email_context["email"],
+                context=email_context,
+            )
+
+            response = render(
+                request, "corporate/support/support_request_thanks.html", context=context
+            )
+            return response
+
+    response = render(request, "corporate/support/demo_request.html", context=context)
     return response
 
 

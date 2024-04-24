@@ -68,7 +68,7 @@ from corporate.views.sponsorship import (
     sponsorship,
     sponsorship_page,
 )
-from corporate.views.support import remote_servers_support, support, support_request
+from corporate.views.support import demo_request, remote_servers_support, support, support_request
 from corporate.views.upgrade import (
     remote_realm_upgrade,
     remote_realm_upgrade_page,
@@ -94,6 +94,7 @@ i18n_urlpatterns: Any = [
     path("sponsorship/", sponsorship_page, name="sponsorship_request"),
     path("upgrade/", upgrade_page, name="upgrade_page"),
     path("support/", support_request),
+    path("request-demo/", demo_request),
     path("billing/event_status/", event_status_page, name="event_status_page"),
     path("stripe/webhook/", stripe_webhook, name="stripe_webhook"),
     # Server admin (user_profile.is_staff) visible stats pages
