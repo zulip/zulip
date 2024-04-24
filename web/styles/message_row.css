@@ -521,8 +521,40 @@
 
 .message_edit_content {
     line-height: 18px;
-    resize: vertical !important;
     max-height: 24em;
+    width: 100%;
+    min-width: 206px;
+    box-sizing: border-box;
+    /* Setting resize as none hides the bottom right diagonal box
+       (which even has a background color of its own!). */
+    resize: none !important;
+    color: hsl(0deg 0% 33%);
+    background-color: hsl(0deg 0% 100%);
+    border-radius: 4px;
+    vertical-align: middle;
+    border: 1px solid hsl(0deg 0% 80%);
+    padding: 4px 6px;
+    margin-bottom: 10px;
+
+    box-shadow: inset 0 1px 1px hsl(0deg 0% 0% / 7.5%);
+    transition:
+        border linear 0.2s,
+        box-shadow linear 0.2s;
+
+    &:focus {
+        border-color: hsl(206.5deg 80% 62% / 80%);
+        outline: 0;
+
+        box-shadow:
+            inset 0 1px 1px hsl(0deg 0% 0% / 7.5%),
+            0 0 8px hsl(206.5deg 80% 62% / 60%);
+    }
+
+    &:read-only,
+    &:disabled {
+        cursor: not-allowed;
+        background-color: hsl(0deg 0% 93%);
+    }
 }
 
 .message_edit_countdown_timer {
@@ -589,42 +621,6 @@
     .edit-controls {
         margin-left: 0;
         margin-top: 0;
-    }
-
-    & textarea {
-        width: 100%;
-        min-width: 206px;
-        box-sizing: border-box;
-        /* Setting resize as none hides the bottom right diagonal box
-           (which even has a background color of its own!). */
-        resize: none !important;
-        color: hsl(0deg 0% 33%);
-        background-color: hsl(0deg 0% 100%);
-        border-radius: 4px;
-        vertical-align: middle;
-        border: 1px solid hsl(0deg 0% 80%);
-        padding: 4px 6px;
-        margin-bottom: 10px;
-
-        box-shadow: inset 0 1px 1px hsl(0deg 0% 0% / 7.5%);
-        transition:
-            border linear 0.2s,
-            box-shadow linear 0.2s;
-
-        &:focus {
-            border-color: hsl(206.5deg 80% 62% / 80%);
-            outline: 0;
-
-            box-shadow:
-                inset 0 1px 1px hsl(0deg 0% 0% / 7.5%),
-                0 0 8px hsl(206.5deg 80% 62% / 60%);
-        }
-
-        &:read-only,
-        &:disabled {
-            cursor: not-allowed;
-            background-color: hsl(0deg 0% 93%);
-        }
     }
 }
 
