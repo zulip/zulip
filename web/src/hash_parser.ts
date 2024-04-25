@@ -91,6 +91,20 @@ export function is_create_new_stream_narrow(): boolean {
     return window.location.hash === "#streams/new";
 }
 
+// This checks whether the user is in the stream settings menu
+// and is opening the 'Subscribers' tab on the right panel.
+export function is_subscribers_section_opened_for_stream(): boolean {
+    const hash_components = window.location.hash.slice(1).split(/\//);
+
+    if (hash_components[0] !== "streams") {
+        return false;
+    }
+    if (!hash_components[3]) {
+        return false;
+    }
+    return hash_components[3] === "subscribers";
+}
+
 export const allowed_web_public_narrows = [
     "channels",
     "channel",

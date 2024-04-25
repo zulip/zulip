@@ -161,6 +161,23 @@ run_test("test_is_create_new_stream_narrow", () => {
     assert.equal(hash_parser.is_create_new_stream_narrow(), false);
 });
 
+run_test("test_is_subscribers_section_opened_for_stream", () => {
+    window.location.hash = "#streams/1/Design/subscribers";
+    assert.equal(hash_parser.is_subscribers_section_opened_for_stream(), true);
+
+    window.location.hash = "#streams/99/.EC.A1.B0.EB.A6.AC.EB.B2.95.20.F0.9F.98.8E/subscribers";
+    assert.equal(hash_parser.is_subscribers_section_opened_for_stream(), true);
+
+    window.location.hash = "#streams/random/subscribers";
+    assert.equal(hash_parser.is_subscribers_section_opened_for_stream(), false);
+
+    window.location.hash = "#some/random/place/subscribers";
+    assert.equal(hash_parser.is_subscribers_section_opened_for_stream(), false);
+
+    window.location.hash = "#";
+    assert.equal(hash_parser.is_subscribers_section_opened_for_stream(), false);
+});
+
 run_test("test_parse_narrow", () => {
     assert.deepEqual(hash_util.parse_narrow(["narrow", "stream", "99-frontend"]), [
         {negated: false, operator: "stream", operand: "frontend"},
