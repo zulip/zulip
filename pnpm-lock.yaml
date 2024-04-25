@@ -52,9 +52,6 @@ dependencies:
   '@types/koa':
     specifier: ^2.15.0
     version: 2.15.0
-  '@types/koa-bodyparser':
-    specifier: ^4.3.12
-    version: 4.3.12
   '@uppy/core':
     specifier: ^3.0.2
     version: 3.10.0
@@ -3133,12 +3130,6 @@ packages:
 
   /@types/keygrip@1.0.6:
     resolution: {integrity: sha512-lZuNAY9xeJt7Bx4t4dx0rYCDqGPW8RXhQZK1td7d4H6E9zYbLoOtjBvfwdTKpsyxQI/2jv+armjX/RW+ZNpXOQ==}
-    dev: false
-
-  /@types/koa-bodyparser@4.3.12:
-    resolution: {integrity: sha512-hKMmRMVP889gPIdLZmmtou/BijaU1tHPyMNmcK7FAHAdATnRcGQQy78EqTTxLH1D4FTsrxIzklAQCso9oGoebQ==}
-    dependencies:
-      '@types/koa': 2.15.0
     dev: false
 
   /@types/koa-compose@3.2.8:
