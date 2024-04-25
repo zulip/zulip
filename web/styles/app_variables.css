@@ -267,6 +267,9 @@
     --color-text-message-default: hsl(0deg 0% 15%);
     --color-text-message-view-header: hsl(0deg 0% 20% / 100%);
     --color-text-message-header: hsl(0deg 0% 15%);
+    /* Light and dark mode both use the same hover color on
+       sender names. */
+    --color-text-sender-name-hover: hsl(200deg 100% 40%);
     --color-text-dropdown-input: hsl(0deg 0% 13.33%);
     --color-text-self-direct-mention: hsl(240deg 52% 45% / 100%);
     --color-text-self-group-mention: hsl(183deg 52% 26% / 100%);
