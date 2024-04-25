@@ -248,9 +248,7 @@ export function add_sub_to_table(sub) {
         );
         stream_create.reset_created_stream();
         // goto topic `stream events` of the newly created stream
-        browser_history.go_to_location(
-            hash_util.by_stream_topic_url(sub.stream_id, "stream events"),
-        );
+        browser_history.go_to_location(hash_util.by_stream_url(sub.stream_id));
         if (stream_create.should_show_first_stream_created_modal()) {
             stream_create.set_first_stream_created_modal_shown();
             show_first_stream_created_modal(sub);
