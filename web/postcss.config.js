@@ -4,7 +4,7 @@ const path = require("path");
 
 const {media_breakpoints} = require("./src/css_variables");
 
-module.exports = ({file}) => ({
+const config = ({file}) => ({
     plugins: [
         (file.basename ?? path.basename(file)) === "dark_theme.css" &&
             // Add postcss-import plugin with postcss-prefixwrap to handle
@@ -22,3 +22,4 @@ module.exports = ({file}) => ({
         }),
     ],
 });
+module.exports = config;
