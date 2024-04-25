@@ -22,8 +22,6 @@ export let initial_narrow_pointer;
 export let initial_narrow_offset;
 
 const consts = {
-    backfill_idle_time: 10 * 1000,
-    backfill_batch_size: 1000,
     narrow_before: 50,
     narrow_after: 50,
     initial_backfill_fetch_size: 400,
@@ -476,19 +474,6 @@ export function maybe_load_newer_messages(opts) {
     });
 }
 
-export function start_backfilling_messages() {
-    // backfill more messages after the user is idle
-    $(document).idle({
-        idle: consts.backfill_idle_time,
-        onIdle() {
-            do_backfill({
-                num_before: consts.backfill_batch_size,
-                msg_list_data: all_messages_data,
-            });
-        },
-    });
-}
-
 export function set_initial_pointer_and_offset({narrow_pointer, narrow_offset}) {
     initial_narrow_pointer = narrow_pointer;
     initial_narrow_offset = narrow_offset;
@@ -510,7 +495,6 @@ export function initialize(finished_initial_fetch) {
         }
 
         if (all_messages_data.num_items() >= consts.maximum_initial_backfill_size) {
-            start_backfilling_messages();
             return;
         }
 
