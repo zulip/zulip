@@ -533,15 +533,15 @@ ul {
         }
     }
 
-    .user_profile_manage_own_edit_button,
-    .user_profile_manage_others_edit_button {
+    .user-profile-manage-own-edit-button,
+    .user-profile-manage-others-edit-button {
         width: 25px;
         height: 14px;
         text-align: center;
         font-size: 18px;
     }
 
-    .user_profile_manage_own_copy_link_button {
+    .user-profile-manage-own-copy-link-button {
         width: 20px;
         height: 15px;
         text-align: center;
@@ -562,7 +562,7 @@ ul {
         vertical-align: middle;
     }
 
-    .user_profile_name {
+    .user-profile-name {
         margin: 0 10px;
     }
 
