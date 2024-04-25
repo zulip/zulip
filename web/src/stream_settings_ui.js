@@ -794,9 +794,16 @@ export function launch(section, left_side_tab, right_side_tab) {
 
 export function switch_rows(event) {
     const active_data = stream_settings_components.get_active_data();
+    const $add_subscriber_pill_input = $(".add_subscribers_container .input");
     let $switch_row;
     if (hash_parser.is_create_new_stream_narrow()) {
         // Prevent switching stream rows when creating a new stream
+        return false;
+    } else if (
+        hash_parser.is_subscribers_section_opened_for_stream() &&
+        $add_subscriber_pill_input.is(":focus")
+    ) {
+        // Prevent switching stream rows when adding a subscriber
         return false;
     } else if (!active_data.id || active_data.$row.hasClass("notdisplayed")) {
         $switch_row = $("div.stream-row:not(.notdisplayed)").first();
