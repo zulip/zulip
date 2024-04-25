@@ -66,6 +66,12 @@
     --base-font-size-px: 14px;
     --base-line-height-unitless: 1.214;
 
+    .more-dense-mode {
+        /* The legacy values here are not altered by JavaScript */
+        --base-font-size-px: 14px;
+        --base-line-height-unitless: 1.214;
+    }
+
     /*
     Message box elements and values.
     */
