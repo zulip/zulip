@@ -115,6 +115,9 @@ def update_realm(
     # are not offered here as it is maintained by the server, not via the API.
     new_stream_announcements_stream_id: Optional[int] = REQ(json_validator=check_int, default=None),
     signup_announcements_stream_id: Optional[int] = REQ(json_validator=check_int, default=None),
+    signup_notifications_include_referrer: Optional[bool] = REQ(
+        json_validator=check_bool, default=None
+    ),
     zulip_update_announcements_stream_id: Optional[int] = REQ(
         json_validator=check_int, default=None
     ),

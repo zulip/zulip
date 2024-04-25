@@ -254,6 +254,7 @@ export function dispatch_normal_event(event) {
                 wildcard_mention_policy: noop,
                 enable_read_receipts: settings_account.update_send_read_receipts_tooltip,
                 enable_guest_user_indicator: noop,
+                signup_notifications_include_referrer: noop,
             };
             switch (event.op) {
                 case "update":

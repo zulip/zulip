@@ -10,6 +10,7 @@ from typing_extensions import override
 
 from corporate.lib.stripe import get_latest_seat_count
 from zerver.actions.create_user import notify_new_user
+from zerver.actions.realm_settings import do_set_realm_property
 from zerver.actions.user_settings import do_change_user_setting
 from zerver.lib.initial_password import initial_password
 from zerver.lib.test_classes import ZulipTestCase
@@ -276,9 +277,47 @@ class TestNotifyNewUser(ZulipTestCase):
         realm = get_realm("zulip")
         new_user = self.example_user("cordelia")
         message_count = self.get_message_count()
+        referring_user = self.example_user("iago")
 
-        notify_new_user(new_user)
+        # # When new user is referred and signup_notifications_include_referrer is true
+        do_set_realm_property(
+            new_user.realm,
+            "signup_notifications_include_referrer",
+            True,
+            acting_user=None,
+        )
+        notify_new_user(new_user, referring_user)
         self.assertEqual(self.get_message_count(), message_count + 1)
+        message = self.get_last_message()
+        self.assertEqual(message.recipient.type, Recipient.STREAM)
+        actual_stream = Stream.objects.get(id=message.recipient.type_id)
+        self.assertEqual(actual_stream.name, Realm.INITIAL_PRIVATE_STREAM_NAME)
+        self.assertIn(
+            f"@_**Cordelia, Lear's daughter|{new_user.id}** accepted @_**Iago|11**'s invitation to join Zulip.",
+            message.content,
+        )
+
+        # When new user is referred and signup_notifications_include_referrer is false
+        do_set_realm_property(
+            new_user.realm,
+            "signup_notifications_include_referrer",
+            False,
+            acting_user=None,
+        )
+        notify_new_user(new_user, referring_user)
+        self.assertEqual(self.get_message_count(), message_count + 2)
+        message = self.get_last_message()
+        self.assertEqual(message.recipient.type, Recipient.STREAM)
+        actual_stream = Stream.objects.get(id=message.recipient.type_id)
+        self.assertEqual(actual_stream.name, Realm.INITIAL_PRIVATE_STREAM_NAME)
+        self.assertIn(
+            f"@_**Cordelia, Lear's daughter|{new_user.id}** joined this organization.",
+            message.content,
+        )
+
+        # When new user is not referred
+        notify_new_user(new_user)
+        self.assertEqual(self.get_message_count(), message_count + 3)
         message = self.get_last_message()
         self.assertEqual(message.recipient.type, Recipient.STREAM)
         actual_stream = Stream.objects.get(id=message.recipient.type_id)
@@ -292,7 +331,7 @@ class TestNotifyNewUser(ZulipTestCase):
         realm.save(update_fields=["signup_announcements_stream"])
         new_user.refresh_from_db()
         notify_new_user(new_user)
-        self.assertEqual(self.get_message_count(), message_count + 1)
+        self.assertEqual(self.get_message_count(), message_count + 3)
 
     def test_notify_realm_of_new_user_in_manual_license_management(self) -> None:
         realm = get_realm("zulip")

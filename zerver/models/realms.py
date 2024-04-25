@@ -361,6 +361,7 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
     )
 
     zulip_update_announcements_level = models.PositiveIntegerField(null=True)
+    signup_notifications_include_referrer = models.BooleanField(default=True)
 
     MESSAGE_RETENTION_SPECIAL_VALUES_MAP = {
         "unlimited": -1,
@@ -610,6 +611,7 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
         enable_spectator_access=bool,
         giphy_rating=int,
         inline_image_preview=bool,
+        signup_notifications_include_referrer=bool,
         inline_url_embed_preview=bool,
         invite_required=bool,
         invite_to_realm_policy=int,

@@ -4389,6 +4389,11 @@ paths:
                                       type: boolean
                                       description: |
                                         Whether [topics are required](/help/require-topics) for messages in this organization.
+                                    signup_notifications_include_referrer:
+                                      type: boolean
+                                      description: |
+                                        Whether new user signup notifications contain the referrer's name.
+
                                     message_content_allowed_in_email_notifications:
                                       type: boolean
                                       description: |
@@ -14849,6 +14854,12 @@ paths:
                           Present if `realm` is present in `fetch_event_types`.
 
                           Whether [topics are required](/help/require-topics) for messages in this organization.
+                      realm_signup_notifications_include_referrer:
+                        type: boolean
+                        description: |
+                          Present if `realm` is present in `fetch_event_types`.
+
+                          Whether new user signup notifications contain the referrer's name.
                       realm_message_retention_days:
                         type: integer
                         description: |

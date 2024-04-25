@@ -70,6 +70,9 @@ const admin_settings_label = {
     realm_enable_guest_user_indicator: $t({
         defaultMessage: "Display “(guest)” after names of guest users",
     }),
+    realm_signup_notifications_include_referrer: $t({
+        defaultMessage: "Include referrer's name in new user signup notifications",
+    }),
 };
 
 function insert_tip_box() {
@@ -144,6 +147,8 @@ export function build_page() {
         realm_waiting_period_threshold: realm.realm_waiting_period_threshold,
         realm_new_stream_announcements_stream_id: realm.realm_new_stream_announcements_stream_id,
         realm_signup_announcements_stream_id: realm.realm_signup_announcements_stream_id,
+        realm_signup_notifications_include_referrer:
+            realm.realm_signup_notifications_include_referrer,
         realm_zulip_update_announcements_stream_id:
             realm.realm_zulip_update_announcements_stream_id,
         is_admin: current_user.is_admin,
