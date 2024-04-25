@@ -9,10 +9,9 @@ for working in a dark space.
 
 {tab|desktop-web}
 
-{settings_tab|preferences}
+{!personal-menu.md!}
 
-1. Under **General**, select the desired color scheme from the **Theme**
-   dropdown.
+1. Select the desired theme using the row of icons in the middle of the menu.
 
 {tab|mobile}
 
