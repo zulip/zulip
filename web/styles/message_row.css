@@ -402,18 +402,47 @@
                 align-items: baseline;
 
                 .zulip-icon.zulip-icon-bot {
+                    font-size: 12px;
                     align-self: center;
                     padding: 0 0 0 5px;
                 }
 
                 .sender_name {
+                    display: inline-flex;
+                    font-weight: 700;
+                    color: var(--color-text-sender-name);
+                    column-gap: 3px;
                     overflow: hidden;
                     text-overflow: ellipsis;
                     white-space: nowrap;
                     outline: none;
                     align-self: baseline;
+
+                    .sender_name_text {
+                        overflow: hidden;
+                        white-space: nowrap;
+                        display: inline-flex;
+
+                        .user-name {
+                            overflow: hidden;
+                            text-overflow: ellipsis;
+                        }
+                    }
                 }
             }
+        }
+    }
+
+    &.sender_info_hovered {
+        .sender_name {
+            cursor: pointer;
+            /* TODO: Refactor the teetering nested classes
+               above so that !important can be removed. */
+            color: hsl(200deg 100% 40%) !important;
+        }
+
+        .message-avatar {
+            cursor: pointer;
         }
     }
 
