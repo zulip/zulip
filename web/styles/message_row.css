@@ -438,7 +438,7 @@
             cursor: pointer;
             /* TODO: Refactor the teetering nested classes
                above so that !important can be removed. */
-            color: hsl(200deg 100% 40%) !important;
+            color: var(--color-text-sender-name-hover) !important;
         }
 
         .message-avatar {
