@@ -64,7 +64,7 @@
     /* Information density and typography values */
     /* The legacy values here are updated via JavaScript */
     --base-font-size-px: 14px;
-    --base-line-height-unitless: calc(20 / 14);
+    --base-line-height-unitless: 1.214;
 
     /*
     Message box elements and values.
@@ -75,7 +75,6 @@
     /* 6px appears to provide 5px of space between the avatar
        and the selected-message outline, which is offset by -1px. */
     --message-box-vertical-margin: 6px;
-    --message-box-line-height: 1.214;
     --message-box-icon-width: 26px;
     --message-box-icon-height: 25px;
     /* The line-height on the sender line should coordinate with the

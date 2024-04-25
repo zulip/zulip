@@ -203,7 +203,7 @@
             */
             padding: 5px 0 0;
             color: var(--color-text-message-default);
-            line-height: var(--message-box-line-height);
+            line-height: var(--base-line-height-unitless);
             min-height: 17px;
             display: block;
             position: relative;
@@ -318,7 +318,7 @@
                     display: block;
                     /* Set the same line-height as on message content for
                        me-messages. */
-                    line-height: var(--message-box-line-height);
+                    line-height: var(--base-line-height-unitless);
                     /* Ensure the same spacing below messages as for any other
                        paragraph.
                        TODO: Coordinate this with other info-density variables. */
