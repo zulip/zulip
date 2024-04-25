@@ -13,6 +13,7 @@ import {
 import type {Typeahead} from "./bootstrap_typeahead";
 import * as bulleted_numbered_list_util from "./bulleted_numbered_list_util";
 import * as common from "./common";
+import type {TypeaheadSuggestion} from "./composebox_typeahead";
 import {$t} from "./i18n";
 import * as loading from "./loading";
 import * as markdown from "./markdown";
@@ -59,10 +60,10 @@ type SelectedLinesSections = {
 export let compose_spinner_visible = false;
 export let shift_pressed = false; // true or false
 export let code_formatting_button_triggered = false; // true or false
-export let compose_textarea_typeahead: Typeahead<object> | undefined;
+export let compose_textarea_typeahead: Typeahead<TypeaheadSuggestion> | undefined;
 let full_size_status = false; // true or false
 
-export function set_compose_textarea_typeahead(typeahead: Typeahead<object>): void {
+export function set_compose_textarea_typeahead(typeahead: Typeahead<TypeaheadSuggestion>): void {
     compose_textarea_typeahead = typeahead;
 }
 

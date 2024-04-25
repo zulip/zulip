@@ -30,7 +30,7 @@ export const popular_emojis = [
 
 const unicode_marks = /\p{M}/gu;
 
-type Emoji =
+export type Emoji =
     | {
           emoji_name: string;
           reaction_type: "realm_emoji" | "zulip_extra_emoji";

@@ -1,16 +1,20 @@
 import $ from "jquery";
 import _ from "lodash";
+import assert from "minimalistic-assert";
 
 import * as typeahead from "../shared/src/typeahead";
+import type {Emoji, EmojiSuggestion} from "../shared/src/typeahead";
 import render_topic_typeahead_hint from "../templates/topic_typeahead_hint.hbs";
 
 import {Typeahead} from "./bootstrap_typeahead";
+import type {TypeaheadInputElement} from "./bootstrap_typeahead";
 import * as bulleted_numbered_list_util from "./bulleted_numbered_list_util";
 import * as compose_pm_pill from "./compose_pm_pill";
 import * as compose_state from "./compose_state";
 import * as compose_ui from "./compose_ui";
 import * as compose_validate from "./compose_validate";
 import * as emoji from "./emoji";
+import type {EmojiDict} from "./emoji";
 import * as flatpickr from "./flatpickr";
 import {$t} from "./i18n";
 import * as keydown_util from "./keydown_util";
@@ -18,17 +22,23 @@ import * as message_store from "./message_store";
 import * as muted_users from "./muted_users";
 import {page_params} from "./page_params";
 import * as people from "./people";
+import type {PseudoMentionUser, User} from "./people";
 import * as realm_playground from "./realm_playground";
 import * as rows from "./rows";
 import * as settings_data from "./settings_data";
 import {realm} from "./state_data";
 import * as stream_data from "./stream_data";
+import type {StreamPillData} from "./stream_pill";
 import * as stream_topic_history from "./stream_topic_history";
 import * as stream_topic_history_util from "./stream_topic_history_util";
 import * as timerender from "./timerender";
 import * as typeahead_helper from "./typeahead_helper";
+import type {UserOrMention, UserOrMentionPillData} from "./typeahead_helper";
+import type {UserGroupPillData} from "./user_group_pill";
 import * as user_groups from "./user_groups";
+import type {UserGroup} from "./user_groups";
 import * as user_pill from "./user_pill";
+import type {UserPillData} from "./user_pill";
 import {user_settings} from "./user_settings";
 
 // **********************************
@@ -42,41 +52,98 @@ import {user_settings} from "./user_settings";
 // highlighter that escapes (i.e. one that calls
 // typeahead_helper.highlight_with_escaping).
 
+// ---------------- TYPE DECLARATIONS ----------------
+// There are many types of suggestions that can show
+// up in the composebox typeahead, but they are never
+// mixed together. So a user can see a list of stream
+// suggestions in one situation, and a list of user
+// suggestions in another, but never both at the same
+// time.
+// We use types with a "type" field to keep track
+// of and differentiate each kind of suggestion,
+// because we handle multiple kinds of suggestions
+// within shared code blocks.
+type SlashCommand = {
+    text: string;
+    name: string;
+    aliases: NamedCurve;
+    placeholder?: string;
+};
+export type SlashCommandSuggestion = SlashCommand & {type: "slash"};
+
+export type LanguageSuggestion = {
+    language: string;
+    type: "syntax";
+};
+
+type TopicSuggestion = {
+    topic: string;
+    type: "topic_list";
+};
+
+type TimeJumpSuggestion = {
+    message: string;
+    type: "time_jump";
+};
+
+type TopicJumpSuggestion = {
+    message: string;
+    type: "topic_jump";
+};
+
+export type TypeaheadSuggestion =
+    | UserGroupPillData
+    | UserOrMentionPillData
+    | StreamPillData
+    | TopicJumpSuggestion
+    | TimeJumpSuggestion
+    | LanguageSuggestion
+    | TopicSuggestion
+    | EmojiSuggestion
+    | SlashCommandSuggestion;
+
 // This is what we use for direct message/compose typeaheads.
 // We export it to allow tests to mock it.
 export const max_num_items = 8;
 
-export let emoji_collection = [];
+export let emoji_collection: Emoji[] = [];
 
-let completing;
-let token;
+// This has mostly been replaced with `type` fields on
+// the typeahead items, but is still used for the stream>topic
+// flow and for `get_header_html`. It would be great if we could
+// get rid of it altogether.
+let completing: string | null;
+let token: string;
 
-export function get_or_set_token_for_testing(val) {
+export function get_or_set_token_for_testing(val?: string): string {
     if (val !== undefined) {
         token = val;
     }
     return token;
 }
 
-export function get_or_set_completing_for_tests(val) {
+export function get_or_set_completing_for_tests(val?: string): string | null {
     if (val !== undefined) {
         completing = val;
     }
     return completing;
 }
 
-export function update_emoji_data(initial_emojis) {
+export function update_emoji_data(initial_emojis: EmojiDict[]): void {
     emoji_collection = [];
     for (const emoji_dict of initial_emojis) {
         const {reaction_type} = emoji.get_emoji_details_by_name(emoji_dict.name);
-        if (emoji_dict.is_realm_emoji === true) {
+        if (emoji_dict.is_realm_emoji) {
+            assert(reaction_type !== "unicode_emoji");
             emoji_collection.push({
                 reaction_type,
                 emoji_name: emoji_dict.name,
                 emoji_url: emoji_dict.url,
                 is_realm_emoji: true,
+                emoji_code: undefined,
             });
         } else {
+            assert(reaction_type === "unicode_emoji");
             for (const alias of emoji_dict.aliases) {
                 emoji_collection.push({
                     reaction_type,
@@ -89,36 +156,43 @@ export function update_emoji_data(initial_emojis) {
     }
 }
 
-export function topics_seen_for(stream_id) {
+export function topics_seen_for(stream_id?: number): string[] {
     if (!stream_id) {
         return [];
     }
 
     // Fetch topic history from the server, in case we will need it soon.
-    stream_topic_history_util.get_server_history(stream_id, () => {});
+    stream_topic_history_util.get_server_history(stream_id, () => {
+        // We'll use the extended results in the next keypress, but we
+        // don't try to live-update what's already shown, because the
+        // click target moving can be annoying if onewas about to
+        // select/click an option.
+    });
     return stream_topic_history.get_recent_topic_names(stream_id);
 }
 
-export function get_language_matcher(query) {
+export function get_language_matcher(query: string): (language: string) => boolean {
     query = query.toLowerCase();
-    return function (lang) {
-        return lang.includes(query);
+    return function (language: string): boolean {
+        return language.includes(query);
     };
 }
 
-export function get_stream_or_user_group_matcher(query) {
+export function get_stream_or_user_group_matcher(
+    query: string,
+): (user_group_or_stream: UserGroupPillData | StreamPillData) => boolean {
     // Case-insensitive.
     query = typeahead.clean_query_lowercase(query);
 
-    return function (user_group_or_stream) {
+    return function (user_group_or_stream: UserGroupPillData | StreamPillData) {
         return typeahead_helper.query_matches_name(query, user_group_or_stream);
     };
 }
 
-export function get_slash_matcher(query) {
+export function get_slash_matcher(query: string): (item: SlashCommand) => boolean {
     query = typeahead.clean_query_lowercase(query);
 
-    return function (item) {
+    return function (item: SlashCommand) {
         return (
             typeahead.query_matches_string_in_order(query, item.name, " ") ||
             typeahead.query_matches_string_in_order(query, item.aliases, " ")
@@ -126,19 +200,15 @@ export function get_slash_matcher(query) {
     };
 }
 
-function get_topic_matcher(query) {
+function get_topic_matcher(query: string): (topic: string) => boolean {
     query = typeahead.clean_query_lowercase(query);
 
-    return function (topic) {
-        const obj = {
-            topic,
-        };
-
-        return typeahead.query_matches_string_in_order(query, obj.topic, " ");
+    return function (topic: string): boolean {
+        return typeahead.query_matches_string_in_order(query, topic, " ");
     };
 }
 
-export function should_enter_send(e) {
+export function should_enter_send(e: JQuery.KeyDownEvent): boolean {
     const has_non_shift_modifier_key = e.ctrlKey || e.metaKey || e.altKey;
     const has_modifier_key = e.shiftKey || has_non_shift_modifier_key;
     let this_enter_sends;
@@ -160,13 +230,18 @@ export function should_enter_send(e) {
     return this_enter_sends;
 }
 
-function handle_bulleting_or_numbering($textarea, e) {
+function handle_bulleting_or_numbering(
+    $textarea: JQuery<HTMLTextAreaElement>,
+    e: JQuery.KeyDownEvent,
+): void {
     // We only want this functionality if the cursor is not in a code block
     if (compose_ui.cursor_inside_code_block($textarea)) {
         return;
     }
     // handles automatic insertion or removal of bulleting or numbering
-    const before_text = split_at_cursor($textarea.val(), $textarea)[0];
+    const val = $textarea.val();
+    assert(val !== undefined);
+    const before_text = split_at_cursor(val, $textarea)[0];
     const previous_line = bulleted_numbered_list_util.get_last_line(before_text);
     let to_append = "";
     // if previous line was bulleted, automatically add a bullet to the new line
@@ -207,7 +282,7 @@ function handle_bulleting_or_numbering($textarea, e) {
     e.preventDefault();
 }
 
-export function handle_enter($textarea, e) {
+export function handle_enter($textarea: JQuery<HTMLTextAreaElement>, e: JQuery.KeyDownEvent): void {
     // Used only if Enter doesn't send. We need to emulate the
     // browser's native "Enter" behavior because this code path
     // includes `Ctrl+Enter` and other modifier key variants that
@@ -240,17 +315,20 @@ export function handle_enter($textarea, e) {
 // We can't focus at the time of keydown because we need to wait for typeahead.
 // And we can't compute where to focus at the time of keyup because only the keydown
 // has reliable information about whether it was a Tab or a Shift+Tab.
-let $nextFocus = false;
+let $nextFocus: JQuery | undefined;
 
-function handle_keydown(e, {on_enter_send}) {
+function handle_keydown(
+    e: JQuery.KeyDownEvent,
+    on_enter_send: (scheduling_message?: boolean) => boolean | undefined,
+): void {
     const key = e.key;
 
     if (keydown_util.is_enter_event(e) || (key === "Tab" && !e.shiftKey)) {
         // Enter key or Tab key
         let target_sel;
-
-        if (e.target.id) {
-            target_sel = `#${CSS.escape(e.target.id)}`;
+        const target_id = $(e.target).attr("id");
+        if (target_id) {
+            target_sel = `#${CSS.escape(target_id)}`;
         }
 
         const on_topic = target_sel === "input#stream_message_recipient_topic";
@@ -297,26 +375,26 @@ function handle_keydown(e, {on_enter_send}) {
     }
 }
 
-function handle_keyup(e) {
+function handle_keyup(e: JQuery.KeyUpEvent): void {
     if (
         // Enter key or Tab key
         (keydown_util.is_enter_event(e) || (e.key === "Tab" && !e.shiftKey)) &&
-        $nextFocus
+        $nextFocus !== undefined
     ) {
         $nextFocus.trigger("focus");
-        $nextFocus = false;
+        $nextFocus = undefined;
 
         // Prevent the form from submitting
         e.preventDefault();
     }
 }
 
-export function split_at_cursor(query, $input) {
+export function split_at_cursor(query: string, $input: JQuery): [string, string] {
     const cursor = $input.caret();
     return [query.slice(0, cursor), query.slice(cursor)];
 }
 
-export function tokenize_compose_str(s) {
+export function tokenize_compose_str(s: string): string {
     // This basically finds a token like "@alic" or
     // "#Veron" as close to the end of the string as it
     // can find it.  It wants to find white space or
@@ -384,7 +462,7 @@ export function tokenize_compose_str(s) {
     return "";
 }
 
-function get_wildcard_string(mention) {
+function get_wildcard_string(mention: string): string {
     if (compose_state.get_message_type() === "private") {
         return $t({defaultMessage: "Notify recipients"});
     }
@@ -394,8 +472,8 @@ function get_wildcard_string(mention) {
     return $t({defaultMessage: "Notify channel"});
 }
 
-export function broadcast_mentions() {
-    let wildcard_mention_array = [];
+export function broadcast_mentions(): PseudoMentionUser[] {
+    let wildcard_mention_array: string[] = [];
     if (compose_state.get_message_type() === "private") {
         wildcard_mention_array = ["all", "everyone"];
     } else if (compose_validate.stream_wildcard_mention_allowed()) {
@@ -422,7 +500,7 @@ export function broadcast_mentions() {
     }));
 }
 
-function filter_mention_name(current_token) {
+function filter_mention_name(current_token: string): string | undefined {
     if (current_token.startsWith("**")) {
         current_token = current_token.slice(2);
     } else if (current_token.startsWith("*")) {
@@ -439,7 +517,7 @@ function filter_mention_name(current_token) {
     return current_token;
 }
 
-function should_show_custom_query(query, items) {
+function should_show_custom_query(query: string, items: string[]): boolean {
     // returns true if the custom query doesn't match one of the
     // choices in the items list.
     if (!query) {
@@ -483,19 +561,28 @@ export const slash_commands = [
     },
 ];
 
-export const all_slash_commands = [...dev_only_slash_commands, ...slash_commands];
+export const all_slash_commands: SlashCommand[] = [...dev_only_slash_commands, ...slash_commands];
 
-export function filter_and_sort_mentions(is_silent, query, opts) {
-    opts = {
+export function filter_and_sort_mentions(
+    is_silent: boolean,
+    query: string,
+    opts: {
+        stream_id: number | undefined;
+        topic: string;
+    },
+): (UserGroupPillData | UserOrMentionPillData)[] {
+    return get_person_suggestions(query, {
         want_broadcast: !is_silent,
         filter_pills: false,
         filter_groups_for_mention: !is_silent,
         ...opts,
-    };
-    return get_person_suggestions(query, opts);
+    }).map((item) => ({
+        ...item,
+        is_silent,
+    }));
 }
 
-export function get_pm_people(query) {
+export function get_pm_people(query: string): (UserGroupPillData | UserPillData)[] {
     const opts = {
         want_broadcast: false,
         filter_pills: true,
@@ -503,13 +590,41 @@ export function get_pm_people(query) {
         topic: compose_state.topic(),
         filter_groups_for_guests: true,
     };
-    return get_person_suggestions(query, opts);
+    const suggestions = get_person_suggestions(query, opts);
+    // We know these aren't mentions because `want_broadcast` was `false`.
+    // TODO: In the future we should separate user and mention so we don't have
+    // to do this.
+    const user_suggestions: (UserGroupPillData | UserPillData)[] = [];
+    for (const suggestion of suggestions) {
+        if (suggestion.type === "user_or_mention") {
+            assert(suggestion.is_broadcast === undefined);
+            user_suggestions.push({
+                ...suggestion,
+                type: "user",
+            });
+        } else {
+            user_suggestions.push(suggestion);
+        }
+    }
+    return user_suggestions;
 }
 
-export function get_person_suggestions(query, opts) {
+type PersonSuggestionOpts = {
+    want_broadcast: boolean;
+    filter_pills: boolean;
+    stream_id: number | undefined;
+    topic: string;
+    filter_groups_for_guests?: boolean;
+    filter_groups_for_mention?: boolean;
+};
+
+export function get_person_suggestions(
+    query: string,
+    opts: PersonSuggestionOpts,
+): (UserOrMentionPillData | UserGroupPillData)[] {
     query = typeahead.clean_query_lowercase(query);
 
-    function filter_persons(all_persons) {
+    function filter_persons(all_persons: User[]): UserOrMentionPillData[] {
         let persons;
 
         if (opts.filter_pills) {
@@ -519,15 +634,15 @@ export function get_person_suggestions(query, opts) {
         }
         // Exclude muted users from typeaheads.
         persons = muted_users.filter_muted_users(persons);
+        let user_or_mention_list: UserOrMention[] = persons.map((person) => ({
+            ...person,
+            is_broadcast: undefined,
+        }));
 
         if (opts.want_broadcast) {
-            persons = [...persons, ...broadcast_mentions()];
+            user_or_mention_list = [...user_or_mention_list, ...broadcast_mentions()];
         }
-        // `sort_recipients` and other functions like `user_pill.get_user_ids`
-        // are shared with the pill typeahead which has only users, and we
-        // need a way to differentiate these mentons-or-users from just users,
-        // to help with typing.
-        const person_items = persons.map((person) => ({
+        const person_items: UserOrMentionPillData[] = user_or_mention_list.map((person) => ({
             ...person,
             type: "user_or_mention",
         }));
@@ -535,7 +650,7 @@ export function get_person_suggestions(query, opts) {
         return person_items.filter((item) => typeahead_helper.query_matches_person(query, item));
     }
 
-    let groups;
+    let groups: UserGroup[];
     if (opts.filter_groups_for_mention) {
         groups = user_groups.get_user_groups_allowed_to_mention();
     } else if (opts.filter_groups_for_guests && !settings_data.user_can_access_all_other_users()) {
@@ -553,7 +668,12 @@ export function get_person_suggestions(query, opts) {
         groups = user_groups.get_realm_user_groups();
     }
 
-    const filtered_groups = groups.filter((item) =>
+    const group_pill_data: UserGroupPillData[] = groups.map((group) => ({
+        ...group,
+        type: "user_group",
+    }));
+
+    const filtered_groups = group_pill_data.filter((item) =>
         typeahead_helper.query_matches_name(query, item),
     );
 
@@ -583,7 +703,7 @@ export function get_person_suggestions(query, opts) {
 
     const filtered_message_persons = filter_persons(people.get_active_message_people());
 
-    let filtered_persons;
+    let filtered_persons: UserOrMentionPillData[];
 
     if (filtered_message_persons.length >= cutoff_length) {
         filtered_persons = filtered_message_persons;
@@ -601,21 +721,30 @@ export function get_person_suggestions(query, opts) {
     });
 }
 
-export function get_stream_topic_data(input_element) {
-    const opts = {};
+function get_stream_topic_data(input_element: TypeaheadInputElement): {
+    stream_id: number | undefined;
+    topic: string;
+} {
+    let stream_id;
+    let topic;
     const $message_row = input_element.$element.closest(".message_row");
     if ($message_row.length === 1) {
         // we are editing a message so we try to use its keys.
         const msg = message_store.get(rows.id($message_row));
+        assert(msg !== undefined);
         if (msg.type === "stream") {
-            opts.stream_id = msg.stream_id;
-            opts.topic = msg.topic;
+            stream_id = msg.stream_id;
+            topic = msg.topic;
         }
     } else {
-        opts.stream_id = compose_state.stream_id();
-        opts.topic = compose_state.topic();
+        stream_id = compose_state.stream_id();
+        topic = compose_state.topic();
     }
-    return opts;
+    assert(topic !== undefined);
+    return {
+        stream_id,
+        topic,
+    };
 }
 
 const ALLOWED_MARKDOWN_FEATURES = {
@@ -629,9 +758,12 @@ const ALLOWED_MARKDOWN_FEATURES = {
     timestamp: true,
 };
 
-export function get_candidates(query, input_element) {
+export function get_candidates(
+    query: string,
+    input_element: TypeaheadInputElement,
+): TypeaheadSuggestion[] {
     const split = split_at_cursor(query, input_element.$element);
-    let current_token = tokenize_compose_str(split[0]);
+    let current_token: string | boolean = tokenize_compose_str(split[0]);
     if (current_token === "") {
         return [];
     }
@@ -678,7 +810,11 @@ export function get_candidates(query, input_element) {
         compose_ui.set_code_formatting_button_triggered(false);
         const matcher = get_language_matcher(token);
         const matches = language_list.filter((item) => matcher(item));
-        return typeahead_helper.sort_languages(matches, token);
+        const matches_list: LanguageSuggestion[] = matches.map((language) => ({
+            language,
+            type: "syntax",
+        }));
+        return typeahead_helper.sort_languages(matches_list, token);
     }
 
     // Only start the emoji autocompleter if : is directly after one
@@ -697,8 +833,12 @@ export function get_candidates(query, input_element) {
         }
         completing = "emoji";
         token = current_token.slice(1);
+        const candidate_list: EmojiSuggestion[] = emoji_collection.map((emoji_dict) => ({
+            ...emoji_dict,
+            type: "emoji",
+        }));
         const matcher = typeahead.get_emoji_matcher(token);
-        const matches = emoji_collection.filter((item) => matcher(item));
+        const matches = candidate_list.filter((item) => matcher(item));
         return typeahead.sort_emojis(matches, token);
     }
 
@@ -712,17 +852,18 @@ export function get_candidates(query, input_element) {
             is_silent = true;
             current_token = current_token.slice(1);
         }
-        current_token = filter_mention_name(current_token);
-        if (current_token === undefined) {
+        const filtered_current_token = filter_mention_name(current_token);
+        if (filtered_current_token === undefined) {
             completing = null;
             return [];
         }
-        token = current_token;
+        token = filtered_current_token;
+
         const opts = get_stream_topic_data(input_element);
         return filter_and_sort_mentions(is_silent, token, opts);
     }
 
-    function get_slash_commands_data() {
+    function get_slash_commands_data(): SlashCommand[] {
         const commands = page_params.development_environment ? all_slash_commands : slash_commands;
         return commands;
     }
@@ -732,10 +873,13 @@ export function get_candidates(query, input_element) {
 
         completing = "slash";
         token = current_token;
-        const slash_commands = get_slash_commands_data();
         const matcher = get_slash_matcher(token);
-        const matches = slash_commands.filter((item) => matcher(item));
-        return typeahead_helper.sort_slash_commands(matches, token);
+        const matches = get_slash_commands_data().filter((item) => matcher(item));
+        const matches_list: SlashCommandSuggestion[] = matches.map((slash_command) => ({
+            ...slash_command,
+            type: "slash",
+        }));
+        return typeahead_helper.sort_slash_commands(matches_list, token);
     }
 
     if (ALLOWED_MARKDOWN_FEATURES.stream && current_token.startsWith("#")) {
@@ -755,9 +899,12 @@ export function get_candidates(query, input_element) {
 
         completing = "stream";
         token = current_token;
-        const subs = stream_data.get_unsorted_subs();
+        const candidate_list: StreamPillData[] = stream_data.get_unsorted_subs().map((sub) => ({
+            ...sub,
+            type: "stream",
+        }));
         const matcher = get_stream_or_user_group_matcher(token);
-        const matches = subs.filter((item) => matcher(item));
+        const matches = candidate_list.filter((item) => matcher(item));
         return typeahead_helper.sort_streams(matches, token);
     }
 
@@ -770,7 +917,12 @@ export function get_candidates(query, input_element) {
             completing = "topic_jump";
             token = ">";
             // We return something so that the typeahead is shown, but ultimately
-            return [""];
+            return [
+                {
+                    message: "",
+                    type: "topic_jump",
+                },
+            ];
         }
 
         // Matches '#**stream name>some text' at the end of a split.
@@ -779,6 +931,7 @@ export function get_candidates(query, input_element) {
         if (should_begin_typeahead) {
             completing = "topic_list";
             const tokens = stream_topic_regex.exec(split[0]);
+            assert(tokens !== null);
             if (tokens[1]) {
                 const stream_name = tokens[1];
                 token = tokens[2] || "";
@@ -795,7 +948,11 @@ export function get_candidates(query, input_element) {
                 }
                 const matcher = get_topic_matcher(token);
                 const matches = topic_list.filter((item) => matcher(item));
-                return typeahead_helper.sorter(token, matches, (x) => x);
+                const matches_list: TopicSuggestion[] = matches.map((topic) => ({
+                    topic,
+                    type: "topic_list",
+                }));
+                return typeahead_helper.sorter(token, matches_list, (x) => x.topic);
             }
         }
     }
@@ -803,19 +960,23 @@ export function get_candidates(query, input_element) {
         const time_jump_regex = /<time(:([^>]*?)>?)?$/;
         if (time_jump_regex.test(split[0])) {
             completing = "time_jump";
-            return [$t({defaultMessage: "Mention a time-zone-aware time"})];
+            return [
+                {
+                    message: $t({defaultMessage: "Mention a time-zone-aware time"}),
+                    type: "time_jump",
+                },
+            ];
         }
     }
     return [];
 }
 
-export function content_highlighter_html(item) {
-    switch (completing) {
+export function content_highlighter_html(item: TypeaheadSuggestion): string | undefined {
+    switch (item.type) {
         case "emoji":
             return typeahead_helper.render_emoji(item);
-        case "mention":
-            return typeahead_helper.render_person_or_user_group(item);
-        case "silent_mention":
+        case "user_group":
+        case "user_or_mention":
             return typeahead_helper.render_person_or_user_group(item);
         case "slash":
             return typeahead_helper.render_typeahead_item({
@@ -824,30 +985,49 @@ export function content_highlighter_html(item) {
         case "stream":
             return typeahead_helper.render_stream(item);
         case "syntax":
-            return typeahead_helper.render_typeahead_item({primary: item});
+            return typeahead_helper.render_typeahead_item({primary: item.language});
         case "topic_jump":
-            return typeahead_helper.render_typeahead_item({primary: item});
+            return typeahead_helper.render_typeahead_item({primary: item.message});
         case "topic_list":
-            return typeahead_helper.render_typeahead_item({primary: item});
+            return typeahead_helper.render_typeahead_item({primary: item.topic});
         case "time_jump":
-            return typeahead_helper.render_typeahead_item({primary: item});
+            return typeahead_helper.render_typeahead_item({primary: item.message});
         default:
             return undefined;
     }
 }
 
-export function content_typeahead_selected(item, query, input_element, event) {
+export function content_typeahead_selected(
+    item: TypeaheadSuggestion,
+    query: string,
+    input_element: TypeaheadInputElement,
+    event?: JQuery.ClickEvent | JQuery.KeyUpEvent | JQuery.KeyDownEvent,
+): string {
     const pieces = split_at_cursor(query, input_element.$element);
     let beginning = pieces[0];
     let rest = pieces[1];
-    const $textbox = input_element.$element;
+    assert(input_element.type === "textarea");
+    const $textbox: JQuery<HTMLTextAreaElement> = input_element.$element;
     // Accepting some typeahead selections, like polls, will generate
     // placeholder text that is selected, in order to clarify for the
     // user what a given parameter is for. This object stores the
     // highlight offsets for that purpose.
-    const highlight = {};
-
-    switch (completing) {
+    const highlight: {
+        start?: number;
+        end?: number;
+    } = {};
+    // `topic_jump` means that the user just typed a stream name
+    // and then `>` to start typing a topic. But the `item` coming
+    // from the typeahead is still the stream item, so here we do
+    // a reassignment so that the switch statement does the right
+    // thing.
+    if (completing === "topic_jump") {
+        item = {
+            type: "topic_jump",
+            message: "",
+        };
+    }
+    switch (item.type) {
         case "emoji":
             // leading and trailing spaces are required for emoji,
             // except if it begins a message or a new line.
@@ -861,9 +1041,9 @@ export function content_typeahead_selected(item, query, input_element, event) {
                 beginning = beginning.slice(0, -token.length - 1) + " :" + item.emoji_name + ": ";
             }
             break;
-        case "silent_mention":
-        case "mention": {
-            const is_silent = completing === "silent_mention";
+        case "user_group":
+        case "user_or_mention": {
+            const is_silent = item.is_silent;
             beginning = beginning.slice(0, -token.length - 1);
             if (beginning.endsWith("@_*")) {
                 beginning = beginning.slice(0, -3);
@@ -872,7 +1052,7 @@ export function content_typeahead_selected(item, query, input_element, event) {
             } else if (beginning.endsWith("@")) {
                 beginning = beginning.slice(0, -1);
             }
-            if (user_groups.is_user_group(item)) {
+            if (item.type === "user_group") {
                 let user_group_mention_text = is_silent ? "@_*" : "@*";
                 user_group_mention_text += item.name + "* ";
                 beginning += user_group_mention_text;
@@ -882,11 +1062,8 @@ export function content_typeahead_selected(item, query, input_element, event) {
                 // that functionality yet, and we haven't gotten much
                 // feedback on this being an actual pitfall.
             } else {
-                let mention_text = people.get_mention_syntax(
-                    item.full_name,
-                    item.user_id,
-                    is_silent,
-                );
+                const user_id = item.is_broadcast ? undefined : item.user_id;
+                let mention_text = people.get_mention_syntax(item.full_name, user_id, is_silent);
                 if (!is_silent && !item.is_broadcast) {
                     compose_validate.warn_if_mentioning_unsubscribed_user(item, $textbox);
                     mention_text = compose_validate.convert_mentions_to_silent_in_direct_messages(
@@ -927,8 +1104,8 @@ export function content_typeahead_selected(item, query, input_element, event) {
             // Isolate the end index of the triple backticks/tildes, including
             // possibly a space afterward
             const backticks = beginning.length - token.length;
-            beginning = beginning.slice(0, backticks) + item;
-            if (item === "spoiler") {
+            beginning = beginning.slice(0, backticks) + item.language;
+            if (item.language === "spoiler") {
                 // to add in and highlight placeholder "Header"
                 const placeholder = $t({defaultMessage: "Header"});
                 highlight.start = beginning.length + 1;
@@ -960,7 +1137,7 @@ export function content_typeahead_selected(item, query, input_element, event) {
             // with the topic and the final **.  Note that token.length can be 0
             // if we are completing from `**streamname>`.
             const start = beginning.length - token.length;
-            beginning = beginning.slice(0, start) + item + "** ";
+            beginning = beginning.slice(0, start) + item.topic + "** ";
             break;
         }
         case "time_jump": {
@@ -970,7 +1147,7 @@ export function content_typeahead_selected(item, query, input_element, event) {
             }
             const timestamp = timerender.get_timestamp_for_flatpickr(timestring);
 
-            const on_timestamp_selection = (val) => {
+            const on_timestamp_selection = (val: string): void => {
                 const datestr = val;
                 beginning =
                     beginning.slice(0, Math.max(0, beginning.lastIndexOf("<time"))) +
@@ -1003,7 +1180,7 @@ export function content_typeahead_selected(item, query, input_element, event) {
     return beginning + rest;
 }
 
-export function compose_automated_selection() {
+export function compose_automated_selection(): boolean {
     if (completing === "topic_jump") {
         // automatically jump inside stream mention on typing > just after
         // a stream mention, to begin stream+topic mention typeahead (topic_list).
@@ -1012,7 +1189,7 @@ export function compose_automated_selection() {
     return false;
 }
 
-export function compose_trigger_selection(event) {
+function compose_trigger_selection(event: JQuery.KeyDownEvent): boolean {
     if (completing === "stream" && event.key === ">") {
         // complete stream typeahead partially to immediately start the topic_list typeahead.
         return true;
@@ -1020,24 +1197,28 @@ export function compose_trigger_selection(event) {
     return false;
 }
 
-export function initialize_topic_edit_typeahead(form_field, stream_name, dropup) {
-    const bootstrap_typeahead_input = {
+export function initialize_topic_edit_typeahead(
+    form_field: JQuery<HTMLInputElement>,
+    stream_name: string,
+    dropup: boolean,
+): Typeahead<string> {
+    const bootstrap_typeahead_input: TypeaheadInputElement = {
         $element: form_field,
         type: "input",
     };
     return new Typeahead(bootstrap_typeahead_input, {
         dropup,
-        highlighter_html(item) {
+        highlighter_html(item: string): string {
             return typeahead_helper.render_typeahead_item({primary: item});
         },
-        sorter(items, query) {
+        sorter(items: string[], query: string): string[] {
             const sorted = typeahead_helper.sorter(query, items, (x) => x);
             if (sorted.length > 0 && !sorted.includes(query)) {
                 sorted.unshift(query);
             }
             return sorted;
         },
-        source() {
+        source(): string[] {
             const stream_id = stream_data.get_stream_id(stream_name);
             return topics_seen_for(stream_id);
         },
@@ -1045,7 +1226,7 @@ export function initialize_topic_edit_typeahead(form_field, stream_name, dropup)
     });
 }
 
-function get_header_html() {
+function get_header_html(): string | false {
     let tip_text = "";
     switch (completing) {
         case "stream":
@@ -1069,8 +1250,8 @@ function get_header_html() {
     return `<em>${_.escape(tip_text)}</em>`;
 }
 
-export function initialize_compose_typeahead(selector) {
-    const bootstrap_typeahead_input = {
+export function initialize_compose_typeahead(selector: string): void {
+    const bootstrap_typeahead_input: TypeaheadInputElement = {
         $element: $(selector),
         type: "textarea",
     };
@@ -1100,31 +1281,37 @@ export function initialize_compose_typeahead(selector) {
     );
 }
 
-export function initialize({on_enter_send}) {
+export function initialize({
+    on_enter_send,
+}: {
+    on_enter_send: (scheduling_message?: boolean) => boolean | undefined;
+}): void {
     // These handlers are at the "form" level so that they are called after typeahead
-    $("form#send_message_form").on("keydown", (e) => handle_keydown(e, {on_enter_send}));
+    $("form#send_message_form").on("keydown", (e) => {
+        handle_keydown(e, on_enter_send);
+    });
     $("form#send_message_form").on("keyup", handle_keyup);
 
-    const stream_message_typeahead_input = {
+    const stream_message_typeahead_input: TypeaheadInputElement = {
         $element: $("input#stream_message_recipient_topic"),
         type: "input",
     };
     new Typeahead(stream_message_typeahead_input, {
-        source() {
+        source(): string[] {
             return topics_seen_for(compose_state.stream_id());
         },
         items: 3,
-        highlighter_html(item) {
+        highlighter_html(item: string): string {
             return typeahead_helper.render_typeahead_item({primary: item});
         },
-        sorter(items, query) {
+        sorter(items: string[], query: string): string[] {
             const sorted = typeahead_helper.sorter(query, items, (x) => x);
             if (sorted.length > 0 && !sorted.includes(query)) {
                 sorted.unshift(query);
             }
             return sorted;
         },
-        option_label(matching_items, item) {
+        option_label(matching_items: string[], item: string): string | false {
             if (!matching_items.includes(item)) {
                 return `<em>${$t({defaultMessage: "New"})}</em>`;
             }
@@ -1133,7 +1320,7 @@ export function initialize({on_enter_send}) {
         header_html: render_topic_typeahead_hint,
     });
 
-    const private_message_typeahead_input = {
+    const private_message_typeahead_input: TypeaheadInputElement = {
         $element: $("#private_message_recipient"),
         type: "contenteditable",
     };
@@ -1141,17 +1328,17 @@ export function initialize({on_enter_send}) {
         source: get_pm_people,
         items: max_num_items,
         dropup: true,
-        highlighter_html(item) {
+        highlighter_html(item: UserGroupPillData | UserPillData) {
             return typeahead_helper.render_person_or_user_group(item);
         },
-        matcher() {
+        matcher(): boolean {
             return true;
         },
-        sorter(items) {
+        sorter(items: (UserGroupPillData | UserPillData)[]): (UserGroupPillData | UserPillData)[] {
             return items;
         },
-        updater(item) {
-            if (user_groups.is_user_group(item)) {
+        updater(item: UserGroupPillData | UserPillData): undefined {
+            if (item.type === "user_group") {
                 for (const user_id of item.members) {
                     const user = people.get_by_user_id(user_id);
                     // filter out inactive users, inserted users and current user

@@ -104,7 +104,7 @@ places:
 - The frontend Markdown processor (`web/src/markdown.ts` and sometimes
   `web/third/marked/lib/marked.js`), or `markdown.contains_backend_only_syntax` if
   your changes won't be supported in the frontend processor.
-- If desired, the typeahead logic in `web/src/composebox_typeahead.js`.
+- If desired, the typeahead logic in `web/src/composebox_typeahead.ts`.
 - The test suite, probably via adding entries to `zerver/tests/fixtures/markdown_test_cases.json`.
 - The in-app Markdown documentation (`markdown_help_rows` in `web/src/info_overlay.ts`).
 - The list of changes to Markdown at the end of this document.

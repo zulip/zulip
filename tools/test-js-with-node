@@ -82,7 +82,7 @@ EXEMPT_FILES = make_set(
         "web/src/compose_tooltips.ts",
         "web/src/compose_ui.ts",
         "web/src/compose_validate.ts",
-        "web/src/composebox_typeahead.js",
+        "web/src/composebox_typeahead.ts",
         "web/src/condense.ts",
         "web/src/confirm_dialog.ts",
         "web/src/copied_tooltip.ts",

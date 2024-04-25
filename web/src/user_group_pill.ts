@@ -11,7 +11,10 @@ export type UserGroupPill = {
 
 type UserGroupPillWidget = InputPillContainer<UserGroupPill>;
 
-export type UserGroupPillData = UserGroup & {type: "user_group"};
+export type UserGroupPillData = UserGroup & {
+    type: "user_group";
+    is_silent?: boolean;
+};
 
 function display_pill(group: UserGroup): string {
     return `${group.name}: ${group.members.size} users`;

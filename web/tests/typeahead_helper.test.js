@@ -304,6 +304,13 @@ test("sort_streams", ({override, override_rewire}) => {
     assert.deepEqual(test_streams[5].name, "Mew"); // Unsubscribed and no match
 });
 
+function language_items(languages) {
+    return languages.map((language) => ({
+        type: "syntax",
+        language,
+    }));
+}
+
 test("sort_languages", ({override_rewire}) => {
     override_rewire(pygments_data, "langs", {
         python: {priority: 26},
@@ -314,18 +321,18 @@ test("sort_languages", ({override_rewire}) => {
         css: {priority: 21},
     });
 
-    let test_langs = ["pascal", "perl", "php", "python", "javascript"];
+    let test_langs = language_items(["pascal", "perl", "php", "python", "javascript"]);
     test_langs = th.sort_languages(test_langs, "p");
 
     // Sort languages by matching first letter, and then by popularity
-    assert.deepEqual(test_langs, ["python", "php", "pascal", "perl", "javascript"]);
+    assert.deepEqual(test_langs, language_items(["python", "php", "pascal", "perl", "javascript"]));
 
     // Test if popularity between two languages are the same
     pygments_data.langs.php = {priority: 26};
-    test_langs = ["pascal", "perl", "php", "python", "javascript"];
+    test_langs = language_items(["pascal", "perl", "php", "python", "javascript"]);
     test_langs = th.sort_languages(test_langs, "p");
 
-    assert.deepEqual(test_langs, ["php", "python", "pascal", "perl", "javascript"]);
+    assert.deepEqual(test_langs, language_items(["php", "python", "pascal", "perl", "javascript"]));
 });
 
 test("sort_languages on actual data", () => {
@@ -334,23 +341,23 @@ test("sort_languages on actual data", () => {
     // We may eventually want to use human-readable names like
     // "JavaScript" with several machine-readable aliases for what the
     // user typed, which might help provide a better user experience.
-    let test_langs = ["j", "java", "javascript", "js"];
+    let test_langs = language_items(["j", "java", "javascript", "js"]);
 
     // Sort according to priority only.
     test_langs = th.sort_languages(test_langs, "jav");
-    assert.deepEqual(test_langs, ["javascript", "java", "j"]);
+    assert.deepEqual(test_langs, language_items(["javascript", "java", "j"]));
 
     // Push exact matches to top, regardless of priority
     test_langs = th.sort_languages(test_langs, "java");
-    assert.deepEqual(test_langs, ["java", "javascript", "j"]);
+    assert.deepEqual(test_langs, language_items(["java", "javascript", "j"]));
     test_langs = th.sort_languages(test_langs, "j");
-    assert.deepEqual(test_langs, ["j", "javascript", "java"]);
+    assert.deepEqual(test_langs, language_items(["j", "javascript", "java"]));
 
     // (Only one alias should be shown per language
     // (e.g. searching for "js" shouldn't show "javascript")
-    test_langs = ["js", "javascript", "java"];
+    test_langs = language_items(["js", "javascript", "java"]);
     test_langs = th.sort_languages(test_langs, "js");
-    assert.deepEqual(test_langs, ["js", "java"]);
+    assert.deepEqual(test_langs, language_items(["js", "java"]));
 });
 
 function get_typeahead_result(query, current_stream_id, current_topic) {
@@ -817,6 +824,7 @@ test("render_person special_item_text", ({mock_template}) => {
         user_id: 7,
         special_item_text: "special_text",
         is_broadcast: true,
+        type: "user_or_mention",
     };
 
     rendered = false;

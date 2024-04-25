@@ -96,7 +96,7 @@ export function create_message_object(message_content = compose_state.message_co
     message.topic = "";
 
     if (message.type === "private") {
-        // TODO: this should be collapsed with the code in composebox_typeahead.js
+        // TODO: this should be collapsed with the code in composebox_typeahead.ts
         const recipient = compose_state.private_message_recipient();
         const emails = util.extract_pm_recipients(recipient);
         message.to = emails;

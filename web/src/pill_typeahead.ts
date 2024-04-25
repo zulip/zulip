@@ -11,17 +11,16 @@ import * as typeahead_helper from "./typeahead_helper";
 import type {CombinedPillContainer} from "./typeahead_helper";
 import * as user_group_pill from "./user_group_pill";
 import type {UserGroupPillData} from "./user_group_pill";
-import type {UserGroup} from "./user_groups";
 import * as user_pill from "./user_pill";
 import type {UserPillData} from "./user_pill";
 
-function person_matcher(query: string, item: User): boolean {
+function person_matcher(query: string, item: UserPillData): boolean {
     return (
         people.is_known_user_id(item.user_id) && typeahead_helper.query_matches_person(query, item)
     );
 }
 
-function group_matcher(query: string, item: UserGroup): boolean {
+function group_matcher(query: string, item: UserGroupPillData): boolean {
     return typeahead_helper.query_matches_name(query, item);
 }
 
@@ -99,10 +98,7 @@ export function set_up(
             // handles `include_users` cases along with
             // default cases.
             assert(item.type === "user");
-            return typeahead_helper.render_person({
-                ...item,
-                is_broadcast: undefined,
-            });
+            return typeahead_helper.render_person(item);
         },
         matcher(item: TypeaheadItem, query: string): boolean {
             query = query.toLowerCase();

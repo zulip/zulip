@@ -46,7 +46,7 @@ type RealmEmoji = {
 };
 
 // Data structure which every widget(like Emoji Picker) in the web app is supposed to use for displaying emojis.
-type EmojiDict = {
+export type EmojiDict = {
     name: string;
     display_name: string;
     aliases: string[];
