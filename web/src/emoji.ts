@@ -66,7 +66,7 @@ type EmojiDict = {
 // Details needed by template to render an emoji.
 export type EmojiRenderingDetails = {
     emoji_name: string;
-    reaction_type: string;
+    reaction_type: "zulip_extra_emoji" | "realm_emoji" | "unicode_emoji";
     emoji_code: string;
     url?: string;
     still_url?: string | null;
@@ -325,7 +325,7 @@ export function get_emoji_details_by_name(emoji_name: string): EmojiRenderingDet
 export function get_emoji_details_for_rendering(opts: {
     emoji_name: string;
     emoji_code: string;
-    reaction_type: string;
+    reaction_type: "zulip_extra_emoji" | "realm_emoji" | "unicode_emoji";
 }): EmojiRenderingDetails {
     if (opts.reaction_type !== "unicode_emoji") {
         const realm_emoji = all_realm_emojis.get(opts.emoji_code);

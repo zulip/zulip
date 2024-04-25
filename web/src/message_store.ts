@@ -100,7 +100,7 @@ export type MessageCleanReaction = {
     is_realm_emoji: boolean;
     label: string;
     local_id: string;
-    reaction_type: string;
+    reaction_type: "zulip_extra_emoji" | "realm_emoji" | "unicode_emoji";
     user_ids: number[];
     vote_text: string;
 };

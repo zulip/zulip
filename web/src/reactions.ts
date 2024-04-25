@@ -24,7 +24,7 @@ type ReactionEvent = {
     message_id: number;
     user_id: number;
     local_id: string;
-    reaction_type: string;
+    reaction_type: "zulip_extra_emoji" | "realm_emoji" | "unicode_emoji";
     emoji_name: string;
     emoji_code: string;
 };
@@ -53,7 +53,7 @@ function get_message(message_id: number): Message | undefined {
 
 export type RawReaction = {
     emoji_name: string;
-    reaction_type: string;
+    reaction_type: "zulip_extra_emoji" | "realm_emoji" | "unicode_emoji";
     emoji_code: string;
     user_id: number;
 };
@@ -566,7 +566,7 @@ function make_clean_reaction({
     user_ids: number[];
     emoji_name: string;
     emoji_code: string;
-    reaction_type: string;
+    reaction_type: "zulip_extra_emoji" | "realm_emoji" | "unicode_emoji";
     should_display_reactors: boolean;
 }): MessageCleanReaction {
     const emoji_details = emoji.get_emoji_details_for_rendering({
