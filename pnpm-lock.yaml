@@ -297,9 +297,6 @@ devDependencies:
   '@types/blueimp-md5':
     specifier: ^2.18.0
     version: 2.18.2
-  '@types/clean-css':
-    specifier: ^4.2.2
-    version: 4.2.11
   '@types/jquery':
     specifier: ^3.3.31
     version: 3.5.29
@@ -3013,13 +3010,6 @@ packages:
     resolution: {integrity: sha512-z9fJ5Im06zvUL548KvYNecEVlA7cVDkGUi6kZusb04mpyEFKCIZJvloCcmpmLaIahDpOQGHaHmG6imtPMmPXGQ==}
     dependencies:
       '@types/node': 20.11.30
-
-  /@types/clean-css@4.2.11:
-    resolution: {integrity: sha512-Y8n81lQVTAfP2TOdtJJEsCoYl1AnOkqDqMvXb9/7pfgZZ7r8YrEyurrAvAoAjHOGXKRybay+5CsExqIH6liccw==}
-    dependencies:
-      '@types/node': 20.11.30
-      source-map: /source-map-js@1.0.1
-    dev: true
 
   /@types/co-body@6.1.3:
     resolution: {integrity: sha512-UhuhrQ5hclX6UJctv5m4Rfp52AfG9o9+d9/HwjxhVB5NjXxr5t9oKgJxN8xRHgr35oo8meUEHUPFWiKg6y71aA==}
