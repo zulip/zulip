@@ -930,7 +930,7 @@ run_test("user_settings", ({override}) => {
     toggled = [];
     dispatch(event);
     assert_same(user_settings.dense_mode, true);
-    assert_same(toggled, ["less_dense_mode", "more_dense_mode"]);
+    assert_same(toggled, ["less-dense-mode", "more-dense-mode"]);
 
     event = event_fixtures.user_settings__web_font_size_px;
     user_settings.web_font_size_px = 14;
