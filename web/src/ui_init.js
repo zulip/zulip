@@ -278,9 +278,9 @@ export function initialize_kitchen_sink_stuff() {
     }
 
     if (!user_settings.dense_mode) {
-        $("body").addClass("less_dense_mode");
+        $("body").addClass("less-dense-mode");
     } else {
-        $("body").addClass("more_dense_mode");
+        $("body").addClass("more-dense-mode");
     }
 
     // To keep the specificity same for the CSS related to hiding the
