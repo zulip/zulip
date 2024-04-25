@@ -97,7 +97,6 @@
     "@formatjs/cli": "^6.0.0",
     "@types/autosize": "^4.0.1",
     "@types/blueimp-md5": "^2.18.0",
-    "@types/clean-css": "^4.2.2",
     "@types/jquery": "^3.3.31",
     "@types/jquery.validation": "^1.16.7",
     "@types/katex": "^0.16.0",
