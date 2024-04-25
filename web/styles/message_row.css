@@ -203,6 +203,7 @@
             */
             padding: 5px 0 0;
             color: var(--color-text-message-default);
+            font-size: var(--base-font-size-px);
             line-height: var(--base-line-height-unitless);
             min-height: 17px;
             display: block;
