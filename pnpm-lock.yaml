@@ -97,9 +97,6 @@ dependencies:
   colord:
     specifier: ^2.9.3
     version: 2.9.3
-  config-ini-parser:
-    specifier: ^1.6.1
-    version: 1.6.1
   core-js:
     specifier: ^3.36.0
     version: 3.36.1
@@ -4955,10 +4952,6 @@ packages:
       inherits: 2.0.4
       readable-stream: 3.6.2
       typedarray: 0.0.6
-    dev: false
-
-  /config-ini-parser@1.6.1:
-    resolution: {integrity: sha512-6YBVmXlWiUKDhjn+S/1ju2+8j8Qnj1PqR8yE5DmLrQRtBOc9kgMLyutFl2so1FNVHevR/A4nY7z9EWw8s6g/Cw==}
     dev: false
 
   /connect-history-api-fallback@2.0.0:

@@ -29,7 +29,6 @@
     "clean-css": "^5.1.0",
     "clipboard": "^2.0.4",
     "colord": "^2.9.3",
-    "config-ini-parser": "^1.6.1",
     "core-js": "^3.36.0",
     "css-loader": "^6.2.0",
     "css-minimizer-webpack-plugin": "^6.0.0",
