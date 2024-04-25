@@ -16,6 +16,7 @@ export const stream_schema = z.object({
     history_public_to_subscribers: z.boolean(),
     invite_only: z.boolean(),
     is_announcement_only: z.boolean(),
+    is_archived: z.boolean(),
     is_web_public: z.boolean(),
     message_retention_days: z.number().nullable(),
     name: z.string(),
