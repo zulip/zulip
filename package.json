@@ -135,7 +135,6 @@
     "mockdate": "^3.0.2",
     "nyc": "^15.0.0",
     "openapi-examples-validator": "^5.0.0",
-    "openapi-types": "^12.0.0",
     "prettier": "^3.0.0",
     "puppeteer": "^22.2.0",
     "source-map": "npm:source-map-js@1.0.1",

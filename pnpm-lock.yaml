@@ -411,9 +411,6 @@ devDependencies:
   openapi-examples-validator:
     specifier: ^5.0.0
     version: 5.0.0
-  openapi-types:
-    specifier: ^12.0.0
-    version: 12.1.3
   prettier:
     specifier: ^3.0.0
     version: 3.2.5
