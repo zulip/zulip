@@ -362,11 +362,11 @@ export function update_add_subscriptions_elements(sub) {
         if (!settings_data.user_can_subscribe_other_users()) {
             tooltip_message = $t({
                 defaultMessage:
-                    "You do not have permission to add other users to streams in this organization.",
+                    "You do not have permission to add other users to channels in this organization.",
             });
         } else {
             tooltip_message = $t({
-                defaultMessage: "Only stream members can add users to a private stream.",
+                defaultMessage: "Only channel members can add users to a private channel.",
             });
         }
         settings_components.initialize_disable_btn_hint_popover(

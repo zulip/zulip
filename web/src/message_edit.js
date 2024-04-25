@@ -1241,7 +1241,7 @@ export function delete_topic(stream_id, topic_name, failures = 0) {
     });
 }
 
-export function handle_narrow_deactivated() {
+export function restore_edit_state_after_message_view_change() {
     assert(message_lists.current !== undefined);
     for (const [idx, elem] of currently_editing_messages) {
         if (message_lists.current.get(idx) !== undefined) {
@@ -1393,7 +1393,7 @@ export function with_first_message_id(stream_id, topic_name, success_cb, error_c
         num_before: 1,
         num_after: 0,
         narrow: JSON.stringify([
-            {operator: "stream", operand: stream_id},
+            {operator: "channel", operand: stream_id},
             {operator: "topic", operand: topic_name},
         ]),
     };
@@ -1421,7 +1421,7 @@ export function is_message_oldest_or_newest(
         num_before: 1,
         num_after: 1,
         narrow: JSON.stringify([
-            {operator: "stream", operand: stream_id},
+            {operator: "channel", operand: stream_id},
             {operator: "topic", operand: topic_name},
         ]),
     };

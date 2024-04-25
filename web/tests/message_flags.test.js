@@ -136,7 +136,7 @@ run_test("unstar_all_in_topic", ({override}) => {
         num_before: 1000,
         num_after: 0,
         narrow: JSON.stringify([
-            {operator: "stream", operand: 20},
+            {operator: "channel", operand: 20},
             {operator: "topic", operand: "topic"},
             {operator: "is", operand: "starred"},
         ]),

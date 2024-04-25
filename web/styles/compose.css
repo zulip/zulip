@@ -1177,7 +1177,7 @@ textarea.new_message_textarea,
         font-weight: lighter;
     }
 
-    /* This is the "Select a stream" default message */
+    /* This is the "Select a channel" default message */
     .text-warning {
         color: inherit;
     }

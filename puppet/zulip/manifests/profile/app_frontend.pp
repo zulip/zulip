@@ -54,23 +54,22 @@ class zulip::profile::app_frontend {
     require => Package[certbot],
   }
   if ! $nginx_http_only {
-      exec { 'fix-standalone-certbot':
-        onlyif  => @(EOT),
-          test -L /etc/ssl/certs/zulip.combined-chain.crt &&
-          readlink /etc/ssl/certs/zulip.combined-chain.crt | grep -q /etc/letsencrypt/live/ &&
-          test -d /etc/letsencrypt/renewal &&
-          grep -qx "authenticator = standalone" /etc/letsencrypt/renewal/*.conf
-          | EOT
-        command => "${facts['zulip_scripts_path']}/lib/fix-standalone-certbot",
-      }
+    exec { 'fix-standalone-certbot':
+      onlyif  => @(EOT),
+        test -L /etc/ssl/certs/zulip.combined-chain.crt &&
+        readlink /etc/ssl/certs/zulip.combined-chain.crt | grep -q /etc/letsencrypt/live/ &&
+        test -d /etc/letsencrypt/renewal &&
+        grep -qx "authenticator = standalone" /etc/letsencrypt/renewal/*.conf
+        | EOT
+      command => "${facts['zulip_scripts_path']}/lib/fix-standalone-certbot",
+    }
   }
 
   # Restart the server regularly to avoid potential memory leak problems.
-  file { '/etc/cron.d/restart-zulip':
-    ensure => file,
-    owner  => 'root',
-    group  => 'root',
-    mode   => '0644',
-    source => 'puppet:///modules/zulip/cron.d/restart-zulip',
+  zulip::cron { 'restart-zulip':
+    hour    => '6',
+    minute  => '0',
+    dow     => '7',
+    command => '/home/zulip/deployments/current/scripts/restart-server --fill-cache',
   }
 }

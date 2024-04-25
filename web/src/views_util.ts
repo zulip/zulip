@@ -56,7 +56,7 @@ export function filters_dropdown_options(current_value: string | number | undefi
             unique_id: FILTERS.ALL_TOPICS,
             name: $t({defaultMessage: "All topics"}),
             description: $t({
-                defaultMessage: "Includes muted streams and topics",
+                defaultMessage: "Includes muted channels and topics",
             }),
             bold_current_selection: current_value === FILTERS.ALL_TOPICS,
         },
@@ -72,9 +72,7 @@ export function show(opts: {
     complete_rerender: () => void;
     is_recent_view?: boolean;
 }): void {
-    if (narrow_state.has_shown_message_list_view) {
-        message_lists.save_pre_narrow_offset_for_reload();
-    }
+    message_lists.save_pre_narrow_offset_for_reload();
 
     if (opts.is_visible()) {
         // If we're already visible, E.g. because the user hit Esc

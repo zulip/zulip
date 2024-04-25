@@ -65,7 +65,7 @@ function get_message_view_header_context(filter: Filter | undefined): MessageVie
             sub_count: "0",
             formatted_sub_count: "0",
             rendered_narrow_description: $t({
-                defaultMessage: "This stream does not exist or is private.",
+                defaultMessage: "This channel does not exist or is private.",
             }),
         };
     }

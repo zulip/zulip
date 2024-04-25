@@ -25,7 +25,7 @@ actually do much of the work.
 Our gear menu has these choices:
 
 =================
-hash:  Stream settings
+hash:  Channel settings
 hash:  Settings
 hash:  Organization settings
 link:  Usage statistics

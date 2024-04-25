@@ -23,10 +23,10 @@
         {% endfor %}
     {% endif %}
 
-    {% if new_streams.html %}
-    <p class="digest_paragraph"><b>{% trans %}New streams{% endtrans %}</b></p>
+    {% if new_channels.html %}
+    <p class="digest_paragraph"><b>{% trans %}New channels{% endtrans %}</b></p>
 
-    <p class="digest_paragraph">{{ new_streams.html|display_list(1000)|safe }}.</p>
+    <p class="digest_paragraph">{{ new_channels.html|display_list(1000)|safe }}.</p>
     {% endif %}
 
     <br />

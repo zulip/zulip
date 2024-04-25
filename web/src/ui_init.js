@@ -14,6 +14,7 @@ import * as activity from "./activity";
 import * as activity_ui from "./activity_ui";
 import * as add_stream_options_popover from "./add_stream_options_popover";
 import * as alert_words from "./alert_words";
+import {all_messages_data} from "./all_messages_data";
 import * as audible_notifications from "./audible_notifications";
 import * as blueslip from "./blueslip";
 import * as bot_data from "./bot_data";
@@ -63,7 +64,6 @@ import * as markdown_config from "./markdown_config";
 import * as message_actions_popover from "./message_actions_popover";
 import * as message_edit_history from "./message_edit_history";
 import * as message_fetch from "./message_fetch";
-import * as message_list from "./message_list";
 import * as message_list_hover from "./message_list_hover";
 import * as message_list_tooltips from "./message_list_tooltips";
 import * as message_lists from "./message_lists";
@@ -726,7 +726,6 @@ export function initialize_everything(state_data) {
 
     realm_logo.initialize();
     message_lists.initialize();
-    message_list.initialize();
     recent_view_ui.initialize({
         on_click_participant(avatar_element, participant_user_id) {
             const user = people.get_by_user_id(participant_user_id);
@@ -736,7 +735,7 @@ export function initialize_everything(state_data) {
         on_mark_topic_as_read: unread_ops.mark_topic_as_read,
         maybe_load_older_messages() {
             message_fetch.maybe_load_older_messages({
-                msg_list: message_lists.home,
+                msg_list_data: all_messages_data,
                 recent_view: true,
             });
         },
@@ -863,7 +862,7 @@ export function initialize_everything(state_data) {
             const sub = sub_store.get(stream_id);
             narrow.activate(
                 [
-                    {operator: "stream", operand: sub.name},
+                    {operator: "channel", operand: sub.name},
                     {operator: "topic", operand: topic},
                 ],
                 {trigger: "sidebar"},

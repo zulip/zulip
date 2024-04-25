@@ -83,7 +83,7 @@ IGNORED_PHRASES = [
     r"acme",
     # Fragments of larger strings
     r"is …",
-    r"your subscriptions on your Streams page",
+    r"your subscriptions on your Channels page",
     r"Add global time<br />Everyone sees global times in their own time zone\.",
     r"user",
     r"an unknown operating system",
@@ -96,14 +96,14 @@ IGNORED_PHRASES = [
     r"^deprecated$",
     # We want the similar text in the Private Messages section to have the same capitalization.
     r"more conversations",
-    r"back to streams",
+    r"back to channels",
     # Capital 'i' looks weird in reminders popover
     r"in 1 hour",
     r"in 20 minutes",
     r"in 3 hours",
     # these are used as topics
-    r"^new streams$",
-    r"^stream events$",
+    r"^new channels$",
+    r"^channel events$",
     # These are used as example short names (e.g. an uncapitalized context):
     r"^marketing$",
     r"^cookie$",

@@ -319,6 +319,10 @@
                     /* Set the same line-height as on message content for
                        me-messages. */
                     line-height: var(--message-box-line-height);
+                    /* Ensure the same spacing below messages as for any other
+                       paragraph.
+                       TODO: Coordinate this with other info-density variables. */
+                    padding-bottom: 5px;
 
                     /* Display message components inline, with wrapping white-space,
                        so the sender name and message display as a continuous line
@@ -388,28 +392,57 @@
                 text-overflow: ellipsis;
                 grid-area: sender;
                 display: flex;
+                /* A generous line-height on the sender name is necessary
+                   for internationalization and non-Western Latin character
+                   sets. */
+                line-height: var(--message-box-sender-line-height);
                 /* Ensure flexed sender info (name, status emoji, inline EDITED)
                    forms a baseline group, which will participate with the
                    message-box grid's baseline group, too. */
                 align-items: baseline;
 
                 .zulip-icon.zulip-icon-bot {
+                    font-size: 12px;
                     align-self: center;
                     padding: 0 0 0 5px;
                 }
 
                 .sender_name {
+                    display: inline-flex;
+                    font-weight: 700;
+                    color: var(--color-text-sender-name);
+                    column-gap: 3px;
                     overflow: hidden;
                     text-overflow: ellipsis;
                     white-space: nowrap;
-                    /* A generous line-height on the sender name is necessary
-                       for internationalization and non-Western Latin character
-                       sets. */
-                    line-height: var(--message-box-sender-line-height);
                     outline: none;
                     align-self: baseline;
+
+                    .sender_name_text {
+                        overflow: hidden;
+                        white-space: nowrap;
+                        display: inline-flex;
+
+                        .user-name {
+                            overflow: hidden;
+                            text-overflow: ellipsis;
+                        }
+                    }
                 }
             }
+        }
+    }
+
+    &.sender_info_hovered {
+        .sender_name {
+            cursor: pointer;
+            /* TODO: Refactor the teetering nested classes
+               above so that !important can be removed. */
+            color: var(--color-text-sender-name-hover) !important;
+        }
+
+        .message-avatar {
+            cursor: pointer;
         }
     }
 
@@ -520,9 +553,42 @@
 /* Additional message-editing UI styles. */
 
 .message_edit_content {
-    line-height: 18px;
-    resize: vertical !important;
     max-height: 24em;
+    width: 100%;
+    min-width: 206px;
+    box-sizing: border-box;
+    /* Setting resize as none hides the bottom right diagonal box
+       (which even has a background color of its own!). */
+    resize: none !important;
+    color: hsl(0deg 0% 33%);
+    background-color: hsl(0deg 0% 100%);
+    border-radius: 4px;
+    vertical-align: middle;
+    border: 1px solid hsl(0deg 0% 80%);
+    /* Match textarea padding to compose box and
+       message-edit preview area. */
+    padding: 5px;
+    margin: 0 0 10px;
+
+    box-shadow: inset 0 1px 1px hsl(0deg 0% 0% / 7.5%);
+    transition:
+        border linear 0.2s,
+        box-shadow linear 0.2s;
+
+    &:focus {
+        border-color: hsl(206.5deg 80% 62% / 80%);
+        outline: 0;
+
+        box-shadow:
+            inset 0 1px 1px hsl(0deg 0% 0% / 7.5%),
+            0 0 8px hsl(206.5deg 80% 62% / 60%);
+    }
+
+    &:read-only,
+    &:disabled {
+        cursor: not-allowed;
+        background-color: hsl(0deg 0% 93%);
+    }
 }
 
 .message_edit_countdown_timer {
@@ -589,42 +655,6 @@
     .edit-controls {
         margin-left: 0;
         margin-top: 0;
-    }
-
-    & textarea {
-        width: 100%;
-        min-width: 206px;
-        box-sizing: border-box;
-        /* Setting resize as none hides the bottom right diagonal box
-           (which even has a background color of its own!). */
-        resize: none !important;
-        color: hsl(0deg 0% 33%);
-        background-color: hsl(0deg 0% 100%);
-        border-radius: 4px;
-        vertical-align: middle;
-        border: 1px solid hsl(0deg 0% 80%);
-        padding: 4px 6px;
-        margin-bottom: 10px;
-
-        box-shadow: inset 0 1px 1px hsl(0deg 0% 0% / 7.5%);
-        transition:
-            border linear 0.2s,
-            box-shadow linear 0.2s;
-
-        &:focus {
-            border-color: hsl(206.5deg 80% 62% / 80%);
-            outline: 0;
-
-            box-shadow:
-                inset 0 1px 1px hsl(0deg 0% 0% / 7.5%),
-                0 0 8px hsl(206.5deg 80% 62% / 60%);
-        }
-
-        &:read-only,
-        &:disabled {
-            cursor: not-allowed;
-            background-color: hsl(0deg 0% 93%);
-        }
     }
 }
 

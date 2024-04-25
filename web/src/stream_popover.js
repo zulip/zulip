@@ -497,7 +497,7 @@ export async function build_move_topic_to_stream_popover(
         const stream = stream_data.get_sub_by_id(stream_id);
         if (stream === undefined) {
             $("#move_topic_to_stream_widget .dropdown_widget_value").text(
-                $t({defaultMessage: "Select a stream"}),
+                $t({defaultMessage: "Select a channel"}),
             );
         } else {
             $("#move_topic_to_stream_widget .dropdown_widget_value").html(

@@ -21,14 +21,6 @@ const compose_recipient = mock_esm("../src/compose_recipient");
 const message_fetch = mock_esm("../src/message_fetch");
 const message_list = mock_esm("../src/message_list");
 const message_lists = mock_esm("../src/message_lists", {
-    home: {
-        view: {
-            $list: {
-                removeClass: noop,
-                addClass: noop,
-            },
-        },
-    },
     current: {
         view: {
             $list: {
@@ -43,6 +35,9 @@ const message_lists = mock_esm("../src/message_lists", {
     },
     update_current_message_list(msg_list) {
         message_lists.current = msg_list;
+    },
+    all_rendered_message_lists() {
+        return [message_lists.current];
     },
 });
 const message_feed_top_notices = mock_esm("../src/message_feed_top_notices");

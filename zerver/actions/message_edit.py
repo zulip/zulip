@@ -103,7 +103,7 @@ def validate_message_edit_payload(
 
     if not message.is_stream_message():
         if stream_id is not None:
-            raise JsonableError(_("Direct messages cannot be moved to streams."))
+            raise JsonableError(_("Direct messages cannot be moved to channels."))
         if topic_name is not None:
             raise JsonableError(_("Direct messages cannot have topics."))
 
@@ -114,7 +114,7 @@ def validate_message_edit_payload(
         check_stream_topic(topic_name)
 
     if stream_id is not None and content is not None:
-        raise JsonableError(_("Cannot change message content while changing stream"))
+        raise JsonableError(_("Cannot change message content while changing channel"))
 
     # Right now, we prevent users from editing widgets.
     if content is not None and is_widget_message(message):
@@ -1325,7 +1325,7 @@ def check_update_message(
             )
             if (timezone_now() - message.date_sent) > timedelta(seconds=deadline_seconds):
                 raise JsonableError(
-                    _("The time limit for editing this message's stream has passed")
+                    _("The time limit for editing this message's channel has passed")
                 )
 
     if (

@@ -1,0 +1,15 @@
+Subject: Demo request for {{ organization_name }}
+
+Full name: {{ full_name }}
+
+Email: {{ email }}
+
+Role: {{ role }}
+
+Organization type: {{ organization_type }}
+
+Organization website: {{ organization_website }}
+
+Expected user count: {{ expected_user_count }}
+
+Message: {{ message }}

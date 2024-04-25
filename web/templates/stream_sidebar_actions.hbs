@@ -17,16 +17,16 @@
     <li class="stream-menu-item">
         <a tabindex="0" class="open_stream_settings">
             <i class="fa fa-cog" aria-hidden="true"></i>
-            {{t "Stream settings" }}
+            {{t "Channel settings" }}
         </a>
     </li>
     <li class="stream-menu-item hidden-for-spectators">
         <a tabindex="0" class="pin_to_top">
             <i class="fa fa-thumb-tack stream-pin-icon" aria-hidden="true"></i>
             {{#if stream.pin_to_top}}
-            {{t "Unpin stream from top"}}
+            {{t "Unpin channel from top"}}
             {{else}}
-            {{t "Pin stream to top"}}
+            {{t "Pin channel to top"}}
             {{/if}}
         </a>
     </li>
@@ -40,10 +40,10 @@
         <a tabindex="0" class="toggle_stream_muted">
             {{#if stream.is_muted}}
             <i class="zulip-icon zulip-icon-mute" aria-hidden="true"></i>
-            {{t "Unmute stream"}}
+            {{t "Unmute channel"}}
             {{else}}
             <i class="zulip-icon zulip-icon-mute" aria-hidden="true"></i>
-            {{t "Mute stream"}}
+            {{t "Mute channel"}}
             {{/if}}
         </a>
     </li>

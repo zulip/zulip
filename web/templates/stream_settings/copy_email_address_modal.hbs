@@ -1,7 +1,7 @@
 <div class="copy-email-modal">
     <div class="new-style">
         <p class="question-which-parts">
-            {{t "Which parts of the email should be included in the Zulip message sent to this stream?"}}
+            {{t "Which parts of the email should be included in the Zulip message sent to this channel?"}}
         </p>
         {{#each tags}}
             {{#if (eq this.name "prefer-html") }}
@@ -17,7 +17,7 @@
         {{/each}}
         <hr />
         <p class="stream-email-header">
-            {{t "Stream email address:"}}
+            {{t "Channel email address:"}}
         </p>
         <div class="stream-email">
             <div class="email-address">{{email_address}}</div>

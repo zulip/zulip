@@ -56,14 +56,14 @@
         </select>
     </div>
     <div>
-        <label>{{t "Streams they should join" }}</label>
+        <label>{{t "Channels they should join" }}</label>
         <div id="streams_to_add">
             {{#if show_select_default_streams_option}}
             <div class="select_default_streams new-style">
                 <label class="checkbox display-block">
                     <input type="checkbox" id="invite_select_default_streams" checked="checked" />
                     <span></span>
-                    {{t 'Default streams for this organization'}}
+                    {{t 'Default channels for this organization'}}
                 </label>
             </div>
             {{/if}}
@@ -83,7 +83,7 @@
                         #{{name}}
                         {{/if}}
                         {{#if (eq name ../new_stream_announcements_stream)}}
-                        <i>({{t 'Receives new stream announcements' }})</i>
+                        <i>({{t 'Receives new channel announcements' }})</i>
                         {{/if}}
                     </label>
                 {{/each}}

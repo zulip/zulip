@@ -76,15 +76,15 @@ export const user_list_style_values = {
 export const web_stream_unreads_count_display_policy_values = {
     all_streams: {
         code: 1,
-        description: $t({defaultMessage: "All streams"}),
+        description: $t({defaultMessage: "All channels"}),
     },
     unmuted_streams: {
         code: 2,
-        description: $t({defaultMessage: "Unmuted streams and topics"}),
+        description: $t({defaultMessage: "Unmuted channels and topics"}),
     },
     no_streams: {
         code: 3,
-        description: $t({defaultMessage: "No streams"}),
+        description: $t({defaultMessage: "No channels"}),
     },
 };
 
@@ -585,7 +585,7 @@ export const notification_settings_labels = {
         defaultMessage: "Automatically follow topics where I'm mentioned",
     }),
     automatically_unmute_topics_in_muted_streams_policy: $t({
-        defaultMessage: "Automatically unmute topics in muted streams",
+        defaultMessage: "Automatically unmute topics in muted channels",
     }),
     desktop_icon_count_display: $t({
         defaultMessage: "Unread count badge (appears in desktop sidebar and browser tab)",
@@ -631,7 +631,7 @@ export const realm_user_settings_defaults_labels = {
         defaultMessage: "Let recipients see when a user is typing direct messages",
     }),
     realm_send_stream_typing_notifications: $t({
-        defaultMessage: "Let recipients see when a user is typing stream messages",
+        defaultMessage: "Let recipients see when a user is typing channel messages",
     }),
 };
 
@@ -650,12 +650,12 @@ export const general_notifications_table_labels = {
         "all_mentions",
     ],
     stream: {
-        is_muted: $t({defaultMessage: "Mute stream"}),
+        is_muted: $t({defaultMessage: "Mute channel"}),
         desktop_notifications: $t({defaultMessage: "Visual desktop notifications"}),
         audible_notifications: $t({defaultMessage: "Audible desktop notifications"}),
         push_notifications: $t({defaultMessage: "Mobile notifications"}),
         email_notifications: $t({defaultMessage: "Email notifications"}),
-        pin_to_top: $t({defaultMessage: "Pin stream to top of left sidebar"}),
+        pin_to_top: $t({defaultMessage: "Pin channel to top of left sidebar"}),
         wildcard_mentions_notify: $t({defaultMessage: "Notifications for @all/@everyone mentions"}),
     },
 };
@@ -849,7 +849,7 @@ export type AllNotifications = {
 export const all_notifications = (settings_object: Settings): AllNotifications => ({
     general_settings: [
         {
-            label: $t({defaultMessage: "Streams"}),
+            label: $t({defaultMessage: "Channels"}),
             notification_settings: get_notifications_table_row_data(
                 stream_notification_settings,
                 settings_object,
@@ -966,7 +966,7 @@ export const user_topic_visibility_policy_values = {
     },
     inherit: {
         code: 0,
-        description: $t({defaultMessage: "Default for stream"}),
+        description: $t({defaultMessage: "Default for channel"}),
     },
 };
 

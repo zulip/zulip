@@ -19,7 +19,7 @@ from zerver.lib.logging_util import log_to_file
 from zerver.lib.message import get_last_message_id
 from zerver.lib.queue import queue_json_publish
 from zerver.lib.send_email import FromAddress, send_future_email
-from zerver.lib.url_encoding import encode_stream
+from zerver.lib.url_encoding import stream_narrow_url
 from zerver.models import (
     Message,
     Realm,
@@ -255,18 +255,16 @@ def gather_new_streams(
     else:
         new_streams = [stream for stream in recently_created_streams if stream.is_web_public]
 
-    base_url = f"{realm.uri}/#narrow/stream/"
-
-    streams_html = []
-    streams_plain = []
+    channels_html = []
+    channels_plain = []
 
     for stream in new_streams:
-        narrow_url = base_url + encode_stream(stream.id, stream.name)
-        stream_link = f"<a href='{narrow_url}'>{stream.name}</a>"
-        streams_html.append(stream_link)
-        streams_plain.append(stream.name)
+        narrow_url = stream_narrow_url(realm, stream)
+        channel_link = f"<a href='{narrow_url}'>{stream.name}</a>"
+        channels_html.append(channel_link)
+        channels_plain.append(stream.name)
 
-    return len(new_streams), {"html": streams_html, "plain": streams_plain}
+    return len(new_streams), {"html": channels_html, "plain": channels_plain}
 
 
 def enough_traffic(hot_conversations: str, new_streams: int) -> bool:
@@ -376,7 +374,7 @@ def bulk_get_digest_context(
             recently_created_streams=recently_created_streams,
             can_access_public=user.can_access_public_streams(),
         )
-        context["new_streams"] = new_streams
+        context["new_channels"] = new_streams
         context["new_streams_count"] = new_streams_count
 
         yield user, context

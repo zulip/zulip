@@ -105,21 +105,21 @@
                         <div class="alert stream_list_info"></div>
                         {{#if show_user_subscribe_widget}}
                             <div class="header-section">
-                                <h3 class="stream-tab-element-header">{{t 'Subscribe {full_name} to streams'}}</h3>
+                                <h3 class="stream-tab-element-header">{{t 'Subscribe {full_name} to channels'}}</h3>
                             </div>
                             {{> user_profile_subscribe_widget}}
                         {{/if}}
                         <div class="stream-list-top-section">
                             <div class="header-section">
-                                <h3 class="stream-tab-element-header">{{t 'Subscribed streams' }}</h3>
+                                <h3 class="stream-tab-element-header">{{t 'Subscribed channels' }}</h3>
                             </div>
-                            <input type="text" class="stream-search modal_text_input" placeholder="{{t 'Filter streams' }}" />
+                            <input type="text" class="stream-search modal_text_input" placeholder="{{t 'Filter channels' }}" />
                             <button type="button" class="clear_search_button" id="clear_stream_search">
                                 <i class="fa fa-remove" aria-hidden="true"></i>
                             </button>
                         </div>
                         <div class="subscription-stream-list empty-list">
-                            <table class="user-stream-list" data-empty="{{t 'No stream subscriptions.'}}" data-search-results-empty="{{t 'No matching streams' }}"></table>
+                            <table class="user-stream-list" data-empty="{{t 'No channel subscriptions.'}}" data-search-results-empty="{{t 'No matching channels' }}"></table>
                         </div>
                     </div>
 

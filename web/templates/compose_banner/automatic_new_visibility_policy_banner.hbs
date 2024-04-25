@@ -2,12 +2,12 @@
     <p class="banner_message">
         {{#if followed}}
             {{#tr}}
-                Now following <z-link>{stream_topic}</z-link>.
+                Now following <z-link>{channel_topic}</z-link>.
                 {{#*inline "z-link"}}<a class="above_compose_banner_action_link" href="{{narrow_url}}" data-message-id="{{link_msg_id}}">{{> @partial-block}}</a>{{/inline}}
             {{/tr}}
         {{else}}
             {{#tr}}
-                Unmuted <z-link>{stream_topic}</z-link>.
+                Unmuted <z-link>{channel_topic}</z-link>.
                 {{#*inline "z-link"}}<a class="above_compose_banner_action_link" href="{{narrow_url}}" data-message-id="{{link_msg_id}}">{{> @partial-block}}</a>{{/inline}}
             {{/tr}}
         {{/if}}

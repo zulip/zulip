@@ -3,43 +3,30 @@ class kandra::prod_app_frontend_once {
   include zulip::hooks::push_git_ref
   include zulip::hooks::zulip_notify
 
-  file { '/etc/cron.d/update-first-visible-message-id':
-    ensure => file,
-    owner  => 'root',
-    group  => 'root',
-    mode   => '0644',
-    source => 'puppet:///modules/zulip/cron.d/calculate-first-visible-message-id',
+  zulip::cron { 'update-first-visible-message-id':
+    hour   => '7',
+    minute => '*',
+    manage => 'calculate_first_visible_message_id --lookback-hours 30',
   }
 
-  file { '/etc/cron.d/invoice-plans':
-    ensure => file,
-    owner  => 'root',
-    group  => 'root',
-    mode   => '0644',
-    source => 'puppet:///modules/zulip/cron.d/invoice-plans',
+  zulip::cron { 'invoice-plans':
+    hour   => '22',
+    minute => '0',
+  }
+  zulip::cron { 'downgrade-small-realms-behind-on-payments':
+    hour   => '17',
+    minute => '0',
   }
 
-  file { '/etc/cron.d/downgrade-small-realms-behind-on-payments':
-    ensure => file,
-    owner  => 'root',
-    group  => 'root',
-    mode   => '0644',
-    source => 'puppet:///modules/zulip/cron.d/downgrade-small-realms-behind-on-payments',
+  zulip::cron { 'check_send_receive_time':
+    hour    => '*',
+    minute  => '*',
+    command => '/usr/lib/nagios/plugins/zulip_app_frontend/check_send_receive_time --site=https://$(/home/zulip/deployments/current/scripts/get-django-setting NAGIOS_BOT_HOST) >/dev/null',
   }
-
-  file { '/etc/cron.d/check_send_receive_time':
-    ensure => file,
-    owner  => 'root',
-    group  => 'root',
-    mode   => '0644',
-    source => 'puppet:///modules/kandra/cron.d/check_send_receive_time',
-  }
-
-  file { '/etc/cron.d/check_user_zephyr_mirror_liveness':
-    ensure => file,
-    owner  => 'root',
-    group  => 'root',
-    mode   => '0644',
-    source => 'puppet:///modules/kandra/cron.d/check_user_zephyr_mirror_liveness',
+  zulip::cron { 'check_user_zephyr_mirror_liveness':
+    hour      => '*',
+    minute    => '*',
+    command   => '/usr/lib/nagios/plugins/zulip_zephyr_mirror/check_user_zephyr_mirror_liveness >/dev/null',
+    use_proxy => false,
   }
 }

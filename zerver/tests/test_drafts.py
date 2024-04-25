@@ -240,7 +240,7 @@ class DraftCreationTests(ZulipTestCase):
             }
         ]
         self.create_and_check_drafts_for_error(
-            draft_dicts, "Must specify exactly 1 stream ID for stream messages"
+            draft_dicts, "Must specify exactly 1 channel ID for channel messages"
         )
 
     def test_create_stream_draft_for_inaccessible_stream(self) -> None:
@@ -255,7 +255,7 @@ class DraftCreationTests(ZulipTestCase):
                 "timestamp": 1595479019,
             }
         ]
-        self.create_and_check_drafts_for_error(draft_dicts, "Invalid stream ID")
+        self.create_and_check_drafts_for_error(draft_dicts, "Invalid channel ID")
 
         # When the stream itself does not exist:
         draft_dicts = [
@@ -267,7 +267,7 @@ class DraftCreationTests(ZulipTestCase):
                 "timestamp": 1595479019,
             }
         ]
-        self.create_and_check_drafts_for_error(draft_dicts, "Invalid stream ID")
+        self.create_and_check_drafts_for_error(draft_dicts, "Invalid channel ID")
 
     def test_create_personal_message_draft_for_non_existing_user(self) -> None:
         draft_dicts = [

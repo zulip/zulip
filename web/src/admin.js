@@ -29,8 +29,8 @@ const admin_settings_label = {
     }),
     // Organization settings
     realm_allow_edit_history: $t({defaultMessage: "Enable message edit history"}),
-    realm_mandatory_topics: $t({defaultMessage: "Require topics in stream messages"}),
-    realm_new_stream_announcements_stream: $t({defaultMessage: "New stream announcements"}),
+    realm_mandatory_topics: $t({defaultMessage: "Require topics in channel messages"}),
+    realm_new_stream_announcements_stream: $t({defaultMessage: "New channel announcements"}),
     realm_signup_announcements_stream: $t({defaultMessage: "New user announcements"}),
     realm_zulip_update_announcements_stream: $t({defaultMessage: "Zulip update announcements"}),
     realm_inline_image_preview: $t({
@@ -42,7 +42,7 @@ const admin_settings_label = {
         defaultMessage: "Allow message content in message notification emails",
     }),
     realm_enable_spectator_access: $t({
-        defaultMessage: "Allow creating web-public streams (visible to anyone on the Internet)",
+        defaultMessage: "Allow creating web-public channels (visible to anyone on the Internet)",
     }),
     realm_digest_emails_enabled: $t({
         defaultMessage: "Send weekly digest emails to inactive users",

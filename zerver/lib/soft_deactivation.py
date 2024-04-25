@@ -400,27 +400,35 @@ def queue_soft_reactivation(user_profile_id: int) -> None:
 
 
 def soft_reactivate_if_personal_notification(
-    user_profile: UserProfile, unique_triggers: Set[str], mentioned_user_group_name: Optional[str]
+    user_profile: UserProfile,
+    unique_triggers: Set[str],
+    mentioned_user_group_members_count: Optional[int],
 ) -> None:
     """When we're about to send an email/push notification to a
     long_term_idle user, it's very likely that the user will try to
     return to Zulip. As a result, it makes sense to optimistically
     soft-reactivate that user, to give them a good return experience.
 
-    It's important that we do nothing for stream wildcard or group mentions,
-    because soft-reactivating an entire realm would be very expensive
-    (and we can't easily check the group's size). The caller is
-    responsible for passing a mentioned_user_group_name that is None
-    for messages that contain both a personal mention and a group
-    mention.
+    It's important that we do nothing for stream wildcard or large
+    group mentions (size > 'settings.MAX_GROUP_SIZE_FOR_MENTION_REACTIVATION'),
+    because soft-reactivating an entire realm or a large group would be
+    very expensive. The caller is responsible for passing a
+    mentioned_user_group_members_count that is None for messages that
+    contain both a personal mention and a group mention.
     """
     if not user_profile.long_term_idle:
         return
 
     direct_message = NotificationTriggers.DIRECT_MESSAGE in unique_triggers
-    personal_mention = (
-        NotificationTriggers.MENTION in unique_triggers and mentioned_user_group_name is None
-    )
+
+    personal_mention = False
+    small_group_mention = False
+    if NotificationTriggers.MENTION in unique_triggers:
+        if mentioned_user_group_members_count is None:
+            personal_mention = True
+        elif mentioned_user_group_members_count <= settings.MAX_GROUP_SIZE_FOR_MENTION_REACTIVATION:
+            small_group_mention = True
+
     topic_wildcard_mention = any(
         trigger in unique_triggers
         for trigger in [
@@ -428,7 +436,12 @@ def soft_reactivate_if_personal_notification(
             NotificationTriggers.TOPIC_WILDCARD_MENTION_IN_FOLLOWED_TOPIC,
         ]
     )
-    if not direct_message and not personal_mention and not topic_wildcard_mention:
+    if (
+        not direct_message
+        and not personal_mention
+        and not small_group_mention
+        and not topic_wildcard_mention
+    ):
         return
 
     queue_soft_reactivation(user_profile.id)

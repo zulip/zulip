@@ -64,12 +64,12 @@
 
         <div id="org-stream-permissions" class="settings-subsection-parent">
             <div class="subsection-header">
-                <h3>{{t "Stream permissions" }}</h3>
+                <h3>{{t "Channel permissions" }}</h3>
                 {{> settings_save_discard_widget section_name="stream-permissions" }}
             </div>
             <div class="m-10 inline-block organization-permissions-parent">
                 <div class="input-group">
-                    <label for="realm_create_public_stream_policy" class="dropdown-title">{{t "Who can create public streams" }}</label>
+                    <label for="realm_create_public_stream_policy" class="dropdown-title">{{t "Who can create public channels" }}</label>
                     <select name="realm_create_public_stream_policy" id="id_realm_create_public_stream_policy" class="prop-element settings_select bootstrap-focus-style" data-setting-widget-type="number">
                         {{> dropdown_options_widget option_values=common_policy_values}}
                     </select>
@@ -83,19 +83,19 @@
                   is_disabled=disable_enable_spectator_access_setting
                   help_link="/help/public-access-option"}}
                 <div class="input-group realm_create_web_public_stream_policy">
-                    <label for="realm_create_web_public_stream_policy" class="dropdown-title">{{t "Who can create web-public streams" }}</label>
+                    <label for="realm_create_web_public_stream_policy" class="dropdown-title">{{t "Who can create web-public channels" }}</label>
                     <select name="realm_create_web_public_stream_policy" id="id_realm_create_web_public_stream_policy" class="prop-element settings_select bootstrap-focus-style" data-setting-widget-type="number">
                         {{> dropdown_options_widget option_values=create_web_public_stream_policy_values}}
                     </select>
                 </div>
                 <div class="input-group">
-                    <label for="realm_create_private_stream_policy" class="dropdown-title">{{t "Who can create private streams" }}</label>
+                    <label for="realm_create_private_stream_policy" class="dropdown-title">{{t "Who can create private channels" }}</label>
                     <select name="realm_create_private_stream_policy" id="id_realm_create_private_stream_policy" class="prop-element settings_select bootstrap-focus-style" data-setting-widget-type="number">
                         {{> dropdown_options_widget option_values=common_policy_values}}
                     </select>
                 </div>
                 <div class="input-group">
-                    <label for="realm_invite_to_stream_policy" class="dropdown-title">{{t "Who can add users to streams" }}</label>
+                    <label for="realm_invite_to_stream_policy" class="dropdown-title">{{t "Who can add users to channels" }}</label>
                     <select name="realm_invite_to_stream_policy" id="id_realm_invite_to_stream_policy" class="prop-element settings_select bootstrap-focus-style" data-setting-widget-type="number">
                         {{> dropdown_options_widget option_values=common_policy_values}}
                     </select>
@@ -186,7 +186,7 @@
             </div>
 
             <div class="input-group">
-                <label for="realm_move_messages_between_streams_policy">{{t "Who can move messages to another stream" }}
+                <label for="realm_move_messages_between_streams_policy">{{t "Who can move messages to another channel" }}
                 </label>
                 <select name="realm_move_messages_between_streams_policy" class="setting-widget prop-element bootstrap-focus-style move-message-policy-setting settings_select" id="id_realm_move_messages_between_streams_policy" data-setting-widget-type="number">
                     {{> dropdown_options_widget option_values=move_messages_between_streams_policy_values}}
@@ -194,7 +194,7 @@
             </div>
 
             <div class="input-group time-limit-setting">
-                <label for="realm_move_messages_between_streams_limit_seconds" class="dropdown-title">{{t "Time limit for moving messages between streams" }} <i>({{t "does not apply to moderators and administrators" }})</i></label>
+                <label for="realm_move_messages_between_streams_limit_seconds" class="dropdown-title">{{t "Time limit for moving messages between channels" }} <i>({{t "does not apply to moderators and administrators" }})</i></label>
                 <select name="realm_move_messages_between_streams_limit_seconds" id="id_realm_move_messages_between_streams_limit_seconds" class="prop-element bootstrap-focus-style settings_select" data-setting-widget-type="time-limit">
                     {{#each msg_move_limit_dropdown_values}}
                         <option value="{{value}}">{{text}}</option>

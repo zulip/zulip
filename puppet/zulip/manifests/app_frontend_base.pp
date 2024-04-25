@@ -208,6 +208,7 @@ class zulip::app_frontend_base {
     '/home/zulip/tornado',
     '/home/zulip/prod-static',
     '/home/zulip/deployments',
+    '/srv/zulip-locks',
     '/srv/zulip-emoji-cache',
     '/srv/zulip-uploaded-files-cache',
   ]:
@@ -245,12 +246,8 @@ class zulip::app_frontend_base {
   }
 
   # This cron job does nothing unless RATE_LIMIT_TOR_TOGETHER is enabled.
-  file { '/etc/cron.d/fetch-tor-exit-nodes':
-    ensure => file,
-    owner  => 'root',
-    group  => 'root',
-    mode   => '0644',
-    source => 'puppet:///modules/zulip/cron.d/fetch-tor-exit-nodes',
+  zulip::cron { 'fetch-tor-exit-nodes':
+    minute => '17',
   }
   # This was originally added with a typo in the name.
   file { '/etc/cron.d/fetch-for-exit-nodes':

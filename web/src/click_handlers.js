@@ -289,6 +289,11 @@ export function initialize() {
         navigate.to_end();
     });
 
+    $("body").on("click", ".message_row", function () {
+        $(".selected_msg_for_touchscreen").removeClass("selected_msg_for_touchscreen");
+        $(this).addClass("selected_msg_for_touchscreen");
+    });
+
     // MESSAGE EDITING
 
     $("body").on("click", ".edit_content_button", function (e) {

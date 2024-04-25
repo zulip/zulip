@@ -22,7 +22,7 @@ function narrow_via_edit_scheduled_message(compose_args) {
         narrow.activate(
             [
                 {
-                    operator: "stream",
+                    operator: "channel",
                     operand: stream_data.get_stream_name_from_id(compose_args.stream_id),
                 },
                 {operator: "topic", operand: compose_args.topic},

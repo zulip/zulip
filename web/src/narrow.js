@@ -59,7 +59,6 @@ import * as util from "./util";
 import * as widgetize from "./widgetize";
 
 const LARGER_THAN_MAX_MESSAGE_ID = 10000000000000000;
-export let has_visited_all_messages = false;
 
 export function reset_ui_state() {
     // Resets the state of various visual UI elements that are
@@ -98,7 +97,7 @@ export function activate(raw_terms, opts) {
 
        raw_terms: Narrowing/search terms; used to construct
        a Filter object that decides which messages belong in the
-       view.  Required (See the above note on how `message_lists.home` works)
+       view.
 
        All other options are encoded via the `opts` dictionary:
 
@@ -128,14 +127,14 @@ export function activate(raw_terms, opts) {
         raw_terms = [{operator: "is", operand: "home"}];
     }
     const filter = new Filter(raw_terms);
-
-    const is_narrowed_to_all_messages_view = narrow_state.filter()?.is_in_home();
-    if (has_visited_all_messages && is_narrowed_to_all_messages_view && filter.is_in_home()) {
+    const is_combined_feed_global_view = filter.is_in_home();
+    const is_narrowed_to_combined_feed_view = narrow_state.filter()?.is_in_home();
+    if (is_narrowed_to_combined_feed_view && is_combined_feed_global_view) {
         // If we're already looking at the combined feed, exit without doing any work.
         return;
     }
 
-    if (filter.is_in_home() && message_scroll_state.actively_scrolling) {
+    if (is_combined_feed_global_view && message_scroll_state.actively_scrolling) {
         // TODO: Figure out why puppeteer test for this fails when run for narrows
         // other than `Combined feed`.
 
@@ -149,8 +148,7 @@ export function activate(raw_terms, opts) {
     }
 
     // Use to determine if user read any unread messages outside the combined feed.
-    // BUG: This doesn't check for the combined feed?
-    const was_narrowed_already = narrow_state.filter() !== undefined;
+    const was_narrowed_already = message_lists.current?.narrowed;
 
     // Since narrow.activate is called directly from various
     // places in our code without passing through hashchange,
@@ -161,7 +159,7 @@ export function activate(raw_terms, opts) {
         // TODO: is:home is currently not permitted for spectators
         // because they can't mute things; maybe that's the wrong
         // policy?
-        !filter.is_in_home() &&
+        !is_combined_feed_global_view &&
         raw_terms.some(
             (raw_term) => !hash_parser.allowed_web_public_narrows.includes(raw_term.operator),
         )
@@ -424,11 +422,21 @@ export function activate(raw_terms, opts) {
 
         const excludes_muted_topics = filter.excludes_muted_topics();
 
+        // Check if we already have a rendered message list for the `filter`.
+        // TODO: If we add a message list other than `is_in_home` to be save as rendered,
+        // we need to add a `is_equal` function to `Filter` to compare the filters.
         let msg_list;
-        if (filter.is_in_home()) {
-            has_visited_all_messages = true;
-            msg_list = message_lists.home;
-        } else {
+        let restore_rendered_list = false;
+        for (const list of message_lists.all_rendered_message_lists()) {
+            if (is_combined_feed_global_view && list.preserve_rendered_state) {
+                assert(list.data.filter.is_in_home());
+                msg_list = list;
+                restore_rendered_list = true;
+                break;
+            }
+        }
+
+        if (!restore_rendered_list) {
             let msg_data = new MessageListData({
                 filter,
                 excludes_muted_topics,
@@ -461,7 +469,6 @@ export function activate(raw_terms, opts) {
         }
         assert(msg_list !== undefined);
 
-        narrow_state.set_has_shown_message_list_view();
         // Show the new set of messages. It is important to set message_lists.current to
         // the view right as it's being shown, because we rely on message_lists.current
         // being shown for deciding when to condense messages.
@@ -473,7 +480,7 @@ export function activate(raw_terms, opts) {
         let select_immediately;
         let select_opts;
         let then_select_offset;
-        if (filter.is_in_home()) {
+        if (restore_rendered_list) {
             select_immediately = true;
             select_opts = {
                 empty_ok: true,
@@ -502,7 +509,7 @@ export function activate(raw_terms, opts) {
             message_lists.current.resume_reading();
             // Reset the collapsed status of messages rows.
             condense.condense_and_collapse(message_lists.current.view.$list.find(".message_row"));
-            message_edit.handle_narrow_deactivated();
+            message_edit.restore_edit_state_after_message_view_change();
             widgetize.set_widgets_for_list();
             message_feed_top_notices.update_top_of_narrow_notices(msg_list);
 
@@ -843,7 +850,7 @@ export function render_message_list_with_selected_message(opts) {
 
 export function activate_stream_for_cycle_hotkey(stream_name) {
     // This is the common code for A/D hotkeys.
-    const filter_expr = [{operator: "stream", operand: stream_name}];
+    const filter_expr = [{operator: "channel", operand: stream_name}];
     activate(filter_expr, {});
 }
 
@@ -914,7 +921,7 @@ export function narrow_to_next_topic(opts = {}) {
     }
 
     const filter_expr = [
-        {operator: "stream", operand: next_narrow.stream},
+        {operator: "channel", operand: next_narrow.stream},
         {operator: "topic", operand: next_narrow.topic},
     ];
 
@@ -980,7 +987,7 @@ export function by_topic(target_id, opts) {
 
     const stream_name = stream_data.get_stream_name_from_id(original.stream_id);
     const search_terms = [
-        {operator: "stream", operand: stream_name},
+        {operator: "channel", operand: stream_name},
         {operator: "topic", operand: original.topic},
     ];
     opts = {then_select_id: target_id, ...opts};
@@ -1042,7 +1049,7 @@ export function to_compose_target() {
         const stream_name = stream_data.get_sub_by_id(stream_id).name;
         // If we are composing to a new topic, we narrow to the stream but
         // grey-out the message view instead of narrowing to an empty view.
-        const terms = [{operator: "stream", operand: stream_name}];
+        const terms = [{operator: "channel", operand: stream_name}];
         const topic = compose_state.topic();
         if (topic !== "") {
             terms.push({operator: "topic", operand: topic});

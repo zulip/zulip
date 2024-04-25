@@ -380,7 +380,7 @@ export function initialize(): void {
     delegate("body", {
         target: ".settings-radio-input-parent.default_stream_private_tooltip",
         content: $t({
-            defaultMessage: "Default streams for new users cannot be made private.",
+            defaultMessage: "Default channels for new users cannot be made private.",
         }),
         appendTo: () => document.body,
         onHidden(instance) {
@@ -391,7 +391,7 @@ export function initialize(): void {
     delegate("body", {
         target: ".default-stream.default_stream_private_tooltip",
         content: $t({
-            defaultMessage: "Private streams cannot be default streams for new users.",
+            defaultMessage: "Private channels cannot be default channels for new users.",
         }),
         appendTo: () => document.body,
         onHidden(instance) {
@@ -480,7 +480,7 @@ export function initialize(): void {
         target: "#stream_creation_form .add_subscribers_disabled",
         content: $t({
             defaultMessage:
-                "You do not have permission to add other users to streams in this organization.",
+                "You do not have permission to add other users to channels in this organization.",
         }),
         appendTo: () => document.body,
         onHidden(instance) {
@@ -555,7 +555,7 @@ export function initialize(): void {
                 instance.setContent(
                     $t({
                         defaultMessage:
-                            "You do not have permission to move messages to another stream in this organization.",
+                            "You do not have permission to move messages to another channel in this organization.",
                     }),
                 );
                 return undefined;
