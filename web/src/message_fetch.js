@@ -22,14 +22,21 @@ export let initial_narrow_pointer;
 export let initial_narrow_offset;
 
 const consts = {
-    narrow_before: 50,
-    narrow_after: 50,
-    initial_backfill_fetch_size: 400,
-    maximum_initial_backfill_size: 4000,
+    // Because most views are centered on the first unread message,
+    // the user has a higher probability of wantingto scroll down
+    // than, so extra fetched history after the cursor is more likely
+    // to be used and thus worth more to fetch.
+    //
+    // It's rare to have hundreds of unreads after the cursor, asking
+    // for a larger number of messages after the cursor is cheap.
+    narrow_before: 60,
+    narrow_after: 150,
+    initial_backfill_fetch_size: 1000,
+    maximum_initial_backfill_size: 15000,
     narrowed_view_backward_batch_size: 100,
     narrowed_view_forward_batch_size: 100,
-    recent_view_fetch_more_batch_size: 1000,
-    catch_up_batch_size: 1000,
+    recent_view_fetch_more_batch_size: 2000,
+    catch_up_batch_size: 2000,
     // Delay in milliseconds after processing a catch-up request
     // before sending the next one.
     catch_up_backfill_delay: 150,
