@@ -1379,13 +1379,9 @@ td.pointer {
 
 .selected_msg_for_touchscreen {
     @media (hover: none) {
-        .message_reactions {
-            .message_reaction {
-                + .reaction_button {
-                    visibility: visible;
-                    pointer-events: all;
-                }
-            }
+        .message_reactions .reaction_button {
+            visibility: visible;
+            pointer-events: all;
         }
     }
 }
