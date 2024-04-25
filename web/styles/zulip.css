@@ -1390,41 +1390,6 @@ td.pointer {
     }
 }
 
-.message_sender {
-    & i.zulip-icon.zulip-icon-bot {
-        font-size: 12px;
-    }
-}
-
-.sender_name {
-    display: inline-flex;
-    font-weight: 700;
-    color: var(--color-text-sender-name);
-    column-gap: 3px;
-
-    .sender_name_text {
-        overflow: hidden;
-        white-space: nowrap;
-        display: inline-flex;
-
-        .user-name {
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-    }
-}
-
-.sender_info_hovered {
-    .sender_name {
-        cursor: pointer;
-        color: hsl(200deg 100% 40%);
-    }
-
-    .message-avatar {
-        cursor: pointer;
-    }
-}
-
 .always_visible_topic_edit,
 .on_hover_topic_read,
 .stream_unmuted.on_hover_topic_unmute,
