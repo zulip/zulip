@@ -529,12 +529,14 @@ function assert_clipboard_setup() {
     assert.equal(clipboard_args[0], "copy-code-stub");
     const text = clipboard_args[1].text({
         to_$: () => ({
-            siblings(arg) {
-                assert.equal(arg, "code");
-                return {
-                    text: () => "text",
-                };
-            },
+            parent: () => ({
+                siblings(arg) {
+                    assert.equal(arg, "code");
+                    return {
+                        text: () => "text",
+                    };
+                },
+            }),
         }),
     });
     assert.equal(text, "text");
