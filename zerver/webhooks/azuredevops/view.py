@@ -16,6 +16,26 @@ from zerver.lib.webhooks.git import (
 )
 from zerver.models import UserProfile
 
+def get_workitem_updated_body(payload: WildValue) -> str:
+    event_message = payload["message"]["markdown"].tame(check_string)
+    detailed_message = payload["detailedMessage"]["markdown"].tame(check_string)
+    fields_changes = "\n".join(
+        f"* {field}: from *{change['oldValue']}* to *{change['newValue']}*"
+        for field, change in payload["resource"]["fields"].items()
+    )
+    
+    body = f"""
+    **Work Item Updated**:
+    {event_message}
+
+    **Details**:
+    {detailed_message}
+
+    **Field Changes**:
+    {fields_changes}
+    """
+    return body
+
 
 def get_code_pull_request_updated_body(payload: WildValue) -> str:
     return get_pull_request_event_message(
@@ -163,6 +183,7 @@ EVENT_FUNCTION_MAPPER: Dict[str, Callable[[WildValue], str]] = {
     "git.pullrequest.created": get_code_pull_request_opened_body,
     "git.pullrequest.merged": get_code_pull_request_merged_body,
     "git.pullrequest.updated": get_code_pull_request_updated_body,
+    "workitem.updated": get_workitem_updated_body,
 }
 
 ALL_EVENT_TYPES = list(EVENT_FUNCTION_MAPPER.keys())
