@@ -65,11 +65,17 @@
     /* The legacy values here are updated via JavaScript */
     --base-font-size-px: 14px;
     --base-line-height-unitless: 1.214;
+    --markdown-interelement-space-px: 5px;
+    --markdown-interelement-doubled-space-px: calc(
+        var(--markdown-interelement-space-px) * 2
+    );
 
     .more-dense-mode {
         /* The legacy values here are not altered by JavaScript */
         --base-font-size-px: 14px;
         --base-line-height-unitless: 1.214;
+        --markdown-interelement-space-px: 5px;
+        --markdown-interelement-doubled-space-px: 10px;
     }
 
     /*
