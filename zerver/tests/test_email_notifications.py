@@ -1,6 +1,7 @@
+import random
 import tempfile
 from datetime import datetime, timedelta, timezone
-from typing import Dict
+from typing import Dict, List, Optional
 from unittest.mock import patch
 
 import ldap
@@ -18,11 +19,12 @@ from zerver.lib.email_notifications import (
 )
 from zerver.lib.send_email import (
     deliver_scheduled_emails,
+    parse_email_template,
     send_custom_email,
     send_custom_server_email,
 )
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.models import Realm, ScheduledEmail, UserProfile
+from zerver.models import Realm, RealmAuditLog, ScheduledEmail, UserProfile
 from zerver.models.realms import get_realm
 from zilencer.models import RemoteZulipServer
 
@@ -233,6 +235,198 @@ class TestCustomEmails(ZulipTestCase):
                 },
             )
             self.assert_length(mail.outbox, 0)
+
+    @staticmethod
+    def send_email_helper(
+        users: List[UserProfile], template_file: Optional[str] = None, distinct_email: bool = False
+    ) -> str:
+        email_subject = "subject_test"
+        reply_to = "reply_to_test"
+        from_name = "from_name_test"
+        hash_code: str
+        id_list = [user.id for user in users]
+        if template_file is not None:
+            _, hash_code = parse_email_template(template_file)
+            send_custom_email(
+                UserProfile.objects.filter(id__in=id_list),
+                dry_run=False,
+                options={
+                    "markdown_template_path": template_file,
+                    "reply_to": reply_to,
+                    "subject": email_subject,
+                    "from_name": from_name,
+                },
+                distinct_email=distinct_email,
+            )
+        else:
+            with tempfile.NamedTemporaryFile() as markdown_template:
+                random_content = f"test_send_custom_email_event_log{random.random()}"
+                markdown_template.write(random_content.encode())
+                markdown_template.flush()
+                _, hash_code = parse_email_template(markdown_template.name)
+                send_custom_email(
+                    UserProfile.objects.filter(id__in=id_list),
+                    dry_run=False,
+                    options={
+                        "markdown_template_path": markdown_template.name,
+                        "reply_to": reply_to,
+                        "subject": email_subject,
+                        "from_name": from_name,
+                    },
+                    distinct_email=distinct_email,
+                )
+        return hash_code
+
+    def test_send_custom_email_event_log(self) -> None:
+        hamlet = self.example_user("hamlet")
+        hash1 = TestCustomEmails.send_email_helper([hamlet])
+        self.assert_length(mail.outbox, 1)
+        logged_events = RealmAuditLog.objects.filter(
+            realm_id=hamlet.realm.id,
+            event_type=RealmAuditLog.CUSTOM_EMAIL_SENT,
+            acting_user_id=hamlet.id,
+        )
+        self.assert_length(logged_events, 1)
+        self.assertEqual(logged_events[0].extra_data.get("email_template_digest"), hash1)
+        hash2 = TestCustomEmails.send_email_helper([hamlet])
+        self.assert_length(mail.outbox, 2)
+        logged_events = RealmAuditLog.objects.filter(
+            realm_id=hamlet.realm.id,
+            event_type=RealmAuditLog.CUSTOM_EMAIL_SENT,
+            acting_user_id=hamlet.id,
+        ).order_by("id")
+        self.assert_length(logged_events, 2)
+        self.assertEqual(logged_events[0].extra_data.get("email_template_digest"), hash1)
+        self.assertEqual(logged_events[1].extra_data.get("email_template_digest"), hash2)
+
+    def test_send_custom_email_event_log_multiple_users(self) -> None:
+        hamlet = self.example_user("hamlet")
+        hash1 = TestCustomEmails.send_email_helper([hamlet])
+        zoe = self.example_user("ZOE")
+        hash2 = TestCustomEmails.send_email_helper([zoe])
+        self.assert_length(mail.outbox, 2)
+        logged_events = RealmAuditLog.objects.filter(
+            realm_id=hamlet.realm.id,
+            event_type=RealmAuditLog.CUSTOM_EMAIL_SENT,
+            acting_user_id=hamlet.id,
+        )
+        self.assert_length(logged_events, 1)
+        self.assertEqual(logged_events[0].extra_data.get("email_template_digest"), hash1)
+        logged_events = RealmAuditLog.objects.filter(
+            realm_id=zoe.realm.id,
+            event_type=RealmAuditLog.CUSTOM_EMAIL_SENT,
+            acting_user_id=zoe.id,
+        )
+        self.assert_length(logged_events, 1)
+        self.assertEqual(logged_events[0].extra_data.get("email_template_digest"), hash2)
+
+    def test_send_custom_email_event_log_duplicate(self) -> None:
+        hamlet = self.example_user("hamlet")
+        with tempfile.NamedTemporaryFile() as markdown_template:
+            hash1 = TestCustomEmails.send_email_helper([hamlet], markdown_template.name)
+            self.assert_length(mail.outbox, 1)
+            logged_events = RealmAuditLog.objects.filter(
+                realm_id=hamlet.realm.id,
+                event_type=RealmAuditLog.CUSTOM_EMAIL_SENT,
+                acting_user_id=hamlet.id,
+            )
+            self.assert_length(logged_events, 1)
+            self.assertEqual(logged_events[0].extra_data.get("email_template_digest"), hash1)
+            TestCustomEmails.send_email_helper([hamlet], markdown_template.name)
+            self.assert_length(mail.outbox, 1)
+            logged_events = RealmAuditLog.objects.filter(
+                realm_id=hamlet.realm.id,
+                event_type=RealmAuditLog.CUSTOM_EMAIL_SENT,
+                acting_user_id=hamlet.id,
+            )
+            self.assert_length(logged_events, 1)
+            self.assertEqual(logged_events[0].extra_data.get("email_template_digest"), hash1)
+
+    def test_send_custom_email_event_log_distinct(self) -> None:
+        zoe = self.example_user("ZOE")
+        hamlet = self.example_user("hamlet")
+        mit_realm = self.mit_user("espuser").realm
+        example_realm = hamlet.realm
+        hamlet_mit = UserProfile.objects.create(
+            realm=mit_realm, email="hamlet.mit@zulip.com", delivery_email=hamlet.delivery_email
+        )
+        zoe_mit = UserProfile.objects.create(
+            realm=mit_realm, email="zoe.mit@zulip.com", delivery_email=zoe.delivery_email
+        )
+        email_count = 0
+        with tempfile.NamedTemporaryFile() as markdown_template:
+            hash_code = TestCustomEmails.send_email_helper(
+                users=[hamlet, zoe, hamlet_mit, zoe_mit],
+                template_file=markdown_template.name,
+                distinct_email=True,
+            )
+            email_count += 2
+            # sending an email to 4 users with duplicate emails, only 2 emails are sent.
+            # but the RealmAuditLog records all 4 users have received the email
+            self.assert_length(mail.outbox, email_count)
+            logged_events = RealmAuditLog.objects.filter(
+                realm=example_realm,
+                event_type=RealmAuditLog.CUSTOM_EMAIL_SENT,
+            )
+            self.assert_length(logged_events, 2)
+            user_id_set = {logged_event.acting_user_id for logged_event in logged_events}
+            expected_user_id_set = {hamlet.id, zoe.id}
+            self.assertEqual(user_id_set, expected_user_id_set)
+            hash_code_set = {
+                logged_event.extra_data.get("email_template_digest")
+                for logged_event in logged_events
+            }
+            self.assertEqual(hash_code_set, {hash_code})
+            logged_events = RealmAuditLog.objects.filter(
+                realm=mit_realm,
+                event_type=RealmAuditLog.CUSTOM_EMAIL_SENT,
+            )
+            self.assert_length(logged_events, 2)
+            user_id_set = {logged_event.acting_user_id for logged_event in logged_events}
+            expected_user_id_set = {hamlet_mit.id, zoe_mit.id}
+            self.assertEqual(user_id_set, expected_user_id_set)
+            hash_code_set = {
+                logged_event.extra_data.get("email_template_digest")
+                for logged_event in logged_events
+            }
+            self.assertEqual(hash_code_set, {hash_code})
+
+            # sending the same email to 5 users, only aaron is new.
+            aaron = self.example_user("aaron")
+            email_count += 1
+            TestCustomEmails.send_email_helper(
+                users=[hamlet, hamlet_mit, aaron, zoe, zoe_mit],
+                template_file=markdown_template.name,
+                distinct_email=True,
+            )
+            self.assert_length(mail.outbox, email_count)
+            logged_events = RealmAuditLog.objects.filter(
+                realm=example_realm,
+                event_type=RealmAuditLog.CUSTOM_EMAIL_SENT,
+            )
+            self.assert_length(logged_events, 3)
+            user_id_set = {logged_event.acting_user_id for logged_event in logged_events}
+            expected_user_id_set = {hamlet.id, zoe.id, aaron.id}
+            self.assertEqual(user_id_set, expected_user_id_set)
+            hash_code_set = {
+                logged_event.extra_data.get("email_template_digest")
+                for logged_event in logged_events
+            }
+            self.assertEqual(hash_code_set, {hash_code})
+
+            logged_events = RealmAuditLog.objects.filter(
+                realm=mit_realm,
+                event_type=RealmAuditLog.CUSTOM_EMAIL_SENT,
+            )
+            self.assert_length(logged_events, 2)
+            user_id_set = {logged_event.acting_user_id for logged_event in logged_events}
+            expected_user_id_set = {hamlet_mit.id, zoe_mit.id}
+            self.assertEqual(user_id_set, expected_user_id_set)
+            hash_code_set = {
+                logged_event.extra_data.get("email_template_digest")
+                for logged_event in logged_events
+            }
+            self.assertEqual(hash_code_set, {hash_code})
 
 
 class TestFollowupEmails(ZulipTestCase):

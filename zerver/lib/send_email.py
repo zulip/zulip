@@ -2,6 +2,7 @@ import hashlib
 import logging
 import os
 import smtplib
+from collections import defaultdict
 from contextlib import suppress
 from datetime import timedelta
 from email.headerregistry import Address
@@ -31,7 +32,7 @@ from django.utils.translation import override as override_language
 
 from confirmation.models import generate_key
 from zerver.lib.logging_util import log_to_file
-from zerver.models import Realm, ScheduledEmail, UserProfile
+from zerver.models import Realm, RealmAuditLog, ScheduledEmail, UserProfile
 from zerver.models.scheduled_jobs import EMAIL_TYPES
 from zerver.models.users import get_user_profile_by_id
 from zproject.email_backends import EmailLogBackEnd, get_forward_address
@@ -582,6 +583,14 @@ def custom_email_sender(
     return send_one_email
 
 
+def get_distinct_email_map(users: QuerySet[UserProfile]) -> Dict[str, List[UserProfile]]:
+    distinct_email_map = defaultdict(list)
+    for user in users:
+        email = user.delivery_email.lower()
+        distinct_email_map[email].append(user)
+    return distinct_email_map
+
+
 def send_custom_email(
     users: QuerySet[UserProfile],
     *,
@@ -601,8 +610,14 @@ def send_custom_email(
     )
     """
     email_sender = custom_email_sender(**options, dry_run=dry_run)
+    _, email_template_digest = parse_email_template(options["markdown_template_path"])
 
     users = users.select_related("realm")
+    # This code creates a dictionary where the key is an email address,
+    # and the value is a list of 'UserProfile' instances associated with the same email.
+    # In the case of 'distinct_email', each list may contain multiple 'UserProfile' instances,
+    # whereas normally each list only contains a single 'UserProfile' instance.
+    users_with_same_email: Dict[str, List[UserProfile]] = get_distinct_email_map(users)
     if distinct_email:
         users = (
             users.annotate(lower_email=Lower("delivery_email"))
@@ -611,7 +626,22 @@ def send_custom_email(
         )
     else:
         users = users.order_by("id")
+
+    one_week_ago = timezone_now() - timedelta(days=7)
     for user_profile in users:
+        past_events = RealmAuditLog.objects.filter(
+            realm_id=user_profile.realm.id,
+            event_type=RealmAuditLog.CUSTOM_EMAIL_SENT,
+            event_time__gte=one_week_ago,
+            acting_user_id=user_profile.id,
+        )
+        skip = False
+        for event in past_events:
+            if event.extra_data["email_template_digest"] == email_template_digest:
+                skip = True
+                break
+        if skip:
+            continue
         context: Dict[str, object] = {
             "realm": user_profile.realm,
             "realm_string_id": user_profile.realm.string_id,
@@ -625,8 +655,21 @@ def send_custom_email(
             context=context,
         )
 
+        sent_email_log_users = users_with_same_email[user_profile.delivery_email.lower()]
+        RealmAuditLog.objects.bulk_create(
+            RealmAuditLog(
+                realm=user_profile.realm,
+                event_type=RealmAuditLog.CUSTOM_EMAIL_SENT,
+                extra_data={"email_template_digest": email_template_digest},
+                acting_user_id=user_profile.id,
+                event_time=timezone_now(),
+            )
+            for user_profile in sent_email_log_users
+        )
+
         if dry_run:
             break
+
     return users
 
 
