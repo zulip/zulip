@@ -53,7 +53,7 @@ class S3Test(ZulipTestCase):
 
         base = "/user_uploads/"
         self.assertEqual(base, url[: len(base)])
-        path_id = re.sub("/user_uploads/", "", url)
+        path_id = re.sub(r"/user_uploads/", "", url)
         content = bucket.Object(path_id).get()["Body"].read()
         self.assertEqual(b"zulip!", content)
 
@@ -72,7 +72,7 @@ class S3Test(ZulipTestCase):
             "dummy.txt", len(b"zulip!"), "text/plain", b"zulip!", user_profile
         )
 
-        path_id = re.sub("/user_uploads/", "", url)
+        path_id = re.sub(r"/user_uploads/", "", url)
         output = BytesIO()
         save_attachment_contents(path_id, output)
         self.assertEqual(output.getvalue(), b"zulip!")
@@ -103,7 +103,7 @@ class S3Test(ZulipTestCase):
         user_profile = self.example_user("hamlet")
         url = upload_message_attachment("dummy.txt", len(b"zulip!"), None, b"zulip!", user_profile)
 
-        path_id = re.sub("/user_uploads/", "", url)
+        path_id = re.sub(r"/user_uploads/", "", url)
         self.assertEqual(b"zulip!", bucket.Object(path_id).get()["Body"].read())
         uploaded_file = Attachment.objects.get(owner=user_profile, path_id=path_id)
         self.assert_length(b"zulip!", uploaded_file.size)
@@ -117,7 +117,7 @@ class S3Test(ZulipTestCase):
             "dummy.txt", len(b"zulip!"), "text/plain", b"zulip!", user_profile
         )
 
-        path_id = re.sub("/user_uploads/", "", url)
+        path_id = re.sub(r"/user_uploads/", "", url)
         self.assertIsNotNone(bucket.Object(path_id).get())
         self.assertTrue(delete_message_attachment(path_id))
         with self.assertRaises(botocore.exceptions.ClientError):
@@ -133,7 +133,7 @@ class S3Test(ZulipTestCase):
             url = upload_message_attachment(
                 "dummy.txt", len(b"zulip!"), "text/plain", b"zulip!", user_profile
             )
-            path_id = re.sub("/user_uploads/", "", url)
+            path_id = re.sub(r"/user_uploads/", "", url)
             self.assertIsNotNone(bucket.Object(path_id).get())
             path_ids.append(path_id)
 
@@ -168,7 +168,7 @@ class S3Test(ZulipTestCase):
             url = upload_message_attachment(
                 "dummy.txt", len(b"zulip!"), "text/plain", b"zulip!", user_profile
             )
-            path_ids.append(re.sub("/user_uploads/", "", url))
+            path_ids.append(re.sub(r"/user_uploads/", "", url))
         found_paths = [r[0] for r in all_message_attachments()]
         self.assertEqual(sorted(found_paths), sorted(path_ids))
 

@@ -151,7 +151,7 @@ EMOJI_REGEX = r"(?P<syntax>:[\w\-\+]+:)"
 
 def verbose_compile(pattern: str) -> Pattern[str]:
     return re.compile(
-        f"^(.*?){pattern}(.*?)$",
+        rf"^(.*?){pattern}(.*?)$",
         re.DOTALL | re.VERBOSE,
     )
 
@@ -207,7 +207,7 @@ def get_web_link_regex() -> Pattern[str]:
     # extra costs.  It's roughly 75ms to run this code, so
     # caching the value is super important here.
 
-    tlds = "|".join(list_of_tlds())
+    tlds = r"|".join(list_of_tlds())
 
     # A link starts at a word boundary, and ends at space, punctuation, or end-of-input.
     #
@@ -2553,7 +2553,7 @@ def maybe_update_markdown_engines(linkifiers_key: int, email_gateway: bool) -> N
 #
 # We also use repr() to improve reproducibility, and to escape terminal control
 # codes, which can do surprisingly nasty things.
-_privacy_re = re.compile("\\w")
+_privacy_re = re.compile(r"\w")
 
 
 def privacy_clean_markdown(content: str) -> str:

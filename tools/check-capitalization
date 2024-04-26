@@ -17,7 +17,7 @@ sanity_check.check_venv(__file__)
 from scripts.lib.zulip_tools import ENDC, FAIL, WARNING
 from tools.lib.capitalization import check_capitalization
 
-DJANGO_PO_REGEX = re.compile('msgid "(.*?)"')
+DJANGO_PO_REGEX = re.compile(r'msgid "(.*?)"')
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()

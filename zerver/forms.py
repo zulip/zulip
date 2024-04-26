@@ -101,7 +101,7 @@ def check_subdomain_available(subdomain: str, allow_reserved_subdomain: bool = F
         raise ValidationError(error_strings["unavailable"])
     if subdomain[0] == "-" or subdomain[-1] == "-":
         raise ValidationError(error_strings["extremal dash"])
-    if not re.match("^[a-z0-9-]*$", subdomain):
+    if not re.match(r"^[a-z0-9-]*$", subdomain):
         raise ValidationError(error_strings["bad character"])
     if len(subdomain) < 3:
         raise ValidationError(error_strings["too short"])

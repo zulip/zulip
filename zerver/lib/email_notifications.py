@@ -55,7 +55,7 @@ def relative_to_full_url(fragment: lxml.html.HtmlElement, base_url: str) -> None
     # is not possible with `make_links_absolute()`.
     for link_info in fragment.iterlinks():
         elem, attrib, link, pos = link_info
-        match = re.match("/?#narrow/", link)
+        match = re.match(r"/?#narrow/", link)
         if match is not None:
             link = re.sub(r"^/?#narrow/", base_url + "/#narrow/", link)
             elem.set(attrib, link)
@@ -937,4 +937,4 @@ def convert_html_to_markdown(html: str) -> str:
     # ugly. Run a regex over the resulting description, turning links of the
     # form `![](http://foo.com/image.png?12345)` into
     # `[image.png](http://foo.com/image.png)`.
-    return re.sub("!\\[\\]\\((\\S*)/(\\S*)\\?(\\S*)\\)", "[\\2](\\1/\\2)", markdown)
+    return re.sub(r"!\[\]\((\S*)/(\S*)\?(\S*)\)", "[\\2](\\1/\\2)", markdown)

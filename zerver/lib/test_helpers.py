@@ -261,7 +261,7 @@ def make_client(name: str) -> Client:
 def find_key_by_email(address: str) -> Optional[str]:
     from django.core.mail import outbox
 
-    key_regex = re.compile("accounts/do_confirm/([a-z0-9]{24})>")
+    key_regex = re.compile(r"accounts/do_confirm/([a-z0-9]{24})>")
     for message in reversed(outbox):
         if address in message.to:
             match = key_regex.search(str(message.body))

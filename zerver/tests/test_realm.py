@@ -1831,7 +1831,7 @@ class ScrubRealmTest(ZulipTestCase):
             )
             base = "/user_uploads/"
             self.assertEqual(base, url[: len(base)])
-            path_id = re.sub("/user_uploads/", "", url)
+            path_id = re.sub(r"/user_uploads/", "", url)
             self.assertTrue(os.path.isfile(os.path.join(settings.LOCAL_FILES_DIR, path_id)))
             path_ids.append(path_id)
 
@@ -1908,7 +1908,7 @@ class ScrubRealmTest(ZulipTestCase):
             )
             base = "/user_uploads/"
             self.assertEqual(base, url[: len(base)])
-            file_path = os.path.join(settings.LOCAL_FILES_DIR, re.sub("/user_uploads/", "", url))
+            file_path = os.path.join(settings.LOCAL_FILES_DIR, re.sub(r"/user_uploads/", "", url))
             self.assertTrue(os.path.isfile(file_path))
             file_paths.append(file_path)
 

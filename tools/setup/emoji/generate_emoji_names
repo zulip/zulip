@@ -90,7 +90,7 @@ def cleanup_name(name: str) -> str:
     }
     for before, after in replacements.items():
         name = name.replace(before, after)
-    name = re.sub("_{2,}", "_", name)
+    name = re.sub(r"_{2,}", "_", name)
     return name.lower()
 
 

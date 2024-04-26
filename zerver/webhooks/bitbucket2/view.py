@@ -187,7 +187,7 @@ def get_type(request: HttpRequest, payload: WildValue) -> str:
         # Note that we only need the HTTP header to determine pullrequest events.
         # We rely on the payload itself to determine the other ones.
         event_key = validate_extract_webhook_http_header(request, "X-Event-Key", "BitBucket")
-        action = re.match("pullrequest:(?P<action>.*)$", event_key)
+        action = re.match(r"pullrequest:(?P<action>.*)$", event_key)
         if action:
             action_group = action.group("action")
             if action_group in PULL_REQUEST_SUPPORTED_ACTIONS:
