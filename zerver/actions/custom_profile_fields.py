@@ -46,27 +46,54 @@ def try_add_realm_default_custom_profile_field(
 
 def try_add_realm_custom_profile_field(
     realm: Realm,
-    name: str,
     field_type: int,
-    hint: str = "",
+    name: Optional[str]  = None, # should we allow "" too?
+    hint: Optional[str] = None,
     field_data: Optional[ProfileFieldData] = None,
     display_in_profile_summary: bool = False,
-    required: bool = False,
+    required: Optional[bool] = False,
 ) -> CustomProfileField:
+    # CHANGES MADE BELOW
+    
+    if name is not None and name!="": #if none or "" is entered
+        print("Name exists")
+        passName = name
+    else:
+        print("name is invalid- cast to \"\"")
+        passName=""
+
+    if hint is not None and hint!="": #if none or "" is entered
+        print("Hint exists")
+
+        passHint = hint
+    else:
+        
+        print("hint is invalid- cast to \"\"")
+        passHint= None
+    if required is None:
+        print("required is invalid, cast to false")
+        passReq=False
+    else:
+        passReq=required
+
+    
+        
+
+
     custom_profile_field = CustomProfileField(
         realm=realm,
-        name=name,
+        name=passName,
         field_type=field_type,
         display_in_profile_summary=display_in_profile_summary,
-        required=required,
+        required=passReq,
     )
-    custom_profile_field.hint = hint
+    custom_profile_field.hint = passHint
     if custom_profile_field.field_type in (
         CustomProfileField.SELECT,
         CustomProfileField.EXTERNAL_ACCOUNT,
     ):
         custom_profile_field.field_data = orjson.dumps(field_data or {}).decode()
-
+   
     custom_profile_field.save()
     custom_profile_field.order = custom_profile_field.id
     custom_profile_field.save(update_fields=["order"])
@@ -101,34 +128,21 @@ def remove_custom_profile_field_value_if_required(
 def try_update_realm_custom_profile_field(
     realm: Realm,
     field: CustomProfileField,
-    name: Optional[str] = None,
-    hint: Optional[str] = None,
+    name: str,
+    hint: str = "",
     field_data: Optional[ProfileFieldData] = None,
-    display_in_profile_summary: Optional[bool] = None,
-    required: Optional[bool] = None,
+    display_in_profile_summary: bool = False,
+    required: bool = False,
 ) -> None:
-    if name is not None:
-        field.name = name
-    if hint is not None:
-        field.hint = hint
-    if required is not None:
-        field.required = required
-    if display_in_profile_summary is not None:
-        field.display_in_profile_summary = display_in_profile_summary
-
-    if field.field_type in (
-        CustomProfileField.SELECT,
-        CustomProfileField.EXTERNAL_ACCOUNT,
-    ):
-        # If field_data is None, field_data is unchanged and there is no need for
-        # comparing field_data values.
-        if field_data is not None and field.field_type == CustomProfileField.SELECT:
+    field.name = name
+    field.hint = hint
+    field.display_in_profile_summary = display_in_profile_summary
+    field.required = required
+    if field.field_type in (CustomProfileField.SELECT, CustomProfileField.EXTERNAL_ACCOUNT):
+        if field.field_type == CustomProfileField.SELECT:
+            assert field_data is not None
             remove_custom_profile_field_value_if_required(field, field_data)
-
-        # If field.field_data is the default empty string, we will set field_data
-        # to an empty dict.
-        if field_data is not None or field.field_data == "":
-            field.field_data = orjson.dumps(field_data or {}).decode()
+        field.field_data = orjson.dumps(field_data or {}).decode()
     field.save()
     notify_realm_custom_profile_fields(realm)
 
