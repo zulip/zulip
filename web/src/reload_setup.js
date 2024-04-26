@@ -15,6 +15,7 @@ export function initialize() {
         return;
     }
     const hash_fragment = location.hash.slice("#".length);
+    const trigger = "reload";
 
     // Using the token, recover the saved pre-reload data from local
     // storage.  Afterwards, we clear the reload entry from local
@@ -27,7 +28,7 @@ export function initialize() {
         // exist, but be log it so that it's available for future
         // debugging if an exception happens later.
         blueslip.info("Invalid hash change reload token");
-        narrow.changehash("");
+        narrow.changehash("", trigger);
         return;
     }
     ls.remove(hash_fragment);
@@ -82,5 +83,5 @@ export function initialize() {
     });
 
     activity.set_new_user_input(false);
-    narrow.changehash(vars.oldhash);
+    narrow.changehash(vars.oldhash, trigger);
 }

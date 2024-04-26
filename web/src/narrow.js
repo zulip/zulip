@@ -74,20 +74,25 @@ export function reset_ui_state() {
     compose_banner.clear_message_sent_banners();
 }
 
-export function changehash(newhash) {
+export function changehash(newhash, trigger) {
     if (browser_history.state.changing_hash) {
+        // If we retargeted the narrow operation because a message was moved,
+        // we want to have the current narrow hash in the browser history.
+        if (trigger === "retarget message location") {
+            window.location.replace(newhash);
+        }
         return;
     }
     message_viewport.stop_auto_scrolling();
     browser_history.set_hash(newhash);
 }
 
-export function save_narrow(terms) {
-    if (browser_history.state.changing_hash) {
+export function save_narrow(terms, trigger) {
+    if (browser_history.state.changing_hash && trigger !== "retarget message location") {
         return;
     }
     const new_hash = hash_util.search_terms_to_hash(terms);
-    changehash(new_hash);
+    changehash(new_hash, trigger);
 }
 
 export function activate(raw_terms, opts) {
@@ -282,6 +287,7 @@ export function activate(raw_terms, opts) {
                         ...opts,
                         // Update the URL fragment to reflect the redirect.
                         change_hash: true,
+                        trigger: "retarget message location",
                     });
                     return;
                 }
@@ -314,6 +320,7 @@ export function activate(raw_terms, opts) {
                             ...opts,
                             // Update the URL fragment to reflect the redirect.
                             change_hash: true,
+                            trigger: "retarget message location",
                         });
                         return;
                     }
@@ -587,9 +594,10 @@ export function activate(raw_terms, opts) {
 
         // Put the narrow terms in the URL fragment.
         // Disabled when the URL fragment was the source
-        // of this narrow.
+        // of this narrow, but not if the fragment had
+        // a target message ID that has been moved.
         if (opts.change_hash) {
-            save_narrow(terms);
+            save_narrow(terms, opts.trigger);
         }
 
         handle_post_view_change(msg_list);
