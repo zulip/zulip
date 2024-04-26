@@ -307,14 +307,15 @@ export const update_elements = ($content: JQuery): void => {
             $view_in_playground_button.attr("data-tippy-content", title);
             $view_in_playground_button.attr("aria-label", title);
         }
-
-        const clipboard = new ClipboardJS($buttonContainer[0], {
+        const $copy_button = $buttonContainer.find(".copy_codeblock");
+        const clipboard = new ClipboardJS($copy_button[0], {
             text(copy_element) {
-                return $(copy_element).siblings("code").text();
+                const $code = $(copy_element).parent().siblings("code");
+                return $code.text();
             },
         });
+
         clipboard.on("success", () => {
-            const $copy_button = $buttonContainer.find(".copy_codeblock");
             show_copied_confirmation($copy_button[0]);
         });
         $codehilite.addClass("zulip-code-block");
