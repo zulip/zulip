@@ -377,6 +377,9 @@
     --color-text-url-hover: hsl(200deg 100% 25%);
     --color-text-settings-field-hint: hsl(0deg 0% 57%);
 
+    /* Markdown colors */
+    --color-border-rendered-markdown-table: hsl(0deg 0% 80%);
+
     /* Markdown code colors */
     --color-markdown-code-text: hsl(0deg 0% 0%);
     --color-markdown-code-background: hsl(0deg 0% 0% / 6%);
