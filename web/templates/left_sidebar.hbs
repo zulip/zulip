@@ -176,9 +176,11 @@
                 </div>
             </div>
 
-            {{#if no_stream_found}}
-            <p id="stream-not-found">{{t 'No matching streams.'}}</p>
-            {{/if}}
+            <div class="stream-list-filter">
+                {{#if no_stream_found}}
+                    <p id="stream-not-found">{{t 'No matching streams.'}}</p>
+                {{/if}}
+            </div>
 
             <div id="topics_header">
                 <a class="show-all-streams" tabindex="0">{{t 'Back to channels' }}</a> <span class="unread_count"></span>

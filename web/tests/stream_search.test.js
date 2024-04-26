@@ -192,6 +192,7 @@ run_test("expanding_sidebar", () => {
 
 run_test("empty_search", () => {
     //stream that doesn't exist
+    const $input = $(".stream-list-filter");
     $input.val("hello");
     stream_list.initiate_search()
 
