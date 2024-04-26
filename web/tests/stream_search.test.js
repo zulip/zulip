@@ -190,7 +190,7 @@ run_test("expanding_sidebar", () => {
     ]);
 });
 
-test("empty_search", () => {
+run_test("empty_search", () => {
     //stream that doesn't exist
     $input.val("hello");
     stream_list.initiate_search()
