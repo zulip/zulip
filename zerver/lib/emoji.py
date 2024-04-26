@@ -33,11 +33,11 @@ EMOTICON_CONVERSIONS = emoji_codes["emoticon_conversions"]
 
 possible_emoticons = EMOTICON_CONVERSIONS.keys()
 possible_emoticon_regexes = (re.escape(emoticon) for emoticon in possible_emoticons)
-terminal_symbols = ",.;?!()\\[\\] \"'\\n\\t"  # from composebox_typeahead.js
+terminal_symbols = r",.;?!()\[\] \"'\n\t"  # from composebox_typeahead.js
 EMOTICON_RE = (
-    f"(?<![^{terminal_symbols}])(?P<emoticon>("
-    + ")|(".join(possible_emoticon_regexes)
-    + f"))(?![^{terminal_symbols}])"
+    rf"(?<![^{terminal_symbols}])(?P<emoticon>("
+    + r")|(".join(possible_emoticon_regexes)
+    + rf"))(?![^{terminal_symbols}])"
 )
 
 

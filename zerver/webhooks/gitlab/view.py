@@ -92,7 +92,7 @@ def get_issue_created_event_body(payload: WildValue, include_title: bool) -> str
     if description:
         stringified_description = description.tame(check_string)
         stringified_description = re.sub(
-            "<!--.*?-->", "", stringified_description, count=0, flags=re.DOTALL
+            r"<!--.*?-->", "", stringified_description, count=0, flags=re.DOTALL
         )
         stringified_description = stringified_description.rstrip()
     else:

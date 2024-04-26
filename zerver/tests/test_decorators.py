@@ -1426,7 +1426,7 @@ class TestUserAgentParsing(ZulipTestCase):
         with open(user_agents_path) as f:
             for line in f:
                 line = line.strip()
-                match = re.match('^(?P<count>[0-9]+) "(?P<user_agent>.*)"$', line)
+                match = re.match(r'^(?P<count>[0-9]+) "(?P<user_agent>.*)"$', line)
                 assert match is not None
                 groupdict = match.groupdict()
                 count = groupdict["count"]
