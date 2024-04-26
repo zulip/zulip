@@ -1,6 +1,7 @@
 import itertools
 import os
 import random
+import tempfile
 from collections import defaultdict
 from datetime import datetime, timedelta
 from typing import Any, Dict, List, Mapping, Sequence, Tuple
@@ -10,6 +11,7 @@ import orjson
 from django.conf import settings
 from django.contrib.sessions.models import Session
 from django.core.files.base import File
+from django.core.files.uploadedfile import UploadedFile
 from django.core.management import call_command
 from django.core.management.base import BaseCommand, CommandParser
 from django.core.validators import validate_email
@@ -43,6 +45,7 @@ from zerver.lib.server_initialization import create_internal_realm, create_users
 from zerver.lib.storage import static_path
 from zerver.lib.stream_color import STREAM_ASSIGNMENT_COLORS
 from zerver.lib.types import ProfileFieldData
+from zerver.lib.upload import upload_message_attachment_from_request
 from zerver.lib.users import add_service
 from zerver.lib.utils import generate_api_key
 from zerver.models import (
@@ -201,6 +204,16 @@ def create_alert_words(realm_id: int) -> None:
     AlertWord.objects.bulk_create(recs)
 
 
+def create_attachment(user: UserProfile) -> str:
+    with tempfile.NamedTemporaryFile() as attach_file:
+        attach_file.write(b"temporary test attachment file. Hello, World!")
+        attach_file.flush()
+        file_size = os.stat(attach_file.name).st_size
+        with open(attach_file.name, "rb") as fp:
+            locator = upload_message_attachment_from_request(UploadedFile(fp), user, file_size)
+            return locator
+
+
 class Command(BaseCommand):
     help = "Populate a test database"
 
@@ -270,6 +283,13 @@ class Command(BaseCommand):
             type=float,
             default=15,
             help="The percent of messages to be personals.",
+        )
+
+        parser.add_argument(
+            "--percent-attachments",
+            type=float,
+            default=5,
+            help="The percent of messages to have attachments.",
         )
 
         parser.add_argument(
@@ -1175,6 +1195,7 @@ def generate_and_send_messages(
     recipients: Dict[int, Tuple[int, int, Dict[str, Any]]] = {}
     messages: List[Message] = []
     while num_messages < tot_messages:
+        has_attachment = False
         saved_data: Dict[str, Any] = {}
         message = Message(realm=realm)
         message.sending_client = get_client("populate_db")
@@ -1210,6 +1231,9 @@ def generate_and_send_messages(
             message_type = Recipient.STREAM
             message.recipient = get_recipient_by_id(random.choice(recipient_streams))
 
+        if randkey <= (random_max * options["percent_attachments"] / 100.0):
+            has_attachment = True
+
         if message_type == Recipient.DIRECT_MESSAGE_GROUP:
             sender_id = random.choice(huddle_members[message.recipient.id])
             message.sender = get_user_profile_by_id(sender_id)
@@ -1230,6 +1254,10 @@ def generate_and_send_messages(
         message.date_sent = choose_date_sent(
             num_messages, tot_messages, options["oldest_message_days"], options["threads"]
         )
+        if has_attachment:
+            locator = create_attachment(message.sender)
+            message.content += f"\n[attachment.txt]({locator})"
+
         messages.append(message)
 
         recipients[num_messages] = (message_type, message.recipient.id, saved_data)
