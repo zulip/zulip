@@ -1,17 +1,17 @@
 .rendered_markdown {
     & p {
-        margin: 0 0 5px;
+        margin: 0 0 var(--markdown-interelement-space-px);
     }
 
-    /* The spacing between two paragraphs is significantly larger.  We
-       arrange things so that this spacing matches the spacing between
-       paragraphs in two consecutive 1-line messages. */
+    /* The spacing between two paragraphs is double the usual value.
+       We coordinate this spacing matches so that it matches the
+       spacing between paragraphs in two consecutive 1-line messages. */
     & p + p {
-        margin-top: 10px;
+        margin-top: var(--markdown-interelement-doubled-space-px);
     }
 
     & ul {
-        margin: 0 0 5px 20px;
+        margin: 0 0 var(--markdown-interelement-space-px) 20px;
     }
 
     /* Swap the left and right margins of bullets for Right-To-Left languages */
@@ -21,7 +21,7 @@
     }
 
     & ol {
-        margin: 0 0 5px 20px;
+        margin: 0 0 var(--markdown-interelement-space-px) 20px;
     }
 
     /* Swap the left and right margins of ordered list for Right-To-Left languages */
@@ -48,7 +48,7 @@
            space they require, but are zeroed out below when they open
            a message. */
         margin-top: 15px;
-        margin-bottom: 5px;
+        margin-bottom: var(--markdown-interelement-space-px);
     }
 
     /* Headings: Ensure that messages that start with a heading don't have
@@ -91,7 +91,7 @@
     /* Formatting for blockquotes */
     & blockquote {
         padding-left: 5px;
-        margin: 0 0 5px 10px;
+        margin: 0 0 var(--markdown-interelement-space-px) 10px;
         border-left: 5px solid hsl(0deg 0% 87%);
     }
 
@@ -107,7 +107,7 @@
     /* Formatting for Markdown tables */
     & table {
         padding-right: 10px;
-        margin: 0 5px 5px;
+        margin: 0 5px var(--markdown-interelement-space-px);
         width: 99%;
         display: block;
         max-width: fit-content;
@@ -237,7 +237,7 @@
         border-radius: 10px;
         /* Space any subsequent Markdown content the same
            distance as adjacent paragraphs are spaced. */
-        margin: 0 0 10px;
+        margin: 0 0 var(--markdown-interelement-doubled-space-px);
 
         .spoiler-header {
             /* We use flexbox to display the spoiler message
@@ -335,7 +335,7 @@
         /* A spoiler block at the end of a message, or as
            a message's only content, gets the same bottom
            margin as other elements. */
-        margin-bottom: 5px;
+        margin-bottom: var(--markdown-interelement-space-px);
     }
 
     /* embedded link previews */
@@ -346,7 +346,7 @@
     .twitter-image,
     .message_inline_image {
         position: relative;
-        margin-bottom: 5px;
+        margin-bottom: var(--markdown-interelement-space-px);
         margin-right: 5px;
 
         /* Sizing CSS for inline images requires care, because images load
@@ -482,7 +482,7 @@
     }
 
     .message_inline_ref {
-        margin-bottom: 5px;
+        margin-bottom: var(--markdown-interelement-space-px);
         margin-left: 5px;
         height: 50px;
         display: block !important;
@@ -584,7 +584,7 @@
     .message_embed {
         display: block;
         position: relative;
-        margin: 0 0 5px;
+        margin: 0 0 var(--markdown-interelement-space-px);
         border: none;
         border-left: 3px solid hsl(0deg 0% 93%);
         height: 80px;
@@ -687,7 +687,7 @@
         overflow-x: auto;
         word-break: break-all;
         word-wrap: normal;
-        margin: 0 0 5px;
+        margin: 0 0 var(--markdown-interelement-space-px);
         padding: 5px 7px 3px;
         display: block;
         border-radius: 4px;
