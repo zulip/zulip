@@ -1219,7 +1219,7 @@ class NormalActionsTest(BaseAction):
         )
 
         events = self.verify_action(
-            lambda: do_deactivate_user(user_profile, acting_user=None), num_events=2
+            lambda: do_deactivate_user(user_profile, acting_user=None), num_events=5
         )
         check_invites_changed("events[0]", events[0])
 
@@ -3051,44 +3051,55 @@ class NormalActionsTest(BaseAction):
     def test_do_deactivate_bot(self) -> None:
         bot = self.create_bot("test")
         action = lambda: do_deactivate_user(bot, acting_user=None)
-        events = self.verify_action(action, num_events=2)
+        events = self.verify_action(action, num_events=4)
         check_realm_user_update("events[0]", events[0], "is_active")
         check_realm_bot_update("events[1]", events[1], "is_active")
+        check_user_group_remove_members("events[2]", events[2])
+        check_user_group_remove_members("events[3]", events[3])
 
     def test_do_deactivate_user(self) -> None:
         user_profile = self.example_user("cordelia")
         action = lambda: do_deactivate_user(user_profile, acting_user=None)
-        events = self.verify_action(action, num_events=1)
+        events = self.verify_action(action, num_events=4)
         check_realm_user_update("events[0]", events[0], "is_active")
+        check_user_group_remove_members("events[1]", events[1])
+        check_user_group_remove_members("events[2]", events[2])
+        check_user_group_remove_members("events[3]", events[3])
 
         do_reactivate_user(user_profile, acting_user=None)
         self.set_up_db_for_testing_user_access()
 
         # Test that guest users receive event only
         # if they can access the deactivated user.
+        # But the user_group events are still sent
+        # because the "members" field includes
+        # inaccessible users as well.
         user_profile = self.example_user("cordelia")
         self.user_profile = self.example_user("polonius")
         action = lambda: do_deactivate_user(user_profile, acting_user=None)
-        events = self.verify_action(action, num_events=0, state_change_expected=False)
+        events = self.verify_action(action, num_events=3)
+        check_user_group_remove_members("events[0]", events[0])
+        check_user_group_remove_members("events[1]", events[1])
+        check_user_group_remove_members("events[2]", events[2])
 
         user_profile = self.example_user("shiva")
         action = lambda: do_deactivate_user(user_profile, acting_user=None)
-        events = self.verify_action(action, num_events=1)
+        events = self.verify_action(action, num_events=2)
         check_realm_user_update("events[0]", events[0], "is_active")
 
         # Guest loses access to deactivated user if the user
         # was not involved in DMs.
         user_profile = self.example_user("hamlet")
         action = lambda: do_deactivate_user(user_profile, acting_user=None)
-        events = self.verify_action(action, num_events=1)
+        events = self.verify_action(action, num_events=4)
         check_realm_user_remove("events[0]", events[0])
 
         user_profile = self.example_user("aaron")
         action = lambda: do_deactivate_user(user_profile, acting_user=None)
         # One update event is for a deactivating a bot owned by aaron.
-        events = self.verify_action(action, num_events=2)
+        events = self.verify_action(action, num_events=6)
         check_realm_user_update("events[0]", events[0], "is_active")
-        check_realm_user_update("events[1]", events[1], "is_active")
+        check_realm_user_update("events[3]", events[3], "is_active")
 
     def test_do_reactivate_user(self) -> None:
         bot = self.create_bot("test")
@@ -3097,15 +3108,17 @@ class NormalActionsTest(BaseAction):
         self.subscribe(bot, "Test private stream")
         do_deactivate_user(bot, acting_user=None)
         action = lambda: do_reactivate_user(bot, acting_user=None)
-        events = self.verify_action(action, num_events=3)
+        events = self.verify_action(action, num_events=5)
         check_realm_bot_update("events[1]", events[1], "is_active")
         check_subscription_peer_add("events[2]", events[2])
+        check_user_group_add_members("events[3]", events[3])
+        check_user_group_add_members("events[4]", events[4])
 
         # Test 'peer_add' event for private stream is received only if user is subscribed to it.
         do_deactivate_user(bot, acting_user=None)
         self.subscribe(self.example_user("hamlet"), "Test private stream")
         action = lambda: do_reactivate_user(bot, acting_user=None)
-        events = self.verify_action(action, num_events=4)
+        events = self.verify_action(action, num_events=6)
         check_realm_bot_update("events[1]", events[1], "is_active")
         check_subscription_peer_add("events[2]", events[2])
         check_subscription_peer_add("events[3]", events[3])
@@ -3118,7 +3131,7 @@ class NormalActionsTest(BaseAction):
 
         self.user_profile = self.example_user("iago")
         action = lambda: do_reactivate_user(bot, acting_user=self.example_user("iago"))
-        events = self.verify_action(action, num_events=7)
+        events = self.verify_action(action, num_events=9)
         check_realm_bot_update("events[1]", events[1], "is_active")
         check_realm_bot_update("events[2]", events[2], "owner_id")
         check_realm_user_update("events[3]", events[3], "bot_owner_id")

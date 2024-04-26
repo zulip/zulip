@@ -24,7 +24,7 @@ from zerver.lib.stream_subscription import bulk_get_subscriber_peer_info
 from zerver.lib.stream_traffic import get_streams_traffic
 from zerver.lib.streams import get_streams_for_user, stream_to_dict
 from zerver.lib.user_counts import realm_user_count_by_role
-from zerver.lib.user_groups import get_system_user_group_for_user
+from zerver.lib.user_groups import get_direct_user_groups, get_system_user_group_for_user
 from zerver.lib.users import (
     get_active_bots_owned_by_user,
     get_user_ids_who_can_access_user,
@@ -384,6 +384,9 @@ def do_deactivate_user(
             send_event_on_commit(
                 user_profile.realm, event_deactivate_bot, bot_owner_user_ids(user_profile)
             )
+
+        for user_group in get_direct_user_groups(user_profile):
+            do_send_user_group_members_update_event("remove_members", user_group, [user_profile.id])
 
 
 def send_stream_events_for_role_update(

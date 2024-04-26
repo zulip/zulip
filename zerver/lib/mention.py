@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from typing import Dict, List, Match, Optional, Set, Tuple
 
 from django.conf import settings
-from django.db.models import Q
+from django.db.models import Prefetch, Q
 
 from zerver.lib.users import get_inaccessible_user_ids
 from zerver.models import UserGroup, UserProfile
@@ -271,7 +271,12 @@ class MentionData:
         if user_group_names:
             for group in UserGroup.objects.filter(
                 realm_id=realm_id, name__in=user_group_names, is_system_group=False
-            ).prefetch_related("direct_members"):
+            ).prefetch_related(
+                Prefetch(
+                    "direct_members",
+                    queryset=UserProfile.objects.filter(realm_id=realm_id, is_active=True),
+                )
+            ):
                 self.user_group_name_info[group.name.lower()] = group
                 self.user_group_members[group.id] = [m.id for m in group.direct_members.all()]
 

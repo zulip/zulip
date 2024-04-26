@@ -30,7 +30,7 @@ from zerver.lib.send_email import clear_scheduled_invitation_emails
 from zerver.lib.stream_subscription import bulk_get_subscriber_peer_info
 from zerver.lib.streams import can_access_stream_history
 from zerver.lib.user_counts import realm_user_count, realm_user_count_by_role
-from zerver.lib.user_groups import get_system_user_group_for_user
+from zerver.lib.user_groups import get_direct_user_groups, get_system_user_group_for_user
 from zerver.lib.users import (
     can_access_delivery_email,
     format_user_row,
@@ -743,3 +743,6 @@ def do_reactivate_user(user_profile: UserProfile, *, acting_user: Optional[UserP
         stream_dict=stream_dict,
         subscriber_peer_info=subscriber_peer_info,
     )
+
+    for user_group in get_direct_user_groups(user_profile):
+        do_send_user_group_members_update_event("add_members", user_group, [user_profile.id])

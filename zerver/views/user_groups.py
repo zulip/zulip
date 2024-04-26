@@ -54,7 +54,7 @@ def add_user_group(
         "can_mention_group", json_validator=check_int, default=None
     ),
 ) -> HttpResponse:
-    user_profiles = user_ids_to_users(members, user_profile.realm)
+    user_profiles = user_ids_to_users(members, user_profile.realm, allow_deactivated=False)
     name = check_user_group_name(name)
 
     group_settings_map = {}
@@ -202,9 +202,6 @@ def notify_for_user_group_subscription_changes(
         if recipient_user.is_bot:
             # Don't send notification message to bots.
             continue
-        if not recipient_user.is_active:
-            # Don't send notification message to deactivated users.
-            continue
 
         with override_language(recipient_user.default_language):
             if send_subscription_message:
@@ -239,7 +236,7 @@ def add_members_to_group_backend(
         return json_success(request)
 
     user_group = access_user_group_by_id(user_group_id, user_profile, for_read=False)
-    member_users = user_ids_to_users(members, user_profile.realm)
+    member_users = user_ids_to_users(members, user_profile.realm, allow_deactivated=False)
     existing_member_ids = set(get_direct_memberships_of_users(user_group, member_users))
 
     for member_user in member_users:
@@ -268,7 +265,7 @@ def remove_members_from_group_backend(
     if not members:
         return json_success(request)
 
-    user_profiles = user_ids_to_users(members, user_profile.realm)
+    user_profiles = user_ids_to_users(members, user_profile.realm, allow_deactivated=False)
     user_group = access_user_group_by_id(user_group_id, user_profile, for_read=False)
     group_member_ids = get_user_group_direct_member_ids(user_group)
     for member in members:
