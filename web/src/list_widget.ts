@@ -326,6 +326,9 @@ export function create<Key, Item = Key>(
             // Stop once the offset reaches the length of the original list.
             if (this.all_rendered()) {
                 render_empty_list_message_if_needed($container, meta.filter_value);
+                if (opts.callback_after_render) {
+                    opts.callback_after_render();
+                }
                 return;
             }
 
