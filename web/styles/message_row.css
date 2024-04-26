@@ -198,10 +198,10 @@
         .message_content {
             grid-area: message;
             /*
-            Space between two single line messages is 10px, which is maintained
-            by setting 5px of padding above messages without a sender.
+            Space between two single line messages is kept in
+            lockstep with adjacent Markdown elements.
             */
-            padding: 5px 0 0;
+            padding: var(--message-box-markdown-aligned-vertical-space) 0 0;
             color: var(--color-text-message-default);
             font-size: var(--base-font-size-px);
             line-height: var(--base-line-height-unitless);
@@ -321,9 +321,10 @@
                        me-messages. */
                     line-height: var(--base-line-height-unitless);
                     /* Ensure the same spacing below messages as for any other
-                       paragraph.
-                       TODO: Coordinate this with other info-density variables. */
-                    padding-bottom: 5px;
+                       paragraph. */
+                    padding-bottom: var(
+                        --message-box-markdown-aligned-vertical-space
+                    );
 
                     /* Display message components inline, with wrapping white-space,
                        so the sender name and message display as a continuous line
