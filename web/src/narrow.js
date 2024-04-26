@@ -226,14 +226,14 @@ export function activate(raw_terms, opts) {
         if (id_info.target_id && filter.has_operator("channel") && filter.has_operator("topic")) {
             const target_message = message_store.get(id_info.target_id);
 
-            function adjusted_terms_if_moved(terms, message) {
+            function adjusted_terms_if_moved(raw_terms, message) {
                 const adjusted_terms = [];
                 let terms_changed = false;
 
-                for (const term of terms) {
+                for (const term of raw_terms) {
                     const adjusted_term = {...term};
                     if (
-                        term.operator === "channel" &&
+                        Filter.canonicalize_operator(term.operator) === "channel" &&
                         !util.lower_same(term.operand, message.display_recipient)
                     ) {
                         adjusted_term.operand = message.display_recipient;
@@ -241,7 +241,7 @@ export function activate(raw_terms, opts) {
                     }
 
                     if (
-                        term.operator === "topic" &&
+                        Filter.canonicalize_operator(term.operator) === "topic" &&
                         !util.lower_same(term.operand, message.topic)
                     ) {
                         adjusted_term.operand = message.topic;
@@ -268,9 +268,9 @@ export function activate(raw_terms, opts) {
                 const narrow_stream_name = filter.operands("channel")[0];
                 const narrow_stream_data = stream_data.get_sub(narrow_stream_name);
                 if (!narrow_stream_data) {
-                    // The id of the target message is correct but the stream name is
-                    // incorrect in the URL. We reconstruct the narrow with the correct
-                    // stream name and narrow.
+                    // The stream name is invalid or incorrect in the URL.
+                    // We reconstruct the narrow with the data from the
+                    // target message ID that we have.
                     const adjusted_terms = adjusted_terms_if_moved(raw_terms, target_message);
 
                     if (adjusted_terms === null) {
