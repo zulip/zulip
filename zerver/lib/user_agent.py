@@ -5,7 +5,7 @@ from typing import Dict
 #   zerver/tests/test_decorators.py
 # And extend zerver/tests/fixtures/user_agents_unique with any new test cases
 pattern = re.compile(
-    """^ (?P<name> [^/ ]* [^0-9/(]* )
+    r"""^ (?P<name> [^/ ]* [^0-9/(]* )
     (/ (?P<version> [^/ ]* ))?
     ([ /] .*)?
     $""",

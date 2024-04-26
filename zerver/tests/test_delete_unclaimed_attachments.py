@@ -33,7 +33,7 @@ class UnclaimedAttachmentTest(UploadSerializeMixin, ZulipTestCase):
             response = self.assert_json_success(
                 self.client_post("/json/user_uploads", {"file": file_obj})
             )
-            path_id = re.sub("/user_uploads/", "", response["uri"])
+            path_id = re.sub(r"/user_uploads/", "", response["uri"])
             return Attachment.objects.get(path_id=path_id)
 
     def assert_exists(

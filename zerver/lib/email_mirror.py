@@ -370,7 +370,7 @@ def find_emailgateway_recipient(message: EmailMessage) -> str:
     ]
 
     pattern_parts = [re.escape(part) for part in settings.EMAIL_GATEWAY_PATTERN.split("%s")]
-    match_email_re = re.compile(".*?".join(pattern_parts))
+    match_email_re = re.compile(r".*?".join(pattern_parts))
 
     for header_name in recipient_headers:
         for header_value in message.get_all(header_name, []):

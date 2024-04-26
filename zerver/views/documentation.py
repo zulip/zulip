@@ -105,7 +105,7 @@ class MarkdownDirectoryView(ApiURLView):
         elif "/" in article:
             article = "missing"
             http_status = 404
-        elif len(article) > 100 or not re.match("^[0-9a-zA-Z_-]+$", article):
+        elif len(article) > 100 or not re.match(r"^[0-9a-zA-Z_-]+$", article):
             article = "missing"
             http_status = 404
 
