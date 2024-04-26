@@ -76,6 +76,7 @@
         --base-line-height-unitless: 1.214;
         --markdown-interelement-space-px: 5px;
         --markdown-interelement-doubled-space-px: 10px;
+        --message-box-markdown-aligned-vertical-space: 5px;
     }
 
     /*
@@ -87,6 +88,9 @@
     /* 6px appears to provide 5px of space between the avatar
        and the selected-message outline, which is offset by -1px. */
     --message-box-vertical-margin: 6px;
+    --message-box-markdown-aligned-vertical-space: var(
+        --markdown-interelement-space-px
+    );
     --message-box-icon-width: 26px;
     --message-box-icon-height: 25px;
     /* The line-height on the sender line should coordinate with the
