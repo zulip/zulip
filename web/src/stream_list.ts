@@ -366,7 +366,6 @@ export function update_subscribe_to_more_streams_link(): void {
         settings_data.user_can_create_public_streams() ||
         settings_data.user_can_create_web_public_streams();
 
-    
     $("#subscribe-to-more-streams").html(
         render_subscribe_to_more_streams({
             can_subscribe_stream_count,
@@ -881,8 +880,7 @@ export function set_event_handlers({
         const stream_id = stream_cursor.get_key();
 
         if (stream_id === undefined) {
-            no_stream_found = true; 
-            sidebar_ui.initialize_left_sidebar();
+            no_stream_found = true;
         }
         else {
             clear_and_hide_search();
@@ -1026,8 +1024,6 @@ export function get_current_stream_li(): JQuery | undefined {
 
     return $stream_li;
 }
-
-
 
 export function getNoStreamFound(): boolean {
     return no_stream_found;

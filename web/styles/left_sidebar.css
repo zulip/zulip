@@ -102,7 +102,7 @@ li.show-more-topics {
 
 #stream-not-found {
     margin-left: 10px;
-    color: hsl(0, 0%, 67%);
+    color: hsl(0deg, 0%, 67%);
     font-style: italic;
 }
 
