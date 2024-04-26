@@ -32,6 +32,7 @@ import type {FullUnreadCountsData, StreamCountInfo} from "./unread";
 
 let pending_stream_list_rerender = false;
 let zoomed_in = false;
+let no_stream_found = false;
 
 export let stream_cursor: ListCursor<number>;
 
@@ -357,14 +358,15 @@ export function get_stream_li(stream_id: number): JQuery | undefined {
 
 export function update_subscribe_to_more_streams_link(): void {
     const can_subscribe_stream_count = stream_data
-        .unsubscribed_subs()
-        .filter((sub) => stream_data.can_toggle_subscription(sub)).length;
+    .unsubscribed_subs()
+    .filter((sub) => stream_data.can_toggle_subscription(sub)).length;
 
     const can_create_streams =
         settings_data.user_can_create_private_streams() ||
         settings_data.user_can_create_public_streams() ||
         settings_data.user_can_create_web_public_streams();
 
+    
     $("#subscribe-to-more-streams").html(
         render_subscribe_to_more_streams({
             can_subscribe_stream_count,
@@ -879,12 +881,15 @@ export function set_event_handlers({
         const stream_id = stream_cursor.get_key();
 
         if (stream_id === undefined) {
-            // This can happen for empty searches, no need to warn.
-            return;
+            no_stream_found = true; 
+            sidebar_ui.initialize_left_sidebar();
         }
+        else {
+            clear_and_hide_search();
+            on_stream_click(stream_id, "sidebar enter key");
 
-        clear_and_hide_search();
-        on_stream_click(stream_id, "sidebar enter key");
+        }
+        return;
     }
 
     keydown_util.handle({
@@ -1020,4 +1025,10 @@ export function get_current_stream_li(): JQuery | undefined {
     }
 
     return $stream_li;
+}
+
+
+
+export function getNoStreamFound(): boolean {
+    return no_stream_found;
 }

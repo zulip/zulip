@@ -100,6 +100,12 @@ li.show-more-topics {
     max-width: 18em;
 }
 
+#stream-not-found {
+    margin-left: 10px;
+    color: hsl(0, 0%, 67%);
+    font-style: italic;
+}
+
 #stream_filters {
     overflow: visible;
     margin-bottom: 5px;

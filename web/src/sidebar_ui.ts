@@ -13,6 +13,7 @@ import * as settings_data from "./settings_data";
 import * as spectators from "./spectators";
 import {current_user} from "./state_data";
 import {user_settings} from "./user_settings";
+import { getNoStreamFound } from "./stream_list";
 
 export let left_sidebar_expanded_as_overlay = false;
 export let right_sidebar_expanded_as_overlay = false;
@@ -148,6 +149,7 @@ export function initialize(): void {
 
 export function initialize_left_sidebar(): void {
     const rendered_sidebar = render_left_sidebar({
+        no_stream_found: getNoStreamFound,
         is_guest: current_user.is_guest,
         development_environment: page_params.development_environment,
         is_inbox_home_view:

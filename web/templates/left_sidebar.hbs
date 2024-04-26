@@ -175,9 +175,15 @@
                     </button>
                 </div>
             </div>
+
+            {{#if no_stream_found}}
+            <p id="stream-not-found">{{t 'No matching streams.'}}</p>
+            {{/if}}
+
             <div id="topics_header">
                 <a class="show-all-streams" tabindex="0">{{t 'Back to channels' }}</a> <span class="unread_count"></span>
             </div>
+
             <div id="stream-filters-container">
                 <ul id="stream_filters" class="filters"></ul>
                 {{#unless is_guest }}

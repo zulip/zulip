@@ -189,3 +189,11 @@ run_test("expanding_sidebar", () => {
         "sidebar_ui.show_streamlist_sidebar",
     ]);
 });
+
+test("empty_search", () => {
+    //stream that doesn't exist
+    $input.val("hello");
+    stream_list.initiate_search()
+
+    assert.ok($("#stream-not-found"));
+});
