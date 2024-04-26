@@ -1,3 +1,4 @@
+import {media_breakpoints_num} from "./css_variables";
 import * as gear_menu from "./gear_menu";
 import * as navbar_help_menu from "./navbar_help_menu";
 import {page_params} from "./page_params";
@@ -10,9 +11,16 @@ import {
 } from "./sidebar_ui";
 
 // Available menu options based on user type
-const popover_menus_options = page_params.is_spectator
-    ? ["signup_button", "login_button", "navbar_help_menu", "gear_menu"]
-    : ["user_list_toggle", "navbar_help_menu", "gear_menu", "personal_menu"];
+function getPopoverMenusOptions() {
+    if (page_params.is_spectator) {
+        return window.innerWidth < media_breakpoints_num.xl
+            ? ["navbar_help_menu", "gear_menu", "login_button"]
+            : ["signup_button", "login_button", "navbar_help_menu", "gear_menu"];
+    }
+    return ["navbar_help_menu", "gear_menu", "personal_menu"];
+}
+
+const popover_menus_options = getPopoverMenusOptions();
 
 export function is_navbar_menus_displayed() {
     return (
@@ -56,17 +64,12 @@ function is_menu_displayed(selected_popover_menu) {
     return false;
 }
 
-// if (popover_menus.is_gear_menu_popover_displayed()) {
-//     if (event_name === "gear_menu") {
-//         gear_menu.toggle();
 // Handle navigation events for specific menus
 function handle_menu_event(selected_popover_menu, event_name, index) {
     switch (event_name) {
         case "gear_menu":
             toggle_menu(selected_popover_menu);
             return true;
-        // } else if (event_name === "right_arrow" && !page_params.is_spectator) {
-        //     // Open personal menu popover on g + right arrow.
         case "left_arrow":
             if (index > 0) {
                 toggle_menu(selected_popover_menu);
@@ -113,11 +116,24 @@ function toggle_menu(selected_popover_menu) {
 
     // Toggle the focus state of a button
     function toggle_button_focus(selected_popover_menu) {
-        const selected_element = document.querySelector("." + selected_popover_menu);
-        if (document.activeElement.classList.contains(selected_popover_menu)) {
-            selected_element.blur();
+        if (window.innerWidth < media_breakpoints_num.xl) {
+            const selected_element = document.querySelector(
+                ".spectator_narrow_login_button ." + selected_popover_menu,
+            );
+            if (selected_element) {
+                if (selected_element === document.activeElement) {
+                    selected_element.blur();
+                } else {
+                    selected_element.focus();
+                }
+            }
         } else {
-            selected_element.focus();
+            const selected_element = document.querySelector("." + selected_popover_menu);
+            if (document.activeElement.classList.contains(selected_popover_menu)) {
+                selected_element.blur();
+            } else {
+                selected_element.focus();
+            }
         }
     }
 }

@@ -506,19 +506,32 @@ body.has-overlay-scrollbar {
             display: none;
         }
 
-        .login_button {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100%;
+        & .login_button {
+            color: var(
+                --color-navbar-spectator-low-attention-brand-button-text
+            );
+            background-color: var(
+                --color-navbar-spectator-low-attention-brand-button-background
+            );
 
-            &:hover {
-                text-decoration: none;
+            &:hover,
+            &:focus {
+                color: var(
+                    --color-navbar-spectator-low-attention-brand-button-text
+                );
+                background-color: var(
+                    --color-navbar-spectator-medium-attention-brand-button-background-hover
+                );
             }
 
-            & i {
-                color: var(--color-navbar-icon);
-                font-size: 1.6em;
+            &:active {
+                transform: scale(0.98);
+                color: var(
+                    --color-navbar-spectator-low-attention-brand-button-text
+                );
+                background-color: var(
+                    --color-navbar-spectator-low-attention-brand-button-background-active
+                );
             }
         }
     }
