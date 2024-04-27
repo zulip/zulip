@@ -156,7 +156,7 @@ export function search_public_streams_notice_url(terms: NarrowTerm[]): string {
     return search_terms_to_hash([public_operator, ...terms]);
 }
 
-export function parse_narrow(hash: string): NarrowTerm[] | undefined {
+export function parse_narrow(hash: string[]): NarrowTerm[] | undefined {
     // This will throw an exception when passed an invalid hash
     // at the decodeHashComponent call, handle appropriately.
     let i;
