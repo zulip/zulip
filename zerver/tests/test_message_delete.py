@@ -11,6 +11,7 @@ from zerver.actions.realm_settings import do_set_realm_property
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.models import Message, Realm, UserProfile
 from zerver.models.realms import get_realm
+from zerver.models.streams import get_stream
 
 if TYPE_CHECKING:
     from django.test.client import _MonkeyPatchedWSGIResponse as TestHttpResponse
@@ -321,3 +322,28 @@ class DeleteMessageTest(ZulipTestCase):
         result = self.client_delete(f"/json/messages/{msg_id}")
         self.assert_json_success(result)
         self.assertFalse(Message.objects.filter(id=msg_id).exists())
+
+    def test_update_first_message_id_on_stream_message_deletion(self) -> None:
+        realm = get_realm("zulip")
+        stream_name = "test"
+        cordelia = self.example_user("cordelia")
+        self.make_stream(stream_name)
+        self.subscribe(cordelia, stream_name)
+        message_ids = [self.send_stream_message(cordelia, stream_name) for _ in range(5)]
+        first_message_id = message_ids[0]
+
+        message = Message.objects.get(id=message_ids[3])
+        do_delete_messages(realm, [message])
+        stream = get_stream(stream_name, realm)
+        self.assertEqual(stream.first_message_id, first_message_id)
+
+        first_message = Message.objects.get(id=first_message_id)
+        do_delete_messages(realm, [first_message])
+        stream = get_stream(stream_name, realm)
+        self.assertEqual(stream.first_message_id, message_ids[1])
+
+        all_messages = Message.objects.filter(id__in=message_ids)
+        with self.assert_database_query_count(23):
+            do_delete_messages(realm, all_messages)
+        stream = get_stream(stream_name, realm)
+        self.assertEqual(stream.first_message_id, None)
