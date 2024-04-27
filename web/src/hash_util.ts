@@ -87,6 +87,8 @@ export function by_stream_topic_url(stream_id: number, topic: string): string {
 // corresponding hash: the # component
 // of the narrow URL
 export function search_terms_to_hash(terms?: NarrowTerm[]): string {
+    // Note: This does not return the correct hash for combined feed, recent and inbox view.
+    // These views can have multiple hashes that lead to them, so this function cannot support them.
     let hash = "#";
 
     if (terms !== undefined) {
