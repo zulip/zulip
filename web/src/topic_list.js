@@ -1,5 +1,6 @@
 import $ from "jquery";
 import _ from "lodash";
+import assert from "minimalistic-assert";
 
 import render_more_topics from "../templates/more_topics.hbs";
 import render_more_topics_spinner from "../templates/more_topics_spinner.hbs";
@@ -11,28 +12,21 @@ import * as scroll_util from "./scroll_util";
 import * as stream_topic_history from "./stream_topic_history";
 import * as stream_topic_history_util from "./stream_topic_history_util";
 import * as topic_list_data from "./topic_list_data";
+import type { TopicInfo } from "./topic_list_data";
 import * as vdom from "./vdom";
 
-/*
-    Track all active widgets with a Map.
+import { createSignal, onCleanup } from 'solid-js'; // Import Solid.js functions
 
-    (We have at max one for now, but we may
-    eventually allow multiple streams to be
-    expanded.)
-*/
-
-const active_widgets = new Map();
-
-// We know whether we're zoomed or not.
+const active_widgets = new Map<number, TopicListWidget>();
 let zoomed = false;
 
-export function update() {
+export function update(): void {
     for (const widget of active_widgets.values()) {
         widget.build();
     }
 }
 
-export function clear() {
+export function clear(): void {
     popover_menus.get_topic_menu_popover()?.hide();
 
     for (const widget of active_widgets.values()) {
@@ -42,92 +36,17 @@ export function clear() {
     active_widgets.clear();
 }
 
-export function close() {
-    zoomed = false;
-    clear();
-}
-
-export function zoom_out() {
-    zoomed = false;
-
-    const stream_ids = [...active_widgets.keys()];
-
-    if (stream_ids.length !== 1) {
-        blueslip.error("Unexpected number of topic lists to zoom out.");
-        return;
-    }
-
-    const stream_id = stream_ids[0];
-    const widget = active_widgets.get(stream_id);
-    const parent_widget = widget.get_parent();
-
-    rebuild(parent_widget, stream_id);
-}
-
-export function keyed_topic_li(conversation) {
-    const render = () => render_topic_list_item(conversation);
-
-    const eq = (other) => _.isEqual(conversation, other.conversation);
-
-    const key = "t:" + conversation.topic_name;
-
-    return {
-        key,
-        render,
-        conversation,
-        eq,
-    };
-}
-
-export function more_li(
-    more_topics_unreads,
-    more_topics_have_unread_mention_messages,
-    more_topics_unread_count_muted,
-) {
-    const render = () =>
-        render_more_topics({
-            more_topics_unreads,
-            more_topics_have_unread_mention_messages,
-            more_topics_unread_count_muted,
-        });
-
-    const eq = (other) => other.more_items && more_topics_unreads === other.more_topics_unreads;
-
-    const key = "more";
-
-    return {
-        key,
-        more_items: true,
-        more_topics_unreads,
-        render,
-        eq,
-    };
-}
-
-export function spinner_li() {
-    const render = () => render_more_topics_spinner();
-
-    const eq = (other) => other.spinner;
-
-    const key = "more";
-
-    return {
-        key,
-        spinner: true,
-        render,
-        eq,
-    };
-}
-
 export class TopicListWidget {
-    prior_dom = undefined;
+    signal = createSignal({ listInfo: null, spinner: false }); // Solid.js reactive signal
+
+    cleanupFunctions = [];
 
     constructor($parent_elem, my_stream_id) {
         this.$parent_elem = $parent_elem;
         this.my_stream_id = my_stream_id;
     }
 
-    build_list(spinner) {
+    async build_list(spinner) {
         const list_info = topic_list_data.get_list_info(
             this.my_stream_id,
             zoomed,
@@ -143,7 +62,7 @@ export class TopicListWidget {
             list_info.items.length === num_possible_topics &&
             stream_topic_history.is_complete_for_stream_id(this.my_stream_id);
 
-        const attrs = [["class", "topic-list"]];
+        const attrs: [string, string][] = [["class", "topic-list"]];
 
         const nodes = list_info.items.map((conversation) => keyed_topic_li(conversation));
 
@@ -159,20 +78,11 @@ export class TopicListWidget {
             );
         }
 
-        const dom = vdom.ul({
-            attrs,
-            keyed_nodes: nodes,
-        });
-
-        return dom;
+        this.signal[0]({ listInfo: nodes, spinner }); // Update the signal with listInfo and spinner
     }
 
     get_parent() {
         return this.$parent_elem;
-    }
-
-    get_stream_id() {
-        return this.my_stream_id;
     }
 
     remove() {
@@ -180,12 +90,12 @@ export class TopicListWidget {
         this.prior_dom = undefined;
     }
 
-    build(spinner) {
+    build(spinner = false) {
         const new_dom = this.build_list(spinner);
 
         const replace_content = (html) => {
             this.remove();
-            this.$parent_elem.append(html);
+            this.$parent_elem.append($(html));
         };
 
         const find = () => this.$parent_elem.find(".topic-list");
@@ -209,12 +119,11 @@ export function clear_topic_search(e) {
         $input.val("");
         $input.trigger("blur");
 
-        // Since this changes the contents of the search input, we
-        // need to rerender the topic list.
         const stream_ids = [...active_widgets.keys()];
 
         const stream_id = stream_ids[0];
         const widget = active_widgets.get(stream_id);
+        assert(widget !== undefined);
         const parent_widget = widget.get_parent();
 
         rebuild(parent_widget, stream_id);
@@ -257,35 +166,30 @@ export function rebuild($stream_li, stream_id) {
     active_widgets.set(stream_id, widget);
 }
 
-// For zooming, we only do topic-list stuff here...let stream_list
-// handle hiding/showing the non-narrowed streams
 export function zoom_in() {
     zoomed = true;
 
     const stream_id = active_stream_id();
-    if (!stream_id) {
+    if (stream_id === undefined) {
         blueslip.error("Cannot find widget for topic history zooming.");
         return;
     }
 
     const active_widget = active_widgets.get(stream_id);
+    assert(active_widget !== undefined);
 
     function on_success() {
-        if (!active_widgets.has(stream_id)) {
+        if (!active_widgets.has(stream_id!)) {
             blueslip.warn("User re-narrowed before topic history was returned.");
             return;
         }
 
         if (!zoomed) {
             blueslip.warn("User zoomed out before topic history was returned.");
-            // Note that we could attempt to re-draw the zoomed out topic list
-            // here, given that we have more history, but that might be more
-            // confusing than helpful to a user who is likely trying to browse
-            // other streams.
             return;
         }
 
-        active_widget.build();
+        active_widget!.build();
     }
 
     scroll_util.get_scroll_element($("#left_sidebar_scroll_container")).scrollTop(0);
@@ -297,19 +201,22 @@ export function zoom_in() {
 }
 
 export function get_topic_search_term() {
-    const $filter = $("#filter-topic-input");
-    if ($filter.val() === undefined) {
+    const $filter = $<HTMLInputElement>("input#filter-topic-input");
+    const filter_val = $filter.val();
+    if (filter_val === undefined) {
         return "";
     }
-    return $filter.val().trim();
+    return filter_val.trim();
 }
 
-export function initialize({on_topic_click}) {
+export function initialize({
+    on_topic_click,
+}) {
     $("#stream_filters").on(
         "click",
         ".sidebar-topic-check, .topic-name, .topic-markers-and-controls",
         (e) => {
-            if (e.metaKey || e.ctrlKey) {
+            if (e.metaKey || e.ctrlKey || e.shiftKey) {
                 return;
             }
             if ($(e.target).closest(".show-more-topics").length > 0) {
@@ -317,7 +224,9 @@ export function initialize({on_topic_click}) {
             }
 
             const $stream_row = $(e.target).parents(".narrow-filter");
-            const stream_id = Number.parseInt($stream_row.attr("data-stream-id"), 10);
+            const stream_id_string = $stream_row.attr("data-stream-id");
+            assert(stream_id_string !== undefined);
+            const stream_id = Number.parseInt(stream_id_string, 10);
             const topic = $(e.target).parents("li").attr("data-topic-name");
             on_topic_click(stream_id, topic);
 
@@ -326,6 +235,8 @@ export function initialize({on_topic_click}) {
     );
 
     $("body").on("input", "#filter-topic-input", () => {
-        active_widgets.get(active_stream_id()).build();
+        const stream_id = active_stream_id();
+        assert(stream_id !== undefined);
+        active_widgets.get(stream_id)?.build();
     });
 }
