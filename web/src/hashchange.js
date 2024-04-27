@@ -60,6 +60,8 @@ function show_all_message_view() {
     narrow.activate([{operator: "in", operand: "home"}], {
         trigger: "hashchange",
         change_hash: false,
+        then_select_id: history.state?.narrow_pointer,
+        then_select_offset: history.state?.narrow_offset,
     });
 }
 
