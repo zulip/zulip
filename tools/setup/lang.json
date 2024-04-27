@@ -39,6 +39,7 @@
         "csharp": 17,
         "cpp": 14,
         "tex": 10,
-        "vbnet": 9
+        "vbnet": 9,
+        "xonsh": 26
     }
 }
