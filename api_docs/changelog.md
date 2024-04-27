@@ -20,6 +20,11 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 9.0
 
+**Feature level 256**
+
+* [`GET /events`](/api/get-events): Stream update events with a new
+  `first_message_id` may now be sent when messages are deleted.
+
 **Feature level 255**
 
 * "Stream" was renamed to "Channel" across strings in the Zulip API

@@ -3,7 +3,7 @@ from typing import Iterable, List, TypedDict
 from zerver.lib import retention
 from zerver.lib.retention import move_messages_to_archive
 from zerver.lib.stream_subscription import get_active_subscriptions_for_stream_id
-from zerver.models import Message, Realm, UserMessage, UserProfile
+from zerver.models import Message, Realm, Stream, UserMessage, UserProfile
 from zerver.tornado.django_api import send_event_on_commit
 
 
@@ -13,6 +13,34 @@ class DeleteMessagesEvent(TypedDict, total=False):
     message_type: str
     topic: str
     stream_id: int
+
+
+def check_update_first_message_id(
+    realm: Realm, stream: Stream, message_ids: List[int], users_to_notify: Iterable[int]
+) -> None:
+    # This will not update the `first_message_id` of streams where the
+    # first message was deleted prior to the implementation of this function.
+    assert stream.recipient_id is not None
+    if stream.first_message_id not in message_ids:
+        return
+    current_first_message_id = (
+        Message.objects.filter(realm_id=realm.id, recipient_id=stream.recipient_id)
+        .values_list("id", flat=True)
+        .order_by("id")
+        .first()
+    )
+
+    stream.first_message_id = current_first_message_id
+    stream.save(update_fields=["first_message_id"])
+
+    stream_event = dict(
+        type="stream",
+        op="update",
+        property="first_message_id",
+        value=stream.first_message_id,
+        stream_id=stream.id,
+    )
+    send_event_on_commit(realm, stream_event, users_to_notify)
 
 
 def do_delete_messages(realm: Realm, messages: Iterable[Message]) -> None:
@@ -52,6 +80,9 @@ def do_delete_messages(realm: Realm, messages: Iterable[Message]) -> None:
         archiving_chunk_size = retention.STREAM_MESSAGE_BATCH_SIZE
 
     move_messages_to_archive(message_ids, realm=realm, chunk_size=archiving_chunk_size)
+    if message_type == "stream":
+        stream = Stream.objects.get(id=sample_message.recipient.type_id)
+        check_update_first_message_id(realm, stream, message_ids, users_to_notify)
 
     event["message_type"] = message_type
     send_event_on_commit(realm, event, users_to_notify)

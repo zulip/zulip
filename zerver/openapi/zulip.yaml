@@ -18080,7 +18080,11 @@ paths:
         response. If all messages in the topic were deleted, then the success
         response will return `"complete": true`.
 
-        **Changes**: Before Zulip 8.0 (feature level 211), if the server's
+        **Changes**: Before Zulip 9.0 (feature level 256), the server never sent
+        events updating the `first_message_id` for a stream when the oldest
+        message that had been sent to it changed.
+
+        Before Zulip 8.0 (feature level 211), if the server's
         processing was interrupted by a timeout, but some messages in the topic
         were deleted, then it would return `"result": "partially_completed"`,
         along with a `code` field for an error string, in the success response
