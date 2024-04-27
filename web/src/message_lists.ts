@@ -10,6 +10,7 @@ import * as ui_util from "./ui_util";
 // TODO(typescript): Move this to message_list_view when it's
 // converted to typescript.
 type MessageListView = {
+    change_message_id: (old_id: number, new_id: number) => void;
     update_recipient_bar_background_color: () => void;
     rerender_messages: (messages: Message[], message_content_edited?: boolean) => void;
     _render_win_start: number;
@@ -50,6 +51,7 @@ export type MessageList = {
         messages: Message[],
         append_opts: {messages_are_new: boolean},
     ) => RenderInfo | undefined;
+    change_message_id: (old_id: number, new_id: number) => void;
 };
 
 export let current: MessageList | undefined;
