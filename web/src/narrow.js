@@ -51,7 +51,6 @@ import * as stream_data from "./stream_data";
 import * as stream_list from "./stream_list";
 import * as topic_generator from "./topic_generator";
 import * as typing_events from "./typing_events";
-import * as unread from "./unread";
 import * as unread_ops from "./unread_ops";
 import * as unread_ui from "./unread_ui";
 import {user_settings} from "./user_settings";
@@ -373,11 +372,6 @@ export function activate(raw_terms, opts) {
             recent_view_ui.hide();
         } else if (coming_from_inbox) {
             inbox_ui.hide();
-        } else {
-            // We must instead be switching from another message view.
-            // Save the scroll position in that message list, so that
-            // we can restore it if/when we later navigate back to that view.
-            message_lists.save_pre_narrow_offset_for_reload();
         }
 
         // Open tooltips are only interesting for current narrow,
@@ -421,10 +415,6 @@ export function activate(raw_terms, opts) {
                     }
                 }
             }
-        }
-
-        if (!was_narrowed_already) {
-            unread.set_messages_read_in_narrow(false);
         }
 
         const excludes_muted_topics = filter.excludes_muted_topics();
@@ -494,20 +484,12 @@ export function activate(raw_terms, opts) {
                 force_rerender: false,
             };
 
-            if (unread.messages_read_in_narrow) {
-                // We read some unread messages in a narrow. Instead of going back to
-                // where we were before the narrow, go to our first unread message (or
-                // the bottom of the feed, if there are no unread messages).
-                id_info.final_select_id = message_lists.current.first_unread_message_id();
-            } else {
-                // We narrowed, but only backwards in time (ie no unread were read). Try
-                // to go back to exactly where we were before narrowing.
-                // We scroll the user back to exactly the offset from the selected
-                // message that they were at the time that they narrowed.
-                // TODO: Make this correctly handle the case of resizing while narrowed.
-                then_select_offset = message_lists.current.pre_narrow_offset;
-                id_info.final_select_id = message_lists.current.selected_id();
+            if (opts.then_select_id !== -1) {
+                // Restore user's last position in narrow if user is navigation via browser back / forward button.
+                id_info.final_select_id = opts.then_select_id;
+                then_select_offset = opts.then_select_offset;
             }
+
             // We are navigating to the combined feed from another
             // narrow, so we reset the reading state to allow user to
             // read messages again in the combined feed if user has

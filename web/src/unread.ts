@@ -25,12 +25,6 @@ import * as util from "./util";
 // See https://zulip.readthedocs.io/en/latest/subsystems/pointer.html
 // for more details on how this system is designed.
 
-export let messages_read_in_narrow = false;
-
-export function set_messages_read_in_narrow(value: boolean): void {
-    messages_read_in_narrow = value;
-}
-
 export let old_unreads_missing = false;
 
 export function clear_old_unreads_missing(): void {

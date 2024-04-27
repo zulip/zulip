@@ -103,7 +103,6 @@ function test_helper({override}) {
     stub(narrow_history, "save_narrow_state_and_flush");
     stub(message_feed_loading, "hide_indicators");
     stub(message_feed_top_notices, "hide_top_of_narrow_notices");
-    stub(message_lists, "save_pre_narrow_offset_for_reload");
     stub(narrow_title, "update_narrow_title");
     stub(stream_list, "handle_narrow_activated");
     stub(message_view_header, "render_title_area");
@@ -225,7 +224,6 @@ run_test("basics", ({override}) => {
         [message_feed_top_notices, "hide_top_of_narrow_notices"],
         [message_feed_loading, "hide_indicators"],
         [compose_banner, "clear_message_sent_banners"],
-        [message_lists, "save_pre_narrow_offset_for_reload"],
         [compose_actions, "on_narrow"],
         [unread_ops, "process_visible"],
         [narrow_history, "save_narrow_state_and_flush"],
