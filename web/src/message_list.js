@@ -82,6 +82,10 @@ export class MessageList {
         return this;
     }
 
+    is_current_message_list() {
+        return this.view.is_current_message_list();
+    }
+
     prevent_reading() {
         this.reading_prevented = true;
     }
@@ -117,14 +121,14 @@ export class MessageList {
             render_info = this.append_to_view(bottom_messages, opts);
         }
 
-        if (!this.visibly_empty()) {
+        if (!this.visibly_empty() && this.is_current_message_list()) {
             // If adding some new messages to the message tables caused
             // our current narrow to no longer be empty, hide the empty
             // feed placeholder text.
             narrow_banner.hide_empty_narrow_message();
         }
 
-        if (!this.visibly_empty() && this.selected_id() === -1) {
+        if (!this.visibly_empty() && this.selected_id() === -1 && this.is_current_message_list()) {
             // The message list was previously empty, but now isn't
             // due to adding these messages, and we need to select a
             // message. Regardless of whether the messages are new or

@@ -380,6 +380,10 @@ export class MessageListView {
         message_container.modified = true;
     }
 
+    is_current_message_list() {
+        return this.list === message_lists.current;
+    }
+
     set_calculated_message_container_variables(message_container, is_revealed) {
         set_timestr(message_container);
 

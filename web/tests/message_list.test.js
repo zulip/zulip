@@ -33,6 +33,7 @@ function MessageListView() {
         append: noop,
         prepend: noop,
         clear_rendering_state: noop,
+        is_current_message_list: () => true,
     };
 }
 mock_esm("../src/message_list_view", {
