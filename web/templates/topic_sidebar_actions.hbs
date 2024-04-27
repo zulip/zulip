@@ -8,9 +8,9 @@
                 </li>
             </ul>
         </li>
-        <li class="popover-menu-outer-list-item">
+        <li class="popover-menu-outer-list-item hidden-for-spectators">
             <ul class="popover-menu-inner-list">
-                <li class="popover-menu-inner-list-item hidden-for-spectators">
+                <li class="popover-menu-inner-list-item">
                     <div class="tabs-container">
                         <div class="tab-option tippy-zulip-tooltip {{#if (eq visibility_policy all_visibility_policies.MUTED)}}selected-tab{{/if}}" data-visibility-policy="{{all_visibility_policies.MUTED}}" data-tippy-content="{{t 'Mute' }}" aria-label="{{t 'Mute' }}">
                             <i class="zulip-icon zulip-icon-mute-new"></i>
