@@ -1,5 +1,7 @@
 {{#> compose_banner }}
     <p class="banner_message">
-        {{#tr}}Warning: <strong>#{channel_name}</strong> is a private channel.{{/tr}}
+        {{#tr}}Warning: <z-link></z-link> is a private channel.
+        {{#*inline "z-link"}}{{{channel_name}}}{{/inline}}
+        {{/tr}}
     </p>
 {{/compose_banner}}

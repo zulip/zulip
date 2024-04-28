@@ -4,6 +4,7 @@ import assert from "minimalistic-assert";
 import render_automatic_new_visibility_policy_banner from "../templates/compose_banner/automatic_new_visibility_policy_banner.hbs";
 import render_message_sent_banner from "../templates/compose_banner/message_sent_banner.hbs";
 import render_unmute_topic_banner from "../templates/compose_banner/unmute_topic_banner.hbs";
+import render_inline_decorated_stream_topic from "../templates/inline_decorated_stream_topic.hbs";
 
 import * as blueslip from "./blueslip";
 import * as compose_banner from "./compose_banner";
@@ -82,8 +83,16 @@ export function notify_automatic_new_visibility_policy(
 // Handlebars templates that will do further escaping.
 function get_message_header(message: Message): string {
     if (message.type === "stream") {
-        const stream_name = stream_data.get_stream_name_from_id(message.stream_id);
-        return `#${stream_name} > ${message.topic}`;
+        const stream = stream_data.get_sub_by_id(message.stream_id);
+        const stream_topic = $t(
+            {defaultMessage: "{stream} > {topic}"},
+            {stream: stream?.name.trimEnd(), topic: message.topic},
+        );
+        const stream_name_with_topic_html = render_inline_decorated_stream_topic({
+            stream,
+            stream_topic,
+        });
+        return stream_name_with_topic_html;
     }
     if (message.display_recipient.length > 2) {
         return $t(

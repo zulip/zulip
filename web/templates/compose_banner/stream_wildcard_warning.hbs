@@ -1,7 +1,11 @@
 {{#> compose_banner }}
     <p class="banner_message">
         {{#tr}}
-        Are you sure you want to send @-mention notifications to the <strong>{subscriber_count}</strong> users subscribed to #{channel_name}? If not, please edit your message to remove the <strong>@{wildcard_mention}</strong> mention.
+            Are you sure you want to send @-mention notifications to the
+            <strong>{subscriber_count}</strong> users subscribed to <z-link></z-link>?
+            If not, please edit your message to remove the <strong>@{wildcard_mention}</strong>
+            mention.
+            {{#*inline "z-link"}}{{{channel_name}}}{{/inline}}
         {{/tr}}
     </p>
 {{/compose_banner}}

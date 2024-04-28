@@ -7,6 +7,7 @@ import render_private_stream_warning from "../templates/compose_banner/private_s
 import render_stream_wildcard_warning from "../templates/compose_banner/stream_wildcard_warning.hbs";
 import render_wildcard_mention_not_allowed_error from "../templates/compose_banner/wildcard_mention_not_allowed_error.hbs";
 import render_compose_limit_indicator from "../templates/compose_limit_indicator.hbs";
+import render_inline_decorated_stream_name from "../templates/inline_decorated_stream_name.hbs";
 
 import * as compose_banner from "./compose_banner";
 import * as compose_pm_pill from "./compose_pm_pill";
@@ -184,10 +185,14 @@ export function warn_if_private_stream_is_linked(
     );
 
     if (!existing_stream_warnings.includes(linked_stream.stream_id)) {
+        const channel_name_html = render_inline_decorated_stream_name({
+            stream: linked_stream,
+            in_message: true,
+        });
         const new_row_html = render_private_stream_warning({
             stream_id: linked_stream.stream_id,
             banner_type: compose_banner.WARNING,
-            channel_name: linked_stream.name,
+            channel_name: channel_name_html,
             classname: compose_banner.CLASSNAMES.private_stream_warning,
         });
         compose_banner.append_compose_banner_to_banner_list($(new_row_html), $banner_container);
@@ -328,9 +333,9 @@ export function warn_if_in_search_view(): void {
 
 function show_stream_wildcard_warnings(opts: StreamWildcardOptions): void {
     const subscriber_count = peer_data.get_subscriber_count(opts.stream_id) || 0;
-    const stream_name = sub_store.maybe_get_stream_name(opts.stream_id);
     const is_edit_container = opts.$banner_container.closest(".edit_form_banners").length > 0;
     const classname = compose_banner.CLASSNAMES.wildcard_warning;
+    const stream = sub_store.get(opts.stream_id);
 
     let button_text = opts.scheduling_message
         ? $t({defaultMessage: "Yes, schedule"})
@@ -340,10 +345,14 @@ function show_stream_wildcard_warnings(opts: StreamWildcardOptions): void {
         button_text = $t({defaultMessage: "Yes, save"});
     }
 
+    const stream_name_with_icon_html = render_inline_decorated_stream_name({
+        stream,
+        in_message: true,
+    });
     const stream_wildcard_html = render_stream_wildcard_warning({
         banner_type: compose_banner.WARNING,
         subscriber_count,
-        channel_name: stream_name,
+        channel_name: stream_name_with_icon_html,
         wildcard_mention: opts.stream_wildcard_mention,
         button_text,
         hide_close_button: true,

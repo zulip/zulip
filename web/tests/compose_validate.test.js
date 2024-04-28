@@ -178,6 +178,7 @@ test_ui("validate", ({mock_template}) => {
         deactivated_user_error_rendered = true;
         return "<banner-stub>";
     });
+
     assert.ok(!compose_validate.validate());
     assert.ok(deactivated_user_error_rendered);
 
@@ -385,6 +386,11 @@ test_ui("validate_stream_message", ({override_rewire, mock_template}) => {
         assert.equal(data.subscriber_count, 16);
         return "<banner-stub>";
     });
+    mock_template(
+        "inline_decorated_stream_name.hbs",
+        true,
+        (_args, rendered_html) => rendered_html,
+    );
 
     override_rewire(compose_validate, "wildcard_mention_policy_authorizes_user", () => true);
     compose_state.message_content("Hey @**all**");
@@ -627,9 +633,13 @@ test_ui("warn_if_private_stream_is_linked", ({mock_template}) => {
     let banner_rendered = false;
     mock_template("compose_banner/private_stream_warning.hbs", false, (data) => {
         assert.equal(data.classname, compose_banner.CLASSNAMES.private_stream_warning);
-        assert.equal(data.channel_name, "Denmark");
+        assert.match(data.channel_name, new RegExp("Denmark"));
         banner_rendered = true;
         return "<banner-stub>";
+    });
+    mock_template("inline_decorated_stream_name.hbs", true, (data, html) => {
+        assert.strictEqual(data.in_message, true);
+        return html;
     });
 
     function test_noop_case(invite_only) {

@@ -914,7 +914,6 @@ div.overlay {
 
 .stream-privacy-type-icon {
     position: relative;
-    top: 0.06rem;
     padding-right: 1px;
     width: 12px;
 
@@ -926,6 +925,10 @@ div.overlay {
     &.zulip-icon-lock,
     &.zulip-icon-users {
         font-size: 0.8em;
+    }
+
+    &.zulip-icon-in-message {
+        left: 3px;
     }
 }
 
