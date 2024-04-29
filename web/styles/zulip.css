@@ -1346,22 +1346,6 @@ td.pointer {
     }
 }
 
-.message_row.private-message {
-    background-color: var(--color-background-private-message-content);
-
-    .date_row {
-        background-color: var(--color-background-private-message-content);
-    }
-
-    .data-container::after {
-        background: linear-gradient(
-            0deg,
-            var(--color-background-private-message-content),
-            transparent 100%
-        );
-    }
-}
-
 .selected_message {
     .messagebox-content {
         /* We add an outline and shift it inside the message so that without
