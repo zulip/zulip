@@ -2142,13 +2142,9 @@ select.invite-as {
     margin-bottom: 0;
 }
 
-.sub-unsub-message,
-.date_row {
+.sub-unsub-message {
     padding-bottom: 10px;
-}
-
-.date_row {
-    text-align: right;
+    text-align: center;
 }
 
 .sub-unsub-message span,
@@ -2172,10 +2168,6 @@ select.invite-as {
     .zulip-icon.zulip-icon-lock {
         font-size: 12px;
     }
-}
-
-.sub-unsub-message {
-    text-align: center;
 }
 
 .sub-unsub-message span {
