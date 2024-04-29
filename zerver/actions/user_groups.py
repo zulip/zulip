@@ -8,6 +8,7 @@ from django.utils.translation import gettext as _
 
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.user_groups import (
+    get_group_setting_value_for_api,
     get_role_based_system_groups_dict,
     set_defaults_for_group_settings,
 )
@@ -175,7 +176,7 @@ def do_send_create_user_group_event(
             id=user_group.id,
             is_system_group=user_group.is_system_group,
             direct_subgroup_ids=[direct_subgroup.id for direct_subgroup in direct_subgroups],
-            can_mention_group=user_group.can_mention_group_id,
+            can_mention_group=get_group_setting_value_for_api(user_group.can_mention_group),
         ),
     )
     send_event(user_group.realm, event, active_user_ids(user_group.realm_id))

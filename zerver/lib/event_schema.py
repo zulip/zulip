@@ -1790,6 +1790,18 @@ update_message_flags_remove_event = event_dict_type(
 check_update_message_flags_remove = make_checker(update_message_flags_remove_event)
 
 
+group_setting_type = UnionType(
+    [
+        int,
+        DictType(
+            required_keys=[
+                ("direct_members", ListType(int)),
+                ("direct_subgroups", ListType(int)),
+            ]
+        ),
+    ]
+)
+
 group_type = DictType(
     required_keys=[
         ("id", int),
@@ -1798,7 +1810,7 @@ group_type = DictType(
         ("direct_subgroup_ids", ListType(int)),
         ("description", str),
         ("is_system_group", bool),
-        ("can_mention_group", int),
+        ("can_mention_group", group_setting_type),
     ]
 )
 

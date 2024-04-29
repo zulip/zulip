@@ -216,6 +216,7 @@ from zerver.lib.test_helpers import (
 from zerver.lib.timestamp import convert_to_UTC, datetime_to_timestamp
 from zerver.lib.topic import TOPIC_NAME
 from zerver.lib.types import ProfileDataElementUpdateDict
+from zerver.lib.user_groups import AnonymousSettingGroupDict
 from zerver.models import (
     Attachment,
     CustomProfileField,
@@ -231,6 +232,7 @@ from zerver.models import (
     RealmUserDefault,
     Service,
     Stream,
+    UserGroup,
     UserMessage,
     UserPresence,
     UserProfile,
@@ -1696,6 +1698,34 @@ class NormalActionsTest(BaseAction):
                 self.user_profile.realm, "backend", [othello], "Backend team", acting_user=None
             )
         check_user_group_add("events[0]", events[0])
+        everyone_group = NamedUserGroup.objects.get(
+            name=SystemGroups.EVERYONE, realm=self.user_profile.realm, is_system_group=True
+        )
+        self.assertEqual(events[0]["group"]["can_mention_group"], everyone_group.id)
+
+        moderators_group = NamedUserGroup.objects.get(
+            name=SystemGroups.MODERATORS, realm=self.user_profile.realm, is_system_group=True
+        )
+        user_group = UserGroup.objects.create(realm=self.user_profile.realm)
+        user_group.direct_members.set([othello])
+        user_group.direct_subgroups.set([moderators_group])
+
+        with self.verify_action() as events:
+            check_add_user_group(
+                self.user_profile.realm,
+                "frontend",
+                [othello],
+                "",
+                {"can_mention_group": user_group},
+                acting_user=None,
+            )
+        check_user_group_add("events[0]", events[0])
+        self.assertEqual(
+            events[0]["group"]["can_mention_group"],
+            AnonymousSettingGroupDict(
+                direct_members=[othello.id], direct_subgroups=[moderators_group.id]
+            ),
+        )
 
         # Test name update
         backend = NamedUserGroup.objects.get(name="backend")
@@ -1710,9 +1740,6 @@ class NormalActionsTest(BaseAction):
         check_user_group_update("events[0]", events[0], "description")
 
         # Test can_mention_group setting update
-        moderators_group = NamedUserGroup.objects.get(
-            name="role:moderators", realm=self.user_profile.realm, is_system_group=True
-        )
         with self.verify_action() as events:
             do_change_user_group_permission_setting(
                 backend, "can_mention_group", moderators_group, acting_user=None

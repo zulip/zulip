@@ -241,8 +241,10 @@ def update_or_create_user_group_for_setting(
     direct_members: List[int],
     direct_subgroups: List[int],
     current_setting_value: Optional[UserGroup],
-) -> UserGroup:  # nocoverage
-    if current_setting_value is not None and not hasattr(current_setting_value, "named_user_group"):
+) -> UserGroup:
+    if current_setting_value is not None and not hasattr(
+        current_setting_value, "named_user_group"
+    ):  # nocoverage
         # We do not create a new group if the setting was already set
         # to an anonymous group. The memberships of existing group
         # itself are updated.
@@ -287,16 +289,16 @@ def access_user_group_for_setting(
 
     # The API would not allow passing the setting parameter as a Dict
     # if require_system_group is true for a setting.
-    assert permission_configuration.require_system_group is False  # nocoverage
+    assert permission_configuration.require_system_group is False
 
     user_group = update_or_create_user_group_for_setting(
         user_profile.realm,
         setting_user_group.direct_members,
         setting_user_group.direct_subgroups,
         current_setting_value,
-    )  # nocoverage
+    )
 
-    return user_group  # nocoverage
+    return user_group
 
 
 def check_user_group_name(group_name: str) -> str:

@@ -1,4 +1,4 @@
-from typing import List, Optional, Sequence
+from typing import Dict, List, Optional, Sequence, Union
 
 from django.conf import settings
 from django.db import transaction
@@ -23,7 +23,9 @@ from zerver.lib.exceptions import JsonableError
 from zerver.lib.mention import MentionBackend, silent_mention_syntax_for_user
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
+from zerver.lib.types import Validator
 from zerver.lib.user_groups import (
+    AnonymousSettingGroupDict,
     access_user_group_by_id,
     access_user_group_for_setting,
     check_user_group_name,
@@ -36,10 +38,38 @@ from zerver.lib.user_groups import (
     user_groups_in_realm_serialized,
 )
 from zerver.lib.users import access_user_by_id, user_ids_to_users
-from zerver.lib.validator import check_bool, check_int, check_list
+from zerver.lib.validator import check_bool, check_dict_only, check_int, check_list, check_union
 from zerver.models import NamedUserGroup, UserProfile
 from zerver.models.users import get_system_bot
 from zerver.views.streams import compose_views
+
+
+def parse_group_setting_value(
+    setting_value: Union[int, Dict[str, List[int]]],
+) -> Union[int, AnonymousSettingGroupDict]:
+    if isinstance(setting_value, int):
+        return setting_value
+
+    if len(setting_value["direct_members"]) == 0 and len(setting_value["direct_subgroups"]) == 1:
+        return setting_value["direct_subgroups"][0]
+
+    return AnonymousSettingGroupDict(
+        direct_members=setting_value["direct_members"],
+        direct_subgroups=setting_value["direct_subgroups"],
+    )
+
+
+check_group_setting: Validator[Union[int, Dict[str, List[int]]]] = check_union(
+    [
+        check_int,
+        check_dict_only(
+            [
+                ("direct_members", check_list(check_int)),
+                ("direct_subgroups", check_list(check_int)),
+            ]
+        ),
+    ]
+)
 
 
 @require_user_group_edit_permission
@@ -50,8 +80,8 @@ def add_user_group(
     name: str = REQ(),
     members: Sequence[int] = REQ(json_validator=check_list(check_int), default=[]),
     description: str = REQ(),
-    can_mention_group_id: Optional[int] = REQ(
-        "can_mention_group", json_validator=check_int, default=None
+    can_mention_group: Optional[Union[Dict[str, List[int]], int]] = REQ(
+        json_validator=check_group_setting, default=None
     ),
 ) -> HttpResponse:
     user_profiles = user_ids_to_users(members, user_profile.realm)
@@ -60,15 +90,13 @@ def add_user_group(
     group_settings_map = {}
     request_settings_dict = locals()
     for setting_name, permission_config in NamedUserGroup.GROUP_PERMISSION_SETTINGS.items():
-        setting_group_id_name = permission_config.id_field_name
-
-        if setting_group_id_name not in request_settings_dict:  # nocoverage
+        if setting_name not in request_settings_dict:  # nocoverage
             continue
 
-        if request_settings_dict[setting_group_id_name] is not None:
-            setting_value_group_id = request_settings_dict[setting_group_id_name]
+        if request_settings_dict[setting_name] is not None:
+            setting_value = parse_group_setting_value(request_settings_dict[setting_name])
             setting_value_group = access_user_group_for_setting(
-                setting_value_group_id,
+                setting_value,
                 user_profile,
                 setting_name=setting_name,
                 permission_configuration=permission_config,
