@@ -20,12 +20,12 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 from oauthlib.oauth2 import OAuth2Error
 from requests_oauthlib import OAuth2Session
-from returns.curry import partial
 
 from zerver.actions.video_calls import do_set_zoom_token
 from zerver.decorator import zulip_login_required
 from zerver.lib.exceptions import ErrorCode, JsonableError
 from zerver.lib.outgoing_http import OutgoingSession
+from zerver.lib.partial import partial
 from zerver.lib.pysa import mark_sanitized
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success

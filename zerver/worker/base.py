@@ -12,11 +12,11 @@ import orjson
 import sentry_sdk
 from django.conf import settings
 from django.db import connection
-from returns.curry import partial
 from typing_extensions import override
 
 from zerver.lib.context_managers import lockfile
 from zerver.lib.db_connections import reset_queries
+from zerver.lib.partial import partial
 from zerver.lib.per_request_cache import flush_per_request_caches
 from zerver.lib.pysa import mark_sanitized
 from zerver.lib.queue import SimpleQueueClient
