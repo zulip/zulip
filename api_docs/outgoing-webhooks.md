@@ -150,6 +150,10 @@ Here's how we fill in the fields that a Slack-format webhook expects:
             <td><code>text</code></td>
             <td>The content of the message (in Markdown)</td>
         </tr>
+         <tr>
+            <td><code>command</code></td>
+            <td>The bot mention</td>
+        </tr>
         <tr>
             <td><code>trigger_word</code></td>
             <td>Trigger method</td>
@@ -173,7 +177,8 @@ The above data is posted as list of tuples (not JSON), here's an example:
  ('timestamp', 1532078950),
  ('user_id', 'U21'),
  ('user_name', 'Full Name'),
- ('text', '@**test**'),
+ ('command', '/test'),
+ ('text', 'content'),
  ('trigger_word', 'mention'),
  ('service_id', 27)]
 ```
