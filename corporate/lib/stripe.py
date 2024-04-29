@@ -1278,26 +1278,25 @@ class BillingSession(ABC):
     def attach_discount_to_customer(self, new_discount: Decimal) -> str:
         # Remove flat discount if giving customer a percentage discount.
         customer = self.get_customer()
-        old_discount = None
-        if customer is not None:
-            old_discount = customer.default_discount
-            customer.default_discount = new_discount
-            customer.flat_discounted_months = 0
-            customer.save(update_fields=["default_discount", "flat_discounted_months"])
-        else:
-            customer = self.update_or_create_customer(
-                defaults={"default_discount": new_discount, "flat_discounted_months": 0}
-            )
+
+        # We set required plan tier before setting a discount for the customer, so it's always defined.
+        assert customer is not None
+        assert customer.required_plan_tier is not None
+
+        old_discount = customer.default_discount
+        customer.default_discount = new_discount
+        customer.flat_discounted_months = 0
+        customer.save(update_fields=["default_discount", "flat_discounted_months"])
         plan = get_current_plan_by_customer(customer)
-        if plan is not None:
+        if plan is not None and plan.tier == customer.required_plan_tier:
             self.apply_discount_to_plan(plan, new_discount)
 
-            # If the customer has a next plan, apply discount to that plan as well.
-            # Make this a check on CustomerPlan.SWITCH_PLAN_TIER_AT_PLAN_END status
-            # if we support this for other plans.
-            next_plan = self.get_legacy_remote_server_next_plan(customer)
-            if next_plan is not None:  # nocoverage
-                self.apply_discount_to_plan(next_plan, new_discount)
+        # If the customer has a next plan, apply discount to that plan as well.
+        # Make this a check on CustomerPlan.SWITCH_PLAN_TIER_AT_PLAN_END status
+        # if we support this for other plans.
+        next_plan = self.get_legacy_remote_server_next_plan(customer)
+        if next_plan is not None and next_plan.tier == customer.required_plan_tier:
+            self.apply_discount_to_plan(next_plan, new_discount)
 
         self.write_to_audit_log(
             event_type=AuditLogEventType.DISCOUNT_CHANGED,
@@ -1366,10 +1365,15 @@ class BillingSession(ABC):
             raise SupportRequestError(f"Invalid plan tier for {self.billing_entity_display_name}.")
 
         if customer is not None:
+            if new_plan_tier is None and customer.default_discount:
+                raise SupportRequestError(
+                    f"Discount for {self.billing_entity_display_name} must be 0 before setting required plan tier to None."
+                )
             previous_required_plan_tier = customer.required_plan_tier
             customer.required_plan_tier = new_plan_tier
             customer.save(update_fields=["required_plan_tier"])
         else:
+            assert new_plan_tier is not None
             customer = self.update_or_create_customer(
                 defaults={"required_plan_tier": new_plan_tier}
             )

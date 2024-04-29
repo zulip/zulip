@@ -4531,6 +4531,7 @@ class StripeTest(StripeTestCase):
         billing_session = RealmBillingSession(
             user=self.example_user("iago"), realm=realm, support_session=True
         )
+        billing_session.set_required_plan_tier(CustomerPlan.TIER_CLOUD_STANDARD)
         billing_session.attach_discount_to_customer(Decimal(20))
         rows.append(Row(realm, Realm.PLAN_TYPE_SELF_HOSTED, None, None, 0, False))
 
@@ -6025,6 +6026,16 @@ class TestSupportBillingHelpers(StripeTestCase):
         support_admin = self.example_user("iago")
         user = self.example_user("hamlet")
         billing_session = RealmBillingSession(support_admin, realm=user.realm, support_session=True)
+
+        # Cannot attach discount without a required_plan_tier set.
+        with self.assertRaises(AssertionError):
+            billing_session.attach_discount_to_customer(Decimal(85))
+        billing_session.update_or_create_customer()
+
+        with self.assertRaises(AssertionError):
+            billing_session.attach_discount_to_customer(Decimal(85))
+
+        billing_session.set_required_plan_tier(CustomerPlan.TIER_CLOUD_STANDARD)
         billing_session.attach_discount_to_customer(Decimal(85))
         realm_audit_log = RealmAuditLog.objects.filter(
             event_type=RealmAuditLog.REALM_DISCOUNT_CHANGED
@@ -6055,6 +6066,7 @@ class TestSupportBillingHelpers(StripeTestCase):
         plan.status = CustomerPlan.ENDED
         plan.save(update_fields=["status"])
         billing_session = RealmBillingSession(support_admin, realm=user.realm, support_session=True)
+        billing_session.set_required_plan_tier(CustomerPlan.TIER_CLOUD_STANDARD)
         billing_session.attach_discount_to_customer(Decimal(25))
         with time_machine.travel(self.now, tick=False):
             self.add_card_and_upgrade(
@@ -6122,6 +6134,7 @@ class TestSupportBillingHelpers(StripeTestCase):
         ):
             billing_session.process_support_view_request(support_view_request)
 
+        billing_session.set_required_plan_tier(CustomerPlan.TIER_CLOUD_STANDARD)
         billing_session.attach_discount_to_customer(Decimal(50))
         message = billing_session.process_support_view_request(support_view_request)
         self.assertEqual("Minimum licenses for zulip changed to 25 from 0.", message)
@@ -6197,10 +6210,17 @@ class TestSupportBillingHelpers(StripeTestCase):
         with self.assertRaisesRegex(SupportRequestError, "Invalid plan tier for zulip."):
             billing_session.process_support_view_request(support_view_request)
 
-        # Set plan tier to None and check that discount is applied to all plan tiers
+        # Cannot set required plan tier to None before setting discount to 0.
         support_view_request = SupportViewRequest(
             support_type=SupportType.update_required_plan_tier, required_plan_tier=0
         )
+        with self.assertRaisesRegex(
+            SupportRequestError,
+            "Discount for zulip must be 0 before setting required plan tier to None.",
+        ):
+            billing_session.process_support_view_request(support_view_request)
+
+        billing_session.attach_discount_to_customer(Decimal(0))
         message = billing_session.process_support_view_request(support_view_request)
         self.assertEqual("Required plan tier for zulip set to None.", message)
         customer.refresh_from_db()
