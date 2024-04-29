@@ -46,7 +46,11 @@ async function create_stream_message_draft(page: Page): Promise<void> {
 async function test_restore_stream_message_draft_by_opening_compose_box(page: Page): Promise<void> {
     await page.click(".search_icon");
     await page.waitForSelector("#search_query", {visible: true});
-    await common.select_item_via_typeahead(page, "#search_query", "stream:Denmark topic:tests", "");
+    await common.clear_and_type(page, "#search_query", "stream:Denmark topic:tests");
+    // Wait for narrow to complete.
+    const wait_for_change = true;
+    await common.get_current_msg_list_id(page, wait_for_change);
+    await page.keyboard.press("Enter");
 
     await page.click("#left_bar_compose_reply_button_big");
     await page.waitForSelector("#send_message_form", {visible: true});
