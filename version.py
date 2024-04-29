@@ -48,4 +48,4 @@ API_FEATURE_LEVEL = 255
 #   historical commits sharing the same major version, in which case a
 #   minor version bump suffices.
 
-PROVISION_VERSION = (269, 2)  # last bumped 2024-04-25 for Transifex CLI upgrade
+PROVISION_VERSION = (269, 3)  # last bumped 2024-04-29 for adding pyasyncore
