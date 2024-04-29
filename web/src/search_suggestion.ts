@@ -345,13 +345,11 @@ function get_person_suggestions(
     return objs;
 }
 
-function get_default_suggestion(terms: NarrowTerm[]): Suggestion {
-    // Here we return the canonical suggestion for the query that the
-    // user typed. (The caller passes us the parsed query as "terms".)
+function get_default_suggestion_line(terms: NarrowTerm[]): SuggestionLine {
     if (terms.length === 0) {
-        return {description_html: "", search_string: ""};
+        return [{description_html: "", search_string: ""}];
     }
-    return format_as_suggestion(terms);
+    return terms.map((term) => format_as_suggestion([term]));
 }
 
 export function get_topic_suggestions_from_candidates({
@@ -729,46 +727,83 @@ function get_operator_suggestions(last: NarrowTerm): Suggestion[] {
     });
 }
 
-class Attacher {
-    result: Suggestion[] = [];
-    prev = new Set<string>();
-    base: Suggestion;
+// One full search suggestion can include multiple search terms, based on what's
+// in the search bar.
+type SuggestionLine = Suggestion[];
+function suggestion_search_string(suggestion_line: SuggestionLine): string {
+    const search_strings = [];
+    for (const suggestion of suggestion_line) {
+        if (suggestion.search_string !== "") {
+            search_strings.push(suggestion.search_string);
+        }
+    }
+    return search_strings.join(" ");
+}
 
-    constructor(base: Suggestion) {
+class Attacher {
+    result: SuggestionLine[] = [];
+    prev = new Set<string>();
+    base: SuggestionLine;
+
+    constructor(base: SuggestionLine) {
         this.base = base;
     }
 
-    prepend_base(suggestion: Suggestion): void {
-        if (this.base && this.base.description_html.length > 0) {
-            suggestion.search_string = this.base.search_string + " " + suggestion.search_string;
-            suggestion.description_html =
-                this.base.description_html + ", " + suggestion.description_html;
+    push(suggestion_line: SuggestionLine): void {
+        const search_string = suggestion_search_string(suggestion_line);
+        if (!this.prev.has(search_string)) {
+            this.prev.add(search_string);
+            this.result.push(suggestion_line);
         }
     }
 
-    push(suggestion: Suggestion): void {
-        if (!this.prev.has(suggestion.search_string)) {
-            this.prev.add(suggestion.search_string);
-            this.result.push(suggestion);
-        }
-    }
-
-    push_many(suggestions: Suggestion[]): void {
-        for (const suggestion of suggestions) {
-            this.push(suggestion);
+    push_many(suggestion_lines: SuggestionLine[]): void {
+        for (const line of suggestion_lines) {
+            this.push(line);
         }
     }
 
     attach_many(suggestions: Suggestion[]): void {
         for (const suggestion of suggestions) {
-            this.prepend_base(suggestion);
-            this.push(suggestion);
+            const suggestion_line = [...this.base, suggestion];
+            this.push(suggestion_line);
         }
+    }
+
+    get_result(): Suggestion[] {
+        return this.result.map((suggestion_line) => {
+            const description_htmls = [];
+            const search_strings = [];
+            for (const suggestion of suggestion_line) {
+                if (suggestion.description_html !== "") {
+                    description_htmls.push(suggestion.description_html);
+                }
+
+                if (suggestion.search_string !== "") {
+                    search_strings.push(suggestion.search_string);
+                }
+            }
+            const last_suggestion = suggestion_line.at(-1);
+            if (last_suggestion?.is_person) {
+                const user_pill_context = last_suggestion.user_pill_context;
+                assert(user_pill_context !== undefined);
+                return {
+                    description_html: description_htmls.join(", "),
+                    search_string: search_strings.join(" "),
+                    is_person: true,
+                    user_pill_context,
+                };
+            }
+            return {
+                description_html: description_htmls.join(", "),
+                search_string: search_strings.join(" "),
+            };
+        });
     }
 }
 
 export function get_search_result(query: string): Suggestion[] {
-    let suggestion: Suggestion;
+    let suggestion_line: SuggestionLine;
 
     // search_terms correspond to the terms for the query in the input.
     // This includes the entire query entered in the searchbox.
@@ -805,7 +840,7 @@ export function get_search_result(query: string): Suggestion[] {
         }
     }
 
-    const base = get_default_suggestion(search_terms.slice(0, -1));
+    const base = get_default_suggestion_line(search_terms.slice(0, -1));
     const attacher = new Attacher(base);
 
     // Display the default first
@@ -813,17 +848,18 @@ export function get_search_result(query: string): Suggestion[] {
     // is not displayed in that case. e.g. `messages that contain abc` as
     // a suggestion for `has:abc` does not make sense.
     if (last.operator === "search") {
-        suggestion = {
-            search_string: last.operand,
-            description_html: `search for <strong>${Handlebars.Utils.escapeExpression(
-                last.operand,
-            )}</strong>`,
-        };
-        attacher.prepend_base(suggestion);
-        attacher.push(suggestion);
+        suggestion_line = [
+            {
+                search_string: last.operand,
+                description_html: `search for <strong>${Handlebars.Utils.escapeExpression(
+                    last.operand,
+                )}</strong>`,
+            },
+        ];
+        attacher.push([...attacher.base, ...suggestion_line]);
     } else if (last.operator !== "" && last.operator !== "has" && last.operator !== "is") {
-        suggestion = get_default_suggestion(search_terms);
-        attacher.push(suggestion);
+        suggestion_line = get_default_suggestion_line(search_terms);
+        attacher.push(suggestion_line);
     }
 
     // only make one people_getter to avoid duplicate work
@@ -876,10 +912,10 @@ export function get_search_result(query: string): Suggestion[] {
 
     if (attacher.result.length < max_items) {
         const subset_suggestions = get_term_subset_suggestions(search_terms);
-        attacher.push_many(subset_suggestions);
+        const subset_suggestion_lines = subset_suggestions.map((suggestion) => [suggestion]);
+        attacher.push_many(subset_suggestion_lines);
     }
-
-    return attacher.result.slice(0, max_items);
+    return attacher.get_result().slice(0, max_items);
 }
 
 export function get_suggestions(query: string): {
