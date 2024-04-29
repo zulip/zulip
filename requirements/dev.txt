@@ -2142,6 +2142,10 @@ pyasn1-modules==0.4.0 \
     # via
     #   python-ldap
     #   service-identity
+pyasyncore==1.0.4 \
+    --hash=sha256:2c7a8b9b750ba6260f1e5a061456d61320a80579c6a43d42183417da89c7d5d6 \
+    --hash=sha256:9e5f6dc9dc057c56370b7a5cdb4c4670fd4b0556de2913ed1f428cd6a5366895
+    # via -r requirements/dev.in
 pycparser==2.22 \
     --hash=sha256:491c8be9c040f5390f5bf44a5b07752bd07f56edf992381b05c701439eec10f6 \
     --hash=sha256:c3702b6d3dd8c7abc1afa565d7e63d53a1d0bd86cdc24edd75470f4de499cfcc
