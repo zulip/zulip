@@ -707,7 +707,7 @@ of the base style defined for a read-only textarea in dark mode. */
 .date_row {
     grid-area: date_row;
 
-    & span {
+    & .timerender-content {
         display: block;
         overflow: hidden;
         text-transform: uppercase;
