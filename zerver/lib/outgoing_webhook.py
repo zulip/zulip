@@ -1,6 +1,7 @@
 import abc
 import json
 import logging
+import re
 from contextlib import suppress
 from time import perf_counter
 from typing import Any, AnyStr, Dict, Optional
@@ -125,6 +126,21 @@ class SlackOutgoingWebhookService(OutgoingWebhookServiceInterface):
         # text=googlebot: What is the air-speed velocity of an unladen swallow?
         # trigger_word=googlebot:
 
+        # https://api.slack.com/interactivity/slash-commands
+        # documents the format of Slack slash commands format
+        # For better compatibility, if message starts with a bot mention:
+        #
+        # we separate the message into command and text fields
+        # transform the mention (@**mybot**) to a slash command (/mybot)
+
+        slash_command = ""
+        command_re = r"(@\*\*[\w]+\*\*)"
+        text = event["command"]
+        message_parts = re.split(command_re, text)
+        if re.fullmatch(command_re, message_parts[1]):
+            slash_command = message_parts[1]
+            text = message_parts[2].strip()
+
         request_data = [
             ("token", self.token),
             ("team_id", f"T{realm.id}"),
@@ -135,7 +151,8 @@ class SlackOutgoingWebhookService(OutgoingWebhookServiceInterface):
             ("timestamp", event["message"]["timestamp"]),
             ("user_id", f"U{event['message']['sender_id']}"),
             ("user_name", event["message"]["sender_full_name"]),
-            ("text", event["command"]),
+            ("command", slash_command),
+            ("text", text),
             ("trigger_word", event["trigger"]),
             ("service_id", event["user_profile_id"]),
         ]
