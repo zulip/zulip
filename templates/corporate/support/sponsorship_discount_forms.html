@@ -4,7 +4,7 @@
     {{ csrf_input }}
     <input type="hidden" name="{{ remote_type }}" value="{{ remote_id }}" />
     <select name="required_plan_tier">
-        {% for plan_tier in REMOTE_PLAN_TIERS %}
+        {% for plan_tier in PLAN_TYPES %}
             {% if sponsorship_data.required_plan_tier == plan_tier.value %}
                 <option value="{{ plan_tier.value }}" selected>{{ plan_tier.name }}</option>
             {% else %}

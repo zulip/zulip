@@ -296,6 +296,21 @@ def get_realm_plan_type_options() -> List[SupportSelectOption]:
     return plan_types
 
 
+def get_realm_plan_type_options_for_discount() -> List[SupportSelectOption]:
+    plan_types = [
+        SupportSelectOption("None", 0),
+        SupportSelectOption(
+            CustomerPlan.name_from_tier(CustomerPlan.TIER_CLOUD_STANDARD),
+            CustomerPlan.TIER_CLOUD_STANDARD,
+        ),
+        SupportSelectOption(
+            CustomerPlan.name_from_tier(CustomerPlan.TIER_CLOUD_PLUS),
+            CustomerPlan.TIER_CLOUD_PLUS,
+        ),
+    ]
+    return plan_types
+
+
 VALID_MODIFY_PLAN_METHODS = [
     "downgrade_at_billing_cycle_end",
     "downgrade_now_without_additional_licenses",
@@ -321,6 +336,8 @@ def support(
     realm_id: Optional[int] = REQ(default=None, converter=to_non_negative_int),
     plan_type: Optional[int] = REQ(default=None, converter=to_non_negative_int),
     discount: Optional[Decimal] = REQ(default=None, converter=to_decimal),
+    minimum_licenses: Optional[int] = REQ(default=None, converter=to_non_negative_int),
+    required_plan_tier: Optional[int] = REQ(default=None, converter=to_non_negative_int),
     new_subdomain: Optional[str] = REQ(default=None),
     status: Optional[str] = REQ(default=None, str_validator=check_string_in(VALID_STATUS_VALUES)),
     billing_modality: Optional[str] = REQ(
@@ -369,6 +386,16 @@ def support(
             support_view_request = SupportViewRequest(
                 support_type=SupportType.attach_discount,
                 discount=discount,
+            )
+        elif minimum_licenses is not None:
+            support_view_request = SupportViewRequest(
+                support_type=SupportType.update_minimum_licenses,
+                minimum_licenses=minimum_licenses,
+            )
+        elif required_plan_tier is not None:
+            support_view_request = SupportViewRequest(
+                support_type=SupportType.update_required_plan_tier,
+                required_plan_tier=required_plan_tier,
             )
         elif billing_modality is not None:
             support_view_request = SupportViewRequest(
@@ -537,6 +564,7 @@ def support(
     context["realm_icon_url"] = realm_icon_url
     context["Confirmation"] = Confirmation
     context["REALM_PLAN_TYPES"] = get_realm_plan_type_options()
+    context["REALM_PLAN_TYPES_FOR_DISCOUNT"] = get_realm_plan_type_options_for_discount()
     context["ORGANIZATION_TYPES"] = sorted(
         Realm.ORG_TYPES.values(), key=lambda d: d["display_order"]
     )
