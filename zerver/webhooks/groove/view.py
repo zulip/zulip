@@ -70,7 +70,7 @@ def ticket_assigned_body(payload: WildValue) -> Optional[str]:
         return None
 
 
-def replied_body(payload: WildValue, actor: str, action: str) -> str:
+def replied_body(actor: str, action: str, payload: WildValue) -> str:
     actor_url = "http://api.groovehq.com/v1/{}/".format(actor + "s")
     actor = payload["links"]["author"]["href"].tame(check_url).split(actor_url)[1]
     number = (
@@ -93,9 +93,9 @@ def replied_body(payload: WildValue, actor: str, action: str) -> str:
 EVENTS_FUNCTION_MAPPER: Dict[str, Callable[[WildValue], Optional[str]]] = {
     "ticket_started": ticket_started_body,
     "ticket_assigned": ticket_assigned_body,
-    "agent_replied": partial(replied_body, actor="agent", action="replied to"),
-    "customer_replied": partial(replied_body, actor="customer", action="replied to"),
-    "note_added": partial(replied_body, actor="agent", action="left a note on"),
+    "agent_replied": partial(replied_body, "agent", "replied to"),
+    "customer_replied": partial(replied_body, "customer", "replied to"),
+    "note_added": partial(replied_body, "agent", "left a note on"),
 }
 
 ALL_EVENT_TYPES = list(EVENTS_FUNCTION_MAPPER.keys())
