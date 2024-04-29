@@ -1,5 +1,7 @@
 {% extends "zerver/portico_signup.html" %}
 
+{% set PAGE_TITLE = "Request a demo | Zulip" %}
+
 {% block portico_content %}
 <div class="register-account flex full-page">
     <div class="center-block new-style">
@@ -12,24 +14,24 @@
 
             <fieldset class="support-request">
                 <div class="input-box support-form-field">
-                    <label for="full_name" class="inline-block label-title">Full name</label>
-                    <input class="required" type="text" name="full_name" maxlength="{{ MAX_INPUT_LENGTH }}" required />
+                    <label for="request_demo_form_full_name" class="inline-block label-title">Full name</label>
+                    <input id="request_demo_form_full_name" class="required" type="text" name="full_name" maxlength="{{ MAX_INPUT_LENGTH }}" required />
                 </div>
                 <div class="input-box support-form-field">
-                    <label for="email" class="inline-block label-title">Email</label>
-                    <input class="required" type="email" name="email" required />
+                    <label for="request_demo_form_email" class="inline-block label-title">Email</label>
+                    <input id="request_demo_form_email" class="required" type="email" name="email" required />
                 </div>
                 <div class="input-box support-form-field">
-                    <label for="role" class="inline-block label-title">Your role</label>
-                    <input class="required" type="text" name="role" maxlength="{{ MAX_INPUT_LENGTH }}" required />
+                    <label for="request_demo_form_role" class="inline-block label-title">Your role</label>
+                    <input id="request_demo_form_role" class="required" type="text" name="role" maxlength="{{ MAX_INPUT_LENGTH }}" required />
                 </div>
                 <div class="input-box support-form-field">
-                    <label for="organization_name" class="inline-block label-title">Organization name</label>
-                    <input class="required" type="text" name="organization_name" maxlength="{{ MAX_INPUT_LENGTH }}" required />
+                    <label for="request_demo_form_organization_name" class="inline-block label-title">Organization name</label>
+                    <input id="request_demo_form_organization_name" class="required" type="text" name="organization_name" maxlength="{{ MAX_INPUT_LENGTH }}" required />
                 </div>
                 <div class="input-box support-form-field">
-                    <label for="organization_type" class="inline-block label-title">Organization type</label>
-                    <select name="organization_type" class="required">
+                    <label for="request_demo_form_organization_type" class="inline-block label-title">Organization type</label>
+                    <select id="request_demo_form_organization_type" name="organization_type" class="required">
                         {% for org_type in SORTED_ORG_TYPE_NAMES %}
                             <option
                               value="{{ org_type }}">
@@ -39,16 +41,16 @@
                     </select>
                 </div>
                 <div class="input-box support-form-field">
-                    <label for="organization_website" class="inline-block label-title">Organization website</label>
-                    <input class="required" type="url" name="organization_website" required />
+                    <label for="request_demo_form_organization_website" class="inline-block label-title">Organization website</label>
+                    <input id="request_demo_form_organization_website" class="required" type="url" name="organization_website" required />
                 </div>
                 <div class="input-box support-form-field">
-                    <label for="expected_user_count" class="inline-block label-title">Expected number of users (approximate range)</label>
-                    <input class="required" type="text" name="expected_user_count" maxlength="{{ MAX_INPUT_LENGTH }}" required />
+                    <label for="request_demo_form_expected_user_count" class="inline-block label-title">Expected number of users (approximate range)</label>
+                    <input id="request_demo_form_expected_user_count" class="required" type="text" name="expected_user_count" maxlength="{{ MAX_INPUT_LENGTH }}" required />
                 </div>
                 <div class="input-box support-form-field">
-                    <label for="message" class="inline-block label-title">How can we help?</label>
-                    <textarea name="message" cols="100" rows="5" required></textarea>
+                    <label for="request_demo_form_message" class="inline-block label-title">How can we help?</label>
+                    <textarea id="request_demo_form_message" name="message" cols="100" rows="5" required></textarea>
                 </div>
 
                 <div class="register-button-box">
