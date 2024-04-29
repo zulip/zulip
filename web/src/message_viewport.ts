@@ -77,6 +77,7 @@ export function message_viewport_info(): MessageViewportInfo {
 // the server are not considered.
 export function at_rendered_bottom(): boolean {
     const bottom = scrollTop() + height();
+    // This also includes bottom whitespace.
     const full_height = $scroll_container[0].scrollHeight;
 
     // We only know within a pixel or two if we're
