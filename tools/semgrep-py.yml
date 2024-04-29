@@ -274,7 +274,7 @@ rules:
 
   - id: functools-partial
     pattern: functools.partial
-    message: "Replace functools.partial with returns.curry.partial for type safety"
+    message: "Replace functools.partial with zerver.lib.partial.partial for type safety"
     languages: [python]
     severity: ERROR
 

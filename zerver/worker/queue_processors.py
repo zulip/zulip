@@ -42,7 +42,6 @@ from django.db.utils import IntegrityError
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
 from django.utils.translation import override as override_language
-from returns.curry import partial
 from sentry_sdk import add_breadcrumb, configure_scope
 from typing_extensions import override
 from zulip_bots.lib import extract_query_without_mention
@@ -69,6 +68,7 @@ from zerver.lib.email_notifications import MissedMessageData, handle_missedmessa
 from zerver.lib.exceptions import RateLimitedError
 from zerver.lib.export import export_realm_wrapper
 from zerver.lib.outgoing_webhook import do_rest_call, get_outgoing_webhook_service_handler
+from zerver.lib.partial import partial
 from zerver.lib.per_request_cache import flush_per_request_caches
 from zerver.lib.push_notifications import (
     clear_push_device_tokens,

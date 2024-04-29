@@ -13,7 +13,6 @@ from django.db import ProgrammingError, connections
 from django.test import runner as django_runner
 from django.test.runner import DiscoverRunner
 from django.test.signals import template_rendered
-from returns.curry import partial
 from typing_extensions import TypeAlias, override
 
 from scripts.lib.zulip_tools import (
@@ -22,6 +21,7 @@ from scripts.lib.zulip_tools import (
     get_or_create_dev_uuid_var_path,
 )
 from zerver.lib import test_helpers
+from zerver.lib.partial import partial
 from zerver.lib.sqlalchemy_utils import get_sqlalchemy_connection
 from zerver.lib.test_fixtures import BACKEND_DATABASE_TEMPLATE
 from zerver.lib.test_helpers import append_instrumentation_data, write_instrumentation_reports
