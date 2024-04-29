@@ -7,6 +7,7 @@ from django.utils.translation import gettext as _
 
 from zerver.lib.default_streams import get_default_stream_ids_for_realm
 from zerver.lib.exceptions import (
+    IncompatibleParametersError,
     JsonableError,
     OrganizationAdministratorRequiredError,
     OrganizationOwnerRequiredError,
@@ -326,7 +327,7 @@ def check_for_exactly_one_stream_arg(stream_id: Optional[int], stream: Optional[
         raise JsonableError(error)
 
     if stream_id is not None and stream is not None:
-        raise JsonableError(_("Please supply only one channel parameter: name or ID."))
+        raise IncompatibleParametersError(["stream_id", "stream"])
 
 
 def check_stream_access_for_delete_or_update(

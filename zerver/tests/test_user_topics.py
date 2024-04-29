@@ -198,7 +198,7 @@ class MutedTopicsTestsDeprecated(ZulipTestCase):
 
         data = {"stream": stream.name, "stream_id": stream.id, "topic": "Verona3", "op": "add"}
         result = self.api_patch(user, url, data)
-        self.assert_json_error(result, "Please supply only one channel parameter: name or ID.")
+        self.assert_json_error(result, "Unsupported parameter combination: stream_id, stream")
 
         data = {"stream_id": stream.id, "topic": "a" * (MAX_TOPIC_NAME_LENGTH + 1), "op": "add"}
         result = self.api_patch(user, url, data)
@@ -238,7 +238,7 @@ class MutedTopicsTestsDeprecated(ZulipTestCase):
 
         data = {"stream": stream.name, "stream_id": stream.id, "topic": "Verona3", "op": "remove"}
         result = self.api_patch(user, url, data)
-        self.assert_json_error(result, "Please supply only one channel parameter: name or ID.")
+        self.assert_json_error(result, "Unsupported parameter combination: stream_id, stream")
 
         data = {"stream_id": stream.id, "topic": "a" * (MAX_TOPIC_NAME_LENGTH + 1), "op": "remove"}
         result = self.api_patch(user, url, data)
