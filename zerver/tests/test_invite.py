@@ -13,7 +13,6 @@ from django.http import HttpRequest
 from django.test import override_settings
 from django.urls import reverse
 from django.utils.timezone import now as timezone_now
-from returns.curry import partial
 from typing_extensions import override
 
 from confirmation import settings as confirmation_settings
@@ -1113,10 +1112,8 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
 
         # We only created accounts for the new users.
         for email in existing:
-            self.assertRaises(
-                PreregistrationUser.DoesNotExist,
-                partial(PreregistrationUser.objects.get, email=email),
-            )
+            with self.assertRaises(PreregistrationUser.DoesNotExist):
+                PreregistrationUser.objects.get(email=email)
         for email in new:
             self.assertTrue(PreregistrationUser.objects.get(email=email))
 
