@@ -20,7 +20,10 @@
 </form>
 {% endif %}
 
-{% include 'corporate/support/sponsorship_discount_forms.html' %}
+{% with %}
+    {% set PLAN_TYPES = REMOTE_PLAN_TIERS %}
+    {% include 'corporate/support/sponsorship_discount_forms.html' %}
+{% endwith %}
 
 {% if sponsorship_data.sponsorship_pending %}
     {% with %}
