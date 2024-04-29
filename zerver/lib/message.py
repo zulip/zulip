@@ -23,7 +23,6 @@ from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
 from django_stubs_ext import ValuesQuerySet
 from psycopg2.sql import SQL
-from returns.curry import partial
 
 from analytics.lib.counts import COUNT_STATS
 from analytics.models import RealmCount
@@ -33,6 +32,7 @@ from zerver.lib.exceptions import JsonableError, MissingAuthenticationError
 from zerver.lib.markdown import MessageRenderingResult
 from zerver.lib.mention import MentionData
 from zerver.lib.message_cache import MessageDict, extract_message_dict, stringify_message_dict
+from zerver.lib.partial import partial
 from zerver.lib.request import RequestVariableConversionError
 from zerver.lib.stream_subscription import (
     get_stream_subscriptions_for_user,
