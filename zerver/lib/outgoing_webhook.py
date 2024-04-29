@@ -138,7 +138,7 @@ class SlackOutgoingWebhookService(OutgoingWebhookServiceInterface):
         text = event["command"]
         message_parts = re.split(command_re, text)
         if re.fullmatch(command_re, message_parts[1]):
-            slash_command = message_parts[1]
+            slash_command = "/" + message_parts[1][3:-2]
             text = message_parts[2].strip()
 
         request_data = [

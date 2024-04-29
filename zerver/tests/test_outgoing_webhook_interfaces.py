@@ -222,7 +222,7 @@ class TestSlackOutgoingWebhookService(ZulipTestCase):
         self.assertEqual(request_data[6][1], 123456)  # timestamp
         self.assertEqual(request_data[7][1], "U21")  # user_id
         self.assertEqual(request_data[8][1], "Sample User")  # user_name
-        self.assertEqual(request_data[9][1], "@**test**")  # command
+        self.assertEqual(request_data[9][1], "/test")  # command
         self.assertEqual(request_data[10][1], "content")  # text
         self.assertEqual(request_data[11][1], "mention")  # trigger_word
         self.assertEqual(request_data[12][1], 12)  # user_profile_id
