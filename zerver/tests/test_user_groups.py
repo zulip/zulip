@@ -434,6 +434,47 @@ class UserGroupAPITestCase(UserGroupTestCase):
         marketing_group = NamedUserGroup.objects.get(name="marketing", realm=hamlet.realm)
         self.assertEqual(marketing_group.can_mention_group, nobody_group.usergroup_ptr)
 
+        othello = self.example_user("othello")
+        params = {
+            "name": "backend",
+            "members": orjson.dumps([hamlet.id]).decode(),
+            "description": "Backend team",
+            "can_mention_group": orjson.dumps(
+                {
+                    "direct_members": [othello.id],
+                    "direct_subgroups": [leadership_group.id, moderators_group.id],
+                }
+            ).decode(),
+        }
+        result = self.client_post("/json/user_groups/create", info=params)
+        self.assert_json_success(result)
+        backend_group = NamedUserGroup.objects.get(name="backend", realm=hamlet.realm)
+        self.assertCountEqual(
+            list(backend_group.can_mention_group.direct_members.all()),
+            [othello],
+        )
+        self.assertCountEqual(
+            list(backend_group.can_mention_group.direct_subgroups.all()),
+            [leadership_group, moderators_group],
+        )
+
+        params = {
+            "name": "help",
+            "members": orjson.dumps([hamlet.id]).decode(),
+            "description": "Troubleshooting team",
+            "can_mention_group": orjson.dumps(
+                {
+                    "direct_members": [],
+                    "direct_subgroups": [moderators_group.id],
+                }
+            ).decode(),
+        }
+        result = self.client_post("/json/user_groups/create", info=params)
+        self.assert_json_success(result)
+        help_group = NamedUserGroup.objects.get(name="help", realm=hamlet.realm)
+        # We do not create a new UserGroup object in such case.
+        self.assertEqual(help_group.can_mention_group_id, moderators_group.id)
+
         internet_group = NamedUserGroup.objects.get(
             name="role:internet", realm=hamlet.realm, is_system_group=True
         )
@@ -470,6 +511,34 @@ class UserGroupAPITestCase(UserGroupTestCase):
         }
         result = self.client_post("/json/user_groups/create", info=params)
         self.assert_json_error(result, "Invalid user group")
+
+        params = {
+            "name": "frontend",
+            "members": orjson.dumps([hamlet.id]).decode(),
+            "description": "Frontend team",
+            "can_mention_group": orjson.dumps(
+                {
+                    "direct_members": [1111],
+                    "direct_subgroups": [leadership_group.id, moderators_group.id],
+                }
+            ).decode(),
+        }
+        result = self.client_post("/json/user_groups/create", info=params)
+        self.assert_json_error(result, "Invalid user ID: 1111")
+
+        params = {
+            "name": "frontend",
+            "members": orjson.dumps([hamlet.id]).decode(),
+            "description": "Frontend team",
+            "can_mention_group": orjson.dumps(
+                {
+                    "direct_members": [othello.id],
+                    "direct_subgroups": [1111, moderators_group.id],
+                }
+            ).decode(),
+        }
+        result = self.client_post("/json/user_groups/create", info=params)
+        self.assert_json_error(result, "Invalid user group ID: 1111")
 
     def test_user_group_get(self) -> None:
         # Test success

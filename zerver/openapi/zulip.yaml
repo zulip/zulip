@@ -18389,19 +18389,24 @@ paths:
                     type: integer
                   example: [1, 2, 3, 4]
                 can_mention_group:
-                  description: |
-                    ID of the user group whose members are allowed to mention the new
-                    user group.
+                  allOf:
+                    - description: |
+                        Either the ID of a named user group that has permission to
+                        mention the group, or an object describing the set of users
+                        and groups who have permission mention the new group.
 
-                    This setting cannot be set to `"role:internet"` and `"role:owners"`
-                    system groups.
+                        This setting cannot be set to `"role:internet"` and
+                        `"role:owners"` system groups.
 
-                    **Changes**: Before Zulip 8.0 (feature level 198),
-                    the `can_mention_group` setting was named `can_mention_group_id`.
+                        **Changes**: Before Zulip 9.0 (feature level 258), the
+                        `can_mention_group` setting could only be set to an integer.
 
-                    New in Zulip 8.0 (feature level 191). Previously, groups
-                    could be mentioned if and only if they were not system groups.
-                  type: integer
+                        **Changes**: Before Zulip 8.0 (feature level 198),
+                        the `can_mention_group` setting was named `can_mention_group_id`.
+
+                        New in Zulip 8.0 (feature level 191). Previously, groups
+                        could be mentioned if and only if they were not system groups.
+                    - $ref: "#/components/schemas/CanMentionGroup"
                   example: 11
               required:
                 - name
