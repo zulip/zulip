@@ -48,7 +48,6 @@ local_partial_types = true
 plugins = [
     "mypy_django_plugin.main",
     "pydantic.mypy",
-    "returns.contrib.mypy.returns_plugin",
 ]
 
 [[tool.mypy.overrides]]

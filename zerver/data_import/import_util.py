@@ -24,11 +24,11 @@ import orjson
 import requests
 from django.forms.models import model_to_dict
 from django.utils.timezone import now as timezone_now
-from returns.curry import partial
 from typing_extensions import TypeAlias
 
 from zerver.data_import.sequencer import NEXT_ID
 from zerver.lib.avatar_hash import user_avatar_path_from_ids
+from zerver.lib.partial import partial
 from zerver.lib.stream_color import STREAM_ASSIGNMENT_COLORS as STREAM_COLORS
 from zerver.models import (
     Attachment,
