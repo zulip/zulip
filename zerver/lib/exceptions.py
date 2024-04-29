@@ -190,6 +190,18 @@ class StreamWithIDDoesNotExistError(JsonableError):
         return _("Channel with ID '{stream_id}' does not exist")
 
 
+class IncompatibleParametersError(JsonableError):
+    data_fields = ["parameters"]
+
+    def __init__(self, parameters: List[str]) -> None:
+        self.parameters = ", ".join(parameters)
+
+    @staticmethod
+    @override
+    def msg_format() -> str:
+        return _("Unsupported parameter combination: {parameters}")
+
+
 class CannotDeactivateLastUserError(JsonableError):
     code = ErrorCode.CANNOT_DEACTIVATE_LAST_USER
     data_fields = ["is_last_owner", "entity"]

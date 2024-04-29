@@ -18862,6 +18862,7 @@ paths:
                 oneOf:
                   - $ref: "#/components/schemas/InvalidApiKeyError"
                   - $ref: "#/components/schemas/MissingArgumentError"
+                  - $ref: "#/components/schemas/IncompatibleParametersError"
                   - $ref: "#/components/schemas/UserNotAuthorizedError"
         "401":
           description: |
@@ -21394,6 +21395,31 @@ components:
               "msg": "Missing 'content' argument",
               "result": "error",
               "var_name": "content",
+            }
+    IncompatibleParametersError:
+      allOf:
+        - $ref: "#/components/schemas/CodedErrorBase"
+        - additionalProperties: false
+          description: |
+            ## Incompatible request parameters
+
+            A typical failed JSON response for when two or more, optional
+            parameters are supplied that are incompatible with each other.
+          properties:
+            result: {}
+            msg: {}
+            code: {}
+            parameters:
+              type: string
+              description: |
+                A string containing the parameters, separated by commas,
+                that are incompatible.
+          example:
+            {
+              "code": "BAD_REQUEST",
+              "msg": "Unsupported parameter combination: object_id, object_name",
+              "result": "error",
+              "parameters": "object_id, object_name",
             }
     UserNotAuthorizedError:
       allOf:
