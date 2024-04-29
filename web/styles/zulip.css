@@ -1360,11 +1360,14 @@ div.focused-message-list {
     font-size: 0;
 }
 
-.typeahead.dropdown-menu a {
-    color: inherit;
-}
-
 .typeahead.dropdown-menu {
+    /* Use default color until some other typeahead overrides it. */
+    color: var(--color-text-default);
+
+    a {
+        color: inherit;
+    }
+
     .active {
         color: hsl(0deg 0% 100%);
 

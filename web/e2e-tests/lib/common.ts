@@ -34,14 +34,12 @@ export const pm_recipient = {
         // a flake where the typeahead doesn't show up.
         await page.type("#private_message_recipient", recipient, {delay: 100});
 
-        // We use [style*="display: block"] here to distinguish
-        // the visible typeahead menu from the invisible ones
-        // meant for something else; e.g., the direct message
-        // input typeahead is different from the topic input
-        // typeahead but both can be present in the DOM.
-        const entry = await page.waitForSelector('.typeahead[style*="display: block"] .active a', {
+        // PM typeaheads always have an image. This ensures we are waiting for the right typeahead to appear.
+        const entry = await page.waitForSelector(".typeahead .active a .typeahead-image", {
             visible: false,
         });
+        // log entry in puppeteer logs
+        console.log(await entry!.evaluate((el) => el.textContent));
         await entry!.click();
     },
 
@@ -584,9 +582,7 @@ export async function select_item_via_typeahead(
     console.log(`Looking in ${field_selector} to select ${str}, ${item}`);
     await clear_and_type(page, field_selector, str);
     const entry = await page.waitForSelector(
-        `xpath///*[${has_class_x(
-            "typeahead",
-        )} and contains(@style, "display: block")]//li[contains(normalize-space(), "${item}")]//a`,
+        `xpath///*[${has_class_x("typeahead")}]//li[contains(normalize-space(), "${item}")]//a`,
         {visible: true},
     );
     assert.ok(entry);
