@@ -82,9 +82,7 @@ rules:
         - pgroonga/migrations/0002_html_escape_subject.py
 
   - id: use-addindexconcurrently
-    pattern-either:
-      - pattern: AddIndex(...)
-      - pattern: migrations.AddIndex(...)
+    pattern: django.db.migrations.AddIndex(...)
     message: "Import and use AddIndexConcurrently from django.contrib.postgres.operations rather than AddIndex"
     languages: [python]
     severity: ERROR
@@ -115,9 +113,7 @@ rules:
         - zilencer/migrations/0059_remoterealmauditlog_add_synced_billing_event_type_index.py
 
   - id: use-removeindexconcurrently
-    pattern-either:
-      - pattern: RemoveIndex(...)
-      - pattern: migrations.RemoveIndex(...)
+    pattern: django.db.migrations.RemoveIndex(...)
     message: "Import and use RemoveIndexConcurrently from django.contrib.postgres.operations rather than RemoveIndex"
     languages: [python]
     severity: ERROR
@@ -328,15 +324,15 @@ rules:
 
   - id: timedelta-positional-argument
     patterns:
-      - pattern: timedelta(...)
-      - pattern-not: timedelta(0)
-      - pattern-not: timedelta(..., days=..., ...)
-      - pattern-not: timedelta(..., seconds=..., ...)
-      - pattern-not: timedelta(..., microseconds=..., ...)
-      - pattern-not: timedelta(..., milliseconds=..., ...)
-      - pattern-not: timedelta(..., minutes=..., ...)
-      - pattern-not: timedelta(..., hours=..., ...)
-      - pattern-not: timedelta(..., weeks=..., ...)
+      - pattern: datetime.timedelta(...)
+      - pattern-not: datetime.timedelta(0)
+      - pattern-not: datetime.timedelta(..., days=..., ...)
+      - pattern-not: datetime.timedelta(..., seconds=..., ...)
+      - pattern-not: datetime.timedelta(..., microseconds=..., ...)
+      - pattern-not: datetime.timedelta(..., milliseconds=..., ...)
+      - pattern-not: datetime.timedelta(..., minutes=..., ...)
+      - pattern-not: datetime.timedelta(..., hours=..., ...)
+      - pattern-not: datetime.timedelta(..., weeks=..., ...)
     message: |
       Specify timedelta with named arguments.
     languages: [python]
@@ -345,9 +341,7 @@ rules:
   - id: time-machine
     languages: [python]
     patterns:
-      - pattern-either:
-          - pattern: patch("$FUNCTION", return_value=$TIME)
-          - pattern: mock.patch("$FUNCTION", return_value=$TIME)
+      - pattern: unittest.mock.patch("$FUNCTION", return_value=$TIME)
       - metavariable-regex:
           metavariable: $FUNCTION
           regex: .*timezone_now
