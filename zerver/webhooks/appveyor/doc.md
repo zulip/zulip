@@ -1,3 +1,5 @@
+# Zulip AppVeyor integration
+
 Receive AppVeyor notifications in Zulip!
 
 {start_tabs}

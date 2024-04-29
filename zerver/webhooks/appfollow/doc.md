@@ -1,3 +1,5 @@
+# Zulip AppFollow integration
+
 Receive user reviews from your tracked apps on AppFollow
 using the Zulip AppFollow integration!
 

@@ -1,3 +1,5 @@
+# Zulip Ansible Tower integration
+
 Get Ansible Tower notifications in Zulip!
 
 {start_tabs}
@@ -13,7 +15,7 @@ Get Ansible Tower notifications in Zulip!
 
 1. Set **Name** to a name of your choice, such as `Zulip`. Select the organization
    you'd like to be notified about, and set **Type** to **Webhook**. Set
-   **Target URL** to the URL constructed above, and click **Save**.
+   **Target URL** to the URL generated above, and click **Save**.
 
 1. Click on **Organizations** on the left sidebar. Click the pencil icon to
    edit the organization you selected above, and click **Notifications**.
