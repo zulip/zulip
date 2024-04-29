@@ -53,24 +53,6 @@
         }
     }
 
-    .date_row {
-        grid-area: date_row;
-        /* We only want padding for the date rows between recipient blocks */
-        padding-bottom: 0;
-
-        & span {
-            font-size: calc(12em / 14);
-            font-style: normal;
-            font-weight: 600;
-            line-height: 17px; /* identical to box height, or 131% */
-            text-align: right;
-            letter-spacing: 0.04em;
-            color: var(--color-date);
-            /* Right padding matches time in message row and date in recipient row. */
-            padding: 8px 6px 8px 4px;
-        }
-    }
-
     .unread_marker {
         margin-left: var(--unread-marker-left);
         opacity: 0;
@@ -719,5 +701,23 @@ of the base style defined for a read-only textarea in dark mode. */
         .date_unread_marker {
             display: block;
         }
+    }
+}
+
+.date_row {
+    grid-area: date_row;
+    /* We only want padding for the date rows between recipient blocks */
+    padding-bottom: 0;
+
+    & span {
+        font-size: calc(12em / 14);
+        font-style: normal;
+        font-weight: 600;
+        line-height: 17px; /* identical to box height, or 131% */
+        text-align: right;
+        letter-spacing: 0.04em;
+        color: var(--color-date);
+        /* Right padding matches time in message row and date in recipient row. */
+        padding: 8px 6px 8px 4px;
     }
 }
