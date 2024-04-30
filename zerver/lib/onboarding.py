@@ -177,7 +177,7 @@ def select_welcome_bot_response(human_response_lower: str) -> str:
                 )
                 + "\n\n",
                 _("[Browse and subscribe to channels]({settings_link}).").format(
-                    settings_link="#streams/all"
+                    settings_link="#channels/all"
                 ),
             ]
         )
@@ -279,7 +279,7 @@ def send_initial_realm_messages(realm: Realm) -> None:
                 "and click on `{initial_private_channel_name}`."
             )
         ).format(
-            channel_settings_url="#streams/subscribed",
+            channel_settings_url="#channels/subscribed",
             initial_private_channel_name=Realm.INITIAL_PRIVATE_STREAM_NAME,
         )
 

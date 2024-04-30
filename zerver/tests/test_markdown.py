@@ -3175,11 +3175,11 @@ class MarkdownTest(ZulipTestCase):
         realm = get_realm("zulip")
         sender_user_profile = self.example_user("othello")
         message = Message(sender=sender_user_profile, sending_client=get_client("test"))
-        msg = "http://zulip.testserver/#streams/all"
+        msg = "http://zulip.testserver/#channels/all"
 
         self.assertEqual(
             markdown_convert(msg, message_realm=realm, message=message).rendered_content,
-            '<p><a href="#streams/all">http://zulip.testserver/#streams/all</a></p>',
+            '<p><a href="#channels/all">http://zulip.testserver/#channels/all</a></p>',
         )
 
     def test_md_relative_link(self) -> None:

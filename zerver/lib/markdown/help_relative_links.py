@@ -21,7 +21,7 @@ gear_info = {
     # link is used for relative links: `Select [name](link).`
     "stream-settings": [
         '<i class="zulip-icon zulip-icon-hash"></i> Stream settings',
-        "/#streams/subscribed",
+        "/#channels/subscribed",
     ],
     "settings": [
         '<i class="zulip-icon zulip-icon-tool"></i> Personal Settings',
@@ -98,7 +98,7 @@ def help_handle_match(key: str) -> str:
 
 
 stream_info = {
-    "all": ["All streams", "/#streams/all"],
+    "all": ["All streams", "/#channels/all"],
 }
 
 stream_all_instructions = """

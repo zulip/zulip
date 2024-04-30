@@ -488,7 +488,7 @@ async function test_users_search(page: Page): Promise<void> {
 
 async function test_narrow_public_streams(page: Page): Promise<void> {
     const stream_id = await common.get_stream_id(page, "Denmark");
-    await page.goto(`http://zulip.zulipdev.com:9981/#streams/${stream_id}/Denmark`);
+    await page.goto(`http://zulip.zulipdev.com:9981/#channels/${stream_id}/Denmark`);
     await page.waitForSelector("button.sub_unsub_button", {visible: true});
     await page.click("button.sub_unsub_button");
     await page.waitForSelector(
