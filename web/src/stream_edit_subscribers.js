@@ -389,13 +389,13 @@ export function rerender_subscribers_list(sub) {
 export function initialize() {
     add_subscribers_pill.set_up_handlers({
         get_pill_widget: () => pill_widget,
-        $parent_container: $("#streams_overlay_container"),
+        $parent_container: $("#channels_overlay_container"),
         pill_selector: ".edit_subscribers_for_stream .pill-container",
         button_selector: ".edit_subscribers_for_stream .add-subscriber-button",
         action: subscribe_new_users,
     });
 
-    $("#streams_overlay_container").on(
+    $("#channels_overlay_container").on(
         "submit",
         ".edit_subscribers_for_stream .subscriber_list_remove form",
         (e) => {

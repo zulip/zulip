@@ -210,7 +210,9 @@ export function unsubscribe_from_private_stream(sub) {
         let $stream_row;
         if (overlays.streams_open()) {
             $stream_row = $(
-                "#streams_overlay_container div.stream-row[data-stream-id='" + sub.stream_id + "']",
+                "#channels_overlay_container div.stream-row[data-stream-id='" +
+                    sub.stream_id +
+                    "']",
             );
         }
 
