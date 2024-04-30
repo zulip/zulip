@@ -939,7 +939,9 @@ class BillingSession(ABC):
             )
 
         assert stripe_customer.invoice_settings is not None
-        assert stripe_customer.invoice_settings.default_payment_method is not None
+        assert isinstance(
+            stripe_customer.invoice_settings.default_payment_method, stripe.PaymentMethod
+        )
         try:
             # Try to charge user immediately, and if that fails, we inform the user about the failure.
             stripe_payment_intent = stripe.PaymentIntent.create(
@@ -952,7 +954,7 @@ class BillingSession(ABC):
                 statement_descriptor=payment_intent_data.plan_name,
                 metadata=metadata,
                 off_session=True,
-                payment_method=stripe_customer.invoice_settings.default_payment_method,
+                payment_method=stripe_customer.invoice_settings.default_payment_method.id,
             )
         except stripe.CardError as e:
             raise StripeCardError("card error", e.user_message)
