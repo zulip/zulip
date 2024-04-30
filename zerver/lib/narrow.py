@@ -326,7 +326,7 @@ class NarrowBuilder:
             raise BadNarrowOperatorError("unknown operator " + operator)
 
         if negated:
-            maybe_negate = not_
+            maybe_negate: ConditionTransform = not_
         else:
             maybe_negate = lambda cond: cond
 
