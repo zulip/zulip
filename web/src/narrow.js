@@ -92,6 +92,10 @@ export function update_hash_to_match_filter(filter, trigger) {
     }
     const new_hash = hash_util.search_terms_to_hash(filter.terms());
     changehash(new_hash, trigger);
+
+    if (stream_list.is_zoomed_in()) {
+        browser_history.update_current_history_state_data({show_more_topics: true});
+    }
 }
 
 function create_and_update_message_list(filter, id_info, opts) {
@@ -166,6 +170,7 @@ function create_and_update_message_list(filter, id_info, opts) {
     // workflow we have which calls `narrow.activate` after hash is updated.
     if (opts.change_hash) {
         update_hash_to_match_filter(filter, opts.trigger);
+        opts.show_more_topics = history.state?.show_more_topics ?? false;
     }
 
     // Show the new set of messages. It is important to set message_lists.current to
@@ -263,6 +268,7 @@ export function activate(raw_terms, opts) {
         then_select_offset: undefined,
         change_hash: true,
         trigger: "unknown",
+        show_more_topics: false,
         ...opts,
     };
 
@@ -606,7 +612,7 @@ export function activate(raw_terms, opts) {
             });
         }
 
-        handle_post_view_change(msg_list);
+        handle_post_view_change(msg_list, opts);
 
         unread_ui.update_unread_banner();
 
@@ -1086,7 +1092,7 @@ export function to_compose_target() {
     }
 }
 
-function handle_post_view_change(msg_list) {
+function handle_post_view_change(msg_list, opts) {
     const filter = msg_list.data.filter;
     scheduled_messages_feed_ui.update_schedule_message_indicator();
     typing_events.render_notifications_for_narrow();
@@ -1103,7 +1109,7 @@ function handle_post_view_change(msg_list) {
     message_view_header.render_title_area();
     narrow_title.update_narrow_title(filter);
     left_sidebar_navigation_area.handle_narrow_activated(filter);
-    stream_list.handle_narrow_activated(filter);
+    stream_list.handle_narrow_activated(filter, opts.change_hash, opts.show_more_topics);
     pm_list.handle_narrow_activated(filter);
     activity_ui.build_user_sidebar();
 }

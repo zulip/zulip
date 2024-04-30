@@ -182,6 +182,7 @@ function do_hashchange_normal(from_reload) {
             const narrow_opts = {
                 change_hash: false, // already set
                 trigger: "hash change",
+                show_more_topics: false,
             };
             if (from_reload) {
                 blueslip.debug("We are narrowing as part of a reload.");
@@ -191,10 +192,11 @@ function do_hashchange_normal(from_reload) {
                 }
             }
 
-            const location_data_for_hash = history.state;
-            if (location_data_for_hash) {
-                narrow_opts.then_select_id = location_data_for_hash.narrow_pointer;
-                narrow_opts.then_select_offset = location_data_for_hash.narrow_offset;
+            const data_for_hash = history.state;
+            if (data_for_hash) {
+                narrow_opts.then_select_id = data_for_hash.narrow_pointer;
+                narrow_opts.then_select_offset = data_for_hash.narrow_offset;
+                narrow_opts.show_more_topics = data_for_hash.show_more_topics ?? false;
             }
             narrow.activate(terms, narrow_opts);
             return true;

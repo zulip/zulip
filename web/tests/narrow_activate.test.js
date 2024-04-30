@@ -6,6 +6,7 @@ const {mock_esm, set_global, zrequire} = require("./lib/namespace");
 const {run_test, noop} = require("./lib/test");
 const $ = require("./lib/zjquery");
 
+set_global("history", {});
 mock_esm("../src/resize", {
     resize_stream_filters_container() {},
 });
@@ -46,7 +47,7 @@ const message_view_header = mock_esm("../src/message_view_header");
 const message_viewport = mock_esm("../src/message_viewport");
 const narrow_history = mock_esm("../src/narrow_history");
 const narrow_title = mock_esm("../src/narrow_title");
-const stream_list = mock_esm("../src/stream_list");
+const stream_list = mock_esm("../src/stream_list", {is_zoomed_in: () => false});
 const left_sidebar_navigation_area = mock_esm("../src/left_sidebar_navigation_area");
 const typing_events = mock_esm("../src/typing_events");
 const unread_ops = mock_esm("../src/unread_ops");

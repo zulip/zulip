@@ -9,6 +9,7 @@ import render_stream_subheader from "../templates/streams_subheader.hbs";
 import render_subscribe_to_more_streams from "../templates/subscribe_to_more_streams.hbs";
 
 import * as blueslip from "./blueslip";
+import * as browser_history from "./browser_history";
 import type {Filter} from "./filter";
 import * as hash_util from "./hash_util";
 import {$t} from "./i18n";
@@ -746,10 +747,21 @@ export function update_stream_sidebar_for_narrow(filter: Filter): JQuery | undef
     return $stream_li;
 }
 
-export function handle_narrow_activated(filter: Filter): void {
+export function handle_narrow_activated(
+    filter: Filter,
+    change_hash: boolean,
+    show_more_topics: boolean,
+): void {
     const $stream_li = update_stream_sidebar_for_narrow(filter);
     if ($stream_li) {
         scroll_stream_into_view($stream_li);
+        if (!change_hash) {
+            if (!is_zoomed_in() && show_more_topics) {
+                zoom_in();
+            } else if (is_zoomed_in() && !show_more_topics) {
+                zoom_out();
+            }
+        }
     }
 }
 
@@ -805,6 +817,7 @@ export function initialize({
 
     $("#stream_filters").on("click", ".show-more-topics", (e) => {
         zoom_in();
+        browser_history.update_current_history_state_data({show_more_topics: true});
 
         e.preventDefault();
         e.stopPropagation();
@@ -812,6 +825,7 @@ export function initialize({
 
     $(".show-all-streams").on("click", (e) => {
         zoom_out();
+        browser_history.update_current_history_state_data({show_more_topics: false});
 
         e.preventDefault();
         e.stopPropagation();
