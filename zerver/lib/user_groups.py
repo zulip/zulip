@@ -1,6 +1,6 @@
 from contextlib import contextmanager
 from dataclasses import dataclass
-from typing import Collection, Dict, Iterable, Iterator, List, Mapping, TypedDict
+from typing import Collection, Dict, Iterable, Iterator, List, Mapping, Optional, TypedDict, Union
 
 from django.db import connection, transaction
 from django.db.models import F, QuerySet
@@ -23,6 +23,12 @@ from zerver.models import (
     UserProfile,
 )
 from zerver.models.groups import SystemGroups
+
+
+@dataclass
+class AnonymousSettingGroupDict:
+    direct_members: List[int]
+    direct_subgroups: List[int]
 
 
 class UserGroupDict(TypedDict):
@@ -169,23 +175,19 @@ def lock_subgroups_with_respect_to_supergroup(
         )
 
 
-def access_user_group_for_setting(
-    user_group_id: int,
-    user_profile: UserProfile,
-    *,
+def check_setting_configuration_for_system_groups(
+    setting_group: NamedUserGroup,
     setting_name: str,
     permission_configuration: GroupPermissionSetting,
-) -> UserGroup:
-    user_group = access_user_group_by_id(user_group_id, user_profile, for_read=True)
-
-    if permission_configuration.require_system_group and not user_group.is_system_group:
+) -> None:
+    if permission_configuration.require_system_group and not setting_group.is_system_group:
         raise JsonableError(
             _("'{setting_name}' must be a system user group.").format(setting_name=setting_name)
         )
 
     if (
         not permission_configuration.allow_internet_group
-        and user_group.name == SystemGroups.EVERYONE_ON_INTERNET
+        and setting_group.name == SystemGroups.EVERYONE_ON_INTERNET
     ):
         raise JsonableError(
             _("'{setting_name}' setting cannot be set to 'role:internet' group.").format(
@@ -193,14 +195,20 @@ def access_user_group_for_setting(
             )
         )
 
-    if not permission_configuration.allow_owners_group and user_group.name == SystemGroups.OWNERS:
+    if (
+        not permission_configuration.allow_owners_group
+        and setting_group.name == SystemGroups.OWNERS
+    ):
         raise JsonableError(
             _("'{setting_name}' setting cannot be set to 'role:owners' group.").format(
                 setting_name=setting_name
             )
         )
 
-    if not permission_configuration.allow_nobody_group and user_group.name == SystemGroups.NOBODY:
+    if (
+        not permission_configuration.allow_nobody_group
+        and setting_group.name == SystemGroups.NOBODY
+    ):
         raise JsonableError(
             _("'{setting_name}' setting cannot be set to 'role:nobody' group.").format(
                 setting_name=setting_name
@@ -209,7 +217,7 @@ def access_user_group_for_setting(
 
     if (
         not permission_configuration.allow_everyone_group
-        and user_group.name == SystemGroups.EVERYONE
+        and setting_group.name == SystemGroups.EVERYONE
     ):
         raise JsonableError(
             _("'{setting_name}' setting cannot be set to 'role:everyone' group.").format(
@@ -219,15 +227,76 @@ def access_user_group_for_setting(
 
     if (
         permission_configuration.allowed_system_groups
-        and user_group.name not in permission_configuration.allowed_system_groups
+        and setting_group.name not in permission_configuration.allowed_system_groups
     ):
         raise JsonableError(
             _("'{setting_name}' setting cannot be set to '{group_name}' group.").format(
-                setting_name=setting_name, group_name=user_group.name
+                setting_name=setting_name, group_name=setting_group.name
             )
         )
 
+
+def update_or_create_user_group_for_setting(
+    realm: Realm,
+    direct_members: List[int],
+    direct_subgroups: List[int],
+    current_setting_value: Optional[UserGroup],
+) -> UserGroup:  # nocoverage
+    if current_setting_value is not None and not hasattr(current_setting_value, "named_user_group"):
+        # We do not create a new group if the setting was already set
+        # to an anonymous group. The memberships of existing group
+        # itself are updated.
+        user_group = current_setting_value
+    else:
+        user_group = UserGroup.objects.create(realm=realm)
+
+    from zerver.lib.users import user_ids_to_users
+
+    member_users = user_ids_to_users(direct_members, realm)
+    user_group.direct_members.set(member_users)
+
+    potential_subgroups = NamedUserGroup.objects.filter(realm=realm, id__in=direct_subgroups)
+    group_ids_found = [group.id for group in potential_subgroups]
+    group_ids_not_found = [
+        group_id for group_id in direct_subgroups if group_id not in group_ids_found
+    ]
+    if group_ids_not_found:
+        raise JsonableError(
+            _("Invalid user group ID: {group_id}").format(group_id=group_ids_not_found[0])
+        )
+
+    user_group.direct_subgroups.set(group_ids_found)
+
     return user_group
+
+
+def access_user_group_for_setting(
+    setting_user_group: Union[int, AnonymousSettingGroupDict],
+    user_profile: UserProfile,
+    *,
+    setting_name: str,
+    permission_configuration: GroupPermissionSetting,
+    current_setting_value: Optional[UserGroup] = None,
+) -> UserGroup:
+    if isinstance(setting_user_group, int):
+        named_user_group = access_user_group_by_id(setting_user_group, user_profile, for_read=True)
+        check_setting_configuration_for_system_groups(
+            named_user_group, setting_name, permission_configuration
+        )
+        return named_user_group.usergroup_ptr
+
+    # The API would not allow passing the setting parameter as a Dict
+    # if require_system_group is true for a setting.
+    assert permission_configuration.require_system_group is False  # nocoverage
+
+    user_group = update_or_create_user_group_for_setting(
+        user_profile.realm,
+        setting_user_group.direct_members,
+        setting_user_group.direct_subgroups,
+        current_setting_value,
+    )  # nocoverage
+
+    return user_group  # nocoverage
 
 
 def check_user_group_name(group_name: str) -> str:
