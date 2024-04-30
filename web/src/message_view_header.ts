@@ -4,6 +4,7 @@ import assert from "minimalistic-assert";
 import render_message_view_header from "../templates/message_view_header.hbs";
 
 import type {Filter} from "./filter";
+import * as hash_util from "./hash_util";
 import {$t} from "./i18n";
 import * as inbox_util from "./inbox_util";
 import * as narrow_state from "./narrow_state";
@@ -81,8 +82,7 @@ function get_message_view_header_context(filter: Filter | undefined): MessageVie
             rendered_narrow_description: current_stream.rendered_description,
             sub_count,
             stream: current_stream,
-            stream_settings_link:
-                "#streams/" + current_stream.stream_id + "/" + current_stream.name + "/general",
+            stream_settings_link: hash_util.stream_edit_url(current_stream, "general"),
         };
     }
     return icon_data;
