@@ -8,7 +8,6 @@ from django.db import transaction
 from django.utils.timezone import now as timezone_now
 
 from analytics.lib.counts import COUNT_STATS, do_increment_logging_stat
-from zerver.actions.invites import revoke_invites_generated_by_user
 from zerver.actions.user_groups import (
     do_send_user_group_members_update_event,
     update_users_in_full_members_system_group,
@@ -17,6 +16,7 @@ from zerver.lib.avatar import avatar_url_from_dict
 from zerver.lib.bot_config import ConfigError, get_bot_config, get_bot_configs, set_bot_config
 from zerver.lib.cache import bot_dict_fields
 from zerver.lib.create_user import create_user
+from zerver.lib.invites import revoke_invites_generated_by_user
 from zerver.lib.remote_server import maybe_enqueue_audit_log_upload
 from zerver.lib.send_email import clear_scheduled_emails
 from zerver.lib.sessions import delete_user_sessions
