@@ -15,6 +15,7 @@ from zerver.lib.send_email import (
     initialize_connection,
     send_email,
 )
+from zerver.models import Realm
 from zerver.worker.base import ConcreteQueueWorker, LoopQueueProcessingWorker, assign_queue
 
 logger = logging.getLogger(__name__)
@@ -58,6 +59,10 @@ class EmailSendingWorker(LoopQueueProcessingWorker):
         if "failed_tries" in copied_event:
             del copied_event["failed_tries"]
         handle_send_email_format_changes(copied_event)
+        if "realm_id" in copied_event:
+            # "realm" does not serialize over the queue, so we send the realm_id
+            copied_event["realm"] = Realm.objects.get(id=copied_event["realm_id"])
+            del copied_event["realm_id"]
         self.connection = initialize_connection(self.connection)
         send_email(**copied_event, connection=self.connection)
 

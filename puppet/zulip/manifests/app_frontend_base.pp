@@ -137,7 +137,6 @@ class zulip::app_frontend_base {
     'email_mirror',
     'embed_links',
     'embedded_bots',
-    'invites',
     'email_senders',
     'missedmessage_emails',
     'missedmessage_mobile_notifications',

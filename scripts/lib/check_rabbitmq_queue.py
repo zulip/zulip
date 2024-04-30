@@ -15,7 +15,6 @@ normal_queues = [
     "email_senders",
     "embed_links",
     "embedded_bots",
-    "invites",
     "missedmessage_emails",
     "missedmessage_mobile_notifications",
     "outgoing_webhooks",

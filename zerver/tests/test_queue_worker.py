@@ -23,12 +23,7 @@ from zerver.lib.remote_server import PushNotificationBouncerRetryLaterError
 from zerver.lib.send_email import EmailNotDeliveredError, FromAddress
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import mock_queue_publish
-from zerver.models import (
-    PreregistrationUser,
-    ScheduledMessageNotificationEmail,
-    UserActivity,
-    UserProfile,
-)
+from zerver.models import ScheduledMessageNotificationEmail, UserActivity, UserProfile
 from zerver.models.clients import get_client
 from zerver.models.realms import get_realm
 from zerver.models.scheduled_jobs import NotificationTriggers
@@ -38,7 +33,6 @@ from zerver.worker import base as base_worker
 from zerver.worker.email_mirror import MirrorWorker
 from zerver.worker.email_senders import EmailSendingWorker
 from zerver.worker.embed_links import FetchLinksEmbedData
-from zerver.worker.invites import ConfirmationEmailWorker
 from zerver.worker.missedmessage_emails import MissedMessageWorker
 from zerver.worker.missedmessage_mobile_notifications import PushNotificationsWorker
 from zerver.worker.user_activity import UserActivityWorker
@@ -682,47 +676,6 @@ class WorkerTest(ZulipTestCase):
                 self.assertIn("failed due to exception EmailNotDeliveredError", m.output[0])
 
         self.assertEqual(data["failed_tries"], 1 + MAX_REQUEST_RETRIES)
-
-    def test_invites_worker(self) -> None:
-        fake_client = FakeClient()
-        inviter = self.example_user("iago")
-        prereg_alice = PreregistrationUser.objects.create(
-            email=self.nonreg_email("alice"), referred_by=inviter, realm=inviter.realm
-        )
-        PreregistrationUser.objects.create(
-            email=self.nonreg_email("bob"), referred_by=inviter, realm=inviter.realm
-        )
-        invite_expires_in_minutes = 4 * 24 * 60
-        data: List[Dict[str, Any]] = [
-            dict(
-                prereg_id=prereg_alice.id,
-                referrer_id=inviter.id,
-                invite_expires_in_minutes=invite_expires_in_minutes,
-            ),
-            dict(
-                prereg_id=prereg_alice.id,
-                referrer_id=inviter.id,
-                email_language="en",
-                invite_expires_in_minutes=invite_expires_in_minutes,
-            ),
-            # Nonexistent prereg_id, as if the invitation was deleted
-            dict(
-                prereg_id=-1,
-                referrer_id=inviter.id,
-                invite_expires_in_minutes=invite_expires_in_minutes,
-            ),
-        ]
-        for element in data:
-            fake_client.enqueue("invites", element)
-
-        with simulated_queue_client(fake_client):
-            worker = ConfirmationEmailWorker()
-            worker.setup()
-            with patch("zerver.actions.user_settings.send_email"), patch(
-                "zerver.worker.invites.send_future_email"
-            ) as send_mock:
-                worker.start()
-                self.assertEqual(send_mock.call_count, 2)
 
     def test_error_handling(self) -> None:
         processed = []
