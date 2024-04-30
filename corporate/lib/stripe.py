@@ -923,12 +923,12 @@ class BillingSession(ABC):
                 days_until_due = 1
 
         metadata = {
-            "plan_tier": plan_tier,
-            "billing_schedule": billing_schedule,
-            "licenses": licenses,
-            "license_management": license_management,
-            "on_free_trial": on_free_trial,
-            "current_plan_id": current_plan_id,
+            "plan_tier": str(plan_tier),
+            "billing_schedule": str(billing_schedule),
+            "licenses": str(licenses),
+            "license_management": str(license_management),
+            "on_free_trial": str(on_free_trial),
+            "current_plan_id": str(current_plan_id),
         }
 
         if hasattr(self, "user"):
@@ -1014,7 +1014,7 @@ class BillingSession(ABC):
         pass
 
     @abstractmethod
-    def get_metadata_for_stripe_update_card(self) -> Dict[str, Any]:
+    def get_metadata_for_stripe_update_card(self) -> Dict[str, str]:
         pass
 
     @abstractmethod
@@ -3955,11 +3955,11 @@ class RealmBillingSession(BillingSession):
         return self.realm.plan_type == self.realm.PLAN_TYPE_STANDARD_FREE
 
     @override
-    def get_metadata_for_stripe_update_card(self) -> Dict[str, Any]:
+    def get_metadata_for_stripe_update_card(self) -> Dict[str, str]:
         assert self.user is not None
         return {
             "type": "card_update",
-            "user_id": self.user.id,
+            "user_id": str(self.user.id),
         }
 
     @override
@@ -4346,7 +4346,7 @@ class RemoteRealmBillingSession(BillingSession):
         return self.remote_realm.plan_type == self.remote_realm.PLAN_TYPE_COMMUNITY
 
     @override
-    def get_metadata_for_stripe_update_card(self) -> Dict[str, Any]:  # nocoverage
+    def get_metadata_for_stripe_update_card(self) -> Dict[str, str]:  # nocoverage
         assert self.remote_billing_user is not None
         return {"type": "card_update", "remote_realm_user_id": str(self.remote_billing_user.id)}
 
@@ -4809,7 +4809,7 @@ class RemoteServerBillingSession(BillingSession):
         return self.remote_server.plan_type == self.remote_server.PLAN_TYPE_COMMUNITY
 
     @override
-    def get_metadata_for_stripe_update_card(self) -> Dict[str, Any]:  # nocoverage
+    def get_metadata_for_stripe_update_card(self) -> Dict[str, str]:  # nocoverage
         assert self.remote_billing_user is not None
         return {"type": "card_update", "remote_server_user_id": str(self.remote_billing_user.id)}
 
