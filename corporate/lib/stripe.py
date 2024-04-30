@@ -8,7 +8,18 @@ from datetime import datetime, timedelta
 from decimal import Decimal
 from enum import Enum
 from functools import wraps
-from typing import Any, Callable, Dict, Generator, Optional, Tuple, TypedDict, TypeVar, Union
+from typing import (
+    Any,
+    Callable,
+    Dict,
+    Generator,
+    Literal,
+    Optional,
+    Tuple,
+    TypedDict,
+    TypeVar,
+    Union,
+)
 from urllib.parse import urlencode, urljoin
 
 import stripe
@@ -1301,7 +1312,9 @@ class BillingSession(ABC):
             )
 
             if charge_automatically:
-                collection_method = "charge_automatically"
+                collection_method: Literal["charge_automatically" | "send_invoice"] = (
+                    "charge_automatically"
+                )
                 days_until_due = None
             else:
                 collection_method = "send_invoice"
@@ -2244,7 +2257,9 @@ class BillingSession(ABC):
 
         if invoice_item_created:
             if plan.charge_automatically:
-                collection_method = "charge_automatically"
+                collection_method: Literal["charge_automatically" | "send_invoice"] = (
+                    "charge_automatically"
+                )
                 days_until_due = None
             else:
                 collection_method = "send_invoice"
