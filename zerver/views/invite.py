@@ -3,6 +3,7 @@ from typing import List, Optional, Sequence, Set
 
 from django.conf import settings
 from django.http import HttpRequest, HttpResponse
+from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
 
 from confirmation import settings as confirmation_settings
@@ -10,9 +11,9 @@ from zerver.actions.invites import (
     do_create_multiuse_invite_link,
     do_get_invites_controlled_by_user,
     do_invite_users,
-    do_resend_user_invite_email,
     do_revoke_multi_use_invite,
     do_revoke_user_invite,
+    do_send_user_invite_email,
 )
 from zerver.decorator import require_member_or_admin
 from zerver.lib.exceptions import InvitationError, JsonableError, OrganizationOwnerRequiredError
@@ -193,7 +194,7 @@ def resend_user_invite_email(
     if prereg_user.referred_by_id != user_profile.id:
         check_role_based_permissions(prereg_user.invited_as, user_profile, require_admin=True)
 
-    do_resend_user_invite_email(prereg_user)
+    do_send_user_invite_email(prereg_user, event_time=timezone_now())
     return json_success(request)
 
 

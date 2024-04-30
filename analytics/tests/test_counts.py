@@ -42,11 +42,7 @@ from zerver.actions.create_user import (
     do_create_user,
     do_reactivate_user,
 )
-from zerver.actions.invites import (
-    do_invite_users,
-    do_resend_user_invite_email,
-    do_revoke_user_invite,
-)
+from zerver.actions.invites import do_invite_users, do_revoke_user_invite, do_send_user_invite_email
 from zerver.actions.message_flags import (
     do_mark_all_as_read,
     do_mark_stream_messages_as_read,
@@ -1719,7 +1715,7 @@ class TestLoggingCountStats(AnalyticsTestCase):
 
         # Resending invite should cost you
         with invite_context():
-            do_resend_user_invite_email(assert_is_not_none(PreregistrationUser.objects.first()))
+            do_send_user_invite_email(assert_is_not_none(PreregistrationUser.objects.first()))
         assertInviteCountEquals(6)
 
     def test_messages_read_hour(self) -> None:

@@ -124,14 +124,13 @@ def get_object_from_key(
     return obj
 
 
-def create_confirmation_link(
+def create_confirmation_object(
     obj: ConfirmationObjT,
     confirmation_type: int,
     *,
     validity_in_minutes: Union[Optional[int], UnspecifiedValue] = UnspecifiedValue(),
-    url_args: Mapping[str, str] = {},
     no_associated_realm_object: bool = False,
-) -> str:
+) -> "Confirmation":
     # validity_in_minutes is an override for the default values which are
     # determined by the confirmation_type - its main purpose is for use
     # in tests which may want to have control over the exact expiration time.
@@ -158,7 +157,7 @@ def create_confirmation_link(
     else:
         expiry_date = current_time + timedelta(days=_properties[confirmation_type].validity_in_days)
 
-    Confirmation.objects.create(
+    return Confirmation.objects.create(
         content_object=obj,
         date_sent=current_time,
         confirmation_key=key,
@@ -166,7 +165,31 @@ def create_confirmation_link(
         expiry_date=expiry_date,
         type=confirmation_type,
     )
-    return confirmation_url(key, realm, confirmation_type, url_args)
+
+
+def create_confirmation_link(
+    obj: ConfirmationObjT,
+    confirmation_type: int,
+    *,
+    validity_in_minutes: Union[Optional[int], UnspecifiedValue] = UnspecifiedValue(),
+    url_args: Mapping[str, str] = {},
+    no_associated_realm_object: bool = False,
+) -> str:
+    return confirmation_url_for(
+        create_confirmation_object(
+            obj,
+            confirmation_type,
+            validity_in_minutes=validity_in_minutes,
+            no_associated_realm_object=no_associated_realm_object,
+        ),
+        url_args=url_args,
+    )
+
+
+def confirmation_url_for(confirmation_obj: "Confirmation", url_args: Mapping[str, str] = {}) -> str:
+    return confirmation_url(
+        confirmation_obj.confirmation_key, confirmation_obj.realm, confirmation_obj.type, url_args
+    )
 
 
 def confirmation_url(
