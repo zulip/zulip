@@ -213,7 +213,17 @@ feature's name followed by the feature itself (e.g. **Settings** page,
 used. Use **bold** for stream names, and quotation marks for topic names.
 
 Keep in mind that the UI may change — don’t describe it in more detail than
-is needed. **Never identify or refer to a button by its color.**
+is needed. In particular:
+
+- Do not specify what the default configuration is. This might change in the
+  future, or may even be different for different types of organizations.
+- Do not list out the options the user is choosing from. Once the user finds the
+  right menu in the UI, they'll be able to see the options. In some cases, we
+  may describe the options in more detail outside of the instructions block.
+- Never identify or refer to a button by its color. You _can_ describe its
+  location.
+- Use screenshots only when it's very difficult to get your point across without
+  them.
 
 ### Voice
 
