@@ -65,62 +65,6 @@
             cursor: pointer;
         }
     }
-
-    /* Message-editing styles */
-    .message-edit-buttons-and-timer {
-        margin-top: 5px;
-        display: flex;
-        gap: 5px;
-        /* Allow items to occupy full height.
-           This is especially important for
-           buttons that are flex items. */
-        align-items: stretch;
-    }
-
-    .message-actions-button {
-        box-sizing: border-box;
-        /* Display the actions buttons as
-           flex containers for positioning
-           text and spinners. */
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        height: 28px;
-        padding: 0 10px;
-        border-radius: 4px;
-        border: 0;
-        line-height: 1;
-    }
-
-    .message_edit_save {
-        /* Match Save button's basic colors to
-           the compose box Send button. */
-        color: var(--color-compose-send-button-icon-color);
-        background-color: var(--color-compose-send-button-background);
-
-        &:hover {
-            background-color: var(
-                --color-compose-send-button-background-interactive
-            );
-        }
-
-        &:disabled {
-            /* Replicate the `.new-style` disabled values,
-               without any color shifts. */
-            cursor: not-allowed;
-            opacity: 0.5;
-        }
-    }
-
-    .message_edit_cancel,
-    .message_edit_close {
-        color: var(--color-exit-button-text);
-        background: var(--color-exit-button-background);
-
-        &:hover {
-            background: var(--color-exit-button-background-interactive);
-        }
-    }
 }
 
 .messagebox {
@@ -531,7 +475,61 @@
     }
 }
 
-/* Additional message-editing UI styles. */
+/* Message-editing styles */
+.message-edit-buttons-and-timer {
+    margin-top: 5px;
+    display: flex;
+    gap: 5px;
+    /* Allow items to occupy full height.
+       This is especially important for
+       buttons that are flex items. */
+    align-items: stretch;
+}
+
+.message-actions-button {
+    box-sizing: border-box;
+    /* Display the actions buttons as
+       flex containers for positioning
+       text and spinners. */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 28px;
+    padding: 0 10px;
+    border-radius: 4px;
+    border: 0;
+    line-height: 1;
+}
+
+.message_edit_save {
+    /* Match Save button's basic colors to
+       the compose box Send button. */
+    color: var(--color-compose-send-button-icon-color);
+    background-color: var(--color-compose-send-button-background);
+
+    &:hover {
+        background-color: var(
+            --color-compose-send-button-background-interactive
+        );
+    }
+
+    &:disabled {
+        /* Replicate the `.new-style` disabled values,
+           without any color shifts. */
+        cursor: not-allowed;
+        opacity: 0.5;
+    }
+}
+
+.message_edit_cancel,
+.message_edit_close {
+    color: var(--color-exit-button-text);
+    background: var(--color-exit-button-background);
+
+    &:hover {
+        background: var(--color-exit-button-background-interactive);
+    }
+}
 
 .message_edit_content {
     max-height: 24em;
