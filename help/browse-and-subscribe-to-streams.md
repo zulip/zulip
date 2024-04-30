@@ -39,4 +39,4 @@
 
 ## Related articles
 
-* [Streams and topics](/help/streams-and-topics)
+* [Channels and topics](/help/channels-and-topics)

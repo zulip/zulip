@@ -52,7 +52,7 @@ following cases:
 
 - The user belongs to a [direct message](/help/direct-messages) thread with the
   guest.
-- The user is subscribed to one or more [streams](/help/streams-and-topics) with
+- The user is subscribed to one or more [channels](/help/channels-and-topics) with
   the guest.
 
 When a guest cannot see information about a user, the guest's experience will be

@@ -1,4 +1,4 @@
-In Zulip, streams determine who gets a message. Topics tell you what the
+In Zulip, channels determine who gets a message. Topics tell you what the
 message is about.
 
 Topics are light-weight subjects, very similar to the subject line of an email.
@@ -9,7 +9,7 @@ conversational thread. Here is what it looks like in Zulip.
 
 Topics are one of the most wonderful aspects of using Zulip:
 
-* Lots of conversations can happen in the same stream at the same time, each in
+* Lots of conversations can happen in the same channel at the same time, each in
   its own topic. You never have to worry about interrupting — each conversation
   has its own space.
 * Conversations can last many hours or days, letting everyone respond in their

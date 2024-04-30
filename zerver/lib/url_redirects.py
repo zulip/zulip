@@ -59,9 +59,10 @@ HELP_DOCUMENTATION_REDIRECTS: List[URLRedirect] = [
     ),
     URLRedirect("/help/configure-message-notification-emails", "/help/email-notifications"),
     URLRedirect("/help/disable-new-login-emails", "/help/email-notifications#new-login-emails"),
-    # The `help/about-streams-and-topics` redirect is particularly important,
-    # because the old URL appears in links from Welcome Bot messages.
-    URLRedirect("/help/about-streams-and-topics", "/help/streams-and-topics"),
+    # The `help/about-streams-and-topics` and `help/streams-and-topics` redirects are particularly
+    # important, because the old URLs appear in links from Welcome Bot messages.
+    URLRedirect("/help/about-streams-and-topics", "/help/channels-and-topics"),
+    URLRedirect("/help/streams-and-topics", "/help/channels-and-topics"),
     URLRedirect("/help/community-topic-edits", "/help/restrict-moving-messages"),
     URLRedirect(
         "/help/only-allow-admins-to-add-emoji", "/help/custom-emoji#change-who-can-add-custom-emoji"

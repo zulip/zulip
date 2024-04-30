@@ -21,8 +21,8 @@ web/desktop app.
   you can choose this option for the mobile app.
 - **Only in conversation views**: In Zulip, a **conversation** is a [direct
   message](/help/direct-messages) thread (one-on-one or with a group), or a
-  [topic in a stream](/help/streams-and-topics). This option makes it convenient
-  to preview new messages in a stream, or skim [Combined
+  [topic in a channel](/help/channels-and-topics). This option makes it
+  convenient to preview new messages in a stream, or skim [Combined
   feed](/help/combined-feed), and later read each topic in detail.
 
 {start_tabs}

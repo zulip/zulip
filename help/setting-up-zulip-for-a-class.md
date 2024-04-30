@@ -353,7 +353,7 @@ HTML archive](https://github.com/zulip/zulip-archive) to archive the information
 
 * [Using Zulip for a class](/help/using-zulip-for-a-class)
 * [Getting started with Zulip](/help/getting-started-with-zulip)
-* [Streams and topics](/help/streams-and-topics)
+* [Channels and topics](/help/channels-and-topics)
 * [Moderating open organizations](/help/moderating-open-organizations)
 
 [make-private]: /help/change-the-privacy-of-a-stream

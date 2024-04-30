@@ -9,7 +9,7 @@
 ## Getting started
 * [Joining an organization](/help/join-a-zulip-organization)
 * [Set up your account](/help/set-up-your-account)
-* [Streams and topics](/help/streams-and-topics)
+* [Channels and topics](/help/channels-and-topics)
 * [Finding a conversation to read](/help/finding-a-conversation-to-read)
 * [Reading conversations](/help/reading-conversations)
 * [Starting a new topic](/help/starting-a-new-topic)
@@ -125,7 +125,7 @@
 * [Find administrators](/help/find-administrators)
 
 ## Streams & topics
-* [Streams and topics](/help/streams-and-topics)
+* [Channels and topics](/help/channels-and-topics)
 * [Browse and subscribe to streams](/help/browse-and-subscribe-to-streams)
 * [Unsubscribe from a stream](/help/unsubscribe-from-a-stream)
 * [Create a stream](/help/create-a-stream)

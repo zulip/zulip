@@ -41,7 +41,7 @@ By default, Zulip displays a count of your unmuted unread messages on the
 can configure the badge to only count [direct messages](/help/direct-messages)
 and [mentions](/help/mention-a-user-or-group), or to include messages in
 [followed topics](/help/follow-a-topic) but not other
-[stream](/help/streams-and-topics) messages.
+[channel](/help/channels-and-topics) messages.
 
 ### Configure unread count badge
 

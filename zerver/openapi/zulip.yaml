@@ -6468,7 +6468,7 @@ paths:
       summary: Send a message
       tags: ["messages"]
       description: |
-        Send a [stream message](/help/streams-and-topics) or a
+        Send a [stream message](/help/channels-and-topics) or a
         [direct message](/help/direct-messages).
       requestBody:
         required: true

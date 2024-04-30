@@ -110,6 +110,6 @@ users at once, [notifying](/help/dm-mention-alert-notifications) them about a me
 ## Further reading
 
 * [Getting started with Zulip](/help/getting-started-with-zulip)
-* [Streams and topics](/help/streams-and-topics)
+* [Channels and topics](/help/channels-and-topics)
 * [Moderating open organizations](/help/moderating-open-organizations)
 * [Setting up Zulip for a class](/help/setting-up-zulip-for-a-class)
