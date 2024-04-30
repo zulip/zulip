@@ -526,7 +526,9 @@ class StripeTestCase(ZulipTestCase):
 
     def send_stripe_webhook_events(self, most_recent_event: stripe.Event) -> None:
         while True:
-            events_old_to_new = list(reversed(stripe.Event.list(ending_before=most_recent_event)))
+            events_old_to_new = list(
+                reversed(stripe.Event.list(ending_before=most_recent_event.id))
+            )
             if len(events_old_to_new) == 0:
                 break
             for event in events_old_to_new:
