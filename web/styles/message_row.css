@@ -53,48 +53,6 @@
         }
     }
 
-    .unread_marker {
-        margin-left: var(--unread-marker-left);
-        opacity: 0;
-        transition: all 0.3s ease-out;
-
-        &.slow_fade {
-            transition: all 2s ease-out;
-        }
-
-        &.fast_fade {
-            transition: all 0.3s ease-out;
-        }
-
-        &.date_unread_marker {
-            grid-area: date_unread_marker;
-
-            .unread-marker-fill {
-                border-radius: 0 !important;
-                height: 100% !important;
-            }
-        }
-
-        &.message_unread_marker {
-            grid-area: message_unread_marker;
-        }
-    }
-
-    .unread-marker-fill {
-        height: 100%;
-        width: 2px;
-        background: linear-gradient(
-            90deg,
-            var(--color-unread-marker) 30%,
-            hsl(217deg 64% 59% / 0%)
-        );
-    }
-
-    &.unread .unread_marker {
-        transition: all 0.3s ease-out;
-        opacity: 1;
-    }
-
     .messagebox {
         grid-area: messagebox;
         word-wrap: break-word;
@@ -514,6 +472,48 @@
             background: var(--color-exit-button-background-interactive);
         }
     }
+}
+
+.unread_marker {
+    margin-left: var(--unread-marker-left);
+    opacity: 0;
+    transition: all 0.3s ease-out;
+
+    &.slow_fade {
+        transition: all 2s ease-out;
+    }
+
+    &.fast_fade {
+        transition: all 0.3s ease-out;
+    }
+
+    &.date_unread_marker {
+        grid-area: date_unread_marker;
+
+        .unread-marker-fill {
+            border-radius: 0 !important;
+            height: 100% !important;
+        }
+    }
+
+    &.message_unread_marker {
+        grid-area: message_unread_marker;
+    }
+}
+
+.unread-marker-fill {
+    height: 100%;
+    width: 2px;
+    background: linear-gradient(
+        90deg,
+        var(--color-unread-marker) 30%,
+        hsl(217deg 64% 59% / 0%)
+    );
+}
+
+.unread .unread_marker {
+    transition: all 0.3s ease-out;
+    opacity: 1;
 }
 
 .message-time {
