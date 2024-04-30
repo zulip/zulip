@@ -66,19 +66,6 @@
         }
     }
 
-    /* Locally echoed messages. */
-    &.locally-echoed .message-time {
-        opacity: 0;
-        /* Don't show pointer when message-time doesn't have a link. */
-        cursor: default;
-    }
-
-    /* Show the spinner only for messages that are still locally echoed. */
-    &.locally-echoed .slow-send-spinner {
-        display: unset !important;
-        cursor: default;
-    }
-
     /* Message-editing styles */
     .message-edit-buttons-and-timer {
         margin-top: 5px;
@@ -680,6 +667,19 @@ of the base style defined for a read-only textarea in dark mode. */
 
 .message_edit_notice_hover:hover {
     opacity: 1;
+}
+
+/* Locally echoed messages. */
+.locally-echoed .message-time {
+    opacity: 0;
+    /* Don't show pointer when message-time doesn't have a link. */
+    cursor: default;
+}
+
+/* Show the spinner only for messages that are still locally echoed. */
+.locally-echoed .slow-send-spinner {
+    display: unset !important;
+    cursor: default;
 }
 
 .recipient_row {
