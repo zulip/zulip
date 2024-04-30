@@ -15,6 +15,7 @@ from typing import (
     Callable,
     Dict,
     List,
+    Literal,
     Mapping,
     Optional,
     Sequence,
@@ -492,13 +493,19 @@ class StripeTestCase(ZulipTestCase):
         stripe_session: Optional[stripe.checkout.Session] = None,
     ) -> None:
         [checkout_setup_intent] = iter(stripe.SetupIntent.list(limit=1))
+        assert isinstance(checkout_setup_intent.customer, str)
+        assert checkout_setup_intent.metadata is not None
+        assert checkout_setup_intent.usage in {"off_session", "on_session"}
+        usage = cast(
+            Literal["off_session", "on_session"], checkout_setup_intent.usage
+        )  # https://github.com/python/mypy/issues/12535
         stripe_setup_intent = stripe.SetupIntent.create(
             payment_method=payment_method,
             confirm=True,
             payment_method_types=checkout_setup_intent.payment_method_types,
             customer=checkout_setup_intent.customer,
             metadata=checkout_setup_intent.metadata,
-            usage=checkout_setup_intent.usage,
+            usage=usage,
         )
         if stripe_session is None:
             [stripe_session] = iter(stripe.checkout.Session.list(limit=1))

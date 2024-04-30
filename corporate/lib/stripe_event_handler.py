@@ -104,6 +104,7 @@ def handle_checkout_session_completed_event(
 def handle_payment_intent_succeeded_event(
     stripe_payment_intent: stripe.PaymentIntent, payment_intent: PaymentIntent
 ) -> None:
+    assert isinstance(stripe_payment_intent.customer, str)
     payment_intent.status = PaymentIntent.SUCCEEDED
     payment_intent.save()
     metadata: Dict[str, Any] = stripe_payment_intent.metadata
