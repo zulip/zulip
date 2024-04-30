@@ -61,6 +61,25 @@ now select the part that you want to quote.
             quote_and_reply_help_url="/help/quote-and-reply",
         ),
     ),
+    ZulipUpdateAnnouncement(
+        level=3,
+        message="""
+- The **All messages** view had been renamed to **Combined feed**.
+[Learn more]({combined_feed_help_url}).
+
+**Web and desktop updates**
+- When you start composing, the most recently edited draft for the conversation
+you are composing to now automatically appears in the compose box. You can
+always save a draft and start a new message using the **send options** menu next
+to the **Send** button. [Learn more]({save_draft_help_url}).
+- If you'd prefer not to see notifications when others type, you can now disable
+them. [Learn more]({typing_notifications_help_url}).
+""".format(
+            typing_notifications_help_url="/help/typing-notifications",
+            combined_feed_help_url="/help/combined-feed",
+            save_draft_help_url="/help/view-and-edit-your-message-drafts#save-a-draft-and-start-a-new-message",
+        ),
+    ),
 ]
 
 
