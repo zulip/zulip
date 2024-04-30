@@ -1588,7 +1588,7 @@ test("tokenizing", () => {
 
     // The following cases are kinda judgment calls...
     assert.equal(ct.tokenize_compose_str("foo @toomanycharactersisridiculoustocomplete"), "");
-    assert.equal(ct.tokenize_compose_str("foo #streams@foo"), "#streams@foo");
+    assert.equal(ct.tokenize_compose_str("foo #bar@foo"), "#bar@foo");
 });
 
 test("content_highlighter_html", ({override_rewire}) => {
