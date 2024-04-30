@@ -1,6 +1,6 @@
 import logging
 from datetime import datetime, timedelta
-from typing import List, Optional, Sequence, Tuple
+from typing import Any, Dict, List, Optional, Sequence, Tuple
 
 from django.conf import settings
 from django.db import transaction
@@ -136,7 +136,7 @@ def edit_scheduled_message(
     message_content: Optional[str],
     deliver_at: Optional[datetime],
     realm: Realm,
-) -> None:
+) -> List[Dict[str, Any]]:
     with transaction.atomic():
         scheduled_message_object = access_scheduled_message(sender, scheduled_message_id)
 
@@ -214,7 +214,7 @@ def edit_scheduled_message(
             check_stream_topic(topic_name)
             new_topic_name = truncate_topic(topic_name)
             scheduled_message_object.set_topic_name(topic_name=new_topic_name)
-
+        detached_files: List[Dict[str, Any]] = []
         if message_content is not None:
             # User has updated the scheduled messages's content.
             rendering_result = render_message_markdown(
@@ -222,9 +222,11 @@ def edit_scheduled_message(
             )
             scheduled_message_object.content = send_request.message.content
             scheduled_message_object.rendered_content = rendering_result.rendered_content
-            scheduled_message_object.has_attachment = check_attachment_reference_change(
-                scheduled_message_object, rendering_result
-            )
+
+            (
+                scheduled_message_object.has_attachment,
+                detached_files,
+            ) = check_attachment_reference_change(scheduled_message_object, rendering_result)
 
         if deliver_at is not None:
             # User has updated the scheduled message's send timestamp.
@@ -243,6 +245,7 @@ def edit_scheduled_message(
         scheduled_message_object.save()
 
     notify_update_scheduled_message(sender, scheduled_message_object)
+    return detached_files
 
 
 def notify_remove_scheduled_message(user_profile: UserProfile, scheduled_message_id: int) -> None:

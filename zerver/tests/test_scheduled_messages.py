@@ -728,3 +728,57 @@ class ScheduledMessageTest(ZulipTestCase):
             [scheduled_message.id],
         )
         self.assertEqual(scheduled_message.has_attachment, True)
+
+    def test_edit_scheduled_message_attachments_remove(self) -> None:
+        user_profile = self.example_user("hamlet")
+        verona_stream_id = self.get_stream_id("Verona")
+        locator1 = self.create_attachment_helper(user_profile)
+        locator2 = self.create_attachment_helper(user_profile)
+        locator3 = self.create_attachment_helper(user_profile)
+        content = f"before edit[attachment1.txt]({locator1})[attachment2.txt]({locator2})[attachment3.txt]({locator3})"
+        self.login("hamlet")
+
+        scheduled_delivery_timestamp = int(time.time() + 86400)
+
+        # Test sending with attachment
+        self.do_schedule_message("stream", verona_stream_id, content, scheduled_delivery_timestamp)
+        scheduled_message = self.last_scheduled_message()
+        edited_content = f"after edit[attachment1.txt]({locator1})"
+        payload = {
+            "content": edited_content,
+        }
+        result = self.client_patch(f"/json/scheduled_messages/{scheduled_message.id}", payload)
+        result_content = orjson.loads(result.content)
+        self.assertEqual(result_content["result"], "success")
+        self.assert_length(result_content["detached_files"], 2)
+        actual_path_id_set = {
+            self.CONST_UPLOAD_PATH_PREFIX + detach_file["path_id"]
+            for detach_file in result_content["detached_files"]
+        }
+        self.assertEqual(actual_path_id_set, {locator3, locator2})
+
+    def test_edit_scheduled_message_attachments_change(self) -> None:
+        user_profile = self.example_user("hamlet")
+        verona_stream_id = self.get_stream_id("Verona")
+        locator1 = self.create_attachment_helper(user_profile)
+        locator2 = self.create_attachment_helper(user_profile)
+        locator3 = self.create_attachment_helper(user_profile)
+        content = f"before edit[attachment1.txt]({locator1})[attachment2.txt]({locator2})"
+        self.login("hamlet")
+        scheduled_delivery_timestamp = int(time.time() + 86400)
+        # Test sending with attachment
+        self.do_schedule_message("stream", verona_stream_id, content, scheduled_delivery_timestamp)
+        scheduled_message = self.last_scheduled_message()
+        edited_content = f"after edit[attachment1.txt]({locator1})[attachment3.txt]({locator3})"
+        payload = {
+            "content": edited_content,
+        }
+        result = self.client_patch(f"/json/scheduled_messages/{scheduled_message.id}", payload)
+        result_content = orjson.loads(result.content)
+        self.assertEqual(result_content["result"], "success")
+        self.assert_length(result_content["detached_files"], 1)
+        actual_path_id_set = {
+            self.CONST_UPLOAD_PATH_PREFIX + detach_file["path_id"]
+            for detach_file in result_content["detached_files"]
+        }
+        self.assertEqual(actual_path_id_set, {locator2})

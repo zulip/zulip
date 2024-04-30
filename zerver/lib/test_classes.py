@@ -31,6 +31,7 @@ import orjson
 import responses
 from django.apps import apps
 from django.conf import settings
+from django.core.files.uploadedfile import UploadedFile
 from django.core.mail import EmailMessage
 from django.core.signals import got_request_exception
 from django.db import connection
@@ -89,6 +90,7 @@ from zerver.lib.test_helpers import (
     queries_captured,
 )
 from zerver.lib.topic import RESOLVED_TOPIC_PREFIX, filter_by_topic_name_via_message
+from zerver.lib.upload import upload_message_attachment_from_request
 from zerver.lib.user_groups import get_system_user_group_for_user
 from zerver.lib.users import get_api_key
 from zerver.lib.webhooks.common import (
@@ -195,6 +197,7 @@ class ZulipTestClient(TestClient):
 
 
 class ZulipTestCaseMixin(SimpleTestCase):
+    CONST_UPLOAD_PATH_PREFIX = "/user_uploads/"
     # Ensure that the test system just shows us diffs
     maxDiff: Optional[int] = None
     # This bypasses BAN_CONSOLE_OUTPUT for the test case when set.
@@ -1976,6 +1979,15 @@ Output:
         do_change_realm_permission_group_setting(
             realm, "can_access_all_users_group", members_group, acting_user=None
         )
+
+    def create_attachment_helper(self, user: UserProfile) -> str:
+        with tempfile.NamedTemporaryFile() as attach_file:
+            attach_file.write(b"temporary test attachment file. Hello, World!")
+            attach_file.flush()
+            file_size = os.stat(attach_file.name).st_size
+            with open(attach_file.name, "rb") as fp:
+                locator = upload_message_attachment_from_request(UploadedFile(fp), user, file_size)
+                return locator
 
 
 class ZulipTestCase(ZulipTestCaseMixin, TestCase):

@@ -17,7 +17,7 @@ from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import queries_captured
 from zerver.lib.topic import TOPIC_NAME
 from zerver.lib.utils import assert_is_not_none
-from zerver.models import Message, NamedUserGroup, Realm, UserProfile, UserTopic
+from zerver.models import Attachment, Message, NamedUserGroup, Realm, UserProfile, UserTopic
 from zerver.models.groups import SystemGroups
 from zerver.models.realms import get_realm
 from zerver.models.streams import get_stream
@@ -1596,3 +1596,105 @@ class EditMessageTest(ZulipTestCase):
             },
         )
         self.assert_json_success(result)
+
+    def test_edit_message_attachments_remove(self) -> None:
+        user_profile = self.example_user("hamlet")
+        locator1 = self.create_attachment_helper(user_profile)
+        locator2 = self.create_attachment_helper(user_profile)
+        locator3 = self.create_attachment_helper(user_profile)
+        content = f"before edit[attachment1.txt]({locator1})[attachment2.txt]({locator2})[attachment3.txt]({locator3})"
+        self.login("hamlet")
+        msg_id = self.send_stream_message(
+            self.example_user("hamlet"),
+            "Denmark",
+            topic_name="editing",
+            content=content,
+        )
+        self.check_message(msg_id, topic_name="editing", content=content)
+        attachments = Attachment.objects.filter(messages__in=[msg_id])
+        self.assert_length(attachments, 3)
+        path_id_set = {
+            self.CONST_UPLOAD_PATH_PREFIX + attachment.path_id for attachment in attachments
+        }
+        self.assertEqual(path_id_set, {locator1, locator2, locator3})
+
+        result = self.client_patch(
+            f"/json/messages/{msg_id}",
+            {
+                "content": f"after edit[attachment1.txt]({locator1})",
+            },
+        )
+        result_content = orjson.loads(result.content)
+        self.assertEqual(result_content["result"], "success")
+        self.assert_length(result_content["detached_files"], 2)
+        actual_path_id_set = {
+            self.CONST_UPLOAD_PATH_PREFIX + detach_file["path_id"]
+            for detach_file in result_content["detached_files"]
+        }
+        self.assertEqual(actual_path_id_set, {locator3, locator2})
+
+        result = self.client_patch(
+            f"/json/messages/{msg_id}",
+            {
+                "content": "after edit",
+            },
+        )
+        result_content = orjson.loads(result.content)
+        self.assertEqual(result_content["result"], "success")
+        self.assert_length(result_content["detached_files"], 1)
+        actual_path_id_set = {
+            self.CONST_UPLOAD_PATH_PREFIX + detach_file["path_id"]
+            for detach_file in result_content["detached_files"]
+        }
+        self.assertEqual(actual_path_id_set, {locator1})
+
+        result = self.client_patch(
+            f"/json/messages/{msg_id}",
+            {
+                "content": "after edit again",
+            },
+        )
+        result_content = orjson.loads(result.content)
+        self.assertEqual(result_content["result"], "success")
+        self.assert_length(result_content["detached_files"], 0)
+
+    def test_edit_message_attachments_change(self) -> None:
+        user_profile = self.example_user("hamlet")
+        locator1 = self.create_attachment_helper(user_profile)
+        locator2 = self.create_attachment_helper(user_profile)
+        locator3 = self.create_attachment_helper(user_profile)
+        content = f"before edit[attachment1.txt]({locator1})[attachment2.txt]({locator2})"
+        self.login("hamlet")
+        msg_id = self.send_stream_message(
+            self.example_user("hamlet"),
+            "Denmark",
+            topic_name="editing",
+            content=content,
+        )
+        result = self.client_patch(
+            f"/json/messages/{msg_id}",
+            {
+                "content": f"after edit[attachment3.txt]({locator3})",
+            },
+        )
+        result_content = orjson.loads(result.content)
+        self.assertEqual(result_content["result"], "success")
+        self.assert_length(result_content["detached_files"], 2)
+        actual_path_id_set = {
+            self.CONST_UPLOAD_PATH_PREFIX + detach_file["path_id"]
+            for detach_file in result_content["detached_files"]
+        }
+        self.assertEqual(actual_path_id_set, {locator2, locator1})
+        attachments = Attachment.objects.filter(messages__in=[msg_id])
+        self.assert_length(attachments, 1)
+        self.assertEqual(self.CONST_UPLOAD_PATH_PREFIX + attachments[0].path_id, locator3)
+
+        result = self.client_patch(
+            f"/json/messages/{msg_id}",
+            {
+                "content": f"after edit[attachment3.txt]({locator3})edit[attachment2.txt]({locator2})",
+            },
+        )
+        result_content = orjson.loads(result.content)
+        self.assertEqual(result_content["result"], "success")
+        self.assert_length(result_content["detached_files"], 0)

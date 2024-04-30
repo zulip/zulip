@@ -5916,7 +5916,39 @@ paths:
                 contentType: application/json
       responses:
         "200":
-          $ref: "#/components/responses/SimpleSuccess"
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
+                      ignored_parameters_unsupported: {}
+                      detached_files:
+                        type: array
+                        description: |
+                          Returns details on all uploaded files whose only references were removed when editing this message. Users should be presented with this list of messages and asked if they want to delete the uploaded files, which would otherwise remain visible only in message edit history.
+                        items:
+                          $ref: "#/components/schemas/Attachments"
+                    example:
+                      {
+                        "result": "success",
+                        "msg": "",
+                        "detached_files":
+                          [
+                            {
+                              "id": 3,
+                              "name": "1253601-1.jpg",
+                              "path_id": "2/5d/BD5NRptFxPDKY3RUKwhhup8r/1253601-1.jpg",
+                              "size": 1339060,
+                              "create_time": 1687984706000,
+                              "messages": [],
+                            },
+                          ],
+                      }
         "400":
           description: Bad request.
           content:
@@ -7920,7 +7952,39 @@ paths:
                 contentType: application/json
       responses:
         "200":
-          $ref: "#/components/responses/SimpleSuccess"
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
+                      ignored_parameters_unsupported: {}
+                      detached_files:
+                        type: array
+                        description: |
+                          Returns details on all uploaded files whose only references were removed when editing this message. Users should be presented with this list of messages and asked if they want to delete the uploaded files, which would otherwise remain visible only in message edit history.
+                        items:
+                          $ref: "#/components/schemas/Attachments"
+                    example:
+                      {
+                        "result": "success",
+                        "msg": "",
+                        "detached_files":
+                          [
+                            {
+                              "id": 3,
+                              "name": "1253601-1.jpg",
+                              "path_id": "2/5d/BD5NRptFxPDKY3RUKwhhup8r/1253601-1.jpg",
+                              "size": 1339060,
+                              "create_time": 1687984706000,
+                              "messages": [],
+                            },
+                          ],
+                      }
         "400":
           description: Bad request.
           content:

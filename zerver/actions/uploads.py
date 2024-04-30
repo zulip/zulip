@@ -1,5 +1,5 @@
 import logging
-from typing import Any, Dict, List, Union
+from typing import Any, Dict, List, Tuple, Union
 
 from zerver.lib.attachments import get_old_unclaimed_attachments, validate_attachment_request
 from zerver.lib.markdown import MessageRenderingResult
@@ -83,23 +83,26 @@ def do_delete_old_unclaimed_attachments(weeks_ago: int) -> None:
 
 def check_attachment_reference_change(
     message: Union[Message, ScheduledMessage], rendering_result: MessageRenderingResult
-) -> bool:
+) -> Tuple[bool, List[Dict[str, Any]]]:
     # For a unsaved message edit (message.* has been updated, but not
     # saved to the database), adjusts Attachment data to correspond to
     # the new content.
     prev_attachments = {a.path_id for a in message.attachment_set.all()}
     new_attachments = set(rendering_result.potential_attachment_path_ids)
-
+    sender = message.sender
     if new_attachments == prev_attachments:
-        return bool(prev_attachments)
-
+        return bool(prev_attachments), []
     to_remove = list(prev_attachments - new_attachments)
     if len(to_remove) > 0:
         attachments_to_update = Attachment.objects.filter(path_id__in=to_remove).select_for_update()
         message.attachment_set.remove(*attachments_to_update)
 
+    detached_attachments_query = Attachment.objects.filter(
+        path_id__in=to_remove, messages__isnull=True, owner=sender
+    )
+    detached_attachments = [d.to_dict() for d in detached_attachments_query]
     to_add = list(new_attachments - prev_attachments)
     if len(to_add) > 0:
         do_claim_attachments(message, to_add)
 
-    return message.attachment_set.exists()
+    return (message.attachment_set.exists(), detached_attachments)

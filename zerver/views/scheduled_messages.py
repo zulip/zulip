@@ -97,7 +97,7 @@ def update_scheduled_message_backend(
     client = RequestNotes.get_notes(request).client
     assert client is not None
 
-    edit_scheduled_message(
+    detached_files = edit_scheduled_message(
         sender,
         client,
         scheduled_message_id,
@@ -108,8 +108,7 @@ def update_scheduled_message_backend(
         deliver_at,
         realm=user_profile.realm,
     )
-
-    return json_success(request)
+    return json_success(request, data={"detached_files": detached_files})
 
 
 @has_request_variables

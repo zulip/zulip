@@ -128,7 +128,7 @@ def update_message_backend(
     send_notification_to_new_thread: Json[bool] = True,
     content: Optional[str] = None,
 ) -> HttpResponse:
-    number_changed = check_update_message(
+    number_changed, detached_files = check_update_message(
         user_profile,
         message_id,
         stream_id,
@@ -143,8 +143,7 @@ def update_message_backend(
     log_data = RequestNotes.get_notes(request).log_data
     assert log_data is not None
     log_data["extra"] = f"[{number_changed}]"
-
-    return json_success(request)
+    return json_success(request, data={"detached_files": detached_files})
 
 
 def validate_can_delete_message(user_profile: UserProfile, message: Message) -> None:
