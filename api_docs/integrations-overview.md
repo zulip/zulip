@@ -34,7 +34,7 @@ Zulip.
   [Slack-compatible webhook API](/integrations/slack/slack_incoming).
 
 * If the product can send email notifications, you can
-  [send those emails to a stream](/help/message-a-stream-by-email).
+  [send those emails to a stream](/help/message-a-channel-by-email).
 
 ## Write your own integration
 

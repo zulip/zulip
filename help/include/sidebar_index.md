@@ -90,7 +90,7 @@
 * [Delete a message](/help/delete-a-message)
 * [Draft messages](/help/view-and-edit-your-message-drafts)
 * [Schedule a message](/help/schedule-a-message)
-* [Message a stream by email](/help/message-a-stream-by-email)
+* [Message a channel by email](/help/message-a-channel-by-email)
 
 ## Reading messages
 * [Reading strategies](/help/reading-strategies)

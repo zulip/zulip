@@ -87,6 +87,7 @@ HELP_DOCUMENTATION_REDIRECTS: List[URLRedirect] = [
     URLRedirect("/help/all-messages", "/help/combined-feed"),
     URLRedirect("/help/create-streams", "/help/create-channels"),
     URLRedirect("/help/create-a-stream", "/help/create-a-channel"),
+    URLRedirect("/help/message-a-stream-by-email", "/help/message-a-channel-by-email"),
 ]
 
 LANDING_PAGE_REDIRECTS = [

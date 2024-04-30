@@ -1,4 +1,4 @@
-# Message a stream by email
+# Message a channel by email
 
 !!! tip ""
 
@@ -7,7 +7,7 @@
     configured by a system administrator.
     [email-gateway]: https://zulip.readthedocs.io/en/stable/production/email-gateway.html
 
-You can send emails to Zulip streams. This can be useful:
+You can send emails to Zulip channels. This can be useful:
 
 * If you have an email that you want to discuss on Zulip
 
@@ -20,13 +20,13 @@ If you're planning on doing this in an automated way, and have some
 programming experience, another option is to use our [send message
 API](/api/send-message).
 
-### Message a stream by email
+### Message a channel by email
 
 {start_tabs}
 
 {relative|gear|stream-settings}
 
-1. Select a stream.
+1. Select a channel.
 
 {!select-stream-view-general.md!}
 
@@ -34,7 +34,7 @@ API](/api/send-message).
 
 1. Toggle the configuration options as desired.
 
-1. Click **Copy address** to add the stream email address to your clipboard.
+1. Click **Copy address** to add the channel email address to your clipboard.
 
 1. Send an email to that address.
 
