@@ -1857,7 +1857,7 @@ user_group_data_type = DictType(
     optional_keys=[
         ("name", str),
         ("description", str),
-        ("can_mention_group", int),
+        ("can_mention_group", group_setting_type),
     ],
 )
 

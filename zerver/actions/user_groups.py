@@ -1,3 +1,4 @@
+from dataclasses import asdict
 from datetime import datetime
 from typing import Dict, List, Mapping, Optional, Sequence, TypedDict, Union
 
@@ -8,6 +9,7 @@ from django.utils.translation import gettext as _
 
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.user_groups import (
+    AnonymousSettingGroupDict,
     get_group_setting_value_for_api,
     get_role_based_system_groups_dict,
     set_defaults_for_group_settings,
@@ -207,7 +209,7 @@ def check_add_user_group(
 
 
 def do_send_user_group_update_event(
-    user_group: NamedUserGroup, data: Dict[str, Union[str, int]]
+    user_group: NamedUserGroup, data: Dict[str, Union[str, int, AnonymousSettingGroupDict]]
 ) -> None:
     event = dict(type="user_group", op="update", group_id=user_group.id, data=data)
     send_event(user_group.realm, event, active_user_ids(user_group.realm_id))
@@ -431,6 +433,15 @@ def check_delete_user_group(user_group: NamedUserGroup, *, acting_user: UserProf
     do_send_delete_user_group_event(acting_user.realm, user_group_id, acting_user.realm.id)
 
 
+def get_group_setting_value_for_audit_log_data(
+    setting_value: Union[int, AnonymousSettingGroupDict],
+) -> Union[int, Dict[str, List[int]]]:
+    if isinstance(setting_value, int):
+        return setting_value
+
+    return asdict(setting_value)
+
+
 @transaction.atomic(savepoint=False)
 def do_change_user_group_permission_setting(
     user_group: NamedUserGroup,
@@ -442,6 +453,20 @@ def do_change_user_group_permission_setting(
     old_value = getattr(user_group, setting_name)
     setattr(user_group, setting_name, setting_value_group)
     user_group.save()
+
+    old_setting_api_value = get_group_setting_value_for_api(old_value)
+    new_setting_api_value = get_group_setting_value_for_api(setting_value_group)
+
+    if not hasattr(old_value, "named_user_group") and hasattr(
+        setting_value_group, "named_user_group"
+    ):
+        # We delete the UserGroup which the setting was set to
+        # previously if it does not have any linked NamedUserGroup
+        # object, as it is not used anywhere else. A new UserGroup
+        # object would be created if the setting is later set to
+        # a combination of users and groups.
+        old_value.delete()
+
     RealmAuditLog.objects.create(
         realm=user_group.realm,
         acting_user=acting_user,
@@ -449,11 +474,17 @@ def do_change_user_group_permission_setting(
         event_time=timezone_now(),
         modified_user_group=user_group,
         extra_data={
-            RealmAuditLog.OLD_VALUE: old_value.id,
-            RealmAuditLog.NEW_VALUE: setting_value_group.id,
+            RealmAuditLog.OLD_VALUE: get_group_setting_value_for_audit_log_data(
+                old_setting_api_value
+            ),
+            RealmAuditLog.NEW_VALUE: get_group_setting_value_for_audit_log_data(
+                new_setting_api_value
+            ),
             "property": setting_name,
         },
     )
 
-    event_data_dict: Dict[str, Union[str, int]] = {setting_name: setting_value_group.id}
+    event_data_dict: Dict[str, Union[str, int, AnonymousSettingGroupDict]] = {
+        setting_name: new_setting_api_value
+    }
     do_send_user_group_update_event(user_group, event_data_dict)
