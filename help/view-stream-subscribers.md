@@ -16,7 +16,7 @@ unsubscribe other users to streams.
 
 1. Select a stream.
 
-{!select-stream-view-subscribers.md!}
+{!select-channel-view-subscribers.md!}
 
 {!stream-menu-subscribers-tab-tip.md!}
 

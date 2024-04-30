@@ -10,7 +10,7 @@
 
 1. Select a stream.
 
-{!select-stream-view-general.md!}
+{!select-channel-view-general.md!}
 
 1. Click the **pencil** (<i class="fa fa-pencil"></i>) icon
    to the right of the stream name, and enter a new stream name.

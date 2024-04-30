@@ -13,7 +13,7 @@ certain users can send messages.
 
 1. Select a stream.
 
-{!select-stream-view-general.md!}
+{!select-channel-view-general.md!}
 
 1. Under **Stream permissions**, configure **Who can post to the stream**.
 

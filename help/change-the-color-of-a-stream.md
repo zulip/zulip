@@ -27,7 +27,7 @@ stream. Changing a stream's color does not change it for anyone else.
 
 1. Select a stream.
 
-{!select-stream-view-personal.md!}
+{!select-channel-view-personal.md!}
 
 1. Under **Personal settings**, click on the colored square below **Stream color**.
 

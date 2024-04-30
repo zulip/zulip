@@ -53,7 +53,7 @@
 
 1. Select a stream.
 
-{!select-stream-view-personal.md!}
+{!select-channel-view-personal.md!}
 
 1. Under **Notification settings**, toggle **Mute stream**.
 

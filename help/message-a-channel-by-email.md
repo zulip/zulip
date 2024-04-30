@@ -28,7 +28,7 @@ API](/api/send-message).
 
 1. Select a channel.
 
-{!select-stream-view-general.md!}
+{!select-channel-view-general.md!}
 
 1. Click **Generate email address** under **Email address**.
 

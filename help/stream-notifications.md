@@ -17,7 +17,7 @@ streams](/help/mute-a-stream), stream notification settings apply only to
 
 1. Click **Stream settings**.
 
-{!select-stream-view-personal.md!}
+{!select-channel-view-personal.md!}
 
 1. Under **Notification settings**, toggle your preferred
    notifications settings for the stream.

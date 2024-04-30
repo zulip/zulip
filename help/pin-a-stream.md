@@ -54,7 +54,7 @@ which is especially handy if you are subscribed to a large number of streams.
 
 1. Select a stream.
 
-{!select-stream-view-personal.md!}
+{!select-channel-view-personal.md!}
 
 1. Under **Personal settings**, toggle **Pin stream to top of left sidebar**.
 

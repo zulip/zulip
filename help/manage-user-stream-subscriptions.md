@@ -29,7 +29,7 @@ other users to a stream][configure-invites].
 
 1. Select a stream.
 
-{!select-stream-view-subscribers.md!}
+{!select-channel-view-subscribers.md!}
 
 1. Under **Add subscribers**, enter the user's name or email address.
 
@@ -65,7 +65,7 @@ stream](/help/unsubscribe-from-a-stream).
 
 1. Select a stream.
 
-{!select-stream-view-subscribers.md!}
+{!select-channel-view-subscribers.md!}
 
 1. Under **Subscribers**, find the user you would like
    to remove from the stream.

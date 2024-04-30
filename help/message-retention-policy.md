@@ -44,7 +44,7 @@ Standard hosting.
 
 1. Select a stream.
 
-{!select-stream-view-general.md!}
+{!select-channel-view-general.md!}
 
 1. Under **Stream permissions**, configure the
    **Message retention period**.

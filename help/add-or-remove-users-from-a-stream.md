@@ -23,7 +23,7 @@ stream][add-users] or [remove other users from a stream][remove-users].
 
 1. Select a stream.
 
-{!select-stream-view-subscribers.md!}
+{!select-channel-view-subscribers.md!}
 
 1. Under **Add subscribers**, enter a name or email address. The typeahead
    will only include users who aren't already subscribed to the stream.
@@ -69,7 +69,7 @@ stream][add-users] or [remove other users from a stream][remove-users].
 
 1. Click **Stream settings**.
 
-{!select-stream-view-subscribers.md!}
+{!select-channel-view-subscribers.md!}
 
 1. Under **Add subscribers**, enter a name or email address. The typeahead
    will only include users who aren't already subscribed to the stream.
@@ -121,7 +121,7 @@ subscribe the user.
 
 1. Select a stream.
 
-{!select-stream-view-subscribers.md!}
+{!select-channel-view-subscribers.md!}
 
 1. Under **Subscribers**, find the user you would like to remove.
 
