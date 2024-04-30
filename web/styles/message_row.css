@@ -53,321 +53,6 @@
         }
     }
 
-    .messagebox-content {
-        display: grid;
-        align-items: baseline;
-        padding-left: 10px;
-        /* Prevent the message column from overflowing the 1fr
-           space allotted by specifying `minmax(0,1fr)`, which
-           sets 0 as the minimum size, not the grid default of
-           `auto`.
-
-            The calculated `--message-box-timestamp-column-width`
-            should match `max-content` exactly, but `max-content`
-            ensures the timestamp will always have enough space
-            in the column. */
-        grid-template:
-            var(--message-box-icon-height) repeat(3, auto) /
-            var(--message-box-avatar-column-width) minmax(0, 1fr) calc(
-                3 * var(--message-box-icon-width)
-            )
-            8px minmax(var(--message-box-timestamp-column-width), max-content);
-        /* Named grid areas provide flexibility for positioning grid items
-           reliably, even if the row or column definitions of the grid change. */
-        grid-template-areas:
-            "edited message   controls . time"
-            ".      message   .        . .   "
-            ".      more      .        . .   "
-            ".      reactions .        . .   ";
-
-        &.content_edit_mode {
-            cursor: default;
-            /* Set the controls area to 0 to give more space
-               to the edit/source view area. */
-            grid-template-columns:
-                var(--message-box-avatar-column-width) minmax(0, 1fr)
-                0 8px minmax(
-                    var(--message-box-timestamp-column-width),
-                    max-content
-                );
-        }
-
-        @media (width < $sm_min), ((width >= $md_min) and (width < $mc_min)) {
-            grid-template-columns:
-                var(--message-box-avatar-column-width) minmax(0, 1fr) calc(
-                    2 * var(--message-box-icon-width)
-                )
-                8px minmax(
-                    var(--message-box-timestamp-column-width),
-                    max-content
-                );
-        }
-
-        .message_controls {
-            grid-area: controls;
-
-            @media (width < $sm_min),
-                ((width >= $md_min) and (width < $mc_min)) {
-                /* This is intended to target the first message_controls child
-                   when there are 3 displayed. 4 = 3 + hidden message_failed element. */
-                .message_control_button:nth-last-child(4) {
-                    display: none;
-                }
-            }
-        }
-
-        .message_edit_notice {
-            grid-area: edited;
-        }
-
-        .slow-send-spinner {
-            display: none;
-            justify-self: end;
-            margin-right: 10px;
-            text-align: end;
-            grid-area: time;
-        }
-
-        .message_content {
-            grid-area: message;
-            /*
-            Space between two single line messages is kept in
-            lockstep with adjacent Markdown elements.
-            */
-            padding: var(--message-box-markdown-aligned-vertical-space) 0 0;
-            color: var(--color-text-message-default);
-            font-size: var(--base-font-size-px);
-            line-height: var(--base-line-height-unitless);
-            min-height: 17px;
-            display: block;
-            position: relative;
-            overflow: hidden;
-
-            &:empty {
-                display: none;
-            }
-
-            &.condensed {
-                max-height: 8.5em;
-                min-height: 0;
-                overflow: hidden;
-                mask-image: linear-gradient(
-                    to top,
-                    hsl(0deg 0% 100% / 0%) 0%,
-                    hsl(0deg 0% 100%) 60px
-                );
-                mask-size: cover;
-            }
-
-            &.collapsed {
-                padding: 0;
-                max-height: 0;
-                min-height: 0;
-                overflow: hidden;
-            }
-        }
-
-        .message_reactions {
-            grid-area: reactions;
-            display: flex;
-            /* Allow reactions to wrap in mobile viewports */
-            flex-wrap: wrap;
-            /* Keep reactions aligned to start (top), so that the
-               margin on the reaction button doesn't appear to
-               stretch the reactions taller. */
-            align-items: flex-start;
-            /* Control reaction spacing with a gap */
-            gap: 4px;
-        }
-
-        .message_edit {
-            grid-area: message;
-            /* Align self to start, rather than baseline, so the baseline
-              is preserved from the message itself--keeping the time,
-              edit message, and controls at the same vertical alignment. */
-            align-self: start;
-            margin-top: var(--message-box-vertical-margin);
-        }
-
-        .message_length_controller {
-            grid-area: more;
-        }
-
-        .collapsed ~ .message_length_controller {
-            /* When content is collapsed, the length controller
-               should occupy the space ordinarily assigned to
-               the message. */
-            grid-area: message;
-            /* However, don't let the SHOW MORE button participate
-               in the baseline group. */
-            align-self: start;
-
-            .message_length_toggle {
-                /* Ensure that a collapsed message maintains the
-                   same space around the toggle button as any other
-                   message-row content. */
-                margin: 4px 0;
-            }
-        }
-
-        &.content_edit_mode .message_length_controller {
-            /* If entering edit mode on a collapsed message,
-               just hide the controller area. This preserves
-               the collapsed state of the message, which need
-               not be touched. We just need to hide the button.
-               This works for condensed messages, too. */
-            display: none;
-        }
-    }
-
-    &.include-sender {
-        .messagebox-content {
-            grid-template-areas:
-                "avatar sender    controls . time"
-                "avatar message   .        . .   "
-                ".      more      .        . .   "
-                ".      reactions .        . .   ";
-
-            .message_edit {
-                /* No top margin when there's a sender row */
-                margin-top: 0;
-            }
-
-            &.is-me-message {
-                grid-template-areas:
-                    "avatar sender    controls . time"
-                    "avatar sender    .        . .   "
-                    ".      more      .        . .   "
-                    ".      reactions .        . .   ";
-
-                .message-avatar {
-                    /* Set the line-height to match the height of the avatar image
-                       to center me-messages within the baseline group. */
-                    line-height: var(--message-box-avatar-height);
-                    align-self: baseline;
-                }
-
-                .message_sender {
-                    /* Don't display message sender as flexbox for me-messages. */
-                    display: block;
-                    /* Set the same line-height as on message content for
-                       me-messages. */
-                    line-height: var(--base-line-height-unitless);
-                    /* Ensure the same spacing below messages as for any other
-                       paragraph. */
-                    padding-bottom: var(
-                        --message-box-markdown-aligned-vertical-space
-                    );
-
-                    /* Display message components inline, with wrapping white-space,
-                       so the sender name and message display as a continuous line
-                       of wrapping text. */
-                    .sender_name {
-                        white-space: normal;
-                        display: inline;
-                    }
-
-                    .sender_name_text {
-                        max-width: 100%;
-                    }
-                }
-
-                &.content_edit_mode {
-                    .message_sender {
-                        /* Keep the me-message participating in the baseline */
-                        visibility: hidden;
-                    }
-
-                    .message_edit {
-                        /* Use the sender grid area for the me-message edit/view-source box */
-                        grid-area: sender;
-                        margin-top: var(--message-box-vertical-margin);
-                    }
-                }
-            }
-
-            .message-avatar {
-                grid-area: avatar;
-                /* The picture should not participate in the baseline group. */
-                align-self: start;
-                /* Because the avatar may be the tallest element in a
-                  single-line me message, this margin preserves the
-                  overall height of the message box. */
-                margin: var(--message-box-vertical-margin) 0;
-            }
-
-            .status-message {
-                font-weight: normal;
-            }
-
-            .message_content {
-                /* Top padding is reduced when there is a sender line. */
-                padding-top: 3px;
-                grid-area: message;
-            }
-
-            .slow-send-spinner {
-                align-self: center;
-                position: unset;
-                margin-top: 1px;
-            }
-
-            .message_edit_notice {
-                /* When the edit notice is inline, as on edited me-messages,
-                  the inline-block and accompanying vertical-align styles will
-                  apply */
-                display: inline-block;
-                vertical-align: baseline;
-                /* A bit of margin here helps these not look associated with the name. */
-                margin-left: 4px;
-            }
-
-            .message_sender {
-                overflow: hidden;
-                text-overflow: ellipsis;
-                grid-area: sender;
-                display: flex;
-                /* A generous line-height on the sender name is necessary
-                   for internationalization and non-Western Latin character
-                   sets. */
-                line-height: var(--message-box-sender-line-height);
-                /* Ensure flexed sender info (name, status emoji, inline EDITED)
-                   forms a baseline group, which will participate with the
-                   message-box grid's baseline group, too. */
-                align-items: baseline;
-
-                .zulip-icon.zulip-icon-bot {
-                    font-size: 12px;
-                    align-self: center;
-                    padding: 0 0 0 5px;
-                }
-
-                .sender_name {
-                    display: inline-flex;
-                    font-weight: 700;
-                    color: var(--color-text-sender-name);
-                    column-gap: 3px;
-                    overflow: hidden;
-                    text-overflow: ellipsis;
-                    white-space: nowrap;
-                    outline: none;
-                    align-self: baseline;
-
-                    .sender_name_text {
-                        overflow: hidden;
-                        white-space: nowrap;
-                        display: inline-flex;
-
-                        .user-name {
-                            overflow: hidden;
-                            text-overflow: ellipsis;
-                        }
-                    }
-                }
-            }
-        }
-    }
-
     &.sender_info_hovered {
         .sender_name {
             cursor: pointer;
@@ -470,6 +155,317 @@
         > div {
             opacity: 1;
             visibility: visible;
+        }
+    }
+}
+
+.messagebox-content {
+    display: grid;
+    align-items: baseline;
+    padding-left: 10px;
+    /* Prevent the message column from overflowing the 1fr
+       space allotted by specifying `minmax(0,1fr)`, which
+       sets 0 as the minimum size, not the grid default of
+       `auto`.
+
+        The calculated `--message-box-timestamp-column-width`
+        should match `max-content` exactly, but `max-content`
+        ensures the timestamp will always have enough space
+        in the column. */
+    grid-template:
+        var(--message-box-icon-height) repeat(3, auto) /
+        var(--message-box-avatar-column-width) minmax(0, 1fr) calc(
+            3 * var(--message-box-icon-width)
+        )
+        8px minmax(var(--message-box-timestamp-column-width), max-content);
+    /* Named grid areas provide flexibility for positioning grid items
+       reliably, even if the row or column definitions of the grid change. */
+    grid-template-areas:
+        "edited message   controls . time"
+        ".      message   .        . .   "
+        ".      more      .        . .   "
+        ".      reactions .        . .   ";
+
+    &.content_edit_mode {
+        cursor: default;
+        /* Set the controls area to 0 to give more space
+           to the edit/source view area. */
+        grid-template-columns:
+            var(--message-box-avatar-column-width) minmax(0, 1fr)
+            0 8px minmax(
+                var(--message-box-timestamp-column-width),
+                max-content
+            );
+    }
+
+    @media (width < $sm_min), ((width >= $md_min) and (width < $mc_min)) {
+        grid-template-columns:
+            var(--message-box-avatar-column-width) minmax(0, 1fr) calc(
+                2 * var(--message-box-icon-width)
+            )
+            8px minmax(var(--message-box-timestamp-column-width), max-content);
+    }
+
+    .message_controls {
+        grid-area: controls;
+
+        @media (width < $sm_min), ((width >= $md_min) and (width < $mc_min)) {
+            /* This is intended to target the first message_controls child
+               when there are 3 displayed. 4 = 3 + hidden message_failed element. */
+            .message_control_button:nth-last-child(4) {
+                display: none;
+            }
+        }
+    }
+
+    .message_edit_notice {
+        grid-area: edited;
+    }
+
+    .slow-send-spinner {
+        display: none;
+        justify-self: end;
+        margin-right: 10px;
+        text-align: end;
+        grid-area: time;
+    }
+
+    .message_content {
+        grid-area: message;
+        /*
+        Space between two single line messages is kept in
+        lockstep with adjacent Markdown elements.
+        */
+        padding: var(--message-box-markdown-aligned-vertical-space) 0 0;
+        color: var(--color-text-message-default);
+        font-size: var(--base-font-size-px);
+        line-height: var(--base-line-height-unitless);
+        min-height: 17px;
+        display: block;
+        position: relative;
+        overflow: hidden;
+
+        &:empty {
+            display: none;
+        }
+
+        &.condensed {
+            max-height: 8.5em;
+            min-height: 0;
+            overflow: hidden;
+            mask-image: linear-gradient(
+                to top,
+                hsl(0deg 0% 100% / 0%) 0%,
+                hsl(0deg 0% 100%) 60px
+            );
+            mask-size: cover;
+        }
+
+        &.collapsed {
+            padding: 0;
+            max-height: 0;
+            min-height: 0;
+            overflow: hidden;
+        }
+    }
+
+    .message_reactions {
+        grid-area: reactions;
+        display: flex;
+        /* Allow reactions to wrap in mobile viewports */
+        flex-wrap: wrap;
+        /* Keep reactions aligned to start (top), so that the
+           margin on the reaction button doesn't appear to
+           stretch the reactions taller. */
+        align-items: flex-start;
+        /* Control reaction spacing with a gap */
+        gap: 4px;
+    }
+
+    .message_edit {
+        grid-area: message;
+        /* Align self to start, rather than baseline, so the baseline
+          is preserved from the message itself--keeping the time,
+          edit message, and controls at the same vertical alignment. */
+        align-self: start;
+        margin-top: var(--message-box-vertical-margin);
+    }
+
+    .message_length_controller {
+        grid-area: more;
+    }
+
+    .collapsed ~ .message_length_controller {
+        /* When content is collapsed, the length controller
+           should occupy the space ordinarily assigned to
+           the message. */
+        grid-area: message;
+        /* However, don't let the SHOW MORE button participate
+           in the baseline group. */
+        align-self: start;
+
+        .message_length_toggle {
+            /* Ensure that a collapsed message maintains the
+               same space around the toggle button as any other
+               message-row content. */
+            margin: 4px 0;
+        }
+    }
+
+    &.content_edit_mode .message_length_controller {
+        /* If entering edit mode on a collapsed message,
+           just hide the controller area. This preserves
+           the collapsed state of the message, which need
+           not be touched. We just need to hide the button.
+           This works for condensed messages, too. */
+        display: none;
+    }
+}
+
+.include-sender {
+    .messagebox-content {
+        grid-template-areas:
+            "avatar sender    controls . time"
+            "avatar message   .        . .   "
+            ".      more      .        . .   "
+            ".      reactions .        . .   ";
+
+        .message_edit {
+            /* No top margin when there's a sender row */
+            margin-top: 0;
+        }
+
+        &.is-me-message {
+            grid-template-areas:
+                "avatar sender    controls . time"
+                "avatar sender    .        . .   "
+                ".      more      .        . .   "
+                ".      reactions .        . .   ";
+
+            .message-avatar {
+                /* Set the line-height to match the height of the avatar image
+                   to center me-messages within the baseline group. */
+                line-height: var(--message-box-avatar-height);
+                align-self: baseline;
+            }
+
+            .message_sender {
+                /* Don't display message sender as flexbox for me-messages. */
+                display: block;
+                /* Set the same line-height as on message content for
+                   me-messages. */
+                line-height: var(--base-line-height-unitless);
+                /* Ensure the same spacing below messages as for any other
+                   paragraph. */
+                padding-bottom: var(
+                    --message-box-markdown-aligned-vertical-space
+                );
+
+                /* Display message components inline, with wrapping white-space,
+                   so the sender name and message display as a continuous line
+                   of wrapping text. */
+                .sender_name {
+                    white-space: normal;
+                    display: inline;
+                }
+
+                .sender_name_text {
+                    max-width: 100%;
+                }
+            }
+
+            &.content_edit_mode {
+                .message_sender {
+                    /* Keep the me-message participating in the baseline */
+                    visibility: hidden;
+                }
+
+                .message_edit {
+                    /* Use the sender grid area for the me-message edit/view-source box */
+                    grid-area: sender;
+                    margin-top: var(--message-box-vertical-margin);
+                }
+            }
+        }
+
+        .message-avatar {
+            grid-area: avatar;
+            /* The picture should not participate in the baseline group. */
+            align-self: start;
+            /* Because the avatar may be the tallest element in a
+              single-line me message, this margin preserves the
+              overall height of the message box. */
+            margin: var(--message-box-vertical-margin) 0;
+        }
+
+        .status-message {
+            font-weight: normal;
+        }
+
+        .message_content {
+            /* Top padding is reduced when there is a sender line. */
+            padding-top: 3px;
+            grid-area: message;
+        }
+
+        .slow-send-spinner {
+            align-self: center;
+            position: unset;
+            margin-top: 1px;
+        }
+
+        .message_edit_notice {
+            /* When the edit notice is inline, as on edited me-messages,
+              the inline-block and accompanying vertical-align styles will
+              apply */
+            display: inline-block;
+            vertical-align: baseline;
+            /* A bit of margin here helps these not look associated with the name. */
+            margin-left: 4px;
+        }
+
+        .message_sender {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            grid-area: sender;
+            display: flex;
+            /* A generous line-height on the sender name is necessary
+               for internationalization and non-Western Latin character
+               sets. */
+            line-height: var(--message-box-sender-line-height);
+            /* Ensure flexed sender info (name, status emoji, inline EDITED)
+               forms a baseline group, which will participate with the
+               message-box grid's baseline group, too. */
+            align-items: baseline;
+
+            .zulip-icon.zulip-icon-bot {
+                font-size: 12px;
+                align-self: center;
+                padding: 0 0 0 5px;
+            }
+
+            .sender_name {
+                display: inline-flex;
+                font-weight: 700;
+                color: var(--color-text-sender-name);
+                column-gap: 3px;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+                outline: none;
+                align-self: baseline;
+
+                .sender_name_text {
+                    overflow: hidden;
+                    white-space: nowrap;
+                    display: inline-flex;
+
+                    .user-name {
+                        overflow: hidden;
+                        text-overflow: ellipsis;
+                    }
+                }
+            }
         }
     }
 }
