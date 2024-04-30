@@ -864,7 +864,7 @@ class BillingSession(ABC):
         plan_tier: int,
         billing_schedule: int,
         charge_automatically: bool,
-        invoice_period: Dict[str, int],
+        invoice_period: stripe.InvoiceItem.CreateParamsPeriod,
         license_management: Optional[str] = None,
         days_until_due: Optional[int] = None,
         on_free_trial: bool = False,
@@ -910,7 +910,9 @@ class BillingSession(ABC):
             )
 
         if charge_automatically:
-            collection_method = "charge_automatically"
+            collection_method: Literal["charge_automatically" | "send_invoice"] = (
+                "charge_automatically"
+            )
         else:
             collection_method = "send_invoice"
             # days_until_due is required for `send_invoice` collection method. Since this is an invoice
@@ -3006,7 +3008,7 @@ class BillingSession(ABC):
                 invoiced_through_id = plan.invoiced_through.id
 
             invoice_item_created = False
-            invoice_period = None
+            invoice_period: stripe.InvoiceItem.CreateParamsPeriod | None = None
             for ledger_entry in LicenseLedger.objects.filter(
                 plan=plan, id__gt=invoiced_through_id, event_time__lte=event_time
             ).order_by("id"):
@@ -3104,7 +3106,9 @@ class BillingSession(ABC):
                     )
 
                 if plan.charge_automatically:
-                    collection_method = "charge_automatically"
+                    collection_method: Literal["charge_automatically" | "send_invoice"] = (
+                        "charge_automatically"
+                    )
                     days_until_due = None
                 else:
                     collection_method = "send_invoice"
@@ -3435,7 +3439,7 @@ class BillingSession(ABC):
         # Stripe does something weird and puts the discount item first, so we need to reverse the order here.
         invoice_items.reverse()
         for invoice_item in invoice_items:
-            price_args = {}
+            price_args: PriceArgs = {}
             # If amount is positive, this must be non-discount item we need to update.
             if invoice_item.amount > 0:
                 assert invoice_item.price is not None
