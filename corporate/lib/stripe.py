@@ -3092,6 +3092,7 @@ class BillingSession(ABC):
                 licenses_base = ledger_entry.licenses
 
             if invoice_item_created:
+                assert invoice_period is not None
                 flat_discount, flat_discounted_months = self.get_flat_discount_info(plan.customer)
                 if plan.fixed_price is None and flat_discounted_months > 0:
                     num_months = (
@@ -3442,14 +3443,19 @@ class BillingSession(ABC):
         # the updated quantity.
         stripe_invoice = stripe.Invoice.retrieve(last_sent_invoice.stripe_invoice_id)
         assert stripe_invoice.status == "open"
+        assert isinstance(stripe_invoice.customer, str)
+        assert stripe_invoice.statement_descriptor is not None
+        assert stripe_invoice.metadata is not None
         invoice_items = stripe_invoice.lines.data
         # Stripe does something weird and puts the discount item first, so we need to reverse the order here.
         invoice_items.reverse()
         for invoice_item in invoice_items:
+            assert invoice_item.description is not None
             price_args: PriceArgs = {}
             # If amount is positive, this must be non-discount item we need to update.
             if invoice_item.amount > 0:
                 assert invoice_item.price is not None
+                assert invoice_item.price.unit_amount is not None
                 price_args = {
                     "quantity": licenses,
                     "unit_amount": invoice_item.price.unit_amount,
