@@ -53,30 +53,7 @@
         }
     }
 
-    .messagebox {
-        grid-area: messagebox;
-        word-wrap: break-word;
-        cursor: pointer;
-        border: none;
-        /* The left padding value accounts for a 2px
-          unread marker, ensuring a uniform 5px of
-          padding on either side of the message box. */
-        padding: 0 5px 0 3px;
-
-        &:hover .message_controls,
-        &:hover .message_failed {
-            .empty-star:hover {
-                cursor: pointer;
-            }
-
-            > div {
-                opacity: 1;
-                visibility: visible;
-            }
-        }
-    }
-
-    .messagebox .messagebox-content {
+    .messagebox-content {
         display: grid;
         align-items: baseline;
         padding-left: 10px;
@@ -244,7 +221,7 @@
     }
 
     &.include-sender {
-        .messagebox .messagebox-content {
+        .messagebox-content {
             grid-template-areas:
                 "avatar sender    controls . time"
                 "avatar message   .        . .   "
@@ -470,6 +447,29 @@
 
         &:hover {
             background: var(--color-exit-button-background-interactive);
+        }
+    }
+}
+
+.messagebox {
+    grid-area: messagebox;
+    word-wrap: break-word;
+    cursor: pointer;
+    border: none;
+    /* The left padding value accounts for a 2px
+      unread marker, ensuring a uniform 5px of
+      padding on either side of the message box. */
+    padding: 0 5px 0 3px;
+
+    &:hover .message_controls,
+    &:hover .message_failed {
+        .empty-star:hover {
+            cursor: pointer;
+        }
+
+        > div {
+            opacity: 1;
+            visibility: visible;
         }
     }
 }
