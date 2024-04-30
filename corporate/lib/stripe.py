@@ -938,14 +938,16 @@ class BillingSession(ABC):
         # If automatic charge fails, we simply void the invoice.
         # https://stripe.com/docs/invoicing/integration/automatic-advancement-collection
         auto_advance = not charge_automatically
-        stripe_invoice = stripe.Invoice.create(
+        invoice_params = stripe.Invoice.CreateParams(
             auto_advance=auto_advance,
             collection_method=collection_method,
             customer=customer.stripe_customer_id,
-            days_until_due=days_until_due,
             statement_descriptor=plan_name,
             metadata=metadata,
         )
+        if days_until_due is not None:
+            invoice_params["days_until_due"] = days_until_due
+        stripe_invoice = stripe.Invoice.create(**invoice_params)
         stripe.Invoice.finalize_invoice(stripe_invoice)
         return stripe_invoice
 
@@ -3114,13 +3116,15 @@ class BillingSession(ABC):
                 else:
                     collection_method = "send_invoice"
                     days_until_due = DEFAULT_INVOICE_DAYS_UNTIL_DUE
-                stripe_invoice = stripe.Invoice.create(
+                invoice_params = stripe.Invoice.CreateParams(
                     auto_advance=True,
                     collection_method=collection_method,
                     customer=plan.customer.stripe_customer_id,
-                    days_until_due=days_until_due,
                     statement_descriptor=plan.name,
                 )
+                if days_until_due is not None:
+                    invoice_params["days_until_due"] = days_until_due
+                stripe_invoice = stripe.Invoice.create(**invoice_params)
                 stripe.Invoice.finalize_invoice(stripe_invoice)
 
         plan.next_invoice_date = next_invoice_date(plan)
