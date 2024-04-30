@@ -475,7 +475,10 @@ export class BuddyList extends BuddyListConf {
             stream_data.can_view_subscribers(current_sub) &&
             has_inactive_users_matching_view
         ) {
-            const stream_edit_hash = hash_util.stream_edit_url(current_sub, "subscribers");
+            const stream_edit_hash = hash_util.channels_settings_edit_url(
+                current_sub,
+                "subscribers",
+            );
             $("#buddy-list-users-matching-view-container").append(
                 $(
                     render_view_all_subscribers({

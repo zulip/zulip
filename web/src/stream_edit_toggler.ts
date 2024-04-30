@@ -29,7 +29,7 @@ export function setup_toggler(): void {
             const stream_id = Number.parseInt($stream_header.attr("data-stream-id") ?? "", 10);
             const sub = sub_store.get(stream_id);
             if (sub) {
-                const hash = hash_util.stream_edit_url(sub, select_tab);
+                const hash = hash_util.channels_settings_edit_url(sub, select_tab);
                 browser_history.update(hash);
             }
         },

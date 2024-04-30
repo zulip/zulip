@@ -196,13 +196,13 @@ run_test("test_parse_narrow", () => {
     ]);
 });
 
-run_test("test_stream_edit_url", () => {
+run_test("test_channels_settings_edit_url", () => {
     const sub = {
         name: "research & development",
         stream_id: 42,
     };
     assert.equal(
-        hash_util.stream_edit_url(sub, "general"),
+        hash_util.channels_settings_edit_url(sub, "general"),
         "#channels/42/research.20.26.20development/general",
     );
 });

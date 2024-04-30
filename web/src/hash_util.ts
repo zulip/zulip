@@ -144,12 +144,6 @@ export function by_conversation_and_time_url(message: Message): string {
     return absolute_url + people.pm_perma_link(message) + suffix;
 }
 
-export function stream_edit_url(sub: StreamSubscription, right_side_tab: string): string {
-    return `#channels/${sub.stream_id}/${internal_url.encodeHashComponent(
-        sub.name,
-    )}/${right_side_tab}`;
-}
-
 export function group_edit_url(group: UserGroup, right_side_tab: string): string {
     const hash = `#groups/${group.id}/${internal_url.encodeHashComponent(group.name)}/${right_side_tab}`;
     return hash;
@@ -190,6 +184,15 @@ export function parse_narrow(hash: string): NarrowTerm[] | undefined {
         terms.push({negated, operator, operand});
     }
     return terms;
+}
+
+export function channels_settings_edit_url(
+    sub: StreamSubscription,
+    right_side_tab: string,
+): string {
+    return `#channels/${sub.stream_id}/${internal_url.encodeHashComponent(
+        sub.name,
+    )}/${right_side_tab}`;
 }
 
 export function channels_settings_section_url(section = "subscribed"): string {
@@ -233,7 +236,7 @@ export function validate_channels_settings_hash(hash: string): string {
         if (!valid_right_side_tab_values.has(right_side_tab)) {
             right_side_tab = "general";
         }
-        return stream_edit_url(sub, right_side_tab);
+        return channels_settings_edit_url(sub, right_side_tab);
     }
 
     return channels_settings_section_url(section);
