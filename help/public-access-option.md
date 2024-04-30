@@ -63,11 +63,11 @@ communities such as open-source projects and research communities.
     See [Managing abuse](#managing-abuse) to learn why only
     trusted roles like moderators and administrators can create web-public streams.
 
-## Creating a web-public stream
+## Creating a web-public channel
 
-To create a new web-public stream, follow the [instructions for
-creating stream](/help/create-a-stream#create-a-stream_1), selecting
-the **Web-public** option for **Who can access the stream?**.
+To create a new web-public channel, follow the [instructions for
+creating a channel](/help/create-a-channel#create-a-channel_1), selecting
+the **Web-public** option for **Who can access the channel?**.
 
 To make an existing stream web-public, follow the instructions to
 [change the privacy of a

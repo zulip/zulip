@@ -48,5 +48,5 @@ unadvertised web-public stream in a legitimate organization.
 
 ## Related articles
 
-* [Create a stream](/help/create-a-stream)
+* [Create a channel](/help/create-a-channel)
 * [Roles and permissions](/help/roles-and-permissions)

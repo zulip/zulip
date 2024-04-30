@@ -128,7 +128,7 @@
 * [Channels and topics](/help/channels-and-topics)
 * [Browse and subscribe to streams](/help/browse-and-subscribe-to-streams)
 * [Unsubscribe from a stream](/help/unsubscribe-from-a-stream)
-* [Create a stream](/help/create-a-stream)
+* [Create a channel](/help/create-a-channel)
 * [View stream subscribers](/help/view-stream-subscribers)
 * [Add or remove users from a stream](/help/add-or-remove-users-from-a-stream)
 * [Pin a stream](/help/pin-a-stream)

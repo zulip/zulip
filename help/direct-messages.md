@@ -5,7 +5,7 @@ of a [channel](/help/channels-and-topics). DMs work well for one-off messages,
 usually with just one or two others.
 
 If you find yourself frequently conversing with the same person or group, it
-often works better to [create a private stream](/help/create-a-stream) for your
+often works better to [create a private channel](/help/create-a-channel) for your
 conversations. This lets you organize your discussion into topics, and add or
 remove participants as needed.
 

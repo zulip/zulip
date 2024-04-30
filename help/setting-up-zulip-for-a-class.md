@@ -221,8 +221,8 @@ how to assign roles and permissions for a class.
 
 {end_tabs}
 
-For more details about stream settings, see [Create a
-stream](/help/create-a-stream#stream-options).
+For more details about channel settings, see [Create a
+channel](/help/create-a-channel#channel-options).
 
 ### Tips for creating streams
 

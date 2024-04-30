@@ -1,27 +1,27 @@
-# Create a stream
+# Create a channel
 
-By default, all users other than guests can create streams. Administrators can
-[restrict the ability to create a stream](/help/configure-who-can-create-streams) to specific
+By default, all users other than guests can create channels. Administrators can
+[restrict the ability to create a channel](/help/configure-who-can-create-streams) to specific
 [roles](/help/roles-and-permissions).
 
-If you are an administrator setting up streams for the first time, check out our
+If you are an administrator setting up channels for the first time, check out our
 [guide to setting up channels for a new organization](/help/create-channels).
 
 ## Create a channel
 
 {!create-a-channel-instructions.md!}
 
-## Stream options
+## Channel options
 
-There are several parameters you can set while creating a stream. All but
-**Announce stream** you can change later.
+There are several parameters you can set while creating a channel. All but
+**Announce channel** you can change later.
 
-* **Stream name**: Appears in the left sidebar for subscribed users. The
-  stream name can be in any language, and can include spaces and other
+* **Channel name**: Appears in the left sidebar for subscribed users. The
+  channel name can be in any language, and can include spaces and other
   punctuation.
 
-* **Stream description**: Helps users decide whether to subscribe when they
-  are browsing streams.
+* **Channel description**: Helps users decide whether to subscribe when they
+  are browsing channels.
 
 * **Announce new stream in the [stream configured by your organization](/help/configure-automated-notices#new-stream-announcements)**:
   Posts a message in the "new streams" topic advertising the new stream.
