@@ -2027,6 +2027,7 @@ class StripeTest(StripeTestCase):
         # Get the last generated invoice for Hamlet
         customer = get_customer_by_realm(get_realm("zulip"))
         assert customer is not None
+        assert customer.stripe_customer_id is not None
         [hamlet_invoice] = iter(stripe.Invoice.list(customer=customer.stripe_customer_id))
 
         self.login_user(othello)
@@ -6052,6 +6053,7 @@ class TestSupportBillingHelpers(StripeTestCase):
         self.add_card_and_upgrade(user)
         customer = Customer.objects.first()
         assert customer is not None
+        assert customer.stripe_customer_id is not None
         [charge] = iter(stripe.Charge.list(customer=customer.stripe_customer_id))
         self.assertEqual(1200 * self.seat_count, charge.amount)
         stripe_customer_id = customer.stripe_customer_id
@@ -6151,6 +6153,7 @@ class TestSupportBillingHelpers(StripeTestCase):
         self.add_card_and_upgrade(user)
         customer = billing_session.get_customer()
         assert customer is not None
+        assert customer.stripe_customer_id is not None
         [charge] = iter(stripe.Charge.list(customer=customer.stripe_customer_id))
         self.assertEqual(4000 * min_licenses, charge.amount)
 

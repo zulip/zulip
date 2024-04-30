@@ -871,6 +871,7 @@ class BillingSession(ABC):
         on_free_trial: bool = False,
         current_plan_id: Optional[int] = None,
     ) -> stripe.Invoice:
+        assert customer.stripe_customer_id is not None
         plan_name = CustomerPlan.name_from_tier(plan_tier)
         assert price_per_license is None or fixed_price is None
         price_args: PriceArgs = {}
@@ -1217,6 +1218,7 @@ class BillingSession(ABC):
     ) -> Dict[str, Any]:
         metadata = self.get_metadata_for_stripe_update_card()
         customer = self.update_or_create_stripe_customer()
+        assert customer.stripe_customer_id is not None
 
         # URL when user cancels the card update session.
         base_cancel_url = f"{self.billing_session_url}/upgrade/"
@@ -3002,6 +3004,7 @@ class BillingSession(ABC):
         # layer of defense to avoid creating any invoices for customers not on
         # paid plan. It saves a DB query too.
         if plan.is_a_paid_plan():
+            assert plan.customer.stripe_customer_id is not None
             if plan.invoicing_status == CustomerPlan.INVOICING_STATUS_INITIAL_INVOICE_TO_BE_SENT:
                 invoiced_through_id = -1
                 licenses_base = None
@@ -3067,7 +3070,6 @@ class BillingSession(ABC):
                     plan.invoiced_through = ledger_entry
                     plan.invoicing_status = CustomerPlan.INVOICING_STATUS_STARTED
                     plan.save(update_fields=["invoicing_status", "invoiced_through"])
-                    assert plan.customer.stripe_customer_id is not None
                     invoice_period = {
                         "start": datetime_to_timestamp(ledger_entry.event_time),
                         "end": datetime_to_timestamp(
