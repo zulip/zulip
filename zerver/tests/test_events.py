@@ -1745,6 +1745,22 @@ class NormalActionsTest(BaseAction):
                 backend, "can_mention_group", moderators_group, acting_user=None
             )
         check_user_group_update("events[0]", events[0], "can_mention_group")
+        self.assertEqual(events[0]["data"]["can_mention_group"], moderators_group.id)
+
+        setting_group = UserGroup.objects.create(realm=self.user_profile.realm)
+        setting_group.direct_members.set([othello.id])
+        setting_group.direct_subgroups.set([moderators_group.id])
+        with self.verify_action() as events:
+            do_change_user_group_permission_setting(
+                backend, "can_mention_group", setting_group, acting_user=None
+            )
+        check_user_group_update("events[0]", events[0], "can_mention_group")
+        self.assertEqual(
+            events[0]["data"]["can_mention_group"],
+            AnonymousSettingGroupDict(
+                direct_members=[othello.id], direct_subgroups=[moderators_group.id]
+            ),
+        )
 
         # Test add members
         hamlet = self.example_user("hamlet")

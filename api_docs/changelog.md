@@ -26,7 +26,8 @@ format used by the Zulip server that they are interacting with.
   /register`](/api/register-queue): `can_mention_group` field can now
   either be an ID of a named user group with the permission, or an
   object describing the set of users and groups with the permission.
-* [`POST /user_groups/create`](/api/create-user-group): The
+* [`POST /user_groups/create`](/api/create-user-group), [`PATCH
+  /user_groups/{user_group_id}`](/api/update-user-group): The
   `can_mention_group` parameter can now either be an ID of a named
   user group or an object describing a set of users and groups.
 

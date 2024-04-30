@@ -81,6 +81,7 @@ from zerver.models import (
     RealmPlayground,
     Recipient,
     Subscription,
+    UserGroup,
     UserProfile,
 )
 from zerver.models.groups import SystemGroups
@@ -1329,6 +1330,91 @@ class TestRealmAuditLog(ZulipTestCase):
             audit_log_entries[0].extra_data,
             {
                 RealmAuditLog.OLD_VALUE: old_group.id,
+                RealmAuditLog.NEW_VALUE: new_group.id,
+                "property": "can_mention_group",
+            },
+        )
+
+        moderators_group = NamedUserGroup.objects.get(
+            name=SystemGroups.MODERATORS, realm=user_group.realm, is_system_group=True
+        )
+        old_group = user_group.can_mention_group
+        new_group = UserGroup.objects.create(realm=user_group.realm)
+        new_group.direct_members.set([hamlet.id])
+        new_group.direct_subgroups.set([moderators_group.id])
+
+        now = timezone_now()
+        do_change_user_group_permission_setting(
+            user_group, "can_mention_group", new_group, acting_user=None
+        )
+        audit_log_entries = RealmAuditLog.objects.filter(
+            event_type=RealmAuditLog.USER_GROUP_GROUP_BASED_SETTING_CHANGED,
+            event_time__gte=now,
+        )
+        self.assert_length(audit_log_entries, 1)
+        self.assertIsNone(audit_log_entries[0].acting_user)
+        self.assertDictEqual(
+            audit_log_entries[0].extra_data,
+            {
+                RealmAuditLog.OLD_VALUE: old_group.id,
+                RealmAuditLog.NEW_VALUE: {
+                    "direct_members": [hamlet.id],
+                    "direct_subgroups": [moderators_group.id],
+                },
+                "property": "can_mention_group",
+            },
+        )
+
+        othello = self.example_user("othello")
+        new_group = UserGroup.objects.create(realm=user_group.realm)
+        new_group.direct_members.set([othello.id])
+        new_group.direct_subgroups.set([moderators_group.id])
+
+        now = timezone_now()
+        do_change_user_group_permission_setting(
+            user_group, "can_mention_group", new_group, acting_user=None
+        )
+        audit_log_entries = RealmAuditLog.objects.filter(
+            event_type=RealmAuditLog.USER_GROUP_GROUP_BASED_SETTING_CHANGED,
+            event_time__gte=now,
+        )
+        self.assert_length(audit_log_entries, 1)
+        self.assertIsNone(audit_log_entries[0].acting_user)
+        self.assertDictEqual(
+            audit_log_entries[0].extra_data,
+            {
+                RealmAuditLog.OLD_VALUE: {
+                    "direct_members": [hamlet.id],
+                    "direct_subgroups": [moderators_group.id],
+                },
+                RealmAuditLog.NEW_VALUE: {
+                    "direct_members": [othello.id],
+                    "direct_subgroups": [moderators_group.id],
+                },
+                "property": "can_mention_group",
+            },
+        )
+
+        new_group = NamedUserGroup.objects.get(
+            name=SystemGroups.EVERYONE, realm=user_group.realm, is_system_group=True
+        )
+        now = timezone_now()
+        do_change_user_group_permission_setting(
+            user_group, "can_mention_group", new_group, acting_user=None
+        )
+        audit_log_entries = RealmAuditLog.objects.filter(
+            event_type=RealmAuditLog.USER_GROUP_GROUP_BASED_SETTING_CHANGED,
+            event_time__gte=now,
+        )
+        self.assert_length(audit_log_entries, 1)
+        self.assertIsNone(audit_log_entries[0].acting_user)
+        self.assertDictEqual(
+            audit_log_entries[0].extra_data,
+            {
+                RealmAuditLog.OLD_VALUE: {
+                    "direct_members": [othello.id],
+                    "direct_subgroups": [moderators_group.id],
+                },
                 RealmAuditLog.NEW_VALUE: new_group.id,
                 "property": "can_mention_group",
             },

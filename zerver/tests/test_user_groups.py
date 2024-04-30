@@ -671,6 +671,62 @@ class UserGroupAPITestCase(UserGroupTestCase):
         support_group = NamedUserGroup.objects.get(name="support", realm=hamlet.realm)
         self.assertEqual(support_group.can_mention_group, nobody_group.usergroup_ptr)
 
+        othello = self.example_user("othello")
+        params = {
+            "can_mention_group": orjson.dumps(
+                {
+                    "direct_members": [othello.id],
+                    "direct_subgroups": [moderators_group.id, marketing_group.id],
+                }
+            ).decode()
+        }
+        result = self.client_patch(f"/json/user_groups/{support_group.id}", info=params)
+        self.assert_json_success(result)
+        support_group = NamedUserGroup.objects.get(name="support", realm=hamlet.realm)
+        self.assertCountEqual(
+            list(support_group.can_mention_group.direct_members.all()),
+            [othello],
+        )
+        self.assertCountEqual(
+            list(support_group.can_mention_group.direct_subgroups.all()),
+            [marketing_group, moderators_group],
+        )
+
+        prospero = self.example_user("prospero")
+        params = {
+            "can_mention_group": orjson.dumps(
+                {
+                    "direct_members": [othello.id, prospero.id],
+                    "direct_subgroups": [moderators_group.id, marketing_group.id],
+                }
+            ).decode()
+        }
+        previous_can_mention_group_id = support_group.can_mention_group_id
+        result = self.client_patch(f"/json/user_groups/{support_group.id}", info=params)
+        self.assert_json_success(result)
+        support_group = NamedUserGroup.objects.get(name="support", realm=hamlet.realm)
+
+        # Test that the existing UserGroup object is updated.
+        self.assertEqual(support_group.can_mention_group_id, previous_can_mention_group_id)
+        self.assertCountEqual(
+            list(support_group.can_mention_group.direct_members.all()),
+            [othello, prospero],
+        )
+        self.assertCountEqual(
+            list(support_group.can_mention_group.direct_subgroups.all()),
+            [marketing_group, moderators_group],
+        )
+
+        params = {"can_mention_group": orjson.dumps(marketing_group.id).decode()}
+        previous_can_mention_group_id = support_group.can_mention_group_id
+        result = self.client_patch(f"/json/user_groups/{support_group.id}", info=params)
+        self.assert_json_success(result)
+        support_group = NamedUserGroup.objects.get(name="support", realm=hamlet.realm)
+
+        # Test that the previous UserGroup object is deleted.
+        self.assertFalse(UserGroup.objects.filter(id=previous_can_mention_group_id).exists())
+        self.assertEqual(support_group.can_mention_group_id, marketing_group.id)
+
         owners_group = NamedUserGroup.objects.get(
             name="role:owners", realm=hamlet.realm, is_system_group=True
         )
@@ -698,6 +754,28 @@ class UserGroupAPITestCase(UserGroupTestCase):
         }
         result = self.client_patch(f"/json/user_groups/{support_group.id}", info=params)
         self.assert_json_error(result, "Invalid user group")
+
+        params = {
+            "can_mention_group": orjson.dumps(
+                {
+                    "direct_members": [1111, othello.id],
+                    "direct_subgroups": [moderators_group.id, marketing_group.id],
+                }
+            ).decode()
+        }
+        result = self.client_patch(f"/json/user_groups/{support_group.id}", info=params)
+        self.assert_json_error(result, "Invalid user ID: 1111")
+
+        params = {
+            "can_mention_group": orjson.dumps(
+                {
+                    "direct_members": [prospero.id, othello.id],
+                    "direct_subgroups": [1111, marketing_group.id],
+                }
+            ).decode()
+        }
+        result = self.client_patch(f"/json/user_groups/{support_group.id}", info=params)
+        self.assert_json_error(result, "Invalid user group ID: 1111")
 
     def test_user_group_update_to_already_existing_name(self) -> None:
         hamlet = self.example_user("hamlet")

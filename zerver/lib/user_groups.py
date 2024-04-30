@@ -242,9 +242,7 @@ def update_or_create_user_group_for_setting(
     direct_subgroups: List[int],
     current_setting_value: Optional[UserGroup],
 ) -> UserGroup:
-    if current_setting_value is not None and not hasattr(
-        current_setting_value, "named_user_group"
-    ):  # nocoverage
+    if current_setting_value is not None and not hasattr(current_setting_value, "named_user_group"):
         # We do not create a new group if the setting was already set
         # to an anonymous group. The memberships of existing group
         # itself are updated.

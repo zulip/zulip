@@ -30,6 +30,7 @@ from zerver.lib.user_groups import (
     access_user_group_for_setting,
     check_user_group_name,
     get_direct_memberships_of_users,
+    get_group_setting_value_for_api,
     get_subgroup_ids,
     get_user_group_direct_member_ids,
     get_user_group_member_ids,
@@ -39,7 +40,7 @@ from zerver.lib.user_groups import (
 )
 from zerver.lib.users import access_user_by_id, user_ids_to_users
 from zerver.lib.validator import check_bool, check_dict_only, check_int, check_list, check_union
-from zerver.models import NamedUserGroup, UserProfile
+from zerver.models import NamedUserGroup, UserGroup, UserProfile
 from zerver.models.users import get_system_bot
 from zerver.views.streams import compose_views
 
@@ -121,6 +122,34 @@ def get_user_group(request: HttpRequest, user_profile: UserProfile) -> HttpRespo
     return json_success(request, data={"user_groups": user_groups})
 
 
+def are_both_setting_values_equal(
+    first_setting_value: Union[int, AnonymousSettingGroupDict],
+    second_setting_value: Union[int, AnonymousSettingGroupDict],
+) -> bool:
+    if isinstance(first_setting_value, int) and isinstance(second_setting_value, int):
+        return first_setting_value == second_setting_value
+
+    if isinstance(first_setting_value, AnonymousSettingGroupDict) and isinstance(
+        second_setting_value, AnonymousSettingGroupDict
+    ):
+        return set(first_setting_value.direct_members) == set(
+            second_setting_value.direct_members
+        ) and set(first_setting_value.direct_subgroups) == set(
+            second_setting_value.direct_subgroups
+        )
+
+    return False
+
+
+def check_setting_value_changed(
+    current_value: UserGroup,
+    new_setting_value: Union[int, AnonymousSettingGroupDict],
+) -> bool:
+    current_setting_api_value = get_group_setting_value_for_api(current_value)
+
+    return not are_both_setting_values_equal(current_setting_api_value, new_setting_value)
+
+
 @transaction.atomic
 @require_user_group_edit_permission
 @has_request_variables
@@ -130,11 +159,11 @@ def edit_user_group(
     user_group_id: int = REQ(json_validator=check_int, path_only=True),
     name: Optional[str] = REQ(default=None),
     description: Optional[str] = REQ(default=None),
-    can_mention_group_id: Optional[int] = REQ(
-        "can_mention_group", json_validator=check_int, default=None
+    can_mention_group: Optional[Union[Dict[str, List[int]], int]] = REQ(
+        json_validator=check_group_setting, default=None
     ),
 ) -> HttpResponse:
-    if name is None and description is None and can_mention_group_id is None:
+    if name is None and description is None and can_mention_group is None:
         raise JsonableError(_("No new data supplied"))
 
     user_group = access_user_group_by_id(user_group_id, user_profile, for_read=False)
@@ -148,20 +177,21 @@ def edit_user_group(
 
     request_settings_dict = locals()
     for setting_name, permission_config in NamedUserGroup.GROUP_PERMISSION_SETTINGS.items():
-        setting_group_id_name = permission_config.id_field_name
-
-        if setting_group_id_name not in request_settings_dict:  # nocoverage
+        if setting_name not in request_settings_dict:  # nocoverage
             continue
 
-        if request_settings_dict[setting_group_id_name] is not None and request_settings_dict[
-            setting_group_id_name
-        ] != getattr(user_group, setting_group_id_name):
-            setting_value_group_id = request_settings_dict[setting_group_id_name]
+        if request_settings_dict[setting_name] is None:
+            continue
+
+        current_value = getattr(user_group, setting_name)
+        new_setting_value = parse_group_setting_value(request_settings_dict[setting_name])
+        if check_setting_value_changed(current_value, new_setting_value):
             setting_value_group = access_user_group_for_setting(
-                setting_value_group_id,
+                new_setting_value,
                 user_profile,
                 setting_name=setting_name,
                 permission_configuration=permission_config,
+                current_setting_value=current_value,
             )
             do_change_user_group_permission_setting(
                 user_group, setting_name, setting_value_group, acting_user=user_profile
