@@ -3460,7 +3460,10 @@ class BillingSession(ABC):
                 currency=invoice_item.currency,
                 customer=stripe_invoice.customer,
                 description=invoice_item.description,
-                period=invoice_item.period,
+                period={
+                    "start": invoice_item.period.start,
+                    "end": invoice_item.period.end,
+                },
                 **price_args,
             )
 
