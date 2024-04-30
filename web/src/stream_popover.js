@@ -121,7 +121,7 @@ function build_stream_popover(opts) {
                 const sub = stream_popover_sub(e);
                 hide_stream_popover();
 
-                const stream_edit_hash = hash_util.stream_edit_url(sub, "general");
+                const stream_edit_hash = hash_util.channels_settings_edit_url(sub, "general");
                 browser_history.go_to_location(stream_edit_hash);
             });
 
