@@ -94,7 +94,7 @@ class TutorialTests(ZulipTestCase):
             self.send_personal_message(user, bot, content)
             expected_response = (
                 "In Zulip, channels [determine who gets a message](/help/streams-and-topics).\n\n"
-                "[Browse and subscribe to channels](#streams/all)."
+                "[Browse and subscribe to channels](#channels/all)."
             )
             self.assertEqual(most_recent_message(user).content, expected_response)
 

@@ -53,7 +53,7 @@ run_test("hash_util", () => {
 });
 
 run_test("test_get_hash_category", () => {
-    assert.deepEqual(hash_parser.get_hash_category("streams/subscribed"), "streams");
+    assert.deepEqual(hash_parser.get_hash_category("channels/subscribed"), "channels");
     assert.deepEqual(hash_parser.get_hash_category("#settings/preferences"), "settings");
     assert.deepEqual(hash_parser.get_hash_category("#drafts"), "drafts");
     assert.deepEqual(hash_parser.get_hash_category("invites"), "invites");
@@ -63,7 +63,7 @@ run_test("test_get_hash_category", () => {
 });
 
 run_test("test_get_hash_section", () => {
-    assert.equal(hash_parser.get_hash_section("streams/subscribed"), "subscribed");
+    assert.equal(hash_parser.get_hash_section("channels/subscribed"), "subscribed");
     assert.equal(hash_parser.get_hash_section("#settings/profile"), "profile");
 
     assert.equal(hash_parser.get_hash_section("settings/10/general/"), "10");
@@ -138,15 +138,15 @@ run_test("build_reload_url", () => {
 });
 
 run_test("test is_editing_stream", () => {
-    window.location.hash = "#streams/1/announce";
+    window.location.hash = "#channels/1/announce";
     assert.equal(hash_parser.is_editing_stream(1), true);
     assert.equal(hash_parser.is_editing_stream(2), false);
 
     // url is missing name at end
-    window.location.hash = "#streams/1";
+    window.location.hash = "#channels/1";
     assert.equal(hash_parser.is_editing_stream(1), false);
 
-    window.location.hash = "#streams/bogus/bogus";
+    window.location.hash = "#channels/bogus/bogus";
     assert.equal(hash_parser.is_editing_stream(1), false);
 
     window.location.hash = "#test/narrow";
@@ -154,7 +154,7 @@ run_test("test is_editing_stream", () => {
 });
 
 run_test("test_is_create_new_stream_narrow", () => {
-    window.location.hash = "#streams/new";
+    window.location.hash = "#channels/new";
     assert.equal(hash_parser.is_create_new_stream_narrow(), true);
 
     window.location.hash = "#some/random/hash";
@@ -162,13 +162,13 @@ run_test("test_is_create_new_stream_narrow", () => {
 });
 
 run_test("test_is_subscribers_section_opened_for_stream", () => {
-    window.location.hash = "#streams/1/Design/subscribers";
+    window.location.hash = "#channels/1/Design/subscribers";
     assert.equal(hash_parser.is_subscribers_section_opened_for_stream(), true);
 
-    window.location.hash = "#streams/99/.EC.A1.B0.EB.A6.AC.EB.B2.95.20.F0.9F.98.8E/subscribers";
+    window.location.hash = "#channels/99/.EC.A1.B0.EB.A6.AC.EB.B2.95.20.F0.9F.98.8E/subscribers";
     assert.equal(hash_parser.is_subscribers_section_opened_for_stream(), true);
 
-    window.location.hash = "#streams/random/subscribers";
+    window.location.hash = "#channels/random/subscribers";
     assert.equal(hash_parser.is_subscribers_section_opened_for_stream(), false);
 
     window.location.hash = "#some/random/place/subscribers";
@@ -203,7 +203,7 @@ run_test("test_stream_edit_url", () => {
     };
     assert.equal(
         hash_util.stream_edit_url(sub, "general"),
-        "#streams/42/research.20.26.20development/general",
+        "#channels/42/research.20.26.20development/general",
     );
 });
 

@@ -42,7 +42,7 @@ async function navigate_to_subscriptions(page: Page): Promise<void> {
 
     await open_menu(page);
 
-    const manage_streams_selector = '.link-item a[href^="#streams"]';
+    const manage_streams_selector = '.link-item a[href^="#channels"]';
     await page.waitForSelector(manage_streams_selector, {visible: true});
     await page.click(manage_streams_selector);
 

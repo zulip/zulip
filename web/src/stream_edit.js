@@ -44,9 +44,9 @@ export function setup_subscriptions_tab_hash(tab_key_value) {
         return;
     }
     if (tab_key_value === "all-streams") {
-        browser_history.update("#streams/all");
+        browser_history.update("#channels/all");
     } else if (tab_key_value === "subscribed") {
-        browser_history.update("#streams/subscribed");
+        browser_history.update("#channels/subscribed");
     } else {
         blueslip.debug("Unknown tab_key_value: " + tab_key_value);
     }

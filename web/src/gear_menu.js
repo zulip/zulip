@@ -59,7 +59,7 @@ The menu itself has the selector
 The items with the prefix of "hash:" are in-page
 links:
 
-    #streams
+    #channels
     #settings
     #organization
     #about-zulip

@@ -1471,7 +1471,7 @@ def send_pm_if_empty_stream(
                     arg_dict = {
                         **arg_dict,
                         "channel_name": f"#**{stream_name}**",
-                        "new_channel_link": "#streams/new",
+                        "new_channel_link": "#channels/new",
                     }
                     content = _(
                         "Your bot {bot_identity} tried to send a message to channel "

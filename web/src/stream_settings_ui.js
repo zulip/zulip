@@ -731,7 +731,7 @@ function show_right_section() {
 }
 
 export function change_state(section, left_side_tab, right_side_tab) {
-    // if in #streams/new form.
+    // if in #channels/new form.
     if (section === "new") {
         do_open_create_stream();
         show_right_section();
@@ -880,7 +880,7 @@ export function do_open_create_stream() {
 
 export function open_create_stream() {
     do_open_create_stream();
-    browser_history.update("#streams/new");
+    browser_history.update("#channels/new");
 }
 
 export function update_stream_privacy_choices(policy) {

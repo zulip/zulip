@@ -8,9 +8,9 @@ be used to deep-link into the application and allow the browser's
 Some examples are:
 
 - `/#settings/your-bots`: Bots section of the settings overlay.
-- `/#streams`: Streams overlay, where the user manages streams
+- `/#channels`: Streams overlay, where the user manages streams
   (subscription etc.)
-- `/#streams/11/announce`: Streams overlay with stream ID 11 (called
+- `/#channels/11/announce`: Streams overlay with stream ID 11 (called
   "announce") selected.
 - `/#narrow/stream/42-android/topic/fun`: Message feed showing stream
   "android" and topic "fun". (The `42` represents the id of the
@@ -25,7 +25,7 @@ different flows:
 - The user clicking on an in-app link, which in turn opens an overlay.
   For example the streams overlay opens when the user clicks the small
   cog symbol on the left sidebar, which is in fact a link to
-  `/#streams`. This makes it easy to have simple links around the app
+  `/#channels`. This makes it easy to have simple links around the app
   without custom click handlers for each one.
 - The user uses the "back" button in their browser (basically
   equivalent to the previous one, as a _link_ out of the browser history
