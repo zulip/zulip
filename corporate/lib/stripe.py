@@ -1320,13 +1320,15 @@ class BillingSession(ABC):
                 collection_method = "send_invoice"
                 days_until_due = DEFAULT_INVOICE_DAYS_UNTIL_DUE
 
-            stripe_invoice = stripe.Invoice.create(
+            invoice_params = stripe.Invoice.CreateParams(
                 auto_advance=True,
                 collection_method=collection_method,
                 customer=customer.stripe_customer_id,
-                days_until_due=days_until_due,
                 statement_descriptor=plan.name,
             )
+            if days_until_due is not None:
+                invoice_params["days_until_due"] = days_until_due
+            stripe_invoice = stripe.Invoice.create(**invoice_params)
             stripe.Invoice.finalize_invoice(stripe_invoice)
 
         if plan.status < CustomerPlan.LIVE_STATUS_THRESHOLD:
@@ -2264,13 +2266,15 @@ class BillingSession(ABC):
             else:
                 collection_method = "send_invoice"
                 days_until_due = DEFAULT_INVOICE_DAYS_UNTIL_DUE
-            stripe_invoice = stripe.Invoice.create(
+            invoice_params = stripe.Invoice.CreateParams(
                 auto_advance=True,
                 collection_method=collection_method,
                 customer=plan.customer.stripe_customer_id,
-                days_until_due=days_until_due,
                 statement_descriptor=plan.name,
             )
+            if days_until_due is not None:
+                invoice_params["days_until_due"] = days_until_due
+            stripe_invoice = stripe.Invoice.create(**invoice_params)
             stripe.Invoice.finalize_invoice(stripe_invoice)
 
         plan.next_invoice_date = next_invoice_date(plan)
