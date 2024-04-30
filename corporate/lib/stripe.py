@@ -5264,8 +5264,9 @@ def get_all_invoices_for_customer(customer: Customer) -> Generator[stripe.Invoic
         for invoice in invoices:
             yield invoice
             last_invoice = invoice
+        assert last_invoice.id is not None
         invoices = stripe.Invoice.list(
-            customer=customer.stripe_customer_id, starting_after=last_invoice, limit=100
+            customer=customer.stripe_customer_id, starting_after=last_invoice.id, limit=100
         )
 
 
