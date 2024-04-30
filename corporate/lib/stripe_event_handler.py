@@ -134,7 +134,6 @@ def handle_payment_intent_succeeded_event(
             auto_advance=True,
             collection_method="charge_automatically",
             customer=stripe_payment_intent.customer,
-            days_until_due=None,
             statement_descriptor=CustomerPlan.name_from_tier(plan_tier).replace("Zulip ", "")
             + " Credit",
         )
