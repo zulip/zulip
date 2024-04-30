@@ -173,7 +173,8 @@ The above data is posted as list of tuples (not JSON), here's an example:
  ('timestamp', 1532078950),
  ('user_id', 'U21'),
  ('user_name', 'Full Name'),
- ('text', '@**test**'),
+ ('command', '@**test**'),
+ ('text', 'The content of the message'),
  ('trigger_word', 'mention'),
  ('service_id', 27)]
 ```
