@@ -790,12 +790,13 @@ class BillingSession(ABC):
         assert customer is not None and customer.stripe_customer_id is not None
 
         # Check if customer has any $0 invoices.
-        if stripe.Invoice.list(
+        list_params = stripe.Invoice.ListParams(
             customer=customer.stripe_customer_id,
             limit=1,
             status="paid",
-            total=0,
-        ).data:  # nocoverage
+        )
+        list_params["total"] = 0  # type: ignore[typeddict-unknown-key]  # Not documented or annotated, but https://github.com/zulip/zulip/pull/28785/files#r1477005528 says it works
+        if stripe.Invoice.list(**list_params).data:  # nocoverage
             # These are payment for upgrades which were paid directly by the customer and then we
             # created an invoice for them resulting in `$0` invoices since there was no amount due.
             headline += " ($0 invoices include payment)"
