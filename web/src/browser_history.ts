@@ -154,3 +154,21 @@ export function set_hash(hash: string): void {
         window.location.hash = hash;
     }
 }
+
+type StateData = {
+    narrow_pointer?: number;
+    narrow_offset?: number;
+    show_more_topics?: boolean;
+};
+
+export function update_current_history_state_data(new_data: StateData): void {
+    // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+    const current_state = history.state as StateData | null;
+    const current_state_data = {
+        narrow_pointer: current_state?.narrow_pointer,
+        narrow_offset: current_state?.narrow_offset,
+        show_more_topics: current_state?.show_more_topics,
+    };
+    const state_data = {...current_state_data, ...new_data};
+    history.replaceState(state_data, "", window.location.href);
+}
