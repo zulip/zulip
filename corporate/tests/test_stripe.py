@@ -5314,6 +5314,7 @@ class TestSupportBillingHelpers(StripeTestCase):
         self.add_card_and_upgrade(user)
         customer = Customer.objects.first()
         assert customer is not None
+        assert customer.stripe_customer_id is not None
         [charge] = iter(stripe.Charge.list(customer=customer.stripe_customer_id))
         self.assertEqual(1200 * self.seat_count, charge.amount)
         stripe_customer_id = customer.stripe_customer_id

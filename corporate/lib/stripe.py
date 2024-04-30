@@ -970,6 +970,7 @@ class BillingSession(ABC):
     ) -> Dict[str, Any]:
         metadata = self.get_metadata_for_stripe_update_card()
         customer = self.update_or_create_stripe_customer()
+        assert customer.stripe_customer_id is not None
         cancel_url = f"{self.billing_session_url}/upgrade/"
         if manual_license_management:
             cancel_url = f"{self.billing_session_url}/upgrade/?manual_license_management=true"
@@ -2237,6 +2238,7 @@ class BillingSession(ABC):
                 plan.invoiced_through = ledger_entry
                 plan.invoicing_status = CustomerPlan.INVOICING_STATUS_STARTED
                 plan.save(update_fields=["invoicing_status", "invoiced_through"])
+                assert plan.customer.stripe_customer_id is not None
                 stripe.InvoiceItem.create(
                     currency="usd",
                     customer=plan.customer.stripe_customer_id,
