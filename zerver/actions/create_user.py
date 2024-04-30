@@ -10,7 +10,6 @@ from django.utils.translation import override as override_language
 
 from analytics.lib.counts import COUNT_STATS, do_increment_logging_stat
 from confirmation import settings as confirmation_settings
-from zerver.actions.invites import notify_invites_changed
 from zerver.actions.message_send import (
     internal_send_huddle_message,
     internal_send_private_message,
@@ -24,6 +23,7 @@ from zerver.lib.create_user import create_user
 from zerver.lib.default_streams import get_slim_realm_default_streams
 from zerver.lib.email_notifications import enqueue_welcome_emails, send_account_registered_email
 from zerver.lib.exceptions import JsonableError
+from zerver.lib.invites import notify_invites_changed
 from zerver.lib.mention import silent_mention_syntax_for_user
 from zerver.lib.remote_server import maybe_enqueue_audit_log_upload
 from zerver.lib.send_email import clear_scheduled_invitation_emails
