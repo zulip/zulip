@@ -708,6 +708,9 @@ of the base style defined for a read-only textarea in dark mode. */
     grid-area: date_row;
 
     & span {
+        display: block;
+        overflow: hidden;
+        text-transform: uppercase;
         font-size: calc(12em / 14);
         font-style: normal;
         font-weight: 600;

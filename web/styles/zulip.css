@@ -2147,12 +2147,11 @@ select.invite-as {
     text-align: center;
 }
 
-.sub-unsub-message span,
-.date_row span {
+.sub-unsub-message span {
+    font-size: 1em;
     display: block;
     padding: 4px;
     overflow: hidden;
-    text-transform: uppercase;
 }
 
 .sub-unsub-message .stream-status {
@@ -2168,11 +2167,6 @@ select.invite-as {
     .zulip-icon.zulip-icon-lock {
         font-size: 12px;
     }
-}
-
-.sub-unsub-message span {
-    font-size: 1em;
-    text-transform: none;
 }
 
 .sub-unsub-message span::before,
