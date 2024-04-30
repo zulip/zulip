@@ -10,7 +10,7 @@
 * [Reading conversations](/help/reading-conversations)
 * [Starting a new topic](/help/starting-a-new-topic)
 * [Replying to messages](/help/replying-to-messages)
-* [Creating streams for your organization](/help/getting-your-organization-started-with-zulip#create-streams)
+* [Creating channels for your organization](/help/getting-your-organization-started-with-zulip#create-channels)
 * [Stream permissions](/help/stream-permissions)
 * Browse the articles under **Channels & topics** and
   **Channel management** on the left sidebar.

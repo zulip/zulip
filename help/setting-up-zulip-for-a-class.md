@@ -205,9 +205,9 @@ how to assign roles and permissions for a class.
 - Set [who can create and manage user groups][user-group-permissions].
   (Recommended: Admins and moderators)
 
-## Create streams
+## Create channels
 
-{!create-streams-intro.md!}
+{!create-channels-intro.md!}
 
 ### How to create a stream
 

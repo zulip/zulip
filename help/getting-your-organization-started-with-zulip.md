@@ -49,9 +49,9 @@ us know!
 
 {!customize-organization-settings.md!}
 
-## Create streams
+## Create channels
 
-{!create-streams-intro.md!}
+{!create-channels-intro.md!}
 
 ### How to create a stream
 
@@ -68,9 +68,9 @@ us know!
 For more details about stream settings, see [Create a
 stream](/help/create-a-stream#stream-options).
 
-### Tips for creating streams
+### Tips for creating channels
 
-{!tips-for-creating-streams.md!}
+{!tips-for-creating-channels.md!}
 
 ## Customize settings for new users
 

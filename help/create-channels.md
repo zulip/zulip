@@ -1,16 +1,16 @@
-# Create streams
+# Create channels
 
-{!create-streams-intro.md!}
+{!create-channels-intro.md!}
 
-## How to create a stream
+## How to create a channel
 
-{!create-a-stream-instructions.md!}
+{!create-a-channel-instructions.md!}
 
-For more details about stream settings, see [Create a stream](/help/create-a-stream#stream-options).
+For more details about channel settings, see [Create a channel](/help/create-a-stream#stream-options).
 
-## Tips for creating streams
+## Tips for creating channels
 
-{!tips-for-creating-streams.md!}
+{!tips-for-creating-channels.md!}
 
 ## Related articles
 

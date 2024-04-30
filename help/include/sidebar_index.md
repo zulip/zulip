@@ -24,7 +24,7 @@
 * [Migrating from other chat tools](/help/migrating-from-other-chat-tools)
 * [Create your organization profile](/help/create-your-organization-profile)
 * [Customize organization settings](/help/customize-organization-settings)
-* [Create streams](/help/create-streams)
+* [Create channels](/help/create-channels)
 * [Customize settings for new users](/help/customize-settings-for-new-users)
 * [Invite users to join](/help/invite-users-to-join)
 * [Create user groups](/help/create-user-groups)

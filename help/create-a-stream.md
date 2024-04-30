@@ -5,11 +5,11 @@ By default, all users other than guests can create streams. Administrators can
 [roles](/help/roles-and-permissions).
 
 If you are an administrator setting up streams for the first time, check out our
-[guide to setting up streams for a new organization](/help/create-streams).
+[guide to setting up channels for a new organization](/help/create-channels).
 
-## Create a stream
+## Create a channel
 
-{!create-a-stream-instructions.md!}
+{!create-a-channel-instructions.md!}
 
 ## Stream options
 
@@ -44,7 +44,7 @@ There are several parameters you can set while creating a stream. All but
 
 ## Related articles
 
-* [Create streams for a new organization](/help/create-streams)
+* [Create channels for a new organization](/help/create-channels)
 * [Stream permissions](/help/stream-permissions)
 * [Set default streams for new users](/help/set-default-streams-for-new-users)
 * [Browse and subscribe to streams](/help/browse-and-subscribe-to-streams)
