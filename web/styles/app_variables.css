@@ -494,6 +494,12 @@
 }
 
 %dark-theme {
+    /* There is no lefthand border to cover in dark mode, so
+       don't apply negative margin that would otherwise pull
+       the unread marker to the left. */
+    --unread-marker-left: 0;
+
+    /* Colors used across the app */
     --color-date: hsl(0deg 0% 100% / 75%);
     --color-background-private-message-header: hsl(46deg 15% 20%);
     --color-background-private-message-content: hsl(46deg 7% 16%);
