@@ -869,17 +869,21 @@ class Attacher {
     }
 }
 
-export function get_search_result(query: string): Suggestion[] {
+export function get_search_result(query_from_pills: string, query_from_text: string): Suggestion[] {
     let suggestion_line: SuggestionLine;
 
     // search_terms correspond to the terms for the query in the input.
     // This includes the entire query entered in the searchbox.
     // terms correspond to the terms for the entire query entered in the searchbox.
-    const search_terms = Filter.parse(query);
+    const pill_search_terms = Filter.parse(query_from_pills);
+    const text_search_terms = Filter.parse(query_from_text);
+    let all_search_terms = [...pill_search_terms, ...text_search_terms];
 
+    // `last` will always be a text term, not a pill term. If there is no
+    // text, then `last` is this default empty term.
     let last: NarrowTerm = {operator: "", operand: "", negated: false};
-    if (search_terms.length > 0) {
-        last = search_terms.at(-1)!;
+    if (text_search_terms.length > 0) {
+        last = text_search_terms.at(-1)!;
     }
 
     const person_suggestion_ops = ["sender", "dm", "dm-including", "from", "pm-with"];
@@ -891,23 +895,25 @@ export function get_search_result(query: string): Suggestion[] {
     // is an email of a user, both of these terms remain unchanged. Otherwise search operator
     // will be deleted and new last will become {operator:'sender', operand: 'Ted sm`....}.
     if (
-        search_terms.length > 1 &&
+        text_search_terms.length > 1 &&
         last.operator === "search" &&
-        person_suggestion_ops.includes(search_terms.at(-2)!.operator)
+        person_suggestion_ops.includes(text_search_terms.at(-2)!.operator)
     ) {
-        const person_op = search_terms.at(-2)!;
+        const person_op = text_search_terms.at(-2)!;
         if (!people.reply_to_to_user_ids_string(person_op.operand)) {
             last = {
                 operator: person_op.operator,
                 operand: person_op.operand + " " + last.operand,
                 negated: person_op.negated,
             };
-            search_terms.splice(-2);
-            search_terms.push(last);
+            text_search_terms.splice(-2);
+            text_search_terms.push(last);
+            all_search_terms = [...pill_search_terms, ...text_search_terms];
         }
     }
 
-    const base = get_default_suggestion_line(search_terms.slice(0, -1));
+    const base_terms = [...pill_search_terms, ...text_search_terms.slice(0, -1)];
+    const base = get_default_suggestion_line(base_terms);
     const attacher = new Attacher(base);
 
     // Display the default first
@@ -925,8 +931,8 @@ export function get_search_result(query: string): Suggestion[] {
             },
         ];
         attacher.push([...attacher.base, ...suggestion_line]);
-    } else if (last.operator !== "" && last.operator !== "has" && last.operator !== "is") {
-        suggestion_line = get_default_suggestion_line(search_terms);
+    } else if (all_search_terms.length > 0 && last.operator !== "has" && last.operator !== "is") {
+        suggestion_line = get_default_suggestion_line(all_search_terms);
         attacher.push(suggestion_line);
     }
 
@@ -968,7 +974,6 @@ export function get_search_result(query: string): Suggestion[] {
         ];
     }
 
-    const base_terms = search_terms.slice(0, -1);
     const max_items = max_num_of_search_results;
 
     for (const filterer of filterers) {
@@ -979,18 +984,21 @@ export function get_search_result(query: string): Suggestion[] {
     }
 
     if (attacher.result.length < max_items) {
-        const subset_suggestions = get_term_subset_suggestions(search_terms);
+        const subset_suggestions = get_term_subset_suggestions(all_search_terms);
         const subset_suggestion_lines = subset_suggestions.map((suggestion) => [suggestion]);
         attacher.push_many(subset_suggestion_lines);
     }
     return attacher.get_result().slice(0, max_items);
 }
 
-export function get_suggestions(query: string): {
+export function get_suggestions(
+    query_from_pills: string,
+    query_from_text: string,
+): {
     strings: string[];
     lookup_table: Map<string, Suggestion>;
 } {
-    const result = get_search_result(query);
+    const result = get_search_result(query_from_pills, query_from_text);
     return finalize_search_result(result);
 }
 

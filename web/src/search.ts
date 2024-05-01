@@ -103,7 +103,7 @@ export function initialize({on_narrow_search}: {on_narrow_search: OnNarrowSearch
             assert(search_pill_widget !== null);
             const query_from_pills =
                 search_pill.get_current_search_string_for_widget(search_pill_widget);
-            const suggestions = search_suggestion.get_suggestions(`${query_from_pills} ${query}`);
+            const suggestions = search_suggestion.get_suggestions(query_from_pills, query);
             // Update our global search_map hash
             search_map = suggestions.lookup_table;
             return suggestions.strings;
