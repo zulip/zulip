@@ -110,7 +110,7 @@ async function un_narrow(page: Page): Promise<void> {
     await page.waitForSelector(".message-list .message_row", {visible: true});
     // Assert that there is only one message list.
     assert.equal((await page.$$(".message-list")).length, 1);
-    assert.strictEqual(await page.title(), "Zulip Dev - All messages - Zulip");
+    assert.strictEqual(await page.title(), "Zulip Dev - Combined Feed - Zulip");
 }
 
 async function un_narrow_by_clicking_org_icon(page: Page): Promise<void> {
