@@ -158,7 +158,6 @@ export function send_message_success(request, data) {
             // topic has been automatically unmuted or followed. No need to
             // suggest the user to unmute. Show the banner and return.
             compose_notifications.notify_automatic_new_visibility_policy(request, data);
-            onboarding_steps.post_onboarding_step_as_read("visibility_policy_banner");
             return;
         }
 
