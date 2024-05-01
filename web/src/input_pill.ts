@@ -370,7 +370,12 @@ export function create<T>(opts: InputPillCreateOptions<T>): InputPillContainer<T
 
                 return;
             }
+        });
 
+        // Register our `onTextInputHook` to be called on "input" events so that
+        // the hook receives the updated text content of the input unlike the "keydown"
+        // event which does not have the updated text content.
+        store.$parent.on("input", ".input", () => {
             store.onTextInputHook?.();
         });
 
