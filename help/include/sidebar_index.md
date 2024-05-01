@@ -137,7 +137,7 @@
 * [Rename a topic](/help/rename-a-topic)
 * [Resolve a topic](/help/resolve-a-topic)
 * [Move content to another topic](/help/move-content-to-another-topic)
-* [Move content to another stream](/help/move-content-to-another-stream)
+* [Move content to another channel](/help/move-content-to-another-channel)
 * [Delete a topic](/help/delete-a-topic)
 * [Manage inactive streams](/help/manage-inactive-streams)
 

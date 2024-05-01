@@ -48,7 +48,7 @@ unresolved](/help/resolve-a-topic). These notices will be marked as unread only
 for users who had participated in the topic.
 
 Additionally, when moving messages to another
-[stream](/help/move-content-to-another-stream) or
+[channel](/help/move-content-to-another-channel) or
 [topic](/help/move-content-to-another-topic), users can decide whether to send
 automated notices to help others understand how content was moved.
 

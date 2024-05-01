@@ -46,7 +46,7 @@ Viewing a topic via a message link will never mark messages as read.
 
 These links will still work even when the message is
 [moved to another topic](/help/move-content-to-another-topic)
-or [stream](/help/move-content-to-another-stream) or
+or [channel](/help/move-content-to-another-channel) or
 if its [topic is resolved](/help/resolve-a-topic).
 
 Zulip uses the same permanent link syntax when [quoting a

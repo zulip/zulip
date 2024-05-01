@@ -86,7 +86,7 @@ off the discussion by [starting a new topic](/help/starting-a-new-topic)
 in the appropriate stream! Don’t stress too much about picking the
 right place if you’re not sure; anyone in the community can edit a
 topic name, and [moderators](/help/roles-and-permissions) can [move a
-topic to a different stream](/help/move-content-to-another-stream).
+topic to a different stream](/help/move-content-to-another-channel).
 
 ## Streams for everyone
 

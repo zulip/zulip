@@ -162,7 +162,7 @@ With conversations organized by topic, you can review prior discussions to
 understand past work, explanations, and decisions — your chat history becomes a
 knowledge base. If a conversation shifts to a new topic, it’s easy to reorganize
 by moving messages to a different [topic](/help/move-content-to-another-topic)
-or [stream](/help/move-content-to-another-stream). There is no more rifling
+or [stream](/help/move-content-to-another-channel). There is no more rifling
 through unrelated chatter to find the context you need.  You can even [link to a
 Zulip
 conversation](/help/link-to-a-message-or-conversation#link-to-zulip-from-anywhere)

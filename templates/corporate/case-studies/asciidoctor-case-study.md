@@ -91,7 +91,7 @@ tools](/help/moderating-open-organizations) make it easy to fix. Community
 moderators can keep the dialogue organized by reclassifying topics and posts
 without disrupting the ongoing conversation. “If someone accidentally posts to
 the wrong stream or topic, Zulip allows me to [move those messages
-around](/help/move-content-to-another-stream) so they land in the right spot,”
+around](/help/move-content-to-another-channel) so they land in the right spot,”
 Dan says. “Moving messages also sends a subtle hint to the person posting about
 where to post the next time. And I can use [topic
 references](/help/link-to-a-message-or-conversation#link-to-a-stream-or-topic-within-zulip)

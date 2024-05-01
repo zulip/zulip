@@ -96,6 +96,7 @@ HELP_DOCUMENTATION_REDIRECTS: List[URLRedirect] = [
     ),
     URLRedirect("/help/pin-a-stream", "/help/pin-a-channel"),
     URLRedirect("/help/change-the-color-of-a-stream", "/help/change-the-color-of-a-channel"),
+    URLRedirect("/help/move-content-to-another-stream", "/help/move-content-to-another-channel"),
 ]
 
 LANDING_PAGE_REDIRECTS = [

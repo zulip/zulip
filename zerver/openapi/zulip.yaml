@@ -2067,7 +2067,7 @@ paths:
                                 for direct messages contained additional `sender_id` and
                                 `recipient_id` fields.
 
-                                [message-move-stream]: /help/move-content-to-another-stream
+                                [message-move-stream]: /help/move-content-to-another-channel
                                 [stream-access]: /help/stream-permissions
                               properties:
                                 id:

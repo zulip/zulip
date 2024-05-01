@@ -82,7 +82,7 @@ Permissions for moving messages between streams can be configured separately.
 * [Rename a topic](/help/rename-a-topic)
 * [Resolve a topic](/help/resolve-a-topic)
 * [Move content to another topic](/help/move-content-to-another-topic)
-* [Move content to another stream](/help/move-content-to-another-stream)
+* [Move content to another channel](/help/move-content-to-another-channel)
 * [Restrict message editing and
   deletion](/help/restrict-message-editing-and-deletion)
 * [Roles and permissions](/help/roles-and-permissions)
