@@ -26,12 +26,12 @@ There are several parameters you can set while creating a channel. All but
 * **Announce new stream in the [stream configured by your organization](/help/configure-automated-notices#new-stream-announcements)**:
   Posts a message in the "new streams" topic advertising the new stream.
 
-* **Who can access the stream?**: See [Stream permissions](/help/stream-permissions).
+* **Who can access the stream?**: See [Channel permissions](/help/channel-permissions).
 
 * **Default stream for new users**: Whether new users will be [automatically
   subscribed](/help/set-default-streams-for-new-users) to the new stream.
 
-* **Who can post to the stream?**: See [Stream permissions](/help/stream-permissions).
+* **Who can post to the stream?**: See [Channel permissions](/help/channel-permissions).
 
 * **Who can unsubscribe others from this stream?**: See
   [Restrict stream membership management](/help/configure-who-can-invite-to-streams#configure-who-can-remove-users).
@@ -45,6 +45,6 @@ There are several parameters you can set while creating a channel. All but
 ## Related articles
 
 * [Create channels for a new organization](/help/create-channels)
-* [Stream permissions](/help/stream-permissions)
+* [Channel permissions](/help/channel-permissions)
 * [Set default streams for new users](/help/set-default-streams-for-new-users)
 * [Browse and subscribe to channels](/help/browse-and-subscribe-to-channels)

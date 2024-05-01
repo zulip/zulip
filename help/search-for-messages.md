@@ -140,7 +140,7 @@ the specified rule. For example:
 
 ## Searching shared history
 
-Zulip's [stream permissions](/help/stream-permissions) model allows access to
+Zulip's [channel permissions](/help/channel-permissions) model allows access to
 the full history of public streams and private streams with shared history,
 including messages sent before you joined the stream (or organization), or those
 sent to public streams you are not subscribed to.

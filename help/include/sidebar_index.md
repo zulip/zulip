@@ -200,7 +200,7 @@
 * [Restrict permissions of new members](/help/restrict-permissions-of-new-members)
 
 ## Stream management
-* [Stream permissions](/help/stream-permissions)
+* [Channel permissions](/help/channel-permissions)
 * [Public access option](/help/public-access-option)
 * [Stream posting policy](/help/stream-sending-policy)
 * [Restrict stream creation](/help/configure-who-can-create-streams)

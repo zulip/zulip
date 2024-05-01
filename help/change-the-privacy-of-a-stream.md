@@ -4,7 +4,7 @@
 
 Streams can be [web-public](/help/public-access-option), public or private,
 and private streams can have shared or protected history.
-See [stream permissions](/help/stream-permissions) for
+See [channel permissions](/help/channel-permissions) for
 details on stream privacy settings.
 
 As an organization administrator, you can always make a public stream

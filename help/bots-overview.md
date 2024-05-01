@@ -55,7 +55,7 @@ A few more details:
 * Bots can be subscribed to streams, and their role can be modified if
   they need to have permission to do administrative actions.
 
-* [Stream permissions](/help/stream-permissions) are the same for bots
+* [Channel permissions](/help/channel-permissions) are the same for bots
   as for other users. Therefore, for private streams with protected
   history, a bot can only access messages sent after it subscribed
   to the stream.

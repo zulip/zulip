@@ -5,7 +5,7 @@
 !!! warn ""
 
       **Note**: The list of a user's **Subscribed channels** will be limited to
-      channels for which [you can see all subscribers](/help/stream-permissions).
+      channels for which [you can see all subscribers](/help/channel-permissions).
 
 {start_tabs}
 
@@ -87,7 +87,7 @@ channel](/help/unsubscribe-from-a-channel).
 
 ## Related articles
 
-* [Stream permissions](/help/stream-permissions)
+* [Channel permissions](/help/channel-permissions)
 * [Roles and permissions](/help/roles-and-permissions)
 * [Add or remove users from a channel](/help/add-or-remove-users-from-a-channel)
 * [Unsubscribe from a channel](/help/unsubscribe-from-a-channel)

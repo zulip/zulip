@@ -103,6 +103,7 @@ HELP_DOCUMENTATION_REDIRECTS: List[URLRedirect] = [
     URLRedirect(
         "/help/manage-user-stream-subscriptions", "/help/manage-user-channel-subscriptions"
     ),
+    URLRedirect("/help/stream-permissions", "/help/channel-permissions"),
 ]
 
 LANDING_PAGE_REDIRECTS = [

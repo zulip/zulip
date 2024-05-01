@@ -78,7 +78,7 @@ Access to messages moved to another channel will immediately be controlled by th
 access policies for the destination channel. Content moved to a private channel will
 thus appear to be deleted to users who are not subscribers of the destination channel.
 
-Content moved to a [private channel with protected history](/help/stream-permissions)
+Content moved to a [private channel with protected history](/help/channel-permissions)
 will only be accessible to users who both:
 
 * Were subscribed to the *original* channel when the content was *sent*.
@@ -86,7 +86,7 @@ will only be accessible to users who both:
 
 ## Moving content out of private channels
 
-In [private channels with protected history](/help/stream-permissions),
+In [private channels with protected history](/help/channel-permissions),
 Zulip determines whether to treat the entire topic as moved using the
 access permissions of the user requesting the topic move. This means
 that the automated notices sent by the notification bot will report

@@ -813,7 +813,7 @@ paths:
 
                                 When a user subscribes to a stream, the current user will receive this
                                 event only if they [have permission to see the stream's subscriber
-                                list](/help/stream-permissions). When the current user gains permission
+                                list](/help/channel-permissions). When the current user gains permission
                                 to see a given stream's subscriber list, they will receive this event
                                 for the existing subscriptions to the stream.
 
@@ -1274,7 +1274,7 @@ paths:
                                 organization administrators will receive this event).
 
                                 This event is also sent when a user gains access to a stream they
-                                previously [could not access](/help/stream-permissions), such as
+                                previously [could not access](/help/channel-permissions), such as
                                 when their [role](/help/roles-and-permissions) changes, a
                                 private stream is made public, or a guest user is subscribed
                                 to a public (or private) stream.
@@ -1345,7 +1345,7 @@ paths:
                                 Event sent to all users who can see a stream when it is deactivated.
 
                                 This event is also sent when a user loses access to a stream they
-                                previously [could access](/help/stream-permissions) because they
+                                previously [could access](/help/channel-permissions) because they
                                 are unsubscribed from a private stream or their [role](/help/roles-and-permissions)
                                 has changed.
 
@@ -2068,7 +2068,7 @@ paths:
                                 `recipient_id` fields.
 
                                 [message-move-stream]: /help/move-content-to-another-channel
-                                [stream-access]: /help/stream-permissions
+                                [stream-access]: /help/channel-permissions
                               properties:
                                 id:
                                   $ref: "#/components/schemas/EventIdSchema"
@@ -7996,7 +7996,7 @@ paths:
                           a target message ID of `first_message_id_allowed_to_move`, if the user
                           desires to move only the portion of the topic that they can.
 
-                          Note that in a stream with [protected history](/help/stream-permissions),
+                          Note that in a stream with [protected history](/help/channel-permissions),
                           the Zulip security model requires that the above calculations only include
                           messages the acting user has access to. So in the rare case of a user
                           attempting to move a topic that started before the user joined a private
@@ -9084,7 +9084,7 @@ paths:
         Get all topics the user has access to in a specific stream.
 
         Note that for private streams with [protected
-        history](/help/stream-permissions), the user will only have access to
+        history](/help/channel-permissions), the user will only have access to
         topics of messages sent after they [subscribed to](/api/subscribe) the
         stream. Similarly, a user's [bot](/help/bots-overview#bot-type)
         will only have access to messages sent after the bot was subscribed to
@@ -9242,7 +9242,7 @@ paths:
         by the optional parameters, like `invite_only`, detailed below.
 
         Note that the ability to subscribe oneself and/or other users to a specified
-        stream depends on the [stream's privacy settings](/help/stream-permissions).
+        stream depends on the [stream's privacy settings](/help/channel-permissions).
 
         **Changes**: Before Zulip 8.0 (feature level 208), if a user
         specified by the [`principals`][principals-param] parameter was
@@ -9609,9 +9609,9 @@ paths:
         - Organization administrators can remove any user from any
           stream.
         - Users can remove a bot that they own from any stream that
-          the user [can access](/help/stream-permissions).
+          the user [can access](/help/channel-permissions).
         - Users can unsubscribe any user from a stream if they [have
-          access](/help/stream-permissions) to the stream and are a
+          access](/help/channel-permissions) to the stream and are a
           member of the [user group](/api/get-user-groups) specified
           by the [`can_remove_subscribers_group`][can-remove-parameter]
           for the stream.
@@ -17571,7 +17571,7 @@ paths:
       summary: Get all streams
       tags: ["streams"]
       description: |
-        Get all streams that the user [has access to](/help/stream-permissions).
+        Get all streams that the user [has access to](/help/channel-permissions).
       x-curl-examples-parameters:
         oneOf:
           - type: include
@@ -17866,12 +17866,12 @@ paths:
         including:
 
         - Stream [name](/help/rename-a-stream) and [description](/help/change-the-stream-description)
-        - Stream [permissions](/help/stream-permissions), including
+        - Stream [permissions](/help/channel-permissions), including
           [privacy](/help/change-the-privacy-of-a-stream) and [who can
           send](/help/stream-sending-policy).
 
         Note that an organization administrator's ability to change a
-        [private stream's permissions](/help/stream-permissions#private-streams)
+        [private stream's permissions](/help/channel-permissions#private-channels)
         depends on them being subscribed to the stream.
       x-curl-examples-parameters:
         oneOf:
@@ -17951,7 +17951,7 @@ paths:
                     newly subscribed members, or users can only access messages
                     they actually received while subscribed to the stream.
 
-                    Corresponds to the [shared history](/help/stream-permissions)
+                    Corresponds to the [shared history](/help/channel-permissions)
                     option in documentation.
 
                     It's an error for this parameter to be false for a public or
@@ -21658,7 +21658,7 @@ components:
         newly subscribed members, or users can only access messages
         they actually received while subscribed to the stream.
 
-        Corresponds to the [shared history](/help/stream-permissions)
+        Corresponds to the [shared history](/help/channel-permissions)
         option in documentation.
       type: boolean
       example: false
@@ -21746,7 +21746,7 @@ components:
         ID of the [user group](/api/get-user-groups) whose members are
         allowed to unsubscribe others from the stream. Note that a user
         who is a member of the specified user group must also [have
-        access](/help/stream-permissions) to the stream in order to
+        access](/help/channel-permissions) to the stream in order to
         unsubscribe others.
 
         This setting can currently only be set to user groups that are

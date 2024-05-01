@@ -20,9 +20,9 @@ A user's profile displays key information about the user.
 
 Additional tabs showing:
 
-- The streams that the user is subscribed to. Note that the list is limited to
-  streams for which you have [permission to see all
-  subscribers](/help/stream-permissions).
+- The channel that the user is subscribed to. Note that the list is limited to
+  channel for which you have [permission to see all
+  subscribers](/help/channel-permissions).
 - The [user groups](/help/user-groups) to which they belong.
 
 {tab|mobile}

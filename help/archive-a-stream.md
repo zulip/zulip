@@ -58,5 +58,5 @@ https://zulip.readthedocs.io/en/latest/production/management-commands.html#other
 * [Delete a message](/help/delete-a-message)
 * [Delete a topic](/help/delete-a-topic)
 * [Message retention policy](/help/message-retention-policy)
-* [Stream permissions](/help/stream-permissions)
+* [Channel permissions](/help/channel-permissions)
 * [Zulip Cloud or self-hosting?](/help/zulip-cloud-or-self-hosting)

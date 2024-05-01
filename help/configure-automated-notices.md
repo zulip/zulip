@@ -14,7 +14,7 @@ language](/help/change-your-language).
 
 Notices about stream settings changes, such as [name](/help/rename-a-stream),
 [description](/help/change-the-stream-description),
-[permission](/help/stream-permissions) and
+[permission](/help/channel-permissions) and
 [policy](/help/stream-sending-policy) updates are sent to the
 “stream events” topic in the stream that was modified.
 
@@ -22,13 +22,13 @@ Notices about stream settings changes, such as [name](/help/rename-a-stream),
 
 {!admin-only.md!}
 
-When creating a new [public stream](/help/stream-permissions), the
+When creating a new [public channel](/help/channel-permissions), the
 stream creator can choose to advertise the new stream via an automated
 notice. You can configure what stream Zulip uses for these notices, or
 disable these notices entirely. The topic for these messages is “new
 streams”.
 
-New [private](/help/stream-permissions) streams are never announced.
+New [private](/help/channel-permissions) channels are never announced.
 
 {start_tabs}
 
