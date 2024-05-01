@@ -1,10 +1,10 @@
-# Pin a stream
+# Pin a channel
 
-Pinning a stream moves it to the **Pinned** section at the top of your streams
-list in the left sidebar. You can pin the streams you pay close attention to,
-which is especially handy if you are subscribed to a large number of streams.
+Pinning a channel moves it to the **Pinned** section at the top of your channels
+list in the left sidebar. You can pin the channels you pay close attention to,
+which is especially handy if you are subscribed to a large number of channels.
 
-## Pin a stream
+## Pin a channel
 
 {start_tabs}
 
@@ -12,7 +12,7 @@ which is especially handy if you are subscribed to a large number of streams.
 
 {!stream-actions.md!}
 
-1. Click **Pin stream to top**.
+1. Click **Pin channel to top**.
 
 {tab|mobile}
 
@@ -24,7 +24,7 @@ which is especially handy if you are subscribed to a large number of streams.
 
 {end_tabs}
 
-## Unpin a stream
+## Unpin a channel
 
 {start_tabs}
 
@@ -32,7 +32,7 @@ which is especially handy if you are subscribed to a large number of streams.
 
 {!stream-actions.md!}
 
-1. Click **Unpin stream from top**.
+1. Click **Unpin channel from top**.
 
 {tab|mobile}
 
@@ -44,7 +44,7 @@ which is especially handy if you are subscribed to a large number of streams.
 
 {end_tabs}
 
-## Alternate method to pin or unpin a stream
+## Alternate method to pin or unpin a channel
 
 {start_tabs}
 
@@ -52,17 +52,17 @@ which is especially handy if you are subscribed to a large number of streams.
 
 {relative|gear|stream-settings}
 
-1. Select a stream.
+1. Select a channel.
 
 {!select-channel-view-personal.md!}
 
-1. Under **Personal settings**, toggle **Pin stream to top of left sidebar**.
+1. Under **Personal settings**, toggle **Pin channel to top of left sidebar**.
 
 {tab|mobile}
 
 {!stream-long-press-menu.md!}
 
-1. Tap **Stream settings**.
+1. Tap **Channel settings**.
 
 1. Toggle **Pinned**.
 

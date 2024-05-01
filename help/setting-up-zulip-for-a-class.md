@@ -340,7 +340,7 @@ for your own classes or for your department), you will likely want to:
   staff][add-to-channel] to these private streams as needed.
 - You may choose to [deactivate students’ Zulip
   accounts][deactivate-user] when the class is over.
-- [Unpin streams](/help/pin-a-stream) from the class from your
+- [Unpin channels](/help/pin-a-channel) from the class from your
   personal view.
 
 If you do not plan to reuse the Zulip organization, you can instead:

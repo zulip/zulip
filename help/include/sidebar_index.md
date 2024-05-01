@@ -131,7 +131,7 @@
 * [Create a channel](/help/create-a-channel)
 * [View channel subscribers](/help/view-channel-subscribers)
 * [Add or remove users from a channel](/help/add-or-remove-users-from-a-channel)
-* [Pin a stream](/help/pin-a-stream)
+* [Pin a channel](/help/pin-a-channel)
 * [Change the color of a stream](/help/change-the-color-of-a-stream)
 * [Start a new topic](/help/starting-a-new-topic)
 * [Rename a topic](/help/rename-a-topic)
