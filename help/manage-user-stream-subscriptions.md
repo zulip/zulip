@@ -55,7 +55,7 @@ other users to a stream][configure-invites].
 {!admin-only.md!}
 
 Anyone can always [unsubscribe themselves from a
-stream](/help/unsubscribe-from-a-stream).
+channel](/help/unsubscribe-from-a-channel).
 
 {start_tabs}
 
@@ -90,7 +90,7 @@ stream](/help/unsubscribe-from-a-stream).
 * [Stream permissions](/help/stream-permissions)
 * [Roles and permissions](/help/roles-and-permissions)
 * [Add or remove users from a stream](/help/add-or-remove-users-from-a-stream)
-* [Unsubscribe from a stream](/help/unsubscribe-from-a-stream)
+* [Unsubscribe from a channel](/help/unsubscribe-from-a-channel)
 * [View stream subscribers](/help/view-stream-subscribers)
 
 [configure-invites]: /help/configure-who-can-invite-to-streams

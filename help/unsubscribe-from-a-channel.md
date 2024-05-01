@@ -1,6 +1,6 @@
-# Unsubscribe from a stream
+# Unsubscribe from a channel
 
-You can always unsubscribe from any stream in Zulip.
+You can always unsubscribe from any channel in Zulip.
 
 {start_tabs}
 
@@ -20,9 +20,9 @@ You can always unsubscribe from any stream in Zulip.
 
 {end_tabs}
 
-## Alternate methods to unsubscribe from a stream
+## Alternate methods to unsubscribe from a channel
 
-### Via subscribed streams
+### Via subscribed channels
 
 {start_tabs}
 
@@ -32,7 +32,7 @@ You can always unsubscribe from any stream in Zulip.
 
 1. Click the **checkmark**
    (<img src="/static/images/help/desktop-web-check-icon.svg" alt="checkmark" class="help-center-icon"/>)
-   icon to the left of a stream to unsubscribe from it.
+   icon to the left of a channel to unsubscribe from it.
 
 {tab|mobile}
 
@@ -40,16 +40,16 @@ You can always unsubscribe from any stream in Zulip.
 
 1. Tap the **checkmark**
    (<img src="/static/images/help/mobile-check-icon.svg" alt="checkmark" class="help-center-icon"/>)
-   icon to the right of a stream to unsubscribe from it.
+   icon to the right of a channel to unsubscribe from it.
 
 !!! tip ""
 
-    You can also press and hold a stream until the long-press menu appears, and
+    You can also press and hold a channel until the long-press menu appears, and
     tap **Unsubscribe**.
 
 {end_tabs}
 
-### Via stream settings
+### Via channel settings
 
 {start_tabs}
 
@@ -57,20 +57,20 @@ You can always unsubscribe from any stream in Zulip.
 
 {!stream-actions.md!}
 
-1. Click **Stream settings**.
+1. Click **Channel settings**.
 
-1. Click **Unsubscribe** near the top right corner of the stream settings panel.
+1. Click **Unsubscribe** near the top right corner of the channel settings panel.
 
 !!! keyboard_tip ""
 
     You can also use <kbd>Shift</kbd> + <kbd>S</kbd> to unsubscribe from the
-    selected stream.
+    selected channel.
 
 {tab|mobile}
 
 {!stream-long-press-menu.md!}
 
-1. Tap **Stream settings**.
+1. Tap **Channel settings**.
 
 1. Tap **Unsubscribe**.
 

@@ -3,7 +3,7 @@
 By default, anyone (other than guests) subscribed to a stream can add
 users to that stream. Additionally, anyone (other than guests) can add
 users to a public stream, whether or not they are subscribed to the
-stream. Anyone can always [unsubscribe themselves from a stream](/help/unsubscribe-from-a-stream).
+stream. Anyone can always [unsubscribe themselves from a channel][unsubscribe].
 
 Organization administrators can also unsubscribe *other* users from any stream,
 including streams the admin is not subscribed to. They can also configure which
@@ -149,10 +149,12 @@ subscribe the user.
 ## Related articles
 
 * [Browse and subscribe to channels](/help/browse-and-subscribe-to-channels)
-* [Unsubscribe from a stream](/help/unsubscribe-from-a-stream)
+* [Unsubscribe from a channel][unsubscribe]
 * [Manage a user's stream subscriptions](/help/manage-user-stream-subscriptions)
 * [Restrict stream invitation](/help/configure-who-can-invite-to-streams)
 * [Set default streams for new users](/help/set-default-streams-for-new-users)
 * [Roles and permissions](/help/roles-and-permissions)
 * [Mention a user or group](/help/mention-a-user-or-group)
 * [View stream subscribers](/help/view-stream-subscribers)
+
+[unsubscribe]: /help/unsubscribe-from-a-channel
