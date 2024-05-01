@@ -59,7 +59,9 @@
     --left-sidebar-header-icon-width: 15px;
 
     /* Tippy popover related values */
-    --popover-menu-min-width: 230px;
+    --navbar-popover-menu-min-width: 230px;
+    --message-actions-popover-min-width: 230px;
+    --topic-actions-popover-min-width: 200px;
 
     /* Information density and typography values */
     /* The legacy values here are updated via JavaScript */
