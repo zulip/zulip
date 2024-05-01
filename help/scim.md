@@ -89,7 +89,71 @@ Zulip's SCIM integration has the following limitations:
        Zulip account to be updated accordingly.
      * Unassigning a user from the app will deactivate their Zulip account.
 
+{tab|entraid}
+
+{!upgrade-to-plus-if-needed.md!}
+
+1. Contact [support@zulip.com](mailto:support@zulip.com) to request the
+   **Secret Token** that Entra will use to authenticate to your SCIM API.
+
+1. Sign in to the [Microsoft Entra admin center](https://entra.microsoft.com/).
+
+1. Go to **Identity** -> **Applications** -> **Enterprise applications**.
+
+1. Select **New application** -> **Create your own application**.
+
+1. Complete the form:
+    * Enter a name for your application.
+    * Select the option **Integrate any other application you don't find in the gallery**.
+    * Click **Add** to create the new app. It will be added to your **Enterprise applications**.
+
+1. Continue to the app's management screen and click **Provisioning** in the left panel.
+
+1. In the **Provisioning Mode** menu, select **Automatic**  and specify the following fields:
+    * **Tenant URL**: `http://yourorganization.zulipchat.com/scim/v2/?aadOptscim062020`.
+      The `?aadOptscim062020` part of it is a [feature flag][feature-flag]
+      that needs to be added to ensure SCIM compliance by Entra ID.
+    * **Secret Token**: `<token>` (given to you by Zulip support)
+
+1. Click **Test Connection.**
+
+1. In the **Mappings** section, there are two sets of [attribute
+   mappings][attribute-mappings]: one for Users and one for
+   Groups. Make sure to set **Provision Microsoft Entra ID Groups** to
+   be disabled. Provisioning of Groups is currently not supported in
+   Zulip.
+
+1. In **Provision Microsoft Entra ID Users**, configure the necessary mappings:
+
+    * Change **userName** to map to **mail**. **Important**: You need
+      **mail** to be set for all your users or trying to assign them
+      to the app will fail.
+    * Delete the other default entries leaving only the **active** and
+      **name.formatted** mappings, until your list looks like the
+      image below.
+
+    ![Attribute Mappings](/static/images/help/entraid-scim-mappings.png)
+
+
+1. Once your configuration is complete, set the **Provisioning
+   Status** to **On** and then click **Save** to start the Microsoft
+   Entra provisioning service.
+
+1. Now you can proceed to the **Users and groups** tab, where you can
+   assign users to be provisioned via this integration.
+
+1. Wait for the initial provisioning cycle to be started by
+   Entra. This might take up to 40 minutes. This delay is entirely
+   inside Entra, and not under Zulip’s control. You can also use
+   [**Provision on demand**][provision-on-demand] in Entra to cause
+   immediate SCIM provisioning for specific users, which is handy when
+   testing the integration.
+
 {end_tabs}
+
+[attribute-mappings]: https://learn.microsoft.com/en-us/entra/identity/app-provisioning/customize-application-attributes
+[feature-flag]: https://learn.microsoft.com/en-us/entra/identity/app-provisioning/application-provisioning-config-problem-scim-compatibility#flags-to-alter-the-scim-behavior
+[provision-on-demand]: https://learn.microsoft.com/en-us/entra/identity/app-provisioning/provision-on-demand
 
 !!! tip ""
 
