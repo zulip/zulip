@@ -147,5 +147,10 @@ test("typeahead", () => {
     // excluded by virtue of already being one of the widget items.
     // And then bogus_item is just a red herring to test robustness.
     const result = user_pill.typeahead_source(pill_widget);
-    assert.deepEqual(result, [alice]);
+    assert.deepEqual(result, [
+        {
+            ...alice,
+            type: "user",
+        },
+    ]);
 });

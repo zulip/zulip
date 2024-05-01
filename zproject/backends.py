@@ -103,10 +103,10 @@ from zerver.lib.url_encoding import append_url_query_string
 from zerver.lib.users import check_full_name, validate_user_custom_profile_field
 from zerver.models import (
     CustomProfileField,
+    NamedUserGroup,
     PreregistrationRealm,
     PreregistrationUser,
     Realm,
-    UserGroup,
     UserGroupMembership,
     UserProfile,
 )
@@ -986,11 +986,11 @@ class ZulipLDAPAuthBackendBase(ZulipAuthMixin, LDAPBackend):
             existing_group_name_set_for_user = set(
                 UserGroupMembership.objects.filter(
                     user_group__realm=user_profile.realm,
-                    user_group__name__in=set(
+                    user_group__named_user_group__name__in=set(
                         settings.LDAP_SYNCHRONIZED_GROUPS_BY_REALM[user_profile.realm.string_id]
                     ),
                     user_profile=user_profile,
-                ).values_list("user_group__name", flat=True)
+                ).values_list("user_group__named_user_group__name", flat=True)
             )
 
             ldap_logger.debug(
@@ -999,7 +999,7 @@ class ZulipLDAPAuthBackendBase(ZulipAuthMixin, LDAPBackend):
                 repr(existing_group_name_set_for_user),
             )
 
-            new_groups = UserGroup.objects.filter(
+            new_groups = NamedUserGroup.objects.filter(
                 name__in=intended_group_name_set_for_user.difference(
                     existing_group_name_set_for_user
                 ),
@@ -1014,7 +1014,7 @@ class ZulipLDAPAuthBackendBase(ZulipAuthMixin, LDAPBackend):
             group_names_for_membership_deletion = existing_group_name_set_for_user.difference(
                 intended_group_name_set_for_user
             )
-            groups_for_membership_deletion = UserGroup.objects.filter(
+            groups_for_membership_deletion = NamedUserGroup.objects.filter(
                 name__in=group_names_for_membership_deletion, realm=user_profile.realm
             )
 

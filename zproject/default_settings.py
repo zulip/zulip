@@ -7,12 +7,10 @@ from django_auth_ldap.config import GroupOfUniqueNamesType, LDAPGroupType
 from scripts.lib.zulip_tools import deport
 from zproject.settings_types import JwtAuthKey, OIDCIdPConfigDict, SAMLIdPConfigDict
 
-from .config import DEVELOPMENT, PRODUCTION, get_secret
+from .config import DEVELOPMENT, PRODUCTION, get_config, get_secret
 
 if TYPE_CHECKING:
     from django_auth_ldap.config import LDAPSearch
-
-    from zerver.models.users import UserProfile
 
 if PRODUCTION:  # nocoverage
     from .prod_settings import EXTERNAL_HOST, ZULIP_ADMINISTRATOR
@@ -137,11 +135,11 @@ LOGGING_SHOW_MODULE = False
 LOGGING_SHOW_PID = False
 
 # Sentry.io error defaults to off
-SENTRY_DSN: Optional[str] = None
+SENTRY_DSN: Optional[str] = get_config("sentry", "project_dsn", None)
 SENTRY_TRACE_WORKER_RATE: Union[float, Dict[str, float]] = 0.0
 SENTRY_TRACE_RATE: float = 0.0
 SENTRY_PROFILE_RATE: float = 0.1
-SENTRY_FRONTEND_DSN: Optional[str] = None
+SENTRY_FRONTEND_DSN: Optional[str] = get_config("sentry", "frontend_project_dsn", None)
 SENTRY_FRONTEND_SAMPLE_RATE: float = 1.0
 SENTRY_FRONTEND_TRACE_RATE: float = 0.1
 
@@ -167,6 +165,9 @@ LOCAL_UPLOADS_DIR: Optional[str] = None
 LOCAL_AVATARS_DIR: Optional[str] = None
 LOCAL_FILES_DIR: Optional[str] = None
 MAX_FILE_UPLOAD_SIZE = 25
+# How many GB an organization on a paid plan can upload per user,
+# on zulipchat.com.
+UPLOAD_QUOTA_PER_USER_GB = 5
 
 # Jitsi Meet video call integration; set to None to disable integration.
 JITSI_SERVER_URL: Optional[str] = "https://meet.jit.si"
@@ -229,7 +230,7 @@ DEFAULT_RATE_LIMITING_RULES = {
     # Rate limiting general API access protects the server against
     # clients causing unreasonable server load.
     "api_by_user": [
-        # 200 requests per limit
+        # 200 requests per minute
         (60, 200),
     ],
     # Limits total number of unauthenticated API requests (primarily
@@ -620,6 +621,10 @@ TYPING_STARTED_WAIT_PERIOD_MILLISECONDS = 30000
 # load in large organizations.
 MAX_STREAM_SIZE_FOR_TYPING_NOTIFICATIONS = 100
 
+# The maximum user-group size value upto which members should
+# be soft-reactivated in the case of user group mention.
+MAX_GROUP_SIZE_FOR_MENTION_REACTIVATION = 11
+
 # Limiting guest access to other users via the
 # can_access_all_users_group setting makes presence queries much more
 # expensive. This can be a significant performance problem for
@@ -631,4 +636,4 @@ CAN_ACCESS_ALL_USERS_GROUP_LIMITS_PRESENCE = False
 # in some places through the codebase.
 SIGNED_ACCESS_TOKEN_VALIDITY_IN_SECONDS = 60
 
-CUSTOM_AUTHENTICATION_WRAPPER_FUNCTION: Optional[Callable[..., Optional["UserProfile"]]] = None
+CUSTOM_AUTHENTICATION_WRAPPER_FUNCTION: Optional[Callable[..., Any]] = None

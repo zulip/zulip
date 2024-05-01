@@ -76,10 +76,10 @@ communication tool across all job functions. There is a stream for each
 department (IT, human resources, etc.), as well as a dedicated stream for each
 customer, where team leaders post daily updates.
 
-For agents, may of whom are not fully comfortable with modern software, Zulip
+For agents, many of whom are not fully comfortable with modern software, Zulip
 being easy to use is invaluable. "We checked out Microsoft Teams and Mattermost,
 and most of our users didn’t like these programs, because they didn’t know how
-to work with them,” Erik says. “In Zulip, agents love the “All messages” view,”
+to work with them,” Erik says. “In Zulip, agents love the “Combined feed” view,”
 which combines direct messages and stream messages into a single feed. “Unlike
 other chat apps, you don’t have to click on each channel separately to see
 unreads,” Erik explains.

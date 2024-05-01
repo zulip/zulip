@@ -93,9 +93,8 @@ class TutorialTests(ZulipTestCase):
         for content in messages:
             self.send_personal_message(user, bot, content)
             expected_response = (
-                "In Zulip, streams [determine who gets a message](/help/streams-and-topics). "
-                "They are similar to channels in other chat apps.\n\n"
-                "[Browse and subscribe to streams](#streams/all)."
+                "In Zulip, channels [determine who gets a message](/help/streams-and-topics).\n\n"
+                "[Browse and subscribe to channels](#channels/all)."
             )
             self.assertEqual(most_recent_message(user).content, expected_response)
 
@@ -154,7 +153,7 @@ class TutorialTests(ZulipTestCase):
             expected_response = (
                 "Here are a few messages I understand: "
                 "`apps`, `profile`, `theme`, "
-                "`streams`, `topics`, `message formatting`, `keyboard shortcuts`.\n\n"
+                "`channels`, `topics`, `message formatting`, `keyboard shortcuts`.\n\n"
                 "Check out our [Getting started guide](/help/getting-started-with-zulip), "
                 "or browse the [Help center](/help/) to learn more!"
             )
@@ -169,7 +168,7 @@ class TutorialTests(ZulipTestCase):
             self.send_personal_message(user, bot, content)
             expected_response = (
                 "I’m sorry, I did not understand your message. Please try one of the following commands: "
-                "`apps`, `profile`, `theme`, `streams`, "
+                "`apps`, `profile`, `theme`, `channels`, "
                 "`topics`, `message formatting`, `keyboard shortcuts`, `help`."
             )
             self.assertEqual(most_recent_message(user).content, expected_response)

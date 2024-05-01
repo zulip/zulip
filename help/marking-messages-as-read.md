@@ -22,8 +22,8 @@ web/desktop app.
 - **Only in conversation views**: In Zulip, a **conversation** is a [direct
   message](/help/direct-messages) thread (one-on-one or with a group), or a
   [topic in a stream](/help/streams-and-topics). This option makes it convenient
-  to preview new messages in a stream, or skim [All
-  messages](/help/all-messages), and later read each topic in detail.
+  to preview new messages in a stream, or skim [Combined
+  feed](/help/combined-feed), and later read each topic in detail.
 
 {start_tabs}
 
@@ -69,7 +69,7 @@ stream or topic as read**.
 
 {tab|via-left-sidebar}
 
-1. Hover over a stream, topic, or **All messages** in the left sidebar.
+1. Hover over a stream, topic, or **Combined feed** in the left sidebar.
 
 1. Click on the **ellipsis** (<i class="zulip-icon zulip-icon-more-vertical"></i>).
 
@@ -100,7 +100,7 @@ stream or topic as read**.
 
 {tab|mobile}
 
-1. Tap a stream, topic, or the **All messages**
+1. Tap a stream, topic, or the **Combined feed**
    (<img src="/static/images/help/mobile-globe-icon.svg" alt="globe" class="help-center-icon"/>)
    tab.
 

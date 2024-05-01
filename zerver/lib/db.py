@@ -51,11 +51,3 @@ class TimeTrackingConnection(connection):
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         self.queries: List[Dict[str, str]] = []
         super().__init__(*args, **kwargs)
-
-
-def reset_queries() -> None:
-    from django.db import connections
-
-    for conn in connections.all():
-        if conn.connection is not None:
-            conn.connection.queries = []

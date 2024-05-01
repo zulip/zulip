@@ -304,11 +304,11 @@ export function compute_placeholder_text(opts: ComposePlaceholderOptions): strin
 
         if (stream_name && opts.topic) {
             return $t(
-                {defaultMessage: "Message #{stream_name} > {topic_name}"},
-                {stream_name, topic_name: opts.topic},
+                {defaultMessage: "Message #{channel_name} > {topic_name}"},
+                {channel_name: stream_name, topic_name: opts.topic},
             );
         } else if (stream_name) {
-            return $t({defaultMessage: "Message #{stream_name}"}, {stream_name});
+            return $t({defaultMessage: "Message #{channel_name}"}, {channel_name: stream_name});
         }
     } else if (opts.direct_message_user_ids.length > 0) {
         const users = people.get_users_from_ids(opts.direct_message_user_ids);
@@ -433,15 +433,17 @@ export function cursor_inside_code_block($textarea: JQuery<HTMLTextAreaElement>)
     const cursor_position = $textarea.caret();
     const current_content = $textarea.val()!;
 
+    return position_inside_code_block(current_content, cursor_position);
+}
+
+export function position_inside_code_block(content: string, position: number): boolean {
     let unique_insert = "UNIQUEINSERT:" + Math.random();
-    while (current_content.includes(unique_insert)) {
+    while (content.includes(unique_insert)) {
         unique_insert = "UNIQUEINSERT:" + Math.random();
     }
-    const content =
-        current_content.slice(0, cursor_position) +
-        unique_insert +
-        current_content.slice(cursor_position);
-    const rendered_content = markdown.parse_non_message(content);
+    const unique_insert_content =
+        content.slice(0, position) + unique_insert + content.slice(position);
+    const rendered_content = markdown.parse_non_message(unique_insert_content);
     const rendered_html = new DOMParser().parseFromString(rendered_content, "text/html");
     const code_blocks = rendered_html.querySelectorAll("pre > code");
     return [...code_blocks].some((code_block) => code_block?.textContent?.includes(unique_insert));

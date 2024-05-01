@@ -1,13 +1,13 @@
 <div id="admin-default-streams-list" class="settings-section" data-name="default-streams-list">
-    <p>{{t "Configure the default streams new users are subscribed to when joining your organization." }}</p>
+    <p>{{t "Configure the default channels new users are subscribed to when joining your organization." }}</p>
 
     <div class="settings_panel_list_header">
-        <h3>{{t "Default streams"}}</h3>
+        <h3>{{t "Default channels"}}</h3>
         <div class="add_default_streams_button_container">
             {{#if is_admin}}
-                <button type="submit" id="show-add-default-streams-modal" class="button rounded sea-green">{{t "Add stream" }}</button>
+                <button type="submit" id="show-add-default-streams-modal" class="button rounded sea-green">{{t "Add channel" }}</button>
             {{/if}}
-            <input type="text" class="search filter_text_input" placeholder="{{t 'Filter default streams' }}" aria-label="{{t 'Filter streams' }}"/>
+            <input type="text" class="search filter_text_input" placeholder="{{t 'Filter default channels' }}" aria-label="{{t 'Filter channels' }}"/>
         </div>
     </div>
 
@@ -19,7 +19,7 @@
                 <th class="actions">{{t "Actions" }}</th>
                 {{/if}}
             </thead>
-            <tbody data-empty="{{t 'There are no default streams.' }}" data-search-results-empty="{{t 'No default streams match your current filter.' }}"
+            <tbody data-empty="{{t 'There are no default channels.' }}" data-search-results-empty="{{t 'No default channels match your current filter.' }}"
               id="admin_default_streams_table" class="admin_default_stream_table"></tbody>
         </table>
     </div>

@@ -37,8 +37,8 @@ type Part =
           content: string;
       }
     | {
-          type: "stream_topic";
-          stream: string;
+          type: "channel_topic";
+          channel: string;
           topic: string;
       }
     | {
@@ -108,9 +108,9 @@ function zephyr_topic_name_match(message: Message & {type: "stream"}, operand: s
 }
 
 function message_in_home(message: Message): boolean {
-    // The home view contains messages not sent to muted streams, with
-    // additional logic for unmuted topics, mentions, and
-    // single-stream windows.
+    // The home view contains messages not sent to muted channels,
+    // with additional logic for unmuted topics, mentions, and
+    // single-channel windows.
     if (message.type === "private") {
         return true;
     }
@@ -411,9 +411,6 @@ export class Filter {
                     negated = true;
                     operator = operator.slice(1);
                 }
-                if (operator === CHANNEL_SYNONYM) {
-                    operator = "channel";
-                }
                 operand = Filter.decodeOperand(parts.join(":"), operator);
 
                 // We use Filter.operator_to_prefix() to check if the
@@ -459,7 +456,7 @@ export class Filter {
             if (term.operator === "") {
                 return term.operand;
             }
-            const operator = util.canonicalize_stream_synonyms(term.operator);
+            const operator = Filter.canonicalize_operator(term.operator);
             return sign + operator + ":" + Filter.encodeOperand(term.operand.toString());
         });
         return term_strings.join(" ");
@@ -534,9 +531,9 @@ export class Filter {
 
         switch (operator) {
             case "channel":
-                return verb + CHANNEL_SYNONYM;
+                return verb + "channel";
             case "channels":
-                return verb + CHANNELS_SYNONYM;
+                return verb + "channels";
             case "near":
                 return verb + "messages around";
 
@@ -574,7 +571,7 @@ export class Filter {
         const parts: Part[] = [];
 
         if (terms.length === 0) {
-            parts.push({type: "plain_text", content: "all messages"});
+            parts.push({type: "plain_text", content: "combined feed"});
             return parts;
         }
 
@@ -583,11 +580,11 @@ export class Filter {
                 Filter.canonicalize_operator(term.operator) === expected && !term.negated;
 
             if (is(terms[0], "channel") && is(terms[1], "topic")) {
-                const stream = terms[0].operand;
+                const channel = terms[0].operand;
                 const topic = terms[1].operand;
                 parts.push({
-                    type: "stream_topic",
-                    stream,
+                    type: "channel_topic",
+                    channel,
                     topic,
                 });
                 terms = terms.slice(2);
@@ -712,7 +709,7 @@ export class Filter {
     }
 
     is_in_home(): boolean {
-        // All messages view.
+        // Combined feed view
         return this._terms.length === 1 && this.has_operand("in", "home");
     }
 
@@ -732,7 +729,7 @@ export class Filter {
 
         // All search/narrow term types, including negations, with the
         // property that if a message is in the view, then any other
-        // message sharing its recipient (stream/topic or direct
+        // message sharing its recipient (channel/topic or direct
         // message recipient) must also be present in the view.
         const valid_term_types = new Set([
             "channel",
@@ -850,9 +847,9 @@ export class Filter {
     }
 
     // This is used to control the behaviour for "exiting search"
-    // within a narrow (E.g. a stream/topic + search) to bring you to
-    // the containing common narrow (stream/topic, in the example)
-    // rather than "All messages".
+    // within a narrow (E.g. a channel/topic + search) to bring you to
+    // the containing common narrow (channel/topic, in the example)
+    // rather than the "Combined feed" view.
     //
     // Note from tabbott: The slug-based approach may not be ideal; we
     // may be able to do better another way.
@@ -861,7 +858,7 @@ export class Filter {
 
         // this comes first because it has 3 term_types but is not a "complex filter"
         if (_.isEqual(term_types, ["channel", "topic", "search"])) {
-            // if stream does not exist, redirect to All
+            // if channel does not exist, redirect to home view
             if (!this._sub) {
                 return "#";
             }
@@ -883,7 +880,7 @@ export class Filter {
         if (term_types[1] === "search") {
             switch (term_types[0]) {
                 case "channel":
-                    // if stream does not exist, redirect to All
+                    // if channel does not exist, redirect to home view
                     if (!this._sub) {
                         return "#";
                     }
@@ -975,7 +972,7 @@ export class Filter {
         ) {
             if (!this._sub) {
                 const search_text = this.operands("channel")[0];
-                return $t({defaultMessage: "Unknown stream #{search_text}"}, {search_text});
+                return $t({defaultMessage: "Unknown channel #{search_text}"}, {search_text});
             }
             return this._sub.name;
         }
@@ -1023,17 +1020,17 @@ export class Filter {
         if (term_types.length === 1) {
             switch (term_types[0]) {
                 case "in-home":
-                    return $t({defaultMessage: "All messages"});
+                    return $t({defaultMessage: "Combined feed"});
                 case "in-all":
-                    return $t({defaultMessage: "All messages including muted streams"});
+                    return $t({defaultMessage: "All messages including muted channels"});
                 case "channels-public":
-                    return $t({defaultMessage: "Messages in all public streams"});
+                    return $t({defaultMessage: "Messages in all public channels"});
                 case "is-starred":
                     return $t({defaultMessage: "Starred messages"});
                 case "is-mentioned":
                     return $t({defaultMessage: "Mentions"});
                 case "is-dm":
-                    return $t({defaultMessage: "All direct messages"});
+                    return $t({defaultMessage: "Direct message feed"});
                 case "is-resolved":
                     return $t({defaultMessage: "Topics marked as resolved"});
                 // These cases return false for is_common_narrow, and therefore are not

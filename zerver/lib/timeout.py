@@ -22,7 +22,7 @@ class TimeoutExpiredError(Exception):
 ResultT = TypeVar("ResultT")
 
 
-def timeout(timeout: float, func: Callable[[], ResultT]) -> ResultT:
+def unsafe_timeout(timeout: float, func: Callable[[], ResultT]) -> ResultT:
     """Call the function in a separate thread.
     Return its return value, or raise an exception,
     within approximately 'timeout' seconds.

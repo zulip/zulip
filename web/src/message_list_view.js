@@ -26,6 +26,7 @@ import * as narrow_state from "./narrow_state";
 import {page_params} from "./page_params";
 import * as people from "./people";
 import * as popovers from "./popovers";
+import * as reactions from "./reactions";
 import * as rendered_markdown from "./rendered_markdown";
 import * as rows from "./rows";
 import * as sidebar_ui from "./sidebar_ui";
@@ -524,6 +525,8 @@ export class MessageListView {
         };
 
         for (const message_container of message_containers) {
+            const message_reactions = reactions.get_message_reactions(message_container.msg);
+            message_container.msg.message_reactions = message_reactions;
             message_container.include_recipient = false;
 
             if (
@@ -775,6 +778,8 @@ export class MessageListView {
     }
 
     _get_message_template(message_container) {
+        const msg_reactions = reactions.get_message_reactions(message_container.msg);
+        message_container.msg.message_reactions = msg_reactions;
         const msg_to_render = {
             ...message_container,
             message_list_id: this.list.id,
@@ -1260,12 +1265,11 @@ export class MessageListView {
     }
 
     _find_message_group(message_group_id) {
-        // Ideally, we'd maintain this data structure with a hash
-        // table or at least a pointer from the message containers (in
-        // either case, updating the data structure when message
-        // groups are merged etc.), but we only call this from flows
-        // like message editing, so it's not a big performance
-        // problem.
+        // Finds the message group with a given message group ID.
+        //
+        // This function does a linear search, so be careful to avoid
+        // calling it in a loop. If you need that, we'll need to add a
+        // hash table to make this O(1) runtime.
         return this._message_groups.find(
             // Since we don't have a way to get a message group from
             // the containing message container, we just do a search
@@ -1589,8 +1593,22 @@ export class MessageListView {
             /* No headers are present */
             return;
         }
-        /* Intentionally remove sticky headers class here to make calculations simpler. */
-        $(".sticky_header").removeClass("sticky_header");
+
+        const $current_sticky_header = $(".sticky_header");
+        if ($current_sticky_header.length === 1) {
+            // Reset the date on the header in case we changed it.
+            const message_group_id = rows
+                .get_message_recipient_row($current_sticky_header)
+                .attr("id");
+            const group = this._find_message_group(message_group_id);
+            if (group !== undefined) {
+                const rendered_date = group.date;
+                $current_sticky_header.find(".recipient_row_date").html(rendered_date);
+                /* Intentionally remove sticky headers class here to make calculations simpler. */
+            }
+            $current_sticky_header.removeClass("sticky_header");
+        }
+
         /* visible_top is navbar top position + height for us. */
         const visible_top = message_viewport.message_viewport_info().visible_top;
         /* We need date to be properly visible on the header, so partially visible headers

@@ -73,7 +73,7 @@ def update_scheduled_message_backend(
         recipient_type_name = "stream"
 
     if recipient_type_name is not None and recipient_type_name == "stream" and topic_name is None:
-        raise JsonableError(_("Topic required when updating scheduled message type to stream."))
+        raise JsonableError(_("Topic required when updating scheduled message type to channel."))
 
     if recipient_type_name is not None and recipient_type_name == "direct":
         # For now, use "private" from Message.API_RECIPIENT_TYPES.

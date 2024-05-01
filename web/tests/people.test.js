@@ -295,8 +295,6 @@ test_people("basics", ({override}) => {
     const email = "isaac@example.com";
 
     assert.ok(!people.is_known_user_id(32));
-    assert.ok(!people.is_known_user(isaac));
-    assert.ok(!people.is_known_user(undefined));
     assert.ok(!people.is_valid_full_name_and_user_id(full_name, 32));
     assert.equal(people.get_user_id_from_name(full_name), undefined);
 
@@ -306,7 +304,6 @@ test_people("basics", ({override}) => {
 
     assert.ok(people.is_valid_full_name_and_user_id(full_name, 32));
     assert.ok(people.is_known_user_id(32));
-    assert.ok(people.is_known_user(isaac));
     assert.equal(people.get_active_human_count(), 2);
 
     assert.equal(people.get_user_id_from_name(full_name), 32);
@@ -1153,8 +1150,8 @@ test_people("get_mention_syntax", () => {
     // blueslip warning is not raised for wildcard mentions without a user_id
     assert.equal(people.get_mention_syntax("all"), "@**all**");
     assert.equal(people.get_mention_syntax("everyone", undefined, true), "@_**everyone**");
-    assert.equal(people.get_mention_syntax("stream"), "@**stream**");
-    assert.equal(people.get_mention_syntax("channel"), "@**stream**");
+    assert.equal(people.get_mention_syntax("stream"), "@**channel**");
+    assert.equal(people.get_mention_syntax("channel"), "@**channel**");
     assert.equal(people.get_mention_syntax("topic"), "@**topic**");
 
     people.add_active_user(stephen1);

@@ -86,6 +86,7 @@ def consolidate_client(client: Client) -> Client:
         return client
 
 
+@transaction.atomic(savepoint=False)
 def do_update_user_presence(
     user_profile: UserProfile,
     client: Client,

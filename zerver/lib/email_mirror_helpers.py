@@ -36,7 +36,7 @@ def get_email_gateway_message_string_from_address(address: str) -> str:
     if settings.EMAIL_GATEWAY_EXTRA_PATTERN_HACK:
         # Accept mails delivered to any Zulip server
         pattern_parts[-1] = settings.EMAIL_GATEWAY_EXTRA_PATTERN_HACK
-    match_email_re = re.compile("(.*?)".join(pattern_parts))
+    match_email_re = re.compile(r"(.*?)".join(pattern_parts))
     match = match_email_re.match(address)
 
     if not match:

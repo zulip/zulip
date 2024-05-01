@@ -4,8 +4,8 @@
        other "Nah, forget it" actions. */
     --color-exit-button-text: hsl(0deg 0% 0%);
     --color-exit-button-border: hsl(300deg 2% 11% / 30%);
-    --color-exit-button-background: hsl(0deg 0% 100%);
-    --color-exit-button-background-interactive: hsl(0deg 0% 97%);
+    --color-exit-button-background: hsl(226deg 1% 42% / 20%);
+    --color-exit-button-background-interactive: hsl(226deg 1% 42% / 27%);
 }
 
 .modal__overlay {
@@ -129,6 +129,7 @@
 
     &:disabled {
         cursor: not-allowed;
+        opacity: 0.5;
     }
 }
 
@@ -151,10 +152,6 @@
     margin-left: 12px;
     background-color: hsl(240deg 96% 68%);
     color: hsl(0deg 0% 100%) !important;
-
-    &:disabled {
-        background-color: hsl(0deg 0% 65%);
-    }
 }
 
 #read_receipts_error,

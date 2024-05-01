@@ -104,12 +104,6 @@
         }
     }
 
-    .modal__btn:disabled,
-    .disabled-message-send-controls button {
-        opacity: 1;
-        background-color: hsl(0deg 0% 83% / 50%);
-    }
-
     & table.table-striped thead.table-sticky-headers th {
         background-color: hsl(0deg 0% 0%);
 
@@ -355,7 +349,7 @@
         border-color: hsl(0deg 0% 100% / 40%);
     }
 
-    .streams_popover .sp-container {
+    #stream-actions-menu-popover .sp-container {
         background-color: transparent;
 
         & button {
@@ -810,14 +804,6 @@
         text-shadow: none;
     }
 
-    /* There is no lefthand border to cover in
-      dark mode, so don't apply negative margin
-      that would otherwise pull the unread marker
-      to the left. */
-    .unread_marker {
-        margin-left: 0;
-    }
-
     .selected_message .messagebox-content {
         border-color: hsl(217deg 64% 59% / 70%);
     }
@@ -1165,7 +1151,7 @@
         }
     }
 
-    .panel_subscriber_member_list > .pill-container {
+    .panel_user_list > .pill-container {
         &:hover {
             color: inherit;
         }

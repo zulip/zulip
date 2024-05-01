@@ -261,7 +261,7 @@ def make_client(name: str) -> Client:
 def find_key_by_email(address: str) -> Optional[str]:
     from django.core.mail import outbox
 
-    key_regex = re.compile("accounts/do_confirm/([a-z0-9]{24})>")
+    key_regex = re.compile(r"accounts/do_confirm/([a-z0-9]{24})>")
     for message in reversed(outbox):
         if address in message.to:
             match = key_regex.search(str(message.body))
@@ -734,18 +734,6 @@ def mock_queue_publish(
 
     with mock.patch(method_to_patch, side_effect=verify_serialize):
         yield inner
-
-
-@contextmanager
-def timeout_mock(mock_path: str) -> Iterator[None]:
-    # timeout() doesn't work in test environment with database operations
-    # and they don't get committed - so we need to replace it with a mock
-    # that just calls the function.
-    def mock_timeout(seconds: int, func: Callable[[], object]) -> object:
-        return func()
-
-    with mock.patch(f"{mock_path}.timeout", new=mock_timeout):
-        yield
 
 
 @contextmanager

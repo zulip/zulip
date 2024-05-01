@@ -50,6 +50,8 @@ run_test("redraw_left_panel", ({mock_template}) => {
         stream_weekly_traffic: null,
         color: "red",
         can_remove_subscribers_group: admins_group.id,
+        date_created: 1691057093,
+        creator_id: null,
     };
     const poland = {
         elem: "poland",
@@ -61,6 +63,8 @@ run_test("redraw_left_panel", ({mock_template}) => {
         stream_weekly_traffic: 13,
         color: "red",
         can_remove_subscribers_group: admins_group.id,
+        date_created: 1691057093,
+        creator_id: null,
     };
     const pomona = {
         elem: "pomona",
@@ -72,6 +76,8 @@ run_test("redraw_left_panel", ({mock_template}) => {
         stream_weekly_traffic: 0,
         color: "red",
         can_remove_subscribers_group: admins_group.id,
+        date_created: 1691057093,
+        creator_id: null,
     };
     const cpp = {
         elem: "cpp",
@@ -83,6 +89,8 @@ run_test("redraw_left_panel", ({mock_template}) => {
         stream_weekly_traffic: 6,
         color: "red",
         can_remove_subscribers_group: admins_group.id,
+        date_created: 1691057093,
+        creator_id: null,
     };
     const zzyzx = {
         elem: "zzyzx",
@@ -94,6 +102,8 @@ run_test("redraw_left_panel", ({mock_template}) => {
         stream_weekly_traffic: 6,
         color: "red",
         can_remove_subscribers_group: admins_group.id,
+        date_created: 1691057093,
+        creator_id: null,
     };
 
     const sub_row_data = [denmark, poland, pomona, cpp, zzyzx];
@@ -120,7 +130,7 @@ run_test("redraw_left_panel", ({mock_template}) => {
         $(sub_row).detach = () => sub_row;
     }
 
-    $.create("#streams_overlay_container .stream-row", {children: sub_stubs});
+    $.create("#channels_overlay_container .stream-row", {children: sub_stubs});
 
     let ui_called = false;
     scroll_util.reset_scrollbar = ($elem) => {
@@ -135,7 +145,7 @@ run_test("redraw_left_panel", ({mock_template}) => {
     assert.ok(!$denmark_row.hasClass("active"));
 
     function test_filter(params, expected_streams) {
-        $("#streams_overlay_container .stream-row:not(.notdisplayed)").length = 0;
+        $("#channels_overlay_container .stream-row:not(.notdisplayed)").length = 0;
         const stream_ids = stream_settings_ui.redraw_left_panel(params);
         assert.deepEqual(
             stream_ids,

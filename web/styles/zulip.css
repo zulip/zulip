@@ -641,10 +641,6 @@ li,
     its own border and background color */
     border: none;
     background-clip: content-box;
-    /* The z-index here ensures that the copy-message
-    icon is clickable and is needed because of reduced
-    opacity of readonly textarea */
-    z-index: 2;
 
     &:hover svg path {
         fill: var(--color-fill-hover-copy-icon);
@@ -664,6 +660,14 @@ li,
     #clipboard_image {
         margin: 0;
     }
+}
+
+#copy_generated_link_container {
+    display: flex;
+    width: 100%;
+    margin-right: -32px;
+    gap: 4px;
+    align-items: center;
 }
 
 #copy_generated_invite_link {
@@ -1342,22 +1346,6 @@ td.pointer {
     }
 }
 
-.message_row.private-message {
-    background-color: var(--color-background-private-message-content);
-
-    .date_row {
-        background-color: var(--color-background-private-message-content);
-    }
-
-    .data-container::after {
-        background: linear-gradient(
-            0deg,
-            var(--color-background-private-message-content),
-            transparent 100%
-        );
-    }
-}
-
 .selected_message {
     .messagebox-content {
         /* We add an outline and shift it inside the message so that without
@@ -1369,38 +1357,12 @@ td.pointer {
     }
 }
 
-.message_sender {
-    & i.zulip-icon.zulip-icon-bot {
-        font-size: 12px;
-    }
-}
-
-.sender_name {
-    display: inline-flex;
-    font-weight: 700;
-    color: var(--color-text-sender-name);
-    column-gap: 3px;
-
-    .sender_name_text {
-        overflow: hidden;
-        white-space: nowrap;
-        display: inline-flex;
-
-        .user-name {
-            overflow: hidden;
-            text-overflow: ellipsis;
+.selected_msg_for_touchscreen {
+    @media (hover: none) {
+        .message_reactions .reaction_button {
+            visibility: visible;
+            pointer-events: all;
         }
-    }
-}
-
-.sender_info_hovered {
-    .sender_name {
-        cursor: pointer;
-        color: hsl(200deg 100% 40%);
-    }
-
-    .message-avatar {
-        cursor: pointer;
     }
 }
 
@@ -1840,9 +1802,13 @@ div.focused-message-list {
     right: 8px;
     border-radius: 4px;
 
-    /* For FontAwesome icons used in place of images for some users. */
+    /* For FontAwesome icons and zulip icons used in place of images for some users. */
     font-size: 19px;
     text-align: center;
+
+    &.zulip-icon-triple-users {
+        font-size: 19px;
+    }
 
     &.no-presence-circle {
         margin-left: 9px;
@@ -2176,21 +2142,16 @@ select.invite-as {
     margin-bottom: 0;
 }
 
-.sub-unsub-message,
-.date_row {
+.sub-unsub-message {
     padding-bottom: 10px;
+    text-align: center;
 }
 
-.date_row {
-    text-align: right;
-}
-
-.sub-unsub-message span,
-.date_row span {
+.sub-unsub-message span {
+    font-size: 1em;
     display: block;
     padding: 4px;
     overflow: hidden;
-    text-transform: uppercase;
 }
 
 .sub-unsub-message .stream-status {
@@ -2206,15 +2167,6 @@ select.invite-as {
     .zulip-icon.zulip-icon-lock {
         font-size: 12px;
     }
-}
-
-.sub-unsub-message {
-    text-align: center;
-}
-
-.sub-unsub-message span {
-    font-size: 1em;
-    text-transform: none;
 }
 
 .sub-unsub-message span::before,
@@ -2446,6 +2398,10 @@ select.invite-as {
 
 .hide-right-sidebar {
     @extend %hide-right-sidebar;
+}
+
+.hide-right-sidebar-by-visibility .app-main .column-right {
+    visibility: hidden;
 }
 
 @media (width < $xl_min) {
@@ -2840,7 +2796,7 @@ select.invite-as {
     }
 
     .zulip-icon-help-bigger,
-    .zulip-icon-triple-users {
+    .zulip-icon-user-list {
         font-size: 20px;
     }
 

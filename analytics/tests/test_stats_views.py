@@ -192,21 +192,21 @@ class TestGetChartData(ZulipTestCase):
                 "end_times": [datetime_to_timestamp(dt) for dt in self.end_times_day],
                 "frequency": CountStat.DAY,
                 "everyone": {
-                    "Public streams": self.data(100),
-                    "Private streams": self.data(0),
+                    "Public channels": self.data(100),
+                    "Private channels": self.data(0),
                     "Direct messages": self.data(101),
                     "Group direct messages": self.data(0),
                 },
                 "user": {
-                    "Public streams": self.data(200),
-                    "Private streams": self.data(201),
+                    "Public channels": self.data(200),
+                    "Private channels": self.data(201),
                     "Direct messages": self.data(0),
                     "Group direct messages": self.data(0),
                 },
                 "display_order": [
                     "Direct messages",
-                    "Public streams",
-                    "Private streams",
+                    "Public channels",
+                    "Private channels",
                     "Group direct messages",
                 ],
                 "result": "success",
@@ -306,7 +306,7 @@ class TestGetChartData(ZulipTestCase):
             },
             subdomain="zephyr",
         )
-        self.assert_json_error(result, "Invalid stream ID")
+        self.assert_json_error(result, "Invalid channel ID")
 
     def test_include_empty_subgroups(self) -> None:
         FillState.objects.create(
@@ -343,8 +343,8 @@ class TestGetChartData(ZulipTestCase):
         self.assertEqual(
             data["everyone"],
             {
-                "Public streams": [0],
-                "Private streams": [0],
+                "Public channels": [0],
+                "Private channels": [0],
                 "Direct messages": [0],
                 "Group direct messages": [0],
             },
@@ -352,8 +352,8 @@ class TestGetChartData(ZulipTestCase):
         self.assertEqual(
             data["user"],
             {
-                "Public streams": [0],
-                "Private streams": [0],
+                "Public channels": [0],
+                "Private channels": [0],
                 "Direct messages": [0],
                 "Group direct messages": [0],
             },

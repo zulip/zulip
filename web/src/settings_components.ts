@@ -1,5 +1,7 @@
 import $ from "jquery";
 import assert from "minimalistic-assert";
+import type {PopperElement, Props} from "tippy.js";
+import tippy from "tippy.js";
 
 import render_compose_banner from "../templates/compose_banner/compose_banner.hbs";
 
@@ -10,6 +12,7 @@ import {$t} from "./i18n";
 import {realm_user_settings_defaults} from "./realm_user_settings_defaults";
 import * as scroll_util from "./scroll_util";
 import * as settings_config from "./settings_config";
+import type {CustomProfileField} from "./state_data";
 import {realm} from "./state_data";
 import * as stream_data from "./stream_data";
 import type {StreamSubscription} from "./sub_store";
@@ -96,14 +99,17 @@ export function get_property_value(
         | RealmSettingProperties
         | StreamSettingProperties
         | keyof UserGroup
+        | keyof CustomProfileField
         | RealmUserSettingDefaultProperties,
     for_realm_default_settings?: boolean,
     sub?: StreamSubscription,
     group?: UserGroup,
+    custom_profile_field?: CustomProfileField,
 ):
     | valueof<RealmSetting>
     | valueof<StreamSubscription>
     | valueof<UserGroup>
+    | valueof<CustomProfileField>
     | valueof<RealmUserSettingDefaultType> {
     if (for_realm_default_settings) {
         // realm_user_default_settings are stored in a separate object.
@@ -134,6 +140,15 @@ export function get_property_value(
     if (group) {
         // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
         return group[property_name as keyof UserGroup];
+    }
+
+    if (custom_profile_field) {
+        // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+        const value = custom_profile_field[property_name as keyof CustomProfileField];
+        if (property_name === "display_in_profile_summary" && value === undefined) {
+            return false;
+        }
+        return value;
     }
 
     if (property_name === "realm_org_join_restrictions") {
@@ -180,6 +195,10 @@ export function extract_property_name($elem: JQuery, for_realm_default_settings?
         // We assume it's not an empty string and can contain only digits and lowercase ASCII letters,
         // this is ensured by a respective allowlist-based filter in populate_auth_methods().
         return /^id_authmethod[\da-z]+_(.*)$/.exec(elem_id)![1];
+    }
+
+    if (elem_id.startsWith("id-custom-profile-field")) {
+        return /^id_custom_profile_field_(.*)$/.exec(elem_id.replaceAll("-", "_"))![1];
     }
 
     return /^id_(.*)$/.exec(elem_id.replaceAll("-", "_"))![1];
@@ -355,6 +374,87 @@ function get_message_retention_setting_value(
         return settings_config.retain_message_forever;
     }
     return check_valid_number_input(custom_input_val);
+}
+
+type FieldData = Record<string, Record<string, string> | string>;
+
+function read_select_field_data_from_form(
+    $profile_field_form: JQuery,
+    old_field_data: FieldData,
+): FieldData {
+    const field_data: FieldData = {};
+    let field_order = 1;
+
+    const old_option_value_map = new Map();
+    if (old_field_data !== undefined) {
+        for (const [value, choice] of Object.entries(old_field_data)) {
+            assert(typeof choice !== "string");
+            old_option_value_map.set(choice.text, value);
+        }
+    }
+    $profile_field_form.find("div.choice-row").each(function (this: HTMLElement) {
+        const text = $(this).find("input")[0].value;
+        if (text) {
+            if (old_option_value_map.get(text) !== undefined) {
+                // Resetting the data-value in the form is
+                // important if the user removed an option string
+                // and then added it back again before saving
+                // changes.
+                $(this).attr("data-value", old_option_value_map.get(text));
+            }
+            const value = $(this).attr("data-value")!;
+            field_data[value] = {text, order: field_order.toString()};
+            field_order += 1;
+        }
+    });
+
+    return field_data;
+}
+
+function read_external_account_field_data($profile_field_form: JQuery): FieldData {
+    const field_data: FieldData = {};
+    field_data.subtype = $profile_field_form
+        .find<HTMLSelectElement & {type: "select-one"}>("select[name=external_acc_field_type]")
+        .val()!;
+    if (field_data.subtype === "custom") {
+        field_data.url_pattern = $profile_field_form
+            .find<HTMLInputElement>("input[name=url_pattern]")
+            .val()!;
+    }
+    return field_data;
+}
+
+export function read_field_data_from_form(
+    field_type_id: number,
+    $profile_field_form: JQuery,
+    old_field_data: FieldData,
+): FieldData | undefined {
+    const field_types = realm.custom_profile_field_types;
+
+    // Only read field data if we are creating a select field
+    // or external account field.
+    if (field_type_id === field_types.SELECT.id) {
+        return read_select_field_data_from_form($profile_field_form, old_field_data);
+    } else if (field_type_id === field_types.EXTERNAL_ACCOUNT.id) {
+        return read_external_account_field_data($profile_field_form);
+    }
+    return undefined;
+}
+
+function get_field_data_input_value($input_elem: JQuery): string | undefined {
+    const $profile_field_form = $input_elem.closest(".profile-field-form");
+    const profile_field_id = Number.parseInt(
+        $($profile_field_form).attr("data-profile-field-id")!,
+        10,
+    );
+    const field = realm.custom_profile_fields.find((field) => field.id === profile_field_id)!;
+
+    const proposed_value = read_field_data_from_form(
+        field.type,
+        $profile_field_form,
+        JSON.parse(field.field_data),
+    );
+    return JSON.stringify(proposed_value);
 }
 
 export function sort_object_by_key(obj: Record<string, boolean>): Record<string, boolean> {
@@ -605,6 +705,8 @@ export function get_input_element_value(
             return get_message_retention_setting_value($(input_elem));
         case "dropdown-list-widget":
             return get_dropdown_list_widget_setting_value($input_elem);
+        case "field-data-setting":
+            return get_field_data_input_value($input_elem);
         default:
             return undefined;
     }
@@ -695,6 +797,7 @@ type setting_property_type =
     | RealmSettingProperties
     | StreamSettingProperties
     | keyof UserGroup
+    | keyof CustomProfileField
     | RealmUserSettingDefaultProperties;
 
 export function check_property_changed(
@@ -702,6 +805,7 @@ export function check_property_changed(
     for_realm_default_settings: boolean,
     sub: StreamSubscription | undefined,
     group: UserGroup | undefined,
+    custom_profile_field: CustomProfileField | undefined,
 ): boolean {
     const $elem = $(elem);
     // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
@@ -709,7 +813,14 @@ export function check_property_changed(
         $elem,
         for_realm_default_settings,
     ) as setting_property_type;
-    let current_val = get_property_value(property_name, for_realm_default_settings, sub, group);
+    let current_val = get_property_value(
+        property_name,
+        for_realm_default_settings,
+        sub,
+        group,
+        custom_profile_field,
+    );
+
     let proposed_val;
 
     switch (property_name) {
@@ -756,6 +867,9 @@ export function check_property_changed(
         case "stream_privacy":
             proposed_val = get_input_element_value(elem, "radio-group");
             break;
+        case "field_data":
+            proposed_val = get_input_element_value(elem, "field-data-setting");
+            break;
         default:
             if (current_val !== undefined) {
                 proposed_val = get_input_element_value(elem, typeof current_val);
@@ -792,7 +906,7 @@ export function save_discard_widget_status_handler(
     $subsection.find(".save-button").show();
     const properties_elements = get_subsection_property_elements($subsection);
     const show_change_process_button = properties_elements.some((elem) =>
-        check_property_changed(elem, for_realm_default_settings, sub, group),
+        check_property_changed(elem, for_realm_default_settings, sub, group, undefined),
     );
 
     const $save_btn_controls = $subsection.find(".subsection-header .save-button-controls");
@@ -819,7 +933,7 @@ export function save_discard_widget_status_handler(
             banner_type: compose_banner.WARNING,
             banner_text: $t({
                 defaultMessage:
-                    "Only subscribers can access or join private streams, so you will lose access to this stream if you convert it to a private stream while not subscribed to it.",
+                    "Only subscribers can access or join private channels, so you will lose access to this channel if you convert it to a private channel while not subscribed to it.",
             }),
             button_text: $t({defaultMessage: "Subscribe"}),
             classname: "stream_privacy_warning",
@@ -914,7 +1028,44 @@ function enable_or_disable_save_button($subsection_elem: JQuery): void {
         disable_save_btn = should_disable_save_button_for_time_limit_settings(time_limit_settings);
     } else if ($subsection_elem.attr("id") === "org-other-settings") {
         disable_save_btn = should_disable_save_button_for_jitsi_server_url_setting();
+        const $button_wrapper = $subsection_elem.find<PopperElement>(".subsection-changes-save");
+        const tippy_instance = $button_wrapper[0]._tippy;
+        if (disable_save_btn) {
+            // avoid duplication of tippy
+            if (!tippy_instance) {
+                const opts: Partial<Props> = {placement: "top"};
+                initialize_disable_btn_hint_popover(
+                    $button_wrapper,
+                    $t({defaultMessage: "Cannot save invalid Jitsi server URL."}),
+                    opts,
+                );
+            }
+        } else {
+            if (tippy_instance) {
+                tippy_instance.destroy();
+            }
+        }
     }
 
     $subsection_elem.find(".subsection-changes-save button").prop("disabled", disable_save_btn);
+}
+
+export function initialize_disable_btn_hint_popover(
+    $btn_wrapper: JQuery,
+    hint_text: string | undefined,
+    opts: Partial<Props>,
+): void {
+    const tippy_opts: Partial<Props> = {
+        animation: false,
+        hideOnClick: false,
+        placement: "bottom",
+        ...opts,
+    };
+
+    // If hint_text is undefined, we use the HTML content of a
+    // <template> whose id is given by data-tooltip-template-id
+    if (hint_text !== undefined) {
+        tippy_opts.content = hint_text;
+    }
+    tippy($btn_wrapper[0], tippy_opts);
 }

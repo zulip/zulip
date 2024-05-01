@@ -12,6 +12,8 @@ class kandra::prometheus::node {
     version        => $version,
     url            => "https://github.com/prometheus/node_exporter/releases/download/v${version}/node_exporter-${version}.linux-${zulip::common::goarch}.tar.gz",
     tarball_prefix => "node_exporter-${version}.linux-${zulip::common::goarch}",
+    bin            => [$bin],
+    cleanup_after  => [Service[supervisor]],
   }
 
   kandra::firewall_allow { 'node_exporter': port => '9100' }
@@ -20,7 +22,7 @@ class kandra::prometheus::node {
     require => [
       User[zulip],
       Package[supervisor],
-      Zulip::External_Dep['node_exporter'],
+      File[$bin],
     ],
     owner   => 'root',
     group   => 'root',

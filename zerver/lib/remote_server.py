@@ -6,6 +6,7 @@ import orjson
 import requests
 from django.conf import settings
 from django.db.models import QuerySet
+from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
 from pydantic import UUID4, BaseModel, ConfigDict, Field, Json, field_validator
 
@@ -16,6 +17,7 @@ from zerver.actions.realm_settings import (
     do_set_push_notifications_enabled_end_timestamp,
     do_set_realm_property,
 )
+from zerver.lib import redis_utils
 from zerver.lib.exceptions import (
     JsonableError,
     MissingRemoteRealmError,
@@ -23,8 +25,11 @@ from zerver.lib.exceptions import (
 )
 from zerver.lib.outgoing_http import OutgoingSession
 from zerver.lib.queue import queue_event_on_commit
+from zerver.lib.redis_utils import get_redis_client
 from zerver.models import Realm, RealmAuditLog
 from zerver.models.realms import OrgTypeEnum
+
+redis_client = get_redis_client()
 
 
 class PushBouncerSession(OutgoingSession):
@@ -245,6 +250,29 @@ def send_json_to_push_bouncer(
     )
 
 
+PUSH_NOTIFICATIONS_RECENTLY_WORKING_REDIS_KEY = "push_notifications_recently_working_ts"
+
+
+def record_push_notifications_recently_working() -> None:
+    # Record the timestamp in redis, marking that push notifications
+    # were working as of this moment.
+
+    redis_key = redis_utils.REDIS_KEY_PREFIX + PUSH_NOTIFICATIONS_RECENTLY_WORKING_REDIS_KEY
+    # Keep this record around for 24h in case it's useful for debugging.
+    redis_client.set(redis_key, str(timezone_now().timestamp()), ex=60 * 60 * 24)
+
+
+def check_push_notifications_recently_working() -> bool:
+    # Check in redis whether push notifications were working in the last hour.
+    redis_key = redis_utils.REDIS_KEY_PREFIX + PUSH_NOTIFICATIONS_RECENTLY_WORKING_REDIS_KEY
+    timestamp = redis_client.get(redis_key)
+    if timestamp is None:
+        return False
+
+    # If the timestamp is within the last hour, we consider push notifications to be working.
+    return timezone_now().timestamp() - float(timestamp) < 60 * 60
+
+
 def maybe_mark_pushes_disabled(
     e: Union[JsonableError, orjson.JSONDecodeError], logger: logging.Logger
 ) -> None:
@@ -259,11 +287,18 @@ def maybe_mark_pushes_disabled(
         logger.exception("Exception communicating with %s", settings.PUSH_NOTIFICATION_BOUNCER_URL)
 
     # An exception was thrown talking to the push bouncer. There may
-    # be certain transient failures that we could ignore here, but the
-    # default explanation is that there is something wrong either with
-    # our credentials being corrupted or our ability to reach the
-    # bouncer service over the network, so we immediately move to
+    # be certain transient failures that we could ignore here -
+    # therefore we check whether push notifications were recently working
+    # and if so, the error can be treated as transient.
+    # Otherwise, the assumed explanation is that there is something wrong
+    # either with our credentials being corrupted or our ability to reach the
+    # bouncer service over the network, so we move to
     # reporting push notifications as likely not working.
+    if check_push_notifications_recently_working():
+        # Push notifications were recently observed working, so we
+        # assume this is likely a transient failure.
+        return
+
     for realm in Realm.objects.filter(push_notifications_enabled=True):
         do_set_realm_property(realm, "push_notifications_enabled", False, acting_user=None)
         do_set_push_notifications_enabled_end_timestamp(realm, None, acting_user=None)

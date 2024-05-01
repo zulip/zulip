@@ -19,7 +19,7 @@ export function initialize(): void {
             if (!can_create_streams) {
                 // If the user can't create streams, we directly
                 // navigate them to the Stream settings subscribe UI.
-                window.location.assign("#streams/all");
+                window.location.assign("#channels/all");
                 // Returning false from an onShow handler cancels the show.
                 return false;
             }
@@ -31,8 +31,8 @@ export function initialize(): void {
             popover_menus.on_show_prep(instance);
 
             //  When showing the popover menu, we want the
-            // "Add streams" and the "Filter streams" tooltip
-            //  to appear below the "Add streams" icon.
+            // "Add channels" and the "Filter channels" tooltip
+            //  to appear below the "Add channels" icon.
             const add_streams_tooltip: ReferenceElement | undefined =
                 $("#add_streams_tooltip").get(0);
             assert(add_streams_tooltip !== undefined);
@@ -55,9 +55,9 @@ export function initialize(): void {
             instance.destroy();
             popover_menus.popover_instances.stream_settings = null;
             //  After the popover menu is closed, we want the
-            //  "Add streams" and the "Filter streams" tooltip
+            //  "Add channels" and the "Filter channels" tooltip
             //  to appear at it's original position that is
-            //  above the "Add streams" icon.
+            //  above the "Add channels" icon.
             const add_streams_tooltip: ReferenceElement | undefined =
                 $("#add_streams_tooltip").get(0);
             assert(add_streams_tooltip !== undefined);

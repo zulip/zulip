@@ -51,6 +51,12 @@
     </li>
     <hr class="drafts-item-in-popover" />
     <li class="drafts-item-in-popover">
-        <a href="#drafts">{{t "Drafts"}} <span class="compose-drafts-count-container">(<span class="compose-drafts-count"></span>)</span></a>
+        <a href="#drafts">{{t "Drafts" }} <span class="compose-drafts-count-container">(<span class="compose-drafts-count"></span>)</span></a>
     </li>
+    {{#if show_compose_new_message}}
+    <hr />
+    <li>
+        <a class="compose_new_message" tabindex=="0">{{t "Save draft and start a new message" }}</a>
+    </li>
+    {{/if}}
 </ul>

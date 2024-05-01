@@ -1,0 +1,14 @@
+{{t 'You will now see the channel you created. To go back to channel settings, you can:' }}
+<ul>
+    <li>
+        {{#tr}}
+        Click on <z-stream></z-stream> at the top of your Zulip window.
+        {{#*inline "z-stream"}}<b>{{> ../inline_decorated_stream_name stream=stream}}</b>{{/inline}}
+        {{/tr}}
+    </li>
+    <li>
+        {{#tr}}
+        Use the <b>back</b> button in your browser or desktop app.
+        {{/tr}}
+    </li>
+</ul>

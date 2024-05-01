@@ -517,11 +517,22 @@ export function discard_property_element_changes(elem, for_realm_default_setting
             break;
         case "emojiset":
         case "user_list_style":
-        case "stream_privacy":
             // Because this widget has a radio button structure, it
             // needs custom reset code.
             $elem.find(`input[value='${CSS.escape(property_value)}']`).prop("checked", true);
             break;
+        case "stream_privacy": {
+            $elem.find(`input[value='${CSS.escape(property_value)}']`).prop("checked", true);
+
+            // Hide stream privacy warning banner
+            const $stream_permissions_warning_banner = $(
+                "#stream_permission_settings .stream-permissions-warning-banner",
+            );
+            if (!$stream_permissions_warning_banner.is(":empty")) {
+                $stream_permissions_warning_banner.empty();
+            }
+            break;
+        }
         case "email_notifications_batching_period_seconds":
         case "email_notification_batching_period_edit_minutes":
             settings_notifications.set_notification_batching_ui(
@@ -673,7 +684,7 @@ export function init_dropdown_widgets() {
         },
         default_id: realm.realm_new_stream_announcements_stream_id,
         unique_id_type: dropdown_widget.DataTypes.NUMBER,
-        text_if_current_value_not_in_options: $t({defaultMessage: "Cannot view stream"}),
+        text_if_current_value_not_in_options: $t({defaultMessage: "Cannot view channel"}),
     });
     settings_components.set_new_stream_announcements_stream_widget(
         new_stream_announcements_stream_widget,
@@ -696,7 +707,7 @@ export function init_dropdown_widgets() {
         },
         default_id: realm.realm_signup_announcements_stream_id,
         unique_id_type: dropdown_widget.DataTypes.NUMBER,
-        text_if_current_value_not_in_options: $t({defaultMessage: "Cannot view stream"}),
+        text_if_current_value_not_in_options: $t({defaultMessage: "Cannot view channel"}),
     });
     settings_components.set_signup_announcements_stream_widget(signup_announcements_stream_widget);
     signup_announcements_stream_widget.setup();
@@ -717,7 +728,7 @@ export function init_dropdown_widgets() {
         },
         default_id: realm.realm_zulip_update_announcements_stream_id,
         unique_id_type: dropdown_widget.DataTypes.NUMBER,
-        text_if_current_value_not_in_options: $t({defaultMessage: "Cannot view stream"}),
+        text_if_current_value_not_in_options: $t({defaultMessage: "Cannot view channel"}),
     });
     settings_components.set_zulip_update_announcements_stream_widget(
         zulip_update_announcements_stream_widget,
@@ -815,7 +826,13 @@ export function init_dropdown_widgets() {
     can_access_all_users_group_widget.setup();
 }
 
-export function populate_data_for_request(subsection, for_realm_default_settings, sub, group) {
+export function populate_data_for_request(
+    subsection,
+    for_realm_default_settings,
+    sub,
+    group,
+    custom_profile_field = undefined,
+) {
     let data = {};
     const properties_elements = settings_components.get_subsection_property_elements(subsection);
 
@@ -827,12 +844,13 @@ export function populate_data_for_request(subsection, for_realm_default_settings
                 for_realm_default_settings,
                 sub,
                 group,
+                custom_profile_field,
             )
         ) {
             const input_value = settings_components.get_input_element_value(input_elem);
             if (input_value !== undefined) {
                 let property_name;
-                if (for_realm_default_settings || sub || group) {
+                if (for_realm_default_settings || sub || group || custom_profile_field) {
                     property_name = settings_components.extract_property_name(
                         $input_elem,
                         for_realm_default_settings,

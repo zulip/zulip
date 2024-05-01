@@ -15,7 +15,6 @@ import * as compose_call_ui from "./compose_call_ui";
 import * as compose_pm_pill from "./compose_pm_pill";
 import * as compose_recipient from "./compose_recipient";
 import * as compose_state from "./compose_state";
-import * as composebox_typeahead from "./composebox_typeahead";
 import * as dark_theme from "./dark_theme";
 import * as emoji from "./emoji";
 import * as emoji_picker from "./emoji_picker";
@@ -176,7 +175,6 @@ export function dispatch_normal_event(event) {
 
         case "web_reload_client": {
             const reload_options = {
-                save_pointer: true,
                 save_compose: true,
                 message_html: "The application has been updated; reloading!",
             };
@@ -391,7 +389,6 @@ export function dispatch_normal_event(event) {
             // And then let other widgets know.
             settings_emoji.populate_emoji();
             emoji_picker.rebuild_catalog();
-            composebox_typeahead.update_emoji_data();
             break;
 
         case "realm_export":
@@ -706,6 +703,7 @@ export function dispatch_normal_event(event) {
                 "web_escape_navigates_to_home_view",
                 "fluid_layout_width",
                 "high_contrast_mode",
+                "receives_typing_notifications",
                 "timezone",
                 "twenty_four_hour_time",
                 "translate_emoticons",
@@ -771,8 +769,8 @@ export function dispatch_normal_event(event) {
                 activity_ui.build_user_sidebar();
             }
             if (event.property === "dense_mode") {
-                $("body").toggleClass("less_dense_mode");
-                $("body").toggleClass("more_dense_mode");
+                $("body").toggleClass("less-dense-mode");
+                $("body").toggleClass("more-dense-mode");
             }
             if (
                 event.property === "web_font_size_px" ||
@@ -800,6 +798,12 @@ export function dispatch_normal_event(event) {
             }
             if (event.property === "starred_message_counts") {
                 starred_messages_ui.rerender_ui();
+            }
+            if (
+                event.property === "receives_typing_notifications" &&
+                !user_settings.receives_typing_notifications
+            ) {
+                typing_events.disable_typing_notification();
             }
             if (event.property === "fluid_layout_width") {
                 scroll_bar.set_layout_width();

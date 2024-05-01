@@ -238,8 +238,8 @@ def get_recipient_info(
     if recipient.type == Recipient.PERSONAL:
         # The sender and recipient may be the same id, so
         # de-duplicate using a set.
-        message_to_user_ids: Collection[int] = list({recipient.type_id, sender_id})
-        assert len(message_to_user_ids) in [1, 2]
+        message_to_user_id_set = {recipient.type_id, sender_id}
+        assert len(message_to_user_id_set) in [1, 2]
 
     elif recipient.type == Recipient.STREAM:
         # Anybody calling us w/r/t a stream message needs to supply
@@ -302,9 +302,9 @@ def get_recipient_info(
             .order_by("user_profile_id")
         )
 
-        message_to_user_ids = list()
+        message_to_user_id_set = set()
         for row in subscription_rows:
-            message_to_user_ids.append(row["user_profile_id"])
+            message_to_user_id_set.add(row["user_profile_id"])
             # We store the 'sender_muted_stream' information here to avoid db query at
             # a later stage when we perform automatically unmute topic in muted stream operation.
             if row["user_profile_id"] == sender_id:
@@ -373,21 +373,18 @@ def get_recipient_info(
             )
 
     elif recipient.type == Recipient.DIRECT_MESSAGE_GROUP:
-        message_to_user_ids = get_huddle_user_ids(recipient)
+        message_to_user_id_set = set(get_huddle_user_ids(recipient))
 
     else:
         raise ValueError("Bad recipient type")
 
-    message_to_user_id_set = set(message_to_user_ids)
-
-    user_ids = set(message_to_user_id_set)
     # Important note: Because we haven't rendered Markdown yet, we
     # don't yet know which of these possibly-mentioned users was
     # actually mentioned in the message (in other words, the
     # mention syntax might have been in a code block or otherwise
     # escaped).  `get_ids_for` will filter these extra user rows
     # for our data structures not related to bots
-    user_ids |= possibly_mentioned_user_ids
+    user_ids = message_to_user_id_set | possibly_mentioned_user_ids
 
     if user_ids:
         query: ValuesQuerySet[UserProfile, ActiveUserDict] = UserProfile.objects.filter(
@@ -1263,7 +1260,7 @@ def extract_stream_indicator(s: str) -> Union[str, int]:
     # once we improve our documentation.
     if isinstance(data, list):
         if len(data) != 1:  # nocoverage
-            raise JsonableError(_("Expected exactly one stream"))
+            raise JsonableError(_("Expected exactly one channel"))
         data = data[0]
 
     if isinstance(data, str):
@@ -1274,7 +1271,7 @@ def extract_stream_indicator(s: str) -> Union[str, int]:
         # We had a stream id.
         return data
 
-    raise JsonableError(_("Invalid data type for stream"))
+    raise JsonableError(_("Invalid data type for channel"))
 
 
 def extract_private_recipients(s: str) -> Union[List[str], List[int]]:
@@ -1463,34 +1460,34 @@ def send_pm_if_empty_stream(
                 if stream_id is not None:
                     arg_dict = {
                         **arg_dict,
-                        "stream_id": stream_id,
+                        "channel_id": stream_id,
                     }
                     content = _(
-                        "Your bot {bot_identity} tried to send a message to stream ID "
-                        "{stream_id}, but there is no stream with that ID."
+                        "Your bot {bot_identity} tried to send a message to channel ID "
+                        "{channel_id}, but there is no channel with that ID."
                     ).format(**arg_dict)
                 else:
                     assert stream_name is not None
                     arg_dict = {
                         **arg_dict,
-                        "stream_name": f"#**{stream_name}**",
-                        "new_stream_link": "#streams/new",
+                        "channel_name": f"#**{stream_name}**",
+                        "new_channel_link": "#channels/new",
                     }
                     content = _(
-                        "Your bot {bot_identity} tried to send a message to stream "
-                        "{stream_name}, but that stream does not exist. "
-                        "Click [here]({new_stream_link}) to create it."
+                        "Your bot {bot_identity} tried to send a message to channel "
+                        "{channel_name}, but that channel does not exist. "
+                        "Click [here]({new_channel_link}) to create it."
                     ).format(**arg_dict)
             else:
                 if num_subscribers_for_stream_id(stream.id) > 0:
                     return
                 arg_dict = {
                     **arg_dict,
-                    "stream_name": f"#**{stream.name}**",
+                    "channel_name": f"#**{stream.name}**",
                 }
                 content = _(
                     "Your bot {bot_identity} tried to send a message to "
-                    "stream {stream_name}. The stream exists but "
+                    "channel {channel_name}. The channel exists but "
                     "does not have any subscribers."
                 ).format(**arg_dict)
 
@@ -1570,7 +1567,7 @@ def get_recipients_for_user_creation_events(
     if len(guest_recipients) == 0:
         return recipients_for_user_creation_events
 
-    if realm.can_access_all_users_group.name == SystemGroups.EVERYONE:
+    if realm.can_access_all_users_group.named_user_group.name == SystemGroups.EVERYONE:
         return recipients_for_user_creation_events
 
     if len(user_profiles) == 1:

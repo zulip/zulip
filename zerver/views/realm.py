@@ -521,6 +521,7 @@ def update_realm_user_settings_defaults(
         default=None,
     ),
     starred_message_counts: Optional[bool] = REQ(json_validator=check_bool, default=None),
+    receives_typing_notifications: Optional[bool] = REQ(json_validator=check_bool, default=None),
     web_stream_unreads_count_display_policy: Optional[int] = REQ(
         json_validator=check_int_in(UserProfile.WEB_STREAM_UNREADS_COUNT_DISPLAY_POLICY_CHOICES),
         default=None,

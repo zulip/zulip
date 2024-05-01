@@ -51,9 +51,9 @@ in the Zulip app to add more to your repertoire as needed.
 
 * **Toggle keyboard shortcuts view**: <kbd>?</kbd>
 
-* **Go to home view**: <kbd>Ctrl</kbd> + <kbd>[</kbd> (or
+* **Go to your home view**: <kbd>Ctrl</kbd> + <kbd>[</kbd> (or
   <kbd>Esc</kbd>, [if enabled][disable-escape])
-  until you are in the [home view](/help/configure-home-view).
+  until you are in your [home view](/help/configure-home-view).
 
 [disable-escape]: /help/configure-home-view#configure-whether-esc-navigates-to-the-home-view
 ## Search
@@ -96,14 +96,14 @@ in the Zulip app to add more to your repertoire as needed.
 
 * **Go to stream from topic view**: <kbd>S</kbd>
 
-* **Go to all direct messages**: <kbd>Shift</kbd> + <kbd>P</kbd>
+* **Go to your direct message feed**: <kbd>Shift</kbd> + <kbd>P</kbd>
 
 * **Zoom to message in conversation context**: <kbd>Z</kbd> — This view does not mark messages as read.
 
 * **Cycle between stream views**: <kbd>Shift</kbd> + <kbd>A</kbd>
   (previous) and <kbd>Shift</kbd> + <kbd>D</kbd> (next)
 
-* **Go to All messages**: <kbd>A</kbd> — Shows all unmuted messages.
+* **Go to Combined feed**: <kbd>A</kbd> — Shows all unmuted messages.
 
 * **Go to the conversation you are composing to**: <kbd>Ctrl</kbd> + <kbd>.</kbd>
 

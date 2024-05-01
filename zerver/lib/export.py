@@ -45,6 +45,7 @@ from zerver.models import (
     Huddle,
     Message,
     MutedUser,
+    NamedUserGroup,
     OnboardingStep,
     Reaction,
     Realm,
@@ -137,6 +138,7 @@ ALL_ZULIP_TABLES = {
     "zerver_missedmessageemailaddress",
     "zerver_multiuseinvite",
     "zerver_multiuseinvite_streams",
+    "zerver_namedusergroup",
     "zerver_onboardingstep",
     "zerver_preregistrationrealm",
     "zerver_preregistrationuser",
@@ -774,6 +776,14 @@ def get_realm_config() -> Config:
         normal_parent=realm_config,
         include_rows="realm_id__in",
         exclude=["direct_members", "direct_subgroups"],
+    )
+
+    Config(
+        table="zerver_namedusergroup",
+        model=NamedUserGroup,
+        normal_parent=realm_config,
+        include_rows="realm_for_sharding_id__in",
+        exclude=["realm", "direct_members", "direct_subgroups"],
     )
 
     Config(

@@ -12,7 +12,6 @@ import * as inbox_ui from "./inbox_ui";
 import * as inbox_util from "./inbox_util";
 import * as info_overlay from "./info_overlay";
 import * as message_fetch from "./message_fetch";
-import * as message_lists from "./message_lists";
 import * as message_viewport from "./message_viewport";
 import * as modals from "./modals";
 import * as narrow from "./narrow";
@@ -75,6 +74,10 @@ export function set_hash_to_home_view() {
     let home_view_hash = `#${user_settings.web_home_view}`;
     if (home_view_hash === "#recent_topics") {
         home_view_hash = "#recent";
+    }
+
+    if (home_view_hash === "#all_messages") {
+        home_view_hash = "#feed";
     }
 
     if (window.location.hash !== home_view_hash) {
@@ -161,7 +164,6 @@ function do_hashchange_normal(from_reload) {
             if (from_reload) {
                 blueslip.debug("We are narrowing as part of a reload.");
                 if (message_fetch.initial_narrow_pointer !== undefined) {
-                    message_lists.home.pre_narrow_offset = message_fetch.initial_offset;
                     narrow_opts.then_select_id = message_fetch.initial_narrow_pointer;
                     narrow_opts.then_select_offset = message_fetch.initial_narrow_offset;
                 }
@@ -199,6 +201,14 @@ function do_hashchange_normal(from_reload) {
             inbox_ui.show();
             break;
         case "#all_messages":
+            // "#all_messages" was renamed to "#feed" in 2024. Unlike
+            // the recent hash rename, there are likely few links that
+            // would break if this compatibility code was removed, but
+            // there's little cost to keeping it.
+            show_all_message_view();
+            window.location.replace("#feed");
+            break;
+        case "#feed":
             show_all_message_view();
             break;
         case "#keyboard-shortcuts":
@@ -206,6 +216,7 @@ function do_hashchange_normal(from_reload) {
         case "#search-operators":
         case "#drafts":
         case "#invite":
+        case "#channels":
         case "#streams":
         case "#organization":
         case "#settings":
@@ -225,7 +236,7 @@ function do_hashchange_overlay(old_hash) {
         // show the user's home view behind it.
         show_home_view();
     }
-    const base = hash_parser.get_current_hash_category();
+    let base = hash_parser.get_current_hash_category();
     const old_base = hash_parser.get_hash_category(old_hash);
     let section = hash_parser.get_current_hash_section();
 
@@ -253,11 +264,21 @@ function do_hashchange_overlay(old_hash) {
         );
     }
 
-    if (base === "streams") {
-        const valid_hash = hash_util.validate_stream_settings_hash(window.location.hash);
+    // In 2024, stream was renamed to channel in the Zulip API and UI.
+    // Because pre-change Welcome Bot and Notification Bot messages
+    // included links to "/#streams/all" and "/#streams/new", we'll
+    // need to support "streams" as an overlay hash as an alias for
+    // "channels" permanently.
+    if (base === "streams" || base === "channels") {
+        const valid_hash = hash_util.validate_channels_settings_hash(window.location.hash);
+        // Here valid_hash will always return "channels" as the base.
+        // So, if we update the history because the valid hash does
+        // not match the window.location.hash, then we also reset the
+        // base string we're tracking for the hash.
         if (valid_hash !== window.location.hash) {
             history.replaceState(null, "", browser_history.get_full_url(valid_hash));
             section = hash_parser.get_current_hash_section();
+            base = hash_parser.get_current_hash_category();
         }
     }
 
@@ -269,14 +290,14 @@ function do_hashchange_overlay(old_hash) {
         }
     }
 
-    // Start by handling the specific case of going
-    // from something like streams/all to streams_subscribed.
+    // Start by handling the specific case of going from
+    // something like "#channels/all" to "#channels/subscribed".
     //
     // In most situations we skip by this logic and load
     // the new overlay.
     if (coming_from_overlay && base === old_base) {
-        if (base === "streams") {
-            // e.g. #streams/29/social/subscribers
+        if (base === "channels") {
+            // e.g. #channels/29/social/subscribers
             const right_side_tab = hash_parser.get_current_nth_hash_section(3);
             stream_settings_ui.change_state(section, undefined, right_side_tab);
             return;
@@ -343,8 +364,8 @@ function do_hashchange_overlay(old_hash) {
         browser_history.set_hash_before_overlay(old_hash);
     }
 
-    if (base === "streams") {
-        // e.g. #streams/29/social/subscribers
+    if (base === "channels") {
+        // e.g. #channels/29/social/subscribers
         const right_side_tab = hash_parser.get_current_nth_hash_section(3);
 
         if (is_somebody_else_profile_open()) {

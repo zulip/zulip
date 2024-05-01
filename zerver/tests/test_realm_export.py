@@ -256,7 +256,7 @@ class RealmExportTest(ZulipTestCase):
             info_logs.output,
             [
                 (
-                    "ERROR:zerver.worker.queue_processors:Marking export for realm zulip "
+                    "ERROR:zerver.worker.deferred_work:Marking export for realm zulip "
                     "as failed due to retry -- possible OOM during export?"
                 )
             ],

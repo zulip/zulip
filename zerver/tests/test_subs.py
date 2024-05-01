@@ -100,6 +100,7 @@ from zerver.models import (
     DefaultStream,
     DefaultStreamGroup,
     Message,
+    NamedUserGroup,
     Realm,
     RealmAuditLog,
     Recipient,
@@ -277,7 +278,7 @@ class TestCreateStreams(ZulipTestCase):
         self.assertEqual(events[0]["event"]["streams"][0]["name"], "Private stream")
         self.assertEqual(events[0]["event"]["streams"][0]["stream_weekly_traffic"], None)
 
-        moderators_system_group = UserGroup.objects.get(
+        moderators_system_group = NamedUserGroup.objects.get(
             name="role:moderators", realm=realm, is_system_group=True
         )
         new_streams, existing_streams = create_streams_if_needed(
@@ -307,6 +308,8 @@ class TestCreateStreams(ZulipTestCase):
             self.assertTrue(stream.stream_post_policy == Stream.STREAM_POST_POLICY_ADMINS)
             self.assertTrue(stream.message_retention_days == -1)
             self.assertEqual(stream.can_remove_subscribers_group.id, moderators_system_group.id)
+            # Streams created where acting_user is None have no creator
+            self.assertIsNone(stream.creator_id)
 
         new_streams, existing_streams = create_streams_if_needed(
             realm,
@@ -423,7 +426,7 @@ class TestCreateStreams(ZulipTestCase):
         result = self.api_post(
             user_profile, "/api/v1/users/me/subscriptions", post_data, subdomain="zulip"
         )
-        self.assert_json_error(result, "A default stream cannot be private.")
+        self.assert_json_error(result, "A default channel cannot be private.")
 
     def test_history_public_to_subscribers_zephyr_realm(self) -> None:
         realm = get_realm("zephyr")
@@ -524,10 +527,10 @@ class TestCreateStreams(ZulipTestCase):
         user = self.example_user("hamlet")
         realm = user.realm
         self.login_user(user)
-        moderators_system_group = UserGroup.objects.get(
+        moderators_system_group = NamedUserGroup.objects.get(
             name="role:moderators", realm=realm, is_system_group=True
         )
-        admins_system_group = UserGroup.objects.get(
+        admins_system_group = NamedUserGroup.objects.get(
             name="role:administrators", realm=realm, is_system_group=True
         )
 
@@ -552,7 +555,7 @@ class TestCreateStreams(ZulipTestCase):
         stream = get_stream("new_stream2", realm)
         self.assertEqual(stream.can_remove_subscribers_group.id, admins_system_group.id)
 
-        hamletcharacters_group = UserGroup.objects.get(name="hamletcharacters", realm=realm)
+        hamletcharacters_group = NamedUserGroup.objects.get(name="hamletcharacters", realm=realm)
         post_data = {
             "subscriptions": orjson.dumps(
                 [{"name": "new_stream3", "description": "Third new stream"}]
@@ -564,7 +567,7 @@ class TestCreateStreams(ZulipTestCase):
             result, "'can_remove_subscribers_group' must be a system user group."
         )
 
-        internet_group = UserGroup.objects.get(
+        internet_group = NamedUserGroup.objects.get(
             name="role:internet", is_system_group=True, realm=realm
         )
         post_data = {
@@ -579,7 +582,9 @@ class TestCreateStreams(ZulipTestCase):
             "'can_remove_subscribers_group' setting cannot be set to 'role:internet' group.",
         )
 
-        owners_group = UserGroup.objects.get(name="role:owners", is_system_group=True, realm=realm)
+        owners_group = NamedUserGroup.objects.get(
+            name="role:owners", is_system_group=True, realm=realm
+        )
         post_data = {
             "subscriptions": orjson.dumps(
                 [{"name": "new_stream3", "description": "Third new stream"}]
@@ -592,7 +597,9 @@ class TestCreateStreams(ZulipTestCase):
             "'can_remove_subscribers_group' setting cannot be set to 'role:owners' group.",
         )
 
-        nobody_group = UserGroup.objects.get(name="role:nobody", is_system_group=True, realm=realm)
+        nobody_group = NamedUserGroup.objects.get(
+            name="role:nobody", is_system_group=True, realm=realm
+        )
         post_data = {
             "subscriptions": orjson.dumps(
                 [{"name": "new_stream3", "description": "Third new stream"}]
@@ -604,6 +611,28 @@ class TestCreateStreams(ZulipTestCase):
             result,
             "'can_remove_subscribers_group' setting cannot be set to 'role:nobody' group.",
         )
+
+    def test_acting_user_is_creator(self) -> None:
+        """
+        If backend calls provide an acting_user while trying to
+        create streams, assign acting_user as the stream creator
+        """
+        hamlet = self.example_user("hamlet")
+        new_streams, _ = create_streams_if_needed(
+            hamlet.realm,
+            [
+                StreamDict(
+                    name="hamlet's test stream",
+                    description="No description",
+                    invite_only=True,
+                    is_web_public=True,
+                    stream_post_policy=Stream.STREAM_POST_POLICY_ADMINS,
+                )
+            ],
+            acting_user=hamlet,
+        )
+        created_stream = new_streams[0]
+        self.assertEqual(created_stream.creator_id, hamlet.id)
 
 
 class RecipientTest(ZulipTestCase):
@@ -630,7 +659,7 @@ class StreamAdminTest(ZulipTestCase):
         }
         stream_id = get_stream("private_stream_1", user_profile.realm).id
         result = self.client_patch(f"/json/streams/{stream_id}", params)
-        self.assert_json_error(result, "Invalid stream ID")
+        self.assert_json_error(result, "Invalid channel ID")
 
         stream = self.subscribe(user_profile, "private_stream_1")
         self.assertFalse(stream.is_in_zephyr_realm)
@@ -647,11 +676,11 @@ class StreamAdminTest(ZulipTestCase):
         self.assertFalse(stream.invite_only)
         self.assertTrue(stream.history_public_to_subscribers)
 
-        messages = get_topic_messages(user_profile, stream, "stream events")
+        messages = get_topic_messages(user_profile, stream, "channel events")
         self.assert_length(messages, 1)
         expected_notification = (
             f"@_**King Hamlet|{user_profile.id}** changed the [access permissions](/help/stream-permissions) "
-            "for this stream from **Private, protected history** to **Public**."
+            "for this channel from **Private, protected history** to **Public**."
         )
         self.assertEqual(messages[0].content, expected_notification)
 
@@ -708,11 +737,11 @@ class StreamAdminTest(ZulipTestCase):
         self.assertTrue(stream.invite_only)
         self.assertFalse(stream.history_public_to_subscribers)
 
-        messages = get_topic_messages(user_profile, stream, "stream events")
+        messages = get_topic_messages(user_profile, stream, "channel events")
         self.assert_length(messages, 1)
         expected_notification = (
             f"@_**King Hamlet|{user_profile.id}** changed the [access permissions](/help/stream-permissions) "
-            "for this stream from **Public** to **Private, protected history**."
+            "for this channel from **Public** to **Private, protected history**."
         )
         self.assertEqual(messages[0].content, expected_notification)
 
@@ -748,7 +777,7 @@ class StreamAdminTest(ZulipTestCase):
             "is_private": orjson.dumps(True).decode(),
         }
         result = self.client_patch(f"/json/streams/{default_stream.id}", params)
-        self.assert_json_error(result, "A default stream cannot be private.")
+        self.assert_json_error(result, "A default channel cannot be private.")
         self.assertFalse(default_stream.invite_only)
 
         do_change_user_role(user_profile, UserProfile.ROLE_MEMBER, acting_user=None)
@@ -784,7 +813,7 @@ class StreamAdminTest(ZulipTestCase):
         with self.settings(WEB_PUBLIC_STREAMS_ENABLED=False):
             self.assertFalse(user_profile.can_create_web_public_streams())
             self.assertFalse(owner.can_create_web_public_streams())
-            with self.assertRaisesRegex(JsonableError, "Web-public streams are not enabled."):
+            with self.assertRaisesRegex(JsonableError, "Web-public channels are not enabled."):
                 list_to_streams(
                     streams_raw,
                     owner,
@@ -825,11 +854,11 @@ class StreamAdminTest(ZulipTestCase):
         self.assertFalse(stream.invite_only)
         self.assertFalse(stream.history_public_to_subscribers)
 
-        messages = get_topic_messages(user_profile, stream, "stream events")
+        messages = get_topic_messages(user_profile, stream, "channel events")
         self.assert_length(messages, 1)
         expected_notification = (
             f"@_**{user_profile.full_name}|{user_profile.id}** changed the [access permissions](/help/stream-permissions) "
-            "for this stream from **Private, protected history** to **Public, protected history**."
+            "for this channel from **Private, protected history** to **Public, protected history**."
         )
         self.assertEqual(messages[0].content, expected_notification)
 
@@ -864,11 +893,11 @@ class StreamAdminTest(ZulipTestCase):
         self.assertTrue(stream.invite_only)
         self.assertTrue(stream.history_public_to_subscribers)
 
-        messages = get_topic_messages(user_profile, stream, "stream events")
+        messages = get_topic_messages(user_profile, stream, "channel events")
         self.assert_length(messages, 1)
         expected_notification = (
             f"@_**King Hamlet|{user_profile.id}** changed the [access permissions](/help/stream-permissions) "
-            "for this stream from **Public** to **Private, shared history**."
+            "for this channel from **Public** to **Private, shared history**."
         )
         self.assertEqual(messages[0].content, expected_notification)
 
@@ -903,11 +932,11 @@ class StreamAdminTest(ZulipTestCase):
         self.assertTrue(stream.invite_only)
         self.assertTrue(stream.history_public_to_subscribers)
 
-        messages = get_topic_messages(user_profile, stream, "stream events")
+        messages = get_topic_messages(user_profile, stream, "channel events")
         self.assert_length(messages, 1)
         expected_notification = (
             f"@_**King Hamlet|{user_profile.id}** changed the [access permissions](/help/stream-permissions) "
-            "for this stream from **Private, protected history** to **Private, shared history**."
+            "for this channel from **Private, protected history** to **Private, shared history**."
         )
         self.assertEqual(messages[0].content, expected_notification)
 
@@ -957,7 +986,7 @@ class StreamAdminTest(ZulipTestCase):
         do_change_user_role(user_profile, UserProfile.ROLE_REALM_OWNER, acting_user=None)
         with self.settings(WEB_PUBLIC_STREAMS_ENABLED=False):
             result = self.client_patch(f"/json/streams/{stream_id}", params)
-        self.assert_json_error(result, "Web-public streams are not enabled.")
+        self.assert_json_error(result, "Web-public channels are not enabled.")
 
         bad_params = {
             "is_web_public": orjson.dumps(True).decode(),
@@ -986,11 +1015,11 @@ class StreamAdminTest(ZulipTestCase):
         self.assertFalse(stream.invite_only)
         self.assertTrue(stream.history_public_to_subscribers)
 
-        messages = get_topic_messages(user_profile, stream, "stream events")
+        messages = get_topic_messages(user_profile, stream, "channel events")
         self.assert_length(messages, 1)
         expected_notification = (
             f"@_**King Hamlet|{user_profile.id}** changed the [access permissions](/help/stream-permissions) "
-            "for this stream from **Public** to **Web-public**."
+            "for this channel from **Public** to **Web-public**."
         )
         self.assertEqual(messages[0].content, expected_notification)
 
@@ -1023,11 +1052,11 @@ class StreamAdminTest(ZulipTestCase):
         self.assertTrue(stream.invite_only)
         self.assertTrue(stream.history_public_to_subscribers)
 
-        messages = get_topic_messages(user_profile, stream, "stream events")
+        messages = get_topic_messages(user_profile, stream, "channel events")
         self.assert_length(messages, 1)
         expected_notification = (
             f"@_**Iago|{user_profile.id}** changed the [access permissions](/help/stream-permissions) "
-            "for this stream from **Private, protected history** to **Private, shared history**."
+            "for this channel from **Private, protected history** to **Private, shared history**."
         )
         self.assertEqual(messages[0].content, expected_notification)
 
@@ -1053,11 +1082,11 @@ class StreamAdminTest(ZulipTestCase):
         self.assertTrue(stream.invite_only)
         self.assertFalse(stream.history_public_to_subscribers)
 
-        messages = get_topic_messages(user_profile, stream, "stream events")
+        messages = get_topic_messages(user_profile, stream, "channel events")
         self.assert_length(messages, 2)
         expected_notification = (
             f"@_**Iago|{user_profile.id}** changed the [access permissions](/help/stream-permissions) "
-            "for this stream from **Private, shared history** to **Private, protected history**."
+            "for this channel from **Private, shared history** to **Private, protected history**."
         )
         self.assertEqual(messages[1].content, expected_notification)
 
@@ -1096,7 +1125,7 @@ class StreamAdminTest(ZulipTestCase):
             "is_private": orjson.dumps(True).decode(),
         }
         result = self.client_patch(f"/json/streams/{stream_id}", params)
-        self.assert_json_error(result, "A default stream cannot be private.")
+        self.assert_json_error(result, "A default channel cannot be private.")
         stream.refresh_from_db()
         self.assertFalse(stream.invite_only)
 
@@ -1118,7 +1147,7 @@ class StreamAdminTest(ZulipTestCase):
             "is_private": orjson.dumps(True).decode(),
         }
         result = self.client_patch(f"/json/streams/{stream_2_id}", bad_params)
-        self.assert_json_error(result, "A default stream cannot be private.")
+        self.assert_json_error(result, "A default channel cannot be private.")
         stream.refresh_from_db()
         self.assertFalse(stream_2.invite_only)
         self.assertFalse(stream_2_id in get_default_stream_ids_for_realm(realm.id))
@@ -1130,7 +1159,7 @@ class StreamAdminTest(ZulipTestCase):
             "is_default_stream": orjson.dumps(True).decode(),
         }
         result = self.client_patch(f"/json/streams/{private_stream_id}", params)
-        self.assert_json_error(result, "A default stream cannot be private.")
+        self.assert_json_error(result, "A default channel cannot be private.")
         self.assertFalse(private_stream_id in get_default_stream_ids_for_realm(realm.id))
 
         params = {
@@ -1448,14 +1477,14 @@ class StreamAdminTest(ZulipTestCase):
 
     def test_unarchive_stream_active_stream(self) -> None:
         stream = self.make_stream("new_stream")
-        with self.assertRaisesRegex(JsonableError, "Stream is not currently deactivated"):
+        with self.assertRaisesRegex(JsonableError, "Channel is not currently deactivated"):
             do_unarchive_stream(stream, new_name="new_stream", acting_user=None)
 
     def test_unarchive_stream_existing_name(self) -> None:
         stream = self.make_stream("new_stream")
         self.make_stream("existing")
         do_deactivate_stream(stream, acting_user=None)
-        with self.assertRaisesRegex(JsonableError, "Stream named existing already exists"):
+        with self.assertRaisesRegex(JsonableError, "Channel named existing already exists"):
             do_unarchive_stream(stream, new_name="existing", acting_user=None)
 
     def test_unarchive_stream(self) -> None:
@@ -1534,7 +1563,7 @@ class StreamAdminTest(ZulipTestCase):
         do_change_user_role(user_profile, UserProfile.ROLE_REALM_ADMINISTRATOR, acting_user=None)
 
         result = self.client_delete("/json/streams/999999999")
-        self.assert_json_error(result, "Invalid stream ID")
+        self.assert_json_error(result, "Invalid channel ID")
 
     def test_deactivate_stream_backend_requires_admin(self) -> None:
         user_profile = self.example_user("hamlet")
@@ -1597,11 +1626,11 @@ class StreamAdminTest(ZulipTestCase):
         do_change_user_role(user_profile, UserProfile.ROLE_REALM_ADMINISTRATOR, acting_user=None)
 
         result = self.client_patch(f"/json/streams/{stream.id}", {"new_name": "stream_name1"})
-        self.assert_json_error(result, "Stream already has that name!")
+        self.assert_json_error(result, "Channel already has that name.")
         result = self.client_patch(f"/json/streams/{stream.id}", {"new_name": "Denmark"})
-        self.assert_json_error(result, "Stream name 'Denmark' is already taken.")
+        self.assert_json_error(result, "Channel name already in use.")
         result = self.client_patch(f"/json/streams/{stream.id}", {"new_name": "denmark "})
-        self.assert_json_error(result, "Stream name 'denmark' is already taken.")
+        self.assert_json_error(result, "Channel name already in use.")
 
         # Do a rename that is case-only--this should succeed.
         result = self.client_patch(f"/json/streams/{stream.id}", {"new_name": "sTREAm_name1"})
@@ -1722,7 +1751,7 @@ class StreamAdminTest(ZulipTestCase):
         # Inspect the notification message sent
         message = self.get_last_message()
         actual_stream = Stream.objects.get(id=message.recipient.type_id)
-        message_content = f"@_**King Hamlet|{user_profile.id}** renamed stream **stream_name1** to **stream_name2**."
+        message_content = f"@_**King Hamlet|{user_profile.id}** renamed channel **stream_name1** to **stream_name2**."
         self.assertEqual(actual_stream.name, "stream_name2")
         self.assertEqual(actual_stream.realm_id, user_profile.realm_id)
         self.assertEqual(message.recipient.type, Recipient.STREAM)
@@ -1760,7 +1789,7 @@ class StreamAdminTest(ZulipTestCase):
                 "is_private": orjson.dumps(True).decode(),
             },
         )
-        self.assert_json_error(result, "Invalid stream ID")
+        self.assert_json_error(result, "Invalid channel ID")
 
     def test_non_admin_cannot_access_unsub_private_stream(self) -> None:
         iago = self.example_user("iago")
@@ -1778,13 +1807,13 @@ class StreamAdminTest(ZulipTestCase):
         stream_id = get_stream("private_stream_1", hamlet.realm).id
 
         result = self.client_patch(f"/json/streams/{stream_id}", {"new_name": "private_stream_2"})
-        self.assert_json_error(result, "Invalid stream ID")
+        self.assert_json_error(result, "Invalid channel ID")
 
         result = self.client_patch(
             f"/json/streams/{stream_id}",
             {"description": "new description"},
         )
-        self.assert_json_error(result, "Invalid stream ID")
+        self.assert_json_error(result, "Invalid channel ID")
 
         result = self.client_patch(
             f"/json/streams/{stream_id}",
@@ -1792,10 +1821,10 @@ class StreamAdminTest(ZulipTestCase):
                 "is_private": orjson.dumps(True).decode(),
             },
         )
-        self.assert_json_error(result, "Invalid stream ID")
+        self.assert_json_error(result, "Invalid channel ID")
 
         result = self.client_delete(f"/json/streams/{stream_id}")
-        self.assert_json_error(result, "Invalid stream ID")
+        self.assert_json_error(result, "Invalid channel ID")
 
     def test_change_stream_description(self) -> None:
         user_profile = self.example_user("iago")
@@ -1847,9 +1876,9 @@ class StreamAdminTest(ZulipTestCase):
         stream = get_stream("stream_name1", realm)
         self.assertEqual(stream.description, "")
 
-        messages = get_topic_messages(user_profile, stream, "stream events")
+        messages = get_topic_messages(user_profile, stream, "channel events")
         expected_notification = (
-            f"@_**{user_profile.full_name}|{user_profile.id}** changed the description for this stream.\n\n"
+            f"@_**{user_profile.full_name}|{user_profile.id}** changed the description for this channel.\n\n"
             "* **Old description:**\n"
             "```` quote\n"
             "Test description\n"
@@ -1869,9 +1898,9 @@ class StreamAdminTest(ZulipTestCase):
         stream = get_stream("stream_name1", realm)
         self.assertEqual(stream.description, "Test description")
 
-        messages = get_topic_messages(user_profile, stream, "stream events")
+        messages = get_topic_messages(user_profile, stream, "channel events")
         expected_notification = (
-            f"@_**{user_profile.full_name}|{user_profile.id}** changed the description for this stream.\n\n"
+            f"@_**{user_profile.full_name}|{user_profile.id}** changed the description for this channel.\n\n"
             "* **Old description:**\n"
             "```` quote\n"
             "*No description.*\n"
@@ -1891,9 +1920,9 @@ class StreamAdminTest(ZulipTestCase):
         stream = get_stream("stream_name1", realm)
         self.assertEqual(stream.description, "a multi line description")
 
-        messages = get_topic_messages(user_profile, stream, "stream events")
+        messages = get_topic_messages(user_profile, stream, "channel events")
         expected_notification = (
-            f"@_**{user_profile.full_name}|{user_profile.id}** changed the description for this stream.\n\n"
+            f"@_**{user_profile.full_name}|{user_profile.id}** changed the description for this channel.\n\n"
             "* **Old description:**\n"
             "```` quote\n"
             "Test description\n"
@@ -1958,11 +1987,11 @@ class StreamAdminTest(ZulipTestCase):
         stream = get_stream("stream_name1", user_profile.realm)
         self.assertEqual(stream.stream_post_policy, Stream.STREAM_POST_POLICY_ADMINS)
 
-        messages = get_topic_messages(user_profile, stream, "stream events")
+        messages = get_topic_messages(user_profile, stream, "channel events")
         expected_notification = (
             f"@_**{user_profile.full_name}|{user_profile.id}** changed the "
-            "[posting permissions](/help/stream-sending-policy) for this stream:\n\n"
-            "* **Old permissions**: All stream members can post.\n"
+            "[posting permissions](/help/stream-sending-policy) for this channel:\n\n"
+            "* **Old permissions**: All channel members can post.\n"
             "* **New permissions**: Only organization administrators can post."
         )
         self.assertEqual(messages[-1].content, expected_notification)
@@ -2021,10 +2050,10 @@ class StreamAdminTest(ZulipTestCase):
             stream = get_stream("stream_name1", user_profile.realm)
             self.assertEqual(stream.stream_post_policy, policy)
 
-            messages = get_topic_messages(user_profile, stream, "stream events")
+            messages = get_topic_messages(user_profile, stream, "channel events")
             expected_notification = (
                 f"@_**{user_profile.full_name}|{user_profile.id}** changed the "
-                "[posting permissions](/help/stream-sending-policy) for this stream:\n\n"
+                "[posting permissions](/help/stream-sending-policy) for this channel:\n\n"
                 f"* **Old permissions**: {Stream.POST_POLICIES[old_post_policy]}.\n"
                 f"* **New permissions**: {Stream.POST_POLICIES[policy]}."
             )
@@ -2055,13 +2084,13 @@ class StreamAdminTest(ZulipTestCase):
             f"/json/streams/{stream.id}", {"message_retention_days": orjson.dumps(2).decode()}
         )
         self.assert_json_success(result)
-        messages = get_topic_messages(user_profile, stream, "stream events")
+        messages = get_topic_messages(user_profile, stream, "channel events")
         self.assert_length(messages, 1)
         expected_notification = (
-            f"@_**Desdemona|{user_profile.id}** has changed the [message retention period](/help/message-retention-policy) for this stream:\n"
+            f"@_**Desdemona|{user_profile.id}** has changed the [message retention period](/help/message-retention-policy) for this channel:\n"
             "* **Old retention period**: Forever\n"
             "* **New retention period**: 2 days\n\n"
-            "Messages in this stream will now be automatically deleted 2 days after they are sent."
+            "Messages in this channel will now be automatically deleted 2 days after they are sent."
         )
         self.assertEqual(messages[0].content, expected_notification)
         realm_audit_log = RealmAuditLog.objects.filter(
@@ -2076,13 +2105,13 @@ class StreamAdminTest(ZulipTestCase):
             f"/json/streams/{stream.id}", {"message_retention_days": orjson.dumps(8).decode()}
         )
         self.assert_json_success(result)
-        messages = get_topic_messages(user_profile, stream, "stream events")
+        messages = get_topic_messages(user_profile, stream, "channel events")
         self.assert_length(messages, 2)
         expected_notification = (
-            f"@_**Desdemona|{user_profile.id}** has changed the [message retention period](/help/message-retention-policy) for this stream:\n"
+            f"@_**Desdemona|{user_profile.id}** has changed the [message retention period](/help/message-retention-policy) for this channel:\n"
             "* **Old retention period**: 2 days\n"
             "* **New retention period**: 8 days\n\n"
-            "Messages in this stream will now be automatically deleted 8 days after they are sent."
+            "Messages in this channel will now be automatically deleted 8 days after they are sent."
         )
         self.assertEqual(messages[1].content, expected_notification)
         realm_audit_log = RealmAuditLog.objects.filter(
@@ -2098,13 +2127,13 @@ class StreamAdminTest(ZulipTestCase):
             {"message_retention_days": orjson.dumps("realm_default").decode()},
         )
         self.assert_json_success(result)
-        messages = get_topic_messages(user_profile, stream, "stream events")
+        messages = get_topic_messages(user_profile, stream, "channel events")
         self.assert_length(messages, 3)
         expected_notification = (
-            f"@_**Desdemona|{user_profile.id}** has changed the [message retention period](/help/message-retention-policy) for this stream:\n"
+            f"@_**Desdemona|{user_profile.id}** has changed the [message retention period](/help/message-retention-policy) for this channel:\n"
             "* **Old retention period**: 8 days\n"
             "* **New retention period**: Forever\n\n"
-            "Messages in this stream will now be retained forever."
+            "Messages in this channel will now be retained forever."
         )
         self.assertEqual(messages[2].content, expected_notification)
         realm_audit_log = RealmAuditLog.objects.filter(
@@ -2240,7 +2269,7 @@ class StreamAdminTest(ZulipTestCase):
         realm = user_profile.realm
         stream = self.subscribe(user_profile, "stream_name1")
 
-        moderators_system_group = UserGroup.objects.get(
+        moderators_system_group = NamedUserGroup.objects.get(
             name="role:moderators", realm=realm, is_system_group=True
         )
         self.login("shiva")
@@ -2260,7 +2289,7 @@ class StreamAdminTest(ZulipTestCase):
         self.assertEqual(stream.can_remove_subscribers_group.id, moderators_system_group.id)
 
         # This setting can only be set to system groups.
-        hamletcharacters_group = UserGroup.objects.get(name="hamletcharacters", realm=realm)
+        hamletcharacters_group = NamedUserGroup.objects.get(name="hamletcharacters", realm=realm)
         result = self.client_patch(
             f"/json/streams/{stream.id}",
             {"can_remove_subscribers_group": orjson.dumps(hamletcharacters_group.id).decode()},
@@ -2269,7 +2298,7 @@ class StreamAdminTest(ZulipTestCase):
             result, "'can_remove_subscribers_group' must be a system user group."
         )
 
-        internet_group = UserGroup.objects.get(
+        internet_group = NamedUserGroup.objects.get(
             name="role:internet", is_system_group=True, realm=realm
         )
         result = self.client_patch(
@@ -2281,7 +2310,9 @@ class StreamAdminTest(ZulipTestCase):
             "'can_remove_subscribers_group' setting cannot be set to 'role:internet' group.",
         )
 
-        owners_group = UserGroup.objects.get(name="role:owners", is_system_group=True, realm=realm)
+        owners_group = NamedUserGroup.objects.get(
+            name="role:owners", is_system_group=True, realm=realm
+        )
         result = self.client_patch(
             f"/json/streams/{stream.id}",
             {"can_remove_subscribers_group": orjson.dumps(owners_group.id).decode()},
@@ -2291,7 +2322,9 @@ class StreamAdminTest(ZulipTestCase):
             "'can_remove_subscribers_group' setting cannot be set to 'role:owners' group.",
         )
 
-        nobody_group = UserGroup.objects.get(name="role:nobody", is_system_group=True, realm=realm)
+        nobody_group = NamedUserGroup.objects.get(
+            name="role:nobody", is_system_group=True, realm=realm
+        )
         result = self.client_patch(
             f"/json/streams/{stream.id}",
             {"can_remove_subscribers_group": orjson.dumps(nobody_group.id).decode()},
@@ -2308,7 +2341,7 @@ class StreamAdminTest(ZulipTestCase):
             f"/json/streams/{stream.id}",
             {"can_remove_subscribers_group": orjson.dumps(moderators_system_group.id).decode()},
         )
-        self.assert_json_error(result, "Invalid stream ID")
+        self.assert_json_error(result, "Invalid channel ID")
 
         self.subscribe(user_profile, "stream_name2")
         result = self.client_patch(
@@ -2465,12 +2498,12 @@ class StreamAdminTest(ZulipTestCase):
             "/json/users/me/subscriptions",
             {"subscriptions": orjson.dumps([{"name": deactivated_stream_name}]).decode()},
         )
-        self.assert_json_error(result, f"Unable to access stream ({deactivated_stream_name}).")
+        self.assert_json_error(result, f"Unable to access channel ({deactivated_stream_name}).")
 
         # You cannot re-archive the stream
         with self.capture_send_event_calls(expected_num_events=0) as events:
             result = self.client_delete("/json/streams/" + str(stream_id))
-        self.assert_json_error(result, "Stream is already deactivated")
+        self.assert_json_error(result, "Channel is already deactivated")
 
     def test_you_must_be_realm_admin(self) -> None:
         """
@@ -2483,13 +2516,13 @@ class StreamAdminTest(ZulipTestCase):
         stream = self.make_stream("other_realm_stream", realm=other_realm)
 
         result = self.client_delete("/json/streams/" + str(stream.id))
-        self.assert_json_error(result, "Invalid stream ID")
+        self.assert_json_error(result, "Invalid channel ID")
 
         # Even becoming a realm admin doesn't help us for an out-of-realm
         # stream.
         do_change_user_role(user_profile, UserProfile.ROLE_REALM_ADMINISTRATOR, acting_user=None)
         result = self.client_delete("/json/streams/" + str(stream.id))
-        self.assert_json_error(result, "Invalid stream ID")
+        self.assert_json_error(result, "Invalid channel ID")
 
     def test_delete_public_stream(self) -> None:
         """
@@ -2940,12 +2973,12 @@ class DefaultStreamTest(ZulipTestCase):
         stream = self.make_stream(stream_name, invite_only=True)
         self.subscribe(self.example_user("iago"), stream_name)
         result = self.client_post("/json/default_streams", dict(stream_id=stream.id))
-        self.assert_json_error(result, "Invalid stream ID")
+        self.assert_json_error(result, "Invalid channel ID")
 
         # Test admin can't add subscribed private stream also.
         self.subscribe(user_profile, stream_name)
         result = self.client_post("/json/default_streams", dict(stream_id=stream.id))
-        self.assert_json_error(result, "Private streams cannot be made default.")
+        self.assert_json_error(result, "Private channels cannot be made default.")
 
     def test_guest_user_access_to_streams(self) -> None:
         user_profile = self.example_user("polonius")
@@ -3047,7 +3080,7 @@ class DefaultStreamGroupTest(ZulipTestCase):
         # Test creating a default stream group which contains a default stream
         do_add_default_stream(remaining_streams[0])
         with self.assertRaisesRegex(
-            JsonableError, "'stream1' is a default stream and cannot be added to 'new group1'"
+            JsonableError, "'stream1' is a default channel and cannot be added to 'new group1'"
         ):
             do_create_default_stream_group(
                 realm, new_group_name, "This is group1", remaining_streams
@@ -3094,7 +3127,7 @@ class DefaultStreamGroupTest(ZulipTestCase):
                 "stream_names": orjson.dumps(stream_names).decode(),
             },
         )
-        self.assert_json_error(result, "Default stream group 'group1' already exists")
+        self.assert_json_error(result, "Default channel group 'group1' already exists")
 
         # Test adding streams to existing default stream group
         group_id = default_stream_groups[0].id
@@ -3121,7 +3154,7 @@ class DefaultStreamGroupTest(ZulipTestCase):
             "/json/default_stream_groups/12345/streams",
             {"op": "add", "stream_names": orjson.dumps(new_stream_names).decode()},
         )
-        self.assert_json_error(result, "Default stream group with id '12345' does not exist.")
+        self.assert_json_error(result, "Default channel group with id '12345' does not exist.")
 
         result = self.client_patch(f"/json/default_stream_groups/{group_id}/streams", {"op": "add"})
         self.assert_json_error(result, "Missing 'stream_names' argument")
@@ -3132,7 +3165,7 @@ class DefaultStreamGroupTest(ZulipTestCase):
             {"op": "add", "stream_names": orjson.dumps(new_stream_names).decode()},
         )
         self.assert_json_error(
-            result, "'stream4' is a default stream and cannot be added to 'group1'"
+            result, "'stream4' is a default channel and cannot be added to 'group1'"
         )
 
         do_remove_default_stream(new_streams[0])
@@ -3151,7 +3184,7 @@ class DefaultStreamGroupTest(ZulipTestCase):
             {"op": "add", "stream_names": orjson.dumps(new_stream_names).decode()},
         )
         self.assert_json_error(
-            result, "Stream 'stream4' is already present in default stream group 'group1'"
+            result, "Channel 'stream4' is already present in default channel group 'group1'"
         )
 
         # Test removing streams from default stream group
@@ -3159,13 +3192,13 @@ class DefaultStreamGroupTest(ZulipTestCase):
             "/json/default_stream_groups/12345/streams",
             {"op": "remove", "stream_names": orjson.dumps(new_stream_names).decode()},
         )
-        self.assert_json_error(result, "Default stream group with id '12345' does not exist.")
+        self.assert_json_error(result, "Default channel group with id '12345' does not exist.")
 
         result = self.client_patch(
             f"/json/default_stream_groups/{group_id}/streams",
             {"op": "remove", "stream_names": orjson.dumps(["random stream name"]).decode()},
         )
-        self.assert_json_error(result, "Invalid stream name 'random stream name'")
+        self.assert_json_error(result, "Invalid channel name 'random stream name'")
 
         streams.remove(new_streams[0])
         result = self.client_patch(
@@ -3183,7 +3216,7 @@ class DefaultStreamGroupTest(ZulipTestCase):
             {"op": "remove", "stream_names": orjson.dumps(new_stream_names).decode()},
         )
         self.assert_json_error(
-            result, "Stream 'stream4' is not present in default stream group 'group1'"
+            result, "Channel 'stream4' is not present in default channel group 'group1'"
         )
 
         # Test changing description of default stream group
@@ -3196,7 +3229,7 @@ class DefaultStreamGroupTest(ZulipTestCase):
             "/json/default_stream_groups/12345",
             {"new_description": new_description},
         )
-        self.assert_json_error(result, "Default stream group with id '12345' does not exist.")
+        self.assert_json_error(result, "Default channel group with id '12345' does not exist.")
 
         result = self.client_patch(
             f"/json/default_stream_groups/{group_id}",
@@ -3215,7 +3248,7 @@ class DefaultStreamGroupTest(ZulipTestCase):
             f"/json/default_stream_groups/{group_id}",
             {"new_group_name": "group2"},
         )
-        self.assert_json_error(result, "Default stream group 'group2' already exists")
+        self.assert_json_error(result, "Default channel group 'group2' already exists")
         new_group = lookup_default_stream_groups(["group2"], realm)[0]
         do_remove_default_stream_group(realm, new_group)
 
@@ -3223,7 +3256,7 @@ class DefaultStreamGroupTest(ZulipTestCase):
             f"/json/default_stream_groups/{group_id}",
             {"new_group_name": group_name},
         )
-        self.assert_json_error(result, "This default stream group is already named 'group1'")
+        self.assert_json_error(result, "This default channel group is already named 'group1'")
 
         result = self.client_patch(
             f"/json/default_stream_groups/{group_id}",
@@ -3242,7 +3275,9 @@ class DefaultStreamGroupTest(ZulipTestCase):
         self.assert_length(default_stream_groups, 0)
 
         result = self.client_delete(f"/json/default_stream_groups/{group_id}")
-        self.assert_json_error(result, f"Default stream group with id '{group_id}' does not exist.")
+        self.assert_json_error(
+            result, f"Default channel group with id '{group_id}' does not exist."
+        )
 
     def test_invalid_default_stream_group_name(self) -> None:
         self.login("iago")
@@ -3262,7 +3297,7 @@ class DefaultStreamGroupTest(ZulipTestCase):
                 "stream_names": orjson.dumps(stream_names).decode(),
             },
         )
-        self.assert_json_error(result, "Invalid default stream group name ''")
+        self.assert_json_error(result, "Invalid default channel group name ''")
 
         result = self.client_post(
             "/json/default_stream_groups/create",
@@ -3274,7 +3309,7 @@ class DefaultStreamGroupTest(ZulipTestCase):
         )
         self.assert_json_error(
             result,
-            f"Default stream group name too long (limit: {DefaultStreamGroup.MAX_NAME_LENGTH} characters)",
+            f"Default channel group name too long (limit: {DefaultStreamGroup.MAX_NAME_LENGTH} characters)",
         )
 
         result = self.client_post(
@@ -3286,14 +3321,14 @@ class DefaultStreamGroupTest(ZulipTestCase):
             },
         )
         self.assert_json_error(
-            result, "Default stream group name 'abc\000' contains NULL (0x00) characters."
+            result, "Default channel group name 'abc\000' contains NULL (0x00) characters."
         )
 
         # Also test that lookup_default_stream_groups raises an
         # error if we pass it a bad name.  This function is used
         # during registration, but it's a bit heavy to do a full
         # test of that.
-        with self.assertRaisesRegex(JsonableError, "Invalid default stream group invalid-name"):
+        with self.assertRaisesRegex(JsonableError, "Invalid default channel group invalid-name"):
             lookup_default_stream_groups(["invalid-name"], realm)
 
 
@@ -3396,7 +3431,7 @@ class SubscriptionPropertiesTest(ZulipTestCase):
             },
         )
         self.assert_json_error(
-            result, "Not subscribed to stream id {}".format(not_subbed[0]["stream_id"])
+            result, "Not subscribed to channel ID {}".format(not_subbed[0]["stream_id"])
         )
 
     def test_set_color_missing_color(self) -> None:
@@ -3696,7 +3731,7 @@ class SubscriptionPropertiesTest(ZulipTestCase):
                 ).decode()
             },
         )
-        self.assert_json_error(result, "Invalid stream ID")
+        self.assert_json_error(result, "Invalid channel ID")
 
     def test_set_invalid_property(self) -> None:
         """
@@ -3834,7 +3869,7 @@ class SubscriptionRestApiTest(ZulipTestCase):
             "/api/v1/users/me/subscriptions/121",
             {"property": "is_muted", "value": "somevalue"},
         )
-        self.assert_json_error(result, "Invalid stream ID")
+        self.assert_json_error(result, "Invalid channel ID")
 
     def test_bad_add_parameters(self) -> None:
         user = self.example_user("hamlet")
@@ -3891,7 +3926,7 @@ class SubscriptionRestApiTest(ZulipTestCase):
             "delete": orjson.dumps([invalid_stream_name]).decode(),
         }
         result = self.api_patch(user, "/api/v1/users/me/subscriptions", request)
-        self.assert_json_error(result, "Stream name can't be empty!")
+        self.assert_json_error(result, "Channel name can't be empty.")
 
     def test_stream_name_too_long(self) -> None:
         user = self.example_user("hamlet")
@@ -3902,7 +3937,7 @@ class SubscriptionRestApiTest(ZulipTestCase):
             "delete": orjson.dumps([long_stream_name]).decode(),
         }
         result = self.api_patch(user, "/api/v1/users/me/subscriptions", request)
-        self.assert_json_error(result, "Stream name too long (limit: 60 characters).")
+        self.assert_json_error(result, "Channel name too long (limit: 60 characters).")
 
     def test_stream_name_contains_null(self) -> None:
         user = self.example_user("hamlet")
@@ -3913,7 +3948,7 @@ class SubscriptionRestApiTest(ZulipTestCase):
             "delete": orjson.dumps([stream_name]).decode(),
         }
         result = self.api_patch(user, "/api/v1/users/me/subscriptions", request)
-        self.assert_json_error(result, "Invalid character in stream name, at position 4!")
+        self.assert_json_error(result, "Invalid character in channel name, at position 4.")
 
     def test_compose_views_rollback(self) -> None:
         """
@@ -3989,7 +4024,7 @@ class SubscriptionAPITest(ZulipTestCase):
         result = self.api_post(
             user, "/api/v1/users/me/subscriptions", post_data_cc, subdomain="zulip"
         )
-        self.assert_json_error(result, "Invalid character in stream name, at position 4!")
+        self.assert_json_error(result, "Invalid character in channel name, at position 4.")
 
         # For Cn category
         post_data_cn = {
@@ -4001,7 +4036,7 @@ class SubscriptionAPITest(ZulipTestCase):
         result = self.api_post(
             user, "/api/v1/users/me/subscriptions", post_data_cn, subdomain="zulip"
         )
-        self.assert_json_error(result, "Invalid character in stream name, at position 4!")
+        self.assert_json_error(result, "Invalid character in channel name, at position 4.")
 
     def test_invalid_stream_rename(self) -> None:
         """
@@ -4013,16 +4048,16 @@ class SubscriptionAPITest(ZulipTestCase):
         do_change_user_role(user_profile, UserProfile.ROLE_REALM_ADMINISTRATOR, acting_user=None)
         # Check for empty name
         result = self.client_patch(f"/json/streams/{stream.id}", {"new_name": ""})
-        self.assert_json_error(result, "Stream name can't be empty!")
+        self.assert_json_error(result, "Channel name can't be empty.")
         # Check for long name
         result = self.client_patch(f"/json/streams/{stream.id}", {"new_name": "a" * 61})
-        self.assert_json_error(result, "Stream name too long (limit: 60 characters).")
+        self.assert_json_error(result, "Channel name too long (limit: 60 characters).")
         # Check for Cc characters
         result = self.client_patch(f"/json/streams/{stream.id}", {"new_name": "test\n\rname"})
-        self.assert_json_error(result, "Invalid character in stream name, at position 5!")
+        self.assert_json_error(result, "Invalid character in channel name, at position 5.")
         # Check for Cn characters
         result = self.client_patch(f"/json/streams/{stream.id}", {"new_name": "test\ufffeame"})
-        self.assert_json_error(result, "Invalid character in stream name, at position 5!")
+        self.assert_json_error(result, "Invalid character in channel name, at position 5.")
 
     def test_successful_subscriptions_list(self) -> None:
         """
@@ -4203,9 +4238,7 @@ class SubscriptionAPITest(ZulipTestCase):
         self.assertEqual(msg.recipient.type, Recipient.STREAM)
         self.assertEqual(msg.recipient.type_id, new_stream_announcements_stream.id)
         self.assertEqual(msg.sender_id, self.notification_bot(self.test_realm).id)
-        expected_msg = (
-            f"@_**{invitee_full_name}|{invitee.id}** created a new stream #**{invite_streams[0]}**."
-        )
+        expected_msg = f"@_**{invitee_full_name}|{invitee.id}** created a new channel #**{invite_streams[0]}**."
         self.assertEqual(msg.content, expected_msg)
 
         msg = self.get_last_message()
@@ -4213,7 +4246,7 @@ class SubscriptionAPITest(ZulipTestCase):
         self.assertEqual(msg.recipient.type_id, target_stream.id)
         self.assertEqual(msg.sender_id, self.notification_bot(self.test_realm).id)
         expected_msg = (
-            f"**Public** stream created by @_**{invitee_full_name}|{invitee.id}**. **Description:**\n"
+            f"**Public** channel created by @_**{invitee_full_name}|{invitee.id}**. **Description:**\n"
             "```` quote\n*No description.*\n````"
         )
         self.assertEqual(msg.content, expected_msg)
@@ -4249,7 +4282,7 @@ class SubscriptionAPITest(ZulipTestCase):
         self.assertEqual(msg.recipient.type_id, new_stream_announcements_stream.id)
         self.assertEqual(msg.sender_id, self.notification_bot(realm).id)
         stream_id = Stream.objects.latest("id").id
-        expected_rendered_msg = f'<p><span class="user-mention silent" data-user-id="{user.id}">{user.full_name}</span> created a new stream <a class="stream" data-stream-id="{stream_id}" href="/#narrow/stream/{stream_id}-{invite_streams[0]}">#{invite_streams[0]}</a>.</p>'
+        expected_rendered_msg = f'<p><span class="user-mention silent" data-user-id="{user.id}">{user.full_name}</span> created a new channel <a class="stream" data-stream-id="{stream_id}" href="/#narrow/stream/{stream_id}-{invite_streams[0]}">#{invite_streams[0]}</a>.</p>'
         self.assertEqual(msg.rendered_content, expected_rendered_msg)
 
     def test_successful_subscriptions_notifies_with_escaping(self) -> None:
@@ -4278,9 +4311,7 @@ class SubscriptionAPITest(ZulipTestCase):
         self.assertEqual(
             msg.sender_id, self.notification_bot(new_stream_announcements_stream.realm).id
         )
-        expected_msg = (
-            f"@_**{invitee_full_name}|{invitee.id}** created a new stream #**{invite_streams[0]}**."
-        )
+        expected_msg = f"@_**{invitee_full_name}|{invitee.id}** created a new channel #**{invite_streams[0]}**."
         self.assertEqual(msg.content, expected_msg)
 
     def test_non_ascii_stream_subscription(self) -> None:
@@ -4307,7 +4338,7 @@ class SubscriptionAPITest(ZulipTestCase):
         result = self.common_subscribe_to_streams(
             self.test_user, [long_stream_name], allow_fail=True
         )
-        self.assert_json_error(result, "Stream name too long (limit: 60 characters).")
+        self.assert_json_error(result, "Channel name too long (limit: 60 characters).")
 
     def test_subscriptions_add_stream_with_null(self) -> None:
         """
@@ -4316,7 +4347,7 @@ class SubscriptionAPITest(ZulipTestCase):
         """
         stream_name = "abc\000"
         result = self.common_subscribe_to_streams(self.test_user, [stream_name], allow_fail=True)
-        self.assert_json_error(result, "Invalid character in stream name, at position 4!")
+        self.assert_json_error(result, "Invalid character in channel name, at position 4.")
 
     def _test_user_settings_for_creating_streams(
         self,
@@ -4412,6 +4443,35 @@ class SubscriptionAPITest(ZulipTestCase):
         self._test_user_settings_for_creating_streams(
             "create_web_public_stream_policy", invite_only=False, is_web_public=True
         )
+
+    def test_stream_creator_id(self) -> None:
+        iago = self.example_user("iago")
+        self.login_user(iago)
+        user1 = self.example_user("hamlet")
+        user2 = self.example_user("desdemona")
+
+        streams_to_sub = ["new_stream"]
+        # We create streams by subscribing users to non-existent streams
+        # Here we subscribe users other than the stream creator
+        with self.capture_send_event_calls(5) as events:
+            self.common_subscribe_to_streams(
+                iago,
+                streams_to_sub,
+                dict(principals=orjson.dumps([user1.id, user2.id]).decode()),
+            )
+        self.assertEqual(events[0]["event"]["streams"][0]["creator_id"], iago.id)
+        created_stream_id = events[0]["event"]["streams"][0]["stream_id"]
+
+        all_streams = self.api_get(iago, "/api/v1/streams")
+        json = self.assert_json_success(all_streams)
+        for stream in json["streams"]:
+            if stream["stream_id"] == created_stream_id:
+                # Acting user should be the creator for api created streams
+                self.assertEqual(stream["creator_id"], iago.id)
+                continue
+
+            # Streams that aren't created using the api should have no creator
+            self.assertIsNone(stream["creator_id"])
 
     def test_private_stream_policies(self) -> None:
         def validation_func(user_profile: UserProfile) -> bool:
@@ -4543,7 +4603,7 @@ class SubscriptionAPITest(ZulipTestCase):
         result = self.common_subscribe_to_streams(
             self.test_user, [invalid_stream_name], allow_fail=True
         )
-        self.assert_json_error(result, "Stream name can't be empty!")
+        self.assert_json_error(result, "Channel name can't be empty.")
 
     def assert_adding_subscriptions_for_principal(
         self,
@@ -4583,10 +4643,10 @@ class SubscriptionAPITest(ZulipTestCase):
         # verify that a welcome message was sent to the stream
         msg = self.get_last_message()
         self.assertEqual(msg.recipient.type, msg.recipient.STREAM)
-        self.assertEqual(msg.topic_name(), "stream events")
+        self.assertEqual(msg.topic_name(), "channel events")
         self.assertEqual(msg.sender.email, settings.NOTIFICATION_BOT)
         self.assertIn(
-            f"**{policy_name}** stream created by @_**{self.test_user.full_name}|{self.test_user.id}**. **Description:**\n"
+            f"**{policy_name}** channel created by @_**{self.test_user.full_name}|{self.test_user.id}**. **Description:**\n"
             "```` quote",
             msg.content,
         )
@@ -5028,7 +5088,7 @@ class SubscriptionAPITest(ZulipTestCase):
         )
         self.assert_json_error(
             result,
-            "You can only invite other Zephyr mirroring users to private streams.",
+            "You can only invite other Zephyr mirroring users to private channels.",
             status_code=400,
         )
 
@@ -5251,7 +5311,7 @@ class SubscriptionAPITest(ZulipTestCase):
             "/json/users/me/subscriptions",
             {"subscriptions": orjson.dumps(streams_to_remove).decode()},
         )
-        self.assert_json_error(result, f"Stream(s) ({random_streams[0]}) do not exist")
+        self.assert_json_error(result, f"Channel(s) ({random_streams[0]}) do not exist")
 
     def get_subscription(self, user_profile: UserProfile, stream_name: str) -> Subscription:
         stream = get_stream(stream_name, self.test_realm)
@@ -5622,14 +5682,14 @@ class GetStreamsTest(ZulipTestCase):
         self.assertEqual(json["stream"]["stream_id"], denmark_stream.id)
 
         result = self.client_get("/json/streams/9999")
-        self.assert_json_error(result, "Invalid stream ID")
+        self.assert_json_error(result, "Invalid channel ID")
 
         private_stream = self.make_stream("private_stream", invite_only=True)
         self.subscribe(self.example_user("cordelia"), "private_stream")
 
         # Non-admins cannot access unsubscribed private streams.
         result = self.client_get(f"/json/streams/{private_stream.id}")
-        self.assert_json_error(result, "Invalid stream ID")
+        self.assert_json_error(result, "Invalid channel ID")
 
         self.login("iago")
         result = self.client_get(f"/json/streams/{private_stream.id}")
@@ -5659,7 +5719,7 @@ class GetStreamsTest(ZulipTestCase):
 
         self.login("polonius")
         result = self.client_get(f"/json/streams/{denmark_stream.id}/email_address")
-        self.assert_json_error(result, "Invalid stream ID")
+        self.assert_json_error(result, "Invalid channel ID")
 
         self.subscribe(polonius, "Denmark")
         result = self.client_get(f"/json/streams/{denmark_stream.id}/email_address")
@@ -5680,7 +5740,7 @@ class GetStreamsTest(ZulipTestCase):
 
         self.unsubscribe(hamlet, "Denmark")
         result = self.client_get(f"/json/streams/{denmark_stream.id}/email_address")
-        self.assert_json_error(result, "Invalid stream ID")
+        self.assert_json_error(result, "Invalid channel ID")
 
         self.login("iago")
         result = self.client_get(f"/json/streams/{denmark_stream.id}/email_address")
@@ -5689,7 +5749,7 @@ class GetStreamsTest(ZulipTestCase):
 
         self.unsubscribe(iago, "Denmark")
         result = self.client_get(f"/json/streams/{denmark_stream.id}/email_address")
-        self.assert_json_error(result, "Invalid stream ID")
+        self.assert_json_error(result, "Invalid channel ID")
 
 
 class StreamIdTest(ZulipTestCase):
@@ -5705,7 +5765,7 @@ class StreamIdTest(ZulipTestCase):
         user = self.example_user("hamlet")
         self.login_user(user)
         result = self.client_get("/json/get_stream_id", {"stream": "wrongname"})
-        self.assert_json_error(result, "Invalid stream name 'wrongname'")
+        self.assert_json_error(result, "Invalid channel name 'wrongname'")
 
 
 class InviteOnlyStreamTest(ZulipTestCase):
@@ -5763,7 +5823,7 @@ class InviteOnlyStreamTest(ZulipTestCase):
         # Subscribing oneself to an invite-only stream is not allowed
         self.login_user(othello)
         result = self.common_subscribe_to_streams(othello, [stream_name], allow_fail=True)
-        self.assert_json_error(result, "Unable to access stream (Saxony).")
+        self.assert_json_error(result, "Unable to access channel (Saxony).")
 
         # authorization_errors_fatal=False works
         self.login_user(othello)
@@ -5918,7 +5978,7 @@ class GetSubscribersTest(ZulipTestCase):
             )
 
         msg = f"""
-            @**King Hamlet|{hamlet.id}** subscribed you to the following streams:
+            @**King Hamlet|{hamlet.id}** subscribed you to the following channels:
 
             * #**stream_0**
             * #**stream_1**
@@ -5953,7 +6013,7 @@ class GetSubscribersTest(ZulipTestCase):
         )
 
         msg = f"""
-            @**King Hamlet|{hamlet.id}** subscribed you to the stream #**stream_invite_only_1**.
+            @**King Hamlet|{hamlet.id}** subscribed you to the channel #**stream_invite_only_1**.
             """
         for user in [cordelia, othello, polonius]:
             self.assert_user_got_subscription_notification(user, msg)
@@ -6281,7 +6341,7 @@ class GetSubscribersTest(ZulipTestCase):
         # Verify another user can't get the data.
         self.login("cordelia")
         result = self.client_get(f"/json/streams/{stream_id}/members")
-        self.assert_json_error(result, "Invalid stream ID")
+        self.assert_json_error(result, "Invalid channel ID")
 
         # But an organization administrator can
         self.login("iago")
@@ -6294,7 +6354,7 @@ class GetSubscribersTest(ZulipTestCase):
         """
         stream_id = 99999999
         result = self.client_get(f"/json/streams/{stream_id}/members")
-        self.assert_json_error(result, "Invalid stream ID")
+        self.assert_json_error(result, "Invalid channel ID")
 
     def test_json_get_subscribers(self) -> None:
         """
@@ -6349,7 +6409,7 @@ class GetSubscribersTest(ZulipTestCase):
         # Try to fetch the subscriber list as a non-member & non-realm-admin-user.
         stream_id = get_stream(stream_name, user_profile.realm).id
         result = self.make_subscriber_request(stream_id, user=user_profile)
-        self.assert_json_error(result, "Invalid stream ID")
+        self.assert_json_error(result, "Invalid channel ID")
 
         # Try to fetch the subscriber list as a non-member & realm-admin-user.
         self.login("iago")
@@ -6372,9 +6432,9 @@ class AccessStreamTest(ZulipTestCase):
         othello = self.example_user("othello")
 
         # Nobody can access a stream that doesn't exist
-        with self.assertRaisesRegex(JsonableError, "Invalid stream ID"):
+        with self.assertRaisesRegex(JsonableError, "Invalid channel ID"):
             access_stream_by_id(hamlet, 501232)
-        with self.assertRaisesRegex(JsonableError, "Invalid stream name 'invalid stream'"):
+        with self.assertRaisesRegex(JsonableError, "Invalid channel name 'invalid stream'"):
             access_stream_by_name(hamlet, "invalid stream")
 
         # Hamlet can access the private stream
@@ -6387,9 +6447,9 @@ class AccessStreamTest(ZulipTestCase):
         self.assertEqual(sub_ret, sub_ret2)
 
         # Othello cannot access the private stream
-        with self.assertRaisesRegex(JsonableError, "Invalid stream ID"):
+        with self.assertRaisesRegex(JsonableError, "Invalid channel ID"):
             access_stream_by_id(othello, stream.id)
-        with self.assertRaisesRegex(JsonableError, "Invalid stream name 'new_private_stream'"):
+        with self.assertRaisesRegex(JsonableError, "Invalid channel name 'new_private_stream'"):
             access_stream_by_name(othello, stream.name)
 
         # Both Othello and Hamlet can access a public stream that only
@@ -6406,19 +6466,19 @@ class AccessStreamTest(ZulipTestCase):
         mit_realm = get_realm("zephyr")
         mit_stream = ensure_stream(mit_realm, "mit_stream", invite_only=False, acting_user=None)
         sipbtest = self.mit_user("sipbtest")
-        with self.assertRaisesRegex(JsonableError, "Invalid stream ID"):
+        with self.assertRaisesRegex(JsonableError, "Invalid channel ID"):
             access_stream_by_id(hamlet, mit_stream.id)
-        with self.assertRaisesRegex(JsonableError, "Invalid stream name 'mit_stream'"):
+        with self.assertRaisesRegex(JsonableError, "Invalid channel name 'mit_stream'"):
             access_stream_by_name(hamlet, mit_stream.name)
-        with self.assertRaisesRegex(JsonableError, "Invalid stream ID"):
+        with self.assertRaisesRegex(JsonableError, "Invalid channel ID"):
             access_stream_by_id(sipbtest, stream.id)
-        with self.assertRaisesRegex(JsonableError, "Invalid stream name 'new_private_stream'"):
+        with self.assertRaisesRegex(JsonableError, "Invalid channel name 'new_private_stream'"):
             access_stream_by_name(sipbtest, stream.name)
 
         # MIT realm users cannot access even public streams in their realm
-        with self.assertRaisesRegex(JsonableError, "Invalid stream ID"):
+        with self.assertRaisesRegex(JsonableError, "Invalid channel ID"):
             access_stream_by_id(sipbtest, mit_stream.id)
-        with self.assertRaisesRegex(JsonableError, "Invalid stream name 'mit_stream'"):
+        with self.assertRaisesRegex(JsonableError, "Invalid channel name 'mit_stream'"):
             access_stream_by_name(sipbtest, mit_stream.name)
 
         # But they can access streams they are subscribed to
@@ -6433,7 +6493,7 @@ class AccessStreamTest(ZulipTestCase):
         stream = self.make_stream(stream_name, guest_user_profile.realm, invite_only=False)
 
         # Guest user don't have access to unsubscribed public streams
-        with self.assertRaisesRegex(JsonableError, "Invalid stream ID"):
+        with self.assertRaisesRegex(JsonableError, "Invalid channel ID"):
             access_stream_by_id(guest_user_profile, stream.id)
 
         # Guest user have access to subscribed public streams
@@ -6446,7 +6506,7 @@ class AccessStreamTest(ZulipTestCase):
         stream_name = "private_stream_1"
         stream = self.make_stream(stream_name, guest_user_profile.realm, invite_only=True)
         # Obviously, a guest user doesn't have access to unsubscribed private streams either
-        with self.assertRaisesRegex(JsonableError, "Invalid stream ID"):
+        with self.assertRaisesRegex(JsonableError, "Invalid channel ID"):
             access_stream_by_id(guest_user_profile, stream.id)
 
         # Guest user have access to subscribed private streams

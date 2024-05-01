@@ -17,7 +17,7 @@ from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import queries_captured
 from zerver.lib.topic import TOPIC_NAME
 from zerver.lib.utils import assert_is_not_none
-from zerver.models import Message, Realm, UserGroup, UserProfile, UserTopic
+from zerver.models import Message, NamedUserGroup, Realm, UserProfile, UserTopic
 from zerver.models.groups import SystemGroups
 from zerver.models.realms import get_realm
 from zerver.models.streams import get_stream
@@ -1423,7 +1423,7 @@ class EditMessageTest(ZulipTestCase):
                 },
             )
         self.assert_json_error(
-            result, "You do not have permission to use stream wildcard mentions in this stream."
+            result, "You do not have permission to use channel wildcard mentions in this channel."
         )
 
         with mock.patch("zerver.lib.message.num_subscribers_for_stream_id", return_value=14):
@@ -1459,7 +1459,7 @@ class EditMessageTest(ZulipTestCase):
         leadership = check_add_user_group(othello.realm, "leadership", [othello], acting_user=None)
         support = check_add_user_group(othello.realm, "support", [othello], acting_user=None)
 
-        moderators_system_group = UserGroup.objects.get(
+        moderators_system_group = NamedUserGroup.objects.get(
             realm=iago.realm, name=SystemGroups.MODERATORS, is_system_group=True
         )
 

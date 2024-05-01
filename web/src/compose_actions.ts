@@ -40,6 +40,7 @@ type ComposeActionsStartOpts = {
     draft_id?: string;
     skip_scrolling_selected_message?: boolean;
     is_reply?: boolean;
+    keep_composebox_empty?: boolean;
 };
 
 // An iteration on `ComposeActionsStartOpts` that enforces that
@@ -301,6 +302,27 @@ export function start(raw_opts: ComposeActionsStartOpts): void {
     compose_state.private_message_recipient(
         opts.private_message_recipient.replaceAll(/,\s*/g, ", "),
     );
+
+    // If we're not explicitly opening a different draft, restore the last
+    // saved draft (if it exists).
+    if (
+        compose_state.can_restore_drafts() &&
+        !opts.content &&
+        opts.draft_id === undefined &&
+        compose_state.message_content().length === 0 &&
+        !opts.keep_composebox_empty
+    ) {
+        const possible_last_draft = drafts.get_last_restorable_draft_based_on_compose_state();
+        if (possible_last_draft !== undefined) {
+            opts.draft_id = possible_last_draft.id;
+            // Add a space at the end so that if the user starts typing
+            // as soon as the composebox opens, they have a bit of separation
+            // from the restored draft. This won't result in a long trail of
+            // spaces if a draft is restored several times, because we trim
+            // whitespace whenever we save drafts.
+            opts.content = possible_last_draft.content + " ";
+        }
+    }
 
     if (opts.content !== undefined) {
         compose_ui.insert_and_scroll_into_view(opts.content, $("textarea#compose-textarea"), true);

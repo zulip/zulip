@@ -81,6 +81,50 @@ rules:
         - zerver/migrations/0493_rename_userhotspot_to_onboardingstep.py
         - pgroonga/migrations/0002_html_escape_subject.py
 
+  - id: use-addindexconcurrently
+    pattern: django.db.migrations.AddIndex(...)
+    message: "Import and use AddIndexConcurrently from django.contrib.postgres.operations rather than AddIndex"
+    languages: [python]
+    severity: ERROR
+    paths:
+      include:
+        - "**/migrations"
+      exclude:
+        - analytics/migrations/0008_add_count_indexes.py
+        - zerver/migrations/0001_initial.py
+        - zerver/migrations/0082_index_starred_user_messages.py
+        - zerver/migrations/0083_index_mentioned_user_messages.py
+        - zerver/migrations/0095_index_unread_user_messages.py
+        - zerver/migrations/0098_index_has_alert_word_user_messages.py
+        - zerver/migrations/0099_index_wildcard_mentioned_user_messages.py
+        - zerver/migrations/0112_index_muted_topics.py
+        - zerver/migrations/0177_user_message_add_and_index_is_private_flag.py
+        - zerver/migrations/0180_usermessage_add_active_mobile_push_notification.py
+        - zerver/migrations/0268_add_userpresence_realm_timestamp_index.py
+        - zerver/migrations/0343_alter_useractivityinterval_index_together.py
+        - zerver/migrations/0351_user_topic_visibility_indexes.py
+        - zerver/migrations/0443_userpresence_new_table_schema.py
+        - zerver/migrations/0446_realmauditlog_zerver_realmauditlog_user_subscriptions_idx.py
+        - zerver/migrations/0449_scheduledmessage_zerver_unsent_scheduled_messages_indexes.py
+        - zilencer/migrations/0016_remote_counts.py
+        - zilencer/migrations/0017_installationcount_indexes.py
+        - zilencer/migrations/0029_update_remoterealm_indexes.py
+        - zilencer/migrations/0058_remoteinstallationcount_add_mobile_pushes_forwarded_index.py
+        - zilencer/migrations/0059_remoterealmauditlog_add_synced_billing_event_type_index.py
+
+  - id: use-removeindexconcurrently
+    pattern: django.db.migrations.RemoveIndex(...)
+    message: "Import and use RemoveIndexConcurrently from django.contrib.postgres.operations rather than RemoveIndex"
+    languages: [python]
+    severity: ERROR
+    paths:
+      include:
+        - "**/migrations"
+      exclude:
+        - zerver/migrations/0473_remove_message_non_realm_id_indexes.py
+        - zerver/migrations/0486_clear_old_data_for_unused_usermessage_flags.py
+        - zilencer/migrations/0038_unique_server_remote_id.py
+
   - id: html-format
     languages: [python]
     pattern-either:
@@ -274,21 +318,21 @@ rules:
 
   - id: functools-partial
     pattern: functools.partial
-    message: "Replace functools.partial with returns.curry.partial for type safety"
+    message: "Replace functools.partial with zerver.lib.partial.partial for type safety"
     languages: [python]
     severity: ERROR
 
   - id: timedelta-positional-argument
     patterns:
-      - pattern: timedelta(...)
-      - pattern-not: timedelta(0)
-      - pattern-not: timedelta(..., days=..., ...)
-      - pattern-not: timedelta(..., seconds=..., ...)
-      - pattern-not: timedelta(..., microseconds=..., ...)
-      - pattern-not: timedelta(..., milliseconds=..., ...)
-      - pattern-not: timedelta(..., minutes=..., ...)
-      - pattern-not: timedelta(..., hours=..., ...)
-      - pattern-not: timedelta(..., weeks=..., ...)
+      - pattern: datetime.timedelta(...)
+      - pattern-not: datetime.timedelta(0)
+      - pattern-not: datetime.timedelta(..., days=..., ...)
+      - pattern-not: datetime.timedelta(..., seconds=..., ...)
+      - pattern-not: datetime.timedelta(..., microseconds=..., ...)
+      - pattern-not: datetime.timedelta(..., milliseconds=..., ...)
+      - pattern-not: datetime.timedelta(..., minutes=..., ...)
+      - pattern-not: datetime.timedelta(..., hours=..., ...)
+      - pattern-not: datetime.timedelta(..., weeks=..., ...)
     message: |
       Specify timedelta with named arguments.
     languages: [python]
@@ -297,9 +341,7 @@ rules:
   - id: time-machine
     languages: [python]
     patterns:
-      - pattern-either:
-          - pattern: patch("$FUNCTION", return_value=$TIME)
-          - pattern: mock.patch("$FUNCTION", return_value=$TIME)
+      - pattern: unittest.mock.patch("$FUNCTION", return_value=$TIME)
       - metavariable-regex:
           metavariable: $FUNCTION
           regex: .*timezone_now

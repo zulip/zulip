@@ -133,7 +133,11 @@ def handle_invoice_paid_event(stripe_invoice: stripe.Invoice, invoice: Invoice) 
             customer, customer.required_plan_tier
         )
 
-    if stripe_invoice.collection_method == "send_invoice" and configured_fixed_price_plan:
+    if (
+        stripe_invoice.collection_method == "send_invoice"
+        and configured_fixed_price_plan
+        and configured_fixed_price_plan.sent_invoice_id == invoice.stripe_invoice_id
+    ):
         billing_session = get_billing_session_for_stripe_webhook(customer, user_id=None)
         remote_server_legacy_plan = billing_session.get_remote_server_legacy_plan(customer)
         assert customer.required_plan_tier is not None

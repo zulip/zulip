@@ -32,9 +32,10 @@ class kandra::aws_tools {
       ensure  => link,
       target  => "/srv/zulip-aws_signing_helper-${helper_version}",
       require => [
-        Zulip::External_Dep['aws_signing_helper'],
+        File["/srv/zulip-aws_signing_helper-${helper_version}"],
         Exec['install-aws-cli'],
       ],
+      before  => Exec['Cleanup aws_signing_helper'],
     }
     package { 'sqlite3': ensure => installed }
     file { '/usr/local/bin/teleport-aws-credentials':

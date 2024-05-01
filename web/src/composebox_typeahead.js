@@ -65,9 +65,9 @@ export function get_or_set_completing_for_tests(val) {
     return completing;
 }
 
-export function update_emoji_data() {
+export function update_emoji_data(initial_emojis) {
     emoji_collection = [];
-    for (const emoji_dict of emoji.emojis_by_name.values()) {
+    for (const emoji_dict of initial_emojis) {
         const {reaction_type} = emoji.get_emoji_details_by_name(emoji_dict.name);
         if (emoji_dict.is_realm_emoji === true) {
             emoji_collection.push({
@@ -106,24 +106,12 @@ function get_language_matcher(query) {
     };
 }
 
-export function query_matches_person(query, person) {
-    return (
-        typeahead.query_matches_string_in_order(query, person.full_name, " ") ||
-        (Boolean(person.delivery_email) &&
-            typeahead.query_matches_string_in_order(query, people.get_visible_email(person), " "))
-    );
-}
-
-export function query_matches_name(query, user_group_or_stream) {
-    return typeahead.query_matches_string_in_order(query, user_group_or_stream.name, " ");
-}
-
 function get_stream_or_user_group_matcher(query) {
     // Case-insensitive.
     query = typeahead.clean_query_lowercase(query);
 
     return function (user_group_or_stream) {
-        return query_matches_name(query, user_group_or_stream);
+        return typeahead_helper.query_matches_name(query, user_group_or_stream);
     };
 }
 
@@ -403,7 +391,7 @@ function get_wildcard_string(mention) {
     if (mention === "topic") {
         return $t({defaultMessage: "Notify topic"});
     }
-    return $t({defaultMessage: "Notify stream"});
+    return $t({defaultMessage: "Notify channel"});
 }
 
 export function broadcast_mentions() {
@@ -411,6 +399,8 @@ export function broadcast_mentions() {
     if (compose_state.get_message_type() === "private") {
         wildcard_mention_array = ["all", "everyone"];
     } else if (compose_validate.stream_wildcard_mention_allowed()) {
+        // TODO: Eventually remove "stream" wildcard from typeahead suggestions
+        // once the rename of stream to channel has settled for users.
         wildcard_mention_array = ["all", "everyone", "stream", "channel", "topic"];
     } else if (compose_validate.topic_wildcard_mention_allowed()) {
         wildcard_mention_array = ["topic"];
@@ -533,8 +523,16 @@ export function get_person_suggestions(query, opts) {
         if (opts.want_broadcast) {
             persons = [...persons, ...broadcast_mentions()];
         }
+        // `sort_recipients` and other functions like `user_pill.get_user_ids`
+        // are shared with the pill typeahead which has only users, and we
+        // need a way to differentiate these mentons-or-users from just users,
+        // to help with typing.
+        const person_items = persons.map((person) => ({
+            ...person,
+            type: "user_or_mention",
+        }));
 
-        return persons.filter((item) => query_matches_person(query, item));
+        return person_items.filter((item) => typeahead_helper.query_matches_person(query, item));
     }
 
     let groups;
@@ -555,7 +553,9 @@ export function get_person_suggestions(query, opts) {
         groups = user_groups.get_realm_user_groups();
     }
 
-    const filtered_groups = groups.filter((item) => query_matches_name(query, item));
+    const filtered_groups = groups.filter((item) =>
+        typeahead_helper.query_matches_name(query, item),
+    );
 
     /*
         Let's say you're on a big realm and type
@@ -1184,8 +1184,6 @@ export function initialize_compose_typeahead(selector) {
 }
 
 export function initialize({on_enter_send}) {
-    update_emoji_data();
-
     // These handlers are at the "form" level so that they are called after typeahead
     $("form#send_message_form").on("keydown", (e) => handle_keydown(e, {on_enter_send}));
     $("form#send_message_form").on("keyup", handle_keyup);

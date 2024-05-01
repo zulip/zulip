@@ -103,18 +103,13 @@
         </form>
         {% endif %}
 
-        <form method="POST" class="support-discount-form support-form">
-            <b>Discount (use 85 for nonprofits)</b>:<br />
-            {{ csrf_input }}
-            <input type="hidden" name="realm_id" value="{{ realm.id }}" />
-            {% if realm_support_data[realm.id].plan_data.current_plan and realm_support_data[realm.id].plan_data.current_plan.fixed_price %}
-            <input type="number" name="discount" value="{{ format_discount(realm_support_data[realm.id].sponsorship_data.default_discount) }}" step="0.01" min="0" max="99.99" disabled />
-            <button type="submit" class="support-submit-button" disabled>Update</button>
-            {% else %}
-            <input type="number" name="discount" value="{{ format_discount(realm_support_data[realm.id].sponsorship_data.default_discount) }}" step="0.01" min="0" max="99.99" required />
-            <button type="submit" class="support-submit-button">Update</button>
-            {% endif %}
-        </form>
+        {% with %}
+            {% set sponsorship_data = realm_support_data[realm.id].sponsorship_data %}
+            {% set PLAN_TYPES = REALM_PLAN_TYPES_FOR_DISCOUNT %}
+            {% set remote_id = realm.id %}
+            {% set remote_type = "realm_id" %}
+            {% include 'corporate/support/sponsorship_discount_forms.html' %}
+        {% endwith %}
 
         {% if realm_support_data[realm.id].sponsorship_data.sponsorship_pending %}
             {% with %}

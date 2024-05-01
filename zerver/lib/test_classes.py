@@ -47,6 +47,7 @@ from django.urls import resolve
 from django.utils import translation
 from django.utils.module_loading import import_string
 from django.utils.timezone import now as timezone_now
+from django_stubs_ext import ValuesQuerySet
 from fakeldap import MockLDAP
 from openapi_core.contrib.django import DjangoOpenAPIRequest, DjangoOpenAPIResponse
 from requests import PreparedRequest
@@ -66,7 +67,7 @@ from zerver.lib.initial_password import initial_password
 from zerver.lib.message import access_message
 from zerver.lib.notification_data import UserMessageNotificationsData
 from zerver.lib.per_request_cache import flush_per_request_caches
-from zerver.lib.rate_limiter import bounce_redis_key_prefix_for_testing
+from zerver.lib.redis_utils import bounce_redis_key_prefix_for_testing
 from zerver.lib.sessions import get_session_dict_user
 from zerver.lib.soft_deactivation import do_soft_deactivate_users
 from zerver.lib.stream_subscription import get_subscribed_stream_ids_for_user
@@ -98,6 +99,7 @@ from zerver.lib.webhooks.common import (
 from zerver.models import (
     Client,
     Message,
+    NamedUserGroup,
     PushDeviceToken,
     Reaction,
     Realm,
@@ -105,7 +107,6 @@ from zerver.models import (
     Recipient,
     Stream,
     Subscription,
-    UserGroup,
     UserGroupMembership,
     UserMessage,
     UserProfile,
@@ -286,7 +287,9 @@ Output:
     django_client to fool the regex.
     """
     DEFAULT_SUBDOMAIN = "zulip"
-    TOKENIZED_NOREPLY_REGEX = settings.TOKENIZED_NOREPLY_EMAIL_ADDRESS.format(token="[a-z0-9_]{24}")
+    TOKENIZED_NOREPLY_REGEX = settings.TOKENIZED_NOREPLY_EMAIL_ADDRESS.format(
+        token=r"[a-z0-9_]{24}"
+    )
 
     def set_http_headers(self, extra: Dict[str, str], skip_user_agent: bool = False) -> None:
         if "subdomain" in extra:
@@ -1245,7 +1248,7 @@ Output:
         """
         self.assertEqual(self.get_json_error(result, status_code=status_code), msg)
 
-    def assert_length(self, items: Collection[Any], count: int) -> None:
+    def assert_length(self, items: Collection[Any] | ValuesQuerySet[Any, Any], count: int) -> None:
         actual_count = len(items)
         if actual_count != count:  # nocoverage
             print("\nITEMS:\n")
@@ -1361,7 +1364,7 @@ Output:
         history_public_to_subscribers = get_default_value_for_history_public_to_subscribers(
             realm, invite_only, history_public_to_subscribers
         )
-        administrators_user_group = UserGroup.objects.get(
+        administrators_user_group = NamedUserGroup.objects.get(
             name=SystemGroups.ADMINISTRATORS, realm=realm, is_system_group=True
         )
 
@@ -1559,7 +1562,7 @@ Output:
         markdown.__init__.do_convert.
         """
         with mock.patch(
-            "zerver.lib.markdown.timeout", side_effect=subprocess.CalledProcessError(1, [])
+            "zerver.lib.markdown.unsafe_timeout", side_effect=subprocess.CalledProcessError(1, [])
         ), self.assertLogs(level="ERROR"):  # For markdown_logger.exception
             yield
 
@@ -1969,7 +1972,7 @@ Output:
         self.send_personal_message(shiva, polonius)
         self.send_huddle_message(aaron, [polonius, zoe])
 
-        members_group = UserGroup.objects.get(name="role:members", realm=realm)
+        members_group = NamedUserGroup.objects.get(name="role:members", realm=realm)
         do_change_realm_permission_group_setting(
             realm, "can_access_all_users_group", members_group, acting_user=None
         )
@@ -2415,7 +2418,7 @@ class BouncerTestCase(ZulipTestCase):
     def add_mock_response(self) -> None:
         # Match any endpoint with the PUSH_NOTIFICATION_BOUNCER_URL.
         assert settings.PUSH_NOTIFICATION_BOUNCER_URL is not None
-        COMPILED_URL = re.compile(settings.PUSH_NOTIFICATION_BOUNCER_URL + ".*")
+        COMPILED_URL = re.compile(settings.PUSH_NOTIFICATION_BOUNCER_URL + r".*")
         responses.add_callback(responses.POST, COMPILED_URL, callback=self.request_callback)
         responses.add_callback(responses.GET, COMPILED_URL, callback=self.request_callback)
 

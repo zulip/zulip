@@ -326,6 +326,8 @@ test("admin_options", () => {
             is_muted: true,
             invite_only: false,
             can_remove_subscribers_group: admins_group.id,
+            date_created: 1691057093,
+            creator_id: null,
         };
         stream_data.add_sub(sub);
         return sub;
@@ -379,6 +381,8 @@ test("stream_settings", () => {
         subscribed: true,
         invite_only: false,
         can_remove_subscribers_group: admins_group.id,
+        date_created: 1691057093,
+        creator_id: null,
     };
 
     const blue = {
@@ -388,6 +392,8 @@ test("stream_settings", () => {
         subscribed: false,
         invite_only: false,
         can_remove_subscribers_group: admins_group.id,
+        date_created: 1691057093,
+        creator_id: null,
     };
 
     const amber = {
@@ -400,6 +406,8 @@ test("stream_settings", () => {
         stream_post_policy: settings_config.stream_post_policy_values.admins.code,
         message_retention_days: 10,
         can_remove_subscribers_group: admins_group.id,
+        date_created: 1691057093,
+        creator_id: null,
     };
     stream_data.add_sub(cinnamon);
     stream_data.add_sub(amber);
@@ -808,6 +816,25 @@ test("create_sub", () => {
     const antarctica_sub = stream_data.create_sub_from_server_data(antarctica);
     assert.ok(antarctica_sub);
     assert.equal(antarctica_sub.color, "#76ce90");
+});
+
+test("creator_id", () => {
+    people.add_active_user(test_user);
+
+    // When creator id is not a valid user id
+    assert.throws(() => stream_data.maybe_get_creator_details(-1), {
+        name: "Error",
+        message: "Unknown user_id in get_by_user_id: -1",
+    });
+
+    // When there is no creator
+    assert.equal(stream_data.maybe_get_creator_details(null), undefined);
+
+    const creator_details = people.get_by_user_id(test_user.user_id);
+    assert.deepStrictEqual(
+        stream_data.maybe_get_creator_details(test_user.user_id),
+        creator_details,
+    );
 });
 
 test("initialize", () => {

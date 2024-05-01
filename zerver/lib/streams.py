@@ -7,6 +7,7 @@ from django.utils.translation import gettext as _
 
 from zerver.lib.default_streams import get_default_stream_ids_for_realm
 from zerver.lib.exceptions import (
+    IncompatibleParametersError,
     JsonableError,
     OrganizationAdministratorRequiredError,
     OrganizationOwnerRequiredError,
@@ -23,6 +24,7 @@ from zerver.lib.types import APIStreamDict
 from zerver.lib.user_groups import is_user_in_group
 from zerver.models import (
     DefaultStreamGroup,
+    NamedUserGroup,
     Realm,
     RealmAuditLog,
     Recipient,
@@ -142,7 +144,7 @@ def create_stream_if_needed(
     )
 
     if can_remove_subscribers_group is None:
-        can_remove_subscribers_group = UserGroup.objects.get(
+        can_remove_subscribers_group = NamedUserGroup.objects.get(
             name=SystemGroups.ADMINISTRATORS, is_system_group=True, realm=realm
         )
 
@@ -153,6 +155,7 @@ def create_stream_if_needed(
             name__iexact=stream_name,
             defaults=dict(
                 name=stream_name,
+                creator=acting_user,
                 description=stream_description,
                 invite_only=invite_only,
                 is_web_public=is_web_public,
@@ -238,21 +241,21 @@ def check_stream_access_based_on_stream_post_policy(sender: UserProfile, stream:
     if sender.is_realm_admin or is_cross_realm_bot_email(sender.delivery_email):
         pass
     elif stream.stream_post_policy == Stream.STREAM_POST_POLICY_ADMINS:
-        raise JsonableError(_("Only organization administrators can send to this stream."))
+        raise JsonableError(_("Only organization administrators can send to this channel."))
     elif (
         stream.stream_post_policy == Stream.STREAM_POST_POLICY_MODERATORS
         and not sender.is_moderator
     ):
         raise JsonableError(
-            _("Only organization administrators and moderators can send to this stream.")
+            _("Only organization administrators and moderators can send to this channel.")
         )
     elif stream.stream_post_policy != Stream.STREAM_POST_POLICY_EVERYONE and sender.is_guest:
-        raise JsonableError(_("Guests cannot send to this stream."))
+        raise JsonableError(_("Guests cannot send to this channel."))
     elif (
         stream.stream_post_policy == Stream.STREAM_POST_POLICY_RESTRICT_NEW_MEMBERS
         and sender.is_provisional_member
     ):
-        raise JsonableError(_("New members cannot send to this stream."))
+        raise JsonableError(_("New members cannot send to this channel."))
 
 
 def access_stream_for_send_message(
@@ -312,22 +315,25 @@ def access_stream_for_send_message(
 
     # All other cases are an error.
     raise JsonableError(
-        _("Not authorized to send to stream '{stream_name}'").format(stream_name=stream.name)
+        _("Not authorized to send to channel '{channel_name}'").format(channel_name=stream.name)
     )
 
 
 def check_for_exactly_one_stream_arg(stream_id: Optional[int], stream: Optional[str]) -> None:
     if stream_id is None and stream is None:
-        raise JsonableError(_("Please supply 'stream'."))
+        # Uses the same translated string as RequestVariableMissingError
+        # with the stream_id parameter, which is the more common use case.
+        error = _("Missing '{var_name}' argument").format(var_name="stream_id")
+        raise JsonableError(error)
 
     if stream_id is not None and stream is not None:
-        raise JsonableError(_("Please choose one: 'stream' or 'stream_id'."))
+        raise IncompatibleParametersError(["stream_id", "stream"])
 
 
 def check_stream_access_for_delete_or_update(
     user_profile: UserProfile, stream: Stream, sub: Optional[Subscription] = None
 ) -> None:
-    error = _("Invalid stream ID")
+    error = _("Invalid channel ID")
     if stream.realm_id != user_profile.realm_id:
         raise JsonableError(error)
 
@@ -346,7 +352,7 @@ def access_stream_for_delete_or_update(
     try:
         stream = Stream.objects.get(id=stream_id)
     except Stream.DoesNotExist:
-        raise JsonableError(_("Invalid stream ID"))
+        raise JsonableError(_("Invalid channel ID"))
 
     try:
         sub = Subscription.objects.get(
@@ -429,7 +435,7 @@ def access_stream_by_id(
     require_active: bool = True,
     allow_realm_admin: bool = False,
 ) -> Tuple[Stream, Optional[Subscription]]:
-    error = _("Invalid stream ID")
+    error = _("Invalid channel ID")
     try:
         stream = get_stream_by_id_in_realm(stream_id, user_profile.realm)
     except Stream.DoesNotExist:
@@ -471,9 +477,7 @@ def check_stream_name_available(realm: Realm, name: str) -> None:
     check_stream_name(name)
     try:
         get_stream(name, realm)
-        raise JsonableError(
-            _("Stream name '{stream_name}' is already taken.").format(stream_name=name)
-        )
+        raise JsonableError(_("Channel name already in use."))
     except Stream.DoesNotExist:
         pass
 
@@ -481,7 +485,7 @@ def check_stream_name_available(realm: Realm, name: str) -> None:
 def access_stream_by_name(
     user_profile: UserProfile, stream_name: str, allow_realm_admin: bool = False
 ) -> Tuple[Stream, Optional[Subscription]]:
-    error = _("Invalid stream name '{stream_name}'").format(stream_name=stream_name)
+    error = _("Invalid channel name '{channel_name}'").format(channel_name=stream_name)
     try:
         stream = get_realm_stream(stream_name, user_profile.realm_id)
     except Stream.DoesNotExist:
@@ -497,7 +501,7 @@ def access_stream_by_name(
 
 
 def access_web_public_stream(stream_id: int, realm: Realm) -> Stream:
-    error = _("Invalid stream ID")
+    error = _("Invalid channel ID")
     try:
         stream = get_stream_by_id_in_realm(stream_id, realm)
     except Stream.DoesNotExist:
@@ -601,7 +605,7 @@ def can_access_stream_history(user_profile: UserProfile, stream: Stream) -> bool
 
     if stream.is_history_public_to_subscribers():
         # In this case, we check if the user is subscribed.
-        error = _("Invalid stream name '{stream_name}'").format(stream_name=stream.name)
+        error = _("Invalid channel name '{channel_name}'").format(channel_name=stream.name)
         try:
             access_stream_common(user_profile, stream, error)
         except JsonableError:
@@ -746,12 +750,12 @@ def list_to_streams(
             if is_default_stream and not user_profile.is_realm_admin:
                 raise JsonableError(_("Insufficient permission"))
             if invite_only and is_default_stream:
-                raise JsonableError(_("A default stream cannot be private."))
+                raise JsonableError(_("A default channel cannot be private."))
 
         if not autocreate:
             raise JsonableError(
-                _("Stream(s) ({stream_names}) do not exist").format(
-                    stream_names=", ".join(
+                _("Channel(s) ({channel_names}) do not exist").format(
+                    channel_names=", ".join(
                         stream_dict["name"] for stream_dict in missing_stream_dicts
                     ),
                 )
@@ -759,7 +763,7 @@ def list_to_streams(
 
         if web_public_stream_requested:
             if not user_profile.realm.web_public_streams_enabled():
-                raise JsonableError(_("Web-public streams are not enabled."))
+                raise JsonableError(_("Web-public channels are not enabled."))
             if not user_profile.can_create_web_public_streams():
                 # We set create_web_public_stream_policy to allow only organization owners
                 # to create web-public streams, because of their sensitive nature.
@@ -789,7 +793,9 @@ def access_default_stream_group_by_id(realm: Realm, group_id: int) -> DefaultStr
         return DefaultStreamGroup.objects.get(realm=realm, id=group_id)
     except DefaultStreamGroup.DoesNotExist:
         raise JsonableError(
-            _("Default stream group with id '{group_id}' does not exist.").format(group_id=group_id)
+            _("Default channel group with id '{group_id}' does not exist.").format(
+                group_id=group_id
+            )
         )
 
 
@@ -861,6 +867,7 @@ def stream_to_dict(
 
     return APIStreamDict(
         can_remove_subscribers_group=stream.can_remove_subscribers_group_id,
+        creator_id=stream.creator_id,
         date_created=datetime_to_timestamp(stream.date_created),
         description=stream.description,
         first_message_id=stream.first_message_id,

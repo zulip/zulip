@@ -292,7 +292,7 @@ class TestStreamHelpers(ZulipTestCase):
         access_stream_for_send_message(cordelia, stream, forwarder_user_profile=None)
 
         # ...but Othello can't.
-        with self.assertRaisesRegex(JsonableError, "Not authorized to send to stream"):
+        with self.assertRaisesRegex(JsonableError, "Not authorized to send to channel"):
             access_stream_for_send_message(othello, stream, forwarder_user_profile=None)
 
 

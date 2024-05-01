@@ -6,7 +6,7 @@ from django.conf import settings
 from django.core.management.base import CommandError
 from typing_extensions import override
 
-from zerver.lib.management import ZulipBaseCommand
+from zerver.lib.management import ZulipBaseCommand, abort_unless_locked
 from zerver.lib.soft_deactivation import (
     do_auto_soft_deactivate_users,
     do_soft_activate_users,
@@ -57,6 +57,7 @@ class Command(ZulipBaseCommand):
         )
 
     @override
+    @abort_unless_locked
     def handle(self, *args: Any, **options: Any) -> None:
         if settings.STAGING:
             print("This is a Staging server. Suppressing management command.")

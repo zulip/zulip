@@ -1,16 +1,13 @@
-import os
 import re
 from dataclasses import dataclass
 from typing import (
     Any,
     Callable,
-    Collection,
     Dict,
     Generic,
     Iterable,
     List,
     Optional,
-    Protocol,
     Sequence,
     Set,
     Tuple,
@@ -23,6 +20,7 @@ from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import connection
 from django.utils.translation import gettext as _
+from pydantic import BaseModel, model_validator
 from sqlalchemy.dialects import postgresql
 from sqlalchemy.engine import Connection, Row
 from sqlalchemy.sql import (
@@ -31,6 +29,7 @@ from sqlalchemy.sql import (
     Select,
     and_,
     column,
+    false,
     func,
     join,
     literal,
@@ -48,7 +47,7 @@ from typing_extensions import TypeAlias, override
 from zerver.lib.addressee import get_user_profiles, get_user_profiles_by_ids
 from zerver.lib.exceptions import ErrorCode, JsonableError
 from zerver.lib.message import get_first_visible_message_id
-from zerver.lib.narrow_helpers import NarrowTerm
+from zerver.lib.narrow_predicate import channel_operators, channels_operators
 from zerver.lib.recipient_users import recipient_for_user_profiles
 from zerver.lib.sqlalchemy_utils import get_sqlalchemy_connection
 from zerver.lib.streams import (
@@ -58,10 +57,8 @@ from zerver.lib.streams import (
     get_stream_by_narrow_operand_access_unchecked,
     get_web_public_streams_queryset,
 )
-from zerver.lib.topic import (
-    RESOLVED_TOPIC_PREFIX,
+from zerver.lib.topic_sqlalchemy import (
     get_resolved_topic_condition_sa,
-    get_topic_from_message_info,
     topic_column_sa,
     topic_match_sa,
 )
@@ -75,40 +72,74 @@ from zerver.lib.validator import (
     check_string_or_int,
     check_string_or_int_list,
 )
-from zerver.models import Realm, Recipient, Stream, Subscription, UserMessage, UserProfile
+from zerver.models import Huddle, Realm, Recipient, Stream, Subscription, UserMessage, UserProfile
 from zerver.models.streams import get_active_streams
 from zerver.models.users import (
     get_user_by_id_in_realm_including_cross_realm,
     get_user_including_cross_realm,
 )
 
-stop_words_list: Optional[List[str]] = None
 
+class NarrowParameter(BaseModel):
+    operator: str
+    operand: Any
+    negated: bool = False
 
-def read_stop_words() -> List[str]:
-    global stop_words_list
-    if stop_words_list is None:
-        file_path = os.path.join(
-            settings.DEPLOY_ROOT, "puppet/zulip/files/postgresql/zulip_english.stop"
-        )
-        with open(file_path) as f:
-            stop_words_list = f.read().splitlines()
+    @model_validator(mode="before")
+    @classmethod
+    def convert_term(cls, elem: Union[Dict[str, Any], List[str]]) -> Dict[str, Any]:
+        # We have to support a legacy tuple format.
+        if isinstance(elem, list):
+            if len(elem) != 2 or any(not isinstance(x, str) for x in elem):
+                raise ValueError("element is not a string pair")
+            return dict(operator=elem[0], operand=elem[1])
 
-    return stop_words_list
+        elif isinstance(elem, dict):
+            if "operand" not in elem or elem["operand"] is None:
+                raise ValueError("operand is missing")
 
+            if "operator" not in elem or elem["operator"] is None:
+                raise ValueError("operator is missing")
+            return elem
+        else:
+            raise ValueError("dict or list required")
 
-# "stream" is a legacy alias for "channel"
-channel_operators: List[str] = ["channel", "stream"]
-# "streams" is a legacy alias for "channels"
-channels_operators: List[str] = ["channels", "streams"]
+    @model_validator(mode="after")
+    def validate_terms(self) -> "NarrowParameter":
+        # Make sure to sync this list to frontend also when adding a new operator that
+        # supports integer IDs. Relevant code is located in web/src/message_fetch.js
+        # in handle_operators_supporting_id_based_api function where you will need to
+        # update operators_supporting_id, or operators_supporting_ids array.
+        operators_supporting_id = [
+            *channel_operators,
+            "id",
+            "sender",
+            "group-pm-with",
+            "dm-including",
+        ]
+        operators_supporting_ids = ["pm-with", "dm"]
+        operators_non_empty_operand = {"search"}
 
+        operator = self.operator
+        if operator in operators_supporting_id:
+            operand_validator: Validator[object] = check_string_or_int
+        elif operator in operators_supporting_ids:
+            operand_validator = check_string_or_int_list
+        elif operator in operators_non_empty_operand:
+            operand_validator = check_required_string
+        else:
+            operand_validator = check_string
 
-def check_narrow_for_events(narrow: Collection[NarrowTerm]) -> None:
-    supported_operators = [*channel_operators, "topic", "sender", "is"]
-    for narrow_term in narrow:
-        operator = narrow_term.operator
-        if operator not in supported_operators:
-            raise JsonableError(_("Operator {operator} not supported.").format(operator=operator))
+        try:
+            self.operand = operand_validator("operand", self.operand)
+            self.operator = check_string("operator", self.operator)
+            if self.negated is not None:
+                self.negated = check_bool("negated", self.negated)
+        except ValidationError as error:
+            raise JsonableError(error.message)
+
+        # whitelist the fields we care about for now
+        return self
 
 
 def is_spectator_compatible(narrow: Iterable[Dict[str, Any]]) -> bool:
@@ -145,64 +176,6 @@ def is_web_public_narrow(narrow: Optional[Iterable[Dict[str, Any]]]) -> bool:
         and term["negated"] is False
         for term in narrow
     )
-
-
-class NarrowPredicate(Protocol):
-    def __call__(self, *, message: Dict[str, Any], flags: List[str]) -> bool: ...
-
-
-def build_narrow_predicate(
-    narrow: Collection[NarrowTerm],
-) -> NarrowPredicate:
-    """Changes to this function should come with corresponding changes to
-    NarrowLibraryTest."""
-    check_narrow_for_events(narrow)
-
-    def narrow_predicate(*, message: Dict[str, Any], flags: List[str]) -> bool:
-        def satisfies_operator(*, operator: str, operand: str) -> bool:
-            if operator in channel_operators:
-                if message["type"] != "stream":
-                    return False
-                if operand.lower() != message["display_recipient"].lower():
-                    return False
-            elif operator == "topic":
-                if message["type"] != "stream":
-                    return False
-                topic_name = get_topic_from_message_info(message)
-                if operand.lower() != topic_name.lower():
-                    return False
-            elif operator == "sender":
-                if operand.lower() != message["sender_email"].lower():
-                    return False
-            elif operator == "is" and operand in ["dm", "private"]:
-                # "is:private" is a legacy alias for "is:dm"
-                if message["type"] != "private":
-                    return False
-            elif operator == "is" and operand in ["starred"]:
-                if operand not in flags:
-                    return False
-            elif operator == "is" and operand == "unread":
-                if "read" in flags:
-                    return False
-            elif operator == "is" and operand in ["alerted", "mentioned"]:
-                if "mentioned" not in flags:
-                    return False
-            elif operator == "is" and operand == "resolved":
-                if message["type"] != "stream":
-                    return False
-                topic_name = get_topic_from_message_info(message)
-                if not topic_name.startswith(RESOLVED_TOPIC_PREFIX):
-                    return False
-            return True
-
-        for narrow_term in narrow:
-            # TODO: Eventually handle negated narrow terms.
-            if not satisfies_operator(operator=narrow_term.operator, operand=narrow_term.operand):
-                return False
-
-        return True
-
-    return narrow_predicate
 
 
 LARGER_THAN_MAX_MESSAGE_ID = 10000000000000000
@@ -613,9 +586,13 @@ class NarrowBuilder:
                 forwarder_user_profile=None,
                 sender=self.user_profile,
                 allow_deactivated=True,
+                create=False,
             )
         except (JsonableError, ValidationError):
             raise BadNarrowOperatorError("unknown user in " + str(operand))
+        except Huddle.DoesNotExist:
+            # Group DM where huddle doesn't exist
+            return query.where(maybe_negate(false()))
 
         # Group direct message
         if recipient.type == Recipient.DIRECT_MESSAGE_GROUP:

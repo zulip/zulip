@@ -52,7 +52,6 @@ export const CLASSNAMES = {
     invalid_recipient: "invalid_recipient",
     invalid_recipients: "invalid_recipients",
     deactivated_user: "deactivated_user",
-    message_too_long: "message_too_long",
     topic_missing: "topic_missing",
     zephyr_not_running: "zephyr_not_running",
     generic_compose_error: "generic_compose_error",
@@ -173,7 +172,7 @@ export function show_stream_does_not_exist_error(stream_name: string): void {
 
     const new_row_html = render_stream_does_not_exist_error({
         banner_type: ERROR,
-        stream_name,
+        channel_name: stream_name,
         classname: CLASSNAMES.stream_does_not_exist,
     });
     append_compose_banner_to_banner_list($(new_row_html), $("#compose_banners"));
@@ -192,7 +191,7 @@ export function show_stream_not_subscribed_error(sub: StreamSubscription): void 
         banner_type: ERROR,
         banner_text: $t({
             defaultMessage:
-                "You're not subscribed to this stream. You will not be notified if other users reply to your message.",
+                "You're not subscribed to this channel. You will not be notified if other users reply to your message.",
         }),
         button_text: stream_data.can_toggle_subscription(sub)
             ? $t({defaultMessage: "Subscribe"})

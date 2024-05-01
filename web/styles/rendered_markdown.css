@@ -1,20 +1,17 @@
 .rendered_markdown {
-    /* The default top/bottom margins for paragraphs are small, to make sure
-       they look nice next to blockquotes, lists, etc. */
     & p {
-        margin: 3px 0;
+        margin: 0 0 var(--markdown-interelement-space-px);
     }
 
-    /* The spacing between two paragraphs is significantly larger.  We
-       arrange things so that this spacing matches the spacing between
-       paragraphs in two consecutive 1-line messages. */
+    /* The spacing between two paragraphs is double the usual value.
+       We coordinate this spacing matches so that it matches the
+       spacing between paragraphs in two consecutive 1-line messages. */
     & p + p {
-        margin-top: 10px;
+        margin-top: var(--markdown-interelement-doubled-space-px);
     }
 
-    /* Ensure bulleted lists are nicely centered in 1-line messages */
     & ul {
-        margin: 2px 0 5px 20px;
+        margin: 0 0 var(--markdown-interelement-space-px) 20px;
     }
 
     /* Swap the left and right margins of bullets for Right-To-Left languages */
@@ -23,21 +20,14 @@
         margin-left: 0;
     }
 
-    /* Ensure ordered lists are nicely centered in 1-line messages */
     & ol {
-        margin: 2px 0 5px 20px;
+        margin: 0 0 var(--markdown-interelement-space-px) 20px;
     }
 
     /* Swap the left and right margins of ordered list for Right-To-Left languages */
     &.rtl ol {
         margin-right: 8px;
         margin-left: 0;
-    }
-
-    /* Reduce top-margin when a paragraph is followed by an ordered or bulleted list */
-    & p + ul,
-    p + ol {
-        margin-top: 0;
     }
 
     & hr {
@@ -54,8 +44,11 @@
     h6 {
         font-weight: 600;
         line-height: 1.4;
+        /* Headings take a margin-top because of the pronounced extra
+           space they require, but are zeroed out below when they open
+           a message. */
         margin-top: 15px;
-        margin-bottom: 5px;
+        margin-bottom: var(--markdown-interelement-space-px);
     }
 
     /* Headings: Ensure that messages that start with a heading don't have
@@ -98,13 +91,8 @@
     /* Formatting for blockquotes */
     & blockquote {
         padding-left: 5px;
-        margin: 5px 0 6px 10px;
+        margin: 0 0 var(--markdown-interelement-space-px) 10px;
         border-left: 5px solid hsl(0deg 0% 87%);
-
-        & p {
-            line-height: inherit;
-            font-size: inherit;
-        }
     }
 
     &.rtl blockquote {
@@ -119,7 +107,7 @@
     /* Formatting for Markdown tables */
     & table {
         padding-right: 10px;
-        margin: 5px;
+        margin: 0 5px var(--markdown-interelement-space-px);
         width: 99%;
         display: block;
         max-width: fit-content;
@@ -230,10 +218,11 @@
     /* LaTeX styling */
     .katex-display {
         /* KaTeX sometimes overdraws its bounding box by a little, so we
-           enlarge its scrolling area by stealing 3px from the margin
-           of the enclosing <p>. */
-        margin: -3px 0;
+           enlarge its scrolling area by adding 3px of padding to its top
+           and bottom. To prevent what will appear as extra whitespace,
+           we reduce surrounding margins by the same 3px. */
         padding: 3px 0;
+        margin: -3px 0;
         overflow: auto hidden;
     }
 
@@ -246,10 +235,9 @@
         border: hsl(0deg 0% 50%) 1px solid;
         padding: 2px 8px 2px 10px;
         border-radius: 10px;
-        position: relative;
-        top: 1px;
-        display: block;
-        margin: 5px 0 15px;
+        /* Space any subsequent Markdown content the same
+           distance as adjacent paragraphs are spaced. */
+        margin: 0 0 var(--markdown-interelement-doubled-space-px);
 
         .spoiler-header {
             /* We use flexbox to display the spoiler message
@@ -343,6 +331,13 @@
         }
     }
 
+    & > .spoiler-block:last-child {
+        /* A spoiler block at the end of a message, or as
+           a message's only content, gets the same bottom
+           margin as other elements. */
+        margin-bottom: var(--markdown-interelement-space-px);
+    }
+
     /* embedded link previews */
     .message_inline_image_title {
         font-weight: bold;
@@ -351,7 +346,7 @@
     .twitter-image,
     .message_inline_image {
         position: relative;
-        margin-bottom: 5px;
+        margin-bottom: var(--markdown-interelement-space-px);
         margin-right: 5px;
 
         /* Sizing CSS for inline images requires care, because images load
@@ -407,8 +402,9 @@
        `.rendered_markdown` out of the baseline group
        formed with EDITED/MOVED markers and the
        timestamp when the first child of the rendered
-       markdown is a media element. */
-    &:has(> .message_inline_image:first-child) {
+       markdown is a media element or KaTeX. */
+    &:has(> .message_inline_image:first-child),
+    &:has(> p:first-child > .katex-display) {
         align-self: center;
     }
 
@@ -416,6 +412,13 @@
        we provide a small layout hack using an
        inline grid. */
     @supports not selector(:has(*)) {
+        p:first-child > .katex-display {
+            /* KaTeX should take up 100% of the message box,
+               so that KaTeX's own CSS for centering still works. */
+            width: 100%;
+        }
+
+        p:first-child > .katex-display,
         .message_inline_image {
             /* We'll display this bit of media as
                an inline grid. That will allow us
@@ -437,6 +440,7 @@
             grid-template: "media" minmax(0, auto) / minmax(0, auto);
         }
 
+        p:first-child > .katex-display > .katex,
         .message_inline_image a,
         .message_inline_image video {
             /* We explicitly place the containing
@@ -444,6 +448,7 @@
             grid-area: media;
         }
 
+        p:first-child > .katex-display::before,
         .message_inline_image::before {
             /* We generate a single . here to create
                text content enough for a baseline.
@@ -477,7 +482,7 @@
     }
 
     .message_inline_ref {
-        margin-bottom: 5px;
+        margin-bottom: var(--markdown-interelement-space-px);
         margin-left: 5px;
         height: 50px;
         display: block !important;
@@ -579,7 +584,7 @@
     .message_embed {
         display: block;
         position: relative;
-        margin: 5px 0;
+        margin: 0 0 var(--markdown-interelement-space-px);
         border: none;
         border-left: 3px solid hsl(0deg 0% 93%);
         height: 80px;
@@ -682,7 +687,7 @@
         overflow-x: auto;
         word-break: break-all;
         word-wrap: normal;
-        margin: 5px 0;
+        margin: 0 0 var(--markdown-interelement-space-px);
         padding: 5px 7px 3px;
         display: block;
         border-radius: 4px;

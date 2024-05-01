@@ -1,8 +1,3 @@
-$avatar_column_width: 46px;
-$distance_of_text_elements_from_message_box_top: 8.5px;
-$distance_of_non_text_elements_from_message_box: 6px;
-$message_box_margin: 3px;
-
 .message_row {
     display: grid;
     /* Prevent the messagebox column from overflowing the 1fr
@@ -17,6 +12,22 @@ $message_box_margin: 3px;
     border-left: 1px solid var(--color-message-list-border);
     border-right: 1px solid var(--color-message-list-border);
     background-color: var(--color-background-stream-message-content);
+
+    &.private-message {
+        background-color: var(--color-background-private-message-content);
+
+        .date_row {
+            background-color: var(--color-background-private-message-content);
+        }
+
+        .data-container::after {
+            background: linear-gradient(
+                0deg,
+                var(--color-background-private-message-content),
+                transparent 100%
+            );
+        }
+    }
 
     &.direct_mention {
         background-color: var(--color-background-direct-mention);
@@ -40,66 +51,6 @@ $message_box_margin: 3px;
                 transparent 100%
             );
         }
-    }
-
-    .date_row {
-        grid-area: date_row;
-        /* We only want padding for the date rows between recipient blocks */
-        padding-bottom: 0;
-
-        & span {
-            font-size: calc(12em / 14);
-            font-style: normal;
-            font-weight: 600;
-            line-height: 17px; /* identical to box height, or 131% */
-            text-align: right;
-            letter-spacing: 0.04em;
-            color: var(--color-date);
-            /* Right padding matches time in message row and date in recipient row. */
-            padding: 8px 6px 8px 4px;
-        }
-    }
-
-    .unread_marker {
-        margin-left: var(--unread-marker-left);
-        opacity: 0;
-        transition: all 0.3s ease-out;
-
-        &.slow_fade {
-            transition: all 2s ease-out;
-        }
-
-        &.fast_fade {
-            transition: all 0.3s ease-out;
-        }
-
-        &.date_unread_marker {
-            grid-area: date_unread_marker;
-
-            .unread-marker-fill {
-                border-radius: 0 !important;
-                height: 100% !important;
-            }
-        }
-
-        &.message_unread_marker {
-            grid-area: message_unread_marker;
-        }
-    }
-
-    .unread-marker-fill {
-        height: 100%;
-        width: 2px;
-        background: linear-gradient(
-            90deg,
-            var(--color-unread-marker) 30%,
-            hsl(217deg 64% 59% / 0%)
-        );
-    }
-
-    &.unread .unread_marker {
-        transition: all 0.3s ease-out;
-        opacity: 1;
     }
 
     .messagebox {
@@ -140,7 +91,7 @@ $message_box_margin: 3px;
             in the column. */
         grid-template:
             var(--message-box-icon-height) repeat(3, auto) /
-            $avatar_column_width minmax(0, 1fr) calc(
+            var(--message-box-avatar-column-width) minmax(0, 1fr) calc(
                 3 * var(--message-box-icon-width)
             )
             8px minmax(var(--message-box-timestamp-column-width), max-content);
@@ -156,7 +107,9 @@ $message_box_margin: 3px;
             cursor: default;
             /* Set the controls area to 0 to give more space
                to the edit/source view area. */
-            grid-template-columns: $avatar_column_width minmax(0, 1fr) 0 8px minmax(
+            grid-template-columns:
+                var(--message-box-avatar-column-width) minmax(0, 1fr)
+                0 8px minmax(
                     var(--message-box-timestamp-column-width),
                     max-content
                 );
@@ -164,7 +117,7 @@ $message_box_margin: 3px;
 
         @media (width < $sm_min), ((width >= $md_min) and (width < $mc_min)) {
             grid-template-columns:
-                $avatar_column_width minmax(0, 1fr) calc(
+                var(--message-box-avatar-column-width) minmax(0, 1fr) calc(
                     2 * var(--message-box-icon-width)
                 )
                 8px minmax(
@@ -201,14 +154,13 @@ $message_box_margin: 3px;
         .message_content {
             grid-area: message;
             /*
-            Space between two single line messages in a paragraph is 10px.
-            There is 3px margin above and below a message. So, having a 2px
-            padding above and below the message will make the space between
-            all single paragraphs the same.
+            Space between two single line messages is kept in
+            lockstep with adjacent Markdown elements.
             */
-            padding: 2px 0;
+            padding: var(--message-box-markdown-aligned-vertical-space) 0 0;
             color: var(--color-text-message-default);
-            line-height: var(--message-box-line-height);
+            font-size: var(--base-font-size-px);
+            line-height: var(--base-line-height-unitless);
             min-height: 17px;
             display: block;
             position: relative;
@@ -257,7 +209,7 @@ $message_box_margin: 3px;
               is preserved from the message itself--keeping the time,
               edit message, and controls at the same vertical alignment. */
             align-self: start;
-            margin-top: $distance_of_non_text_elements_from_message_box;
+            margin-top: var(--message-box-vertical-margin);
         }
 
         .message_length_controller {
@@ -321,20 +273,14 @@ $message_box_margin: 3px;
                 .message_sender {
                     /* Don't display message sender as flexbox for me-messages. */
                     display: block;
-                    /* This preserves a consistent bottom spacing on the me-message
-                       grid, which ordinarily benefits from the margin of <p>
-                       elements in the markdown--which single-line me-messages do
-                       not receive.
-
-                       It also ensures a uniform space-relationship between the top: of the avatar and the top of the sender_name line.
-
-                       However, this should all arguably be handled from the grid
-                       container or the grid definition itself. */
-                    margin: $message_box_margin 0;
-
                     /* Set the same line-height as on message content for
                        me-messages. */
-                    line-height: var(--message-box-line-height);
+                    line-height: var(--base-line-height-unitless);
+                    /* Ensure the same spacing below messages as for any other
+                       paragraph. */
+                    padding-bottom: var(
+                        --message-box-markdown-aligned-vertical-space
+                    );
 
                     /* Display message components inline, with wrapping white-space,
                        so the sender name and message display as a continuous line
@@ -358,7 +304,7 @@ $message_box_margin: 3px;
                     .message_edit {
                         /* Use the sender grid area for the me-message edit/view-source box */
                         grid-area: sender;
-                        margin-top: $distance_of_non_text_elements_from_message_box;
+                        margin-top: var(--message-box-vertical-margin);
                     }
                 }
             }
@@ -370,7 +316,7 @@ $message_box_margin: 3px;
                 /* Because the avatar may be the tallest element in a
                   single-line me message, this margin preserves the
                   overall height of the message box. */
-                margin: $distance_of_non_text_elements_from_message_box 0;
+                margin: var(--message-box-vertical-margin) 0;
             }
 
             .status-message {
@@ -378,15 +324,9 @@ $message_box_margin: 3px;
             }
 
             .message_content {
-                padding-top: 0;
+                /* Top padding is reduced when there is a sender line. */
+                padding-top: 3px;
                 grid-area: message;
-            }
-
-            .message-time {
-                /* Don't adjust the line-height for collapsed or
-                   edited/source messages when there's a sender,
-                   as the sender text is always visible. */
-                line-height: inherit;
             }
 
             .slow-send-spinner {
@@ -410,30 +350,57 @@ $message_box_margin: 3px;
                 text-overflow: ellipsis;
                 grid-area: sender;
                 display: flex;
+                /* A generous line-height on the sender name is necessary
+                   for internationalization and non-Western Latin character
+                   sets. */
+                line-height: var(--message-box-sender-line-height);
                 /* Ensure flexed sender info (name, status emoji, inline EDITED)
                    forms a baseline group, which will participate with the
                    message-box grid's baseline group, too. */
                 align-items: baseline;
 
-                margin-top: $message_box_margin;
-
                 .zulip-icon.zulip-icon-bot {
+                    font-size: 12px;
                     align-self: center;
                     padding: 0 0 0 5px;
                 }
 
                 .sender_name {
+                    display: inline-flex;
+                    font-weight: 700;
+                    color: var(--color-text-sender-name);
+                    column-gap: 3px;
                     overflow: hidden;
                     text-overflow: ellipsis;
                     white-space: nowrap;
-                    /* It is important to use line-height `normal` here since user's name can
-                       be in any language and `line-height: 1` doesn't work to accommodate text
-                       from start and end vertically in all languages. */
-                    line-height: normal;
                     outline: none;
                     align-self: baseline;
+
+                    .sender_name_text {
+                        overflow: hidden;
+                        white-space: nowrap;
+                        display: inline-flex;
+
+                        .user-name {
+                            overflow: hidden;
+                            text-overflow: ellipsis;
+                        }
+                    }
                 }
             }
+        }
+    }
+
+    &.sender_info_hovered {
+        .sender_name {
+            cursor: pointer;
+            /* TODO: Refactor the teetering nested classes
+               above so that !important can be removed. */
+            color: var(--color-text-sender-name-hover) !important;
+        }
+
+        .message-avatar {
+            cursor: pointer;
         }
     }
 
@@ -492,7 +459,6 @@ $message_box_margin: 3px;
             /* Replicate the `.new-style` disabled values,
                without any color shifts. */
             cursor: not-allowed;
-            filter: saturate(0);
             opacity: 0.5;
         }
     }
@@ -501,12 +467,53 @@ $message_box_margin: 3px;
     .message_edit_close {
         color: var(--color-exit-button-text);
         background: var(--color-exit-button-background);
-        border: 1px solid var(--color-exit-button-border);
 
         &:hover {
             background: var(--color-exit-button-background-interactive);
         }
     }
+}
+
+.unread_marker {
+    margin-left: var(--unread-marker-left);
+    opacity: 0;
+    transition: all 0.3s ease-out;
+
+    &.slow_fade {
+        transition: all 2s ease-out;
+    }
+
+    &.fast_fade {
+        transition: all 0.3s ease-out;
+    }
+
+    &.date_unread_marker {
+        grid-area: date_unread_marker;
+
+        .unread-marker-fill {
+            border-radius: 0 !important;
+            height: 100% !important;
+        }
+    }
+
+    &.message_unread_marker {
+        grid-area: message_unread_marker;
+    }
+}
+
+.unread-marker-fill {
+    height: 100%;
+    width: 2px;
+    background: linear-gradient(
+        90deg,
+        var(--color-unread-marker) 30%,
+        hsl(217deg 64% 59% / 0%)
+    );
+}
+
+.unread .unread_marker {
+    transition: all 0.3s ease-out;
+    opacity: 1;
 }
 
 .message-time {
@@ -517,20 +524,8 @@ $message_box_margin: 3px;
        collapsed message, or source/edit view). This
        line-height also keeps EDITED/MOVED messages
        in place, care of their baseline-group participation
-       within the grid.
-
-       That said, 28px is a bit of a magical number.
-       In theory, this should be 27px. That's the height
-       of a single-message row without a sender. (See the
-       calculations for the height of a single-line,
-       sender-less message row in the message box grid.)
-       But when shifting into collapsed or source views,
-       28px is necessary to maintain the vertical alignment
-       of the EDITED messages, hover controls, and
-       timestamp. It's possible that this is also due to a
-       a rounding error, given how --message-box-line-height
-       is expressed as a unitless decimal. */
-    line-height: 28px;
+       within the grid. */
+    line-height: var(--message-box-sender-line-height);
     grid-area: time;
     display: block;
     font-size: 13px;
@@ -556,9 +551,47 @@ $message_box_margin: 3px;
 /* Additional message-editing UI styles. */
 
 .message_edit_content {
-    line-height: 18px;
-    resize: vertical !important;
     max-height: 24em;
+    width: 100%;
+    min-width: 206px;
+    box-sizing: border-box;
+    /* Setting resize as none hides the bottom right diagonal box
+       (which even has a background color of its own!). */
+    resize: none !important;
+    color: hsl(0deg 0% 33%);
+    background-color: hsl(0deg 0% 100%);
+    border-radius: 4px;
+    vertical-align: middle;
+    border: 1px solid hsl(0deg 0% 80%);
+    /* Match textarea padding to compose box and
+       message-edit preview area. */
+    padding: 5px;
+    margin: 0 0 10px;
+
+    box-shadow: inset 0 1px 1px hsl(0deg 0% 0% / 7.5%);
+    transition:
+        border linear 0.2s,
+        box-shadow linear 0.2s;
+
+    &:focus {
+        border-color: hsl(206.5deg 80% 62% / 80%);
+        outline: 0;
+
+        box-shadow:
+            inset 0 1px 1px hsl(0deg 0% 0% / 7.5%),
+            0 0 8px hsl(206.5deg 80% 62% / 60%);
+    }
+
+    &:read-only,
+    &:disabled {
+        cursor: not-allowed;
+    }
+}
+
+/* The selector needs to be written this way to override the specificity
+of the base style defined for a read-only textarea in dark mode. */
+.message_edit_form .edit-controls textarea.message_edit_content:read-only {
+    opacity: 1;
 }
 
 .message_edit_countdown_timer {
@@ -626,42 +659,6 @@ $message_box_margin: 3px;
         margin-left: 0;
         margin-top: 0;
     }
-
-    & textarea {
-        width: 100%;
-        min-width: 206px;
-        box-sizing: border-box;
-        /* Setting resize as none hides the bottom right diagonal box
-           (which even has a background color of its own!). */
-        resize: none !important;
-        color: hsl(0deg 0% 33%);
-        background-color: hsl(0deg 0% 100%);
-        border-radius: 4px;
-        vertical-align: middle;
-        border: 1px solid hsl(0deg 0% 80%);
-        padding: 4px 6px;
-        margin-bottom: 10px;
-
-        box-shadow: inset 0 1px 1px hsl(0deg 0% 0% / 7.5%);
-        transition:
-            border linear 0.2s,
-            box-shadow linear 0.2s;
-
-        &:focus {
-            border-color: hsl(206.5deg 80% 62% / 80%);
-            outline: 0;
-
-            box-shadow:
-                inset 0 1px 1px hsl(0deg 0% 0% / 7.5%),
-                0 0 8px hsl(206.5deg 80% 62% / 60%);
-        }
-
-        &:read-only,
-        &:disabled {
-            cursor: not-allowed;
-            background-color: hsl(0deg 0% 93%);
-        }
-    }
 }
 
 .message_edit_notice {
@@ -704,5 +701,24 @@ $message_box_margin: 3px;
         .date_unread_marker {
             display: block;
         }
+    }
+}
+
+.date_row {
+    grid-area: date_row;
+
+    & .timerender-content {
+        display: block;
+        overflow: hidden;
+        text-transform: uppercase;
+        font-size: calc(12em / 14);
+        font-style: normal;
+        font-weight: 600;
+        line-height: 17px; /* identical to box height, or 131% */
+        text-align: right;
+        letter-spacing: 0.04em;
+        color: var(--color-date);
+        /* Right padding matches time in message row and date in recipient row. */
+        padding: 8px 6px 8px 4px;
     }
 }

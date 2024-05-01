@@ -289,6 +289,11 @@ export function initialize() {
         navigate.to_end();
     });
 
+    $("body").on("click", ".message_row", function () {
+        $(".selected_msg_for_touchscreen").removeClass("selected_msg_for_touchscreen");
+        $(this).addClass("selected_msg_for_touchscreen");
+    });
+
     // MESSAGE EDITING
 
     $("body").on("click", ".edit_content_button", function (e) {
@@ -777,7 +782,7 @@ export function initialize() {
         ".direct-messages-container.zoom-out #private_messages_section_header",
         (e) => {
             if ($(e.target).closest("#show_all_private_messages").length === 1) {
-                // Let the browser handle the "all direct messages" widget.
+                // Let the browser handle the "direct message feed" widget.
                 return;
             }
 

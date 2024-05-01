@@ -14,6 +14,8 @@ import * as dialog_widget from "./dialog_widget";
 import {$t, $t_html} from "./i18n";
 import * as loading from "./loading";
 import * as people from "./people";
+import {read_field_data_from_form} from "./settings_components";
+import {populate_data_for_request} from "./settings_org";
 import * as settings_ui from "./settings_ui";
 import {current_user, realm} from "./state_data";
 import * as ui_report from "./ui_report";
@@ -103,45 +105,6 @@ function delete_profile_field(e) {
         html_heading: $t_html({defaultMessage: "Delete custom profile field?"}),
         on_click: request_delete,
     });
-}
-
-function read_select_field_data_from_form($profile_field_form, old_field_data) {
-    const field_data = {};
-    let field_order = 1;
-
-    const old_option_value_map = new Map();
-    if (old_field_data !== undefined) {
-        for (const [value, choice] of Object.entries(old_field_data)) {
-            old_option_value_map.set(choice.text, value);
-        }
-    }
-
-    $profile_field_form.find("div.choice-row").each(function () {
-        const text = $(this).find("input")[0].value;
-        if (text) {
-            if (old_option_value_map.get(text) !== undefined) {
-                // Resetting the data-value in the form is
-                // important if the user removed an option string
-                // and then added it back again before saving
-                // changes.
-                $(this).attr("data-value", old_option_value_map.get(text));
-            }
-            const value = $(this).attr("data-value");
-            field_data[value] = {text, order: field_order.toString()};
-            field_order += 1;
-        }
-    });
-
-    return field_data;
-}
-
-function read_external_account_field_data($profile_field_form) {
-    const field_data = {};
-    field_data.subtype = $profile_field_form.find("select[name=external_acc_field_type]").val();
-    if (field_data.subtype === "custom") {
-        field_data.url_pattern = $profile_field_form.find("input[name=url_pattern]").val();
-    }
-    return field_data;
 }
 
 export function get_value_for_new_option(container) {
@@ -235,19 +198,6 @@ function set_up_create_field_form() {
     }
 }
 
-function read_field_data_from_form(field_type_id, $profile_field_form, old_field_data) {
-    const field_types = realm.custom_profile_field_types;
-
-    // Only read field data if we are creating a select field
-    // or external account field.
-    if (field_type_id === field_types.SELECT.id) {
-        return read_select_field_data_from_form($profile_field_form, old_field_data);
-    } else if (field_type_id === field_types.EXTERNAL_ACCOUNT.id) {
-        return read_external_account_field_data($profile_field_form);
-    }
-    return undefined;
-}
-
 function open_custom_profile_field_form_modal() {
     const html_body = render_add_new_custom_profile_field_form({
         realm_default_external_accounts: realm.realm_default_external_accounts,
@@ -295,7 +245,7 @@ function open_custom_profile_field_form_modal() {
             "disabled_label",
             display_in_profile_summary_fields_limit_reached,
         );
-        $("#add-new-custom-profile-field-form .checkbox").toggleClass(
+        $("#add-new-custom-profile-field-form .profile_field_display_label").toggleClass(
             "display_in_profile_summary_tooltip",
             display_in_profile_summary_fields_limit_reached,
         );
@@ -313,25 +263,7 @@ function open_custom_profile_field_form_modal() {
     });
 }
 
-function disable_submit_btn_if_empty_choices() {
-    const $choice_text_rows = $("#edit-custom-profile-field-form-modal .choice-row").find(
-        ".modal_text_input",
-    );
-    let non_empty_choice_present = false;
-    for (const text_row of $choice_text_rows) {
-        if ($(text_row).val() !== "") {
-            non_empty_choice_present = true;
-            break;
-        }
-    }
-    $("#edit-custom-profile-field-form-modal .dialog_submit_button").prop(
-        "disabled",
-        !non_empty_choice_present,
-    );
-}
-
 function add_choice_row(e) {
-    disable_submit_btn_if_empty_choices();
     const $curr_choice_row = $(e.target).parent();
     if ($curr_choice_row.next().hasClass("choice-row")) {
         return;
@@ -346,7 +278,11 @@ function add_choice_row(e) {
 function delete_choice_row(e) {
     const $row = $(e.currentTarget).parent();
     $row.remove();
-    disable_submit_btn_if_empty_choices();
+}
+
+function delete_choice_row_for_edit(e, $profile_field_form, field) {
+    delete_choice_row(e);
+    disable_submit_btn_if_no_property_changed($profile_field_form, field);
 }
 
 function show_modal_for_deleting_options(field, deleted_values, update_profile_field) {
@@ -407,13 +343,25 @@ function set_up_external_account_field_edit_form($profile_field_form, url_patter
     }
 }
 
-function set_up_select_field_edit_form($profile_field_form, field_data) {
+function disable_submit_btn_if_no_property_changed($profile_field_form, field) {
+    const data = populate_data_for_request($profile_field_form, false, undefined, undefined, field);
+    let save_changes_button_disabled = false;
+    if (Object.keys(data).length === 0 || data.field_data === "{}") {
+        save_changes_button_disabled = true;
+    }
+    $("#edit-custom-profile-field-form-modal .dialog_submit_button").prop(
+        "disabled",
+        save_changes_button_disabled,
+    );
+}
+
+function set_up_select_field_edit_form($profile_field_form, field) {
     // Re-render field choices in edit form to load initial select data
     const $choice_list = $profile_field_form.find(".edit_profile_field_choices_container");
     $choice_list.off();
     $choice_list.empty();
 
-    const choices_data = parse_field_choices_from_field_data(field_data);
+    const choices_data = parse_field_choices_from_field_data(JSON.parse(field.field_data));
 
     for (const choice of choices_data) {
         $choice_list.append(
@@ -432,6 +380,9 @@ function set_up_select_field_edit_form($profile_field_form, field_data) {
         onUpdate() {},
         filter: "input",
         preventOnFilter: false,
+        onSort() {
+            disable_submit_btn_if_no_property_changed($profile_field_form, field);
+        },
     });
 }
 
@@ -475,12 +426,12 @@ function open_edit_form_modal(e) {
                 .find("input[name=display_in_profile_summary]")
                 .prop("disabled", true);
             $profile_field_form
-                .find(".checkbox")
+                .find(".edit_profile_field_display_label")
                 .addClass("display_in_profile_summary_tooltip disabled_label");
         }
 
         if (Number.parseInt(field.type, 10) === field_types.SELECT.id) {
-            set_up_select_field_edit_form($profile_field_form, field_data);
+            set_up_select_field_edit_form($profile_field_form, field);
         }
 
         if (Number.parseInt(field.type, 10) === field_types.EXTERNAL_ACCOUNT.id) {
@@ -499,29 +450,29 @@ function open_edit_form_modal(e) {
             .on("input", ".choice-row input", add_choice_row);
         $profile_field_form
             .find(".edit_profile_field_choices_container")
-            .on("click", "button.delete-choice", delete_choice_row);
+            .on("click", "button.delete-choice", (e) =>
+                delete_choice_row_for_edit(e, $profile_field_form, field),
+            );
+
+        $("#edit-custom-profile-field-form-modal .dialog_submit_button").prop("disabled", true);
+        // Setup onInput event listeners to disable/enable submit button,
+        // select field add/update/remove operations are covered in onSort and
+        // row delete button is separately covered in delete_choice_row_for_edit.
+        $profile_field_form.on("input", () =>
+            disable_submit_btn_if_no_property_changed($profile_field_form, field),
+        );
     }
 
     function submit_form() {
         const $profile_field_form = $("#edit-custom-profile-field-form-" + field_id);
 
-        // For some reason jQuery's serialize() is not working with
-        // channel.patch even though it is supported by $.ajax.
-        const data = {};
-
-        data.name = $profile_field_form.find("input[name=name]").val();
-        data.hint = $profile_field_form.find("input[name=hint]").val();
-        data.display_in_profile_summary = $profile_field_form
-            .find("input[name=display_in_profile_summary]")
-            .is(":checked");
-        data.required = $profile_field_form.find("input[name=required]").is(":checked");
-
-        const new_field_data = read_field_data_from_form(
-            Number.parseInt(field.type, 10),
+        const data = populate_data_for_request(
             $profile_field_form,
-            field_data,
+            false,
+            undefined,
+            undefined,
+            field,
         );
-        data.field_data = JSON.stringify(new_field_data);
 
         function update_profile_field() {
             const url = "/json/realm/profile_fields/" + field_id;
@@ -533,8 +484,8 @@ function open_edit_form_modal(e) {
             dialog_widget.submit_api_request(channel.patch, url, data, opts);
         }
 
-        if (field.type === field_types.SELECT.id) {
-            const new_values = new Set(Object.keys(new_field_data));
+        if (field.type === field_types.SELECT.id && data.field_data !== undefined) {
+            const new_values = new Set(Object.keys(JSON.parse(data.field_data)));
             const deleted_values = {};
             for (const [value, option] of Object.entries(field_data)) {
                 if (!new_values.has(value)) {
@@ -581,19 +532,9 @@ function update_profile_fields_checkboxes() {
 
 function toggle_display_in_profile_summary_profile_field(e) {
     const field_id = Number.parseInt($(e.currentTarget).attr("data-profile-field-id"), 10);
-    const field = get_profile_field(field_id);
-
-    let field_data;
-    if (field.field_data) {
-        field_data = field.field_data;
-    }
 
     const data = {
-        name: field.name,
-        hint: field.hint,
-        field_data,
-        display_in_profile_summary: !field.display_in_profile_summary,
-        required: field.required,
+        display_in_profile_summary: $(e.currentTarget).prop("checked"),
     };
     const $profile_field_status = $("#admin-profile-field-status").expectOne();
 
@@ -607,19 +548,9 @@ function toggle_display_in_profile_summary_profile_field(e) {
 
 function toggle_required(e) {
     const field_id = Number.parseInt($(e.currentTarget).attr("data-profile-field-id"), 10);
-    const field = get_profile_field(field_id);
-
-    let field_data;
-    if (field.field_data) {
-        field_data = field.field_data;
-    }
 
     const data = {
-        name: field.name,
-        hint: field.hint,
-        field_data,
-        display_in_profile_summary: field.display_in_profile_summary,
-        required: !field.required,
+        required: $(e.currentTarget).prop("checked"),
     };
     const $profile_field_status = $("#admin-profile-field-status").expectOne();
 

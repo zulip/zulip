@@ -29,7 +29,6 @@ const attachments_ui = mock_esm("../src/attachments_ui");
 const audible_notifications = mock_esm("../src/audible_notifications");
 const bot_data = mock_esm("../src/bot_data");
 const compose_pm_pill = mock_esm("../src/compose_pm_pill");
-const composebox_typeahead = mock_esm("../src/composebox_typeahead");
 const dark_theme = mock_esm("../src/dark_theme");
 const emoji_picker = mock_esm("../src/emoji_picker");
 const gear_menu = mock_esm("../src/gear_menu");
@@ -93,6 +92,7 @@ const user_groups = mock_esm("../src/user_groups");
 const user_group_edit = mock_esm("../src/user_group_edit");
 const overlays = mock_esm("../src/overlays");
 mock_esm("../src/giphy");
+const {Filter} = zrequire("filter");
 
 const electron_bridge = set_global("electron_bridge", {});
 
@@ -102,19 +102,17 @@ message_lists.current = {
     rerender_view: noop,
     data: {
         get_messages_sent_by_user: () => [],
-        filter: {
-            is_in_home: () => true,
-        },
+        filter: new Filter([]),
     },
 };
-message_lists.home = {
+const cached_message_list = {
     get_row: noop,
     rerender_view: noop,
     data: {
         get_messages_sent_by_user: () => [],
     },
 };
-message_lists.all_rendered_message_lists = () => [message_lists.home, message_lists.current];
+message_lists.all_rendered_message_lists = () => [cached_message_list, message_lists.current];
 
 // page_params is highly coupled to dispatching now
 page_params.test_suite = false;
@@ -147,8 +145,6 @@ people.add_active_user(me);
 people.add_active_user(test_user);
 people.initialize_current_user(me.user_id);
 
-// process_new_messages calls get_message_reactions, so we need to stub it.
-reactions.get_message_reactions = (message) => message.reactions;
 message_helper.process_new_message(test_message);
 
 const realm_emoji = {};
@@ -663,7 +659,6 @@ run_test("realm_emoji", ({override}) => {
     const ui_func_names = [
         [settings_emoji, "populate_emoji"],
         [emoji_picker, "rebuild_catalog"],
-        [composebox_typeahead, "update_emoji_data"],
     ];
 
     const ui_stubs = [];
@@ -787,7 +782,6 @@ run_test("web_reload_client", ({override}) => {
     dispatch(event);
     assert.equal(stub.num_calls, 1);
     const args = stub.get_args("options");
-    assert.equal(args.options.save_pointer, true);
     assert.equal(args.options.immediate, true);
 });
 
@@ -894,13 +888,16 @@ run_test("user_settings", ({override}) => {
     message_lists.current.rerender = () => {
         called = true;
     };
-
-    override(message_lists.home, "rerender", noop);
+    let called_for_cached_msg_list = false;
+    cached_message_list.rerender = () => {
+        called_for_cached_msg_list = true;
+    };
     event = event_fixtures.user_settings__twenty_four_hour_time;
     user_settings.twenty_four_hour_time = false;
     dispatch(event);
     assert_same(user_settings.twenty_four_hour_time, true);
     assert_same(called, true);
+    assert_same(called_for_cached_msg_list, true);
 
     event = event_fixtures.user_settings__translate_emoticons;
     user_settings.translate_emoticons = false;
@@ -933,7 +930,7 @@ run_test("user_settings", ({override}) => {
     toggled = [];
     dispatch(event);
     assert_same(user_settings.dense_mode, true);
-    assert_same(toggled, ["less_dense_mode", "more_dense_mode"]);
+    assert_same(toggled, ["less-dense-mode", "more-dense-mode"]);
 
     event = event_fixtures.user_settings__web_font_size_px;
     user_settings.web_font_size_px = 14;
@@ -1017,6 +1014,17 @@ run_test("user_settings", ({override}) => {
     user_settings.starred_message_counts = false;
     dispatch(event);
     assert_same(user_settings.starred_message_counts, true);
+
+    event = event_fixtures.user_settings__receives_typing_notifications;
+    user_settings.receives_typing_notifications = false;
+    dispatch(event);
+    assert_same(user_settings.receives_typing_notifications, true);
+
+    event = event_fixtures.user_settings__receives_typing_notifications_disabled;
+    override(typing_events, "disable_typing_notification", noop);
+    user_settings.receives_typing_notifications = true;
+    dispatch(event);
+    assert_same(user_settings.receives_typing_notifications, false);
 
     override(scroll_bar, "set_layout_width", noop);
     event = event_fixtures.user_settings__fluid_layout_width;

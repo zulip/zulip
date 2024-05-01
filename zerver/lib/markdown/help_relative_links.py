@@ -21,7 +21,7 @@ gear_info = {
     # link is used for relative links: `Select [name](link).`
     "stream-settings": [
         '<i class="zulip-icon zulip-icon-hash"></i> Stream settings',
-        "/#streams/subscribed",
+        "/#channels/subscribed",
     ],
     "settings": [
         '<i class="zulip-icon zulip-icon-tool"></i> Personal Settings',
@@ -98,7 +98,7 @@ def help_handle_match(key: str) -> str:
 
 
 stream_info = {
-    "all": ["All streams", "/#streams/all"],
+    "all": ["All streams", "/#channels/all"],
 }
 
 stream_all_instructions = """
@@ -156,7 +156,7 @@ recent_instructions = """
 """
 
 all_instructions = """
-1. Click on <i class="fa fa-align-left"></i> **All messages** in the left
+1. Click on <i class="fa fa-align-left"></i> **Combined feed** in the left
    sidebar, or use the <kbd>A</kbd> keyboard shortcut.
 """
 
@@ -166,7 +166,7 @@ starred_instructions = """
 """
 
 direct_instructions = """
-1. In the left sidebar, click the **All direct messages**
+1. In the left sidebar, click the **Direct message feed**
    (<i class="fa fa-align-right"></i>) icon to the right of the
    **Direct messages** label, or use the <kbd>Shift</kbd> + <kbd>P</kbd>
    keyboard shortcut.
@@ -181,9 +181,9 @@ message_info = {
     "drafts": ["Drafts", "/#drafts", draft_instructions],
     "scheduled": ["Scheduled messages", "/#scheduled", scheduled_instructions],
     "recent": ["Recent conversations", "/#recent", recent_instructions],
-    "all": ["All messages", "/#all_messages", all_instructions],
+    "all": ["Combined feed", "/#feed", all_instructions],
     "starred": ["Starred messages", "/#narrow/is/starred", starred_instructions],
-    "direct": ["All direct messages", "/#narrow/is/dm", direct_instructions],
+    "direct": ["Direct message feed", "/#narrow/is/dm", direct_instructions],
     "inbox": ["Inbox", "/#inbox", inbox_instructions],
 }
 

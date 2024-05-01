@@ -34,9 +34,29 @@ class kandra::profile::postgresql inherits kandra::profile::base {
     unless  => 'test /var/lib/postgresql/ -ef /srv/data/postgresql/',
   }
 
+  # This is the second stage, after secrets are configured
+  $replication_primary = zulipconf('postgresql', 'replication_primary', undef)
+  if $replication_primary != undef {
+      file { '/root/setup_data.sh':
+        ensure => file,
+        owner  => 'root',
+        group  => 'root',
+        mode   => '0744',
+        source => 'puppet:///modules/kandra/postgresql/setup_data.sh',
+      }
+      exec { 'setup_data':
+        command => '/root/setup_data.sh',
+        require => [File['/usr/local/bin/env-wal-g'], Exec['setup_disks']],
+        unless  => "test -d /srv/data/postgresql/${zulip::postgresql_common::version}/main",
+        timeout => 0,
+        notify  => Exec[$zulip::postgresql_base::postgresql_restart],
+      }
+  }
+
   file { "${zulip::postgresql_base::postgresql_confdir}/pg_hba.conf":
     ensure  => file,
     require => Package["postgresql-${zulip::postgresql_common::version}"],
+    notify  => Exec[$zulip::postgresql_base::postgresql_restart],
     owner   => 'postgres',
     group   => 'postgres',
     mode    => '0640',

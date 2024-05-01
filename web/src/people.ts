@@ -265,10 +265,6 @@ export function is_known_user_id(user_id: number): boolean {
     return true;
 }
 
-export function is_known_user(user: User): boolean {
-    return user && is_known_user_id(user.user_id);
-}
-
 function sort_numerically(user_ids: number[]): number[] {
     user_ids.sort((a, b) => a - b);
 
@@ -1361,8 +1357,11 @@ export function get_mention_syntax(full_name: string, user_id?: number, silent =
         mention += "@**";
     }
     const wildcard_match = full_name_matches_wildcard_mention(full_name);
-    if (wildcard_match && user_id === undefined) {
-        mention += util.canonicalize_stream_synonyms(full_name);
+    // TODO: Eventually remove "stream" wildcard from typeahead suggestions
+    // once the rename of stream to channel has settled for users.
+    // Until then, when selected, replace with "channel" wildcard.
+    if (wildcard_match && user_id === undefined && full_name === "stream") {
+        mention += "channel";
     } else {
         mention += full_name;
     }

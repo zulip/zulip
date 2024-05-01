@@ -30,12 +30,12 @@ import * as loading from "./loading";
 import * as modals from "./modals";
 import * as peer_data from "./peer_data";
 import * as people from "./people";
+import * as settings_components from "./settings_components";
 import * as settings_config from "./settings_config";
 import * as settings_data from "./settings_data";
 import * as settings_profile_fields from "./settings_profile_fields";
 import {current_user, realm} from "./state_data";
 import * as stream_data from "./stream_data";
-import * as stream_ui_updates from "./stream_ui_updates";
 import * as sub_store from "./sub_store";
 import * as subscriber_api from "./subscriber_api";
 import * as timerender from "./timerender";
@@ -142,12 +142,12 @@ function change_state_of_subscribe_button(event, dropdown) {
 
 function reset_subscribe_widget() {
     $("#user-profile-modal .add-subscription-button").prop("disabled", true);
-    stream_ui_updates.initialize_disable_btn_hint_popover(
+    settings_components.initialize_disable_btn_hint_popover(
         $("#user-profile-modal .add-subscription-button-wrapper"),
-        $t({defaultMessage: "Select a stream to subscribe"}),
+        $t({defaultMessage: "Select a channel to subscribe"}),
     );
     $("#user_profile_subscribe_widget .dropdown_widget_value").text(
-        $t({defaultMessage: "Select a stream"}),
+        $t({defaultMessage: "Select a channel"}),
     );
     //  There are two cases when the subscribe widget is reset: when the user_profile
     //  is setup (the object is null), or after subscribing of a user in the dropdown.
@@ -196,7 +196,7 @@ function format_user_stream_list_item_html(stream, user) {
         show_unsubscribe_button,
         show_private_stream_unsub_tooltip,
         show_last_user_in_private_stream_unsub_tooltip,
-        stream_edit_url: hash_util.stream_edit_url(stream, "general"),
+        stream_edit_url: hash_util.channels_settings_edit_url(stream, "general"),
     });
 }
 
@@ -435,7 +435,7 @@ export function show_user_profile(user, default_tab_key = "profile-tab") {
         child_wants_focus: true,
         values: [
             {label: $t({defaultMessage: "Profile"}), key: "profile-tab"},
-            {label: $t({defaultMessage: "Streams"}), key: "user-profile-streams-tab"},
+            {label: $t({defaultMessage: "Channels"}), key: "user-profile-streams-tab"},
             {label: $t({defaultMessage: "User groups"}), key: "user-profile-groups-tab"},
         ],
         callback(_name, key) {
@@ -464,6 +464,11 @@ export function show_user_profile(user, default_tab_key = "profile-tab") {
                     render_manage_profile_content(user);
                     break;
             }
+            setTimeout(() => {
+                $(".modal__body .simplebar-content-wrapper").attr("tabindex", "-1");
+                $(".modal__container .ind-tab").attr("tabindex", "-1");
+                $(".modal__container .ind-tab.selected").attr("tabindex", "0");
+            }, 0);
         },
     };
 
@@ -904,13 +909,13 @@ export function initialize() {
             let error_message;
             if (people.is_my_user_id(target_user_id)) {
                 error_message = $t(
-                    {defaultMessage: "Error in unsubscribing from #{stream_name}"},
-                    {stream_name: sub.name},
+                    {defaultMessage: "Error in unsubscribing from #{channel_name}"},
+                    {channel_name: sub.name},
                 );
             } else {
                 error_message = $t(
-                    {defaultMessage: "Error removing user from #{stream_name}"},
-                    {stream_name: sub.name},
+                    {defaultMessage: "Error removing user from #{channel_name}"},
+                    {channel_name: sub.name},
                 );
             }
 
@@ -922,7 +927,7 @@ export function initialize() {
             (people.is_my_user_id(target_user_id) ||
                 peer_data.get_subscriber_count(stream_id) === 1)
         ) {
-            const new_hash = hash_util.stream_edit_url(sub, "general");
+            const new_hash = hash_util.channels_settings_edit_url(sub, "general");
             hide_user_profile();
             browser_history.go_to_location(new_hash);
             return;

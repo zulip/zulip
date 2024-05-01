@@ -1,19 +1,18 @@
 import time
 from collections import defaultdict
 from datetime import datetime, timedelta
-from typing import Any, Dict, Mapping, Optional, Sequence, Set
+from typing import Any, Dict, Mapping, Optional, Sequence
 
 from django.conf import settings
 from django.utils.timezone import now as timezone_now
 
-from zerver.lib.query_helpers import query_for_ids
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.users import check_user_can_access_all_users, get_accessible_user_ids
-from zerver.models import PushDeviceToken, Realm, UserPresence, UserProfile
+from zerver.models import Realm, UserPresence, UserProfile
 
 
 def get_presence_dicts_for_rows(
-    all_rows: Sequence[Mapping[str, Any]], mobile_user_ids: Set[int], slim_presence: bool
+    all_rows: Sequence[Mapping[str, Any]], slim_presence: bool
 ) -> Dict[str, Dict[str, Any]]:
     if slim_presence:
         # Stringify user_id here, since it's gonna be turned
@@ -144,12 +143,7 @@ def get_presence_for_user(
     )
     presence_rows = list(query)
 
-    mobile_user_ids: Set[int] = set()
-    if PushDeviceToken.objects.filter(user_id=user_profile_id).exists():  # nocoverage
-        # TODO: Add a test, though this is low priority, since we don't use mobile_user_ids yet.
-        mobile_user_ids.add(user_profile_id)
-
-    return get_presence_dicts_for_rows(presence_rows, mobile_user_ids, slim_presence)
+    return get_presence_dicts_for_rows(presence_rows, slim_presence)
 
 
 def get_presence_dict_by_realm(
@@ -181,29 +175,7 @@ def get_presence_dict_by_realm(
         )
     )
 
-    mobile_query = PushDeviceToken.objects.distinct("user_id").values_list(
-        "user_id",
-        flat=True,
-    )
-
-    user_profile_ids = [presence_row["user_profile_id"] for presence_row in presence_rows]
-    if len(user_profile_ids) == 0:
-        # This conditional is necessary because query_for_ids
-        # throws an exception if passed an empty list.
-        #
-        # It's not clear this condition is actually possible,
-        # though, because it shouldn't be possible to end up with
-        # a realm with 0 active users.
-        return {}
-
-    mobile_query_ids = query_for_ids(
-        query=mobile_query,
-        user_ids=user_profile_ids,
-        field="user_id",
-    )
-    mobile_user_ids = set(mobile_query_ids)
-
-    return get_presence_dicts_for_rows(presence_rows, mobile_user_ids, slim_presence)
+    return get_presence_dicts_for_rows(presence_rows, slim_presence)
 
 
 def get_presences_for_realm(

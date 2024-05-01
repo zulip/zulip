@@ -25,7 +25,7 @@ actually do much of the work.
 Our gear menu has these choices:
 
 =================
-hash:  Stream settings
+hash:  Channel settings
 hash:  Settings
 hash:  Organization settings
 link:  Usage statistics
@@ -59,7 +59,7 @@ The menu itself has the selector
 The items with the prefix of "hash:" are in-page
 links:
 
-    #streams
+    #channels
     #settings
     #organization
     #about-zulip

@@ -24,6 +24,7 @@ from zerver.models import (
     ArchivedAttachment,
     Attachment,
     Message,
+    NamedUserGroup,
     Realm,
     RealmAuditLog,
     RealmAuthenticationMethod,
@@ -658,7 +659,7 @@ def do_change_realm_plan_type(
         # If downgrading to a plan that no longer has access to change
         # can_access_all_users_group, set it back to the default
         # value.
-        everyone_system_group = UserGroup.objects.get(
+        everyone_system_group = NamedUserGroup.objects.get(
             name=SystemGroups.EVERYONE, realm=realm, is_system_group=True
         )
         if realm.can_access_all_users_group_id != everyone_system_group.id:
@@ -692,23 +693,18 @@ def do_change_realm_plan_type(
     if plan_type == Realm.PLAN_TYPE_PLUS:
         realm.max_invites = Realm.INVITES_STANDARD_REALM_DAILY_MAX
         realm.message_visibility_limit = None
-        realm.upload_quota_gb = Realm.UPLOAD_QUOTA_STANDARD
     elif plan_type == Realm.PLAN_TYPE_STANDARD:
         realm.max_invites = Realm.INVITES_STANDARD_REALM_DAILY_MAX
         realm.message_visibility_limit = None
-        realm.upload_quota_gb = Realm.UPLOAD_QUOTA_STANDARD
     elif plan_type == Realm.PLAN_TYPE_SELF_HOSTED:
         realm.max_invites = None  # type: ignore[assignment] # https://github.com/python/mypy/issues/3004
         realm.message_visibility_limit = None
-        realm.upload_quota_gb = None
     elif plan_type == Realm.PLAN_TYPE_STANDARD_FREE:
         realm.max_invites = Realm.INVITES_STANDARD_REALM_DAILY_MAX
         realm.message_visibility_limit = None
-        realm.upload_quota_gb = Realm.UPLOAD_QUOTA_STANDARD
     elif plan_type == Realm.PLAN_TYPE_LIMITED:
         realm.max_invites = settings.INVITES_DEFAULT_REALM_DAILY_MAX
         realm.message_visibility_limit = Realm.MESSAGE_VISIBILITY_LIMITED
-        realm.upload_quota_gb = Realm.UPLOAD_QUOTA_LIMITED
     else:
         raise AssertionError("Invalid plan type")
 
@@ -719,7 +715,6 @@ def do_change_realm_plan_type(
             "_max_invites",
             "enable_spectator_access",
             "message_visibility_limit",
-            "upload_quota_gb",
         ]
     )
 

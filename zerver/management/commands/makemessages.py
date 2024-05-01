@@ -47,10 +47,10 @@ from django.utils.translation import template
 from typing_extensions import override
 
 strip_whitespace_right = re.compile(
-    f"({BLOCK_TAG_START}-?\\s*(trans|pluralize).*?-{BLOCK_TAG_END})\\s+"
+    rf"({BLOCK_TAG_START}-?\s*(trans|pluralize).*?-{BLOCK_TAG_END})\s+"
 )
 strip_whitespace_left = re.compile(
-    f"\\s+({BLOCK_TAG_START}-\\s*(endtrans|pluralize).*?-?{BLOCK_TAG_END})"
+    rf"\s+({BLOCK_TAG_START}-\s*(endtrans|pluralize).*?-?{BLOCK_TAG_END})"
 )
 
 regexes = [
@@ -67,7 +67,7 @@ tags = [
 
 frontend_compiled_regexes = [re.compile(regex) for regex in regexes]
 multiline_js_comment = re.compile(r"/\*.*?\*/", re.DOTALL)
-singleline_js_comment = re.compile("//.*?\n")
+singleline_js_comment = re.compile(r"//.*?\n")
 
 
 def strip_whitespaces(src: str) -> str:
@@ -135,13 +135,13 @@ class Command(makemessages.Command):
         # Extend the regular expressions that are used to detect
         # translation blocks with an "OR jinja-syntax" clause.
         template.endblock_re = re.compile(
-            template.endblock_re.pattern + "|" + r"""^-?\s*endtrans\s*-?$"""
+            template.endblock_re.pattern + r"|" + r"""^-?\s*endtrans\s*-?$"""
         )
         template.block_re = re.compile(
-            template.block_re.pattern + "|" + r"""^-?\s*trans(?:\s+(?!'|")(?=.*?=.*?)|\s*-?$)"""
+            template.block_re.pattern + r"|" + r"""^-?\s*trans(?:\s+(?!'|")(?=.*?=.*?)|\s*-?$)"""
         )
         template.plural_re = re.compile(
-            template.plural_re.pattern + "|" + r"""^-?\s*pluralize(?:\s+.+|-?$)"""
+            template.plural_re.pattern + r"|" + r"""^-?\s*pluralize(?:\s+.+|-?$)"""
         )
         template.constant_re = re.compile(r"""_\(((?:".*?")|(?:'.*?')).*\)""")
 

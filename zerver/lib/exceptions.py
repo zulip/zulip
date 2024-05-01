@@ -174,7 +174,7 @@ class StreamDoesNotExistError(JsonableError):
     @staticmethod
     @override
     def msg_format() -> str:
-        return _("Stream '{stream}' does not exist")
+        return _("Channel '{stream}' does not exist")
 
 
 class StreamWithIDDoesNotExistError(JsonableError):
@@ -187,7 +187,19 @@ class StreamWithIDDoesNotExistError(JsonableError):
     @staticmethod
     @override
     def msg_format() -> str:
-        return _("Stream with ID '{stream_id}' does not exist")
+        return _("Channel with ID '{stream_id}' does not exist")
+
+
+class IncompatibleParametersError(JsonableError):
+    data_fields = ["parameters"]
+
+    def __init__(self, parameters: List[str]) -> None:
+        self.parameters = ", ".join(parameters)
+
+    @staticmethod
+    @override
+    def msg_format() -> str:
+        return _("Unsupported parameter combination: {parameters}")
 
 
 class CannotDeactivateLastUserError(JsonableError):
@@ -631,7 +643,7 @@ class StreamWildcardMentionNotAllowedError(JsonableError):
     @staticmethod
     @override
     def msg_format() -> str:
-        return _("You do not have permission to use stream wildcard mentions in this stream.")
+        return _("You do not have permission to use channel wildcard mentions in this channel.")
 
 
 class TopicWildcardMentionNotAllowedError(JsonableError):

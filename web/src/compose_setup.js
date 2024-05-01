@@ -9,6 +9,7 @@ import * as compose_banner from "./compose_banner";
 import * as compose_call from "./compose_call";
 import * as compose_call_ui from "./compose_call_ui";
 import * as compose_recipient from "./compose_recipient";
+import * as compose_send_menu_popover from "./compose_send_menu_popover";
 import * as compose_state from "./compose_state";
 import * as compose_ui from "./compose_ui";
 import * as compose_validate from "./compose_validate";
@@ -23,7 +24,6 @@ import * as popovers from "./popovers";
 import * as resize from "./resize";
 import * as rows from "./rows";
 import * as scheduled_messages from "./scheduled_messages";
-import * as scheduled_messages_popover from "./scheduled_messages_popover";
 import * as stream_data from "./stream_data";
 import * as stream_settings_components from "./stream_settings_components";
 import * as sub_store from "./sub_store";
@@ -127,7 +127,7 @@ export function initialize() {
             if (is_edit_input) {
                 message_edit.save_message_row_edit($row);
             } else if (event.target.dataset.validationTrigger === "schedule") {
-                scheduled_messages_popover.open_send_later_menu();
+                compose_send_menu_popover.open_send_later_menu();
 
                 // We need to set this flag to true here because `open_send_later_menu` validates the message and sets
                 // the user acknowledged wildcard flag back to 'false' and we don't want that to happen because then it
@@ -231,7 +231,7 @@ export function initialize() {
         (event) => {
             event.preventDefault();
             const send_at_timestamp = scheduled_messages.get_selected_send_later_timestamp();
-            scheduled_messages_popover.do_schedule_message(send_at_timestamp);
+            compose_send_menu_popover.do_schedule_message(send_at_timestamp);
         },
     );
 

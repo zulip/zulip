@@ -31,6 +31,7 @@ export function respond_to_message(opts) {
             compose_actions.start({
                 message_type: "stream",
                 trigger: "recent_view_nofocus",
+                keep_composebox_empty: opts.keep_composebox_empty,
             });
             return;
         }
@@ -43,6 +44,7 @@ export function respond_to_message(opts) {
                 message_type: message_opts.msg_type ?? "stream",
                 trigger: "inbox_nofocus",
                 ...message_opts,
+                keep_composebox_empty: opts.keep_composebox_empty,
             });
             return;
         }
@@ -63,6 +65,7 @@ export function respond_to_message(opts) {
                 compose_actions.start({
                     message_type: "stream",
                     trigger: "empty_narrow_compose",
+                    keep_composebox_empty: opts.keep_composebox_empty,
                 });
                 return;
             }
@@ -75,6 +78,7 @@ export function respond_to_message(opts) {
                 compose_actions.start({
                     message_type: "stream",
                     trigger: "empty_narrow_compose",
+                    keep_composebox_empty: opts.keep_composebox_empty,
                 });
                 return;
             }
@@ -90,7 +94,10 @@ export function respond_to_message(opts) {
                 ...opts,
                 message_type: msg_type,
             });
-            compose_actions.start(new_opts);
+            compose_actions.start({
+                ...new_opts,
+                keep_composebox_empty: opts.keep_composebox_empty,
+            });
             return;
         }
 
@@ -130,12 +137,16 @@ export function respond_to_message(opts) {
         private_message_recipient: pm_recipient,
         trigger: opts.trigger,
         is_reply: true,
+        keep_composebox_empty: opts.keep_composebox_empty,
     });
 }
 
 export function reply_with_mention(opts) {
     assert(message_lists.current !== undefined);
-    respond_to_message(opts);
+    respond_to_message({
+        ...opts,
+        keep_composebox_empty: true,
+    });
     const message = message_lists.current.selected_message();
     const mention = people.get_mention_syntax(message.sender_full_name, message.sender_id);
     compose_ui.insert_syntax_and_focus(mention);
@@ -202,7 +213,10 @@ export function quote_and_reply(opts) {
         // are prone to glitches where you select the
         // text, plus it's a complicated codepath that
         // can have other unintended consequences.)
-        respond_to_message(opts);
+        respond_to_message({
+            ...opts,
+            keep_composebox_empty: true,
+        });
     }
 
     compose_ui.insert_syntax_and_focus(quoting_placeholder, $textarea, "block");

@@ -1,14 +1,14 @@
 <p>
     {{#tr}}
-        Archiving stream <z-stream></z-stream> will immediately unsubscribe everyone. This action cannot be undone.
+        Archiving channel <z-stream></z-stream> will immediately unsubscribe everyone. This action cannot be undone.
         {{#*inline "z-stream"}}<strong>{{{stream_name_with_privacy_symbol_html}}}</strong>{{/inline}}
     {{/tr}}
 </p>
 {{#if is_announcement_stream}}
-<p class="notification_stream_archive_warning">{{#tr}}Archiving this stream will also disable settings that were configured to use this stream:{{/tr}}</p>
+<p class="notification_stream_archive_warning">{{#tr}}Archiving this channel will also disable settings that were configured to use this channel:{{/tr}}</p>
 <ul>
     {{#if is_new_stream_announcements_stream}}
-        <li>{{#tr}}New stream notifications{{/tr}}</li>
+        <li>{{#tr}}New channel notifications{{/tr}}</li>
     {{/if}}
     {{#if is_signup_announcements_stream}}
         <li>{{#tr}}New user notifications{{/tr}}</li>

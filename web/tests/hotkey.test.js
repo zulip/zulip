@@ -21,9 +21,8 @@ const $ = require("./lib/zjquery");
 // it calls any external module other than `ui.foo`, it'll crash.
 // Future work includes making sure it actually does call `ui.foo()`.
 
-// Since all the tests here are based on narrow starting with all_messages.
-// We set our default narrow to all messages here.
-window.location.hash = "#all_messages";
+// All tests use the combined feed as the default narrow.
+window.location.hash = "#feed";
 
 set_global("navigator", {
     platform: "",

@@ -26,4 +26,4 @@ types-regex
 types-requests
 types-zxcvbn
 
-django-stubs
+https://github.com/typeddjango/django-stubs/archive/e11955f05994e196dcee004811ce2e05ff230462.zip#egg=django-stubs==5.0.0.dev1+git  # https://github.com/typeddjango/django-stubs/issues/1493

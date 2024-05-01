@@ -43,8 +43,10 @@ from zerver.lib.display_recipient import get_display_recipient
 from zerver.lib.emoji_utils import hex_codepoint_to_emoji
 from zerver.lib.exceptions import ErrorCode, JsonableError
 from zerver.lib.message import access_message_and_usermessage, huddle_users
+from zerver.lib.notification_data import get_mentioned_user_group
 from zerver.lib.outgoing_http import OutgoingSession
 from zerver.lib.remote_server import (
+    record_push_notifications_recently_working,
     send_json_to_push_bouncer,
     send_server_data_to_push_bouncer,
     send_to_push_bouncer,
@@ -61,7 +63,6 @@ from zerver.models import (
     Realm,
     Recipient,
     Stream,
-    UserGroup,
     UserMessage,
     UserProfile,
 )
@@ -662,15 +663,18 @@ def send_notifications_to_bouncer(
         # The server may have updated our understanding of whether
         # push notifications will work.
         assert isinstance(remote_realm_dict, dict)
+        can_push = remote_realm_dict["can_push"]
         do_set_realm_property(
             user_profile.realm,
             "push_notifications_enabled",
-            remote_realm_dict["can_push"],
+            can_push,
             acting_user=None,
         )
         do_set_push_notifications_enabled_end_timestamp(
             user_profile.realm, remote_realm_dict["expected_end_timestamp"], acting_user=None
         )
+        if can_push:
+            record_push_notifications_recently_working()
 
     logger.info(
         "Sent mobile push notifications for user %s through bouncer: %s via FCM devices, %s via APNs devices",
@@ -1263,7 +1267,7 @@ def handle_remove_push_notification(user_profile_id: int, message_ids: List[int]
 def handle_push_notification(user_profile_id: int, missed_message: Dict[str, Any]) -> None:
     """
     missed_message is the event received by the
-    zerver.worker.queue_processors.PushNotificationWorker.consume function.
+    zerver.worker.missedmessage_mobile_notifications.PushNotificationWorker.consume function.
     """
     if not push_notifications_configured():
         return
@@ -1347,20 +1351,22 @@ def handle_push_notification(user_profile_id: int, missed_message: Dict[str, Any
     if trigger == "private_message":
         trigger = NotificationTriggers.DIRECT_MESSAGE  # nocoverage
 
-    mentioned_user_group_name = None
-    # mentioned_user_group_id will be None if the user is personally mentioned
+    # mentioned_user_group will be None if the user is personally mentioned
     # regardless whether they are a member of the mentioned user group in the
     # message or not.
-    mentioned_user_group_id = missed_message.get("mentioned_user_group_id")
-
-    if mentioned_user_group_id is not None:
-        user_group = UserGroup.objects.get(
-            id=mentioned_user_group_id, realm_id=user_profile.realm_id
-        )
-        mentioned_user_group_name = user_group.name
+    mentioned_user_group_id = None
+    mentioned_user_group_name = None
+    mentioned_user_group_members_count = None
+    mentioned_user_group = get_mentioned_user_group([missed_message], user_profile)
+    if mentioned_user_group is not None:
+        mentioned_user_group_id = mentioned_user_group.id
+        mentioned_user_group_name = mentioned_user_group.name
+        mentioned_user_group_members_count = mentioned_user_group.members_count
 
     # Soft reactivate if pushing to a long_term_idle user that is personally mentioned
-    soft_reactivate_if_personal_notification(user_profile, {trigger}, mentioned_user_group_name)
+    soft_reactivate_if_personal_notification(
+        user_profile, {trigger}, mentioned_user_group_members_count
+    )
 
     if message.is_stream_message():
         # This will almost always be True. The corner case where you

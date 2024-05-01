@@ -33,7 +33,6 @@ from zerver.lib.narrow import (
     LARGER_THAN_MAX_MESSAGE_ID,
     BadNarrowOperatorError,
     NarrowBuilder,
-    build_narrow_predicate,
     exclude_muting_conditions,
     find_first_unread_anchor,
     is_spectator_compatible,
@@ -41,6 +40,7 @@ from zerver.lib.narrow import (
     post_process_limited_query,
 )
 from zerver.lib.narrow_helpers import NarrowTerm
+from zerver.lib.narrow_predicate import build_narrow_predicate
 from zerver.lib.sqlalchemy_utils import get_sqlalchemy_connection
 from zerver.lib.streams import StreamDict, create_streams_if_needed, get_public_streams_queryset
 from zerver.lib.test_classes import ZulipTestCase
@@ -61,6 +61,7 @@ from zerver.models import (
     UserTopic,
 )
 from zerver.models.realms import get_realm
+from zerver.models.recipients import get_or_create_huddle
 from zerver.models.streams import get_stream
 from zerver.views.message_fetch import get_messages_backend
 
@@ -362,7 +363,21 @@ class NarrowBuilderTest(ZulipTestCase):
             "WHERE (flags & %(flags_1)s) != %(param_1)s AND realm_id = %(realm_id_1)s AND (sender_id = %(sender_id_1)s AND recipient_id = %(recipient_id_1)s OR sender_id = %(sender_id_2)s AND recipient_id = %(recipient_id_2)s)",
         )
 
+    def test_add_term_using_dm_operator_more_than_one_user_as_operand_no_huddle(self) -> None:
+        # If the group doesn't exist, it's a flat false
+        two_others = f"{self.example_user('cordelia').email},{self.example_user('othello').email}"
+        term = dict(operator="dm", operand=two_others)
+        self._do_add_term_test(term, "WHERE false")
+
     def test_add_term_using_dm_operator_more_than_one_user_as_operand(self) -> None:
+        # Make the huddle first
+        get_or_create_huddle(
+            [
+                self.example_user("hamlet").id,
+                self.example_user("cordelia").id,
+                self.example_user("othello").id,
+            ]
+        )
         two_others = f"{self.example_user('cordelia').email},{self.example_user('othello').email}"
         term = dict(operator="dm", operand=two_others)
         self._do_add_term_test(term, "WHERE recipient_id = %(recipient_id_1)s")
@@ -379,9 +394,25 @@ class NarrowBuilderTest(ZulipTestCase):
             "WHERE NOT ((flags & %(flags_1)s) != %(param_1)s AND realm_id = %(realm_id_1)s AND (sender_id = %(sender_id_1)s AND recipient_id = %(recipient_id_1)s OR sender_id = %(sender_id_2)s AND recipient_id = %(recipient_id_2)s))",
         )
 
+    def test_add_term_using_dm_operator_more_than_one_user_as_operand_no_huddle_and_negated(
+        self,
+    ) -> None:  # NEGATED
+        # If the group doesn't exist, it's a flat true
+        two_others = f"{self.example_user('cordelia').email},{self.example_user('othello').email}"
+        term = dict(operator="dm", operand=two_others, negated=True)
+        self._do_add_term_test(term, "WHERE true")
+
     def test_add_term_using_dm_operator_more_than_one_user_as_operand_and_negated(
         self,
     ) -> None:  # NEGATED
+        # Make the huddle first
+        get_or_create_huddle(
+            [
+                self.example_user("hamlet").id,
+                self.example_user("cordelia").id,
+                self.example_user("othello").id,
+            ]
+        )
         two_others = f"{self.example_user('cordelia').email},{self.example_user('othello').email}"
         term = dict(operator="dm", operand=two_others, negated=True)
         self._do_add_term_test(term, "WHERE recipient_id != %(recipient_id_1)s")
@@ -2170,6 +2201,23 @@ class GetOldMessagesTest(ZulipTestCase):
 
             for message in result["messages"]:
                 self.assertEqual(dr_emails(message["display_recipient"]), emails)
+
+    def test_get_messages_with_nonexistant_group_dm(self) -> None:
+        me = self.example_user("hamlet")
+        # Huddle which doesn't match anything gets no results
+        non_existant_huddle = [
+            me.id,
+            self.example_user("iago").id,
+            self.example_user("othello").id,
+        ]
+        self.login_user(me)
+        narrow: List[Dict[str, Any]] = [dict(operator="dm", operand=non_existant_huddle)]
+        result = self.get_and_check_messages(dict(narrow=orjson.dumps(narrow).decode()))
+        self.assertEqual(result["messages"], [])
+
+        narrow = [dict(operator="dm", operand=non_existant_huddle, negated=True)]
+        result = self.get_and_check_messages(dict(narrow=orjson.dumps(narrow).decode()))
+        self.assertEqual([m["id"] for m in result["messages"]], [1, 3])
 
     def test_get_visible_messages_with_narrow_dm(self) -> None:
         me = self.example_user("hamlet")

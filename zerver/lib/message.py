@@ -23,7 +23,6 @@ from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
 from django_stubs_ext import ValuesQuerySet
 from psycopg2.sql import SQL
-from returns.curry import partial
 
 from analytics.lib.counts import COUNT_STATS
 from analytics.models import RealmCount
@@ -33,6 +32,7 @@ from zerver.lib.exceptions import JsonableError, MissingAuthenticationError
 from zerver.lib.markdown import MessageRenderingResult
 from zerver.lib.mention import MentionData
 from zerver.lib.message_cache import MessageDict, extract_message_dict, stringify_message_dict
+from zerver.lib.partial import partial
 from zerver.lib.request import RequestVariableConversionError
 from zerver.lib.stream_subscription import (
     get_stream_subscriptions_for_user,
@@ -47,11 +47,11 @@ from zerver.lib.user_topics import build_get_topic_visibility_policy, get_topic_
 from zerver.lib.users import get_inaccessible_user_ids
 from zerver.models import (
     Message,
+    NamedUserGroup,
     Realm,
     Recipient,
     Stream,
     Subscription,
-    UserGroup,
     UserMessage,
     UserProfile,
     UserTopic,
@@ -420,7 +420,10 @@ def has_message_access(
 
 
 def bulk_access_messages(
-    user_profile: UserProfile, messages: Collection[Message], *, stream: Optional[Stream] = None
+    user_profile: UserProfile,
+    messages: Collection[Message] | QuerySet[Message],
+    *,
+    stream: Optional[Stream] = None,
 ) -> List[Message]:
     """This function does the full has_message_access check for each
     message.  If stream is provided, it is used to avoid unnecessary
@@ -1210,28 +1213,28 @@ def stream_wildcard_mention_allowed(sender: UserProfile, stream: Stream, realm: 
 
 
 def check_user_group_mention_allowed(sender: UserProfile, user_group_ids: List[int]) -> None:
-    user_groups = UserGroup.objects.filter(id__in=user_group_ids).select_related(
-        "can_mention_group"
+    user_groups = NamedUserGroup.objects.filter(id__in=user_group_ids).select_related(
+        "can_mention_group", "can_mention_group__named_user_group"
     )
     sender_is_system_bot = is_cross_realm_bot_email(sender.delivery_email)
 
     for group in user_groups:
         can_mention_group = group.can_mention_group
-
+        can_mention_group_name = can_mention_group.named_user_group.name
         if sender_is_system_bot:
-            if can_mention_group.name == SystemGroups.EVERYONE:
+            if can_mention_group_name == SystemGroups.EVERYONE:
                 continue
             raise JsonableError(
                 _(
                     "You are not allowed to mention user group '{user_group_name}'. You must be a member of '{can_mention_group_name}' to mention this group."
-                ).format(user_group_name=group.name, can_mention_group_name=can_mention_group.name)
+                ).format(user_group_name=group.name, can_mention_group_name=can_mention_group_name)
             )
 
         if not is_user_in_group(can_mention_group, sender, direct_member_only=False):
             raise JsonableError(
                 _(
                     "You are not allowed to mention user group '{user_group_name}'. You must be a member of '{can_mention_group_name}' to mention this group."
-                ).format(user_group_name=group.name, can_mention_group_name=can_mention_group.name)
+                ).format(user_group_name=group.name, can_mention_group_name=can_mention_group_name)
             )
 
 

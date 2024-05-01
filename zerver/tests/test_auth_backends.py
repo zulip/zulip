@@ -110,11 +110,11 @@ from zerver.models import (
     CustomProfileField,
     CustomProfileFieldValue,
     MultiuseInvite,
+    NamedUserGroup,
     PreregistrationUser,
     Realm,
     RealmDomain,
     Stream,
-    UserGroup,
     UserProfile,
 )
 from zerver.models.realms import clear_supported_auth_backends_cache, get_realm
@@ -4654,7 +4654,7 @@ class GoogleAuthBackendTest(SocialAuthBase):
         self.assert_in_response('action="http://zulip.testserver/accounts/do_confirm/', result)
 
         url = re.findall(
-            'action="(http://zulip.testserver/accounts/do_confirm[^"]*)"',
+            r'action="(http://zulip.testserver/accounts/do_confirm[^"]*)"',
             result.content.decode(),
         )[0]
         confirmation = Confirmation.objects.all().first()
@@ -7497,15 +7497,19 @@ class LDAPGroupSyncTest(ZulipTestCase):
             },
             LDAP_APPEND_DOMAIN="zulip.com",
         ), self.assertLogs("zulip.ldap", "DEBUG") as zulip_ldap_log:
-            self.assertFalse(UserGroup.objects.filter(realm=realm, name="cool_test_group").exists())
+            self.assertFalse(
+                NamedUserGroup.objects.filter(realm=realm, name="cool_test_group").exists()
+            )
 
             create_user_group_in_database(
                 "cool_test_group", [], realm, acting_user=None, description="Created by LDAP sync"
             )
 
-            self.assertTrue(UserGroup.objects.filter(realm=realm, name="cool_test_group").exists())
+            self.assertTrue(
+                NamedUserGroup.objects.filter(realm=realm, name="cool_test_group").exists()
+            )
 
-            user_group = UserGroup.objects.get(realm=realm, name="cool_test_group")
+            user_group = NamedUserGroup.objects.get(realm=realm, name="cool_test_group")
 
             self.assertFalse(
                 is_user_in_group(
@@ -7536,7 +7540,7 @@ class LDAPGroupSyncTest(ZulipTestCase):
 
             self.assertTrue(
                 is_user_in_group(
-                    UserGroup.objects.get(realm=realm, name="cool_test_group"),
+                    NamedUserGroup.objects.get(realm=realm, name="cool_test_group"),
                     cordelia,
                     direct_member_only=True,
                 )
@@ -7547,7 +7551,7 @@ class LDAPGroupSyncTest(ZulipTestCase):
 
             self.assertFalse(
                 is_user_in_group(
-                    UserGroup.objects.get(realm=realm, name="cool_test_group"),
+                    NamedUserGroup.objects.get(realm=realm, name="cool_test_group"),
                     cordelia,
                     direct_member_only=True,
                 )

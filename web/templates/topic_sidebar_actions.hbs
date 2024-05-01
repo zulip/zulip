@@ -1,102 +1,111 @@
-<ul class="nav nav-list topics_popover">
-    <li class="topic-menu-item">
-        <div class="topic-name">{{topic_name}}</div>
-    </li>
+{{! Contents of the "topic actions" popup }}
+<div class="popover-menu" id="topic-actions-menu-popover" data-simplebar>
+    <ul class="popover-menu-outer-list">
+        <li class="popover-menu-outer-list-item">
+            <ul class="popover-menu-inner-list">
+                <li class="popover-topic-header text-item popover-menu-inner-list-item">
+                    <span class="popover-topic-name">{{topic_name}}</span>
+                </li>
+            </ul>
+        </li>
+        <li class="popover-menu-outer-list-item hidden-for-spectators">
+            <ul class="popover-menu-inner-list">
+                <li class="popover-menu-inner-list-item">
+                    <div class="tabs-container">
+                        <div class="tab-option tippy-zulip-tooltip {{#if (eq visibility_policy all_visibility_policies.MUTED)}}selected-tab{{/if}}" data-visibility-policy="{{all_visibility_policies.MUTED}}" data-tippy-content="{{t 'Mute' }}" aria-label="{{t 'Mute' }}">
+                            <i class="zulip-icon zulip-icon-mute-new"></i>
+                        </div>
+                        <div class="tab-option tippy-zulip-tooltip {{#if (eq visibility_policy all_visibility_policies.INHERIT)}}selected-tab{{/if}}" data-visibility-policy="{{all_visibility_policies.INHERIT}}" data-tippy-content="{{t 'Default' }}" aria-label="{{t 'Default' }}">
+                            <i class="zulip-icon zulip-icon-inherit"></i>
+                        </div>
+                        {{#if (or stream_muted topic_unmuted)}}
+                            <div class="tab-option tippy-zulip-tooltip {{#if (eq visibility_policy all_visibility_policies.UNMUTED)}}selected-tab{{/if}}" data-visibility-policy="{{all_visibility_policies.UNMUTED}}" data-tippy-content="{{t 'Unmute' }}" aria-label="{{t 'Unmute' }}">
+                                <i class="zulip-icon zulip-icon-unmute-new"></i>
+                            </div>
+                        {{/if}}
+                        <div class="tab-option tippy-zulip-tooltip {{#if (eq visibility_policy all_visibility_policies.FOLLOWED)}}selected-tab{{/if}}" data-visibility-policy="{{all_visibility_policies.FOLLOWED}}" data-tippy-content="{{t 'Follow' }}" aria-label="{{t 'Follow' }}">
+                            <i class="zulip-icon zulip-icon-follow"></i>
+                        </div>
+                    </div>
+                </li>
+            </ul>
+        </li>
+        <li class="popover-menu-outer-list-item">
+            <ul class="popover-menu-inner-list">
+                {{#if has_starred_messages}}
+                <li class="link-item popover-menu-inner-list-item hidden-for-spectators">
+                    <a class="sidebar-popover-unstar-all-in-topic popover-menu-link" data-stream-id="{{ stream_id }}" data-topic-name="{{ topic_name }}" tabindex="0">
+                        <i class="popover-menu-icon zulip-icon zulip-icon-star" aria-hidden="true"></i>
+                        <span class="popover-menu-label">{{t "Unstar all messages in topic" }}</span>
+                    </a>
+                </li>
+                {{/if}}
 
-    <hr />
+                {{#if has_unread_messages}}
+                <li class="link-item popover-menu-inner-list-item hidden-for-spectators">
+                    <a class="sidebar-popover-mark-topic-read popover-menu-link" data-stream-id="{{ stream_id }}" data-topic-name="{{ topic_name }}" tabindex="0">
+                        <i class="popover-menu-icon zulip-icon zulip-icon-mark-as-read" aria-hidden="true"></i>
+                        <span class="popover-menu-label">{{t "Mark all messages as read" }}</span>
+                    </a>
+                </li>
+                {{else}}
+                <li class="link-item popover-menu-inner-list-item hidden-for-spectators">
+                    <a class="sidebar-popover-mark-topic-unread popover-menu-link" data-stream-id="{{ stream_id }}" data-topic-name="{{ topic_name }}" tabindex="0">
+                        <i class="popover-menu-icon zulip-icon zulip-icon-mark-as-unread" aria-hidden="true"></i>
+                        <span class="popover-menu-label">{{t "Mark all messages as unread" }}</span>
+                    </a>
+                </li>
+                {{/if}}
 
-    <li class="topic-menu-item hidden-for-spectators">
-        <div class="tabs-container">
-            <div class="tab-option tippy-zulip-tooltip {{#if (eq visibility_policy all_visibility_policies.MUTED)}}selected-tab{{/if}}" data-visibility-policy="{{all_visibility_policies.MUTED}}" data-tippy-content="{{t 'Mute' }}" aria-label="{{t 'Mute' }}">
-                <i class="zulip-icon zulip-icon-mute-new"></i>
-            </div>
-            <div class="tab-option tippy-zulip-tooltip {{#if (eq visibility_policy all_visibility_policies.INHERIT)}}selected-tab{{/if}}" data-visibility-policy="{{all_visibility_policies.INHERIT}}" data-tippy-content="{{t 'Default' }}" aria-label="{{t 'Default' }}">
-                <i class="zulip-icon zulip-icon-inherit"></i>
-            </div>
-            {{#if (or stream_muted topic_unmuted)}}
-                <div class="tab-option tippy-zulip-tooltip {{#if (eq visibility_policy all_visibility_policies.UNMUTED)}}selected-tab{{/if}}" data-visibility-policy="{{all_visibility_policies.UNMUTED}}" data-tippy-content="{{t 'Unmute' }}" aria-label="{{t 'Unmute' }}">
-                    <i class="zulip-icon zulip-icon-unmute-new"></i>
-                </div>
-            {{/if}}
-            <div class="tab-option tippy-zulip-tooltip {{#if (eq visibility_policy all_visibility_policies.FOLLOWED)}}selected-tab{{/if}}" data-visibility-policy="{{all_visibility_policies.FOLLOWED}}" data-tippy-content="{{t 'Follow' }}" aria-label="{{t 'Follow' }}">
-                <i class="zulip-icon zulip-icon-follow"></i>
-            </div>
-        </div>
-    </li>
-
-    <hr class="hidden-for-spectators" />
-
-    {{#if has_starred_messages}}
-    <li class="topic-menu-item hidden-for-spectators">
-        <a tabindex="0" class="sidebar-popover-unstar-all-in-topic" data-stream-id="{{ stream_id }}" data-topic-name="{{ topic_name }}">
-            <i class="zulip-icon zulip-icon-star" aria-hidden="true"></i>
-            {{t "Unstar all messages in topic" }}
-        </a>
-    </li>
-    {{/if}}
-
-    {{#if has_unread_messages}}
-    <li class="topic-menu-item hidden-for-spectators">
-        <a tabindex="0" class="sidebar-popover-mark-topic-read" data-stream-id="{{ stream_id }}" data-topic-name="{{ topic_name }}">
-            <i class="fa fa-book" aria-hidden="true"></i>
-            {{t "Mark all messages as read"}}
-        </a>
-    </li>
-    {{else}}
-    <li class="topic-menu-item hidden-for-spectators">
-        <a tabindex="0" class="sidebar-popover-mark-topic-unread" data-stream-id="{{ stream_id }}" data-topic-name="{{ topic_name }}">
-            <i class="fa fa-book" aria-hidden="true"></i>
-            {{t "Mark all messages as unread"}}
-        </a>
-    </li>
-    {{/if}}
-
-    <li class="topic-menu-item">
-        <a tabindex="0" class="sidebar-popover-copy-link-to-topic" data-stream-id="{{ stream_id }}" data-topic-name="{{ topic_name }}" data-clipboard-text="{{ url }}">
-            <i class="fa fa-link" aria-hidden="true"></i>
-            {{t "Copy link to topic"}}
-        </a>
-    </li>
-
-    {{#if can_move_topic}}
-    <hr />
-
-    <li class="topic-menu-item">
-        <a tabindex="0" class="sidebar-popover-move-topic-messages" data-stream-id="{{ stream_id }}" data-topic-name="{{ topic_name }}">
-            <i class="fa fa-arrows" aria-hidden="true"></i>
-            {{t "Move topic"}}
-        </a>
-    </li>
-    {{else if can_rename_topic}}
-    <hr />
-
-    <li class="topic-menu-item">
-        <a tabindex="0" class="sidebar-popover-rename-topic-messages" data-stream-id="{{ stream_id }}" data-topic-name="{{ topic_name }}">
-            <i class="fa fa-pencil" aria-hidden="true"></i>
-            {{t "Rename topic"}}
-        </a>
-    </li>
-    {{/if}}
-
-    {{#if can_rename_topic}}
-    <li class="topic-menu-item">
-        <a tabindex="0" class="sidebar-popover-toggle-resolved" data-stream-id="{{ stream_id }}" data-topic-name="{{ topic_name }}">
-            <i class="fa fa-check" aria-hidden="true"></i>
-            {{# if topic_is_resolved }}
-            {{t "Mark as unresolved"}}
-            {{else}}
-            {{t "Mark as resolved"}}
-            {{/if}}
-        </a>
-    </li>
-    {{/if}}
-
-    {{#if is_realm_admin}}
-    <li class="topic-menu-item">
-        <a tabindex="0" class="sidebar-popover-delete-topic-messages" data-stream-id="{{ stream_id }}" data-topic-name="{{ topic_name }}">
-            <i class="fa fa-trash" aria-hidden="true"></i>
-            {{t "Delete topic"}}
-        </a>
-    </li>
-    {{/if}}
-</ul>
+                <li class="link-item popover-menu-inner-list-item">
+                    <a class="sidebar-popover-copy-link-to-topic popover-menu-link" data-stream-id="{{ stream_id }}" data-topic-name="{{ topic_name }}" data-clipboard-text="{{ url }}" tabindex="0">
+                        <i class="popover-menu-icon zulip-icon zulip-icon-link-alt" aria-hidden="true"></i>
+                        <span class="popover-menu-label">{{t "Copy link to topic" }}</span>
+                    </a>
+                </li>
+            </ul>
+        </li>
+        {{#if (or can_move_topic can_rename_topic is_realm_admin)}}
+        <li class="popover-menu-outer-list-item">
+            <ul class="popover-menu-inner-list">
+                {{#if can_move_topic}}
+                <li class="link-item popover-menu-inner-list-item">
+                    <a class="sidebar-popover-move-topic-messages popover-menu-link" data-stream-id="{{ stream_id }}" data-topic-name="{{ topic_name }}" tabindex="0">
+                        <i class="popover-menu-icon zulip-icon zulip-icon-move-alt" aria-hidden="true"></i>
+                        <span class="popover-menu-label">{{t "Move topic" }}</span>
+                    </a>
+                </li>
+                {{else if can_rename_topic}}
+                <li class="link-item popover-menu-inner-list-item">
+                    <a class="sidebar-popover-rename-topic-messages popover-menu-link" data-stream-id="{{ stream_id }}" data-topic-name="{{ topic_name }}" tabindex="0">
+                        <i class="popover-menu-icon zulip-icon zulip-icon-rename" aria-hidden="true"></i>
+                        <span class="popover-menu-label">{{t "Rename topic" }}</span>
+                    </a>
+                </li>
+                {{/if}}
+                {{#if can_rename_topic}}
+                <li class="link-item popover-menu-inner-list-item">
+                    <a class="sidebar-popover-toggle-resolved popover-menu-link" data-stream-id="{{ stream_id }}" data-topic-name="{{ topic_name }}" tabindex="0">
+                        {{# if topic_is_resolved }}
+                        <i class="popover-menu-icon zulip-icon zulip-icon-check-x" aria-hidden="true"></i>
+                        <span class="popover-menu-label">{{t "Mark as unresolved"}}</span>
+                        {{else}}
+                        <i class="popover-menu-icon zulip-icon zulip-icon-check" aria-hidden="true"></i>
+                        <span class="popover-menu-label">{{t "Mark as resolved"}}</span>
+                        {{/if}}
+                    </a>
+                </li>
+                {{/if}}
+                {{#if is_realm_admin}}
+                <li class="link-item popover-menu-inner-list-item">
+                    <a class="sidebar-popover-delete-topic-messages popover-menu-link" data-stream-id="{{ stream_id }}" data-topic-name="{{ topic_name }}" tabindex="0">
+                        <i class="popover-menu-icon zulip-icon zulip-icon-trash" aria-hidden="true"></i>
+                        <span class="popover-menu-label">{{t "Delete topic"}}</span>
+                    </a>
+                </li>
+                {{/if}}
+            </ul>
+        </li>
+        {{/if}}
+    </ul>
+</div>

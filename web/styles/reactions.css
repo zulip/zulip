@@ -2,6 +2,10 @@
     overflow: hidden;
     user-select: none;
 
+    &:has(.message_reaction) {
+        padding-bottom: 5px;
+    }
+
     .message_reaction {
         display: flex;
         /* Set a pixel and half padding to maintain
@@ -41,33 +45,6 @@
 
         &:active {
             transform: scale(var(--scale-message-reaction-active));
-        }
-
-        + .reaction_button {
-            visibility: hidden;
-            pointer-events: none;
-            /* Set top/bottom padding to accommodate borders
-               and padding around reaction pills. */
-            padding: 4.5px 6px;
-            height: 13px;
-            border-radius: 21px;
-            color: var(--color-message-reaction-button-text);
-            background-color: var(--color-message-reaction-button-background);
-            border: 1px solid var(--color-message-reaction-button-border);
-            /* TODO: Eventually this space will be set on the message
-               box, at least in part, but for now this preserves the
-               space beneath the reactions area. */
-            margin-bottom: 4px;
-
-            &:hover {
-                color: var(--color-message-reaction-button-text-hover);
-                background-color: var(
-                    --color-message-reaction-button-background-hover
-                );
-                border-color: var(--color-message-reaction-button-border-hover);
-                box-shadow: inset 0 0 5px 0
-                    var(--color-message-reaction-shadow-inner);
-            }
         }
 
         .emoji {
@@ -113,26 +90,30 @@
         color: var(--color-message-reaction-button-text-hover);
     }
 
-    & i {
-        font-size: 1.3em;
-        float: left;
-        color: var(--color-message-reaction-button-text);
-    }
-
-    &:hover .message_reaction + .reaction_button {
+    &:hover .reaction_button {
         visibility: visible;
         pointer-events: all;
     }
 
-    .reaction_button,
     .emoji-message-control-button-container {
         display: flex;
         align-items: center;
     }
 
     .reaction_button {
+        visibility: hidden;
+        pointer-events: none;
+        /* Set top/bottom padding to accommodate borders
+           and padding around reaction pills. */
+        padding: 4px 6px;
+        border-radius: 21px;
+        color: var(--color-message-reaction-button-text);
+        background-color: var(--color-message-reaction-button-background);
+        border: 1px solid var(--color-message-reaction-button-border);
+
         & i {
             font-size: 1em;
+            color: var(--color-message-reaction-button-text);
         }
 
         &:hover i {
@@ -149,19 +130,23 @@
         }
 
         &:hover {
-            border: 1px solid var(--color-message-reaction-button-border-hover);
+            color: var(--color-message-reaction-button-text-hover);
             background-color: var(
                 --color-message-reaction-button-background-hover
             );
+            border: 1px solid var(--color-message-reaction-button-border-hover);
+            border-color: var(--color-message-reaction-button-border-hover);
+            box-shadow: inset 0 0 5px 0
+                var(--color-message-reaction-shadow-inner);
             cursor: pointer;
             opacity: 1;
-            color: var(--color-message-reaction-button-text-hover);
         }
 
         .message_reaction_count {
             font-weight: 700;
             color: var(--color-message-reaction-button-text);
             margin-right: 0;
+            line-height: 14px;
         }
 
         &:hover .message_reaction_count {

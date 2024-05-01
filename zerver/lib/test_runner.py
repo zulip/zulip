@@ -13,7 +13,6 @@ from django.db import ProgrammingError, connections
 from django.test import runner as django_runner
 from django.test.runner import DiscoverRunner
 from django.test.signals import template_rendered
-from returns.curry import partial
 from typing_extensions import TypeAlias, override
 
 from scripts.lib.zulip_tools import (
@@ -22,6 +21,7 @@ from scripts.lib.zulip_tools import (
     get_or_create_dev_uuid_var_path,
 )
 from zerver.lib import test_helpers
+from zerver.lib.partial import partial
 from zerver.lib.sqlalchemy_utils import get_sqlalchemy_connection
 from zerver.lib.test_fixtures import BACKEND_DATABASE_TEMPLATE
 from zerver.lib.test_helpers import append_instrumentation_data, write_instrumentation_reports
@@ -186,6 +186,7 @@ def init_worker(
     process_setup: Optional[Callable[..., None]] = None,
     process_setup_args: Optional[Tuple[Any, ...]] = None,
     debug_mode: Optional[bool] = None,
+    used_aliases: Optional[Set[str]] = None,
 ) -> None:
     """
     This function runs only under parallel mode. It initializes the
@@ -359,14 +360,13 @@ class Runner(DiscoverRunner):
     def run_tests(
         self,
         test_labels: List[str],
-        extra_tests: Optional[List[unittest.TestCase]] = None,
         failed_tests_path: Optional[str] = None,
         full_suite: bool = False,
         include_webhooks: bool = False,
         **kwargs: Any,
     ) -> int:
         self.setup_test_environment()
-        suite = self.build_suite(test_labels, extra_tests)
+        suite = self.build_suite(test_labels)
         self.test_imports(test_labels, suite)
         if self.parallel == 1:
             # We are running in serial mode so create the databases here.

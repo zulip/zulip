@@ -1,0 +1,21 @@
+{% extends "zerver/emails/email_base_messages.html" %}
+
+{% block content %}
+<b>Subject</b>: Demo request for {{ organization_name }}
+<br />
+<b>Full name</b>: {{ full_name }}
+<br />
+<b>Email</b>: {{ email }}
+<br />
+<b>Role</b>: {{ role }}
+<br />
+<b>Organization type</b>: {{ organization_type }}
+<br />
+<b>Organization website</b>: {{ organization_website }}
+<br />
+<b>Expected user count</b>: {{ expected_user_count }}
+<br />
+<b>Message</b>: {{ message }}
+<br />
+
+{% endblock %}

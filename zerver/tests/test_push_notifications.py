@@ -36,9 +36,10 @@ from zerver.actions.realm_settings import (
     do_deactivate_realm,
     do_set_realm_authentication_methods,
 )
-from zerver.actions.user_groups import check_add_user_group
+from zerver.actions.user_groups import add_subgroups_to_user_group, check_add_user_group
 from zerver.actions.user_settings import do_change_user_setting, do_regenerate_api_key
 from zerver.actions.user_topics import do_set_user_topic_visibility_policy
+from zerver.lib import redis_utils
 from zerver.lib.avatar import absolute_avatar_url, get_avatar_for_inaccessible_user
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.push_notifications import (
@@ -64,12 +65,15 @@ from zerver.lib.push_notifications import (
     send_notifications_to_bouncer,
 )
 from zerver.lib.remote_server import (
+    PUSH_NOTIFICATIONS_RECENTLY_WORKING_REDIS_KEY,
     AnalyticsRequest,
     PushNotificationBouncerError,
     PushNotificationBouncerRetryLaterError,
     PushNotificationBouncerServerError,
     build_analytics_data,
     get_realms_info_for_push_bouncer,
+    record_push_notifications_recently_working,
+    redis_client,
     send_server_data_to_push_bouncer,
     send_to_push_bouncer,
 )
@@ -496,14 +500,19 @@ class PushBouncerNotificationTest(BouncerTestCase):
 
     def test_register_validate_ios_app_id(self) -> None:
         endpoint = "/api/v1/remotes/push/register"
-        args = {"user_id": 11, "token": "1122", "token_kind": PushDeviceToken.APNS}
+        args = {
+            "user_id": 11,
+            "token": "1122",
+            "token_kind": PushDeviceToken.APNS,
+            "ios_app_id": "'; tables --",
+        }
 
-        result = self.uuid_post(
-            self.server_uuid,
-            endpoint,
-            {**args, "ios_app_id": "'; tables --"},
-        )
-        self.assert_json_error(result, "Invalid app ID")
+        result = self.uuid_post(self.server_uuid, endpoint, args)
+        self.assert_json_error(result, "ios_app_id has invalid format")
+
+        args["ios_app_id"] = "com.zulip.apple"
+        result = self.uuid_post(self.server_uuid, endpoint, args)
+        self.assert_json_success(result)
 
     def test_register_device_deduplication(self) -> None:
         hamlet = self.example_user("hamlet")
@@ -1171,7 +1180,7 @@ class PushBouncerNotificationTest(BouncerTestCase):
                 result = self.client_post(
                     endpoint, {"token": token, "appid": "'; tables --"}, subdomain="zulip"
                 )
-                self.assert_json_error(result, "Invalid app ID")
+                self.assert_json_error(result, "appid has invalid format")
 
             # Try to remove a non-existent token...
             result = self.client_delete(endpoint, {"token": "abcd1234"}, subdomain="zulip")
@@ -1297,9 +1306,9 @@ class PushBouncerNotificationTest(BouncerTestCase):
         # Now we want to remove them using the bouncer after an API key change.
         # First we test error handling in case of issues with the bouncer:
         with mock.patch(
-            "zerver.worker.queue_processors.clear_push_device_tokens",
+            "zerver.worker.deferred_work.clear_push_device_tokens",
             side_effect=PushNotificationBouncerRetryLaterError("test"),
-        ), mock.patch("zerver.worker.queue_processors.retry_event") as mock_retry:
+        ), mock.patch("zerver.worker.deferred_work.retry_event") as mock_retry:
             do_regenerate_api_key(user, user)
             mock_retry.assert_called()
 
@@ -1329,6 +1338,12 @@ class AnalyticsBouncerTest(BouncerTestCase):
             ),
         )
 
+    @override
+    def setUp(self) -> None:
+        redis_client.delete(PUSH_NOTIFICATIONS_RECENTLY_WORKING_REDIS_KEY)
+
+        return super().setUp()
+
     @override_settings(PUSH_NOTIFICATION_BOUNCER_URL="https://push.zulip.org.example.com")
     @responses.activate
     def test_analytics_failure_api(self) -> None:
@@ -1348,6 +1363,40 @@ class AnalyticsBouncerTest(BouncerTestCase):
             )
             self.assertTrue(resp.assert_call_count(ANALYTICS_STATUS_URL, 1))
             self.assertPushNotificationsAre(False)
+
+        # Simulate ConnectionError again, but this time with a redis record indicating
+        # that push notifications have recently worked fine.
+        with responses.RequestsMock() as resp, self.assertLogs(
+            "zulip.analytics", level="WARNING"
+        ) as mock_warning:
+            resp.add(responses.GET, ANALYTICS_STATUS_URL, body=ConnectionError())
+            Realm.objects.all().update(push_notifications_enabled=True)
+            record_push_notifications_recently_working()
+
+            send_server_data_to_push_bouncer()
+            self.assertEqual(
+                "WARNING:zulip.analytics:ConnectionError while trying to connect to push notification bouncer",
+                mock_warning.output[0],
+            )
+            self.assertTrue(resp.assert_call_count(ANALYTICS_STATUS_URL, 1))
+            # push_notifications_enabled shouldn't get set to False, because this is treated
+            # as a transient error.
+            self.assertPushNotificationsAre(True)
+
+            # However after an hour has passed without seeing push notifications
+            # working, we take the error seriously.
+            with time_machine.travel(now() + timedelta(minutes=61), tick=False):
+                send_server_data_to_push_bouncer()
+                self.assertEqual(
+                    "WARNING:zulip.analytics:ConnectionError while trying to connect to push notification bouncer",
+                    mock_warning.output[1],
+                )
+                self.assertTrue(resp.assert_call_count(ANALYTICS_STATUS_URL, 2))
+                self.assertPushNotificationsAre(False)
+
+            redis_client.delete(
+                redis_utils.REDIS_KEY_PREFIX + PUSH_NOTIFICATIONS_RECENTLY_WORKING_REDIS_KEY
+            )
 
         with responses.RequestsMock() as resp, self.assertLogs(
             "zulip.analytics", level="WARNING"
@@ -3514,18 +3563,31 @@ class HandlePushNotificationTest(PushNotificationTest):
             mock_send_android.assert_called_with(user_identity, android_devices, {"gcm": True}, {})
             mock_push_notifications.assert_called_once()
 
+    @override_settings(MAX_GROUP_SIZE_FOR_MENTION_REACTIVATION=2)
     @mock.patch("zerver.lib.push_notifications.push_notifications_configured", return_value=True)
     def test_user_push_soft_reactivate_soft_deactivated_user(
         self, mock_push_notifications: mock.MagicMock
     ) -> None:
         othello = self.example_user("othello")
         cordelia = self.example_user("cordelia")
-        large_user_group = check_add_user_group(
-            get_realm("zulip"),
-            "large_user_group",
-            [self.user_profile, othello, cordelia],
+        zulip_realm = get_realm("zulip")
+
+        # user groups having upto 'MAX_GROUP_SIZE_FOR_MENTION_REACTIVATION'
+        # members are small user groups.
+        small_user_group = check_add_user_group(
+            zulip_realm,
+            "small_user_group",
+            [self.user_profile, othello],
             acting_user=None,
         )
+
+        large_user_group = check_add_user_group(
+            zulip_realm, "large_user_group", [self.user_profile], acting_user=None
+        )
+        subgroup = check_add_user_group(
+            zulip_realm, "subgroup", [othello, cordelia], acting_user=None
+        )
+        add_subgroups_to_user_group(large_user_group, [subgroup], acting_user=None)
 
         # Personal mention in a stream message should soft reactivate the user
         def mention_in_stream() -> None:
@@ -3621,8 +3683,24 @@ class HandlePushNotificationTest(PushNotificationTest):
         self.soft_deactivate_main_user()
         self.expect_to_stay_long_term_idle(self.user_profile, send_stream_wildcard_mention)
 
-        # Group mention should NOT soft reactivate the user
-        def send_group_mention() -> None:
+        # Small group mention should soft reactivate the user
+        def send_small_group_mention() -> None:
+            mention = "@*small_user_group*"
+            stream_mentioned_message_id = self.send_stream_message(othello, "Denmark", mention)
+            handle_push_notification(
+                self.user_profile.id,
+                {
+                    "message_id": stream_mentioned_message_id,
+                    "trigger": NotificationTriggers.MENTION,
+                    "mentioned_user_group_id": small_user_group.id,
+                },
+            )
+
+        self.soft_deactivate_main_user()
+        self.expect_soft_reactivation(self.user_profile, send_small_group_mention)
+
+        # Large group mention should NOT soft reactivate the user
+        def send_large_group_mention() -> None:
             mention = "@*large_user_group*"
             stream_mentioned_message_id = self.send_stream_message(othello, "Denmark", mention)
             handle_push_notification(
@@ -3635,7 +3713,7 @@ class HandlePushNotificationTest(PushNotificationTest):
             )
 
         self.soft_deactivate_main_user()
-        self.expect_to_stay_long_term_idle(self.user_profile, send_group_mention)
+        self.expect_to_stay_long_term_idle(self.user_profile, send_large_group_mention)
 
     @mock.patch("zerver.lib.push_notifications.logger.info")
     @mock.patch("zerver.lib.push_notifications.push_notifications_configured", return_value=True)
@@ -4569,7 +4647,7 @@ class TestPushApi(BouncerTestCase):
                 self.assert_json_error(result, "Missing 'appid' argument")
 
                 result = self.client_post(endpoint, {"token": label, "appid": "'; tables --"})
-                self.assert_json_error(result, "Invalid app ID")
+                self.assert_json_error(result, "appid has invalid format")
 
             # Try to remove a non-existent token...
             result = self.client_delete(endpoint, {"token": "abcd1234"})
@@ -5003,6 +5081,24 @@ class PushBouncerSignupTest(ZulipTestCase):
         request["zulip_org_id"] = zulip_org_id
         result = self.client_post("/api/v1/remotes/server/register", request)
         self.assert_json_error(result, "Invalid UUID")
+
+        # check if zulip org id is of allowed length
+        zulip_org_id = "18cedb98"
+        request["zulip_org_id"] = zulip_org_id
+        result = self.client_post("/api/v1/remotes/server/register", request)
+        self.assert_json_error(result, "zulip_org_id is not length 36")
+
+    def test_push_signup_invalid_zulip_org_key(self) -> None:
+        zulip_org_id = str(uuid.uuid4())
+        zulip_org_key = get_random_string(63)
+        request = dict(
+            zulip_org_id=zulip_org_id,
+            zulip_org_key=zulip_org_key,
+            hostname="invalid-host",
+            contact_email="server-admin@zulip.com",
+        )
+        result = self.client_post("/api/v1/remotes/server/register", request)
+        self.assert_json_error(result, "zulip_org_key is not length 64")
 
     def test_push_signup_success(self) -> None:
         zulip_org_id = str(uuid.uuid4())

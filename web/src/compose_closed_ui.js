@@ -67,20 +67,20 @@ function update_reply_button_state(disable = false) {
     $(".compose_reply_button").attr("disabled", disable);
     if (disable) {
         $("#compose_buttons .compose-reply-button-wrapper").attr(
-            "data-tooltip-template-id",
-            "compose_reply_button_disabled_tooltip_template",
+            "data-reply-button-type",
+            "direct_disabled",
         );
         return;
     }
     if (narrow_state.is_message_feed_visible()) {
         $("#compose_buttons .compose-reply-button-wrapper").attr(
-            "data-tooltip-template-id",
-            "compose_reply_message_button_tooltip_template",
+            "data-reply-button-type",
+            "selected_message",
         );
     } else {
         $("#compose_buttons .compose-reply-button-wrapper").attr(
-            "data-tooltip-template-id",
-            "compose_reply_selected_topic_button_tooltip_template",
+            "data-reply-button-type",
+            "selected_conversation",
         );
     }
 }
@@ -175,7 +175,7 @@ export function initialize() {
     $(document).on("message_selected.zulip", () => {
         if (narrow_state.is_message_feed_visible()) {
             // message_selected events can occur with Recent Conversations
-            // open due to "All messages" loading in the background,
+            // open due to the combined feed view loading in the background,
             // so we only update if message feed is visible.
             update_reply_recipient_label();
         }
@@ -186,6 +186,7 @@ export function initialize() {
         compose_actions.start({
             message_type: "stream",
             trigger: "clear topic button",
+            keep_composebox_empty: true,
         });
     });
 
@@ -193,6 +194,7 @@ export function initialize() {
         compose_actions.start({
             message_type: "private",
             trigger: "new direct message",
+            keep_composebox_empty: true,
         });
     });
 }

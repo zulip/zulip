@@ -8,6 +8,7 @@ import render_delete_message_modal from "../templates/confirm_dialog/confirm_del
 import render_confirm_merge_topics_with_rename from "../templates/confirm_dialog/confirm_merge_topics_with_rename.hbs";
 import render_confirm_moving_messages_modal from "../templates/confirm_dialog/confirm_moving_messages.hbs";
 import render_message_edit_form from "../templates/message_edit_form.hbs";
+import render_message_moved_widget_body from "../templates/message_moved_widget_body.hbs";
 import render_resolve_topic_time_limit_error_modal from "../templates/resolve_topic_time_limit_error_modal.hbs";
 import render_topic_edit_form from "../templates/topic_edit_form.hbs";
 
@@ -25,7 +26,9 @@ import * as confirm_dialog from "./confirm_dialog";
 import {show_copied_confirmation} from "./copied_tooltip";
 import * as dialog_widget from "./dialog_widget";
 import * as echo from "./echo";
+import * as feedback_widget from "./feedback_widget";
 import * as giphy from "./giphy";
+import * as hash_util from "./hash_util";
 import {$t, $t_html} from "./i18n";
 import * as keydown_util from "./keydown_util";
 import * as loading from "./loading";
@@ -41,6 +44,7 @@ import * as settings_data from "./settings_data";
 import {current_user, realm} from "./state_data";
 import * as stream_data from "./stream_data";
 import * as stream_topic_history from "./stream_topic_history";
+import * as sub_store from "./sub_store";
 import * as timerender from "./timerender";
 import * as ui_report from "./ui_report";
 import * as upload from "./upload";
@@ -1237,7 +1241,7 @@ export function delete_topic(stream_id, topic_name, failures = 0) {
     });
 }
 
-export function handle_narrow_deactivated() {
+export function restore_edit_state_after_message_view_change() {
     assert(message_lists.current !== undefined);
     for (const [idx, elem] of currently_editing_messages) {
         if (message_lists.current.get(idx) !== undefined) {
@@ -1280,6 +1284,25 @@ function handle_message_move_failure_due_to_time_limit(xhr, handle_confirm, on_h
     });
 }
 
+function show_message_moved_toast(toast_params) {
+    const new_stream_name = sub_store.maybe_get_stream_name(toast_params.new_stream_id);
+    const stream_topic = `#${new_stream_name} > ${toast_params.new_topic_name}`;
+    const new_location_url = hash_util.by_stream_topic_url(
+        toast_params.new_stream_id,
+        toast_params.new_topic_name,
+    );
+    feedback_widget.show({
+        populate($container) {
+            const widget_body_html = render_message_moved_widget_body({
+                stream_topic,
+                new_location_url,
+            });
+            $container.html(widget_body_html);
+        },
+        title_text: $t({defaultMessage: "Message moved"}),
+    });
+}
+
 export function move_topic_containing_message_to_stream(
     message_id,
     new_stream_id,
@@ -1287,6 +1310,7 @@ export function move_topic_containing_message_to_stream(
     send_notification_to_new_thread,
     send_notification_to_old_thread,
     propagate_mode,
+    toast_params,
 ) {
     function reset_modal_ui() {
         currently_topic_editing_messages = currently_topic_editing_messages.filter(
@@ -1320,6 +1344,9 @@ export function move_topic_containing_message_to_stream(
             // from server_events.js.
             reset_modal_ui();
             dialog_widget.close();
+            if (toast_params) {
+                show_message_moved_toast(toast_params);
+            }
         },
         error(xhr) {
             reset_modal_ui();
@@ -1366,7 +1393,7 @@ export function with_first_message_id(stream_id, topic_name, success_cb, error_c
         num_before: 1,
         num_after: 0,
         narrow: JSON.stringify([
-            {operator: "stream", operand: stream_id},
+            {operator: "channel", operand: stream_id},
             {operator: "topic", operand: topic_name},
         ]),
     };
@@ -1394,7 +1421,7 @@ export function is_message_oldest_or_newest(
         num_before: 1,
         num_after: 1,
         narrow: JSON.stringify([
-            {operator: "stream", operand: stream_id},
+            {operator: "channel", operand: stream_id},
             {operator: "topic", operand: topic_name},
         ]),
     };

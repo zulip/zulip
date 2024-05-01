@@ -1,70 +1,76 @@
 {{! Contents of the "stream actions" popup }}
-<ul class="nav nav-list streams_popover" data-stream-id="{{ stream.stream_id }}" data-name="{{ stream.name }}">
-    <li class="stream-menu-item">
-        <div class="stream-name">
-            <span class="stream-privacy-original-color-{{stream.stream_id}} stream-privacy filter-icon" style="color: {{stream.color}}">
-                {{> stream_privacy
-                  invite_only=stream.invite_only
-                  is_web_public=stream.is_web_public }}
-            </span>
-            {{stream.name}}
-        </div>
-    </li>
-
-    <hr />
-
-    {{! tabindex="0" Makes anchor tag focusable. Needed for keyboard support. }}
-    <li class="stream-menu-item">
-        <a tabindex="0" class="open_stream_settings">
-            <i class="fa fa-cog" aria-hidden="true"></i>
-            {{t "Stream settings" }}
-        </a>
-    </li>
-    <li class="stream-menu-item hidden-for-spectators">
-        <a tabindex="0" class="pin_to_top">
-            <i class="fa fa-thumb-tack stream-pin-icon" aria-hidden="true"></i>
-            {{#if stream.pin_to_top}}
-            {{t "Unpin stream from top"}}
-            {{else}}
-            {{t "Pin stream to top"}}
-            {{/if}}
-        </a>
-    </li>
-    <li class="stream-menu-item hidden-for-spectators">
-        <a tabindex="0" class="mark_stream_as_read">
-            <i class="fa fa-book" aria-hidden="true"></i>
-            {{t "Mark all messages as read"}}
-        </a>
-    </li>
-    <li class="stream-menu-item hidden-for-spectators">
-        <a tabindex="0" class="toggle_stream_muted">
-            {{#if stream.is_muted}}
-            <i class="zulip-icon zulip-icon-mute" aria-hidden="true"></i>
-            {{t "Unmute stream"}}
-            {{else}}
-            <i class="zulip-icon zulip-icon-mute" aria-hidden="true"></i>
-            {{t "Mute stream"}}
-            {{/if}}
-        </a>
-    </li>
-    <li class="stream-menu-item">
-        <a tabindex="0" class="popover_new_topic_button">
-            <i class="fa fa-plus" aria-hidden="true"></i>
-            {{t "New topic" }}
-        </a>
-    </li>
-    <li class="stream-menu-item hidden-for-spectators">
-        <a tabindex="0" class="popover_sub_unsub_button" data-name="{{stream.name}}">
-            <i class='fa fa-envelope' aria-hidden="true"></i>
-            {{t "Unsubscribe" }}
-        </a>
-    </li>
-    <li class="stream-menu-item hidden-for-spectators no-auto-hide-left-sidebar-overlay">
-        <span class="colorpicker-container"><input stream_id="{{stream.stream_id}}" class="colorpicker" type="text" value="{{stream.color}}" /></span>
-        <a tabindex="0" class="choose_stream_color">
-            <i class="fa fa-eyedropper" aria-hidden="true"></i>
-            {{t "Change color" }}
-        </a>
-    </li>
-
-</ul>
+<div class="popover-menu" id="stream-actions-menu-popover" data-simplebar>
+    <ul class="popover-menu-outer-list">
+        <li class="popover-menu-outer-list-item">
+            <ul class="popover-menu-inner-list">
+                <li class="popover-stream-header text-item popover-menu-inner-list-item">
+                    <span class="stream-privacy-original-color-{{stream.stream_id}} stream-privacy filter-icon" style="color: {{stream.color}}">
+                        {{> stream_privacy
+                          invite_only=stream.invite_only
+                          is_web_public=stream.is_web_public }}
+                    </span>
+                    <span class="popover-stream-name">{{stream.name}}</span>
+                </li>
+            </ul>
+        </li>
+        <li class="popover-menu-outer-list-item">
+            <ul class="popover-menu-inner-list" data-stream-id="{{ stream.stream_id }}" data-name="{{ stream.name }}">
+                <li class="link-item popover-menu-inner-list-item">
+                    <a class="open_stream_settings popover-menu-link" tabindex="0">
+                        <i class="popover-menu-icon zulip-icon zulip-icon-gear" aria-hidden="true"></i>
+                        <span class="popover-menu-label">{{t "Channel settings" }}</span>
+                    </a>
+                </li>
+                <li class="link-item popover-menu-inner-list-item hidden-for-spectators">
+                    <a class="pin_to_top popover-menu-link" tabindex="0">
+                        {{#if stream.pin_to_top}}
+                        <i class="popover-menu-icon zulip-icon zulip-icon-unpin" aria-hidden="true"></i>
+                        <span class="popover-menu-label">{{t "Unpin channel from top"}}</span>
+                        {{else}}
+                        <i class="popover-menu-icon zulip-icon zulip-icon-pin" aria-hidden="true"></i>
+                        <span class="popover-menu-label">{{t "Pin channel to top"}}</span>
+                        {{/if}}
+                    </a>
+                </li>
+                <li class="link-item popover-menu-inner-list-item hidden-for-spectators">
+                    <a class="mark_stream_as_read popover-menu-link" tabindex="0">
+                        <i class="popover-menu-icon zulip-icon zulip-icon-mark-as-read" aria-hidden="true"></i>
+                        <span class="popover-menu-label">{{t "Mark all messages as read"}}</span>
+                    </a>
+                </li>
+                <li class="link-item popover-menu-inner-list-item hidden-for-spectators">
+                    <a class="toggle_stream_muted popover-menu-link" tabindex="0">
+                        {{#if stream.is_muted}}
+                        <i class="popover-menu-icon zulip-icon zulip-icon-unmute-new" aria-hidden="true"></i>
+                        <span class="popover-menu-label">{{t "Unmute channel"}}</span>
+                        {{else}}
+                        <i class="popover-menu-icon zulip-icon zulip-icon-mute-new" aria-hidden="true"></i>
+                        <span class="popover-menu-label">{{t "Mute channel"}}</span>
+                        {{/if}}
+                    </a>
+                </li>
+                <li class="link-item popover-menu-inner-list-item hidden-for-spectators">
+                    <a class="popover_new_topic_button popover-menu-link" tabindex="0">
+                        <i class="popover-menu-icon zulip-icon zulip-icon-square-plus" aria-hidden="true"></i>
+                        <span class="popover-menu-label">{{t "New topic"}}</span>
+                    </a>
+                </li>
+                <li class="link-item popover-menu-inner-list-item hidden-for-spectators">
+                    <a class="popover_sub_unsub_button popover-menu-link" tabindex="0">
+                        <i class="popover-menu-icon zulip-icon zulip-icon-circle-x" aria-hidden="true"></i>
+                        <span class="popover-menu-label">{{t "Unsubscribe"}}</span>
+                    </a>
+                </li>
+                <li class="link-item popover-menu-inner-list-item hidden-for-spectators no-auto-hide-left-sidebar-overlay">
+                    <span class="colorpicker-container">
+                        <input stream_id="{{stream.stream_id}}" class="colorpicker" type="text" value="{{stream.color}}" />
+                    </span>
+                    <a class="choose_stream_color popover-menu-link" tabindex="0">
+                        <i class="popover-menu-icon zulip-icon zulip-icon-pipette" aria-hidden="true"></i>
+                        <span class="popover-menu-label">{{t "Change color"}}</span>
+                    </a>
+                </li>
+            </ul>
+        </li>
+    </ul>
+</div>

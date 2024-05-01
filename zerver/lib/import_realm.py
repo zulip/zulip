@@ -52,6 +52,7 @@ from zerver.models import (
     Huddle,
     Message,
     MutedUser,
+    NamedUserGroup,
     OnboardingStep,
     Reaction,
     Realm,
@@ -193,7 +194,7 @@ def fix_upload_links(data: TableData, message_table: TableName) -> None:
 
 def fix_streams_can_remove_subscribers_group_column(data: TableData, realm: Realm) -> None:
     table = get_db_table(Stream)
-    admins_group = UserGroup.objects.get(
+    admins_group = NamedUserGroup.objects.get(
         name=SystemGroups.ADMINISTRATORS, realm=realm, is_system_group=True
     )
     for stream in data[table]:
@@ -688,6 +689,29 @@ def bulk_import_model(data: TableData, model: Any, dump_file_id: Optional[str] =
         logging.info("Successfully imported %s from %s[%s].", model, table, dump_file_id)
 
 
+def bulk_import_named_user_groups(data: TableData) -> None:
+    vals = [
+        (
+            group["usergroup_ptr_id"],
+            group["realm_for_sharding_id"],
+            group["name"],
+            group["description"],
+            group["is_system_group"],
+            group["can_mention_group_id"],
+        )
+        for group in data["zerver_namedusergroup"]
+    ]
+
+    query = SQL(
+        """
+        INSERT INTO zerver_namedusergroup (usergroup_ptr_id, realm_id, name, description, is_system_group, can_mention_group_id)
+        VALUES %s
+        """
+    )
+    with connection.cursor() as cursor:
+        execute_values(cursor.cursor, query, vals)
+
+
 # Client is a table shared by multiple realms, so in order to
 # correctly import multiple realms into the same server, we need to
 # check if a Client object already exists, and so we need to support
@@ -970,11 +994,32 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
 
     bulk_import_client(data, Client, "zerver_client")
 
-    # We don't import the Stream and UserGroup models yet, since
-    # they depend on Realm, which isn't imported yet.
-    # But we need the Stream and UserGroup model IDs for
-    # announcements streams and group permissions, respectively
+    # Remap the user IDs for notification_bot and friends to their
+    # appropriate IDs on this server
+    internal_realm = get_realm(settings.SYSTEM_BOT_REALM)
+    crossrealm_user_ids = set()
+    for item in data["zerver_userprofile_crossrealm"]:
+        logging.info(
+            "Adding to ID map: %s %s",
+            item["id"],
+            get_system_bot(item["email"], internal_realm.id).id,
+        )
+        new_user_id = get_system_bot(item["email"], internal_realm.id).id
+        update_id_map(table="user_profile", old_id=item["id"], new_id=new_user_id)
+        crossrealm_user_ids.add(new_user_id)
+        new_recipient_id = Recipient.objects.get(type=Recipient.PERSONAL, type_id=new_user_id).id
+        update_id_map(table="recipient", old_id=item["recipient_id"], new_id=new_recipient_id)
+
+    # We first do a pass of updating model IDs for the cluster of
+    # major models that have foreign keys into each other.
+    # TODO: Should we just do this for all tables at the start?
+    update_model_ids(Realm, data, "realm")
     update_model_ids(Stream, data, "stream")
+    update_model_ids(UserProfile, data, "user_profile")
+    if "zerver_usergroup" in data:
+        update_model_ids(UserGroup, data, "usergroup")
+
+    # Now we prepare to import the Realm table
     re_map_foreign_keys(
         data, "zerver_realm", "new_stream_announcements_stream", related_table="stream"
     )
@@ -983,7 +1028,6 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
         data, "zerver_realm", "zulip_update_announcements_stream", related_table="stream"
     )
     if "zerver_usergroup" in data:
-        update_model_ids(UserGroup, data, "usergroup")
         for setting_name in Realm.REALM_PERMISSION_GROUP_SETTINGS:
             re_map_foreign_keys(data, "zerver_realm", setting_name, related_table="usergroup")
 
@@ -991,7 +1035,6 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
     # Fix realm subdomain information
     data["zerver_realm"][0]["string_id"] = subdomain
     data["zerver_realm"][0]["name"] = subdomain
-    update_model_ids(Realm, data, "realm")
 
     # Create the realm, but mark it deactivated for now, while we
     # import the supporting data structures, which may take a bit.
@@ -1013,15 +1056,27 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
 
         if "zerver_usergroup" in data:
             re_map_foreign_keys(data, "zerver_usergroup", "realm", related_table="realm")
-            for setting_name in UserGroup.GROUP_PERMISSION_SETTINGS:
-                re_map_foreign_keys(
-                    data, "zerver_usergroup", setting_name, related_table="usergroup"
-                )
             bulk_import_model(data, UserGroup)
+
+            if "zerver_namedusergroup" in data:
+                re_map_foreign_keys(
+                    data, "zerver_namedusergroup", "usergroup_ptr", related_table="usergroup"
+                )
+                re_map_foreign_keys(
+                    data, "zerver_namedusergroup", "realm_for_sharding", related_table="realm"
+                )
+                for setting_name in NamedUserGroup.GROUP_PERMISSION_SETTINGS:
+                    re_map_foreign_keys(
+                        data,
+                        "zerver_namedusergroup",
+                        setting_name,
+                        related_table="usergroup",
+                    )
+                bulk_import_named_user_groups(data)
 
         # We expect Zulip server exports to contain these system groups,
         # this logic here is needed to handle the imports from other services.
-        role_system_groups_dict: Optional[Dict[int, UserGroup]] = None
+        role_system_groups_dict: Optional[Dict[int, NamedUserGroup]] = None
         if "zerver_usergroup" not in data:
             role_system_groups_dict = create_system_user_groups_for_realm(realm)
 
@@ -1029,6 +1084,7 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
         # Stream objects are created by Django.
         fix_datetime_fields(data, "zerver_stream")
         re_map_foreign_keys(data, "zerver_stream", "realm", related_table="realm")
+        re_map_foreign_keys(data, "zerver_stream", "creator", related_table="user_profile")
         if role_system_groups_dict is not None:
             # Because the system user groups are missing, we manually set up
             # the defaults for can_remove_subscribers_group for all the
@@ -1046,27 +1102,10 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
         if "zerver_usergroup" not in data:
             set_default_for_realm_permission_group_settings(realm)
 
-    # Remap the user IDs for notification_bot and friends to their
-    # appropriate IDs on this server
-    internal_realm = get_realm(settings.SYSTEM_BOT_REALM)
-    crossrealm_user_ids = set()
-    for item in data["zerver_userprofile_crossrealm"]:
-        logging.info(
-            "Adding to ID map: %s %s",
-            item["id"],
-            get_system_bot(item["email"], internal_realm.id).id,
-        )
-        new_user_id = get_system_bot(item["email"], internal_realm.id).id
-        update_id_map(table="user_profile", old_id=item["id"], new_id=new_user_id)
-        crossrealm_user_ids.add(new_user_id)
-        new_recipient_id = Recipient.objects.get(type=Recipient.PERSONAL, type_id=new_user_id).id
-        update_id_map(table="recipient", old_id=item["recipient_id"], new_id=new_recipient_id)
-
     # To remap foreign key for UserProfile.last_active_message_id
     update_message_foreign_keys(import_dir=import_dir, sort_by_date=sort_by_date)
 
     fix_datetime_fields(data, "zerver_userprofile")
-    update_model_ids(UserProfile, data, "user_profile")
     re_map_foreign_keys(data, "zerver_userprofile", "realm", related_table="realm")
     re_map_foreign_keys(data, "zerver_userprofile", "bot_owner", related_table="user_profile")
     re_map_foreign_keys(
@@ -1733,9 +1772,11 @@ def import_analytics_data(realm: Realm, import_dir: Path, crossrealm_user_ids: S
 
 
 def add_users_to_system_user_groups(
-    realm: Realm, user_profiles: List[UserProfile], role_system_groups_dict: Dict[int, UserGroup]
+    realm: Realm,
+    user_profiles: List[UserProfile],
+    role_system_groups_dict: Dict[int, NamedUserGroup],
 ) -> None:
-    full_members_system_group = UserGroup.objects.get(
+    full_members_system_group = NamedUserGroup.objects.get(
         name=SystemGroups.FULL_MEMBERS,
         realm=realm,
         is_system_group=True,
@@ -1757,7 +1798,7 @@ def add_users_to_system_user_groups(
         RealmAuditLog(
             realm=realm,
             modified_user=membership.user_profile,
-            modified_user_group=membership.user_group,
+            modified_user_group=membership.user_group.named_user_group,
             event_type=RealmAuditLog.USER_GROUP_DIRECT_USER_MEMBERSHIP_ADDED,
             event_time=now,
             acting_user=None,

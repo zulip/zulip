@@ -21,14 +21,6 @@ const compose_recipient = mock_esm("../src/compose_recipient");
 const message_fetch = mock_esm("../src/message_fetch");
 const message_list = mock_esm("../src/message_list");
 const message_lists = mock_esm("../src/message_lists", {
-    home: {
-        view: {
-            $list: {
-                removeClass: noop,
-                addClass: noop,
-            },
-        },
-    },
     current: {
         view: {
             $list: {
@@ -43,6 +35,9 @@ const message_lists = mock_esm("../src/message_lists", {
     },
     update_current_message_list(msg_list) {
         message_lists.current = msg_list;
+    },
+    all_rendered_message_lists() {
+        return [message_lists.current];
     },
 });
 const message_feed_top_notices = mock_esm("../src/message_feed_top_notices");
@@ -229,8 +224,8 @@ run_test("basics", ({override}) => {
     helper.assert_events([
         [message_feed_top_notices, "hide_top_of_narrow_notices"],
         [message_feed_loading, "hide_indicators"],
-        [message_lists, "save_pre_narrow_offset_for_reload"],
         [compose_banner, "clear_message_sent_banners"],
+        [message_lists, "save_pre_narrow_offset_for_reload"],
         [compose_actions, "on_narrow"],
         [unread_ops, "process_visible"],
         [narrow_history, "save_narrow_state_and_flush"],

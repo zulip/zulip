@@ -222,7 +222,7 @@ run_test("show_empty_narrow_message", ({mock_template}) => {
     narrow_banner.show_empty_narrow_message();
     assert.equal(
         $(".empty_feed_notice_main").html(),
-        empty_narrow_html("translated: This stream does not exist or is private."),
+        empty_narrow_html("translated: This channel does not exist or is private."),
     );
 
     // for non-subbed public stream
@@ -232,8 +232,8 @@ run_test("show_empty_narrow_message", ({mock_template}) => {
     assert.equal(
         $(".empty_feed_notice_main").html(),
         empty_narrow_html(
-            "translated: You aren't subscribed to this stream and nobody has talked about that yet!",
-            'translated HTML: <button class="button white rounded stream_sub_unsub_button sea-green" type="button" name="subscription">Subscribe</button>',
+            "translated: There are no messages here.",
+            'translated HTML: Why not <a href="#" class="empty_feed_compose_stream">start the conversation</a>?',
         ),
     );
 
@@ -524,7 +524,7 @@ run_test("show_empty_narrow_message", ({mock_template}) => {
     narrow_banner.show_empty_narrow_message();
     assert.equal(
         $(".empty_feed_notice_main").html(),
-        empty_narrow_html("translated: This stream does not exist or is private."),
+        empty_narrow_html("translated: This channel does not exist or is private."),
     );
 });
 
@@ -626,7 +626,7 @@ run_test("show_invalid_narrow_message", ({mock_template}) => {
         $(".empty_feed_notice_main").html(),
         empty_narrow_html(
             "translated: No search results.",
-            "translated HTML: <p>You are searching for messages that belong to more than one stream, which is not possible.</p>",
+            "translated HTML: <p>You are searching for messages that belong to more than one channel, which is not possible.</p>",
         ),
     );
 
@@ -692,7 +692,7 @@ run_test("narrow_to_compose_target streams", ({override_rewire}) => {
     assert.equal(args.called, true);
     assert.equal(args.opts.trigger, "narrow_to_compose_target");
     assert.deepEqual(args.terms, [
-        {operator: "stream", operand: "ROME"},
+        {operator: "channel", operand: "ROME"},
         {operator: "topic", operand: "one"},
     ]);
 
@@ -702,7 +702,7 @@ run_test("narrow_to_compose_target streams", ({override_rewire}) => {
     narrow.to_compose_target();
     assert.equal(args.called, true);
     assert.deepEqual(args.terms, [
-        {operator: "stream", operand: "ROME"},
+        {operator: "channel", operand: "ROME"},
         {operator: "topic", operand: "four"},
     ]);
 
@@ -711,14 +711,14 @@ run_test("narrow_to_compose_target streams", ({override_rewire}) => {
     args.called = false;
     narrow.to_compose_target();
     assert.equal(args.called, true);
-    assert.deepEqual(args.terms, [{operator: "stream", operand: "ROME"}]);
+    assert.deepEqual(args.terms, [{operator: "channel", operand: "ROME"}]);
 
     // Test with no topic
     compose_state.topic(undefined);
     args.called = false;
     narrow.to_compose_target();
     assert.equal(args.called, true);
-    assert.deepEqual(args.terms, [{operator: "stream", operand: "ROME"}]);
+    assert.deepEqual(args.terms, [{operator: "channel", operand: "ROME"}]);
 });
 
 run_test("narrow_to_compose_target direct messages", ({override, override_rewire}) => {
@@ -789,7 +789,7 @@ run_test("narrow_compute_title", () => {
 
     inbox_util.set_visible(false);
     filter = new Filter([{operator: "in", operand: "home"}]);
-    assert.equal(narrow_title.compute_narrow_title(filter), "translated: All messages");
+    assert.equal(narrow_title.compute_narrow_title(filter), "translated: Combined feed");
 
     // Search & uncommon narrows
     filter = new Filter([{operator: "search", operand: "potato"}]);
@@ -815,7 +815,10 @@ run_test("narrow_compute_title", () => {
     assert.equal(narrow_title.compute_narrow_title(filter), "#Foo");
 
     filter = new Filter([{operator: "stream", operand: "Elephant"}]);
-    assert.equal(narrow_title.compute_narrow_title(filter), "translated: Unknown stream #Elephant");
+    assert.equal(
+        narrow_title.compute_narrow_title(filter),
+        "translated: Unknown channel #Elephant",
+    );
 
     // Direct messages with narrows
     const joe = {

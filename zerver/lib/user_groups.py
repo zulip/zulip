@@ -2,17 +2,19 @@ from contextlib import contextmanager
 from dataclasses import dataclass
 from typing import Collection, Dict, Iterable, Iterator, List, Mapping, TypedDict
 
-from django.db import transaction
+from django.db import connection, transaction
 from django.db.models import F, QuerySet
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
 from django_cte import With
 from django_stubs_ext import ValuesQuerySet
+from psycopg2.sql import SQL, Literal
 
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.types import GroupPermissionSetting, ServerSupportedPermissionSettings
 from zerver.models import (
     GroupGroupMembership,
+    NamedUserGroup,
     Realm,
     RealmAuditLog,
     Stream,
@@ -43,13 +45,13 @@ class LockedUserGroupContext:
     recursive_subgroups include direct_subgroups and their descendants.
     """
 
-    supergroup: UserGroup
-    direct_subgroups: List[UserGroup]
-    recursive_subgroups: List[UserGroup]
+    supergroup: NamedUserGroup
+    direct_subgroups: List[NamedUserGroup]
+    recursive_subgroups: List[NamedUserGroup]
 
 
 def has_user_group_access(
-    user_group: UserGroup, user_profile: UserProfile, *, for_read: bool, as_subgroup: bool
+    user_group: NamedUserGroup, user_profile: UserProfile, *, for_read: bool, as_subgroup: bool
 ) -> bool:
     if user_group.realm_id != user_profile.realm_id:
         return False
@@ -82,15 +84,15 @@ def has_user_group_access(
 
 def access_user_group_by_id(
     user_group_id: int, user_profile: UserProfile, *, for_read: bool
-) -> UserGroup:
+) -> NamedUserGroup:
     try:
         if for_read:
-            user_group = UserGroup.objects.get(id=user_group_id, realm=user_profile.realm)
+            user_group = NamedUserGroup.objects.get(id=user_group_id, realm=user_profile.realm)
         else:
-            user_group = UserGroup.objects.select_for_update().get(
+            user_group = NamedUserGroup.objects.select_for_update().get(
                 id=user_group_id, realm=user_profile.realm
             )
-    except UserGroup.DoesNotExist:
+    except NamedUserGroup.DoesNotExist:
         raise JsonableError(_("Invalid user group"))
 
     if not has_user_group_access(user_group, user_profile, for_read=for_read, as_subgroup=False):
@@ -232,14 +234,14 @@ def check_user_group_name(group_name: str) -> str:
     if group_name.strip() == "":
         raise JsonableError(_("User group name can't be empty!"))
 
-    if len(group_name) > UserGroup.MAX_NAME_LENGTH:
+    if len(group_name) > NamedUserGroup.MAX_NAME_LENGTH:
         raise JsonableError(
             _("User group name cannot exceed {max_length} characters.").format(
-                max_length=UserGroup.MAX_NAME_LENGTH
+                max_length=NamedUserGroup.MAX_NAME_LENGTH
             )
         )
 
-    for invalid_prefix in UserGroup.INVALID_NAME_PREFIXES:
+    for invalid_prefix in NamedUserGroup.INVALID_NAME_PREFIXES:
         if group_name.startswith(invalid_prefix):
             raise JsonableError(
                 _("User group name cannot start with '{prefix}'.").format(prefix=invalid_prefix)
@@ -254,7 +256,7 @@ def user_groups_in_realm_serialized(realm: Realm) -> List[UserGroupDict]:
     Django's ORM doesn't properly support the left join between
     UserGroup and UserGroupMembership that we need.
     """
-    realm_groups = UserGroup.objects.filter(realm=realm)
+    realm_groups = NamedUserGroup.objects.filter(realm=realm)
     group_dicts: Dict[int, UserGroupDict] = {}
     for user_group in realm_groups:
         group_dicts[user_group.id] = dict(
@@ -323,9 +325,25 @@ def get_recursive_subgroups(user_group: UserGroup) -> QuerySet[UserGroup]:
     cte = With.recursive(
         lambda cte: UserGroup.objects.filter(id=user_group.id)
         .values(group_id=F("id"))
-        .union(cte.join(UserGroup, direct_supergroups=cte.col.group_id).values(group_id=F("id")))
+        .union(
+            cte.join(NamedUserGroup, direct_supergroups=cte.col.group_id).values(group_id=F("id"))
+        )
     )
     return cte.join(UserGroup, id=cte.col.group_id).with_cte(cte)
+
+
+def get_recursive_strict_subgroups(user_group: UserGroup) -> QuerySet[NamedUserGroup]:
+    # Same as get_recursive_subgroups but does not include the
+    # user_group passed.
+    direct_subgroup_ids = user_group.direct_subgroups.all().values("id")
+    cte = With.recursive(
+        lambda cte: NamedUserGroup.objects.filter(id__in=direct_subgroup_ids)
+        .values(group_id=F("id"))
+        .union(
+            cte.join(NamedUserGroup, direct_supergroups=cte.col.group_id).values(group_id=F("id"))
+        )
+    )
+    return cte.join(NamedUserGroup, id=cte.col.group_id).with_cte(cte)
 
 
 def get_recursive_group_members(user_group: UserGroup) -> QuerySet[UserProfile]:
@@ -365,29 +383,29 @@ def get_subgroup_ids(user_group: UserGroup, *, direct_subgroup_only: bool = Fals
     if direct_subgroup_only:
         subgroup_ids = user_group.direct_subgroups.all().values_list("id", flat=True)
     else:
-        subgroup_ids = (
-            get_recursive_subgroups(user_group)
-            .exclude(id=user_group.id)
-            .values_list("id", flat=True)
-        )
+        subgroup_ids = get_recursive_strict_subgroups(user_group).values_list("id", flat=True)
 
     return list(subgroup_ids)
 
 
 def get_recursive_subgroups_for_groups(
     user_group_ids: Iterable[int], realm: Realm
-) -> QuerySet[UserGroup]:
+) -> QuerySet[NamedUserGroup]:
     cte = With.recursive(
-        lambda cte: UserGroup.objects.filter(id__in=user_group_ids, realm=realm)
+        lambda cte: NamedUserGroup.objects.filter(id__in=user_group_ids, realm=realm)
         .values(group_id=F("id"))
-        .union(cte.join(UserGroup, direct_supergroups=cte.col.group_id).values(group_id=F("id")))
+        .union(
+            cte.join(NamedUserGroup, direct_supergroups=cte.col.group_id).values(group_id=F("id"))
+        )
     )
-    recursive_subgroups = cte.join(UserGroup, id=cte.col.group_id).with_cte(cte)
+    recursive_subgroups = cte.join(NamedUserGroup, id=cte.col.group_id).with_cte(cte)
     return recursive_subgroups
 
 
-def get_role_based_system_groups_dict(realm: Realm) -> Dict[str, UserGroup]:
-    system_groups = UserGroup.objects.filter(realm=realm, is_system_group=True)
+def get_role_based_system_groups_dict(realm: Realm) -> Dict[str, NamedUserGroup]:
+    system_groups = NamedUserGroup.objects.filter(realm=realm, is_system_group=True).select_related(
+        "usergroup_ptr"
+    )
     system_groups_name_dict = {}
     for group in system_groups:
         system_groups_name_dict[group.name] = group
@@ -396,11 +414,11 @@ def get_role_based_system_groups_dict(realm: Realm) -> Dict[str, UserGroup]:
 
 
 def set_defaults_for_group_settings(
-    user_group: UserGroup,
+    user_group: NamedUserGroup,
     group_settings_map: Mapping[str, UserGroup],
-    system_groups_name_dict: Dict[str, UserGroup],
-) -> UserGroup:
-    for setting_name, permission_config in UserGroup.GROUP_PERMISSION_SETTINGS.items():
+    system_groups_name_dict: Dict[str, NamedUserGroup],
+) -> NamedUserGroup:
+    for setting_name, permission_config in NamedUserGroup.GROUP_PERMISSION_SETTINGS.items():
         if setting_name in group_settings_map:
             # We skip the settings for which a value is passed
             # in user group creation API request.
@@ -411,73 +429,109 @@ def set_defaults_for_group_settings(
         else:
             default_group_name = permission_config.default_group_name
 
-        default_group = system_groups_name_dict[default_group_name]
+        default_group = system_groups_name_dict[default_group_name].usergroup_ptr
         setattr(user_group, setting_name, default_group)
 
     return user_group
 
 
-@transaction.atomic(savepoint=False)
-def create_system_user_groups_for_realm(realm: Realm) -> Dict[int, UserGroup]:
-    """Any changes to this function likely require a migration to adjust
-    existing realms.  See e.g. migration 0382_create_role_based_system_groups.py,
-    which is a copy of this function from when we introduced system groups.
-    """
-    role_system_groups_dict: Dict[int, UserGroup] = {}
-
+def bulk_create_system_user_groups(groups: List[Dict[str, str]], realm: Realm) -> None:
     # This value will be used to set the temporary initial value for different
     # settings since we can only set them to the correct values after the groups
     # are created.
     initial_group_setting_value = -1
 
-    for role in UserGroup.SYSTEM_USER_GROUP_ROLE_MAP:
-        user_group_params = UserGroup.SYSTEM_USER_GROUP_ROLE_MAP[role]
-        user_group = UserGroup(
-            name=user_group_params["name"],
-            description=user_group_params["description"],
-            realm=realm,
-            is_system_group=True,
-            can_mention_group_id=initial_group_setting_value,
-        )
-        role_system_groups_dict[role] = user_group
+    rows = [SQL("({})").format(Literal(realm.id))] * len(groups)
+    query = SQL(
+        """
+        INSERT INTO zerver_usergroup (realm_id)
+        VALUES {rows}
+        RETURNING id
+        """
+    ).format(rows=SQL(", ").join(rows))
+    with connection.cursor() as cursor:
+        cursor.execute(query)
+        user_group_ids = [id for (id,) in cursor.fetchall()]
 
-    full_members_system_group = UserGroup(
-        name=SystemGroups.FULL_MEMBERS,
-        description="Members of this organization, not including new accounts and guests",
-        realm=realm,
-        is_system_group=True,
-        can_mention_group_id=initial_group_setting_value,
-    )
-    everyone_on_internet_system_group = UserGroup(
-        name=SystemGroups.EVERYONE_ON_INTERNET,
-        description="Everyone on the Internet",
-        realm=realm,
-        is_system_group=True,
-        can_mention_group_id=initial_group_setting_value,
-    )
-    nobody_system_group = UserGroup(
-        name=SystemGroups.NOBODY,
-        description="Nobody",
-        realm=realm,
-        is_system_group=True,
-        can_mention_group_id=initial_group_setting_value,
-    )
+    rows = [
+        SQL("({},{},{},{},{},{})").format(
+            Literal(user_group_ids[idx]),
+            Literal(realm.id),
+            Literal(group["name"]),
+            Literal(group["description"]),
+            Literal(True),
+            Literal(initial_group_setting_value),
+        )
+        for idx, group in enumerate(groups)
+    ]
+    query = SQL(
+        """
+        INSERT INTO zerver_namedusergroup (usergroup_ptr_id, realm_id, name, description, is_system_group, can_mention_group_id)
+        VALUES {rows}
+        """
+    ).format(rows=SQL(", ").join(rows))
+    with connection.cursor() as cursor:
+        cursor.execute(query)
+
+
+@transaction.atomic(savepoint=False)
+def create_system_user_groups_for_realm(realm: Realm) -> Dict[int, NamedUserGroup]:
+    """Any changes to this function likely require a migration to adjust
+    existing realms.  See e.g. migration 0382_create_role_based_system_groups.py,
+    which is a copy of this function from when we introduced system groups.
+    """
+    role_system_groups_dict: Dict[int, NamedUserGroup] = {}
+
+    system_groups_info_list: List[Dict[str, str]] = []
+
+    nobody_group_info = {
+        "name": SystemGroups.NOBODY,
+        "description": "Nobody",
+    }
+
+    full_members_group_info = {
+        "name": SystemGroups.FULL_MEMBERS,
+        "description": "Members of this organization, not including new accounts and guests",
+    }
+
+    everyone_on_internet_group_info = {
+        "name": SystemGroups.EVERYONE_ON_INTERNET,
+        "description": "Everyone on the Internet",
+    }
+
+    system_groups_info_list = [
+        nobody_group_info,
+        NamedUserGroup.SYSTEM_USER_GROUP_ROLE_MAP[UserProfile.ROLE_REALM_OWNER],
+        NamedUserGroup.SYSTEM_USER_GROUP_ROLE_MAP[UserProfile.ROLE_REALM_ADMINISTRATOR],
+        NamedUserGroup.SYSTEM_USER_GROUP_ROLE_MAP[UserProfile.ROLE_MODERATOR],
+        full_members_group_info,
+        NamedUserGroup.SYSTEM_USER_GROUP_ROLE_MAP[UserProfile.ROLE_MEMBER],
+        NamedUserGroup.SYSTEM_USER_GROUP_ROLE_MAP[UserProfile.ROLE_GUEST],
+        everyone_on_internet_group_info,
+    ]
+
+    bulk_create_system_user_groups(system_groups_info_list, realm)
+
+    system_groups_name_dict: Dict[str, NamedUserGroup] = get_role_based_system_groups_dict(realm)
+    for role in NamedUserGroup.SYSTEM_USER_GROUP_ROLE_MAP:
+        group_name = NamedUserGroup.SYSTEM_USER_GROUP_ROLE_MAP[role]["name"]
+        role_system_groups_dict[role] = system_groups_name_dict[group_name]
+
     # Order of this list here is important to create correct GroupGroupMembership objects
     # Note that because we do not create user memberships here, no audit log entries for
     # user memberships are populated either.
     system_user_groups_list = [
-        nobody_system_group,
-        role_system_groups_dict[UserProfile.ROLE_REALM_OWNER],
-        role_system_groups_dict[UserProfile.ROLE_REALM_ADMINISTRATOR],
-        role_system_groups_dict[UserProfile.ROLE_MODERATOR],
-        full_members_system_group,
-        role_system_groups_dict[UserProfile.ROLE_MEMBER],
-        role_system_groups_dict[UserProfile.ROLE_GUEST],
-        everyone_on_internet_system_group,
+        system_groups_name_dict[SystemGroups.NOBODY],
+        system_groups_name_dict[SystemGroups.OWNERS],
+        system_groups_name_dict[SystemGroups.ADMINISTRATORS],
+        system_groups_name_dict[SystemGroups.MODERATORS],
+        system_groups_name_dict[SystemGroups.FULL_MEMBERS],
+        system_groups_name_dict[SystemGroups.MEMBERS],
+        system_groups_name_dict[SystemGroups.EVERYONE],
+        system_groups_name_dict[SystemGroups.EVERYONE_ON_INTERNET],
     ]
 
     creation_time = timezone_now()
-    UserGroup.objects.bulk_create(system_user_groups_list)
     realmauditlog_objects = [
         RealmAuditLog(
             realm=realm,
@@ -490,25 +544,10 @@ def create_system_user_groups_for_realm(realm: Realm) -> Dict[int, UserGroup]:
     ]
 
     groups_with_updated_settings = []
-    system_groups_name_dict = get_role_based_system_groups_dict(realm)
     for group in system_user_groups_list:
         user_group = set_defaults_for_group_settings(group, {}, system_groups_name_dict)
-        groups_with_updated_settings.append(group)
-        realmauditlog_objects.append(
-            RealmAuditLog(
-                realm=realm,
-                acting_user=None,
-                event_type=RealmAuditLog.USER_GROUP_GROUP_BASED_SETTING_CHANGED,
-                event_time=creation_time,
-                modified_user_group=user_group,
-                extra_data={
-                    RealmAuditLog.OLD_VALUE: None,
-                    RealmAuditLog.NEW_VALUE: user_group.can_mention_group.id,
-                    "property": "can_mention_group",
-                },
-            )
-        )
-    UserGroup.objects.bulk_update(groups_with_updated_settings, ["can_mention_group"])
+        groups_with_updated_settings.append(user_group)
+    NamedUserGroup.objects.bulk_update(groups_with_updated_settings, ["can_mention_group"])
 
     subgroup_objects: List[GroupGroupMembership] = []
     # "Nobody" system group is not a subgroup of any user group, since it is already empty.
@@ -544,10 +583,10 @@ def create_system_user_groups_for_realm(realm: Realm) -> Dict[int, UserGroup]:
     return role_system_groups_dict
 
 
-def get_system_user_group_for_user(user_profile: UserProfile) -> UserGroup:
-    system_user_group_name = UserGroup.SYSTEM_USER_GROUP_ROLE_MAP[user_profile.role]["name"]
+def get_system_user_group_for_user(user_profile: UserProfile) -> NamedUserGroup:
+    system_user_group_name = NamedUserGroup.SYSTEM_USER_GROUP_ROLE_MAP[user_profile.role]["name"]
 
-    system_user_group = UserGroup.objects.get(
+    system_user_group = NamedUserGroup.objects.get(
         name=system_user_group_name, realm=user_profile.realm, is_system_group=True
     )
     return system_user_group
@@ -557,5 +596,5 @@ def get_server_supported_permission_settings() -> ServerSupportedPermissionSetti
     return ServerSupportedPermissionSettings(
         realm=Realm.REALM_PERMISSION_GROUP_SETTINGS,
         stream=Stream.stream_permission_group_settings,
-        group=UserGroup.GROUP_PERMISSION_SETTINGS,
+        group=NamedUserGroup.GROUP_PERMISSION_SETTINGS,
     )

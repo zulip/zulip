@@ -34,7 +34,7 @@ export function handle_topic_updates(user_topic_event) {
         if ($row.length) {
             // If the row exists, update the status only.
             // We don't call 'populate_list' in this case as it re-creates the panel (re-sorts by date updated +
-            // removes topics with status set to 'Default for stream'), making it hard to review the changes
+            // removes topics with status set to 'Default for channel'), making it hard to review the changes
             // and undo if needed.
             const $status = $row.find("select.settings_user_topic_visibility_policy");
             $status.val(visibility_policy);
@@ -47,10 +47,11 @@ export function handle_topic_updates(user_topic_event) {
     }
 
     setTimeout(0, () => {
-        /* Rerender "all messages" if necessary, but defer until after
-         * the browser has rendered the DOM updates scheduled above. */
-        if (message_lists.current !== message_lists.home) {
-            message_lists.home.update_muting_and_rerender();
+        // Defer updates for any background-rendered messages lists until the visible one has been updated.
+        for (const list of message_lists.all_rendered_message_lists()) {
+            if (list.preserve_rendered_state && message_lists.current !== list) {
+                list.update_muting_and_rerender();
+            }
         }
     });
 }
