@@ -18,6 +18,7 @@ import * as flatpickr from "./flatpickr";
 import {$t_html} from "./i18n";
 import * as message_edit from "./message_edit";
 import * as narrow from "./narrow";
+import * as onboarding_steps from "./onboarding_steps";
 import {page_params} from "./page_params";
 import * as poll_modal from "./poll_modal";
 import * as popovers from "./popovers";
@@ -212,13 +213,19 @@ export function initialize() {
         },
     );
 
+    const automatic_new_visibility_policy_banner_selector = `.${CSS.escape(compose_banner.CLASSNAMES.automatic_new_visibility_policy)}`;
     $("body").on(
         "click",
-        `.${CSS.escape(
-            compose_banner.CLASSNAMES.automatic_new_visibility_policy,
-        )} .main-view-banner-action-button`,
+        `${automatic_new_visibility_policy_banner_selector} .main-view-banner-action-button`,
         (event) => {
             event.preventDefault();
+            if ($(event.target).attr("data-action") === "mark-as-read") {
+                $(event.target)
+                    .parents(`${automatic_new_visibility_policy_banner_selector}`)
+                    .remove();
+                onboarding_steps.post_onboarding_step_as_read("visibility_policy_banner");
+                return;
+            }
             window.location.href = "/#settings/notifications";
         },
     );

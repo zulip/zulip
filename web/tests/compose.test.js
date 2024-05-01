@@ -168,10 +168,6 @@ test_ui("send_message_success", ({override, override_rewire}) => {
         assert.equal(data.automatic_new_visibility_policy, 2);
     });
 
-    override(onboarding_steps, "post_onboarding_step_as_read", (onboarding_step_name) => {
-        assert.equal(onboarding_step_name, "visibility_policy_banner");
-    });
-
     let request = {
         locally_echoed: false,
         local_id: "1001",

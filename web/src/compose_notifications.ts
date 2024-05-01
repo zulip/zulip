@@ -73,6 +73,8 @@ export function notify_automatic_new_visibility_policy(
             narrow_url,
             followed,
             button_text: $t({defaultMessage: "Change setting"}),
+            hide_close_button: true,
+            is_onboarding_banner: true,
         }),
     );
     compose_banner.append_compose_banner_to_banner_list($notification, $("#compose_banners"));
