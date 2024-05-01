@@ -147,4 +147,4 @@ user 1234, and user 5678, the correct JSON-encoded query is:
 ```
 
 [view-profile]: /help/view-someones-profile
-[browse-streams]: /help/browse-and-subscribe-to-streams
+[browse-streams]: /help/browse-and-subscribe-to-channels

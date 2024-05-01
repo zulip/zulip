@@ -47,4 +47,4 @@ There are several parameters you can set while creating a channel. All but
 * [Create channels for a new organization](/help/create-channels)
 * [Stream permissions](/help/stream-permissions)
 * [Set default streams for new users](/help/set-default-streams-for-new-users)
-* [Browse and subscribe to streams](/help/browse-and-subscribe-to-streams)
+* [Browse and subscribe to channels](/help/browse-and-subscribe-to-channels)

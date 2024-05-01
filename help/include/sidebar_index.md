@@ -126,7 +126,7 @@
 
 ## Streams & topics
 * [Channels and topics](/help/channels-and-topics)
-* [Browse and subscribe to streams](/help/browse-and-subscribe-to-streams)
+* [Browse and subscribe to channels](/help/browse-and-subscribe-to-channels)
 * [Unsubscribe from a stream](/help/unsubscribe-from-a-stream)
 * [Create a channel](/help/create-a-channel)
 * [View stream subscribers](/help/view-stream-subscribers)
