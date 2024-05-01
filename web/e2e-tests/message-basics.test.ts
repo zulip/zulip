@@ -16,7 +16,7 @@ async function expect_home(page: Page): Promise<void> {
     });
     // Assert that there is only one message list.
     assert.equal((await page.$$(".message-list")).length, 1);
-    assert.strictEqual(await page.title(), "Combined feed - Zulip Dev - Zulip");
+    assert.strictEqual(await page.title(), "Zulip Dev - Combined feed - Zulip");
     await common.check_messages_sent(page, message_list_id, [
         ["Verona > test", ["verona test a", "verona test b"]],
         ["Verona > other topic", ["verona other topic c"]],
