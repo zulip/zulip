@@ -10735,7 +10735,7 @@ paths:
                   example: "google"
                 demote_inactive_streams:
                   description: |
-                    Whether to [demote inactive streams](/help/manage-inactive-streams) in the left sidebar.
+                    Whether to [demote inactive streams](/help/manage-inactive-channels) in the left sidebar.
 
                     - 1 - Automatic
                     - 2 - Always
@@ -13560,7 +13560,7 @@ paths:
                           demote_inactive_streams:
                             type: integer
                             description: |
-                              Whether to [demote inactive streams](/help/manage-inactive-streams) in the left sidebar.
+                              Whether to [demote inactive streams](/help/manage-inactive-channels) in the left sidebar.
 
                               - 1 - Automatic
                               - 2 - Always
@@ -15883,7 +15883,7 @@ paths:
                           demote_inactive_streams:
                             type: integer
                             description: |
-                              Whether to [demote inactive streams](/help/manage-inactive-streams) in the left sidebar.
+                              Whether to [demote inactive streams](/help/manage-inactive-channels) in the left sidebar.
 
                               - 1 - Automatic
                               - 2 - Always
@@ -17035,7 +17035,7 @@ paths:
                   example: "google"
                 demote_inactive_streams:
                   description: |
-                    Whether to [demote inactive streams](/help/manage-inactive-streams) in the left sidebar.
+                    Whether to [demote inactive streams](/help/manage-inactive-channels) in the left sidebar.
 
                     - 1 - Automatic
                     - 2 - Always
