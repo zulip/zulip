@@ -69,7 +69,7 @@ function init() {
 }
 
 function get_suggestions(query) {
-    return search.get_suggestions(query);
+    return search.get_suggestions("", query);
 }
 
 function test(label, f) {
