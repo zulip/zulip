@@ -15,7 +15,7 @@ language](/help/change-your-language).
 Notices about stream settings changes, such as [name](/help/rename-a-stream),
 [description](/help/change-the-stream-description),
 [permission](/help/channel-permissions) and
-[policy](/help/stream-sending-policy) updates are sent to the
+[policy](/help/channel-posting-policy) updates are sent to the
 “stream events” topic in the stream that was modified.
 
 ### New stream announcements

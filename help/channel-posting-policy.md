@@ -1,9 +1,9 @@
-# Stream posting policy
+# Channel posting policy
 
 {!admin-only.md!}
 
-By default, anyone who belongs to a stream can also send messages to
-the stream. However, sometimes it's useful to have a stream (often a
+By default, anyone who belongs to a channel can also send messages to
+the channel. However, sometimes it's useful to have a channel (often a
 [default stream](/help/set-default-streams-for-new-users)) where only
 certain users can send messages.
 
@@ -11,11 +11,11 @@ certain users can send messages.
 
 {relative|stream|all}
 
-1. Select a stream.
+1. Select a channel.
 
 {!select-channel-view-general.md!}
 
-1. Under **Stream permissions**, configure **Who can post to the stream**.
+1. Under **Channel permissions**, configure **Who can post to the channel**.
 
 {!save-changes.md!}
 

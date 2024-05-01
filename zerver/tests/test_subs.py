@@ -1990,7 +1990,7 @@ class StreamAdminTest(ZulipTestCase):
         messages = get_topic_messages(user_profile, stream, "channel events")
         expected_notification = (
             f"@_**{user_profile.full_name}|{user_profile.id}** changed the "
-            "[posting permissions](/help/stream-sending-policy) for this channel:\n\n"
+            "[posting permissions](/help/channel-posting-policy) for this channel:\n\n"
             "* **Old permissions**: All channel members can post.\n"
             "* **New permissions**: Only organization administrators can post."
         )
@@ -2053,7 +2053,7 @@ class StreamAdminTest(ZulipTestCase):
             messages = get_topic_messages(user_profile, stream, "channel events")
             expected_notification = (
                 f"@_**{user_profile.full_name}|{user_profile.id}** changed the "
-                "[posting permissions](/help/stream-sending-policy) for this channel:\n\n"
+                "[posting permissions](/help/channel-posting-policy) for this channel:\n\n"
                 f"* **Old permissions**: {Stream.POST_POLICIES[old_post_policy]}.\n"
                 f"* **New permissions**: {Stream.POST_POLICIES[policy]}."
             )

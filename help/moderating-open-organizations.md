@@ -53,7 +53,7 @@ problematic behavior.
   so only [moderators](/help/roles-and-permissions) can mention everyone in your organization.
 * Create a [default stream](/help/set-default-streams-for-new-users)
   for announcements where [only admins can
-  post](/help/stream-sending-policy).
+  post](/help/channel-posting-policy).
 * Restrict who can [send direct messages](/help/restrict-direct-messages).
 
 ## Response

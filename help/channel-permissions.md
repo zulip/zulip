@@ -81,7 +81,7 @@ administrator can access private channel messages:
 <span class="legend_symbol">&#9726;</span><span class="legend_label">If subscribed to the channel</span>
 
 <span class="legend_symbol">&#10038;</span><span class="legend_label">
-Configurable. See [Stream posting policy](/help/stream-sending-policy),
+Configurable. See [Channel posting policy](/help/channel-posting-policy),
 [Configure who can add users][add-users], and
 [Configure who can remove users][remove-users]
 for details.
@@ -112,7 +112,7 @@ for details.
 
 <span class="legend_symbol">&#10038;</span><span class="legend_label">
 Configurable, but at minimum must be subscribed to the channel.
-See [Stream posting policy](/help/stream-sending-policy),
+See [Channel posting policy](/help/channel-posting-policy),
 [Configure who can add users][add-users], and
 [Configure who can remove users][remove-users]
 for details.
@@ -121,7 +121,7 @@ for details.
 ## Related articles
 
 * [Roles and permissions](/help/roles-and-permissions)
-* [Stream sending policy](/help/stream-sending-policy)
+* [Channel sending policy](/help/channel-posting-policy)
 * [Web-public channels](/help/public-access-option)
 
 [add-users]: /help/configure-who-can-invite-to-streams#configure-who-can-add-users

@@ -229,9 +229,9 @@ channel](/help/create-a-channel#channel-options).
 For most classes, the following streams are recommended:
 
 - **#announcements**: For general announcements about the class. When
-  creating this stream, [restrict posting
-  permissions](/help/stream-sending-policy) so that only course staff
-  ([Administrators and moderators](/help/roles-and-permissions) are
+  creating this channel, [restrict posting
+  permissions](/help/channel-posting-policy) so that only course staff
+  ([administrators and moderators](/help/roles-and-permissions)) are
   allowed to post.
 - **#staff (private)**: For discussions among course staff.
 - **#general**: For random topics, e.g. students forming study groups.
