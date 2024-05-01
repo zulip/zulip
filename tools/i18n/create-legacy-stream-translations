@@ -1,0 +1,44 @@
+#!/usr/bin/env python3
+import json
+import os
+import re
+from subprocess import check_output
+from typing import Dict, List
+
+
+def get_json_filename(locale: str) -> str:
+    return f"locale/{locale}/translations.json"
+
+
+def get_locales() -> List[str]:
+    output = check_output(["git", "ls-files", "locale"], text=True)
+    tracked_files = output.split()
+    regex = re.compile(r"locale/(\w+)/LC_MESSAGES/django.po")
+    locales = []
+    for tracked_file in tracked_files:
+        matched = regex.search(tracked_file)
+        if matched and matched.group(1) != "en_GB":
+            locales.append(matched.group(1))
+
+    return locales
+
+
+def create_legacy_stream_translations(resource: str) -> None:
+    with open(resource) as raw_resource_file:
+        translated_strings = json.load(raw_resource_file)
+
+    stream_strings: Dict[str, str] = {}
+    for line in translated_strings:
+        if "stream" in str(line).lower() and translated_strings[line] != "":
+            stream_strings[line] = translated_strings[line]
+
+    legacy_path = os.path.join("locale", locale, "legacy_stream_translations.json")
+    with open(legacy_path, "w") as f:
+        json.dump(stream_strings, f, ensure_ascii=False, indent=2, sort_keys=True)
+        f.write("\n")
+
+
+for locale in get_locales():
+    path = get_json_filename(locale)
+    if os.path.exists(path):
+        create_legacy_stream_translations(path)
