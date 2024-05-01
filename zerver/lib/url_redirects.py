@@ -95,6 +95,7 @@ HELP_DOCUMENTATION_REDIRECTS: List[URLRedirect] = [
         "/help/add-or-remove-users-from-a-stream", "/help/add-or-remove-users-from-a-channel"
     ),
     URLRedirect("/help/pin-a-stream", "/help/pin-a-channel"),
+    URLRedirect("/help/change-the-color-of-a-stream", "/help/change-the-color-of-a-channel"),
 ]
 
 LANDING_PAGE_REDIRECTS = [

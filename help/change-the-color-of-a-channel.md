@@ -1,9 +1,9 @@
-# Change the color of a stream
+# Change the color of a channel
 
-Zulip assigns each of your streams a color when you subscribe to the
-stream. Changing a stream's color does not change it for anyone else.
+Zulip assigns each of your channels a color when you subscribe to the
+channel. Changing a channel's color does not change it for anyone else.
 
-## Change the color of a stream
+## Change the color of a channel
 
 {start_tabs}
 
@@ -19,17 +19,17 @@ stream. Changing a stream's color does not change it for anyone else.
 
 {end_tabs}
 
-### From the streams page (alternate method)
+### From the channels page (alternate method)
 
 {start_tabs}
 
 {relative|gear|stream-settings}
 
-1. Select a stream.
+1. Select a channel.
 
 {!select-channel-view-personal.md!}
 
-1. Under **Personal settings**, click on the colored square below **Stream color**.
+1. Under **Personal settings**, click on the colored square below **Channel color**.
 
 1. Select a color from the grid, use the color picker, or enter a hex code.
 
