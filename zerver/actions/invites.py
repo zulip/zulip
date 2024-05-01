@@ -438,7 +438,7 @@ def do_revoke_multi_use_invite(multiuse_invite: MultiuseInvite) -> None:
 
 
 @transaction.atomic
-def do_resend_user_invite_email(prereg_user: PreregistrationUser) -> int:
+def do_resend_user_invite_email(prereg_user: PreregistrationUser) -> None:
     # Take a lock on the realm, so we can check for invitation limits without races
     realm_id = assert_is_not_none(prereg_user.realm_id)
     realm = Realm.objects.select_for_update().get(id=realm_id)
@@ -446,16 +446,13 @@ def do_resend_user_invite_email(prereg_user: PreregistrationUser) -> int:
 
     assert prereg_user.referred_by is not None
 
-    prereg_user.invited_at = timezone_now()
-    prereg_user.save()
-
     expiry_date = prereg_user.confirmation.get().expiry_date
     if expiry_date is None:
         invite_expires_in_minutes = None
     else:
         # The resent invitation is reset to expire as long after the
         # reminder is sent as it lasted originally.
-        invite_expires_in_minutes = (expiry_date - prereg_user.invited_at).total_seconds() / 60
+        invite_expires_in_minutes = (expiry_date - timezone_now()).total_seconds() / 60
     prereg_user.confirmation.clear()
 
     do_increment_logging_stat(realm, COUNT_STATS["invites_sent::day"], None, prereg_user.invited_at)
@@ -469,5 +466,3 @@ def do_resend_user_invite_email(prereg_user: PreregistrationUser) -> int:
         "invite_expires_in_minutes": invite_expires_in_minutes,
     }
     queue_event_on_commit("invites", event)
-
-    return datetime_to_timestamp(prereg_user.invited_at)
