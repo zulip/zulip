@@ -68,15 +68,15 @@ Users can disable notifications for `@**topic**` mentions by:
 [globally](/help/dm-mention-alert-notifications) or for [individual
 channels](/help/channel-notifications).
 
-- Muting the [topic](/help/mute-a-topic) or [stream](/help/mute-a-stream).
+- Muting the [topic](/help/mute-a-topic) or [channel](/help/mute-a-channel).
 
-## Mention everyone on a stream
+## Mention everyone on a channel
 
-You can mention everyone on a stream with the `@**all**` mention (or,
+You can mention everyone on a channel with the `@**all**` mention (or,
 equivalently, `@**everyone**` or `@**channel**`). It's best to use these mentions
-only when your message requires timely attention from many stream subscribers.
+only when your message requires timely attention from many channel subscribers.
 An organization can be configured to
-[restrict](/help/restrict-wildcard-mentions) wildcard mentions in large streams.
+[restrict](/help/restrict-wildcard-mentions) wildcard mentions in large channels.
 
 Users can disable notifications for `@**all**`, `@**everyone**`, and
 `@**channel**` mentions by:
@@ -85,7 +85,7 @@ Users can disable notifications for `@**all**`, `@**everyone**`, and
 [globally](/help/dm-mention-alert-notifications) or for [individual
 channels](/help/channel-notifications).
 
-- Muting the [topic](/help/mute-a-topic) or [stream](/help/mute-a-stream).
+- Muting the [topic](/help/mute-a-topic) or [channel](/help/mute-a-channel).
 
 ## Examples
 

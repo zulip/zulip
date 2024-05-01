@@ -11197,7 +11197,7 @@ paths:
 
                           - `"color"`: The hex value of the user's display color for the stream.
 
-                          - `"is_muted"`: Whether the stream is [muted](/help/mute-a-stream).<br>
+                          - `"is_muted"`: Whether the stream is [muted](/help/mute-a-channel).<br>
                             **Changes**: As of Zulip 6.0 (feature level 139), updating either
                             `"is_muted"` or `"in_home_view"` generates two [subscription update
                             events](/api/get-events#subscription-update), one for each property,

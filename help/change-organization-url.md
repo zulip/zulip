@@ -11,7 +11,7 @@ organization URL is a disruptive operation for users:
   to be updated to point to the new organization URL.
 
 We recommend using a [wildcard
-mention](/help/mention-a-user-or-group#mention-everyone-on-a-stream)
+mention](/help/mention-a-user-or-group#mention-everyone-on-a-channel)
 in an announcement stream to notify users that they need to update
 their clients.
 

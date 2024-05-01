@@ -73,4 +73,4 @@ which is especially handy if you are subscribed to a large number of channels.
 ## Related articles
 
 * [Browse and subscribe to channels](/help/browse-and-subscribe-to-channels)
-* [Mute or unmute a stream](/help/mute-a-stream)
+* [Mute or unmute a channel](/help/mute-a-channel)

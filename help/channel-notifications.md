@@ -6,7 +6,7 @@ channel basis.
 ## Configure notifications for a single channel
 
 These settings will override any default channel notification settings. In [muted
-channels](/help/mute-a-stream), channel notification settings apply only to
+channels](/help/mute-a-channel), channel notification settings apply only to
 [unmuted topics](/help/mute-a-topic).
 
 {start_tabs}
@@ -66,7 +66,7 @@ explicitly set a notification preference.
 * [Desktop notifications](/help/desktop-notifications)
 * [Email notifications](/help/email-notifications)
 * [Mobile notifications](/help/mobile-notifications)
-* [Mute or unmute a stream](/help/mute-a-stream)
+* [Mute or unmute a channel](/help/mute-a-channel)
 * [Mute or unmute a topic](/help/mute-a-topic)
 * [DMs, mentions, and alerts](/help/dm-mention-alert-notifications)
 * [Do not disturb](/help/do-not-disturb)
