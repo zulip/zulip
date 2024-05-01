@@ -664,7 +664,7 @@ run_test("getCurrentText/onTextInputHook", ({mock_template}) => {
     $pill_input.text("yellow");
     assert.equal(widget.getCurrentText(), "yellow");
 
-    const key_handler = $container.get_on_handler("keydown", ".input");
+    const key_handler = $container.get_on_handler("input", ".input");
     key_handler({
         key: " ",
         preventDefault: noop,
@@ -674,5 +674,5 @@ run_test("getCurrentText/onTextInputHook", ({mock_template}) => {
         preventDefault: noop,
     });
 
-    assert.deepEqual(widget.items(), [items.blue, items.red, items.yellow]);
+    assert.deepEqual(widget.items(), [items.blue, items.red]);
 });
