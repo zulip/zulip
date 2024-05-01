@@ -35,7 +35,7 @@ preference settings, including the following:
       minimizes the need to [mention](/help/mention-a-user-or-group) other users
       to get their attention.
 
-[default-notifications]: /help/stream-notifications#configure-default-notifications-for-all-streams
+[default-notifications]: /help/channel-notifications#configure-default-notifications-for-all-channels
 
 ## Configure default settings for new users
 

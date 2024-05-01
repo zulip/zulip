@@ -22,6 +22,6 @@ unmute topics.
 ## Related articles
 
 * [Follow a topic](/help/follow-a-topic)
-* [Stream notifications](/help/stream-notifications)
+* [Channel notifications](/help/channel-notifications)
 * [Mute or unmute a topic](/help/mute-a-topic)
 * [Mute or unmute a stream](/help/mute-a-stream)

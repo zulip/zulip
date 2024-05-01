@@ -17,7 +17,7 @@ single place for:
 ## Posting lecture notes and announcements
 
 !!! tip ""
-    [Subscribe to email notifications](/help/stream-notifications) for
+    [Subscribe to email notifications](/help/channel-notifications) for
     streams such as **#announcements** to make sure you never miss an important message.
 
 Many classes use a dedicated stream to post general announcements, e.g.:

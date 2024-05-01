@@ -734,7 +734,7 @@ _Released 2023-01-23_
   “[delay before sending message notification emails](https://zulip.com/help/email-notifications#delay-before-sending-emails)”
   setting.
 - Fixed an error which prevented users from changing
-  [stream-specific notification settings](https://zulip.com/help/stream-notifications#set-notifications-for-a-single-stream).
+  [stream-specific notification settings](https://zulip.com/help/stream-notifications#configure-notifications-for-a-single-stream).
 - Fixed the redirect from `/apps` to https://zulip.com/apps/.
 - Started preserving timezone information in
   [Rocket.Chat imports](https://zulip.com/help/import-from-rocketchat).

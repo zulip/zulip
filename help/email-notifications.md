@@ -4,7 +4,7 @@
 
 Zulip can be configured to send message notification emails for [DMs
 and mentions](/help/dm-mention-alert-notifications), as well as
-[stream messages](/help/stream-notifications).
+[channel messages](/help/channel-notifications).
 
 {start_tabs}
 
@@ -135,5 +135,5 @@ to Zulip Cloud users announcing major changes in Zulip.
 
 * [Using Zulip via email](/help/using-zulip-via-email)
 * [Message a channel by email](/help/message-a-channel-by-email)
-* [Stream notifications](/help/stream-notifications)
+* [Channel notifications](/help/channel-notifications)
 * [Hide message content in emails (for organizations)](/help/hide-message-content-in-emails)

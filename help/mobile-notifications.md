@@ -1,6 +1,6 @@
 # Mobile notifications
 
-You can customize whether [stream messages](/help/stream-notifications),
+You can customize whether [channel messages](/help/channel-notifications),
 [direct messages](/help/dm-mention-alert-notifications) and
 [mentions][notifications-wildcard-mentions] trigger notifications in Zulip's
 [Android](https://zulip.com/apps/ios) and [iOS](https://zulip.com/apps/ios)
@@ -237,7 +237,7 @@ troubleshooting data provided by the mobile app.
 
 ## Related articles
 
-* [Stream notifications](/help/stream-notifications)
+* [Channel notifications](/help/channel-notifications)
 * [DMs, mentions, and alerts](/help/dm-mention-alert-notifications)
 * [Email notifications](/help/email-notifications)
 * [Desktop notifications](/help/desktop-notifications)

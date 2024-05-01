@@ -1,12 +1,12 @@
-# Stream notifications
+# Channel notifications
 
-You can configure desktop, mobile, and email notifications on a stream by
-stream basis.
+You can configure desktop, mobile, and email notifications on a channel by
+channel basis.
 
-## Configure notifications for a single stream
+## Configure notifications for a single channel
 
-These settings will override any default stream notification settings. In [muted
-streams](/help/mute-a-stream), stream notification settings apply only to
+These settings will override any default channel notification settings. In [muted
+channels](/help/mute-a-stream), channel notification settings apply only to
 [unmuted topics](/help/mute-a-topic).
 
 {start_tabs}
@@ -15,18 +15,18 @@ streams](/help/mute-a-stream), stream notification settings apply only to
 
 {!stream-actions.md!}
 
-1. Click **Stream settings**.
+1. Click **Channel settings**.
 
 {!select-channel-view-personal.md!}
 
 1. Under **Notification settings**, toggle your preferred
-   notifications settings for the stream.
+   notifications settings for the channel.
 
 {tab|mobile}
 
 {!stream-long-press-menu.md!}
 
-1. Tap **Stream settings**.
+1. Tap **Channel settings**.
 
 1. Toggle **Notifications**.
 
@@ -34,9 +34,9 @@ streams](/help/mute-a-stream), stream notification settings apply only to
 
 {end_tabs}
 
-## Configure default notifications for all streams
+## Configure default notifications for all channels
 
-These settings only apply to streams where you have not
+These settings only apply to channels where you have not
 explicitly set a notification preference.
 
 {start_tabs}
@@ -46,7 +46,7 @@ explicitly set a notification preference.
 {settings_tab|notifications}
 
 1. In the **Notification triggers** table,
-   toggle the settings for **Streams**.
+   toggle the settings for **Channels**.
 
 {tab|mobile}
 
@@ -56,8 +56,8 @@ explicitly set a notification preference.
 
 1. Tap **Notifications**.
 
-1. Toggle **Stream notifications** to configure mobile push notifications for
-   stream messages.
+1. Toggle **Channel notifications** to configure mobile push notifications for
+   channel messages.
 
 {end_tabs}
 

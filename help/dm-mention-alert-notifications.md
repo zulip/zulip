@@ -50,7 +50,7 @@ for wildcard mentions.
 {end_tabs}
 
 Additionally, you can override this configuration for individual
-streams in your [Stream settings](/help/stream-notifications), and
+streams in your [Channel settings](/help/channel-notifications), and
 administrators can [restrict use of wildcard
 mentions](/help/restrict-wildcard-mentions) in large streams.
 
@@ -82,6 +82,6 @@ case-insensitive.
 * [Email notifications](/help/email-notifications)
 * [Mobile notifications](/help/mobile-notifications)
 * [Restrict wildcard mentions](/help/restrict-wildcard-mentions)
-* [Stream notifications](/help/stream-notifications)
+* [Channel notifications](/help/channel-notifications)
 * [View your mentions](/help/view-your-mentions)
 * [Do not disturb](/help/do-not-disturb)

@@ -76,7 +76,7 @@ New messages will pop a long-running thread to the top, rather than languishing
 in a forgotten sidebar. You’ll never create a new channel (and later forget to
 check it) because your team’s main channel is busy — a busy stream
 works just fine in Zulip! For timely messages, Zulip alerts you with [fully
-customizable](/help/stream-notifications) mobile, email and desktop
+customizable](/help/channel-notifications) mobile, email and desktop
 notifications.
 
 >  “With Zulip, I can manage hundreds of participants across two communities

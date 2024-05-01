@@ -51,6 +51,6 @@ time to focus on your work.
 
 * [Desktop notifications](/help/desktop-notifications)
 * [DMs, mentions, and alerts](/help/dm-mention-alert-notifications)
-* [Stream notifications](/help/stream-notifications)
+* [Channel notifications](/help/channel-notifications)
 * [Email notifications](/help/email-notifications)
 * [Mobile notifications](/help/mobile-notifications)

@@ -98,6 +98,7 @@ HELP_DOCUMENTATION_REDIRECTS: List[URLRedirect] = [
     URLRedirect("/help/change-the-color-of-a-stream", "/help/change-the-color-of-a-channel"),
     URLRedirect("/help/move-content-to-another-stream", "/help/move-content-to-another-channel"),
     URLRedirect("/help/manage-inactive-streams", "/help/manage-inactive-channels"),
+    URLRedirect("/help/stream-notifications", "/help/channel-notifications"),
 ]
 
 LANDING_PAGE_REDIRECTS = [

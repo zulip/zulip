@@ -142,7 +142,7 @@
 * [Manage inactive channels](/help/manage-inactive-channels)
 
 ## Notifications
-* [Stream notifications](/help/stream-notifications)
+* [Channel notifications](/help/channel-notifications)
 * [Topic notifications](/help/topic-notifications)
 * [Follow a topic](/help/follow-a-topic)
 * [DMs, mentions, and alerts](/help/dm-mention-alert-notifications)
