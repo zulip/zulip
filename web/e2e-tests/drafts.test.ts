@@ -177,7 +177,7 @@ async function test_restore_private_message_draft_via_draft_overlay(page: Page):
     await common.pm_recipient.expect(page, `${cordelia_internal_email},${hamlet_internal_email}`);
     assert.strictEqual(
         await common.get_text_from_selector(page, "title"),
-        "Cordelia, Lear's daughter, King Hamlet - Zulip Dev - Zulip",
+        "Zulip Dev - Cordelia, Lear's daughter, King Hamlet - Zulip",
         "Didn't narrow to the direct messages with cordelia and hamlet",
     );
     await page.click("#compose_close");
