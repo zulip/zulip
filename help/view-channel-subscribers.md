@@ -1,12 +1,12 @@
-# View stream subscribers
+# View channel subscribers
 
-Who is subscribed to a stream determines who receives the messages sent there.
-All non-[guest](/help/guest-users) users can view public streams and subscribe
+Who is subscribed to a channel determines who receives the messages sent there.
+All non-[guest](/help/guest-users) users can view public channels and subscribe
 themselves. Organization administrators can
 [configure](/help/configure-who-can-invite-to-streams) who can subscribe and
-unsubscribe other users to streams.
+unsubscribe other users to channels.
 
-## View stream subscribers
+## View channel subscribers
 
 {start_tabs}
 
@@ -14,7 +14,7 @@ unsubscribe other users to streams.
 
 {relative|stream|all}
 
-1. Select a stream.
+1. Select a channel.
 
 {!select-channel-view-subscribers.md!}
 
@@ -22,15 +22,15 @@ unsubscribe other users to streams.
 
 {tab|via-right-sidebar}
 
-1. Click on a stream in the left sidebar.
+1. Click on a channel in the left sidebar.
 
-1. View subscribers in the **In this stream** section in the right sidebar. If
-   the section is collapsed, click **In this stream** to reveal it.
+1. View subscribers in the **In this channel** section in the right sidebar. If
+   the section is collapsed, click **In this channel** to reveal it.
 
 !!! tip ""
 
-    To see the full list of subscribers for a stream that has more than 600
-    people subscribed, scroll to the bottom of the **In this stream** section,
+    To see the full list of subscribers for a channel that has more than 600
+    people subscribed, scroll to the bottom of the **In this channel** section,
     and click **View all subscribers**.
 
 {end_tabs}

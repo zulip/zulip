@@ -155,6 +155,6 @@ subscribe the user.
 * [Set default streams for new users](/help/set-default-streams-for-new-users)
 * [Roles and permissions](/help/roles-and-permissions)
 * [Mention a user or group](/help/mention-a-user-or-group)
-* [View stream subscribers](/help/view-stream-subscribers)
+* [View channel subscribers](/help/view-channel-subscribers)
 
 [unsubscribe]: /help/unsubscribe-from-a-channel

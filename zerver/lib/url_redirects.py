@@ -90,6 +90,7 @@ HELP_DOCUMENTATION_REDIRECTS: List[URLRedirect] = [
     URLRedirect("/help/message-a-stream-by-email", "/help/message-a-channel-by-email"),
     URLRedirect("/help/browse-and-subscribe-to-streams", "/help/browse-and-subscribe-to-channels"),
     URLRedirect("/help/unsubscribe-from-a-stream", "/help/unsubscribe-from-a-channel"),
+    URLRedirect("/help/view-stream-subscribers", "/help/view-channel-subscribers"),
 ]
 
 LANDING_PAGE_REDIRECTS = [
