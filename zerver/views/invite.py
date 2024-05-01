@@ -193,8 +193,8 @@ def resend_user_invite_email(
     if prereg_user.referred_by_id != user_profile.id:
         check_role_based_permissions(prereg_user.invited_as, user_profile, require_admin=True)
 
-    timestamp = do_resend_user_invite_email(prereg_user)
-    return json_success(request, data={"timestamp": timestamp})
+    do_resend_user_invite_email(prereg_user)
+    return json_success(request)
 
 
 @require_member_or_admin

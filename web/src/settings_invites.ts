@@ -201,12 +201,9 @@ function do_resend_invite({$row, invite_id}: {$row: JQuery; invite_id: string}):
         error(xhr) {
             ui_report.generic_row_button_error(xhr, $resend_button);
         },
-        success(raw_data) {
-            const data = z.object({timestamp: z.number()}).parse(raw_data);
+        success() {
             $resend_button.text($t({defaultMessage: "Sent!"}));
             $resend_button.removeClass("resend btn-warning").addClass("sea-green");
-            const timestamp = timerender.absolute_time(data.timestamp * 1000);
-            $row.find(".invited_at").text(timestamp);
         },
     });
 }
