@@ -123,7 +123,7 @@ async function test_restore_message_draft_via_draft_overlay(page: Page): Promise
     });
     assert.strictEqual(
         await common.get_text_from_selector(page, "title"),
-        "#Denmark > tests - Zulip Dev - Zulip",
+        "Zulip Dev - #Denmark > tests - Zulip",
         "Didn't narrow to the right topic.",
     );
 }
