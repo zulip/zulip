@@ -150,7 +150,7 @@ subscribe the user.
 
 * [Browse and subscribe to channels](/help/browse-and-subscribe-to-channels)
 * [Unsubscribe from a channel][unsubscribe]
-* [Manage a user's stream subscriptions](/help/manage-user-stream-subscriptions)
+* [Manage a user's channel subscriptions](/help/manage-user-channel-subscriptions)
 * [Restrict stream invitation](/help/configure-who-can-invite-to-streams)
 * [Set default streams for new users](/help/set-default-streams-for-new-users)
 * [Roles and permissions](/help/roles-and-permissions)

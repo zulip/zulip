@@ -39,6 +39,6 @@ unsubscribe other users to channels.
 
 * [Browse and subscribe to channels](/help/browse-and-subscribe-to-channels)
 * [Unsubscribe from a channel](/help/unsubscribe-from-a-channel)
-* [Manage a user's stream subscriptions](/help/manage-user-stream-subscriptions)
+* [Manage a user's channel subscriptions](/help/manage-user-channel-subscriptions)
 * [Add or remove users from a channel](/help/add-or-remove-users-from-a-channel)
 * [Set default streams for new users](/help/set-default-streams-for-new-users)

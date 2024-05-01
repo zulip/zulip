@@ -100,6 +100,9 @@ HELP_DOCUMENTATION_REDIRECTS: List[URLRedirect] = [
     URLRedirect("/help/manage-inactive-streams", "/help/manage-inactive-channels"),
     URLRedirect("/help/stream-notifications", "/help/channel-notifications"),
     URLRedirect("/help/mute-a-stream", "/help/mute-a-channel"),
+    URLRedirect(
+        "/help/manage-user-stream-subscriptions", "/help/manage-user-channel-subscriptions"
+    ),
 ]
 
 LANDING_PAGE_REDIRECTS = [

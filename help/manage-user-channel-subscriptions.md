@@ -1,25 +1,25 @@
-# Manage a user's stream subscriptions
+# Manage a user's channel subscriptions
 
-## View a user's stream subscriptions
+## View a user's channel subscriptions
 
 !!! warn ""
 
-      **Note**: The list of a user's **Subscribed streams** will be limited to
-      streams for which [you can see all subscribers](/help/stream-permissions).
+      **Note**: The list of a user's **Subscribed channels** will be limited to
+      channels for which [you can see all subscribers](/help/stream-permissions).
 
 {start_tabs}
 
 {!right-sidebar-view-profile.md!}
 
-1. Select the **Streams** tab.
+1. Select the **Channels** tab.
 
 {end_tabs}
 
-## Subscribe a user to a stream
+## Subscribe a user to a channel
 
 Organization administrators can configure which
 [roles](/help/roles-and-permissions) have access to [subscribe
-other users to a stream][configure-invites].
+other users to a channel][configure-invites].
 
 {start_tabs}
 
@@ -27,7 +27,7 @@ other users to a stream][configure-invites].
 
 {relative|stream|all}
 
-1. Select a stream.
+1. Select a channel.
 
 {!select-channel-view-subscribers.md!}
 
@@ -39,10 +39,10 @@ other users to a stream][configure-invites].
 
 {!right-sidebar-view-profile.md!}
 
-1. Select the **Streams** tab.
+1. Select the **Channels** tab.
 
-1. Under **Subscribe user to streams**, select a stream from the
-   dropdown list. You can start typing to filter streams.
+1. Under **Subscribe user to channels**, select a channel from the
+   dropdown list. You can start typing to filter channels.
 
 1. Click the **Subscribe** button.
 
@@ -50,7 +50,7 @@ other users to a stream][configure-invites].
 
 {!automated-dm-stream-subscription.md!}
 
-## Unsubscribe a user from stream(s)
+## Unsubscribe a user from channel(s)
 
 {!admin-only.md!}
 
@@ -63,12 +63,12 @@ channel](/help/unsubscribe-from-a-channel).
 
 {relative|stream|all}
 
-1. Select a stream.
+1. Select a channel.
 
 {!select-channel-view-subscribers.md!}
 
 1. Under **Subscribers**, find the user you would like
-   to remove from the stream.
+   to remove from the channel.
 
 1. In the **Actions** column, click the **Unsubscribe** button in that row.
 
@@ -76,9 +76,9 @@ channel](/help/unsubscribe-from-a-channel).
 
 {!right-sidebar-view-profile.md!}
 
-1. Select the **Streams** tab.
+1. Select the **Channels** tab.
 
-1. Under **Subscribed streams**, find the stream you would like
+1. Under **Subscribed channels**, find the channel you would like
    to remove the user from.
 
 1. Click the **Unsubscribe** button in that row.

@@ -194,7 +194,7 @@
 * [Manage user groups](/help/manage-user-groups)
 * [Change a user's role](/help/change-a-users-role)
 * [Change a user's name](/help/change-a-users-name)
-* [Manage a user's stream subscriptions](/help/manage-user-stream-subscriptions)
+* [Manage a user's channel subscriptions](/help/manage-user-channel-subscriptions)
 * [Restrict name and email changes](/help/restrict-name-and-email-changes)
 * [Restrict profile picture changes](/help/restrict-profile-picture-changes)
 * [Restrict permissions of new members](/help/restrict-permissions-of-new-members)

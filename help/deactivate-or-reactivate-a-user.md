@@ -104,8 +104,8 @@ bots will be deactivated until the user manually
 
 !!! tip ""
 
-    You may want to [review and adjust](/help/manage-user-stream-subscriptions)
-    the reactivated user's stream subscriptions.
+    You may want to [review and adjust](/help/manage-user-channel-subscriptions)
+    the reactivated user's channel subscriptions.
 
 ## Related articles
 

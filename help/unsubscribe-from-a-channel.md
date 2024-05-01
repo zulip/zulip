@@ -80,4 +80,4 @@ You can always unsubscribe from any channel in Zulip.
 
 ## Related articles
 
-* [Manage a user's stream subscriptions](/help/manage-user-stream-subscriptions)
+* [Manage a user's channel subscriptions](/help/manage-user-channel-subscriptions)
