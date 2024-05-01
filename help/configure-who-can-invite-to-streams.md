@@ -39,5 +39,5 @@ subscribed to the stream to configure these settings.
 
 ## Related articles
 
-* [Add or remove users from a stream](/help/add-or-remove-users-from-a-stream)
+* [Add or remove users from a channel](/help/add-or-remove-users-from-a-channel)
 * [Roles and permissions](/help/roles-and-permissions)

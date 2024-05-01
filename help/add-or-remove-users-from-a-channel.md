@@ -1,19 +1,19 @@
-# Add or remove users from a stream
+# Add or remove users from a channel
 
-By default, anyone (other than guests) subscribed to a stream can add
-users to that stream. Additionally, anyone (other than guests) can add
-users to a public stream, whether or not they are subscribed to the
-stream. Anyone can always [unsubscribe themselves from a channel][unsubscribe].
+By default, anyone (other than guests) subscribed to a channel can add
+users to that channel. Additionally, anyone (other than guests) can add
+users to a public channel, whether or not they are subscribed to the
+channel. Anyone can always [unsubscribe themselves from a channel][unsubscribe].
 
-Organization administrators can also unsubscribe *other* users from any stream,
-including streams the admin is not subscribed to. They can also configure which
+Organization administrators can also unsubscribe *other* users from any channel,
+including channels the admin is not subscribed to. They can also configure which
 [roles](/help/roles-and-permissions) have access to [add other users to a
-stream][add-users] or [remove other users from a stream][remove-users].
+channel][add-users] or [remove other users from a channel][remove-users].
 
 [add-users]: /help/configure-who-can-invite-to-streams#configure-who-can-add-users
 [remove-users]: /help/configure-who-can-invite-to-streams#configure-who-can-remove-users
 
-## Add users to a stream
+## Add users to a channel
 
 {start_tabs}
 
@@ -21,19 +21,19 @@ stream][add-users] or [remove other users from a stream][remove-users].
 
 {relative|stream|all}
 
-1. Select a stream.
+1. Select a channel.
 
 {!select-channel-view-subscribers.md!}
 
 1. Under **Add subscribers**, enter a name or email address. The typeahead
-   will only include users who aren't already subscribed to the stream.
+   will only include users who aren't already subscribed to the channel.
 
 1. Click **Add**.
 
 !!! tip ""
 
       To add users in bulk, you can copy members from an
-      existing stream or [user group](/help/user-groups).
+      existing channel or [user group](/help/user-groups).
 
 {tab|mobile}
 
@@ -41,7 +41,7 @@ stream][add-users] or [remove other users from a stream][remove-users].
 
 {!stream-long-press-menu.md!}
 
-1. Tap **Stream settings**.
+1. Tap **Channel settings**.
 
 1. Tap **Add subscribers**.
 
@@ -57,9 +57,9 @@ stream][add-users] or [remove other users from a stream][remove-users].
 
 {!automated-dm-stream-subscription.md!}
 
-## Alternate methods to add users to a stream
+## Alternate methods to add users to a channel
 
-### Via stream settings
+### Via channel settings
 
 {start_tabs}
 
@@ -67,12 +67,12 @@ stream][add-users] or [remove other users from a stream][remove-users].
 
 {!stream-actions.md!}
 
-1. Click **Stream settings**.
+1. Click **Channel settings**.
 
 {!select-channel-view-subscribers.md!}
 
 1. Under **Add subscribers**, enter a name or email address. The typeahead
-   will only include users who aren't already subscribed to the stream.
+   will only include users who aren't already subscribed to the channel.
 
 1. Click **Add**.
 
@@ -80,7 +80,7 @@ stream][add-users] or [remove other users from a stream][remove-users].
 
 {!stream-long-press-menu.md!}
 
-1. Tap **Stream settings**.
+1. Tap **Channel settings**.
 
 1. Tap **Add subscribers**.
 
@@ -100,10 +100,10 @@ stream][add-users] or [remove other users from a stream][remove-users].
 
 When you [mention a user](/help/mention-a-user-or-group) while composing
 a message in the web or desktop app, an alert banner appears above the
-compose box if they are not subscribed to the stream.
+compose box if they are not subscribed to the channel.
 
 Click the **Subscribe them** button on the banner to add the user to the
-stream. You will not see the button if you don't have permission to
+channel. You will not see the button if you don't have permission to
 subscribe the user.
 
 !!! tip ""
@@ -111,7 +111,7 @@ subscribe the user.
       You do not have to send the message you are composing for
       the user to be subscribed this way.
 
-## Remove users from a stream
+## Remove users from a channel
 
 {start_tabs}
 
@@ -119,7 +119,7 @@ subscribe the user.
 
 {relative|stream|all}
 
-1. Select a stream.
+1. Select a channel.
 
 {!select-channel-view-subscribers.md!}
 
@@ -133,16 +133,16 @@ subscribe the user.
 
 {!right-sidebar-view-profile.md!}
 
-1. Select the **Streams** tab.
+1. Select the **Channels** tab.
 
-1. Under **Subscribed streams**, find the stream you would like
+1. Under **Subscribed channels**, find the channel you would like
    to remove the user from.
 
 1. Click the **Unsubscribe** button in that row.
 
 !!! tip ""
 
-    This method is useful if you need to remove one user from multiple streams.
+    This method is useful if you need to remove one user from multiple channels.
 
 {end_tabs}
 

@@ -337,7 +337,7 @@ for your own classes or for your department), you will likely want to:
   from the prior term (e.g. because you posted homework solutions),
   [make all the streams from the class private][make-private]. You’ll
   be able to find and reuse content yourself, and [invite course
-  staff][add-to-stream] to these private streams as needed.
+  staff][add-to-channel] to these private streams as needed.
 - You may choose to [deactivate students’ Zulip
   accounts][deactivate-user] when the class is over.
 - [Unpin streams](/help/pin-a-stream) from the class from your
@@ -357,5 +357,5 @@ HTML archive](https://github.com/zulip/zulip-archive) to archive the information
 * [Moderating open organizations](/help/moderating-open-organizations)
 
 [make-private]: /help/change-the-privacy-of-a-stream
-[add-to-stream]: /help/add-or-remove-users-from-a-stream
+[add-to-channel]: /help/add-or-remove-users-from-a-channel
 [deactivate-user]: /help/deactivate-or-reactivate-a-user#deactivate-a-user

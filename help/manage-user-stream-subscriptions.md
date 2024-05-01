@@ -89,7 +89,7 @@ channel](/help/unsubscribe-from-a-channel).
 
 * [Stream permissions](/help/stream-permissions)
 * [Roles and permissions](/help/roles-and-permissions)
-* [Add or remove users from a stream](/help/add-or-remove-users-from-a-stream)
+* [Add or remove users from a channel](/help/add-or-remove-users-from-a-channel)
 * [Unsubscribe from a channel](/help/unsubscribe-from-a-channel)
 * [View channel subscribers](/help/view-channel-subscribers)
 
