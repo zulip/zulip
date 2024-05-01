@@ -64,7 +64,7 @@ now select the part that you want to quote.
     ZulipUpdateAnnouncement(
         level=3,
         message="""
-- The **All messages** view had been renamed to **Combined feed**.
+- The **All messages** view has been renamed to **Combined feed**.
 [Learn more]({combined_feed_help_url}).
 
 **Web and desktop updates**
