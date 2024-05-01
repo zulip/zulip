@@ -98,6 +98,7 @@ TAB_SECTION_LABELS = {
     "okta": "Okta",
     "onelogin": "OneLogin",
     "azuread": "AzureAD",
+    "entraid": "Microsoft Entra ID",
     "keycloak": "Keycloak",
     "auth0": "Auth0",
     "logged-in": "If you are logged in",
