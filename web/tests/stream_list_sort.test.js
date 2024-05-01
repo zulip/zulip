@@ -54,9 +54,9 @@ const weaving = {
     stream_id: 5,
     pin_to_top: false,
 };
-const stream_hyphen_underscore_slash = {
+const stream_hyphen_underscore_slash_colon = {
     subscribed: true,
-    name: "stream-hyphen_underscore/slash",
+    name: "stream-hyphen_underscore/slash:colon",
     stream_id: 6,
     pin_to_top: false,
 };
@@ -106,7 +106,7 @@ test("basics", ({override_rewire}) => {
     stream_data.add_sub(pneumonia);
     stream_data.add_sub(clarinet);
     stream_data.add_sub(weaving);
-    stream_data.add_sub(stream_hyphen_underscore_slash);
+    stream_data.add_sub(stream_hyphen_underscore_slash_colon);
     stream_data.add_sub(muted_active);
     stream_data.add_sub(muted_pinned);
 
@@ -118,7 +118,7 @@ test("basics", ({override_rewire}) => {
     assert.deepEqual(sorted.normal_streams, [
         clarinet.stream_id,
         fast_tortoise.stream_id,
-        stream_hyphen_underscore_slash.stream_id,
+        stream_hyphen_underscore_slash_colon.stream_id,
     ]);
     assert.deepEqual(sorted.muted_pinned_streams, [muted_pinned.stream_id]);
     assert.deepEqual(sorted.muted_active_streams, [muted_active.stream_id]);
@@ -133,15 +133,15 @@ test("basics", ({override_rewire}) => {
 
     assert.equal(
         stream_list_sort.next_stream_id(fast_tortoise.stream_id),
-        stream_hyphen_underscore_slash.stream_id,
+        stream_hyphen_underscore_slash_colon.stream_id,
     );
     assert.equal(
-        stream_list_sort.next_stream_id(stream_hyphen_underscore_slash.stream_id),
+        stream_list_sort.next_stream_id(stream_hyphen_underscore_slash_colon.stream_id),
         muted_active.stream_id,
     );
     assert.equal(
         stream_list_sort.next_stream_id(fast_tortoise.stream_id),
-        stream_hyphen_underscore_slash.stream_id,
+        stream_hyphen_underscore_slash_colon.stream_id,
     );
     assert.equal(stream_list_sort.next_stream_id(muted_active.stream_id), pneumonia.stream_id);
     assert.equal(stream_list_sort.next_stream_id(pneumonia.stream_id), undefined);
@@ -149,7 +149,7 @@ test("basics", ({override_rewire}) => {
     // Test filtering
     sorted = sort_groups("s");
     assert.deepEqual(sorted.pinned_streams, [scalene.stream_id]);
-    assert.deepEqual(sorted.normal_streams, [stream_hyphen_underscore_slash.stream_id]);
+    assert.deepEqual(sorted.normal_streams, [stream_hyphen_underscore_slash_colon.stream_id]);
     assert.deepEqual(sorted.dormant_streams, []);
 
     assert.equal(stream_list_sort.prev_stream_id(clarinet.stream_id), undefined);
@@ -177,18 +177,22 @@ test("basics", ({override_rewire}) => {
     // Test searching part of stream name with non space word separators
     sorted = sort_groups("hyphen");
     assert.deepEqual(sorted.pinned_streams, []);
-    assert.deepEqual(sorted.normal_streams, [stream_hyphen_underscore_slash.stream_id]);
+    assert.deepEqual(sorted.normal_streams, [stream_hyphen_underscore_slash_colon.stream_id]);
     assert.deepEqual(sorted.dormant_streams, []);
 
     sorted = sort_groups("hyphen_underscore");
     assert.deepEqual(sorted.pinned_streams, []);
-    assert.deepEqual(sorted.normal_streams, [stream_hyphen_underscore_slash.stream_id]);
+    assert.deepEqual(sorted.normal_streams, [stream_hyphen_underscore_slash_colon.stream_id]);
     assert.deepEqual(sorted.dormant_streams, []);
 
-    // Test searching part of stream name with non space word separators
+    sorted = sort_groups("colon");
+    assert.deepEqual(sorted.pinned_streams, []);
+    assert.deepEqual(sorted.normal_streams, [stream_hyphen_underscore_slash_colon.stream_id]);
+    assert.deepEqual(sorted.dormant_streams, []);
+
     sorted = sort_groups("underscore");
     assert.deepEqual(sorted.pinned_streams, []);
-    assert.deepEqual(sorted.normal_streams, [stream_hyphen_underscore_slash.stream_id]);
+    assert.deepEqual(sorted.normal_streams, [stream_hyphen_underscore_slash_colon.stream_id]);
     assert.deepEqual(sorted.dormant_streams, []);
 });
 
