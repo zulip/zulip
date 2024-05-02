@@ -35,6 +35,7 @@ from zerver.models import (
     Stream,
     UserProfile,
 )
+from zerver.models.presence import PresenceSequence
 from zerver.models.realms import (
     CommonPolicyEnum,
     InviteToRealmPolicyEnum,
@@ -286,6 +287,8 @@ def do_create_realm(
                 for backend_name in all_default_backend_names()
             ]
         )
+
+        PresenceSequence.objects.create(realm=realm, last_update_id=0)
 
         maybe_enqueue_audit_log_upload(realm)
 
