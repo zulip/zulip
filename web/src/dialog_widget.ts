@@ -161,9 +161,13 @@ export function launch(conf: DialogWidgetConfig): void {
         $inputs.each(function () {
             const property_name = $(this).attr("name")!;
             if (property_name) {
-                if ($(this).is("input[type='file']") && $(this).prop("files")?.length) {
+                if (
+                    this instanceof HTMLInputElement &&
+                    this.type === "file" &&
+                    this.files?.length
+                ) {
                     // If the input is a file input and a file has been selected, set value to file object
-                    current_values[property_name] = $(this).prop("files")[0];
+                    current_values[property_name] = this.files[0];
                 } else if (property_name === "edit_bot_owner") {
                     current_values[property_name] = $(this).find(".dropdown_widget_value").text();
                 } else {
