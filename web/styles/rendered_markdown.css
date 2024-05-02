@@ -117,7 +117,7 @@
     }
 
     & thead {
-        background-color: hsl(0deg 0% 93%);
+        background-color: var(--color-background-rendered-markdown-thead);
     }
 
     & tr {

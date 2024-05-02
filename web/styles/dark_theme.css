@@ -509,7 +509,6 @@
     }
 
     .new-style .tab-switcher .ind-tab.selected,
-    div.message_content thead,
     .table-striped thead th {
         background-color: hsl(0deg 0% 0% / 50%);
         border-color: hsl(0deg 0% 0% / 90%);
@@ -707,8 +706,7 @@
         background-color: hsl(228deg 11% 17%);
     }
 
-    & thead,
-    .drafts-container .drafts-header,
+    & .drafts-container .drafts-header,
     .nav > li > a:focus,
     .nav > li > a:hover,
     .subscriptions-container .subscriptions-header,
