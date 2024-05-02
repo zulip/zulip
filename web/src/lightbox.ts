@@ -202,11 +202,9 @@ export function clear_for_testing(): void {
 
 export function render_lightbox_media_list(preview_source: string): void {
     if (!is_open) {
-        const media_list = Array.prototype.slice.call(
-            $(
-                ".focused-message-list .message_inline_image img, .focused-message-list .message_inline_video video",
-            ),
-        );
+        const media_list = $(
+            ".focused-message-list .message_inline_image img, .focused-message-list .message_inline_video video",
+        ).toArray();
         const $media_list = $("#lightbox_overlay .image-list").empty();
 
         for (const media of media_list) {
@@ -605,7 +603,7 @@ export function initialize(): void {
         this.blur();
     });
 
-    $("#lightbox_overlay").on("click", ".image-list .image", function () {
+    $("#lightbox_overlay").on("click", ".image-list .image", function (this: HTMLElement) {
         const $media_list = $(this).parent();
         let $original_media_element;
         const is_video = $(this).hasClass("lightbox_video");
@@ -628,7 +626,7 @@ export function initialize(): void {
         $(".image-list .image.selected").removeClass("selected");
         $(this).addClass("selected");
 
-        const parentOffset = this.parentNode.clientWidth + this.parentNode.scrollLeft;
+        const parentOffset = this.parentElement!.clientWidth + this.parentElement!.scrollLeft;
         // this is the left and right of the image compared to its parent.
         const coords = {
             left: this.offsetLeft,
@@ -639,11 +637,11 @@ export function initialize(): void {
             // add 2px margin
             $media_list.animate(
                 {
-                    scrollLeft: coords.right - this.parentNode.clientWidth + 2,
+                    scrollLeft: coords.right - this.parentElement!.clientWidth + 2,
                 },
                 100,
             );
-        } else if (coords.left < this.parentNode.scrollLeft) {
+        } else if (coords.left < this.parentElement!.scrollLeft) {
             // subtract 2px margin
             $media_list.animate({scrollLeft: coords.left - 2}, 100);
         }
