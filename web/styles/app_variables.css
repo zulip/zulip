@@ -188,6 +188,7 @@
     --color-background-private-message-header: hsl(46deg 35% 93%);
     --color-background-private-message-content: hsl(45deg 20% 96%);
     --color-background-stream-message-content: hsl(0deg 0% 100%);
+    --color-selected-message-outline: hsl(217deg 64% 59%);
     --color-message-list-border: hsl(0deg 0% 0% / 16%);
     --color-message-header-contents-border: hsl(0deg 0% 0% / 10%);
     --color-private-message-header-border: hsl(0deg 0% 0% / 10%);
@@ -510,6 +511,7 @@
     --color-private-message-header-border: hsl(0deg 0% 0% / 48%);
     --color-message-header-contents-border-bottom: hsl(0deg 0% 0% / 50%);
     --color-private-message-header-border-bottom: hsl(0deg 0% 0% / 37%);
+    --color-selected-message-outline: hsl(217deg 64% 59% / 70%);
     --color-message-list-border: hsl(0deg 0% 0% / 40%);
     --color-background: hsl(0deg 0% 11%);
     --color-background-widget-input: hsl(225deg 6% 10%);
