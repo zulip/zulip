@@ -74,12 +74,6 @@ export function destroy_indicator($container: JQuery): void {
         return;
     }
     $container.data("destroying", true);
-
-    const spinner = $container.data("spinner_obj");
-    if (spinner !== undefined) {
-        spinner.stop();
-    }
-    $container.removeData("spinner_obj");
     $container.empty();
     $container.css({width: 0, height: 0});
 }
