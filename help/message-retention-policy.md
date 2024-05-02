@@ -72,4 +72,4 @@ more details on precisely how message deletion works in Zulip.
 * [Edit a message](/help/edit-a-message)
 * [Delete a message](/help/delete-a-message)
 * [Delete a topic](/help/delete-a-topic)
-* [Archive a stream](/help/archive-a-stream)
+* [Archive a channel](/help/archive-a-channel)

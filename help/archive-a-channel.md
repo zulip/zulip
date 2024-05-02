@@ -1,19 +1,19 @@
-# Archive a stream
+# Archive a channel
 
 {!admin-only.md!}
 
-Archiving a stream will immediately unsubscribe all users from the stream,
-remove the stream from search and other typeaheads, and remove the stream's
+Archiving a channel will immediately unsubscribe all users from the channel,
+remove the channel from search and other typeaheads, and remove the channel's
 messages from **Combined feed**.
 
-Archiving a stream does not delete a stream's messages. Users will still be
+Archiving a channel does not delete a channel's messages. Users will still be
 able to find any given message by searching for it. However, links to
-messages and topics in the stream may or may not continue to work.
+messages and topics in the channel may or may not continue to work.
 
 In most cases, we recommend [renaming channels](/help/rename-a-channel) rather
 than archiving them.
 
-## Archive a stream
+## Archive a channel
 
 {start_tabs}
 
@@ -21,31 +21,31 @@ than archiving them.
 
 {relative|stream|all}
 
-1. Select a stream.
+1. Select a channel.
 
 1. Click the **trash** <i class="fa fa-trash-o"></i> icon near the top right
-   corner of the stream settings panel.
+   corner of the channel settings panel.
 
 1. Approve by clicking **Confirm**.
 
 !!! tip ""
 
-    You can also hover over a stream in the left sidebar, click on the
+    You can also hover over a channel in the left sidebar, click on the
     **ellipsis** (<i class="zulip-icon zulip-icon-more-vertical"></i>), and
-    select **Stream settings** to access the **trash**
+    select **Channel settings** to access the **trash**
     <i class="fa fa-trash-o"></i> icon.
 
 {end_tabs}
 
 !!! warn ""
 
-    Archiving a stream is currently irreversible via the UI.
+    Archiving a channel is currently irreversible via the UI.
 
-## Unarchiving archived streams
+## Unarchiving archived channels
 
-If you are self-hosting, you can unarchive an archived stream using the
+If you are self-hosting, you can unarchive an archived channel using the
 `unarchive_stream` [management command][management-command]. This will restore
-it as a private stream with shared history, and subscribe all organization
+it as a private channel with shared history, and subscribe all organization
 owners to it. If you are using Zulip Cloud, you can [contact us](/help/contact-support)
 for help.
 

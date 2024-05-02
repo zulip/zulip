@@ -640,7 +640,7 @@ export function initialize() {
                 {"z-link": () => stream_name_with_privacy_symbol_html},
             ),
             id: "archive-stream-modal",
-            help_link: "/help/archive-a-stream",
+            help_link: "/help/archive-a-channel",
             html_body,
             on_click: do_archive_stream,
         });

@@ -17840,7 +17840,7 @@ paths:
       summary: Archive a stream
       tags: ["streams"]
       description: |
-        [Archive the stream](/help/archive-a-stream) with the ID `stream_id`.
+        [Archive the stream](/help/archive-a-channel) with the ID `stream_id`.
       x-requires-administrator: true
       parameters:
         - $ref: "#/components/parameters/StreamIdInPath"

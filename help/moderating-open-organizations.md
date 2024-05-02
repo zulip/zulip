@@ -71,7 +71,7 @@ organization's policy choices.
   their account is reactivated by an administrator.
 * Investigate behavior by [viewing messages sent by a
   user](/help/view-messages-sent-by-a-user).
-* Delete messages, [archive streams](/help/archive-a-stream), and
+* Delete messages, [archive channels](/help/archive-a-channel), and
   [unsubscribe users from channels](/help/add-or-remove-users-from-a-channel).
 * [Move topics](/help/rename-a-topic), including between streams, when
   users start conversations in the wrong place.
