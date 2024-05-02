@@ -170,7 +170,6 @@
 * [Communities directory](/help/communities-directory)
 * [Import from Mattermost](/help/import-from-mattermost)
 * [Import from Slack](/help/import-from-slack)
-* [Import from Gitter](/help/import-from-gitter)
 * [Import from Rocket.Chat](/help/import-from-rocketchat)
 * [Configure authentication methods](/help/configure-authentication-methods)
 * [SAML authentication](/help/saml-authentication)

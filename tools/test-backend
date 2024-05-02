@@ -119,7 +119,6 @@ not_yet_fully_covered = [
     # Data import files; relatively low priority
     "zerver/data_import/sequencer.py",
     "zerver/data_import/slack.py",
-    "zerver/data_import/gitter.py",
     "zerver/data_import/import_util.py",
     # Webhook integrations with incomplete coverage
     "zerver/webhooks/greenhouse/view.py",
