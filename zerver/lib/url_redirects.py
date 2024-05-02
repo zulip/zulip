@@ -114,6 +114,7 @@ HELP_DOCUMENTATION_REDIRECTS: List[URLRedirect] = [
     URLRedirect(
         "/help/set-default-streams-for-new-users", "/help/set-default-channels-for-new-users"
     ),
+    URLRedirect("/help/rename-a-stream", "/help/rename-a-channel"),
 ]
 
 LANDING_PAGE_REDIRECTS = [

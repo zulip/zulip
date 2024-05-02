@@ -10,7 +10,7 @@ Archiving a stream does not delete a stream's messages. Users will still be
 able to find any given message by searching for it. However, links to
 messages and topics in the stream may or may not continue to work.
 
-In most cases, we recommend [renaming streams](/help/rename-a-stream) rather
+In most cases, we recommend [renaming channels](/help/rename-a-channel) rather
 than archiving them.
 
 ## Archive a stream

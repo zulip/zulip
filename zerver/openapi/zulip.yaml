@@ -17865,7 +17865,7 @@ paths:
         an organization administrator editing any property of a stream,
         including:
 
-        - Stream [name](/help/rename-a-stream) and [description](/help/change-the-stream-description)
+        - Stream [name](/help/rename-a-channel) and [description](/help/change-the-stream-description)
         - Stream [permissions](/help/channel-permissions), including
           [privacy](/help/change-the-privacy-of-a-stream) and [who can
           send](/help/channel-posting-policy).

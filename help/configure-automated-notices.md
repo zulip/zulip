@@ -12,7 +12,7 @@ language](/help/change-your-language).
 
 ## Notices about streams
 
-Notices about stream settings changes, such as [name](/help/rename-a-stream),
+Notices about channel settings changes, such as [name](/help/rename-a-channel),
 [description](/help/change-the-stream-description),
 [permission](/help/channel-permissions) and
 [policy](/help/channel-posting-policy) updates are sent to the
