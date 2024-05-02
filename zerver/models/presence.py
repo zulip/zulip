@@ -30,6 +30,8 @@ class UserPresence(models.Model):
     # queries to fetch all presence data for a given realm.
     realm = models.ForeignKey(Realm, on_delete=CASCADE)
 
+    last_update_id = models.PositiveBigIntegerField(db_index=True, default=0)
+
     # The last time the user had a client connected to Zulip,
     # including idle clients where the user hasn't interacted with the
     # system recently (and thus might be AFK).
@@ -58,6 +60,10 @@ class UserPresence(models.Model):
                 fields=["realm", "last_connected_time"],
                 name="zerver_userpresence_realm_id_last_connected_time_98d2fc9f_idx",
             ),
+            models.Index(
+                fields=["realm", "last_update_id"],
+                name="zerver_userpresence_realm_last_update_id_idx",
+            ),
         ]
 
     @staticmethod
@@ -68,6 +74,11 @@ class UserPresence(models.Model):
             return UserPresence.LEGACY_STATUS_IDLE_INT
 
         return None
+
+
+class PresenceSequence(models.Model):
+    realm = models.OneToOneField(Realm, on_delete=CASCADE)
+    last_update_id = models.PositiveBigIntegerField()
 
 
 class UserStatus(AbstractEmoji):
