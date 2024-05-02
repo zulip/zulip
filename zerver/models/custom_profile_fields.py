@@ -35,25 +35,18 @@ from zerver.models.users import UserProfile, get_user_profile_by_id_in_realm
 def check_valid_user_ids(realm_id: int, val: object, allow_deactivated: bool = False) -> List[int]:
     user_ids = check_list(check_int)("User IDs", val)
     realm = Realm.objects.get(id=realm_id)
-    for user_id in user_ids:
-        # TODO: Structurally, we should be doing a bulk fetch query to
-        # get the users here, not doing these in a loop.  But because
-        # this is a rarely used feature and likely to never have more
-        # than a handful of users, it's probably mostly OK.
-        try:
-            user_profile = get_user_profile_by_id_in_realm(user_id, realm)
-        except UserProfile.DoesNotExist:
-            raise ValidationError(_("Invalid user ID: {user_id}").format(user_id=user_id))
-
-        if not allow_deactivated and not user_profile.is_active:
+    users = UserProfile.objects.filter(id__in=user_ids, realm=realm)
+    for user in users:
+        if not allow_deactivated and not user.is_active:
             raise ValidationError(
-                _("User with ID {user_id} is deactivated").format(user_id=user_id)
+                _("User with ID {user_id} is deactivated").format(user_id=user.id)
             )
 
-        if user_profile.is_bot:
-            raise ValidationError(_("User with ID {user_id} is a bot").format(user_id=user_id))
+        if user.is_bot:
+            raise ValidationError(_("User with ID {user_id} is a bot").format(user_id=user.id))
 
     return user_ids
+
 
 
 class CustomProfileField(models.Model):
