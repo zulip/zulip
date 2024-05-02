@@ -108,42 +108,6 @@ export function initialize() {
                     );
                 });
 
-                $popper.one("click", ".sidebar-popover-unmute-topic", () => {
-                    user_topics.set_user_topic_visibility_policy(
-                        stream_id,
-                        topic_name,
-                        user_topics.all_visibility_policies.UNMUTED,
-                    );
-                    popover_menus.hide_current_popover_if_visible(instance);
-                });
-
-                $popper.one("click", ".sidebar-popover-remove-unmute", () => {
-                    user_topics.set_user_topic_visibility_policy(
-                        stream_id,
-                        topic_name,
-                        user_topics.all_visibility_policies.INHERIT,
-                    );
-                    popover_menus.hide_current_popover_if_visible(instance);
-                });
-
-                $popper.one("click", ".sidebar-popover-mute-topic", () => {
-                    user_topics.set_user_topic_visibility_policy(
-                        stream_id,
-                        topic_name,
-                        user_topics.all_visibility_policies.MUTED,
-                    );
-                    popover_menus.hide_current_popover_if_visible(instance);
-                });
-
-                $popper.one("click", ".sidebar-popover-remove-mute", () => {
-                    user_topics.set_user_topic_visibility_policy(
-                        stream_id,
-                        topic_name,
-                        user_topics.all_visibility_policies.INHERIT,
-                    );
-                    popover_menus.hide_current_popover_if_visible(instance);
-                });
-
                 $popper.one("click", ".sidebar-popover-unstar-all-in-topic", () => {
                     starred_messages_ui.confirm_unstar_all_messages_in_topic(
                         Number.parseInt(stream_id, 10),
