@@ -15,6 +15,7 @@ import * as stream_popover from "./stream_popover";
 import * as ui_util from "./ui_util";
 import * as unread_ops from "./unread_ops";
 import * as user_topics from "./user_topics";
+import * as util from "./util";
 
 export function initialize() {
     popover_menus.register_popover_menu(
@@ -63,15 +64,47 @@ export function initialize() {
                     return;
                 }
 
-                $popper.on("click", ".tab-option", (e) => {
-                    $(".tab-option").removeClass("selected-tab");
-                    $(e.currentTarget).addClass("selected-tab");
+                $popper.on("change", "input[name='sidebar-topic-visibility-select']", (e) => {
+                    const start_time = Date.now();
+                    const visibility_policy = Number.parseInt(
+                        $(e.currentTarget).attr("data-visibility-policy"),
+                        10,
+                    );
 
-                    const visibility_policy = $(e.currentTarget).attr("data-visibility-policy");
+                    const success_cb = () => {
+                        setTimeout(
+                            () => {
+                                popover_menus.hide_current_popover_if_visible(instance);
+                            },
+                            util.get_remaining_time(start_time, 500),
+                        );
+                    };
+
+                    const error_cb = () => {
+                        const prev_visibility_policy = user_topics.get_topic_visibility_policy(
+                            stream_id,
+                            topic_name,
+                        );
+                        const $prev_visibility_policy_input = $(e.currentTarget)
+                            .parent()
+                            .find(`input[data-visibility-policy="${prev_visibility_policy}"]`);
+                        setTimeout(
+                            () => {
+                                $prev_visibility_policy_input.prop("checked", true);
+                            },
+                            util.get_remaining_time(start_time, 500),
+                        );
+                    };
+
                     user_topics.set_user_topic_visibility_policy(
                         stream_id,
                         topic_name,
                         visibility_policy,
+                        false,
+                        false,
+                        undefined,
+                        success_cb,
+                        error_cb,
                     );
                 });
 
