@@ -100,7 +100,7 @@ export function get_max_message_id_in_stream(stream_id: number): number {
 }
 
 export function get_topics_for_message_ids(message_ids: number[]): Map<string, [number, string]> {
-    const topics = new Map(); // key = stream_id:topic
+    const topics = new Map<string, [number, string]>(); // key = stream_id:topic
     for (const msg_id of message_ids) {
         // message_store still has data on deleted messages when this runs.
         const message = message_store.get(msg_id);
