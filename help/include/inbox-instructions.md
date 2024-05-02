@@ -9,12 +9,12 @@
 
 !!! tip ""
 
-    You can collapse or expand the list of topics in a stream by clicking the
+    You can collapse or expand the list of topics in a channel by clicking the
     **collapse**
     (<i class="zulip-icon zulip-icon-arrow-down"></i>)
     or **expand**
     (<i class="zulip-icon zulip-icon-arrow-down icon-collapsed-state"></i>)
-    icon to the left of a stream name.
+    icon to the left of a channel name.
 
 {tab|mobile}
 
@@ -27,11 +27,11 @@
 
 !!! tip ""
 
-    You can collapse or expand the list of topics in a stream by tapping the
+    You can collapse or expand the list of topics in a channel by tapping the
     **collapse**
     (<img src="/static/images/help/mobile-expand-less-icon.svg" alt="inbox" class="help-center-icon"/>)
     or **expand**
     (<img src="/static/images/help/mobile-expand-more-icon.svg" alt="inbox" class="help-center-icon"/>)
-    icon to the left of a stream name.
+    icon to the left of a channel name.
 
 {end_tabs}

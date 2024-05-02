@@ -37,9 +37,9 @@ channel][add-users] or [remove other users from a channel][remove-users].
 
 {tab|mobile}
 
-{!mobile-all-streams-view.md!}
+{!mobile-all-channels-view.md!}
 
-{!stream-long-press-menu.md!}
+{!channel-long-press-menu.md!}
 
 1. Tap **Channel settings**.
 
@@ -55,7 +55,7 @@ channel][add-users] or [remove other users from a channel][remove-users].
 
 {end_tabs}
 
-{!automated-dm-stream-subscription.md!}
+{!automated-dm-channel-subscription.md!}
 
 ## Alternate methods to add users to a channel
 
@@ -65,7 +65,7 @@ channel][add-users] or [remove other users from a channel][remove-users].
 
 {tab|desktop-web}
 
-{!stream-actions.md!}
+{!channel-actions.md!}
 
 1. Click **Channel settings**.
 
@@ -78,7 +78,7 @@ channel][add-users] or [remove other users from a channel][remove-users].
 
 {tab|mobile}
 
-{!stream-long-press-menu.md!}
+{!channel-long-press-menu.md!}
 
 1. Tap **Channel settings**.
 
@@ -92,7 +92,7 @@ channel][add-users] or [remove other users from a channel][remove-users].
    (<img src="/static/images/help/mobile-check-circle-icon.svg" alt="checkmark" class="help-center-icon"/>)
    button in the bottom right corner of the app.
 
-{!mobile-stream-settings-menu-tip.md!}
+{!mobile-channel-settings-menu-tip.md!}
 
 {end_tabs}
 
@@ -127,7 +127,7 @@ subscribe the user.
 
 1. Click the **Unsubscribe** button in that row.
 
-{!stream-menu-subscribers-tab-tip.md!}
+{!channel-menu-subscribers-tab-tip.md!}
 
 {tab|via-right-sidebar}
 

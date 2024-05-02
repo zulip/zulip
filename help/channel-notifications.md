@@ -13,7 +13,7 @@ channels](/help/mute-a-channel), channel notification settings apply only to
 
 {tab|desktop-web}
 
-{!stream-actions.md!}
+{!channel-actions.md!}
 
 1. Click **Channel settings**.
 
@@ -24,13 +24,13 @@ channels](/help/mute-a-channel), channel notification settings apply only to
 
 {tab|mobile}
 
-{!stream-long-press-menu.md!}
+{!channel-long-press-menu.md!}
 
 1. Tap **Channel settings**.
 
 1. Toggle **Notifications**.
 
-{!mobile-stream-settings-menu-tip.md!}
+{!mobile-channel-settings-menu-tip.md!}
 
 {end_tabs}
 

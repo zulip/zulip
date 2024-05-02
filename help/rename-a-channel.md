@@ -17,13 +17,13 @@
 
 {!save-changes.md!}
 
-{!stream-settings-general-tab-tip.md!}
+{!channel-settings-general-tab-tip.md!}
 
 {tab|mobile}
 
-{!mobile-all-streams-view.md!}
+{!mobile-all-channels-view.md!}
 
-{!stream-name-long-press-menu.md!}
+{!channel-name-long-press-menu.md!}
 
 1. Tap **Channel settings**.
 
@@ -31,8 +31,8 @@
 
 1. Tap **Save**.
 
-{!stream-name-long-press-menu-tip.md!}
+{!channel-name-long-press-menu-tip.md!}
 
 {end_tabs}
 
-{!automated-notice-stream-event.md!}
+{!automated-notice-channel-event.md!}

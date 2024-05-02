@@ -22,7 +22,7 @@
 
 {tab|mobile}
 
-{!mobile-all-streams-view.md!}
+{!mobile-all-channels-view.md!}
 
 1. Scroll through the list of channels.
 

@@ -58,7 +58,7 @@
 ## Writing messages
 * [Message formatting](/help/format-your-message-using-markdown)
 * [Mention a user or group](/help/mention-a-user-or-group)
-* [Link to a stream, topic, or message](/help/link-to-a-message-or-conversation)
+* [Link to a channel, topic, or message](/help/link-to-a-message-or-conversation)
 * [Format a quote](/help/format-a-quote)
 * [Quote and reply](/help/quote-and-reply)
 * [Emoji and emoticons](/help/emoji-and-emoticons)
@@ -124,7 +124,7 @@
 * [User groups](/help/user-groups)
 * [Find administrators](/help/find-administrators)
 
-## Streams & topics
+## Channels & topics
 * [Channels and topics](/help/channels-and-topics)
 * [Browse and subscribe to channels](/help/browse-and-subscribe-to-channels)
 * [Unsubscribe from a channel](/help/unsubscribe-from-a-channel)
@@ -199,7 +199,7 @@
 * [Restrict profile picture changes](/help/restrict-profile-picture-changes)
 * [Restrict permissions of new members](/help/restrict-permissions-of-new-members)
 
-## Stream management
+## Channel management
 * [Channel permissions](/help/channel-permissions)
 * [Public access option](/help/public-access-option)
 * [Channel posting policy](/help/channel-posting-policy)
@@ -215,7 +215,7 @@
 ## Organization settings
 * [Custom emoji](/help/custom-emoji)
 * [Add a custom linkifier](/help/add-a-custom-linkifier)
-* [Require topics in stream messages](/help/require-topics)
+* [Require topics in channel messages](/help/require-topics)
 * [Restrict direct messages](/help/restrict-direct-messages)
 * [Restrict wildcard mentions](/help/restrict-wildcard-mentions)
 * [Restrict moving messages](/help/restrict-moving-messages)

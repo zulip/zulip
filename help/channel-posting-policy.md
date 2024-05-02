@@ -21,4 +21,4 @@ certain users can send messages.
 
 {end_tabs}
 
-{!automated-notice-stream-event.md!}
+{!automated-notice-channel-event.md!}

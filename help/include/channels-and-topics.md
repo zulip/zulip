@@ -5,7 +5,7 @@ Topics are light-weight subjects, very similar to the subject line of an email.
 Like in email or a forum, messages about the same topic are shown together as a
 conversational thread. Here is what it looks like in Zulip.
 
-![Streams and topics](/static/images/help/streams-and-topics.png)
+![Channels and topics](/static/images/help/streams-and-topics.png)
 
 Topics are one of the most wonderful aspects of using Zulip:
 

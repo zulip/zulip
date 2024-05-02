@@ -26,13 +26,13 @@ disabled. Use Markdown formatting to include a link to a website, Zulip
 
 {!save-changes.md!}
 
-{!stream-settings-general-tab-tip.md!}
+{!channel-settings-general-tab-tip.md!}
 
 {tab|mobile}
 
-{!mobile-all-streams-view.md!}
+{!mobile-all-channels-view.md!}
 
-{!stream-name-long-press-menu.md!}
+{!channel-name-long-press-menu.md!}
 
 1. Tap **Channel settings**.
 
@@ -40,11 +40,11 @@ disabled. Use Markdown formatting to include a link to a website, Zulip
 
 1. Tap **Save**.
 
-{!stream-name-long-press-menu-tip.md!}
+{!channel-name-long-press-menu-tip.md!}
 
 {end_tabs}
 
-{!automated-notice-stream-event.md!}
+{!automated-notice-channel-event.md!}
 
 [markdown-formatting]: /help/format-your-message-using-markdown
 [message-link]: /help/link-to-a-message-or-conversation#get-a-link-to-a-specific-message

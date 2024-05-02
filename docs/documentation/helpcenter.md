@@ -374,7 +374,7 @@ The source for macros is the Markdown files under `help/include` in the
 - **Save changes** `{!save-changes.md!}`: Save changes after modifying
   organization settings.
 
-- **Stream actions** `{!stream-actions.md!}`: Navigate to the stream actions
+- **Stream actions** `{!channel-actions.md!}`: Navigate to the stream actions
   menu from the left sidebar.
 
 - **Start composing** `{!start-composing.md!}`: Open the compose box.

@@ -7,7 +7,7 @@ channel. Changing a channel's color does not change it for anyone else.
 
 {start_tabs}
 
-{!stream-actions.md!}
+{!channel-actions.md!}
 
 1. Click **Change color**.
 

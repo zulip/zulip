@@ -8,17 +8,17 @@
 
 {tab|desktop-web}
 
-{!stream-actions.md!}
+{!channel-actions.md!}
 
 1. Click **Mute channel**.
 
 {tab|mobile}
 
-{!stream-long-press-menu.md!}
+{!channel-long-press-menu.md!}
 
 1. Tap **Mute channel**.
 
-{!stream-long-press-menu-tip.md!}
+{!channel-long-press-menu-tip.md!}
 
 {end_tabs}
 
@@ -29,17 +29,17 @@
 
 {tab|desktop-web}
 
-{!stream-actions.md!}
+{!channel-actions.md!}
 
 1. Click **Unmute channel**.
 
 {tab|mobile}
 
-{!stream-long-press-menu.md!}
+{!channel-long-press-menu.md!}
 
 1. Tap **Unmute channel**.
 
-{!stream-long-press-menu-tip.md!}
+{!channel-long-press-menu-tip.md!}
 
 {end_tabs}
 
@@ -59,13 +59,13 @@
 
 {tab|mobile}
 
-{!stream-long-press-menu.md!}
+{!channel-long-press-menu.md!}
 
 1. Tap **Channel settings**.
 
 1. Toggle **Muted**.
 
-{!mobile-stream-settings-menu-tip.md!}
+{!mobile-channel-settings-menu-tip.md!}
 
 {end_tabs}
 

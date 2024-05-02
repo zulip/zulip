@@ -48,7 +48,7 @@ other users to a channel][configure-invites].
 
 {end_tabs}
 
-{!automated-dm-stream-subscription.md!}
+{!automated-dm-channel-subscription.md!}
 
 ## Unsubscribe a user from channel(s)
 

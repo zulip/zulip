@@ -82,7 +82,7 @@ organization's policy choices.
 
 ## Public access option
 
-{!web-public-streams-intro.md!}
+{!web-public-channels-intro.md!}
 
 ## Zulip communities directory
 

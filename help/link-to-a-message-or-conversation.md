@@ -109,11 +109,11 @@ message](/help/quote-and-reply).
 
 {tab|mobile}
 
-{!stream-long-press-menu.md!}
+{!channel-long-press-menu.md!}
 
 1. Tap **Copy link to stream**.
 
-{!stream-long-press-menu-tip.md!}
+{!channel-long-press-menu-tip.md!}
 
 {end_tabs}
 

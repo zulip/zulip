@@ -10,17 +10,17 @@ which is especially handy if you are subscribed to a large number of channels.
 
 {tab|desktop-web}
 
-{!stream-actions.md!}
+{!channel-actions.md!}
 
 1. Click **Pin channel to top**.
 
 {tab|mobile}
 
-{!stream-long-press-menu.md!}
+{!channel-long-press-menu.md!}
 
 1. Tap **Pin to top**.
 
-{!stream-long-press-menu-tip.md!}
+{!channel-long-press-menu-tip.md!}
 
 {end_tabs}
 
@@ -30,17 +30,17 @@ which is especially handy if you are subscribed to a large number of channels.
 
 {tab|desktop-web}
 
-{!stream-actions.md!}
+{!channel-actions.md!}
 
 1. Click **Unpin channel from top**.
 
 {tab|mobile}
 
-{!stream-long-press-menu.md!}
+{!channel-long-press-menu.md!}
 
 1. Tap **Unpin from top**.
 
-{!stream-long-press-menu-tip.md!}
+{!channel-long-press-menu-tip.md!}
 
 {end_tabs}
 
@@ -60,13 +60,13 @@ which is especially handy if you are subscribed to a large number of channels.
 
 {tab|mobile}
 
-{!stream-long-press-menu.md!}
+{!channel-long-press-menu.md!}
 
 1. Tap **Channel settings**.
 
 1. Toggle **Pinned**.
 
-{!mobile-stream-settings-menu-tip.md!}
+{!mobile-channel-settings-menu-tip.md!}
 
 {end_tabs}
 

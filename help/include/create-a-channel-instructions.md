@@ -17,7 +17,7 @@
 
 {tab|mobile}
 
-{!mobile-all-streams-view.md!}
+{!mobile-all-channels-view.md!}
 
 1. Tap the **Create new channel** button at the top of the app.
 

@@ -53,7 +53,7 @@ Standard hosting.
 
 {end_tabs}
 
-{!automated-notice-stream-event.md!}
+{!automated-notice-channel-event.md!}
 
 ## Important details
 

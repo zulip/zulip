@@ -6,17 +6,17 @@ You can always unsubscribe from any channel in Zulip.
 
 {tab|desktop-web}
 
-{!stream-actions.md!}
+{!channel-actions.md!}
 
 1. Click **Unsubscribe**.
 
 {tab|mobile}
 
-{!stream-long-press-menu.md!}
+{!channel-long-press-menu.md!}
 
 1. Tap **Unsubscribe**.
 
-{!stream-long-press-menu-tip.md!}
+{!channel-long-press-menu-tip.md!}
 
 {end_tabs}
 
@@ -36,7 +36,7 @@ You can always unsubscribe from any channel in Zulip.
 
 {tab|mobile}
 
-{!mobile-all-streams-view.md!}
+{!mobile-all-channels-view.md!}
 
 1. Tap the **checkmark**
    (<img src="/static/images/help/mobile-check-icon.svg" alt="checkmark" class="help-center-icon"/>)
@@ -55,7 +55,7 @@ You can always unsubscribe from any channel in Zulip.
 
 {tab|desktop-web}
 
-{!stream-actions.md!}
+{!channel-actions.md!}
 
 1. Click **Channel settings**.
 
@@ -68,13 +68,13 @@ You can always unsubscribe from any channel in Zulip.
 
 {tab|mobile}
 
-{!stream-long-press-menu.md!}
+{!channel-long-press-menu.md!}
 
 1. Tap **Channel settings**.
 
 1. Tap **Unsubscribe**.
 
-{!mobile-stream-settings-menu-tip.md!}
+{!mobile-channel-settings-menu-tip.md!}
 
 {end_tabs}
 

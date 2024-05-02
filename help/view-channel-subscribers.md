@@ -18,7 +18,7 @@ unsubscribe other users to channels.
 
 {!select-channel-view-subscribers.md!}
 
-{!stream-menu-subscribers-tab-tip.md!}
+{!channel-menu-subscribers-tab-tip.md!}
 
 {tab|via-right-sidebar}
 
