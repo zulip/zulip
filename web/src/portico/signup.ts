@@ -1,4 +1,5 @@
 import $ from "jquery";
+import assert from "minimalistic-assert";
 
 import * as common from "../common";
 import {$t} from "../i18n";
@@ -231,8 +232,9 @@ $(() => {
     });
 
     // GitHub auth
-    $("body").on("click", "#choose_email .choose-email-box", function () {
-        this.parentNode.submit();
+    $("body").on("click", "#choose_email .choose-email-box", function (this: HTMLElement) {
+        assert(this.parentElement instanceof HTMLFormElement);
+        this.parentElement.submit();
     });
 
     $("#new-user-email-address-visibility .change_email_address_visibility").on("click", () => {
