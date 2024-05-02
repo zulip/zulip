@@ -289,14 +289,14 @@ function is_hotspot_displayed(hotspot_name: string): number {
     return $(`#hotspot_${hotspot_name}_overlay`).length;
 }
 
-export function close_hotspot_icon(elem: JQuery): void {
-    $(elem).animate(
+export function close_hotspot_icon($elem: JQuery): void {
+    $elem.animate(
         {opacity: 0},
         {
             duration: 300,
-            done: function () {
-                $(elem).css({display: "none"});
-            }.bind(elem),
+            done() {
+                $elem.css({display: "none"});
+            },
         },
     );
 }
@@ -356,9 +356,9 @@ export function initialize(): void {
     load_new(onboarding_steps.filter_new_hotspots(current_user.onboarding_steps));
 
     // open
-    $("body").on("click", ".hotspot-icon", function (e) {
+    $("body").on("click", ".hotspot-icon", function (this: HTMLElement, e) {
         // hide icon
-        close_hotspot_icon(this);
+        close_hotspot_icon($(this));
 
         // show popover
         const match_array = /^hotspot_(.*)_icon$/.exec(
