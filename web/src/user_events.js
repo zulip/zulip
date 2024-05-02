@@ -169,6 +169,9 @@ export const update_person = function update(person) {
     if (Object.hasOwn(person, "is_active")) {
         if (person.is_active) {
             people.add_active_user(person_obj);
+            if (!people.is_valid_bot_user(person.user_id)) {
+                settings_users.redraw_active_users_list();
+            }
         } else {
             people.deactivate(person_obj);
             stream_events.remove_deactivated_user_from_all_streams(person.user_id);

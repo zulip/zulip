@@ -271,6 +271,7 @@ run_test("updates", ({override}) => {
     assert.ok(!people.is_person_active(isaac.user_id));
     assert.ok(user_removed_from_streams);
 
+    override(settings_users, "redraw_active_users_list", noop);
     user_events.update_person({user_id: isaac.user_id, is_active: true});
     assert.ok(people.is_person_active(isaac.user_id));
 

@@ -95,6 +95,10 @@ export function update_view_on_deactivate(user_id) {
     $button.empty().append($("<i>").addClass(["fa", "fa-user-plus"]).attr("aria-hidden", "true"));
     $row.removeClass("reactivated_user");
     $row.addClass("deactivated_user");
+
+    if (!people.is_valid_bot_user(user_id)) {
+        redraw_non_active_users_list();
+    }
 }
 
 function update_view_on_reactivate($row) {
@@ -418,6 +422,26 @@ export function redraw_bots_list() {
     const bot_user_ids = people.get_bot_ids();
     bot_list_widget.replace_list_data(bot_user_ids);
     bot_list_widget.hard_redraw();
+}
+
+export function redraw_active_users_list() {
+    if (!section.active.list_widget) {
+        return;
+    }
+
+    const active_user_ids = people.get_realm_active_human_user_ids();
+    section.active.list_widget.replace_list_data(active_user_ids);
+    section.active.list_widget.hard_redraw();
+}
+
+function redraw_non_active_users_list() {
+    if (!section.deactivated.list_widget) {
+        return;
+    }
+
+    const non_active_user_ids = people.get_non_active_human_ids();
+    section.deactivated.list_widget.replace_list_data(non_active_user_ids);
+    section.deactivated.list_widget.hard_redraw();
 }
 
 function start_data_load() {
