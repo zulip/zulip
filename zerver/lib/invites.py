@@ -6,7 +6,7 @@ from django.utils.timezone import now as timezone_now
 from confirmation.models import Confirmation
 from zerver.models import MultiuseInvite, PreregistrationUser, Realm, UserProfile
 from zerver.models.prereg_users import filter_to_valid_prereg_users
-from zerver.tornado.django_api import send_event
+from zerver.tornado.django_api import send_event_on_commit
 
 
 def notify_invites_changed(
@@ -17,7 +17,7 @@ def notify_invites_changed(
     recipient_ids = admin_ids
     if changed_invite_referrer and changed_invite_referrer.id not in recipient_ids:
         recipient_ids.append(changed_invite_referrer.id)
-    send_event(realm, event, recipient_ids)
+    send_event_on_commit(realm, event, recipient_ids)
 
 
 def get_valid_invite_confirmations_generated_by_user(
