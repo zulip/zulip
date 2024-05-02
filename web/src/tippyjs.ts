@@ -278,7 +278,7 @@ export function initialize(): void {
             if (title === undefined) {
                 return false;
             }
-            const filename = $(instance.reference).prop("data-filename");
+            const filename = $(instance.reference).attr("data-filename");
             const $markup = $("<span>").text(title);
             if (title !== filename) {
                 // If the image title is the same as the filename, there's no reason

@@ -258,7 +258,7 @@ function display_image(payload: Payload): void {
     $(".media-description .title")
         .text(payload.title ?? "N/A")
         .attr("aria-label", payload.title ?? "N/A")
-        .prop("data-filename", filename ?? "N/A");
+        .attr("data-filename", filename ?? "N/A");
     if (payload.user !== undefined) {
         $(".media-description .user").text(payload.user).prop("title", payload.user);
     }
@@ -303,7 +303,7 @@ function display_video(payload: Payload): void {
         $(".media-description .title")
             .text(payload.title ?? "N/A")
             .attr("aria-label", payload.title ?? "N/A")
-            .prop("data-filename", filename ?? "N/A");
+            .attr("data-filename", filename ?? "N/A");
         if (payload.user !== undefined) {
             $(".media-description .user").text(payload.user).prop("title", payload.user);
         }
