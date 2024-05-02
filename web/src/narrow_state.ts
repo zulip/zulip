@@ -55,11 +55,11 @@ export function search_string(filter?: Filter): string {
     return Filter.unparse(search_terms(filter));
 }
 
-// Collect terms which appear only once into an object,
+// Collect terms which appear only once into a map,
 // and discard those which appear more than once.
 function collect_single(terms: NarrowTerm[]): Map<string, string> {
-    const seen = new Map();
-    const result = new Map();
+    const seen = new Set<string>();
+    const result = new Map<string, string>();
 
     for (const term of terms) {
         const key = term.operator;
@@ -67,7 +67,7 @@ function collect_single(terms: NarrowTerm[]): Map<string, string> {
             result.delete(key);
         } else {
             result.set(key, term.operand);
-            seen.set(key, true);
+            seen.add(key);
         }
     }
 
