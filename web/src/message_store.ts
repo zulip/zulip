@@ -15,10 +15,17 @@ export type MessageReactionType = "unicode_emoji" | "realm_emoji" | "zulip_extra
 export type DisplayRecipientUser = {
     email: string;
     full_name: string;
-    id: number;
-    is_mirror_dummy: boolean;
-    unknown_local_echo_user?: boolean;
-};
+    is_mirror_dummy?: boolean;
+} & (
+    | {
+          unknown_local_echo_user: true;
+          id: undefined;
+      }
+    | {
+          unknown_local_echo_user?: false;
+          id: number;
+      }
+);
 
 export type DisplayRecipient = string | DisplayRecipientUser[];
 
