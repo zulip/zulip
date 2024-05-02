@@ -29,13 +29,20 @@ from zerver.lib.validator import (
     validate_select_field,
 )
 from zerver.models.realms import Realm
-from zerver.models.users import UserProfile, get_user_profile_by_id_in_realm
+from zerver.models.users import UserProfile
 
 
 def check_valid_user_ids(realm_id: int, val: object, allow_deactivated: bool = False) -> List[int]:
     user_ids = check_list(check_int)("User IDs", val)
     realm = Realm.objects.get(id=realm_id)
     users = UserProfile.objects.filter(id__in=user_ids, realm=realm)
+    
+    if len(users) != len(user_ids):
+        invalid_user_ids = set(user_ids) - set(users.values_list("id", flat=True))
+        raise ValidationError(
+            _("Invalid user ID: {user_id}").format(user_id=invalid_user_ids.pop())
+        )
+    
     for user in users:
         if not allow_deactivated and not user.is_active:
             raise ValidationError(
