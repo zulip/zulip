@@ -192,36 +192,52 @@ Coffee`,
 `,
     },
     {
-        markdown: "/todo",
+        markdown: `/todo Today's tasks
+Task 1: This is the first task.
+Task 2: This is the second task
+Last task`,
         output_html: `\
 <div class="message_content rendered_markdown">
-   <div class="widget-content">
-      <div class="todo-widget">
-        <h4>Task list</h4>
-        <ul class="todo-widget new-style">
-            <li>
-                <label class="checkbox">
-                    <div>
-                        <input type="checkbox" class="task">
-                        <span></span>
-                    </div>
-                    <div>
-                        <strong>Submit final budget</strong> - Due Friday
-                    </div>
-                </label>
-            </li>
-            <li>
-                <label class="checkbox">
-                    <div>
-                        <input type="checkbox" class="task" checked="checked">
-                        <span></span>
-                    </div>
-                    <strike><em><strong>Share draft budget</strong> - By Tuesday</em></strike>
-                </label>
-            </li>
-        </ul>
-      </div>
-   </div>
+    <div class="widget-content">
+        <div class="todo-widget">
+            <h4>Today's tasks</h4>
+            <ul class="todo-widget new-style">
+                <li>
+                    <label class="checkbox">
+                        <div>
+                            <input type="checkbox" class="task" checked="checked">
+                            <span></span>
+                        </div>
+                        <div>
+                            <strike><strong>Task 1:</strong> This is the first task.</strike>
+                        </div>
+                    </label>
+                </li>
+                <li>
+                    <label class="checkbox">
+                        <div>
+                            <input type="checkbox" class="task">
+                            <span></span>
+                        </div>
+                        <div>
+                            <strong>Task 2:</strong> This is the second task.
+                        </div>
+                    </label>
+                </li>
+                <li>
+                    <label class="checkbox">
+                        <div>
+                            <input type="checkbox" class="task">
+                            <span></span>
+                        </div>
+                        <div>
+                            <strong>Last task</strong>
+                        </div>
+                    </label>
+                </li>
+            </ul>
+        </div>
+    </div>
 </div>
 `,
     },
