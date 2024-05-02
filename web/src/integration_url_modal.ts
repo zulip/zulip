@@ -37,7 +37,7 @@ export function show_generate_integration_url_modal(api_key: string): void {
         let integration_input_dropdown_widget: DropdownWidget;
         let previous_selected_integration = "";
 
-        const $override_topic = $("#integration-url-override-topic");
+        const $override_topic = $<HTMLInputElement>("input#integration-url-override-topic");
         const $topic_input = $<HTMLInputElement>("input#integration-url-topic-input");
         const $integration_url = $("#generate-integration-url-modal .integration-url");
         const $dialog_submit_button = $("#generate-integration-url-modal .dialog_submit_button");
@@ -56,7 +56,7 @@ export function show_generate_integration_url_modal(api_key: string): void {
         });
 
         $override_topic.on("change", function () {
-            const checked = $(this).prop("checked");
+            const checked = this.checked;
             $topic_input.parent().toggleClass("hide", !checked);
         });
 
