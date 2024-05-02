@@ -28,7 +28,7 @@ problematic behavior.
 
 * Restrict who can [create channels](/help/configure-who-can-create-channels), or
   monitor new streams by enabling [new stream
-  announcements](/help/configure-automated-notices#new-stream-announcements).
+  announcements](/help/configure-automated-notices#new-channel-announcements).
 * Restrict who can [add custom emoji](/help/custom-emoji#change-who-can-add-custom-emoji).
 * Restrict who can [move messages to another
   stream](/help/restrict-moving-messages#configure-who-can-move-messages-to-another-stream),

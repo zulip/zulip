@@ -4,29 +4,29 @@ The Zulip sends automated notices via **Notification Bot** to notify users about
 changes in their organization or account. Some types of notices can be
 configured, or disabled altogether.
 
-Notices sent to streams are translated into the language that the organization
+Notices sent to channels are translated into the language that the organization
 has configured as the [language for automated messages and invitation
 emails](/help/configure-organization-language). The topic name is also
 translated. Notices sent directly to users will use [their preferred
 language](/help/change-your-language).
 
-## Notices about streams
+## Notices about channels
 
 Notices about channel settings changes, such as [name](/help/rename-a-channel),
-[description](/help/change-the-stream-description),
+[description](/help/change-the-channel-description),
 [permission](/help/channel-permissions) and
 [policy](/help/channel-posting-policy) updates are sent to the
-“stream events” topic in the stream that was modified.
+“channel events” topic in the channel that was modified.
 
-### New stream announcements
+### New channel announcements
 
 {!admin-only.md!}
 
 When creating a new [public channel](/help/channel-permissions), the
-stream creator can choose to advertise the new stream via an automated
-notice. You can configure what stream Zulip uses for these notices, or
+channel creator can choose to advertise the new channel via an automated
+notice. You can configure what channel Zulip uses for these notices, or
 disable these notices entirely. The topic for these messages is “new
-streams”.
+channels”.
 
 New [private](/help/channel-permissions) channels are never announced.
 
@@ -34,7 +34,7 @@ New [private](/help/channel-permissions) channels are never announced.
 
 {settings_tab|organization-settings}
 
-1. Under **Automated messages and emails**, configure **New stream
+1. Under **Automated messages and emails**, configure **New channel
    announcements**.
 
 {!save-changes.md!}
@@ -83,7 +83,7 @@ Zulip announces new features and other important product changes via automated
 messages. This is designed to help users discover new features they may find
 useful, including new configuration options.
 
-These announcements are posted to the “Zulip updates” topic in the stream selected by
+These announcements are posted to the “Zulip updates” topic in the channel selected by
 organization administrators. You can read update messages whenever it's
 convenient, or [mute](/help/mute-a-topic) the topic if you are not interested.
 If you organization does not want to receive these announcements, they can be

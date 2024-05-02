@@ -7,16 +7,16 @@ search of your complete history.
 
 Zulip supports configuring both a global organization-level message
 retention policy, as well as retention policies for individual
-streams.  These policies control how many days a message is stored
+channels.  These policies control how many days a message is stored
 before being automatically deleted (the default being forever).
 Zulip's system supports:
 
 * Setting an organization-level retention policy, which applies to
-  all direct messages and all streams without a specific policy.
-* Setting a retention policy for individual streams, which overrides
-  the organization-level policy for that stream.  This can be used to
-  just delete messages on specific streams, to only retain messages
-  forever on specific streams, or just to have a different retention
+  all direct messages and all channels without a specific policy.
+* Setting a retention policy for individual channels, which overrides
+  the organization-level policy for that channel.  This can be used to
+  just delete messages on specific channels, to only retain messages
+  forever on specific channels, or just to have a different retention
   period.
 
 In Zulip Cloud, message retention policies are available on the Zulip
@@ -36,17 +36,17 @@ Standard hosting.
 
 {end_tabs}
 
-### Configure message retention policy for individual streams
+### Configure message retention policy for individual channels
 
 {start_tabs}
 
 {relative|stream|all}
 
-1. Select a stream.
+1. Select a channel.
 
 {!select-channel-view-general.md!}
 
-1. Under **Stream permissions**, configure the
+1. Under **Channel permissions**, configure the
    **Message retention period**.
 
 {!save-changes.md!}

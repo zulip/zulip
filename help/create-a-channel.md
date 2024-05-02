@@ -23,23 +23,23 @@ There are several parameters you can set while creating a channel. All but
 * **Channel description**: Helps users decide whether to subscribe when they
   are browsing channels.
 
-* **Announce new stream in the [stream configured by your organization](/help/configure-automated-notices#new-stream-announcements)**:
-  Posts a message in the "new streams" topic advertising the new stream.
+* **Announce new channel in the [channel configured by your organization](/help/configure-automated-notices#new-channel-announcements)**:
+  Posts a message in the "new channels" topic advertising the new channel.
 
-* **Who can access the stream?**: See [Channel permissions](/help/channel-permissions).
+* **Who can access the channel?**: See [Channel permissions](/help/channel-permissions).
 
 * **Default channel for new users**: Whether new users will be [automatically
   subscribed](/help/set-default-channels-for-new-users) to the new channel.
 
-* **Who can post to the stream?**: See [Channel permissions](/help/channel-permissions).
+* **Who can post to the channel?**: See [Channel permissions](/help/channel-permissions).
 
-* **Who can unsubscribe others from this stream?**: See
+* **Who can unsubscribe others from this channel?**: See
   [Restrict channel membership management](/help/configure-who-can-invite-to-channels#configure-who-can-remove-users).
 
 * **Message retention period**: See
-  [Message retention policy](/help/message-retention-policy#configure-message-retention-policy-for-individual-streams).
+  [Message retention policy](/help/message-retention-policy#configure-message-retention-policy-for-individual-channels).
 
-* **Choose subscribers**: You can copy the membership from an existing stream or
+* **Choose subscribers**: You can copy the membership from an existing channel or
   [user group](/help/user-groups), add all users, or enter users one by one.
 
 ## Related articles

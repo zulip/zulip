@@ -4504,7 +4504,7 @@ paths:
                                         Since these automated messages are sent by the server, this field is
                                         primarily relevant to clients containing UI for changing it.
 
-                                        [new-stream-announce]: /help/configure-automated-notices#new-stream-announcements
+                                        [new-stream-announce]: /help/configure-automated-notices#new-channel-announcements
 
                                         **Changes**: In Zulip 9.0 (feature level 241), renamed 'notifications_stream_id'
                                         to `new_stream_announcements_stream_id`.
@@ -9297,7 +9297,7 @@ paths:
                       description:
                         type: string
                         description: |
-                          The [description](/help/change-the-stream-description)
+                          The [description](/help/change-the-channel-description)
                           to use for a new stream being created, in text/markdown format.
 
                           Clients should use the `max_stream_description_length` returned
@@ -15689,7 +15689,7 @@ paths:
                           Since these automated messages are sent by the server, this field is
                           primarily relevant to clients containing UI for changing it.
 
-                          [new-stream-announce]: /help/configure-automated-notices#new-stream-announcements
+                          [new-stream-announce]: /help/configure-automated-notices#new-channel-announcements
 
                           **Changes**: In Zulip 9.0 (feature level 241), renamed 'realm_notifications_stream_id'
                           to `realm_new_stream_announcements_stream_id`.
@@ -17865,7 +17865,7 @@ paths:
         an organization administrator editing any property of a stream,
         including:
 
-        - Stream [name](/help/rename-a-channel) and [description](/help/change-the-stream-description)
+        - Stream [name](/help/rename-a-channel) and [description](/help/change-the-channel-description)
         - Stream [permissions](/help/channel-permissions), including
           [privacy](/help/change-the-privacy-of-a-stream) and [who can
           send](/help/channel-posting-policy).
@@ -17892,7 +17892,7 @@ paths:
               properties:
                 description:
                   description: |
-                    The new [description](/help/change-the-stream-description) for
+                    The new [description](/help/change-the-channel-description) for
                     the stream, in text/markdown format.
 
                     Clients should use the `max_stream_description_length` returned
@@ -19976,7 +19976,7 @@ components:
         description:
           type: string
           description: |
-            The [description](/help/change-the-stream-description) of the stream in text/markdown format,
+            The [description](/help/change-the-channel-description) of the stream in text/markdown format,
             intended to be used to prepopulate UI for editing a stream's
             description.
 
@@ -19984,7 +19984,7 @@ components:
         rendered_description:
           type: string
           description: |
-            The [description](/help/change-the-stream-description) of the stream rendered as HTML, intended to
+            The [description](/help/change-the-channel-description) of the stream rendered as HTML, intended to
             be used when displaying the stream description in a UI.
 
             One should use the standard Zulip rendered_markdown CSS when
