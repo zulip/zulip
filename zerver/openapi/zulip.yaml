@@ -18672,15 +18672,21 @@ paths:
 
                                 **Changes**: New in Zulip 5.0 (feature level 93).
                             can_mention_group:
-                              type: integer
-                              description: |
-                                ID of the user group whose members are allowed to mention the group.
+                              allOf:
+                                - $ref: "#/components/schemas/CanMentionGroup"
+                                - description: |
+                                    Either the ID of a named user group that has permission to
+                                    mention the group, or an object describing the set of users
+                                    and groups who have permission to mention the group.
 
-                                **Changes**: Before Zulip 8.0 (feature level 198),
-                                the `can_mention_group` setting was named `can_mention_group_id`.
+                                    **Changes**: Before Zulip 9.0 (feature level 258), the
+                                    `can_mention_group` field was always an integer.
 
-                                New in Zulip 8.0 (feature level 191). Previously, groups
-                                could be mentioned if and only if they were not system groups.
+                                    **Changes**: Before Zulip 8.0 (feature level 198),
+                                    the `can_mention_group` setting was named `can_mention_group_id`.
+
+                                    New in Zulip 8.0 (feature level 191). Previously, groups
+                                    could be mentioned if and only if they were not system groups.
                         description: |
                           A list of `user_group` objects.
                     example:
@@ -19878,15 +19884,41 @@ components:
 
             **Changes**: New in Zulip 5.0 (feature level 93).
         can_mention_group:
-          type: integer
-          description: |
-            ID of the user group whose members are allowed to mention the group.
+          allOf:
+            - $ref: "#/components/schemas/CanMentionGroup"
+            - description: |
+                Either the ID of a named user group that has permission to
+                mention the group, or an object describing the set of users
+                and groups who have permission mention the group.
 
-            **Changes**: Before Zulip 8.0 (feature level 198),
-            the `can_mention_group` setting was named `can_mention_group_id`.
+                **Changes**: Before Zulip 9.0 (feature level 258), the
+                `can_mention_group` field was always an integer.
 
-            New in Zulip 8.0 (feature level 191). Previously, groups
-            could be mentioned if and only if they were not system groups.
+                **Changes**: Before Zulip 8.0 (feature level 198),
+                the `can_mention_group` setting was named `can_mention_group_id`.
+
+                New in Zulip 8.0 (feature level 191). Previously, groups
+                could be mentioned if and only if they were not system groups.
+    CanMentionGroup:
+      oneOf:
+        - type: object
+          additionalProperties: false
+          properties:
+            direct_members:
+              description: |
+                The list of user IDs that have permission to
+                mention the group.
+              type: array
+              items:
+                type: integer
+            direct_subgroups:
+              description: |
+                The list of user group IDs that have permission
+                to mention the group.
+              type: array
+              items:
+                type: integer
+        - type: integer
     Invite:
       type: object
       description: |

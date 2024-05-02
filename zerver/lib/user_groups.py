@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from typing import Collection, Dict, Iterable, Iterator, List, Mapping, Optional, TypedDict, Union
 
 from django.db import connection, transaction
-from django.db.models import F, QuerySet
+from django.db.models import F, Prefetch, QuerySet
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
 from django_cte import With
@@ -38,7 +38,7 @@ class UserGroupDict(TypedDict):
     members: List[int]
     direct_subgroup_ids: List[int]
     is_system_group: bool
-    can_mention_group: int
+    can_mention_group: Union[int, AnonymousSettingGroupDict]
 
 
 @dataclass
@@ -319,13 +319,44 @@ def check_user_group_name(group_name: str) -> str:
     return group_name
 
 
+def get_group_setting_value_for_api(
+    setting_value_group: UserGroup,
+) -> Union[int, AnonymousSettingGroupDict]:
+    if hasattr(setting_value_group, "named_user_group"):
+        return setting_value_group.id
+
+    return AnonymousSettingGroupDict(
+        direct_members=[member.id for member in setting_value_group.direct_members.all()],
+        direct_subgroups=[subgroup.id for subgroup in setting_value_group.direct_subgroups.all()],
+    )
+
+
 def user_groups_in_realm_serialized(realm: Realm) -> List[UserGroupDict]:
     """This function is used in do_events_register code path so this code
     should be performant.  We need to do 2 database queries because
     Django's ORM doesn't properly support the left join between
     UserGroup and UserGroupMembership that we need.
     """
-    realm_groups = NamedUserGroup.objects.filter(realm=realm)
+    realm_groups = (
+        NamedUserGroup.objects.select_related(
+            "can_mention_group", "can_mention_group__named_user_group"
+        )
+        # Using prefetch_related results in one query for each field. This is fine
+        # for now but would be problematic when more settings would be added.
+        #
+        # TODO: We should refactor it such that we only make two queries - one
+        # to fetch all the realm groups and the second to fetch all the groups
+        # that they point to and then set the setting fields for realm groups
+        # accordingly in Python.
+        .prefetch_related(
+            Prefetch("can_mention_group__direct_members", queryset=UserProfile.objects.only("id")),
+            Prefetch(
+                "can_mention_group__direct_subgroups", queryset=NamedUserGroup.objects.only("id")
+            ),
+        )
+        .filter(realm=realm)
+    )
+
     group_dicts: Dict[int, UserGroupDict] = {}
     for user_group in realm_groups:
         group_dicts[user_group.id] = dict(
@@ -335,7 +366,7 @@ def user_groups_in_realm_serialized(realm: Realm) -> List[UserGroupDict]:
             members=[],
             direct_subgroup_ids=[],
             is_system_group=user_group.is_system_group,
-            can_mention_group=user_group.can_mention_group_id,
+            can_mention_group=get_group_setting_value_for_api(user_group.can_mention_group),
         )
 
     membership = (

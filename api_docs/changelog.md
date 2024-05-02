@@ -20,6 +20,13 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 9.0
 
+**Feature level 258**:
+
+* [`GET /user_groups`](/api/get-user-groups), [`POST
+  /register`](/api/register-queue): `can_mention_group` field can now
+  either be an ID of a named user group with the permission, or an
+  object describing the set of users and groups with the permission.
+
 **Feature level 257**:
 
 * [`POST /register`](/api/register-queue),

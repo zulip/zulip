@@ -22,6 +22,7 @@ from zerver.lib.streams import ensure_stream
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import most_recent_usermessage
 from zerver.lib.user_groups import (
+    AnonymousSettingGroupDict,
     get_direct_user_groups,
     get_recursive_group_members,
     get_recursive_membership_groups,
@@ -75,6 +76,7 @@ class UserGroupTestCase(ZulipTestCase):
         self.assertEqual(user_groups[0]["description"], "Nobody")
         self.assertEqual(user_groups[0]["members"], [])
         self.assertEqual(user_groups[0]["direct_subgroup_ids"], [])
+        self.assertEqual(user_groups[0]["can_mention_group"], user_group.id)
 
         owners_system_group = NamedUserGroup.objects.get(name=SystemGroups.OWNERS, realm=realm)
         membership = UserGroupMembership.objects.filter(user_group=owners_system_group).values_list(
@@ -85,6 +87,7 @@ class UserGroupTestCase(ZulipTestCase):
         self.assertEqual(user_groups[1]["description"], "Owners of this organization")
         self.assertEqual(set(user_groups[1]["members"]), set(membership))
         self.assertEqual(user_groups[1]["direct_subgroup_ids"], [])
+        self.assertEqual(user_groups[1]["can_mention_group"], user_group.id)
 
         admins_system_group = NamedUserGroup.objects.get(
             name=SystemGroups.ADMINISTRATORS, realm=realm
@@ -93,10 +96,39 @@ class UserGroupTestCase(ZulipTestCase):
         # Check that owners system group is present in "direct_subgroup_ids"
         self.assertEqual(user_groups[2]["direct_subgroup_ids"], [owners_system_group.id])
 
+        everyone_group = NamedUserGroup.objects.get(
+            name=SystemGroups.EVERYONE, realm=realm, is_system_group=True
+        )
         self.assertEqual(user_groups[9]["id"], empty_user_group.id)
         self.assertEqual(user_groups[9]["name"], "newgroup")
         self.assertEqual(user_groups[9]["description"], "")
         self.assertEqual(user_groups[9]["members"], [])
+        self.assertEqual(user_groups[9]["can_mention_group"], everyone_group.id)
+
+        othello = self.example_user("othello")
+        setting_group = UserGroup.objects.create(realm=realm)
+        setting_group.direct_members.set([othello])
+        setting_group.direct_subgroups.set([admins_system_group])
+
+        new_user_group = check_add_user_group(
+            realm,
+            "newgroup2",
+            [othello],
+            group_settings_map={"can_mention_group": setting_group},
+            acting_user=None,
+        )
+        user_groups = user_groups_in_realm_serialized(realm)
+        self.assertEqual(user_groups[10]["id"], new_user_group.id)
+        self.assertEqual(user_groups[10]["name"], "newgroup2")
+        self.assertEqual(user_groups[10]["description"], "")
+        self.assertEqual(user_groups[10]["members"], [othello.id])
+        self.assertEqual(
+            user_groups[10]["can_mention_group"],
+            AnonymousSettingGroupDict(
+                direct_members=[othello.id],
+                direct_subgroups=[admins_system_group.id],
+            ),
+        )
 
     def test_get_direct_user_groups(self) -> None:
         othello = self.example_user("othello")
