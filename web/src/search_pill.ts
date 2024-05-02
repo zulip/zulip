@@ -9,7 +9,7 @@ import type {NarrowTerm} from "./state_data";
 import * as user_status from "./user_status";
 import type {UserStatusEmojiInfo} from "./user_status";
 
-type SearchUserPill = {
+export type SearchUserPill = {
     type: "search_user";
     operator: string;
     // TODO: It would be nice if we just call this `search_string` instead of

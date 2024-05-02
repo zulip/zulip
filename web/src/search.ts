@@ -90,6 +90,10 @@ export function initialize({on_narrow_search}: {on_narrow_search: OnNarrowSearch
         search_input_has_changed = true;
     });
 
+    $search_query_box.on("change", () => {
+        search_typeahead.lookup(false);
+    });
+
     // Data storage for the typeahead.
     // This maps a search string to an object with a "description_html" field.
     // (It's a bit of legacy that we have an object with only one important

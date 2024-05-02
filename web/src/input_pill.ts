@@ -9,6 +9,7 @@ import render_search_user_pill from "../templates/search_user_pill.hbs";
 import * as blueslip from "./blueslip";
 import type {EmojiRenderingDetails} from "./emoji";
 import * as keydown_util from "./keydown_util";
+import type {SearchUserPill} from "./search_pill";
 import * as ui_util from "./ui_util";
 
 // See https://zulip.readthedocs.io/en/latest/subsystems/input-pills.html
@@ -255,6 +256,59 @@ export function create<T>(opts: InputPillCreateOptions<T>): InputPillContainer<T
             return undefined;
         },
 
+        // TODO: This function is only used for the search input supporting multiple user
+        // pills within an individual top-level pill. Ideally, we'd encapsulate it in a
+        // subclass used only for search so that this code can be part of search_pill.ts.
+        removeUserPill(user_container: HTMLElement, user_id: number) {
+            // First get the outer pill that contains the user pills.
+            let container_idx: number | undefined;
+            for (let x = 0; x < store.pills.length; x += 1) {
+                if (store.pills[x]!.$element[0] === user_container) {
+                    container_idx = x;
+                }
+            }
+            assert(container_idx !== undefined);
+            assert(store.pills[container_idx]!.item.type === "search_user");
+            // TODO: Figure out how to get this typed correctly.
+            // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+            const user_pill_container = store.pills[container_idx]!
+                .item as unknown as InputPillItem<SearchUserPill>;
+
+            // If there's only one user in this pill, delete the whole pill.
+            if (user_pill_container.users.length === 1) {
+                assert(user_pill_container.users[0]!.user_id === user_id);
+                this.removePill(user_container);
+                return;
+            }
+
+            // Remove the user id from the pill data.
+            let user_idx: number | undefined;
+            for (let x = 0; x < user_pill_container.users.length; x += 1) {
+                if (user_pill_container.users[x]!.user_id === user_id) {
+                    user_idx = x;
+                }
+            }
+            assert(user_idx !== undefined);
+            user_pill_container.users.splice(user_idx, 1);
+            const sign = user_pill_container.negated ? "-" : "";
+            const search_string =
+                sign +
+                user_pill_container.operator +
+                ":" +
+                user_pill_container.users.map((user) => user.email).join(",");
+            user_pill_container.display_value = search_string;
+
+            // Remove the user pill from the DOM.
+            const $user_pill = $(store.pills[container_idx]!.$element.children(".pill")[user_idx]!);
+            assert($user_pill.data("user-id") === user_id);
+            $user_pill.remove();
+
+            // This is needed to run the "change" event handler registered in
+            // compose_recipient.js, which calls the `update_on_recipient_change` to update
+            // the compose_fade state.
+            store.$input.trigger("change");
+        },
+
         // this will remove the last pill in the container -- by default tied
         // to the "Backspace" key when the value of the input is empty.
         // If quiet is a truthy value, the event handler associated with the
@@ -450,6 +504,18 @@ export function create<T>(opts: InputPillCreateOptions<T>): InputPillContainer<T
         // when the "×" is clicked on a pill, it should delete that pill and then
         // select the next pill (or input).
         store.$parent.on("click", ".exit", function (this: HTMLElement, e) {
+            const $user_pill_container = $(this).parents(".user-pill-container");
+            if ($user_pill_container.length) {
+                // The user-pill-container container class is used exclusively for
+                // group-DM search pills, where multiple user pills sit inside a larger
+                // pill. The exit icons in those individual user pills should remove
+                // just that pill, not the outer pill.
+                // TODO: Figure out how to move this code into search_pill.ts.
+                const user_id = $(this).closest(".pill").attr("data-user-id");
+                assert(user_id !== undefined);
+                funcs.removeUserPill($user_pill_container[0]!, Number.parseInt(user_id, 10));
+                return;
+            }
             e.stopPropagation();
             const $pill = $(this).closest(".pill");
             const $next = $pill.next();

@@ -529,6 +529,9 @@ run_test("exit button on pill", ({mock_template}) => {
                 assert.equal(sel, ".pill");
                 return $curr_pill_stub;
             },
+            parents() {
+                return [];
+            },
         }),
     };
 
