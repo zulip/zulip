@@ -339,6 +339,7 @@
     --color-text-settings-field-hint: hsl(0deg 0% 57%);
 
     /* Markdown colors */
+    --color-background-rendered-markdown-thead: hsl(0deg 0% 93%);
     --color-border-rendered-markdown-table: hsl(0deg 0% 80%);
 
     /* Markdown code colors */
@@ -687,6 +688,9 @@
     );
     --color-text-url-hover: hsl(200deg 79% 66%);
     --color-text-settings-field-hint: hsl(0deg 0% 52%);
+
+    /* Markdown color */
+    --color-background-rendered-markdown-thead: hsl(0deg 0% 0% / 50%);
 
     /* Markdown code colors */
     /* Note that Markdown code-link colors are identical
