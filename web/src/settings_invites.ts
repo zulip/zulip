@@ -235,16 +235,16 @@ export function on_load_success(
     if (!initialize_event_handlers) {
         return;
     }
-    $(".admin_invites_table").on("click", ".revoke", (e) => {
+    $(".admin_invites_table").on("click", ".revoke", function (this: HTMLElement, e) {
         // This click event must not get propagated to parent container otherwise the modal
         // will not show up because of a call to `close_active` in `settings.js`.
         e.preventDefault();
         e.stopPropagation();
-        const $row = $(e.target).closest(".invite_row");
+        const $row = $(this).closest(".invite_row");
         const email = $row.find(".email").text();
         const referred_by = $row.find(".referred_by").text();
-        const invite_id = $(e.currentTarget).attr("data-invite-id")!;
-        const is_multiuse = $(e.currentTarget).attr("data-is-multiuse")!;
+        const invite_id = $(this).attr("data-invite-id")!;
+        const is_multiuse = $(this).attr("data-is-multiuse")!;
         const ctx = {
             is_multiuse: is_multiuse === "true",
             email,
@@ -266,15 +266,15 @@ export function on_load_success(
         $(".dialog_submit_button").attr("data-is-multiuse", is_multiuse);
     });
 
-    $(".admin_invites_table").on("click", ".resend", (e) => {
+    $(".admin_invites_table").on("click", ".resend", function (this: HTMLElement, e) {
         // This click event must not get propagated to parent container otherwise the modal
         // will not show up because of a call to `close_active` in `settings.js`.
         e.preventDefault();
         e.stopPropagation();
 
-        const $row = $(e.target).closest(".invite_row");
+        const $row = $(this).closest(".invite_row");
         const email = $row.find(".email").text();
-        const invite_id = $(e.currentTarget).attr("data-invite-id")!;
+        const invite_id = $(this).attr("data-invite-id")!;
         const html_body = render_settings_resend_invite_modal({email});
 
         confirm_dialog.launch({
