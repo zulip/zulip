@@ -132,10 +132,10 @@ most of their time integrating improvements into Zulip.
 Many communities that migrated from
 [Slack](/help/import-from-slack),
 [Mattermost](/help/import-from-mattermost),
-[Gitter](/help/import-from-gitter), or
-[Rocket.Chat](/help/import-from-rocketchat) to Zulip tell us
-that Zulip helped them manage and grow an inclusive, healthy
-community. We hope Zulip can help your community succeed too!
+[Rocket.Chat](/help/import-from-rocketchat), or
+Gitter to Zulip tell us that Zulip helped them manage
+and grow an inclusive, healthy community. We hope Zulip
+can help your community succeed too!
 
 
 >  “I highly recommend Zulip to other communities. We’re coming from
