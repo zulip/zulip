@@ -23,6 +23,7 @@ from confirmation.models import Confirmation, confirmation_url
 from confirmation.settings import STATUS_USED
 from corporate.lib.activity import format_optional_datetime, remote_installation_stats_link
 from corporate.lib.stripe import (
+    BILLING_SUPPORT_EMAIL,
     RealmBillingSession,
     RemoteRealmBillingSession,
     RemoteServerBillingSession,
@@ -176,10 +177,10 @@ def demo_request(request: HttpRequest) -> HttpResponse:
                 "expected_user_count": form.cleaned_data["expected_user_count"],
                 "message": form.cleaned_data["message"],
             }
-            # Sent to the server's support team, so this email is not user-facing.
+            # Sent to the server's sales team, so this email is not user-facing.
             send_email(
                 "zerver/emails/demo_request",
-                to_emails=[FromAddress.SUPPORT],
+                to_emails=[BILLING_SUPPORT_EMAIL],
                 from_name="Zulip demo request",
                 from_address=FromAddress.tokenized_no_reply_address(),
                 reply_to_email=email_context["email"],
