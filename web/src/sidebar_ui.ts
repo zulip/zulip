@@ -23,7 +23,19 @@ export function hide_userlist_sidebar(): void {
 }
 
 export function show_userlist_sidebar(): void {
-    $(".app-main .column-right").addClass("expanded");
+    const $userlist_sidebar = $(".app-main .column-right");
+    if ($userlist_sidebar.css("display") !== "none") {
+        // Return early if the right sidebar is already visible.
+        return;
+    }
+
+    if (window.innerWidth >= media_breakpoints_num.xl) {
+        $("body").removeClass("hide-right-sidebar");
+        fix_invite_user_button_flicker();
+        return;
+    }
+
+    $userlist_sidebar.addClass("expanded");
     fix_invite_user_button_flicker();
     resize.resize_page_components();
     right_sidebar_expanded_as_overlay = true;
