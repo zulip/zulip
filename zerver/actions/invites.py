@@ -350,6 +350,7 @@ def do_get_invites_controlled_by_user(user_profile: UserProfile) -> List[Dict[st
     return invites
 
 
+@transaction.atomic
 def do_create_multiuse_invite_link(
     referred_by: UserProfile,
     invited_as: int,
@@ -368,6 +369,7 @@ def do_create_multiuse_invite_link(
     )
 
 
+@transaction.atomic
 def do_revoke_user_invite(prereg_user: PreregistrationUser) -> None:
     email = prereg_user.email
     realm = prereg_user.realm
@@ -378,23 +380,20 @@ def do_revoke_user_invite(prereg_user: PreregistrationUser) -> None:
     # to a "revoked" status so that we can give the invited user a better
     # error message.
     content_type = ContentType.objects.get_for_model(PreregistrationUser)
-    with transaction.atomic():
-        Confirmation.objects.filter(content_type=content_type, object_id=prereg_user.id).delete()
-        prereg_user.delete()
-        clear_scheduled_invitation_emails(email)
+    Confirmation.objects.filter(content_type=content_type, object_id=prereg_user.id).delete()
+    prereg_user.delete()
+    clear_scheduled_invitation_emails(email)
     notify_invites_changed(realm, changed_invite_referrer=prereg_user.referred_by)
 
 
+@transaction.atomic
 def do_revoke_multi_use_invite(multiuse_invite: MultiuseInvite) -> None:
     realm = multiuse_invite.referred_by.realm
 
     content_type = ContentType.objects.get_for_model(MultiuseInvite)
-    with transaction.atomic():
-        Confirmation.objects.filter(
-            content_type=content_type, object_id=multiuse_invite.id
-        ).delete()
-        multiuse_invite.status = confirmation_settings.STATUS_REVOKED
-        multiuse_invite.save(update_fields=["status"])
+    Confirmation.objects.filter(content_type=content_type, object_id=multiuse_invite.id).delete()
+    multiuse_invite.status = confirmation_settings.STATUS_REVOKED
+    multiuse_invite.save(update_fields=["status"])
     notify_invites_changed(realm, changed_invite_referrer=multiuse_invite.referred_by)
 
 
