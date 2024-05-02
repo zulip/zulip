@@ -14,7 +14,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-02-23 21:12+0000\n"
+"POT-Creation-Date: 2024-03-06 02:37+0000\n"
 "PO-Revision-Date: 2015-12-06 00:18+0000\n"
 "Last-Translator: rahim agh <rahim.aghareb@gmail.com>, 2023\n"
 "Language-Team: Persian (http://app.transifex.com/zulip/zulip/language/fa/)\n"
@@ -182,75 +182,75 @@ msgstr "لطفاً قبل از شروع آزمایش رایگان، یک کار�
 msgid "Please add a credit card to schedule upgrade."
 msgstr "لطفاً یک کارت اعتباری اضافه کنید تا برنامه‌ریزی ارتقا انجام شود."
 
-#: corporate/lib/stripe.py:2572
+#: corporate/lib/stripe.py:2576
 msgid ""
 "Unable to update the plan. The plan has been expired and replaced with a new"
 " plan."
 msgstr "امکان به روزرسانی این طرح نیست. این طرح منقضی شده و با طرح جدیدتری جابجا شده است."
 
-#: corporate/lib/stripe.py:2577
+#: corporate/lib/stripe.py:2581
 msgid "Unable to update the plan. The plan has ended."
 msgstr "امکان به‌روزرسانی این طرح نیست. این طرح پایان یافته است."
 
-#: corporate/lib/stripe.py:2632
+#: corporate/lib/stripe.py:2636
 msgid ""
 "Cannot update licenses in the current billing period for free trial plan."
 msgstr "نمی‌توان محوزها را در دوره فعلی صورتحساب، برای طرح آزمایشی رایگان به‌روزرسانی کرد."
 
-#: corporate/lib/stripe.py:2637 corporate/lib/stripe.py:2665
+#: corporate/lib/stripe.py:2641 corporate/lib/stripe.py:2669
 msgid ""
 "Unable to update licenses manually. Your plan is on automatic license "
 "management."
 msgstr "امکان به‌روزرسانی مجوزها به صورت غیر اتوماتیک نیست. طرح شما بر روی حالت مدیریت اتوماتیک مجوزها است. "
 
-#: corporate/lib/stripe.py:2643
+#: corporate/lib/stripe.py:2647
 #, python-brace-format
 msgid ""
 "Your plan is already on {licenses} licenses in the current billing period."
 msgstr "طرح شما بر روی {licenses} مجوز، در دوره فاکتور جاری است."
 
-#: corporate/lib/stripe.py:2648
+#: corporate/lib/stripe.py:2652
 msgid "You cannot decrease the licenses in the current billing period."
 msgstr "شما نمی‌توانید در دوره فاکتور جاری تعدا مجوزها را کاهش دهید."
 
-#: corporate/lib/stripe.py:2674
+#: corporate/lib/stripe.py:2678
 msgid ""
 "Cannot change the licenses for next billing cycle for a plan that is being "
 "downgraded."
 msgstr "نمی‌توانید مجوزها را برای دوره صورتحساب بعدی، برای یک طرح که در حال کاهش است، تغییر دهید."
 
-#: corporate/lib/stripe.py:2680
+#: corporate/lib/stripe.py:2684
 #, python-brace-format
 msgid ""
 "Your plan is already scheduled to renew with {licenses_at_next_renewal} "
 "licenses."
 msgstr "طرح شما در حال حاضر برای به روزرسانی با {licenses_at_next_renewal} مجوز، برنامه‌ریزی شده است."
 
-#: corporate/lib/stripe.py:2695
+#: corporate/lib/stripe.py:2699
 msgid "Nothing to change."
 msgstr "چیزی برای تغییر نیست"
 
-#: corporate/lib/stripe.py:2931
+#: corporate/lib/stripe.py:2935
 msgid "No customer for this organization!"
 msgstr "مشتری برای این سازمان نیست!"
 
-#: corporate/lib/stripe.py:2940
+#: corporate/lib/stripe.py:2944
 msgid "Session not found"
 msgstr "جلسه پیدا نشد"
 
-#: corporate/lib/stripe.py:2946 zerver/decorator.py:200
+#: corporate/lib/stripe.py:2950 zerver/decorator.py:200
 msgid "Must be a billing administrator or an organization owner"
 msgstr "باید یک ادمین فاکتور یا یک مالک سازمان باشد"
 
-#: corporate/lib/stripe.py:2957
+#: corporate/lib/stripe.py:2961
 msgid "Payment intent not found"
 msgstr "هدف پرداخت پیدا نشد"
 
-#: corporate/lib/stripe.py:2960
+#: corporate/lib/stripe.py:2964
 msgid "Pass stripe_session_id or stripe_invoice_id"
 msgstr ""
 
-#: corporate/lib/stripe.py:3609
+#: corporate/lib/stripe.py:3613
 #, python-brace-format
 msgid ""
 "Your organization's request for sponsored hosting has been approved! You have been upgraded to {plan_name}, free of charge. {emoji}\n"
@@ -298,7 +298,7 @@ msgstr "کلید zulip_org_key برای این zulip_org_id نامعتبر اس�
 msgid "Your server registration has been deactivated."
 msgstr "ثبت نام سرور شما غیرفعال شده است."
 
-#: corporate/views/support.py:273 zerver/views/streams.py:293
+#: corporate/views/support.py:279 zerver/views/streams.py:293
 #: zerver/views/streams.py:297 zerver/views/streams.py:305
 msgid "Invalid parameters"
 msgstr "پارامترهای نامعتبر"
@@ -604,43 +604,43 @@ msgstr "مطمئن شوید که لینک تایید را به درستی در �
 msgid "Billing"
 msgstr "صورتحساب"
 
-#: templates/corporate/billing/billing.html:373
-#: templates/corporate/billing/billing.html:408
-#: templates/corporate/billing/billing.html:437
-#: templates/corporate/billing/billing.html:466
-#: templates/corporate/billing/billing.html:492
-#: templates/corporate/billing/billing.html:520
+#: templates/corporate/billing/billing.html:376
+#: templates/corporate/billing/billing.html:411
+#: templates/corporate/billing/billing.html:440
+#: templates/corporate/billing/billing.html:469
+#: templates/corporate/billing/billing.html:495
+#: templates/corporate/billing/billing.html:523
 #: templates/zerver/change_email_address_visibility_modal.html:8
 #: templates/zerver/development/email_log.html:33
 msgid "Close modal"
 msgstr "بستن پنجره"
 
-#: templates/corporate/billing/billing.html:393
-#: templates/corporate/billing/billing.html:477
-#: templates/corporate/billing/billing.html:505
-#: templates/corporate/billing/billing.html:533
+#: templates/corporate/billing/billing.html:396
+#: templates/corporate/billing/billing.html:480
+#: templates/corporate/billing/billing.html:508
+#: templates/corporate/billing/billing.html:536
 msgid "Never mind"
 msgstr "بیخیال شو"
 
-#: templates/corporate/billing/billing.html:395
-#: templates/corporate/billing/billing.html:479
-#: templates/corporate/billing/billing.html:507
+#: templates/corporate/billing/billing.html:398
+#: templates/corporate/billing/billing.html:482
+#: templates/corporate/billing/billing.html:510
 msgid "Downgrade"
 msgstr "تنزل نسخه"
 
-#: templates/corporate/billing/billing.html:422
-#: templates/corporate/billing/billing.html:451
+#: templates/corporate/billing/billing.html:425
+#: templates/corporate/billing/billing.html:454
 #: templates/zerver/change_email_address_visibility_modal.html:26
 msgid "Cancel"
 msgstr "لغو کردن"
 
-#: templates/corporate/billing/billing.html:424
-#: templates/corporate/billing/billing.html:453
+#: templates/corporate/billing/billing.html:427
+#: templates/corporate/billing/billing.html:456
 #: templates/zerver/change_email_address_visibility_modal.html:28
 msgid "Confirm"
 msgstr "تایید"
 
-#: templates/corporate/billing/billing.html:535
+#: templates/corporate/billing/billing.html:538
 msgid "Cancel upgrade"
 msgstr "لغو ارتقا"
 
@@ -665,15 +665,14 @@ msgid ""
 " Plan management is not available for this\n"
 "                        organization, because your Zulip server is already on a\n"
 "                        %(server_plan_name)s plan, which covers all\n"
-"                        organizations on this server. Follow the <a\n"
-"                        href=\"https://zulip.com/help/self-hosted-billing#manage-billing\">log\n"
-"                        in instructions</a>\n"
-"                        for <b>All older versions</b>\n"
-"                        of the Zulip server to manage your plan.\n"
+"                        organizations on this server. See the <b>All versions</b> tab of the\n"
+"                        <a href=\"https://zulip.com/help/self-hosted-billing#manage-billing\">log\n"
+"                        in instructions</a> to administer the plan for your\n"
+"                        Zulip server.\n"
 "                        "
-msgstr " مدیریت برنامه برای این سازمان در دسترس نیست،\n                        زیرا سرور Zulip شما در حال حاضر در یک \n                        طرح %(server_plan_name)s است که تمام\n                        سازمان‌ها را در این سرور پوشش می‌دهد.\n                        <a\n                        href=\"https://zulip.com/help/self-hosted-billing#manage-billing\">دستورات ورود</a> را برای\n                        <b>تمام نسخه‌های قدیمی‌تر</b> سرور زولیپ\n                        دنبال کنید تا طرح خود را مدیریت کنید.\n                        "
+msgstr ""
 
-#: templates/corporate/billing/remote_realm_login_error_for_server_on_active_plan.html:29
+#: templates/corporate/billing/remote_realm_login_error_for_server_on_active_plan.html:28
 msgid ""
 " To move the plan from the server to this\n"
 "                        organization, or for other questions, <a href=\"mailto:{{\n"
@@ -1211,14 +1210,14 @@ msgstr "وصل شدن به عنوان یک خود-میزبان"
 msgid "Join as a contributor"
 msgstr "وصل شده به عنوان یک مشارکت‌کننده"
 
-#: templates/corporate/for/business.html:25
+#: templates/corporate/for/business.html:24
 #: templates/corporate/for/communities.html:34
 #: templates/corporate/for/communities.html:64
 #: templates/corporate/for/education.html:32
 #: templates/corporate/for/events.html:34
 #: templates/corporate/for/events.html:288
 #: templates/corporate/for/open-source.html:36
-#: templates/corporate/for/open-source.html:730
+#: templates/corporate/for/open-source.html:729
 #: templates/corporate/for/research.html:36
 #: templates/corporate/for/research.html:416
 #: templates/corporate/for/use-cases.html:23
@@ -1226,19 +1225,19 @@ msgstr "وصل شده به عنوان یک مشارکت‌کننده"
 msgid "Create organization"
 msgstr "ایجاد سازمان "
 
-#: templates/corporate/for/business.html:28
+#: templates/corporate/for/business.html:27
 #: templates/corporate/self-hosting.html:27 templates/zerver/footer.html:11
 msgid "Plans & pricing"
 msgstr "طرح‌ها و قیمت‌ها"
 
-#: templates/corporate/for/business.html:31
+#: templates/corporate/for/business.html:30
 #: templates/corporate/for/communities.html:40
 #: templates/corporate/for/communities.html:70
 #: templates/corporate/for/education.html:38
 #: templates/corporate/for/events.html:40
 #: templates/corporate/for/events.html:294
 #: templates/corporate/for/open-source.html:42
-#: templates/corporate/for/open-source.html:736
+#: templates/corporate/for/open-source.html:735
 #: templates/corporate/for/research.html:42
 #: templates/corporate/for/research.html:422
 #: templates/corporate/for/use-cases.html:29
@@ -1250,7 +1249,7 @@ msgstr "زولیپ خود-میزبان"
 #: templates/corporate/for/events.html:37
 #: templates/corporate/for/events.html:291
 #: templates/corporate/for/open-source.html:39
-#: templates/corporate/for/open-source.html:733
+#: templates/corporate/for/open-source.html:732
 #: templates/corporate/for/research.html:39
 #: templates/corporate/for/research.html:419
 msgid "Request sponsorship"
@@ -1313,7 +1312,7 @@ msgid ""
 "            "
 msgstr "\n            می‌توانید پاسخ‌هایی برای سوال‌های رایج پیدا کنید\n            <a href=\"/help/\">مرکز کمک‌رسانی زولیپ</a>.\n            "
 
-#: templates/corporate/team.html:146
+#: templates/corporate/team.html:139
 msgid "Avatar"
 msgstr "آواتار "
 
@@ -1507,7 +1506,7 @@ msgid "You may now close this window."
 msgstr "شما اکنون می‌توانید این پنجره را ببندید"
 
 #: templates/zerver/config_error/container.html:4
-#: templates/zerver/config_error/container.html:14
+#: templates/zerver/config_error/container.html:12
 msgid "Configuration error"
 msgstr "خطای پیکربندی"
 
@@ -1519,6 +1518,16 @@ msgid ""
 "        your organization and then try again.\n"
 "    "
 msgstr "\n        شما سعی می کنید با استفاده از LDAP بدون آنکه سازمانی ایجاد کرده\n        باشید، وارد سیستم شوید. لطفاً از EmailAuthBackend برای\n        ایجاد سازمان خود استفاده کنید و سپس دوباره امتحان کنید.\n    "
+
+#: templates/zerver/config_error/remote_billing_bouncer_not_configured.html:4
+#, python-format
+msgid ""
+"\n"
+"        This server is not configured to use push notifications. For instructions on how to\n"
+"        configure push notifications, please see the\n"
+"        <a href=\"%(doc_url)s\">documentation</a>.\n"
+"    "
+msgstr ""
 
 #: templates/zerver/confirm_continue_registration.html:4
 msgid "Account not found"
@@ -3999,9 +4008,21 @@ msgstr "لیست مرتب‌شده نباید حاوی پیونددهنده تک
 msgid "The ordered list must enumerate all existing linkifiers exactly once"
 msgstr "لیست مرتب شده باید تمام پیونددهنده‌های موجود را دقیقاً یک بار شمارش کند"
 
-#: zerver/actions/realm_settings.py:220
+#: zerver/actions/realm_settings.py:256
+#, python-brace-format
+msgid ""
+"You need to upgrade to the {required_upgrade_plan_name} plan to use this "
+"authentication method."
+msgstr ""
+
+#: zerver/actions/realm_settings.py:271
 #, python-brace-format
 msgid "Invalid authentication method: {name}. Valid methods are: {methods}"
+msgstr ""
+
+#: zerver/actions/realm_settings.py:297
+#, python-brace-format
+msgid "Authentication method {name} is not available on your current plan."
 msgstr ""
 
 #: zerver/actions/scheduled_messages.py:145
@@ -4192,74 +4213,74 @@ msgstr "زیردامنه در حال حاضر در حال استفاده است.
 msgid "Subdomain reserved. Please choose a different one."
 msgstr "زیردامنه محفوظ است. لطفا یکی دیگر را انتخاب کنید."
 
-#: zerver/forms.py:131 zerver/forms.py:134 zerver/forms.py:278
-#: zerver/lib/email_validation.py:105 zilencer/views.py:148
+#: zerver/forms.py:131 zerver/forms.py:275 zerver/lib/email_validation.py:111
+#: zilencer/views.py:150
 msgid "Please use your real email address."
 msgstr "لطفا از آدرس ایمیل واقعی خود استفاده کنید. "
 
-#: zerver/forms.py:254
+#: zerver/forms.py:251
 #, python-brace-format
 msgid "The organization you are trying to join using {email} does not exist."
 msgstr "سازمانی که قصد عضویت در آن با استفاده از {email} را دارید وجود ندارد. "
 
-#: zerver/forms.py:262
+#: zerver/forms.py:259
 #, python-brace-format
 msgid ""
 "Please request an invite for {email} from the organization administrator."
 msgstr "لطفاً از ادمین سازمان درخواست یک دعوت برای {email} کنید. "
 
-#: zerver/forms.py:273
+#: zerver/forms.py:270
 #, python-brace-format
 msgid ""
 "Your email address, {email}, is not in one of the domains that are allowed "
 "to register for accounts in this organization."
 msgstr "آدرس ایمیل شما، {email}، در هیچکدام از دامنه‌های تعریف شده برای ثبت نام حساب های کاربری در این سازمان، نیست. "
 
-#: zerver/forms.py:281
+#: zerver/forms.py:278
 msgid "Email addresses containing + are not allowed in this organization."
 msgstr "آدرس‌های ایمیل شامل + در این سازمان مجاز نیستند. "
 
-#: zerver/forms.py:294
+#: zerver/forms.py:291
 msgid ""
 "New members cannot join this organization because all Zulip licenses are in "
 "use. Please contact the person who invited you and ask them to increase the "
 "number of licenses, then try again."
 msgstr "کاربران جدید نمی‌توانند به این سازمان متصل شوند چرا که تمام مجوزهای زولیپ استفاده شده‌اند. لطفاً با کسی که شما را دعوت کرده است تماس بگیرید و بخواهید که تعداد مجوزها را افزایش دهند، سپس دوباره تلاش کنید."
 
-#: zerver/forms.py:313
+#: zerver/forms.py:310
 msgid "New password"
 msgstr "کلمه عبور جدید"
 
-#: zerver/forms.py:320
+#: zerver/forms.py:317
 msgid "New password confirmation"
 msgstr "تأیید کلمه عبور جدید"
 
-#: zerver/forms.py:511
+#: zerver/forms.py:508
 #, python-brace-format
 msgid ""
 "You're making too many attempts to sign in. Try again in {seconds} seconds "
 "or contact your organization administrator for help."
 msgstr "شما دفعات زیادی برای ورود به سیستم تلاش کردید. بعد از {seconds} دوباره امتحان کنید یا برای دریافت راهنمایی با ادمین سازمان خود تماس بگیرید."
 
-#: zerver/forms.py:523
+#: zerver/forms.py:520
 msgid ""
 "Your password has been disabled because it is too weak. Reset your password "
 "to create a new one."
 msgstr "کلمه عبور شما غیرفعال شده است چرا که بیش از حد ساده بود. کلمه عبور خود را بازنشانی کنید و یک کلمه عبور جدید تعیین کنید."
 
-#: zerver/forms.py:573
+#: zerver/forms.py:570
 msgid "Token"
 msgstr "توکن"
 
-#: zerver/forms.py:596
+#: zerver/forms.py:593
 msgid "Tip: You can enter multiple email addresses with commas between them."
 msgstr "راهنما: شما می‌توانید چندین آدرس ایمیل را که با ویرگول جدا شده باشند وارد کنید."
 
-#: zerver/forms.py:602
+#: zerver/forms.py:599
 msgid "Please enter at most 10 emails."
 msgstr "لطفا حداکثر 10 ایمیل وارد کنید. "
 
-#: zerver/forms.py:615
+#: zerver/forms.py:612
 msgid "We couldn't find that Zulip organization."
 msgstr "ما نمی‌توانیم این سازمان زولیپ را پیدا کنیم. "
 
@@ -4355,41 +4376,41 @@ msgstr "کاربر همگام‌سازی پیش نویس‌ها را غیرفع�
 msgid "Draft does not exist"
 msgstr "پیش‌نویس وجود ندارد"
 
-#: zerver/lib/email_notifications.py:133 zerver/lib/email_notifications.py:155
+#: zerver/lib/email_notifications.py:134 zerver/lib/email_notifications.py:156
 msgid "Open Zulip to see the spoiler content"
 msgstr "برای دیدن محتوای اسپویلر، زولیپ را باز کنید"
 
-#: zerver/lib/email_notifications.py:570
+#: zerver/lib/email_notifications.py:571
 #, python-brace-format
 msgid "{service_name} notifications"
 msgstr "اطلاع‌رسانی‌های {service_name}"
 
-#: zerver/lib/email_validation.py:98 zilencer/views.py:152
+#: zerver/lib/email_validation.py:104 zilencer/views.py:154
 msgid "Invalid address."
 msgstr "آدرس نامعتبر است. "
 
-#: zerver/lib/email_validation.py:103
+#: zerver/lib/email_validation.py:109
 msgid "Outside your domain."
 msgstr "خارج از دامنه شما است. "
 
-#: zerver/lib/email_validation.py:107 zerver/views/users.py:718
+#: zerver/lib/email_validation.py:113 zerver/views/users.py:718
 msgid "Email addresses containing + are not allowed."
 msgstr "آدرس های ایمیل شامل + مجاز نیستند. "
 
-#: zerver/lib/email_validation.py:152
+#: zerver/lib/email_validation.py:158
 msgid "Reserved for system bots."
 msgstr "برای ربات‌های سیستم رزرو شده است."
 
-#: zerver/lib/email_validation.py:175
+#: zerver/lib/email_validation.py:181
 #, python-brace-format
 msgid "{email} already has an account"
 msgstr "ایمیل {email} یک حساب کاربری دارد"
 
-#: zerver/lib/email_validation.py:177
+#: zerver/lib/email_validation.py:183
 msgid "Already has an account."
 msgstr "قبلاً یک حساب کاربری دارد. "
 
-#: zerver/lib/email_validation.py:179
+#: zerver/lib/email_validation.py:185
 msgid "Account has been deactivated."
 msgstr "حساب کاربری غیر فعال شده است. "
 
@@ -4440,7 +4461,7 @@ msgstr "نام ایموجی ها باید فقط شامل حروف کوچک ان
 msgid "Emoji name is missing"
 msgstr "نام ایموجی گم شده است"
 
-#: zerver/lib/events.py:1624
+#: zerver/lib/events.py:1641
 msgid "Could not allocate event queue"
 msgstr "امکان تخصیص صف برای رویداد وجود ندارد "
 
@@ -4481,7 +4502,7 @@ msgid "API usage exceeded rate limit"
 msgstr "استفاده از API بیش از نرخ مجاز است"
 
 #: zerver/lib/exceptions.py:256 zerver/lib/request.py:440
-#: zerver/lib/typed_endpoint.py:361 zerver/lib/validator.py:790
+#: zerver/lib/typed_endpoint.py:361 zerver/lib/validator.py:791
 msgid "Malformed JSON"
 msgstr "Json نادرست "
 
@@ -4727,11 +4748,11 @@ msgstr "اپراتور {operator} پشتیبانی نمی‌شود."
 msgid "Invalid narrow operator: {desc}"
 msgstr "عملگر محدودسازی اشتباه است: {desc}"
 
-#: zerver/lib/narrow.py:1099
+#: zerver/lib/narrow.py:1100
 msgid "Missing 'anchor' argument."
 msgstr "مقدار 'anchor' موجود نیست."
 
-#: zerver/lib/narrow.py:1119
+#: zerver/lib/narrow.py:1120
 msgid "Invalid anchor"
 msgstr "لنگر نامعتبر"
 
@@ -4936,45 +4957,45 @@ msgid "Invalid GCM options to bouncer: {options}"
 msgstr "گزینه‌های GCM نامعتبر برای بانسر:  {options}"
 
 #. error
-#: zerver/lib/push_notifications.py:752 zilencer/views.py:297
+#: zerver/lib/push_notifications.py:752 zilencer/views.py:299
 msgid "Token does not exist"
 msgstr "توکن وجود ندارد"
 
-#: zerver/lib/push_notifications.py:926
+#: zerver/lib/push_notifications.py:928
 msgid ""
 "This organization has disabled including message content in mobile push "
 "notifications"
 msgstr "این سازمان نمایش محتوای پیام در اعلان‌های فشاری تلفن همراه را غیرفعال کرده است"
 
-#: zerver/lib/push_notifications.py:1039
+#: zerver/lib/push_notifications.py:1041
 #, python-brace-format
 msgid "{full_name} mentioned @{user_group_name}:"
 msgstr "{full_name} به @{user_group_name} اشاره کرده:"
 
-#: zerver/lib/push_notifications.py:1043
+#: zerver/lib/push_notifications.py:1045
 #, python-brace-format
 msgid "{full_name} mentioned you:"
 msgstr "{full_name} به شما اشاره کرده:"
 
-#: zerver/lib/push_notifications.py:1050
+#: zerver/lib/push_notifications.py:1052
 #, python-brace-format
 msgid "{full_name} mentioned everyone:"
 msgstr "{full_name} به همه اشاره کرده:"
 
-#: zerver/lib/push_notifications.py:1454
+#: zerver/lib/push_notifications.py:1456
 msgid "Test notification"
 msgstr "اعلان آزمایشی"
 
-#: zerver/lib/push_notifications.py:1455
+#: zerver/lib/push_notifications.py:1457
 #, python-brace-format
 msgid "This is a test notification from {realm_name} ({realm_uri})."
 msgstr "این یک اعلان آزمایشی از {realm_name} ({realm_uri}) است."
 
-#: zerver/lib/push_notifications.py:1507
+#: zerver/lib/push_notifications.py:1509
 msgid "Device not recognized"
 msgstr "دستگاه شناسایی نشد"
 
-#: zerver/lib/push_notifications.py:1519
+#: zerver/lib/push_notifications.py:1521
 msgid "Device not recognized by the push bouncer"
 msgstr "دستگاه توسط push bouncer شناسایی نشد"
 
@@ -5002,7 +5023,7 @@ msgstr "'{email}' دیگر از زولیپ استفاده نمی‌کند."
 msgid "You can't send direct messages outside of your organization."
 msgstr "شما نمی‌توانید پیام های مستقیم را خارج از سازمان خود ارسال کنید."
 
-#: zerver/lib/remote_server.py:186
+#: zerver/lib/remote_server.py:187
 #, python-brace-format
 msgid "Push notifications bouncer error: {error}"
 msgstr "خطای bouncer اعلان فشاری: {error}"
@@ -5149,7 +5170,7 @@ msgid "{var_name} is not a date"
 msgstr "{var_name} یک تاریخ نیست"
 
 #: zerver/lib/typed_endpoint.py:317 zerver/lib/validator.py:282
-#: zerver/lib/validator.py:682
+#: zerver/lib/validator.py:683
 #, python-brace-format
 msgid "{var_name} is not a dict"
 msgstr "{var_name} یک دیکشنری نیست"
@@ -5187,7 +5208,7 @@ msgid "{var_name} is too large"
 msgstr "{var_name} زیادی بلند است"
 
 #: zerver/lib/typed_endpoint.py:327 zerver/lib/validator.py:237
-#: zerver/lib/validator.py:679
+#: zerver/lib/validator.py:680
 #, python-brace-format
 msgid "{var_name} is not a list"
 msgstr "{var_name} یک لیست نیست"
@@ -5438,22 +5459,22 @@ msgstr "فیلد نباید دارای گزینه‌های تکراری باشد
 msgid "'{value}' is not a valid choice for '{field_name}'."
 msgstr "'{value}' یک گزینه صحیح برای '{field_name}' نیست."
 
-#: zerver/lib/validator.py:631
+#: zerver/lib/validator.py:632
 #, python-brace-format
 msgid "{var_name} is not a string or an integer list"
 msgstr "{var_name} یک فهرست از رشته حروف یا اعداد صحیح نیست"
 
-#: zerver/lib/validator.py:641
+#: zerver/lib/validator.py:642
 #, python-brace-format
 msgid "{var_name} is not a string or integer"
 msgstr "{var_name} از نوع رشته حروف یا عدد صحیح نیست"
 
-#: zerver/lib/validator.py:670
+#: zerver/lib/validator.py:671
 #, python-brace-format
 msgid "{var_name} does not have a length"
 msgstr "{var_name} یک طول مشخص ندارد"
 
-#: zerver/lib/validator.py:730 zerver/lib/validator.py:752
+#: zerver/lib/validator.py:731 zerver/lib/validator.py:753
 #, python-brace-format
 msgid "{var_name} is missing"
 msgstr "{var_name} گم شده است"
@@ -5580,35 +5601,39 @@ msgstr "متغیر \"code\" باید تنها متغیر موجود در قال�
 msgid "stream events"
 msgstr "رویدادهای جریان"
 
-#: zerver/models/realms.py:468
+#: zerver/models/realms.py:353
+msgid "Zulip updates"
+msgstr ""
+
+#: zerver/models/realms.py:477
 msgid "Available on Zulip Cloud Standard. Upgrade to access."
 msgstr "در زولیپ کلود استاندارد در دسترس است. ارتقا دهید تا دسترسی داشته باشید."
 
-#: zerver/models/realms.py:469
+#: zerver/models/realms.py:478
 msgid "Available on Zulip Cloud Plus. Upgrade to access."
 msgstr "بر روی زولیپ ابری پلاس در دسترس است. ارتقا دهید تا دسترسی داشته باشید."
 
-#: zerver/models/realms.py:539
+#: zerver/models/realms.py:548
 msgid "GIPHY integration disabled"
 msgstr "ادغام GIPHY غیرفعال شد"
 
-#: zerver/models/realms.py:544
+#: zerver/models/realms.py:553
 msgid "Allow GIFs rated Y (Very young audience)"
 msgstr "گیف‌های رده Y (مخاطبان خیلی جوان) مجاز هستند"
 
-#: zerver/models/realms.py:548
+#: zerver/models/realms.py:557
 msgid "Allow GIFs rated G (General audience)"
 msgstr "گیف‌های رده G (مخاطبان عمومی) مجاز هستند"
 
-#: zerver/models/realms.py:552
+#: zerver/models/realms.py:561
 msgid "Allow GIFs rated PG (Parental guidance)"
 msgstr "گیف‌های رده PG (تخت نظر والدین) مجاز هستند"
 
-#: zerver/models/realms.py:556
+#: zerver/models/realms.py:565
 msgid "Allow GIFs rated PG-13 (Parental guidance - under 13)"
 msgstr "گیف‌های رده PG-13 مجاز است (زیر نظر والدین - زیر ۱۳ سال)"
 
-#: zerver/models/realms.py:560
+#: zerver/models/realms.py:569
 msgid "Allow GIFs rated R (Restricted)"
 msgstr "گیف‌های با رده R (محدودشده) مجاز باشد"
 
@@ -5692,15 +5717,15 @@ msgstr "عضو"
 msgid "Guest"
 msgstr "مهمان"
 
-#: zerver/signals.py:105
+#: zerver/signals.py:106
 msgid "Unknown IP address"
 msgstr "آدرس آی پی ناشناخته"
 
-#: zerver/signals.py:106
+#: zerver/signals.py:107
 msgid "an unknown operating system"
 msgstr "یک سیستم عامل ناشناخته"
 
-#: zerver/signals.py:107
+#: zerver/signals.py:108
 msgid "An unknown browser"
 msgstr "یک مرورگر ناشناخته"
 
@@ -5940,23 +5965,23 @@ msgstr "اگر مشتری emoji_code یا reagim_type را ارسال کند، �
 msgid "Invalid status: {status}"
 msgstr "وضعیت نامعتبر: {status}"
 
-#: zerver/views/push_notifications.py:43
+#: zerver/views/push_notifications.py:45
 msgid "Invalid app ID"
 msgstr "شناسه اپ نامعتبر"
 
-#: zerver/views/push_notifications.py:49
+#: zerver/views/push_notifications.py:51
 msgid "Empty or invalid length token"
 msgstr "طول توکن نادرست است یا توکن خالی است"
 
-#: zerver/views/push_notifications.py:55
+#: zerver/views/push_notifications.py:57
 msgid "Invalid APNS token"
 msgstr "توکن APNS اشتباه است"
 
-#: zerver/views/push_notifications.py:126
+#: zerver/views/push_notifications.py:137
 msgid "Server doesn't use the push notification service"
 msgstr ""
 
-#: zerver/views/push_notifications.py:163
+#: zerver/views/push_notifications.py:169
 #, python-brace-format
 msgid "Error returned by the bouncer: {result}"
 msgstr "خطای برگشت داده شده از بانسر: {result}"
@@ -5971,26 +5996,26 @@ msgstr "حداقل یکی از آرگومان های زیر باید باشند:
 msgid "Read receipts are disabled in this organization."
 msgstr "رسید خوانده‌شدن، در این سازمان غیرفعال شده است."
 
-#: zerver/views/realm.py:196
+#: zerver/views/realm.py:201
 #, python-brace-format
 msgid "Invalid language '{language}'"
 msgstr "زبان نامعتبر '{language}'"
 
-#: zerver/views/realm.py:203
+#: zerver/views/realm.py:208
 msgid "At least one authentication method must be enabled."
 msgstr "حداقل یک روش احرازهویت باید فعال باشد."
 
-#: zerver/views/realm.py:209
+#: zerver/views/realm.py:215
 #, python-brace-format
 msgid "Invalid video_chat_provider {video_chat_provider}"
 msgstr "تأمین‌کننده تماس تصویری نامعتبر {video_chat_provider}"
 
-#: zerver/views/realm.py:217
+#: zerver/views/realm.py:223
 #, python-brace-format
 msgid "Invalid giphy_rating {giphy_rating}"
 msgstr "giphy_rating نامعتبر {giphy_rating}"
 
-#: zerver/views/realm.py:433
+#: zerver/views/realm.py:457
 msgid "Must be a demo organization."
 msgstr "باید یک سازمان آزمایشی باشد."
 
@@ -6018,7 +6043,7 @@ msgid "Only administrators can override default emoji."
 msgstr "فقط ادمین‌ها می‌توانند ایموجی‌های پیش‌نویس را تغییر بدهند."
 
 #: zerver/views/realm_emoji.py:49 zerver/views/realm_icon.py:27
-#: zerver/views/realm_logo.py:33 zerver/views/upload.py:320
+#: zerver/views/realm_logo.py:33 zerver/views/upload.py:321
 #: zerver/views/user_settings.py:415
 #, python-brace-format
 msgid "Uploaded file is larger than the allowed limit of {max_size} MiB"
@@ -6154,7 +6179,7 @@ msgstr "مشترک جریان با شناسه {stream_id} نیست"
 msgid "Invalid json for submessage"
 msgstr "Json برای پیام زیرمجموعه اشتباه است"
 
-#: zerver/views/thumbnail.py:44 zerver/views/upload.py:223
+#: zerver/views/thumbnail.py:44 zerver/views/upload.py:224
 msgid "<p>You are not authorized to view this file.</p>"
 msgstr "<p>شما مجاز به دیدن این فایل نیستید.</p>"
 
@@ -6178,23 +6203,23 @@ msgstr "لیست 'گیرندگان' خالی"
 msgid "User has disabled typing notifications for direct messages"
 msgstr "کاربر اطلاع‌رسانی نوشتن را برای پیام‌های مستقیم، غیر فعال کرده است"
 
-#: zerver/views/upload.py:213
+#: zerver/views/upload.py:214
 msgid "<p>This file does not exist or has been deleted.</p>"
 msgstr "<p>این فایل وجود ندارد یا پاک شده است.</p>"
 
-#: zerver/views/upload.py:265
+#: zerver/views/upload.py:266
 msgid "Invalid token"
 msgstr "توکن نامعتبر"
 
-#: zerver/views/upload.py:267
+#: zerver/views/upload.py:268
 msgid "Invalid filename"
 msgstr "نام فایل نامعتبر"
 
-#: zerver/views/upload.py:310
+#: zerver/views/upload.py:311
 msgid "You must specify a file to upload"
 msgstr "شما باید برای بارگذاری یک فایل مشخص کنید"
 
-#: zerver/views/upload.py:312 zerver/views/users.py:434
+#: zerver/views/upload.py:313 zerver/views/users.py:434
 #: zerver/views/users.py:536
 msgid "You may only upload one file at a time"
 msgstr "شما هر دفعه تنها می توانید یک فایل بارگذاری کنید"
@@ -6421,7 +6446,7 @@ msgstr "موضوع نمی تواند خالی باشد"
 msgid "Content can't be empty"
 msgstr "محتوا نمی تواند خالی باشد"
 
-#: zerver/webhooks/librato/view.py:177
+#: zerver/webhooks/librato/view.py:175
 msgid "Malformed JSON input"
 msgstr "ورودی JSON قالب درستی ندارد"
 
@@ -6448,20 +6473,16 @@ msgstr "کلید رویدادها در محموله گم شده است"
 msgid "Unable to handle Pivotal payload"
 msgstr "امکان مدیریت کردن بار محوری وجود ندارد"
 
-#: zerver/webhooks/slack/view.py:30
+#: zerver/webhooks/slack/view.py:60
 msgid "Error: channels_map_to_topics parameter other than 0 or 1"
 msgstr "خطا: پارامتر channels_map_to_topics مقداری غیر از 0 و 1 است"
-
-#: zerver/webhooks/slack/view.py:36
-msgid "Message from Slack"
-msgstr "پیام از اسلک"
 
 #: zerver/webhooks/wordpress/view.py:57
 #, python-brace-format
 msgid "Unknown WordPress webhook action: {hook}"
 msgstr "عملیات وبهوک وردپرس ناشناخته است: {hook}"
 
-#: zerver/worker/queue_processors.py:1160
+#: zerver/worker/queue_processors.py:1176
 #, python-brace-format
 msgid ""
 "Your data export is complete. [View and download "
@@ -6477,89 +6498,89 @@ msgid "Must validate with valid Zulip server API key"
 msgstr "باید با کلید صحیح API سرور زولیپ اعتبارسنجی شود"
 
 #. error
-#: zilencer/views.py:92 zilencer/views.py:94
+#: zilencer/views.py:94 zilencer/views.py:96
 msgid "Invalid UUID"
 msgstr "UUID نامعتبر"
 
 #. error
-#: zilencer/views.py:99
+#: zilencer/views.py:101
 msgid "Invalid token type"
 msgstr "نوع توکن نامعتبر است"
 
-#: zilencer/views.py:137
+#: zilencer/views.py:139
 #, python-brace-format
 msgid "{hostname} is not a valid hostname"
 msgstr "{hostname} یک نام میزبان معتبر نیست"
 
-#: zilencer/views.py:164
+#: zilencer/views.py:166
 #, python-brace-format
 msgid "{domain} does not exist or is not configured to accept email."
 msgstr ""
 
-#: zilencer/views.py:188
+#: zilencer/views.py:190
 #, python-brace-format
 msgid "A server with hostname {hostname} already exists"
 msgstr ""
 
-#: zilencer/views.py:232
+#: zilencer/views.py:234
 msgid "Missing ios_app_id"
 msgstr "ios_app_id گم شده است"
 
-#: zilencer/views.py:235
+#: zilencer/views.py:237
 msgid "Missing user_id or user_uuid"
 msgstr "شناسه کاربری یا uuid کاربر گم شده است"
 
-#: zilencer/views.py:485
+#: zilencer/views.py:487
 #, python-brace-format
 msgid ""
 "Your plan doesn't allow sending push notifications. Reason provided by the "
 "server: {reason}"
 msgstr ""
 
-#: zilencer/views.py:518
+#: zilencer/views.py:520
 msgid "Your plan doesn't allow sending push notifications."
 msgstr "طرح شما اجازه ارسال اعلان‌های فشاری را نمی‌دهد."
 
-#: zilencer/views.py:723
+#: zilencer/views.py:725
 #, python-brace-format
 msgid "Invalid property {property}"
 msgstr "دارایی نامعتبر {property}"
 
-#: zilencer/views.py:726
+#: zilencer/views.py:728
 msgid "Invalid event type."
 msgstr "نوع رویداد نامعتبر است."
 
-#: zilencer/views.py:733
+#: zilencer/views.py:735
 msgid "Data is out of order."
 msgstr "داده خارج از ترتیب است."
 
-#: zilencer/views.py:823
+#: zilencer/views.py:825
 msgid "Duplicate registration detected."
 msgstr "ثبت نام تکراری تشخیص داده شد."
 
-#: zilencer/views.py:1012
+#: zilencer/views.py:1044
 #, python-brace-format
 msgid ""
 "Couldn't reconcile billing data between server and realm. Please contact "
 "{support_email}"
 msgstr ""
 
-#: zilencer/views.py:1138
+#: zilencer/views.py:1170
 msgid "Malformed audit log data"
 msgstr "گزارش لاگ داده‌ها نادرست است"
 
-#: zproject/backends.py:546
+#: zproject/backends.py:566
 msgid "You need to reset your password."
 msgstr "لازم است که کلمه عبور خود را جایگزین کنید."
 
-#: zproject/backends.py:2342
+#: zproject/backends.py:2368
 msgid "Missing id_token parameter"
 msgstr "پارامتر id_token گم شده"
 
-#: zproject/backends.py:3055
+#: zproject/backends.py:3083
 msgid "Invalid OTP"
 msgstr "OTP اشتباه است"
 
-#: zproject/backends.py:3058
+#: zproject/backends.py:3086
 msgid "Can't use both mobile_flow_otp and desktop_flow_otp together."
 msgstr "نمی توان از mobile_flow_otp و desktop_flow_otp با هم استفاده کرد."
