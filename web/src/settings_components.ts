@@ -384,7 +384,7 @@ function read_select_field_data_from_form(
     const field_data: FieldData = {};
     let field_order = 1;
 
-    const old_option_value_map = new Map();
+    const old_option_value_map = new Map<string, string>();
     if (old_field_data !== undefined) {
         for (const [value, choice] of Object.entries(old_field_data)) {
             assert(typeof choice !== "string");
@@ -394,14 +394,16 @@ function read_select_field_data_from_form(
     $profile_field_form.find("div.choice-row").each(function (this: HTMLElement) {
         const text = $(this).find("input")[0].value;
         if (text) {
-            if (old_option_value_map.get(text) !== undefined) {
+            let value = old_option_value_map.get(text);
+            if (value !== undefined) {
                 // Resetting the data-value in the form is
                 // important if the user removed an option string
                 // and then added it back again before saving
                 // changes.
-                $(this).attr("data-value", old_option_value_map.get(text));
+                $(this).attr("data-value", value);
+            } else {
+                value = $(this).attr("data-value")!;
             }
-            const value = $(this).attr("data-value")!;
             field_data[value] = {text, order: field_order.toString()};
             field_order += 1;
         }
@@ -665,13 +667,14 @@ function get_input_type($input_elem: JQuery, input_type?: string): string {
 export function get_input_element_value(
     input_elem: HTMLElement,
     input_type?: string,
-): number | string | null | undefined {
+): boolean | number | string | null | undefined {
     const $input_elem = $(input_elem);
     input_type = get_input_type($input_elem, input_type);
     let input_value;
     switch (input_type) {
         case "boolean":
-            return $(input_elem).prop("checked");
+            assert(input_elem instanceof HTMLInputElement);
+            return input_elem.checked;
         case "string":
             assert(
                 input_elem instanceof HTMLInputElement ||
@@ -742,7 +745,7 @@ export function get_auth_method_list_data(): Record<string, boolean> {
     for (const method_row of $auth_method_rows) {
         const method = $(method_row).attr("data-method");
         assert(method !== undefined);
-        new_auth_methods[method] = $(method_row).find("input").prop("checked");
+        new_auth_methods[method] = $(method_row).find<HTMLInputElement>("input")[0].checked;
     }
 
     return new_auth_methods;
