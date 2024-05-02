@@ -755,9 +755,7 @@
     #subscription_overlay .settings-radio-input-parent,
     #settings_page .sidebar-wrapper,
     #settings_page .sidebar-wrapper *,
-    table,
-    table th,
-    table td {
+    #recent_view_table table td {
         border-color: hsl(0deg 0% 0% / 20%);
     }
 
