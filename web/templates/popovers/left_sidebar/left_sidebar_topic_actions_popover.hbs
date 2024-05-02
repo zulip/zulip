@@ -6,22 +6,27 @@
         {{!-- Group 1 --}}
         {{#unless is_spectator}}
         <li role="separator" class="popover-menu-separator"></li>
-        <li role="none" class="popover-menu-list-item hidden-for-spectators">
-            <div role="group" class="tabs-container" aria-label="{{t 'Topic visibility' }}">
-                <div role="menuitemradio" class="tab-option tippy-zulip-tooltip {{#if (eq visibility_policy all_visibility_policies.MUTED)}}selected-tab{{/if}}" data-visibility-policy="{{all_visibility_policies.MUTED}}" data-tippy-content="{{t 'Mute' }}" aria-label="{{t 'Mute' }}">
+        <li role="none" class="popover-menu-list-item">
+            <div role="group" class="sidebar-topic-visibility-switcher tab-picker" aria-label="{{t 'Topic visibility' }}">
+                <input type="radio" id="sidebar-topic-muted-policy" class="tab-option" name="sidebar-topic-visibility-select" data-visibility-policy="{{all_visibility_policies.MUTED}}" {{#if (eq visibility_policy all_visibility_policies.MUTED)}}checked{{/if}} />
+                <label role="menuitemradio" class="tab-option-content tippy-zulip-delayed-tooltip" for="sidebar-topic-muted-policy" aria-label="{{t 'Mute' }}" data-tippy-content="{{t 'Mute' }}" tabindex="0">
                     <i class="zulip-icon zulip-icon-mute-new" aria-hidden="true"></i>
-                </div>
-                <div role="menuitemradio" class="tab-option tippy-zulip-tooltip {{#if (eq visibility_policy all_visibility_policies.INHERIT)}}selected-tab{{/if}}" data-visibility-policy="{{all_visibility_policies.INHERIT}}" data-tippy-content="{{t 'Default' }}" aria-label="{{t 'Default' }}">
+                </label>
+                <input type="radio" id="sidebar-topic-inherit-policy" class="tab-option" name="sidebar-topic-visibility-select" data-visibility-policy="{{all_visibility_policies.INHERIT}}" {{#if (eq visibility_policy all_visibility_policies.INHERIT)}}checked{{/if}} />
+                <label role="menuitemradio" class="tab-option-content tippy-zulip-delayed-tooltip" for="sidebar-topic-inherit-policy" aria-label="{{t 'Default' }}" data-tippy-content="{{t 'Default' }}" tabindex="0">
                     <i class="zulip-icon zulip-icon-inherit" aria-hidden="true"></i>
-                </div>
+                </label>
                 {{#if (or stream_muted topic_unmuted)}}
-                    <div role="menuitemradio" class="tab-option tippy-zulip-tooltip {{#if (eq visibility_policy all_visibility_policies.UNMUTED)}}selected-tab{{/if}}" data-visibility-policy="{{all_visibility_policies.UNMUTED}}" data-tippy-content="{{t 'Unmute' }}" aria-label="{{t 'Unmute' }}">
-                        <i class="zulip-icon zulip-icon-unmute-new" aria-hidden="true"></i>
-                    </div>
+                <input type="radio" id="sidebar-topic-unmuted-policy" class="tab-option" name="sidebar-topic-visibility-select" data-visibility-policy="{{all_visibility_policies.UNMUTED}}" {{#if (eq visibility_policy all_visibility_policies.UNMUTED)}}checked{{/if}} />
+                <label role="menuitemradio" class="tab-option-content tippy-zulip-delayed-tooltip" for="sidebar-topic-unmuted-policy" aria-label="{{t 'Unmute' }}" data-tippy-content="{{t 'Unmute' }}" tabindex="0">
+                    <i class="zulip-icon zulip-icon-unmute-new" aria-hidden="true"></i>
+                </label>
                 {{/if}}
-                <div role="menuitemradio" class="tab-option tippy-zulip-tooltip {{#if (eq visibility_policy all_visibility_policies.FOLLOWED)}}selected-tab{{/if}}" data-visibility-policy="{{all_visibility_policies.FOLLOWED}}" data-tippy-content="{{t 'Follow' }}" aria-label="{{t 'Follow' }}">
+                <input type="radio" id="sidebar-topic-followed-policy" class="tab-option" name="sidebar-topic-visibility-select" data-visibility-policy="{{all_visibility_policies.FOLLOWED}}" {{#if (eq visibility_policy all_visibility_policies.FOLLOWED)}}checked{{/if}} />
+                <label role="menuitemradio" class="tab-option-content tippy-zulip-delayed-tooltip" for="sidebar-topic-followed-policy" aria-label="{{t 'Follow' }}" data-tippy-content="{{t 'Follow' }}" tabindex="0">
                     <i class="zulip-icon zulip-icon-follow" aria-hidden="true"></i>
-                </div>
+                </label>
+                <span class="slider"></span>
             </div>
         </li>
         {{/unless}}

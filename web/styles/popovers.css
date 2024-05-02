@@ -307,7 +307,7 @@ ul {
             margin-right: 3px;
         }
 
-        &.zulip-icon:not(.tab-option > .zulip-icon) {
+        &.zulip-icon {
             /* These icons are different from font awesome icons,
                 so they need to be aligned separately. */
             line-height: 14px;
@@ -1428,7 +1428,8 @@ ul.popover-menu-list {
     }
 }
 
-#theme-switcher {
+#theme-switcher,
+.sidebar-topic-visibility-switcher {
     margin: 0 10px;
 
     .tab-option-content:focus-visible {
