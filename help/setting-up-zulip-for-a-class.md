@@ -356,6 +356,6 @@ HTML archive](https://github.com/zulip/zulip-archive) to archive the information
 * [Channels and topics](/help/channels-and-topics)
 * [Moderating open organizations](/help/moderating-open-organizations)
 
-[make-private]: /help/change-the-privacy-of-a-stream
+[make-private]: /help/change-the-privacy-of-a-channel
 [add-to-channel]: /help/add-or-remove-users-from-a-channel
 [deactivate-user]: /help/deactivate-or-reactivate-a-user#deactivate-a-user

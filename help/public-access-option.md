@@ -71,7 +71,7 @@ the **Web-public** option for **Who can access the channel?**.
 
 To make an existing stream web-public, follow the instructions to
 [change the privacy of a
-stream](/help/change-the-privacy-of-a-stream), selecting the
+channel](/help/change-the-privacy-of-a-channel), selecting the
 **Web-public** option for **Who can access the stream?**.
 
 ## What can logged out visitors do?

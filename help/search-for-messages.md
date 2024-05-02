@@ -76,7 +76,7 @@ Zulip offers the following filters based on the location of the message.
 * `dm-including:Bo Lin`: Search all direct message conversations
   (1-on-1 and group) that include you and Bo, as well as any other users.
 * `streams:public`: Search the history of all [public
-  streams](/help/change-the-privacy-of-a-stream) in the organization, including
+  channels](/help/change-the-privacy-of-a-channel) in the organization, including
   streams you are not subscribed to; see details
   [below](#searching-shared-history).
 

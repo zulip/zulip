@@ -209,7 +209,7 @@
 * [Set default channels for new users](/help/set-default-channels-for-new-users)
 * [Rename a channel](/help/rename-a-channel)
 * [Change a channel's description](/help/change-the-channel-description)
-* [Change the privacy of a stream](/help/change-the-privacy-of-a-stream)
+* [Change the privacy of a channel](/help/change-the-privacy-of-a-channel)
 * [Delete or archive a stream](/help/archive-a-stream)
 
 ## Organization settings

@@ -116,6 +116,7 @@ HELP_DOCUMENTATION_REDIRECTS: List[URLRedirect] = [
     ),
     URLRedirect("/help/rename-a-stream", "/help/rename-a-channel"),
     URLRedirect("/help/change-the-stream-description", "/help/change-the-channel-description"),
+    URLRedirect("/help/change-the-privacy-of-a-stream", "/help/change-the-privacy-of-a-channel"),
 ]
 
 LANDING_PAGE_REDIRECTS = [
