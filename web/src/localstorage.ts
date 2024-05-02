@@ -54,14 +54,12 @@ const ls = {
 
     getData(version: number, name: string): FormData | undefined {
         const key = this.formGetter(version, name);
-        let data;
         try {
             const raw_data = localStorage.getItem(key);
             if (raw_data === null) {
                 return undefined;
             }
-            data = JSON.parse(raw_data);
-            data = formDataSchema.parse(data);
+            const data = formDataSchema.parse(JSON.parse(raw_data));
             if (
                 // JSON forms of data with `Infinity` turns into `null`,
                 // so if null then it hasn't expired since nothing was specified.
@@ -220,17 +218,15 @@ export const localstorage = function (): LocalStorage {
         ): T | undefined {
             return ls.migrate(name, v1, v2, callback);
         },
-    };
 
-    // set a new master version for the LocalStorage instance.
-    Object.defineProperty(prototype, "version", {
-        get() {
+        // set a new master version for the LocalStorage instance.
+        get version() {
             return _data.VERSION;
         },
-        set(version) {
+        set version(version) {
             _data.VERSION = version;
         },
-    });
+    };
 
     return prototype;
 };
