@@ -124,5 +124,5 @@ for details.
 * [Channel sending policy](/help/channel-posting-policy)
 * [Web-public channels](/help/public-access-option)
 
-[add-users]: /help/configure-who-can-invite-to-streams#configure-who-can-add-users
-[remove-users]: /help/configure-who-can-invite-to-streams#configure-who-can-remove-users
+[add-users]: /help/configure-who-can-invite-to-channels#configure-who-can-add-users
+[remove-users]: /help/configure-who-can-invite-to-channels#configure-who-can-remove-users

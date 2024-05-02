@@ -3,7 +3,7 @@
 Who is subscribed to a channel determines who receives the messages sent there.
 All non-[guest](/help/guest-users) users can view public channels and subscribe
 themselves. Organization administrators can
-[configure](/help/configure-who-can-invite-to-streams) who can subscribe and
+[configure](/help/configure-who-can-invite-to-channels) who can subscribe and
 unsubscribe other users to channels.
 
 ## View channel subscribers

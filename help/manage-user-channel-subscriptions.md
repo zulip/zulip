@@ -93,4 +93,4 @@ channel](/help/unsubscribe-from-a-channel).
 * [Unsubscribe from a channel](/help/unsubscribe-from-a-channel)
 * [View channel subscribers](/help/view-channel-subscribers)
 
-[configure-invites]: /help/configure-who-can-invite-to-streams
+[configure-invites]: /help/configure-who-can-invite-to-channels

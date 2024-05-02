@@ -54,7 +54,7 @@ priority.
   accounts are older than a [configurable waiting period][waiting_period].
 - Zulip also supports customizing whether non-admins can
   [create streams](/help/configure-who-can-create-channels),
-  [invite to streams](/help/configure-who-can-invite-to-streams),
+  [invite to streams](/help/configure-who-can-invite-to-channels),
   [add custom emoji](/help/custom-emoji#change-who-can-add-custom-emoji),
   [add integrations and bots](/help/restrict-bot-creation),
   [edit or delete messages](/help/restrict-message-editing-and-deletion),

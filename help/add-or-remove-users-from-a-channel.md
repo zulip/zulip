@@ -10,8 +10,8 @@ including channels the admin is not subscribed to. They can also configure which
 [roles](/help/roles-and-permissions) have access to [add other users to a
 channel][add-users] or [remove other users from a channel][remove-users].
 
-[add-users]: /help/configure-who-can-invite-to-streams#configure-who-can-add-users
-[remove-users]: /help/configure-who-can-invite-to-streams#configure-who-can-remove-users
+[add-users]: /help/configure-who-can-invite-to-channels#configure-who-can-add-users
+[remove-users]: /help/configure-who-can-invite-to-channels#configure-who-can-remove-users
 
 ## Add users to a channel
 
@@ -151,7 +151,7 @@ subscribe the user.
 * [Browse and subscribe to channels](/help/browse-and-subscribe-to-channels)
 * [Unsubscribe from a channel][unsubscribe]
 * [Manage a user's channel subscriptions](/help/manage-user-channel-subscriptions)
-* [Restrict stream invitation](/help/configure-who-can-invite-to-streams)
+* [Restrict channel invitations](/help/configure-who-can-invite-to-channels)
 * [Set default streams for new users](/help/set-default-streams-for-new-users)
 * [Roles and permissions](/help/roles-and-permissions)
 * [Mention a user or group](/help/mention-a-user-or-group)

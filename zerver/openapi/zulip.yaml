@@ -16265,7 +16265,7 @@ paths:
                           Present if `realm_user` is present in `fetch_event_types`.
 
                           Whether the current user is allowed to subscribe other users to streams with
-                          the organization's [streams policy](/help/configure-who-can-invite-to-streams).
+                          the organization's [streams policy](/help/configure-who-can-invite-to-channels).
                       can_invite_others_to_realm:
                         type: boolean
                         description: |

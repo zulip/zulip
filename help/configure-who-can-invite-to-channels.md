@@ -1,12 +1,12 @@
-# Restrict stream membership management
+# Restrict channel membership management
 
 {!admin-only.md!}
 
-By default, anyone other than guests can add other users to streams. However,
+By default, anyone other than guests can add other users to channels. However,
 you can restrict the ability to do so to specific
 [roles](/help/roles-and-permissions). You can also can configure who can remove
-other users from a public stream. For private streams, administrators must be
-subscribed to the stream to configure these settings.
+other users from a public channel. For private channels, administrators must be
+subscribed to the channel to configure these settings.
 
 ## Configure who can add users
 
@@ -14,7 +14,7 @@ subscribed to the stream to configure these settings.
 
 {settings_tab|organization-permissions}
 
-1. Under **Stream permissions**, configure **Who can add users to streams**.
+1. Under **Channel permissions**, configure **Who can add users to channels**.
 
 {!save-changes.md!}
 
@@ -26,12 +26,12 @@ subscribed to the stream to configure these settings.
 
 {relative|stream|all}
 
-1. Select a stream.
+1. Select a channel.
 
 {!select-channel-view-general.md!}
 
-1. Under **Stream permissions**, configure
-   **Who can unsubscribe others from this stream?**
+1. Under **Channel permissions**, configure
+   **Who can unsubscribe others from this channel?**
 
 {!save-changes.md!}
 

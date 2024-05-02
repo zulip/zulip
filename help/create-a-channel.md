@@ -34,7 +34,7 @@ There are several parameters you can set while creating a channel. All but
 * **Who can post to the stream?**: See [Channel permissions](/help/channel-permissions).
 
 * **Who can unsubscribe others from this stream?**: See
-  [Restrict stream membership management](/help/configure-who-can-invite-to-streams#configure-who-can-remove-users).
+  [Restrict channel membership management](/help/configure-who-can-invite-to-channels#configure-who-can-remove-users).
 
 * **Message retention period**: See
   [Message retention policy](/help/message-retention-policy#configure-message-retention-policy-for-individual-streams).
