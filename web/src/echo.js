@@ -10,7 +10,6 @@ import * as markdown from "./markdown";
 import * as message_lists from "./message_lists";
 import * as message_live_update from "./message_live_update";
 import * as message_store from "./message_store";
-import * as narrow_state from "./narrow_state";
 import * as people from "./people";
 import * as pm_list from "./pm_list";
 import * as recent_view_data from "./recent_view_data";
@@ -210,32 +209,26 @@ export function is_slash_command(content) {
 }
 
 export function try_deliver_locally(message_request, insert_new_messages) {
-    if (message_lists.current === undefined) {
-        return undefined;
-    }
-
+    // Checks if the message request can be locally echoed, and if so,
+    // adds a local echoed copy of the message to appropriate message lists.
+    //
+    // Returns the message object, or undefined if it cannot be
+    // echoed; in that case, the compose box will remain in the
+    // sending state rather than being cleared to allow composing a
+    // next message.
+    //
+    // Notably, this algorithm will allow locally echoing a message in
+    // cases where we are currently looking at a search view where
+    // `!filter.can_apply_locally(message)`; so it is possible for a
+    // message to be locally echoed but not appear in the current
+    // view; this is useful to ensure it will be visible in other
+    // views that we might navigate to before we get a response from
+    // the server.
     if (markdown.contains_backend_only_syntax(message_request.content)) {
         return undefined;
     }
 
-    if (narrow_state.filter() !== undefined && !narrow_state.filter().can_apply_locally(true)) {
-        return undefined;
-    }
-
     if (is_slash_command(message_request.content)) {
-        return undefined;
-    }
-
-    if (!message_lists.current.data.fetch_status.has_found_newest()) {
-        // If the current message list doesn't yet have the latest
-        // messages before the one we just sent, local echo would make
-        // it appear as though there were no messages between what we
-        // have and the new message we just sent, when in fact we're
-        // in the process of fetching those from the server.  In this
-        // case, it's correct to skip local echo; we'll get the
-        // message we just sent placed appropriately when we get it
-        // from either server_events or message_fetch.
-        blueslip.info("Skipping local echo until newest messages get loaded.");
         return undefined;
     }
 
