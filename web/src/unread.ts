@@ -569,8 +569,9 @@ function add_message_to_unread_mention_topics(message_id: number): void {
     const topic_key = recent_view_util.get_topic_key(message.stream_id, message.topic);
     if (unread_mention_topics.has(topic_key)) {
         unread_mention_topics.get(topic_key).add(message_id);
+    } else {
+        unread_mention_topics.set(topic_key, new Set([message_id]));
     }
-    unread_mention_topics.set(topic_key, new Set([message_id]));
 }
 
 function remove_message_from_unread_mention_topics(message_id: number): void {
@@ -614,8 +615,9 @@ export function clear_and_populate_unread_mention_topics(): void {
         const topic_key = recent_view_util.get_topic_key(stream_id, topic);
         if (unread_mention_topics.has(topic_key)) {
             unread_mention_topics.get(topic_key).add(message_id);
+        } else {
+            unread_mention_topics.set(topic_key, new Set([message_id]));
         }
-        unread_mention_topics.set(topic_key, new Set([message_id]));
     }
 }
 
