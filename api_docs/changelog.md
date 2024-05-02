@@ -20,6 +20,12 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 9.0
 
+**Feature level 260**:
+
+* [`PATCH /user_groups/{user_group_id}`](/api/update-user-group):
+  Updating `can_mention_group` now uses a race-resistant format where
+  the client sends the expected `old` value and desired `new` value.
+
 **Feature level 259**:
 
 * [`POST /register`](/api/register-queue), [`GET /events`](/api/get-events):

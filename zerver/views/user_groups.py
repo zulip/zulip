@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 from typing import List, Optional, Sequence, Union
 
 from django.conf import settings
@@ -20,7 +21,7 @@ from zerver.actions.user_groups import (
     remove_subgroups_from_user_group,
 )
 from zerver.decorator import require_member_or_admin, require_user_group_edit_permission
-from zerver.lib.exceptions import JsonableError
+from zerver.lib.exceptions import JsonableError, PreviousSettingValueMismatchedError
 from zerver.lib.mention import MentionBackend, silent_mention_syntax_for_user
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
@@ -125,13 +126,29 @@ def are_both_setting_values_equal(
     return False
 
 
-def check_setting_value_changed(
+def validate_group_setting_value_change(
     current_value: UserGroup,
     new_setting_value: Union[int, AnonymousSettingGroupDict],
+    expected_current_setting_value: Optional[Union[int, AnonymousSettingGroupDict]],
 ) -> bool:
     current_setting_api_value = get_group_setting_value_for_api(current_value)
 
+    if expected_current_setting_value is not None and not are_both_setting_values_equal(
+        expected_current_setting_value,
+        current_setting_api_value,
+    ):
+        # This check is here to help prevent races, by refusing to
+        # change a setting where the client (and thus the UI presented
+        # to user) showed a different existing state.
+        raise PreviousSettingValueMismatchedError
+
     return not are_both_setting_values_equal(current_setting_api_value, new_setting_value)
+
+
+@dataclass
+class GroupSettingChangeRequest:
+    new: Union[int, AnonymousSettingGroupDict]
+    old: Optional[Union[int, AnonymousSettingGroupDict]] = None
 
 
 @transaction.atomic
@@ -144,7 +161,7 @@ def edit_user_group(
     user_group_id: PathOnly[int],
     name: Optional[str] = None,
     description: Optional[str] = None,
-    can_mention_group: Optional[Json[Union[int, AnonymousSettingGroupDict]]] = None,
+    can_mention_group: Optional[Json[GroupSettingChangeRequest]] = None,
 ) -> HttpResponse:
     if name is None and description is None and can_mention_group is None:
         raise JsonableError(_("No new data supplied"))
@@ -166,9 +183,17 @@ def edit_user_group(
         if request_settings_dict[setting_name] is None:
             continue
 
+        setting_value = request_settings_dict[setting_name]
+        new_setting_value = parse_group_setting_value(setting_value.new)
+
+        expected_current_setting_value = None
+        if setting_value.old is not None:
+            expected_current_setting_value = parse_group_setting_value(setting_value.old)
+
         current_value = getattr(user_group, setting_name)
-        new_setting_value = parse_group_setting_value(request_settings_dict[setting_name])
-        if check_setting_value_changed(current_value, new_setting_value):
+        if validate_group_setting_value_change(
+            current_value, new_setting_value, expected_current_setting_value
+        ):
             setting_value_group = access_user_group_for_setting(
                 new_setting_value,
                 user_profile,
