@@ -4,7 +4,7 @@
 
 By default, anyone who belongs to a channel can also send messages to
 the channel. However, sometimes it's useful to have a channel (often a
-[default stream](/help/set-default-streams-for-new-users)) where only
+[default channel](/help/set-default-channels-for-new-users)) where only
 certain users can send messages.
 
 {start_tabs}

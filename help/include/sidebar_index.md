@@ -206,7 +206,7 @@
 * [Restrict channel creation](/help/configure-who-can-create-channels)
 * [Restrict channel membership management](/help/configure-who-can-invite-to-channels)
 * [Add or remove users from a channel](/help/add-or-remove-users-from-a-channel)
-* [Set default streams for new users](/help/set-default-streams-for-new-users)
+* [Set default channels for new users](/help/set-default-channels-for-new-users)
 * [Rename a stream](/help/rename-a-stream)
 * [Change a stream's description](/help/change-the-stream-description)
 * [Change the privacy of a stream](/help/change-the-privacy-of-a-stream)

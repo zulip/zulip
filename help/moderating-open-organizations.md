@@ -51,7 +51,7 @@ problematic behavior.
   to prevent off-platform spam.
 * [Restrict wildcard mentions](/help/restrict-wildcard-mentions)
   so only [moderators](/help/roles-and-permissions) can mention everyone in your organization.
-* Create a [default stream](/help/set-default-streams-for-new-users)
+* Create a [default channel](/help/set-default-channels-for-new-users)
   for announcements where [only admins can
   post](/help/channel-posting-policy).
 * Restrict who can [send direct messages](/help/restrict-direct-messages).

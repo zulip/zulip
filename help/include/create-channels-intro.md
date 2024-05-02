@@ -3,7 +3,7 @@ channels in IRC/Slack/Discord, chat rooms, and email lists.
 
 We recommend setting up some channels before inviting other users to
 join Zulip, so that you can [automatically subscribe
-everyone](/help/set-default-streams-for-new-users) to the right set of
+everyone](/help/set-default-channels-for-new-users) to the right set of
 channels.
 
 If you later create additional channels, no worries! You can always add

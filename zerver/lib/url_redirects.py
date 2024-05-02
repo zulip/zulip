@@ -111,6 +111,9 @@ HELP_DOCUMENTATION_REDIRECTS: List[URLRedirect] = [
     URLRedirect(
         "/help/configure-who-can-invite-to-streams", "/help/configure-who-can-invite-to-channels"
     ),
+    URLRedirect(
+        "/help/set-default-streams-for-new-users", "/help/set-default-channels-for-new-users"
+    ),
 ]
 
 LANDING_PAGE_REDIRECTS = [

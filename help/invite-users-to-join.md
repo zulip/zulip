@@ -21,6 +21,6 @@ to [Getting started with Zulip](/help/getting-started-with-zulip).
 * [Setting up your organization](/help/getting-your-organization-started-with-zulip)
 * [Invite new users](/help/invite-new-users)
 * [Restrict account creation](/help/restrict-account-creation)
-* [Set default streams for new users](/help/set-default-streams-for-new-users)
+* [Set default channels for new users](/help/set-default-channels-for-new-users)
 * [Customize settings for new users](/help/customize-settings-for-new-users)
 * [Getting started with Zulip](/help/getting-started-with-zulip)

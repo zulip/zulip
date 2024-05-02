@@ -6005,7 +6005,7 @@ paths:
         Add a stream to the set of [default streams][default-streams]
         for new users joining the organization.
 
-        [default-streams]: /help/set-default-streams-for-new-users
+        [default-streams]: /help/set-default-channels-for-new-users
       requestBody:
         required: true
         content:
@@ -6055,7 +6055,7 @@ paths:
         Remove a stream from the set of [default streams][default-streams]
         for new users joining the organization.
 
-        [default-streams]: /help/set-default-streams-for-new-users
+        [default-streams]: /help/set-default-channels-for-new-users
       x-requires-administrator: true
       requestBody:
         required: true
@@ -9368,7 +9368,7 @@ paths:
                     added as [default streams][default-streams] for new users joining
                     the organization.
 
-                    [default-streams]: /help/set-default-streams-for-new-users
+                    [default-streams]: /help/set-default-channels-for-new-users
 
                     **Changes**: New in Zulip 8.0 (feature level 200). Previously, default stream status
                     could only be changed using the [dedicated API endpoint](/api/add-default-stream).
@@ -13311,7 +13311,7 @@ paths:
                           Present if `default_streams` is present in `fetch_event_types`.
 
                           An array of dictionaries where each dictionary contains details
-                          about a single [default stream](/help/set-default-streams-for-new-users)
+                          about a single [default stream](/help/set-default-channels-for-new-users)
                           for the Zulip organization.
                       realm_default_stream_groups:
                         type: array
@@ -17697,7 +17697,7 @@ paths:
                                     parameter is `true`.
 
                                     Whether the given stream is a
-                                    [default stream](/help/set-default-streams-for-new-users).
+                                    [default stream](/help/set-default-channels-for-new-users).
 
                                     [include_default]: /api/get-streams#parameter-include_default
                               required:
@@ -17967,7 +17967,7 @@ paths:
                     Add or remove the stream as a [default stream][default-stream]
                     for new users joining the organization.
 
-                    [default-stream]: /help/set-default-streams-for-new-users
+                    [default-stream]: /help/set-default-channels-for-new-users
 
                     **Changes**: New in Zulip 8.0 (feature level 200). Previously, default stream status
                     could only be changed using the [dedicated API endpoint](/api/add-default-stream).
