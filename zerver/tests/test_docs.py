@@ -426,7 +426,7 @@ class HelpTest(ZulipTestCase):
     def test_help_relative_links_for_stream(self) -> None:
         result = self.client_get("/help/message-a-channel-by-email")
         self.assertIn(
-            '<a href="/#channels/subscribed"><i class="zulip-icon zulip-icon-hash"></i> Stream settings</a>',
+            '<a href="/#channels/subscribed"><i class="zulip-icon zulip-icon-hash"></i> Channel settings</a>',
             str(result.content),
         )
         self.assertEqual(result.status_code, 200)
@@ -435,7 +435,7 @@ class HelpTest(ZulipTestCase):
             result = self.client_get("/help/message-a-channel-by-email", subdomain="")
         self.assertEqual(result.status_code, 200)
         self.assertIn(
-            '<strong><i class="zulip-icon zulip-icon-hash"></i> Stream settings</strong>',
+            '<strong><i class="zulip-icon zulip-icon-hash"></i> Channel settings</strong>',
             str(result.content),
         )
         self.assertNotIn("/#channels", str(result.content))

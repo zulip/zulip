@@ -15,7 +15,7 @@ disabled. Use Markdown formatting to include a link to a website, Zulip
 
 {tab|desktop-web}
 
-{relative|stream|all}
+{relative|channel|all}
 
 1. Select a channel.
 

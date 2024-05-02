@@ -25,7 +25,7 @@ other users to a channel][configure-invites].
 
 {tab|via-stream-settings}
 
-{relative|stream|all}
+{relative|channel|all}
 
 1. Select a channel.
 
@@ -61,7 +61,7 @@ channel](/help/unsubscribe-from-a-channel).
 
 {tab|via-stream-settings}
 
-{relative|stream|all}
+{relative|channel|all}
 
 1. Select a channel.
 

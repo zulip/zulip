@@ -19,7 +19,7 @@ channel][add-users] or [remove other users from a channel][remove-users].
 
 {tab|desktop-web}
 
-{relative|stream|all}
+{relative|channel|all}
 
 1. Select a channel.
 
@@ -117,7 +117,7 @@ subscribe the user.
 
 {tab|desktop-web}
 
-{relative|stream|all}
+{relative|channel|all}
 
 1. Select a channel.
 

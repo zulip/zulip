@@ -24,7 +24,7 @@ API](/api/send-message).
 
 {start_tabs}
 
-{relative|gear|stream-settings}
+{relative|gear|channel-settings}
 
 1. Select a channel.
 

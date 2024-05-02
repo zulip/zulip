@@ -24,7 +24,7 @@ subscribed to the channel to configure these settings.
 
 {start_tabs}
 
-{relative|stream|all}
+{relative|channel|all}
 
 1. Select a channel.
 

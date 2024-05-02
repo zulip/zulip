@@ -28,7 +28,7 @@ You can always unsubscribe from any channel in Zulip.
 
 {tab|desktop-web}
 
-{relative|gear|stream-settings}
+{relative|gear|channel-settings}
 
 1. Click the **checkmark**
    (<img src="/static/images/help/desktop-web-check-icon.svg" alt="checkmark" class="help-center-icon"/>)

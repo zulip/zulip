@@ -9,7 +9,7 @@ certain users can send messages.
 
 {start_tabs}
 
-{relative|stream|all}
+{relative|channel|all}
 
 1. Select a channel.
 

@@ -49,7 +49,7 @@
 
 {tab|desktop-web}
 
-{relative|gear|stream-settings}
+{relative|gear|channel-settings}
 
 1. Select a channel.
 

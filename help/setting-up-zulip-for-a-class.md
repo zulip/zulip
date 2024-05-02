@@ -213,7 +213,7 @@ how to assign roles and permissions for a class.
 
 {start_tabs}
 
-{relative|stream|all}
+{relative|channel|all}
 
 1. Click **Create stream** on the right.
 

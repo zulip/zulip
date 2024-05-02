@@ -50,7 +50,7 @@ which is especially handy if you are subscribed to a large number of channels.
 
 {tab|desktop-web}
 
-{relative|gear|stream-settings}
+{relative|gear|channel-settings}
 
 1. Select a channel.
 

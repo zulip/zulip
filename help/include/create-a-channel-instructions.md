@@ -2,7 +2,7 @@
 
 {tab|desktop-web}
 
-{relative|gear|stream-settings}
+{relative|gear|channel-settings}
 
 1. Click **Create channel** on the right, or click the **plus**
    (<i class="fa fa-plus"></i>) icon in the upper right.

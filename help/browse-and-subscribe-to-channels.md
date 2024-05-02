@@ -4,7 +4,7 @@
 
 {tab|desktop-web}
 
-{relative|stream|all}
+{relative|channel|all}
 
 1. Scroll through the list of channels. You can use the **search box** near the
    top of the menu to filter the list by channel name or description.

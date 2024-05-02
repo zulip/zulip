@@ -23,7 +23,7 @@ channel. Changing a channel's color does not change it for anyone else.
 
 {start_tabs}
 
-{relative|gear|stream-settings}
+{relative|gear|channel-settings}
 
 1. Select a channel.
 

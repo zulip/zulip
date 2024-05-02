@@ -19,7 +19,7 @@ than archiving them.
 
 {tab|desktop-web}
 
-{relative|stream|all}
+{relative|channel|all}
 
 1. Select a channel.
 
