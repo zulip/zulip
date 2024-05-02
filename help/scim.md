@@ -12,12 +12,11 @@ for Zulip.
 Zulip's SCIM integration has the following limitations:
 
 * Provisioning Groups is not yet implemented.
-* While Zulip's SCIM integration is generic, it has only been
-  fully tested and documented with Okta's SCIM provider, and it is
-  possible minor adjustments may be required. [Zulip
-  support](/help/contact-support) is happy to help customers configure
-  this integration with SCIM providers that do not yet have detailed
-  self-service documentation on this page.
+* While Zulip's SCIM integration is generic, we've only fully
+  documented the setup process with the Okta and Microsoft EntraID
+  SCIM providers. [Zulip support](/help/contact-support) is happy to
+  help customers configure this integration with SCIM providers that
+  do not yet have detailed self-service documentation on this page.
 
 {!cloud-plus-only.md!}
 
