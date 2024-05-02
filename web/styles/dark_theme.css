@@ -804,10 +804,6 @@
         text-shadow: none;
     }
 
-    .selected_message .messagebox-content {
-        border-color: hsl(217deg 64% 59% / 70%);
-    }
-
     #message-edit-history-overlay-container {
         .message_edit_history_content {
             .highlight_text_inserted {
