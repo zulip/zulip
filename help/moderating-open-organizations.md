@@ -26,7 +26,7 @@ problematic behavior.
 
 ### Restrict permissions for making changes
 
-* Restrict who can [create streams](/help/configure-who-can-create-streams), or
+* Restrict who can [create channels](/help/configure-who-can-create-channels), or
   monitor new streams by enabling [new stream
   announcements](/help/configure-automated-notices#new-stream-announcements).
 * Restrict who can [add custom emoji](/help/custom-emoji#change-who-can-add-custom-emoji).

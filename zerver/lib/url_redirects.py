@@ -105,6 +105,9 @@ HELP_DOCUMENTATION_REDIRECTS: List[URLRedirect] = [
     ),
     URLRedirect("/help/stream-permissions", "/help/channel-permissions"),
     URLRedirect("/help/stream-sending-policy", "/help/channel-posting-policy"),
+    URLRedirect(
+        "/help/configure-who-can-create-streams", "/help/configure-who-can-create-channels"
+    ),
 ]
 
 LANDING_PAGE_REDIRECTS = [

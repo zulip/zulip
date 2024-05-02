@@ -35,4 +35,4 @@ Zulip's new user onboarding experience). Consider also [restricting
 bot creation](/help/restrict-bot-creation) when using this feature.
 
 * Restricting direct messages does not automatically [restrict creating
-private streams](/help/configure-who-can-create-streams).
+private channels](/help/configure-who-can-create-channels).

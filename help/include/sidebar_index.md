@@ -203,7 +203,7 @@
 * [Channel permissions](/help/channel-permissions)
 * [Public access option](/help/public-access-option)
 * [Channel posting policy](/help/channel-posting-policy)
-* [Restrict stream creation](/help/configure-who-can-create-streams)
+* [Restrict channel creation](/help/configure-who-can-create-channels)
 * [Restrict stream membership management](/help/configure-who-can-invite-to-streams)
 * [Add or remove users from a channel](/help/add-or-remove-users-from-a-channel)
 * [Set default streams for new users](/help/set-default-streams-for-new-users)

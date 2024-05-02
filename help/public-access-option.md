@@ -174,4 +174,4 @@ with [Zulip's Rules of Use](https://zulip.com/policies/rules).
 
 * [Moderating open organizations](/help/moderating-open-organizations)
 * [Channel permissions](/help/channel-permissions)
-* [Restrict stream creation](/help/configure-who-can-create-streams)
+* [Restrict channel creation](/help/configure-who-can-create-channels)

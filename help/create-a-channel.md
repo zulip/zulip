@@ -1,7 +1,7 @@
 # Create a channel
 
 By default, all users other than guests can create channels. Administrators can
-[restrict the ability to create a channel](/help/configure-who-can-create-streams) to specific
+[restrict the ability to create a channel](/help/configure-who-can-create-channels) to specific
 [roles](/help/roles-and-permissions).
 
 If you are an administrator setting up channels for the first time, check out our

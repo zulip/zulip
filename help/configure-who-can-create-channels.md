@@ -1,22 +1,22 @@
-# Restrict stream creation
+# Restrict channel creation
 
 {!admin-only.md!}
 
 Zulip allows you to separately control [permissions](/help/roles-and-permissions)
 for creating [web-public](/help/public-access-option), public and private
-streams.
+channels.
 
 For corporations and other organizations with controlled access, we
-recommend keeping stream creation open to make it easy for users to
+recommend keeping channel creation open to make it easy for users to
 self-organize.
 
 Only users in trusted roles (moderators and administrators) can be
-given permission to create web-public streams. This is intended
+given permission to create web-public channels. This is intended
 [to help manage abuse](/help/public-access-option#managing-abuse) by
 making it hard for an attacker to host malicious content in an
-unadvertised web-public stream in a legitimate organization.
+unadvertised web-public channel in a legitimate organization.
 
-### Manage who can create streams
+### Manage who can create channels
 
 {start_tabs}
 
@@ -24,7 +24,7 @@ unadvertised web-public stream in a legitimate organization.
 
 {settings_tab|organization-permissions}
 
-1. Under **Stream permissions**, configure **Who can create public streams**.
+1. Under **Channel permissions**, configure **Who can create public channels**.
 
 {!save-changes.md!}
 
@@ -32,7 +32,7 @@ unadvertised web-public stream in a legitimate organization.
 
 {settings_tab|organization-permissions}
 
-1. Under **Stream permissions**, configure **Who can create private streams**.
+1. Under **Channel permissions**, configure **Who can create private channels**.
 
 {!save-changes.md!}
 
@@ -40,7 +40,7 @@ unadvertised web-public stream in a legitimate organization.
 
 {settings_tab|organization-permissions}
 
-1. Under **Stream permissions**, configure **Who can create web-public streams**.
+1. Under **Channel permissions**, configure **Who can create web-public channels**.
 
 {!save-changes.md!}
 

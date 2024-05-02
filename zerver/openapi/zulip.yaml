@@ -16215,7 +16215,7 @@ paths:
 
                           Whether the current user is allowed to create at least one type
                           of stream with the organization's [stream creation
-                          policy](/help/configure-who-can-create-streams). Its value will
+                          policy](/help/configure-who-can-create-channels). Its value will
                           always equal `can_create_public_streams || can_create_private_streams`.
 
                           **Changes**: Deprecated in Zulip 5.0 (feature level 102), when
@@ -16230,7 +16230,7 @@ paths:
                           Present if `realm_user` is present in `fetch_event_types`.
 
                           Whether the current user is allowed to create public streams with
-                          the organization's [stream creation policy](/help/configure-who-can-create-streams).
+                          the organization's [stream creation policy](/help/configure-who-can-create-channels).
 
                           **Changes**: New in Zulip 5.0 (feature level 102). In older
                           versions, the deprecated `can_create_streams` property should be
@@ -16241,7 +16241,7 @@ paths:
                           Present if `realm_user` is present in `fetch_event_types`.
 
                           Whether the current user is allowed to create private streams with
-                          the organization's [stream creation policy](/help/configure-who-can-create-streams).
+                          the organization's [stream creation policy](/help/configure-who-can-create-channels).
 
                           **Changes**: New in Zulip 5.0 (feature level 102). In older
                           versions, the deprecated `can_create_streams` property should be
@@ -16252,7 +16252,7 @@ paths:
                           Present if `realm_user` is present in `fetch_event_types`.
 
                           Whether the current user is allowed to create public streams with
-                          the organization's [stream creation policy](/help/configure-who-can-create-streams).
+                          the organization's [stream creation policy](/help/configure-who-can-create-channels).
 
                           Note that this will be false if the Zulip server does not have the
                           `WEB_PUBLIC_STREAMS_ENABLED` setting enabled or if the organization has
