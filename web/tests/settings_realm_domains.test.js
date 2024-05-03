@@ -28,9 +28,10 @@ function test_realms_domain_modal(override, add_realm_domain) {
     );
 
     $("#add-realm-domain-widget").set_find_results(
-        ".new-realm-domain-allow-subdomains",
-        $.create("new-realm-domain-allow-subdomains-stub"),
+        "input.new-realm-domain-allow-subdomains",
+        $("<new-realm-domain-allow-subdomains-stub>"),
     );
+    $("<new-realm-domain-allow-subdomains-stub>")[0] = {};
 
     let posted;
     let success_callback;
@@ -76,13 +77,14 @@ function test_change_allow_subdomains(change_allow_subdomains) {
     $domain_obj.text(domain);
 
     const $elem_obj = $.create("<elem html>");
+    const elem_obj = {to_$: () => $elem_obj};
     const $parents_obj = $.create("parents object");
 
     $elem_obj.set_parents_result("tr", $parents_obj);
     $parents_obj.set_find_results(".domain", $domain_obj);
-    $elem_obj.prop("checked", allow);
+    elem_obj.checked = allow;
 
-    change_allow_subdomains.call($elem_obj, ev);
+    change_allow_subdomains.call(elem_obj, ev);
 
     success_callback();
     assert.equal(
@@ -94,8 +96,8 @@ function test_change_allow_subdomains(change_allow_subdomains) {
     assert.equal($info.val(), "translated HTML: Failed");
 
     allow = false;
-    $elem_obj.prop("checked", allow);
-    change_allow_subdomains.call($elem_obj, ev);
+    elem_obj.checked = allow;
+    change_allow_subdomains.call(elem_obj, ev);
     success_callback();
     assert.equal(
         $info.val(),
@@ -107,6 +109,6 @@ run_test("test_realm_domains_table", ({override}) => {
     settings_realm_domains.setup_realm_domains_modal_handlers();
     test_realms_domain_modal(override, () => $("#submit-add-realm-domain").trigger("click"));
     test_change_allow_subdomains(
-        $("#realm_domains_table").get_on_handler("change", ".allow-subdomains"),
+        $("#realm_domains_table").get_on_handler("change", "input.allow-subdomains"),
     );
 });
