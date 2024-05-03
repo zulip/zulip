@@ -80,14 +80,18 @@ class CreateCustomProfileFieldTest(CustomProfileFieldTestCase):
         self.assertEqual(field.id, field.order)
 
         data["name"] = "Name "
-        data["hint"] = "Some name"
+        data["hint"] = "@**iago**"
         data["field_type"] = CustomProfileField.SHORT_TEXT
         data["display_in_profile_summary"] = "true"
         result = self.client_post("/json/realm/profile_fields", info=data)
         self.assert_json_success(result)
 
         field = CustomProfileField.objects.get(name="Name", realm=realm)
+        rendered_name = "<p>Name</p>"
+        rendered_hint = '<p><span class="user-mention" data-user-id="11">@Iago</span></p>'
         self.assertEqual(field.id, field.order)
+        self.assertEqual(field.rendered_name, rendered_name)
+        self.assertEqual(field.rendered_hint, rendered_hint)
 
         result = self.client_post("/json/realm/profile_fields", info=data)
         self.assert_json_error(

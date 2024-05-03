@@ -935,3 +935,8 @@
 .highlight {
     background-color: hsl(51deg 100% 79%);
 }
+
+.profile_field_name.rendered_markdown p,
+.custom_user_field .rendered_markdown p {
+    display: inline;
+}

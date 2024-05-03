@@ -14,6 +14,7 @@ import * as dialog_widget from "./dialog_widget";
 import {$t, $t_html} from "./i18n";
 import * as loading from "./loading";
 import * as people from "./people";
+import {update_elements} from "./rendered_markdown";
 import {read_field_data_from_form} from "./settings_components";
 import {populate_data_for_request} from "./settings_org";
 import * as settings_ui from "./settings_ui";
@@ -87,6 +88,8 @@ function delete_profile_field(e) {
 
     const html_body = render_confirm_delete_profile_field({
         profile_field_name: profile_field.name,
+        rendered_profile_field_name:
+            profile_field.rendered_name !== "" ? profile_field.rendered_name : undefined,
         count: users_using_deleting_profile_field,
     });
 
@@ -105,6 +108,8 @@ function delete_profile_field(e) {
         html_heading: $t_html({defaultMessage: "Delete custom profile field?"}),
         on_click: request_delete,
     });
+
+    update_elements($(".profile_field_name"));
 }
 
 export function get_value_for_new_option(container) {
@@ -617,7 +622,12 @@ export function do_populate_profile_fields(profile_fields_data) {
                     profile_field: {
                         id: profile_field.id,
                         name: profile_field.name,
+                        rendered_name:
+                            profile_field.rendered_name !== ""
+                                ? profile_field.rendered_name
+                                : undefined,
                         hint: profile_field.hint,
+                        rendered_hint: profile_field.rendered_hint,
                         type: field_type_id_to_string(profile_field.type),
                         choices,
                         is_select_field: profile_field.type === field_types.SELECT.id,
@@ -634,6 +644,9 @@ export function do_populate_profile_fields(profile_fields_data) {
                 }),
             ),
         );
+
+        update_elements($(".profile_field_name"));
+        update_elements($(".profile_field_hint"));
 
         // Keeping counts of all display_in_profile_summary profile fields, to keep track.
         if (display_in_profile_summary) {

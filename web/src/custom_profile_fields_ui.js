@@ -6,6 +6,7 @@ import * as bootstrap_typeahead from "./bootstrap_typeahead";
 import {$t} from "./i18n";
 import * as people from "./people";
 import * as pill_typeahead from "./pill_typeahead";
+import {update_elements} from "./rendered_markdown";
 import {realm} from "./state_data";
 import * as typeahead_helper from "./typeahead_helper";
 import * as user_pill from "./user_pill";
@@ -66,6 +67,7 @@ export function append_custom_profile_fields(element_id, user_id) {
         });
         $(element_id).append($(html));
     }
+    update_elements($(".custom_user_field"));
 }
 
 export function initialize_custom_user_type_fields(

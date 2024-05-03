@@ -9,6 +9,8 @@ const {current_user, realm} = require("./lib/zpage_params");
 
 const loading = mock_esm("../src/loading");
 
+const rendered_markdown = mock_esm("../src/rendered_markdown");
+
 const SHORT_TEXT_ID = 1;
 
 const SELECT_ID = 3;
@@ -78,9 +80,10 @@ function test_populate(opts, template_data) {
     assert.equal(num_appends, fields_data.length);
 }
 
-run_test("populate_profile_fields", ({mock_template}) => {
+run_test("populate_profile_fields", ({override, mock_template}) => {
     realm.custom_profile_fields = {};
     realm.realm_default_external_accounts = JSON.stringify({});
+    override(rendered_markdown, "update_elements", noop);
 
     $("#admin_profile_fields_table .display_in_profile_summary_false").toggleClass = noop;
 
@@ -95,7 +98,9 @@ run_test("populate_profile_fields", ({mock_template}) => {
             type: SHORT_TEXT_ID,
             id: 10,
             name: "favorite color",
+            rendered_name: "<p>favorite color</p>",
             hint: "blue?",
+            rendered_hint: "<p>blue?</p>",
             field_data: "",
             display_in_profile_summary: false,
             valid_to_display_in_summary: true,
@@ -105,7 +110,9 @@ run_test("populate_profile_fields", ({mock_template}) => {
             type: SELECT_ID,
             id: 30,
             name: "meal",
+            rendered_name: "<p>meal</p>",
             hint: "lunch",
+            rendered_hint: "<p>lunch</p>",
             field_data: JSON.stringify([
                 {
                     text: "lunch",
@@ -124,7 +131,9 @@ run_test("populate_profile_fields", ({mock_template}) => {
             type: EXTERNAL_ACCOUNT_ID,
             id: 20,
             name: "github profile",
+            rendered_name: "<p>github profile</p>",
             hint: "username only",
+            rendered_hint: "<p>username only</p>",
             field_data: JSON.stringify({
                 subtype: "github",
             }),
@@ -136,7 +145,9 @@ run_test("populate_profile_fields", ({mock_template}) => {
             type: EXTERNAL_ACCOUNT_ID,
             id: 21,
             name: "zulip profile",
+            rendered_name: "<p>zulip profile</p>",
             hint: "username only",
+            rendered_hint: "<p>username only</p>",
             field_data: JSON.stringify({
                 subtype: "custom",
                 url_pattern: "https://chat.zulip.com/%(username)s",
@@ -151,7 +162,9 @@ run_test("populate_profile_fields", ({mock_template}) => {
             profile_field: {
                 id: 10,
                 name: "favorite color",
+                rendered_name: "<p>favorite color</p>",
                 hint: "blue?",
+                rendered_hint: "<p>blue?</p>",
                 type: SHORT_TEXT_NAME,
                 choices: [],
                 is_select_field: false,
@@ -167,7 +180,9 @@ run_test("populate_profile_fields", ({mock_template}) => {
             profile_field: {
                 id: 30,
                 name: "meal",
+                rendered_name: "<p>meal</p>",
                 hint: "lunch",
+                rendered_hint: "<p>lunch</p>",
                 type: SELECT_NAME,
                 choices: [
                     {order: 0, value: "0", text: "lunch"},
@@ -186,7 +201,9 @@ run_test("populate_profile_fields", ({mock_template}) => {
             profile_field: {
                 id: 20,
                 name: "github profile",
+                rendered_name: "<p>github profile</p>",
                 hint: "username only",
+                rendered_hint: "<p>username only</p>",
                 type: EXTERNAL_ACCOUNT_NAME,
                 choices: [],
                 is_select_field: false,
@@ -202,7 +219,9 @@ run_test("populate_profile_fields", ({mock_template}) => {
             profile_field: {
                 id: 21,
                 name: "zulip profile",
+                rendered_name: "<p>zulip profile</p>",
                 hint: "username only",
+                rendered_hint: "<p>username only</p>",
                 type: EXTERNAL_ACCOUNT_NAME,
                 choices: [],
                 is_select_field: false,

@@ -69,7 +69,9 @@ class CustomProfileField(models.Model):
 
     realm = models.ForeignKey(Realm, on_delete=CASCADE)
     name = models.CharField(max_length=NAME_MAX_LENGTH)
+    rendered_name = models.TextField(null=True, default="")
     hint = models.CharField(max_length=HINT_MAX_LENGTH, default="")
+    rendered_hint = models.TextField(null=True, default="")
 
     # Sort order for display of custom profile fields.
     order = models.IntegerField(default=0)
@@ -162,8 +164,10 @@ class CustomProfileField(models.Model):
         data_as_dict: ProfileDataElementBase = {
             "id": self.id,
             "name": self.name,
+            "rendered_name": self.rendered_name,
             "type": self.field_type,
             "hint": self.hint,
+            "rendered_hint": self.rendered_hint,
             "field_data": self.field_data,
             "order": self.order,
             "required": self.required,
