@@ -21,7 +21,7 @@
         {% set billing_emails_string = get_remote_realm_billing_user_emails(remote_realm) %}
         <b>Billing users</b>: {{ billing_emails_string }}
         {% if billing_emails_string %}
-        <a title="Copy emails" class="copy-button" data-copytext="{{ billing_emails_string }}">
+        <a title="Copy emails" class="copy-button" data-clipboard-text="{{ billing_emails_string }}">
             <i class="fa fa-copy"></i>
         </a>
         {% endif %}

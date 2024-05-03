@@ -729,8 +729,10 @@ class TestSupportEndpoint(ZulipTestCase):
                 [
                     f"<b>Admins</b>: {self.example_email('iago')}\n",
                     f"<b>Owners</b>: {self.example_email('desdemona')}\n",
-                    'class="copy-button" data-copytext="{}">'.format(self.example_email("iago")),
-                    'class="copy-button" data-copytext="{}">'.format(
+                    'class="copy-button" data-clipboard-text="{}">'.format(
+                        self.example_email("iago")
+                    ),
+                    'class="copy-button" data-clipboard-text="{}">'.format(
                         self.example_email("desdemona")
                     ),
                 ],

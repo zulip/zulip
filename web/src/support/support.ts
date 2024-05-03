@@ -1,6 +1,5 @@
+import ClipboardJS from "clipboard";
 import $ from "jquery";
-
-import * as common from "../common";
 
 $(() => {
     $("body").on("click", ".scrub-realm-button", function (e) {
@@ -43,7 +42,5 @@ $(() => {
         }
     });
 
-    $("a.copy-button").on("click", function () {
-        common.copy_data_attribute_value($(this), "copytext");
-    });
+    new ClipboardJS("a.copy-button");
 });
