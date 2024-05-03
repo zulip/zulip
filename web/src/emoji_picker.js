@@ -241,7 +241,7 @@ export function is_emoji_present_in_text(text, emoji_dict) {
 function filter_emojis() {
     const $elt = $(".emoji-popover-filter").expectOne();
     const query = $elt.val().trim().toLowerCase();
-    const message_id = $(".emoji-search-results-container").data("message-id");
+    const message_id = Number($(".emoji-search-results-container").attr("data-message-id"));
     const search_results_visible = $(".emoji-search-results-container").is(":visible");
     if (query !== "") {
         const categories = complete_emoji_catalog;
