@@ -278,7 +278,7 @@ export const update_elements = ($content: JQuery): void => {
     $content.find("div.codehilite").each(function (): void {
         const $codehilite = $(this);
         const $pre = $codehilite.find("pre");
-        const fenced_code_lang = $codehilite.data("code-language");
+        const fenced_code_lang = $codehilite.attr("data-code-language");
         let playground_info;
         if (fenced_code_lang !== undefined) {
             playground_info = realm_playground.get_playground_info_for_languages(fenced_code_lang);
