@@ -314,7 +314,7 @@ export function initialize(): void {
     message_list_tooltip(".view_user_card_tooltip", {
         delay: LONG_HOVER_DELAY,
         onShow(instance) {
-            const is_bot = $(instance.reference).data("is-bot");
+            const is_bot = $(instance.reference).attr("data-is-bot") === "true";
             if (is_bot) {
                 instance.setContent(parse_html($("#view-bot-card-tooltip-template").html()));
             } else {
