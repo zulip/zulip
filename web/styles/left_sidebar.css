@@ -305,15 +305,6 @@ li.show-more-topics {
 
         & li#show-more-direct-messages {
             cursor: pointer;
-            padding-right: 26px;
-            /* TODO: Rewrite the show-more and show-less
-               buttons as grids alongside the left sidebar
-               header rewrites. This padding value
-               is a stopgap to provide the same lefthand
-               alignment as the "more topics" text, which
-               aligns with the topic above--just as this
-               aligns with the DM row above. */
-            padding-left: 29px;
 
             & a {
                 font-size: 12px;
@@ -1098,6 +1089,10 @@ li.topic-list-item {
     .conversation-partners-icon {
         grid-area: starting-anchor-element;
         place-self: center;
+    }
+
+    .dm-name {
+        grid-area: row-content;
     }
 
     .user_circle {
