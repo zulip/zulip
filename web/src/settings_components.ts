@@ -658,7 +658,9 @@ function get_input_type($input_elem: JQuery, input_type?: string): string {
     if (input_type !== undefined && ["boolean", "string", "number"].includes(input_type)) {
         return input_type;
     }
-    return $input_elem.data("setting-widget-type");
+    input_type = $input_elem.attr("data-setting-widget-type");
+    assert(input_type !== undefined);
+    return input_type;
 }
 
 export function get_input_element_value(
