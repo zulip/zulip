@@ -13,7 +13,7 @@ from zerver.actions.default_streams import default_stream_groups_to_dicts_sorted
 from zerver.actions.realm_settings import get_realm_authentication_methods_for_page_params_api
 from zerver.actions.users import get_owned_bot_dicts
 from zerver.lib import emoji
-from zerver.lib.alert_words import user_alert_words
+from zerver.lib.alert_words import user_alert_words, user_watched_phrases
 from zerver.lib.avatar import avatar_url
 from zerver.lib.bot_config import load_bot_config_template
 from zerver.lib.compatibility import is_outdated_server
@@ -160,6 +160,13 @@ def fetch_initial_state_data(
 
     if want("alert_words"):
         state["alert_words"] = [] if user_profile is None else user_alert_words(user_profile)
+
+    if want("watched_phrases"):
+        state["watched_phrases"] = (
+            []
+            if user_profile is None
+            else [phrase.dict() for phrase in user_watched_phrases(user_profile)]
+        )
 
     if want("custom_profile_fields"):
         if user_profile is None:
@@ -1406,6 +1413,8 @@ def apply_event(
         pass
     elif event["type"] == "alert_words":
         state["alert_words"] = event["alert_words"]
+    elif event["type"] == "watched_phrases":
+        state["watched_phrases"] = event["watched_phrases"]
     elif event["type"] == "muted_topics":
         state["muted_topics"] = event["muted_topics"]
     elif event["type"] == "muted_users":

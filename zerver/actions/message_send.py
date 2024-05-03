@@ -35,7 +35,7 @@ from zerver.actions.user_topics import (
     do_set_user_topic_visibility_policy,
 )
 from zerver.lib.addressee import Addressee
-from zerver.lib.alert_words import get_alert_word_automaton
+from zerver.lib.alert_words import get_watched_phrases_automaton
 from zerver.lib.cache import cache_with_key, user_profile_delivery_email_cache_key
 from zerver.lib.create_user import create_user
 from zerver.lib.exceptions import (
@@ -157,13 +157,13 @@ def render_incoming_message(
     url_embed_data: Optional[Dict[str, Optional[UrlEmbedData]]] = None,
     email_gateway: bool = False,
 ) -> MessageRenderingResult:
-    realm_alert_words_automaton = get_alert_word_automaton(realm)
+    realm_watched_phrases_automaton = get_watched_phrases_automaton(realm)
     try:
         rendering_result = render_message_markdown(
             message=message,
             content=content,
             realm=realm,
-            realm_alert_words_automaton=realm_alert_words_automaton,
+            realm_watched_phrases_automaton=realm_watched_phrases_automaton,
             mention_data=mention_data,
             url_embed_data=url_embed_data,
             email_gateway=email_gateway,
@@ -729,7 +729,7 @@ def create_user_messages(
 ) -> List[UserMessageLite]:
     # These properties on the Message are set via
     # render_message_markdown by code in the Markdown inline patterns
-    ids_with_alert_words = rendering_result.user_ids_with_alert_words
+    ids_with_watched_phrases = rendering_result.user_ids_with_watched_phrases
     is_stream_message = message.is_stream_message()
 
     base_flags = 0
@@ -766,7 +766,7 @@ def create_user_messages(
             flags |= UserMessage.flags.read
         if user_profile_id in mentioned_user_ids:
             flags |= UserMessage.flags.mentioned
-        if user_profile_id in ids_with_alert_words:
+        if user_profile_id in ids_with_watched_phrases:
             flags |= UserMessage.flags.has_alert_word
         if (
             rendering_result.mentions_topic_wildcard

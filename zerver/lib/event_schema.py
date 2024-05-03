@@ -114,6 +114,14 @@ alert_words_event = event_dict_type(
 )
 check_alert_words = make_checker(alert_words_event)
 
+watched_phrases_event = event_dict_type(
+    required_keys=[
+        ("type", Equals("watched_phrases")),
+        ("watched_phrases", ListType(DictType(required_keys=[("watched_phrase", str)]))),
+    ]
+)
+check_watched_phrases = make_checker(watched_phrases_event)
+
 attachment_message_type = DictType(
     required_keys=[
         ("id", int),

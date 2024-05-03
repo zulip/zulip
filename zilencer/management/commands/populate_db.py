@@ -66,7 +66,7 @@ from zerver.models import (
     UserPresence,
     UserProfile,
 )
-from zerver.models.alert_words import flush_alert_word
+from zerver.models.alert_words import flush_watched_phrase
 from zerver.models.clients import get_client
 from zerver.models.realms import get_realm
 from zerver.models.recipients import get_or_create_huddle
@@ -117,7 +117,7 @@ def clear_database() -> None:
     # The after-delete signal on this just updates caches, and slows
     # down the deletion noticeably.  Remove the signal and replace it
     # after we're done.
-    post_delete.disconnect(flush_alert_word, sender=AlertWord)
+    post_delete.disconnect(flush_watched_phrase, sender=AlertWord)
     for model in [
         Message,
         Stream,
@@ -135,7 +135,7 @@ def clear_database() -> None:
     ]:
         model.objects.all().delete()
     Session.objects.all().delete()
-    post_delete.connect(flush_alert_word, sender=AlertWord)
+    post_delete.connect(flush_watched_phrase, sender=AlertWord)
 
 
 def subscribe_users_to_streams(realm: Realm, stream_dict: Dict[str, Dict[str, Any]]) -> None:
@@ -169,14 +169,14 @@ def subscribe_users_to_streams(realm: Realm, stream_dict: Dict[str, Dict[str, An
     RealmAuditLog.objects.bulk_create(all_subscription_logs)
 
 
-def create_alert_words(realm_id: int) -> None:
+def create_watched_phrases(realm_id: int) -> None:
     user_ids = UserProfile.objects.filter(
         realm_id=realm_id,
         is_bot=False,
         is_active=True,
     ).values_list("id", flat=True)
 
-    alert_words = [
+    watched_phrases = [
         "algorithms",
         "complexity",
         "founded",
@@ -192,10 +192,10 @@ def create_alert_words(realm_id: int) -> None:
 
     recs: List[AlertWord] = []
     for user_id in user_ids:
-        random.shuffle(alert_words)
+        random.shuffle(watched_phrases)
         recs.extend(
-            AlertWord(realm_id=realm_id, user_profile_id=user_id, word=word)
-            for word in alert_words[:4]
+            AlertWord(realm_id=realm_id, user_profile_id=user_id, watched_phrase=watched_phrase)
+            for watched_phrase in watched_phrases[:4]
         )
 
     AlertWord.objects.bulk_create(recs)
@@ -934,7 +934,7 @@ class Command(BaseCommand):
             random.sample(user_profiles_ids, 2) for i in range(options["num_personals"])
         ]
 
-        create_alert_words(zulip_realm.id)
+        create_watched_phrases(zulip_realm.id)
 
         # Generate a new set of test data.
         create_test_data()

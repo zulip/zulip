@@ -226,6 +226,7 @@ paths:
                               description: |
                                 Event sent to a user's clients when that user's set of configured
                                 [alert words](/help/dm-mention-alert-notifications#alert-words) have changed.
+                              deprecated: true
                               properties:
                                 id:
                                   $ref: "#/components/schemas/EventIdSchema"
@@ -246,6 +247,41 @@ paths:
                                 {
                                   "type": "alert_words",
                                   "alert_words": ["alert_word"],
+                                  "id": 0,
+                                }
+                            - type: object
+                              description: |
+                                Event sent to a user's clients when that user's set of configured
+                                [watched phrases](/help/dm-mention-alert-notifications#alert-words) have changed.
+                              properties:
+                                id:
+                                  $ref: "#/components/schemas/EventIdSchema"
+                                type:
+                                  allOf:
+                                    - $ref: "#/components/schemas/EventTypeSchema"
+                                    - enum:
+                                        - watched_phrases
+                                watched_phrases:
+                                  type: array
+                                  description: |
+                                    An array of objects, where each object is a watched phrase
+                                    configured by the user.
+                                  items:
+                                    type: object
+                                    description: |
+                                      Object containing the watched phrase.
+                                    additionalProperties: false
+                                    properties:
+                                      watched_phrase:
+                                        type: string
+                                        description: |
+                                          Watched phrase configured by the user.
+                              additionalProperties: false
+                              example:
+                                {
+                                  "type": "watched_phrases",
+                                  "watched_phrases":
+                                    [{"watched_phrase": "watched_phrase"}],
                                   "id": 0,
                                 }
                             - type: object
@@ -8918,6 +8954,219 @@ paths:
                         "msg": "",
                         "alert_words": ["bar", "natural", "illustrious"],
                       }
+  /users/me/watched_phrases:
+    get:
+      operationId: get-watched-phrases
+      summary: Get all watched phrases
+      tags: ["users"]
+      description: |
+        Get all of the user's configured [watched phrases][watched-phrases].
+
+        [watched-phrases]: /help/dm-mention-alert-notifications#alert-words
+      responses:
+        "200":
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
+                      ignored_parameters_unsupported: {}
+                      watched_phrases:
+                        type: array
+                        description: |
+                          An array of objects, where each object is a watched phrase
+                          configured by the user.
+                        items:
+                          type: object
+                          description: |
+                            Object containing the watched phrase.
+                          additionalProperties: false
+                          properties:
+                            watched_phrase:
+                              type: string
+                              description: |
+                                Watched phrase configured by the user.
+                    example:
+                      {
+                        "result": "success",
+                        "msg": "",
+                        "watched_phrases":
+                          [
+                            {"watched_phrase": "natural"},
+                            {"watched_phrase": "illustrious"},
+                          ],
+                      }
+    post:
+      operationId: add-watched-phrases
+      summary: Add watched phrases
+      tags: ["users"]
+      description: |
+        Add words (or phrases) to the user's set of configured [watched phrases][alert-words].
+
+        [watched-phrases]: /help/dm-mention-alert-notifications#alert-words
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                watched_phrases:
+                  description: |
+                    An array of objects containing watched phrases to be added to the user's
+                    set of configured watched phrases. Strings already present in the user's
+                    set of watched phrases already are ignored.
+
+                    Watched phrases are case insensitive.
+                  type: array
+                  items:
+                    type: object
+                    description: |
+                      Object containing the watched phrase.
+                    additionalProperties: false
+                    properties:
+                      watched_phrase:
+                        type: string
+                        description: |
+                          Watched phrase configured by the user.
+                  example:
+                    [{"watched_phrase": "foo"}, {"watched_phrase": "bar"}]
+              required:
+                - watched_phrases
+            encoding:
+              watched_phrases:
+                contentType: application/json
+      responses:
+        "200":
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
+                      ignored_parameters_unsupported: {}
+                      watched_phrases:
+                        type: array
+                        description: |
+                          An array of objects, where each object contains a watched phrase
+                          configured by the user.
+                        items:
+                          type: object
+                          description: |
+                            Object containing the watched phrase.
+                          additionalProperties: false
+                          properties:
+                            watched_phrase:
+                              type: string
+                              description: |
+                                Watched phrase configured by the user.
+                    example:
+                      {
+                        "result": "success",
+                        "msg": "",
+                        "watched_phrases":
+                          [
+                            {"watched_phrase": "foo"},
+                            {"watched_phrase": "bar"},
+                            {"watched_phrase": "natural"},
+                            {"watched_phrase": "illustrious"},
+                          ],
+                      }
+        "400":
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/CodedError"
+                  - example:
+                      {
+                        "code": "BAD_REQUEST",
+                        "msg": "watched_phrases[0] is too long (limit: 100 characters)",
+                        "result": "error",
+                      }
+                    description: |
+                      An example JSON response for when a supplied watched phrase
+                      exceeds the character limit:
+    delete:
+      operationId: remove-watched-phrases
+      summary: Remove watched phrases
+      tags: ["users"]
+      description: |
+        Remove watched phrases from the user's set of configured [watched phrases][alert-words].
+
+        Watched phrases are case insensitive.
+
+        [watched-phrases]: /help/dm-mention-alert-notifications#alert-words
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                watched_phrases:
+                  description: |
+                    An array of strings to be removed from the user's set of configured
+                    watched phrases. Strings that are not in the user's set of watched phrase
+                    are ignored.
+                  type: array
+                  items:
+                    type: string
+                  example: ["foo"]
+              required:
+                - watched_phrases
+            encoding:
+              watched_phrases:
+                contentType: application/json
+      responses:
+        "200":
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
+                      ignored_parameters_unsupported: {}
+                      watched_phrases:
+                        type: array
+                        description: |
+                          An array of objects, where each object is a watched phrase
+                          configured by the user.
+                        items:
+                          type: object
+                          description: |
+                            Object containing the watched phrase.
+                          additionalProperties: false
+                          properties:
+                            watched_phrase:
+                              type: string
+                              description: |
+                                Watched phrase configured by the user.
+                    example:
+                      {
+                        "result": "success",
+                        "msg": "",
+                        "watched_phrases":
+                          [
+                            {"watched_phrase": "bar"},
+                            {"watched_phrase": "natural"},
+                            {"watched_phrase": "illustrious"},
+                          ],
+                      }
   /users/me/status:
     post:
       operationId: update-status
@@ -14069,6 +14318,23 @@ paths:
 
                                 In Zulip 7.0 (feature level 170), added unmuted as a visibility
                                 policy option.
+                      watched_phrases:
+                        type: array
+                        description: |
+                          Present if `watched_phrases` is present in `fetch_event_types`.
+
+                          An array of objects, each a [watched phrase](/help/dm-mention-alert-notifications#alert-words)
+                          that the current user has configured.
+                        items:
+                          type: object
+                          description: |
+                            Object containing the watched phrase.
+                          additionalProperties: false
+                          properties:
+                            watched_phrase:
+                              type: string
+                              description: |
+                                Watched phrase configured by the user.
                       has_zoom_token:
                         type: boolean
                         description: |

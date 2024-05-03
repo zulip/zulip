@@ -1528,6 +1528,17 @@ def get_alert_words(client: Client) -> None:
     assert result["result"] == "success"
 
 
+@openapi_test_function("/users/me/watched_phrases:get")
+def get_watched_phrases(client: Client) -> None:
+    # {code_example|start}
+    # Get all of the user's configured watched phrases.
+    result = client.call_endpoint(url="/users/me/watched_phrases", method="GET")
+    # {code_example|end}
+    validate_against_openapi_schema(result, "/users/me/watched_phrases", "get", "200")
+
+    assert result["result"] == "success"
+
+
 @openapi_test_function("/users/me/alert_words:post")
 def add_alert_words(client: Client) -> None:
     # {code_example|start}
@@ -1541,6 +1552,20 @@ def add_alert_words(client: Client) -> None:
     assert result["result"] == "success"
 
 
+@openapi_test_function("/users/me/watched_phrases:post")
+def add_watched_phrases(client: Client) -> None:
+    # {code_example|start}
+    # Add words (or phrases) to the user's set of configured watched phrases.
+    watched_phrase = json.dumps([{"watched_phrase": "foo"}, {"watched_phrase": "bar"}])
+    request = {"watched_phrases": watched_phrase}
+
+    result = client.call_endpoint(url="/users/me/watched_phrases", method="POST", request=request)
+    # {code_example|end}
+    validate_against_openapi_schema(result, "/users/me/watched_phrases", "post", "200")
+
+    assert result["result"] == "success"
+
+
 @openapi_test_function("/users/me/alert_words:delete")
 def remove_alert_words(client: Client) -> None:
     # {code_example|start}
@@ -1550,6 +1575,20 @@ def remove_alert_words(client: Client) -> None:
     result = client.remove_alert_words(word)
     # {code_example|end}
     validate_against_openapi_schema(result, "/users/me/alert_words", "delete", "200")
+
+    assert result["result"] == "success"
+
+
+@openapi_test_function("/users/me/watched_phrases:delete")
+def remove_watched_phrases(client: Client) -> None:
+    # {code_example|start}
+    # Remove words (or phrases) from the user's set of configured watched phrase.
+    watched_phrase = ["foo"]
+    request = {"watched_phrases": watched_phrase}
+
+    result = client.call_endpoint(url="/users/me/watched_phrases", method="DELETE", request=request)
+    # {code_example|end}
+    validate_against_openapi_schema(result, "/users/me/watched_phrases", "delete", "200")
 
     assert result["result"] == "success"
 
@@ -1696,8 +1735,11 @@ def test_users(client: Client, owner_client: Client) -> None:
     update_user_group_members(client, user_group_id)
     remove_user_group(client, user_group_id)
     get_alert_words(client)
+    get_watched_phrases(client)
     add_alert_words(client)
+    add_watched_phrases(client)
     remove_alert_words(client)
+    remove_watched_phrases(client)
     deactivate_own_user(client, owner_client)
     add_user_mute(client)
     remove_user_mute(client)

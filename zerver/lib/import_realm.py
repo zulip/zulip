@@ -368,11 +368,11 @@ def fix_message_rendered_content(
             # We don't handle alert words on import from third-party
             # platforms, since they generally don't have an "alert
             # words" type feature, and notifications aren't important anyway.
-            realm_alert_words_automaton = None
+            realm_watched_phrases_automaton = None
 
             rendered_content = markdown_convert(
                 content=content,
-                realm_alert_words_automaton=realm_alert_words_automaton,
+                realm_watched_phrases_automaton=realm_watched_phrases_automaton,
                 message_realm=realm,
                 sent_by_bot=sent_by_bot,
                 translate_emoticons=translate_emoticons,
