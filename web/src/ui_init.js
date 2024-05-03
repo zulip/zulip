@@ -469,7 +469,7 @@ export function initialize_everything(state_data) {
         return result;
     }
 
-    const alert_words_params = pop_fields("alert_words");
+    const watched_phrases_params = pop_fields("watched_phrases");
 
     const emoji_params = pop_fields("realm_emoji");
 
@@ -748,7 +748,7 @@ export function initialize_everything(state_data) {
         },
     });
     inbox_ui.initialize();
-    alert_words.initialize(alert_words_params);
+    alert_words.initialize(watched_phrases_params);
     emojisets.initialize();
     scroll_bar.initialize();
     message_viewport.initialize();

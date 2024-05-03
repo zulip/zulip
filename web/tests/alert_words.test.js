@@ -10,17 +10,17 @@ set_global("page_params", {
 });
 
 const params = {
-    alert_words: [
-        "alertone",
-        "alerttwo",
-        "alertthree",
-        "al*rt.*s",
-        ".+",
-        "emoji",
-        "FD&C",
-        "<3",
-        ">8",
-        "5'11\"",
+    watched_phrases: [
+        {watched_phrase: "alertone"},
+        {watched_phrase: "alerttwo"},
+        {watched_phrase: "alertthree"},
+        {watched_phrase: "al*rt.*s"},
+        {watched_phrase: ".+"},
+        {watched_phrase: "emoji"},
+        {watched_phrase: "FD&C"},
+        {watched_phrase: "<3"},
+        {watched_phrase: ">8"},
+        {watched_phrase: "5'11\""},
     ],
 };
 
@@ -44,62 +44,62 @@ const regular_message = {
 const own_message = {
     sender_email: "tester@zulip.com",
     content: "<p>hey this message alertone</p>",
-    alerted: true,
+    watched: true,
 };
 const other_message = {
     sender_email: "another@zulip.com",
     content: "<p>another alertone message</p>",
-    alerted: true,
+    watched: true,
 };
 const caps_message = {
     sender_email: "another@zulip.com",
     content: "<p>another ALERTtwo message</p>",
-    alerted: true,
+    watched: true,
 };
 const alertwordboundary_message = {
     sender_email: "another@zulip.com",
     content: "<p>another alertthreemessage</p>",
-    alerted: false,
+    watched: false,
 };
 const multialert_message = {
     sender_email: "another@zulip.com",
     content: "<p>another emoji alertone and then alerttwo</p>",
-    alerted: true,
+    watched: true,
 };
 const unsafe_word_message = {
     sender_email: "another@zulip.com",
     content: "<p>gotta al*rt.*s all</p>",
-    alerted: true,
+    watched: true,
 };
 const alert_in_url_message = {
     sender_email: "another@zulip.com",
     content: "<p>http://www.google.com/alertone/me</p>",
-    alerted: true,
+    watched: true,
 };
 const question_word_message = {
     sender_email: "another@zulip.com",
     content: "<p>still alertone? me</p>",
-    alerted: true,
+    watched: true,
 };
 
 const typo_word_message = {
     sender_email: "another@zulip.com",
     content: "<p>alertones alerttwo alerttwo alertthreez</p>",
-    alerted: true,
+    watched: true,
 };
 
 const alert_domain_message = {
     sender_email: "another@zulip.com",
     content:
         '<p>now with link <a href="http://www.alerttwo.us/foo/bar" target="_blank" title="http://www.alerttwo.us/foo/bar">www.alerttwo.us/foo/bar</a></p>',
-    alerted: true,
+    watched: true,
 };
 // This test ensure we are not mucking up rendered HTML content.
 const message_with_emoji = {
     sender_email: "another@zulip.com",
     content:
         '<p>I <img alt=":heart:" class="emoji" src="/static/generated/emoji/images/emoji/unicode/2764.png" title="heart"> emoji!</p>',
-    alerted: true,
+    watched: true,
 };
 
 run_test("notifications", () => {
@@ -116,17 +116,17 @@ run_test("notifications", () => {
 
 run_test("munging", () => {
     alert_words.initialize(params);
-    assert.deepEqual(alert_words.get_word_list(), [
-        {word: "alertthree"},
-        {word: "alertone"},
-        {word: "alerttwo"},
-        {word: "al*rt.*s"},
-        {word: "emoji"},
-        {word: `5'11"`},
-        {word: "FD&C"},
-        {word: ".+"},
-        {word: "<3"},
-        {word: ">8"},
+    assert.deepEqual(alert_words.get_watched_phrase_data(), [
+        {watched_phrase: "alertthree"},
+        {watched_phrase: "alertone"},
+        {watched_phrase: "alerttwo"},
+        {watched_phrase: "al*rt.*s"},
+        {watched_phrase: "emoji"},
+        {watched_phrase: `5'11"`},
+        {watched_phrase: "FD&C"},
+        {watched_phrase: ".+"},
+        {watched_phrase: "<3"},
+        {watched_phrase: ">8"},
     ]);
     let saved_content = regular_message.content;
     alert_words.process_message(regular_message);
@@ -144,62 +144,62 @@ run_test("munging", () => {
 
     assert_transform(
         other_message,
-        "<p>another <span class='alert-word'>alertone</span> message</p>",
+        "<p>another <span class='watched-phrase'>alertone</span> message</p>",
     );
 
     assert_transform(
         caps_message,
-        "<p>another <span class='alert-word'>ALERTtwo</span> message</p>",
+        "<p>another <span class='watched-phrase'>ALERTtwo</span> message</p>",
     );
 
     assert_transform(
         multialert_message,
-        "<p>another <span class='alert-word'>emoji</span> <span class='alert-word'>alertone</span> and then <span class='alert-word'>alerttwo</span></p>",
+        "<p>another <span class='watched-phrase'>emoji</span> <span class='watched-phrase'>alertone</span> and then <span class='watched-phrase'>alerttwo</span></p>",
     );
 
     assert_transform(
         unsafe_word_message,
-        "<p>gotta <span class='alert-word'>al*rt.*s</span> all</p>",
+        "<p>gotta <span class='watched-phrase'>al*rt.*s</span> all</p>",
     );
 
     assert_transform(alert_in_url_message, "<p>http://www.google.com/alertone/me</p>");
 
     assert_transform(
         question_word_message,
-        "<p>still <span class='alert-word'>alertone</span>? me</p>",
+        "<p>still <span class='watched-phrase'>alertone</span>? me</p>",
     );
 
     assert_transform(
         typo_word_message,
-        "<p>alertones <span class='alert-word'>alerttwo</span> <span class='alert-word'>alerttwo</span> alertthreez</p>",
+        "<p>alertones <span class='watched-phrase'>alerttwo</span> <span class='watched-phrase'>alerttwo</span> alertthreez</p>",
     );
 
     assert_transform(
         alert_domain_message,
-        '<p>now with link <a href="http://www.alerttwo.us/foo/bar" target="_blank" title="http://www.alerttwo.us/foo/bar">www.<span class=\'alert-word\'>alerttwo</span>.us/foo/bar</a></p>',
+        '<p>now with link <a href="http://www.alerttwo.us/foo/bar" target="_blank" title="http://www.alerttwo.us/foo/bar">www.<span class=\'watched-phrase\'>alerttwo</span>.us/foo/bar</a></p>',
     );
 
     assert_transform(
         message_with_emoji,
-        '<p>I <img alt=":heart:" class="emoji" src="/static/generated/emoji/images/emoji/unicode/2764.png" title="heart"> <span class=\'alert-word\'>emoji</span>!</p>',
+        '<p>I <img alt=":heart:" class="emoji" src="/static/generated/emoji/images/emoji/unicode/2764.png" title="heart"> <span class=\'watched-phrase\'>emoji</span>!</p>',
     );
 
     assert_transform(
         {
             sender_email: "another@zulip.com",
             content: `<p>FD&amp;C &lt;3 &gt;8 5'11" 5&#39;11&quot;</p>`,
-            alerted: true,
+            watched: true,
         },
-        `<p><span class='alert-word'>FD&amp;C</span> <span class='alert-word'>&lt;3</span> <span class='alert-word'>&gt;8</span> <span class='alert-word'>5'11"</span> <span class='alert-word'>5&#39;11&quot;</span></p>`,
+        `<p><span class='watched-phrase'>FD&amp;C</span> <span class='watched-phrase'>&lt;3</span> <span class='watched-phrase'>&gt;8</span> <span class='watched-phrase'>5'11"</span> <span class='watched-phrase'>5&#39;11&quot;</span></p>`,
     );
 });
 
 run_test("basic get/set operations", () => {
-    alert_words.initialize({alert_words: []});
-    assert.ok(!alert_words.has_alert_word("breakfast"));
-    assert.ok(!alert_words.has_alert_word("lunch"));
-    alert_words.set_words(["breakfast", "lunch"]);
-    assert.ok(alert_words.has_alert_word("breakfast"));
-    assert.ok(alert_words.has_alert_word("lunch"));
-    assert.ok(!alert_words.has_alert_word("dinner"));
+    alert_words.initialize({watched_phrases: []});
+    assert.ok(!alert_words.has_watched_phrase("breakfast"));
+    assert.ok(!alert_words.has_watched_phrase("lunch"));
+    alert_words.set_watched_phrases([{watched_phrase: "breakfast"}, {watched_phrase: "lunch"}]);
+    assert.ok(alert_words.has_watched_phrase("breakfast"));
+    assert.ok(alert_words.has_watched_phrase("lunch"));
+    assert.ok(!alert_words.has_watched_phrase("dinner"));
 });

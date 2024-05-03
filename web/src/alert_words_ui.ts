@@ -12,84 +12,87 @@ import * as ui_report from "./ui_report";
 
 export let loaded = false;
 
-export function rerender_alert_words_ui(): void {
+export function rerender_watched_phrases_ui(): void {
     if (!loaded) {
         return;
     }
 
-    const words = alert_words.get_word_list();
-    words.sort();
-    const $word_list = $("#alert-words-table");
+    const watched_phrase_data = alert_words.get_watched_phrase_data();
+    watched_phrase_data.sort((a, b) => a.watched_phrase.length - b.watched_phrase.length);
+    const $word_list = $("#watched-phrases-table");
 
-    ListWidget.create($word_list, words, {
-        name: "alert-words-list",
+    ListWidget.create($word_list, watched_phrase_data, {
+        name: "watched-phrases-list",
         get_item: ListWidget.default_get_item,
-        modifier_html(alert_word) {
-            return render_alert_word_settings_item({alert_word});
+        modifier_html(watched_phrase) {
+            return render_alert_word_settings_item({watched_phrase});
         },
-        $parent_container: $("#alert-word-settings"),
-        $simplebar_container: $("#alert-word-settings .progressive-table-wrapper"),
+        $parent_container: $("#watched-phrase-settings"),
+        $simplebar_container: $("#watched-phrase-settings .progressive-table-wrapper"),
         sort_fields: {
-            ...ListWidget.generic_sort_functions("alphabetic", ["word"]),
+            ...ListWidget.generic_sort_functions("alphabetic", ["watched_phrase"]),
         },
     });
 }
 
-function update_alert_word_status(status_text: string, is_error: boolean): void {
-    const $alert_word_status = $("#alert_word_status");
+function update_watched_phrase_status(status_text: string, is_error: boolean): void {
+    const $watched_phrase_status = $("#watched_phrase_status");
     if (is_error) {
-        $alert_word_status.removeClass("alert-success").addClass("alert-danger");
+        $watched_phrase_status.removeClass("alert-success").addClass("alert-danger");
     } else {
-        $alert_word_status.removeClass("alert-danger").addClass("alert-success");
+        $watched_phrase_status.removeClass("alert-danger").addClass("alert-success");
     }
-    $alert_word_status.find(".alert_word_status_text").text(status_text);
-    $alert_word_status.show();
+    $watched_phrase_status.find(".watched_phrase_status_text").text(status_text);
+    $watched_phrase_status.show();
 }
 
-function add_alert_word(): void {
-    const alert_word = $<HTMLInputElement>("input#add-alert-word-name").val()!.trim();
+function add_watched_phrase(): void {
+    const watched_phrase = $<HTMLInputElement>("input#add-watched-phrase-name").val()!.trim();
 
-    if (alert_words.has_alert_word(alert_word)) {
+    if (alert_words.has_watched_phrase(watched_phrase)) {
         ui_report.client_error(
-            $t({defaultMessage: "Alert word already exists!"}),
+            $t({defaultMessage: "Watched phrase already exists!"}),
             $("#dialog_error"),
         );
         dialog_widget.hide_dialog_spinner();
         return;
     }
 
-    const words_to_be_added = [alert_word];
+    const watched_phrases_to_be_added = [{watched_phrase}];
 
-    const data = {alert_words: JSON.stringify(words_to_be_added)};
-    dialog_widget.submit_api_request(channel.post, "/json/users/me/alert_words", data);
+    const data = {watched_phrases: JSON.stringify(watched_phrases_to_be_added)};
+    dialog_widget.submit_api_request(channel.post, "/json/users/me/watched_phrases", data);
 }
 
-function remove_alert_word(alert_word: string): void {
-    const words_to_be_removed = [alert_word];
+function remove_watched_phrase(watched_phrase: string): void {
+    const words_to_be_removed = [watched_phrase];
     void channel.del({
-        url: "/json/users/me/alert_words",
-        data: {alert_words: JSON.stringify(words_to_be_removed)},
+        url: "/json/users/me/watched_phrases",
+        data: {watched_phrases: JSON.stringify(words_to_be_removed)},
         success() {
-            update_alert_word_status(
+            update_watched_phrase_status(
                 $t(
-                    {defaultMessage: `Alert word "{alert_word}" removed successfully!`},
-                    {alert_word},
+                    {defaultMessage: `Watched phrase "{watched_phrase}" removed successfully!`},
+                    {watched_phrase},
                 ),
                 false,
             );
         },
         error() {
-            update_alert_word_status($t({defaultMessage: "Error removing alert word!"}), true);
+            update_watched_phrase_status(
+                $t({defaultMessage: "Error removing watched phrase!"}),
+                true,
+            );
         },
     });
 }
 
-export function show_add_alert_word_modal(): void {
+export function show_add_watched_phrase_modal(): void {
     const html_body = render_add_alert_word();
 
-    function add_alert_word_post_render(): void {
-        const $add_user_group_input_element = $<HTMLInputElement>("input#add-alert-word-name");
-        const $add_user_group_submit_button = $("#add-alert-word .dialog_submit_button");
+    function add_watched_phrase_post_render(): void {
+        const $add_user_group_input_element = $<HTMLInputElement>("input#add-watched-phrase-name");
+        const $add_user_group_submit_button = $("#add-watched-phrase .dialog_submit_button");
         $add_user_group_submit_button.prop("disabled", true);
 
         $add_user_group_input_element.on("input", () => {
@@ -101,34 +104,34 @@ export function show_add_alert_word_modal(): void {
     }
 
     dialog_widget.launch({
-        html_heading: $t_html({defaultMessage: "Add a new alert word"}),
+        html_heading: $t_html({defaultMessage: "Add a new watched phrase"}),
         html_body,
         html_submit_button: $t_html({defaultMessage: "Add"}),
         help_link: "/help/dm-mention-alert-notifications#alert-words",
-        form_id: "add-alert-word-form",
-        id: "add-alert-word",
+        form_id: "add-watched-phrase-form",
+        id: "add-watched-phrase",
         loading_spinner: true,
-        on_click: add_alert_word,
-        on_shown: () => $("#add-alert-word-name").trigger("focus"),
-        post_render: add_alert_word_post_render,
+        on_click: add_watched_phrase,
+        on_shown: () => $("#add-watched-phrase-name").trigger("focus"),
+        post_render: add_watched_phrase_post_render,
     });
 }
 
-export function set_up_alert_words(): void {
+export function set_up_watched_phrases(): void {
     // The settings page must be rendered before this function gets called.
     loaded = true;
-    rerender_alert_words_ui();
+    rerender_watched_phrases_ui();
 
-    $("#open-add-alert-word-modal").on("click", () => {
-        show_add_alert_word_modal();
+    $("#open-add-watched-phrase-modal").on("click", () => {
+        show_add_watched_phrase_modal();
     });
 
-    $("#alert-words-table").on("click", ".remove-alert-word", (event) => {
+    $("#watched-phrases-table").on("click", ".remove-watched-phrase", (event) => {
         const word = $(event.currentTarget).parents("tr").find(".value").text().trim();
-        remove_alert_word(word);
+        remove_watched_phrase(word);
     });
 
-    $("#alert-word-settings").on("click", ".close-alert-word-status", (event) => {
+    $("#watched-phrase-settings").on("click", ".close-watched-phrase-status", (event) => {
         event.preventDefault();
         const $alert = $(event.currentTarget).parents(".alert");
         $alert.hide();

@@ -63,14 +63,14 @@ run_test("message_store", () => {
 
     const in_message = {...messages.isaac_to_denmark_stream};
 
-    assert.equal(in_message.alerted, undefined);
+    assert.equal(in_message.watched, undefined);
 
     // Let's add a message into our message_store via
     // message_helper.process_new_message.
     assert.equal(message_store.get(in_message.id), undefined);
     message_helper.process_new_message(in_message);
     const message = message_store.get(in_message.id);
-    assert.equal(in_message.alerted, true);
+    assert.equal(in_message.watched, true);
     assert.equal(message, in_message);
 
     // There are more side effects.

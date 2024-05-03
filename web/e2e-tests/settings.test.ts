@@ -277,74 +277,74 @@ async function test_your_bots_section(page: Page): Promise<void> {
     await test_invalid_edit_bot_form(page);
 }
 
-const alert_word_status_selector = "#alert_word_status";
+const watched_phrase_status_selector = "#watched_phrase_status";
 
-async function add_alert_word(page: Page, word: string): Promise<void> {
-    await page.click("#open-add-alert-word-modal");
+async function add_watched_phrase(page: Page, word: string): Promise<void> {
+    await page.click("#open-add-watched-phrase-modal");
     await common.wait_for_micromodal_to_open(page);
 
-    await page.type("#add-alert-word-name", word);
-    await page.click("#add-alert-word .dialog_submit_button");
+    await page.type("#add-watched-phrase-name", word);
+    await page.click("#add-watched-phrase .dialog_submit_button");
 
     await common.wait_for_micromodal_to_close(page);
 }
 
-async function check_alert_word_added(page: Page, word: string): Promise<void> {
-    const added_alert_word_selector = `.alert-word-item[data-word='${CSS.escape(word)}']`;
-    await page.waitForSelector(added_alert_word_selector, {visible: true});
+async function check_watched_phrase_added(page: Page, word: string): Promise<void> {
+    const added_watched_phrase_selector = `.watched-phrase-item[data-word='${CSS.escape(word)}']`;
+    await page.waitForSelector(added_watched_phrase_selector, {visible: true});
 }
 
-async function get_alert_words_status_text(page: Page): Promise<string> {
-    await page.waitForSelector(alert_word_status_selector, {visible: true});
-    const status_text = await common.get_text_from_selector(page, ".alert_word_status_text");
+async function get_watched_phrases_status_text(page: Page): Promise<string> {
+    await page.waitForSelector(watched_phrase_status_selector, {visible: true});
+    const status_text = await common.get_text_from_selector(page, ".watched_phrase_status_text");
     return status_text;
 }
 
-async function close_alert_words_status(page: Page): Promise<void> {
-    const status_close_btn = ".close-alert-word-status";
+async function close_watched_phrases_status(page: Page): Promise<void> {
+    const status_close_btn = ".close-watched-phrase-status";
     await page.click(status_close_btn);
-    await page.waitForSelector(alert_word_status_selector, {hidden: true});
+    await page.waitForSelector(watched_phrase_status_selector, {hidden: true});
 }
 
-async function test_duplicate_alert_words_cannot_be_added(
+async function test_duplicate_watched_phrases_cannot_be_added(
     page: Page,
     duplicate_word: string,
 ): Promise<void> {
-    await page.click("#open-add-alert-word-modal");
+    await page.click("#open-add-watched-phrase-modal");
     await common.wait_for_micromodal_to_open(page);
 
-    await page.type("#add-alert-word-name", duplicate_word);
-    await page.click("#add-alert-word .dialog_submit_button");
+    await page.type("#add-watched-phrase-name", duplicate_word);
+    await page.click("#add-watched-phrase .dialog_submit_button");
 
-    const alert_word_status_selector = "#dialog_error";
-    await page.waitForSelector(alert_word_status_selector, {visible: true});
-    const status_text = await common.get_text_from_selector(page, alert_word_status_selector);
-    assert.strictEqual(status_text, "Alert word already exists!");
+    const watched_phrase_status_selector = "#dialog_error";
+    await page.waitForSelector(watched_phrase_status_selector, {visible: true});
+    const status_text = await common.get_text_from_selector(page, watched_phrase_status_selector);
+    assert.strictEqual(status_text, "Watched phrase already exists!");
 
-    await page.click("#add-alert-word .dialog_exit_button");
+    await page.click("#add-watched-phrase .dialog_exit_button");
     await common.wait_for_micromodal_to_close(page);
 }
 
-async function delete_alert_word(page: Page, word: string): Promise<void> {
-    const delete_btn_selector = `.remove-alert-word[data-word="${CSS.escape(word)}"]`;
+async function delete_watched_phrase(page: Page, word: string): Promise<void> {
+    const delete_btn_selector = `.remove-watched-phrase[data-word="${CSS.escape(word)}"]`;
     await page.click(delete_btn_selector);
     await page.waitForSelector(delete_btn_selector, {hidden: true});
 }
 
-async function test_alert_word_deletion(page: Page, word: string): Promise<void> {
-    await delete_alert_word(page, word);
-    const status_text = await get_alert_words_status_text(page);
-    assert.strictEqual(status_text, `Alert word "${word}" removed successfully!`);
-    await close_alert_words_status(page);
+async function test_watched_phrase_deletion(page: Page, word: string): Promise<void> {
+    await delete_watched_phrase(page, word);
+    const status_text = await get_watched_phrases_status_text(page);
+    assert.strictEqual(status_text, `Watched phrase "${word}" removed successfully!`);
+    await close_watched_phrases_status(page);
 }
 
-async function test_alert_words_section(page: Page): Promise<void> {
-    await page.click('[data-section="alert-words"]');
+async function test_watched_phrases_section(page: Page): Promise<void> {
+    await page.click('[data-section="watched-phrases"]');
     const word = "puppeteer";
-    await add_alert_word(page, word);
-    await check_alert_word_added(page, word);
-    await test_duplicate_alert_words_cannot_be_added(page, word);
-    await test_alert_word_deletion(page, word);
+    await add_watched_phrase(page, word);
+    await check_watched_phrase_added(page, word);
+    await test_duplicate_watched_phrases_cannot_be_added(page, word);
+    await test_watched_phrase_deletion(page, word);
 }
 
 async function change_language(page: Page, language_data_code: string): Promise<void> {
@@ -453,7 +453,7 @@ async function settings_tests(page: Page): Promise<void> {
     await close_settings_and_date_picker(page);
     await open_settings(page);
     await test_change_full_name(page);
-    await test_alert_words_section(page);
+    await test_watched_phrases_section(page);
     await test_your_bots_section(page);
     await test_default_language_setting(page);
     await test_notifications_section(page);

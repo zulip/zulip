@@ -121,7 +121,7 @@ run_test("update_messages", () => {
 
     assert.deepEqual(rendered_mgs, [
         {
-            alerted: false,
+            watched: false,
             collapsed: false,
             content: "<b>new content</b>",
             display_recipient: denmark.name,

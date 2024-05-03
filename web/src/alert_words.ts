@@ -5,32 +5,37 @@ import * as people from "./people";
 
 // For simplicity, we use a list for our internal
 // data, since that matches what the server sends us.
-let my_alert_words: string[] = [];
+let my_watched_phrases: WatchedPhraseData[] = [];
 
-export function set_words(words: string[]): void {
+type WatchedPhraseData = {
+    watched_phrase: string;
+};
+
+export function set_watched_phrases(watched_phrases: WatchedPhraseData[]): void {
     // This module's highlighting algorithm of greedily created
-    // highlight spans cannot correctly handle overlapping alert word
+    // highlight spans cannot correctly handle overlapping watched phrase
     // clauses, but processing in order from longest-to-shortest
     // reduces some symptoms of this. See #28415 for details.
-    my_alert_words = words;
-    my_alert_words.sort((a, b) => b.length - a.length);
+    my_watched_phrases = watched_phrases;
+    my_watched_phrases.sort((a, b) => b.watched_phrase.length - a.watched_phrase.length);
 }
 
-export function get_word_list(): {word: string}[] {
+export function get_watched_phrase_data(): {watched_phrase: string}[] {
     // Returns a array of objects
-    // (with each alert_word as value and 'word' as key to the object.)
-    const words = [];
-    for (const word of my_alert_words) {
-        words.push({word});
+    // (with each watched_phrase as value and 'word' as key to the object.)
+    const watched_phrases = [];
+    for (const phrase of my_watched_phrases) {
+        const watched_phrase_data = {watched_phrase: phrase.watched_phrase};
+        watched_phrases.push(watched_phrase_data);
     }
-    return words;
+    return watched_phrases;
 }
 
-export function has_alert_word(word: string): boolean {
-    return my_alert_words.includes(word);
+export function has_watched_phrase(phrase: string): boolean {
+    return my_watched_phrases.some((watched_phrase) => watched_phrase.watched_phrase === phrase);
 }
 
-const alert_regex_replacements = new Map<string, string>([
+const watched_phrase_regex_replacements = new Map<string, string>([
     ["&", "&amp;"],
     ["<", "&lt;"],
     [">", "&gt;"],
@@ -40,16 +45,16 @@ const alert_regex_replacements = new Map<string, string>([
 ]);
 
 export function process_message(message: Message): void {
-    // Parsing for alert words is expensive, so we rely on the host
-    // to tell us there any alert words to even look for.
-    if (!message.alerted) {
+    // Parsing for watched phrases is expensive, so we rely on the host
+    // to tell us there any watched phrases to even look for.
+    if (!message.watched) {
         return;
     }
 
-    for (const word of my_alert_words) {
-        const clean = _.escapeRegExp(word).replaceAll(
+    for (const watched_phrase of my_watched_phrases) {
+        const clean = _.escapeRegExp(watched_phrase.watched_phrase).replaceAll(
             /["&'<>]/g,
-            (c) => alert_regex_replacements.get(c)!,
+            (c) => watched_phrase_regex_replacements.get(c)!,
         );
         const before_punctuation = "\\s|^|>|[\\(\\\".,';\\[]";
         const after_punctuation = "(?=\\s)|$|<|[\\)\\\"\\?!:.,';\\]!]";
@@ -70,14 +75,14 @@ export function process_message(message: Message): void {
                 // We want to find the position of the `<` and `>` only in the
                 // match and the string before it. So, don't include the last
                 // character of match in `check_string`. This covers the corner
-                // case when there is an alert word just before `<` or `>`.
+                // case when there is a watched phrase just before `<` or `>`.
                 const check_string = pre_match + match.slice(0, -1);
                 const in_tag = check_string.lastIndexOf("<") > check_string.lastIndexOf(">");
                 // Matched word is inside an HTML tag so don't perform any highlighting.
                 if (in_tag) {
                     return before + word + after;
                 }
-                return before + "<span class='alert-word'>" + word + "</span>" + after;
+                return before + "<span class='watched-phrase'>" + word + "</span>" + after;
             },
         );
     }
@@ -85,12 +90,12 @@ export function process_message(message: Message): void {
 
 export function notifies(message: Message): boolean {
     // We exclude ourselves from notifications when we type one of our own
-    // alert words into a message, just because that can be annoying for
+    // watched phrases into a message, just because that can be annoying for
     // certain types of workflows where everybody on your team, including
-    // yourself, sets up an alert word to effectively mention the team.
-    return !people.is_current_user(message.sender_email) && message.alerted;
+    // yourself, sets up an watched phrase to effectively mention the team.
+    return !people.is_current_user(message.sender_email) && message.watched;
 }
 
-export const initialize = (params: {alert_words: string[]}): void => {
-    set_words(params.alert_words);
+export const initialize = (params: {watched_phrases: WatchedPhraseData[]}): void => {
+    set_watched_phrases(params.watched_phrases);
 };

@@ -302,7 +302,7 @@ export function edit_locally(message, request) {
             message.content = request.content;
             message.mentioned = request.mentioned;
             message.mentioned_me_directly = request.mentioned_me_directly;
-            message.alerted = request.alerted;
+            message.watched = request.watched;
         } else {
             // Otherwise, we Markdown-render the message; this resets
             // all flags, so we need to restore those flags that are

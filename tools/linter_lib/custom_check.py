@@ -602,7 +602,7 @@ html_rules: List["Rule"] = [
         "pattern": "aria-label='[^{]",
         "description": "`aria-label` value should be translatable.",
         "good_lines": [
-            '<button type="button" class="close close-alert-word-status" aria-label="{{t \'Close\' }}">'
+            '<button type="button" class="close close-watched-phrase-status" aria-label="{{t \'Close\' }}">'
         ],
         "bad_lines": ["<button aria-label='foo'></button>"],
     },
@@ -610,7 +610,7 @@ html_rules: List["Rule"] = [
         "pattern": 'aria-label="[^{]',
         "description": "`aria-label` value should be translatable.",
         "good_lines": [
-            '<button type="button" class="close close-alert-word-status" aria-label="{{t \'Close\' }}">'
+            '<button type="button" class="close close-watched-phrase-status" aria-label="{{t \'Close\' }}">'
         ],
         "bad_lines": ['<button aria-label="foo"></button>'],
     },
