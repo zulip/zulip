@@ -547,7 +547,7 @@ function test_code_playground(mock_template, viewing_code) {
     $content.set_find_results("div.codehilite", $array([$hilite]));
     $hilite.set_find_results("pre", $pre);
 
-    $hilite.data("code-language", "javascript");
+    $hilite.attr("data-code-language", "javascript");
 
     const $code_buttons_container = $.create("code_buttons_container", {
         children: ["copy-code-stub", "view-code-stub"],

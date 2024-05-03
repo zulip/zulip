@@ -98,9 +98,11 @@ function register_click_handlers(): void {
             const $view_in_playground_button = $(this);
             const $codehilite_div = $(this).closest(".codehilite");
             e.stopPropagation();
-            const playground_info = realm_playground.get_playground_info_for_languages(
-                $codehilite_div.data("code-language"),
-            );
+            const language = $codehilite_div.attr("data-code-language");
+            if (language === undefined) {
+                return;
+            }
+            const playground_info = realm_playground.get_playground_info_for_languages(language);
             if (playground_info === undefined) {
                 return;
             }
