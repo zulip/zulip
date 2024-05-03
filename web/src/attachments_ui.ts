@@ -2,6 +2,7 @@ import $ from "jquery";
 import {z} from "zod";
 
 import render_confirm_delete_attachment from "../templates/confirm_dialog/confirm_delete_attachment.hbs";
+import render_confirm_delete_detached_attachments_modal from "../templates/confirm_dialog/confirm_delete_detached_attachments.hbs";
 import render_settings_upload_space_stats from "../templates/settings/upload_space_stats.hbs";
 import render_uploaded_files_list from "../templates/settings/uploaded_files_list.hbs";
 
@@ -107,6 +108,48 @@ function delete_attachments(attachment: string, file_name: string): void {
             dialog_widget.submit_api_request(channel.del, "/json/attachments/" + attachment, {});
         },
         loading_spinner: true,
+    });
+}
+
+export function suggest_delete_detached_attachments(attachments_list: []): void {
+    const html_body = render_confirm_delete_detached_attachments_modal({
+        attachments_list,
+        realm_allow_edit_history: realm.realm_allow_edit_history,
+    });
+    dialog_widget.launch({
+        id: "confirm_delete_attachments_modal",
+        html_heading: $t_html({defaultMessage: "Delete uploaded files?"}),
+        html_body,
+        html_submit_button: $t_html({defaultMessage: "Delete"}),
+        html_exit_button: $t_html({defaultMessage: "Don't delete"}),
+        loading_spinner: true,
+        on_click() {
+            const delete_attachment = async ({id}: {id: number}): Promise<unknown> =>
+                channel.async_request(channel.del, "/json/attachments/" + id);
+            const requests = attachments_list.map(async (attachment) =>
+                delete_attachment(attachment),
+            );
+
+            dialog_widget.show_dialog_spinner();
+            Promise.all(requests)
+                .then(() => {
+                    dialog_widget.close();
+                })
+                .catch(() => {
+                    dialog_widget.hide_dialog_spinner();
+                    ui_report.error(
+                        $t_html({defaultMessage: "One or more files could not be deleted."}),
+                        undefined,
+                        $("#dialog_error"),
+                    );
+                });
+        },
+    });
+
+    // This is to open "Manage uploaded files" link.
+    $("#confirm_delete_attachments_modal .uploaded_files_settings_link").on("click", (e) => {
+        e.stopPropagation();
+        dialog_widget.close();
     });
 }
 

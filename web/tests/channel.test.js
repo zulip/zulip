@@ -430,3 +430,40 @@ test("error in callback", () => {
         },
     });
 });
+
+test("async_request", () => {
+    let response_promise;
+    test_with_mock_ajax({
+        xhr: {
+            data: "hello",
+            status: 200,
+            responseJSON: undefined,
+            responseText: "success",
+        },
+        run_code() {
+            response_promise = channel.async_request(channel.get, "/json/endpoint");
+        },
+
+        check_ajax_options(options) {
+            assert.equal(options.type, "GET");
+            assert.equal(options.dataType, "json");
+            options.simulate_success();
+            response_promise.then((data) => {
+                assert.equal(data.jqXHR.data, "hello");
+                assert.equal(data.jqXHR.responseText, "success");
+            });
+        },
+    });
+    test_with_mock_ajax({
+        xhr: xhr_401,
+        run_code() {
+            response_promise = channel.async_request(channel.get, "/json/endpoint");
+        },
+        check_ajax_options(options) {
+            options.simulate_error();
+            response_promise.catch((error) => {
+                assert.equal(error.xhr.status, 401);
+            });
+        },
+    });
+});

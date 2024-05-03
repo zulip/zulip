@@ -12,6 +12,7 @@ import render_message_moved_widget_body from "../templates/message_moved_widget_
 import render_resolve_topic_time_limit_error_modal from "../templates/resolve_topic_time_limit_error_modal.hbs";
 import render_topic_edit_form from "../templates/topic_edit_form.hbs";
 
+import * as attachments_ui from "./attachments_ui";
 import * as blueslip from "./blueslip";
 import * as channel from "./channel";
 import * as compose_actions from "./compose_actions";
@@ -1054,7 +1055,7 @@ export function save_message_row_edit($row) {
     channel.patch({
         url: "/json/messages/" + message.id,
         data: request,
-        success() {
+        success(res) {
             if (edit_locally_echoed) {
                 delete message.local_edit_timestamp;
                 currently_echoing_messages.delete(message_id);
@@ -1066,6 +1067,9 @@ export function save_message_row_edit($row) {
             // re-renders. Note that any subsequent editing will
             // create a fresh Save button, without the spinner
             // class attached.
+            if (res.detached_files.length) {
+                attachments_ui.suggest_delete_detached_attachments(res.detached_files);
+            }
         },
         error(xhr) {
             if (msg_list === message_lists.current) {

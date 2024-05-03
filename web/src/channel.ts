@@ -223,3 +223,23 @@ export function xhr_error_message(message: string, xhr: JQuery.jqXHR<unknown>): 
 
     return message;
 }
+
+export async function async_request(
+    request_method: typeof call,
+    url: string,
+    data: Parameters<AjaxRequestHandler>[0]["data"] = {},
+): Promise<{data: unknown; textStatus: string; jqXHR: JQuery.jqXHR<unknown>}> {
+    return await new Promise((resolve, reject) => {
+        void request_method({
+            url,
+            data,
+            success(data, textStatus, jqXHR) {
+                resolve({data, textStatus, jqXHR});
+            },
+            error(xhr, error_type, xhn) {
+                // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
+                reject({xhr, error_type, xhn});
+            },
+        });
+    });
+}
