@@ -20,7 +20,7 @@ async function test_mention(page: Page): Promise<void> {
 
     console.log("Checking for all everyone warning");
     const stream_size = await page.evaluate(() =>
-        zulip_test.get_subscriber_count(zulip_test.get_sub("Verona").stream_id),
+        zulip_test.get_subscriber_count(zulip_test.get_sub("Verona")!.stream_id),
     );
     const threshold = await page.evaluate(() => {
         zulip_test.set_wildcard_mention_threshold(5);
