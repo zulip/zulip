@@ -284,16 +284,16 @@ run_test("is:mentioned with no unreads and no matches", () => {
     test_with(fixture);
 });
 
-run_test("is:alerted with no unreads and one match", () => {
+run_test("is:watched with no unreads and one match", () => {
     const fixture = {
-        filter_terms: [{operator: "is", operand: "alerted"}],
+        filter_terms: [{operator: "is", operand: "watched"}],
         unread_info: {
             flavor: "not_found",
         },
         has_found_newest: true,
         all_messages: [
-            {id: 55, topic: "whatever", alerted: true},
-            {id: 57, topic: "whatever", alerted: false},
+            {id: 55, topic: "whatever", watched: true},
+            {id: 57, topic: "whatever", watched: false},
         ],
         expected_id_info: {
             target_id: undefined,

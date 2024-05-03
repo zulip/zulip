@@ -595,9 +595,9 @@ function get_is_filter_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Sugge
             incompatible_patterns: [{operator: "is", operand: "mentioned"}],
         },
         {
-            search_string: "is:alerted",
-            description_html: "alerted messages",
-            incompatible_patterns: [{operator: "is", operand: "alerted"}],
+            search_string: "is:watched",
+            description_html: "watched messages",
+            incompatible_patterns: [{operator: "is", operand: "watched"}],
         },
         {
             search_string: "is:unread",
