@@ -53,7 +53,6 @@ const compose_pm_pill = zrequire("compose_pm_pill");
 const compose_recipient = zrequire("compose_recipient");
 const composebox_typeahead = zrequire("composebox_typeahead");
 const settings_config = zrequire("settings_config");
-const pygments_data = zrequire("pygments_data");
 
 const ct = composebox_typeahead;
 
@@ -286,6 +285,10 @@ for (const [key, val] of emojis_by_name.entries()) {
 }
 emoji_picker.rebuild_catalog();
 const emoji_list = composebox_typeahead.emoji_collection;
+const emoji_list_by_name = new Map(emoji_list.map((emoji) => [emoji.emoji_name, emoji]));
+function emoji_objects(emoji_names) {
+    return emoji_names.map((emoji_name) => emoji_list_by_name.get(emoji_name));
+}
 
 const ali = user_or_mention_item({
     email: "ali@zulip.com",
@@ -1068,91 +1071,63 @@ test("initialize", ({override, override_rewire, mock_template}) => {
                 assert.equal(actual_value, expected_value);
 
                 // matching
+                let matcher = typeahead.get_emoji_matcher("ta");
+                assert.equal(matcher(make_emoji(emoji_tada), matcher), true);
+                assert.equal(matcher(make_emoji(emoji_moneybag), matcher), false);
 
-                function match(item) {
-                    const token = ct.get_or_set_token_for_testing();
-                    const completing = ct.get_or_set_completing_for_tests();
+                matcher = ct.get_stream_or_user_group_matcher("swed");
+                assert.equal(matcher(sweden_stream, matcher), true);
+                assert.equal(matcher(denmark_stream, matcher), false);
 
-                    return ct.compose_content_matcher(completing, token)(item);
-                }
-
-                ct.get_or_set_completing_for_tests("emoji");
-                ct.get_or_set_token_for_testing("ta");
-                assert.equal(match(make_emoji(emoji_tada)), true);
-                assert.equal(match(make_emoji(emoji_moneybag)), false);
-
-                ct.get_or_set_completing_for_tests("stream");
-                ct.get_or_set_token_for_testing("swed");
-                assert.equal(match(sweden_stream), true);
-                assert.equal(match(denmark_stream), false);
-
-                ct.get_or_set_completing_for_tests("syntax");
-                ct.get_or_set_token_for_testing("py");
-                assert.equal(match("python"), true);
-                assert.equal(match("javascript"), false);
-
-                ct.get_or_set_completing_for_tests("non-existing-completion");
-                assert.equal(match(), undefined);
-
-                function sort_items(item) {
-                    const token = ct.get_or_set_token_for_testing();
-                    const completing = ct.get_or_set_completing_for_tests();
-
-                    return ct.sort_results(completing, item, token);
-                }
+                matcher = ct.get_language_matcher("py");
+                assert.equal(matcher("python", matcher), true);
+                assert.equal(matcher("javascript", matcher), false);
 
                 // options.sorter()
-                ct.get_or_set_completing_for_tests("emoji");
-                ct.get_or_set_token_for_testing("ta");
-                actual_value = sort_items([make_emoji(emoji_stadium), make_emoji(emoji_tada)]);
+                actual_value = typeahead.sort_emojis(
+                    [make_emoji(emoji_stadium), make_emoji(emoji_tada)],
+                    "ta",
+                );
                 expected_value = [make_emoji(emoji_tada), make_emoji(emoji_stadium)];
                 assert.deepEqual(actual_value, expected_value);
 
-                ct.get_or_set_completing_for_tests("emoji");
-                ct.get_or_set_token_for_testing("th");
-                actual_value = sort_items([
-                    make_emoji(emoji_thermometer),
-                    make_emoji(emoji_thumbs_up),
-                ]);
+                actual_value = typeahead.sort_emojis(
+                    [make_emoji(emoji_thermometer), make_emoji(emoji_thumbs_up)],
+                    "th",
+                );
                 expected_value = [make_emoji(emoji_thumbs_up), make_emoji(emoji_thermometer)];
                 assert.deepEqual(actual_value, expected_value);
 
-                ct.get_or_set_completing_for_tests("emoji");
-                ct.get_or_set_token_for_testing("he");
-                actual_value = sort_items([make_emoji(emoji_headphones), make_emoji(emoji_heart)]);
+                actual_value = typeahead.sort_emojis(
+                    [make_emoji(emoji_headphones), make_emoji(emoji_heart)],
+                    "he",
+                );
                 expected_value = [make_emoji(emoji_heart), make_emoji(emoji_headphones)];
                 assert.deepEqual(actual_value, expected_value);
 
-                ct.get_or_set_completing_for_tests("slash");
-                ct.get_or_set_token_for_testing("m");
-                actual_value = sort_items([my_slash, me_slash]);
+                actual_value = typeahead_helper.sort_slash_commands([my_slash, me_slash], "m");
                 expected_value = [me_slash, my_slash];
                 assert.deepEqual(actual_value, expected_value);
 
-                ct.get_or_set_completing_for_tests("slash");
-                ct.get_or_set_token_for_testing("da");
-                actual_value = sort_items([dark_slash, light_slash]);
+                actual_value = typeahead_helper.sort_slash_commands(
+                    [dark_slash, light_slash],
+                    "da",
+                );
                 expected_value = [dark_slash, light_slash];
                 assert.deepEqual(actual_value, expected_value);
 
-                ct.get_or_set_completing_for_tests("stream");
-                ct.get_or_set_token_for_testing("de");
-                actual_value = sort_items([sweden_stream, denmark_stream]);
+                actual_value = typeahead_helper.sort_streams([sweden_stream, denmark_stream], "de");
                 expected_value = [denmark_stream, sweden_stream];
                 assert.deepEqual(actual_value, expected_value);
 
                 // Matches in the descriptions affect the order as well.
                 // Testing "co" for "cold", in both streams' description. It's at the
                 // beginning of Sweden's description, so that one should go first.
-                ct.get_or_set_completing_for_tests("stream");
-                ct.get_or_set_token_for_testing("co");
-                actual_value = sort_items([denmark_stream, sweden_stream]);
+                actual_value = typeahead_helper.sort_streams([denmark_stream, sweden_stream], "co");
                 expected_value = [sweden_stream, denmark_stream];
                 assert.deepEqual(actual_value, expected_value);
 
-                ct.get_or_set_completing_for_tests("syntax");
-                ct.get_or_set_token_for_testing("ap");
-                actual_value = sort_items(["abap", "applescript"]);
+                actual_value = typeahead_helper.sort_languages(["abap", "applescript"], "ap");
                 expected_value = ["applescript", "abap"];
                 assert.deepEqual(actual_value, expected_value);
 
@@ -1170,9 +1145,7 @@ test("initialize", ({override, override_rewire, mock_template}) => {
                 );
 
                 stream_list_sort.set_filter_out_inactives();
-                ct.get_or_set_completing_for_tests("stream");
-                ct.get_or_set_token_for_testing("s");
-                actual_value = sort_items([sweden_stream, serbia_stream]);
+                actual_value = typeahead_helper.sort_streams([sweden_stream, serbia_stream], "s");
                 expected_value = [sweden_stream, serbia_stream];
                 assert.deepEqual(actual_value, expected_value);
                 // Subscribed stream is inactive
@@ -1183,18 +1156,16 @@ test("initialize", ({override, override_rewire, mock_template}) => {
                 );
 
                 stream_list_sort.set_filter_out_inactives();
-                actual_value = sort_items([sweden_stream, serbia_stream]);
+                actual_value = typeahead_helper.sort_streams([sweden_stream, serbia_stream], "s");
                 expected_value = [sweden_stream, serbia_stream];
                 assert.deepEqual(actual_value, expected_value);
 
-                ct.get_or_set_completing_for_tests("stream");
-                ct.get_or_set_token_for_testing("ser");
-                actual_value = sort_items([denmark_stream, serbia_stream]);
+                actual_value = typeahead_helper.sort_streams(
+                    [denmark_stream, serbia_stream],
+                    "ser",
+                );
                 expected_value = [serbia_stream, denmark_stream];
                 assert.deepEqual(actual_value, expected_value);
-
-                ct.get_or_set_completing_for_tests("non-existing-completion");
-                assert.equal(sort_items(), undefined);
 
                 compose_textarea_typeahead_called = true;
 
@@ -1392,19 +1363,42 @@ test("begins_typeahead", ({override, override_rewire}) => {
         assert.deepEqual(values, reference);
     }
 
-    const lang_list = Object.keys(pygments_data.langs);
+    function assert_typeahead_starts_with(input, rest, reference) {
+        if (reference === undefined) {
+            reference = rest;
+            rest = "";
+        }
+        const values = get_values(input, rest);
+        assert.ok(reference.length > 0);
+        assert.deepEqual(values.slice(0, reference.length), reference);
+    }
 
-    assert_typeahead_equals("test", false);
-    assert_typeahead_equals("test one two", false);
-    assert_typeahead_equals("*", false);
-    assert_typeahead_equals("* ", false);
-    assert_typeahead_equals(" *", false);
-    assert_typeahead_equals("test *", false);
+    assert_typeahead_equals("test", []);
+    assert_typeahead_equals("test one two", []);
+    assert_typeahead_equals("*", []);
+    assert_typeahead_equals("* ", []);
+    assert_typeahead_equals(" *", []);
+    assert_typeahead_equals("test *", []);
 
     // Make sure that the last token is the one we read.
     assert_typeahead_equals("~~~ @zulip", []); // zulip isn't set up as a user group
-    assert_typeahead_equals("@zulip :ta", emoji_list);
-    assert_typeahead_equals("#foo\n~~~py", lang_list);
+    assert_typeahead_equals("@zulip :ta", emoji_objects(["tada", "stadium"]));
+    assert_typeahead_equals("#foo\n~~~py", [
+        "py",
+        "py+ul4",
+        "py2",
+        "py2tb",
+        "py3tb",
+        "pycon",
+        "pypy",
+        "pyrex",
+        "antlr-python",
+        "bst-pybtex",
+        "ipython",
+        "ipython3",
+        "ipythonconsole",
+        "numpy",
+    ]);
     assert_typeahead_equals(":tada: <time:", ["translated: Mention a time-zone-aware time"]);
 
     const mention_all = user_or_mention_item(ct.broadcast_mentions()[0]);
@@ -1434,14 +1428,14 @@ test("begins_typeahead", ({override, override_rewire}) => {
     assert_typeahead_equals("test @_*h", [harry, hal, hamlet, hamletcharacters, cordelia, othello]);
     assert_typeahead_equals("test @", users_and_all_mention);
     assert_typeahead_equals("test @_", users_and_user_groups);
-    assert_typeahead_equals("test no@o", false);
-    assert_typeahead_equals("test no@_k", false);
-    assert_typeahead_equals("@ ", false);
-    assert_typeahead_equals("@_ ", false);
-    assert_typeahead_equals("@* ", false);
-    assert_typeahead_equals("@_* ", false);
-    assert_typeahead_equals("@** ", false);
-    assert_typeahead_equals("@_** ", false);
+    assert_typeahead_equals("test no@o", []);
+    assert_typeahead_equals("test no@_k", []);
+    assert_typeahead_equals("@ ", []);
+    assert_typeahead_equals("@_ ", []);
+    assert_typeahead_equals("@* ", []);
+    assert_typeahead_equals("@_* ", []);
+    assert_typeahead_equals("@** ", []);
+    assert_typeahead_equals("@_** ", []);
     assert_typeahead_equals("test\n@i", [
         ali,
         alice,
@@ -1489,8 +1483,8 @@ test("begins_typeahead", ({override, override_rewire}) => {
     ]);
     assert_typeahead_equals("@zuli", []);
     assert_typeahead_equals("@_zuli", []);
-    assert_typeahead_equals("@ zuli", false);
-    assert_typeahead_equals("@_ zuli", false);
+    assert_typeahead_equals("@ zuli", []);
+    assert_typeahead_equals("@_ zuli", []);
     assert_typeahead_equals(" @zuli", []);
     assert_typeahead_equals(" @_zuli", []);
     assert_typeahead_equals("test @o", [othello, cordelia, mention_everyone]);
@@ -1498,95 +1492,149 @@ test("begins_typeahead", ({override, override_rewire}) => {
     assert_typeahead_equals("test @z", []);
     assert_typeahead_equals("test @_z", []);
 
-    assert_typeahead_equals(":", false);
-    assert_typeahead_equals(": ", false);
-    assert_typeahead_equals(" :", false);
-    assert_typeahead_equals(":)", false);
-    assert_typeahead_equals(":4", false);
-    assert_typeahead_equals(": la", false);
-    assert_typeahead_equals("test :-P", false);
-    assert_typeahead_equals("hi emoji :", false);
-    assert_typeahead_equals("hi emoj:i", false);
-    assert_typeahead_equals("hi emoji :D", false);
-    assert_typeahead_equals("hi emoji : t", false);
-    assert_typeahead_equals("hi emoji :t", emoji_list);
-    assert_typeahead_equals("hi emoji :ta", emoji_list);
-    assert_typeahead_equals("hi emoji :da", emoji_list);
-    assert_typeahead_equals("hi emoji :da_", emoji_list);
-    assert_typeahead_equals("hi emoji :da ", emoji_list);
-    assert_typeahead_equals("hi emoji\n:da", emoji_list);
-    assert_typeahead_equals("hi emoji\n :ra", emoji_list);
-    assert_typeahead_equals(":+", emoji_list);
-    assert_typeahead_equals(":la", emoji_list);
-    assert_typeahead_equals(" :lee", emoji_list);
-    assert_typeahead_equals("hi :see no", emoji_list);
-    assert_typeahead_equals("hi :japanese post of", emoji_list);
+    assert_typeahead_equals(":", []);
+    assert_typeahead_equals(": ", []);
+    assert_typeahead_equals(" :", []);
+    assert_typeahead_equals(":)", []);
+    assert_typeahead_equals(":4", []);
+    assert_typeahead_equals(": la", []);
+    assert_typeahead_equals("test :-P", []);
+    assert_typeahead_equals("hi emoji :", []);
+    assert_typeahead_equals("hi emoj:i", []);
+    assert_typeahead_equals("hi emoji :D", []);
+    assert_typeahead_equals("hi emoji : t", []);
+    assert_typeahead_equals(
+        "hi emoji :t",
+        emoji_objects([
+            "thumbs_up",
+            "tada",
+            "thermometer",
+            "heart",
+            "stadium",
+            "japanese_post_office",
+        ]),
+    );
+    assert_typeahead_equals("hi emoji :ta", emoji_objects(["tada", "stadium"]));
+    assert_typeahead_equals("hi emoji :da", emoji_objects(["panda_face", "tada"]));
+    // We store the emoji panda_face with underscore, but that's not part of the emoji's name
+    assert_typeahead_equals("hi emoji :da_", emoji_objects([]));
+    assert_typeahead_equals("hi emoji :da ", emoji_objects([]));
+    assert_typeahead_equals("hi emoji\n:da", emoji_objects(["panda_face", "tada"]));
+    assert_typeahead_equals("hi emoji\n :ra", []);
+    assert_typeahead_equals(":+", []);
+    assert_typeahead_equals(":la", []);
+    assert_typeahead_equals(" :lee", []);
+    assert_typeahead_equals("hi :see no", emoji_objects(["see_no_evil"]));
+    assert_typeahead_equals("hi :japanese post of", emoji_objects(["japanese_post_office"]));
 
-    assert_typeahead_equals("#", false);
-    assert_typeahead_equals("# ", false);
-    assert_typeahead_equals(" #", false);
-    assert_typeahead_equals("# s", false);
-    assert_typeahead_equals("test #", false);
-    assert_typeahead_equals("test # a", false);
-    assert_typeahead_equals("test no#o", false);
+    assert_typeahead_equals("#", []);
+    assert_typeahead_equals("# ", []);
+    assert_typeahead_equals(" #", []);
+    assert_typeahead_equals("# s", []);
+    assert_typeahead_equals("test #", []);
+    assert_typeahead_equals("test # a", []);
+    assert_typeahead_equals("test no#o", []);
 
-    assert_typeahead_equals("/", composebox_typeahead.slash_commands);
-    assert_typeahead_equals("/m", composebox_typeahead.slash_commands);
-    assert_typeahead_equals(" /m", false);
-    assert_typeahead_equals("abc/me", false);
-    assert_typeahead_equals("hello /me", false);
-    assert_typeahead_equals("\n/m", false);
-    assert_typeahead_equals("/poll", composebox_typeahead.slash_commands);
-    assert_typeahead_equals(" /pol", false);
-    assert_typeahead_equals("abc/po", false);
-    assert_typeahead_equals("hello /poll", false);
-    assert_typeahead_equals("\n/pol", false);
-    assert_typeahead_equals("/todo", composebox_typeahead.slash_commands);
-    assert_typeahead_equals("my /todo", false);
-    assert_typeahead_equals("\n/to", false);
-    assert_typeahead_equals(" /tod", false);
+    const me_command = {
+        text: "translated: /me (Action message)",
+        name: "me",
+        aliases: "",
+        placeholder: "translated: is …",
+    };
+    const poll_command = {
+        text: "translated: /poll (Create a poll)",
+        name: "poll",
+        aliases: "",
+        placeholder: "translated: Question",
+    };
+    const todo_command = {
+        text: "translated: /todo (Create a collaborative to-do list)",
+        name: "todo",
+        aliases: "",
+        placeholder: "translated: Task list",
+    };
 
-    assert_typeahead_equals("x/", false);
-    assert_typeahead_equals("```", false);
-    assert_typeahead_equals("``` ", false);
-    assert_typeahead_equals(" ```", false);
-    assert_typeahead_equals("test ```", false);
-    assert_typeahead_equals("test ``` py", false);
-    assert_typeahead_equals("test ```a", false);
-    assert_typeahead_equals("test\n```", false);
-    assert_typeahead_equals("``c", false);
-    assert_typeahead_equals("```b", lang_list);
-    assert_typeahead_equals("``` d", lang_list);
-    assert_typeahead_equals("test\n``` p", lang_list);
-    assert_typeahead_equals("test\n```  p", lang_list);
-    assert_typeahead_equals("~~~", false);
-    assert_typeahead_equals("~~~ ", false);
-    assert_typeahead_equals(" ~~~", false);
-    assert_typeahead_equals(" ~~~ g", false);
-    assert_typeahead_equals("test ~~~", false);
-    assert_typeahead_equals("test ~~~p", false);
-    assert_typeahead_equals("test\n~~~", false);
-    assert_typeahead_equals("~~~e", lang_list);
-    assert_typeahead_equals("~~~ f", lang_list);
-    assert_typeahead_equals("test\n~~~ p", lang_list);
-    assert_typeahead_equals("test\n~~~  p", lang_list);
+    assert_typeahead_equals("/", [me_command, poll_command, todo_command]);
+    assert_typeahead_equals("/m", [me_command]);
+    // Slash commands can only occur at the start of a message
+    assert_typeahead_equals(" /m", []);
+    assert_typeahead_equals("abc/me", []);
+    assert_typeahead_equals("hello /me", []);
+    assert_typeahead_equals("\n/m", []);
+    assert_typeahead_equals("/poll", [poll_command]);
+    assert_typeahead_equals(" /pol", []);
+    assert_typeahead_equals("abc/po", []);
+    assert_typeahead_equals("hello /poll", []);
+    assert_typeahead_equals("\n/pol", []);
+    assert_typeahead_equals("/todo", [todo_command]);
+    assert_typeahead_equals("my /todo", []);
+    assert_typeahead_equals("\n/to", []);
+    assert_typeahead_equals(" /tod", []);
+
+    assert_typeahead_equals("x/", []);
+    // We don't open the typeahead until there's a letter after ```
+    assert_typeahead_equals("```", []);
+    assert_typeahead_equals("``` ", []);
+    assert_typeahead_equals(" ```", []);
+    assert_typeahead_equals("test ```", []);
+    assert_typeahead_equals("test ``` py", []);
+    assert_typeahead_equals("test ```a", []);
+    assert_typeahead_equals("test\n```", []);
+    assert_typeahead_equals("``c", []);
+    // Languages filtered by a single letter is a very long list.
+    // The typeahead displays languages sorted by popularity, so to
+    // avoid typing out all of them here we'll just test that the
+    // first several match up.
+    assert_typeahead_starts_with("```b", ["bash", "b3d", "bare", "basemake", "basic", "bat"]);
+    assert_typeahead_starts_with("``` d", [
+        "d",
+        "dart",
+        "d-objdump",
+        "dasm16",
+        "dax",
+        "debcontrol",
+    ]);
+    const p_langs = ["python", "powershell", "php", "perl", "pacmanconf", "pan"];
+    assert_typeahead_starts_with("test\n``` p", p_langs);
+    // Too many spaces between ``` and the p to
+    // trigger the typeahead.
+    assert_typeahead_equals("test\n```  p", []);
+    assert_typeahead_equals("~~~", []);
+    assert_typeahead_equals("~~~ ", []);
+    assert_typeahead_equals(" ~~~", []);
+    // Only valid when ``` or ~~~ is at the beginning of a line.
+    assert_typeahead_equals(" ~~~ g", []);
+    assert_typeahead_equals("test ~~~", []);
+    assert_typeahead_equals("test ~~~p", []);
+    assert_typeahead_equals("test\n~~~", []);
+    assert_typeahead_starts_with("~~~e", [
+        "earl-grey",
+        "easytrieve",
+        "ebnf",
+        "ec",
+        "ecl",
+        "eiffel",
+    ]);
+    assert_typeahead_starts_with("~~~ f", ["f#", "f90", "factor", "fan", "fancy", "fc"]);
+    assert_typeahead_starts_with("test\n~~~ p", p_langs);
+    // Too many spaces before the p
+    assert_typeahead_equals("test\n~~~  p", []);
 
     // topic_jump
-    assert_typeahead_equals("@**a person**>", false);
-    assert_typeahead_equals("@**a person** >", false);
+    assert_typeahead_equals("@**a person**>", []);
+    assert_typeahead_equals("@**a person** >", []);
     assert_typeahead_equals("#**stream**>", [""]); // this is deliberately a blank choice.
     assert_typeahead_equals("#**stream** >", [""]);
-    assert_typeahead_equals("#**Sweden>some topic** >", false); // Already completed a topic.
+    assert_typeahead_equals("#**Sweden>some topic** >", []); // Already completed a topic.
 
     // topic_list
     // includes "more ice"
-    assert_typeahead_equals("#**Sweden>more ice", sweden_topics_to_show);
-    sweden_topics_to_show.push("totally new topic");
-    assert_typeahead_equals("#**Sweden>totally new topic", sweden_topics_to_show);
+    assert_typeahead_equals("#**Sweden>more ice", ["more ice", "even more ice"]);
+    assert_typeahead_equals("#**Sweden>totally new topic", ["totally new topic"]);
 
     // time_jump
-    assert_typeahead_equals("<tim", false);
-    assert_typeahead_equals("<timerandom", false);
+    assert_typeahead_equals("<tim", []);
+    assert_typeahead_equals("<timerandom", []);
     assert_typeahead_equals("<time", ["translated: Mention a time-zone-aware time"]);
     assert_typeahead_equals("<time:", ["translated: Mention a time-zone-aware time"]);
     assert_typeahead_equals("<time:something", ["translated: Mention a time-zone-aware time"]);
@@ -1594,20 +1642,20 @@ test("begins_typeahead", ({override, override_rewire}) => {
         "translated: Mention a time-zone-aware time",
     ]);
     assert_typeahead_equals("<time:something>", ["translated: Mention a time-zone-aware time"]);
-    assert_typeahead_equals("<time:something> ", false); // Already completed the mention
+    assert_typeahead_equals("<time:something> ", []); // Already completed the mention
 
     // Following tests place the cursor before the second string
-    assert_typeahead_equals("#test", "ing", false);
-    assert_typeahead_equals("@test", "ing", false);
-    assert_typeahead_equals(":test", "ing", false);
-    assert_typeahead_equals("```test", "ing", false);
-    assert_typeahead_equals("~~~test", "ing", false);
+    assert_typeahead_equals("#test", "ing", []);
+    assert_typeahead_equals("@test", "ing", []);
+    assert_typeahead_equals(":test", "ing", []);
+    assert_typeahead_equals("```test", "ing", []);
+    assert_typeahead_equals("~~~test", "ing", []);
     const terminal_symbols = ",.;?!()[]> \"'\n\t";
     for (const symbol of terminal_symbols.split()) {
-        assert_typeahead_equals("@test", symbol, []);
-        assert_typeahead_equals(":test", symbol, emoji_list);
-        assert_typeahead_equals("```test", symbol, lang_list);
-        assert_typeahead_equals("~~~test", symbol, lang_list);
+        assert_typeahead_equals("@othello", symbol, [othello]);
+        assert_typeahead_equals(":tada", symbol, emoji_objects(["tada"]));
+        assert_typeahead_starts_with("```p", symbol, p_langs);
+        assert_typeahead_starts_with("~~~p", symbol, p_langs);
     }
 });
 
@@ -1753,12 +1801,9 @@ test("typeahead_results", () => {
         mobile_stream,
     ];
 
-    function compose_typeahead_results(completing, items, token) {
-        return ct.filter_and_sort_candidates(completing, items, token);
-    }
-
     function assert_emoji_matches(input, expected) {
-        const returned = compose_typeahead_results("emoji", emoji_list, input);
+        const matcher = typeahead.get_emoji_matcher(input);
+        const returned = emoji_list.filter((item) => matcher(item));
         assert.deepEqual(returned, expected);
     }
     function assert_mentions_matches(input, expected) {
@@ -1767,16 +1812,14 @@ test("typeahead_results", () => {
         assert.deepEqual(returned, expected);
     }
     function assert_stream_matches(input, expected) {
-        const returned = compose_typeahead_results("stream", stream_list, input);
+        const matcher = ct.get_stream_or_user_group_matcher(input);
+        const returned = stream_list.filter((item) => matcher(item));
         assert.deepEqual(returned, expected);
     }
 
     function assert_slash_matches(input, expected) {
-        const returned = compose_typeahead_results(
-            "slash",
-            composebox_typeahead.all_slash_commands,
-            input,
-        );
+        const matcher = ct.get_slash_matcher(input);
+        const returned = composebox_typeahead.all_slash_commands.filter((item) => matcher(item));
         assert.deepEqual(returned, expected);
     }
     assert_emoji_matches("da", [
@@ -1898,7 +1941,7 @@ test("typeahead_results", () => {
     assert_stream_matches("cold", []);
     assert_stream_matches("city", []);
     // Always prioritise exact matches, irrespective of activity
-    assert_stream_matches("Mobile", [mobile_stream, mobile_team_stream]);
+    assert_stream_matches("Mobile", [mobile_team_stream, mobile_stream]);
 });
 
 test("message people", ({override, override_rewire}) => {

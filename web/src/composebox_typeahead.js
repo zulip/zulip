@@ -99,14 +99,14 @@ export function topics_seen_for(stream_id) {
     return stream_topic_history.get_recent_topic_names(stream_id);
 }
 
-function get_language_matcher(query) {
+export function get_language_matcher(query) {
     query = query.toLowerCase();
     return function (lang) {
         return lang.includes(query);
     };
 }
 
-function get_stream_or_user_group_matcher(query) {
+export function get_stream_or_user_group_matcher(query) {
     // Case-insensitive.
     query = typeahead.clean_query_lowercase(query);
 
@@ -115,7 +115,7 @@ function get_stream_or_user_group_matcher(query) {
     };
 }
 
-function get_slash_matcher(query) {
+export function get_slash_matcher(query) {
     query = typeahead.clean_query_lowercase(query);
 
     return function (item) {
@@ -618,54 +618,6 @@ export function get_stream_topic_data(input_element) {
     return opts;
 }
 
-export function get_sorted_filtered_items(query, input_element) {
-    /*
-        This is just a "glue" function to work
-        around bootstrap.  We want to control these
-        three steps ourselves:
-
-            - get data
-            - filter data
-            - sort data
-
-        If we do it ourselves, we can convert some
-        O(N) behavior to just O(1) time.
-
-        For example, we want to avoid dispatching
-        on completing every time through the loop, plus
-        doing the same token cleanup every time.
-
-        It's also a bit easier to debug typeahead when
-        it's all one step, instead of three callbacks.
-
-        (We did the same thing for search suggestions
-        several years ago.)
-    */
-
-    const big_results = get_candidates(query, input_element);
-
-    if (!big_results) {
-        return [];
-    }
-
-    // These are sorted separately
-    if (completing === "mention" || completing === "silent_mention") {
-        return big_results;
-    }
-
-    return filter_and_sort_candidates(completing, big_results, token);
-}
-
-export function filter_and_sort_candidates(completing, candidates, token) {
-    const matcher = compose_content_matcher(completing, token);
-
-    const small_results = candidates.filter((item) => matcher(item));
-
-    const sorted_results = sort_results(completing, small_results, token);
-
-    return sorted_results;
-}
-
 const ALLOWED_MARKDOWN_FEATURES = {
     mention: true,
     emoji: true,
@@ -681,7 +633,7 @@ export function get_candidates(query, input_element) {
     const split = split_at_cursor(query, input_element.$element);
     let current_token = tokenize_compose_str(split[0]);
     if (current_token === "") {
-        return false;
+        return [];
     }
     const rest = split[1];
 
@@ -693,7 +645,7 @@ export function get_candidates(query, input_element) {
     // We will likely want to extend this list to be more i18n-friendly.
     const terminal_symbols = ",.;?!()[]> \"'\n\t";
     if (rest !== "" && !terminal_symbols.includes(rest[0])) {
-        return false;
+        return [];
     }
 
     // Start syntax highlighting autocompleter if the first three characters are ```
@@ -702,14 +654,14 @@ export function get_candidates(query, input_element) {
         // Only autocomplete if user starts typing a language after ```
         // unless the fence was added via the code formatting button.
         if (current_token.length === 3 && !compose_ui.code_formatting_button_triggered) {
-            return false;
+            return [];
         }
 
         // If the only input is a space, don't autocomplete
         current_token = current_token.slice(3);
         if (current_token === " ") {
             compose_ui.set_code_formatting_button_triggered(false);
-            return false;
+            return [];
         }
 
         // Trim the first whitespace if it is there
@@ -724,7 +676,9 @@ export function get_candidates(query, input_element) {
             ? ["", ...realm_playground.get_pygments_typeahead_list_for_composebox()]
             : realm_playground.get_pygments_typeahead_list_for_composebox();
         compose_ui.set_code_formatting_button_triggered(false);
-        return language_list;
+        const matcher = get_language_matcher(token);
+        const matches = language_list.filter((item) => matcher(item));
+        return typeahead_helper.sort_languages(matches, token);
     }
 
     // Only start the emoji autocompleter if : is directly after one
@@ -735,15 +689,17 @@ export function get_candidates(query, input_element) {
         // Also, if the user has only typed a colon and nothing after,
         // no need to match yet.
         if (/^:-.?$/.test(current_token) || /^:[^+a-z]?$/.test(current_token)) {
-            return false;
+            return [];
         }
         // Don't autocomplete if there is a space following a ':'
         if (current_token[1] === " ") {
-            return false;
+            return [];
         }
         completing = "emoji";
         token = current_token.slice(1);
-        return emoji_collection;
+        const matcher = typeahead.get_emoji_matcher(token);
+        const matches = emoji_collection.filter((item) => matcher(item));
+        return typeahead.sort_emojis(matches, token);
     }
 
     if (ALLOWED_MARKDOWN_FEATURES.mention && current_token.startsWith("@")) {
@@ -759,7 +715,7 @@ export function get_candidates(query, input_element) {
         current_token = filter_mention_name(current_token);
         if (current_token === undefined) {
             completing = null;
-            return false;
+            return [];
         }
         token = current_token;
         const opts = get_stream_topic_data(input_element);
@@ -776,12 +732,15 @@ export function get_candidates(query, input_element) {
 
         completing = "slash";
         token = current_token;
-        return get_slash_commands_data();
+        const slash_commands = get_slash_commands_data();
+        const matcher = get_slash_matcher(token);
+        const matches = slash_commands.filter((item) => matcher(item));
+        return typeahead_helper.sort_slash_commands(matches, token);
     }
 
     if (ALLOWED_MARKDOWN_FEATURES.stream && current_token.startsWith("#")) {
         if (current_token.length === 1) {
-            return false;
+            return [];
         }
 
         current_token = current_token.slice(1);
@@ -791,12 +750,15 @@ export function get_candidates(query, input_element) {
 
         // Don't autocomplete if there is a space following a '#'
         if (current_token.startsWith(" ")) {
-            return false;
+            return [];
         }
 
         completing = "stream";
         token = current_token;
-        return stream_data.get_unsorted_subs();
+        const subs = stream_data.get_unsorted_subs();
+        const matcher = get_stream_or_user_group_matcher(token);
+        const matches = subs.filter((item) => matcher(item));
+        return typeahead_helper.sort_streams(matches, token);
     }
 
     if (ALLOWED_MARKDOWN_FEATURES.topic) {
@@ -823,7 +785,7 @@ export function get_candidates(query, input_element) {
 
                 // Don't autocomplete if there is a space following '>'
                 if (token.startsWith(" ")) {
-                    return false;
+                    return [];
                 }
 
                 const stream_id = stream_data.get_stream_id(stream_name);
@@ -831,7 +793,9 @@ export function get_candidates(query, input_element) {
                 if (should_show_custom_query(token, topic_list)) {
                     topic_list.push(token);
                 }
-                return topic_list;
+                const matcher = get_topic_matcher(token);
+                const matches = topic_list.filter((item) => matcher(item));
+                return typeahead_helper.sorter(token, matches, (x) => x);
             }
         }
     }
@@ -842,7 +806,7 @@ export function get_candidates(query, input_element) {
             return [$t({defaultMessage: "Mention a time-zone-aware time"})];
         }
     }
-    return false;
+    return [];
 }
 
 export function content_highlighter_html(item) {
@@ -1039,53 +1003,6 @@ export function content_typeahead_selected(item, query, input_element, event) {
     return beginning + rest;
 }
 
-export function compose_content_matcher(completing, token) {
-    switch (completing) {
-        case "emoji":
-            return typeahead.get_emoji_matcher(token);
-        case "slash":
-            return get_slash_matcher(token);
-        case "stream":
-            return get_stream_or_user_group_matcher(token);
-        case "syntax":
-            return get_language_matcher(token);
-        case "topic_list":
-            return get_topic_matcher(token);
-    }
-
-    return function () {
-        switch (completing) {
-            case "topic_jump":
-            case "time_jump":
-                // these don't actually have a typeahead popover, so we return quickly here.
-                return true;
-            default:
-                return undefined;
-        }
-    };
-}
-
-export function sort_results(completing, matches, token) {
-    switch (completing) {
-        case "emoji":
-            return typeahead.sort_emojis(matches, token);
-        case "slash":
-            return typeahead_helper.sort_slash_commands(matches, token);
-        case "stream":
-            return typeahead_helper.sort_streams(matches, token);
-        case "syntax":
-            return typeahead_helper.sort_languages(matches, token);
-        case "topic_jump":
-        case "time_jump":
-            // topic_jump doesn't actually have a typeahead popover, so we return quickly here.
-            return matches;
-        case "topic_list":
-            return typeahead_helper.sorter(token, matches, (x) => x);
-        default:
-            return undefined;
-    }
-}
-
 export function compose_automated_selection() {
     if (completing === "topic_jump") {
         // automatically jump inside stream mention on typing > just after
@@ -1166,7 +1083,7 @@ export function initialize_compose_typeahead(selector) {
             // matching and sorting inside the `source` field to avoid
             // O(n) behavior in the number of users in the organization
             // inside the typeahead library.
-            source: get_sorted_filtered_items,
+            source: get_candidates,
             highlighter_html: content_highlighter_html,
             matcher() {
                 return true;
