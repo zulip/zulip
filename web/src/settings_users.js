@@ -441,7 +441,7 @@ function handle_deactivation($tbody) {
         e.stopPropagation();
 
         const $row = $(e.target).closest(".user_row");
-        const user_id = $row.data("user-id");
+        const user_id = Number($row.attr("data-user-id"));
 
         function handle_confirm() {
             const url = "/json/users/" + encodeURIComponent(user_id);

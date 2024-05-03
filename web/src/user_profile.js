@@ -79,7 +79,7 @@ function compare_by_name(a, b) {
 
 export function get_user_id_if_user_profile_modal_open() {
     if (modals.any_active() && modals.active_modal() === "#user-profile-modal") {
-        const user_id = $("#user-profile-modal").data("user-id");
+        const user_id = Number($("#user-profile-modal").attr("data-user-id"));
         return user_id;
     }
     return undefined;
@@ -675,7 +675,7 @@ export function show_edit_bot_info_modal(user_id, $container) {
         $("#bot-edit-form").on("click", ".deactivate_bot_button", (e) => {
             e.preventDefault();
             e.stopPropagation();
-            const bot_id = $("#bot-edit-form").data("user-id");
+            const bot_id = Number($("#bot-edit-form").attr("data-user-id"));
             function handle_confirm() {
                 const url = "/json/bots/" + encodeURIComponent(bot_id);
                 dialog_widget.submit_api_request(channel.del, url, {});
@@ -687,7 +687,7 @@ export function show_edit_bot_info_modal(user_id, $container) {
         $("#bot-edit-form").on("click", ".reactivate_user_button", (e) => {
             e.preventDefault();
             e.stopPropagation();
-            const user_id = $("#bot-edit-form").data("user-id");
+            const user_id = Number($("#bot-edit-form").attr("data-user-id"));
             function handle_confirm() {
                 const url = "/json/users/" + encodeURIComponent(user_id) + "/reactivate";
                 dialog_widget.submit_api_request(channel.post, url, {});
@@ -787,7 +787,7 @@ export function show_edit_user_info_modal(user_id, $container) {
     $("#edit-user-form").on("click", ".deactivate_user_button", (e) => {
         e.preventDefault();
         e.stopPropagation();
-        const user_id = $("#edit-user-form").data("user-id");
+        const user_id = Number($("#edit-user-form").attr("data-user-id"));
         function handle_confirm() {
             const url = "/json/users/" + encodeURIComponent(user_id);
             dialog_widget.submit_api_request(channel.del, url, {});
@@ -799,7 +799,7 @@ export function show_edit_user_info_modal(user_id, $container) {
     $("#edit-user-form").on("click", ".reactivate_user_button", (e) => {
         e.preventDefault();
         e.stopPropagation();
-        const user_id = $("#edit-user-form").data("user-id");
+        const user_id = Number($("#edit-user-form").attr("data-user-id"));
         function handle_confirm() {
             const url = "/json/users/" + encodeURIComponent(user_id) + "/reactivate";
             dialog_widget.submit_api_request(channel.post, url, {});
