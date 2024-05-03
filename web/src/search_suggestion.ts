@@ -24,7 +24,7 @@ type UserPillItem = {
 
 type TermPattern = Omit<NarrowTerm, "operand"> & Partial<Pick<NarrowTerm, "operand">>;
 
-type Suggestion = {
+export type Suggestion = {
     description_html: string;
     search_string: string;
     is_person?: boolean;
