@@ -45,6 +45,7 @@ const ListWidget = zrequire("list_widget");
 
 function make_container() {
     const $container = {};
+    $container.attr = noop;
     $container.empty = noop;
     $container.data = noop;
 

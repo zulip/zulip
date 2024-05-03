@@ -215,7 +215,7 @@ export function render_empty_list_message_if_needed(
 ): void {
     let empty_list_message = $container.data("empty");
 
-    const empty_search_results_message = $container.data("search-results-empty");
+    const empty_search_results_message = $container.attr("data-search-results-empty");
     if (filter_value && empty_search_results_message) {
         empty_list_message = empty_search_results_message;
     }
