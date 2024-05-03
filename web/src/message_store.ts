@@ -2,6 +2,7 @@ import * as blueslip from "./blueslip";
 import * as people from "./people";
 import type {RawReaction} from "./reactions";
 import type {Submessage, TopicLink} from "./types";
+import type {UserStatusEmojiInfo} from "./user_status";
 
 const stored_messages = new Map();
 
@@ -254,7 +255,10 @@ export function update_stream_name(stream_id: number, new_name: string): void {
     }
 }
 
-export function update_status_emoji_info(user_id: number, new_info: string): void {
+export function update_status_emoji_info(
+    user_id: number,
+    new_info: UserStatusEmojiInfo | undefined,
+): void {
     for (const msg of stored_messages.values()) {
         if (msg.sender_id && msg.sender_id === user_id) {
             msg.status_emoji_info = new_info;
