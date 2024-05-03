@@ -1,5 +1,6 @@
 import $ from "jquery";
 import assert from "minimalistic-assert";
+import type {ReferenceElement} from "tippy.js";
 import tippy, {delegate} from "tippy.js";
 
 import render_buddy_list_title_tooltip from "../templates/buddy_list/title_tooltip.hbs";
@@ -234,11 +235,11 @@ export function initialize(): void {
     $("body").on(
         "blur",
         ".message_control_button, .delete-selected-drafts-button-container",
-        (e) => {
+        function (this: ReferenceElement) {
             // Remove tooltip when user is trying to tab through all the icons.
             // If user tabs slowly, tooltips are displayed otherwise they are
             // destroyed before they can be displayed.
-            e.currentTarget?._tippy?.destroy();
+            this._tippy?.destroy();
         },
     );
 
