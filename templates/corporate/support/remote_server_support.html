@@ -50,14 +50,14 @@
                         <p class="support-section-header">Has a discount 💸</p>
                     {% endif %}
                     <b>Contact email</b>: {{ remote_server.contact_email }}
-                    <a title="Copy email" class="copy-button" data-copytext="{{ remote_server.contact_email }}">
+                    <a title="Copy email" class="copy-button" data-clipboard-text="{{ remote_server.contact_email }}">
                         <i class="fa fa-copy"></i>
                     </a>
                     <br />
                     {% set billing_emails_string = get_remote_server_billing_user_emails(remote_server) %}
                     <b>Billing users</b>: {{ billing_emails_string }}
                     {% if billing_emails_string %}
-                    <a title="Copy emails" class="copy-button" data-copytext="{{ billing_emails_string }}">
+                    <a title="Copy emails" class="copy-button" data-clipboard-text="{{ billing_emails_string }}">
                         <i class="fa fa-copy"></i>
                     </a>
                     {% endif %}

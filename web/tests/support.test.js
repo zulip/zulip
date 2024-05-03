@@ -6,7 +6,7 @@ const path = require("path");
 
 const {JSDOM} = require("jsdom");
 
-const {zrequire} = require("./lib/namespace");
+const {mock_cjs, zrequire} = require("./lib/namespace");
 const {run_test} = require("./lib/test");
 const $ = require("./lib/zjquery");
 
@@ -16,6 +16,8 @@ const template = fs.readFileSync(
 );
 const dom = new JSDOM(template, {pretendToBeVisual: true});
 const document = dom.window.document;
+
+mock_cjs("clipboard", class Clipboard {});
 
 zrequire("../src/support/support");
 
