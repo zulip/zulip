@@ -26,9 +26,9 @@ feature development or integrations, etc., should contact
 Paid plan discounts are available in a variety of situations; see
 [below](#paid-plan-discounts) for details.
 
-### Upgrades for new customers
+## Upgrade to a paid plan
 
-#### Upgrade to Zulip Basic
+### Start a free trial
 
 **New customers** are eligible for a free 30-day trial of Zulip Basic. An
 organization is considered to be a new customer if:
@@ -81,18 +81,20 @@ organization is considered to be a new customer if:
 
 {end_tabs}
 
-#### Upgrade to Zulip Business
+### Upgrade directly to a paid plan
+
+{!self-hosted-billing-multiple-organizations.md!}
 
 {start_tabs}
 
 {tab|v8}
 
-{!register-server.md!}
+{!self-hosted-billing-admin-only.md!}
 
 {!self-hosted-log-in.md!}
 
-1. On the page listing Zulip's self-hosted plans, click the **Upgrade to Business** button
-   at the bottom of the **Business** plan.
+1. On the page listing Zulip's self-hosted plans, click the button at the bottom
+   of the plan you would like to purchase.
 
 1. Select your preferred option from the **Payment schedule** dropdown.
 
@@ -110,12 +112,7 @@ organization is considered to be a new customer if:
 
 {!legacy-log-in-intro.md!}
 
-{!register-server-legacy.md!}
-
 {!legacy-log-in.md!}
-
-1. On the page listing Zulip's self-hosted plans, click the **Upgrade to Business** button
-   at the bottom of the **Business** plan.
 
 1. Select your preferred option from the **Payment schedule** dropdown.
 
@@ -123,16 +120,9 @@ organization is considered to be a new customer if:
 
 1. Click the **Purchase** button to complete your purchase.
 
-!!! tip ""
-
-    Once you start the trial, you can switch between monthly and annual billing
-    on your organization's billing page.
-
 {end_tabs}
 
-### Upgrades for existing customers
-
-#### Do I have to upgrade my server first?
+### Do I have to upgrade my server first?
 
 While upgrading your Zulip server to version 8.0+ makes it more convenient to
 manage your plan, you do not have to upgrade your Zulip installation in order to
@@ -155,49 +145,6 @@ If you upgrade your server after signing up for a plan, you will be able to
 transfer your plan to an organization on your server. If your server has one
 organization on it, this will happen automatically. Otherwise, contact
 [support@zulip.com](mailto:support@zulip.com) for help.
-
-#### Upgrading to a paid plan
-
-{!self-hosted-billing-multiple-organizations.md!}
-
-{start_tabs}
-
-{tab|v8}
-
-{!self-hosted-billing-admin-only.md!}
-
-{!self-hosted-log-in.md!}
-
-1. On the page listing Zulip's self-hosted plans, click the button at the bottom
-   of the plan you would like to purchase.
-
-1. Select your preferred option from the **Payment schedule** dropdown.
-
-1. Click **Add card** to enter your payment details.
-
-1. Click the **Purchase** or **Schedule upgrade** button to complete your
-   purchase.
-
-!!! warn ""
-
-    If your server hosts more than one organization, commercial
-    support for server-wide configurations requires upgrading the
-    organization with the largest number of users.
-
-{tab|all-versions}
-
-{!legacy-log-in-intro.md!}
-
-{!legacy-log-in.md!}
-
-1. Select your preferred option from the **Payment schedule** dropdown.
-
-1. Click **Add card** to enter your payment details.
-
-1. Click the **Purchase** or **Schedule upgrade** button to complete your
-   purchase.
-
-{end_tabs}
 
 ## Manage billing
 
