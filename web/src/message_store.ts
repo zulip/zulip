@@ -149,7 +149,7 @@ export function update_message_cache(message: Message): void {
     stored_messages.set(message.id, message);
 }
 
-export function get_cached_message(message_id: number): Message {
+export function get_cached_message(message_id: number): Message | undefined {
     // You should only call this from message_helper.
     // Use the get() wrapper below for most other use cases.
     return stored_messages.get(message_id);
