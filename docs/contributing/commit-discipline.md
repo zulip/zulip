@@ -7,11 +7,17 @@ makes the commit history a much more useful resource for developers
 trying to understand why the code works the way it does, which also
 helps a lot in preventing bugs.
 
+Use `git rebase -i` as much as you need to shape your commit structure. See the
+[Git guide](../git/overview.md) for useful resources on mastering Git.
+
 ## Each commit must be coherent
 
 - It should pass tests (so test updates needed by a change should be
   in the same commit as the original change, not a separate "fix the
   tests that were broken by the last commit" commit).
+- It should not make Zulip worse. For example, it is fine to add backend
+  capabilities without adding a frontend to access them. It's not fine to add a
+  frontend component with no backend to make it work.
 - It should be safe to deploy individually, or explain in detail in
   the commit message as to why it isn't (maybe with a [manual] tag).
   So implementing a new API endpoint in one commit and then adding the
@@ -24,8 +30,14 @@ helps a lot in preventing bugs.
 
 ## Commits should generally be minimal
 
-- Significant refactorings should be done in a separate commit from
-  functional changes.
+Whenever possible, find chunks of complexity that you can separate from the
+rest of the project.
+
+- If you need to refactor code, add tests for existing functionality,
+  rename variables or functions, or make other changes that do not
+  change the functionality of the product, make those changes into a
+  series of preparatory commits that can be merged independently of
+  building the feature itself.
 - Moving code from one file to another should be done in a separate
   commits from functional changes or even refactoring within a file.
 - 2 different refactorings should be done in different commits.
