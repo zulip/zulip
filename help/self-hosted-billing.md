@@ -96,11 +96,7 @@ organization is considered to be a new customer if:
 1. On the page listing Zulip's self-hosted plans, click the button at the bottom
    of the plan you would like to purchase.
 
-1. Select your preferred option from the **Payment schedule** dropdown.
-
-1. Click **Add card** to enter your payment details.
-
-1. Click the **Purchase** button to complete your purchase.
+{!plan-upgrade-steps.md!}
 
 !!! warn ""
 
@@ -114,11 +110,7 @@ organization is considered to be a new customer if:
 
 {!legacy-log-in.md!}
 
-1. Select your preferred option from the **Payment schedule** dropdown.
-
-1. Click **Add card** to enter your payment details.
-
-1. Click the **Purchase** button to complete your purchase.
+{!plan-upgrade-steps.md!}
 
 {end_tabs}
 
