@@ -415,7 +415,7 @@ function read_select_field_data_from_form(
 function read_external_account_field_data($profile_field_form: JQuery): FieldData {
     const field_data: FieldData = {};
     field_data.subtype = $profile_field_form
-        .find<HTMLSelectOneElement>("select[name=external_acc_field_type]")
+        .find<HTMLSelectOneElement>("select:not([multiple])[name=external_acc_field_type]")
         .val()!;
     if (field_data.subtype === "custom") {
         field_data.url_pattern = $profile_field_form
