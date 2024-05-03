@@ -223,7 +223,7 @@ export function warn_if_mentioning_unsubscribed_user(
         );
 
         const existing_invites = [...$existing_invites_area].map((user_row) =>
-            Number.parseInt($(user_row).data("user-id"), 10),
+            Number($(user_row).attr("data-user-id")),
         );
 
         const can_subscribe_other_users = settings_data.user_can_subscribe_other_users();

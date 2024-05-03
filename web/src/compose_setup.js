@@ -252,7 +252,7 @@ export function initialize() {
             const {$banner_container} = get_input_info(event);
             const $invite_row = $(event.target).parents(".main-view-banner");
 
-            const user_id = Number.parseInt($invite_row.data("user-id"), 10);
+            const user_id = Number($invite_row.attr("data-user-id"));
             const stream_id = Number($invite_row.attr("data-stream-id"));
 
             function success() {

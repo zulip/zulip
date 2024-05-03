@@ -732,10 +732,7 @@ test_ui("warn_if_mentioning_unsubscribed_user", ({override, mock_template}) => {
 
     // Simulate that the row was added to the DOM.
     const $warning_row = $("#compose_banners .recipient_not_subscribed");
-    $warning_row.data = (key) =>
-        ({
-            "user-id": "34",
-        })[key];
+    $warning_row.attr("data-user-id", "34");
     $warning_row.attr("data-stream-id", "111");
     $("#compose_banners .recipient_not_subscribed").length = 1;
     $("#compose_banners .recipient_not_subscribed")[0] = $warning_row;
