@@ -25,6 +25,7 @@ type JQueryIdleOptions = Partial<{
 declare global {
     let zulip_test: any; // eslint-disable-line @typescript-eslint/no-explicit-any
 
+    // eslint-disable-next-line @typescript-eslint/no-namespace
     namespace JQueryValidation {
         // eslint-disable-next-line @typescript-eslint/consistent-type-definitions
         interface ValidationOptions {
