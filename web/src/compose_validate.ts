@@ -183,7 +183,7 @@ export function warn_if_private_stream_is_linked(
     );
 
     const existing_stream_warnings = [...$existing_stream_warnings_area].map((stream_row) =>
-        Number.parseInt($(stream_row).data("stream-id"), 10),
+        Number($(stream_row).attr("data-stream-id")),
     );
 
     if (!existing_stream_warnings.includes(linked_stream.stream_id)) {

@@ -647,10 +647,7 @@ test_ui("warn_if_private_stream_is_linked", ({mock_template}) => {
 
     // Simulate that the row was added to the DOM.
     const $warning_row = $("#compose_banners .private_stream_warning");
-    $warning_row.data = (key) =>
-        ({
-            "stream-id": "22",
-        })[key];
+    $warning_row.attr("data-stream-id", "22");
     $("#compose_banners .private_stream_warning").length = 1;
     $("#compose_banners .private_stream_warning")[0] = $warning_row;
 
@@ -738,8 +735,8 @@ test_ui("warn_if_mentioning_unsubscribed_user", ({override, mock_template}) => {
     $warning_row.data = (key) =>
         ({
             "user-id": "34",
-            "stream-id": "111",
         })[key];
+    $warning_row.attr("data-stream-id", "111");
     $("#compose_banners .recipient_not_subscribed").length = 1;
     $("#compose_banners .recipient_not_subscribed")[0] = $warning_row;
 
