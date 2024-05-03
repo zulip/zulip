@@ -297,7 +297,8 @@ function set_custom_time_inputs_visibility(): void {
 }
 
 function set_streams_to_join_list_visibility(): void {
-    const default_streams_selected = $("#invite_select_default_streams").prop("checked");
+    const default_streams_selected = $<HTMLInputElement>("input#invite_select_default_streams")[0]
+        .checked;
     if (default_streams_selected) {
         $("#streams_to_add .invite-stream-controls").hide();
         $("#invite-stream-checkboxes").hide();
