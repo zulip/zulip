@@ -253,7 +253,7 @@
     }
 }
 
-.include-sender {
+.messagebox-includes-sender {
     .messagebox-content {
         grid-template-areas:
             "avatar sender    controls . time"
