@@ -1,6 +1,7 @@
 import * as message_lists from "./message_lists";
 import * as message_store from "./message_store";
 import * as people from "./people";
+import type {UserStatusEmojiInfo} from "./user_status";
 
 export function rerender_messages_view(): void {
     for (const list of message_lists.all_rendered_message_lists()) {
@@ -85,7 +86,10 @@ export function update_avatar(user_id: number, avatar_url: string): void {
     rerender_messages_view_for_user(user_id);
 }
 
-export function update_user_status_emoji(user_id: number, status_emoji_info: string): void {
+export function update_user_status_emoji(
+    user_id: number,
+    status_emoji_info: UserStatusEmojiInfo | undefined,
+): void {
     message_store.update_status_emoji_info(user_id, status_emoji_info);
     rerender_messages_view_for_user(user_id);
 }
