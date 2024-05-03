@@ -4,7 +4,7 @@ import type {RawReaction} from "./reactions";
 import type {Submessage, TopicLink} from "./types";
 import type {UserStatusEmojiInfo} from "./user_status";
 
-const stored_messages = new Map();
+const stored_messages = new Map<number, Message>();
 
 export type MatchedMessage = {
     match_content?: string;
@@ -128,6 +128,9 @@ export type Message = (
 
     // Used in `markdown.js`, `server_events.js`, and `set_message_booleans`
     flags?: string[];
+
+    small_avatar_url?: string; // Used in `message_avatar.hbs`
+    status_emoji_info?: UserStatusEmojiInfo; // Used in `message_body.hbs`
 } & (
         | {
               type: "private";
@@ -249,7 +252,7 @@ export function update_small_avatar_url(user_id: number, new_url: string): void 
 
 export function update_stream_name(stream_id: number, new_name: string): void {
     for (const msg of stored_messages.values()) {
-        if (msg.stream_id && msg.stream_id === stream_id) {
+        if (msg.type === "stream" && msg.stream_id === stream_id) {
             msg.display_recipient = new_name;
         }
     }
@@ -267,8 +270,9 @@ export function update_status_emoji_info(
 }
 
 export function reify_message_id({old_id, new_id}: {old_id: number; new_id: number}): void {
-    if (stored_messages.has(old_id)) {
-        stored_messages.set(new_id, stored_messages.get(old_id));
+    const message = stored_messages.get(old_id);
+    if (message !== undefined) {
+        stored_messages.set(new_id, message);
         stored_messages.delete(old_id);
     }
 }
