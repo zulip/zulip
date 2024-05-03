@@ -586,8 +586,9 @@ export function handle_sort<Key, Item>($th: JQuery, list: ListWidget<Key, Item>)
             <th data-sort="status"></th>
         </thead>
         */
-    const sort_type: string = $th.data("sort");
-    const prop_name: string = $th.data("sort-prop");
+    const sort_type = $th.attr("data-sort");
+    const prop_name = $th.attr("data-sort-prop");
+    assert(sort_type !== undefined);
 
     if ($th.hasClass("active")) {
         if (!$th.hasClass("descend")) {
