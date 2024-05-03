@@ -72,7 +72,7 @@ function is_somebody_else_profile_open() {
     );
 }
 
-export function set_hash_to_home_view() {
+export function set_hash_to_home_view(triggered_by_escape_key = false) {
     let home_view_hash = `#${user_settings.web_home_view}`;
     if (home_view_hash === "#recent_topics") {
         home_view_hash = "#recent";
@@ -83,6 +83,20 @@ export function set_hash_to_home_view() {
     }
 
     if (window.location.hash !== home_view_hash) {
+        const hash_before_current = browser_history.old_hash();
+        if (
+            triggered_by_escape_key &&
+            home_view_hash === "#feed" &&
+            (hash_before_current === "" || hash_before_current === "#feed")
+        ) {
+            // If the previous view was the user's Combined Feed home
+            // view, and this change was triggered by escape keypress,
+            // then we simulate the back button in order to reuse
+            // existing code for restoring the user's scroll position.
+            window.history.back();
+            return;
+        }
+
         // We want to set URL with no hash here. It is not possible
         // to do so with `window.location.hash` since it will set an empty
         // hash. So, we use `pushState` which simply updates the current URL

@@ -385,7 +385,8 @@ export function process_escape_key(e) {
     /* The Ctrl+[ hotkey navigates to the home view
      * unconditionally; Esc's behavior depends on a setting. */
     if (user_settings.web_escape_navigates_to_home_view || e.which === 219) {
-        hashchange.set_hash_to_home_view();
+        const triggered_by_escape_key = true;
+        hashchange.set_hash_to_home_view(triggered_by_escape_key);
         return true;
     }
 
