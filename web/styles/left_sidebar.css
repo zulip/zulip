@@ -305,6 +305,10 @@ li.show-more-topics {
 
         & li#show-more-direct-messages {
             cursor: pointer;
+            /* The 'more conversations' line has no icons,
+               so vertically align the text with the unread
+               count, when one appears there. */
+            align-items: baseline;
 
             & a {
                 font-size: 12px;
