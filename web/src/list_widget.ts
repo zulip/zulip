@@ -433,9 +433,13 @@ export function create<Key, Item = Key>(
             });
 
             if (opts.$parent_container) {
-                opts.$parent_container.on("click.list_widget_sort", "[data-sort]", function () {
-                    handle_sort($(this), widget);
-                });
+                opts.$parent_container.on(
+                    "click.list_widget_sort",
+                    "[data-sort]",
+                    function (this: HTMLElement) {
+                        handle_sort($(this), widget);
+                    },
+                );
             }
 
             opts.filter?.$element?.on("input.list_widget_filter", function () {
