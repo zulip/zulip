@@ -1,0 +1,111 @@
+#message_view_header {
+    color: var(--color-text-message-view-header);
+    z-index: 2;
+    float: left;
+    height: var(--header-height);
+    width: 100%;
+    line-height: var(--header-height);
+    display: flex;
+    align-items: baseline;
+    white-space: nowrap;
+    cursor: default;
+
+    .hidden {
+        display: none;
+    }
+
+    .message-header-stream-settings-button,
+    .navbar_title {
+        font-weight: 600;
+        font-size: 16px;
+        padding: 0 2px 0 6px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        color: inherit;
+        text-decoration: none;
+        /* Create a flex container for the icon and
+           stream name. */
+        display: flex;
+        /* We want to use baseline alignment so that the
+           stream name and narrow description sit on
+           the same invisible line. */
+        align-items: baseline;
+
+        .zulip-icon {
+            font-size: 14px;
+            /* Pull the icon out of baseline alignment,
+               and center with stream name. */
+            align-self: center;
+        }
+
+        .zulip-icon-inbox {
+            font-size: 16px;
+        }
+
+        .fa-envelope {
+            /* The squatter envelope icon appears
+               better vertically centered when aligned
+               to the baseline of the adjacent DM partners. */
+            align-self: baseline;
+        }
+
+        @media (height < $short_navbar_cutoff_height) {
+            padding: 0 3.5px; /* based on having ~41.66% decrease */
+        }
+
+        & i {
+            margin: 0 6px 0 5px;
+            /* Align all icons to center. */
+            align-self: center;
+        }
+
+        .fa {
+            .fa-envelope {
+                font-size: 14px;
+                margin: 0 5px;
+            }
+
+            .fa-hashtag {
+                font-size: 1.2rem;
+                margin: 0 2px 0 5px;
+            }
+        }
+    }
+
+    .message-header-navbar-title {
+        /* Allow long navbar titles (e.g., stream names) to collapse. */
+        flex: 0 1 auto;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .narrow_description {
+        /* the actual value of flex shrink does not matter, it is the
+           ratio of this value to other flex items that determines the
+           behavior while shrinking, here the other item has the .stream
+           class and a flex of 1, so the value here *is* the ratio, and
+           is chosen such that the narrow description shrinks to close
+           before the stream name must begin to shrink */
+        flex-shrink: 100;
+        background: none;
+        font-size: 14px;
+        color: inherit;
+        font-weight: 400;
+        padding-left: 10px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    /* The very last element in the navbar is the search icon, the second
+       last element is either the narrow description (for stream narrows) or
+       the "title" (for other narrows). The flex-grow property ensures these
+       elements take up the entirety of the white space, while flex-shrink
+       accommodates narrower viewports. Setting flex-basis 0 enables an
+       ellipsis to be displayed, as the 0 takes the place of the max-content
+       default that would otherwise run titles under the search box. */
+    .navbar_title,
+    .narrow_description {
+        flex: 1 1 0;
+        margin: 0;
+    }
+}
