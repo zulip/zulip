@@ -1,4 +1,5 @@
 import $ from "jquery";
+import type * as tippy from "tippy.js";
 
 import * as activity_ui from "./activity_ui";
 import * as compose_actions from "./compose_actions";
@@ -21,12 +22,14 @@ export const FILTERS = {
     FOLLOWED_TOPICS: "followed_topics",
 };
 
+const TIPPY_PROPS: Partial<tippy.Props> = {
+    placement: "bottom-start",
+    offset: [0, 2],
+};
+
 export const COMMON_DROPDOWN_WIDGET_PARAMS = {
     get_options: filters_dropdown_options,
-    tippy_props: {
-        placement: "bottom-start",
-        offset: [0, 2],
-    },
+    tippy_props: TIPPY_PROPS,
     unique_id_type: dropdown_widget.DataTypes.STRING,
     hide_search_box: true,
     bold_current_selection: true,

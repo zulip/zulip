@@ -479,6 +479,7 @@ test("test_recent_view_show", ({override, mock_template}) => {
     $("#mark_read_on_scroll_state_banner").toggleClass = noop;
 
     rt.clear_for_tests();
+    rt.set_filters_for_tests();
     rt.process_messages(messages);
 
     rt.show();
@@ -515,6 +516,7 @@ test("test_filter_is_spectator", ({mock_template}) => {
     row_data = generate_topic_data([[1, "topic-1", 0, all_visibility_policies.INHERIT]]);
     i = row_data.length;
     rt.clear_for_tests();
+    rt.set_filters_for_tests();
     stub_out_filter_buttons();
     recent_view_util.set_visible(true);
     rt.process_messages([messages[0]]);
@@ -549,6 +551,7 @@ test("test_no_filter", ({mock_template}) => {
     row_data = generate_topic_data([[1, "topic-1", 0, all_visibility_policies.INHERIT]]);
     i = row_data.length;
     rt.clear_for_tests();
+    rt.set_filters_for_tests();
     stub_out_filter_buttons();
     recent_view_util.set_visible(true);
     rt.process_messages([messages[0]]);
@@ -676,6 +679,7 @@ test("test_filter_pm", ({mock_template}) => {
     });
 
     rt.clear_for_tests();
+    rt.set_filters_for_tests();
     stub_out_filter_buttons();
     recent_view_util.set_visible(true);
     rt.set_filter("include_private");
@@ -737,6 +741,7 @@ test("test_filter_participated", ({mock_template}) => {
     });
 
     rt.clear_for_tests();
+    rt.set_filters_for_tests();
     recent_view_util.set_visible(true);
     rt.set_default_focus();
     stub_out_filter_buttons();
@@ -828,6 +833,7 @@ test("test_update_unread_count", () => {
 test("basic assertions", ({mock_template, override_rewire}) => {
     override_rewire(rt, "inplace_rerender", noop);
     rt.clear_for_tests();
+    rt.set_filters_for_tests();
 
     mock_template("recent_view_table.hbs", false, noop);
     mock_template("recent_view_row.hbs", true, (_data, html) => {
@@ -962,6 +968,7 @@ test("test_reify_local_echo_message", ({mock_template}) => {
     mock_template("recent_view_row.hbs", false, noop);
 
     rt.clear_for_tests();
+    rt.set_filters_for_tests();
     stub_out_filter_buttons();
     recent_view_util.set_visible(true);
     rt.process_messages(messages);
