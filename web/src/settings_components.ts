@@ -741,9 +741,9 @@ export function get_auth_method_list_data(): Record<string, boolean> {
     const $auth_method_rows = $("#id_realm_authentication_methods").find("div.method_row");
 
     for (const method_row of $auth_method_rows) {
-        new_auth_methods[$(method_row).data("method")] = $(method_row)
-            .find("input")
-            .prop("checked");
+        const method = $(method_row).attr("data-method");
+        assert(method !== undefined);
+        new_auth_methods[method] = $(method_row).find("input").prop("checked");
     }
 
     return new_auth_methods;
