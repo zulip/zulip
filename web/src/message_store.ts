@@ -115,6 +115,7 @@ export type Message = (
     clean_reactions: Map<string, MessageCleanReaction>;
 
     locally_echoed?: boolean;
+    raw_content?: string;
 
     // Added in `message_helper.process_new_message`.
     sent_by_me: boolean;

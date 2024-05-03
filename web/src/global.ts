@@ -1,11 +1,6 @@
-// These declarations tell the TypeScript compiler about the existence
-// of the global variables for our untyped JavaScript modules.  Please
-// remove each declaration when the corresponding module is migrated
-// to TS.
-
 /// <reference types="spectrum" />
 
-export {};
+import type * as zulip_test_module from "./zulip_test";
 
 type JQueryCaretRange = {
     start: number;
@@ -23,7 +18,7 @@ type JQueryIdleOptions = Partial<{
 }>;
 
 declare global {
-    let zulip_test: any; // eslint-disable-line @typescript-eslint/no-explicit-any
+    const zulip_test: typeof zulip_test_module;
 
     // eslint-disable-next-line @typescript-eslint/no-namespace
     namespace JQueryValidation {
