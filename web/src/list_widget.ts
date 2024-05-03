@@ -213,7 +213,7 @@ export function render_empty_list_message_if_needed(
     $container: JQuery,
     filter_value: string,
 ): void {
-    let empty_list_message = $container.data("empty");
+    let empty_list_message = $container.attr("data-empty");
 
     const empty_search_results_message = $container.attr("data-search-results-empty");
     if (filter_value && empty_search_results_message) {
