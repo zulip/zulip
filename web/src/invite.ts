@@ -25,6 +25,7 @@ import * as settings_data from "./settings_data";
 import {current_user, realm} from "./state_data";
 import * as stream_data from "./stream_data";
 import * as timerender from "./timerender";
+import type {HTMLSelectOneElement} from "./types";
 import * as ui_report from "./ui_report";
 import * as util from "./util";
 
@@ -48,12 +49,10 @@ function get_common_invitation_data(): {
     invitee_emails: string;
 } {
     const invite_as = Number.parseInt(
-        $<HTMLSelectElement & {type: "select-one"}>("select:not([multiple])#invite_as").val()!,
+        $<HTMLSelectOneElement>("select:not([multiple])#invite_as").val()!,
         10,
     );
-    const raw_expires_in = $<HTMLSelectElement & {type: "select-one"}>(
-        "select:not([multiple])#expires_in",
-    ).val()!;
+    const raw_expires_in = $<HTMLSelectOneElement>("select:not([multiple])#expires_in").val()!;
     // See settings_config.expires_in_values for why we do this conversion.
     let expires_in: number | null;
     if (raw_expires_in === "null") {
@@ -111,9 +110,7 @@ function beforeSend(): void {
 }
 
 function submit_invitation_form(): void {
-    const $expires_in = $<HTMLSelectElement & {type: "select-one"}>(
-        "select:not([multiple])#expires_in",
-    );
+    const $expires_in = $<HTMLSelectOneElement>("select:not([multiple])#expires_in");
     const $invite_status = $("#dialog_error");
     const data = get_common_invitation_data();
 
@@ -270,9 +267,7 @@ function get_expiration_time_in_minutes(): number {
 }
 
 function set_expires_on_text(): void {
-    const $expires_in = $<HTMLSelectElement & {type: "select-one"}>(
-        "select:not([multiple])#expires_in",
-    );
+    const $expires_in = $<HTMLSelectOneElement>("select:not([multiple])#expires_in");
     if ($expires_in.val() === "custom") {
         $("#expires_on").hide();
         $("#custom_expires_on").text(valid_to(get_expiration_time_in_minutes()));
@@ -283,14 +278,12 @@ function set_expires_on_text(): void {
 }
 
 function set_custom_time_inputs_visibility(): void {
-    const $expires_in = $<HTMLSelectElement & {type: "select-one"}>(
-        "select:not([multiple])#expires_in",
-    );
+    const $expires_in = $<HTMLSelectOneElement>("select:not([multiple])#expires_in");
     if ($expires_in.val() === "custom") {
         $("#custom-expiration-time-input").val(custom_expiration_time_input);
-        $<HTMLSelectElement & {type: "select-one"}>(
-            "select:not([multiple])#custom-expiration-time-unit",
-        ).val(custom_expiration_time_unit);
+        $<HTMLSelectOneElement>("select:not([multiple])#custom-expiration-time-unit").val(
+            custom_expiration_time_unit,
+        );
         $("#custom-invite-expiration-time").show();
     } else {
         $("#custom-invite-expiration-time").hide();
@@ -340,9 +333,7 @@ function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void
     });
 
     function invite_user_modal_post_render(): void {
-        const $expires_in = $<HTMLSelectElement & {type: "select-one"}>(
-            "select:not([multiple])#expires_in",
-        );
+        const $expires_in = $<HTMLSelectOneElement>("select:not([multiple])#expires_in");
         const $pill_container = $("#invitee_emails_container .pill-container");
         pills = input_pill.create({
             $container: $pill_container,
@@ -411,7 +402,7 @@ function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void
             custom_expiration_time_input = Number.parseFloat(
                 $<HTMLInputElement>("input#custom-expiration-time-input").val()!,
             );
-            custom_expiration_time_unit = $<HTMLSelectElement & {type: "select-one"}>(
+            custom_expiration_time_unit = $<HTMLSelectOneElement>(
                 "select:not([multiple])#custom-expiration-time-unit",
             ).val()!;
             $("#custom_expires_on").text(valid_to(get_expiration_time_in_minutes()));

@@ -16,6 +16,7 @@ import type {CustomProfileField} from "./state_data";
 import {realm} from "./state_data";
 import * as stream_data from "./stream_data";
 import type {StreamSubscription} from "./sub_store";
+import type {HTMLSelectOneElement} from "./types";
 import type {UserGroup} from "./user_groups";
 import * as util from "./util";
 
@@ -248,9 +249,7 @@ export function change_element_block_display_property(
 
 export function is_video_chat_provider_jitsi_meet(): boolean {
     const video_chat_provider_id = Number.parseInt(
-        $<HTMLSelectElement & {type: "select-one"}>(
-            "select:not([multiple])#id_realm_video_chat_provider",
-        ).val()!,
+        $<HTMLSelectOneElement>("select:not([multiple])#id_realm_video_chat_provider").val()!,
         10,
     );
     const jitsi_meet_id = realm.realm_available_video_chat_providers.jitsi_meet.id;
@@ -414,7 +413,7 @@ function read_select_field_data_from_form(
 function read_external_account_field_data($profile_field_form: JQuery): FieldData {
     const field_data: FieldData = {};
     field_data.subtype = $profile_field_form
-        .find<HTMLSelectElement & {type: "select-one"}>("select[name=external_acc_field_type]")
+        .find<HTMLSelectOneElement>("select[name=external_acc_field_type]")
         .val()!;
     if (field_data.subtype === "custom") {
         field_data.url_pattern = $profile_field_form
@@ -969,7 +968,7 @@ function should_disable_save_button_for_jitsi_server_url_setting(): boolean {
         return false;
     }
 
-    const $dropdown_elem = $<HTMLSelectElement & {type: "select-one"}>(
+    const $dropdown_elem = $<HTMLSelectOneElement>(
         "select:not([multiple])#id_realm_jitsi_server_url",
     );
     const $custom_input_elem = $<HTMLInputElement>("input#id_realm_jitsi_server_url_custom_input");
@@ -985,9 +984,7 @@ function should_disable_save_button_for_time_limit_settings(
 ): boolean {
     let disable_save_btn = false;
     for (const setting_elem of time_limit_settings) {
-        const $dropdown_elem = $(setting_elem).find<HTMLSelectElement & {type: "select-one"}>(
-            "select:not([multiple])",
-        );
+        const $dropdown_elem = $(setting_elem).find<HTMLSelectOneElement>("select:not([multiple])");
         const $custom_input_elem = $(setting_elem).find<HTMLInputElement>(
             "input.time-limit-custom-input",
         );

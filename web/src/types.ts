@@ -52,3 +52,5 @@ export type UpdateMessageEvent = {
     // This will not be set until it gets fixed.
     topic?: string;
 };
+
+export type HTMLSelectOneElement = HTMLSelectElement & {type: "select-one"};
