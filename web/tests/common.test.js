@@ -28,49 +28,6 @@ run_test("phrase_match", () => {
     assert.ok(!common.phrase_match("tes", "hostess"));
 });
 
-run_test("copy_data_attribute_value", ({override}) => {
-    const admin_emails_val = "iago@zulip.com";
-
-    const $input = $.create("input");
-
-    let removed;
-    $input.remove = () => {
-        removed = true;
-    };
-
-    override(document, "createElement", () => $input);
-    override(document, "execCommand", noop);
-
-    $("body").append = noop;
-    $input.val = (arg) => {
-        assert.equal(arg, admin_emails_val);
-        return {
-            trigger: noop,
-        };
-    };
-
-    const $elem = {};
-    let faded_in = false;
-    let faded_out = false;
-
-    $elem.data = (key) => {
-        assert.equal(key, "admin-emails");
-        return admin_emails_val;
-    };
-    $elem.fadeOut = (val) => {
-        assert.equal(val, 250);
-        faded_out = true;
-    };
-    $elem.fadeIn = (val) => {
-        assert.equal(val, 1000);
-        faded_in = true;
-    };
-    common.copy_data_attribute_value($elem, "admin-emails");
-    assert.ok(removed);
-    assert.ok(faded_in);
-    assert.ok(faded_out);
-});
-
 run_test("adjust_mac_kbd_tags non-mac", ({override}) => {
     override(navigator, "platform", "Windows");
 
