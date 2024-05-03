@@ -162,12 +162,11 @@ run_test("copy from pill", ({mock_template}) => {
         },
     };
     const e = {
-        currentTarget: $pill_stub,
         originalEvent,
         preventDefault: noop,
     };
 
-    copy_handler(e);
+    copy_handler.call($pill_stub, e);
 
     assert.equal(copied_text, "RED");
 });
@@ -362,14 +361,16 @@ run_test("Enter key with text", ({mock_template}) => {
 
     const key_handler = $container.get_on_handler("keydown", ".input");
 
-    key_handler({
-        key: "Enter",
-        preventDefault: noop,
-        stopPropagation: noop,
-        target: {
+    key_handler.call(
+        {
             textContent: " yellow ",
         },
-    });
+        {
+            key: "Enter",
+            preventDefault: noop,
+            stopPropagation: noop,
+        },
+    );
 
     assert.deepEqual(widget.items(), [items.blue, items.red, items.yellow]);
 });
@@ -441,13 +442,15 @@ run_test("insert_remove", ({mock_template}) => {
 
     let key_handler = $container.get_on_handler("keydown", ".input");
 
-    key_handler({
-        key: "Backspace",
-        target: {
+    key_handler.call(
+        {
             textContent: "",
         },
-        preventDefault: noop,
-    });
+        {
+            key: "Backspace",
+            preventDefault: noop,
+        },
+    );
 
     assert.ok(removed);
     assert.equal(color_removed, "YELLOW");
