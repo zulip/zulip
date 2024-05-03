@@ -70,7 +70,7 @@ export function initialize({on_narrow_search}: {on_narrow_search: OnNarrowSearch
     // (It's a bit of legacy that we have an object with only one important
     // field.  There's also a "search_string" field on each element that actually
     // just represents the key of the hash, so it's redundant.)
-    let search_map = new Map();
+    let search_map = new Map<string, search_suggestion.Suggestion>();
 
     const bootstrap_typeahead_input: TypeaheadInputElement = {
         $element: $search_query_box,
