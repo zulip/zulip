@@ -61,26 +61,30 @@ export function populate_list(): void {
 export function set_up(): void {
     loaded = true;
 
-    $("body").on("change", ".settings_user_topic_visibility_policy", function (e) {
-        const $row = $(this).closest("tr");
-        const stream_id_string = $row.attr("data-stream-id");
-        assert(stream_id_string !== undefined);
-        const stream_id = Number.parseInt(stream_id_string, 10);
-        const topic = $row.attr("data-topic");
-        assert(topic !== undefined);
-        const visibility_policy = this.value;
+    $("body").on(
+        "change",
+        "select.settings_user_topic_visibility_policy",
+        function (this: HTMLSelectElement, e) {
+            const $row = $(this).closest("tr");
+            const stream_id_string = $row.attr("data-stream-id");
+            assert(stream_id_string !== undefined);
+            const stream_id = Number.parseInt(stream_id_string, 10);
+            const topic = $row.attr("data-topic");
+            assert(topic !== undefined);
+            const visibility_policy = Number(this.value);
 
-        e.stopPropagation();
+            e.stopPropagation();
 
-        user_topics.set_user_topic_visibility_policy(
-            stream_id,
-            topic,
-            visibility_policy,
-            false,
-            false,
-            $row.closest("#user-topic-settings").find(".alert-notification"),
-        );
-    });
+            user_topics.set_user_topic_visibility_policy(
+                stream_id,
+                topic,
+                visibility_policy,
+                false,
+                false,
+                $row.closest("#user-topic-settings").find(".alert-notification"),
+            );
+        },
+    );
 
     populate_list();
 }
