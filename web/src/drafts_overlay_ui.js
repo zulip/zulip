@@ -188,8 +188,8 @@ export function launch() {
             e.stopPropagation();
 
             const $draft_row = $(this).closest(".overlay-message-row");
-            const $draft_id = $draft_row.data("draft-id");
-            restore_draft($draft_id);
+            const draft_id = $draft_row.data("draft-id");
+            restore_draft(draft_id);
         });
 
         $("#drafts_table .overlay_message_controls .delete-overlay-message").on(
