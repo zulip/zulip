@@ -489,7 +489,8 @@ test("render_empty_user_list_message", ({override, mock_template}) => {
         append($data) {
             $appended_data = $data;
         },
-        data() {
+        attr(name) {
+            assert.equal(name, "data-search-results-empty");
             return empty_list_message;
         },
         children: () => [],
