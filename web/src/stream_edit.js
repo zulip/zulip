@@ -599,7 +599,7 @@ export function initialize() {
         }
 
         function do_archive_stream() {
-            const stream_id = $(".dialog_submit_button").data("stream-id");
+            const stream_id = Number($(".dialog_submit_button").attr("data-stream-id"));
             if (!stream_id) {
                 ui_report.client_error(
                     $t_html({defaultMessage: "Invalid channel ID"}),
@@ -692,7 +692,9 @@ export function initialize() {
             const $save_button = $(e.currentTarget);
             const $subsection_elem = $save_button.closest(".settings-subsection-parent");
 
-            const stream_id = $save_button.closest(".subscription_settings.show").data("stream-id");
+            const stream_id = Number(
+                $save_button.closest(".subscription_settings.show").attr("data-stream-id"),
+            );
             const sub = sub_store.get(stream_id);
             const data = settings_org.populate_data_for_request($subsection_elem, false, sub);
 
@@ -724,7 +726,9 @@ export function initialize() {
             e.preventDefault();
             e.stopPropagation();
 
-            const stream_id = $(e.target).closest(".subscription_settings.show").data("stream-id");
+            const stream_id = Number(
+                $(e.target).closest(".subscription_settings.show").attr("data-stream-id"),
+            );
             const sub = sub_store.get(stream_id);
 
             const $subsection = $(e.target).closest(".settings-subsection-parent");

@@ -253,7 +253,7 @@ export function initialize() {
             const $invite_row = $(event.target).parents(".main-view-banner");
 
             const user_id = Number.parseInt($invite_row.data("user-id"), 10);
-            const stream_id = Number.parseInt($invite_row.data("stream-id"), 10);
+            const stream_id = Number($invite_row.attr("data-stream-id"));
 
             function success() {
                 $invite_row.remove();
