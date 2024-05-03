@@ -104,7 +104,8 @@ function beforeSend(): void {
     // aren't in the right domain, etc.)
     //
     // OR, you could just let the server do it. Probably my temptation.
-    const loading_text = $("#invite-user-modal .dialog_submit_button").data("loading-text");
+    const loading_text = $("#invite-user-modal .dialog_submit_button").attr("data-loading-text");
+    assert(loading_text !== undefined);
     $("#invite-user-modal .dialog_submit_button").text(loading_text);
     $("#invite-user-modal .dialog_submit_button").prop("disabled", true);
 }
@@ -377,10 +378,10 @@ function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void
             );
             if ($("#invitee_emails_container").is(":visible")) {
                 $button.text($t({defaultMessage: "Invite"}));
-                $button.data("loading-text", $t({defaultMessage: "Inviting..."}));
+                $button.attr("data-loading-text", $t({defaultMessage: "Inviting..."}));
             } else {
                 $button.text($t({defaultMessage: "Generate invite link"}));
-                $button.data("loading-text", $t({defaultMessage: "Generating link..."}));
+                $button.attr("data-loading-text", $t({defaultMessage: "Generating link..."}));
             }
         }
 
