@@ -648,10 +648,9 @@ export function get_sorted_filtered_items(query, input_element) {
         return [];
     }
 
-    const opts = get_stream_topic_data(input_element);
-
+    // These are sorted separately
     if (completing === "mention" || completing === "silent_mention") {
-        return filter_and_sort_mentions(big_results.is_silent, token, opts);
+        return big_results;
     }
 
     return filter_and_sort_candidates(completing, big_results, token);
@@ -763,7 +762,8 @@ export function get_candidates(query, input_element) {
             return false;
         }
         token = current_token;
-        return {is_silent};
+        const opts = get_stream_topic_data(input_element);
+        return filter_and_sort_mentions(is_silent, token, opts);
     }
 
     function get_slash_commands_data() {

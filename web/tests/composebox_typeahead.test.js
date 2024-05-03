@@ -408,6 +408,21 @@ const make_emoji = (emoji_dict) => ({
     reaction_type: "unicode_emoji",
 });
 
+// Sorted by name
+const sorted_user_list = [
+    ali,
+    alice,
+    cordelia,
+    hal, // Early Hal
+    gael,
+    harry,
+    hamlet, // King Hamlet
+    lear,
+    twin1, // Mark Twin
+    twin2,
+    othello,
+];
+
 function test(label, f) {
     run_test(label, (helpers) => {
         people.init();
@@ -1355,6 +1370,7 @@ test("begins_typeahead", ({override, override_rewire}) => {
         $element: {},
         type: "input",
     };
+    input_element.$element.closest = () => [];
 
     function get_values(input, rest) {
         // Stub out split_at_cursor that uses $(':focus')
@@ -1376,8 +1392,6 @@ test("begins_typeahead", ({override, override_rewire}) => {
         assert.deepEqual(values, reference);
     }
 
-    const people_only = {is_silent: true};
-    const all_mentions = {is_silent: false};
     const lang_list = Object.keys(pygments_data.langs);
 
     assert_typeahead_equals("test", false);
@@ -1388,27 +1402,38 @@ test("begins_typeahead", ({override, override_rewire}) => {
     assert_typeahead_equals("test *", false);
 
     // Make sure that the last token is the one we read.
-    assert_typeahead_equals("~~~ @zulip", all_mentions);
+    assert_typeahead_equals("~~~ @zulip", []); // zulip isn't set up as a user group
     assert_typeahead_equals("@zulip :ta", emoji_list);
     assert_typeahead_equals("#foo\n~~~py", lang_list);
     assert_typeahead_equals(":tada: <time:", ["translated: Mention a time-zone-aware time"]);
 
-    assert_typeahead_equals("@", all_mentions);
-    assert_typeahead_equals("@_", people_only);
-    assert_typeahead_equals(" @", all_mentions);
-    assert_typeahead_equals(" @_", people_only);
-    assert_typeahead_equals("@*", all_mentions);
-    assert_typeahead_equals("@_*", people_only);
-    assert_typeahead_equals("@**", all_mentions);
-    assert_typeahead_equals("@_**", people_only);
-    assert_typeahead_equals("test @**o", all_mentions);
-    assert_typeahead_equals("test @_**o", people_only);
-    assert_typeahead_equals("test @*o", all_mentions);
-    assert_typeahead_equals("test @_*k", people_only);
-    assert_typeahead_equals("test @*h", all_mentions);
-    assert_typeahead_equals("test @_*h", people_only);
-    assert_typeahead_equals("test @", all_mentions);
-    assert_typeahead_equals("test @_", people_only);
+    const mention_all = user_or_mention_item(ct.broadcast_mentions()[0]);
+    const users_and_all_mention = [...sorted_user_list, mention_all];
+    const users_and_user_groups = [
+        ...sorted_user_list,
+        // alphabetical
+        hamletcharacters, // "Characters of Hamlet"
+        backend,
+        call_center, // "folks working in support"
+    ];
+    const mention_everyone = user_or_mention_item(ct.broadcast_mentions()[1]);
+    assert_typeahead_equals("@", users_and_all_mention);
+    // The user we're testing for is only allowed to do silent mentions of groups
+    assert_typeahead_equals("@_", users_and_user_groups);
+    assert_typeahead_equals(" @", users_and_all_mention);
+    assert_typeahead_equals(" @_", users_and_user_groups);
+    assert_typeahead_equals("@*", users_and_all_mention);
+    assert_typeahead_equals("@_*", users_and_user_groups);
+    assert_typeahead_equals("@**", users_and_all_mention);
+    assert_typeahead_equals("@_**", users_and_user_groups);
+    assert_typeahead_equals("test @**o", [othello, cordelia, mention_everyone]);
+    assert_typeahead_equals("test @_**o", [othello, cordelia]);
+    assert_typeahead_equals("test @*o", [othello, cordelia, mention_everyone]);
+    assert_typeahead_equals("test @_*k", [hamlet, lear, twin1, twin2, backend]);
+    assert_typeahead_equals("test @*h", [harry, hal, hamlet, cordelia, othello]);
+    assert_typeahead_equals("test @_*h", [harry, hal, hamlet, hamletcharacters, cordelia, othello]);
+    assert_typeahead_equals("test @", users_and_all_mention);
+    assert_typeahead_equals("test @_", users_and_user_groups);
     assert_typeahead_equals("test no@o", false);
     assert_typeahead_equals("test no@_k", false);
     assert_typeahead_equals("@ ", false);
@@ -1417,20 +1442,61 @@ test("begins_typeahead", ({override, override_rewire}) => {
     assert_typeahead_equals("@_* ", false);
     assert_typeahead_equals("@** ", false);
     assert_typeahead_equals("@_** ", false);
-    assert_typeahead_equals("test\n@i", all_mentions);
-    assert_typeahead_equals("test\n@_i", people_only);
-    assert_typeahead_equals("test\n @l", all_mentions);
-    assert_typeahead_equals("test\n @_l", people_only);
-    assert_typeahead_equals("@zuli", all_mentions);
-    assert_typeahead_equals("@_zuli", people_only);
+    assert_typeahead_equals("test\n@i", [
+        ali,
+        alice,
+        cordelia,
+        gael,
+        hamlet,
+        lear,
+        twin1,
+        twin2,
+        othello,
+    ]);
+    assert_typeahead_equals("test\n@_i", [
+        ali,
+        alice,
+        cordelia,
+        gael,
+        hamlet,
+        lear,
+        twin1,
+        twin2,
+        othello,
+    ]);
+    assert_typeahead_equals("test\n @l", [
+        cordelia,
+        lear,
+        ali,
+        alice,
+        hal,
+        gael,
+        hamlet,
+        othello,
+        mention_all,
+    ]);
+    assert_typeahead_equals("test\n @_l", [
+        cordelia,
+        lear,
+        ali,
+        alice,
+        hal,
+        gael,
+        hamlet,
+        othello,
+        hamletcharacters,
+        call_center,
+    ]);
+    assert_typeahead_equals("@zuli", []);
+    assert_typeahead_equals("@_zuli", []);
     assert_typeahead_equals("@ zuli", false);
     assert_typeahead_equals("@_ zuli", false);
-    assert_typeahead_equals(" @zuli", all_mentions);
-    assert_typeahead_equals(" @_zuli", people_only);
-    assert_typeahead_equals("test @o", all_mentions);
-    assert_typeahead_equals("test @_o", people_only);
-    assert_typeahead_equals("test @z", all_mentions);
-    assert_typeahead_equals("test @_z", people_only);
+    assert_typeahead_equals(" @zuli", []);
+    assert_typeahead_equals(" @_zuli", []);
+    assert_typeahead_equals("test @o", [othello, cordelia, mention_everyone]);
+    assert_typeahead_equals("test @_o", [othello, cordelia]);
+    assert_typeahead_equals("test @z", []);
+    assert_typeahead_equals("test @_z", []);
 
     assert_typeahead_equals(":", false);
     assert_typeahead_equals(": ", false);
@@ -1538,7 +1604,7 @@ test("begins_typeahead", ({override, override_rewire}) => {
     assert_typeahead_equals("~~~test", "ing", false);
     const terminal_symbols = ",.;?!()[]> \"'\n\t";
     for (const symbol of terminal_symbols.split()) {
-        assert_typeahead_equals("@test", symbol, all_mentions);
+        assert_typeahead_equals("@test", symbol, []);
         assert_typeahead_equals(":test", symbol, emoji_list);
         assert_typeahead_equals("```test", symbol, lang_list);
         assert_typeahead_equals("~~~test", symbol, lang_list);
