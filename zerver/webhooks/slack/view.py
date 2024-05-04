@@ -47,8 +47,8 @@ def api_slack_webhook(
             content,
         )
     elif channels_map_to_topics == VALID_OPTIONS["SHOULD_NOT_BE_MAPPED"]:
-        # This stream-channel mapping will be used even if
-        # there is a stream specified in the webhook URL.
+        # This channel-channel mapping will be used even if
+        # there is a channel specified in the webhook URL.
         check_send_webhook_message(
             request,
             user_profile,
