@@ -1,6 +1,7 @@
 import {strict as assert} from "assert";
 
 import type {Page} from "puppeteer";
+import {z} from "zod";
 
 import * as common from "./lib/common";
 
@@ -34,7 +35,10 @@ async function realm_creation_tests(page: Page): Promise<void> {
 
     // Open the confirmation URL
     const page_content = await page.evaluate(() => document.querySelector("body")!.textContent);
-    const confirmation_key: string = JSON.parse(page_content!).confirmation_key;
+    assert(page_content !== null);
+    const {confirmation_key} = z
+        .object({confirmation_key: z.string()})
+        .parse(JSON.parse(page_content));
     const confirmation_url = `http://${host}/accounts/do_confirm/${confirmation_key}`;
     await page.goto(confirmation_url);
 
