@@ -26,7 +26,7 @@ Leo Franchi created [BUG-15: New bug with hook](http://lfranchi.com:8080/browse/
 * **Priority**: Major
 * **Assignee**: no one
 """.strip()
-        self.assert_stream_message(
+        self.assert_channel_message(
             message=msg,
             stream_name="jira_custom",
             topic_name="BUG-15: New bug with hook",

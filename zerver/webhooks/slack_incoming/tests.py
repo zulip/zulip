@@ -37,7 +37,7 @@ Hello, world.
                 payload,
                 content_type="application/json",
             )
-            self.assert_stream_message(
+            self.assert_channel_message(
                 message=msg,
                 stream_name=self.CHANNEL_NAME,
                 topic_name="(no topic)",

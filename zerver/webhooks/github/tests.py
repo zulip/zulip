@@ -558,7 +558,7 @@ A temporary team so that I can get some webhook fixtures!
                 content_type="application/json",
             )
 
-        self.assert_stream_message(
+        self.assert_channel_message(
             message=stream_message,
             stream_name=self.CHANNEL_NAME,
             topic_name="team My Team",
