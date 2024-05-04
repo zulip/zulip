@@ -19,7 +19,7 @@ class ZenDeskHookTests(WebhookTestCase):
         }
 
     def do_test(self, expected_topic: str, expected_message: str) -> None:
-        self.api_stream_message(
+        self.api_channel_message(
             self.test_user,
             "",
             expected_topic,

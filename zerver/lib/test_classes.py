@@ -2148,7 +2148,7 @@ You can fix this by adding "{complete_event_type}" to ALL_EVENT_TYPES for this w
             self.patch.start()
             self.addCleanup(self.patch.stop)
 
-    def api_stream_message(
+    def api_channel_message(
         self,
         user: UserProfile,
         fixture_name: str,

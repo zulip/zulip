@@ -22,7 +22,7 @@ class DeskDotComHookTests(WebhookTestCase):
         expected_topic_name = "static text notification"
         expected_message = "This is a custom action."
 
-        self.api_stream_message(
+        self.api_channel_message(
             self.test_user,
             "static_text",
             expected_topic_name,
@@ -38,7 +38,7 @@ class DeskDotComHookTests(WebhookTestCase):
             "I have a question</a>"
         )
 
-        self.api_stream_message(
+        self.api_channel_message(
             self.test_user,
             "case_updated",
             expected_topic_name,
@@ -54,7 +54,7 @@ class DeskDotComHookTests(WebhookTestCase):
             "Il mio hovercraft è pieno di anguille.</a>"
         )
 
-        self.api_stream_message(
+        self.api_channel_message(
             self.test_user,
             "unicode_text_italian",
             expected_topic_name,
@@ -70,7 +70,7 @@ class DeskDotComHookTests(WebhookTestCase):
             "私のホバークラフトは鰻でいっぱいです</a>"
         )
 
-        self.api_stream_message(
+        self.api_channel_message(
             self.test_user,
             "unicode_text_japanese",
             expected_topic_name,
