@@ -560,7 +560,7 @@ A temporary team so that I can get some webhook fixtures!
 
         self.assert_channel_message(
             message=stream_message,
-            stream_name=self.CHANNEL_NAME,
+            channel_name=self.CHANNEL_NAME,
             topic_name="team My Team",
             content="Team has changes to `bogus_key1/bogus_key2` data.",
         )

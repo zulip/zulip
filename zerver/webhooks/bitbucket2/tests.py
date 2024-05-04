@@ -292,7 +292,7 @@ class Bitbucket2HookTests(WebhookTestCase):
         msg = self.get_second_to_last_message()
         self.assert_channel_message(
             message=msg,
-            stream_name=self.CHANNEL_NAME,
+            channel_name=self.CHANNEL_NAME,
             topic_name=TOPIC,
             content=expected_message.format(name="a"),
         )
@@ -300,7 +300,7 @@ class Bitbucket2HookTests(WebhookTestCase):
         msg = self.get_last_message()
         self.assert_channel_message(
             message=msg,
-            stream_name=self.CHANNEL_NAME,
+            channel_name=self.CHANNEL_NAME,
             topic_name=TOPIC,
             content=expected_message.format(name="b"),
         )
@@ -320,7 +320,7 @@ class Bitbucket2HookTests(WebhookTestCase):
         msg = self.get_second_to_last_message()
         self.assert_channel_message(
             message=msg,
-            stream_name=self.CHANNEL_NAME,
+            channel_name=self.CHANNEL_NAME,
             topic_name=TOPIC_BRANCH_EVENTS,
             content="Tomasz [pushed](https://bitbucket.org/kolaszek/repository-name/branch/master) 1 commit to branch master.\n\n* first commit ([84b96adc644](https://bitbucket.org/kolaszek/repository-name/commits/84b96adc644a30fd6465b3d196369d880762afed))",
         )
@@ -328,7 +328,7 @@ class Bitbucket2HookTests(WebhookTestCase):
         msg = self.get_last_message()
         self.assert_channel_message(
             message=msg,
-            stream_name=self.CHANNEL_NAME,
+            channel_name=self.CHANNEL_NAME,
             topic_name=TOPIC,
             content="Tomasz pushed tag [a](https://bitbucket.org/kolaszek/repository-name/commits/tag/a).",
         )
@@ -350,7 +350,7 @@ class Bitbucket2HookTests(WebhookTestCase):
         msg = self.get_second_to_last_message()
         self.assert_channel_message(
             message=msg,
-            stream_name=self.CHANNEL_NAME,
+            channel_name=self.CHANNEL_NAME,
             topic_name=TOPIC_BRANCH_EVENTS,
             content="Tomasz [pushed](https://bitbucket.org/kolaszek/repository-name/branch/master) 1 commit to branch master.\n\n* first commit ([84b96adc644](https://bitbucket.org/kolaszek/repository-name/commits/84b96adc644a30fd6465b3d196369d880762afed))",
         )
@@ -358,7 +358,7 @@ class Bitbucket2HookTests(WebhookTestCase):
         msg = self.get_last_message()
         self.assert_channel_message(
             message=msg,
-            stream_name=self.CHANNEL_NAME,
+            channel_name=self.CHANNEL_NAME,
             topic_name=TOPIC,
             content="Tomasz pushed tag [a](https://bitbucket.org/kolaszek/repository-name/commits/tag/a).",
         )

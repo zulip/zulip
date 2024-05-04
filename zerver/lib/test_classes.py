@@ -2234,7 +2234,7 @@ one or more new messages.
 
         self.assert_channel_message(
             message=msg,
-            stream_name=self.CHANNEL_NAME,
+            channel_name=self.CHANNEL_NAME,
             topic_name=expected_topic_name,
             content=expected_message,
         )
@@ -2242,11 +2242,11 @@ one or more new messages.
     def assert_channel_message(
         self,
         message: Message,
-        stream_name: str,
+        channel_name: str,
         topic_name: str,
         content: str,
     ) -> None:
-        self.assert_message_stream_name(message, stream_name)
+        self.assert_message_stream_name(message, channel_name)
         self.assertEqual(message.topic_name(), topic_name)
         self.assertEqual(message.content, content)
 
