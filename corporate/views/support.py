@@ -56,6 +56,7 @@ from zerver.actions.users import do_delete_user_preserving_messages
 from zerver.decorator import require_server_admin, zulip_login_required
 from zerver.forms import check_subdomain_available
 from zerver.lib.exceptions import JsonableError
+from zerver.lib.rate_limiter import rate_limit_request_by_ip
 from zerver.lib.realm_icon import realm_icon_url
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.send_email import FromAddress, send_email
@@ -167,6 +168,8 @@ def demo_request(request: HttpRequest) -> HttpResponse:
         form = DemoRequestForm(post_data)
 
         if form.is_valid():
+            rate_limit_request_by_ip(request, domain="sends_email_by_ip")
+
             email_context = {
                 "full_name": form.cleaned_data["full_name"],
                 "email": form.cleaned_data["email"],
