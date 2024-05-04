@@ -39,7 +39,7 @@ Hello, world.
             )
             self.assert_channel_message(
                 message=msg,
-                stream_name=self.CHANNEL_NAME,
+                channel_name=self.CHANNEL_NAME,
                 topic_name="(no topic)",
                 content=output_value,
             )

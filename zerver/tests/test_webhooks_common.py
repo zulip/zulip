@@ -175,7 +175,7 @@ class WebhookURLConfigurationTestCase(WebhookTestCase):
         msg = self.get_last_message()
         self.assert_channel_message(
             message=msg,
-            stream_name="helloworld_renamed",
+            channel_name="helloworld_renamed",
             topic_name=expected_topic_name,
             content=expected_message,
         )
