@@ -4,7 +4,7 @@ TOPIC_NAME = "Zulip HQ"
 
 
 class BasecampHookTests(WebhookTestCase):
-    STREAM_NAME = "basecamp"
+    CHANNEL_NAME = "basecamp"
     URL_TEMPLATE = "/api/v1/external/basecamp?stream={stream}&api_key={api_key}"
     WEBHOOK_DIR_NAME = "basecamp"
 

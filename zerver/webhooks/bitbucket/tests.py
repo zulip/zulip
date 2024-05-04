@@ -7,7 +7,7 @@ TOPIC_BRANCH_EVENTS = "Repository name / master"
 
 
 class BitbucketHookTests(WebhookTestCase):
-    STREAM_NAME = "bitbucket"
+    CHANNEL_NAME = "bitbucket"
     URL_TEMPLATE = "/api/v1/external/bitbucket?stream={stream}"
     WEBHOOK_DIR_NAME = "bitbucket"
 

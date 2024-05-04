@@ -2,7 +2,7 @@ from zerver.lib.test_classes import WebhookTestCase
 
 
 class ReviewBoardHookTests(WebhookTestCase):
-    STREAM_NAME = "reviewboard"
+    CHANNEL_NAME = "reviewboard"
     URL_TEMPLATE = "/api/v1/external/reviewboard?&api_key={api_key}&stream={stream}"
     WEBHOOK_DIR_NAME = "reviewboard"
 

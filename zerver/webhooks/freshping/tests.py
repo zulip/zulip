@@ -2,7 +2,7 @@ from zerver.lib.test_classes import WebhookTestCase
 
 
 class FreshpingHookTests(WebhookTestCase):
-    STREAM_NAME = "freshping"
+    CHANNEL_NAME = "freshping"
     URL_TEMPLATE = "/api/v1/external/freshping?api_key={api_key}&stream={stream}"
     WEBHOOK_DIR_NAME = "freshping"
 

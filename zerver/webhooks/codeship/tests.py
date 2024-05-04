@@ -2,7 +2,7 @@ from zerver.lib.test_classes import WebhookTestCase
 
 
 class CodeshipHookTests(WebhookTestCase):
-    STREAM_NAME = "codeship"
+    CHANNEL_NAME = "codeship"
     URL_TEMPLATE = "/api/v1/external/codeship?stream={stream}&api_key={api_key}"
     TOPIC_NAME = "codeship/docs"
     WEBHOOK_DIR_NAME = "codeship"

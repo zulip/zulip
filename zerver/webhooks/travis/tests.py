@@ -6,7 +6,7 @@ from zerver.lib.test_classes import WebhookTestCase
 
 
 class TravisHookTests(WebhookTestCase):
-    STREAM_NAME = "travis"
+    CHANNEL_NAME = "travis"
     URL_TEMPLATE = "/api/v1/external/travis?stream={stream}&api_key={api_key}"
     WEBHOOK_DIR_NAME = "travis"
     TOPIC_NAME = "builds"

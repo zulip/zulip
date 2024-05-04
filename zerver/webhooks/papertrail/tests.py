@@ -6,7 +6,7 @@ from zerver.lib.test_classes import WebhookTestCase
 
 
 class PapertrailHookTests(WebhookTestCase):
-    STREAM_NAME = "papertrail"
+    CHANNEL_NAME = "papertrail"
     URL_TEMPLATE = "/api/v1/external/papertrail?&api_key={api_key}&stream={stream}"
     WEBHOOK_DIR_NAME = "papertrail"
 
