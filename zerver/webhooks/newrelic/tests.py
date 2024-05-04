@@ -2,7 +2,7 @@ from zerver.lib.test_classes import WebhookTestCase
 
 
 class NewRelicHookTests(WebhookTestCase):
-    STREAM_NAME = "newrelic"
+    CHANNEL_NAME = "newrelic"
     URL_TEMPLATE = "/api/v1/external/newrelic?stream={stream}&api_key={api_key}"
     WEBHOOK_DIR_NAME = "newrelic"
 

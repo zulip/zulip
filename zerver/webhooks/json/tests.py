@@ -4,7 +4,7 @@ from zerver.lib.test_classes import WebhookTestCase
 
 
 class JsonHookTests(WebhookTestCase):
-    STREAM_NAME = "json"
+    CHANNEL_NAME = "json"
     URL_TEMPLATE = "/api/v1/external/json?api_key={api_key}&stream={stream}"
     WEBHOOK_DIR_NAME = "json"
 

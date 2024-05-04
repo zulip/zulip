@@ -5,7 +5,7 @@ from zerver.webhooks.zabbix.view import MISCONFIGURED_PAYLOAD_ERROR_MESSAGE
 
 
 class ZabbixHookTests(WebhookTestCase):
-    STREAM_NAME = "zabbix"
+    CHANNEL_NAME = "zabbix"
     URL_TEMPLATE = "/api/v1/external/zabbix?api_key={api_key}&stream={stream}"
     WEBHOOK_DIR_NAME = "zabbix"
 

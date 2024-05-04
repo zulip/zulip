@@ -3,7 +3,7 @@ from zerver.webhooks.gosquared.view import CHAT_MESSAGE_TEMPLATE
 
 
 class GoSquaredHookTests(WebhookTestCase):
-    STREAM_NAME = "gosquared"
+    CHANNEL_NAME = "gosquared"
     URL_TEMPLATE = "/api/v1/external/gosquared?stream={stream}&api_key={api_key}"
     WEBHOOK_DIR_NAME = "gosquared"
 

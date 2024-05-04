@@ -4,7 +4,7 @@ from zerver.lib.test_classes import WebhookTestCase
 
 
 class FreshdeskHookTests(WebhookTestCase):
-    STREAM_NAME = "freshdesk"
+    CHANNEL_NAME = "freshdesk"
     URL_TEMPLATE = "/api/v1/external/freshdesk?stream={stream}"
     WEBHOOK_DIR_NAME = "freshdesk"
 

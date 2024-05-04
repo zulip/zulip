@@ -5,7 +5,7 @@ from zerver.lib.webhooks.git import COMMITS_LIMIT
 
 
 class GitlabHookTests(WebhookTestCase):
-    STREAM_NAME = "gitlab"
+    CHANNEL_NAME = "gitlab"
     URL_TEMPLATE = "/api/v1/external/gitlab?&api_key={api_key}&stream={stream}"
     WEBHOOK_DIR_NAME = "gitlab"
 

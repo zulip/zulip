@@ -17,7 +17,7 @@ TOPIC_SPONSORS = "sponsors"
 
 
 class GitHubWebhookTest(WebhookTestCase):
-    STREAM_NAME = "github"
+    CHANNEL_NAME = "github"
     URL_TEMPLATE = "/api/v1/external/github?stream={stream}&api_key={api_key}"
     WEBHOOK_DIR_NAME = "github"
 
@@ -535,7 +535,7 @@ A temporary team so that I can get some webhook fixtures!
             self.verify_post_is_ignored(payload, event)
 
     def test_team_edited_with_unsupported_keys(self) -> None:
-        self.subscribe(self.test_user, self.STREAM_NAME)
+        self.subscribe(self.test_user, self.CHANNEL_NAME)
 
         event = "team"
         payload = dict(
@@ -560,7 +560,7 @@ A temporary team so that I can get some webhook fixtures!
 
         self.assert_stream_message(
             message=stream_message,
-            stream_name=self.STREAM_NAME,
+            stream_name=self.CHANNEL_NAME,
             topic_name="team My Team",
             content="Team has changes to `bogus_key1/bogus_key2` data.",
         )
@@ -595,7 +595,7 @@ A temporary team so that I can get some webhook fixtures!
 
 
 class GitHubSponsorsHookTests(WebhookTestCase):
-    STREAM_NAME = "github"
+    CHANNEL_NAME = "github"
     URL_TEMPLATE = "/api/v1/external/githubsponsors?stream={stream}&api_key={api_key}"
     WEBHOOK_DIR_NAME = "github"
 

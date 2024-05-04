@@ -3,7 +3,7 @@ from zerver.webhooks.appfollow.view import convert_markdown
 
 
 class AppFollowHookTests(WebhookTestCase):
-    STREAM_NAME = "appfollow"
+    CHANNEL_NAME = "appfollow"
     URL_TEMPLATE = "/api/v1/external/appfollow?stream={stream}&api_key={api_key}"
     WEBHOOK_DIR_NAME = "appfollow"
 
