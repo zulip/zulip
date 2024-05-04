@@ -684,7 +684,7 @@ def get_name_template(entity: str) -> str:
     return EPIC_NAME_TEMPLATE
 
 
-def send_stream_messages_for_actions(
+def send_channel_messages_for_actions(
     request: HttpRequest,
     user_profile: UserProfile,
     payload: WildValue,
@@ -786,8 +786,8 @@ def api_clubhouse_webhook(
         if event in EVENTS_SECONDARY_ACTIONS_FUNCTION_MAPPER:
             sec_actions_func = EVENTS_SECONDARY_ACTIONS_FUNCTION_MAPPER[event]
             for sec_action in sec_actions_func(payload):
-                send_stream_messages_for_actions(request, user_profile, payload, sec_action, event)
+                send_channel_messages_for_actions(request, user_profile, payload, sec_action, event)
         else:
-            send_stream_messages_for_actions(request, user_profile, payload, primary_action, event)
+            send_channel_messages_for_actions(request, user_profile, payload, primary_action, event)
 
     return json_success(request)
