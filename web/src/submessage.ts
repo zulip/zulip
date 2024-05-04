@@ -79,7 +79,7 @@ export function get_message_events(message: Message): SubmessageEvents | undefin
 
     message.submessages.sort((m1, m2) => m1.id - m2.id);
 
-    const events = message.submessages.map((obj) => ({
+    const events = message.submessages.map((obj): {sender_id: number; data: unknown} => ({
         sender_id: obj.sender_id,
         data: JSON.parse(obj.content),
     }));
@@ -186,7 +186,7 @@ export function handle_event(submsg: Submessage): void {
         return;
     }
 
-    let data;
+    let data: unknown;
 
     try {
         data = JSON.parse(submsg.content);
