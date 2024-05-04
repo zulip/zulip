@@ -83,7 +83,7 @@ class WordPressHookTests(WebhookTestCase):
         # we are testing. The value of result is the error message the webhook should
         # return if no params are sent. The fixture for this test is an empty file.
 
-        # subscribe to the target stream
+        # subscribe to the target channel
         self.subscribe(self.test_user, self.CHANNEL_NAME)
 
         # post to the webhook url

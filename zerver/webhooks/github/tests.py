@@ -550,7 +550,7 @@ A temporary team so that I can get some webhook fixtures!
         log_mock = patch("zerver.decorator.webhook_unsupported_events_logger.exception")
 
         with log_mock as m:
-            stream_message = self.send_webhook_payload(
+            channel_message = self.send_webhook_payload(
                 self.test_user,
                 self.url,
                 payload,
@@ -559,7 +559,7 @@ A temporary team so that I can get some webhook fixtures!
             )
 
         self.assert_channel_message(
-            message=stream_message,
+            message=channel_message,
             channel_name=self.CHANNEL_NAME,
             topic_name="team My Team",
             content="Team has changes to `bogus_key1/bogus_key2` data.",
