@@ -13,6 +13,7 @@ import * as overlays from "./overlays";
 import {page_params} from "./page_params";
 import * as settings_components from "./settings_components";
 import * as settings_ui from "./settings_ui";
+import {realm} from "./state_data";
 import * as ui_report from "./ui_report";
 import {user_settings} from "./user_settings";
 
@@ -132,7 +133,7 @@ export function launch_default_language_setting_modal() {
     let selected_language = user_settings.default_language;
 
     if (hash_parser.get_current_hash_category() === "organization") {
-        selected_language = page_params.realm_default_language;
+        selected_language = realm.realm_default_language;
     }
 
     const html_body = render_dialog_default_language({
@@ -192,16 +193,20 @@ export function set_up(settings_panel) {
 
     // Common handler for sending requests to the server when an input
     // element is changed.
-    $container.on("change", "input[type=checkbox], select", function (e) {
-        const $input_elem = $(e.currentTarget);
-        const setting = $input_elem.attr("name");
-        const data = {};
-        data[setting] = settings_components.get_input_element_value(this);
-        const $status_element = $input_elem
-            .closest(".subsection-parent")
-            .find(".alert-notification");
-        change_display_setting(data, $status_element);
-    });
+    $container.on(
+        "change",
+        "input[type=checkbox], .information-density-settings input[type=text], select",
+        function (e) {
+            const $input_elem = $(e.currentTarget);
+            const setting = $input_elem.attr("name");
+            const data = {};
+            data[setting] = settings_components.get_input_element_value(this);
+            const $status_element = $input_elem
+                .closest(".subsection-parent")
+                .find(".alert-notification");
+            change_display_setting(data, $status_element);
+        },
+    );
 
     $container.find(".setting_emojiset_choice").on("click", function () {
         const data = {emojiset: $(this).val()};

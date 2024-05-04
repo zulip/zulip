@@ -1,4 +1,5 @@
 import $ from "jquery";
+import assert from "minimalistic-assert";
 
 import render_edit_content_button from "../templates/edit_content_button.hbs";
 
@@ -17,6 +18,7 @@ export function message_unhover() {
 
 export function message_hover($message_row) {
     const id = rows.id($message_row);
+    assert(message_lists.current !== undefined);
     const message = message_lists.current.get(id);
 
     if ($current_message_hover && rows.id($current_message_hover) === id) {
@@ -40,18 +42,15 @@ export function message_hover($message_row) {
     const args = {
         is_content_editable: is_content_editable && !message.status_message,
         can_move_message,
-        msg_id: id,
     };
     const $edit_content = $message_row.find(".edit_content");
     $edit_content.html(render_edit_content_button(args));
 
-    let data_template_id = "view-source-tooltip-template";
     if (args.is_content_editable) {
-        data_template_id = "edit-content-tooltip-template";
+        $edit_content.attr("data-tooltip-template-id", "edit-content-tooltip-template");
     } else if (args.can_move_message) {
-        data_template_id = "move-message-tooltip-template";
+        $edit_content.attr("data-tooltip-template-id", "move-message-tooltip-template");
     }
-    $edit_content.attr("data-tooltip-template-id", data_template_id);
 }
 
 export function initialize() {

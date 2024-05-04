@@ -7,11 +7,12 @@ const {mock_esm, zrequire} = require("./lib/namespace");
 const {make_stub} = require("./lib/stub");
 const {run_test, noop} = require("./lib/test");
 const blueslip = require("./lib/zblueslip");
-const {page_params} = require("./lib/zpage_params");
+const {realm} = require("./lib/zpage_params");
 
 const event_fixtures = events.fixtures;
 const test_user = events.test_user;
 
+const compose_recipient = mock_esm("../src/compose_recipient");
 const message_lists = mock_esm("../src/message_lists");
 const narrow_state = mock_esm("../src/narrow_state");
 const overlays = mock_esm("../src/overlays");
@@ -22,7 +23,6 @@ const stream_list = mock_esm("../src/stream_list");
 const stream_settings_ui = mock_esm("../src/stream_settings_ui");
 message_lists.current = {};
 
-const compose_recipient = zrequire("compose_recipient");
 const compose_state = zrequire("compose_state");
 const peer_data = zrequire("peer_data");
 const people = zrequire("people");
@@ -241,8 +241,9 @@ test("stream delete (special streams)", ({override}) => {
 
     // sanity check data
     assert.equal(event.streams.length, 2);
-    page_params.realm_notifications_stream_id = event.streams[0].stream_id;
-    page_params.realm_signup_notifications_stream_id = event.streams[1].stream_id;
+    realm.realm_new_stream_announcements_stream_id = event.streams[0].stream_id;
+    realm.realm_signup_announcements_stream_id = event.streams[1].stream_id;
+    realm.realm_zulip_update_announcements_stream_id = event.streams[0].stream_id;
 
     override(stream_settings_ui, "remove_stream", noop);
     override(settings_org, "sync_realm_settings", noop);
@@ -253,12 +254,13 @@ test("stream delete (special streams)", ({override}) => {
 
     dispatch(event);
 
-    assert.equal(page_params.realm_notifications_stream_id, -1);
-    assert.equal(page_params.realm_signup_notifications_stream_id, -1);
+    assert.equal(realm.realm_new_stream_announcements_stream_id, -1);
+    assert.equal(realm.realm_signup_announcements_stream_id, -1);
+    assert.equal(realm.realm_zulip_update_announcements_stream_id, -1);
 });
 
-test("stream delete (stream is selected in compose)", ({override, override_rewire}) => {
-    override_rewire(compose_recipient, "on_compose_select_recipient_update", noop);
+test("stream delete (stream is selected in compose)", ({override}) => {
+    override(compose_recipient, "on_compose_select_recipient_update", noop);
 
     const event = event_fixtures.stream__delete;
 

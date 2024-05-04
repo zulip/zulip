@@ -163,9 +163,9 @@ how to assign roles and permissions for a class.
   (Recommended: Admins)
 - Set [who can access user email addresses](/help/configure-email-visibility).
   (Recommended: Admins only)
-- Set [who can create streams](/help/configure-who-can-create-streams).
+- Set [who can create channels](/help/configure-who-can-create-channels).
   (Recommended: Admins for public streams; Admins, moderators and members for private streams)
-- Set [who can add users to streams](/help/configure-who-can-invite-to-streams).
+- Set [who can add users to channels](/help/configure-who-can-invite-to-channels).
   (Recommended: Admins and moderators)
 - Set [who can edit the topic of any message](/help/restrict-moving-messages).
   (Recommended: (default) Members for small classes;
@@ -193,10 +193,10 @@ how to assign roles and permissions for a class.
   (Recommended: Admins and moderators)
 - Set [who can access user email addresses](/help/configure-email-visibility).
   (Recommended: Admins only)
-- Set [who can create streams](/help/configure-who-can-create-streams).
+- Set [who can create channels](/help/configure-who-can-create-channels).
   (Recommended: Admins and moderators for public streams;
    Admins, moderators and members for private streams)
-- Set [who can add users to streams](/help/configure-who-can-invite-to-streams).
+- Set [who can add users to channels](/help/configure-who-can-invite-to-channels).
   (Recommended: Admins and moderators)
 - Set [who can edit the topic of any message](/help/restrict-moving-messages).
   (Recommended: Admins and moderators)
@@ -205,15 +205,15 @@ how to assign roles and permissions for a class.
 - Set [who can create and manage user groups][user-group-permissions].
   (Recommended: Admins and moderators)
 
-## Create streams
+## Create channels
 
-{!create-streams-intro.md!}
+{!create-channels-intro.md!}
 
 ### How to create a stream
 
 {start_tabs}
 
-{relative|stream|all}
+{relative|channel|all}
 
 1. Click **Create stream** on the right.
 
@@ -221,17 +221,17 @@ how to assign roles and permissions for a class.
 
 {end_tabs}
 
-For more details about stream settings, see [Create a
-stream](/help/create-a-stream#stream-options).
+For more details about channel settings, see [Create a
+channel](/help/create-a-channel#channel-options).
 
 ### Tips for creating streams
 
 For most classes, the following streams are recommended:
 
 - **#announcements**: For general announcements about the class. When
-  creating this stream, [restrict posting
-  permissions](/help/stream-sending-policy) so that only course staff
-  ([Administrators and moderators](/help/roles-and-permissions) are
+  creating this channel, [restrict posting
+  permissions](/help/channel-posting-policy) so that only course staff
+  ([administrators and moderators](/help/roles-and-permissions)) are
   allowed to post.
 - **#staff (private)**: For discussions among course staff.
 - **#general**: For random topics, e.g. students forming study groups.
@@ -337,10 +337,10 @@ for your own classes or for your department), you will likely want to:
   from the prior term (e.g. because you posted homework solutions),
   [make all the streams from the class private][make-private]. You’ll
   be able to find and reuse content yourself, and [invite course
-  staff][add-to-stream] to these private streams as needed.
+  staff][add-to-channel] to these private streams as needed.
 - You may choose to [deactivate students’ Zulip
   accounts][deactivate-user] when the class is over.
-- [Unpin streams](/help/pin-a-stream) from the class from your
+- [Unpin channels](/help/pin-a-channel) from the class from your
   personal view.
 
 If you do not plan to reuse the Zulip organization, you can instead:
@@ -353,9 +353,9 @@ HTML archive](https://github.com/zulip/zulip-archive) to archive the information
 
 * [Using Zulip for a class](/help/using-zulip-for-a-class)
 * [Getting started with Zulip](/help/getting-started-with-zulip)
-* [Streams and topics](/help/streams-and-topics)
+* [Channels and topics](/help/channels-and-topics)
 * [Moderating open organizations](/help/moderating-open-organizations)
 
-[make-private]: /help/change-the-privacy-of-a-stream
-[add-to-stream]: /help/add-or-remove-users-from-a-stream
+[make-private]: /help/change-the-privacy-of-a-channel
+[add-to-channel]: /help/add-or-remove-users-from-a-channel
 [deactivate-user]: /help/deactivate-or-reactivate-a-user#deactivate-a-user

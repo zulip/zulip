@@ -1,0 +1,164 @@
+<div class="realm-support-information">
+    <span class="cloud-label">Cloud realm</span>
+    <h3><img src="{{ realm_icon_url(realm) }}" class="support-realm-icon" /> {{ realm.name }}</h3>
+    <b>URL</b>: <a target="_blank" rel="noopener noreferrer" href="{{ realm.uri }}">{{ realm.uri }}</a> |
+    <a target="_blank" rel="noopener noreferrer" href="/stats/realm/{{ realm.string_id }}/">stats</a> |
+    <a target="_blank" rel="noopener noreferrer" href="/realm_activity/{{ realm.string_id }}/">activity</a><br />
+    <b>Date created</b>: {{ realm.date_created|timesince }} ago<br />
+    {% set owner_emails_string = get_realm_owner_emails_as_string(realm) %}
+    <b>Owners</b>: {{ owner_emails_string }}
+    {% if owner_emails_string %}
+    <a title="Copy emails" class="copy-button" data-clipboard-text="{{ owner_emails_string }}">
+        <i class="fa fa-copy"></i>
+    </a>
+    {% endif %}
+    <br />
+    {% set admin_emails_string = get_realm_admin_emails_as_string(realm) %}
+    <b>Admins</b>: {{ admin_emails_string }}
+    {% if admin_emails_string %}
+    <a title="Copy emails" class="copy-button" data-clipboard-text="{{ admin_emails_string }}">
+        <i class="fa fa-copy"></i>
+    </a>
+    {% endif %}
+    <br />
+    {% set first_human_user = realm.get_first_human_user() %}
+    {% if first_human_user %}
+    <b>First human user</b>: {{ first_human_user.delivery_email  }}
+    <a title="Copy emails" class="copy-button" data-clipboard-text="{{ first_human_user.delivery_email }}">
+        <i class="fa fa-copy"></i>
+    </a>
+    {% else %}
+    <b>First human user</b>:
+    {% endif %}
+</div>
+<div class="realm-support-forms">
+    <div class="realm-form-container">
+        <form method="POST" class="support-realm-status-form support-form">
+            <b>Status</b>:<br />
+            {{ csrf_input }}
+            <input type="hidden" name="realm_id" value="{{ realm.id }}" />
+            <select name="status">
+                <option value="active" {% if not realm.deactivated %}selected{% endif %}>Active</option>
+                <option value="deactivated" {% if realm.deactivated %}selected{% endif %}>Deactivated</option>
+            </select>
+            <button type="submit" class="support-submit-button">Update</button>
+        </form>
+        <form method="POST" class="realm-subdomain-form support-form">
+            <b>New subdomain</b>:<br />
+            {{ csrf_input }}
+            <input type="hidden" name="realm_id" value="{{ realm.id }}" />
+            <input type="text" name="new_subdomain" required />
+            <button type="submit" class="support-submit-button">Update</button>
+        </form>
+        <form method="POST" class="realm-organization-type-form support-form">
+            <b>Org type</b>:<br />
+            {{ csrf_input }}
+            <input type="hidden" name="realm_id" value="{{ realm.id }}" />
+            <select name="org_type" id="org_type">
+                {% for organization_type in ORGANIZATION_TYPES %}
+                    {% if realm.org_type == organization_type.id %}
+                        <option value="{{ organization_type.id }}" selected>{{ organization_type.name }}</option>
+                    {% else %}
+                        <option value="{{ organization_type.id }}">{{ organization_type.name }}</option>
+                    {% endif %}
+                {% endfor %}
+            </select>
+            <button type="submit" class="support-submit-button">Update</button>
+        </form>
+        <form method="POST" class="support-plan-type-form support-form">
+            <b>Plan type</b>:<br />
+            {{ csrf_input }}
+            <input type="hidden" name="realm_id" value="{{ realm.id }}" />
+            <select name="plan_type">
+                {% for plan_type in REALM_PLAN_TYPES %}
+                    {% if realm.plan_type == plan_type.value %}
+                        <option value="{{ plan_type.value }}" selected>{{ plan_type.name }}</option>
+                    {% else %}
+                        <option value="{{ plan_type.value }}">{{ plan_type.name }}</option>
+                    {% endif %}
+                {% endfor %}
+            </select>
+            <button type="submit" class="support-submit-button">Update</button>
+        </form>
+        <form method="POST" class="sponsorship-pending-form support-form">
+            <b>Sponsorship pending</b>:<br />
+            {{ csrf_input }}
+            <input type="hidden" name="realm_id" value="{{ realm.id }}" />
+            <select name="sponsorship_pending">
+                <option value="true" {% if realm_support_data[realm.id].sponsorship_data.sponsorship_pending %}selected{% endif %}>Yes</option>
+                <option value="false" {% if not realm_support_data[realm.id].sponsorship_data.sponsorship_pending %}selected{% endif %}>No</option>
+            </select>
+            <button type="submit" class="support-submit-button">Update</button>
+        </form>
+
+        {% if realm_support_data[realm.id].sponsorship_data.sponsorship_pending %}
+        <form method="POST" class="approve-sponsorship-form support-form">
+            {{ csrf_input }}
+            <input type="hidden" name="realm_id" value="{{ realm.id }}" />
+            <input type="hidden" name="approve_sponsorship" value="true" />
+            <button class="approve-sponsorship-button">
+                Approve full sponsorship
+            </button>
+            (will email organization owners)
+        </form>
+        {% endif %}
+
+        {% with %}
+            {% set sponsorship_data = realm_support_data[realm.id].sponsorship_data %}
+            {% set PLAN_TYPES = REALM_PLAN_TYPES_FOR_DISCOUNT %}
+            {% set remote_id = realm.id %}
+            {% set remote_type = "realm_id" %}
+            {% include 'corporate/support/sponsorship_discount_forms.html' %}
+        {% endwith %}
+
+        {% if realm_support_data[realm.id].sponsorship_data.sponsorship_pending %}
+            {% with %}
+                {% set latest_sponsorship_request = realm_support_data[realm.id].sponsorship_data.latest_sponsorship_request %}
+                {% include 'corporate/support/sponsorship_request_details.html' %}
+            {% endwith %}
+        {% endif %}
+    </div>
+    {% if realm_support_data[realm.id].plan_data.current_plan %}
+    <div class="current-plan-container">
+        {% with %}
+            {% set plan_data = realm_support_data[realm.id].plan_data %}
+            {% set format_discount = format_discount %}
+            {% set dollar_amount = dollar_amount %}
+            {% include 'corporate/support/current_plan_details.html' %}
+        {% endwith %}
+
+        <form method="POST" class="billing-modality-form support-form">
+            <b>Billing collection method</b><br />
+            {{ csrf_input }}
+            <input type="hidden" name="realm_id" value="{{ realm.id }}" />
+            <select name="billing_modality" class="billing-modality-select" required>
+                <option value="charge_automatically" {% if realm_support_data[realm.id].plan_data.current_plan.charge_automatically %}selected{% endif %}>Charge automatically</option>
+                <option value="send_invoice" {% if not realm_support_data[realm.id].plan_data.current_plan.charge_automatically %}selected{% endif %}>Pay by invoice</option>
+            </select>
+            <button type="submit" class="support-submit-button">Update</button>
+        </form>
+
+        <form method="POST" class="downgrade-plan-form support-form">
+            <b>Modify plan</b><br />
+            {{ csrf_input }}
+            <input type="hidden" name="realm_id" value="{{ realm.id }}" />
+            <select name="modify_plan" class="modify-plan-method-select" required>
+                <option disabled value="" selected>-- select --</option>
+                <option value="downgrade_at_billing_cycle_end">Downgrade at the end of current billing cycle</option>
+                <option value="downgrade_now_without_additional_licenses">Downgrade now without creating additional invoices</option>
+                <option value="downgrade_now_void_open_invoices">Downgrade now and void open invoices</option>
+                <option value="upgrade_plan_tier">Upgrade to the Plus plan</option>
+            </select>
+            <button type="submit" class="support-submit-button">Modify</button>
+        </form>
+    </div>
+    {% endif %}
+
+    <form method="POST" class="scrub-realm-form support-form">
+        <h3>❌ Scrub realm</h3>
+        {{ csrf_input }}
+        <input type="hidden" name="realm_id" value="{{ realm.id }}" />
+        <input type="hidden" name="scrub_realm" value="true" />
+        <button data-string-id="{{realm.string_id}}" class="scrub-realm-button">Scrub realm (danger)</button>
+    </form>
+</div>

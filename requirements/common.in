@@ -2,8 +2,12 @@
 # /tools/update-locked-requirements to update requirements/dev.txt
 # and requirements/prod.txt.
 # See requirements/README.md for more detail.
+
+-r pip.in
+
 # Django itself
-Django[argon2]==4.2.*
+https://github.com/django/django/archive/d36ecbd5306f98231c9f9cbfc78136052fde723a.zip#egg=Django[argon2]==5.0.5.dev+git  # https://code.djangoproject.com/ticket/35361
+asgiref<3.8.0  # Breaks with https://github.com/django/asgiref/pull/367
 
 # needed for NotRequired, ParamSpec
 typing-extensions
@@ -16,7 +20,6 @@ Jinja2
 
 # Needed for Markdown processing
 Markdown
-importlib-metadata ; python_version < "3.10"  # for Markdown
 Pygments
 jsx-lexer
 uri-template
@@ -81,9 +84,6 @@ django-bmemcached
 # Needed for zerver/tests/test_timestamp.py
 python-dateutil
 
-# Needed for time zone work
-https://github.com/andersk/zoneinfo/archive/f9687abaea8453be1c8d0e21544bd557d65af933.zip#egg=backports.zoneinfo==0.2.1+git ; python_version < "3.9"  # https://github.com/pganssle/zoneinfo/pull/126
-
 # Needed for Redis
 redis
 
@@ -94,7 +94,7 @@ tornado
 orjson
 
 # Needed for iOS push notifications
-https://github.com/zulip/aioapns/archive/2d69284481d328bd3e4168c631d75a38268eddb9.zip#egg=aioapns==3.1+git  # https://github.com/Fatal1ty/aioapns/pull/52
+aioapns
 
 python-twitter
 
@@ -137,7 +137,7 @@ lxml
 django-two-factor-auth[call,phonenumberslite,sms]
 
 # Needed for processing payments (in corporate)
-stripe<7.8.0  # https://github.com/stripe/stripe-python/issues/1158
+stripe
 
 # For checking whether email of the user is from a disposable email provider.
 disposable-email-domains
@@ -161,8 +161,6 @@ requests-oauthlib
 
 # For OpenAPI schema validation.
 openapi-core
-jsonschema-specifications<2023.11.1  # https://github.com/python-openapi/openapi-core/pull/686
-importlib-resources ; python_version < "3.9"
 
 # For reporting errors to sentry.io
 sentry-sdk
@@ -188,14 +186,11 @@ django-cte
 # SCIM integration
 django-scim2
 
-# CSS manipulation
-soupsieve
-
 # Circuit-breaking for outgoing services
 circuitbreaker
 
 # Runtime monkeypatching of django-stubs generics
-django-stubs-ext
+https://github.com/typeddjango/django-stubs/archive/e11955f05994e196dcee004811ce2e05ff230462.zip#egg=django-stubs-ext==5.0.0.dev1+git&subdirectory=ext  # https://github.com/typeddjango/django-stubs/issues/1493
 
 # Structured data representation with parsing.
 pydantic

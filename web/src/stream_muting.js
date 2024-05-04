@@ -7,10 +7,14 @@ import * as unread_ui from "./unread_ui";
 export function update_is_muted(sub, value) {
     sub.is_muted = value;
 
-    // TODO: In theory, other message lists whose behavior depends on
-    // stream muting might need to be live-updated as well, but the
-    // current _all_items design doesn't have a way to support that.
-    message_lists.home.update_muting_and_rerender();
+    for (const msg_list of message_lists.all_rendered_message_lists()) {
+        // TODO: In theory, other message lists whose behavior depends on
+        // stream muting might need to be live-updated as well, but the
+        // current _all_items design doesn't have a way to support that.
+        if (msg_list.data.filter.is_in_home()) {
+            msg_list.update_muting_and_rerender();
+        }
+    }
 
     // Since muted streams aren't counted in visible unread
     // counts, we need to update the rendering of them.

@@ -6,7 +6,6 @@ more. Follow the detailed import guides:
   incoming webhook](https://zulip.com/integrations/doc/slack_incoming) also
   makes it easy to migrate any integrations.
 * [Import from Mattermost](/help/import-from-mattermost)
-* [Import from Gitter](/help/import-from-gitter)
 * [Import from Rocket.Chat](/help/import-from-rocketchat)
 
 !!! warn ""

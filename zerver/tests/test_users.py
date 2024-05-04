@@ -414,6 +414,45 @@ class PermissionTest(ZulipTestCase):
         result = self.client_patch("/json/users/{}".format(self.example_user("hamlet").id), req)
         self.assert_json_success(result)
 
+    def test_require_unique_names(self) -> None:
+        self.login("desdemona")
+        iago = self.example_user("iago")
+        hamlet = self.example_user("hamlet")
+
+        do_set_realm_property(hamlet.realm, "require_unique_names", True, acting_user=None)
+        req = dict(full_name="IaGo")
+        result = self.client_patch(f"/json/users/{hamlet.id}", req)
+        self.assert_json_error(result, "Unique names required in this organization.")
+
+        req = dict(full_name="𝕚𝕒𝕘𝕠")
+        result = self.client_patch(f"/json/users/{hamlet.id}", req)
+        self.assert_json_error(result, "Unique names required in this organization.")
+
+        req = dict(full_name="ｉａｇｏ")
+        result = self.client_patch(f"/json/users/{hamlet.id}", req)
+        self.assert_json_error(result, "Unique names required in this organization.")
+
+        req = dict(full_name="𝒾𝒶𝑔𝑜")
+        result = self.client_patch(f"/json/users/{hamlet.id}", req)
+        self.assert_json_error(result, "Unique names required in this organization.")
+
+        # check for uniqueness including imported users
+        iago.is_mirror_dummy = True
+        req = dict(full_name="iago")
+        result = self.client_patch(f"/json/users/{hamlet.id}", req)
+        self.assert_json_error(result, "Unique names required in this organization.")
+
+        # check for uniqueness including deactivated users
+        do_deactivate_user(iago, acting_user=None)
+        req = dict(full_name="iago")
+        result = self.client_patch(f"/json/users/{hamlet.id}", req)
+        self.assert_json_error(result, "Unique names required in this organization.")
+
+        do_set_realm_property(hamlet.realm, "require_unique_names", False, acting_user=None)
+        req = dict(full_name="iago")
+        result = self.client_patch(f"/json/users/{hamlet.id}", req)
+        self.assert_json_success(result)
+
     def test_not_allowed_format_complex(self) -> None:
         new_name = "Hello- 12iago|72"
         self.login("iago")
@@ -858,12 +897,13 @@ class QueryCountTest(ZulipTestCase):
         streams = [get_stream(stream_name, realm) for stream_name in stream_names]
 
         invite_expires_in_minutes = 4 * 24 * 60
-        do_invite_users(
-            user_profile=self.example_user("hamlet"),
-            invitee_emails=["fred@zulip.com"],
-            streams=streams,
-            invite_expires_in_minutes=invite_expires_in_minutes,
-        )
+        with self.captureOnCommitCallbacks(execute=True):
+            do_invite_users(
+                user_profile=self.example_user("hamlet"),
+                invitee_emails=["fred@zulip.com"],
+                streams=streams,
+                invite_expires_in_minutes=invite_expires_in_minutes,
+            )
 
         prereg_user = PreregistrationUser.objects.get(email="fred@zulip.com")
 
@@ -1453,7 +1493,7 @@ class UserProfileTest(ZulipTestCase):
 
         # Invalid stream ID.
         result = self.client_get(f"/json/users/{iago.id}/subscriptions/25")
-        self.assert_json_error(result, "Invalid stream ID")
+        self.assert_json_error(result, "Invalid channel ID")
 
         result = orjson.loads(
             self.client_get(f"/json/users/{iago.id}/subscriptions/{stream.id}").content
@@ -1462,7 +1502,7 @@ class UserProfileTest(ZulipTestCase):
 
         # Subscribe to the stream.
         self.subscribe(iago, stream.name)
-        with self.assert_database_query_count(6):
+        with self.assert_database_query_count(7):
             result = orjson.loads(
                 self.client_get(f"/json/users/{iago.id}/subscriptions/{stream.id}").content
             )
@@ -1502,7 +1542,7 @@ class UserProfileTest(ZulipTestCase):
         # Unsubscribed non-admins cannot check subscription status in a private stream.
         self.login("shiva")
         result = self.client_get(f"/json/users/{iago.id}/subscriptions/{stream.id}")
-        self.assert_json_error(result, "Invalid stream ID")
+        self.assert_json_error(result, "Invalid channel ID")
 
         # Subscribed non-admins can check subscription status in a private stream
         self.subscribe(self.example_user("shiva"), stream.name)
@@ -1662,35 +1702,36 @@ class ActivateTest(ZulipTestCase):
         desdemona = self.example_user("desdemona")
 
         invite_expires_in_minutes = 2 * 24 * 60
-        do_invite_users(
-            iago,
-            ["new1@zulip.com", "new2@zulip.com"],
-            [],
-            invite_expires_in_minutes=invite_expires_in_minutes,
-            invite_as=PreregistrationUser.INVITE_AS["REALM_ADMIN"],
-        )
-        do_invite_users(
-            desdemona,
-            ["new3@zulip.com", "new4@zulip.com"],
-            [],
-            invite_expires_in_minutes=invite_expires_in_minutes,
-            invite_as=PreregistrationUser.INVITE_AS["REALM_ADMIN"],
-        )
+        with self.captureOnCommitCallbacks(execute=True):
+            do_invite_users(
+                iago,
+                ["new1@zulip.com", "new2@zulip.com"],
+                [],
+                invite_expires_in_minutes=invite_expires_in_minutes,
+                invite_as=PreregistrationUser.INVITE_AS["REALM_ADMIN"],
+            )
+            do_invite_users(
+                desdemona,
+                ["new3@zulip.com", "new4@zulip.com"],
+                [],
+                invite_expires_in_minutes=invite_expires_in_minutes,
+                invite_as=PreregistrationUser.INVITE_AS["REALM_ADMIN"],
+            )
 
-        do_invite_users(
-            iago,
-            ["new5@zulip.com"],
-            [],
-            invite_expires_in_minutes=None,
-            invite_as=PreregistrationUser.INVITE_AS["REALM_ADMIN"],
-        )
-        do_invite_users(
-            desdemona,
-            ["new6@zulip.com"],
-            [],
-            invite_expires_in_minutes=None,
-            invite_as=PreregistrationUser.INVITE_AS["REALM_ADMIN"],
-        )
+            do_invite_users(
+                iago,
+                ["new5@zulip.com"],
+                [],
+                invite_expires_in_minutes=None,
+                invite_as=PreregistrationUser.INVITE_AS["REALM_ADMIN"],
+            )
+            do_invite_users(
+                desdemona,
+                ["new6@zulip.com"],
+                [],
+                invite_expires_in_minutes=None,
+                invite_as=PreregistrationUser.INVITE_AS["REALM_ADMIN"],
+            )
 
         iago_multiuse_key = do_create_multiuse_invite_link(
             iago, PreregistrationUser.INVITE_AS["MEMBER"], invite_expires_in_minutes
@@ -2733,7 +2774,7 @@ class DeleteUserTest(ZulipTestCase):
 
         huddle_with_hamlet_recipient_ids = list(
             Subscription.objects.filter(
-                user_profile=hamlet, recipient__type=Recipient.HUDDLE
+                user_profile=hamlet, recipient__type=Recipient.DIRECT_MESSAGE_GROUP
             ).values_list("recipient_id", flat=True)
         )
         self.assertGreater(len(huddle_with_hamlet_recipient_ids), 0)
@@ -2800,7 +2841,7 @@ class DeleteUserTest(ZulipTestCase):
 
         huddle_with_hamlet_recipient_ids = list(
             Subscription.objects.filter(
-                user_profile=hamlet, recipient__type=Recipient.HUDDLE
+                user_profile=hamlet, recipient__type=Recipient.DIRECT_MESSAGE_GROUP
             ).values_list("recipient_id", flat=True)
         )
         self.assertGreater(len(huddle_with_hamlet_recipient_ids), 0)

@@ -85,7 +85,7 @@ two and continue from there.
 
 When new team members join the company, the onboarding process welcomes them to
 Zulip and the company’s communication culture. An internal Wiki introduces
-Zulip’s [topic-based threading](/help/streams-and-topics), [search
+Zulip’s [topic-based threading](/help/channels-and-topics), [search
 tools](/help/search-for-messages), and some handy [keyboard
 shortcuts](/help/keyboard-shortcuts), with pointers to [Zulip’s help
 center](/help/) for more information. Gareth hasn’t seen much difference between
@@ -114,5 +114,7 @@ confusing.”
 ---
 
 Check out our guide on [using Zulip for business](/for/business/). You can also
-learn how Zulip is being used at the [iDrift AS](/case-studies/idrift/) company,
-and the [End Point Dev](/case-studies/end-point/) software consultancy.
+learn how Zulip is being used at the InsurTech startup
+[Semsee](/case-studies/semsee/), the [iDrift AS](/case-studies/idrift/) company,
+the [End Point Dev](/case-studies/end-point/) software consultancy, and the [GUT
+contact](/case-studies/gut-contact/) support agency.

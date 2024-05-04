@@ -8,23 +8,12 @@ don't hesitate to reach out at [sales@zulip.com](mailto:sales@zulip.com).
 
 {start_tabs}
 
-{tab|zulip-cloud-standard}
-
 {relative|gear|plans}
 
-1. Under the **Cloud Standard** pricing plan, click **Upgrade to Standard**.
+1. On the page listing Zulip Cloud plans, click the button at the bottom
+   of the plan you would like to purchase.
 
-1. Select your preferred option from the **Payment schedule** dropdown.
-
-1. Click **Add card** to enter your payment details.
-
-1. Click **Purchase Zulip Cloud Standard**.
-
-{tab|zulip-cloud-plus}
-
-{relative|gear|plans}
-
-1. Under the **Cloud Plus** pricing plan, click **Contact sales**.
+{!plan-upgrade-steps.md!}
 
 {end_tabs}
 

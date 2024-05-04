@@ -5,7 +5,7 @@ const {strict: assert} = require("assert");
 const {zrequire} = require("./lib/namespace");
 const {run_test} = require("./lib/test");
 const blueslip = require("./lib/zblueslip");
-const {page_params} = require("./lib/zpage_params");
+const {realm} = require("./lib/zpage_params");
 
 const user_groups = zrequire("user_groups");
 
@@ -47,6 +47,9 @@ run_test("user_groups", () => {
     };
 
     user_groups.add(admins);
+    assert.deepEqual(user_groups.get_user_group_from_id(admins.id), admins);
+
+    assert.equal(user_groups.maybe_get_user_group_from_id(99), undefined);
     assert.deepEqual(user_groups.get_user_group_from_id(admins.id), admins);
 
     const update_name_event = {
@@ -318,7 +321,7 @@ run_test("get_realm_user_groups_for_dropdown_list_widget", () => {
         direct_subgroup_ids: new Set([4, 5]),
     };
 
-    page_params.server_supported_permission_settings = {
+    realm.server_supported_permission_settings = {
         stream: {
             can_remove_subscribers_group: {
                 require_system_group: true,

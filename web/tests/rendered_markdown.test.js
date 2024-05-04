@@ -2,11 +2,12 @@
 
 const {strict: assert} = require("assert");
 
+const {$t} = require("./lib/i18n");
 const {mock_cjs, mock_esm, zrequire} = require("./lib/namespace");
 const {run_test, noop} = require("./lib/test");
 const blueslip = require("./lib/zblueslip");
 const $ = require("./lib/zjquery");
-const {page_params, user_settings} = require("./lib/zpage_params");
+const {realm, user_settings} = require("./lib/zpage_params");
 
 let clipboard_args;
 class Clipboard {
@@ -28,8 +29,8 @@ const rm = zrequire("rendered_markdown");
 const people = zrequire("people");
 const user_groups = zrequire("user_groups");
 const stream_data = zrequire("stream_data");
-const rows = zrequire("rows");
-const message_store = zrequire("message_store");
+const rows = mock_esm("../src/rows");
+const message_store = mock_esm("../src/message_store");
 
 const iago = {
     email: "iago@zulip.com",
@@ -162,11 +163,11 @@ run_test("misc_helpers", () => {
     rm.set_name_in_mention_element($elem, "Aaron, but silent");
     assert.equal($elem.text(), "Aaron, but silent");
 
-    page_params.realm_enable_guest_user_indicator = true;
+    realm.realm_enable_guest_user_indicator = true;
     rm.set_name_in_mention_element($elem, "Polonius", polonius.user_id);
     assert.equal($elem.text(), "translated: Polonius (guest)");
 
-    page_params.realm_enable_guest_user_indicator = false;
+    realm.realm_enable_guest_user_indicator = false;
     rm.set_name_in_mention_element($elem, "Polonius", polonius.user_id);
     assert.equal($elem.text(), "Polonius");
 });
@@ -200,7 +201,7 @@ run_test("user-mention", () => {
     $polonius.set_find_results(".highlight", false);
     $polonius.attr("data-user-id", polonius.user_id);
     $content.set_find_results(".user-mention", $array([$iago, $cordelia, $polonius]));
-    page_params.realm_enable_guest_user_indicator = true;
+    realm.realm_enable_guest_user_indicator = true;
     // Initial asserts
     assert.ok(!$iago.hasClass("user-mention-me"));
     assert.equal($iago.text(), "never-been-set");
@@ -227,7 +228,7 @@ run_test("user-mention without guest indicator", () => {
     $polonius.attr("data-user-id", polonius.user_id);
     $content.set_find_results(".user-mention", $array([$polonius]));
 
-    page_params.realm_enable_guest_user_indicator = false;
+    realm.realm_enable_guest_user_indicator = false;
     rm.update_elements($content);
     assert.equal($polonius.text(), `@${polonius.full_name}`);
 });
@@ -467,10 +468,11 @@ run_test("emoji", () => {
     const $emoji = $.create("emoji-stub");
     $emoji.attr("title", "tada");
     let called = false;
-    $emoji.replaceWith = (f) => {
+    $emoji.text = (f) => {
         const text = f.call($emoji);
         assert.equal(":tada:", text);
         called = true;
+        return {contents: () => ({unwrap() {}})};
     };
     $content.set_find_results(".emoji", $emoji);
     user_settings.emojiset = "text";
@@ -488,6 +490,10 @@ run_test("spoiler-header", () => {
     const $content = get_content_element();
     const $header = $.create("div.spoiler-header");
     $content.set_find_results("div.spoiler-header", $array([$header]));
+    let $appended;
+    $header.append = ($element) => {
+        $appended = $element;
+    };
 
     // Test that the show/hide button gets added to a spoiler header.
     const label = "My spoiler header";
@@ -495,7 +501,8 @@ run_test("spoiler-header", () => {
         '<span class="spoiler-button" aria-expanded="false"><span class="spoiler-arrow"></span></span>';
     $header.html(label);
     rm.update_elements($content);
-    assert.equal(toggle_button_html + label, $header.html());
+    assert.equal(label, $header.html());
+    assert.equal($appended.selector, toggle_button_html);
 });
 
 run_test("spoiler-header-empty-fill", () => {
@@ -503,13 +510,19 @@ run_test("spoiler-header-empty-fill", () => {
     const $content = get_content_element();
     const $header = $.create("div.spoiler-header");
     $content.set_find_results("div.spoiler-header", $array([$header]));
+    const $appended = [];
+    $header.append = ($element) => {
+        $appended.push($element);
+    };
 
     // Test that an empty header gets the default text applied (through i18n filter).
     const toggle_button_html =
         '<span class="spoiler-button" aria-expanded="false"><span class="spoiler-arrow"></span></span>';
     $header.empty();
     rm.update_elements($content);
-    assert.equal(toggle_button_html + "<p>translated HTML: Spoiler</p>", $header.html());
+    assert.equal($appended[0].selector, "<p>");
+    assert.equal($appended[0].text(), $t({defaultMessage: "Spoiler"}));
+    assert.equal($appended[1].selector, toggle_button_html);
 });
 
 function assert_clipboard_setup() {
@@ -534,12 +547,18 @@ function test_code_playground(mock_template, viewing_code) {
     $content.set_find_results("div.codehilite", $array([$hilite]));
     $hilite.set_find_results("pre", $pre);
 
-    $hilite.data("code-language", "javascript");
+    $hilite.attr("data-code-language", "javascript");
 
+    const $code_buttons_container = $.create("code_buttons_container", {
+        children: ["copy-code-stub", "view-code-stub"],
+    });
     const $copy_code_button = $.create("copy_code_button", {children: ["copy-code-stub"]});
     const $view_code_in_playground = $.create("view_code_in_playground");
 
-    // The code playground code prepends a few buttons
+    $code_buttons_container.set_find_results(".copy_codeblock", $copy_code_button);
+    $code_buttons_container.set_find_results(".code_external_link", $view_code_in_playground);
+
+    // The code playground code prepends a button container
     // to the <pre> section of a highlighted piece of code.
     // The args to prepend should be jQuery objects (or in
     // our case "fake" zjquery objects).
@@ -549,15 +568,15 @@ function test_code_playground(mock_template, viewing_code) {
         prepends.push(arg);
     };
 
-    mock_template("copy_code_button.hbs", false, (data) => {
-        assert.equal(data, undefined);
-        return {to_$: () => $copy_code_button};
-    });
-
     if (viewing_code) {
-        mock_template("view_code_in_playground.hbs", false, (data) => {
-            assert.equal(data, undefined);
-            return {to_$: () => $view_code_in_playground};
+        mock_template("code_buttons_container.hbs", true, (data) => {
+            assert.equal(data.show_playground_button, true);
+            return {to_$: () => $code_buttons_container};
+        });
+    } else {
+        mock_template("code_buttons_container.hbs", true, (data) => {
+            assert.equal(data.show_playground_button, false);
+            return {to_$: () => $code_buttons_container};
         });
     }
 
@@ -565,6 +584,7 @@ function test_code_playground(mock_template, viewing_code) {
 
     return {
         prepends,
+        $button_container: $code_buttons_container,
         $copy_code: $copy_code_button,
         $view_code: $view_code_in_playground,
     };
@@ -578,8 +598,8 @@ run_test("code playground none", ({override, mock_template}) => {
 
     override(copied_tooltip, "show_copied_confirmation", noop);
 
-    const {prepends, $copy_code, $view_code} = test_code_playground(mock_template, false);
-    assert.deepEqual(prepends, [$copy_code]);
+    const {prepends, $button_container, $view_code} = test_code_playground(mock_template, false);
+    assert.deepEqual(prepends, [$button_container]);
     assert_clipboard_setup();
 
     assert.equal($view_code.attr("data-tippy-content"), undefined);
@@ -594,8 +614,8 @@ run_test("code playground single", ({override, mock_template}) => {
 
     override(copied_tooltip, "show_copied_confirmation", noop);
 
-    const {prepends, $copy_code, $view_code} = test_code_playground(mock_template, true);
-    assert.deepEqual(prepends, [$view_code, $copy_code]);
+    const {prepends, $button_container, $view_code} = test_code_playground(mock_template, true);
+    assert.deepEqual(prepends, [$button_container]);
     assert_clipboard_setup();
 
     assert.equal(
@@ -614,8 +634,8 @@ run_test("code playground multiple", ({override, mock_template}) => {
 
     override(copied_tooltip, "show_copied_confirmation", noop);
 
-    const {prepends, $copy_code, $view_code} = test_code_playground(mock_template, true);
-    assert.deepEqual(prepends, [$view_code, $copy_code]);
+    const {prepends, $button_container, $view_code} = test_code_playground(mock_template, true);
+    assert.deepEqual(prepends, [$button_container]);
     assert_clipboard_setup();
 
     assert.equal($view_code.attr("data-tippy-content"), "translated: View in playground");

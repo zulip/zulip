@@ -40,7 +40,7 @@ export const pm_recipient = {
         // input typeahead is different from the topic input
         // typeahead but both can be present in the DOM.
         const entry = await page.waitForSelector('.typeahead[style*="display: block"] .active a', {
-            visible: true,
+            visible: false,
         });
         await entry!.click();
     },
@@ -196,7 +196,7 @@ export async function check_form_contents(
 }
 
 export async function get_element_text(element: ElementHandle): Promise<string> {
-    const text = await (await element.getProperty("innerText"))!.jsonValue();
+    const text = await (await element.getProperty("innerText")).jsonValue();
     assert.ok(typeof text === "string");
     return text;
 }
@@ -544,7 +544,7 @@ export async function open_streams_modal(page: Page): Promise<void> {
 
     await page.waitForSelector("#subscription_overlay.new-style", {visible: true});
     const url = await page_url_with_fragment(page);
-    assert.ok(url.includes("#streams/all"));
+    assert.ok(url.includes("#channels/all"));
 }
 
 export async function open_personal_menu(page: Page): Promise<void> {
@@ -715,7 +715,7 @@ export async function run_test_async(test_function: (page: Page) => Promise<void
 }
 
 export function run_test(test_function: (page: Page) => Promise<void>): void {
-    run_test_async(test_function).catch((error) => {
+    run_test_async(test_function).catch((error: unknown) => {
         console.error(error);
         process.exit(1);
     });

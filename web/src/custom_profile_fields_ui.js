@@ -2,10 +2,11 @@ import $ from "jquery";
 
 import render_settings_custom_user_profile_field from "../templates/settings/custom_user_profile_field.hbs";
 
+import * as bootstrap_typeahead from "./bootstrap_typeahead";
 import {$t} from "./i18n";
-import {page_params} from "./page_params";
 import * as people from "./people";
 import * as pill_typeahead from "./pill_typeahead";
+import {realm} from "./state_data";
 import * as typeahead_helper from "./typeahead_helper";
 import * as user_pill from "./user_pill";
 
@@ -14,8 +15,8 @@ export function append_custom_profile_fields(element_id, user_id) {
     if (person.is_bot) {
         return;
     }
-    const all_custom_fields = page_params.custom_profile_fields;
-    const all_field_types = page_params.custom_profile_field_types;
+    const all_custom_fields = realm.custom_profile_fields;
+    const all_field_types = realm.custom_profile_field_types;
 
     const all_field_template_types = new Map([
         [all_field_types.LONG_TEXT.id, "text"],
@@ -61,8 +62,9 @@ export function append_custom_profile_fields(element_id, user_id) {
             is_select_field,
             field_choices,
             for_manage_user_modal: element_id === "#edit-user-form .custom-profile-field-form",
+            is_empty_required_field: field.required && !field_value.value,
         });
-        $(element_id).append(html);
+        $(element_id).append($(html));
     }
 }
 
@@ -72,7 +74,7 @@ export function initialize_custom_user_type_fields(
     is_editable,
     pill_update_handler,
 ) {
-    const field_types = page_params.custom_profile_field_types;
+    const field_types = realm.custom_profile_field_types;
     const user_pills = new Map();
 
     const person = people.get_by_user_id(user_id);
@@ -80,7 +82,7 @@ export function initialize_custom_user_type_fields(
         return user_pills;
     }
 
-    for (const field of page_params.custom_profile_fields) {
+    for (const field of realm.custom_profile_fields) {
         let field_value_raw = people.get_custom_profile_data(user_id, field.id);
 
         if (field_value_raw) {
@@ -163,17 +165,22 @@ export function initialize_custom_pronouns_type_fields(element_id) {
         $t({defaultMessage: "she/her"}),
         $t({defaultMessage: "they/them"}),
     ];
-    $(element_id)
-        .find(".pronouns_type_field")
-        .typeahead({
-            items: 3,
-            fixed: true,
-            helpOnEmptyStrings: true,
-            source() {
-                return commonly_used_pronouns;
-            },
-            highlighter(item) {
-                return typeahead_helper.render_typeahead_item({primary: item});
-            },
-        });
+    const bootstrap_typeahead_input = {
+        $element: $(element_id).find(".pronouns_type_field"),
+        type: "input",
+    };
+    bootstrap_typeahead.create(bootstrap_typeahead_input, {
+        items: 3,
+        fixed: true,
+        helpOnEmptyStrings: true,
+        source() {
+            return commonly_used_pronouns;
+        },
+        sorter(items, query) {
+            return bootstrap_typeahead.defaultSorter(items, query);
+        },
+        highlighter_html(item) {
+            return typeahead_helper.render_typeahead_item({primary: item});
+        },
+    });
 }

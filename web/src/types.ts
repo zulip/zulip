@@ -53,18 +53,4 @@ export type UpdateMessageEvent = {
     topic?: string;
 };
 
-// TODO/typescript: Move the User and Stream placeholder
-// types to their appropriate modules.
-export type User = Record<string, never>;
-
-export type GroupPermissionSetting = {
-    require_system_group: boolean;
-    allow_internet_group: boolean;
-    allow_owners_group: boolean;
-    allow_nobody_group: boolean;
-    allow_everyone_group: boolean;
-    default_group_name: string;
-    id_field_name: string;
-    default_for_system_groups: string | null;
-    allowed_system_groups: string[];
-};
+export type HTMLSelectOneElement = HTMLSelectElement & {type: "select-one"};

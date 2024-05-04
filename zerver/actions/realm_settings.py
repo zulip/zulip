@@ -5,12 +5,14 @@ from typing import Any, Dict, Literal, Optional, Tuple, Union
 from django.conf import settings
 from django.db import transaction
 from django.utils.timezone import now as timezone_now
+from django.utils.translation import gettext as _
 
 from confirmation.models import Confirmation, create_confirmation_link, generate_key
 from zerver.actions.custom_profile_fields import do_remove_realm_custom_profile_fields
 from zerver.actions.message_delete import do_delete_messages_by_sender
 from zerver.actions.user_groups import update_users_in_full_members_system_group
 from zerver.actions.user_settings import do_delete_avatar_image
+from zerver.lib.exceptions import JsonableError
 from zerver.lib.message import parse_message_time_limit_setting, update_first_visible_message_id
 from zerver.lib.retention import move_messages_to_archive
 from zerver.lib.send_email import FromAddress, send_email_to_admins
@@ -22,6 +24,7 @@ from zerver.models import (
     ArchivedAttachment,
     Attachment,
     Message,
+    NamedUserGroup,
     Realm,
     RealmAuditLog,
     RealmAuthenticationMethod,
@@ -208,6 +211,96 @@ def parse_and_set_setting_value_if_required(
     return parsed_value, setting_value_changed
 
 
+def get_realm_authentication_methods_for_page_params_api(
+    realm: Realm, authentication_methods: Dict[str, bool]
+) -> Dict[str, Any]:
+    # To avoid additional queries, this expects passing in the authentication_methods
+    # dictionary directly, which is useful when the caller already has to fetch it
+    # for other purposes - and that's the circumstance in which this function is
+    # currently used. We can trivially make this argument optional if needed.
+
+    from zproject.backends import AUTH_BACKEND_NAME_MAP
+
+    result_dict: Dict[str, Dict[str, Union[str, bool]]] = {
+        backend_name: {"enabled": enabled, "available": True}
+        for backend_name, enabled in authentication_methods.items()
+    }
+
+    if not settings.BILLING_ENABLED:
+        return result_dict
+
+    # The rest of the function is only for the mechanism of restricting
+    # certain backends based on the realm's plan type on Zulip Cloud.
+
+    from corporate.models import CustomerPlan
+
+    for backend_name in result_dict:
+        available_for = AUTH_BACKEND_NAME_MAP[backend_name].available_for_cloud_plans
+
+        if available_for is not None and realm.plan_type not in available_for:
+            result_dict[backend_name]["available"] = False
+
+            required_upgrade_plan_number = min(
+                set(available_for).intersection({Realm.PLAN_TYPE_STANDARD, Realm.PLAN_TYPE_PLUS})
+            )
+            if required_upgrade_plan_number == Realm.PLAN_TYPE_STANDARD:
+                required_upgrade_plan_name = CustomerPlan.name_from_tier(
+                    CustomerPlan.TIER_CLOUD_STANDARD
+                )
+            else:
+                assert required_upgrade_plan_number == Realm.PLAN_TYPE_PLUS
+                required_upgrade_plan_name = CustomerPlan.name_from_tier(
+                    CustomerPlan.TIER_CLOUD_PLUS
+                )
+
+            result_dict[backend_name]["unavailable_reason"] = _(
+                "You need to upgrade to the {required_upgrade_plan_name} plan to use this authentication method."
+            ).format(required_upgrade_plan_name=required_upgrade_plan_name)
+        else:
+            result_dict[backend_name]["available"] = True
+
+    return result_dict
+
+
+def validate_authentication_methods_dict_from_api(
+    realm: Realm, authentication_methods: Dict[str, bool]
+) -> None:
+    current_authentication_methods = realm.authentication_methods_dict()
+    for name in authentication_methods:
+        if name not in current_authentication_methods:
+            raise JsonableError(
+                _("Invalid authentication method: {name}. Valid methods are: {methods}").format(
+                    name=name, methods=sorted(current_authentication_methods.keys())
+                )
+            )
+
+    if settings.BILLING_ENABLED:
+        validate_plan_for_authentication_methods(realm, authentication_methods)
+
+
+def validate_plan_for_authentication_methods(
+    realm: Realm, authentication_methods: Dict[str, bool]
+) -> None:
+    from zproject.backends import AUTH_BACKEND_NAME_MAP
+
+    old_authentication_methods = realm.authentication_methods_dict()
+    newly_enabled_authentication_methods = {
+        name
+        for name, enabled in authentication_methods.items()
+        if enabled and not old_authentication_methods.get(name, False)
+    }
+    for name in newly_enabled_authentication_methods:
+        available_for = AUTH_BACKEND_NAME_MAP[name].available_for_cloud_plans
+        if available_for is not None and realm.plan_type not in available_for:
+            # This should only be feasible via the API, since app UI should prevent
+            # trying to enable an unavailable authentication method.
+            raise JsonableError(
+                _("Authentication method {name} is not available on your current plan.").format(
+                    name=name
+                )
+            )
+
+
 def do_set_realm_authentication_methods(
     realm: Realm, authentication_methods: Dict[str, bool], *, acting_user: Optional[UserProfile]
 ) -> None:
@@ -234,18 +327,27 @@ def do_set_realm_authentication_methods(
             },
         )
 
+    event_data = dict(
+        authentication_methods=get_realm_authentication_methods_for_page_params_api(
+            realm, updated_value
+        )
+    )
     event = dict(
         type="realm",
         op="update_dict",
         property="default",
-        data=dict(authentication_methods=updated_value),
+        data=event_data,
     )
     send_event(realm, event, active_user_ids(realm.id))
 
 
 def do_set_realm_stream(
     realm: Realm,
-    field: Literal["notifications_stream", "signup_notifications_stream"],
+    field: Literal[
+        "new_stream_announcements_stream",
+        "signup_announcements_stream",
+        "zulip_update_announcements_stream",
+    ],
     stream: Optional[Stream],
     stream_id: int,
     *,
@@ -253,14 +355,18 @@ def do_set_realm_stream(
 ) -> None:
     # We could calculate more of these variables from `field`, but
     # it's probably more readable to not do so.
-    if field == "notifications_stream":
-        old_value = realm.notifications_stream_id
-        realm.notifications_stream = stream
-        property = "notifications_stream_id"
-    elif field == "signup_notifications_stream":
-        old_value = realm.signup_notifications_stream_id
-        realm.signup_notifications_stream = stream
-        property = "signup_notifications_stream_id"
+    if field == "new_stream_announcements_stream":
+        old_value = realm.new_stream_announcements_stream_id
+        realm.new_stream_announcements_stream = stream
+        property = "new_stream_announcements_stream_id"
+    elif field == "signup_announcements_stream":
+        old_value = realm.signup_announcements_stream_id
+        realm.signup_announcements_stream = stream
+        property = "signup_announcements_stream_id"
+    elif field == "zulip_update_announcements_stream":
+        old_value = realm.zulip_update_announcements_stream_id
+        realm.zulip_update_announcements_stream = stream
+        property = "zulip_update_announcements_stream_id"
     else:
         raise AssertionError("Invalid realm stream field.")
 
@@ -289,17 +395,27 @@ def do_set_realm_stream(
     send_event(realm, event, active_user_ids(realm.id))
 
 
-def do_set_realm_notifications_stream(
-    realm: Realm, stream: Optional[Stream], stream_id: int, *, acting_user: Optional[UserProfile]
-) -> None:
-    do_set_realm_stream(realm, "notifications_stream", stream, stream_id, acting_user=acting_user)
-
-
-def do_set_realm_signup_notifications_stream(
+def do_set_realm_new_stream_announcements_stream(
     realm: Realm, stream: Optional[Stream], stream_id: int, *, acting_user: Optional[UserProfile]
 ) -> None:
     do_set_realm_stream(
-        realm, "signup_notifications_stream", stream, stream_id, acting_user=acting_user
+        realm, "new_stream_announcements_stream", stream, stream_id, acting_user=acting_user
+    )
+
+
+def do_set_realm_signup_announcements_stream(
+    realm: Realm, stream: Optional[Stream], stream_id: int, *, acting_user: Optional[UserProfile]
+) -> None:
+    do_set_realm_stream(
+        realm, "signup_announcements_stream", stream, stream_id, acting_user=acting_user
+    )
+
+
+def do_set_realm_zulip_update_announcements_stream(
+    realm: Realm, stream: Optional[Stream], stream_id: int, *, acting_user: Optional[UserProfile]
+) -> None:
+    do_set_realm_stream(
+        realm, "zulip_update_announcements_stream", stream, stream_id, acting_user=acting_user
     )
 
 
@@ -474,7 +590,7 @@ def do_scrub_realm(realm: Realm, *, acting_user: Optional[UserProfile]) -> None:
         *Stream.objects.filter(realm=realm).values_list("recipient_id", flat=True),
         *UserProfile.objects.filter(realm=realm).values_list("recipient_id", flat=True),
         *Subscription.objects.filter(
-            recipient__type=Recipient.HUDDLE, user_profile__realm=realm
+            recipient__type=Recipient.DIRECT_MESSAGE_GROUP, user_profile__realm=realm
         ).values_list("recipient_id", flat=True),
     ]
     cross_realm_bot_message_ids = list(
@@ -528,6 +644,8 @@ def do_change_realm_org_type(
 def do_change_realm_plan_type(
     realm: Realm, plan_type: int, *, acting_user: Optional[UserProfile]
 ) -> None:
+    from zproject.backends import AUTH_BACKEND_NAME_MAP
+
     old_value = realm.plan_type
 
     if plan_type == Realm.PLAN_TYPE_LIMITED:
@@ -541,12 +659,25 @@ def do_change_realm_plan_type(
         # If downgrading to a plan that no longer has access to change
         # can_access_all_users_group, set it back to the default
         # value.
-        everyone_system_group = UserGroup.objects.get(
+        everyone_system_group = NamedUserGroup.objects.get(
             name=SystemGroups.EVERYONE, realm=realm, is_system_group=True
         )
         if realm.can_access_all_users_group_id != everyone_system_group.id:
             do_change_realm_permission_group_setting(
                 realm, "can_access_all_users_group", everyone_system_group, acting_user=acting_user
+            )
+
+    # If downgrading, disable authentication methods that are not available on the new plan.
+    if settings.BILLING_ENABLED:
+        realm_authentication_methods = realm.authentication_methods_dict()
+        for backend_name, enabled in realm_authentication_methods.items():
+            if enabled and plan_type < old_value:
+                available_for = AUTH_BACKEND_NAME_MAP[backend_name].available_for_cloud_plans
+                if available_for is not None and plan_type not in available_for:
+                    realm_authentication_methods[backend_name] = False
+        if realm_authentication_methods != realm.authentication_methods_dict():
+            do_set_realm_authentication_methods(
+                realm, realm_authentication_methods, acting_user=acting_user
             )
 
     realm.plan_type = plan_type
@@ -562,23 +693,18 @@ def do_change_realm_plan_type(
     if plan_type == Realm.PLAN_TYPE_PLUS:
         realm.max_invites = Realm.INVITES_STANDARD_REALM_DAILY_MAX
         realm.message_visibility_limit = None
-        realm.upload_quota_gb = Realm.UPLOAD_QUOTA_STANDARD
     elif plan_type == Realm.PLAN_TYPE_STANDARD:
         realm.max_invites = Realm.INVITES_STANDARD_REALM_DAILY_MAX
         realm.message_visibility_limit = None
-        realm.upload_quota_gb = Realm.UPLOAD_QUOTA_STANDARD
     elif plan_type == Realm.PLAN_TYPE_SELF_HOSTED:
         realm.max_invites = None  # type: ignore[assignment] # https://github.com/python/mypy/issues/3004
         realm.message_visibility_limit = None
-        realm.upload_quota_gb = None
     elif plan_type == Realm.PLAN_TYPE_STANDARD_FREE:
         realm.max_invites = Realm.INVITES_STANDARD_REALM_DAILY_MAX
         realm.message_visibility_limit = None
-        realm.upload_quota_gb = Realm.UPLOAD_QUOTA_STANDARD
     elif plan_type == Realm.PLAN_TYPE_LIMITED:
         realm.max_invites = settings.INVITES_DEFAULT_REALM_DAILY_MAX
         realm.message_visibility_limit = Realm.MESSAGE_VISIBILITY_LIMITED
-        realm.upload_quota_gb = Realm.UPLOAD_QUOTA_LIMITED
     else:
         raise AssertionError("Invalid plan type")
 
@@ -589,7 +715,6 @@ def do_change_realm_plan_type(
             "_max_invites",
             "enable_spectator_access",
             "message_visibility_limit",
-            "upload_quota_gb",
         ]
     )
 

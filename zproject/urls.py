@@ -19,7 +19,13 @@ from zerver.forms import LoggingSetPasswordForm
 from zerver.lib.integrations import WEBHOOK_INTEGRATIONS
 from zerver.lib.rest import rest_path
 from zerver.lib.url_redirects import DOCUMENTATION_REDIRECTS
-from zerver.tornado.views import cleanup_event_queue, get_events, get_events_internal, notify
+from zerver.tornado.views import (
+    cleanup_event_queue,
+    get_events,
+    get_events_internal,
+    notify,
+    web_reload_clients,
+)
 from zerver.views.alert_words import add_alert_words, list_alert_words, remove_alert_words
 from zerver.views.attachments import list_by_user, remove
 from zerver.views.auth import (
@@ -93,6 +99,7 @@ from zerver.views.push_notifications import (
     remove_android_reg_id,
     remove_apns_device_token,
     self_hosting_auth_json_endpoint,
+    self_hosting_auth_not_configured,
     self_hosting_auth_redirect_endpoint,
     send_test_push_notification_api,
 )
@@ -227,16 +234,12 @@ from zerver.views.video_calls import (
 )
 from zerver.views.zephyr import webathena_kerberos_login
 from zproject import dev_urls
-from zproject.legacy_urls import legacy_urls
 
 if settings.TWO_FACTOR_AUTHENTICATION_ENABLED:  # nocoverage
     from two_factor.gateways.twilio.urls import urlpatterns as tf_twilio_urls
     from two_factor.urls import urlpatterns as tf_urls
 
 # NB: There are several other pieces of code which route requests by URL:
-#
-#   - legacy_urls.py contains API endpoint written before the redesign
-#     and should not be added to.
 #
 #   - runtornado.py has its own URL list for Tornado views.  See the
 #     invocation of web.Application in that file.
@@ -313,7 +316,7 @@ v1_api_and_json_patterns = [
     rest_path("bots/<int:bot_id>", PATCH=patch_bot_backend, DELETE=deactivate_bot_backend),
     # invites -> zerver.views.invite
     rest_path("invites", GET=get_user_invites, POST=invite_users_backend),
-    rest_path("invites/<int:prereg_id>", DELETE=revoke_user_invite),
+    rest_path("invites/<int:invite_id>", DELETE=revoke_user_invite),
     rest_path("invites/<int:prereg_id>/resend", POST=resend_user_invite_email),
     # invites/multiuse -> zerver.views.invite
     rest_path("invites/multiuse", POST=generate_multiuse_invite_backend),
@@ -726,11 +729,6 @@ v1_api_mobile_patterns = [
     path("jwt/fetch_api_key", jwt_fetch_api_key),
 ]
 
-# View for uploading messages from email mirror
-urls += [
-    path("email_mirror_message", email_mirror_message),
-]
-
 # Include URL configuration files for site-specified extra installed
 # Django apps
 for app_name in settings.EXTRA_INSTALLED_APPS:
@@ -739,13 +737,12 @@ for app_name in settings.EXTRA_INSTALLED_APPS:
         urls += [path("", include(f"{app_name}.urls"))]
         i18n_urls += import_string(f"{app_name}.urls.i18n_urlpatterns")
 
-# Tornado views
+# Used internally for communication between command-line, Django,
+# and Tornado processes
 urls += [
-    # Used internally for communication between Django and Tornado processes
-    #
-    # Since these views don't use rest_dispatch, they cannot have
-    # asynchronous Tornado behavior.
-    path("notify_tornado", notify),
+    path("api/internal/email_mirror_message", email_mirror_message),
+    path("api/internal/notify_tornado", notify),
+    path("api/internal/web_reload_clients", web_reload_clients),
     path("api/v1/events/internal", get_events_internal),
 ]
 
@@ -828,6 +825,10 @@ urls += [
         self_hosting_auth_redirect_endpoint,
         name="self_hosting_auth_redirect_endpoint",
     ),
+    path(
+        "self-hosted-billing/not-configured/",
+        self_hosting_auth_not_configured,
+    ),
     rest_path(
         "json/self-hosted-billing",
         GET=self_hosting_auth_json_endpoint,
@@ -861,4 +862,4 @@ urls += [path("health", health)]
 # The sequence is important; if i18n URLs don't come first then
 # reverse URL mapping points to i18n URLs which causes the frontend
 # tests to fail
-urlpatterns = i18n_patterns(*i18n_urls) + urls + legacy_urls
+urlpatterns = i18n_patterns(*i18n_urls) + urls

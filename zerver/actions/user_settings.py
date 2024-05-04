@@ -109,7 +109,7 @@ def send_delivery_email_update_events(
 
 @transaction.atomic(savepoint=False)
 def do_change_user_delivery_email(user_profile: UserProfile, new_email: str) -> None:
-    delete_user_profile_caches([user_profile], user_profile.realm)
+    delete_user_profile_caches([user_profile], user_profile.realm_id)
 
     user_profile.delivery_email = new_email
     if user_profile.email_address_is_realm_public():
@@ -249,7 +249,9 @@ def check_change_full_name(
     is responsible for checking check permissions.  Returns the new
     full name, which may differ from what was passed in (because this
     function strips whitespace)."""
-    new_full_name = check_full_name(full_name_raw)
+    new_full_name = check_full_name(
+        full_name_raw=full_name_raw, user_profile=user_profile, realm=user_profile.realm
+    )
     do_change_full_name(user_profile, new_full_name, acting_user)
     return new_full_name
 
@@ -257,7 +259,9 @@ def check_change_full_name(
 def check_change_bot_full_name(
     user_profile: UserProfile, full_name_raw: str, acting_user: UserProfile
 ) -> None:
-    new_full_name = check_full_name(full_name_raw)
+    new_full_name = check_full_name(
+        full_name_raw=full_name_raw, user_profile=user_profile, realm=user_profile.realm
+    )
 
     if new_full_name == user_profile.full_name:
         # Our web app will try to patch full_name even if the user didn't
@@ -268,6 +272,7 @@ def check_change_bot_full_name(
     check_bot_name_available(
         realm_id=user_profile.realm_id,
         full_name=new_full_name,
+        is_activation=False,
     )
     do_change_full_name(user_profile, new_full_name, acting_user)
 

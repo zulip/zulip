@@ -7,7 +7,7 @@
 By default, any user can [change their name](/help/change-your-name).
 You can instead prevent users from changing their name. This setting is
 especially useful if user names are managed via an external source, and
-synced into Zulip via the [Zulip API](/api), [LDAP][ldap-sync-data] or
+synced into Zulip via the [Zulip API](/api/), [LDAP][ldap-sync-data] or
 another method.
 
 !!! tip ""
@@ -45,6 +45,25 @@ to manage user emails.
 
 1. Under **User identity**, select **Prevent users from changing their
    email address**.
+
+{!save-changes.md!}
+
+{end_tabs}
+
+## Require unique names
+
+You can require users to choose unique names when joining your organization, or
+changing their name. This helps prevent accidental creation of duplicate
+accounts, and makes it harder to impersonate other users.
+
+When you turn on this setting, users who already have non-unique names are not
+required to change their name.
+
+{start_tabs}
+
+{settings_tab|organization-permissions}
+
+1. Under **User identity**, select **Require unique names**.
 
 {!save-changes.md!}
 

@@ -73,7 +73,8 @@ bot, regardless of who owns them.
 
 ## Related articles
 
-* [Bots and integrations](/help/bots-and-integrations)
+* [Bots overview](/help/bots-overview)
+* [Integrations overview](/help/integrations-overview)
 * [Add a bot or integration](/help/add-a-bot-or-integration)
 * [Edit a bot](/help/edit-a-bot)
 * [Restrict bot creation](/help/restrict-bot-creation)

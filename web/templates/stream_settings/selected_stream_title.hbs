@@ -1,5 +1,7 @@
-{{> stream_privacy_icon
-  invite_only=sub.invite_only
-  is_web_public=sub.is_web_public
-  color=title_icon_color }}
-<span class="stream-name-title">{{sub.name}}</span>
+<a class="tippy-zulip-delayed-tooltip" data-tooltip-template-id="view-stream-tooltip-template" data-tippy-placement="top" href="{{preview_url}}">
+    {{> stream_privacy_icon
+      invite_only=sub.invite_only
+      is_web_public=sub.is_web_public
+      color=title_icon_color }}
+    <span class="stream-name-title">{{sub.name}}</span>
+</a>

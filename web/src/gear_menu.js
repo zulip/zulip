@@ -25,7 +25,7 @@ actually do much of the work.
 Our gear menu has these choices:
 
 =================
-hash:  Stream settings
+hash:  Channel settings
 hash:  Settings
 hash:  Organization settings
 link:  Usage statistics
@@ -59,7 +59,7 @@ The menu itself has the selector
 The items with the prefix of "hash:" are in-page
 links:
 
-    #streams
+    #channels
     #settings
     #organization
     #about-zulip
@@ -79,7 +79,7 @@ mechanism to link to external pages, and they
 have a target of "_blank".
 
 The "info:" items use our info overlay system
-in web/src/info_overlay.js.  They are dispatched
+in web/src/info_overlay.ts.  They are dispatched
 using a click handler in web/src/click_handlers.js.
 The click handler uses "[data-overlay-trigger]" as
 the selector and then calls browser_history.go_to_location.
@@ -94,7 +94,7 @@ function render(instance) {
 
 export function initialize() {
     popover_menus.register_popover_menu("#gear-menu", {
-        theme: "navbar-dropdown-menu",
+        theme: "popover-menu",
         placement: "bottom",
         offset: [-50, 0],
         popperOptions: {
@@ -145,13 +145,13 @@ export function initialize() {
                         });
                     },
                 );
-                instance.hide();
+                popover_menus.hide_current_popover_if_visible(instance);
                 e.preventDefault();
                 e.stopPropagation();
             });
 
             $popper.on("click", ".change-language-spectator", (e) => {
-                instance.hide();
+                popover_menus.hide_current_popover_if_visible(instance);
                 e.preventDefault();
                 e.stopPropagation();
                 settings_preferences.launch_default_language_setting_modal();
@@ -162,7 +162,7 @@ export function initialize() {
             // Also, since these buttons are only visible for spectators which doesn't have events,
             // if theme is changed in a different tab, the theme of this tab remains the same.
             $popper.on("click", "#gear-menu-dropdown .gear-menu-select-dark-theme", (e) => {
-                instance.hide();
+                popover_menus.hide_current_popover_if_visible(instance);
                 e.preventDefault();
                 e.stopPropagation();
                 requestAnimationFrame(() => {
@@ -172,7 +172,7 @@ export function initialize() {
             });
 
             $popper.on("click", "#gear-menu-dropdown .gear-menu-select-light-theme", (e) => {
-                instance.hide();
+                popover_menus.hide_current_popover_if_visible(instance);
                 e.preventDefault();
                 e.stopPropagation();
                 requestAnimationFrame(() => {

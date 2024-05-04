@@ -42,8 +42,8 @@ class StateHandler:
 
     def __init__(self, user_profile: UserProfile) -> None:
         self.user_profile = user_profile
-        self.marshal: Callable[[object], str] = lambda obj: json.dumps(obj)
-        self.demarshal: Callable[[str], object] = lambda obj: json.loads(obj)
+        self.marshal: Callable[[object], str] = json.dumps
+        self.demarshal: Callable[[str], object] = json.loads
 
     def get(self, key: str) -> object:
         return self.demarshal(get_bot_storage(self.user_profile, key))
@@ -110,7 +110,7 @@ class EmbeddedBotHandler:
             )
         else:
             message_id = internal_send_huddle_message(
-                self.user_profile.realm, self.user_profile, recipients, message["content"]
+                self.user_profile.realm, self.user_profile, message["content"], emails=recipients
             )
         return {"id": message_id}
 

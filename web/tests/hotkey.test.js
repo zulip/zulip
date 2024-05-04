@@ -21,17 +21,19 @@ const $ = require("./lib/zjquery");
 // it calls any external module other than `ui.foo`, it'll crash.
 // Future work includes making sure it actually does call `ui.foo()`.
 
-// Since all the tests here are based on narrow starting with all_messages.
-// We set our default narrow to all messages here.
-window.location.hash = "#all_messages";
+// All tests use the combined feed as the default narrow.
+window.location.hash = "#feed";
 
 set_global("navigator", {
     platform: "",
 });
 
 // jQuery stuff should go away if we make an initialize() method.
-set_global("document", "document-stub");
+set_global("document", {
+    hasFocus: () => false,
+});
 
+const activity_ui = mock_esm("../src/activity_ui");
 const browser_history = mock_esm("../src/browser_history");
 const compose_actions = mock_esm("../src/compose_actions");
 const compose_reply = mock_esm("../src/compose_reply");
@@ -49,9 +51,7 @@ const message_edit = mock_esm("../src/message_edit");
 const message_lists = mock_esm("../src/message_lists");
 const user_topics_ui = mock_esm("../src/user_topics_ui");
 const narrow = mock_esm("../src/narrow");
-const narrow_state = mock_esm("../src/narrow_state", {
-    is_message_feed_visible: () => true,
-});
+const narrow_state = mock_esm("../src/narrow_state");
 const navigate = mock_esm("../src/navigate");
 const modals = mock_esm("../src/modals", {
     any_active: () => false,
@@ -65,6 +65,7 @@ const overlays = mock_esm("../src/overlays", {
     drafts_open: () => false,
     scheduled_messages_open: () => false,
     info_overlay_open: () => false,
+    message_edit_history_open: () => false,
 });
 const popovers = mock_esm("../src/user_card_popover", {
     manage_menu: {
@@ -81,6 +82,7 @@ const popovers = mock_esm("../src/user_card_popover", {
     },
 });
 const reactions = mock_esm("../src/reactions");
+const read_receipts = mock_esm("../src/read_receipts");
 const search = mock_esm("../src/search");
 const settings_data = mock_esm("../src/settings_data");
 const stream_list = mock_esm("../src/stream_list");
@@ -122,7 +124,6 @@ message_lists.current = {
     },
 };
 
-const activity_ui = zrequire("activity_ui");
 const emoji = zrequire("emoji");
 const emoji_codes = zrequire("../../static/generated/emoji/emoji_codes.json");
 const hotkey = zrequire("hotkey");
@@ -136,14 +137,6 @@ function stubbing(module, func_name_to_stub, test_function) {
     with_overrides(({override}) => {
         const stub = make_stub();
         override(module, func_name_to_stub, stub.f);
-        test_function(stub);
-    });
-}
-
-function stubbing_rewire(module, func_name_to_stub, test_function) {
-    with_overrides(({override_rewire}) => {
-        const stub = make_stub();
-        override_rewire(module, func_name_to_stub, stub.f);
         test_function(stub);
     });
 }
@@ -185,6 +178,7 @@ run_test("mappings", () => {
     assert.equal(map_down(46).name, "delete");
     assert.equal(map_down(13, true).name, "enter");
     assert.equal(map_down(78, true).name, "narrow_to_next_unread_followed_topic");
+    assert.equal(map_down(86, true).name, "toggle_read_receipts"); // Shift + V
 
     assert.equal(map_press(47).name, "search"); // slash
     assert.equal(map_press(106).name, "vim_down"); // j
@@ -263,13 +257,6 @@ function assert_mapping(c, module, func_name, shiftKey, keydown) {
     });
 }
 
-function assert_mapping_rewire(c, module, func_name, shiftKey) {
-    stubbing_rewire(module, func_name, (stub) => {
-        assert.ok(process(c, shiftKey));
-        assert.equal(stub.num_calls, 1);
-    });
-}
-
 function assert_unmapped(s) {
     for (const c of s) {
         assert.equal(process(c), false);
@@ -327,7 +314,7 @@ run_test("streams", ({override}) => {
 run_test("basic mappings", () => {
     assert_mapping("?", browser_history, "go_to_location");
     assert_mapping("/", search, "initiate_search");
-    assert_mapping_rewire("w", activity_ui, "initiate_search");
+    assert_mapping("w", activity_ui, "initiate_search");
     assert_mapping("q", stream_list, "initiate_search");
 
     assert_mapping("A", narrow, "stream_cycle_backward");
@@ -363,7 +350,7 @@ run_test("modal open", ({override}) => {
 
 run_test("misc", ({override}) => {
     // Next, test keys that only work on a selected message.
-    const message_view_only_keys = "@+>RjJkKsuvi:GM";
+    const message_view_only_keys = "@+>RjJkKsuvVi:GM";
 
     // Check that they do nothing without a selected message
     with_overrides(({override}) => {
@@ -374,7 +361,7 @@ run_test("misc", ({override}) => {
     // Check that they do nothing while in the settings overlay
     with_overrides(({override}) => {
         override(overlays, "settings_open", () => true);
-        assert_unmapped("@*+->rRjJkKsSuvi:GM");
+        assert_unmapped("@*+->rRjJkKsSuvVi:GM");
     });
 
     // TODO: Similar check for being in the subs page
@@ -413,6 +400,12 @@ run_test("misc", ({override}) => {
 
     override(message_edit, "can_move_message", () => false);
     assert_unmapped("m");
+
+    assert_mapping("V", read_receipts, "show_user_list", true, true);
+
+    override(modals, "any_active", () => true);
+    override(modals, "active_modal", () => "#read_receipts_modal");
+    assert_mapping("V", read_receipts, "hide_user_list", true, true);
 });
 
 run_test("lightbox overlay open", ({override}) => {

@@ -90,8 +90,8 @@ type StreamListSortResult = {
 
 export function sort_groups(stream_ids: number[], search_term: string): StreamListSortResult {
     const stream_id_to_name = (stream_id: number): string => sub_store.get(stream_id)!.name;
-    // Use -, _ and / as word separators apart from the default space character
-    const word_separator_regex = /[\s/_-]/;
+    // Use -, _, : and / as word separators apart from the default space character
+    const word_separator_regex = /[\s/:_-]/;
     stream_ids = util.filter_by_word_prefix_match(
         stream_ids,
         search_term,

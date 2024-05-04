@@ -11,7 +11,7 @@ attachment_url_re = re.compile(r"[/\-]user[\-_]uploads[/\.-].*?(?=[ )]|\Z)")
 def attachment_url_to_path_id(attachment_url: str) -> str:
     path_id_raw = re.sub(r"[/\-]user[\-_]uploads[/\.-]", "", attachment_url)
     # Remove any extra '.' after file extension. These are probably added by the user
-    return re.sub("[.]+$", "", path_id_raw, flags=re.M)
+    return re.sub(r"[.]+$", "", path_id_raw, flags=re.M)
 
 
 def check_and_create_attachments(apps: StateApps, schema_editor: BaseDatabaseSchemaEditor) -> None:

@@ -1,8 +1,0 @@
-<%# This is appended to puppet/zulip_ops/files/teleport_node.yaml, so should be
-    indented.  Specifically, the "-" should be in the same column as the "T" at
-    the start of this comment. -%>
-    - name: "<%= @name %>"
-      description: "<%= @description %>"
-      uri: "http://127.0.0.1:<%= @port %>"
-      labels:
-        name: "<%= @name %>"

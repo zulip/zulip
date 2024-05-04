@@ -8,4 +8,5 @@ pnpm-lock.yaml
 /web/third
 /zerver/tests/fixtures
 /zerver/webhooks/*/doc.md
+/zerver/webhooks/github/githubsponsors.md
 /zerver/webhooks/*/fixtures

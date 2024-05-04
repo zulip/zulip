@@ -24,8 +24,8 @@ your message.
 
 {!message-actions.md!}
 
-1. Click the **pencil** (<i class="fa fa-pencil"></i>) icon. If you do not see
-   the **pencil** (<i class="fa fa-pencil"></i>) icon, you do not have
+1. Click the **pencil** (<i class="zulip-icon zulip-icon-edit"></i>) icon. If you do not see
+   the **pencil** (<i class="zulip-icon zulip-icon-edit"></i>) icon, you do not have
    permission to delete the content of this message.
 
 1. Delete the content of the message.
@@ -99,7 +99,7 @@ including [mentions and alerts](/help/dm-mention-alert-notifications).
 ## Related articles
 
 * [Delete a topic](/help/delete-a-topic)
-* [Archive a stream](/help/archive-a-stream)
+* [Archive a channel](/help/archive-a-channel)
 * [Message retention policy](/help/message-retention-policy)
 * [Edit a message](/help/edit-a-message)
 * [Restrict message editing and deletion](/help/restrict-message-editing-and-deletion)

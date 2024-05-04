@@ -5,7 +5,7 @@ import * as scroll_util from "./scroll_util";
 
 type List<Key> = {
     scroll_container_selector: string;
-    find_li: (opts: {key: Key; force_render: boolean}) => JQuery;
+    find_li: (opts: {key: Key; force_render: boolean}) => JQuery | undefined;
     first_key: () => Key | undefined;
     prev_key: (key: Key) => Key | undefined;
     next_key: (key: Key) => Key | undefined;

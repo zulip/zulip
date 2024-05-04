@@ -120,7 +120,8 @@ def serve_local(
         # the response to; serve it directly ourselves.  FileResponse
         # handles setting Content-Type, Content-Disposition, etc.
         response: HttpResponseBase = FileResponse(
-            open(local_path, "rb"), as_attachment=download  # noqa: SIM115
+            open(local_path, "rb"),  # noqa: SIM115
+            as_attachment=download,
         )
         patch_cache_control(response, private=True, immutable=True)
         return response
@@ -315,7 +316,7 @@ def upload_file_backend(request: HttpRequest, user_profile: UserProfile) -> Http
     assert isinstance(user_file, UploadedFile)
     file_size = user_file.size
     assert file_size is not None
-    if settings.MAX_FILE_UPLOAD_SIZE * 1024 * 1024 < file_size:
+    if file_size > settings.MAX_FILE_UPLOAD_SIZE * 1024 * 1024:
         raise JsonableError(
             _("Uploaded file is larger than the allowed limit of {max_size} MiB").format(
                 max_size=settings.MAX_FILE_UPLOAD_SIZE,

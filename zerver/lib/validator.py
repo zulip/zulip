@@ -27,8 +27,8 @@ To extend this concept, it's simply a matter of writing your own validator
 for any particular type of object.
 
 """
+
 import re
-import sys
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from decimal import Decimal
@@ -51,6 +51,7 @@ from typing import (
 )
 
 import orjson
+import zoneinfo
 from django.core.exceptions import ValidationError
 from django.core.validators import URLValidator, validate_email
 from django.utils.translation import gettext as _
@@ -61,11 +62,6 @@ from typing_extensions import override
 from zerver.lib.exceptions import InvalidJSONError, JsonableError
 from zerver.lib.timezone import canonicalize_timezone
 from zerver.lib.types import ProfileFieldData, Validator
-
-if sys.version_info < (3, 9):  # nocoverage
-    from backports import zoneinfo
-else:  # nocoverage
-    import zoneinfo
 
 ResultT = TypeVar("ResultT")
 
@@ -139,7 +135,7 @@ def check_long_string(var_name: str, val: object) -> str:
 def check_timezone(var_name: str, val: object) -> str:
     s = check_string(var_name, val)
     try:
-        zoneinfo.ZoneInfo(s)
+        zoneinfo.ZoneInfo(canonicalize_timezone(s))
     except (ValueError, zoneinfo.ZoneInfoNotFoundError):
         raise ValidationError(
             _("{var_name} is not a recognized time zone").format(var_name=var_name)
@@ -260,10 +256,7 @@ def check_dict(
     optional_keys: Collection[Tuple[str, Validator[object]]] = [],
     *,
     _allow_only_listed_keys: bool = False,
-) -> Validator[Dict[str, object]]:
-    ...
-
-
+) -> Validator[Dict[str, object]]: ...
 @overload
 def check_dict(
     required_keys: Collection[Tuple[str, Validator[ResultT]]] = [],
@@ -271,10 +264,7 @@ def check_dict(
     *,
     value_validator: Validator[ResultT],
     _allow_only_listed_keys: bool = False,
-) -> Validator[Dict[str, ResultT]]:
-    ...
-
-
+) -> Validator[Dict[str, ResultT]]: ...
 def check_dict(
     required_keys: Collection[Tuple[str, Validator[ResultT]]] = [],
     optional_keys: Collection[Tuple[str, Validator[ResultT]]] = [],
@@ -557,7 +547,7 @@ def validate_poll_data(poll_data: object, is_widget_author: bool) -> None:
     raise ValidationError(f"Unknown type for poll data: {poll_data['type']}")
 
 
-def validate_todo_data(todo_data: object) -> None:
+def validate_todo_data(todo_data: object, is_widget_author: bool) -> None:
     check_dict([("type", check_string)])("todo data", todo_data)
 
     assert isinstance(todo_data, dict)
@@ -580,6 +570,19 @@ def validate_todo_data(todo_data: object) -> None:
             [
                 ("type", check_string),
                 ("key", check_string),
+            ]
+        )
+        checker("todo data", todo_data)
+        return
+
+    if todo_data["type"] == "new_task_list_title":
+        if not is_widget_author:
+            raise ValidationError("You can't edit the task list title unless you are the author.")
+
+        checker = check_dict_only(
+            [
+                ("type", check_string),
+                ("title", check_string),
             ]
         )
         checker("todo data", todo_data)
@@ -608,11 +611,12 @@ def to_decimal(var_name: str, s: str) -> Decimal:
 
 def to_timezone_or_empty(var_name: str, s: str) -> str:
     try:
+        s = canonicalize_timezone(s)
         zoneinfo.ZoneInfo(s)
     except (ValueError, zoneinfo.ZoneInfoNotFoundError):
         return ""
     else:
-        return canonicalize_timezone(s)
+        return s
 
 
 def to_converted_or_fallback(

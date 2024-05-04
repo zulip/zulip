@@ -6,9 +6,9 @@ const _ = require("lodash");
 
 const {zrequire, set_global} = require("./lib/namespace");
 const {run_test} = require("./lib/test");
-const {page_params, user_settings} = require("./lib/zpage_params");
+const {realm, user_settings} = require("./lib/zpage_params");
 
-page_params.realm_push_notifications_enabled = false;
+realm.realm_push_notifications_enabled = false;
 
 set_global("document", "document-stub");
 const {FoldDict} = zrequire("fold_dict");
@@ -245,6 +245,7 @@ test("muting", () => {
 
     user_topics.update_user_topics(
         social.stream_id,
+        social.stream_name,
         "test_muting",
         user_topics.all_visibility_policies.MUTED,
     );
@@ -481,11 +482,12 @@ test("mentions", () => {
     test_notifiable_count(counts.home_unread_messages, 0);
 
     const muted_stream_id = 900;
+    const muted_stream_name = "muted stream for testing unread mentions";
     const unmuted_stream_id = 901;
 
     sub_store.add_hydrated_sub(muted_stream_id, {
         muted_stream_id,
-        name: "muted stream for testing unread mentions",
+        name: muted_stream_name,
         subscribed: true,
         is_muted: true,
     });
@@ -498,6 +500,7 @@ test("mentions", () => {
 
     user_topics.update_user_topics(
         muted_stream_id,
+        muted_stream_name,
         "lunch",
         user_topics.all_visibility_policies.MUTED,
     );
@@ -638,7 +641,12 @@ test("mention updates", () => {
 
 test("stream_has_any_unread_mentions", () => {
     const muted_stream_id = 401;
-    user_topics.update_user_topics(401, "lunch", user_topics.all_visibility_policies.MUTED);
+    user_topics.update_user_topics(
+        401,
+        "random_stream_name",
+        "lunch",
+        user_topics.all_visibility_policies.MUTED,
+    );
 
     const mention_me_message = {
         id: 15,

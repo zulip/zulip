@@ -38,7 +38,7 @@ export function set_last_movement_direction(value: number): void {
     last_movement_direction = value;
 }
 
-export function at_top(): boolean {
+export function at_rendered_top(): boolean {
     return scrollTop() <= 0;
 }
 
@@ -71,9 +71,13 @@ export function message_viewport_info(): MessageViewportInfo {
     };
 }
 
-export function at_bottom(): boolean {
+// Important note: These functions just look at the state of the
+// rendered message feed; messages that are not displayed due to a
+// limited render window or because they have not been fetched from
+// the server are not considered.
+export function at_rendered_bottom(): boolean {
     const bottom = scrollTop() + height();
-    const full_height = $scroll_container.prop("scrollHeight");
+    const full_height = $scroll_container[0].scrollHeight;
 
     // We only know within a pixel or two if we're
     // exactly at the bottom, due to browser quirkiness,
@@ -82,9 +86,10 @@ export function at_bottom(): boolean {
     return bottom + 2 >= full_height;
 }
 
-// This differs from at_bottom in that it only requires the bottom message to
-// be visible, but you may be able to scroll down further.
-export function bottom_message_visible(): boolean {
+// This differs from at_rendered_bottom in that it only requires the
+// bottom message to be visible, but you may be able to scroll down
+// further to see the rest of that message.
+export function bottom_rendered_message_visible(): boolean {
     const $last_row = rows.last_visible();
     if ($last_row.length) {
         const message_bottom = $last_row[0].getBoundingClientRect().bottom;
@@ -180,13 +185,13 @@ function add_to_visible<T>(
     top_of_feed: number,
     bottom_of_feed: number,
     require_fully_visible: boolean,
-    row_to_id: ($row: HTMLElement) => T,
+    row_to_output: ($row: HTMLElement) => T,
 ): void {
     for (const row of $candidates) {
         const row_rect = row.getBoundingClientRect();
         // Mark very tall messages as read once we've gotten past them
         if (in_viewport_or_tall(row_rect, top_of_feed, bottom_of_feed, require_fully_visible)) {
-            visible.push(row_to_id(row));
+            visible.push(row_to_output(row));
         } else {
             break;
         }
@@ -292,7 +297,7 @@ export function visible_messages(require_fully_visible: boolean): Message[] {
 
     function row_to_id(row: HTMLElement): Message {
         assert(message_lists.current !== undefined);
-        return message_lists.current.get(rows.id($(row))!)!;
+        return message_lists.current.get(rows.id($(row)))!;
     }
 
     // Being simplistic about this, the smallest message is 25 px high.
@@ -353,8 +358,11 @@ export function stop_auto_scrolling(): void {
     }
 }
 
-export function system_initiated_animate_scroll(scroll_amount: number): void {
-    message_scroll_state.set_update_selection_on_next_scroll(false);
+export function system_initiated_animate_scroll(
+    scroll_amount: number,
+    update_selection_on_scroll = false,
+): void {
+    message_scroll_state.set_update_selection_on_next_scroll(update_selection_on_scroll);
     const viewport_offset = scrollTop();
     in_stoppable_autoscroll = true;
     $scroll_container.animate({
@@ -456,7 +464,7 @@ export function keep_pointer_in_view(): void {
     const bottom_threshold = info.visible_top + (9 / 10) * info.visible_height;
 
     function message_is_far_enough_down(): boolean {
-        if (at_top()) {
+        if (at_rendered_top()) {
             return true;
         }
 
@@ -481,7 +489,7 @@ export function keep_pointer_in_view(): void {
     }
 
     function message_is_far_enough_up(): boolean {
-        return at_bottom() || $next_row.get_offset_to_window().top <= bottom_threshold;
+        return at_rendered_bottom() || $next_row.get_offset_to_window().top <= bottom_threshold;
     }
 
     function adjust(
@@ -507,7 +515,7 @@ export function keep_pointer_in_view(): void {
         adjust(message_is_far_enough_up, rows.prev_visible);
     }
 
-    message_lists.current.select_id(rows.id($next_row)!, {from_scroll: true});
+    message_lists.current.select_id(rows.id($next_row), {from_scroll: true});
 }
 
 export function scroll_to_selected(): void {

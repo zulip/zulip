@@ -7,17 +7,17 @@ const _ = require("lodash");
 const {mock_esm, zrequire} = require("./lib/namespace");
 const {run_test} = require("./lib/test");
 const blueslip = require("./lib/zblueslip");
-const {page_params, user_settings} = require("./lib/zpage_params");
+const {current_user, realm, user_settings} = require("./lib/zpage_params");
 
 const timerender = mock_esm("../src/timerender");
 
 const compose_fade_helper = zrequire("compose_fade_helper");
 const muted_users = zrequire("muted_users");
+const narrow_state = zrequire("narrow_state");
 const peer_data = zrequire("peer_data");
 const people = zrequire("people");
 const presence = zrequire("presence");
 const stream_data = zrequire("stream_data");
-const sub_store = zrequire("sub_store");
 const user_status = zrequire("user_status");
 const buddy_data = zrequire("buddy_data");
 
@@ -157,119 +157,6 @@ test("user_circle, level", () => {
     assert.equal(buddy_data.level(fred.user_id), 3);
 });
 
-test("compose fade interactions (streams)", () => {
-    const sub = {
-        stream_id: 101,
-        name: "Devel",
-        subscribed: true,
-    };
-    stream_data.add_sub(sub);
-    stream_data.subscribe_myself(sub);
-
-    people.add_active_user(fred);
-
-    set_presence(fred.user_id, "active");
-
-    function faded() {
-        return buddy_data.get_item(fred.user_id).faded;
-    }
-
-    // If we are not narrowed, then we don't fade fred in the buddy list.
-    assert.equal(faded(), false);
-
-    // If we narrow to a stream that fred has not subscribed
-    // to, we will fade him.
-    compose_fade_helper.set_focused_recipient({
-        type: "stream",
-        stream_id: sub.stream_id,
-        topic: "whatever",
-    });
-    assert.equal(faded(), true);
-
-    // If we subscribe, we don't fade.
-    peer_data.add_subscriber(sub.stream_id, fred.user_id);
-    assert.equal(faded(), false);
-
-    // Test our punting logic.
-    const bogus_stream_id = 99999;
-    assert.equal(sub_store.get(bogus_stream_id), undefined);
-
-    compose_fade_helper.set_focused_recipient({
-        type: "stream",
-        stream_id: bogus_stream_id,
-    });
-
-    assert.equal(faded(), false);
-});
-
-test("compose fade interactions (missing topic)", () => {
-    const sub = {
-        stream_id: 102,
-        name: "Social",
-        subscribed: true,
-    };
-    stream_data.add_sub(sub);
-    stream_data.subscribe_myself(sub);
-
-    people.add_active_user(fred);
-
-    set_presence(fred.user_id, "active");
-
-    function faded() {
-        return buddy_data.get_item(fred.user_id).faded;
-    }
-
-    // If we are not narrowed, then we don't fade fred in the buddy list.
-    assert.equal(faded(), false);
-
-    // If we narrow to a stream that fred has not subscribed
-    // to, we will fade him.
-    compose_fade_helper.set_focused_recipient({
-        type: "stream",
-        stream_id: sub.stream_id,
-        topic: "whatever",
-    });
-    assert.equal(faded(), true);
-
-    // If the user clears the topic, we won't fade fred.
-    compose_fade_helper.set_focused_recipient({
-        type: "stream",
-        stream_id: sub.stream_id,
-        topic: "",
-    });
-    assert.equal(faded(), false);
-});
-
-test("compose fade interactions (direct messages)", () => {
-    people.add_active_user(fred);
-
-    set_presence(fred.user_id, "active");
-
-    function faded() {
-        return buddy_data.get_item(fred.user_id).faded;
-    }
-
-    // Don't fade if we're not in a narrow.
-    assert.equal(faded(), false);
-
-    // Fade fred if we are narrowed to a direct message narrow
-    // that does not include him.
-    compose_fade_helper.set_focused_recipient({
-        type: "private",
-        to_user_ids: "9999999",
-    });
-    assert.equal(faded(), true);
-
-    // Now include fred in a narrow with jill, and we will
-    // stop fading him.
-    compose_fade_helper.set_focused_recipient({
-        type: "private",
-        to_user_ids: [fred.user_id, jill.user_id].join(","),
-    });
-
-    assert.equal(faded(), false);
-});
-
 test("title_data", () => {
     add_canned_users();
 
@@ -316,7 +203,7 @@ test("title_data", () => {
         third_line: "translated: Active now",
         show_you: true,
     };
-    page_params.user_id = me.user_id;
+    current_user.user_id = me.user_id;
     assert.deepEqual(buddy_data.get_title_data(me.user_id, is_group), expected_data);
 
     expected_data = {
@@ -421,8 +308,14 @@ test("always show me", () => {
     assert.deepEqual(buddy_data.get_filtered_and_sorted_user_ids(""), [me.user_id]);
 });
 
+test("always show pm users", ({override_rewire}) => {
+    people.add_active_user(selma);
+    override_rewire(narrow_state, "pm_ids_set", () => new Set([selma.user_id]));
+    assert.deepEqual(buddy_data.get_filtered_and_sorted_user_ids(""), [me.user_id, selma.user_id]);
+});
+
 test("level", () => {
-    page_params.server_presence_offline_threshold_seconds = 200;
+    realm.server_presence_offline_threshold_seconds = 200;
 
     add_canned_users();
     assert.equal(buddy_data.level(me.user_id), 0);
@@ -450,18 +343,70 @@ test("level", () => {
     assert.equal(buddy_data.level(selma.user_id), 3);
 });
 
+test("compare_function", () => {
+    const first_user_shown_higher = -1;
+    const second_user_shown_higher = 1;
+
+    const stream_id = 1001;
+    const sub = {name: "Rome", subscribed: true, stream_id};
+    stream_data.add_sub(sub);
+    people.add_active_user(alice);
+    people.add_active_user(fred);
+
+    // Alice is higher because of alphabetical sorting.
+    peer_data.set_subscribers(stream_id, []);
+    assert.equal(
+        second_user_shown_higher,
+        buddy_data.compare_function(fred.user_id, alice.user_id, sub, new Set()),
+    );
+
+    // Fred is higher because they're in the narrow and Alice isn't.
+    peer_data.set_subscribers(stream_id, [fred.user_id]);
+    assert.equal(
+        first_user_shown_higher,
+        buddy_data.compare_function(fred.user_id, alice.user_id, sub, new Set()),
+    );
+    assert.equal(
+        second_user_shown_higher,
+        buddy_data.compare_function(alice.user_id, fred.user_id, sub, new Set()),
+    );
+
+    // Fred is higher because they're in the DM conversation and Alice isn't.
+    assert.equal(
+        first_user_shown_higher,
+        buddy_data.compare_function(
+            fred.user_id,
+            alice.user_id,
+            undefined,
+            new Set([fred.user_id]),
+        ),
+    );
+
+    // Alice is higher because of alphabetical sorting.
+    assert.equal(
+        second_user_shown_higher,
+        buddy_data.compare_function(fred.user_id, alice.user_id, undefined, new Set()),
+    );
+
+    // The user is part of a DM conversation, though that's not explicitly in the DM list.
+    assert.equal(
+        first_user_shown_higher,
+        buddy_data.compare_function(me.user_id, alice.user_id, undefined, new Set([fred.user_id])),
+    );
+});
+
 test("user_last_seen_time_status", ({override}) => {
     set_presence(selma.user_id, "active");
     set_presence(me.user_id, "active");
 
     assert.equal(buddy_data.user_last_seen_time_status(selma.user_id), "translated: Active now");
 
-    page_params.realm_is_zephyr_mirror_realm = true;
+    realm.realm_is_zephyr_mirror_realm = true;
     assert.equal(
         buddy_data.user_last_seen_time_status(old_user.user_id),
         "translated: Activity unknown",
     );
-    page_params.realm_is_zephyr_mirror_realm = false;
+    realm.realm_is_zephyr_mirror_realm = false;
     assert.equal(
         buddy_data.user_last_seen_time_status(old_user.user_id),
         "translated: Active more than 2 weeks ago",
@@ -517,7 +462,6 @@ test("get_items_for_users", () => {
 
     assert.deepEqual(buddy_data.get_items_for_users(user_ids), [
         {
-            faded: false,
             href: "#narrow/dm/1001-Human-Myself",
             is_current_user: true,
             name: "Human Myself",
@@ -530,7 +474,6 @@ test("get_items_for_users", () => {
             should_add_guest_user_indicator: false,
         },
         {
-            faded: false,
             href: "#narrow/dm/1002-Alice-Smith",
             is_current_user: false,
             name: "Alice Smith",
@@ -543,7 +486,6 @@ test("get_items_for_users", () => {
             should_add_guest_user_indicator: false,
         },
         {
-            faded: false,
             href: "#narrow/dm/1003-Fred-Flintstone",
             is_current_user: false,
             name: "Fred Flintstone",

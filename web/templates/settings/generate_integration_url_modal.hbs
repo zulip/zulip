@@ -23,8 +23,25 @@
         </label>
     </div>
     <div class="input-group hide">
-        <label for="integration-url-topic-input">{{t "Topic"}}</label>
+        <label for="integration-url-topic-input" class="modal-label-field">{{t "Topic"}}</label>
         <input type="text" id="integration-url-topic-input" class="modal_text_input integration-url-parameter" maxlength="{{ max_topic_length }}" />
+    </div>
+    <div id="integration-events-parameter" class="input-group hide">
+        <label class="checkbox">
+            <input type="checkbox" id="show-integration-events"/>
+            <span></span>
+        </label>
+        <label class="inline" for="show-integration-events">
+            {{t "Filter events that will trigger notifications?"}}
+        </label>
+    </div>
+    <div class="input-group hide" id="integrations-event-container">
+        <label for="integrations-event-options">{{t "Events to include:"}}</label>
+        <div class="integration-all-events-buttons">
+            <button class="button rounded" id="add-all-integration-events">{{t "Check all"}}</button>
+            <button class="button rounded" id="remove-all-integration-events">{{t "Uncheck all"}}</button>
+        </div>
+        <div id="integrations-event-options"></div>
     </div>
     <hr />
     <p class="integration-url-header">{{t "URL for your integration"}}</p>

@@ -36,7 +36,7 @@ class LocalStorageTest(UploadSerializeMixin, ZulipTestCase):
 
         base = "/user_uploads/"
         self.assertEqual(base, url[: len(base)])
-        path_id = re.sub("/user_uploads/", "", url)
+        path_id = re.sub(r"/user_uploads/", "", url)
         assert settings.LOCAL_UPLOADS_DIR is not None
         assert settings.LOCAL_FILES_DIR is not None
         file_path = os.path.join(settings.LOCAL_FILES_DIR, path_id)
@@ -51,7 +51,7 @@ class LocalStorageTest(UploadSerializeMixin, ZulipTestCase):
             "dummy.txt", len(b"zulip!"), "text/plain", b"zulip!", user_profile
         )
 
-        path_id = re.sub("/user_uploads/", "", url)
+        path_id = re.sub(r"/user_uploads/", "", url)
         output = BytesIO()
         save_attachment_contents(path_id, output)
         self.assertEqual(output.getvalue(), b"zulip!")
@@ -80,7 +80,7 @@ class LocalStorageTest(UploadSerializeMixin, ZulipTestCase):
         result = self.client_post("/json/user_uploads", {"file": fp})
 
         response_dict = self.assert_json_success(result)
-        path_id = re.sub("/user_uploads/", "", response_dict["uri"])
+        path_id = re.sub(r"/user_uploads/", "", response_dict["uri"])
 
         assert settings.LOCAL_FILES_DIR is not None
         file_path = os.path.join(settings.LOCAL_FILES_DIR, path_id)
@@ -101,7 +101,7 @@ class LocalStorageTest(UploadSerializeMixin, ZulipTestCase):
             )
             base = "/user_uploads/"
             self.assertEqual(base, url[: len(base)])
-            path_id = re.sub("/user_uploads/", "", url)
+            path_id = re.sub(r"/user_uploads/", "", url)
             path_ids.append(path_id)
             file_path = os.path.join(settings.LOCAL_FILES_DIR, path_id)
             self.assertTrue(os.path.isfile(file_path))

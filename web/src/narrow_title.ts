@@ -4,9 +4,9 @@ import * as favicon from "./favicon";
 import type {Filter} from "./filter";
 import {$t} from "./i18n";
 import * as inbox_util from "./inbox_util";
-import {page_params} from "./page_params";
 import * as people from "./people";
 import * as recent_view_util from "./recent_view_util";
+import {realm} from "./state_data";
 import * as unread from "./unread";
 import type {FullUnreadCountsData} from "./unread";
 
@@ -16,8 +16,7 @@ export let narrow_title = "home";
 
 export function compute_narrow_title(filter?: Filter): string {
     if (filter === undefined) {
-        // "All messages" and "Recent conversations" views have
-        // an `undefined` filter.
+        // Views without a message feed in the center pane.
         if (recent_view_util.is_visible()) {
             return $t({defaultMessage: "Recent conversations"});
         }
@@ -33,7 +32,7 @@ export function compute_narrow_title(filter?: Filter): string {
         return $t({defaultMessage: "Search results"});
     }
 
-    if (filter.has_operator("stream")) {
+    if (filter.has_operator("channel")) {
         if (!filter._sub) {
             // The stream is not set because it does not currently
             // exist (possibly due to a stream name change), or it
@@ -85,7 +84,7 @@ export function redraw_title(): void {
         (unread_count ? "(" + unread_count + ") " : "") +
         narrow_title +
         " - " +
-        page_params.realm_name +
+        realm.realm_name +
         " - " +
         "Zulip";
 
@@ -114,7 +113,7 @@ export function update_unread_counts(counts: FullUnreadCountsData): void {
     redraw_title();
 }
 
-export function update_narrow_title(filter: Filter): void {
+export function update_narrow_title(filter?: Filter): void {
     narrow_title = compute_narrow_title(filter);
     redraw_title();
 }

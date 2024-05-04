@@ -1,5 +1,5 @@
-import {page_params} from "./page_params";
 import * as people from "./people";
+import {realm} from "./state_data";
 import {user_settings} from "./user_settings";
 
 export type RawPresence = {
@@ -13,7 +13,7 @@ export type PresenceStatus = {
     last_active?: number;
 };
 
-type PresenceInfoFromEvent = {
+export type PresenceInfoFromEvent = {
     website: {
         client: "website";
         status: "idle" | "active";
@@ -73,7 +73,7 @@ export function status_from_raw(raw: RawPresence): PresenceStatus {
     */
 
     /* Mark users as offline after this many seconds since their last checkin, */
-    const offline_threshold_secs = page_params.server_presence_offline_threshold_seconds;
+    const offline_threshold_secs = realm.server_presence_offline_threshold_seconds;
 
     function age(timestamp = 0): number {
         return raw.server_timestamp - timestamp;
@@ -182,7 +182,7 @@ export function set_info(
         const user_id = Number.parseInt(user_id_str, 10);
 
         // Note: In contrast with all other state updates received
-        // receive from the server, presence data is updated via a
+        // from the server, presence data is updated via a
         // polling process rather than the events system
         // (server_events_dispatch.js).
         //

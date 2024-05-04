@@ -47,7 +47,6 @@ import uri_template
 from django.conf import settings
 from markdown.blockparser import BlockParser
 from markdown.extensions import codehilite, nl2br, sane_lists, tables
-from soupsieve import escape as css_escape
 from tlds import tld_set
 from typing_extensions import Self, TypeAlias, override
 
@@ -69,7 +68,7 @@ from zerver.lib.outgoing_http import OutgoingSession
 from zerver.lib.subdomains import is_static_or_current_realm_url
 from zerver.lib.tex import render_tex
 from zerver.lib.thumbnail import user_uploads_or_external
-from zerver.lib.timeout import timeout
+from zerver.lib.timeout import unsafe_timeout
 from zerver.lib.timezone import common_timezones
 from zerver.lib.types import LinkifierDict
 from zerver.lib.url_encoding import encode_stream, hash_util_encode
@@ -152,7 +151,7 @@ EMOJI_REGEX = r"(?P<syntax>:[\w\-\+]+:)"
 
 def verbose_compile(pattern: str) -> Pattern[str]:
     return re.compile(
-        f"^(.*?){pattern}(.*?)$",
+        rf"^(.*?){pattern}(.*?)$",
         re.DOTALL | re.VERBOSE,
     )
 
@@ -208,7 +207,7 @@ def get_web_link_regex() -> Pattern[str]:
     # extra costs.  It's roughly 75ms to run this code, so
     # caching the value is super important here.
 
-    tlds = "|".join(list_of_tlds())
+    tlds = r"|".join(list_of_tlds())
 
     # A link starts at a word boundary, and ends at space, punctuation, or end-of-input.
     #
@@ -570,13 +569,14 @@ class BacktickInlineProcessor(markdown.inlinepatterns.BacktickInlineProcessor):
     @override
     def handleMatch(  # type: ignore[override] # https://github.com/python/mypy/issues/10197
         self, m: Match[str], data: str
-    ) -> Union[Tuple[None, None, None], Tuple[Element, int, int]]:
+    ) -> Tuple[Union[Element, str, None], Optional[int], Optional[int]]:
         # Let upstream's implementation do its job as it is, we'll
         # just replace the text to not strip the group because it
         # makes it impossible to put leading/trailing whitespace in
         # an inline code span.
         el, start, end = ret = super().handleMatch(m, data)
         if el is not None and m.group(3):
+            assert isinstance(el, Element)
             # upstream's code here is: m.group(3).strip() rather than m.group(3).
             el.text = markdown.util.AtomicString(markdown.util.code_escape(m.group(3)))
         return ret
@@ -689,7 +689,12 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
 
         img_link = get_camo_url(extracted_data.image)
         img = SubElement(container, "a")
-        img.set("style", "background-image: url(" + css_escape(img_link) + ")")
+        img.set(
+            "style",
+            'background-image: url("'
+            + img_link.replace("\\", "\\\\").replace('"', '\\"').replace("\n", "\\a ")
+            + '")',
+        )
         img.set("href", link)
         img.set("class", "message_embed_image")
 
@@ -1492,7 +1497,7 @@ class UnicodeEmoji(CompiledInlineProcessor):
     @override
     def handleMatch(  # type: ignore[override] # https://github.com/python/mypy/issues/10197
         self, match: Match[str], data: str
-    ) -> Union[Tuple[None, None, None], Tuple[Element, int, int]]:
+    ) -> Tuple[Union[Element, str, None], Optional[int], Optional[int]]:
         orig_syntax = match.group("syntax")
 
         # We want to avoid turning things like arrows (↔) and keycaps (numbers
@@ -1840,7 +1845,7 @@ class LinkifierPattern(CompiledInlineProcessor):
     @override
     def handleMatch(  # type: ignore[override] # https://github.com/python/mypy/issues/10197
         self, m: Match[str], data: str
-    ) -> Union[Tuple[Element, int, int], Tuple[None, None, None]]:
+    ) -> Tuple[Union[Element, str, None], Optional[int], Optional[int]]:
         db_data: Optional[DbData] = self.zmd.zulip_db_data
         url = url_to_a(
             db_data,
@@ -1861,7 +1866,7 @@ class UserMentionPattern(CompiledInlineProcessor):
     @override
     def handleMatch(  # type: ignore[override] # https://github.com/python/mypy/issues/10197
         self, m: Match[str], data: str
-    ) -> Union[Tuple[None, None, None], Tuple[Element, int, int]]:
+    ) -> Tuple[Union[Element, str, None], Optional[int], Optional[int]]:
         name = m.group("match")
         silent = m.group("silent") == "_"
         db_data: Optional[DbData] = self.zmd.zulip_db_data
@@ -1927,7 +1932,7 @@ class UserGroupMentionPattern(CompiledInlineProcessor):
     @override
     def handleMatch(  # type: ignore[override] # https://github.com/python/mypy/issues/10197
         self, m: Match[str], data: str
-    ) -> Union[Tuple[None, None, None], Tuple[Element, int, int]]:
+    ) -> Tuple[Union[Element, str, None], Optional[int], Optional[int]]:
         name = m.group("match")
         silent = m.group("silent") == "_"
         db_data: Optional[DbData] = self.zmd.zulip_db_data
@@ -1968,7 +1973,7 @@ class StreamPattern(CompiledInlineProcessor):
     @override
     def handleMatch(  # type: ignore[override] # https://github.com/python/mypy/issues/10197
         self, m: Match[str], data: str
-    ) -> Union[Tuple[None, None, None], Tuple[Element, int, int]]:
+    ) -> Tuple[Union[Element, str, None], Optional[int], Optional[int]]:
         name = m.group("stream_name")
 
         stream_id = self.find_stream_id(name)
@@ -2000,7 +2005,7 @@ class StreamTopicPattern(CompiledInlineProcessor):
     @override
     def handleMatch(  # type: ignore[override] # https://github.com/python/mypy/issues/10197
         self, m: Match[str], data: str
-    ) -> Union[Tuple[None, None, None], Tuple[Element, int, int]]:
+    ) -> Tuple[Union[Element, str, None], Optional[int], Optional[int]]:
         stream_name = m.group("stream_name")
         topic_name = m.group("topic_name")
 
@@ -2121,11 +2126,11 @@ class LinkInlineProcessor(markdown.inlinepatterns.LinkInlineProcessor):
     @override
     def handleMatch(  # type: ignore[override] # https://github.com/python/mypy/issues/10197
         self, m: Match[str], data: str
-    ) -> Union[Tuple[None, None, None], Tuple[Element, int, int]]:
+    ) -> Tuple[Union[Element, str, None], Optional[int], Optional[int]]:
         ret = super().handleMatch(m, data)
         if ret[0] is not None:
-            el: Optional[Element]
             el, match_start, index = ret
+            assert isinstance(el, Element)
             el = self.zulip_specific_link_changes(el)
             if el is not None:
                 return el, match_start, index
@@ -2548,7 +2553,7 @@ def maybe_update_markdown_engines(linkifiers_key: int, email_gateway: bool) -> N
 #
 # We also use repr() to improve reproducibility, and to escape terminal control
 # codes, which can do surprisingly nasty things.
-_privacy_re = re.compile("\\w")
+_privacy_re = re.compile(r"\w")
 
 
 def privacy_clean_markdown(content: str) -> str:
@@ -2662,7 +2667,7 @@ def do_convert(
         # extremely inefficient in corner cases) as well as user
         # errors (e.g. a linkifier that makes some syntax
         # infinite-loop).
-        rendering_result.rendered_content = timeout(5, lambda: _md_engine.convert(content))
+        rendering_result.rendered_content = unsafe_timeout(5, lambda: _md_engine.convert(content))
 
         # Throw an exception if the content is huge; this protects the
         # rest of the codebase from any bugs where we end up rendering
@@ -2743,3 +2748,38 @@ def markdown_convert(
     )
     markdown_stats_finish()
     return ret
+
+
+def render_message_markdown(
+    message: Message,
+    content: str,
+    realm: Optional[Realm] = None,
+    realm_alert_words_automaton: Optional[ahocorasick.Automaton] = None,
+    url_embed_data: Optional[Dict[str, Optional[UrlEmbedData]]] = None,
+    mention_data: Optional[MentionData] = None,
+    email_gateway: bool = False,
+) -> MessageRenderingResult:
+    """
+    This is basically just a wrapper for do_render_markdown.
+    """
+
+    if realm is None:
+        realm = message.get_realm()
+
+    sender = message.sender
+    sent_by_bot = sender.is_bot
+    translate_emoticons = sender.translate_emoticons
+
+    rendering_result = markdown_convert(
+        content,
+        realm_alert_words_automaton=realm_alert_words_automaton,
+        message=message,
+        message_realm=realm,
+        sent_by_bot=sent_by_bot,
+        translate_emoticons=translate_emoticons,
+        url_embed_data=url_embed_data,
+        mention_data=mention_data,
+        email_gateway=email_gateway,
+    )
+
+    return rendering_result

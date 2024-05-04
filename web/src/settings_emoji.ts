@@ -1,4 +1,5 @@
 import $ from "jquery";
+import assert from "minimalistic-assert";
 
 import emoji_codes from "../../static/generated/emoji/emoji_codes.json";
 import render_confirm_deactivate_custom_emoji from "../templates/confirm_dialog/confirm_deactivate_custom_emoji.hbs";
@@ -15,11 +16,11 @@ import type {ServerEmoji} from "./emoji";
 import {$t_html} from "./i18n";
 import * as ListWidget from "./list_widget";
 import * as loading from "./loading";
-import {page_params} from "./page_params";
 import * as people from "./people";
 import * as scroll_util from "./scroll_util";
 import * as settings_config from "./settings_config";
 import * as settings_data from "./settings_data";
+import {current_user, realm} from "./state_data";
 import * as ui_report from "./ui_report";
 import * as upload_widget from "./upload_widget";
 import * as util from "./util";
@@ -29,7 +30,7 @@ const meta = {
 };
 
 function can_delete_emoji(emoji: ServerEmoji): boolean {
-    if (page_params.is_admin) {
+    if (current_user.is_admin) {
         return true;
     }
     if (emoji.author_id === null) {
@@ -44,7 +45,7 @@ function can_delete_emoji(emoji: ServerEmoji): boolean {
 
 export function update_custom_emoji_ui(): void {
     const rendered_tip = render_settings_emoji_settings_tip({
-        realm_add_custom_emoji_policy: page_params.realm_add_custom_emoji_policy,
+        realm_add_custom_emoji_policy: realm.realm_add_custom_emoji_policy,
         policy_values: settings_config.common_policy_values,
     });
     $("#emoji-settings").find(".emoji-settings-tip-container").html(rendered_tip);
@@ -56,7 +57,7 @@ export function update_custom_emoji_ui(): void {
     } else {
         $(".add-emoji-text").show();
         $("#add-custom-emoji-button").show();
-        if (page_params.is_admin) {
+        if (current_user.is_admin) {
             $("#emoji-settings .emoji-settings-tip-container").show();
         } else {
             $("#emoji-settings .emoji-settings-tip-container").hide();
@@ -262,14 +263,14 @@ function show_modal(): void {
         }
 
         const formData = new FormData();
-        for (const [i, file] of Array.prototype.entries.call(
-            $<HTMLInputElement>("#emoji_file_input")[0].files,
-        )) {
+        const files = $<HTMLInputElement>("input#emoji_file_input")[0].files;
+        assert(files !== null);
+        for (const [i, file] of [...files].entries()) {
             formData.append("file-" + i, file);
         }
 
         if (is_default_emoji(emoji.name)) {
-            if (!page_params.is_admin) {
+            if (!current_user.is_admin) {
                 ui_report.client_error(
                     $t_html({
                         defaultMessage:

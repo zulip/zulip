@@ -405,34 +405,17 @@
                     flex-wrap: wrap;
                     column-gap: 10px;
                     grid-area: recipient_info;
-                    overflow: hidden;
+                    word-break: break-word;
 
                     .user_block {
                         display: flex;
                         align-items: center;
-                        white-space: nowrap;
-                        overflow: hidden;
 
-                        .fa-group {
-                            font-size: 11px;
+                        .zulip-icon-triple-users {
                             margin-right: 5px;
                             align-self: flex-start;
-                            margin-top: 5px;
                             opacity: 0.7;
                         }
-
-                        .user_status_icon_wrapper {
-                            overflow: hidden;
-                            text-overflow: ellipsis;
-                        }
-                    }
-
-                    .recipients_name {
-                        display: flex;
-                        flex-wrap: wrap;
-                        white-space: nowrap;
-                        gap: 2px;
-                        overflow: hidden;
                     }
                 }
             }
@@ -448,9 +431,18 @@
             &:focus,
             &:focus-within,
             &:hover {
+                .inbox-row-visibility-policy-inherit,
                 .inbox-action-button {
                     opacity: 1;
                 }
+            }
+        }
+
+        .inbox-row-visibility-policy-inherit {
+            opacity: 0;
+
+            &.visibility-policy-popover-visible {
+                opacity: 1;
             }
         }
 
@@ -560,8 +552,8 @@
     text-align: left;
 }
 
-#recent-view-filter_widget .fa-chevron-down,
-#inbox-filter_widget .fa-chevron-down {
+#recent-view-filter_widget .zulip-icon-chevron-down,
+#inbox-filter_widget .zulip-icon-chevron-down {
     color: var(--color-icons-inbox);
     opacity: 0.4;
 }

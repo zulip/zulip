@@ -108,7 +108,7 @@ class Addressee:
 
         if recipient_type_name == "stream":
             if len(message_to) > 1:
-                raise JsonableError(_("Cannot send to multiple streams"))
+                raise JsonableError(_("Cannot send to multiple channels"))
 
             if message_to:
                 stream_name_or_id = message_to[0]
@@ -120,7 +120,7 @@ class Addressee:
                     # Use the user's default stream
                     stream_name_or_id = sender.default_sending_stream_id
                 else:
-                    raise JsonableError(_("Missing stream"))
+                    raise JsonableError(_("Missing channel"))
 
             if topic_name is None:
                 raise JsonableError(_("Missing topic"))
@@ -193,6 +193,14 @@ class Addressee:
     @staticmethod
     def for_user_profile(user_profile: UserProfile) -> "Addressee":
         user_profiles = [user_profile]
+        return Addressee(
+            msg_type="private",
+            user_profiles=user_profiles,
+        )
+
+    @staticmethod
+    def for_user_profiles(user_profiles: Sequence[UserProfile]) -> "Addressee":
+        assert len(user_profiles) > 0
         return Addressee(
             msg_type="private",
             user_profiles=user_profiles,

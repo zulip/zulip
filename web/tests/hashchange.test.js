@@ -33,6 +33,7 @@ const hash_util = zrequire("hash_util");
 const hashchange = zrequire("hashchange");
 const narrow = zrequire("../src/narrow");
 const stream_data = zrequire("stream_data");
+const {Filter} = zrequire("../src/filter");
 
 run_test("terms_round_trip", () => {
     let terms;
@@ -76,6 +77,44 @@ run_test("terms_round_trip", () => {
     assert.equal(hash, "#narrow/stream/987-Florida.2C-USA");
     narrow = hash_util.parse_narrow(hash.split("/"));
     assert.deepEqual(narrow, [{operator: "stream", operand: "Florida, USA", negated: false}]);
+});
+
+run_test("stream_to_channel_rename", () => {
+    let terms;
+    let hash;
+    let narrow;
+    let filter;
+
+    // Confirm the URLs generated from search terms use "stream" and "streams"
+    // and that the new Filter has the new "channel" and "channels" operators.
+    terms = [{operator: "channel", operand: "devel"}];
+    hash = hash_util.search_terms_to_hash(terms);
+    assert.equal(hash, "#narrow/stream/devel");
+    narrow = hash_util.parse_narrow(hash.split("/"));
+    assert.deepEqual(narrow, [{operator: "stream", operand: "devel", negated: false}]);
+    filter = new Filter(narrow);
+    assert.deepEqual(filter.terms(), [{operator: "channel", operand: "devel", negated: false}]);
+
+    terms = [{operator: "channels", operand: "public"}];
+    hash = hash_util.search_terms_to_hash(terms);
+    assert.equal(hash, "#narrow/streams/public");
+    narrow = hash_util.parse_narrow(hash.split("/"));
+    assert.deepEqual(narrow, [{operator: "streams", operand: "public", negated: false}]);
+    filter = new Filter(narrow);
+    assert.deepEqual(filter.terms(), [{operator: "channels", operand: "public", negated: false}]);
+
+    // Confirm that a narrow URL with "channel" and an enocoded stream/channel ID,
+    // will be decoded correctly.
+    const test_channel = {
+        name: "decode",
+        stream_id: 34,
+    };
+    stream_data.add_sub(test_channel);
+    hash = "#narrow/channel/34-decode";
+    narrow = hash_util.parse_narrow(hash.split("/"));
+    assert.deepEqual(narrow, [{operator: "channel", operand: "decode", negated: false}]);
+    filter = new Filter(narrow);
+    assert.deepEqual(filter.terms(), [{operator: "channel", operand: "decode", negated: false}]);
 });
 
 run_test("terms_trailing_slash", () => {
@@ -134,7 +173,6 @@ function test_helper({override, override_rewire, change_tab}) {
     stub(admin, "build_page");
     stub(drafts_overlay_ui, "launch");
     stub(message_viewport, "stop_auto_scrolling");
-    stub(narrow, "deactivate");
     stub(overlays, "close_for_hash_change");
     stub(settings, "launch");
     stub(settings, "build_page");
@@ -190,7 +228,7 @@ run_test("hash_interactions", ({override, override_rewire}) => {
         [message_viewport, "stop_auto_scrolling"],
     ]);
 
-    window.location.hash = "#all_messages";
+    window.location.hash = "#feed";
     hide_all_called = false;
 
     helper.clear_events();
@@ -199,7 +237,7 @@ run_test("hash_interactions", ({override, override_rewire}) => {
     helper.assert_events([
         [overlays, "close_for_hash_change"],
         [message_viewport, "stop_auto_scrolling"],
-        [narrow, "deactivate"],
+        "narrow.activate",
     ]);
 
     helper.clear_events();
@@ -207,7 +245,7 @@ run_test("hash_interactions", ({override, override_rewire}) => {
     helper.assert_events([
         [overlays, "close_for_hash_change"],
         [message_viewport, "stop_auto_scrolling"],
-        [narrow, "deactivate"],
+        "narrow.activate",
     ]);
 
     // Test old "#recent_topics" hash redirects to "#recent".
@@ -258,7 +296,7 @@ run_test("hash_interactions", ({override, override_rewire}) => {
         [ui_report, "error"],
     ]);
 
-    window.location.hash = "#streams/whatever";
+    window.location.hash = "#channels/subscribed";
 
     helper.clear_events();
     $window_stub.trigger("hashchange");

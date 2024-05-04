@@ -37,7 +37,7 @@ from django.http.request import QueryDict
 from django.http.response import HttpResponseBase
 from django.test import override_settings
 from django.urls import URLResolver
-from moto.s3 import mock_s3
+from moto.core.decorator import mock_aws
 from mypy_boto3_s3.service_resource import Bucket
 from typing_extensions import ParamSpec, override
 
@@ -53,7 +53,7 @@ from zerver.lib.rate_limiter import RateLimitedIPAddr, rules
 from zerver.lib.request import RequestNotes
 from zerver.lib.upload.s3 import S3UploadBackend
 from zerver.models import Client, Message, RealmUserDefault, Subscription, UserMessage, UserProfile
-from zerver.models.clients import get_client
+from zerver.models.clients import clear_client_cache, get_client
 from zerver.models.realms import get_realm
 from zerver.models.streams import get_stream
 from zerver.tornado.handlers import AsyncDjangoHandler, allocate_handler_id
@@ -181,6 +181,7 @@ def queries_captured(
         cache = get_cache_backend(None)
         cache.clear()
         flush_per_request_caches()
+        clear_client_cache()
     with mock.patch.multiple(
         TimeTrackingCursor, execute=cursor_execute, executemany=cursor_executemany
     ):
@@ -260,7 +261,7 @@ def make_client(name: str) -> Client:
 def find_key_by_email(address: str) -> Optional[str]:
     from django.core.mail import outbox
 
-    key_regex = re.compile("accounts/do_confirm/([a-z0-9]{24})>")
+    key_regex = re.compile(r"accounts/do_confirm/([a-z0-9]{24})>")
     for message in reversed(outbox):
         if address in message.to:
             match = key_regex.search(str(message.body))
@@ -504,6 +505,7 @@ def write_instrumentation_reports(full_suite: bool, include_webhooks: bool) -> N
             "config-error/(?P<error_name>[^/]+)",
             "confirmation_key/",
             "node-coverage/(?P<path>.+)",
+            "docs/",
             "docs/(?P<path>.+)",
             "casper/(?P<path>.+)",
             "static/(?P<path>.+)",
@@ -524,9 +526,9 @@ def write_instrumentation_reports(full_suite: bool, include_webhooks: bool) -> N
             "scim/v2/ServiceProviderConfig",
             "scim/v2/Groups(?:/(?P<uuid>[^/]+))?",
             "scim/v2/Groups/.search",
-            # TODO: This endpoint and the rest of its system are a work in progress,
-            # we are not testing it yet.
-            "self-hosted-billing/",
+            # This endpoint only returns 500 and 404 codes, so it doesn't get picked up
+            # by find_pattern above and therefore needs to be exempt.
+            "self-hosted-billing/not-configured/",
             *(webhook.url for webhook in WEBHOOK_INTEGRATIONS if not include_webhooks),
         }
 
@@ -562,7 +564,7 @@ P = ParamSpec("P")
 
 
 def use_s3_backend(method: Callable[P, None]) -> Callable[P, None]:
-    @mock_s3
+    @mock_aws
     @override_settings(LOCAL_UPLOADS_DIR=None)
     @override_settings(LOCAL_AVATARS_DIR=None)
     @override_settings(LOCAL_FILES_DIR=None)
@@ -584,7 +586,7 @@ TestCaseT = TypeVar("TestCaseT", bound="MigrationsTestCase")
 
 
 def use_db_models(
-    method: Callable[[TestCaseT, StateApps], None]
+    method: Callable[[TestCaseT, StateApps], None],
 ) -> Callable[[TestCaseT, StateApps], None]:  # nocoverage
     def method_patched_with_mock(self: TestCaseT, apps: StateApps) -> None:
         ArchivedAttachment = apps.get_model("zerver", "ArchivedAttachment")
@@ -614,7 +616,7 @@ def use_db_models(
         Recipient = apps.get_model("zerver", "Recipient")
         Recipient.PERSONAL = 1
         Recipient.STREAM = 2
-        Recipient.HUDDLE = 3
+        Recipient.DIRECT_MESSAGE_GROUP = 3
         ScheduledEmail = apps.get_model("zerver", "ScheduledEmail")
         ScheduledMessage = apps.get_model("zerver", "ScheduledMessage")
         Service = apps.get_model("zerver", "Service")
@@ -732,18 +734,6 @@ def mock_queue_publish(
 
     with mock.patch(method_to_patch, side_effect=verify_serialize):
         yield inner
-
-
-@contextmanager
-def timeout_mock(mock_path: str) -> Iterator[None]:
-    # timeout() doesn't work in test environment with database operations
-    # and they don't get committed - so we need to replace it with a mock
-    # that just calls the function.
-    def mock_timeout(seconds: int, func: Callable[[], object]) -> object:
-        return func()
-
-    with mock.patch(f"{mock_path}.timeout", new=mock_timeout):
-        yield
 
 
 @contextmanager

@@ -30,7 +30,7 @@ ALL_HOTSPOTS = {
 ### Step 2: Configure hotspot placement
 
 The target element and visual orientation of each hotspot is specified in
-`HOTSPOT_LOCATIONS` of `web/src/hotspots.js`.
+`HOTSPOT_LOCATIONS` of `web/src/hotspots.ts`.
 
 The `icon_offset` property specifies where the pulsing icon is placed _relative to
 the width and height of the target element_.

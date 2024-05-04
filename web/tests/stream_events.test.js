@@ -9,7 +9,7 @@ const blueslip = require("./lib/zblueslip");
 const $ = require("./lib/zjquery");
 
 const color_data = mock_esm("../src/color_data");
-const compose_fade = mock_esm("../src/compose_fade");
+const compose_recipient = mock_esm("../src/compose_recipient");
 const stream_color_events = mock_esm("../src/stream_color_events");
 const stream_list = mock_esm("../src/stream_list");
 const stream_muting = mock_esm("../src/stream_muting");
@@ -20,7 +20,7 @@ const stream_settings_ui = mock_esm("../src/stream_settings_ui", {
 });
 const unread_ui = mock_esm("../src/unread_ui");
 const message_lists = mock_esm("../src/message_lists", {
-    current: {},
+    current: undefined,
 });
 const message_view_header = mock_esm("../src/message_view_header", {
     maybe_rerender_title_area_for_stream() {},
@@ -37,13 +37,14 @@ mock_esm("../src/overlays", {
 const user_profile = mock_esm("../src/user_profile");
 
 const {Filter} = zrequire("../src/filter");
+const activity_ui = zrequire("activity_ui");
+const {buddy_list} = zrequire("buddy_list");
 const narrow_state = zrequire("narrow_state");
 const peer_data = zrequire("peer_data");
 const people = zrequire("people");
 const settings_config = zrequire("settings_config");
 const stream_data = zrequire("stream_data");
 const stream_events = zrequire("stream_events");
-const compose_recipient = zrequire("compose_recipient");
 
 const george = {
     email: "george@zulip.com",
@@ -79,7 +80,11 @@ const frontend = {
 
 function narrow_to_frontend() {
     const filter = new Filter([{operator: "stream", operand: "frontend"}]);
-    narrow_state.set_current_filter(filter);
+    message_lists.current = {
+        data: {
+            filter,
+        },
+    };
 }
 
 function test(label, f) {
@@ -89,9 +94,9 @@ function test(label, f) {
     });
 }
 
-test("update_property", ({override, override_rewire}) => {
-    override_rewire(compose_recipient, "possibly_update_stream_name_in_compose", noop);
-    override_rewire(compose_recipient, "on_compose_select_recipient_update", noop);
+test("update_property", ({override}) => {
+    override(compose_recipient, "possibly_update_stream_name_in_compose", noop);
+    override(compose_recipient, "on_compose_select_recipient_update", noop);
 
     const sub = {...frontend};
     stream_data.add_sub(sub);
@@ -286,6 +291,8 @@ test("marked_subscribed (normal)", ({override}) => {
     const sub = {...frontend};
     stream_data.add_sub(sub);
     override(stream_color_events, "update_stream_color", noop);
+    override(buddy_list, "populate", noop);
+    activity_ui.set_cursor_and_filter();
 
     narrow_to_frontend();
 
@@ -307,7 +314,7 @@ test("marked_subscribed (normal)", ({override}) => {
     });
     override(user_profile, "update_user_profile_streams_list_for_users", noop);
 
-    $("#streams_overlay_container .stream-row:not(.notdisplayed)").length = 0;
+    $("#channels_overlay_container .stream-row:not(.notdisplayed)").length = 0;
 
     stream_events.mark_subscribed(sub, [], "blue");
 
@@ -318,7 +325,7 @@ test("marked_subscribed (normal)", ({override}) => {
     assert.equal(list_updated, true);
 
     assert.equal(sub.color, "blue");
-    narrow_state.reset_current_filter();
+    message_lists.current = undefined;
 });
 
 test("marked_subscribed (color)", ({override}) => {
@@ -338,7 +345,7 @@ test("marked_subscribed (color)", ({override}) => {
     override(color_data, "pick_color", () => "green");
     override(user_profile, "update_user_profile_streams_list_for_users", noop);
 
-    $("#streams_overlay_container .stream-row:not(.notdisplayed)").length = 0;
+    $("#channels_overlay_container .stream-row:not(.notdisplayed)").length = 0;
 
     // narrow state is undefined
     {
@@ -369,7 +376,7 @@ test("marked_subscribed (emails)", ({override}) => {
     override(stream_settings_ui, "update_settings_for_subscribed", subs_stub.f);
     override(user_profile, "update_user_profile_streams_list_for_users", noop);
 
-    $("#streams_overlay_container .stream-row:not(.notdisplayed)").length = 0;
+    $("#channels_overlay_container .stream-row:not(.notdisplayed)").length = 0;
 
     assert.ok(!stream_data.is_subscribed_by_name(sub.name));
 
@@ -396,7 +403,7 @@ test("mark_unsubscribed (update_settings_for_unsubscribed)", ({override}) => {
     override(unread_ui, "update_unread_counts", noop);
     override(user_profile, "update_user_profile_streams_list_for_users", noop);
 
-    $("#streams_overlay_container .stream-row:not(.notdisplayed)").length = 0;
+    $("#channels_overlay_container .stream-row:not(.notdisplayed)").length = 0;
 
     stream_events.mark_unsubscribed(sub);
     const args = stub.get_args("sub");
@@ -422,14 +429,15 @@ test("mark_unsubscribed (render_title_area)", ({override}) => {
     override(unread_ui, "update_unread_counts", noop);
     override(unread_ui, "hide_unread_banner", noop);
     override(user_profile, "update_user_profile_streams_list_for_users", noop);
+    override(buddy_list, "populate", noop);
 
-    $("#streams_overlay_container .stream-row:not(.notdisplayed)").length = 0;
+    $("#channels_overlay_container .stream-row:not(.notdisplayed)").length = 0;
 
     stream_events.mark_unsubscribed(sub);
 
     assert.equal(message_view_header_stub.num_calls, 1);
 
-    narrow_state.reset_current_filter();
+    message_lists.current = undefined;
 });
 
 test("remove_deactivated_user_from_all_streams", () => {
@@ -450,13 +458,14 @@ test("remove_deactivated_user_from_all_streams", () => {
     assert.equal(subs_stub.num_calls, 1);
 });
 
-test("process_subscriber_update", ({override}) => {
+test("process_subscriber_update", ({override, override_rewire}) => {
     const subsStub = make_stub();
     stream_settings_ui.update_subscribers_ui = subsStub.f;
 
-    const fadedUsersStub = make_stub();
-    override(compose_fade, "update_faded_users", fadedUsersStub.f);
-
+    let build_user_sidebar_called = false;
+    override_rewire(activity_ui, "build_user_sidebar", () => {
+        build_user_sidebar_called = true;
+    });
     override(user_profile, "update_user_profile_streams_list_for_users", noop);
     // Sample user IDs
     const userIds = [104, 2, 3];
@@ -469,6 +478,11 @@ test("process_subscriber_update", ({override}) => {
     // Assert that update_subscribers_ui is called for each stream ID
     assert.equal(subsStub.num_calls, streamIds.length);
 
-    // Assert that update_faded_users is called once
-    assert.equal(fadedUsersStub.num_calls, 1);
+    assert.ok(!build_user_sidebar_called);
+
+    // For a stream the user is currently viewing, we rebuild the user sidebar
+    // when someone subscribes to that stream.
+    override_rewire(narrow_state, "stream_id", () => 1);
+    stream_events.process_subscriber_update(userIds, streamIds);
+    assert.ok(build_user_sidebar_called);
 });

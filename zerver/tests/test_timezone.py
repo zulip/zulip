@@ -1,15 +1,10 @@
-import sys
 from datetime import datetime, timezone
 
+import zoneinfo
 from django.utils.timezone import now as timezone_now
 
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.timezone import canonicalize_timezone, common_timezones
-
-if sys.version_info < (3, 9):  # nocoverage
-    from backports import zoneinfo
-else:  # nocoverage
-    import zoneinfo
 
 
 class TimeZoneTest(ZulipTestCase):

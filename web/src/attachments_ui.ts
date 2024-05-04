@@ -10,8 +10,8 @@ import * as dialog_widget from "./dialog_widget";
 import {$t, $t_html} from "./i18n";
 import * as ListWidget from "./list_widget";
 import * as loading from "./loading";
-import {page_params} from "./page_params";
 import * as scroll_util from "./scroll_util";
+import {realm} from "./state_data";
 import * as timerender from "./timerender";
 import * as ui_report from "./ui_report";
 
@@ -70,21 +70,25 @@ export function bytes_to_size(bytes: number, kb_with_1024_bytes = false): string
     return size + " " + sizes[i];
 }
 
+export function mib_to_bytes(mib: number): number {
+    return mib * 1024 * 1024;
+}
+
 export function percentage_used_space(uploads_size: number): string | null {
-    if (page_params.realm_upload_quota_mib === null) {
+    if (realm.realm_upload_quota_mib === null) {
         return null;
     }
-    return ((100 * uploads_size) / page_params.realm_upload_quota_mib).toFixed(1);
+    return ((100 * uploads_size) / mib_to_bytes(realm.realm_upload_quota_mib)).toFixed(1);
 }
 
 function set_upload_space_stats(): void {
-    if (page_params.realm_upload_quota_mib === null) {
+    if (realm.realm_upload_quota_mib === null) {
         return;
     }
     const args = {
-        show_upgrade_message: page_params.realm_plan_type === 2,
+        show_upgrade_message: realm.realm_plan_type === 2,
         percent_used: percentage_used_space(upload_space_used),
-        upload_quota: bytes_to_size(page_params.realm_upload_quota_mib, true),
+        upload_quota: bytes_to_size(mib_to_bytes(realm.realm_upload_quota_mib), true),
     };
     const rendered_upload_stats_html = render_settings_upload_space_stats(args);
     $("#attachment-stats-holder").html(rendered_upload_stats_html);
@@ -100,7 +104,7 @@ function delete_attachments(attachment: string, file_name: string): void {
         id: "confirm_delete_file_modal",
         focus_submit_on_open: true,
         on_click() {
-            dialog_widget.submit_api_request(channel.del, "/json/attachments/" + attachment);
+            dialog_widget.submit_api_request(channel.del, "/json/attachments/" + attachment, {});
         },
         loading_spinner: true,
     });

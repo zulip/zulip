@@ -24,11 +24,11 @@ import orjson
 import requests
 from django.forms.models import model_to_dict
 from django.utils.timezone import now as timezone_now
-from returns.curry import partial
 from typing_extensions import TypeAlias
 
 from zerver.data_import.sequencer import NEXT_ID
 from zerver.lib.avatar_hash import user_avatar_path_from_ids
+from zerver.lib.partial import partial
 from zerver.lib.stream_color import STREAM_ASSIGNMENT_COLORS as STREAM_COLORS
 from zerver.models import (
     Attachment,
@@ -41,7 +41,7 @@ from zerver.models import (
     Subscription,
     UserProfile,
 )
-from zproject.backends import all_implemented_backend_names
+from zproject.backends import all_default_backend_names
 
 # stubs
 ZerverFieldsT: TypeAlias = Dict[str, Any]
@@ -214,8 +214,7 @@ def build_subscription(recipient_id: int, user_id: int, subscription_id: int) ->
 
 
 class GetUsers(Protocol):
-    def __call__(self, stream_id: int = ..., huddle_id: int = ...) -> Set[int]:
-        ...
+    def __call__(self, stream_id: int = ..., huddle_id: int = ...) -> Set[int]: ...
 
 
 def build_stream_subscriptions(
@@ -258,7 +257,8 @@ def build_huddle_subscriptions(
     recipient_map = {
         recipient["id"]: recipient["type_id"]  # recipient_id -> stream_id
         for recipient in zerver_recipient
-        if recipient["type"] == Recipient.HUDDLE and recipient["type_id"] in huddle_ids
+        if recipient["type"] == Recipient.DIRECT_MESSAGE_GROUP
+        and recipient["type_id"] in huddle_ids
     }
 
     for recipient_id, huddle_id in recipient_map.items():
@@ -311,7 +311,7 @@ def build_recipients(
 ) -> List[ZerverFieldsT]:
     """
     This function was only used HipChat import, this function may be
-    required for future conversions. The Slack and Gitter conversions do it more
+    required for future conversions. The Slack conversions do it more
     tightly integrated with creating other objects.
     """
 
@@ -341,7 +341,7 @@ def build_recipients(
 
     for huddle in zerver_huddle:
         type_id = huddle["id"]
-        type = Recipient.HUDDLE
+        type = Recipient.DIRECT_MESSAGE_GROUP
         recipient = Recipient(
             type_id=type_id,
             id=NEXT_ID("recipient"),
@@ -379,7 +379,7 @@ def build_realm(
         zerver_realmplayground=[],
         zerver_realmauthenticationmethod=[
             {"realm": realm_id, "name": name, "id": i}
-            for i, name in enumerate(all_implemented_backend_names(), start=1)
+            for i, name in enumerate(all_default_backend_names(), start=1)
         ],
     )
     return realm
@@ -583,7 +583,7 @@ def process_avatars(
     2. avatar_dir: Folder where the downloaded avatars are saved
     3. realm_id: Realm ID.
 
-    We use this for Slack and Gitter conversions, where avatars need to be
+    We use this for Slack conversions, where avatars need to be
     downloaded.  For simpler conversions see write_avatar_png.
     """
 
@@ -635,12 +635,10 @@ def run_parallel_wrapper(
     logging.info("Distributing %s items across %s threads", len(full_items), threads)
 
     with ProcessPoolExecutor(max_workers=threads) as executor:
-        count = 0
-        for future in as_completed(
-            executor.submit(wrapping_function, f, item) for item in full_items
+        for count, future in enumerate(
+            as_completed(executor.submit(wrapping_function, f, item) for item in full_items), 1
         ):
             future.result()
-            count += 1
             if count % 1000 == 0:
                 logging.info("Finished %s items", count)
 

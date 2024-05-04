@@ -36,7 +36,7 @@ preparing a new release.
   them. Use the `--branch 6.x` parameter for maintenance releases.
 - Use `build-release-tarball` to generate a pre-release tarball.
 - Test the new tarball extensively, both new install and upgrade from last
-  release, on Ubuntu 20.04 or 22.04.
+  release, on Ubuntu 22.04.
 - Repeat until release is ready.
 - Send around the Paper blog post draft for review.
 - Move the blog post draft to Astro:
@@ -109,7 +109,7 @@ preparing a new release.
     resources and archive the previous release branch's resources with
     the "Translations can't translate this resource" setting.
   - Add a new CI production upgrade target:
-    - Build a docker image: `cd tools/ci && docker build . -f Dockerfile.prod --build-arg=BASE_IMAGE=zulip/ci:bullseye --build-arg=VERSION=5.0 --tag=zulip/ci:bullseye-5.0 && docker push zulip/ci:bullseye-5.0`
+    - Build a docker image: `cd tools/ci && docker build . -f Dockerfile.prod --build-arg=BASE_IMAGE=zulip/ci:bookworm --build-arg=VERSION=7.0 --tag=zulip/ci:bookworm-7.0 && docker push zulip/ci:bookworm-7.0`
     - Add a new line to the `production_upgrade` matrix in
       `.github/workflows/production-suite.yml`.
 - _Minor releases only (e.g. 3.2):_

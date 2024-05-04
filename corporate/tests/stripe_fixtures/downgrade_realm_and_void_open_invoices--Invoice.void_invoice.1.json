@@ -13,6 +13,7 @@
   "auto_advance": false,
   "automatic_tax": {
     "enabled": false,
+    "liability": null,
     "status": null
   },
   "billing_reason": "manual",
@@ -40,9 +41,12 @@
   "ending_balance": 0,
   "footer": null,
   "from_invoice": null,
-  "hosted_invoice_url": "https://invoice.stripe.com/i/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QRDdDRzl1UFVSWmU1RkJPM3JUaWNYcnZSSkdYQktXLDkzNDQ3MzEx0200EOo1xf7B?s=ap",
-  "id": "in_NORMALIZED00000000000002",
-  "invoice_pdf": "https://pay.stripe.com/invoice/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QRDdDRzl1UFVSWmU1RkJPM3JUaWNYcnZSSkdYQktXLDkzNDQ3MzEx0200EOo1xf7B/pdf?s=ap",
+  "hosted_invoice_url": "https://invoice.stripe.com/i/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QdHBQQlp4TEJKZWtIOWI2bWJRMGduaEkyNnFFVnhQLDEwMzI5ODYxNQ0200KDcorUOk?s=ap",
+  "id": "in_NORMALIZED00000000000004",
+  "invoice_pdf": "https://pay.stripe.com/invoice/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QdHBQQlp4TEJKZWtIOWI2bWJRMGduaEkyNnFFVnhQLDEwMzI5ODYxNQ0200KDcorUOk/pdf?s=ap",
+  "issuer": {
+    "type": "self"
+  },
   "last_finalization_error": null,
   "latest_revision": null,
   "lines": {
@@ -51,18 +55,19 @@
         "amount": 984000,
         "amount_excluding_tax": 984000,
         "currency": "usd",
-        "description": "Zulip Cloud Standard",
+        "description": "Zulip Cloud Standard - renewal",
         "discount_amounts": [],
         "discountable": false,
         "discounts": [],
-        "id": "il_NORMALIZED00000000000002",
-        "invoice_item": "ii_NORMALIZED00000000000002",
+        "id": "il_NORMALIZED00000000000005",
+        "invoice": "in_NORMALIZED00000000000004",
+        "invoice_item": "ii_NORMALIZED00000000000008",
         "livemode": false,
         "metadata": {},
         "object": "line_item",
         "period": {
-          "end": 1357095845,
-          "start": 1325473445
+          "end": 1388631845,
+          "start": 1357095845
         },
         "plan": null,
         "price": {
@@ -71,13 +76,13 @@
           "created": 1000000000,
           "currency": "usd",
           "custom_unit_amount": null,
-          "id": "price_NORMALIZED00000000000002",
+          "id": "price_NORMALIZED00000000000006",
           "livemode": false,
           "lookup_key": null,
           "metadata": {},
           "nickname": null,
           "object": "price",
-          "product": "prod_NORMALIZED0002",
+          "product": "prod_NORMALIZED0006",
           "recurring": null,
           "tax_behavior": "unspecified",
           "tiers_mode": null,
@@ -101,17 +106,17 @@
     "has_more": false,
     "object": "list",
     "total_count": 1,
-    "url": "/v1/invoices/in_NORMALIZED00000000000002/lines"
+    "url": "/v1/invoices/in_NORMALIZED00000000000004/lines"
   },
   "livemode": false,
   "metadata": {},
   "next_payment_attempt": null,
-  "number": "NORMALI-0002",
+  "number": "NORMALI-0005",
   "object": "invoice",
   "on_behalf_of": null,
   "paid": false,
   "paid_out_of_band": false,
-  "payment_intent": "pi_NORMALIZED00000000000002",
+  "payment_intent": "pi_NORMALIZED00000000000004",
   "payment_settings": {
     "default_mandate": null,
     "payment_method_options": null,

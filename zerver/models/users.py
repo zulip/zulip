@@ -78,6 +78,15 @@ class UserBaseSettings(models.Model):
     COLOR_SCHEME_CHOICES = [COLOR_SCHEME_AUTOMATIC, COLOR_SCHEME_NIGHT, COLOR_SCHEME_LIGHT]
     color_scheme = models.PositiveSmallIntegerField(default=COLOR_SCHEME_AUTOMATIC)
 
+    # Information density is established through
+    # adjustments to the font size and line height.
+    WEB_FONT_SIZE_PX_LEGACY = 14
+    WEB_LINE_HEIGHT_PERCENT_LEGACY = 122
+    web_font_size_px = models.PositiveSmallIntegerField(default=WEB_FONT_SIZE_PX_LEGACY)
+    web_line_height_percent = models.PositiveSmallIntegerField(
+        default=WEB_LINE_HEIGHT_PERCENT_LEGACY
+    )
+
     # UI setting controlling Zulip's behavior of demoting in the sort
     # order and graying out streams with no recent traffic.  The
     # default behavior, automatic, enables this behavior once a user
@@ -236,6 +245,9 @@ class UserBaseSettings(models.Model):
     send_private_typing_notifications = models.BooleanField(default=True)
     send_read_receipts = models.BooleanField(default=True)
 
+    # Whether the user wants to see typing notifications.
+    receives_typing_notifications = models.BooleanField(default=True)
+
     # Who in the organization has access to users' actual email
     # addresses.  Controls whether the UserProfile.email field is
     # the same as UserProfile.delivery_email, or is instead a fake
@@ -308,12 +320,15 @@ class UserBaseSettings(models.Model):
         display_emoji_reaction_users=bool,
         email_address_visibility=int,
         web_escape_navigates_to_home_view=bool,
+        receives_typing_notifications=bool,
         send_private_typing_notifications=bool,
         send_read_receipts=bool,
         send_stream_typing_notifications=bool,
         web_mark_read_on_scroll_policy=int,
         user_list_style=int,
         web_stream_unreads_count_display_policy=int,
+        web_font_size_px=int,
+        web_line_height_percent=int,
     )
 
     modern_notification_settings: Dict[str, Any] = dict(
@@ -579,6 +594,15 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
         ROLE_GUEST: gettext_lazy("Guest"),
     }
 
+    class Meta:
+        indexes = [
+            models.Index(Upper("email"), name="upper_userprofile_email_idx"),
+        ]
+
+    @override
+    def __str__(self) -> str:
+        return f"{self.email} {self.realm!r}"
+
     def get_role_name(self) -> str:
         return str(self.ROLE_ID_TO_NAME_MAP[self.role])
 
@@ -594,8 +618,9 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
         for field in custom_profile_fields_for_realm(self.realm_id):
             field_values = user_data.get(field.id, None)
             if field_values:
-                value, rendered_value = field_values.get("value"), field_values.get(
-                    "rendered_value"
+                value, rendered_value = (
+                    field_values.get("value"),
+                    field_values.get("rendered_value"),
                 )
             else:
                 value, rendered_value = None, None
@@ -628,10 +653,6 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
             return True
         else:
             return False
-
-    @override
-    def __str__(self) -> str:
-        return f"{self.email} {self.realm!r}"
 
     @property
     def is_provisional_member(self) -> bool:
@@ -843,11 +864,6 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
 
         super().set_password(password)
 
-    class Meta:
-        indexes = [
-            models.Index(Upper("email"), name="upper_userprofile_email_idx"),
-        ]
-
 
 class PasswordTooWeakError(Exception):
     pass
@@ -867,7 +883,10 @@ post_save.connect(flush_user_profile, sender=UserProfile)
 @cache_with_key(user_profile_by_id_cache_key, timeout=3600 * 24 * 7)
 def get_user_profile_by_id(user_profile_id: int) -> UserProfile:
     return UserProfile.objects.select_related(
-        "realm", "realm__can_access_all_users_group", "bot_owner"
+        "realm",
+        "realm__can_access_all_users_group",
+        "realm__can_access_all_users_group__named_user_group",
+        "bot_owner",
     ).get(id=user_profile_id)
 
 
@@ -885,7 +904,10 @@ def get_user_profile_by_email(email: str) -> UserProfile:
 def maybe_get_user_profile_by_api_key(api_key: str) -> Optional[UserProfile]:
     try:
         return UserProfile.objects.select_related(
-            "realm", "realm__can_access_all_users_group", "bot_owner"
+            "realm",
+            "realm__can_access_all_users_group",
+            "realm__can_access_all_users_group__named_user_group",
+            "bot_owner",
         ).get(api_key=api_key)
     except UserProfile.DoesNotExist:
         # We will cache failed lookups with None.  The
@@ -911,7 +933,10 @@ def get_user_by_delivery_email(email: str, realm: "Realm") -> UserProfile:
     those code paths.
     """
     return UserProfile.objects.select_related(
-        "realm", "realm__can_access_all_users_group", "bot_owner"
+        "realm",
+        "realm__can_access_all_users_group",
+        "realm__can_access_all_users_group__named_user_group",
+        "bot_owner",
     ).get(delivery_email__iexact=email.strip(), realm=realm)
 
 
@@ -948,7 +973,10 @@ def get_user(email: str, realm: "Realm") -> UserProfile:
     get_user_by_delivery_email.
     """
     return UserProfile.objects.select_related(
-        "realm", "realm__can_access_all_users_group", "bot_owner"
+        "realm",
+        "realm__can_access_all_users_group",
+        "realm__can_access_all_users_group__named_user_group",
+        "bot_owner",
     ).get(email__iexact=email.strip(), realm=realm)
 
 
@@ -963,7 +991,10 @@ def get_active_user(email: str, realm: "Realm") -> UserProfile:
 
 def get_user_profile_by_id_in_realm(uid: int, realm: "Realm") -> UserProfile:
     return UserProfile.objects.select_related(
-        "realm", "realm__can_access_all_users_group", "bot_owner"
+        "realm",
+        "realm__can_access_all_users_group",
+        "realm__can_access_all_users_group__named_user_group",
+        "bot_owner",
     ).get(id=uid, realm=realm)
 
 
@@ -1046,9 +1077,9 @@ def active_non_guest_user_ids(realm_id: int) -> List[int]:
 
 def bot_owner_user_ids(user_profile: UserProfile) -> Set[int]:
     is_private_bot = (
-        user_profile.default_sending_stream
-        and user_profile.default_sending_stream.invite_only
-        or user_profile.default_events_register_stream
+        user_profile.default_sending_stream and user_profile.default_sending_stream.invite_only
+    ) or (
+        user_profile.default_events_register_stream
         and user_profile.default_events_register_stream.invite_only
     )
     assert user_profile.bot_owner_id is not None

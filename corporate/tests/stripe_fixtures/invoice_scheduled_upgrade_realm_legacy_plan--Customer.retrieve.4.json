@@ -1,30 +1,30 @@
 {
   "address": null,
   "balance": 0,
-  "created": 1705936954,
+  "created": 1000000000,
   "currency": null,
   "default_currency": null,
   "default_source": null,
   "delinquent": false,
-  "description": "zulip.testserver 15439a7d-691",
+  "description": "zulip.testserver f27ccad7-fd5",
   "discount": null,
   "email": "hamlet@zulip.com",
-  "id": "cus_PQFq9E4uE975fx",
-  "invoice_prefix": "A8DC88AC",
+  "id": "cus_NORMALIZED0001",
+  "invoice_prefix": "NORMA01",
   "invoice_settings": {
     "custom_fields": null,
     "default_payment_method": {
       "billing_details": {
         "address": {
-          "city": null,
-          "country": null,
-          "line1": null,
+          "city": "San Francisco",
+          "country": "US",
+          "line1": "123 Main St",
           "line2": null,
-          "postal_code": null,
-          "state": null
+          "postal_code": "94105",
+          "state": "CA"
         },
         "email": null,
-        "name": null,
+        "name": "John Doe",
         "phone": null
       },
       "card": {
@@ -35,9 +35,10 @@
           "cvc_check": "pass"
         },
         "country": "US",
-        "exp_month": 1,
+        "display_brand": "visa",
+        "exp_month": 4,
         "exp_year": 2025,
-        "fingerprint": "9XKsMixKBi6kIIzd",
+        "fingerprint": "NORMALIZED000001",
         "funding": "credit",
         "generated_from": null,
         "last4": "4242",
@@ -52,9 +53,9 @@
         },
         "wallet": null
       },
-      "created": 1705936956,
-      "customer": "cus_PQFq9E4uE975fx",
-      "id": "pm_1ObPKaDEQaroqDjsfNthLIRI",
+      "created": 1000000000,
+      "customer": "cus_NORMALIZED0001",
+      "id": "pm_1P41jmDEQaroqDjs9qzS8nzJ",
       "livemode": false,
       "metadata": {},
       "object": "payment_method",
@@ -66,7 +67,7 @@
   "livemode": false,
   "metadata": {
     "remote_realm_host": "zulip.testserver",
-    "remote_realm_uuid": "15439a7d-6911-4d6e-a26a-154a525214ab"
+    "remote_realm_uuid": "f27ccad7-fd5b-42cf-947a-3763c39673b7"
   },
   "name": null,
   "next_invoice_sequence": 1,

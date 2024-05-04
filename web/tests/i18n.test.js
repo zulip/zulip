@@ -15,9 +15,9 @@ page_params.request_language = "en";
 page_params.translation_data = {
     "Quote and reply": "Citer et répondre",
     "Notification triggers": "Déclencheurs de notification",
-    "You subscribed to stream {stream}": "Vous n'êtes pas abonnés au canal {stream}",
-    "<p>The stream <b>{stream_name}</b> does not exist.</p><p>Manage your subscriptions <z-link>on your Streams page</z-link>.</p>":
-        "<p>Le canal <b>{stream_name}</b> n'existe pas.</p><p>Gérez vos abonnements <z-link>sur votre page canaux</z-link>.</p>",
+    "You subscribed to channel {name}": "Vous n'êtes pas abonnés au canal {name}",
+    "<p>The channel <b>{name}</b> does not exist.</p><p>Manage your subscriptions <z-link>on your Channels page</z-link>.</p>":
+        "<p>Le canal <b>{name}</b> n'existe pas.</p><p>Gérez vos abonnements <z-link>sur votre page canaux</z-link>.</p>",
 };
 
 // Re-register Zulip extensions so extensions registered previously with
@@ -41,10 +41,10 @@ run_test("$t", () => {
     assert.equal(
         $t(
             {
-                id: "You subscribed to stream {stream}",
-                defaultMessage: "You subscribed to stream {stream}",
+                id: "You subscribed to channel {name}",
+                defaultMessage: "You subscribed to channel {name}",
             },
-            {stream: "l'abonnement"},
+            {name: "l'abonnement"},
         ),
         "Vous n'êtes pas abonnés au canal l'abonnement",
     );
@@ -54,16 +54,16 @@ run_test("$tr", () => {
     assert.equal(
         $t_html(
             {
-                id: "<p>The stream <b>{stream_name}</b> does not exist.</p><p>Manage your subscriptions <z-link>on your Streams page</z-link>.</p>",
+                id: "<p>The channel <b>{name}</b> does not exist.</p><p>Manage your subscriptions <z-link>on your Channels page</z-link>.</p>",
                 defaultMessage:
-                    "<p>The stream <b>{stream_name}</b> does not exist.</p><p>Manage your subscriptions <z-link>on your Streams page</z-link>.</p>",
+                    "<p>The channel <b>{name}</b> does not exist.</p><p>Manage your subscriptions <z-link>on your Channels page</z-link>.</p>",
             },
             {
-                stream_name: "l'abonnement",
-                "z-link": (content_html) => `<a href='#streams/all'>${content_html.join("")}</a>`,
+                name: "l'abonnement",
+                "z-link": (content_html) => `<a href='#channels/all'>${content_html.join("")}</a>`,
             },
         ),
-        "<p>Le canal <b>l&#39;abonnement</b> n'existe pas.</p><p>Gérez vos abonnements <a href='#streams/all'>sur votre page canaux</a>.</p>",
+        "<p>Le canal <b>l&#39;abonnement</b> n'existe pas.</p><p>Gérez vos abonnements <a href='#channels/all'>sur votre page canaux</a>.</p>",
     );
 });
 
@@ -79,7 +79,7 @@ run_test("t_tag", ({mock_template}) => {
 
     mock_template("popovers/actions_popover.hbs", true, (data, html) => {
         assert.equal(data, args);
-        assert.ok(html.indexOf("Citer et répondre") > 0);
+        assert.ok(html.includes("Citer et répondre"));
     });
 
     require("../templates/popovers/actions_popover.hbs")(args);
@@ -89,14 +89,19 @@ run_test("tr_tag", ({mock_template}) => {
     const args = {
         botserverrc: "botserverrc",
         date_joined_text: "Mar 21, 2022",
+        information_density_settings: {
+            settings: {},
+        },
         display_settings: {
             settings: {},
         },
         notification_settings: {},
-        page_params: {
+        current_user: {
             full_name: "John Doe",
             delivery_email: "john@zulip.com",
         },
+        page_params: {},
+        realm: {},
         settings_object: {},
         settings_label: {
             desktop_icon_count_display:
@@ -106,7 +111,7 @@ run_test("tr_tag", ({mock_template}) => {
             twenty_four_hour_time: "Time format",
             automatically_follow_topics_policy: "Automatically follow topics",
             automatically_unmute_topics_in_muted_streams_policy:
-                "Automatically unmute topics in muted streams",
+                "Automatically unmute topics in muted channels",
             automatically_follow_topics_where_mentioned:
                 "Automatically follow topics where I'm mentioned",
         },
@@ -116,7 +121,7 @@ run_test("tr_tag", ({mock_template}) => {
 
     mock_template("settings_tab.hbs", true, (data, html) => {
         assert.equal(data, args);
-        assert.ok(html.indexOf("Déclencheurs de notification") > 0);
+        assert.ok(html.includes("Déclencheurs de notification"));
     });
     require("../templates/settings_tab.hbs")(args);
 });

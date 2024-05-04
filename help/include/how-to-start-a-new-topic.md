@@ -5,9 +5,9 @@
 1. Click the **Start new conversation** button at the bottom of the app, or
    use the <kbd>C</kbd> keyboard shortcut.
 
-1. _(optional)_ You can change the destination stream for your message using
+1. _(optional)_ You can change the destination channel for your message using
    the dropdown in the top left of the compose box. You can start typing to
-   filter streams.
+   filter channels.
 
 1. Enter a topic name. Auto-complete will provide suggestions for previously
    used topics.
@@ -28,11 +28,11 @@
 
 {tab|mobile}
 
-1. Tap the **Streams**
+1. Tap the **Channels**
    (<img src="/static/images/help/mobile-hash-icon.svg" alt="hash" class="help-center-icon"/>)
    tab at the bottom of the app.
 
-1. Tap on the desired stream.
+1. Tap on the desired channel.
 
 1. Tap the compose box at the bottom of the app.
 

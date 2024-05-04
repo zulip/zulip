@@ -167,6 +167,7 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
 
     mandatory_topics = models.BooleanField(default=False)
 
+    require_unique_names = models.BooleanField(default=False)
     name_changes_disabled = models.BooleanField(default=False)
     email_changes_disabled = models.BooleanField(default=False)
     avatar_changes_disabled = models.BooleanField(default=False)
@@ -242,7 +243,7 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
     create_web_public_stream_policy = models.PositiveSmallIntegerField(default=POLICY_OWNERS_ONLY)
 
     # Who in the organization is allowed to delete messages they themselves sent.
-    delete_own_message_policy = models.PositiveSmallIntegerField(default=POLICY_ADMINS_ONLY)
+    delete_own_message_policy = models.PositiveSmallIntegerField(default=POLICY_EVERYONE)
 
     # Who in the organization is allowed to edit topics of any message.
     edit_topic_policy = models.PositiveSmallIntegerField(default=POLICY_EVERYONE)
@@ -268,7 +269,7 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
 
     # Who in the organization is allowed to move messages between streams.
     move_messages_between_streams_policy = models.PositiveSmallIntegerField(
-        default=POLICY_ADMINS_ONLY
+        default=POLICY_MEMBERS_ONLY
     )
 
     user_group_edit_policy = models.PositiveSmallIntegerField(default=POLICY_MEMBERS_ONLY)
@@ -334,21 +335,32 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
 
     DEFAULT_NOTIFICATION_STREAM_NAME = "general"
     INITIAL_PRIVATE_STREAM_NAME = "core team"
-    STREAM_EVENTS_NOTIFICATION_TOPIC_NAME = gettext_lazy("stream events")
-    notifications_stream = models.ForeignKey(
+    STREAM_EVENTS_NOTIFICATION_TOPIC_NAME = gettext_lazy("channel events")
+    new_stream_announcements_stream = models.ForeignKey(
         "Stream",
         related_name="+",
         null=True,
         blank=True,
         on_delete=models.SET_NULL,
     )
-    signup_notifications_stream = models.ForeignKey(
+    signup_announcements_stream = models.ForeignKey(
         "Stream",
         related_name="+",
         null=True,
         blank=True,
         on_delete=models.SET_NULL,
     )
+
+    ZULIP_UPDATE_ANNOUNCEMENTS_TOPIC_NAME = gettext_lazy("Zulip updates")
+    zulip_update_announcements_stream = models.ForeignKey(
+        "Stream",
+        related_name="+",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+    )
+
+    zulip_update_announcements_level = models.PositiveIntegerField(null=True)
 
     MESSAGE_RETENTION_SPECIAL_VALUES_MAP = {
         "unlimited": -1,
@@ -498,10 +510,9 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
         BOT_CREATION_ADMINS_ONLY,
     ]
 
-    # See upload_quota_bytes; don't interpret upload_quota_gb directly.
     UPLOAD_QUOTA_LIMITED = 5
-    UPLOAD_QUOTA_STANDARD = 50
-    upload_quota_gb = models.IntegerField(null=True)
+    UPLOAD_QUOTA_STANDARD_FREE = 50
+    custom_upload_quota_gb = models.IntegerField(null=True)
 
     VIDEO_CHAT_PROVIDERS = {
         "disabled": {
@@ -616,6 +627,7 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
         name_changes_disabled=bool,
         private_message_policy=int,
         push_notifications_enabled=bool,
+        require_unique_names=bool,
         send_welcome_emails=bool,
         user_group_edit_policy=int,
         video_chat_provider=int,
@@ -702,13 +714,12 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
         on the server, this will not return an entry for "Email")."""
         # This mapping needs to be imported from here due to the cyclic
         # dependency.
-        from zproject.backends import AUTH_BACKEND_NAME_MAP, all_implemented_backend_names
+        from zproject.backends import AUTH_BACKEND_NAME_MAP
 
         ret: Dict[str, bool] = {}
         supported_backends = [type(backend) for backend in supported_auth_backends()]
 
-        for backend_name in all_implemented_backend_names():
-            backend_class = AUTH_BACKEND_NAME_MAP[backend_name]
+        for backend_name, backend_class in AUTH_BACKEND_NAME_MAP.items():
             if backend_class in supported_backends:
                 ret[backend_name] = False
         for realm_authentication_method in RealmAuthenticationMethod.objects.filter(
@@ -784,17 +795,28 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
     def get_bot_domain(self) -> str:
         return get_fake_email_domain(self.host)
 
-    def get_notifications_stream(self) -> Optional["Stream"]:
-        if self.notifications_stream is not None and not self.notifications_stream.deactivated:
-            return self.notifications_stream
+    def get_new_stream_announcements_stream(self) -> Optional["Stream"]:
+        if (
+            self.new_stream_announcements_stream is not None
+            and not self.new_stream_announcements_stream.deactivated
+        ):
+            return self.new_stream_announcements_stream
         return None
 
-    def get_signup_notifications_stream(self) -> Optional["Stream"]:
+    def get_signup_announcements_stream(self) -> Optional["Stream"]:
         if (
-            self.signup_notifications_stream is not None
-            and not self.signup_notifications_stream.deactivated
+            self.signup_announcements_stream is not None
+            and not self.signup_announcements_stream.deactivated
         ):
-            return self.signup_notifications_stream
+            return self.signup_announcements_stream
+        return None
+
+    def get_zulip_update_announcements_stream(self) -> Optional["Stream"]:
+        if (
+            self.zulip_update_announcements_stream is not None
+            and not self.zulip_update_announcements_stream.deactivated
+        ):
+            return self.zulip_update_announcements_stream
         return None
 
     @property
@@ -806,6 +828,34 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
     @max_invites.setter
     def max_invites(self, value: Optional[int]) -> None:
         self._max_invites = value
+
+    @property
+    def upload_quota_gb(self) -> Optional[int]:
+        # See upload_quota_bytes; don't interpret upload_quota_gb directly.
+
+        if self.custom_upload_quota_gb is not None:
+            return self.custom_upload_quota_gb
+
+        if not settings.CORPORATE_ENABLED:
+            return None
+
+        plan_type = self.plan_type
+        if plan_type == Realm.PLAN_TYPE_SELF_HOSTED:  # nocoverage
+            return None
+        if plan_type == Realm.PLAN_TYPE_LIMITED:
+            return Realm.UPLOAD_QUOTA_LIMITED
+        elif plan_type == Realm.PLAN_TYPE_STANDARD_FREE:
+            return Realm.UPLOAD_QUOTA_STANDARD_FREE
+        elif plan_type in [Realm.PLAN_TYPE_STANDARD, Realm.PLAN_TYPE_PLUS]:
+            from corporate.lib.stripe import get_cached_seat_count
+
+            # Paying customers with few users should get a reasonable minimum quota.
+            return max(
+                get_cached_seat_count(self) * settings.UPLOAD_QUOTA_PER_USER_GB,
+                Realm.UPLOAD_QUOTA_STANDARD_FREE,
+            )
+        else:
+            raise AssertionError("Invalid plan type")
 
     def upload_quota_bytes(self) -> Optional[int]:
         if self.upload_quota_gb is None:
@@ -941,6 +991,13 @@ def get_realm(string_id: str) -> Realm:
 
 def get_realm_by_id(realm_id: int) -> Realm:
     return Realm.objects.get(id=realm_id)
+
+
+def require_unique_names(realm: Optional[Realm]) -> bool:
+    if realm is None:
+        # realm is None when a new realm is being created.
+        return False
+    return realm.require_unique_names
 
 
 def name_changes_disabled(realm: Optional[Realm]) -> bool:

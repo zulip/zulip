@@ -184,24 +184,25 @@ def reactivate_user_backend(
     if target.is_bot:
         assert target.bot_type is not None
         check_bot_creation_policy(user_profile, target.bot_type)
+        check_bot_name_available(user_profile.realm_id, target.full_name, is_activation=True)
     do_reactivate_user(target, acting_user=user_profile)
     return json_success(request)
 
 
-check_profile_data: Validator[
-    List[Dict[str, Optional[Union[int, ProfileDataElementValue]]]]
-] = check_list(
-    check_dict_only(
-        [
-            ("id", check_int),
-            (
-                "value",
-                check_none_or(
-                    check_union([check_string, check_list(check_int)]),
+check_profile_data: Validator[List[Dict[str, Optional[Union[int, ProfileDataElementValue]]]]] = (
+    check_list(
+        check_dict_only(
+            [
+                ("id", check_int),
+                (
+                    "value",
+                    check_none_or(
+                        check_union([check_string, check_list(check_int)]),
+                    ),
                 ),
-            ),
-        ]
-    ),
+            ]
+        ),
+    )
 )
 
 
@@ -490,7 +491,9 @@ def add_bot_backend(
     if bot_type != UserProfile.INCOMING_WEBHOOK_BOT:
         service_name = service_name or short_name
     short_name += "-bot"
-    full_name = check_full_name(full_name_raw)
+    full_name = check_full_name(
+        full_name_raw=full_name_raw, user_profile=user_profile, realm=user_profile.realm
+    )
     try:
         email = Address(username=short_name, domain=user_profile.realm.get_bot_domain()).addr_spec
     except InvalidFakeEmailDomainError:
@@ -524,6 +527,7 @@ def add_bot_backend(
     check_bot_name_available(
         realm_id=user_profile.realm_id,
         full_name=full_name,
+        is_activation=False,
     )
 
     check_bot_creation_policy(user_profile, bot_type)
@@ -695,7 +699,9 @@ def create_user_backend(
     if not user_profile.can_create_users:
         raise JsonableError(_("User not authorized to create users"))
 
-    full_name = check_full_name(full_name_raw)
+    full_name = check_full_name(
+        full_name_raw=full_name_raw, user_profile=user_profile, realm=user_profile.realm
+    )
     form = CreateUserForm({"full_name": full_name, "email": email})
     if not form.is_valid():
         raise JsonableError(_("Bad name or username"))

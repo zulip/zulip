@@ -60,7 +60,8 @@
 
     /************************* MODAL DARK THEME *******************/
     .user_profile_manage_own_edit_button,
-    .user_profile_manage_others_edit_button {
+    .user_profile_manage_others_edit_button,
+    .user_profile_manage_own_copy_link_button {
         color: hsl(200deg 100% 50%);
         cursor: pointer;
 
@@ -101,12 +102,6 @@
         .enter_sends_minor {
             color: hsl(0deg 0% 80%);
         }
-    }
-
-    .modal__btn:disabled,
-    .disabled-message-send-controls button {
-        opacity: 1;
-        background-color: hsl(0deg 0% 83% / 50%);
     }
 
     & table.table-striped thead.table-sticky-headers th {
@@ -345,18 +340,8 @@
         }
     }
 
-    .message_embed .data-container::after {
-        background: linear-gradient(
-            0deg,
-            hsl(212deg 28% 18%),
-            transparent 100%
-        );
-    }
-
-    .column-left .left-sidebar,
     .stream_name_search_section,
-    .group_name_search_section,
-    .column-right .right-sidebar {
+    .group_name_search_section {
         border-color: hsl(0deg 0% 0% / 20%);
     }
 
@@ -364,7 +349,7 @@
         border-color: hsl(0deg 0% 100% / 40%);
     }
 
-    .streams_popover .sp-container {
+    #stream-actions-menu-popover .sp-container {
         background-color: transparent;
 
         & button {
@@ -376,6 +361,10 @@
         .sp-picker-container {
             border-left: solid 1px hsl(210deg 36% 4%);
         }
+    }
+
+    .stream_header_colorblock.disabled {
+        filter: brightness(50%);
     }
 
     /* this one is because in the app we have blue and in dark-theme it should be white. */
@@ -479,11 +468,15 @@
         border-width: 1px;
     }
 
+    .settings-profile-user-field {
+        border-color: hsl(3deg 73% 74%);
+    }
+
     .deactivated-pill {
         background-color: hsl(0deg 86% 14%) !important;
     }
 
-    #compose-direct-recipient.pill-container {
+    #compose-direct-recipient .pill-container {
         background-color: hsl(0deg 0% 0% / 20%);
     }
 
@@ -515,31 +508,6 @@
         border-color: hsl(0deg 0% 0% / 60%);
     }
 
-    .emoji-picker-popover .emoji-showcase-container,
-    .emoji-picker-popover .emoji-popover .emoji-popover-category-tabs,
-    .emoji-picker-popover .emoji-popover .emoji-popover-top {
-        background-color: hsl(0deg 0% 0% / 20%);
-    }
-
-    .emoji-picker-popover
-        .emoji-popover
-        .emoji-popover-category-tabs
-        .emoji-popover-tab-item.active {
-        background-color: hsl(0deg 0% 0% / 50%);
-    }
-
-    .emoji-popover-emoji {
-        &:focus {
-            background-color: hsl(212deg 28% 8% / 75%);
-            box-shadow: 0 0 1px hsl(0deg 0% 98%);
-        }
-
-        &.reacted {
-            background-color: hsl(0deg 0% 0% / 50%);
-            border-color: hsl(0deg 0% 0% / 90%);
-        }
-    }
-
     .new-style .tab-switcher .ind-tab.selected,
     div.message_content thead,
     .table-striped thead th {
@@ -549,10 +517,6 @@
 
     .ind-tab.disabled {
         color: hsl(0deg 0% 42% / 90%) !important;
-    }
-
-    .message_time:hover {
-        color: var(--color-message-action-interactive);
     }
 
     & input[type="text"]:focus,
@@ -618,7 +582,8 @@
     }
 
     #draft_overlay,
-    #scheduled_messages_overlay_container {
+    #scheduled_messages_overlay_container,
+    #message-edit-history-overlay-container {
         .flex.overlay-content > div {
             box-shadow: 0 0 30px hsl(213deg 31% 0%);
             background-color: var(--color-background);
@@ -628,10 +593,6 @@
     /* Undo default dropdown background color for dark mode. */
     #searchbox_form .dropdown-menu ul {
         background-color: unset;
-    }
-
-    .dropdown-menu a {
-        color: inherit;
     }
 
     .popover hr,
@@ -648,10 +609,6 @@
         .gear-menu-select-light-theme {
             display: block;
         }
-    }
-
-    .nav .dropdown-menu::after {
-        border-bottom-color: hsl(235deg 18% 7%);
     }
 
     .narrow_to_compose_recipients,
@@ -680,11 +637,6 @@
             color: hsl(0deg 0% 100% / 75%);
             opacity: 0.75;
         }
-    }
-
-    #buddy-list-users-matching-view li:hover,
-    #buddy-list-users-matching-view li.highlighted_user {
-        background-color: hsl(136deg 25% 73% / 20%);
     }
 
     .group-row.active,
@@ -852,19 +804,11 @@
         text-shadow: none;
     }
 
-    /* There is no lefthand border to cover in
-      dark mode, so don't apply negative margin
-      that would otherwise pull the unread marker
-      to the left. */
-    .unread_marker {
-        margin-left: 0;
-    }
-
     .selected_message .messagebox-content {
         border-color: hsl(217deg 64% 59% / 70%);
     }
 
-    #message-edit-history {
+    #message-edit-history-overlay-container {
         .message_edit_history_content {
             .highlight_text_inserted {
                 color: hsl(122deg 100% 81%);
@@ -1077,6 +1021,10 @@
         background-color: hsl(212deg 25% 15%);
         border-color: hsl(0deg 0% 0% / 50%);
         color: inherit;
+
+        & a:hover {
+            color: hsl(0deg 0% 100%);
+        }
     }
 
     /* Search highlight used in both topics and rendered_markdown */
@@ -1207,6 +1155,19 @@
         }
     }
 
+    .panel_user_list > .pill-container {
+        &:hover {
+            color: inherit;
+        }
+
+        > .pill {
+            &:focus,
+            &:hover {
+                color: inherit;
+            }
+        }
+    }
+
     /* Originally the icon inherits the color of label, but when the setting
     is disabled, the color of the label is changed and thus the icon becomes
     too light. So, we set the color explicitly to original color of label to
@@ -1221,7 +1182,7 @@
         }
     }
 
-    #read_receipts_modal #read_receipts_list li {
+    #read_receipts_modal .read_receipts_list li {
         &:hover {
             background-color: hsl(0deg 0% 100% / 5%);
         }

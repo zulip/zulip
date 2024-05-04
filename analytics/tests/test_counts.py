@@ -1,5 +1,6 @@
+from contextlib import AbstractContextManager, ExitStack, contextmanager
 from datetime import datetime, timedelta, timezone
-from typing import Any, Dict, List, Optional, Tuple, Type
+from typing import Any, Dict, Iterator, List, Optional, Tuple, Type
 from unittest import mock
 
 import orjson
@@ -41,11 +42,7 @@ from zerver.actions.create_user import (
     do_create_user,
     do_reactivate_user,
 )
-from zerver.actions.invites import (
-    do_invite_users,
-    do_resend_user_invite_email,
-    do_revoke_user_invite,
-)
+from zerver.actions.invites import do_invite_users, do_revoke_user_invite, do_send_user_invite_email
 from zerver.actions.message_flags import (
     do_mark_all_as_read,
     do_mark_stream_messages_as_read,
@@ -68,13 +65,13 @@ from zerver.models import (
     Client,
     Huddle,
     Message,
+    NamedUserGroup,
     PreregistrationUser,
     Realm,
     RealmAuditLog,
     Recipient,
     Stream,
     UserActivityInterval,
-    UserGroup,
     UserProfile,
 )
 from zerver.models.clients import get_client
@@ -104,7 +101,7 @@ class AnalyticsTestCase(ZulipTestCase):
         self.default_realm = do_create_realm(
             string_id="realmtest", name="Realm Test", date_created=self.TIME_ZERO - 2 * self.DAY
         )
-        self.administrators_user_group = UserGroup.objects.get(
+        self.administrators_user_group = NamedUserGroup.objects.get(
             name=SystemGroups.ADMINISTRATORS,
             realm=self.default_realm,
             is_system_group=True,
@@ -170,7 +167,7 @@ class AnalyticsTestCase(ZulipTestCase):
         for key, value in defaults.items():
             kwargs[key] = kwargs.get(key, value)
         huddle = Huddle.objects.create(**kwargs)
-        recipient = Recipient.objects.create(type_id=huddle.id, type=Recipient.HUDDLE)
+        recipient = Recipient.objects.create(type_id=huddle.id, type=Recipient.DIRECT_MESSAGE_GROUP)
         huddle.recipient = recipient
         huddle.save(update_fields=["recipient"])
         return huddle, recipient
@@ -1461,9 +1458,7 @@ class TestLoggingCountStats(AnalyticsTestCase):
         ), mock.patch("zilencer.views.send_apple_push_notification", return_value=1), mock.patch(
             "corporate.lib.stripe.RemoteServerBillingSession.current_count_for_billed_licenses",
             return_value=10,
-        ), self.assertLogs(
-            "zilencer.views", level="INFO"
-        ):
+        ), self.assertLogs("zilencer.views", level="INFO"):
             result = self.uuid_post(
                 self.server_uuid,
                 "/api/v1/remotes/push/notify",
@@ -1522,9 +1517,7 @@ class TestLoggingCountStats(AnalyticsTestCase):
         ), mock.patch("zilencer.views.send_apple_push_notification", return_value=1), mock.patch(
             "corporate.lib.stripe.RemoteServerBillingSession.current_count_for_billed_licenses",
             return_value=10,
-        ), self.assertLogs(
-            "zilencer.views", level="INFO"
-        ):
+        ), self.assertLogs("zilencer.views", level="INFO"):
             result = self.uuid_post(
                 self.server_uuid,
                 "/api/v1/remotes/push/notify",
@@ -1580,11 +1573,9 @@ class TestLoggingCountStats(AnalyticsTestCase):
         with time_machine.travel(now, tick=False), mock.patch(
             "zilencer.views.send_android_push_notification", return_value=1
         ), mock.patch("zilencer.views.send_apple_push_notification", return_value=1), mock.patch(
-            "corporate.lib.stripe.RemoteServerBillingSession.current_count_for_billed_licenses",
+            "corporate.lib.stripe.RemoteRealmBillingSession.current_count_for_billed_licenses",
             return_value=10,
-        ), self.assertLogs(
-            "zilencer.views", level="INFO"
-        ):
+        ), self.assertLogs("zilencer.views", level="INFO"):
             result = self.uuid_post(
                 self.server_uuid,
                 "/api/v1/remotes/push/notify",
@@ -1646,6 +1637,23 @@ class TestLoggingCountStats(AnalyticsTestCase):
     def test_invites_sent(self) -> None:
         property = "invites_sent::day"
 
+        @contextmanager
+        def invite_context(
+            too_many_recent_realm_invites: bool = False, failure: bool = False
+        ) -> Iterator[None]:
+            managers: List[AbstractContextManager[Any]] = [
+                mock.patch(
+                    "zerver.actions.invites.too_many_recent_realm_invites", return_value=False
+                ),
+                self.captureOnCommitCallbacks(execute=True),
+            ]
+            if failure:
+                managers.append(self.assertRaises(InvitationError))
+            with ExitStack() as stack:
+                for mgr in managers:
+                    stack.enter_context(mgr)
+                yield
+
         def assertInviteCountEquals(count: int) -> None:
             self.assertEqual(
                 count,
@@ -1658,7 +1666,7 @@ class TestLoggingCountStats(AnalyticsTestCase):
         stream, _ = self.create_stream_with_recipient()
 
         invite_expires_in_minutes = 2 * 24 * 60
-        with mock.patch("zerver.actions.invites.too_many_recent_realm_invites", return_value=False):
+        with invite_context():
             do_invite_users(
                 user,
                 ["user1@domain.tld", "user2@domain.tld"],
@@ -1669,7 +1677,7 @@ class TestLoggingCountStats(AnalyticsTestCase):
 
         # We currently send emails when re-inviting users that haven't
         # turned into accounts, so count them towards the total
-        with mock.patch("zerver.actions.invites.too_many_recent_realm_invites", return_value=False):
+        with invite_context():
             do_invite_users(
                 user,
                 ["user1@domain.tld", "user2@domain.tld"],
@@ -1679,9 +1687,7 @@ class TestLoggingCountStats(AnalyticsTestCase):
         assertInviteCountEquals(4)
 
         # Test mix of good and malformed invite emails
-        with self.assertRaises(InvitationError), mock.patch(
-            "zerver.actions.invites.too_many_recent_realm_invites", return_value=False
-        ):
+        with invite_context(failure=True):
             do_invite_users(
                 user,
                 ["user3@domain.tld", "malformed"],
@@ -1691,15 +1697,14 @@ class TestLoggingCountStats(AnalyticsTestCase):
         assertInviteCountEquals(4)
 
         # Test inviting existing users
-        with self.assertRaises(InvitationError), mock.patch(
-            "zerver.actions.invites.too_many_recent_realm_invites", return_value=False
-        ):
-            do_invite_users(
+        with invite_context():
+            skipped = do_invite_users(
                 user,
                 ["first@domain.tld", "user4@domain.tld"],
                 [stream],
                 invite_expires_in_minutes=invite_expires_in_minutes,
             )
+            self.assert_length(skipped, 1)
         assertInviteCountEquals(5)
 
         # Revoking invite should not give you credit
@@ -1709,8 +1714,8 @@ class TestLoggingCountStats(AnalyticsTestCase):
         assertInviteCountEquals(5)
 
         # Resending invite should cost you
-        with mock.patch("zerver.actions.invites.too_many_recent_realm_invites", return_value=False):
-            do_resend_user_invite_email(assert_is_not_none(PreregistrationUser.objects.first()))
+        with invite_context():
+            do_send_user_invite_email(assert_is_not_none(PreregistrationUser.objects.first()))
         assertInviteCountEquals(6)
 
     def test_messages_read_hour(self) -> None:

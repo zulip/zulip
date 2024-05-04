@@ -66,10 +66,10 @@ $category-text: hsl(219deg 23% 33%);
 
     & ol li {
         list-style: none;
-    }
 
-    & ul li {
-        list-style: circle;
+        & ul li {
+            list-style: inherit;
+        }
     }
 
     .integration-main-text {
@@ -561,10 +561,6 @@ $category-text: hsl(219deg 23% 33%);
         }
 
         .integration-instructions {
-            .help-content h3 {
-                margin: 20px 0;
-            }
-
             .logos_disclaimer {
                 font-size: 14px;
                 font-style: italic;

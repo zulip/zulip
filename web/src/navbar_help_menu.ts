@@ -8,7 +8,7 @@ import {parse_html} from "./ui_util";
 
 export function initialize(): void {
     popover_menus.register_popover_menu("#help-menu", {
-        theme: "navbar-dropdown-menu",
+        theme: "popover-menu",
         placement: "bottom",
         offset: [-50, 0],
         // The strategy: "fixed"; and eventlisteners modifier option

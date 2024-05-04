@@ -19,9 +19,9 @@ gear_info = {
     # key is from REGEXP: `{relative|gear|key}`
     # name is what the item is called in the gear menu: `Select **name**.`
     # link is used for relative links: `Select [name](link).`
-    "stream-settings": [
-        '<i class="zulip-icon zulip-icon-hash"></i> Stream settings',
-        "/#streams/subscribed",
+    "channel-settings": [
+        '<i class="zulip-icon zulip-icon-hash"></i> Channel settings',
+        "/#channels/subscribed",
     ],
     "settings": [
         '<i class="zulip-icon zulip-icon-tool"></i> Personal Settings',
@@ -97,26 +97,26 @@ def help_handle_match(key: str) -> str:
     return help_instructions.format(item=item)
 
 
-stream_info = {
-    "all": ["All streams", "/#streams/all"],
+channel_info = {
+    "all": ["All channels", "/#channels/all"],
 }
 
-stream_all_instructions = """
+channel_all_instructions = """
 1. Click on the **gear** (<i class="zulip-icon zulip-icon-gear"></i>) icon in
    the upper right corner of the web or desktop app.
 
-1. Select <i class="zulip-icon zulip-icon-hash"></i> **Stream settings**.
+1. Select <i class="zulip-icon zulip-icon-hash"></i> **Channel settings**.
 
 1. Click {item} in the upper left.
 """
 
 
-def stream_handle_match(key: str) -> str:
+def channel_handle_match(key: str) -> str:
     if relative_help_links:
-        item = f"[{stream_info[key][0]}]({stream_info[key][1]})"
+        item = f"[{channel_info[key][0]}]({channel_info[key][1]})"
     else:
-        item = f"**{stream_info[key][0]}**"
-    return stream_all_instructions.format(item=item)
+        item = f"**{channel_info[key][0]}**"
+    return channel_all_instructions.format(item=item)
 
 
 group_info = {
@@ -156,7 +156,7 @@ recent_instructions = """
 """
 
 all_instructions = """
-1. Click on <i class="fa fa-align-left"></i> **All messages** in the left
+1. Click on <i class="fa fa-align-left"></i> **Combined feed** in the left
    sidebar, or use the <kbd>A</kbd> keyboard shortcut.
 """
 
@@ -166,7 +166,7 @@ starred_instructions = """
 """
 
 direct_instructions = """
-1. In the left sidebar, click the **All direct messages**
+1. In the left sidebar, click the **Direct message feed**
    (<i class="fa fa-align-right"></i>) icon to the right of the
    **Direct messages** label, or use the <kbd>Shift</kbd> + <kbd>P</kbd>
    keyboard shortcut.
@@ -181,9 +181,9 @@ message_info = {
     "drafts": ["Drafts", "/#drafts", draft_instructions],
     "scheduled": ["Scheduled messages", "/#scheduled", scheduled_instructions],
     "recent": ["Recent conversations", "/#recent", recent_instructions],
-    "all": ["All messages", "/#all_messages", all_instructions],
+    "all": ["Combined feed", "/#feed", all_instructions],
     "starred": ["Starred messages", "/#narrow/is/starred", starred_instructions],
-    "direct": ["All direct messages", "/#narrow/is/dm", direct_instructions],
+    "direct": ["Direct message feed", "/#narrow/is/dm", direct_instructions],
     "inbox": ["Inbox", "/#inbox", inbox_instructions],
 }
 
@@ -197,7 +197,7 @@ def message_handle_match(key: str) -> str:
 
 LINK_TYPE_HANDLERS = {
     "gear": gear_handle_match,
-    "stream": stream_handle_match,
+    "channel": channel_handle_match,
     "message": message_handle_match,
     "help": help_handle_match,
     "group": group_handle_match,

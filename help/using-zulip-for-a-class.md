@@ -17,7 +17,7 @@ single place for:
 ## Posting lecture notes and announcements
 
 !!! tip ""
-    [Subscribe to email notifications](/help/stream-notifications) for
+    [Subscribe to email notifications](/help/channel-notifications) for
     streams such as **#announcements** to make sure you never miss an important message.
 
 Many classes use a dedicated stream to post general announcements, e.g.:
@@ -42,7 +42,7 @@ from today’s lecture. [lecture notes 10/2.pdf]() You can view a recording of t
 
 In Zulip, streams determine who receives a message. Topics are
 light-weight subjects for individual conversations. You can more about
-streams and topics [here](/help/streams-and-topics).
+channels and topics [here](/help/channels-and-topics).
 
 Zulip works best when each conversation has its own topic. When you
 have a question to ask, simply start a new topic! For example, one

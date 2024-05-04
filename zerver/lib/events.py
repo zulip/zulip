@@ -1,6 +1,7 @@
 # See https://zulip.readthedocs.io/en/latest/subsystems/events-system.html for
 # high-level documentation on how this system works.
 import copy
+import logging
 import time
 from typing import Any, Callable, Collection, Dict, Iterable, Mapping, Optional, Sequence, Set
 
@@ -9,6 +10,7 @@ from django.utils.translation import gettext as _
 
 from version import API_FEATURE_LEVEL, ZULIP_MERGE_BASE, ZULIP_VERSION
 from zerver.actions.default_streams import default_stream_groups_to_dicts_sorted
+from zerver.actions.realm_settings import get_realm_authentication_methods_for_page_params_api
 from zerver.actions.users import get_owned_bot_dicts
 from zerver.lib import emoji
 from zerver.lib.alert_words import user_alert_words
@@ -36,8 +38,8 @@ from zerver.lib.message import (
     remove_message_id_from_unread_mgs,
 )
 from zerver.lib.muted_users import get_user_mutes
-from zerver.lib.narrow import check_narrow_for_events, read_stop_words
-from zerver.lib.narrow_helpers import NarrowTerm
+from zerver.lib.narrow_helpers import NarrowTerm, read_stop_words
+from zerver.lib.narrow_predicate import check_narrow_for_events
 from zerver.lib.presence import get_presence_for_user, get_presences_for_realm
 from zerver.lib.realm_icon import realm_icon_url
 from zerver.lib.realm_logo import get_realm_logo_source, get_realm_logo_url
@@ -67,6 +69,7 @@ from zerver.lib.users import (
     is_administrator_role,
     max_message_id_for_user,
 )
+from zerver.lib.utils import optional_bytes_to_mib
 from zerver.models import (
     Client,
     CustomProfileField,
@@ -89,12 +92,6 @@ from zerver.models.realms import get_realm_domains
 from zerver.models.streams import get_default_stream_groups
 from zerver.tornado.django_api import get_user_events, request_event_queue
 from zproject.backends import email_auth_enabled, password_auth_enabled
-
-
-class RestartEventError(Exception):
-    """
-    Special error for handling restart events in apply_events.
-    """
 
 
 def add_realm_logo_fields(state: Dict[str, Any], realm: Realm) -> None:
@@ -224,8 +221,7 @@ def fetch_initial_state_data(
         # user_topic and muted_topics, and receive the duplicate
         # muted_topics data only from older servers that don't yet
         # support user_topic.
-        event_types is None
-        or not want("user_topic")
+        event_types is None or not want("user_topic")
     ):
         state["muted_topics"] = [] if user_profile is None else get_topic_mutes(user_profile)
 
@@ -276,7 +272,11 @@ def fetch_initial_state_data(
         # these manual entries are for those realm settings that don't
         # fit into that framework.
         realm_authentication_methods_dict = realm.authentication_methods_dict()
-        state["realm_authentication_methods"] = realm_authentication_methods_dict
+        state["realm_authentication_methods"] = (
+            get_realm_authentication_methods_for_page_params_api(
+                realm, realm_authentication_methods_dict
+            )
+        )
 
         # We pretend these features are disabled because anonymous
         # users can't access them.  In the future, we may want to move
@@ -302,7 +302,8 @@ def fetch_initial_state_data(
         state["max_avatar_file_size_mib"] = settings.MAX_AVATAR_FILE_SIZE_MIB
         state["max_file_upload_size_mib"] = settings.MAX_FILE_UPLOAD_SIZE
         state["max_icon_file_size_mib"] = settings.MAX_ICON_FILE_SIZE_MIB
-        state["realm_upload_quota_mib"] = realm.upload_quota_bytes()
+        upload_quota_bytes = realm.upload_quota_bytes()
+        state["realm_upload_quota_mib"] = optional_bytes_to_mib(upload_quota_bytes)
 
         state["realm_icon_url"] = realm_icon_url(realm)
         state["realm_icon_source"] = realm.icon_source
@@ -350,9 +351,9 @@ def fetch_initial_state_data(
         state["server_emoji_data_url"] = emoji.data_url()
 
         state["server_needs_upgrade"] = is_outdated_server(user_profile)
-        state[
-            "event_queue_longpoll_timeout_seconds"
-        ] = settings.EVENT_QUEUE_LONGPOLL_TIMEOUT_SECONDS
+        state["event_queue_longpoll_timeout_seconds"] = (
+            settings.EVENT_QUEUE_LONGPOLL_TIMEOUT_SECONDS
+        )
 
         # TODO: This probably belongs on the server object.
         state["realm_default_external_accounts"] = get_default_external_accounts()
@@ -367,17 +368,25 @@ def fetch_initial_state_data(
             else server_default_jitsi_server_url
         )
 
-        if realm.notifications_stream and not realm.notifications_stream.deactivated:
-            notifications_stream = realm.notifications_stream
-            state["realm_notifications_stream_id"] = notifications_stream.id
+        new_stream_announcements_stream = realm.get_new_stream_announcements_stream()
+        if new_stream_announcements_stream:
+            state["realm_new_stream_announcements_stream_id"] = new_stream_announcements_stream.id
         else:
-            state["realm_notifications_stream_id"] = -1
+            state["realm_new_stream_announcements_stream_id"] = -1
 
-        signup_notifications_stream = realm.get_signup_notifications_stream()
-        if signup_notifications_stream:
-            state["realm_signup_notifications_stream_id"] = signup_notifications_stream.id
+        signup_announcements_stream = realm.get_signup_announcements_stream()
+        if signup_announcements_stream:
+            state["realm_signup_announcements_stream_id"] = signup_announcements_stream.id
         else:
-            state["realm_signup_notifications_stream_id"] = -1
+            state["realm_signup_announcements_stream_id"] = -1
+
+        zulip_update_announcements_stream = realm.get_zulip_update_announcements_stream()
+        if zulip_update_announcements_stream:
+            state["realm_zulip_update_announcements_stream_id"] = (
+                zulip_update_announcements_stream.id
+            )
+        else:
+            state["realm_zulip_update_announcements_stream_id"] = -1
 
         state["max_stream_name_length"] = Stream.MAX_NAME_LENGTH
         state["max_stream_description_length"] = Stream.MAX_DESCRIPTION_LENGTH
@@ -393,15 +402,15 @@ def fetch_initial_state_data(
         state["server_presence_ping_interval_seconds"] = settings.PRESENCE_PING_INTERVAL_SECS
         state["server_presence_offline_threshold_seconds"] = settings.OFFLINE_THRESHOLD_SECS
         # Typing notifications protocol parameters for client behavior.
-        state[
-            "server_typing_started_expiry_period_milliseconds"
-        ] = settings.TYPING_STARTED_EXPIRY_PERIOD_MILLISECONDS
-        state[
-            "server_typing_stopped_wait_period_milliseconds"
-        ] = settings.TYPING_STOPPED_WAIT_PERIOD_MILLISECONDS
-        state[
-            "server_typing_started_wait_period_milliseconds"
-        ] = settings.TYPING_STARTED_WAIT_PERIOD_MILLISECONDS
+        state["server_typing_started_expiry_period_milliseconds"] = (
+            settings.TYPING_STARTED_EXPIRY_PERIOD_MILLISECONDS
+        )
+        state["server_typing_stopped_wait_period_milliseconds"] = (
+            settings.TYPING_STOPPED_WAIT_PERIOD_MILLISECONDS
+        )
+        state["server_typing_started_wait_period_milliseconds"] = (
+            settings.TYPING_STARTED_WAIT_PERIOD_MILLISECONDS
+        )
 
         state["server_supported_permission_settings"] = get_server_supported_permission_settings()
     if want("realm_user_settings_defaults"):
@@ -412,12 +421,12 @@ def fetch_initial_state_data(
                 realm_user_default, property_name
             )
 
-        state["realm_user_settings_defaults"][
-            "emojiset_choices"
-        ] = RealmUserDefault.emojiset_choices()
-        state["realm_user_settings_defaults"][
-            "available_notification_sounds"
-        ] = get_available_notification_sounds()
+        state["realm_user_settings_defaults"]["emojiset_choices"] = (
+            RealmUserDefault.emojiset_choices()
+        )
+        state["realm_user_settings_defaults"]["available_notification_sounds"] = (
+            get_available_notification_sounds()
+        )
 
     if want("realm_domains"):
         state["realm_domains"] = get_realm_domains(realm)
@@ -659,9 +668,9 @@ def fetch_initial_state_data(
 
         state["user_settings"]["emojiset_choices"] = UserProfile.emojiset_choices()
         state["user_settings"]["timezone"] = canonicalize_timezone(settings_user.timezone)
-        state["user_settings"][
-            "available_notification_sounds"
-        ] = get_available_notification_sounds()
+        state["user_settings"]["available_notification_sounds"] = (
+            get_available_notification_sounds()
+        )
 
     if want("user_status"):
         # We require creating an account to access statuses.
@@ -711,8 +720,6 @@ def apply_events(
     user_list_incomplete: bool,
 ) -> None:
     for event in events:
-        if event["type"] == "restart":
-            raise RestartEventError
         if fetch_event_types is not None and event["type"] not in fetch_event_types:
             # TODO: continuing here is not, most precisely, correct.
             # In theory, an event of one type, e.g. `realm_user`,
@@ -907,9 +914,9 @@ def apply_event(
                     # Recompute properties based on is_admin/is_guest
                     state["can_create_private_streams"] = user_profile.can_create_private_streams()
                     state["can_create_public_streams"] = user_profile.can_create_public_streams()
-                    state[
-                        "can_create_web_public_streams"
-                    ] = user_profile.can_create_web_public_streams()
+                    state["can_create_web_public_streams"] = (
+                        user_profile.can_create_web_public_streams()
+                    )
                     state["can_create_streams"] = (
                         state["can_create_private_streams"]
                         or state["can_create_public_streams"]
@@ -1152,7 +1159,9 @@ def apply_event(
             if event["property"] == "plan_type":
                 # Then there are some extra fields that also need to be set.
                 state["zulip_plan_is_not_limited"] = event["value"] != Realm.PLAN_TYPE_LIMITED
-                state["realm_upload_quota_mib"] = event["extra_data"]["upload_quota"]
+                # upload_quota is in bytes, so we need to convert it to MiB.
+                upload_quota_bytes = event["extra_data"]["upload_quota"]
+                state["realm_upload_quota_mib"] = optional_bytes_to_mib(upload_quota_bytes)
 
             if field == "realm_jitsi_server_url":
                 state["jitsi_server_url"] = (
@@ -1198,8 +1207,10 @@ def apply_event(
                 # update the state for whether password authentication
                 # is enabled on this server.
                 if key == "authentication_methods":
-                    state["realm_password_auth_enabled"] = value["Email"] or value["LDAP"]
-                    state["realm_email_auth_enabled"] = value["Email"]
+                    state["realm_password_auth_enabled"] = (
+                        value["Email"]["enabled"] or value["LDAP"]["enabled"]
+                    )
+                    state["realm_email_auth_enabled"] = value["Email"]["enabled"]
         elif event["op"] == "deactivated":
             # The realm has just been deactivated.  If our request had
             # arrived a moment later, we'd have rendered the
@@ -1522,6 +1533,17 @@ def apply_event(
             state["user_topics"].append({x: event[x] for x in fields})
     elif event["type"] == "has_zoom_token":
         state["has_zoom_token"] = event["value"]
+    elif event["type"] == "web_reload_client":
+        # This is an unlikely race, where the queue was created with a
+        # previous Tornado process, which restarted, and subsequently
+        # was told by restart-server to tell its old clients to
+        # reload.  We warn, since we do not expect this race to be
+        # possible, but the worst expected outcome is that the client
+        # retains the old JS instead of reloading.
+        logging.warning("Got a web_reload_client event during apply_events")
+    elif event["type"] == "restart":
+        # The Tornado process restarted.  This has no effect; we ignore it.
+        pass
     else:
         raise AssertionError("Unexpected event type {}".format(event["type"]))
 
@@ -1599,68 +1621,57 @@ def do_events_register(
 
     legacy_narrow = [[nt.operator, nt.operand] for nt in narrow]
 
-    while True:
-        # Note that we pass event_types, not fetch_event_types here, since
-        # that's what controls which future events are sent.
-        queue_id = request_event_queue(
-            user_profile,
-            user_client,
-            apply_markdown,
-            client_gravatar,
-            slim_presence,
-            queue_lifespan_secs,
-            event_types,
-            all_public_streams,
-            narrow=legacy_narrow,
-            bulk_message_deletion=bulk_message_deletion,
-            stream_typing_notifications=stream_typing_notifications,
-            user_settings_object=user_settings_object,
-            pronouns_field_type_supported=pronouns_field_type_supported,
-            linkifier_url_template=linkifier_url_template,
-            user_list_incomplete=user_list_incomplete,
-        )
+    # Note that we pass event_types, not fetch_event_types here, since
+    # that's what controls which future events are sent.
+    queue_id = request_event_queue(
+        user_profile,
+        user_client,
+        apply_markdown,
+        client_gravatar,
+        slim_presence,
+        queue_lifespan_secs,
+        event_types,
+        all_public_streams,
+        narrow=legacy_narrow,
+        bulk_message_deletion=bulk_message_deletion,
+        stream_typing_notifications=stream_typing_notifications,
+        user_settings_object=user_settings_object,
+        pronouns_field_type_supported=pronouns_field_type_supported,
+        linkifier_url_template=linkifier_url_template,
+        user_list_incomplete=user_list_incomplete,
+    )
 
-        if queue_id is None:
-            raise JsonableError(_("Could not allocate event queue"))
+    if queue_id is None:
+        raise JsonableError(_("Could not allocate event queue"))
 
-        ret = fetch_initial_state_data(
-            user_profile,
-            event_types=event_types_set,
-            queue_id=queue_id,
-            client_gravatar=client_gravatar,
-            user_avatar_url_field_optional=user_avatar_url_field_optional,
-            user_settings_object=user_settings_object,
-            slim_presence=slim_presence,
-            include_subscribers=include_subscribers,
-            include_streams=include_streams,
-            pronouns_field_type_supported=pronouns_field_type_supported,
-            linkifier_url_template=linkifier_url_template,
-            user_list_incomplete=user_list_incomplete,
-        )
+    ret = fetch_initial_state_data(
+        user_profile,
+        event_types=event_types_set,
+        queue_id=queue_id,
+        client_gravatar=client_gravatar,
+        user_avatar_url_field_optional=user_avatar_url_field_optional,
+        user_settings_object=user_settings_object,
+        slim_presence=slim_presence,
+        include_subscribers=include_subscribers,
+        include_streams=include_streams,
+        pronouns_field_type_supported=pronouns_field_type_supported,
+        linkifier_url_template=linkifier_url_template,
+        user_list_incomplete=user_list_incomplete,
+    )
 
-        # Apply events that came in while we were fetching initial data
-        events = get_user_events(user_profile, queue_id, -1)
-        try:
-            apply_events(
-                user_profile,
-                state=ret,
-                events=events,
-                fetch_event_types=fetch_event_types,
-                client_gravatar=client_gravatar,
-                slim_presence=slim_presence,
-                include_subscribers=include_subscribers,
-                linkifier_url_template=linkifier_url_template,
-                user_list_incomplete=user_list_incomplete,
-            )
-        except RestartEventError:
-            # This represents a rare race condition, where Tornado
-            # restarted (and sent `restart` events) while we were waiting
-            # for fetch_initial_state_data to return. To avoid the client
-            # needing to reload shortly after loading, we recursively call
-            # do_events_register here.
-            continue
-        else:
-            break
+    # Apply events that came in while we were fetching initial data
+    events = get_user_events(user_profile, queue_id, -1)
+    apply_events(
+        user_profile,
+        state=ret,
+        events=events,
+        fetch_event_types=fetch_event_types,
+        client_gravatar=client_gravatar,
+        slim_presence=slim_presence,
+        include_subscribers=include_subscribers,
+        linkifier_url_template=linkifier_url_template,
+        user_list_incomplete=user_list_incomplete,
+    )
 
     post_process_state(user_profile, ret, notification_settings_null)
 

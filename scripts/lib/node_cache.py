@@ -18,7 +18,8 @@ def setup_node_modules(production: bool = DEFAULT_PRODUCTION) -> None:
 
     run(
         [
-            "/usr/local/bin/pnpm",
+            "/usr/local/bin/corepack",
+            "pnpm",
             "install",
             "--frozen-lockfile",
             "--prefer-offline",

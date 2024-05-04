@@ -28,49 +28,6 @@ run_test("phrase_match", () => {
     assert.ok(!common.phrase_match("tes", "hostess"));
 });
 
-run_test("copy_data_attribute_value", ({override}) => {
-    const admin_emails_val = "iago@zulip.com";
-
-    const $input = $.create("input");
-
-    let removed;
-    $input.remove = () => {
-        removed = true;
-    };
-
-    override(document, "createElement", () => $input);
-    override(document, "execCommand", noop);
-
-    $("body").append = noop;
-    $input.val = (arg) => {
-        assert.equal(arg, admin_emails_val);
-        return {
-            trigger: noop,
-        };
-    };
-
-    const $elem = {};
-    let faded_in = false;
-    let faded_out = false;
-
-    $elem.data = (key) => {
-        assert.equal(key, "admin-emails");
-        return admin_emails_val;
-    };
-    $elem.fadeOut = (val) => {
-        assert.equal(val, 250);
-        faded_out = true;
-    };
-    $elem.fadeIn = (val) => {
-        assert.equal(val, 1000);
-        faded_in = true;
-    };
-    common.copy_data_attribute_value($elem, "admin-emails");
-    assert.ok(removed);
-    assert.ok(faded_in);
-    assert.ok(faded_out);
-});
-
 run_test("adjust_mac_kbd_tags non-mac", ({override}) => {
     override(navigator, "platform", "Windows");
 
@@ -94,12 +51,13 @@ run_test("adjust_mac_kbd_tags mac", ({override}) => {
         ["Ctrl+K", "Ctrl+K"],
         ["[", "["],
         ["X", "X"],
+        ["data-mac-following-key", "data-mac-following-key"],
     ]);
 
     const fn_shortcuts = new Set(["Home", "End", "PgUp", "PgDn"]);
-    const inserted_fn_key = "<kbd>Fn</kbd> + ";
 
     override(navigator, "platform", "MacIntel");
+    $("<span>").contents = () => $("<contents-stub>");
 
     const test_items = [];
     let key_no = 1;
@@ -111,7 +69,15 @@ run_test("adjust_mac_kbd_tags mac", ({override}) => {
         assert.equal($stub.hasClass("arrow-key"), false);
         if (fn_shortcuts.has(old_key)) {
             $stub.before = ($elem) => {
-                assert.equal($elem, inserted_fn_key);
+                assert.equal($elem.selector, "<kbd>");
+            };
+        }
+        if (old_key === "data-mac-following-key") {
+            $stub.attr("data-mac-following-key", "⌥");
+            $stub.after = ($plus, $elem) => {
+                assert.equal($plus.selector, "<contents-stub>");
+                assert.equal($elem.selector, "<kbd>");
+                assert.equal($elem.text(), $stub.attr("data-mac-following-key"));
             };
         }
         test_item.$stub = $stub;
@@ -133,18 +99,18 @@ run_test("adjust_mac_kbd_tags mac", ({override}) => {
     }
 });
 
-run_test("adjust_mac_tooltip_keys non-mac", ({override}) => {
+run_test("adjust_mac_hotkey_hints non-mac", ({override}) => {
     override(navigator, "platform", "Windows");
 
-    // The adjust_mac_tooltip_keys has a really simple guard
+    // The adjust_mac_hotkey_hints has a really simple guard
     // at the top, and we just test the early-return behavior
     // by trying to pass it garbage.
-    common.adjust_mac_tooltip_keys("not-an-array");
+    common.adjust_mac_hotkey_hints("not-an-array");
 });
 
-// Test default values of adjust_mac_tooltip_keys
+// Test default values of adjust_mac_hotkey_hints
 // Expected values
-run_test("adjust_mac_tooltip_keys mac expected", ({override}) => {
+run_test("adjust_mac_hotkey_hints mac expected", ({override}) => {
     const keys_to_test_mac = new Map([
         [["Backspace"], ["Delete"]],
         [["Enter"], ["Return"]],
@@ -161,7 +127,7 @@ run_test("adjust_mac_tooltip_keys mac expected", ({override}) => {
 
     for (const [old_key, mac_key] of keys_to_test_mac) {
         const test_item = {};
-        common.adjust_mac_tooltip_keys(old_key);
+        common.adjust_mac_hotkey_hints(old_key);
 
         test_item.mac_key = mac_key;
         test_item.adjusted_key = old_key;
@@ -173,9 +139,9 @@ run_test("adjust_mac_tooltip_keys mac expected", ({override}) => {
     }
 });
 
-// Test non-default values of adjust_mac_tooltip_keys
+// Test non-default values of adjust_mac_hotkey_hints
 // Random values
-run_test("adjust_mac_tooltip_keys mac random", ({override}) => {
+run_test("adjust_mac_hotkey_hints mac random", ({override}) => {
     const keys_to_test_mac = new Map([
         [
             ["Ctrl", "["],
@@ -198,7 +164,7 @@ run_test("adjust_mac_tooltip_keys mac random", ({override}) => {
 
     for (const [old_key, mac_key] of keys_to_test_mac) {
         const test_item = {};
-        common.adjust_mac_tooltip_keys(old_key);
+        common.adjust_mac_hotkey_hints(old_key);
 
         test_item.mac_key = mac_key;
         test_item.adjusted_key = old_key;
@@ -225,7 +191,13 @@ run_test("show password", () => {
         assert.ok(!$(password_selector).hasClass(absent_class));
     }
 
-    const ev = {
+    const click_ev = {
+        preventDefault() {},
+        stopPropagation() {},
+    };
+
+    const key_ev = {
+        key: "Enter",
         preventDefault() {},
         stopPropagation() {},
     };
@@ -233,15 +205,23 @@ run_test("show password", () => {
     set_attribute("password");
     common.setup_password_visibility_toggle("#id_password", password_selector);
 
-    const handler = $(password_selector).get_on_handler("click");
+    const click_handler = $(password_selector).get_on_handler("click");
 
-    handler(ev);
+    const key_handler = $(password_selector).get_on_handler("keydown");
+
+    click_handler(click_ev);
     check_assertion("text", "fa-eye", "fa-eye-slash");
 
-    handler(ev);
+    click_handler(click_ev);
     check_assertion("password", "fa-eye-slash", "fa-eye");
 
-    handler(ev);
+    key_handler(key_ev);
+    check_assertion("text", "fa-eye", "fa-eye-slash");
+
+    key_handler(key_ev);
+    check_assertion("password", "fa-eye-slash", "fa-eye");
+
+    click_handler(click_ev);
 
     common.reset_password_toggle_icons("#id_password", password_selector);
     check_assertion("password", "fa-eye-slash", "fa-eye");

@@ -23,8 +23,12 @@ run_test("get_message_events", () => {
     assert.equal(submessage.get_message_events(msg), undefined);
 
     const submessages = [
-        {id: 222, sender_id: 99, content: "84"},
-        {id: 9, sender_id: 33, content: "42"},
+        {id: 222, sender_id: 99, content: '{"type":"new_option","idx":1,"option":"bar"}'},
+        {
+            id: 9,
+            sender_id: 33,
+            content: '{"widget_type": "poll", "extra_data": {"question": "foo", "options": []}}',
+        },
     ];
 
     msg = {
@@ -37,8 +41,24 @@ run_test("get_message_events", () => {
         submessages,
     };
     assert.deepEqual(submessage.get_message_events(msg), [
-        {sender_id: 33, data: 42},
-        {sender_id: 99, data: 84},
+        {
+            sender_id: 33,
+            data: {
+                widget_type: "poll",
+                extra_data: {
+                    question: "foo",
+                    options: [],
+                },
+            },
+        },
+        {
+            sender_id: 99,
+            data: {
+                type: "new_option",
+                idx: 1,
+                option: "bar",
+            },
+        },
     ]);
 });
 
@@ -73,7 +93,13 @@ run_test("check sender", ({override}) => {
     const message = {
         id: message_id,
         sender_id: 1,
-        submessages: [{sender_id: 2, content: "{}"}],
+        submessages: [
+            {
+                sender_id: 2,
+                content:
+                    '{"widget_type": "poll", "extra_data": {"question": "foo", "options": []}}',
+            },
+        ],
     };
 
     override(message_store, "get", (arg) => {

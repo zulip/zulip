@@ -150,6 +150,26 @@ run_test("triage", () => {
     );
 });
 
+run_test("triage: prioritise word boundary matches to arbitrary substring matches", () => {
+    const book = {name: "book"};
+    const hyphen_ok = {name: "hyphen_ok"};
+    const space_ok = {name: "space ok"};
+    const no_space_ok = {name: "nospaceok"};
+    const number_ok = {name: "number1ok"};
+    const okay = {name: "okay"};
+    const ok = {name: "ok"};
+
+    const emojis = [book, hyphen_ok, space_ok, no_space_ok, number_ok, okay, ok];
+
+    assert.deepEqual(
+        typeahead.triage("ok", emojis, (r) => r.name),
+        {
+            matches: [ok, okay, hyphen_ok, space_ok],
+            rest: [book, no_space_ok, number_ok],
+        },
+    );
+});
+
 function sort_emojis(emojis, query) {
     return typeahead.sort_emojis(emojis, query).map((emoji) => emoji.emoji_name);
 }
@@ -251,4 +271,52 @@ run_test("sort_emojis: prioritise perfect matches", () => {
         },
     ];
     assert.deepEqual(typeahead.sort_emojis(emoji_list, "thank you"), emoji_list);
+});
+
+run_test("last_prefix_match", () => {
+    let words = [
+        "apple",
+        "banana",
+        "cantaloupe",
+        "cherry",
+        "kiwi",
+        "melon",
+        "pear",
+        "plum",
+        "raspberry",
+        "watermelon",
+    ];
+    let prefix = "p";
+    assert.equal(typeahead.last_prefix_match(prefix, words), 7);
+
+    prefix = "ch";
+    assert.equal(typeahead.last_prefix_match(prefix, words), 3);
+
+    prefix = "pom";
+    assert.equal(typeahead.last_prefix_match(prefix, words), null);
+
+    prefix = "aa";
+    assert.equal(typeahead.last_prefix_match(prefix, words), null);
+
+    prefix = "zu";
+    assert.equal(typeahead.last_prefix_match(prefix, words), null);
+
+    prefix = "";
+    assert.equal(typeahead.last_prefix_match(prefix, words), 9);
+
+    words = ["one"];
+    prefix = "one";
+    assert.equal(typeahead.last_prefix_match(prefix, words), 0);
+
+    words = ["aa", "pr", "pra", "pre", "pri", "pro", "pru", "zz"];
+    prefix = "pr";
+    assert.equal(typeahead.last_prefix_match(prefix, words), 6);
+
+    words = ["same", "same", "same", "same", "same"];
+    prefix = "same";
+    assert.equal(typeahead.last_prefix_match(prefix, words), 4);
+
+    words = [];
+    prefix = "empty";
+    assert.equal(typeahead.last_prefix_match(prefix, words), null);
 });

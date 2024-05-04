@@ -2,8 +2,8 @@
   "address": null,
   "balance": 0,
   "created": 1000000000,
-  "currency": null,
-  "default_currency": null,
+  "currency": "usd",
+  "default_currency": "usd",
   "default_source": null,
   "delinquent": false,
   "description": "zulip (Zulip Dev)",
@@ -16,15 +16,15 @@
     "default_payment_method": {
       "billing_details": {
         "address": {
-          "city": null,
-          "country": null,
-          "line1": null,
+          "city": "San Francisco",
+          "country": "US",
+          "line1": "123 Main St",
           "line2": null,
-          "postal_code": null,
-          "state": null
+          "postal_code": "94105",
+          "state": "CA"
         },
         "email": null,
-        "name": null,
+        "name": "John Doe",
         "phone": null
       },
       "card": {
@@ -35,8 +35,9 @@
           "cvc_check": "pass"
         },
         "country": "US",
-        "exp_month": 12,
-        "exp_year": 2024,
+        "display_brand": "visa",
+        "exp_month": 4,
+        "exp_year": 2025,
         "fingerprint": "NORMALIZED000001",
         "funding": "credit",
         "generated_from": null,
@@ -54,7 +55,7 @@
       },
       "created": 1000000000,
       "customer": "cus_NORMALIZED0001",
-      "id": "pm_1OOgxLDEQaroqDjsjl7ObYvT",
+      "id": "pm_1P41p7DEQaroqDjsm67M8ozP",
       "livemode": false,
       "metadata": {},
       "object": "payment_method",
@@ -69,7 +70,7 @@
     "realm_str": "zulip"
   },
   "name": null,
-  "next_invoice_sequence": 1,
+  "next_invoice_sequence": 2,
   "object": "customer",
   "phone": null,
   "preferred_locales": [],

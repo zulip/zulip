@@ -195,7 +195,7 @@ parties listed in this section. We do not sell Personal Data.
       otherwise provide data to Zulip, it may be shared with some or all other
       users in that Zulip Organization. Please note that some Zulip streams [may
       be accessible to the general
-      public](/help/stream-permissions), in addition to the
+      public](/help/channel-permissions), in addition to the
       stream’s current subscribers. For more information, please review our
       [Terms of Service](/policies/terms).
     - Zulip Organization Administrators may export all Zulip data for a Zulip
@@ -430,6 +430,8 @@ change these settings in your
 privacy](/accounts/go/?next=%23settings%2Faccount-and-privacy) settings.
 
 ### Nevada Resident Rights
+
+As noted above, we do not sell Personal Data.
 
 If you are a resident of Nevada, you have the right to opt-out of the
 sale of certain Personal Data to third parties who intend to license

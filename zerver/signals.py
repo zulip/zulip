@@ -1,6 +1,6 @@
-import sys
 from typing import Any, Optional
 
+import zoneinfo
 from django.conf import settings
 from django.contrib.auth.signals import user_logged_in, user_logged_out
 from django.dispatch import receiver
@@ -11,12 +11,8 @@ from django.utils.translation import gettext as _
 from confirmation.models import one_click_unsubscribe_link
 from zerver.lib.queue import queue_json_publish
 from zerver.lib.send_email import FromAddress
+from zerver.lib.timezone import canonicalize_timezone
 from zerver.models import UserProfile
-
-if sys.version_info < (3, 9):  # nocoverage
-    from backports import zoneinfo
-else:  # nocoverage
-    import zoneinfo
 
 JUST_CREATED_THRESHOLD = 60
 
@@ -96,7 +92,7 @@ def email_on_new_login(sender: Any, user: UserProfile, request: Any, **kwargs: A
         user_tz = user.timezone
         if user_tz == "":
             user_tz = timezone_get_current_timezone_name()
-        local_time = timezone_now().astimezone(zoneinfo.ZoneInfo(user_tz))
+        local_time = timezone_now().astimezone(zoneinfo.ZoneInfo(canonicalize_timezone(user_tz)))
         if user.twenty_four_hour_time:
             hhmm_string = local_time.strftime("%H:%M")
         else:

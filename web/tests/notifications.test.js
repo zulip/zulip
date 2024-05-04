@@ -5,7 +5,7 @@ const {strict: assert} = require("assert");
 const {mock_esm, zrequire} = require("./lib/namespace");
 const {run_test} = require("./lib/test");
 const $ = require("./lib/zjquery");
-const {page_params, user_settings} = require("./lib/zpage_params");
+const {current_user, page_params, user_settings} = require("./lib/zpage_params");
 
 mock_esm("../src/spoilers", {hide_spoilers_in_notification() {}});
 
@@ -38,19 +38,21 @@ stream_data.add_sub(muted);
 
 user_topics.update_user_topics(
     general.stream_id,
+    general.name,
     "muted topic",
     user_topics.all_visibility_policies.MUTED,
 );
 
 user_topics.update_user_topics(
     general.stream_id,
+    general.name,
     "followed topic",
     user_topics.all_visibility_policies.FOLLOWED,
 );
 
 function test(label, f) {
     run_test(label, (helpers) => {
-        page_params.is_admin = false;
+        current_user.is_admin = false;
         page_params.realm_users = [];
         user_settings.enable_followed_topic_desktop_notifications = true;
         user_settings.enable_followed_topic_audible_notifications = true;
@@ -339,8 +341,9 @@ test("message_is_notifiable", () => {
 });
 
 test("basic_notifications", () => {
-    $("<div>").set_find_results(".emoji", {replaceWith() {}});
+    $("<div>").set_find_results(".emoji", {text: () => ({contents: () => ({unwrap() {}})})});
     $("<div>").set_find_results("span.katex", {each() {}});
+    $("<div>").children = () => [];
 
     let n; // Object for storing all notification data for assertions.
     let last_closed_message_id = null;

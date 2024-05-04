@@ -1,0 +1,66 @@
+{
+  "data": [
+    {
+      "api_version": "2020-08-27",
+      "created": 1010000006,
+      "data": {
+        "object": {
+          "ach_credit_transfer": {
+            "account_number": "test_NORMALIZED02",
+            "bank_name": "TEST BANK",
+            "fingerprint": "NORMALIZED000001",
+            "refund_account_holder_name": null,
+            "refund_account_holder_type": null,
+            "refund_routing_number": null,
+            "routing_number": "110000000",
+            "swift_code": "TSTEZ122"
+          },
+          "amount": null,
+          "client_secret": "src_client_secret_NORMALIZED00000000000001",
+          "created": 1010000006,
+          "currency": "usd",
+          "customer": "cus_NORMALIZED0001",
+          "flow": "receiver",
+          "id": "src_NORMALIZED00000000000001",
+          "livemode": false,
+          "metadata": {},
+          "object": "source",
+          "owner": {
+            "address": null,
+            "email": "amount_0@stripe.com",
+            "name": null,
+            "phone": null,
+            "verified_address": null,
+            "verified_email": null,
+            "verified_name": null,
+            "verified_phone": null
+          },
+          "receiver": {
+            "address": "000000000-test_NORMALIZED01",
+            "amount_charged": 0,
+            "amount_received": 0,
+            "amount_returned": 0,
+            "refund_attributes_method": "email",
+            "refund_attributes_status": "missing"
+          },
+          "statement_descriptor": null,
+          "status": "pending",
+          "type": "ach_credit_transfer",
+          "usage": "reusable"
+        }
+      },
+      "id": "evt_1P41xpDEQaroqDjs0tnBmoxF",
+      "livemode": false,
+      "object": "event",
+      "pending_webhooks": 0,
+      "request": {
+        "id": null,
+        "idempotency_key": "e764ba7c-88c7-4e15-a152-6f1fefe9eaf3"
+      },
+      "type": "customer.source.created"
+    }
+  ],
+  "has_more": true,
+  "object": "list",
+  "url": "/v1/events"
+}

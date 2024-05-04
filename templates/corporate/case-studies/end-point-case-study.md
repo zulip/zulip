@@ -52,7 +52,7 @@ explored all the leading open-source team chat products. They found that while
 Mattermost and Rocket.Chat were similar to Slack (but felt less polished), Zulip
 stood out. “Zulip had all the modern features we were looking for, like
 reliable, flexible notifications. At the same time, the [extensive keyboard
-shortcuts](/help/keyboard-shortcuts) and the ‘All messages’
+shortcuts](/help/keyboard-shortcuts) and the ‘Combined feed’
 view offered a UI that the IRC fans loved.”
 
 When End Point moved to Zulip, it was an immediate improvement over the
@@ -66,7 +66,7 @@ busy topics,” Jon says.
 
 For the past six years, the Zulip chat has been a virtual office for End Point’s
 distributed team, a place to show up and be present at work. Discussing projects
-in Zulip [streams](/help/streams-and-topics) (similar to channels in other chat
+in Zulip [channels](/help/channels-and-topics) (similar to channels in other chat
 tools) keeps everyone informed.
 
 “Zulip is my lifeline,” says [Joanne
@@ -118,7 +118,7 @@ Jensen](https://www.endpointdev.com/team/jon-jensen/) has experienced them all.
 “It is amazing that companies would use Teams in its current state,” Jon says, a
 bit exasperated. “The UI is slow and inconsistent, and you have to do so much
 clicking to get anywhere. Compared to Zulip, it’s missing key features like the
-‘All messages’ view and topics.”
+‘Combined feed’ view and topics.”
 
 > “It is amazing that companies would use Teams in its current state. The UI is
 > slow and inconsistent, and compared to Zulip, it’s missing key features.”
@@ -142,4 +142,5 @@ chat apps. We love it."
 
 Check out our guide on [using Zulip for business](/for/business/). You can also
 learn how Zulip is being used at the [iDrift AS](/case-studies/idrift/) company,
-and the startup [Atolio](/case-studies/atolio/).
+the [GUT contact](/case-studies/gut-contact/) support agency, and the startups
+[Semsee](/case-studies/semsee/) and [Atolio](/case-studies/atolio/).

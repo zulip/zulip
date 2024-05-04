@@ -28,7 +28,7 @@ export function get_name() {
 class UserGroupMembershipError {
     report_no_members_to_user_group() {
         $("#user_group_membership_error").text(
-            $t({defaultMessage: "You cannot create a user group with no members!"}),
+            $t({defaultMessage: "You cannot create a user group with no members."}),
         );
         $("#user_group_membership_error").show();
     }
@@ -42,7 +42,7 @@ const user_group_membership_error = new UserGroupMembershipError();
 class UserGroupNameError {
     report_already_exists() {
         $("#user_group_name_error").text(
-            $t({defaultMessage: "A user group with this name already exists"}),
+            $t({defaultMessage: "A user group with this name already exists."}),
         );
         $("#user_group_name_error").show();
     }
@@ -52,7 +52,9 @@ class UserGroupNameError {
     }
 
     report_empty_user_group() {
-        $("#user_group_name_error").text($t({defaultMessage: "A user group needs to have a name"}));
+        $("#user_group_name_error").text(
+            $t({defaultMessage: "Choose a name for the new user group."}),
+        );
         $("#user_group_name_error").show();
     }
 

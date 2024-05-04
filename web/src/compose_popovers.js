@@ -39,14 +39,19 @@ export function initialize() {
         onMount(instance) {
             const $popper = $(instance.popper);
             $popper.one("click", ".compose_mobile_stream_button", (e) => {
-                compose_actions.start("stream", {trigger: "clear topic button"});
+                compose_actions.start({
+                    mesage_type: "stream",
+                    trigger: "clear topic button",
+                });
                 e.stopPropagation();
-                instance.hide();
+                popover_menus.hide_current_popover_if_visible(instance);
             });
             $popper.one("click", ".compose_mobile_direct_message_button", (e) => {
-                compose_actions.start("private");
+                compose_actions.start({
+                    message_type: "private",
+                });
                 e.stopPropagation();
-                instance.hide();
+                popover_menus.hide_current_popover_if_visible(instance);
             });
         },
         onHidden(instance) {

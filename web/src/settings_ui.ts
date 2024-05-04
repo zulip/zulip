@@ -17,10 +17,10 @@ type RequestOpts = {
 };
 
 export function display_checkmark($elem: JQuery): void {
-    const check_mark = document.createElement("img");
-    check_mark.src = checkbox_image;
-    $elem.prepend(check_mark);
-    $(check_mark).css("width", "13px");
+    const $check_mark = $("<img>");
+    $check_mark.attr("src", checkbox_image);
+    $check_mark.css("width", "13px");
+    $elem.prepend($check_mark);
 }
 
 export const strings = {
@@ -34,7 +34,7 @@ export const strings = {
 export function do_settings_change(
     request_method: AjaxRequestHandler,
     url: string,
-    data: Parameters<AjaxRequestHandler>[0]["data"],
+    data: Omit<Parameters<AjaxRequestHandler>[0]["data"], "undefined">,
     $status_element: JQuery,
     {
         success_msg_html = strings.success_html,

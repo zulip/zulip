@@ -1,4 +1,5 @@
 import $ from "jquery";
+import assert from "minimalistic-assert";
 
 import * as activity from "./activity";
 import * as activity_ui from "./activity_ui";
@@ -9,6 +10,7 @@ import * as compose_actions from "./compose_actions";
 import * as compose_banner from "./compose_banner";
 import * as compose_recipient from "./compose_recipient";
 import * as compose_reply from "./compose_reply";
+import * as compose_send_menu_popover from "./compose_send_menu_popover";
 import * as compose_state from "./compose_state";
 import * as compose_textarea from "./compose_textarea";
 import * as condense from "./condense";
@@ -42,15 +44,16 @@ import * as playground_links_popover from "./playground_links_popover";
 import * as popover_menus from "./popover_menus";
 import * as popovers from "./popovers";
 import * as reactions from "./reactions";
+import * as read_receipts from "./read_receipts";
 import * as recent_view_ui from "./recent_view_ui";
 import * as recent_view_util from "./recent_view_util";
 import * as scheduled_messages_overlay_ui from "./scheduled_messages_overlay_ui";
-import * as scheduled_messages_popover from "./scheduled_messages_popover";
 import * as search from "./search";
 import * as settings_data from "./settings_data";
 import * as sidebar_ui from "./sidebar_ui";
 import * as spectators from "./spectators";
 import * as starred_messages_ui from "./starred_messages_ui";
+import {realm} from "./state_data";
 import * as stream_data from "./stream_data";
 import * as stream_list from "./stream_list";
 import * as stream_popover from "./stream_popover";
@@ -63,6 +66,10 @@ import {user_settings} from "./user_settings";
 import * as user_topics_ui from "./user_topics_ui";
 
 function do_narrow_action(action) {
+    if (message_lists.current === undefined) {
+        return false;
+    }
+
     action(message_lists.current.selected_id(), {trigger: "hotkey"});
     return true;
 }
@@ -91,6 +98,7 @@ const keydown_shift_mappings = {
     40: {name: "down_arrow", message_view_only: false}, // down arrow
     72: {name: "view_edit_history", message_view_only: true}, // 'H'
     78: {name: "narrow_to_next_unread_followed_topic", message_view_only: false}, // 'N'
+    86: {name: "toggle_read_receipts", message_view_only: true}, // 'V'
 };
 
 const keydown_unshift_mappings = {
@@ -164,7 +172,8 @@ const keypress_mappings = {
     83: {name: "toggle_stream_subscription", message_view_only: true}, // 'S'
     85: {name: "mark_unread", message_view_only: true}, // 'U'
     86: {name: "view_selected_stream", message_view_only: false}, // 'V'
-    97: {name: "all_messages", message_view_only: true}, // 'a'
+    // The shortcut "a" dates from when this was called "All messages".
+    97: {name: "open_combined_feed", message_view_only: true}, // 'a'
     99: {name: "compose", message_view_only: true}, // 'c'
     100: {name: "open_drafts", message_view_only: true}, // 'd'
     101: {name: "edit_message", message_view_only: true}, // 'e'
@@ -376,7 +385,8 @@ export function process_escape_key(e) {
     /* The Ctrl+[ hotkey navigates to the home view
      * unconditionally; Esc's behavior depends on a setting. */
     if (user_settings.web_escape_navigates_to_home_view || e.which === 219) {
-        hashchange.set_hash_to_home_view();
+        const triggered_by_escape_key = true;
+        hashchange.set_hash_to_home_view(triggered_by_escape_key);
         return true;
     }
 
@@ -495,7 +505,7 @@ export function process_enter_key(e) {
     // it since it is the trigger for the popover. <button> is already used
     // to trigger the tooltip so it cannot be used to trigger the popover.
     if (e.target.id === "send_later") {
-        scheduled_messages_popover.toggle();
+        compose_send_menu_popover.toggle();
         return true;
     }
 
@@ -555,6 +565,7 @@ export function process_enter_key(e) {
     // conversation.
     const current_filter = narrow_state.filter();
     if (current_filter !== undefined && !current_filter.supports_collapsing_recipients()) {
+        assert(message_lists.current !== undefined);
         const message = message_lists.current.selected_message();
 
         if (message === undefined) {
@@ -714,8 +725,18 @@ export function process_hotkey(e, hotkey) {
         return emoji_picker.navigate(event_name);
     }
 
+    // modals.any_active() and modals.active_modal() both query the dom to
+    // find and retrieve any active modal. Thus, we limit the number of calls
+    // to the DOM by storing these values as constansts to be reused.
+    const is_any_modal_active = modals.any_active();
+    const active_modal = is_any_modal_active ? modals.active_modal() : null;
+
     // `list_util` will process the event in send later modal.
-    if (modals.any_active() && modals.active_modal() !== "#send_later_modal") {
+    if (is_any_modal_active && active_modal !== "#send_later_modal") {
+        if (event_name === "toggle_read_receipts" && active_modal === "#read_receipts_modal") {
+            read_receipts.hide_user_list();
+            return true;
+        }
         return false;
     }
 
@@ -734,6 +755,10 @@ export function process_hotkey(e, hotkey) {
             }
             if (overlays.scheduled_messages_open()) {
                 scheduled_messages_overlay_ui.handle_keyboard_events(event_name);
+                return true;
+            }
+            if (overlays.message_edit_history_open()) {
+                message_edit_history.handle_keyboard_events(event_name);
                 return true;
             }
     }
@@ -889,7 +914,7 @@ export function process_hotkey(e, hotkey) {
     }
 
     // Prevent navigation in the background when the overlays are active.
-    if (overlays.any_active() || modals.any_active()) {
+    if (overlays.any_active() || is_any_modal_active) {
         if (event_name === "view_selected_stream" && overlays.streams_open()) {
             stream_settings_ui.view_stream();
             return true;
@@ -910,9 +935,8 @@ export function process_hotkey(e, hotkey) {
     // Shortcuts that don't require a message
     switch (event_name) {
         case "narrow_private":
-            return do_narrow_action((_target, opts) => {
-                narrow.by("is", "dm", opts);
-            });
+            narrow.by("is", "dm", {trigger: "hotkey"});
+            return true;
         case "query_streams":
             stream_list.initiate_search();
             return true;
@@ -950,9 +974,21 @@ export function process_hotkey(e, hotkey) {
         case "open_inbox":
             browser_history.go_to_location("#inbox");
             return true;
-        case "all_messages":
-            browser_history.go_to_location("#all_messages");
+        case "open_combined_feed":
+            browser_history.go_to_location("#feed");
             return true;
+        case "toggle_topic_visibility_policy":
+            if (recent_view_ui.is_in_focus()) {
+                const recent_msg = recent_view_ui.get_focused_row_message();
+                if (recent_msg !== undefined && recent_msg.type === "stream") {
+                    user_topics_ui.toggle_topic_visibility_policy(recent_msg);
+                    return true;
+                }
+                return false;
+            }
+            if (inbox_ui.is_in_focus()) {
+                return inbox_ui.toggle_topic_visibility_policy();
+            }
     }
 
     // Shortcuts that are useful with an empty message feed, like opening compose.
@@ -964,12 +1000,20 @@ export function process_hotkey(e, hotkey) {
             return true;
         case "compose": // 'c': compose
             if (!compose_state.composing()) {
-                compose_actions.start("stream", {trigger: "compose_hotkey"});
+                compose_actions.start({
+                    message_type: "stream",
+                    trigger: "compose_hotkey",
+                    keep_composebox_empty: true,
+                });
             }
             return true;
         case "compose_private_message":
             if (!compose_state.composing()) {
-                compose_actions.start("private", {trigger: "compose_hotkey"});
+                compose_actions.start({
+                    message_type: "private",
+                    trigger: "compose_hotkey",
+                    keep_composebox_empty: true,
+                });
             }
             return true;
         case "open_drafts":
@@ -985,7 +1029,7 @@ export function process_hotkey(e, hotkey) {
 
     // Hotkeys below this point are for the message feed, and so
     // should only function if the message feed is visible and nonempty.
-    if (!narrow_state.is_message_feed_visible() || message_lists.current.visibly_empty()) {
+    if (message_lists.current === undefined || message_lists.current.visibly_empty()) {
         return false;
     }
 
@@ -1092,7 +1136,7 @@ export function process_hotkey(e, hotkey) {
             // Use canonical name.
             const thumbs_up_emoji_code = "1f44d";
             const canonical_name = emoji.get_emoji_name(thumbs_up_emoji_code);
-            reactions.toggle_emoji_reaction(msg.id, canonical_name);
+            reactions.toggle_emoji_reaction(msg, canonical_name);
             return true;
         }
         case "upvote_first_emoji": {
@@ -1109,7 +1153,7 @@ export function process_hotkey(e, hotkey) {
                 return true;
             }
 
-            reactions.toggle_emoji_reaction(msg.id, first_reaction.emoji_name);
+            reactions.toggle_emoji_reaction(msg, first_reaction.emoji_name);
             return true;
         }
         case "toggle_topic_visibility_policy":
@@ -1130,9 +1174,9 @@ export function process_hotkey(e, hotkey) {
             return true;
         }
         case "view_edit_history": {
-            if (page_params.realm_allow_edit_history) {
-                message_edit_history.show_history(msg);
-                $("#message-history-cancel").trigger("focus");
+            if (realm.realm_allow_edit_history) {
+                message_edit_history.fetch_and_render_message_history(msg);
+                $("#message-history-overlay .exit-sign").trigger("focus");
                 return true;
             }
             return false;
@@ -1143,6 +1187,10 @@ export function process_hotkey(e, hotkey) {
             }
 
             stream_popover.build_move_topic_to_stream_popover(msg.stream_id, msg.topic, false, msg);
+            return true;
+        }
+        case "toggle_read_receipts": {
+            read_receipts.show_user_list(msg.id);
             return true;
         }
         case "zoom_to_message_near": {
@@ -1163,7 +1211,7 @@ export function process_hotkey(e, hotkey) {
                     narrow.activate(
                         [
                             {
-                                operator: "stream",
+                                operator: "channel",
                                 operand: stream_data.get_stream_name_from_id(msg.stream_id),
                             },
                             {operator: "topic", operand: msg.topic},

@@ -1,3 +1,4 @@
+from email.errors import HeaderParseError
 from email.headerregistry import Address
 from typing import Callable, Dict, Optional, Set, Tuple
 
@@ -17,8 +18,13 @@ from zerver.models.realms import (
 from zerver.models.users import get_users_by_delivery_email, is_cross_realm_bot_email
 
 
-def validate_disposable(email: str) -> None:
-    if is_disposable_domain(Address(addr_spec=email).domain):
+def validate_is_not_disposable(email: str) -> None:
+    try:
+        domain = Address(addr_spec=email).domain
+    except (HeaderParseError, ValueError):
+        raise DisposableEmailError
+
+    if is_disposable_domain(domain):
         raise DisposableEmailError
 
 
@@ -26,7 +32,7 @@ def get_realm_email_validator(realm: Realm) -> Callable[[str], None]:
     if not realm.emails_restricted_to_domains:
         # Should we also do '+' check for non-restricted realms?
         if realm.disallow_disposable_email_addresses:
-            return validate_disposable
+            return validate_is_not_disposable
 
         # allow any email through
         return lambda email: None

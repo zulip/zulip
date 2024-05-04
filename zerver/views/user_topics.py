@@ -99,7 +99,7 @@ def update_user_topic(
     visibility_policy: int = REQ(json_validator=check_int_in(UserTopic.VisibilityPolicy.values)),
 ) -> HttpResponse:
     if visibility_policy == UserTopic.VisibilityPolicy.INHERIT:
-        error = _("Invalid stream ID")
+        error = _("Invalid channel ID")
         stream = access_stream_to_remove_visibility_policy_by_id(user_profile, stream_id, error)
     else:
         (stream, sub) = access_stream_by_id(user_profile, stream_id)

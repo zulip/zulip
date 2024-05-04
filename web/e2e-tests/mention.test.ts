@@ -12,12 +12,9 @@ async function test_mention(page: Page): Promise<void> {
     await page.waitForSelector("#compose", {visible: true});
 
     await common.select_stream_in_compose_via_dropdown(page, "Verona");
-    await common.select_item_via_typeahead(
-        page,
-        "#stream_message_recipient_topic",
-        "Test mention all",
-        "Test mention all",
-    );
+    await common.fill_form(page, 'form[action^="/json/messages"]', {
+        stream_message_recipient_topic: "Test mention all",
+    });
     await common.select_item_via_typeahead(page, "#compose-textarea", "@**all", "all");
     await common.ensure_enter_does_not_send(page);
 

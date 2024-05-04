@@ -3,7 +3,7 @@ class zulip::postgresql_base {
   include zulip::postgresql_common
   include zulip::process_fts_updates
 
-  case $::os['family'] {
+  case $facts['os']['family'] {
     'Debian': {
       $postgresql = "postgresql-${zulip::postgresql_common::version}"
       $postgresql_sharedir = "/usr/share/postgresql/${zulip::postgresql_common::version}"
@@ -75,13 +75,6 @@ class zulip::postgresql_base {
   $pgroonga = zulipconf('machine', 'pgroonga', false)
   if $pgroonga {
     # Needed for optional our full text search system
-
-    # Removed 2020-12 in version 4.0; these lines can be removed when
-    # we drop support for upgrading from Zulip 3 or older.
-    package{"${postgresql}-pgroonga":
-      ensure  => purged,
-    }
-
     package{"${postgresql}-pgdg-pgroonga":
       ensure  => latest,
       require => [
@@ -96,12 +89,17 @@ class zulip::postgresql_base {
           test "$(dpkg-query --show --showformat='\${Version}' "${postgresql}-pgdg-pgroonga")" \
              = "$(cat ${pgroonga_setup_sql_path}.applied)"
           | EOT
-      command => "${::zulip_scripts_path}/setup/pgroonga-config ${postgresql_sharedir}",
+      command => "${facts['zulip_scripts_path']}/setup/pgroonga-config ${postgresql_sharedir}",
     }
   }
 
-  $s3_backups_bucket = zulipsecret('secrets', 's3_backups_bucket', '')
-  if $s3_backups_bucket != '' {
+  $backups_s3_bucket = zulipsecret('secrets', 's3_backups_bucket', '')
+  $backups_directory = zulipconf('postgresql', 'backups_directory', '')
+  if $backups_s3_bucket != '' or $backups_directory != '' {
     include zulip::postgresql_backups
+  } else {
+    file { '/etc/cron.d/pg_backup_and_purge':
+      ensure => absent,
+    }
   }
 }

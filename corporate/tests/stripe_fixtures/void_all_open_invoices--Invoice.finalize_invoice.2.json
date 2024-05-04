@@ -13,6 +13,7 @@
   "auto_advance": true,
   "automatic_tax": {
     "enabled": false,
+    "liability": null,
     "status": null
   },
   "billing_reason": "manual",
@@ -40,9 +41,12 @@
   "ending_balance": 0,
   "footer": null,
   "from_invoice": null,
-  "hosted_invoice_url": "https://invoice.stripe.com/i/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QRDdDek9Id2dXTTFia2JMbGJpNm1BNmI2aFV2dVc4LDkzNDQ3MjY20200QrhGScGc?s=ap",
+  "hosted_invoice_url": "https://invoice.stripe.com/i/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QdHBVQ043RDM1dXpQQ3VHSE1QMjJmWVhrdmFqSWdSLDEwMzI5ODkyNA0200QllwceIH?s=ap",
   "id": "in_NORMALIZED00000000000002",
-  "invoice_pdf": "https://pay.stripe.com/invoice/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QRDdDek9Id2dXTTFia2JMbGJpNm1BNmI2aFV2dVc4LDkzNDQ3MjY20200QrhGScGc/pdf?s=ap",
+  "invoice_pdf": "https://pay.stripe.com/invoice/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QdHBVQ043RDM1dXpQQ3VHSE1QMjJmWVhrdmFqSWdSLDEwMzI5ODkyNA0200QllwceIH/pdf?s=ap",
+  "issuer": {
+    "type": "self"
+  },
   "last_finalization_error": null,
   "latest_revision": null,
   "lines": {
@@ -56,6 +60,7 @@
         "discountable": false,
         "discounts": [],
         "id": "il_NORMALIZED00000000000002",
+        "invoice": "in_NORMALIZED00000000000002",
         "invoice_item": "ii_NORMALIZED00000000000002",
         "livemode": false,
         "metadata": {},

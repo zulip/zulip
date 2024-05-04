@@ -61,22 +61,11 @@ run_test("set_focused_recipient", ({override_rewire}) => {
         subscribed: true,
     };
 
-    compose_fade.set_focused_recipient("stream");
-
-    // If a stream is unknown, then we turn off the compose-fade
-    // feature, since a mix won't happen if the message can't be
-    // delivered.
     stream_data.clear_subscriptions();
-    assert.equal(compose_fade_helper.would_receive_message(bob.user_id), true);
-
     stream_data.add_sub(sub);
     compose_state.set_stream_id(sub.stream_id);
     peer_data.set_subscribers(sub.stream_id, [me.user_id, alice.user_id]);
     compose_fade.set_focused_recipient("stream");
-
-    assert.equal(compose_fade_helper.would_receive_message(me.user_id), true);
-    assert.equal(compose_fade_helper.would_receive_message(alice.user_id), true);
-    assert.equal(compose_fade_helper.would_receive_message(bob.user_id), false);
 
     const good_msg = {
         type: "stream",

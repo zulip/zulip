@@ -75,6 +75,7 @@ Dependencies:
 * [Pygments (optional)](http://pygments.org)
 
 """
+
 import re
 from typing import Any, Callable, Dict, Iterable, List, Mapping, MutableSequence, Optional, Sequence
 

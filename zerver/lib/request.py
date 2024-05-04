@@ -66,7 +66,6 @@ class RequestNotes(BaseNotes[HttpRequest, "RequestNotes"]):
     ratelimits_applied: List[rate_limiter.RateLimitResult] = field(default_factory=list)
     query: Optional[str] = None
     error_format: Optional[str] = None
-    placeholder_open_graph_description: Optional[str] = None
     saved_response: Optional[HttpResponse] = None
     tornado_handler_id: Optional[int] = None
     processed_parameters: Set[str] = field(default_factory=set)
@@ -222,8 +221,7 @@ def REQ(
     documentation_pending: bool = ...,
     aliases: Sequence[str] = ...,
     path_only: bool = ...,
-) -> ResultT:
-    ...
+) -> ResultT: ...
 
 
 # Overload 2: json_validator
@@ -238,8 +236,7 @@ def REQ(
     documentation_pending: bool = ...,
     aliases: Sequence[str] = ...,
     path_only: bool = ...,
-) -> ResultT:
-    ...
+) -> ResultT: ...
 
 
 # Overload 3: no converter/json_validator, default: str or unspecified, argument_type=None
@@ -253,8 +250,7 @@ def REQ(
     documentation_pending: bool = ...,
     aliases: Sequence[str] = ...,
     path_only: bool = ...,
-) -> str:
-    ...
+) -> str: ...
 
 
 # Overload 4: no converter/validator, default=None, argument_type=None
@@ -268,8 +264,7 @@ def REQ(
     documentation_pending: bool = ...,
     aliases: Sequence[str] = ...,
     path_only: bool = ...,
-) -> Optional[str]:
-    ...
+) -> Optional[str]: ...
 
 
 # Overload 5: argument_type="body"
@@ -283,8 +278,7 @@ def REQ(
     documentation_pending: bool = ...,
     aliases: Sequence[str] = ...,
     path_only: bool = ...,
-) -> ResultT:
-    ...
+) -> ResultT: ...
 
 
 # Implementation
@@ -340,7 +334,7 @@ ReturnT = TypeVar("ReturnT")
 # expected to call json_success or raise JsonableError, as it uses JsonableError
 # internally when it encounters an error
 def has_request_variables(
-    req_func: Callable[Concatenate[HttpRequest, ParamT], ReturnT]
+    req_func: Callable[Concatenate[HttpRequest, ParamT], ReturnT],
 ) -> Callable[Concatenate[HttpRequest, ParamT], ReturnT]:
     num_params = req_func.__code__.co_argcount
     default_param_values = cast(FunctionType, req_func).__defaults__

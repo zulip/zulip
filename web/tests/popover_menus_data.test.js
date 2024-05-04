@@ -4,11 +4,13 @@ const {strict: assert} = require("assert");
 
 const {mock_esm, zrequire} = require("./lib/namespace");
 const {run_test} = require("./lib/test");
-const {page_params} = require("./lib/zpage_params");
+const $ = require("./lib/zjquery");
+const {page_params, realm} = require("./lib/zpage_params");
 
 const {Filter} = zrequire("filter");
 const {MessageList} = zrequire("message_list");
 const message_lists = zrequire("message_lists");
+
 const popover_menus_data = zrequire("popover_menus_data");
 const people = zrequire("people");
 const compose_state = zrequire("compose_state");
@@ -107,19 +109,25 @@ function add_message_with_view(list, messages) {
 // User is assumed to not be an admin.
 function set_page_params_no_edit_restrictions() {
     page_params.is_spectator = false;
-    page_params.realm_allow_message_editing = true;
-    page_params.realm_message_content_edit_limit_seconds = null;
-    page_params.realm_allow_edit_history = true;
-    page_params.realm_message_content_delete_limit_seconds = null;
-    page_params.realm_delete_own_message_policy = 1;
-    page_params.realm_enable_read_receipts = true;
-    page_params.realm_edit_topic_policy = 5;
-    page_params.realm_move_messages_within_stream_limit_seconds = null;
+    realm.realm_allow_message_editing = true;
+    realm.realm_message_content_edit_limit_seconds = null;
+    realm.realm_allow_edit_history = true;
+    realm.realm_message_content_delete_limit_seconds = null;
+    realm.realm_delete_own_message_policy = 1;
+    realm.realm_enable_read_receipts = true;
+    realm.realm_edit_topic_policy = 5;
+    realm.realm_move_messages_within_stream_limit_seconds = null;
 }
 
 // Test init function
 function test(label, f) {
     run_test(label, (helpers) => {
+        // Stubs for calculate_timestamp_widths()
+        $("<div>").css = noop;
+        $(":root").css = noop;
+        $("<div>").width = noop;
+        $("<div>").remove = noop;
+
         // Clear stuff for testing environment
         add_initialize_users();
         message_lists.initialize();
@@ -214,7 +222,7 @@ test("not_my_message_view_actions", () => {
 
     const response = popover_menus_data.get_actions_popover_content_context(1);
 
-    assert.equal(response.view_source_menu_item, "translated: View message source");
+    assert.equal(response.view_source_menu_item, "translated: View original message");
     assert.equal(response.editability_menu_item, undefined);
     assert.equal(response.move_message_menu_item, undefined);
 });
@@ -255,7 +263,7 @@ test("not_my_message_view_source_and_move", () => {
     add_message_with_view(list, messages);
 
     const response = popover_menus_data.get_actions_popover_content_context(1);
-    assert.equal(response.view_source_menu_item, "translated: View message source");
+    assert.equal(response.view_source_menu_item, "translated: View original message");
     assert.equal(response.editability_menu_item, undefined);
     assert.equal(response.move_message_menu_item, "translated: Move messages");
 });

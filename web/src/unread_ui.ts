@@ -24,6 +24,10 @@ export function register_update_unread_counts_hook(f: UpdateUnreadCountsHook): v
 }
 
 export function update_unread_banner(): void {
+    if (message_lists.current === undefined) {
+        return;
+    }
+
     const filter = narrow_state.filter();
     const is_conversation_view = filter === undefined ? false : filter.is_conversation_view();
     if (
@@ -40,7 +44,6 @@ export function update_unread_banner(): void {
             render_mark_as_read_only_in_conversation_view(),
         );
     } else {
-        assert(message_lists.current !== undefined);
         $("#mark_read_on_scroll_state_banner").html(render_mark_as_read_turned_off_banner());
         if (message_lists.current.can_mark_messages_read_without_setting()) {
             hide_unread_banner();

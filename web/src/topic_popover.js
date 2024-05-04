@@ -7,10 +7,10 @@ import render_topic_sidebar_actions from "../templates/topic_sidebar_actions.hbs
 import * as confirm_dialog from "./confirm_dialog";
 import {$t_html} from "./i18n";
 import * as message_edit from "./message_edit";
-import {page_params} from "./page_params";
 import * as popover_menus from "./popover_menus";
 import * as popover_menus_data from "./popover_menus_data";
 import * as starred_messages_ui from "./starred_messages_ui";
+import {realm} from "./state_data";
 import * as stream_popover from "./stream_popover";
 import * as ui_util from "./ui_util";
 import * as unread_ops from "./unread_ops";
@@ -20,6 +20,7 @@ export function initialize() {
     popover_menus.register_popover_menu(
         "#stream_filters .topic-sidebar-menu-icon, .inbox-row .inbox-topic-menu",
         {
+            theme: "popover-menu",
             ...popover_menus.left_sidebar_tippy_options,
             onShow(instance) {
                 popover_menus.popover_instances.topics_menu = instance;
@@ -33,7 +34,7 @@ export function initialize() {
                     const $elt = $(instance.reference);
                     stream_id = Number.parseInt($elt.attr("data-stream-id"), 10);
                     topic_name = $elt.attr("data-topic-name");
-                    url = new URL($elt.attr("data-topic-url"), page_params.realm_uri);
+                    url = new URL($elt.attr("data-topic-url"), realm.realm_uri);
                 } else {
                     const $elt = $(instance.reference)
                         .closest(".topic-sidebar-menu-icon")
@@ -58,7 +59,7 @@ export function initialize() {
                 const {stream_id, topic_name} = instance.context;
 
                 if (!stream_id) {
-                    instance.hide();
+                    popover_menus.hide_current_popover_if_visible(instance);
                     return;
                 }
 
@@ -80,7 +81,7 @@ export function initialize() {
                         topic_name,
                         user_topics.all_visibility_policies.UNMUTED,
                     );
-                    instance.hide();
+                    popover_menus.hide_current_popover_if_visible(instance);
                 });
 
                 $popper.one("click", ".sidebar-popover-remove-unmute", () => {
@@ -89,7 +90,7 @@ export function initialize() {
                         topic_name,
                         user_topics.all_visibility_policies.INHERIT,
                     );
-                    instance.hide();
+                    popover_menus.hide_current_popover_if_visible(instance);
                 });
 
                 $popper.one("click", ".sidebar-popover-mute-topic", () => {
@@ -98,7 +99,7 @@ export function initialize() {
                         topic_name,
                         user_topics.all_visibility_policies.MUTED,
                     );
-                    instance.hide();
+                    popover_menus.hide_current_popover_if_visible(instance);
                 });
 
                 $popper.one("click", ".sidebar-popover-remove-mute", () => {
@@ -107,7 +108,7 @@ export function initialize() {
                         topic_name,
                         user_topics.all_visibility_policies.INHERIT,
                     );
-                    instance.hide();
+                    popover_menus.hide_current_popover_if_visible(instance);
                 });
 
                 $popper.one("click", ".sidebar-popover-unstar-all-in-topic", () => {
@@ -115,12 +116,17 @@ export function initialize() {
                         Number.parseInt(stream_id, 10),
                         topic_name,
                     );
-                    instance.hide();
+                    popover_menus.hide_current_popover_if_visible(instance);
                 });
 
                 $popper.one("click", ".sidebar-popover-mark-topic-read", () => {
                     unread_ops.mark_topic_as_read(stream_id, topic_name);
-                    instance.hide();
+                    popover_menus.hide_current_popover_if_visible(instance);
+                });
+
+                $popper.one("click", ".sidebar-popover-mark-topic-unread", () => {
+                    unread_ops.mark_topic_as_unread(stream_id, topic_name);
+                    popover_menus.hide_current_popover_if_visible(instance);
                 });
 
                 $popper.one("click", ".sidebar-popover-delete-topic-messages", () => {
@@ -135,7 +141,7 @@ export function initialize() {
                         },
                     });
 
-                    instance.hide();
+                    popover_menus.hide_current_popover_if_visible(instance);
                 });
 
                 $popper.one("click", ".sidebar-popover-toggle-resolved", () => {
@@ -143,23 +149,23 @@ export function initialize() {
                         message_edit.toggle_resolve_topic(message_id, topic_name, true);
                     });
 
-                    instance.hide();
+                    popover_menus.hide_current_popover_if_visible(instance);
                 });
 
                 $popper.one("click", ".sidebar-popover-move-topic-messages", () => {
                     stream_popover.build_move_topic_to_stream_popover(stream_id, topic_name, false);
-                    instance.hide();
+                    popover_menus.hide_current_popover_if_visible(instance);
                 });
 
                 $popper.one("click", ".sidebar-popover-rename-topic-messages", () => {
                     stream_popover.build_move_topic_to_stream_popover(stream_id, topic_name, true);
-                    instance.hide();
+                    popover_menus.hide_current_popover_if_visible(instance);
                 });
 
                 new ClipboardJS($popper.find(".sidebar-popover-copy-link-to-topic")[0]).on(
                     "success",
                     () => {
-                        instance.hide();
+                        popover_menus.hide_current_popover_if_visible(instance);
                     },
                 );
             },

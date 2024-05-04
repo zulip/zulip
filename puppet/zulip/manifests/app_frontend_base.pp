@@ -7,7 +7,7 @@ class zulip::app_frontend_base {
   include zulip::tornado_sharding
   include zulip::hooks::base
 
-  if $::os['family'] == 'Debian' {
+  if $facts['os']['family'] == 'Debian' {
     # Upgrade and other tooling wants to be able to get a database
     # shell.  This is not necessary on CentOS because the PostgreSQL
     # package already includes the client.
@@ -118,20 +118,18 @@ class zulip::app_frontend_base {
     source  => 'puppet:///modules/zulip/nginx/zulip-include-frontend/uploads-internal.conf',
   }
 
-  file { [
-    # TODO/compatibility: Removed 2021-04 in Zulip 4.0; these lines can
-    # be removed once one must have upgraded through Zulip 4.0 or higher
-    # to get to the next release.
-    '/etc/nginx/zulip-include/uploads.route',
-    '/etc/nginx/zulip-include/app.d/thumbor.conf',
-  ]:
-    ensure => absent,
-  }
-
   # This determines whether we run queue processors multithreaded or
   # multiprocess.  Multiprocess scales much better, but requires more
   # RAM; we just auto-detect based on available system RAM.
-  $queues_multiprocess_default = $zulip::common::total_memory_mb > 3500
+  #
+  # Because Zulip can run in the multiprocess mode with 4GB of memory,
+  # and it's a common instance size, we aim for that to be the cutoff
+  # for this higher-performance mode.
+  #
+  # We use a cutoff less than 4000 here to detect systems advertised
+  # as "4GB"; some may have as little as 4 x 1000^3 / 1024^2 ≈ 3815 MiB
+  # of memory.
+  $queues_multiprocess_default = $zulip::common::total_memory_mb > 3800
   $queues_multiprocess = zulipconf('application_server', 'queue_workers_multiprocess', $queues_multiprocess_default)
   $queues = [
     'deferred_work',
@@ -139,7 +137,6 @@ class zulip::app_frontend_base {
     'email_mirror',
     'embed_links',
     'embedded_bots',
-    'invites',
     'email_senders',
     'missedmessage_emails',
     'missedmessage_mobile_notifications',
@@ -148,11 +145,19 @@ class zulip::app_frontend_base {
     'user_activity_interval',
     'user_presence',
   ]
-  if $queues_multiprocess {
+
+  if $zulip::common::total_memory_mb > 24000 {
+    $uwsgi_default_processes = 16
+  } elsif $zulip::common::total_memory_mb > 12000 {
+    $uwsgi_default_processes = 8
+  } elsif $zulip::common::total_memory_mb > 6000 {
     $uwsgi_default_processes = 6
-  } else {
+  } elsif $zulip::common::total_memory_mb > 3000 {
     $uwsgi_default_processes = 4
+  } else {
+    $uwsgi_default_processes = 3
   }
+  $mobile_notification_shards = Integer(zulipconf('application_server','mobile_notification_shards', 1))
   $tornado_ports = $zulip::tornado_sharding::tornado_ports
 
   $proxy_host = zulipconf('http_proxy', 'host', 'localhost')
@@ -161,6 +166,9 @@ class zulip::app_frontend_base {
   if ($proxy_host in ['localhost', '127.0.0.1', '::1']) and ($proxy_port == '4750') {
     include zulip::smokescreen
   }
+
+  $katex_server = zulipconf('application_server', 'katex_server', false)
+  $katex_server_port = zulipconf('application_server', 'katex_server_port', '9700')
 
   if $proxy_host != '' and $proxy_port != '' {
     $proxy = "http://${proxy_host}:${proxy_port}"
@@ -191,14 +199,16 @@ class zulip::app_frontend_base {
     notify  => Service[$zulip::common::supervisor_service],
   }
   zulip::sysctl { 'uwsgi':
-    content     => template('zulip/sysctl.d/40-uwsgi.conf.erb'),
-    skip_docker => true,
+    comment => 'Allow larger listen backlog',
+    key     => 'net.core.somaxconn',
+    value   => $somaxconn,
   }
 
   file { [
     '/home/zulip/tornado',
     '/home/zulip/prod-static',
     '/home/zulip/deployments',
+    '/srv/zulip-locks',
     '/srv/zulip-emoji-cache',
     '/srv/zulip-uploaded-files-cache',
   ]:
@@ -236,12 +246,8 @@ class zulip::app_frontend_base {
   }
 
   # This cron job does nothing unless RATE_LIMIT_TOR_TOGETHER is enabled.
-  file { '/etc/cron.d/fetch-tor-exit-nodes':
-    ensure => file,
-    owner  => 'root',
-    group  => 'root',
-    mode   => '0644',
-    source => 'puppet:///modules/zulip/cron.d/fetch-tor-exit-nodes',
+  zulip::cron { 'fetch-tor-exit-nodes':
+    minute => '17',
   }
   # This was originally added with a typo in the name.
   file { '/etc/cron.d/fetch-for-exit-nodes':

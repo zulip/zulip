@@ -8,7 +8,7 @@ from typing import List, Tuple
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import models
-from django.db.models import Max, Q, UniqueConstraint
+from django.db.models import Max, Q, QuerySet, UniqueConstraint
 from django.utils.timezone import now as timezone_now
 from typing_extensions import override
 
@@ -87,6 +87,12 @@ class RemoteZulipServer(models.Model):
 
     def format_requester_for_logs(self) -> str:
         return "zulip-server:" + str(self.uuid)
+
+    def get_remote_server_billing_users(self) -> QuerySet["RemoteServerBillingUser"]:
+        return RemoteServerBillingUser.objects.filter(
+            remote_server=self,
+            is_active=True,
+        )
 
 
 class RemotePushDeviceToken(AbstractPushDeviceToken):
@@ -175,6 +181,12 @@ class RemoteRealm(models.Model):
     @override
     def __str__(self) -> str:
         return f"{self.host} {str(self.uuid)[0:12]}"
+
+    def get_remote_realm_billing_users(self) -> QuerySet["RemoteRealmBillingUser"]:
+        return RemoteRealmBillingUser.objects.filter(
+            remote_realm=self,
+            is_active=True,
+        )
 
 
 class AbstractRemoteRealmBillingUser(models.Model):
@@ -333,6 +345,11 @@ class RemoteRealmAuditLog(AbstractRealmAuditLog):
                 condition=Q(remote_realm__isnull=True),
                 name="zilencer_remoterealmauditlog_server",
             ),
+            models.Index(
+                fields=["remote_realm_id", "id"],
+                condition=Q(event_type__in=AbstractRealmAuditLog.SYNCED_BILLING_EVENTS),
+                name="zilencer_remoterealmauditlog_synced_billing_events",
+            ),
         ]
 
 
@@ -372,6 +389,13 @@ class RemoteInstallationCount(BaseRemoteCount):
                 condition=Q(remote_id__isnull=False),
                 name="unique_remote_installation_count_server_id_remote_id",
             ),
+        ]
+        indexes = [
+            models.Index(
+                fields=["server_id", "end_time"],
+                condition=Q(property="mobile_pushes_forwarded::day"),
+                name="zilencer_remoteinstallationcount_server_end_time_mobile_pushes_forwarded",
+            )
         ]
 
     @override
@@ -528,7 +552,8 @@ def get_remote_realm_guest_and_non_guest_count(
         # bulk_create_users to create the users in the system bot
         # realm also generate such audit logs. Such audit logs should
         # never be the latest in a normal realm.
-        .exclude(extra_data={}).last()
+        .exclude(extra_data={})
+        .last()
     )
 
     if latest_audit_log is not None:

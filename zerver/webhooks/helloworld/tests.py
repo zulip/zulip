@@ -54,7 +54,7 @@ class HelloWorldHookTests(WebhookTestCase):
         self.url = self.build_webhook_url()
         realm = get_realm("zulip")
         notification_bot = get_system_bot(settings.NOTIFICATION_BOT, realm.id)
-        expected_message = "Your bot `webhook-bot@zulip.com` tried to send a message to stream #**nonexistent**, but that stream does not exist. Click [here](#streams/new) to create it."
+        expected_message = "Your bot `webhook-bot@zulip.com` tried to send a message to channel #**nonexistent**, but that channel does not exist. Click [here](#channels/new) to create it."
         self.send_and_test_private_message(
             "goodbye",
             expected_message=expected_message,

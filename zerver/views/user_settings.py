@@ -208,11 +208,14 @@ def json_change_settings(
         default=None,
     ),
     starred_message_counts: Optional[bool] = REQ(json_validator=check_bool, default=None),
+    receives_typing_notifications: Optional[bool] = REQ(json_validator=check_bool, default=None),
     fluid_layout_width: Optional[bool] = REQ(json_validator=check_bool, default=None),
     high_contrast_mode: Optional[bool] = REQ(json_validator=check_bool, default=None),
     color_scheme: Optional[int] = REQ(
         json_validator=check_int_in(UserProfile.COLOR_SCHEME_CHOICES), default=None
     ),
+    web_font_size_px: Optional[int] = REQ(json_validator=check_int, default=None),
+    web_line_height_percent: Optional[int] = REQ(json_validator=check_int, default=None),
     translate_emoticons: Optional[bool] = REQ(json_validator=check_bool, default=None),
     display_emoji_reaction_users: Optional[bool] = REQ(json_validator=check_bool, default=None),
     default_language: Optional[str] = REQ(default=None),
@@ -410,7 +413,7 @@ def set_avatar_backend(request: HttpRequest, user_profile: UserProfile) -> HttpR
     [user_file] = request.FILES.values()
     assert isinstance(user_file, UploadedFile)
     assert user_file.size is not None
-    if (settings.MAX_AVATAR_FILE_SIZE_MIB * 1024 * 1024) < user_file.size:
+    if user_file.size > settings.MAX_AVATAR_FILE_SIZE_MIB * 1024 * 1024:
         raise JsonableError(
             _("Uploaded file is larger than the allowed limit of {max_size} MiB").format(
                 max_size=settings.MAX_AVATAR_FILE_SIZE_MIB,

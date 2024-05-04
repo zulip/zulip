@@ -131,7 +131,9 @@ h3,
 
 .admin_profile_fields_table {
     & th.display,
-    td.display_in_profile_summary_cell {
+    & th.required,
+    td.display_in_profile_summary_cell,
+    td.required-cell {
         text-align: center;
     }
 }
@@ -329,8 +331,7 @@ td .button {
     /* Messy implementation of buttons with text and a pencil icon in them
        having spacing before the pencil icon. */
     & button.btn-link i.fa-pencil,
-    button[data-dismiss="modal"] i.fa-pencil,
-    .dropdown-toggle i.fa-pencil {
+    button[data-dismiss="modal"] i.fa-pencil {
         margin-left: 3px;
     }
 
@@ -346,8 +347,7 @@ td .button {
         color: hsl(0deg 0% 20%);
     }
 
-    .settings_select,
-    .dropdown-list-widget .dropdown-toggle {
+    .settings_select {
         height: 30px;
         min-width: 325px;
         max-width: 100%;
@@ -361,7 +361,7 @@ td .button {
 /* list_select is similar to settings_select, but without the height styling. */
 .settings_select,
 .list_select {
-    padding: 0 6px;
+    padding: 0 25px 0 6px;
     color: hsl(0deg 0% 33%);
     border-radius: 4px;
     border: 1px solid hsl(0deg 0% 80%);
@@ -493,6 +493,27 @@ input[type="checkbox"] {
     }
 }
 
+.information-density-settings {
+    max-width: 325px;
+
+    .input-group {
+        display: flex;
+        gap: 5px;
+        align-items: baseline;
+
+        label {
+            flex: 1 0 max-content;
+        }
+
+        .settings_text_input {
+            width: 0;
+            flex: 0 0 8ch;
+            margin-left: auto;
+            text-align: right;
+        }
+    }
+}
+
 #stream-specific-notify-table .unmute_stream {
     position: relative;
     left: 3px;
@@ -519,18 +540,12 @@ input[type="checkbox"] {
     margin-top: 10px;
 }
 
-.language_selection_widget {
-    .title {
-        margin-bottom: 3px;
-    }
+.language_selection_widget .language_selection_button {
+    text-decoration: none;
+    color: hsl(0deg 0% 20%);
 
-    .language_selection_button {
-        text-decoration: none;
-        color: hsl(0deg 0% 20%);
-
-        .fa.fa-pencil {
-            margin-left: 5px;
-        }
+    .fa.fa-pencil {
+        margin-left: 5px;
     }
 }
 
@@ -672,6 +687,15 @@ input[type="checkbox"] {
     & textarea {
         width: 311px;
     }
+}
+
+.required-symbol {
+    color: hsl(0deg 66% 60%);
+}
+
+.settings-profile-user-field {
+    margin-top: 5px;
+    max-width: fit-content;
 }
 
 .control-label-disabled {
@@ -850,11 +874,11 @@ input[type="checkbox"] {
     list-style-type: none;
     margin-left: 0;
 
-    .image {
+    .bot-card-image {
         vertical-align: top;
     }
 
-    .name {
+    .bot-card-name {
         font-weight: 600;
         font-size: 1.1rem;
         margin: 7px 5px;
@@ -865,7 +889,7 @@ input[type="checkbox"] {
         white-space: pre;
     }
 
-    .regenerate_bot_api_key {
+    .bot-card-regenerate-bot-api-key {
         position: relative;
         margin-left: 5px;
         color: hsl(0deg 0% 67%);
@@ -932,13 +956,13 @@ input[type="checkbox"] {
 
         overflow: auto;
 
-        .details {
+        .bot-card-details {
             display: inline-block;
             width: calc(100% - 75px);
         }
     }
 
-    & img.avatar {
+    & img.bot-card-avatar {
         margin: 10px 5px 0 10px;
         height: 50px;
         width: 50px;
@@ -947,13 +971,13 @@ input[type="checkbox"] {
         box-shadow: 0 0 4px hsl(0deg 0% 0% / 10%);
     }
 
-    .email,
-    .type {
+    .bot-card-email,
+    .bot-card-type {
         margin-bottom: 5px;
     }
 
-    .email .value,
-    .api_key .api-key-value-and-button {
+    .bot-card-email .bot-card-value,
+    .bot-card-api-key .bot-card-api-key-value-and-button {
         display: block;
         margin-left: 0;
         word-wrap: break-word;
@@ -961,17 +985,17 @@ input[type="checkbox"] {
         white-space: normal;
     }
 
-    .api_key .api-key-value-and-button {
+    .bot-card-api-key .bot-card-api-key-value-and-button {
         font-family: "Source Code Pro", monospace;
         font-size: 0.85em;
         display: flex;
     }
 
-    .bot_info {
+    .bot-card-info {
         padding: 10px;
     }
 
-    .field {
+    .bot-card-field {
         text-transform: uppercase;
         font-weight: 600;
         color: hsl(0deg 0% 67%);
@@ -1458,7 +1482,7 @@ $option_title_width: 180px;
     gap: 15px;
 
     .jitsi_server_url_custom_input_label {
-        margin-bottom: 3px;
+        margin-bottom: var(--margin-bottom-field-description);
     }
 }
 
@@ -1466,10 +1490,6 @@ $option_title_width: 180px;
 #edit-user-form {
     .custom_user_field {
         padding-bottom: 20px;
-
-        .field_hint {
-            color: hsl(0deg 0% 67%);
-        }
 
         & textarea {
             height: 80px;
@@ -1512,7 +1532,6 @@ $option_title_width: 180px;
 #edit-user-form {
     .person_picker {
         min-width: 206px;
-        margin-top: 5px;
     }
 
     & textarea {
@@ -1535,73 +1554,6 @@ $option_title_width: 180px;
     & select {
         /* Override undesired Bootstrap default. */
         margin-bottom: 0;
-        margin-top: 5px;
-    }
-}
-
-.dropdown-list-widget {
-    & button.dropdown-toggle {
-        text-align: left;
-
-        .fa-chevron-down {
-            float: right;
-            position: relative;
-            top: 2px;
-            padding-left: 5px;
-            color: hsl(0deg 0% 58%);
-            font-weight: 200;
-        }
-
-        &.dropdown-toggle {
-            /* Match settings for select elements. */
-            padding: 4px 6px;
-
-            & span {
-                line-height: 20px;
-                height: 1.4em;
-            }
-        }
-
-        &:disabled i.fa-chevron-down {
-            display: none;
-        }
-    }
-
-    & button.multiselect_btn {
-        /* Matches the dropdown input margin so as to keep it aligned */
-        margin-left: 9px;
-        margin-top: 4px;
-    }
-
-    & a.dropdown_list_reset_button {
-        /* Prevent dark theme from overriding background. */
-        background: unset !important;
-        border: none;
-        margin-left: 10px;
-
-        &:disabled {
-            display: none;
-        }
-    }
-
-    .dropdown-search > input[type="text"] {
-        margin: 9px;
-        /* 100% - 2* (9px (margin) + 1px (border) + 6px (padding)) */
-        width: calc(100% - 32px);
-    }
-
-    .dropdown-menu {
-        top: -7px; /* -(margin+padding), both are set by bootstrap. */
-        bottom: auto;
-    }
-
-    .dropdown-list-wrapper {
-        position: relative;
-        height: auto;
-        max-height: 200px;
-        overflow-y: auto;
-        margin-top: 0;
-        display: block;
     }
 }
 
@@ -1631,8 +1583,23 @@ $option_title_width: 180px;
     }
 }
 
-.dropdown-title {
-    margin-bottom: 3px;
+.settings-field-label {
+    margin-bottom: var(--margin-bottom-field-description);
+}
+
+.settings-profile-user-field-hint {
+    color: var(--color-text-settings-field-hint);
+    /* We effectively eliminate the margin-bottom on
+       .settings-field-label by pulling .field-hint
+       up a corresponding negative value. This cinches
+       things up a little tighter, given the generous
+       line-height (20px) on <label> elements, though
+       note well that that comes care of Bootstrap. */
+    margin-top: calc(var(--margin-bottom-field-description) * -1.5);
+    /* Maintain the same margin-bottom value as appears
+       with .settings-field-label to display text-input
+       combinations uniformly throughout the settings UI. */
+    margin-bottom: var(--margin-bottom-field-description);
 }
 
 .profile-field-choices {
@@ -1921,7 +1888,26 @@ $option_title_width: 180px;
         display: inline-block;
     }
 
+    .user_filters {
+        display: flex;
+        float: right;
+        flex-wrap: wrap;
+
+        & .dropdown-widget-button {
+            height: 30px;
+            max-width: 160px;
+            margin-right: 12px;
+            margin-top: 12px;
+        }
+    }
+
     & input.search {
+        /* Without explicitly mentioning the height, it used be just a little
+        bit short of 20px, since we need to maintain the same height with
+        .dropdown-widget-button, we need to explicitly set the height here.
+        We could set the height inside .user_filters but that would make
+        the height a tiny bit inconsistent on pages without .user_filters. */
+        height: 20px;
         float: right;
         font-size: 1em;
         max-width: 160px;
@@ -1968,6 +1954,23 @@ $option_title_width: 180px;
         box-shadow:
             inset 0 1px 1px hsl(0deg 0% 0% / 7.5%),
             0 0 8px hsl(206deg 80% 62% / 60%);
+    }
+}
+
+.empty-required-field {
+    border: 1px solid hsl(3deg 57% 33%);
+    border-radius: 5px;
+
+    .settings_url_input,
+    .settings_text_input,
+    .settings_textarea,
+    .pill-container {
+        border-color: hsl(0deg 0% 100%);
+        margin-bottom: 0;
+
+        &:focus {
+            border-color: hsl(206deg 80% 62% / 80%);
+        }
     }
 }
 

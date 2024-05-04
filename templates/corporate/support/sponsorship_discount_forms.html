@@ -1,0 +1,48 @@
+<form method="POST" class="remote-form">
+    <b>Required plan tier for discounts and fixed prices</b>:<br />
+    <i>Updates will not change any pre-existing plans or scheduled upgrades.</i><br />
+    {{ csrf_input }}
+    <input type="hidden" name="{{ remote_type }}" value="{{ remote_id }}" />
+    <select name="required_plan_tier">
+        {% for plan_tier in PLAN_TYPES %}
+            {% if sponsorship_data.required_plan_tier == plan_tier.value %}
+                <option value="{{ plan_tier.value }}" selected>{{ plan_tier.name }}</option>
+            {% else %}
+                <option value="{{ plan_tier.value }}">{{ plan_tier.name }}</option>
+            {% endif %}
+        {% endfor %}
+    </select>
+    <button type="submit" class="support-submit-button">Update</button>
+</form>
+
+<form method="POST" class="remote-form">
+    <b>Discount percentage</b>:<br />
+    <i>Needs required plan tier to be set.</i><br />
+    <i>Updates will change pre-existing plans and scheduled upgrades.</i><br />
+    <i>Any prorated licenses for the current billing cycle will be billed at the updated discounted rate.</i><br />
+    {{ csrf_input }}
+    <input type="hidden" name="{{ remote_type }}" value="{{ remote_id }}" />
+    {% if has_fixed_price %}
+    <input type="number" name="discount" value="{{ format_discount(sponsorship_data.default_discount) }}" step="0.01" min="0" max="99.99" disabled />
+    <button type="submit" class="support-submit-button" disabled>Update</button>
+    {% else %}
+    <input type="number" name="discount" value="{{ format_discount(sponsorship_data.default_discount) }}" step="0.01" min="0" max="99.99"
+      {% if sponsorship_data.required_plan_tier %}
+      required
+      {% else %}
+      disabled
+      {% endif %}
+      />
+    <button type="submit" class="support-submit-button">Update</button>
+    {% endif %}
+</form>
+
+{% if not has_fixed_price and (sponsorship_data.default_discount or sponsorship_data.minimum_licenses) %}
+<form method="POST" class="remote-form">
+    <b>Minimum licenses</b>:<br />
+    {{ csrf_input }}
+    <input type="hidden" name="{{ remote_type }}" value="{{ remote_id }}" />
+    <input type="number" name="minimum_licenses" value="{{ sponsorship_data.minimum_licenses }}" required />
+    <button type="submit" class="support-submit-button">Update</button>
+</form>
+{% endif %}

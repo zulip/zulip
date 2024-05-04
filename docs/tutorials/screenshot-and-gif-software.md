@@ -50,7 +50,7 @@ to check out your branch.
 - [GIPHY](https://giphy.com/apps/giphycapture)
 - [CloudApp](https://www.getcloudapp.com)
 - [Kap](https://getkap.co)
-- [Gifski](https://sindresorhus.com/gifski)]
+- [Gifski](https://sindresorhus.com/gifski)
 - [Gyazo GIF](https://gyazo.com/en)
 
 ### Windows

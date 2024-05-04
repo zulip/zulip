@@ -15,7 +15,7 @@ from zerver.actions.message_send import (
     extract_stream_indicator,
 )
 from zerver.lib.exceptions import JsonableError
-from zerver.lib.message import render_markdown
+from zerver.lib.markdown import render_message_markdown
 from zerver.lib.request import REQ, RequestNotes, has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.topic import REQ_topic
@@ -145,6 +145,11 @@ def send_message_backend(
         # TODO: Use "direct" here, as well as in events and
         # message (created, schdeduled, drafts) objects/dicts.
         recipient_type_name = "private"
+    elif recipient_type_name == "channel":
+        # For now, use "stream" from Message.API_RECIPIENT_TYPES.
+        # TODO: Use "channel" here, as well as in events and
+        # message (created, schdeduled, drafts) objects/dicts.
+        recipient_type_name = "stream"
 
     # If req_to is None, then we default to an
     # empty list of recipients.
@@ -247,9 +252,9 @@ def send_message_backend(
     )
     data["id"] = sent_message_result.message_id
     if sent_message_result.automatic_new_visibility_policy:
-        data[
-            "automatic_new_visibility_policy"
-        ] = sent_message_result.automatic_new_visibility_policy
+        data["automatic_new_visibility_policy"] = (
+            sent_message_result.automatic_new_visibility_policy
+        )
     return json_success(request, data=data)
 
 
@@ -272,5 +277,5 @@ def render_message_backend(
     assert client is not None
     message.sending_client = client
 
-    rendering_result = render_markdown(message, content, realm=user_profile.realm)
+    rendering_result = render_message_markdown(message, content, realm=user_profile.realm)
     return json_success(request, data={"rendered": rendering_result.rendered_content})

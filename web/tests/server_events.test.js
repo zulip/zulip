@@ -10,18 +10,11 @@ const {page_params} = require("./lib/zpage_params");
 set_global("addEventListener", noop);
 
 const channel = mock_esm("../src/channel");
-const message_lists = mock_esm("../src/message_lists");
 mock_esm("../src/reload_state", {
     is_in_progress() {
         return false;
     },
 });
-message_lists.home = {
-    select_id: noop,
-    selected_id() {
-        return 1;
-    },
-};
 page_params.test_suite = false;
 
 // we also directly write to pointer
@@ -55,7 +48,7 @@ const message_events = mock_esm("../src/message_events", {
 
 const server_events = zrequire("server_events");
 
-server_events.home_view_loaded();
+server_events.finished_initial_fetch();
 
 run_test("message_event", ({override}) => {
     const event = {
@@ -79,7 +72,7 @@ run_test("message_event", ({override}) => {
 // Start blueslip tests here
 
 const setup = () => {
-    server_events.home_view_loaded();
+    server_events.finished_initial_fetch();
 };
 
 run_test("event_dispatch_error", () => {

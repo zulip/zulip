@@ -1,11 +1,9 @@
-import $ from "jquery";
+import assert from "minimalistic-assert";
 
-export const page_params: {
-    data_url_suffix: string;
-    guest_users: number;
-    upload_space_used: number;
-} = $("#page-params").data("params");
+import {page_params as base_page_params} from "../base_page_params";
 
-if (!page_params) {
-    throw new Error("Missing page-params");
-}
+assert(base_page_params.page_type === "stats");
+
+// We need to export with a narrowed TypeScript type
+// eslint-disable-next-line unicorn/prefer-export-from
+export const page_params = base_page_params;

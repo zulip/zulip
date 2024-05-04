@@ -9,8 +9,8 @@
 import * as Sentry from "@sentry/browser";
 import $ from "jquery";
 
+import {page_params} from "./base_page_params";
 import {BlueslipError, display_stacktrace} from "./blueslip_stacktrace";
-import {page_params} from "./page_params";
 
 if (Error.stackTraceLimit !== undefined) {
     Error.stackTraceLimit = 100000;
@@ -112,15 +112,8 @@ export function error(msg: string, more_info?: object | undefined, original_erro
 if (page_params.development_environment) {
     $(window).on("error", (event: JQuery.TriggeredEvent) => {
         const {originalEvent} = event;
-        if (!(originalEvent instanceof ErrorEvent)) {
-            return;
+        if (originalEvent instanceof ErrorEvent && originalEvent.error instanceof Error) {
+            void display_stacktrace(originalEvent.error);
         }
-
-        const ex = originalEvent.error;
-        if (!ex) {
-            return;
-        }
-
-        void display_stacktrace(ex);
     });
 }

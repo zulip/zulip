@@ -1,5 +1,6 @@
 import $ from "jquery";
 
+import {unresolve_name} from "../shared/src/resolved_topic";
 import render_add_poll_modal from "../templates/add_poll_modal.hbs";
 
 import * as compose from "./compose";
@@ -8,6 +9,7 @@ import * as compose_banner from "./compose_banner";
 import * as compose_call from "./compose_call";
 import * as compose_call_ui from "./compose_call_ui";
 import * as compose_recipient from "./compose_recipient";
+import * as compose_send_menu_popover from "./compose_send_menu_popover";
 import * as compose_state from "./compose_state";
 import * as compose_ui from "./compose_ui";
 import * as compose_validate from "./compose_validate";
@@ -16,13 +18,13 @@ import * as flatpickr from "./flatpickr";
 import {$t_html} from "./i18n";
 import * as message_edit from "./message_edit";
 import * as narrow from "./narrow";
+import * as onboarding_steps from "./onboarding_steps";
 import {page_params} from "./page_params";
 import * as poll_modal from "./poll_modal";
 import * as popovers from "./popovers";
 import * as resize from "./resize";
 import * as rows from "./rows";
 import * as scheduled_messages from "./scheduled_messages";
-import * as scheduled_messages_popover from "./scheduled_messages_popover";
 import * as stream_data from "./stream_data";
 import * as stream_settings_components from "./stream_settings_components";
 import * as sub_store from "./sub_store";
@@ -34,7 +36,7 @@ import * as user_topics from "./user_topics";
 
 export function abort_xhr() {
     $("#compose-send-button").prop("disabled", false);
-    upload.compose_upload_object.cancelAll();
+    upload.compose_upload_cancel();
 }
 
 function setup_compose_actions_hooks() {
@@ -126,7 +128,7 @@ export function initialize() {
             if (is_edit_input) {
                 message_edit.save_message_row_edit($row);
             } else if (event.target.dataset.validationTrigger === "schedule") {
-                scheduled_messages_popover.open_send_later_menu();
+                compose_send_menu_popover.open_send_later_menu();
 
                 // We need to set this flag to true here because `open_send_later_menu` validates the message and sets
                 // the user acknowledged wildcard flag back to 'false' and we don't want that to happen because then it
@@ -168,7 +170,22 @@ export function initialize() {
             const topic_name = $target.attr("data-topic-name");
 
             message_edit.with_first_message_id(stream_id, topic_name, (message_id) => {
-                message_edit.toggle_resolve_topic(message_id, topic_name, true);
+                if (message_id === undefined) {
+                    // There is no message in the topic, so it is sufficient to
+                    // just remove the topic resolved prefix (✔) from the topic name.
+                    const $input = $("input#stream_message_recipient_topic");
+                    const new_topic = unresolve_name(topic_name);
+                    $input.val(new_topic);
+                    // Trigger an input event, since this is a form of
+                    // user-triggered edit to that field.
+                    $input.trigger("input");
+
+                    // TODO: Probably this should also renarrow to the
+                    // new topic, if we were currently viewing the old
+                    // topic, just as if a message edit had occurred.
+                } else {
+                    message_edit.toggle_resolve_topic(message_id, topic_name, true);
+                }
                 compose_validate.clear_topic_resolved_warning(true);
             });
         },
@@ -196,13 +213,19 @@ export function initialize() {
         },
     );
 
+    const automatic_new_visibility_policy_banner_selector = `.${CSS.escape(compose_banner.CLASSNAMES.automatic_new_visibility_policy)}`;
     $("body").on(
         "click",
-        `.${CSS.escape(
-            compose_banner.CLASSNAMES.automatic_new_visibility_policy,
-        )} .main-view-banner-action-button`,
+        `${automatic_new_visibility_policy_banner_selector} .main-view-banner-action-button`,
         (event) => {
             event.preventDefault();
+            if ($(event.target).attr("data-action") === "mark-as-read") {
+                $(event.target)
+                    .parents(`${automatic_new_visibility_policy_banner_selector}`)
+                    .remove();
+                onboarding_steps.post_onboarding_step_as_read("visibility_policy_banner");
+                return;
+            }
             window.location.href = "/#settings/notifications";
         },
     );
@@ -215,7 +238,7 @@ export function initialize() {
         (event) => {
             event.preventDefault();
             const send_at_timestamp = scheduled_messages.get_selected_send_later_timestamp();
-            scheduled_messages_popover.do_schedule_message(send_at_timestamp);
+            compose_send_menu_popover.do_schedule_message(send_at_timestamp);
         },
     );
 
@@ -229,8 +252,8 @@ export function initialize() {
             const {$banner_container} = get_input_info(event);
             const $invite_row = $(event.target).parents(".main-view-banner");
 
-            const user_id = Number.parseInt($invite_row.data("user-id"), 10);
-            const stream_id = Number.parseInt($invite_row.data("stream-id"), 10);
+            const user_id = Number($invite_row.attr("data-user-id"));
+            const stream_id = Number($invite_row.attr("data-stream-id"));
 
             function success() {
                 $invite_row.remove();
@@ -462,9 +485,12 @@ export function initialize() {
 
     if (page_params.narrow !== undefined) {
         if (page_params.narrow_topic !== undefined) {
-            compose_actions.start("stream", {topic: page_params.narrow_topic});
+            compose_actions.start({
+                message_type: "stream",
+                topic: page_params.narrow_topic,
+            });
         } else {
-            compose_actions.start("stream", {});
+            compose_actions.start({message_type: "stream"});
         }
     }
 }

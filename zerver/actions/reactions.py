@@ -1,18 +1,18 @@
 from typing import Any, Dict, Optional
 
-from zerver.actions.create_user import create_historical_user_messages
 from zerver.actions.user_topics import do_set_user_topic_visibility_policy
 from zerver.lib.emoji import check_emoji_request, get_emoji_data
 from zerver.lib.exceptions import ReactionExistsError
 from zerver.lib.message import (
-    access_message,
+    access_message_and_usermessage,
     set_visibility_policy_possible,
     should_change_visibility_policy,
-    update_to_dict_cache,
     visibility_policy_for_participation,
 )
+from zerver.lib.message_cache import update_message_cache
 from zerver.lib.stream_subscription import subscriber_ids_with_stream_history_access
 from zerver.lib.streams import access_stream_by_id
+from zerver.lib.user_message import create_historical_user_messages
 from zerver.models import Message, Reaction, Recipient, Stream, UserMessage, UserProfile
 from zerver.tornado.django_api import send_event_on_commit
 
@@ -41,7 +41,7 @@ def notify_reaction_update(
     }
 
     # Update the cached message since new reaction is added.
-    update_to_dict_cache([message])
+    update_message_cache([message])
 
     # Recipients for message update events, including reactions, are
     # everyone who got the original message, plus subscribers of
@@ -126,7 +126,9 @@ def check_add_reaction(
     emoji_code: Optional[str],
     reaction_type: Optional[str],
 ) -> None:
-    message, user_message = access_message(user_profile, message_id, lock_message=True)
+    message, user_message = access_message_and_usermessage(
+        user_profile, message_id, lock_message=True
+    )
 
     if emoji_code is None or reaction_type is None:
         emoji_data = get_emoji_data(message.realm_id, emoji_name)

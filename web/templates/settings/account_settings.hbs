@@ -11,7 +11,7 @@
                         <label class="inline-block title">{{t "Email" }}</label>
                         <div id="change_email_button_container" class="inline-block {{#unless user_can_change_email}}disabled_setting_tooltip{{/unless}}">
                             <button id="change_email_button" type="button" class="button btn-link small rounded inline-block" {{#unless user_can_change_email}}disabled="disabled"{{/unless}}>
-                                {{page_params.delivery_email}}
+                                {{current_user.delivery_email}}
                                 <i class="fa fa-pencil"></i>
                             </button>
                         </div>
@@ -87,7 +87,7 @@
                   is_checked=settings_object.send_read_receipts
                   label=settings_label.send_read_receipts
                   tooltip_text=send_read_receipts_tooltip
-                  hide_tooltip=page_params.realm_enable_read_receipts
+                  hide_tooltip=realm.realm_enable_read_receipts
                   help_link="/help/read-receipts"
                   }}
                 {{> settings_checkbox
@@ -99,7 +99,7 @@
                   prefix="user_"}}
             </div>
             <div class="input-group">
-                <label for="email_address_visibility" class="dropdown-title">{{t "Who can access your email address" }}
+                <label for="email_address_visibility" class="settings-field-label">{{t "Who can access your email address" }}
                     {{> ../help_link_widget link="/help/configure-email-visibility" }}
                 </label>
                 <div id="user_email_address_dropdown_container" class="inline-block {{#unless user_has_email_set}}disabled_setting_tooltip{{/unless}}">
@@ -127,7 +127,7 @@
                 </p>
                 <div id="api_key_button_container" class="inline-block {{#unless user_has_email_set}}disabled_setting_tooltip{{/unless}}">
                     <button class="button rounded" id="api_key_button" {{#unless user_has_email_set}}disabled="disabled"{{/unless}}>
-                        {{t "Show/change your API key" }}
+                        {{t "Manage your API key" }}
                     </button>
                 </div>
             </div>

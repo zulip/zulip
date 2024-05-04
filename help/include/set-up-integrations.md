@@ -9,5 +9,5 @@ more through [Zapier](/integrations/doc/zapier) and
 * The [integrations page](/integrations/) has instructions for
   integrating with each product.
 * If you don't see an integration you need, you can [request it](/help/request-an-integration).
-* You can also [create custom integrations](/api/integrations-overview) using our API.
-* Want to learn more? Read about [Zulip bots and integrations](/help/bots-and-integrations).
+* You can also create [custom incoming webhook integrations](/api/incoming-webhooks-overview) using our API.
+* Want to learn more? Read about [Zulip integrations](/help/integrations-overview).

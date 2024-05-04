@@ -63,7 +63,7 @@ def set_api_request_retry_limits(api_object: digitalocean.baseapi.BaseAPI) -> No
 
 
 def create_droplet(
-    name: str, ssh_keys: List[str], image: str = "ubuntu-20-04-x64"
+    name: str, ssh_keys: List[str], image: str = "ubuntu-22-04-x64"
 ) -> digitalocean.Droplet:
     droplet = digitalocean.Droplet(
         token=manager.token,

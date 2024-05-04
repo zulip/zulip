@@ -5,11 +5,11 @@
     {{#if only_topic_edit }}
     <p>{{t "Rename topic to:" }}</p>
     {{else}}
-    <p>{{t "Select a stream below or change topic name." }}</p>
+    <p>{{t "Select a channel below or change topic name." }}</p>
     {{/if}}
     <div class="topic_stream_edit_header">
         {{#unless only_topic_edit}}
-        {{> dropdown_widget_with_stream_colorblock widget_name="move_topic_to_stream"}}
+        {{> dropdown_widget_wrapper widget_name="move_topic_to_stream"}}
         <i class="fa fa-angle-right" aria-hidden="true"></i>
         {{/unless}}
         <input name="new_topic_name" type="text" class="move_messages_edit_topic modal_text_input" autocomplete="off" value="{{topic_name}}" {{#if disable_topic_input}}disabled{{/if}} />

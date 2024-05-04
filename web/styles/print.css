@@ -63,7 +63,7 @@
 
     .messagebox-content {
         .message_edit_notice,
-        .message_time {
+        .message-time {
             /* Firefox seems to have a bug that fuzzes out
                small text with opacity; this unsets that
                value, and replaces with a matching gray. */

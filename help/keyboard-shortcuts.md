@@ -6,8 +6,9 @@ and use the convenient [**keyboard shortcuts reference**](#keyboard-shortcuts-re
 in the Zulip app to add more to your repertoire as needed.
 
 * [The basics](#the-basics)
+* [Search](#search)
+* [Scrolling](#scrolling)
 * [Navigation](#navigation)
-* [Narrowing](#narrowing)
 * [Composing messages](#composing-messages)
 * [Message actions](#message-actions)
 * [Drafts](#drafts)
@@ -23,6 +24,10 @@ in the Zulip app to add more to your repertoire as needed.
   stream.
 
 * **New direct message**: <kbd>X</kbd>
+
+* **Paste formatted text**: <kbd>Ctrl</kbd> + <kbd>V</kbd>
+
+* **Paste as plain text**: <kbd data-mac-following-key="⌥">Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>V</kbd>
 
 * **Cancel compose and save draft**: <kbd>Esc</kbd> or <kbd>Ctrl</kbd> +
   <kbd>[</kbd> — Close the compose box and save the unsent message as a
@@ -46,18 +51,20 @@ in the Zulip app to add more to your repertoire as needed.
 
 * **Toggle keyboard shortcuts view**: <kbd>?</kbd>
 
-* **Go to home view**: <kbd>Ctrl</kbd> + <kbd>[</kbd> (or
+* **Go to your home view**: <kbd>Ctrl</kbd> + <kbd>[</kbd> (or
   <kbd>Esc</kbd>, [if enabled][disable-escape])
-  until you are in the [home view](/help/configure-home-view).
+  until you are in your [home view](/help/configure-home-view).
 
 [disable-escape]: /help/configure-home-view#configure-whether-esc-navigates-to-the-home-view
-## Navigation
+## Search
 
 * **Search messages**: <kbd>/</kbd> or <kbd>Ctrl</kbd> + <kbd>K</kbd>
 
 * **Filter streams**: <kbd>Q</kbd>
 
 * **Search people**: <kbd>W</kbd>
+
+## Scrolling
 
 * **Last message**: <kbd>End</kbd> or <kbd>Shift</kbd> + <kbd>G</kbd> —
   Also marks all messages in the current view as read.
@@ -73,32 +80,32 @@ in the Zulip app to add more to your repertoire as needed.
 * **Scroll down**: <kbd>PgDn</kbd>, <kbd>Shift</kbd> + <kbd>J</kbd>, or
   <kbd>Spacebar</kbd>
 
+## Navigation
+
 * **Go back through viewing history**: <kbd data-mac-key="⌘">Alt</kbd> +
   <kbd class="arrow-key">←</kbd>
 
 * **Go forward through viewing history**: <kbd data-mac-key="⌘">Alt</kbd> +
   <kbd class="arrow-key">→</kbd>
 
-## Narrowing
+* **Go to next unread topic**: <kbd>N</kbd>
 
-* **Narrow to next unread topic**: <kbd>N</kbd>
+* **Go to next unread direct message**: <kbd>P</kbd>
 
-* **Narrow to next unread direct message**: <kbd>P</kbd>
+* **Go to topic or DM conversation**: <kbd>S</kbd>
 
-* **Narrow to topic or DM conversation**: <kbd>S</kbd>
+* **Go to stream from topic view**: <kbd>S</kbd>
 
-* **Narrow to stream from topic view**: <kbd>S</kbd>
-
-* **Narrow to all direct messages**: <kbd>Shift</kbd> + <kbd>P</kbd>
+* **Go to your direct message feed**: <kbd>Shift</kbd> + <kbd>P</kbd>
 
 * **Zoom to message in conversation context**: <kbd>Z</kbd> — This view does not mark messages as read.
 
-* **Cycle between stream narrows**: <kbd>Shift</kbd> + <kbd>A</kbd>
+* **Cycle between stream views**: <kbd>Shift</kbd> + <kbd>A</kbd>
   (previous) and <kbd>Shift</kbd> + <kbd>D</kbd> (next)
 
-* **Narrow to All messages**: <kbd>A</kbd> — Shows all unmuted messages.
+* **Go to Combined feed**: <kbd>A</kbd> — Shows all unmuted messages.
 
-* **Narrow to current compose box recipient**: <kbd>Ctrl</kbd> + <kbd>.</kbd>
+* **Go to the conversation you are composing to**: <kbd>Ctrl</kbd> + <kbd>.</kbd>
 
 ## Composing messages
 
@@ -146,11 +153,14 @@ in the Zulip app to add more to your repertoire as needed.
 
 ### For a selected message (outlined in blue)
 
+* **Edit message or view original message**: <kbd>E</kbd>
+
 * **Show message sender's user card**: <kbd>U</kbd>
 
-* **View image**: <kbd>V</kbd>
+* **View read receipts**: <kbd>Shift</kbd> + <kbd>V</kbd> — Same shortcut
+  also closes the read receipts menu (if open).
 
-* **Edit message or view message source**: <kbd>E</kbd>
+* **View image**: <kbd>V</kbd>
 
 * **Move message and (optionally) other messages in the same topic**: <kbd>M</kbd>
 
@@ -170,9 +180,10 @@ in the Zulip app to add more to your repertoire as needed.
 
 * **Collapse/show message**: <kbd>-</kbd>
 
-* **Toggle topic mute**: <kbd>Shift</kbd> + <kbd>M</kbd> — Muted topics
-  don't show up in any views (including **All messages**), and don't contribute
-  to unread counts. Read more about [muting or unmuting topics](/help/mute-a-topic).
+* **Toggle topic mute**: <kbd>Shift</kbd> + <kbd>M</kbd>. This works in both
+  message views and views that list topics (e.g., [inbox](/help/inbox), [recent
+  conversations](/help/recent-conversations)). Learn about [muted
+  topics](/help/mute-a-topic).
 
 ## Recent conversations
 

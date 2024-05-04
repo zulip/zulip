@@ -44,7 +44,7 @@ team to tens of thousands of users. It has [hundreds of
 features](https://zulip.com/features/) both large and small, and
 supports dedicated apps for iOS, Android, Linux, Windows, and macOS,
 all modern web browsers, several cross-protocol chat clients, and
-numerous dedicated [Zulip API](https://zulip.com/api) clients
+numerous dedicated [Zulip API](https://zulip.com/api/) clients
 (e.g., bots).
 
 A server can host multiple Zulip _realms_ (organizations), each on its
@@ -87,7 +87,7 @@ database queries inside the Tornado code paths, since those blocking
 requests carry a very high performance penalty for a single-threaded,
 asynchronous server system. (In principle, we could do non-blocking
 requests to those services, but the Django-based database libraries we
-use in most of our codebase using don't support that, and in any case,
+use in most of our codebase don't support that, and in any case,
 our architecture doesn't require Tornado to do that).
 
 The parts that are activated relatively rarely (e.g. when people type or
@@ -220,7 +220,7 @@ Two simple wrappers around `pika` (the Python RabbitMQ client) are in
 Tornado and a more general client for use elsewhere. Most of the
 processes started by Supervisor are queue processors that continually
 pull things out of a RabbitMQ queue and handle them; they are defined
-in `zerver/worker/queue_processors.py`.
+in `zerver/worker/`.
 
 Also see [the queuing guide](../subsystems/queuing.md).
 
@@ -280,7 +280,7 @@ self-explanatory names.
 
 - **ellipsis**: A small vertical three dot icon (technically called
   as ellipsis-v), present in sidebars as a menu icon.
-  It offers contextual options for global filters (All messages
+  It offers contextual options for global filters (Combined feed
   and Starred messages), stream filters and topics in left
   sidebar and users in right sidebar. To avoid visual clutter
   ellipsis only appears in the web UI upon hover.

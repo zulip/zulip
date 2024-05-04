@@ -3,7 +3,10 @@ import $ from "jquery";
 import render_compose_banner from "../templates/compose_banner/compose_banner.hbs";
 import render_stream_does_not_exist_error from "../templates/compose_banner/stream_does_not_exist_error.hbs";
 
+import {$t} from "./i18n";
 import * as scroll_util from "./scroll_util";
+import * as stream_data from "./stream_data";
+import type {StreamSubscription} from "./sub_store";
 
 export let scroll_to_message_banner_message_id: number | null = null;
 export function set_scroll_to_message_banner_message_id(val: number | null): void {
@@ -49,7 +52,6 @@ export const CLASSNAMES = {
     invalid_recipient: "invalid_recipient",
     invalid_recipients: "invalid_recipients",
     deactivated_user: "deactivated_user",
-    message_too_long: "message_too_long",
     topic_missing: "topic_missing",
     zephyr_not_running: "zephyr_not_running",
     generic_compose_error: "generic_compose_error",
@@ -170,7 +172,7 @@ export function show_stream_does_not_exist_error(stream_name: string): void {
 
     const new_row_html = render_stream_does_not_exist_error({
         banner_type: ERROR,
-        stream_name,
+        channel_name: stream_name,
         classname: CLASSNAMES.stream_does_not_exist,
     });
     append_compose_banner_to_banner_list($(new_row_html), $("#compose_banners"));
@@ -178,4 +180,26 @@ export function show_stream_does_not_exist_error(stream_name: string): void {
 
     // Open stream select dropdown.
     $("#compose_select_recipient_widget").trigger("click");
+}
+
+export function show_stream_not_subscribed_error(sub: StreamSubscription): void {
+    const $banner_container = $("#compose_banners");
+    if ($(`#compose_banners .${CSS.escape(CLASSNAMES.user_not_subscribed)}`).length) {
+        return;
+    }
+    const new_row_html = render_compose_banner({
+        banner_type: ERROR,
+        banner_text: $t({
+            defaultMessage:
+                "You're not subscribed to this channel. You will not be notified if other users reply to your message.",
+        }),
+        button_text: stream_data.can_toggle_subscription(sub)
+            ? $t({defaultMessage: "Subscribe"})
+            : null,
+        classname: CLASSNAMES.user_not_subscribed,
+        // The message cannot be sent until the user subscribes to the stream, so
+        // closing the banner would be more confusing than helpful.
+        hide_close_button: true,
+    });
+    append_compose_banner_to_banner_list($(new_row_html), $banner_container);
 }

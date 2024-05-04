@@ -1,10 +1,11 @@
 import logging
 from argparse import ArgumentParser
-from typing import Any, Collection
+from typing import Any
 
 from django.conf import settings
 from django.core.management.base import CommandError
 from django.db import transaction
+from django.db.models import QuerySet
 from typing_extensions import override
 
 from zerver.lib.logging_util import log_to_file
@@ -20,7 +21,7 @@ log_to_file(logger, settings.LDAP_SYNC_LOG_PATH)
 # Run this on a cron job to pick up on name changes.
 @transaction.atomic
 def sync_ldap_user_data(
-    user_profiles: Collection[UserProfile], deactivation_protection: bool = True
+    user_profiles: QuerySet[UserProfile], deactivation_protection: bool = True
 ) -> None:
     logger.info("Starting update.")
     try:

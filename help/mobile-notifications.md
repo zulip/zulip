@@ -1,6 +1,6 @@
 # Mobile notifications
 
-You can customize whether [stream messages](/help/stream-notifications),
+You can customize whether [channel messages](/help/channel-notifications),
 [direct messages](/help/dm-mention-alert-notifications) and
 [mentions][notifications-wildcard-mentions] trigger notifications in Zulip's
 [Android](https://zulip.com/apps/ios) and [iOS](https://zulip.com/apps/ios)
@@ -206,6 +206,12 @@ notification settings.
 
 {end_tabs}
 
+### Why am I seeing “New message” in place of message text?
+
+Administrators of self-hosted Zulip servers can
+[configure](https://zulip.readthedocs.io/en/stable/production/mobile-push-notifications.html#security-and-privacy)
+push notifications not to include any message content.
+
 ### Contacting Zulip support
 
 If you are still having trouble with your push notifications, you can send an
@@ -231,7 +237,7 @@ troubleshooting data provided by the mobile app.
 
 ## Related articles
 
-* [Stream notifications](/help/stream-notifications)
+* [Channel notifications](/help/channel-notifications)
 * [DMs, mentions, and alerts](/help/dm-mention-alert-notifications)
 * [Email notifications](/help/email-notifications)
 * [Desktop notifications](/help/desktop-notifications)

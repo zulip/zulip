@@ -5,7 +5,7 @@ const {strict: assert} = require("assert");
 const {mock_esm, zrequire} = require("./lib/namespace");
 const {run_test} = require("./lib/test");
 const $ = require("./lib/zjquery");
-const {page_params} = require("./lib/zpage_params");
+const {realm} = require("./lib/zpage_params");
 
 const message_edit = mock_esm("../src/message_edit");
 const message_lists = mock_esm("../src/message_lists");
@@ -14,7 +14,7 @@ const pm_list = mock_esm("../src/pm_list");
 const stream_list = mock_esm("../src/stream_list");
 const unread_ui = mock_esm("../src/unread_ui");
 message_lists.current = {};
-message_lists.all_rendered_message_lists = () => [message_lists.home, message_lists.current];
+message_lists.all_rendered_message_lists = () => [message_lists.current];
 
 const people = zrequire("people");
 const message_events = zrequire("message_events");
@@ -95,7 +95,6 @@ run_test("update_messages", () => {
         rendered_mgs = msgs_to_rerender;
         assert.equal(message_content_edited, true);
     };
-    message_lists.home = message_lists.current;
 
     const side_effects = [
         [message_edit, "end_message_edit"],
@@ -107,7 +106,7 @@ run_test("update_messages", () => {
 
     const helper = test_helper(side_effects);
 
-    page_params.realm_allow_edit_history = false;
+    realm.realm_allow_edit_history = false;
 
     const $message_edit_history_modal = $.create("#message-edit-history");
     const $modal = $.create("micromodal").addClass("modal--open");

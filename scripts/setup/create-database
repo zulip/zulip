@@ -15,7 +15,7 @@ DATABASE_NAME=$(crudini --get /etc/zulip/zulip.conf postgresql database_name 2>/
 DATABASE_USER=$(crudini --get /etc/zulip/zulip.conf postgresql database_user 2>/dev/null || echo zulip)
 
 if [ "$(su "$POSTGRES_USER" -c "cd / && psql -v ON_ERROR_STOP=1 -Atc \"SELECT 1 FROM pg_database WHERE datname='$DATABASE_NAME';\"")" = "1" ]; then
-    records="$(su "$POSTGRES_USER" -c "cd / && psql -v ON_ERROR_STOP=1 -Atc 'SELECT COUNT(*) FROM $DATABASE_NAME.zerver_message;' $DATABASE_USER")"
+    records="$(su "$POSTGRES_USER" -c "cd / && psql -v ON_ERROR_STOP=1 -Atc 'SELECT COUNT(*) FROM $DATABASE_NAME.zerver_message;' $DATABASE_USER" || echo 0)"
     if [ "$records" -gt 200 ]; then
         set +x
         echo "WARNING: This will delete your Zulip database which currently contains $records messages."
@@ -29,8 +29,8 @@ if [ "$(su "$POSTGRES_USER" -c "cd / && psql -v ON_ERROR_STOP=1 -Atc \"SELECT 1 
 fi
 
 # Shut down all services to ensure a quiescent state.
-if [ -e "/var/run/supervisor.sock" ]; then
-    su zulip -c "$(dirname "$0")/../stop-server"
+if [ -e "/home/zulip/deployments" ]; then
+    su zulip -c "/home/zulip/deployments/current/scripts/stop-server"
 fi
 
 # Drop any open connections to any old database.
@@ -54,6 +54,8 @@ EOF
 fi
 
 # Clear memcached to avoid contamination from previous database state
-"$(dirname "$0")/flush-memcached"
+if [ -e "/home/zulip/deployments" ]; then
+    /home/zulip/deployments/current/scripts/setup/flush-memcached
+fi
 
 echo "Database created"

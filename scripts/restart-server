@@ -18,13 +18,14 @@ from scripts.lib.zulip_tools import (
     ENDC,
     OKGREEN,
     WARNING,
-    get_config_bool,
+    get_config,
     get_config_file,
     get_tornado_ports,
     has_application_server,
     has_process_fts_updates,
     overwrite_symlink,
     start_arg_parser,
+    su_to_zulip,
 )
 
 action = "restart"
@@ -41,7 +42,10 @@ args = parser.parse_args()
 deploy_path = os.path.realpath(os.path.join(os.path.dirname(__file__), ".."))
 os.chdir(deploy_path)
 
-if pwd.getpwuid(os.getuid()).pw_name != "zulip":
+username = pwd.getpwuid(os.getuid()).pw_name
+if username == "root":
+    su_to_zulip()
+elif username != "zulip":
     logging.error("Must be run as user 'zulip'.")
     sys.exit(1)
 
@@ -97,12 +101,17 @@ if has_application_server():
             )
         )
 
+    # This is an optional service, so may or may not exist
+    workers.extend(list_supervisor_processes(["zulip-katex"]))
+
 if has_process_fts_updates():
     workers.append("process-fts-updates")
 
 # Before we start (re)starting main services, make sure to start any
 # optional auxiliary services that we don't stop, but do expect to be
-# running, and aren't currently.
+# running, and aren't currently.  These get new versions by getting
+# updated supervisor files, and puppet restarts them -- so we never
+# restart them in here, only start them.
 aux_services = list_supervisor_processes(["go-camo", "smokescreen"], only_running=False)
 if aux_services:
     subprocess.check_call(["supervisorctl", "start", *aux_services])
@@ -158,15 +167,14 @@ if action == "restart" and len(workers) > 0:
 
 if has_application_server():
     # Next, we restart the Tornado processes sequentially, in order to
-    # minimize downtime of the tornado service caused by too many Python
-    # processes restarting at the same time, resulting in each receiving
-    # insufficient priority.  This is important, because Tornado is the
-    # main source of user-visible downtime when we restart a Zulip server.
-    # We do this before restarting Django, in case there are new event
-    # types which it will need to know how to deal with.
-    if action == "restart" and args.skip_tornado:
-        logging.info("Skipping restart of Tornado")
-    elif len(tornado_ports) > 1:
+    # minimize downtime of the tornado service caused by too many
+    # Python processes restarting at the same time, resulting in each
+    # receiving insufficient priority.  This is important, because
+    # Tornado being unavailable for too long is the main source of
+    # user-visible downtime when we restart a Zulip server.  We do
+    # this before restarting Django, in case there are new event types
+    # which it will need to know how to deal with.
+    if len(tornado_ports) > 1:
         for p in tornado_ports:
             # Restart Tornado processes individually for a better rate of
             # restarts.  This also avoids behavior with restarting a whole
@@ -182,7 +190,7 @@ if has_application_server():
     if (
         action == "restart"
         and not args.less_graceful
-        and get_config_bool(config_file, "application_server", "rolling_restart")
+        and get_config(config_file, "application_server", "rolling_restart", False)
         and os.path.exists("/home/zulip/deployments/uwsgi-control")
     ):
         # See if it's currently running
@@ -218,6 +226,11 @@ if action == "start" or args.less_graceful:
         logging.info("Starting workers")
         subprocess.check_call(["supervisorctl", "start", *workers])
 
+if has_application_server() and not args.skip_client_reloads:
+    # All of the servers have been (re)started; now enqueue events in
+    # the Tornado servers to tell clients to reload.
+    subprocess.check_call(["./scripts/reload-clients"])
+
 logging.info("Done!")
 print(OKGREEN + f"Zulip {action}ed successfully!" + ENDC)
 
@@ -231,8 +244,6 @@ if change_symlink and "PWD" in os.environ:
 which has now changed. Your shell will not see this change until you run:
   cd {}
 to traverse the symlink again.{}
-""".format(
-                    WARNING, symlink, shlex.quote(os.environ["PWD"]), ENDC
-                ),
+""".format(WARNING, symlink, shlex.quote(os.environ["PWD"]), ENDC),
                 file=sys.stderr,
             )

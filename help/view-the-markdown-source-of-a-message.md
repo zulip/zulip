@@ -11,7 +11,7 @@ formatted, or to copy the Markdown source for a reply.
 
 {!message-actions-menu.md!}
 
-1. Click **View message source**. You will not see the **View message source**
+1. Click **View original message**. You will not see the **View original message**
    menu option for editable messages that you have sent.
 
 !!! keyboard_tip ""
@@ -29,7 +29,7 @@ formatted, or to copy the Markdown source for a reply.
 
 {!message-actions-menu.md!}
 
-1. Click **View message source**. You will not see the **View message source**
+1. Click **View original message**. You will not see the **View original message**
    menu option for editable messages that you have sent.
 
 1. Click the **Copy and close**

@@ -60,7 +60,7 @@ def further_validated_draft_dict(
         if "\0" in topic_name:
             raise JsonableError(_("Topic must not contain null bytes"))
         if len(to) != 1:
-            raise JsonableError(_("Must specify exactly 1 stream ID for stream messages"))
+            raise JsonableError(_("Must specify exactly 1 channel ID for channel messages"))
         stream, sub = access_stream_by_id(user_profile, to[0])
         recipient_id = stream.recipient_id
     elif draft_dict.type == "private" and len(to) != 0:
@@ -79,7 +79,7 @@ def further_validated_draft_dict(
 
 
 def draft_endpoint(
-    view_func: Callable[Concatenate[HttpRequest, UserProfile, ParamT], HttpResponse]
+    view_func: Callable[Concatenate[HttpRequest, UserProfile, ParamT], HttpResponse],
 ) -> Callable[Concatenate[HttpRequest, UserProfile, ParamT], HttpResponse]:
     @wraps(view_func)
     def draft_view_func(

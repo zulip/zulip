@@ -1,7 +1,7 @@
 <div class="input-group stream-privacy-values">
     <div class="alert stream-privacy-status"></div>
-    <label>{{t 'Who can access the stream?'}}
-        {{> ../help_link_widget link="/help/stream-permissions" }}
+    <label>{{t 'Who can access the channel?'}}
+        {{> ../help_link_widget link="/help/channel-permissions" }}
     </label>
 
     <div class="stream-privacy_choices prop-element" id="id_stream_privacy" data-setting-widget-type="radio-group" data-setting-choice-type="string">
@@ -21,14 +21,14 @@
       prefix="id_"
       setting_name="is_default_stream"
       is_checked=check_default_stream
-      label="Default stream for new users"
-      help_link="/help/set-default-streams-for-new-users"
+      label=(t "Default channel for new users")
+      help_link="/help/set-default-channels-for-new-users"
       }}
 </div>
 
 <div class="input-group">
-    <label class="dropdown-title">{{t 'Who can post to the stream?'}}
-        {{> ../help_link_widget link="/help/stream-sending-policy" }}
+    <label class="settings-field-label">{{t 'Who can post to the channel?'}}
+        {{> ../help_link_widget link="/help/channel-posting-policy" }}
     </label>
     <select name="stream-post-policy" class="stream_post_policy_setting prop-element settings_select bootstrap-focus-style" id="id_stream_post_policy" data-setting-widget-type="number">
         {{#each stream_post_policy_values}}
@@ -41,13 +41,13 @@
 
 {{> ../dropdown_widget_with_label
   widget_name=can_remove_subscribers_setting_widget_name
-  label=(t 'Who can unsubscribe others from this stream?')
+  label=(t 'Who can unsubscribe others from this channel?')
   value_type="number"}}
 
 {{#if (or is_owner is_stream_edit)}}
 <div>
     <div class="input-group inline-block message-retention-setting-group time-limit-setting">
-        <label class="dropdown-title">{{t "Message retention period" }}
+        <label class="settings-field-label">{{t "Message retention period" }}
             {{> ../help_link_widget link="/help/message-retention-policy" }}
         </label>
 

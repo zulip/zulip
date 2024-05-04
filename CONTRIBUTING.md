@@ -41,9 +41,9 @@ needs doing:
 
 - Bug squashing and feature development on our Python/Django
   [backend](https://github.com/zulip/zulip), web
-  [frontend](https://github.com/zulip/zulip), React Native
-  [mobile app](https://github.com/zulip/zulip-mobile), or Electron
-  [desktop app](https://github.com/zulip/zulip-desktop).
+  [frontend](https://github.com/zulip/zulip),
+  Flutter [mobile app](https://github.com/zulip/zulip-flutter) in beta,
+  or Electron [desktop app](https://github.com/zulip/zulip-desktop).
 - Building out our
   [Python API and bots](https://github.com/zulip/python-zulip-api) framework.
 - [Writing an integration](https://zulip.com/api/integrations-overview).
@@ -85,15 +85,34 @@ to help.
   your name as the topic. Bonus: tell us about your first impressions of
   Zulip, and anything that felt confusing/broken or interesting/helpful as you
   started using the product.
+
 - Read [What makes a great Zulip contributor](#what-makes-a-great-zulip-contributor).
-- [Install the development environment](https://zulip.readthedocs.io/en/latest/development/overview.html),
-  getting help in
-  [#provision help](https://chat.zulip.org/#narrow/stream/21-provision-help)
-  if you run into any troubles.
-- Familiarize yourself with [using the development environment](https://zulip.readthedocs.io/en/latest/development/using.html).
-- Go through the [new application feature
-  tutorial](https://zulip.readthedocs.io/en/latest/tutorials/new-feature-tutorial.html) to get familiar with
-  how the Zulip codebase is organized and how to find code in it.
+
+- Set up the development environment for the Zulip codebase you want
+  to work on, and start getting familiar with the code.
+
+  - For the server and web app:
+
+    - [Install the development environment](https://zulip.readthedocs.io/en/latest/development/overview.html),
+      getting help in
+      [#provision help](https://chat.zulip.org/#narrow/stream/21-provision-help)
+      if you run into any troubles.
+    - Familiarize yourself with [using the development environment](https://zulip.readthedocs.io/en/latest/development/using.html).
+    - Go through the [new application feature
+      tutorial](https://zulip.readthedocs.io/en/latest/tutorials/new-feature-tutorial.html) to get familiar with
+      how the Zulip codebase is organized and how to find code in it.
+
+  - For the upcoming Flutter-based mobile app:
+    - Set up a development environment following the instructions in
+      [the project README](https://github.com/zulip/zulip-flutter).
+    - Start reading recent commits to see the code we're writing.
+      Use either a [graphical Git viewer][] like `gitk`, or `git log -p`
+      with [the "secret" to reading its output][git-log-secret].
+    - Pick some of the code that appears in those Git commits and
+      that looks interesting. Use your IDE to visit that code
+      and to navigate to related code, reading to see how it works
+      and how the codebase is organized.
+
 - Read the [Zulip guide to
   Git](https://zulip.readthedocs.io/en/latest/git/index.html) if you
   are unfamiliar with Git or Zulip's rebase-based Git workflow,
@@ -102,6 +121,9 @@ to help.
   into any troubles. Even Git experts should read the [Zulip-specific
   Git tools
   page](https://zulip.readthedocs.io/en/latest/git/zulip-tools.html).
+
+[graphical Git viewer]: https://zulip.readthedocs.io/en/latest/git/setup.html#get-a-graphical-client
+[git-log-secret]: https://github.com/zulip/zulip-mobile/blob/main/docs/howto/git.md#git-log-secret
 
 ### Where to look for an issue
 
@@ -117,7 +139,10 @@ use the "good first issue" label to tag issues that are especially approachable
 for new contributors.
 
 - [Server and web app](https://github.com/zulip/zulip/issues?q=is%3Aopen+is%3Aissue+label%3A%22help+wanted%22)
-- [Mobile apps](https://github.com/zulip/zulip-mobile/issues?q=is%3Aopen+is%3Aissue+label%3A%22help+wanted%22)
+- Mobile apps: no "help wanted" label, but see the
+  [project board](https://github.com/orgs/zulip/projects/5/views/4)
+  for the upcoming Flutter-based app. Look for issues up through the
+  "Launch" milestone, and that aren't already assigned.
 - [Desktop app](https://github.com/zulip/zulip-desktop/issues?q=is%3Aopen+is%3Aissue+label%3A%22help+wanted%22)
 - [Terminal app](https://github.com/zulip/zulip-terminal/issues?q=is%3Aopen+is%3Aissue+label%3A"help+wanted")
 - [Python API bindings and bots](https://github.com/zulip/python-zulip-api/issues?q=is%3Aopen+is%3Aissue+label%3A%22help+wanted%22)
@@ -192,7 +217,7 @@ issue you're interested in.
 #### In other Zulip repositories
 
 There is no bot for other Zulip repositories
-([`zulip/zulip-mobile`](https://github.com/zulip/zulip-mobile/), etc.). If
+([`zulip/zulip-flutter`](https://github.com/zulip/zulip-flutter/), etc.). If
 you are interested in claiming an issue in one of these repositories, simply
 post a comment on the issue thread saying that you'd like to work on it. There
 is no need to @-mention the issue creator in your comment.
@@ -383,7 +408,7 @@ Here are some ways you can help others find Zulip:
 
 - Star us on GitHub. There are four main repositories:
   [server/web](https://github.com/zulip/zulip),
-  [mobile](https://github.com/zulip/zulip-mobile),
+  [Flutter mobile](https://github.com/zulip/zulip-flutter),
   [desktop](https://github.com/zulip/zulip-desktop), and
   [Python API](https://github.com/zulip/python-zulip-api).
 

@@ -4,7 +4,7 @@ const {strict: assert} = require("assert");
 
 const {zrequire} = require("./lib/namespace");
 const {run_test} = require("./lib/test");
-const {page_params} = require("./lib/zpage_params");
+const {realm} = require("./lib/zpage_params");
 
 // In the Zulip app you can narrow your message stream by topic, by
 // sender, by direct message recipient, by search keywords, etc.
@@ -14,12 +14,12 @@ const {page_params} = require("./lib/zpage_params");
 const {Filter} = zrequire("../src/filter");
 const stream_data = zrequire("stream_data");
 
-// This is the first time we have to deal with page_params.
-// page_params has a lot of important data shared by various
+// This is the first time we have to deal with `realm`.
+// `realm` has a lot of important data shared by various
 // modules. Most of the data is irrelevant to our tests.
 // Use this to explicitly say we are not a special Zephyr
 // realm, since we want to test the "normal" codepath.
-page_params.realm_is_zephyr_mirror_realm = false;
+realm.realm_is_zephyr_mirror_realm = false;
 
 const denmark_stream = {
     color: "blue",
@@ -70,11 +70,12 @@ run_test("filter", () => {
 // state with the narrow_state module.
 
 const narrow_state = zrequire("narrow_state");
+const message_lists = zrequire("message_lists");
 
 run_test("narrow_state", () => {
     stream_data.clear_subscriptions();
     stream_data.add_sub(denmark_stream);
-    narrow_state.reset_current_filter();
+    message_lists.set_current(undefined);
 
     // As we often do, first make assertions about the starting
     // state:
@@ -90,8 +91,11 @@ run_test("narrow_state", () => {
     const filter = new Filter(filter_terms);
 
     // And here is where we actually change state.
-    narrow_state.set_current_filter(filter);
-
+    message_lists.set_current({
+        data: {
+            filter,
+        },
+    });
     assert.equal(narrow_state.stream_name(), "Denmark");
     assert.equal(narrow_state.topic(), "copenhagen");
 });

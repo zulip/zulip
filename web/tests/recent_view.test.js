@@ -88,7 +88,7 @@ const ListWidget = mock_esm("../src/list_widget", {
 
 mock_esm("../src/compose_closed_ui", {
     set_standard_text_for_reply_button: noop,
-    update_buttons_for_non_stream_views: noop,
+    update_buttons_for_non_specific_views: noop,
 });
 mock_esm("../src/hash_util", {
     by_stream_url: test_url,
@@ -180,13 +180,17 @@ mock_esm("../src/unread", {
 mock_esm("../src/resize", {
     update_recent_view_filters_height: noop,
 });
-const dropdown_widget = zrequire("../src/dropdown_widget");
+const dropdown_widget = mock_esm("../src/dropdown_widget", {
+    DataTypes: {NUMBER: "number", STRING: "string"},
+});
 dropdown_widget.DropdownWidget = function DropdownWidget() {
     this.setup = noop;
     this.render = noop;
 };
 
 const {all_messages_data} = zrequire("all_messages_data");
+const {buddy_list} = zrequire("buddy_list");
+const activity_ui = zrequire("activity_ui");
 const people = zrequire("people");
 const rt = zrequire("recent_view_ui");
 const recent_view_util = zrequire("recent_view_util");
@@ -442,7 +446,7 @@ function test(label, f) {
     });
 }
 
-test("test_recent_view_show", ({mock_template}) => {
+test("test_recent_view_show", ({override, mock_template}) => {
     // Note: unread count and urls are fake,
     // since they are generated in external libraries
     // and are not to be tested here.
@@ -456,12 +460,19 @@ test("test_recent_view_show", ({mock_template}) => {
         is_spectator: false,
     };
 
+    activity_ui.set_cursor_and_filter();
+
     mock_template("recent_view_table.hbs", false, (data) => {
         assert.deepEqual(data, expected);
         return "<recent_view table stub>";
     });
 
     mock_template("recent_view_row.hbs", false, noop);
+
+    let buddy_list_populated = false;
+    override(buddy_list, "populate", () => {
+        buddy_list_populated = true;
+    });
 
     stub_out_filter_buttons();
     // We don't test the css calls; we just skip over them.
@@ -471,6 +482,8 @@ test("test_recent_view_show", ({mock_template}) => {
     rt.process_messages(messages);
 
     rt.show();
+
+    assert.ok(buddy_list_populated);
 
     // incorrect topic_key
     assert.equal(rt.inplace_rerender("stream_unknown:topic_unknown"), false);
@@ -1107,22 +1120,24 @@ test("test_search", () => {
     assert.equal(rt.topic_in_search_results("recent", "general", "Recent topic"), true);
     assert.equal(rt.topic_in_search_results("RECENT", "general", "Recent topic"), true);
 
-    // match in any order of words
+    // Match (by prefix) in any order of words.
     assert.equal(rt.topic_in_search_results("topic recent", "general", "Recent topic"), true);
-
-    // Matches any sequence of words.
-    assert.equal(rt.topic_in_search_results("o", "general", "Recent topic"), true);
-    assert.equal(rt.topic_in_search_results("nt to", "general", "Recent topic"), true);
-    assert.equal(rt.topic_in_search_results("z", "general", "Recent topic"), false);
+    assert.equal(rt.topic_in_search_results("o", "general", "Recent topic"), false);
+    assert.equal(rt.topic_in_search_results("to recen", "general", "Recent topic"), true);
+    assert.equal(rt.topic_in_search_results("ner opic", "general", "Recent topic"), false);
+    assert.equal(rt.topic_in_search_results("pr pro", "general", "pro PRs"), true);
+    assert.equal(rt.topic_in_search_results("pr pro pr pro", "general", "pro PRs"), false);
+    assert.equal(rt.topic_in_search_results("co cows", "general", "one cow 2 cows"), true);
+    assert.equal(rt.topic_in_search_results("cows cows", "general", "one cow 2 cows"), false);
 
     assert.equal(rt.topic_in_search_results("?", "general", "Recent topic"), false);
 
     // Test special character match
     assert.equal(rt.topic_in_search_results(".*+?^${}()[]\\", "general", "Recent topic"), false);
-    assert.equal(rt.topic_in_search_results("?", "general", "not-at-start?"), true);
+    assert.equal(rt.topic_in_search_results("?", "general", "?at-start"), true);
 
     assert.equal(rt.topic_in_search_results("?", "general", "?"), true);
-    assert.equal(rt.topic_in_search_results("?", "general", "\\?"), true);
+    assert.equal(rt.topic_in_search_results("?", "general", "\\?"), false);
 
     assert.equal(rt.topic_in_search_results("\\", "general", "\\"), true);
     assert.equal(rt.topic_in_search_results("\\", "general", "\\\\"), true);

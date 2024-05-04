@@ -13,7 +13,7 @@ import DebugRequirePlugin from "./debug-require-webpack-plugin";
 import assets from "./webpack.assets.json";
 import dev_assets from "./webpack.dev-assets.json";
 
-export default (
+const config = (
     env: {minimize?: boolean; ZULIP_VERSION?: string} = {},
     argv: {mode?: string},
 ): webpack.Configuration[] => {
@@ -145,6 +145,7 @@ export default (
                             "tr",
                             "rendered_markdown",
                             "tooltip_hotkey_hints",
+                            "popover_hotkey_hints",
                         ],
                         precompileOptions: {strict: true},
                         preventIndent: true,
@@ -255,12 +256,20 @@ export default (
         name: "server",
         target: "node",
         entry: {
+            katex_server: "babel-loader!./server/katex_server.ts",
             "katex-cli": "shebang-loader!katex/cli",
         },
         output: {
             path: path.resolve(__dirname, "../static/webpack-bundles"),
         },
+        resolve: {
+            alias: {
+                // koa-body uses formidable 2.x, which suffers from https://github.com/node-formidable/formidable/issues/337
+                hexoid: "hexoid/dist/index.js",
+            },
+        },
     };
 
     return [frontendConfig, serverConfig];
 };
+export default config;

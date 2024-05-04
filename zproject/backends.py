@@ -37,7 +37,7 @@ import magic
 import orjson
 from decorator import decorator
 from django.conf import settings
-from django.contrib.auth import authenticate, get_backends
+from django.contrib.auth import authenticate, get_backends, logout
 from django.contrib.auth.backends import RemoteUserBackend
 from django.contrib.staticfiles.storage import staticfiles_storage
 from django.core.exceptions import ValidationError
@@ -103,10 +103,10 @@ from zerver.lib.url_encoding import append_url_query_string
 from zerver.lib.users import check_full_name, validate_user_custom_profile_field
 from zerver.models import (
     CustomProfileField,
+    NamedUserGroup,
     PreregistrationRealm,
     PreregistrationUser,
     Realm,
-    UserGroup,
     UserGroupMembership,
     UserProfile,
 )
@@ -129,8 +129,23 @@ from zproject.settings_types import OIDCIdPConfigDict
 redis_client = get_redis_client()
 
 
-def all_implemented_backend_names() -> List[str]:
-    return list(AUTH_BACKEND_NAME_MAP.keys())
+def all_default_backend_names() -> List[str]:
+    if not settings.BILLING_ENABLED or settings.DEVELOPMENT:
+        # If billing isn't enabled, it's a self-hosted server
+        # and has access to all authentication backends.
+        #
+        # In DEVELOPMENT, we have BILLING_ENABLED=True, but
+        # nonetheless we want to enable all backends by default
+        # for convenience - we shouldn't add additional steps to the
+        # process of setting up a backend for testing.
+        return list(AUTH_BACKEND_NAME_MAP.keys())
+
+    # By default, only enable backends that are available without requiring a plan.
+    return [
+        name
+        for name, backend in AUTH_BACKEND_NAME_MAP.items()
+        if backend.available_for_cloud_plans is None
+    ]
 
 
 # This first batch of methods is used by other code in Zulip to check
@@ -165,7 +180,7 @@ def auth_enabled_helper(
         else:
             enabled_method_dict = realm.authentication_methods_dict()
     else:
-        enabled_method_dict = {method: True for method in AUTH_BACKEND_NAME_MAP}
+        enabled_method_dict = dict.fromkeys(AUTH_BACKEND_NAME_MAP, True)
 
     pad_method_dict(enabled_method_dict)
     for supported_backend in supported_auth_backends():
@@ -427,6 +442,11 @@ class ZulipAuthMixin:
 
     name = "undefined"
     _logger: Optional[logging.Logger] = None
+
+    # Describes which plans gives access to this authentication method on zulipchat.com.
+    # None means the backend is available regardless of the plan.
+    # Otherwise, it should be a list of Realm.plan_type values that give access to the backend.
+    available_for_cloud_plans: Optional[List[int]] = None
 
     @property
     def logger(self) -> logging.Logger:
@@ -910,7 +930,9 @@ class ZulipLDAPAuthBackendBase(ZulipAuthMixin, LDAPBackend):
         full_name = self.get_mapped_name(ldap_user)
         if full_name != user_profile.full_name:
             try:
-                full_name = check_full_name(full_name)
+                full_name = check_full_name(
+                    full_name_raw=full_name, user_profile=user_profile, realm=user_profile.realm
+                )
             except JsonableError as e:
                 raise ZulipLDAPError(e.msg)
             do_change_full_name(user_profile, full_name, None)
@@ -964,11 +986,11 @@ class ZulipLDAPAuthBackendBase(ZulipAuthMixin, LDAPBackend):
             existing_group_name_set_for_user = set(
                 UserGroupMembership.objects.filter(
                     user_group__realm=user_profile.realm,
-                    user_group__name__in=set(
+                    user_group__named_user_group__name__in=set(
                         settings.LDAP_SYNCHRONIZED_GROUPS_BY_REALM[user_profile.realm.string_id]
                     ),
                     user_profile=user_profile,
-                ).values_list("user_group__name", flat=True)
+                ).values_list("user_group__named_user_group__name", flat=True)
             )
 
             ldap_logger.debug(
@@ -977,7 +999,7 @@ class ZulipLDAPAuthBackendBase(ZulipAuthMixin, LDAPBackend):
                 repr(existing_group_name_set_for_user),
             )
 
-            new_groups = UserGroup.objects.filter(
+            new_groups = NamedUserGroup.objects.filter(
                 name__in=intended_group_name_set_for_user.difference(
                     existing_group_name_set_for_user
                 ),
@@ -992,7 +1014,7 @@ class ZulipLDAPAuthBackendBase(ZulipAuthMixin, LDAPBackend):
             group_names_for_membership_deletion = existing_group_name_set_for_user.difference(
                 intended_group_name_set_for_user
             )
-            groups_for_membership_deletion = UserGroup.objects.filter(
+            groups_for_membership_deletion = NamedUserGroup.objects.filter(
                 name__in=group_names_for_membership_deletion, realm=user_profile.realm
             )
 
@@ -1128,7 +1150,9 @@ class ZulipLDAPAuthBackend(ZulipLDAPAuthBackendBase):
         # We have valid LDAP credentials; time to create an account.
         full_name = self.get_mapped_name(ldap_user)
         try:
-            full_name = check_full_name(full_name)
+            full_name = check_full_name(
+                full_name_raw=full_name, user_profile=None, realm=self._realm
+            )
         except JsonableError as e:
             raise ZulipLDAPError(e.msg)
 
@@ -1546,7 +1570,7 @@ def sync_user_profile_custom_fields(
 
 
 @external_auth_method
-class ZulipRemoteUserBackend(RemoteUserBackend, ExternalAuthMethod):
+class ZulipRemoteUserBackend(ZulipAuthMixin, RemoteUserBackend, ExternalAuthMethod):
     """Authentication backend that reads the Apache REMOTE_USER variable.
     Used primarily in enterprise environments with an SSO solution
     that has an Apache REMOTE_USER integration.  For manual testing, see
@@ -2150,6 +2174,12 @@ class AzureADAuthBackend(SocialAuthMixin, AzureADOAuth2):
     auth_backend_name = "AzureAD"
     display_icon = staticfiles_storage.url("images/authentication_backends/azuread-icon.png")
 
+    available_for_cloud_plans = [
+        Realm.PLAN_TYPE_STANDARD,
+        Realm.PLAN_TYPE_STANDARD_FREE,
+        Realm.PLAN_TYPE_PLUS,
+    ]
+
 
 @external_auth_method
 class GitLabAuthBackend(SocialAuthMixin, GitLabOAuth2):
@@ -2551,6 +2581,8 @@ class SAMLAuthBackend(SocialAuthMixin, SAMLAuth):
     # their organization want to use in Zulip.  So don't unnecessarily
     # provide a registration flow prompt for them to set their name.
     full_name_validated = True
+
+    available_for_cloud_plans = [Realm.PLAN_TYPE_PLUS]
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         if settings.SAML_REQUIRE_LIMIT_TO_SUBDOMAINS:
@@ -3128,8 +3160,6 @@ class SAMLSPInitiatedLogout:
         Validates the LogoutResponse and logs out the user if successful,
         finishing the SP-initiated logout flow.
         """
-        from django.contrib.auth.views import logout_then_login as django_logout_then_login
-
         idp = logout_response.backend.get_idp(idp_name)
         auth = logout_response.backend._create_saml_auth(idp)
         auth.process_slo(keep_local_session=True)
@@ -3140,8 +3170,8 @@ class SAMLSPInitiatedLogout:
             # They're informative but generic enough to not leak any sensitive information.
             raise JsonableError(f"LogoutResponse error: {errors}")
 
-        # We call Django's version of logout_then_login so that POST isn't required.
-        return django_logout_then_login(logout_response.backend.strategy.request)
+        logout(logout_response.backend.strategy.request)
+        return HttpResponseRedirect(settings.LOGIN_URL)
 
 
 def get_external_method_dicts(realm: Optional[Realm] = None) -> List[ExternalAuthMethodDictT]:

@@ -37,20 +37,12 @@ function show_end_of_results_notice(): void {
 export function update_top_of_narrow_notices(msg_list: MessageList): void {
     // Assumes that the current state is all notices hidden (i.e. this
     // will not hide a notice that should not be there)
-    if (msg_list !== message_lists.current) {
+    if (message_lists.current === undefined || msg_list !== message_lists.current) {
         return;
     }
 
-    if (
-        msg_list.data.fetch_status.has_found_oldest() &&
-        message_lists.current !== message_lists.home
-    ) {
+    if (msg_list.data.fetch_status.has_found_oldest()) {
         const filter = narrow_state.filter();
-        if (filter === undefined && !narrow_state.is_message_feed_visible()) {
-            // user moved away from the narrow / filter to Recent Conversations.
-            return;
-        }
-        assert(filter !== undefined);
         // Potentially display the notice that lets users know
         // that not all messages were searched.  One could
         // imagine including `filter.is_keyword_search()` in these
@@ -58,6 +50,8 @@ export function update_top_of_narrow_notices(msg_list: MessageList): void {
         // for moderation of searching for all messages sent
         // by a potential spammer user.
         if (
+            filter &&
+            !filter.is_in_home() &&
             !filter.contains_only_private_messages() &&
             !filter.includes_full_stream_history() &&
             !filter.is_personal_filter()

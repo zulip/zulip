@@ -1,7 +1,5 @@
 import $ from "jquery";
-import tippy from "tippy.js";
 
-import render_announce_stream_docs from "../templates/announce_stream_docs.hbs";
 import render_subscription_invites_warning_modal from "../templates/confirm_dialog/confirm_subscription_invites_warning.hbs";
 
 import * as channel from "./channel";
@@ -9,15 +7,15 @@ import * as confirm_dialog from "./confirm_dialog";
 import {$t, $t_html} from "./i18n";
 import * as keydown_util from "./keydown_util";
 import * as loading from "./loading";
-import {page_params} from "./page_params";
+import * as onboarding_steps from "./onboarding_steps";
 import * as people from "./people";
 import * as settings_data from "./settings_data";
+import {current_user, realm} from "./state_data";
 import * as stream_create_subscribers from "./stream_create_subscribers";
 import * as stream_data from "./stream_data";
 import * as stream_settings_components from "./stream_settings_components";
 import * as stream_ui_updates from "./stream_ui_updates";
 import * as ui_report from "./ui_report";
-import {parse_html} from "./ui_util";
 
 let created_stream;
 
@@ -33,10 +31,18 @@ export function get_name() {
     return created_stream;
 }
 
+export function set_first_stream_created_modal_shown() {
+    onboarding_steps.post_onboarding_step_as_read("first_stream_created_banner");
+}
+
+export function should_show_first_stream_created_modal() {
+    return onboarding_steps.ONE_TIME_NOTICES_TO_DISPLAY.has("first_stream_created_banner");
+}
+
 class StreamSubscriptionError {
     report_no_subs_to_stream() {
         $("#stream_subscription_error").text(
-            $t({defaultMessage: "You cannot create a stream with no subscribers!"}),
+            $t({defaultMessage: "You cannot create a channel with no subscribers."}),
         );
         $("#stream_subscription_error").show();
     }
@@ -45,7 +51,7 @@ class StreamSubscriptionError {
         $("#stream_subscription_error").text(
             $t({
                 defaultMessage:
-                    "You must be an organization administrator to create a stream without subscribing.",
+                    "You must be an organization administrator to create a channel without subscribing.",
             }),
         );
         $("#stream_subscription_error").show();
@@ -60,7 +66,7 @@ const stream_subscription_error = new StreamSubscriptionError();
 class StreamNameError {
     report_already_exists() {
         $("#stream_name_error").text(
-            $t({defaultMessage: "A stream with this name already exists"}),
+            $t({defaultMessage: "A channel with this name already exists."}),
         );
         $("#stream_name_error").show();
     }
@@ -70,7 +76,7 @@ class StreamNameError {
     }
 
     report_empty_stream() {
-        $("#stream_name_error").text($t({defaultMessage: "A stream needs to have a name"}));
+        $("#stream_name_error").text($t({defaultMessage: "Choose a name for the new channel."}));
         $("#stream_name_error").show();
     }
 
@@ -121,8 +127,8 @@ let stream_announce_previous_value;
 
 // Within the new stream modal...
 function update_announce_stream_state() {
-    // If there is no notifications_stream, we simply hide the widget.
-    if (stream_data.get_notifications_stream() === "") {
+    // If there is no new_stream_announcements_stream, we simply hide the widget.
+    if (stream_data.get_new_stream_announcements_stream() === "") {
         $("#announce-new-stream").hide();
         return;
     }
@@ -170,7 +176,7 @@ function create_stream() {
     // and paste over a description with newline characters in it. Prevent that.
     if (description.includes("\n")) {
         ui_report.client_error(
-            $t_html({defaultMessage: "The stream description cannot contain newline characters."}),
+            $t_html({defaultMessage: "The channel description cannot contain newline characters."}),
             $(".stream_create_info"),
         );
         return undefined;
@@ -238,12 +244,12 @@ function create_stream() {
     data.message_retention_days = JSON.stringify(message_retention_selection);
 
     let announce =
-        stream_data.get_notifications_stream() !== "" &&
+        stream_data.get_new_stream_announcements_stream() !== "" &&
         $("#announce-new-stream input").prop("checked");
 
     if (
-        stream_data.get_notifications_stream() === "" &&
-        stream_data.realm_has_notifications_stream() &&
+        stream_data.get_new_stream_announcements_stream() === "" &&
+        stream_data.realm_has_new_stream_announcements_stream() &&
         !invite_only
     ) {
         announce = true;
@@ -263,7 +269,7 @@ function create_stream() {
     data.can_remove_subscribers_group = can_remove_subscribers_group_id;
 
     loading.make_indicator($("#stream_creating_indicator"), {
-        text: $t({defaultMessage: "Creating stream..."}),
+        text: $t({defaultMessage: "Creating channel..."}),
     });
 
     // Subscribe yourself and possible other people to a new stream.
@@ -274,7 +280,7 @@ function create_stream() {
             $("#create_stream_name").val("");
             $("#create_stream_description").val("");
             ui_report.success(
-                $t_html({defaultMessage: "Stream successfully created!"}),
+                $t_html({defaultMessage: "Channel successfully created!"}),
                 $(".stream_create_info"),
             );
             loading.destroy_indicator($("#stream_creating_indicator"));
@@ -289,13 +295,13 @@ function create_stream() {
                 // parsing the error string, so it works correctly
                 // with i18n.  And likely we should be reporting the
                 // error text directly rather than turning it into
-                // "Error creating stream"?
-                stream_name_error.report_already_exists(stream_name);
+                // "Error creating channel"?
+                stream_name_error.report_already_exists();
                 stream_name_error.select();
             }
 
             ui_report.error(
-                $t_html({defaultMessage: "Error creating stream"}),
+                $t_html({defaultMessage: "Error creating channel"}),
                 xhr,
                 $(".stream_create_info"),
             );
@@ -338,7 +344,7 @@ export function show_new_stream_modal() {
 
     // The message retention setting is visible to owners only. The below block
     // sets the default state of setting if it is visible.
-    if (page_params.is_owner) {
+    if (current_user.is_owner) {
         $("#stream_creation_form .stream-message-retention-days-input").hide();
         $("#stream_creation_form select[name=stream_message_retention_setting]").val(
             "realm_default",
@@ -348,11 +354,11 @@ export function show_new_stream_modal() {
         // "realm_default" for realms on limited plans, so we disable the setting.
         $("#stream_creation_form select[name=stream_message_retention_setting]").prop(
             "disabled",
-            !page_params.zulip_plan_is_not_limited,
+            !realm.zulip_plan_is_not_limited,
         );
 
         // This listener is only needed if the dropdown setting is enabled.
-        if (page_params.zulip_plan_is_not_limited) {
+        if (realm.zulip_plan_is_not_limited) {
             // Add listener to .show stream-message-retention-days-input that we've hidden above
             $("#stream_creation_form .stream_message_retention_setting").on("change", (e) => {
                 if (e.target.value === "custom_period") {
@@ -415,14 +421,14 @@ export function set_up_handlers() {
             stream_subscription_error.report_no_subs_to_stream();
             return;
         }
-        if (!principals.includes(people.my_current_user_id()) && !page_params.is_admin) {
+        if (!principals.includes(people.my_current_user_id()) && !current_user.is_admin) {
             stream_subscription_error.cant_create_stream_without_subscribing();
             return;
         }
 
         if (principals.length >= 50) {
             const html_body = render_subscription_invites_warning_modal({
-                stream_name,
+                channel_name: stream_name,
                 count: principals.length,
             });
 
@@ -443,15 +449,6 @@ export function set_up_handlers() {
 
         // This is an inexpensive check.
         stream_name_error.pre_validate(stream_name);
-    });
-
-    tippy("#announce-stream-docs", {
-        content: () =>
-            parse_html(
-                render_announce_stream_docs({
-                    notifications_stream: stream_data.get_notifications_stream(),
-                }),
-            ),
     });
 
     // Do not allow the user to enter newline characters while typing out the

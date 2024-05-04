@@ -7,7 +7,7 @@ define zulip::sha256_tarball_to(
   String $install_to,
 ) {
   exec { $url:
-    command => "${::zulip_scripts_path}/setup/sha256-tarball-to ${sha256} ${url} ${install_from} ${install_to}",
+    command => "${facts['zulip_scripts_path']}/setup/sha256-tarball-to ${sha256} ${url} ${install_from} ${install_to}",
     creates => $install_to,
     timeout => 600,
   }

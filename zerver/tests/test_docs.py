@@ -240,7 +240,7 @@ class DocPageTest(ZulipTestCase):
     def test_dev_environment_endpoints(self) -> None:
         self._test("/devlogin/", ["Normal users"])
         self._test("/devtools/", ["Useful development URLs"])
-        self._test("/emails/", ["manually generate most of the emails by clicking"])
+        self._test("/emails/", ["Manually generate most emails"])
 
     def test_error_endpoints(self) -> None:
         self._test("/errors/404/", ["Page not found"])
@@ -257,7 +257,7 @@ class DocPageTest(ZulipTestCase):
         self._test("/hello/", ["your mission-critical communications with Zulip"])
         self._test("/communities/", ["Open communities directory"])
         self._test("/development-community/", ["Zulip development community"])
-        self._test("/features/", ["Beautiful messaging"])
+        self._test("/features/", ["Organized team chat solution"])
         self._test("/jobs/", ["Work with us"])
         self._test("/self-hosting/", ["Self-host Zulip"])
         self._test("/security/", ["TLS encryption"])
@@ -424,21 +424,21 @@ class HelpTest(ZulipTestCase):
         self.assertNotIn("/stats", str(result.content))
 
     def test_help_relative_links_for_stream(self) -> None:
-        result = self.client_get("/help/message-a-stream-by-email")
+        result = self.client_get("/help/message-a-channel-by-email")
         self.assertIn(
-            '<a href="/#streams/subscribed"><i class="zulip-icon zulip-icon-hash"></i> Stream settings</a>',
+            '<a href="/#channels/subscribed"><i class="zulip-icon zulip-icon-hash"></i> Channel settings</a>',
             str(result.content),
         )
         self.assertEqual(result.status_code, 200)
 
         with self.settings(ROOT_DOMAIN_LANDING_PAGE=True):
-            result = self.client_get("/help/message-a-stream-by-email", subdomain="")
+            result = self.client_get("/help/message-a-channel-by-email", subdomain="")
         self.assertEqual(result.status_code, 200)
         self.assertIn(
-            '<strong><i class="zulip-icon zulip-icon-hash"></i> Stream settings</strong>',
+            '<strong><i class="zulip-icon zulip-icon-hash"></i> Channel settings</strong>',
             str(result.content),
         )
-        self.assertNotIn("/#streams", str(result.content))
+        self.assertNotIn("/#channels", str(result.content))
 
 
 class IntegrationTest(ZulipTestCase):

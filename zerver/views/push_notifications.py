@@ -1,9 +1,9 @@
-import re
 from typing import Optional
 
 from django.conf import settings
 from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
+from django.urls import reverse
 from django.utils.translation import gettext as _
 
 from zerver.decorator import human_users_only, zulip_login_required
@@ -28,20 +28,10 @@ from zerver.lib.remote_server import (
     send_server_data_to_push_bouncer,
     send_to_push_bouncer,
 )
-from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
-from zerver.lib.typed_endpoint import typed_endpoint
-from zerver.lib.validator import check_string
+from zerver.lib.typed_endpoint import ApnsAppId, typed_endpoint
 from zerver.models import PushDeviceToken, UserProfile
-
-
-def check_app_id(var_name: str, val: object) -> str:
-    # Garbage values should be harmless, but we can be picky
-    # as insurance against bugs somewhere.
-    s = check_string(var_name, val)
-    if not re.fullmatch("[.a-zA-Z0-9-]+", s):
-        raise JsonableError(_("Invalid app ID"))
-    return s
+from zerver.views.errors import config_error
 
 
 def validate_token(token_str: str, kind: int) -> None:
@@ -56,12 +46,13 @@ def validate_token(token_str: str, kind: int) -> None:
 
 
 @human_users_only
-@has_request_variables
+@typed_endpoint
 def add_apns_device_token(
     request: HttpRequest,
     user_profile: UserProfile,
-    token: str = REQ(),
-    appid: str = REQ(str_validator=check_app_id),
+    *,
+    token: str,
+    appid: ApnsAppId,
 ) -> HttpResponse:
     validate_token(token, PushDeviceToken.APNS)
     add_push_device_token(user_profile, token, PushDeviceToken.APNS, ios_app_id=appid)
@@ -69,9 +60,9 @@ def add_apns_device_token(
 
 
 @human_users_only
-@has_request_variables
+@typed_endpoint
 def add_android_reg_id(
-    request: HttpRequest, user_profile: UserProfile, token: str = REQ()
+    request: HttpRequest, user_profile: UserProfile, *, token: str
 ) -> HttpResponse:
     validate_token(token, PushDeviceToken.GCM)
     add_push_device_token(user_profile, token, PushDeviceToken.GCM)
@@ -79,9 +70,9 @@ def add_android_reg_id(
 
 
 @human_users_only
-@has_request_variables
+@typed_endpoint
 def remove_apns_device_token(
-    request: HttpRequest, user_profile: UserProfile, token: str = REQ()
+    request: HttpRequest, user_profile: UserProfile, *, token: str
 ) -> HttpResponse:
     validate_token(token, PushDeviceToken.APNS)
     remove_push_device_token(user_profile, token, PushDeviceToken.APNS)
@@ -89,9 +80,9 @@ def remove_apns_device_token(
 
 
 @human_users_only
-@has_request_variables
+@typed_endpoint
 def remove_android_reg_id(
-    request: HttpRequest, user_profile: UserProfile, token: str = REQ()
+    request: HttpRequest, user_profile: UserProfile, *, token: str
 ) -> HttpResponse:
     validate_token(token, PushDeviceToken.GCM)
     remove_push_device_token(user_profile, token, PushDeviceToken.GCM)
@@ -99,9 +90,9 @@ def remove_android_reg_id(
 
 
 @human_users_only
-@has_request_variables
+@typed_endpoint
 def send_test_push_notification_api(
-    request: HttpRequest, user_profile: UserProfile, token: Optional[str] = REQ(default=None)
+    request: HttpRequest, user_profile: UserProfile, *, token: Optional[str] = None
 ) -> HttpResponse:
     # If a token is specified in the request, the test notification is supposed to be sent
     # to that device. If no token is provided, the test notification should be sent to
@@ -122,15 +113,19 @@ def send_test_push_notification_api(
 def self_hosting_auth_view_common(
     request: HttpRequest, user_profile: UserProfile, next_page: Optional[str] = None
 ) -> str:
-    if not uses_notification_bouncer():
-        raise ResourceNotFoundError(_("Server doesn't use the push notification service"))
-
-    if not user_profile.has_billing_access:  # nocoverage
+    if not user_profile.has_billing_access:
         # We may want to replace this with an html error page at some point,
         # but this endpoint shouldn't be accessible via the UI to an unauthorized
         # user_profile - and they need to directly enter the URL in their browser. So a json
         # error may be sufficient.
         raise OrganizationOwnerRequiredError
+
+    if not uses_notification_bouncer():
+        if settings.CORPORATE_ENABLED:
+            # This endpoint makes no sense on zulipchat.com, so just 404.
+            raise ResourceNotFoundError(_("Server doesn't use the push notification service"))
+        else:
+            return reverse(self_hosting_auth_not_configured)
 
     realm_info = get_realms_info_for_push_bouncer(user_profile.realm_id)[0]
 
@@ -210,3 +205,27 @@ def self_hosting_auth_json_endpoint(
     redirect_url = self_hosting_auth_view_common(request, user_profile, next_page)
 
     return json_success(request, data={"billing_access_url": redirect_url})
+
+
+@zulip_login_required
+def self_hosting_auth_not_configured(request: HttpRequest) -> HttpResponse:
+    # Use the same access model as the main endpoints for consistency
+    # and to not have to worry about this endpoint leaking some kind of
+    # sensitive configuration information in the future.
+    user = request.user
+    assert user.is_authenticated
+    assert isinstance(user, UserProfile)
+    if not user.has_billing_access:
+        raise OrganizationOwnerRequiredError
+
+    if settings.CORPORATE_ENABLED or uses_notification_bouncer():
+        # This error page should only be available if the config error
+        # is actually real.
+        return render(request, "404.html", status=404)
+
+    return config_error(
+        request,
+        "remote_billing_bouncer_not_configured",
+        go_back_to_url="/",
+        go_back_to_url_name="the app",
+    )

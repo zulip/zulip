@@ -1,7 +1,6 @@
 <tr>
-    <td>
-        <a data-user-id="{{user_id}}" class="view_user_profile" tabindex="0">{{full_name}}</a>
-        {{#if is_current_user}} <span class="my_user_status">{{t "(you)"}}</span>{{/if}}
+    <td class="panel_user_list">
+        {{> ../user_display_only_pill display_value=full_name}}
     </td>
     {{#if email}}
         <td class="subscriber-email">{{email}}</td>

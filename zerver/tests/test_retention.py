@@ -194,10 +194,10 @@ class ArchiveMessagesTestingBase(RetentionTestingBase):
         self.subscribe(user_profile, "Denmark")
         body = (
             "Some files here ..."
-            " [zulip.txt](http://{host}/user_uploads/{id}/31/4CBjtTLYZhk66pZrF8hnYGwc/zulip.txt)"
-            " http://{host}/user_uploads/{id}/31/4CBjtTLYZhk66pZrF8hnYGwc/temp_file.py.... Some"
-            " more.... http://{host}/user_uploads/{id}/31/4CBjtTLYZhk66pZrF8hnYGwc/abc.py"
-        ).format(id=realm_id, host=host)
+            f" [zulip.txt](http://{host}/user_uploads/{realm_id}/31/4CBjtTLYZhk66pZrF8hnYGwc/zulip.txt)"
+            f" http://{host}/user_uploads/{realm_id}/31/4CBjtTLYZhk66pZrF8hnYGwc/temp_file.py.... Some"
+            f" more.... http://{host}/user_uploads/{realm_id}/31/4CBjtTLYZhk66pZrF8hnYGwc/abc.py"
+        )
 
         expired_message_id = self.send_stream_message(user_profile, "Denmark", body)
         actual_message_id = self.send_stream_message(user_profile, "Denmark", body)
@@ -754,15 +754,13 @@ class MoveMessageToArchiveGeneral(MoveMessageToArchiveBase):
         self._create_attachments()
         realm_id = get_realm("zulip").id
         host = get_realm("zulip").host
-        body = """Some files here ...[zulip.txt](
-            http://{host}/user_uploads/{id}/31/4CBjtTLYZhk66pZrF8hnYGwc/zulip.txt)
-            http://{host}/user_uploads/{id}/31/4CBjtTLYZhk66pZrF8hnYGwc/temp_file.py ....
-            Some more.... http://{host}/user_uploads/{id}/31/4CBjtTLYZhk66pZrF8hnYGwc/abc.py ...
-            http://{host}/user_uploads/{id}/31/4CBjtTLYZhk66pZrF8hnYGwc/new.py ....
-            http://{host}/user_uploads/{id}/31/4CBjtTLYZhk66pZrF8hnYGwc/hello.txt ....
-        """.format(
-            id=realm_id, host=host
-        )
+        body = f"""Some files here ...[zulip.txt](
+            http://{host}/user_uploads/{realm_id}/31/4CBjtTLYZhk66pZrF8hnYGwc/zulip.txt)
+            http://{host}/user_uploads/{realm_id}/31/4CBjtTLYZhk66pZrF8hnYGwc/temp_file.py ....
+            Some more.... http://{host}/user_uploads/{realm_id}/31/4CBjtTLYZhk66pZrF8hnYGwc/abc.py ...
+            http://{host}/user_uploads/{realm_id}/31/4CBjtTLYZhk66pZrF8hnYGwc/new.py ....
+            http://{host}/user_uploads/{realm_id}/31/4CBjtTLYZhk66pZrF8hnYGwc/hello.txt ....
+        """
 
         msg_id = self.send_personal_message(self.sender, self.recipient, body)
         # Simulate a reply with the same contents.
@@ -815,15 +813,13 @@ class MoveMessageToArchiveGeneral(MoveMessageToArchiveBase):
         self._create_attachments()
         realm_id = get_realm("zulip").id
         host = get_realm("zulip").host
-        body = """Some files here ...[zulip.txt](
-            http://{host}/user_uploads/{id}/31/4CBjtTLYZhk66pZrF8hnYGwc/zulip.txt)
-            http://{host}/user_uploads/{id}/31/4CBjtTLYZhk66pZrF8hnYGwc/temp_file.py ....
-            Some more.... http://{host}/user_uploads/{id}/31/4CBjtTLYZhk66pZrF8hnYGwc/abc.py ...
-            http://{host}/user_uploads/{id}/31/4CBjtTLYZhk66pZrF8hnYGwc/new.py ....
-            http://{host}/user_uploads/{id}/31/4CBjtTLYZhk66pZrF8hnYGwc/hello.txt ....
-        """.format(
-            id=realm_id, host=host
-        )
+        body = f"""Some files here ...[zulip.txt](
+            http://{host}/user_uploads/{realm_id}/31/4CBjtTLYZhk66pZrF8hnYGwc/zulip.txt)
+            http://{host}/user_uploads/{realm_id}/31/4CBjtTLYZhk66pZrF8hnYGwc/temp_file.py ....
+            Some more.... http://{host}/user_uploads/{realm_id}/31/4CBjtTLYZhk66pZrF8hnYGwc/abc.py ...
+            http://{host}/user_uploads/{realm_id}/31/4CBjtTLYZhk66pZrF8hnYGwc/new.py ....
+            http://{host}/user_uploads/{realm_id}/31/4CBjtTLYZhk66pZrF8hnYGwc/hello.txt ....
+        """
 
         msg_id = self.send_personal_message(self.sender, self.recipient, body)
 
@@ -1142,7 +1138,7 @@ class TestDoDeleteMessages(ZulipTestCase):
         message_ids = [self.send_stream_message(cordelia, "Verona", str(i)) for i in range(10)]
         messages = Message.objects.filter(id__in=message_ids)
 
-        with self.assert_database_query_count(20):
+        with self.assert_database_query_count(21):
             do_delete_messages(realm, messages)
         self.assertFalse(Message.objects.filter(id__in=message_ids).exists())
 

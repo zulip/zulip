@@ -46,6 +46,7 @@ exports.test_streams = {
         invite_only: false,
         stream_id: 101,
         date_created: fake_now,
+        creator_id: null,
         first_message_id: 1,
         history_public_to_subscribers: false,
         is_announcement_only: false,
@@ -61,6 +62,7 @@ exports.test_streams = {
         invite_only: true,
         stream_id: 102,
         date_created: fake_then,
+        creator_id: null,
         first_message_id: 1,
         history_public_to_subscribers: false,
         is_web_public: false,
@@ -138,6 +140,7 @@ exports.fixtures = {
                 field_data: "",
                 order: 1,
                 display_in_profile_summary: false,
+                required: false,
             },
             {
                 id: 2,
@@ -147,6 +150,7 @@ exports.fixtures = {
                 field_data: "",
                 order: 2,
                 display_in_profile_summary: false,
+                required: false,
             },
         ],
     },
@@ -344,10 +348,10 @@ exports.fixtures = {
         value: "new_realm_name",
     },
 
-    realm__update__notifications_stream_id: {
+    realm__update__new_stream_announcements_stream_id: {
         type: "realm",
         op: "update",
-        property: "notifications_stream_id",
+        property: "new_stream_announcements_stream_id",
         value: 42,
     },
 
@@ -358,10 +362,10 @@ exports.fixtures = {
         value: 50,
     },
 
-    realm__update__signup_notifications_stream_id: {
+    realm__update__signup_announcements_stream_id: {
         type: "realm",
         op: "update",
-        property: "signup_notifications_stream_id",
+        property: "signup_announcements_stream_id",
         value: 41,
     },
 
@@ -370,6 +374,13 @@ exports.fixtures = {
         op: "update",
         property: "want_advertise_in_communities_directory",
         value: false,
+    },
+
+    realm__update__zulip_update_announcements_stream_id: {
+        type: "realm",
+        op: "update",
+        property: "zulip_update_announcements_stream_id",
+        value: 42,
     },
 
     realm__update_dict__default: {
@@ -382,7 +393,7 @@ exports.fixtures = {
             edit_topic_policy: 4,
             create_multiuse_invite_group: 3,
             authentication_methods: {
-                Google: true,
+                Google: {enabled: true, available: true},
             },
         },
     },
@@ -604,11 +615,10 @@ exports.fixtures = {
 
     restart: {
         type: "restart",
-        zulip_version: "4.0-dev+git",
-        zulip_merge_base: "",
-        zulip_feature_level: 55,
-        server_generation: 2,
-        immediate: true,
+        zulip_version: "9.0-dev-753-gced3e85da9",
+        zulip_merge_base: "9.0-dev-743-g54053c1d28",
+        zulip_feature_level: 237,
+        server_generation: 1707511515,
     },
 
     scheduled_messages__add: {
@@ -991,6 +1001,20 @@ exports.fixtures = {
         value: true,
     },
 
+    user_settings__receives_typing_notifications: {
+        type: "user_settings",
+        op: "update",
+        property: "receives_typing_notifications",
+        value: true,
+    },
+
+    user_settings__receives_typing_notifications_disabled: {
+        type: "user_settings",
+        op: "update",
+        property: "receives_typing_notifications",
+        value: false,
+    },
+
     user_settings__starred_message_counts: {
         type: "user_settings",
         op: "update",
@@ -1026,6 +1050,13 @@ exports.fixtures = {
         value: true,
     },
 
+    user_settings__web_font_size_px: {
+        type: "user_settings",
+        op: "update",
+        property: "web_font_size_px",
+        value: 16,
+    },
+
     user_settings__web_home_view_all_messages: {
         type: "user_settings",
         op: "update",
@@ -1045,6 +1076,13 @@ exports.fixtures = {
         op: "update",
         property: "web_home_view",
         value: "recent_topics",
+    },
+
+    user_settings__web_line_height_percent: {
+        type: "user_settings",
+        op: "update",
+        property: "web_line_height_percent",
+        value: 130,
     },
 
     user_settings__web_mark_read_on_scroll_policy: {
@@ -1083,5 +1121,10 @@ exports.fixtures = {
         topic_name: "js",
         last_updated: fake_now,
         visibility_policy: 1,
+    },
+
+    web_reload_client: {
+        type: "web_reload_client",
+        immediate: true,
     },
 };

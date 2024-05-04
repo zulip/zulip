@@ -17,6 +17,7 @@ const stream_data = zrequire("stream_data");
 const unread = zrequire("unread");
 // The main code we are testing lives here.
 const narrow_state = zrequire("narrow_state");
+const message_lists = zrequire("message_lists");
 
 const alice = {
     email: "alice@example.com",
@@ -29,11 +30,18 @@ people.add_active_user(alice);
 
 function set_filter(terms) {
     const filter = new Filter(terms);
-    narrow_state.set_current_filter(filter);
+    message_lists.set_current({
+        data: {
+            filter,
+        },
+    });
 }
 
 function assert_unread_info(expected) {
-    assert.deepEqual(narrow_state.get_first_unread_info(), expected);
+    assert.deepEqual(
+        narrow_state.get_first_unread_info(message_lists.current?.data.filter),
+        expected,
+    );
 }
 
 function candidate_ids() {
@@ -42,7 +50,7 @@ function candidate_ids() {
 
 run_test("get_unread_ids", () => {
     unread.declare_bankruptcy();
-    narrow_state.reset_current_filter();
+    message_lists.set_current(undefined);
 
     let unread_ids;
     let terms;
@@ -194,7 +202,7 @@ run_test("get_unread_ids", () => {
         flavor: "cannot_compute",
     });
 
-    narrow_state.reset_current_filter();
+    message_lists.set_current(undefined);
     blueslip.expect("error", "unexpected call to get_first_unread_info");
     assert_unread_info({
         flavor: "cannot_compute",

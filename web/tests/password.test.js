@@ -10,15 +10,15 @@ const {password_quality, password_warning} = zrequire("password_quality");
 function password_field(min_length, min_guesses) {
     const self = {};
 
-    self.data = (field) => {
-        switch (field) {
-            case "minLength":
+    self.attr = (name) => {
+        switch (name) {
+            case "data-min-length":
                 return min_length;
-            case "minGuesses":
+            case "data-min-guesses":
                 return min_guesses;
             /* istanbul ignore next */
             default:
-                throw new Error(`Unknown field ${field}`);
+                throw new Error(`Unknown attribute ${name}`);
         }
     };
 

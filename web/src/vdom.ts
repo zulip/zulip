@@ -1,3 +1,4 @@
+import $ from "jquery";
 import _ from "lodash";
 
 import * as blueslip from "./blueslip";
@@ -47,7 +48,7 @@ export function ul<T>(opts: Options<T>): Tag<T> {
     };
 }
 
-export function render_tag<T>(tag: Tag<T>): string | undefined {
+export function render_tag<T>(tag: Tag<T>): string {
     /*
         This renders a tag into a string.  It will
         automatically escape attributes, but it's your
@@ -65,11 +66,6 @@ export function render_tag<T>(tag: Tag<T>): string | undefined {
 
     const start_tag = "<" + tag_name + attr_str + ">";
     const end_tag = "</" + tag_name + ">";
-
-    if (opts.keyed_nodes === undefined) {
-        blueslip.error("We need keyed_nodes to render innards.");
-        return undefined;
-    }
 
     const innards = opts.keyed_nodes.map((node) => node.render()).join("\n");
     return start_tag + "\n" + innards + "\n" + end_tag;
@@ -97,7 +93,7 @@ export function update_attrs(
 }
 
 export function update<T>(
-    replace_content: (html: string | undefined) => void,
+    replace_content: (html: string) => void,
     find: () => JQuery,
     new_dom: Tag<T>,
     old_dom: Tag<T> | undefined,
@@ -207,7 +203,7 @@ export function update<T>(
             continue;
         }
         const rendered_dom = new_node.render();
-        $child_elems.eq(i).replaceWith(rendered_dom);
+        $child_elems.eq(i).replaceWith($(rendered_dom));
     }
 
     update_attrs(find(), new_opts.attrs, old_opts.attrs);

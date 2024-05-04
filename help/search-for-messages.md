@@ -6,6 +6,24 @@ top of the app. There is a convenient [**search filters reference**](#search-fil
 in the Zulip app that you can use whenever you need a reminder of the search
 filters below.
 
+## Search for messages
+
+{start_tabs}
+
+{tab|desktop-web}
+
+1. Click the **search** (<i class="search_icon zulip-icon
+   zulip-icon-search"></i>) icon in the top bar to open the search box.
+
+1. Type your query, and press <kbd>Enter</kbd>.
+
+!!! keyboard_tip ""
+
+    You can also use the <kbd>/</kbd> or <kbd>Ctrl</kbd> + <kbd>K</kbd>
+    keyboard shortcut to start searching messages.
+
+{end_tabs}
+
 ## Keyword search
 
 Zulip lets you search messages and topics by keyword. For example:
@@ -58,7 +76,7 @@ Zulip offers the following filters based on the location of the message.
 * `dm-including:Bo Lin`: Search all direct message conversations
   (1-on-1 and group) that include you and Bo, as well as any other users.
 * `streams:public`: Search the history of all [public
-  streams](/help/change-the-privacy-of-a-stream) in the organization, including
+  channels](/help/change-the-privacy-of-a-channel) in the organization, including
   streams you are not subscribed to; see details
   [below](#searching-shared-history).
 
@@ -122,7 +140,7 @@ the specified rule. For example:
 
 ## Searching shared history
 
-Zulip's [stream permissions](/help/stream-permissions) model allows access to
+Zulip's [channel permissions](/help/channel-permissions) model allows access to
 the full history of public streams and private streams with shared history,
 including messages sent before you joined the stream (or organization), or those
 sent to public streams you are not subscribed to.
@@ -164,5 +182,6 @@ A summary of the search filters above is available in the Zulip app.
 ## Related articles
 
 * [Configure multi-language search](/help/configure-multi-language-search)
+* [Search people](/help/user-list#search-people)
 * [Link to a message or
   conversation](/help/link-to-a-message-or-conversation#link-to-zulip-from-anywhere)

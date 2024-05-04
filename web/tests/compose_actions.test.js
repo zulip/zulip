@@ -2,12 +2,11 @@
 
 const {strict: assert} = require("assert");
 
-const {mock_stream_header_colorblock} = require("./lib/compose");
 const {mock_banners} = require("./lib/compose_banner");
 const {mock_esm, set_global, zrequire} = require("./lib/namespace");
 const {run_test, noop} = require("./lib/test");
 const $ = require("./lib/zjquery");
-const {page_params} = require("./lib/zpage_params");
+const {realm} = require("./lib/zpage_params");
 
 const settings_config = zrequire("settings_config");
 
@@ -45,6 +44,8 @@ mock_esm("../src/reload_state", {
 });
 mock_esm("../src/drafts", {
     update_draft: noop,
+    update_compose_draft_count: noop,
+    get_last_restorable_draft_based_on_compose_state: noop,
 });
 mock_esm("../src/unread_ops", {
     notify_server_message_read: noop,
@@ -63,7 +64,6 @@ mock_esm("../src/popovers", {
 
 const people = zrequire("people");
 
-const compose_setup = zrequire("compose_setup");
 const compose_state = zrequire("compose_state");
 const compose_actions = zrequire("compose_actions");
 const compose_reply = zrequire("compose_reply");
@@ -122,10 +122,13 @@ test("start", ({override, override_rewire, mock_template}) => {
     override_rewire(compose_recipient, "on_compose_select_recipient_update", noop);
     override_rewire(compose_recipient, "check_posting_policy_for_compose_box", noop);
     mock_template("inline_decorated_stream_name.hbs", false, noop);
-    mock_stream_header_colorblock();
 
     let compose_defaults;
     override(narrow_state, "set_compose_defaults", () => compose_defaults);
+    override(compose_ui, "insert_and_scroll_into_view", (content, $textarea, replace_all) => {
+        $textarea.val(content);
+        assert.ok(replace_all);
+    });
 
     // Start stream message
     compose_defaults = {
@@ -133,8 +136,10 @@ test("start", ({override, override_rewire, mock_template}) => {
         topic: "topic1",
     };
 
-    let opts = {};
-    start("stream", opts);
+    let opts = {
+        message_type: "stream",
+    };
+    start(opts);
 
     assert_visible("#compose_recipient_box");
     assert_hidden("#compose-direct-recipient");
@@ -157,8 +162,10 @@ test("start", ({override, override_rewire, mock_template}) => {
         trigger: "clear topic button",
     };
 
-    opts = {};
-    start("stream", opts);
+    opts = {
+        message_type: "stream",
+    };
+    start(opts);
     assert.equal(compose_state.stream_name(), "Denmark");
     assert.equal(compose_state.topic(), "");
 
@@ -166,8 +173,10 @@ test("start", ({override, override_rewire, mock_template}) => {
         trigger: "compose_hotkey",
     };
 
-    opts = {};
-    start("stream", opts);
+    opts = {
+        message_type: "stream",
+    };
+    start(opts);
     assert.equal(compose_state.stream_name(), "Denmark");
     assert.equal(compose_state.topic(), "");
 
@@ -181,8 +190,10 @@ test("start", ({override, override_rewire, mock_template}) => {
 
     compose_state.set_stream_id("");
     // More than 1 subscription, do not autofill
-    opts = {};
-    start("stream", opts);
+    opts = {
+        message_type: "stream",
+    };
+    start(opts);
     assert.equal(compose_state.stream_name(), "");
     assert.equal(compose_state.topic(), "");
     stream_data.clear_subscriptions();
@@ -193,10 +204,11 @@ test("start", ({override, override_rewire, mock_template}) => {
     };
 
     opts = {
+        message_type: "private",
         content: "hello",
     };
 
-    start("private", opts);
+    start(opts);
 
     assert_hidden("input#stream_message_recipient_topic");
     assert_visible("#compose-direct-recipient");
@@ -208,10 +220,11 @@ test("start", ({override, override_rewire, mock_template}) => {
 
     // Triggered by new direct message
     opts = {
+        message_type: "private",
         trigger: "new direct message",
     };
 
-    start("private", opts);
+    start(opts);
 
     assert.equal(compose_state.private_message_recipient(), "");
     assert.equal(compose_state.get_message_type(), "private");
@@ -224,11 +237,9 @@ test("start", ({override, override_rewire, mock_template}) => {
     };
 
     let abort_xhr_called = false;
-    override_rewire(compose_setup, "abort_xhr", () => {
+    compose_actions.register_compose_cancel_hook(() => {
         abort_xhr_called = true;
     });
-
-    compose_actions.register_compose_cancel_hook(compose_setup.abort_xhr);
     $("textarea#compose-textarea").set_height(50);
 
     assert_hidden("#compose_controls");
@@ -248,7 +259,6 @@ test("respond_to_message", ({override, override_rewire, mock_template}) => {
     override_rewire(compose_recipient, "check_posting_policy_for_compose_box", noop);
     override_private_message_recipient({override});
     mock_template("inline_decorated_stream_name.hbs", false, noop);
-    mock_stream_header_colorblock();
 
     // Test direct message
     const person = {
@@ -296,7 +306,6 @@ test("respond_to_message", ({override, override_rewire, mock_template}) => {
 
 test("reply_with_mention", ({override, override_rewire, mock_template}) => {
     mock_banners();
-    mock_stream_header_colorblock();
     compose_state.set_message_type("stream");
     override_rewire(compose_recipient, "on_compose_select_recipient_update", noop);
     override_rewire(compose_actions, "complete_starting_tasks", noop);
@@ -355,9 +364,9 @@ test("reply_with_mention", ({override, override_rewire, mock_template}) => {
 
 test("quote_and_reply", ({disallow, override, override_rewire}) => {
     override_rewire(compose_recipient, "on_compose_select_recipient_update", noop);
+    override_rewire(compose_reply, "selection_within_message_id", () => undefined);
 
     mock_banners();
-    mock_stream_header_colorblock();
     compose_state.set_message_type("stream");
     const steve = {
         user_id: 90,
@@ -535,7 +544,7 @@ test("on_narrow", ({override, override_rewire}) => {
         start_called = true;
     });
     narrowed_by_pm_reply = true;
-    page_params.realm_private_message_policy =
+    realm.realm_private_message_policy =
         settings_config.private_message_policy_values.disabled.code;
     compose_actions.on_narrow({
         force_close: false,
@@ -551,7 +560,7 @@ test("on_narrow", ({override, override_rewire}) => {
     });
     assert.ok(start_called);
 
-    page_params.realm_private_message_policy =
+    realm.realm_private_message_policy =
         settings_config.private_message_policy_values.by_anyone.code;
     compose_actions.on_narrow({
         force_close: false,

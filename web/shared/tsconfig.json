@@ -1,7 +1,7 @@
 {
     "compilerOptions": {
         /* Language and Environment */
-        "target": "es2019",
+        "target": "esnext",
 
         /* Modules */
         "rootDir": "src",

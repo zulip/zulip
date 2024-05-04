@@ -24,6 +24,9 @@ integration URL.
 1. _(optional)_ Select **Send all notifications to a single topic**, and
    enter the topic name.
 
+1. _(optional)_ Select **Filter events that will trigger notifications?**,
+   and select which supported events should trigger notifications.
+
 1. Click **Copy URL** to add the URL to your clipboard.
 
 !!! tip ""
@@ -50,13 +53,17 @@ integration URL.
 1. _(optional)_ Select **Send all notifications to a single topic**, and
    enter the topic name.
 
+1. _(optional)_ Select **Filter events that will trigger notifications?**,
+   and select which supported events should trigger notifications.
+
 1. Click **Copy URL** to add the URL to your clipboard.
 
 {end_tabs}
 
 ## Related articles
 
-* [Bots and integrations](/help/bots-and-integrations)
+* [Integrations overview](/help/integrations-overview)
+* [Bots overview](/help/bots-overview)
 * [Add a bot or integration](/help/add-a-bot-or-integration)
 * [View all bots in your organization](/help/view-all-bots-in-your-organization)
 * [Request an integration](/help/request-an-integration)

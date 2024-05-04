@@ -12,13 +12,13 @@
 
             <div class="organization-settings-parent">
                 <div class="input-group admin-realm">
-                    <label for="id_realm_name">{{t "Organization name" }}</label>
+                    <label for="id_realm_name" class="settings-field-label">{{t "Organization name" }}</label>
                     <input type="text" id="id_realm_name" name="realm_name" class="admin-realm-name setting-widget prop-element settings_text_input"
                       autocomplete="off" data-setting-widget-type="string"
                       value="{{ realm_name }}" maxlength="40" />
                 </div>
                 <div class="input-group admin-realm">
-                    <label for="realm_org_type" class="dropdown-title">{{t "Organization type" }}
+                    <label for="realm_org_type" class="settings-field-label">{{t "Organization type" }}
                         {{> ../help_link_widget link="/help/organization-type" }}
                     </label>
                     <select name="realm_org_type" class="setting-widget prop-element settings_select bootstrap-focus-style" id="id_realm_org_type" data-setting-widget-type="number">
@@ -33,7 +33,7 @@
                   label=admin_settings_label.realm_want_advertise_in_communities_directory
                   help_link="/help/communities-directory"}}
                 <div class="input-group admin-realm">
-                    <label for="realm_description">{{t "Organization description" }}</label>
+                    <label for="realm_description" class="settings-field-label">{{t "Organization description" }}</label>
                     <textarea id="id_realm_description" name="realm_description" class="admin-realm-description setting-widget prop-element settings_textarea"
                       maxlength="1000" data-setting-widget-type="string">{{ realm_description }}</textarea>
                 </div>

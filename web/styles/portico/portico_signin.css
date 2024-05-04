@@ -527,6 +527,7 @@ html {
         input[type="email"],
         input[type="password"],
         input[type="number"],
+        input[type="url"],
         textarea,
         select {
             padding: 10px 32px 10px 12px;
@@ -668,7 +669,7 @@ html {
     }
 }
 
-#new-user-email-address-visibility {
+.registration-form-hint {
     text-align: left;
     font-size: 0.8em;
     line-height: normal;
@@ -843,9 +844,8 @@ html {
 button.login-social-button {
     width: 328px;
     height: auto;
-    /* Using 44px gives us more space between text and icon so that they don't overlap. */
-    /* Tested in Russian language which has the maximum text. */
-    padding-left: 44px;
+    /* Using 16% gives us space between text and icon so that they don't overlap. */
+    padding-left: 16%;
     line-height: 1;
 
     background-size: auto 60%;
@@ -1457,4 +1457,15 @@ button#register_auth_button_gitlab {
     .account-creation .white-box {
         max-width: 800px;
     }
+}
+
+#registration #how-realm-creator-found-zulip label {
+    top: -5px;
+}
+
+#how-realm-creator-found-zulip-where-ad,
+#how-realm-creator-found-zulip-other,
+#how-realm-creator-found-zulip-which-organization {
+    margin-top: 5px;
+    display: none;
 }

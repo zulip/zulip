@@ -47,13 +47,13 @@ class Recipient(models.Model):
     # The type for stream messages.
     STREAM = 2
     # The type group direct messages.
-    HUDDLE = 3
+    DIRECT_MESSAGE_GROUP = 3
 
     class Meta:
         unique_together = ("type", "type_id")
 
     # N.B. If we used Django's choice=... we would get this for free (kinda)
-    _type_names = {PERSONAL: "personal", STREAM: "stream", HUDDLE: "huddle"}
+    _type_names = {PERSONAL: "personal", STREAM: "stream", DIRECT_MESSAGE_GROUP: "huddle"}
 
     @override
     def __str__(self) -> str:
@@ -75,7 +75,7 @@ class Recipient(models.Model):
 def get_huddle_user_ids(recipient: Recipient) -> ValuesQuerySet["Subscription", int]:
     from zerver.models import Subscription
 
-    assert recipient.type == Recipient.HUDDLE
+    assert recipient.type == Recipient.DIRECT_MESSAGE_GROUP
 
     return (
         Subscription.objects.filter(
@@ -150,7 +150,9 @@ def get_or_create_huddle(id_list: List[int]) -> Huddle:
     with transaction.atomic():
         (huddle, created) = Huddle.objects.get_or_create(huddle_hash=huddle_hash)
         if created:
-            recipient = Recipient.objects.create(type_id=huddle.id, type=Recipient.HUDDLE)
+            recipient = Recipient.objects.create(
+                type_id=huddle.id, type=Recipient.DIRECT_MESSAGE_GROUP
+            )
             huddle.recipient = recipient
             huddle.save(update_fields=["recipient"])
             subs_to_create = [

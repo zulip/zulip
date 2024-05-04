@@ -4,6 +4,7 @@ import twitter_sheet from "emoji-datasource-twitter/img/twitter/sheets-256/64.pn
 
 import octopus_url from "../../static/generated/emoji/images-google-64/1f419.png";
 
+import * as blueslip from "./blueslip";
 import {user_settings} from "./user_settings";
 
 import google_blob_css from "!style-loader?injectType=lazyStyleTag!css-loader!../generated/emoji-styles/google-blob-sprite.css";
@@ -27,6 +28,56 @@ emojisets.set("text", emojisets.get("google")!);
 
 let current_emojiset: EmojiSet | undefined;
 
+async function fetch_emojiset(name: string, url: string): Promise<void> {
+    const MAX_RETRIES = 3;
+    const RETRY_DELAY = 10000; // 10 seconds
+
+    for (let attempt = 1; attempt <= MAX_RETRIES; attempt += 1) {
+        try {
+            const response = await fetch(url);
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            // If the fetch is successful, resolve the promise and return
+            return;
+        } catch (error) {
+            if (!navigator.onLine) {
+                // If the user is offline, retry once they are online.
+                await new Promise<void>((resolve) => {
+                    // We don't want to throw an error here since this is clearly something wrong with user's network.
+                    blueslip.warn(
+                        `Failed to load emojiset ${name} from ${url}. Retrying when online.`,
+                    );
+                    window.addEventListener(
+                        "online",
+                        () => {
+                            resolve();
+                        },
+                        {once: true},
+                    );
+                });
+            } else {
+                blueslip.warn(
+                    `Failed to load emojiset ${name} from ${url}. Attempt ${attempt} of ${MAX_RETRIES}.`,
+                );
+
+                // If this was the last attempt, rethrow the error
+                if (attempt === MAX_RETRIES) {
+                    blueslip.error(
+                        `Failed to load emojiset ${name} from ${url} after ${MAX_RETRIES} attempts.`,
+                    );
+                    throw error;
+                }
+
+                // Wait before the next attempt
+                await new Promise((resolve) => setTimeout(resolve, RETRY_DELAY));
+            }
+        }
+    }
+}
+
 export async function select(name: string): Promise<void> {
     const new_emojiset = emojisets.get(name);
     if (new_emojiset === current_emojiset) {
@@ -37,17 +88,8 @@ export async function select(name: string): Promise<void> {
         throw new Error("Unknown emojiset " + name);
     }
 
-    await new Promise((resolve, reject) => {
-        const sheet = new Image();
-        sheet.addEventListener("load", resolve);
-        sheet.addEventListener("error", () => {
-            // Unfortunately, the "event" we get doesn't have any
-            // useful information on it, as it's not the window-level
-            // error handler.
-            reject(new Error("Failed to load emojiset " + name + " from " + sheet.src));
-        });
-        sheet.src = new_emojiset.sheet;
-    });
+    await fetch_emojiset(name, new_emojiset.sheet);
+
     if (current_emojiset) {
         current_emojiset.css.unuse();
     }

@@ -10,7 +10,7 @@ import {buddy_list} from "./buddy_list";
 import * as compose_state from "./compose_state";
 import * as message_live_update from "./message_live_update";
 import * as narrow_state from "./narrow_state";
-import {page_params} from "./page_params";
+import * as navbar_alerts from "./navbar_alerts";
 import * as people from "./people";
 import * as pm_list from "./pm_list";
 import * as settings from "./settings";
@@ -22,6 +22,7 @@ import * as settings_profile_fields from "./settings_profile_fields";
 import * as settings_realm_user_settings_defaults from "./settings_realm_user_settings_defaults";
 import * as settings_streams from "./settings_streams";
 import * as settings_users from "./settings_users";
+import {current_user, realm} from "./state_data";
 import * as stream_events from "./stream_events";
 
 export const update_person = function update(person) {
@@ -40,7 +41,7 @@ export const update_person = function update(person) {
         compose_state.update_email(user_id, new_email);
 
         if (people.is_my_user_id(person.user_id)) {
-            page_params.email = new_email;
+            current_user.email = new_email;
         }
 
         people.update_email(user_id, new_email);
@@ -51,7 +52,7 @@ export const update_person = function update(person) {
         person_obj.delivery_email = delivery_email;
         if (people.is_my_user_id(person.user_id)) {
             settings_account.update_email(delivery_email);
-            page_params.delivery_email = delivery_email;
+            current_user.delivery_email = delivery_email;
             settings_account.hide_confirm_email_banner();
         }
     }
@@ -64,7 +65,7 @@ export const update_person = function update(person) {
         message_live_update.update_user_full_name(person.user_id, person.full_name);
         pm_list.update_private_messages();
         if (people.is_my_user_id(person.user_id)) {
-            page_params.full_name = person.full_name;
+            current_user.full_name = person.full_name;
             settings_account.update_full_name(person.full_name);
         }
     }
@@ -78,14 +79,14 @@ export const update_person = function update(person) {
         person_obj.is_moderator = person.role === settings_config.user_role_values.moderator.code;
         settings_users.update_user_data(person.user_id, person);
 
-        if (people.is_my_user_id(person.user_id) && page_params.is_owner !== person_obj.is_owner) {
-            page_params.is_owner = person_obj.is_owner;
+        if (people.is_my_user_id(person.user_id) && current_user.is_owner !== person_obj.is_owner) {
+            current_user.is_owner = person_obj.is_owner;
             settings_org.maybe_disable_widgets();
             settings.update_lock_icon_in_sidebar();
         }
 
-        if (people.is_my_user_id(person.user_id) && page_params.is_admin !== person_obj.is_admin) {
-            page_params.is_admin = person_obj.is_admin;
+        if (people.is_my_user_id(person.user_id) && current_user.is_admin !== person_obj.is_admin) {
+            current_user.is_admin = person_obj.is_admin;
             settings_linkifiers.maybe_disable_widgets();
             settings_org.maybe_disable_widgets();
             settings_profile_fields.maybe_disable_widgets();
@@ -97,16 +98,16 @@ export const update_person = function update(person) {
 
         if (
             people.is_my_user_id(person.user_id) &&
-            page_params.is_moderator !== person_obj.is_moderator
+            current_user.is_moderator !== person_obj.is_moderator
         ) {
-            page_params.is_moderator = person_obj.is_moderator;
+            current_user.is_moderator = person_obj.is_moderator;
         }
     }
 
     if (Object.hasOwn(person, "is_billing_admin")) {
         person_obj.is_billing_admin = person.is_billing_admin;
         if (people.is_my_user_id(person.user_id)) {
-            page_params.is_billing_admin = person_obj.is_billing_admin;
+            current_user.is_billing_admin = person_obj.is_billing_admin;
         }
     }
 
@@ -116,9 +117,9 @@ export const update_person = function update(person) {
         person_obj.avatar_version = person.avatar_version;
 
         if (people.is_my_user_id(person.user_id)) {
-            page_params.avatar_source = person.avatar_source;
-            page_params.avatar_url = url;
-            page_params.avatar_url_medium = person.avatar_url_medium;
+            current_user.avatar_source = person.avatar_source;
+            current_user.avatar_url = url;
+            current_user.avatar_url_medium = person.avatar_url_medium;
             $("#user-avatar-upload-widget .image-block").attr("src", person.avatar_url_medium);
             $("#personal-menu .header-button-avatar").attr("src", `${person.avatar_url_medium}`);
         }
@@ -128,6 +129,33 @@ export const update_person = function update(person) {
 
     if (Object.hasOwn(person, "custom_profile_field")) {
         people.set_custom_profile_field_data(person.user_id, person.custom_profile_field);
+        if (person.user_id === people.my_current_user_id()) {
+            navbar_alerts.maybe_show_empty_required_profile_fields_alert();
+
+            const field_id = person.custom_profile_field.id;
+            const field_value = people.get_custom_profile_data(person.user_id, field_id)?.value;
+            const is_field_required = realm.custom_profile_fields?.find(
+                (f) => field_id === f.id,
+            )?.required;
+            if (is_field_required) {
+                const $custom_user_field = $(
+                    `.profile-settings-form .custom_user_field[data-field-id="${CSS.escape(field_id)}"]`,
+                );
+                const $field = $custom_user_field.find(".settings-profile-user-field");
+                const $required_symbol = $custom_user_field.find(".required-symbol");
+                if (!field_value) {
+                    if (!$field.hasClass("empty-required-field")) {
+                        $field.addClass("empty-required-field");
+                        $required_symbol.removeClass("hidden");
+                    }
+                } else {
+                    if ($field.hasClass("empty-required-field")) {
+                        $field.removeClass("empty-required-field");
+                        $required_symbol.addClass("hidden");
+                    }
+                }
+            }
+        }
     }
 
     if (Object.hasOwn(person, "timezone")) {
@@ -148,7 +176,7 @@ export const update_person = function update(person) {
             buddy_list.maybe_remove_user_id({user_id: person.user_id});
         }
         settings_account.maybe_update_deactivate_account_button();
-        if (people.user_is_bot(person.user_id)) {
+        if (people.is_valid_bot_user(person.user_id)) {
             settings_users.update_bot_data(person.user_id);
         }
     }

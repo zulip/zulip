@@ -40,7 +40,7 @@ class ScheduledMessageTest(ZulipTestCase):
         self.login("hamlet")
 
         topic_name = ""
-        if msg_type == "stream":
+        if msg_type in ["stream", "channel"]:
             topic_name = "Test topic"
 
         payload = {
@@ -61,7 +61,7 @@ class ScheduledMessageTest(ZulipTestCase):
 
         # Scheduling a message to a stream you are subscribed is successful.
         result = self.do_schedule_message(
-            "stream", verona_stream_id, content + " 1", scheduled_delivery_timestamp
+            "channel", verona_stream_id, content + " 1", scheduled_delivery_timestamp
         )
         scheduled_message = self.last_scheduled_message()
         self.assert_json_success(result)
@@ -99,7 +99,7 @@ class ScheduledMessageTest(ZulipTestCase):
         scheduled_delivery_timestamp = int(scheduled_delivery_datetime.timestamp())
         verona_stream_id = self.get_stream_id("Verona")
         result = self.do_schedule_message(
-            "stream", verona_stream_id, content + " 1", scheduled_delivery_timestamp
+            "channel", verona_stream_id, content + " 1", scheduled_delivery_timestamp
         )
         self.assert_json_success(result)
 
@@ -420,7 +420,7 @@ class ScheduledMessageTest(ZulipTestCase):
         scheduled_delivery_timestamp = int(time.time() - 86400)
 
         result = self.do_schedule_message(
-            "stream", verona_stream_id, content + " 1", scheduled_delivery_timestamp
+            "channel", verona_stream_id, content + " 1", scheduled_delivery_timestamp
         )
         self.assert_json_error(result, "Scheduled delivery time must be in the future.")
 
@@ -431,7 +431,7 @@ class ScheduledMessageTest(ZulipTestCase):
 
         # Scheduling a message to a stream you are subscribed is successful.
         result = self.do_schedule_message(
-            "stream", verona_stream_id, content, scheduled_delivery_timestamp
+            "channel", verona_stream_id, content, scheduled_delivery_timestamp
         )
         scheduled_message = self.last_scheduled_message()
         self.assert_json_success(result)
@@ -444,6 +444,26 @@ class ScheduledMessageTest(ZulipTestCase):
         )
         scheduled_message_id = scheduled_message.id
         payload: Dict[str, Any]
+
+        # Edit message with other stream message type ("stream") and no other changes
+        # results in no changes to the scheduled message.
+        payload = {
+            "type": "stream",
+            "to": orjson.dumps(verona_stream_id).decode(),
+            "topic": "Test topic",
+        }
+        result = self.client_patch(f"/json/scheduled_messages/{scheduled_message_id}", payload)
+        self.assert_json_success(result)
+
+        scheduled_message = self.get_scheduled_message(str(scheduled_message_id))
+        self.assertEqual(scheduled_message.recipient.type, Recipient.STREAM)
+        self.assertEqual(scheduled_message.stream_id, verona_stream_id)
+        self.assertEqual(scheduled_message.content, "Original test message")
+        self.assertEqual(scheduled_message.topic_name(), "Test topic")
+        self.assertEqual(
+            scheduled_message.scheduled_timestamp,
+            timestamp_to_datetime(scheduled_delivery_timestamp),
+        )
 
         # Sending request with only scheduled message ID returns an error
         result = self.client_patch(f"/json/scheduled_messages/{scheduled_message_id}")
@@ -480,17 +500,17 @@ class ScheduledMessageTest(ZulipTestCase):
 
         # Trying to edit `type` to stream message type without a `topic` returns an error
         payload = {
-            "type": "stream",
+            "type": "channel",
             "to": orjson.dumps(verona_stream_id).decode(),
         }
         result = self.client_patch(f"/json/scheduled_messages/{scheduled_message_id}", payload)
         self.assert_json_error(
-            result, "Topic required when updating scheduled message type to stream."
+            result, "Topic required when updating scheduled message type to channel."
         )
 
         # Edit message `type` to stream with valid `to` and `topic` succeeds
         payload = {
-            "type": "stream",
+            "type": "channel",
             "to": orjson.dumps(verona_stream_id).decode(),
             "topic": "New test topic",
         }
@@ -568,7 +588,7 @@ class ScheduledMessageTest(ZulipTestCase):
         verona_stream_id = self.get_stream_id("Verona")
         content = "Test message"
         scheduled_delivery_timestamp = int(time.time() + 86400)
-        self.do_schedule_message("stream", verona_stream_id, content, scheduled_delivery_timestamp)
+        self.do_schedule_message("channel", verona_stream_id, content, scheduled_delivery_timestamp)
 
         # Single scheduled message
         result = self.client_get("/json/scheduled_messages")
@@ -611,7 +631,7 @@ class ScheduledMessageTest(ZulipTestCase):
         verona_stream_id = self.get_stream_id("Verona")
         scheduled_delivery_timestamp = int(time.time() + 86400)
 
-        self.do_schedule_message("stream", verona_stream_id, content, scheduled_delivery_timestamp)
+        self.do_schedule_message("channel", verona_stream_id, content, scheduled_delivery_timestamp)
         scheduled_message = self.last_scheduled_message()
         self.logout()
 
@@ -636,20 +656,20 @@ class ScheduledMessageTest(ZulipTestCase):
         attachment_file1 = StringIO("zulip!")
         attachment_file1.name = "dummy_1.txt"
         result = self.client_post("/json/user_uploads", {"file": attachment_file1})
-        path_id1 = re.sub("/user_uploads/", "", result.json()["uri"])
+        path_id1 = re.sub(r"/user_uploads/", "", result.json()["uri"])
         attachment_object1 = Attachment.objects.get(path_id=path_id1)
 
         attachment_file2 = StringIO("zulip!")
         attachment_file2.name = "dummy_1.txt"
         result = self.client_post("/json/user_uploads", {"file": attachment_file2})
-        path_id2 = re.sub("/user_uploads/", "", result.json()["uri"])
+        path_id2 = re.sub(r"/user_uploads/", "", result.json()["uri"])
         attachment_object2 = Attachment.objects.get(path_id=path_id2)
 
         content = f"Test [zulip.txt](http://{hamlet.realm.host}/user_uploads/{path_id1})"
         scheduled_delivery_timestamp = int(time.time() + 86400)
 
         # Test sending with attachment
-        self.do_schedule_message("stream", verona_stream_id, content, scheduled_delivery_timestamp)
+        self.do_schedule_message("channel", verona_stream_id, content, scheduled_delivery_timestamp)
         scheduled_message = self.last_scheduled_message()
         self.assertEqual(
             list(attachment_object1.scheduled_messages.all().values_list("id", flat=True)),

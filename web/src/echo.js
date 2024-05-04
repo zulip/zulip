@@ -5,19 +5,18 @@ import {all_messages_data} from "./all_messages_data";
 import * as blueslip from "./blueslip";
 import * as compose_notifications from "./compose_notifications";
 import * as compose_ui from "./compose_ui";
-import * as drafts from "./drafts";
 import * as local_message from "./local_message";
 import * as markdown from "./markdown";
 import * as message_lists from "./message_lists";
 import * as message_live_update from "./message_live_update";
 import * as message_store from "./message_store";
 import * as narrow_state from "./narrow_state";
-import {page_params} from "./page_params";
 import * as people from "./people";
 import * as pm_list from "./pm_list";
 import * as recent_view_data from "./recent_view_data";
 import * as rows from "./rows";
 import * as sent_messages from "./sent_messages";
+import {current_user} from "./state_data";
 import * as stream_data from "./stream_data";
 import * as stream_list from "./stream_list";
 import * as stream_topic_history from "./stream_topic_history";
@@ -54,6 +53,7 @@ function hide_retry_spinner($row) {
 function show_message_failed(message_id, failed_msg) {
     // Failed to send message, so display inline retry/cancel
     message_live_update.update_message_in_all_views(message_id, ($row) => {
+        $row.find(".slow-send-spinner").addClass("hidden");
         const $failed_div = $row.find(".message_failed");
         $failed_div.toggleClass("hide", false);
         $failed_div.find(".failed_text").attr("title", failed_msg);
@@ -79,9 +79,6 @@ function resend_message(message, $row, {on_send_message_success, send_message}) 
         return;
     }
 
-    // Always re-set queue_id if we've gotten a new one
-    // since the time when the message object was initially created
-    message.queue_id = page_params.queue_id;
     message.resend = true;
 
     function on_success(data) {
@@ -174,22 +171,29 @@ export function insert_local_message(message_request, local_id_float, insert_new
     // Shallow clone of message request object that is turned into something suitable
     // for zulip.js:add_message
     // Keep this in sync with changes to compose.create_message_object
-    const message = {...message_request};
+    let message = {...message_request};
 
     message.raw_content = message.content;
 
     // NOTE: This will parse synchronously. We're not using the async pipeline
-    markdown.apply_markdown(message);
+    message = {
+        ...message,
+        ...markdown.render(message.raw_content),
+    };
 
     message.content_type = "text/html";
     message.sender_email = people.my_current_email();
     message.sender_full_name = people.my_full_name();
-    message.avatar_url = page_params.avatar_url;
+    message.avatar_url = current_user.avatar_url;
     message.timestamp = Date.now() / 1000;
     message.local_id = local_id_float.toString();
     message.locally_echoed = true;
     message.id = local_id_float;
-    markdown.add_topic_links(message);
+    if (message.topic === undefined) {
+        message.topic_links = [];
+    } else {
+        message.topic_links = markdown.get_topic_links(message.topic);
+    }
 
     waiting_for_id.set(message.local_id, message);
     waiting_for_ack.set(message.local_id, message);
@@ -206,11 +210,15 @@ export function is_slash_command(content) {
 }
 
 export function try_deliver_locally(message_request, insert_new_messages) {
+    if (message_lists.current === undefined) {
+        return undefined;
+    }
+
     if (markdown.contains_backend_only_syntax(message_request.content)) {
         return undefined;
     }
 
-    if (narrow_state.active() && !narrow_state.filter().can_apply_locally(true)) {
+    if (narrow_state.filter() !== undefined && !narrow_state.filter().can_apply_locally(true)) {
         return undefined;
     }
 
@@ -237,14 +245,6 @@ export function try_deliver_locally(message_request, insert_new_messages) {
         // This can happen for legit reasons.
         return undefined;
     }
-
-    // Save a locally echoed message in drafts, so it cannot be
-    // lost. It will be cleared if the message is sent successfully.
-    // We ask the drafts system to not notify the user or update the
-    // draft count, since that would be quite distracting in the very
-    // common case that the message sends normally.
-    const draft_id = drafts.update_draft({no_notify: true, update_count: false});
-    message_request.draft_id = draft_id;
 
     // Now that we've committed to delivering the message locally, we
     // shrink the compose-box if it is in the full-screen state. This
@@ -315,7 +315,10 @@ export function edit_locally(message, request) {
             // all flags, so we need to restore those flags that are
             // properties of how the user has interacted with the
             // message, and not its rendering.
-            markdown.apply_markdown(message);
+            const {content, flags, is_me_message} = markdown.render(message.raw_content);
+            message.content = content;
+            message.flags = flags;
+            message.is_me_message = is_me_message;
             if (request.starred !== undefined) {
                 message.starred = request.starred;
             }
@@ -336,6 +339,7 @@ export function edit_locally(message, request) {
     }
     stream_list.update_streams_sidebar();
     pm_list.update_private_messages();
+    return message;
 }
 
 export function reify_message_id(local_id, server_id) {
@@ -351,11 +355,6 @@ export function reify_message_id(local_id, server_id) {
 
     message.id = server_id;
     message.locally_echoed = false;
-
-    if (message.draft_id) {
-        // Delete the draft if message was locally echoed
-        drafts.draft_model.deleteDraft(message.draft_id);
-    }
 
     const opts = {old_id: Number.parseFloat(local_id), new_id: server_id};
 
@@ -389,7 +388,6 @@ export function process_from_server(messages) {
             // the "main" codepath that doesn't have to id reconciliation.
             // We simply return non-echo messages to our caller.
             non_echo_messages.push(message);
-            sent_messages.report_event_received(local_id);
             continue;
         }
 
@@ -448,23 +446,26 @@ export function _patch_waiting_for_ack(data) {
 
 export function message_send_error(message_id, error_response) {
     // Error sending message, show inline
-    message_store.get(message_id).failed_request = true;
+    const message = message_store.get(message_id);
+    message.failed_request = true;
+    message.show_slow_send_spinner = false;
+
     show_message_failed(message_id, error_response);
 }
 
 function abort_message(message) {
     // Remove in all lists in which it exists
     all_messages_data.remove([message.id]);
-    for (const msg_list of [message_lists.home, message_lists.current]) {
+    for (const msg_list of message_lists.all_rendered_message_lists()) {
         msg_list.remove_and_rerender([message.id]);
     }
 }
 
 export function display_slow_send_loading_spinner(message) {
-    const message_list_id = message_lists.current.id;
-    const $row = $(`#message-row-${message_list_id}-${CSS.escape(message.id)}`);
+    const $rows = message_lists.all_rendered_row_for_message_id(message.id);
     if (message.locally_echoed && !message.failed_request) {
-        $row.find(".slow-send-spinner").removeClass("hidden");
+        message.show_slow_send_spinner = true;
+        $rows.find(".slow-send-spinner").removeClass("hidden");
         // We don't need to do anything special to ensure this gets
         // cleaned up if the message is delivered, because the
         // message's HTML gets replaced once the message is

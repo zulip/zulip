@@ -55,13 +55,6 @@ class zulip::profile::postgresql {
   }
 
   if $replication_primary != undef and $replication_user != undef {
-    if $s3_backups_bucket == '' {
-      $message = @(EOT/L)
-          Replication is enabled, but s3_backups_bucket is not set in zulip-secrets.conf!  \
-          Streaming replication requires wal-g backups be configured.
-          |-EOT
-      warning($message)
-    }
     # The presence of a standby.signal file triggers replication
     file { "${zulip::postgresql_base::postgresql_datadir}/standby.signal":
       ensure  => file,
@@ -71,11 +64,19 @@ class zulip::profile::postgresql {
       mode    => '0644',
       content => '',
     }
-    }
+  }
 
-    exec { $zulip::postgresql_base::postgresql_restart:
-      require     => Package[$zulip::postgresql_base::postgresql],
-      refreshonly => true,
-      subscribe   => [ File[$postgresql_conf_file] ],
-    }
+  $backups_s3_bucket = zulipsecret('secrets', 's3_backups_bucket', '')
+  $backups_directory = zulipconf('postgresql', 'backups_directory', '')
+  if $backups_s3_bucket != '' or $backups_directory != '' {
+    $require = [File['/usr/local/bin/env-wal-g'], Package[$zulip::postgresql_base::postgresql]]
+  } else {
+    $require = [Package[$zulip::postgresql_base::postgresql]]
+  }
+  exec { $zulip::postgresql_base::postgresql_restart:
+    require     => $require,
+    refreshonly => true,
+    subscribe   => [ File[$postgresql_conf_file] ],
+    onlyif      => "test -d ${zulip::postgresql_base::postgresql_datadir}",
+  }
 }

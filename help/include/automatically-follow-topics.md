@@ -19,7 +19,7 @@ You can automatically follow topics where you are personally
 - You will automatically follow topics where you are personally mentioned, but
   group mentions and wildcard mentions (**@all**, **@topic**, etc.) will not
   affect topic status.
-- You will automatically follow topics in [muted streams](/help/mute-a-stream)
+- You will automatically follow topics in [muted channels](/help/mute-a-channel)
   when you are mentioned.
 - Mentions will *not* cause you to automatically follow topics you have
   explicitly [muted](/help/mute-a-topic).

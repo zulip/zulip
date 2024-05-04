@@ -13,6 +13,7 @@ TOPIC_ORGANIZATION = "baxterandthehackers organization"
 TOPIC_BRANCH = "public-repo / changes"
 TOPIC_WIKI = "public-repo / wiki pages"
 TOPIC_DISCUSSION = "testing-gh discussion #20: Lets discuss"
+TOPIC_SPONSORS = "sponsors"
 
 
 class GitHubWebhookTest(WebhookTestCase):
@@ -591,3 +592,59 @@ A temporary team so that I can get some webhook fixtures!
     def test_discussion_comment_edited_msg(self) -> None:
         expected_message = "sbansal1999 edited a [comment](https://github.com/sbansal1999/testing-gh/discussions/20#discussioncomment-6332416) on [discussion #20](https://github.com/sbansal1999/testing-gh/discussions/20):\n\n~~~ quote\nsome random comment edited\n~~~"
         self.check_webhook("discussion_comment__edited", TOPIC_DISCUSSION, expected_message)
+
+
+class GitHubSponsorsHookTests(WebhookTestCase):
+    STREAM_NAME = "github"
+    URL_TEMPLATE = "/api/v1/external/githubsponsors?stream={stream}&api_key={api_key}"
+    WEBHOOK_DIR_NAME = "github"
+
+    def test_cancelled_message(self) -> None:
+        expected_message = "monalisa cancelled their $5 a month subscription."
+        self.check_webhook(
+            "cancelled",
+            TOPIC_SPONSORS,
+            expected_message,
+        )
+
+    def test_created_message(self) -> None:
+        expected_message = "monalisa subscribed for $5 a month."
+        self.check_webhook(
+            "created",
+            TOPIC_SPONSORS,
+            expected_message,
+        )
+
+    def test_pending_cancellation_message(self) -> None:
+        expected_message = (
+            "monalisa's $5 a month subscription will be cancelled on January 05, 2020."
+        )
+        self.check_webhook(
+            "pending_cancellation",
+            TOPIC_SPONSORS,
+            expected_message,
+        )
+
+    def test_pending_tier_change_message(self) -> None:
+        expected_message = "monalisa's subscription will change from $10 a month to $5 a month on December 30, 2019."
+        self.check_webhook(
+            "pending_tier_change",
+            TOPIC_SPONSORS,
+            expected_message,
+        )
+
+    def test_tier_changed_message(self) -> None:
+        expected_message = "monalisa changed their subscription from $10 a month to $5 a month."
+        self.check_webhook(
+            "tier_changed",
+            TOPIC_SPONSORS,
+            expected_message,
+        )
+
+    def test_edited_message(self) -> None:
+        expected_message = "monalisa changed who can see their sponsorship from public to private."
+        self.check_webhook(
+            "edited",
+            TOPIC_SPONSORS,
+            expected_message,
+        )

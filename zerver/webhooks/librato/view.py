@@ -164,9 +164,7 @@ def api_librato_webhook(
     request: HttpRequest,
     user_profile: UserProfile,
     *,
-    payload: Json[
-        Mapping[str, Any]
-    ] = {},  # noqa: B006 # Mapping is indeed immutable, but Json's type annotation drops that information
+    payload: Json[Mapping[str, Any]] = {},  # noqa: B006 # Mapping is indeed immutable, but Json's type annotation drops that information
 ) -> HttpResponse:
     try:
         attachments = orjson.loads(request.body).get("attachments", [])

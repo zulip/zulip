@@ -18,7 +18,9 @@ from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
 from django.utils.translation import gettext as err_
 from django.views.decorators.csrf import csrf_exempt
-from pydantic import BaseModel, ConfigDict, Json
+from pydantic import BaseModel, ConfigDict, Json, StringConstraints
+from pydantic.functional_validators import AfterValidator
+from typing_extensions import Annotated
 
 from analytics.lib.counts import (
     BOUNCER_ONLY_REMOTE_COUNT_STAT_PROPERTIES,
@@ -27,14 +29,19 @@ from analytics.lib.counts import (
     do_increment_logging_stat,
 )
 from corporate.lib.stripe import (
+    BILLING_SUPPORT_EMAIL,
     RemoteRealmBillingSession,
     RemoteServerBillingSession,
     do_deactivate_remote_server,
     get_push_status_for_remote_request,
 )
-from corporate.models import CustomerPlan, get_current_plan_by_customer
+from corporate.models import (
+    CustomerPlan,
+    get_current_plan_by_customer,
+    get_customer_by_remote_realm,
+)
 from zerver.decorator import require_post
-from zerver.lib.email_validation import validate_disposable
+from zerver.lib.email_validation import validate_is_not_disposable
 from zerver.lib.exceptions import (
     ErrorCode,
     JsonableError,
@@ -48,20 +55,27 @@ from zerver.lib.push_notifications import (
     send_apple_push_notification,
     send_test_push_notification_directly_to_devices,
 )
+from zerver.lib.queue import queue_json_publish
 from zerver.lib.remote_server import (
     InstallationCountDataForAnalytics,
     RealmAuditLogDataForAnalytics,
     RealmCountDataForAnalytics,
     RealmDataForAnalytics,
 )
-from zerver.lib.request import REQ, RequestNotes, has_request_variables
+from zerver.lib.request import RequestNotes, has_request_variables
 from zerver.lib.response import json_success
+from zerver.lib.send_email import FromAddress
 from zerver.lib.timestamp import timestamp_to_datetime
-from zerver.lib.typed_endpoint import JsonBodyPayload, typed_endpoint
+from zerver.lib.typed_endpoint import (
+    ApnsAppId,
+    JsonBodyPayload,
+    RequiredStringConstraint,
+    typed_endpoint,
+)
+from zerver.lib.typed_endpoint_validators import check_string_fixed_length
 from zerver.lib.types import RemoteRealmDictValue
-from zerver.lib.validator import check_capped_string, check_int, check_string_fixed_length
 from zerver.models.realms import DisposableEmailError
-from zerver.views.push_notifications import check_app_id, validate_token
+from zerver.views.push_notifications import validate_token
 from zilencer.auth import InvalidZulipServerKeyError
 from zilencer.models import (
     RemoteInstallationCount,
@@ -109,20 +123,29 @@ def deactivate_remote_server(
 
 @csrf_exempt
 @require_post
-@has_request_variables
+@typed_endpoint
 def register_remote_server(
     request: HttpRequest,
-    zulip_org_id: str = REQ(str_validator=check_string_fixed_length(RemoteZulipServer.UUID_LENGTH)),
-    zulip_org_key: str = REQ(
-        str_validator=check_string_fixed_length(RemoteZulipServer.API_KEY_LENGTH)
-    ),
-    hostname: str = REQ(str_validator=check_capped_string(RemoteZulipServer.HOSTNAME_MAX_LENGTH)),
-    contact_email: str = REQ(),
-    new_org_key: Optional[str] = REQ(
-        str_validator=check_string_fixed_length(RemoteZulipServer.API_KEY_LENGTH), default=None
-    ),
+    *,
+    zulip_org_id: Annotated[
+        str,
+        RequiredStringConstraint,
+        AfterValidator(lambda s: check_string_fixed_length(s, RemoteZulipServer.UUID_LENGTH)),
+    ],
+    zulip_org_key: Annotated[
+        str,
+        RequiredStringConstraint,
+        AfterValidator(lambda s: check_string_fixed_length(s, RemoteZulipServer.API_KEY_LENGTH)),
+    ],
+    hostname: Annotated[str, StringConstraints(max_length=RemoteZulipServer.HOSTNAME_MAX_LENGTH)],
+    contact_email: str,
+    new_org_key: Annotated[
+        Optional[str],
+        RequiredStringConstraint,
+        AfterValidator(lambda s: check_string_fixed_length(s, RemoteZulipServer.API_KEY_LENGTH)),
+    ] = None,
 ) -> HttpResponse:
-    # REQ validated the the field lengths, but we still need to
+    # StringConstraints validated the the field lengths, but we still need to
     # validate the format of these fields.
     try:
         # TODO: Ideally we'd not abuse the URL validator this way
@@ -138,7 +161,7 @@ def register_remote_server(
 
     # We don't want to allow disposable domains for contact_email either
     try:
-        validate_disposable(contact_email)
+        validate_is_not_disposable(contact_email)
     except DisposableEmailError:
         raise JsonableError(_("Please use your real email address."))
 
@@ -211,16 +234,17 @@ def register_remote_server(
     return json_success(request, data={"created": created})
 
 
-@has_request_variables
+@typed_endpoint
 def register_remote_push_device(
     request: HttpRequest,
     server: RemoteZulipServer,
-    user_id: Optional[int] = REQ(json_validator=check_int, default=None),
-    user_uuid: Optional[str] = REQ(default=None),
-    realm_uuid: Optional[str] = REQ(default=None),
-    token: str = REQ(),
-    token_kind: int = REQ(json_validator=check_int),
-    ios_app_id: Optional[str] = REQ(str_validator=check_app_id, default=None),
+    *,
+    user_id: Optional[Json[int]] = None,
+    user_uuid: Optional[str] = None,
+    realm_uuid: Optional[str] = None,
+    token: Annotated[str, RequiredStringConstraint],
+    token_kind: Json[int],
+    ios_app_id: Optional[ApnsAppId] = None,
 ) -> HttpResponse:
     validate_bouncer_token_request(token, token_kind)
     if token_kind == RemotePushDeviceToken.APNS and ios_app_id is None:
@@ -253,9 +277,9 @@ def register_remote_push_device(
             remote_realm.last_request_datetime = timezone_now()
             remote_realm.save(update_fields=["last_request_datetime"])
 
-    try:
-        with transaction.atomic():
-            RemotePushDeviceToken.objects.create(
+    RemotePushDeviceToken.objects.bulk_create(
+        [
+            RemotePushDeviceToken(
                 server=server,
                 kind=token_kind,
                 token=token,
@@ -263,22 +287,24 @@ def register_remote_push_device(
                 # last_updated is to be renamed to date_created.
                 last_updated=timezone_now(),
                 **kwargs,
-            )
-    except IntegrityError:
-        pass
+            ),
+        ],
+        ignore_conflicts=True,
+    )
 
     return json_success(request)
 
 
-@has_request_variables
+@typed_endpoint
 def unregister_remote_push_device(
     request: HttpRequest,
     server: RemoteZulipServer,
-    token: str = REQ(),
-    token_kind: int = REQ(json_validator=check_int),
-    user_id: Optional[int] = REQ(json_validator=check_int, default=None),
-    user_uuid: Optional[str] = REQ(default=None),
-    realm_uuid: Optional[str] = REQ(default=None),
+    *,
+    token: Annotated[str, RequiredStringConstraint],
+    token_kind: Json[int],
+    user_id: Optional[Json[int]] = None,
+    user_uuid: Optional[str] = None,
+    realm_uuid: Optional[str] = None,
 ) -> HttpResponse:
     validate_bouncer_token_request(token, token_kind)
     user_identity = UserPushIdentityCompat(user_id=user_id, user_uuid=user_uuid)
@@ -294,13 +320,14 @@ def unregister_remote_push_device(
     return json_success(request)
 
 
-@has_request_variables
+@typed_endpoint
 def unregister_all_remote_push_devices(
     request: HttpRequest,
     server: RemoteZulipServer,
-    user_id: Optional[int] = REQ(json_validator=check_int, default=None),
-    user_uuid: Optional[str] = REQ(default=None),
-    realm_uuid: Optional[str] = REQ(default=None),
+    *,
+    user_id: Optional[Json[int]] = None,
+    user_uuid: Optional[str] = None,
+    realm_uuid: Optional[str] = None,
 ) -> HttpResponse:
     user_identity = UserPushIdentityCompat(user_id=user_id, user_uuid=user_uuid)
 
@@ -472,21 +499,44 @@ class OldZulipServerError(JsonableError):
         self._msg: str = msg
 
 
-@has_request_variables
+class PushNotificationsDisallowedError(JsonableError):
+    code = ErrorCode.PUSH_NOTIFICATIONS_DISALLOWED
+
+    def __init__(self, reason: str) -> None:
+        msg = _(
+            "Your plan doesn't allow sending push notifications. Reason provided by the server: {reason}"
+        ).format(reason=reason)
+        super().__init__(msg)
+
+
+class RemoteServerNotificationPayload(BaseModel):
+    user_id: Optional[int] = None
+    user_uuid: Optional[str] = None
+    realm_uuid: Optional[str] = None
+    gcm_payload: Dict[str, Any] = {}
+    apns_payload: Dict[str, Any] = {}
+    gcm_options: Dict[str, Any] = {}
+
+    android_devices: List[str] = []
+    apple_devices: List[str] = []
+
+
+@typed_endpoint
 def remote_server_notify_push(
     request: HttpRequest,
     server: RemoteZulipServer,
-    payload: Dict[str, Any] = REQ(argument_type="body"),
+    *,
+    payload: JsonBodyPayload[RemoteServerNotificationPayload],
 ) -> HttpResponse:
-    user_id = payload.get("user_id")
-    user_uuid = payload.get("user_uuid")
+    user_id = payload.user_id
+    user_uuid = payload.user_uuid
     user_identity = UserPushIdentityCompat(user_id, user_uuid)
 
-    gcm_payload = payload["gcm_payload"]
-    apns_payload = payload["apns_payload"]
-    gcm_options = payload.get("gcm_options", {})
+    gcm_payload = payload.gcm_payload
+    apns_payload = payload.apns_payload
+    gcm_options = payload.gcm_options
 
-    realm_uuid = payload.get("realm_uuid")
+    realm_uuid = payload.realm_uuid
     remote_realm = None
     if realm_uuid is not None:
         assert isinstance(
@@ -502,7 +552,8 @@ def remote_server_notify_push(
         if server.last_api_feature_level is None:
             raise OldZulipServerError(_("Your plan doesn't allow sending push notifications."))
         else:
-            raise JsonableError(_("Your plan doesn't allow sending push notifications."))
+            reason = push_status.message
+            raise PushNotificationsDisallowedError(reason=reason)
 
     android_devices = list(
         RemotePushDeviceToken.objects.filter(
@@ -635,8 +686,8 @@ def remote_server_notify_push(
     deleted_devices = get_deleted_devices(
         user_identity,
         server,
-        android_devices=payload.get("android_devices", []),
-        apple_devices=payload.get("apple_devices", []),
+        android_devices=payload.android_devices,
+        apple_devices=payload.apple_devices,
     )
 
     return json_success(
@@ -727,7 +778,7 @@ def batch_create_table_data(
     row_objects: List[ModelT],
 ) -> None:
     # We ignore previously-existing data, in case it was truncated and
-    # re-created on the remote server.  `ignore_concflicts=True`
+    # re-created on the remote server.  `ignore_conflicts=True`
     # cannot return the ids, or count thereof, of the new inserts,
     # (see https://code.djangoproject.com/ticket/0138) so we rely on
     # having a lock to accurately count them before and after.  This
@@ -764,12 +815,12 @@ def ensure_devices_set_remote_realm(
 def update_remote_realm_data_for_server(
     server: RemoteZulipServer, server_realms_info: List[RealmDataForAnalytics]
 ) -> None:
-    uuids = [realm.uuid for realm in server_realms_info]
+    reported_uuids = [realm.uuid for realm in server_realms_info]
     all_registered_remote_realms_for_server = list(RemoteRealm.objects.filter(server=server))
     already_registered_remote_realms = [
         remote_realm
         for remote_realm in all_registered_remote_realms_for_server
-        if remote_realm.uuid in uuids
+        if remote_realm.uuid in reported_uuids
     ]
     # RemoteRealm registrations that we have for this server, but aren't
     # present in the data sent to us. We assume this to mean the server
@@ -777,7 +828,7 @@ def update_remote_realm_data_for_server(
     remote_realms_missing_from_server_data = [
         remote_realm
         for remote_realm in all_registered_remote_realms_for_server
-        if remote_realm.uuid not in uuids
+        if remote_realm.uuid not in reported_uuids
     ]
 
     already_registered_uuids = {
@@ -814,10 +865,6 @@ def update_remote_realm_data_for_server(
     # Update RemoteRealm entries, for which the corresponding realm's info has changed
     # (for the attributes that make sense to sync like this).
     for remote_realm in already_registered_remote_realms:
-        # TODO: We'll also want to check if .realm_locally_deleted is True, and if so,
-        # toggle it off (and potentially restore registration_deactivated=True too),
-        # since the server is now sending us data for this realm again.
-
         modified = False
         realm = uuid_to_realm_dict[str(remote_realm.uuid)]
         for remote_realm_attr, realm_dict_key in [
@@ -852,6 +899,20 @@ def update_remote_realm_data_for_server(
             )
             modified = True
 
+        if remote_realm.realm_locally_deleted and remote_realm.uuid in reported_uuids:
+            remote_realm.realm_locally_deleted = False
+            remote_realm_audit_logs.append(
+                RemoteRealmAuditLog(
+                    server=server,
+                    remote_id=None,
+                    remote_realm=remote_realm,
+                    realm_id=uuid_to_realm_dict[str(remote_realm.uuid)].id,
+                    event_type=RemoteRealmAuditLog.REMOTE_REALM_LOCALLY_DELETED_RESTORED,
+                    event_time=now,
+                )
+            )
+            modified = True
+
         if modified:
             remote_realms_to_update.append(remote_realm)
 
@@ -864,12 +925,14 @@ def update_remote_realm_data_for_server(
             "authentication_methods",
             "org_type",
             "is_system_bot_realm",
+            "realm_locally_deleted",
         ],
     )
     RemoteRealmAuditLog.objects.bulk_create(remote_realm_audit_logs)
 
     remote_realms_to_update = []
     remote_realm_audit_logs = []
+    new_locally_deleted_remote_realms_on_paid_plan_contexts = []
     for remote_realm in remote_realms_missing_from_server_data:
         if not remote_realm.realm_locally_deleted:
             # Otherwise we already knew about this, so nothing to do.
@@ -891,11 +954,29 @@ def update_remote_realm_data_for_server(
             )
             remote_realms_to_update.append(remote_realm)
 
+            billing_session = RemoteRealmBillingSession(remote_realm=remote_realm)
+            if billing_session.on_paid_plan():
+                context = {
+                    "billing_entity": billing_session.billing_entity_display_name,
+                    "support_url": billing_session.support_url(),
+                    "notice_reason": "locally_deleted_realm_on_paid_plan",
+                }
+                new_locally_deleted_remote_realms_on_paid_plan_contexts.append(context)
+
     RemoteRealm.objects.bulk_update(
         remote_realms_to_update,
-        ["realm_locally_deleted", "registration_deactivated"],
+        ["realm_locally_deleted"],
     )
     RemoteRealmAuditLog.objects.bulk_create(remote_realm_audit_logs)
+
+    email_dict: Dict[str, Any] = {
+        "template_prefix": "zerver/emails/internal_billing_notice",
+        "to_emails": [BILLING_SUPPORT_EMAIL],
+        "from_address": FromAddress.tokenized_no_reply_address(),
+    }
+    for context in new_locally_deleted_remote_realms_on_paid_plan_contexts:
+        email_dict["context"] = context
+        queue_json_publish("email_senders", email_dict)
 
 
 def get_human_user_realm_uuids(
@@ -904,6 +985,7 @@ def get_human_user_realm_uuids(
     query = RemoteRealm.objects.filter(
         server=server,
         realm_deactivated=False,
+        realm_locally_deleted=False,
         registration_deactivated=False,
         is_system_bot_realm=False,
     ).exclude(
@@ -918,7 +1000,7 @@ def get_human_user_realm_uuids(
 
 
 @transaction.atomic
-def handle_customer_migration_from_server_to_realms(
+def handle_customer_migration_from_server_to_realm(
     server: RemoteZulipServer,
 ) -> None:
     server_billing_session = RemoteServerBillingSession(server)
@@ -950,69 +1032,87 @@ def handle_customer_migration_from_server_to_realms(
     event_time = timezone_now()
     remote_realm_audit_logs = []
 
-    if (
-        server_plan.tier == CustomerPlan.TIER_SELF_HOSTED_LEGACY
-        and server_plan.status == CustomerPlan.ACTIVE
-    ):
-        assert server.plan_type == RemoteZulipServer.PLAN_TYPE_SELF_MANAGED_LEGACY
-        assert server_plan.end_date is not None
-        remote_realms = RemoteRealm.objects.filter(
-            uuid__in=realm_uuids, server=server, plan_type=RemoteRealm.PLAN_TYPE_SELF_MANAGED
-        )
+    if len(realm_uuids) != 1:
+        return
 
-        # Verify that all the realms are on self hosted plan.
-        assert remote_realms.count() == len(realm_uuids)
+    # Here, we have exactly one non-system-bot realm, and some
+    # sort of plan on the server; move it to the realm.
+    remote_realm = RemoteRealm.objects.get(uuid=realm_uuids[0], server=server)
+    remote_realm_customer = get_customer_by_remote_realm(remote_realm)
 
-        # End existing plan for server.
-        server_plan.status = CustomerPlan.ENDED
-        server_plan.save(update_fields=["status"])
-
-        server.plan_type = RemoteZulipServer.PLAN_TYPE_SELF_MANAGED
-        server.save(update_fields=["plan_type"])
-
-        # Create new legacy plan for each remote realm.
-        for remote_realm in remote_realms:
-            RemoteRealmBillingSession(remote_realm).migrate_customer_to_legacy_plan(
-                server_plan.billing_cycle_anchor, server_plan.end_date
-            )
-            remote_realm_audit_logs.append(
-                RemoteRealmAuditLog(
-                    server=server,
-                    remote_realm=remote_realm,
-                    event_type=RemoteRealmAuditLog.REMOTE_PLAN_TRANSFERRED_SERVER_TO_REALM,
-                    event_time=event_time,
-                    # No extra_data since there was no real change in any RemoteRealm attribute.
-                )
-            )
-
-    elif len(realm_uuids) == 1:
-        # Here, we have exactly one non-system-bot realm, and some
-        # sort of plan on the server; move it to the realm.
-        remote_realm = RemoteRealm.objects.get(
-            uuid=realm_uuids[0], plan_type=RemoteRealm.PLAN_TYPE_SELF_MANAGED
-        )
-        # Migrate customer from server to remote realm if there is only one realm.
+    # Migrate customer from server to remote realm if there is only one realm.
+    if remote_realm_customer is None:
+        # In this case the migration is easy, since we can just move the customer
+        # object directly.
         server_customer.remote_realm = remote_realm
         server_customer.remote_server = None
         server_customer.save(update_fields=["remote_realm", "remote_server"])
-        # TODO: Might be better to call do_change_plan_type here.
-        remote_realm.plan_type = server.plan_type
-        remote_realm.save(update_fields=["plan_type"])
-        server.plan_type = RemoteZulipServer.PLAN_TYPE_SELF_MANAGED
-        server.save(update_fields=["plan_type"])
-        remote_realm_audit_logs.append(
-            RemoteRealmAuditLog(
-                server=server,
-                remote_realm=remote_realm,
-                event_type=RemoteRealmAuditLog.REMOTE_PLAN_TRANSFERRED_SERVER_TO_REALM,
-                event_time=event_time,
-                extra_data={
-                    "attr_name": "plan_type",
-                    "old_value": RemoteRealm.PLAN_TYPE_SELF_MANAGED,
-                    "new_value": remote_realm.plan_type,
-                },
+    else:
+        # If there's a Customer object for the realm already, things are harder,
+        # because it's an unusual state and there may be a plan already active
+        # for the realm, or there may have been.
+        # In the simplest case, where the realm doesn't have an active plan and the
+        # server's plan state can easily be moved, we proceed with the migrations.
+        remote_realm_plan = get_current_plan_by_customer(remote_realm_customer)
+        if (
+            remote_realm_plan is None
+            and server_plan.status != CustomerPlan.SWITCH_PLAN_TIER_AT_PLAN_END
+            and remote_realm_customer.stripe_customer_id is None
+        ):
+            # This is a simple case where we don't have to worry about the realm
+            # having an active plan or an already configured stripe_customer_id,
+            # or the server having a next plan scheduled that we'd need
+            # to figure out how to migrate correctly as well.
+            # Any other case is too complex to handle here, and should be handled manually,
+            # especially since that should be extremely rare.
+            server_plan.customer = remote_realm_customer
+            server_plan.save(update_fields=["customer"])
+
+            # The realm's customer does not have .stripe_customer_id set by assumption.
+            # This situation happens e.g. if the Customer was created by a sponsorship request,
+            # so we need to move the value over from the server.
+            # That's because the plan we're transferring might be paid or a free trial and
+            # therefore need a stripe_customer_id to generate invoices.
+            # Hypothetically if the server's customer didn't have a stripe_customer_id set,
+            # that would imply the plan doesn't require it (e.g. this might be a Community plan)
+            # so we don't have to worry about whether we're copying over a valid value or None here.
+            stripe_customer_id = server_customer.stripe_customer_id
+            server_customer.stripe_customer_id = None
+            server_customer.save(update_fields=["stripe_customer_id"])
+
+            remote_realm_customer.stripe_customer_id = stripe_customer_id
+            remote_realm_customer.save(update_fields=["stripe_customer_id"])
+        else:
+            logger.warning(
+                "Failed to migrate customer from server (id: %s) to realm (id: %s): RemoteRealm customer already exists "
+                "and plans can't be migrated automatically.",
+                server.id,
+                remote_realm.id,
             )
+            raise JsonableError(
+                _(
+                    "Couldn't reconcile billing data between server and realm. Please contact {support_email}"
+                ).format(support_email=FromAddress.SUPPORT)
+            )
+
+    # TODO: Might be better to call do_change_plan_type here.
+    remote_realm.plan_type = server.plan_type
+    remote_realm.save(update_fields=["plan_type"])
+    server.plan_type = RemoteZulipServer.PLAN_TYPE_SELF_MANAGED
+    server.save(update_fields=["plan_type"])
+    remote_realm_audit_logs.append(
+        RemoteRealmAuditLog(
+            server=server,
+            remote_realm=remote_realm,
+            event_type=RemoteRealmAuditLog.REMOTE_PLAN_TRANSFERRED_SERVER_TO_REALM,
+            event_time=event_time,
+            extra_data={
+                "attr_name": "plan_type",
+                "old_value": RemoteRealm.PLAN_TYPE_SELF_MANAGED,
+                "new_value": remote_realm.plan_type,
+            },
         )
+    )
 
     RemoteRealmAuditLog.objects.bulk_create(remote_realm_audit_logs)
 

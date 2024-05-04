@@ -1,5 +1,6 @@
 import $ from "jquery";
 import _ from "lodash";
+import assert from "minimalistic-assert";
 
 import generated_emoji_codes from "../../static/generated/emoji/emoji_codes.json";
 import * as fenced_code from "../shared/src/fenced_code";
@@ -13,6 +14,7 @@ import * as activity from "./activity";
 import * as activity_ui from "./activity_ui";
 import * as add_stream_options_popover from "./add_stream_options_popover";
 import * as alert_words from "./alert_words";
+import {all_messages_data} from "./all_messages_data";
 import * as audible_notifications from "./audible_notifications";
 import * as blueslip from "./blueslip";
 import * as bot_data from "./bot_data";
@@ -26,6 +28,7 @@ import * as compose_pm_pill from "./compose_pm_pill";
 import * as compose_popovers from "./compose_popovers";
 import * as compose_recipient from "./compose_recipient";
 import * as compose_reply from "./compose_reply";
+import * as compose_send_menu_popover from "./compose_send_menu_popover";
 import * as compose_setup from "./compose_setup";
 import * as compose_textarea from "./compose_textarea";
 import * as compose_tooltips from "./compose_tooltips";
@@ -48,18 +51,19 @@ import * as hotkey from "./hotkey";
 import * as hotspots from "./hotspots";
 import * as i18n from "./i18n";
 import * as inbox_ui from "./inbox_ui";
+import * as information_density from "./information_density";
 import * as invite from "./invite";
 import * as left_sidebar_navigation_area from "./left_sidebar_navigation_area";
 import * as left_sidebar_navigation_area_popovers from "./left_sidebar_navigation_area_popovers";
 import * as lightbox from "./lightbox";
 import * as linkifiers from "./linkifiers";
+import * as local_message from "./local_message";
 import {localstorage} from "./localstorage";
 import * as markdown from "./markdown";
 import * as markdown_config from "./markdown_config";
 import * as message_actions_popover from "./message_actions_popover";
 import * as message_edit_history from "./message_edit_history";
 import * as message_fetch from "./message_fetch";
-import * as message_list from "./message_list";
 import * as message_list_hover from "./message_list_hover";
 import * as message_list_tooltips from "./message_list_tooltips";
 import * as message_lists from "./message_lists";
@@ -95,11 +99,11 @@ import * as reload_setup from "./reload_setup";
 import * as resize_handler from "./resize_handler";
 import * as scheduled_messages from "./scheduled_messages";
 import * as scheduled_messages_overlay_ui from "./scheduled_messages_overlay_ui";
-import * as scheduled_messages_popover from "./scheduled_messages_popover";
 import * as scheduled_messages_ui from "./scheduled_messages_ui";
 import * as scroll_bar from "./scroll_bar";
 import * as scroll_util from "./scroll_util";
 import * as search from "./search";
+import * as sentry from "./sentry";
 import * as server_events from "./server_events";
 import * as settings from "./settings";
 import * as settings_data from "./settings_data";
@@ -113,6 +117,7 @@ import * as sidebar_ui from "./sidebar_ui";
 import * as spoilers from "./spoilers";
 import * as starred_messages from "./starred_messages";
 import * as starred_messages_ui from "./starred_messages_ui";
+import {current_user, realm, set_current_user, set_realm, state_data_schema} from "./state_data";
 import * as stream_data from "./stream_data";
 import * as stream_edit from "./stream_edit";
 import * as stream_edit_subscribers from "./stream_edit_subscribers";
@@ -161,7 +166,7 @@ function initialize_bottom_whitespace() {
 function initialize_navbar() {
     const rendered_navbar = render_navbar({
         embedded: page_params.narrow_stream !== undefined,
-        user_avatar: page_params.avatar_url_medium,
+        user_avatar: current_user.avatar_url_medium,
     });
 
     $("#header-container").html(rendered_navbar);
@@ -169,13 +174,16 @@ function initialize_navbar() {
 
 function initialize_compose_box() {
     $("#compose-container").append(
-        render_compose({
-            embedded: $("#compose").attr("data-embedded") === "",
-            file_upload_enabled: page_params.max_file_upload_size_mib > 0,
-            giphy_enabled: giphy.is_giphy_enabled(),
-            max_stream_name_length: page_params.max_stream_name_length,
-            max_topic_length: page_params.max_topic_length,
-        }),
+        $(
+            render_compose({
+                embedded: $("#compose").attr("data-embedded") === "",
+                file_upload_enabled: realm.max_file_upload_size_mib > 0,
+                giphy_enabled: giphy.is_giphy_enabled(),
+                max_stream_name_length: realm.max_stream_name_length,
+                max_topic_length: realm.max_topic_length,
+                max_message_length: realm.max_message_length,
+            }),
+        ),
     );
     $(`.enter_sends_${user_settings.enter_sends}`).show();
     common.adjust_mac_kbd_tags(".open_enter_sends_dialog kbd");
@@ -190,16 +198,22 @@ export function initialize_kitchen_sink_stuff() {
     //      This function is a historical dumping ground
     //      for lots of miscellaneous setup.  Almost all of
     //      the code here can probably be moved to more
-    //      specific-purpose modules like message_viewport.js.
+    //      specific-purpose modules like message_viewport.ts.
 
     const throttled_mousewheelhandler = _.throttle((_e, delta) => {
+        if (!narrow_state.is_message_feed_visible()) {
+            // Since this function is called with a delay, it's
+            // possible that message list was hidden before we reached here.
+            return;
+        }
+
         // Most of the mouse wheel's work will be handled by the
         // scroll handler, but when we're at the top or bottom of the
         // page, the pointer may still need to move.
 
-        if (delta < 0 && message_viewport.at_top()) {
+        if (delta < 0 && message_viewport.at_rendered_top()) {
             navigate.up();
-        } else if (delta > 0 && message_viewport.at_bottom()) {
+        } else if (delta > 0 && message_viewport.at_rendered_bottom()) {
             navigate.down();
         }
 
@@ -265,10 +279,17 @@ export function initialize_kitchen_sink_stuff() {
     }
 
     if (!user_settings.dense_mode) {
-        $("body").addClass("less_dense_mode");
+        $("body").addClass("less-dense-mode");
     } else {
-        $("body").addClass("more_dense_mode");
+        $("body").addClass("more-dense-mode");
     }
+
+    // To keep the specificity same for the CSS related to hiding the
+    // sidebars, we add the class to the body which is then later replaced
+    // by the class to hide right / left sidebar. We can take our time to do
+    // this since we are still showing the loading indicator screen and
+    // the rendered sidebars hasn't been displayed to the user yet.
+    $("body").addClass("default-sidebar-behaviour");
 
     $(window).on("blur", () => {
         $(document.body).addClass("window_blurred");
@@ -279,9 +300,10 @@ export function initialize_kitchen_sink_stuff() {
     });
 
     $(document).on("message_selected.zulip", (event) => {
-        if (message_lists.current !== event.msg_list) {
+        if (message_lists.current === undefined || message_lists.current !== event.msg_list) {
             return;
         }
+
         if (event.id === -1) {
             // If the message list is empty, don't do anything
             return;
@@ -327,11 +349,11 @@ export function initialize_kitchen_sink_stuff() {
         }
     });
 
-    if (!page_params.realm_allow_message_editing) {
+    if (!realm.realm_allow_message_editing) {
         $("#edit-message-hotkey-help").hide();
     }
 
-    if (page_params.realm_presence_disabled) {
+    if (realm.realm_presence_disabled) {
         $("#user-list").hide();
     }
 }
@@ -358,13 +380,13 @@ function initialize_unread_ui() {
     unread_ui.initialize({notify_server_messages_read: unread_ops.notify_server_messages_read});
 }
 
-export function initialize_everything() {
+export function initialize_everything(state_data) {
     /*
         When we initialize our various modules, a lot
         of them will consume data from the server
-        in the form of `page_params`.
+        in the form of `state_data`.
 
-        The `page_params` variable is basically a
+        The `state_data` variable is basically a
         massive dictionary with all the information
         that the client needs to run the app.  Here
         are some examples of what it includes:
@@ -380,13 +402,13 @@ export function initialize_everything() {
 
         Except for the actual Zulip messages, basically
         any data that you see in the app soon after page
-        load comes from `page_params`.
+        load comes from `state_data`.
 
         ## Mostly static data
 
-        Now, we mostly leave `page_params` intact through
+        Now, we mostly leave `state_data` intact through
         the duration of the app.  Most of the data in
-        `page_params` is fairly static in nature, and we
+        `state_data` is fairly static in nature, and we
         will simply update it for basic changes like
         the following (meant as examples, not gospel):
 
@@ -396,13 +418,13 @@ export function initialize_everything() {
             - I switched from light theme to dark theme.
 
         Especially for things that are settings-related,
-        we rarely abstract away the data from `page_params`.
+        we rarely abstract away the data from `state_data`.
         As of this writing, over 90 modules refer directly
-        to `page_params` for some reason or another.
+        to `state_data` for some reason or another.
 
         ## Dynamic data
 
-        Some of the data in `page_params` is either
+        Some of the data in `state_data` is either
         more highly dynamic than settings data, or
         has more performance requirements than
         simple settings data, or both.  Examples
@@ -419,11 +441,11 @@ export function initialize_everything() {
         module called `stream_data` to actually track
         all the info about the streams that a user
         can know about.  We populate this module
-        with data from `page_params`, but thereafter
+        with data from `state_data`, but thereafter
         `stream_data.js` "owns" the stream data:
 
             - other modules should ask `stream_data`
-              for stuff (and not go to `page_params`)
+              for stuff (and not go to `state_data`)
             - when server events come in, they should
               be processed by stream_data to update
               its own data structures
@@ -432,17 +454,17 @@ export function initialize_everything() {
         following:
 
             - only pass `stream_data` what it needs
-              from `page_params`
+              from `state_data`
             - delete the reference to data owned by
-              `stream_data` in `page_params` itself
+              `stream_data` in `state_data` itself
     */
 
     function pop_fields(...fields) {
         const result = {};
 
         for (const field of fields) {
-            result[field] = page_params[field];
-            delete page_params[field];
+            result[field] = state_data[field];
+            delete state_data[field];
         }
 
         return result;
@@ -477,14 +499,165 @@ export function initialize_everything() {
     const user_topics_params = pop_fields("user_topics");
 
     const user_status_params = pop_fields("user_status");
-    const i18n_params = pop_fields("language_list");
     const user_settings_params = pop_fields("user_settings");
     const realm_settings_defaults_params = pop_fields("realm_user_settings_defaults");
     const scheduled_messages_params = pop_fields("scheduled_messages");
+    const server_events_params = pop_fields(
+        "queue_id",
+        "server_generation",
+        "event_queue_longpoll_timeout_seconds",
+        "last_event_id",
+    );
+    const local_message_params = pop_fields("max_message_id");
+
+    const current_user_params = pop_fields(
+        "avatar_source",
+        "avatar_url",
+        "avatar_url_medium",
+        "can_create_private_streams",
+        "can_create_public_streams",
+        "can_create_streams",
+        "can_create_web_public_streams",
+        "can_invite_others_to_realm",
+        "can_subscribe_other_users",
+        "delivery_email",
+        "email",
+        "full_name",
+        "has_zoom_token",
+        "is_admin",
+        "is_billing_admin",
+        "is_guest",
+        "is_moderator",
+        "is_owner",
+        "onboarding_steps",
+        "user_id",
+    );
+
+    const realm_params = pop_fields(
+        "custom_profile_field_types",
+        "custom_profile_fields",
+        "demo_organization_scheduled_deletion_date",
+        "giphy_api_key",
+        "giphy_rating_options",
+        "max_avatar_file_size_mib",
+        "max_file_upload_size_mib",
+        "max_icon_file_size_mib",
+        "max_logo_file_size_mib",
+        "max_message_length",
+        "max_stream_description_length",
+        "max_stream_name_length",
+        "max_topic_length",
+        "password_min_guesses",
+        "password_min_length",
+        "realm_add_custom_emoji_policy",
+        "realm_allow_edit_history",
+        "realm_allow_message_editing",
+        "realm_authentication_methods",
+        "realm_available_video_chat_providers",
+        "realm_avatar_changes_disabled",
+        "realm_bot_creation_policy",
+        "realm_bot_domain",
+        "realm_can_access_all_users_group",
+        "realm_create_multiuse_invite_group",
+        "realm_create_private_stream_policy",
+        "realm_create_public_stream_policy",
+        "realm_create_web_public_stream_policy",
+        "realm_date_created",
+        "realm_default_code_block_language",
+        "realm_default_external_accounts",
+        "realm_default_language",
+        "realm_delete_own_message_policy",
+        "realm_description",
+        "realm_digest_emails_enabled",
+        "realm_digest_weekday",
+        "realm_disallow_disposable_email_addresses",
+        "realm_domains",
+        "realm_edit_topic_policy",
+        "realm_email_auth_enabled",
+        "realm_email_changes_disabled",
+        "realm_emails_restricted_to_domains",
+        "realm_embedded_bots",
+        "realm_enable_guest_user_indicator",
+        "realm_enable_read_receipts",
+        "realm_enable_spectator_access",
+        "realm_giphy_rating",
+        "realm_icon_source",
+        "realm_icon_url",
+        "realm_incoming_webhook_bots",
+        "realm_inline_image_preview",
+        "realm_inline_url_embed_preview",
+        "realm_invite_required",
+        "realm_invite_to_realm_policy",
+        "realm_invite_to_stream_policy",
+        "realm_is_zephyr_mirror_realm",
+        "realm_jitsi_server_url",
+        "realm_linkifiers",
+        "realm_logo_source",
+        "realm_logo_url",
+        "realm_mandatory_topics",
+        "realm_message_content_allowed_in_email_notifications",
+        "realm_message_content_delete_limit_seconds",
+        "realm_message_content_edit_limit_seconds",
+        "realm_message_retention_days",
+        "realm_move_messages_between_streams_limit_seconds",
+        "realm_move_messages_between_streams_policy",
+        "realm_move_messages_within_stream_limit_seconds",
+        "realm_name",
+        "realm_name_changes_disabled",
+        "realm_new_stream_announcements_stream_id",
+        "realm_night_logo_source",
+        "realm_night_logo_url",
+        "realm_org_type",
+        "realm_password_auth_enabled",
+        "realm_plan_type",
+        "realm_playgrounds",
+        "realm_presence_disabled",
+        "realm_private_message_policy",
+        "realm_push_notifications_enabled",
+        "realm_push_notifications_enabled_end_timestamp",
+        "realm_require_unique_names",
+        "realm_send_welcome_emails",
+        "realm_signup_announcements_stream_id",
+        "realm_upload_quota_mib",
+        "realm_uri",
+        "realm_user_group_edit_policy",
+        "realm_video_chat_provider",
+        "realm_waiting_period_threshold",
+        "realm_want_advertise_in_communities_directory",
+        "realm_wildcard_mention_policy",
+        "realm_zulip_update_announcements_stream_id",
+        "server_avatar_changes_disabled",
+        "server_emoji_data_url",
+        "server_inline_image_preview",
+        "server_inline_url_embed_preview",
+        "server_jitsi_server_url",
+        "server_name_changes_disabled",
+        "server_needs_upgrade",
+        "server_presence_offline_threshold_seconds",
+        "server_presence_ping_interval_seconds",
+        "server_supported_permission_settings",
+        "server_typing_started_expiry_period_milliseconds",
+        "server_typing_started_wait_period_milliseconds",
+        "server_typing_stopped_wait_period_milliseconds",
+        "server_web_public_streams_enabled",
+        "settings_send_digest_emails",
+        "stop_words",
+        "upgrade_text_for_wide_organization_logo",
+        "zulip_feature_level",
+        "zulip_merge_base",
+        "zulip_plan_is_not_limited",
+        "zulip_version",
+    );
+
+    set_current_user(current_user_params);
+    set_realm(realm_params);
+    sentry.initialize();
 
     /* To store theme data for spectators, we need to initialize
-       user_settings before setting the theme. */
+       user_settings before setting the theme. Because information
+       density is so fundamental, we initialize that first, however. */
     initialize_user_settings(user_settings_params);
+    information_density.initialize();
     if (page_params.is_spectator) {
         const ls = localstorage();
         const preferred_theme = ls.get("spectator-theme-preference");
@@ -495,7 +668,7 @@ export function initialize_everything() {
         }
     }
 
-    i18n.initialize(i18n_params);
+    i18n.initialize({language_list: page_params.language_list});
     timerender.initialize();
     widgets.initialize();
     tippyjs.initialize();
@@ -510,15 +683,15 @@ export function initialize_everything() {
     user_topic_popover.initialize();
     topic_popover.initialize();
     message_actions_popover.initialize();
-    scheduled_messages_popover.initialize();
+    compose_send_menu_popover.initialize();
 
     realm_user_settings_defaults.initialize(realm_settings_defaults_params);
-    people.initialize(page_params.user_id, people_params);
+    people.initialize(current_user.user_id, people_params);
     starred_messages.initialize(starred_messages_params);
 
     let date_joined;
     if (!page_params.is_spectator) {
-        const user = people.get_by_user_id(page_params.user_id);
+        const user = people.get_by_user_id(current_user.user_id);
         date_joined = user.date_joined;
     } else {
         // Spectators don't have an account, so we just prevent their
@@ -554,7 +727,6 @@ export function initialize_everything() {
 
     realm_logo.initialize();
     message_lists.initialize();
-    message_list.initialize();
     recent_view_ui.initialize({
         on_click_participant(avatar_element, participant_user_id) {
             const user = people.get_by_user_id(participant_user_id);
@@ -564,7 +736,7 @@ export function initialize_everything() {
         on_mark_topic_as_read: unread_ops.mark_topic_as_read,
         maybe_load_older_messages() {
             message_fetch.maybe_load_older_messages({
-                msg_list: message_lists.home,
+                msg_list_data: all_messages_data,
                 recent_view: true,
             });
         },
@@ -577,6 +749,7 @@ export function initialize_everything() {
     navbar_alerts.initialize();
     message_list_hover.initialize();
     initialize_kitchen_sink_stuff();
+    local_message.initialize(local_message_params);
     echo.initialize({
         on_send_message_success: compose.send_message_success,
         send_message: transmit.send_message,
@@ -597,6 +770,7 @@ export function initialize_everything() {
             sidebar_ui.hide_all();
             popovers.hide_all();
             narrow.by("stream", sub.name, {trigger});
+            activity_ui.build_user_sidebar();
         },
     });
     stream_list_sort.initialize();
@@ -613,7 +787,7 @@ export function initialize_everything() {
     overlays.initialize();
     invite.initialize();
     message_view_header.initialize();
-    server_events.initialize();
+    server_events.initialize(server_events_params);
     user_status.initialize(user_status_params);
     compose_recipient.initialize();
     compose_pm_pill.initialize({
@@ -621,15 +795,16 @@ export function initialize_everything() {
     });
     compose_closed_ui.initialize();
     compose_reply.initialize();
+    drafts.initialize(); // Must happen before reload_setup.initialize()
     reload_setup.initialize();
     unread.initialize(unread_params);
     bot_data.initialize(bot_params); // Must happen after people.initialize()
-    message_fetch.initialize(server_events.home_view_loaded);
+    message_fetch.initialize(server_events.finished_initial_fetch);
     message_scroll.initialize();
     markdown.initialize(markdown_config.get_helpers());
-    linkifiers.initialize(page_params.realm_linkifiers);
+    linkifiers.initialize(realm.realm_linkifiers);
     realm_playground.initialize({
-        playground_data: page_params.realm_playgrounds,
+        playground_data: realm.realm_playgrounds,
         pygments_comparator_func: typeahead_helper.compare_language,
     });
     compose_setup.initialize();
@@ -642,7 +817,6 @@ export function initialize_everything() {
     search.initialize({
         on_narrow_search: narrow.activate,
     });
-    tutorial.initialize();
     desktop_notifications.initialize();
     audible_notifications.initialize();
     compose_notifications.initialize({
@@ -664,9 +838,6 @@ export function initialize_everything() {
     settings_toggle.initialize();
     about_zulip.initialize();
 
-    // All overlays must be initialized before hashchange.js
-    hashchange.initialize();
-
     initialize_unread_ui();
     activity.initialize();
     activity_ui.initialize({
@@ -674,6 +845,13 @@ export function initialize_everything() {
             narrow.by("dm", email, {trigger: "sidebar"});
         },
     });
+    // This needs to happen after activity_ui.initialize, so that user_filter
+    // is defined.
+    tutorial.initialize();
+
+    // All overlays, and also activity_ui, must be initialized before hashchange.js
+    hashchange.initialize();
+
     emoji_picker.initialize();
     user_group_popover.initialize();
     user_card_popover.initialize();
@@ -685,14 +863,14 @@ export function initialize_everything() {
             const sub = sub_store.get(stream_id);
             narrow.activate(
                 [
-                    {operator: "stream", operand: sub.name},
+                    {operator: "channel", operand: sub.name},
                     {operator: "topic", operand: topic},
                 ],
                 {trigger: "sidebar"},
             );
         },
     });
-    drafts.initialize();
+    drafts.initialize_ui();
     drafts_overlay_ui.initialize();
     onboarding_steps.initialize();
     hotspots.initialize();
@@ -725,8 +903,8 @@ $(async () => {
             url: "/json/register",
             data,
             success(response_data) {
-                Object.assign(page_params, response_data);
-                initialize_everything();
+                const state_data = state_data_schema.parse(response_data);
+                initialize_everything(state_data);
             },
             error() {
                 $("#app-loading-middle-content").hide();
@@ -736,6 +914,7 @@ $(async () => {
             },
         });
     } else {
-        initialize_everything();
+        assert(page_params.state_data !== undefined);
+        initialize_everything(page_params.state_data);
     }
 });

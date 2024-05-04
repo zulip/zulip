@@ -9,7 +9,7 @@ const $ = require("./lib/zjquery");
 mock_esm("../src/resize", {
     resize_stream_filters_container() {},
 });
-
+const {Filter} = zrequire("../src/filter");
 const all_messages_data = mock_esm("../src/all_messages_data");
 const browser_history = mock_esm("../src/browser_history", {
     state: {changing_hash: false},
@@ -21,14 +21,6 @@ const compose_recipient = mock_esm("../src/compose_recipient");
 const message_fetch = mock_esm("../src/message_fetch");
 const message_list = mock_esm("../src/message_list");
 const message_lists = mock_esm("../src/message_lists", {
-    home: {
-        view: {
-            $list: {
-                removeClass: noop,
-                addClass: noop,
-            },
-        },
-    },
     current: {
         view: {
             $list: {
@@ -37,9 +29,15 @@ const message_lists = mock_esm("../src/message_lists", {
                 addClass: noop,
             },
         },
+        data: {
+            filter: new Filter([{operator: "in", operand: "all"}]),
+        },
     },
-    set_current(msg_list) {
+    update_current_message_list(msg_list) {
         message_lists.current = msg_list;
+    },
+    all_rendered_message_lists() {
+        return [message_lists.current];
     },
 });
 const message_feed_top_notices = mock_esm("../src/message_feed_top_notices");
@@ -72,9 +70,12 @@ mock_esm("../src/user_topics", {
     is_topic_muted: () => false,
 });
 
+const {buddy_list} = zrequire("buddy_list");
+const activity_ui = zrequire("activity_ui");
 const narrow_state = zrequire("narrow_state");
 const stream_data = zrequire("stream_data");
 const narrow = zrequire("narrow");
+const people = zrequire("people");
 
 const denmark = {
     subscribed: false,
@@ -102,7 +103,6 @@ function test_helper({override}) {
     stub(narrow_history, "save_narrow_state_and_flush");
     stub(message_feed_loading, "hide_indicators");
     stub(message_feed_top_notices, "hide_top_of_narrow_notices");
-    stub(message_lists, "save_pre_narrow_offset_for_reload");
     stub(narrow_title, "update_narrow_title");
     stub(stream_list, "handle_narrow_activated");
     stub(message_view_header, "render_title_area");
@@ -156,6 +156,16 @@ function stub_message_list() {
 
 run_test("basics", ({override}) => {
     stub_message_list();
+    activity_ui.set_cursor_and_filter();
+
+    const me = {
+        email: "me@zulip.com",
+        user_id: 999,
+        full_name: "Me Myself",
+    };
+    people.add_active_user(me);
+    people.initialize_current_user(me.user_id);
+    override(buddy_list, "populate", noop);
 
     const helper = test_helper({override});
     const terms = [{operator: "stream", operand: "Denmark"}];
@@ -213,8 +223,8 @@ run_test("basics", ({override}) => {
     helper.assert_events([
         [message_feed_top_notices, "hide_top_of_narrow_notices"],
         [message_feed_loading, "hide_indicators"],
-        [message_lists, "save_pre_narrow_offset_for_reload"],
         [compose_banner, "clear_message_sent_banners"],
+        [compose_actions, "on_narrow"],
         [unread_ops, "process_visible"],
         [narrow_history, "save_narrow_state_and_flush"],
         [message_viewport, "stop_auto_scrolling"],
@@ -226,7 +236,6 @@ run_test("basics", ({override}) => {
         [narrow_title, "update_narrow_title"],
         [left_sidebar_navigation_area, "handle_narrow_activated"],
         [stream_list, "handle_narrow_activated"],
-        [compose_actions, "on_narrow"],
         [compose_recipient, "handle_middle_pane_transition"],
     ]);
 

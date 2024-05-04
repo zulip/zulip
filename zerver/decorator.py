@@ -105,7 +105,7 @@ def update_user_activity(
 
 # Based on django.views.decorators.http.require_http_methods
 def require_post(
-    func: Callable[Concatenate[HttpRequest, ParamT], HttpResponse]
+    func: Callable[Concatenate[HttpRequest, ParamT], HttpResponse],
 ) -> Callable[Concatenate[HttpRequest, ParamT], HttpResponse]:
     # Arguments before ParamT needs to be positional-only as required by Concatenate
     @wraps(func)
@@ -132,7 +132,7 @@ def require_post(
 
 
 def require_realm_owner(
-    func: Callable[Concatenate[HttpRequest, UserProfile, ParamT], HttpResponse]
+    func: Callable[Concatenate[HttpRequest, UserProfile, ParamT], HttpResponse],
 ) -> Callable[Concatenate[HttpRequest, UserProfile, ParamT], HttpResponse]:
     @wraps(func)
     def wrapper(
@@ -150,7 +150,7 @@ def require_realm_owner(
 
 
 def require_realm_admin(
-    func: Callable[Concatenate[HttpRequest, UserProfile, ParamT], HttpResponse]
+    func: Callable[Concatenate[HttpRequest, UserProfile, ParamT], HttpResponse],
 ) -> Callable[Concatenate[HttpRequest, UserProfile, ParamT], HttpResponse]:
     @wraps(func)
     def wrapper(
@@ -168,7 +168,7 @@ def require_realm_admin(
 
 
 def require_organization_member(
-    func: Callable[Concatenate[HttpRequest, UserProfile, ParamT], HttpResponse]
+    func: Callable[Concatenate[HttpRequest, UserProfile, ParamT], HttpResponse],
 ) -> Callable[Concatenate[HttpRequest, UserProfile, ParamT], HttpResponse]:
     @wraps(func)
     def wrapper(
@@ -186,7 +186,7 @@ def require_organization_member(
 
 
 def require_billing_access(
-    func: Callable[Concatenate[HttpRequest, UserProfile, ParamT], HttpResponse]
+    func: Callable[Concatenate[HttpRequest, UserProfile, ParamT], HttpResponse],
 ) -> Callable[Concatenate[HttpRequest, UserProfile, ParamT], HttpResponse]:
     @wraps(func)
     def wrapper(
@@ -429,7 +429,7 @@ def user_passes_test(
     """
 
     def decorator(
-        view_func: Callable[Concatenate[HttpRequest, ParamT], HttpResponse]
+        view_func: Callable[Concatenate[HttpRequest, ParamT], HttpResponse],
     ) -> Callable[Concatenate[HttpRequest, ParamT], HttpResponse]:
         @wraps(view_func)
         def _wrapped_view(
@@ -491,7 +491,7 @@ def do_login(request: HttpRequest, user_profile: UserProfile) -> None:
 
 
 def log_view_func(
-    view_func: Callable[Concatenate[HttpRequest, ParamT], HttpResponse]
+    view_func: Callable[Concatenate[HttpRequest, ParamT], HttpResponse],
 ) -> Callable[Concatenate[HttpRequest, ParamT], HttpResponse]:
     @wraps(view_func)
     def _wrapped_view_func(
@@ -504,7 +504,7 @@ def log_view_func(
 
 
 def add_logging_data(
-    view_func: Callable[Concatenate[HttpRequest, ParamT], HttpResponse]
+    view_func: Callable[Concatenate[HttpRequest, ParamT], HttpResponse],
 ) -> Callable[Concatenate[HttpRequest, ParamT], HttpResponse]:
     @wraps(view_func)
     def _wrapped_view_func(
@@ -523,7 +523,7 @@ def add_logging_data(
 
 
 def human_users_only(
-    view_func: Callable[Concatenate[HttpRequest, ParamT], HttpResponse]
+    view_func: Callable[Concatenate[HttpRequest, ParamT], HttpResponse],
 ) -> Callable[Concatenate[HttpRequest, ParamT], HttpResponse]:
     @wraps(view_func)
     def _wrapped_view_func(
@@ -537,15 +537,13 @@ def human_users_only(
     return _wrapped_view_func
 
 
+# Based on Django 1.8's @login_required
 @overload
 def zulip_login_required(
     function: Callable[Concatenate[HttpRequest, ParamT], HttpResponse],
     redirect_field_name: str = REDIRECT_FIELD_NAME,
     login_url: str = settings.HOME_NOT_LOGGED_IN,
-) -> Callable[Concatenate[HttpRequest, ParamT], HttpResponse]:
-    ...
-
-
+) -> Callable[Concatenate[HttpRequest, ParamT], HttpResponse]: ...
 @overload
 def zulip_login_required(
     function: None,
@@ -554,11 +552,7 @@ def zulip_login_required(
 ) -> Callable[
     [Callable[Concatenate[HttpRequest, ParamT], HttpResponse]],
     Callable[Concatenate[HttpRequest, ParamT], HttpResponse],
-]:
-    ...
-
-
-# Based on Django 1.8's @login_required
+]: ...
 def zulip_login_required(
     function: Optional[Callable[Concatenate[HttpRequest, ParamT], HttpResponse]] = None,
     redirect_field_name: str = REDIRECT_FIELD_NAME,
@@ -603,7 +597,7 @@ def web_public_view(
 
 
 def require_server_admin(
-    view_func: Callable[Concatenate[HttpRequest, ParamT], HttpResponse]
+    view_func: Callable[Concatenate[HttpRequest, ParamT], HttpResponse],
 ) -> Callable[Concatenate[HttpRequest, ParamT], HttpResponse]:
     @zulip_login_required
     @wraps(view_func)
@@ -619,7 +613,7 @@ def require_server_admin(
 
 
 def require_server_admin_api(
-    view_func: Callable[Concatenate[HttpRequest, ParamT], HttpResponse]
+    view_func: Callable[Concatenate[HttpRequest, ParamT], HttpResponse],
 ) -> Callable[Concatenate[HttpRequest, ParamT], HttpResponse]:
     @zulip_login_required
     @wraps(view_func)
@@ -637,7 +631,7 @@ def require_server_admin_api(
 
 
 def require_non_guest_user(
-    view_func: Callable[Concatenate[HttpRequest, UserProfile, ParamT], HttpResponse]
+    view_func: Callable[Concatenate[HttpRequest, UserProfile, ParamT], HttpResponse],
 ) -> Callable[Concatenate[HttpRequest, UserProfile, ParamT], HttpResponse]:
     @wraps(view_func)
     def _wrapped_view_func(
@@ -655,7 +649,7 @@ def require_non_guest_user(
 
 
 def require_member_or_admin(
-    view_func: Callable[Concatenate[HttpRequest, UserProfile, ParamT], HttpResponse]
+    view_func: Callable[Concatenate[HttpRequest, UserProfile, ParamT], HttpResponse],
 ) -> Callable[Concatenate[HttpRequest, UserProfile, ParamT], HttpResponse]:
     @wraps(view_func)
     def _wrapped_view_func(
@@ -675,7 +669,7 @@ def require_member_or_admin(
 
 
 def require_user_group_edit_permission(
-    view_func: Callable[Concatenate[HttpRequest, UserProfile, ParamT], HttpResponse]
+    view_func: Callable[Concatenate[HttpRequest, UserProfile, ParamT], HttpResponse],
 ) -> Callable[Concatenate[HttpRequest, UserProfile, ParamT], HttpResponse]:
     @require_member_or_admin
     @wraps(view_func)
@@ -762,7 +756,7 @@ def authenticated_rest_api_view(
         allow_webhook_access = True
 
     def _wrapped_view_func(
-        view_func: Callable[Concatenate[HttpRequest, UserProfile, ParamT], HttpResponse]
+        view_func: Callable[Concatenate[HttpRequest, UserProfile, ParamT], HttpResponse],
     ) -> Callable[Concatenate[HttpRequest, ParamT], HttpResponse]:
         @csrf_exempt
         @wraps(view_func)
@@ -815,7 +809,7 @@ def authenticated_rest_api_view(
 
 
 def process_as_post(
-    view_func: Callable[Concatenate[HttpRequest, ParamT], HttpResponse]
+    view_func: Callable[Concatenate[HttpRequest, ParamT], HttpResponse],
 ) -> Callable[Concatenate[HttpRequest, ParamT], HttpResponse]:
     @wraps(view_func)
     def _wrapped_view_func(
@@ -922,17 +916,18 @@ def authenticated_json_view(
     return _wrapped_view_func
 
 
-# These views are used by the main Django server to notify the Tornado server
-# of events.  We protect them from the outside world by checking a shared
-# secret, and also the originating IP (for now).
+# These views are used for communication from Django to Tornado, or
+# from command-line tools into Django.  We protect them from the
+# outside world by checking a shared secret, and also the originating
+# IP (for now).
 @has_request_variables
-def authenticate_notify(request: HttpRequest, secret: str = REQ("secret")) -> bool:
+def authenticate_internal_api(request: HttpRequest, secret: str = REQ("secret")) -> bool:
     return is_local_addr(request.META["REMOTE_ADDR"]) and constant_time_compare(
         secret, settings.SHARED_SECRET
     )
 
 
-def internal_notify_view(
+def internal_api_view(
     is_tornado_view: bool,
 ) -> Callable[
     [Callable[Concatenate[HttpRequest, ParamT], HttpResponse]],
@@ -943,7 +938,7 @@ def internal_notify_view(
     the server."""
 
     def _wrapped_view_func(
-        view_func: Callable[Concatenate[HttpRequest, ParamT], HttpResponse]
+        view_func: Callable[Concatenate[HttpRequest, ParamT], HttpResponse],
     ) -> Callable[Concatenate[HttpRequest, ParamT], HttpResponse]:
         @csrf_exempt
         @require_post
@@ -951,7 +946,7 @@ def internal_notify_view(
         def _wrapped_func_arguments(
             request: HttpRequest, /, *args: ParamT.args, **kwargs: ParamT.kwargs
         ) -> HttpResponse:
-            if not authenticate_notify(request):
+            if not authenticate_internal_api(request):
                 raise AccessDeniedError
             request_notes = RequestNotes.get_notes(request)
             is_tornado_request = request_notes.tornado_handler_id is not None
@@ -974,7 +969,7 @@ def to_utc_datetime(var_name: str, timestamp: str) -> datetime:
 
 
 def return_success_on_head_request(
-    view_func: Callable[Concatenate[HttpRequest, ParamT], HttpResponse]
+    view_func: Callable[Concatenate[HttpRequest, ParamT], HttpResponse],
 ) -> Callable[Concatenate[HttpRequest, ParamT], HttpResponse]:
     @wraps(view_func)
     def _wrapped_view_func(
@@ -1049,7 +1044,7 @@ def add_google_analytics_context(context: Dict[str, object]) -> None:
 
 
 def add_google_analytics(
-    view_func: Callable[Concatenate[HttpRequest, ParamT], HttpResponse]
+    view_func: Callable[Concatenate[HttpRequest, ParamT], HttpResponse],
 ) -> Callable[Concatenate[HttpRequest, ParamT], HttpResponse]:
     @wraps(view_func)
     def _wrapped_view_func(

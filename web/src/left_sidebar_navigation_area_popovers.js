@@ -38,7 +38,7 @@ function common_click_handlers() {
 function register_mark_all_read_handler(event) {
     const {instance} = event.data;
     unread_ops.confirm_mark_all_as_read();
-    instance.hide();
+    popover_menus.hide_current_popover_if_visible(instance);
 }
 
 export function initialize() {
@@ -52,7 +52,7 @@ export function initialize() {
 
             $popper.one("click", "#unstar_all_messages", () => {
                 starred_messages_ui.confirm_unstar_all_messages();
-                instance.hide();
+                popover_menus.hide_current_popover_if_visible(instance);
             });
             $popper.one("click", "#toggle_display_starred_msg_count", () => {
                 const data = {};
@@ -63,7 +63,7 @@ export function initialize() {
                     url: "/json/settings",
                     data,
                 });
-                instance.hide();
+                popover_menus.hide_current_popover_if_visible(instance);
             });
         },
         onShow(instance) {
@@ -97,7 +97,7 @@ export function initialize() {
 
             $popper.one("click", "#delete_all_drafts_sidebar", () => {
                 drafts.confirm_delete_all_drafts();
-                instance.hide();
+                popover_menus.hide_current_popover_if_visible(instance);
             });
         },
         onShow(instance) {
@@ -146,7 +146,7 @@ export function initialize() {
         },
     });
 
-    // All messages popover
+    // Combined feed popover
     popover_menus.register_popover_menu(".all-messages-sidebar-menu-icon", {
         ...popover_menus.left_sidebar_tippy_options,
         onMount(instance) {

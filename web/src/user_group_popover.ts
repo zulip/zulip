@@ -8,11 +8,11 @@ import * as blueslip from "./blueslip";
 import * as buddy_data from "./buddy_data";
 import * as hash_util from "./hash_util";
 import * as message_lists from "./message_lists";
-import {page_params} from "./page_params";
 import * as people from "./people";
 import type {User} from "./people";
 import * as popover_menus from "./popover_menus";
 import * as rows from "./rows";
+import {current_user} from "./state_data";
 import * as ui_util from "./ui_util";
 import * as user_groups from "./user_groups";
 import * as util from "./util";
@@ -96,8 +96,8 @@ export function toggle_user_group_info_popover(
                     group_name: group.name,
                     group_description: group.description,
                     members: sort_group_members(fetch_group_members([...group.members])),
-                    group_edit_url: hash_util.group_edit_url(group),
-                    is_guest: page_params.is_guest,
+                    group_edit_url: hash_util.group_edit_url(group, "general"),
+                    is_guest: current_user.is_guest,
                 };
                 instance.setContent(ui_util.parse_html(render_user_group_info_popover(args)));
             },
@@ -112,20 +112,19 @@ export function toggle_user_group_info_popover(
 }
 
 export function register_click_handlers(): void {
-    $("#main_div").on("click", ".user-group-mention", (e) => {
+    $("#main_div").on("click", ".user-group-mention", function (this: HTMLElement, e) {
         e.stopPropagation();
 
-        const $elt = $(e.currentTarget);
+        const $elt = $(this);
         const $row = $elt.closest(".message_row");
         const message_id = rows.id($row);
-        assert(message_id !== undefined);
 
         assert(message_lists.current !== undefined);
         const message = message_lists.current.get(message_id);
         assert(message !== undefined);
 
         try {
-            toggle_user_group_info_popover(e.currentTarget, message.id);
+            toggle_user_group_info_popover(this, message.id);
         } catch {
             // This user group has likely been deleted.
             blueslip.info("Unable to find user group in message" + message.sender_id);

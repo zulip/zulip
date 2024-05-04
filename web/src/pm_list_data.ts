@@ -51,6 +51,13 @@ export function get_conversations(): DisplayObject[] {
     // The user_ids_string for the current view, if any.
     const active_user_ids_string = get_active_user_ids_string();
 
+    if (
+        active_user_ids_string !== undefined &&
+        !private_messages.map((obj) => obj.user_ids_string).includes(active_user_ids_string)
+    ) {
+        private_messages.unshift({user_ids_string: active_user_ids_string, max_message_id: -1});
+    }
+
     for (const conversation of private_messages) {
         const user_ids_string = conversation.user_ids_string;
         const reply_to = people.user_ids_string_to_emails_string(user_ids_string);

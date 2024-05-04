@@ -17,13 +17,12 @@ import {$t, $t_html} from "./i18n";
 import * as ListWidget from "./list_widget";
 import * as loading from "./loading";
 import * as overlays from "./overlays";
-import {page_params} from "./page_params";
 import * as people from "./people";
 import * as scroll_util from "./scroll_util";
 import * as settings_components from "./settings_components";
 import * as settings_data from "./settings_data";
 import * as settings_org from "./settings_org";
-import * as stream_ui_updates from "./stream_ui_updates";
+import {current_user, realm} from "./state_data";
 import * as ui_report from "./ui_report";
 import * as user_group_components from "./user_group_components";
 import * as user_group_create from "./user_group_create";
@@ -32,16 +31,11 @@ import * as user_groups from "./user_groups";
 import * as util from "./util";
 
 export let toggler;
-export let select_tab = "group_general_settings";
+export let select_tab = "general";
 
 let group_list_widget;
 let group_list_toggler;
 let active_group_id;
-
-function setup_group_edit_hash(group) {
-    const hash = hash_util.group_edit_url(group);
-    browser_history.update(hash);
-}
 
 function get_user_group_id(target) {
     const $row = $(target).closest(
@@ -79,7 +73,7 @@ function update_add_members_elements(group) {
     // We are only concerned with the Members tab for editing groups.
     const $add_members_container = $(".edit_members_for_user_group .add_members_container");
 
-    if (page_params.is_guest || page_params.realm_is_zephyr_mirror_realm) {
+    if (current_user.is_guest || realm.realm_is_zephyr_mirror_realm) {
         // For guest users, we just hide the add_members feature.
         $add_members_container.hide();
         return;
@@ -91,17 +85,17 @@ function update_add_members_elements(group) {
     const $button_element = $add_members_container.find('button[name="add_member"]').expectOne();
 
     if (settings_data.can_edit_user_group(group.id)) {
-        $input_element.prop("disabled", false);
+        $input_element.prop("contenteditable", true);
         $button_element.prop("disabled", false);
         $button_element.css("pointer-events", "");
         $add_members_container[0]._tippy?.destroy();
         $add_members_container.removeClass("add_members_disabled");
     } else {
-        $input_element.prop("disabled", true);
+        $input_element.prop("contenteditable", false);
         $button_element.prop("disabled", true);
         $add_members_container.addClass("add_members_disabled");
 
-        stream_ui_updates.initialize_disable_btn_hint_popover(
+        settings_components.initialize_disable_btn_hint_popover(
             $add_members_container,
             $t({defaultMessage: "Only group members can add users to a group."}),
         );
@@ -154,7 +148,7 @@ function initialize_tooltip_for_membership_button(group_id) {
     } else {
         tooltip_message = $t({defaultMessage: "You do not have permission to join this group."});
     }
-    stream_ui_updates.initialize_disable_btn_hint_popover($tooltip_wrapper, tooltip_message);
+    settings_components.initialize_disable_btn_hint_popover($tooltip_wrapper, tooltip_message);
 }
 
 function update_group_membership_button(group_id) {
@@ -277,34 +271,34 @@ export function show_settings_for(group) {
     });
 
     scroll_util.get_content_element($("#user_group_settings")).html(html);
-    update_toggler_for_group_setting(group);
+    update_toggler_for_group_setting();
 
     if (!settings_data.can_edit_user_group(group.id)) {
         initialize_tooltip_for_membership_button(group.id);
     }
 
-    $("#user_group_settings .tab-container").prepend(toggler.get());
+    toggler.get().prependTo("#user_group_settings .tab-container");
     const $edit_container = get_edit_container(group);
     $(".nothing-selected").hide();
 
     $edit_container.show();
     show_membership_settings(group);
     user_group_components.setup_permissions_dropdown(group, false);
-
-    $edit_container.find("button").prop("disabled", !settings_data.can_edit_user_group(group.id));
 }
 
 export function setup_group_settings(group) {
     toggler = components.toggle({
         child_wants_focus: true,
         values: [
-            {label: $t({defaultMessage: "General"}), key: "group_general_settings"},
-            {label: $t({defaultMessage: "Members"}), key: "group_member_settings"},
+            {label: $t({defaultMessage: "General"}), key: "general"},
+            {label: $t({defaultMessage: "Members"}), key: "members"},
         ],
         callback(_name, key) {
             $(".group_setting_section").hide();
-            $(`.${CSS.escape(key)}`).show();
+            $(`[data-group-section="${CSS.escape(key)}"]`).show();
             select_tab = key;
+            const hash = hash_util.group_edit_url(group, select_tab);
+            browser_history.update(hash);
         },
     });
 
@@ -415,7 +409,6 @@ export function show_group_settings(group) {
     $(".group-row.active").removeClass("active");
     show_user_group_settings_pane.settings(group);
     row_for_group_id(group.id).addClass("active");
-    setup_group_edit_hash(group);
     setup_group_settings(group);
 }
 
@@ -433,8 +426,8 @@ export function reset_active_group_id() {
 }
 
 // Ideally this should be included in page params.
-// Like we have page_params.max_stream_name_length` and
-// `page_params.max_stream_description_length` for streams.
+// Like we have realm.max_stream_name_length` and
+// `realm.max_stream_description_length` for streams.
 export const max_user_group_name_length = 100;
 
 export function set_up_click_handlers() {
@@ -561,7 +554,7 @@ export function update_group(group_id) {
     }
 }
 
-export function change_state(section) {
+export function change_state(section, left_side_tab, right_side_tab) {
     if (section === "new") {
         do_open_create_user_group();
         redraw_user_group_list();
@@ -574,32 +567,31 @@ export function change_state(section) {
         return;
     }
 
-    if (section === "your") {
-        group_list_toggler.goto("your-groups");
-        empty_right_panel();
-        return;
-    }
-
     // if the section is a valid number.
     if (/\d+/.test(section)) {
         const group_id = Number.parseInt(section, 10);
         const group = user_groups.get_user_group_from_id(group_id);
-        if (!group) {
-            // Some users can type random url of the form
-            // /#groups/<random-group-id> we need to handle that.
-            group_list_toggler.goto("your-groups");
-        } else {
-            show_right_section();
-            // We show the list of user groups in the left panel
-            // based on the tab that is active. It is `your-groups`
-            // tab by default.
-            redraw_user_group_list();
-            switch_to_group_row(group);
+        show_right_section();
+        select_tab = right_side_tab;
+
+        if (left_side_tab === undefined) {
+            left_side_tab = "all-groups";
+            if (user_groups.is_direct_member_of(current_user.user_id, group_id)) {
+                left_side_tab = "your-groups";
+            }
         }
+
+        // Callback to .goto() will update browser_history unless a
+        // group is being edited. We are always editing a group here
+        // so its safe to call
+        if (left_side_tab !== group_list_toggler.value()) {
+            set_active_group_id(group.id);
+            group_list_toggler.goto(left_side_tab);
+        }
+        switch_to_group_row(group);
         return;
     }
 
-    blueslip.info("invalid section for groups: " + section);
     group_list_toggler.goto("your-groups");
     empty_right_panel();
 }
@@ -677,10 +669,7 @@ export function maybe_reset_right_panel(groups_list_data) {
 
     const group_ids = new Set(groups_list_data.map((group) => group.id));
     if (!group_ids.has(active_group_id)) {
-        $(".right .settings").hide();
-        $(".nothing-selected").show();
-        $(".group-row.active").removeClass("active");
-        reset_active_group_id();
+        show_user_group_settings_pane.nothing_selected();
     }
 }
 
@@ -722,7 +711,7 @@ export function setup_page(callback) {
             },
         });
 
-        $("#groups_overlay_container .list-toggler-container").prepend(group_list_toggler.get());
+        group_list_toggler.get().prependTo("#groups_overlay_container .list-toggler-container");
     }
 
     function populate_and_fill() {
@@ -731,13 +720,12 @@ export function setup_page(callback) {
             max_user_group_name_length,
         };
 
-        const rendered = render_user_group_settings_overlay(template_data);
+        const groups_overlay_html = render_user_group_settings_overlay(template_data);
 
         const $groups_overlay_container = scroll_util.get_content_element(
             $("#groups_overlay_container"),
         );
-        $groups_overlay_container.empty();
-        $groups_overlay_container.append(rendered);
+        $groups_overlay_container.html(groups_overlay_html);
 
         // Initially as the overlay is build with empty right panel,
         // active_group_id is undefined.
@@ -972,7 +960,7 @@ export function initialize() {
     );
 }
 
-export function launch(section) {
+export function launch(section, left_side_tab, right_side_tab) {
     setup_page(() => {
         overlays.open_overlay({
             name: "group_subscriptions",
@@ -981,7 +969,7 @@ export function launch(section) {
                 browser_history.exit_overlay();
             },
         });
-        change_state(section);
+        change_state(section, left_side_tab, right_side_tab);
     });
     if (!get_active_data().id) {
         if (section === "new") {

@@ -14,11 +14,14 @@ from zerver.actions.realm_settings import (
     do_deactivate_realm,
     do_reactivate_realm,
     do_set_realm_authentication_methods,
-    do_set_realm_notifications_stream,
+    do_set_realm_new_stream_announcements_stream,
     do_set_realm_property,
-    do_set_realm_signup_notifications_stream,
+    do_set_realm_signup_announcements_stream,
     do_set_realm_user_default_setting,
+    do_set_realm_zulip_update_announcements_stream,
     parse_and_set_setting_value_if_required,
+    validate_authentication_methods_dict_from_api,
+    validate_plan_for_authentication_methods,
 )
 from zerver.decorator import require_realm_admin, require_realm_owner
 from zerver.forms import check_subdomain_available as check_subdomain
@@ -79,6 +82,7 @@ def update_realm(
     create_multiuse_invite_group_id: Optional[int] = REQ(
         "create_multiuse_invite_group", json_validator=check_int, default=None
     ),
+    require_unique_names: Optional[bool] = REQ(json_validator=check_bool, default=None),
     name_changes_disabled: Optional[bool] = REQ(json_validator=check_bool, default=None),
     email_changes_disabled: Optional[bool] = REQ(json_validator=check_bool, default=None),
     avatar_changes_disabled: Optional[bool] = REQ(json_validator=check_bool, default=None),
@@ -109,8 +113,11 @@ def update_realm(
     ),
     # Note: push_notifications_enabled and push_notifications_enabled_end_timestamp
     # are not offered here as it is maintained by the server, not via the API.
-    notifications_stream_id: Optional[int] = REQ(json_validator=check_int, default=None),
-    signup_notifications_stream_id: Optional[int] = REQ(json_validator=check_int, default=None),
+    new_stream_announcements_stream_id: Optional[int] = REQ(json_validator=check_int, default=None),
+    signup_announcements_stream_id: Optional[int] = REQ(json_validator=check_int, default=None),
+    zulip_update_announcements_stream_id: Optional[int] = REQ(
+        json_validator=check_int, default=None
+    ),
     message_retention_days_raw: Optional[Union[int, str]] = REQ(
         "message_retention_days", json_validator=check_string_or_int, default=None
     ),
@@ -196,8 +203,12 @@ def update_realm(
     if authentication_methods is not None:
         if not user_profile.is_realm_owner:
             raise OrganizationOwnerRequiredError
+
+        validate_authentication_methods_dict_from_api(realm, authentication_methods)
         if True not in authentication_methods.values():
             raise JsonableError(_("At least one authentication method must be enabled."))
+        validate_plan_for_authentication_methods(realm, authentication_methods)
+
     if video_chat_provider is not None and video_chat_provider not in {
         p["id"] for p in Realm.VIDEO_CHAT_PROVIDERS.values()
     }:
@@ -288,9 +299,9 @@ def update_realm(
         )
 
         if setting_value_changed:
-            data[
-                "move_messages_within_stream_limit_seconds"
-            ] = move_messages_within_stream_limit_seconds
+            data["move_messages_within_stream_limit_seconds"] = (
+                move_messages_within_stream_limit_seconds
+            )
 
     move_messages_between_streams_limit_seconds: Optional[int] = None
     if move_messages_between_streams_limit_seconds_raw is not None:
@@ -305,9 +316,9 @@ def update_realm(
         )
 
         if setting_value_changed:
-            data[
-                "move_messages_between_streams_limit_seconds"
-            ] = move_messages_between_streams_limit_seconds
+            data["move_messages_between_streams_limit_seconds"] = (
+                move_messages_between_streams_limit_seconds
+            )
 
     jitsi_server_url: Optional[str] = None
     if jitsi_server_url_raw is not None:
@@ -385,38 +396,59 @@ def update_realm(
         do_set_realm_authentication_methods(realm, authentication_methods, acting_user=user_profile)
         data["authentication_methods"] = authentication_methods
 
-    # Realm.notifications_stream and Realm.signup_notifications_stream are not boolean,
-    # str or integer field, and thus doesn't fit into the do_set_realm_property framework.
-    if notifications_stream_id is not None and (
-        realm.notifications_stream is None
-        or (realm.notifications_stream.id != notifications_stream_id)
+    # Realm.new_stream_announcements_stream, Realm.signup_announcements_stream,
+    # and Realm.zulip_update_announcements_stream are not boolean, str or integer field,
+    # and thus doesn't fit into the do_set_realm_property framework.
+    if new_stream_announcements_stream_id is not None and (
+        realm.new_stream_announcements_stream is None
+        or (realm.new_stream_announcements_stream.id != new_stream_announcements_stream_id)
     ):
-        new_notifications_stream = None
-        if notifications_stream_id >= 0:
-            (new_notifications_stream, sub) = access_stream_by_id(
-                user_profile, notifications_stream_id, allow_realm_admin=True
+        new_stream_announcements_stream_new = None
+        if new_stream_announcements_stream_id >= 0:
+            (new_stream_announcements_stream_new, sub) = access_stream_by_id(
+                user_profile, new_stream_announcements_stream_id, allow_realm_admin=True
             )
-        do_set_realm_notifications_stream(
-            realm, new_notifications_stream, notifications_stream_id, acting_user=user_profile
-        )
-        data["notifications_stream_id"] = notifications_stream_id
-
-    if signup_notifications_stream_id is not None and (
-        realm.signup_notifications_stream is None
-        or realm.signup_notifications_stream.id != signup_notifications_stream_id
-    ):
-        new_signup_notifications_stream = None
-        if signup_notifications_stream_id >= 0:
-            (new_signup_notifications_stream, sub) = access_stream_by_id(
-                user_profile, signup_notifications_stream_id, allow_realm_admin=True
-            )
-        do_set_realm_signup_notifications_stream(
+        do_set_realm_new_stream_announcements_stream(
             realm,
-            new_signup_notifications_stream,
-            signup_notifications_stream_id,
+            new_stream_announcements_stream_new,
+            new_stream_announcements_stream_id,
             acting_user=user_profile,
         )
-        data["signup_notifications_stream_id"] = signup_notifications_stream_id
+        data["new_stream_announcements_stream_id"] = new_stream_announcements_stream_id
+
+    if signup_announcements_stream_id is not None and (
+        realm.signup_announcements_stream is None
+        or realm.signup_announcements_stream.id != signup_announcements_stream_id
+    ):
+        new_signup_announcements_stream = None
+        if signup_announcements_stream_id >= 0:
+            (new_signup_announcements_stream, sub) = access_stream_by_id(
+                user_profile, signup_announcements_stream_id, allow_realm_admin=True
+            )
+        do_set_realm_signup_announcements_stream(
+            realm,
+            new_signup_announcements_stream,
+            signup_announcements_stream_id,
+            acting_user=user_profile,
+        )
+        data["signup_announcements_stream_id"] = signup_announcements_stream_id
+
+    if zulip_update_announcements_stream_id is not None and (
+        realm.zulip_update_announcements_stream is None
+        or realm.zulip_update_announcements_stream.id != zulip_update_announcements_stream_id
+    ):
+        new_zulip_update_announcements_stream = None
+        if zulip_update_announcements_stream_id >= 0:
+            (new_zulip_update_announcements_stream, sub) = access_stream_by_id(
+                user_profile, zulip_update_announcements_stream_id, allow_realm_admin=True
+            )
+        do_set_realm_zulip_update_announcements_stream(
+            realm,
+            new_zulip_update_announcements_stream,
+            zulip_update_announcements_stream_id,
+            acting_user=user_profile,
+        )
+        data["zulip_update_announcements_stream_id"] = zulip_update_announcements_stream_id
 
     if string_id is not None:
         if not user_profile.is_realm_owner:
@@ -489,6 +521,7 @@ def update_realm_user_settings_defaults(
         default=None,
     ),
     starred_message_counts: Optional[bool] = REQ(json_validator=check_bool, default=None),
+    receives_typing_notifications: Optional[bool] = REQ(json_validator=check_bool, default=None),
     web_stream_unreads_count_display_policy: Optional[int] = REQ(
         json_validator=check_int_in(UserProfile.WEB_STREAM_UNREADS_COUNT_DISPLAY_POLICY_CHOICES),
         default=None,
@@ -498,6 +531,8 @@ def update_realm_user_settings_defaults(
     color_scheme: Optional[int] = REQ(
         json_validator=check_int_in(UserProfile.COLOR_SCHEME_CHOICES), default=None
     ),
+    web_font_size_px: Optional[int] = REQ(json_validator=check_int, default=None),
+    web_line_height_percent: Optional[int] = REQ(json_validator=check_int, default=None),
     translate_emoticons: Optional[bool] = REQ(json_validator=check_bool, default=None),
     display_emoji_reaction_users: Optional[bool] = REQ(json_validator=check_bool, default=None),
     web_home_view: Optional[str] = REQ(

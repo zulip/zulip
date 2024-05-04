@@ -1,4 +1,5 @@
 import $ from "jquery";
+import assert from "minimalistic-assert";
 
 import * as common from "../common";
 import {$t} from "../i18n";
@@ -101,7 +102,7 @@ $(() => {
     }
 
     $("#registration").on("submit", () => {
-        if ($<HTMLInputElement>("#registration").valid()) {
+        if ($("#registration").valid()) {
             $(".register-button .loader").css("display", "inline-block");
             $(".register-button").prop("disabled", true);
             $(".register-button span").hide();
@@ -141,7 +142,7 @@ $(() => {
         errorPlacement($error: JQuery) {
             $(".email-frontend-error").empty();
             $("#send_confirm .alert.email-backend-error").remove();
-            $error.appendTo(".email-frontend-error").addClass("text-error");
+            $error.appendTo($(".email-frontend-error")).addClass("text-error");
         },
         success() {
             $("#errors").empty();
@@ -223,19 +224,17 @@ $(() => {
     update_full_name_section();
 
     let timer: number;
-    $("#id_team_subdomain").on("keydown", () => {
+    $("#id_team_subdomain").on("input", () => {
         $(".team_subdomain_error_server").text("").css("display", "none");
         $("#id_team_subdomain_error_client").css("display", "none");
-        clearTimeout(timer);
-    });
-    $("#id_team_subdomain").on("keyup", () => {
         clearTimeout(timer);
         timer = setTimeout(check_subdomain_available, 250, $("#id_team_subdomain").val());
     });
 
     // GitHub auth
-    $("body").on("click", "#choose_email .choose-email-box", function () {
-        this.parentNode.submit();
+    $("body").on("click", "#choose_email .choose-email-box", function (this: HTMLElement) {
+        assert(this.parentElement instanceof HTMLFormElement);
+        this.parentElement.submit();
     });
 
     $("#new-user-email-address-visibility .change_email_address_visibility").on("click", () => {
@@ -304,5 +303,41 @@ $(() => {
         $("#id_team_name").val("").val(name_val);
 
         $(e.target).hide();
+    });
+
+    $("#how-realm-creator-found-zulip select").on("change", function () {
+        const elements: Record<string, string> = {
+            Other: "how-realm-creator-found-zulip-other",
+            Advertisement: "how-realm-creator-found-zulip-where-ad",
+            "At an organization that's using it":
+                "how-realm-creator-found-zulip-which-organization",
+        };
+
+        const hideElement = (element: string): void => {
+            const $element = $(`#${element}`);
+            $element.hide();
+            $element.removeAttr("required");
+            $(`#${element}-error`).hide();
+        };
+
+        const showElement = (element: string): void => {
+            const $element = $(`#${element}`);
+            $element.show();
+            $element.attr("required", "required");
+        };
+
+        // Reset state
+        for (const element of Object.values(elements)) {
+            if (element) {
+                hideElement(element);
+            }
+        }
+
+        // Show the additional input box if needed.
+        const selected_option = $("option:selected", this).text();
+        const selected_element = elements[selected_option];
+        if (selected_element) {
+            showElement(selected_element);
+        }
     });
 });

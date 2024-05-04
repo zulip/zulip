@@ -13,6 +13,7 @@ from zulint.custom_rules import Rule, RuleList
 FILES_WITH_LEGACY_SUBJECT = {
     # This basically requires a big DB migration:
     "zerver/lib/topic.py",
+    "zerver/lib/topic_sqlalchemy.py",
     # This is for backward compatibility.
     "zerver/tests/test_legacy_subject.py",
     # Other migration-related changes require extreme care.
@@ -141,10 +142,10 @@ js_rules = RuleList(
         {"pattern": r"\+.*\$t\(.+\)", "description": "Do not concatenate i18n strings"},
         {
             "pattern": "[.]html[(]",
-            "exclude_pattern": r"""\.html\(("|'|render_|html|message\.content|util\.clean_user_content_links|rendered_|$|\)|error_html|widget_elem|\$error|\$\("<p>"\))""",
+            "exclude_pattern": r"""\.html\(("|'|render_|\w+_html|html|message\.content|util\.clean_user_content_links|rendered_|$|\)|error_html|widget_elem|\$error|\$\("<p>"\))""",
             "exclude": {
                 "web/src/portico",
-                "web/src/lightbox.js",
+                "web/src/lightbox.ts",
                 "web/src/ui_report.ts",
                 "web/src/dialog_widget.ts",
                 "web/tests/",
@@ -161,6 +162,12 @@ js_rules = RuleList(
             "exclude": {
                 "web/tests/",
                 "web/src/billing/",
+            },
+            "exclude_line": {
+                (
+                    "web/src/common.ts",
+                    '$(this).before($("<kbd>").text("Fn"), $("<span>").text(" + ").contents());',
+                ),
             },
         },
         {
@@ -364,11 +371,8 @@ python_rules = RuleList(
             "pattern": "[^a-z]Message.objects.get",
             "exclude": {
                 "zerver/tests",
-                "zerver/lib/onboarding.py",
                 "zilencer/management/commands/add_mock_conversation.py",
-                "zerver/worker/queue_processors.py",
                 "zerver/management/commands/export.py",
-                "zerver/lib/export.py",
             },
             "description": "Please use access_message() to fetch Message objects",
         },
@@ -538,8 +542,8 @@ html_rules: List["Rule"] = [
             "templates/zerver/email.html",
             "zerver/tests/fixtures/email",
             "templates/corporate/for/business.html",
-            "templates/corporate/support_request.html",
-            "templates/corporate/support_request_thanks.html",
+            "templates/corporate/support/support_request.html",
+            "templates/corporate/support/support_request_thanks.html",
             "templates/zerver/emails/support_request.html",
         },
         "exclude_pattern": "email subject",
@@ -555,8 +559,6 @@ html_rules: List["Rule"] = [
             ("templates/zerver/realm_creation_form.html", 'placeholder="Acme or Ακμή"'),
         },
         "exclude": {
-            "templates/analytics/support.html",
-            "templates/analytics/remote_server_support.html",
             "templates/corporate",
             # We have URL template and Pygments language name as placeholders
             # in the below template which we don't want to be translatable.
@@ -630,9 +632,10 @@ html_rules: List["Rule"] = [
         "pattern": r'title="[^{\:]',
         "exclude": {
             "templates/zerver/emails",
-            "templates/analytics/realm_details.html",
-            "templates/analytics/remote_server_support.html",
-            "templates/analytics/support.html",
+            "templates/corporate/support/realm_details.html",
+            "templates/corporate/support/remote_server_support.html",
+            "templates/corporate/support/support.html",
+            "templates/corporate/support/remote_realm_details.html",
         },
         "description": "`title` value should be translatable.",
     },
@@ -668,7 +671,7 @@ html_rules: List["Rule"] = [
         "the DOM is ready (inside a $(function () {...}) block).",
         "exclude": {
             "templates/zerver/development/dev_login.html",
-            "templates/corporate/upgrade.html",
+            "templates/corporate/billing/upgrade.html",
         },
         "good_lines": ["($('#foo').on('click', function () {}"],
         "bad_lines": [
@@ -707,8 +710,8 @@ html_rules: List["Rule"] = [
             "templates/zerver/landing_nav.html",
             "templates/corporate/features.html",
             "templates/zerver/portico-header.html",
-            "templates/corporate/billing.html",
-            "templates/corporate/upgrade.html",
+            "templates/corporate/billing/billing.html",
+            "templates/corporate/billing/upgrade.html",
             # Miscellaneous violations to be cleaned up
             "web/templates/popovers/user_card/user_card_popover_avatar.hbs",
             "web/templates/confirm_dialog/confirm_subscription_invites_warning.hbs",
@@ -720,7 +723,6 @@ html_rules: List["Rule"] = [
             "templates/zerver/accounts_send_confirm.html",
             "templates/zerver/integrations/index.html",
             "templates/zerver/documentation_main.html",
-            "templates/analytics/realm_summary_table.html",
             "templates/corporate/zephyr.html",
             "templates/corporate/zephyr-mirror.html",
         },
@@ -903,18 +905,18 @@ puppet_rules = RuleList(
             "pattern": r"(include[\t ]+|\$)zulip::(profile|base)\b",
             "exclude": {
                 "puppet/zulip/manifests/profile/",
-                "puppet/zulip_ops/manifests/",
+                "puppet/kandra/manifests/",
                 "puppet/zulip/manifests/dockervoyager.pp",
             },
             "description": "Abstraction layering violation; only profiles should reference profiles or zulip::base",
         },
         {
-            "pattern": r"(include[\t ]+|\$)zulip_ops::(profile|base)\b",
+            "pattern": r"(include[\t ]+|\$)kandra::(profile|base)\b",
             "exclude": {
                 "puppet/zulip/manifests/",
-                "puppet/zulip_ops/manifests/profile/",
+                "puppet/kandra/manifests/profile/",
             },
-            "description": "Abstraction layering violation; only profiles should reference profiles or zulip_ops::base",
+            "description": "Abstraction layering violation; only profiles should reference profiles or kandra::base",
         },
     ],
 )

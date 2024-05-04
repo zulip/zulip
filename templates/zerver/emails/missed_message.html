@@ -30,17 +30,17 @@
     {% elif mentioned_user_group_name %}
     {% trans %}You are receiving this because @{{ mentioned_user_group_name }} was mentioned.{% endtrans %}<br />
     {% elif topic_wildcard_mentioned_in_followed_topic %}
-    {% trans %}You are receiving this because all topic participants were mentioned in #{{ stream_name }} > {{ topic_name }}.{% endtrans %}<br />
+    {% trans %}You are receiving this because all topic participants were mentioned in #{{ channel_name }} > {{ topic_name }}.{% endtrans %}<br />
     {% elif stream_wildcard_mentioned_in_followed_topic %}
     {% trans %}You are receiving this because you have wildcard mention notifications enabled for topics you follow.{% endtrans %}<br />
     {% elif topic_wildcard_mentioned %}
-    {% trans %}You are receiving this because all topic participants were mentioned in #{{ stream_name }} > {{ topic_name }}.{% endtrans %}<br />
+    {% trans %}You are receiving this because all topic participants were mentioned in #{{ channel_name }} > {{ topic_name }}.{% endtrans %}<br />
     {% elif stream_wildcard_mentioned %}
-    {% trans %}You are receiving this because everyone was mentioned in #{{ stream_name }}.{% endtrans %}<br />
+    {% trans %}You are receiving this because everyone was mentioned in #{{ channel_name }}.{% endtrans %}<br />
     {% elif followed_topic_email_notify %}
     {% trans %}You are receiving this because you have email notifications enabled for topics you follow.{% endtrans %}<br />
     {% elif stream_email_notify %}
-    {% trans %}You are receiving this because you have email notifications enabled for #{{ stream_name }}.{% endtrans %}<br />
+    {% trans %}You are receiving this because you have email notifications enabled for #{{ channel_name }}.{% endtrans %}<br />
     {% endif %}
     {% if reply_to_zulip %}
     {% trans notif_url=realm_uri + "/#settings/notifications" %}Reply to this email directly, <a href="{{ narrow_url }}">view it in {{ realm_name }} Zulip</a>, or <a href="{{ notif_url }}">manage email preferences</a>.{% endtrans %}

@@ -238,6 +238,7 @@ test("authentication_error_401_is_spectator", () => {
 
         // is_spectator = true
         check_ajax_options(options) {
+            page_params.page_type = "home";
             page_params.is_spectator = true;
 
             options.simulate_error();
@@ -258,6 +259,7 @@ test("authentication_error_401_password_change_in_progress", () => {
         // is_spectator = true
         // password_change_in_progress = true
         check_ajax_options(options) {
+            page_params.page_type = "home";
             page_params.is_spectator = true;
             channel.set_password_change_in_progress(true);
 
@@ -280,6 +282,7 @@ test("authentication_error_401_not_spectator", () => {
 
         // is_spectator = false
         check_ajax_options(options) {
+            page_params.page_type = "home";
             page_params.is_spectator = false;
 
             options.simulate_error();

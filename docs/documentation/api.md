@@ -327,7 +327,7 @@ above.
    match the title of the endpoint from the OpenAPI `summary` field.
 
 1. Test your endpoint, pretending to be a new user in a hurry, by
-   visiting it via the links on `http://localhost:9991/api` (the API
+   visiting it via the links on `http://localhost:9991/api/` (the API
    docs are rendered from the Markdown source files on page load, so
    just reload to see an updated version as you edit). You should
    make sure that copy-pasting the code in your examples works, and

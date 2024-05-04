@@ -76,7 +76,7 @@ New messages will pop a long-running thread to the top, rather than languishing
 in a forgotten sidebar. You’ll never create a new channel (and later forget to
 check it) because your team’s main channel is busy — a busy stream
 works just fine in Zulip! For timely messages, Zulip alerts you with [fully
-customizable](/help/stream-notifications) mobile, email and desktop
+customizable](/help/channel-notifications) mobile, email and desktop
 notifications.
 
 >  “With Zulip, I can manage hundreds of participants across two communities
@@ -89,7 +89,7 @@ notifications.
 
 ## Zulip empowers teams to work flexibly anytime, from anywhere, without interruptions.
 
-With team chat that is designed for both synchronous and asynchronous
+With organized team chat that is designed for both synchronous and asynchronous
 communication, everyone can be included in decision-making without being online
 at the same time. Team members can focus when they need to, and contribute to
 discussions asynchronously without interrupting their flow.
@@ -162,7 +162,7 @@ With conversations organized by topic, you can review prior discussions to
 understand past work, explanations, and decisions — your chat history becomes a
 knowledge base. If a conversation shifts to a new topic, it’s easy to reorganize
 by moving messages to a different [topic](/help/move-content-to-another-topic)
-or [stream](/help/move-content-to-another-stream). There is no more rifling
+or [stream](/help/move-content-to-another-channel). There is no more rifling
 through unrelated chatter to find the context you need.  You can even [link to a
 Zulip
 conversation](/help/link-to-a-message-or-conversation#link-to-zulip-from-anywhere)

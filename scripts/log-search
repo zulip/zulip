@@ -8,7 +8,7 @@ import os
 import re
 import signal
 import sys
-from datetime import datetime, timedelta
+from datetime import date, datetime, timedelta, timezone
 from enum import Enum, auto
 from typing import List, Match, Optional, Set, TextIO, Tuple
 
@@ -49,7 +49,7 @@ def parser() -> argparse.ArgumentParser:
         "-n",
         help="Number of log files to search",
         choices=range(1, access_log_retention_days + 2),
-        metavar=f"[1-{access_log_retention_days+1}]",
+        metavar=f"[1-{access_log_retention_days + 1}]",
         type=int,
     )
     log_selection_options.add_argument(
@@ -76,7 +76,7 @@ def parser() -> argparse.ArgumentParser:
     filtering = parser.add_argument_group("Filtering")
     filtering.add_argument(
         "filter_terms",
-        help="IP address, hostname, user-id, path, or status code to search for; multiple are AND'ed together",
+        help="IP address, hostname, user-id, HTTP method, path, datetime prefix, or status code to search for; multiple are AND'ed together",
         nargs="+",
     )
     filtering.add_argument(
@@ -98,10 +98,16 @@ def parser() -> argparse.ArgumentParser:
     )
     filtering.add_argument("--presence", "-p", help="Include presence paths", action="store_true")
     filtering.add_argument(
-        "--report", "-r", help="Include timing report paths", action="store_true"
+        "--report", "-r", help="Include Sentry reporting paths", action="store_true"
     )
     filtering.add_argument(
         "--no-other", "-O", help="Exclude paths not explicitly included", action="store_true"
+    )
+    filtering.add_argument(
+        "--client",
+        "--user-agent",
+        "-C",
+        help="Only include requests whose client/user-agent contains this string",
     )
 
     output = parser.add_argument_group("Output")
@@ -183,23 +189,23 @@ class FilterType(Enum):
     METHOD = auto()
     PATH = auto()
     STATUS = auto()
+    DATETIME = auto()
 
 
 class FilterFunc(Protocol):
-    def __call__(self, m: Match[str], t: str = ...) -> bool:
-        ...
+    def __call__(self, m: Match[str], t: str = ...) -> bool: ...
 
 
 def main() -> None:
     args = parser().parse_args()
 
-    (filter_types, filter_funcs) = parse_filters(args)
+    (filter_types, filter_funcs, substr_terms) = parse_filters(args)
     logfile_names = parse_logfile_names(args)
     if args.timeline and args.nginx:
         print("! nginx logs not suggested for timeline, due to imprecision", file=sys.stderr)
 
     use_color = sys.stdout.isatty()
-    lowered_terms = [term.lower() for term in args.filter_terms]
+    lowered_terms = [term.lower() for term in substr_terms]
     try:
         for logfile_name in reversed(logfile_names):
             with maybe_gzip(logfile_name) as logfile:
@@ -242,6 +248,28 @@ def parse_logfile_names(args: argparse.Namespace) -> List[str]:
     else:
         base_path = "/var/log/zulip/server.log"
 
+    for term in args.filter_terms:
+        date_term = re.match(r"2\d\d\d-\d\d-\d\d", term)
+        if not date_term:
+            continue
+        # They're limiting to a specific day; find the right logfile
+        # which is going to have any matches
+        rotations = int(
+            (datetime.now(tz=timezone.utc).date() - date.fromisoformat(date_term[0]))
+            / timedelta(days=1)
+        )
+        access_log_retention_days = int(
+            get_config(get_config_file(), "application_server", "access_log_retention_days", "14")
+        )
+        if rotations > access_log_retention_days:
+            raise RuntimeError(f"Date is too old (more than {access_log_retention_days} days ago)")
+        if rotations == 0:
+            return [base_path]
+        if rotations == 1:
+            return [f"{base_path}.1"]
+        else:
+            return [f"{base_path}.{rotations}.gz"]
+
     logfile_names = [base_path]
     if args.all_logs:
         logfile_count = 15
@@ -267,9 +295,23 @@ def parse_logfile_names(args: argparse.Namespace) -> List[str]:
     return logfile_names
 
 
+month_no_to_name_lookup = {f"{k:02d}": v for k, v in enumerate(calendar.month_abbr)}
+month_name_to_no_lookup = {v: k for k, v in month_no_to_name_lookup.items()}
+
+
+def convert_from_nginx_date(date: str) -> str:
+    day_of_month, month_abbr, year = date.split("/")
+    return f"{year}-{month_name_to_no_lookup[month_abbr]}-{day_of_month}"
+
+
+def convert_to_nginx_date(date: str) -> str:
+    year, month_no, day_of_month = date.split("-")
+    return f"{day_of_month}/{month_no_to_name_lookup[month_no]}/{year}"
+
+
 def parse_filters(
     args: argparse.Namespace,
-) -> Tuple[Set[FilterType], List[FilterFunc]]:
+) -> Tuple[Set[FilterType], List[FilterFunc], List[str]]:
     # The heuristics below are not intended to be precise -- they
     # certainly count things as "IPv4" or "IPv6" addresses that are
     # invalid.  However, we expect the input here to already be
@@ -278,6 +320,10 @@ def parse_filters(
     filter_types = set()
     filter_funcs = []
     filter_terms = []
+
+    if args.events and not args.nginx:
+        logging.warning("Adding --nginx -- /events requests do not appear in Django logs.")
+        args.nginx = True
 
     for filter_term in args.filter_terms:
         if re.match(r"[1-5][0-9][0-9]$", filter_term):
@@ -304,6 +350,16 @@ def parse_filters(
         elif re.match(r"DELETE|GET|HEAD|OPTIONS|PATCH|POST|PUT", filter_term):
             filter_func = lambda m, t=filter_term: m["method"].upper() == t
             filter_type = FilterType.METHOD
+        elif re.match(r"(2\d\d\d-\d\d-\d\d)( \d(\d(:(\d(\d(:(\d\d?)?)?)?)?)?)?)?", filter_term):
+            if args.nginx:
+                datetime_parts = filter_term.split(" ")
+                filter_term = ":".join(
+                    [convert_to_nginx_date(datetime_parts[0]), *datetime_parts[1:]]
+                )
+                filter_func = lambda m, t=filter_term: f"{m['date']}:{m['time']}".startswith(t)
+            else:
+                filter_func = lambda m, t=filter_term: f"{m['date']} {m['time']}".startswith(t)
+            filter_type = FilterType.DATETIME
         elif re.match(r"[a-z0-9]([a-z0-9-]*[a-z0-9])?$", filter_term.lower()):
             filter_term = filter_term.lower()
             if args.nginx:
@@ -325,7 +381,7 @@ def parse_filters(
             args.all_lines = True
         else:
             raise RuntimeError(
-                f"Can't parse {filter_term} as an IP, hostname, user-id, path, or status code."
+                f"Can't parse {filter_term} as an IP, hostname, user-id, HTTP method, path, or status code."
             )
         if filter_type in filter_types:
             parser().error("Supplied the same time of value more than once, which cannot match!")
@@ -333,10 +389,11 @@ def parse_filters(
         filter_funcs.append(filter_func)
         filter_terms.append(filter_term)
 
-    # Push back the modified raw strings, so we can use them for fast substring searches
-    args.filter_terms = filter_terms
+    if args.client:
+        filter_funcs.append(lambda m, t=args.client: t in m["user_agent"])
+        filter_terms.append(args.client)
 
-    return (filter_types, filter_funcs)
+    return (filter_types, filter_funcs, filter_terms)
 
 
 def passes_filters(
@@ -365,14 +422,13 @@ def passes_filters(
         return args.messages
     elif path in ("/api/v1/users/me/presence", "/json/users/me/presence"):
         return args.presence
-    elif path.startswith(("/api/v1/report/", "/json/report/")) or path == "/error_tracing":
+    elif path == "/error_tracing":
         return args.report
     else:
         return not args.no_other
 
 
 last_match_end: Optional[datetime] = None
-month_lookup = {v: f"{k:02d}" for k, v in enumerate(calendar.month_abbr)}
 
 
 def print_line(
@@ -388,11 +444,10 @@ def print_line(
         return
 
     if args.nginx:
-        day_of_month, month_abbr, year = match["date"].split("/")
-        date = f"{year}-{month_lookup[month_abbr]}-{day_of_month}"
+        date = convert_from_nginx_date(match["date"])
     else:
         date = match["date"]
-    if args.all_logs or args.log_files is not None and args.log_files > 1:
+    if args.all_logs or (args.log_files is not None and args.log_files > 1):
         ts = date + " " + match["time"]
     else:
         ts = match["time"]
@@ -448,7 +503,7 @@ def print_line(
             gap_ms = int((logline_start - last_match_end) / timedelta(milliseconds=1))
             if gap_ms > 5000:
                 print()
-                print(f"========== {int(gap_ms/1000):>4} second gap ==========")
+                print(f"========== {int(gap_ms / 1000):>4} second gap ==========")
                 print()
             elif gap_ms > 1000:
                 print(f"============ {gap_ms:>5}ms gap ============")
@@ -456,7 +511,7 @@ def print_line(
                 print(f"------------ {gap_ms:>5}ms gap ------------")
             else:
                 print(f"!!!!!!!!!! {abs(gap_ms):>5}ms overlap !!!!!!!!!!")
-        if args.all_logs or args.log_files is not None and args.log_files > 1:
+        if args.all_logs or (args.log_files is not None and args.log_files > 1):
             print(logline_start.isoformat(" ", timespec="milliseconds") + " (start)")
         else:
             print(logline_start.time().isoformat(timespec="milliseconds") + " (start)")

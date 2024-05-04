@@ -33,7 +33,7 @@ feedback.
 
         * Response time: Usually within one business day.
 
-    * **Self-managed** and **Community** plan customers can ask for help in the
+    * **Free** and **Community** plan customers can ask for help in the
       [Zulip development community](#zulip-community). You will usually get a
       friendly reply within 1-3 business days.
 

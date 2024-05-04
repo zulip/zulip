@@ -50,12 +50,12 @@ run_test("basics", ({override, override_rewire}) => {
     set_global("clearTimeout", clear_timeout);
 
     function notify_server_start(recipient) {
-        assert.deepStrictEqual(recipient, [1, 2]);
+        assert.deepStrictEqual(recipient, {message_type: "direct", ids: [1, 2]});
         events.started = true;
     }
 
     function notify_server_stop(recipient) {
-        assert.deepStrictEqual(recipient, [1, 2]);
+        assert.deepStrictEqual(recipient, {message_type: "direct", ids: [1, 2]});
         events.stopped = true;
     }
 
@@ -83,11 +83,11 @@ run_test("basics", ({override, override_rewire}) => {
     };
 
     // Start talking to users having ids - 1, 2.
-    call_handler([1, 2]);
+    call_handler({message_type: "direct", ids: [1, 2]});
     assert.deepEqual(typing_status.state, {
         next_send_start_time: make_time(5 + 10),
         idle_timer: "idle_timer_stub",
-        current_recipient: [1, 2],
+        current_recipient: {message_type: "direct", ids: [1, 2]},
     });
     assert.deepEqual(events, {
         idle_callback: events.idle_callback,
@@ -99,11 +99,11 @@ run_test("basics", ({override, override_rewire}) => {
 
     // type again 3 seconds later
     worker.get_current_time = returns_time(8);
-    call_handler([1, 2]);
+    call_handler({message_type: "direct", ids: [1, 2]});
     assert.deepEqual(typing_status.state, {
         next_send_start_time: make_time(5 + 10),
         idle_timer: "idle_timer_stub",
-        current_recipient: [1, 2],
+        current_recipient: {message_type: "direct", ids: [1, 2]},
     });
     assert.deepEqual(events, {
         idle_callback: events.idle_callback,
@@ -116,11 +116,11 @@ run_test("basics", ({override, override_rewire}) => {
     // type after 15 secs, so that we can notify the server
     // again
     worker.get_current_time = returns_time(18);
-    call_handler([1, 2]);
+    call_handler({message_type: "direct", ids: [1, 2]});
     assert.deepEqual(typing_status.state, {
         next_send_start_time: make_time(18 + 10),
         idle_timer: "idle_timer_stub",
-        current_recipient: [1, 2],
+        current_recipient: {message_type: "direct", ids: [1, 2]},
     });
     assert.deepEqual(events, {
         idle_callback: events.idle_callback,
@@ -153,11 +153,11 @@ run_test("basics", ({override, override_rewire}) => {
 
     // Start talking to users again.
     worker.get_current_time = returns_time(50);
-    call_handler([1, 2]);
+    call_handler({message_type: "direct", ids: [1, 2]});
     assert.deepEqual(typing_status.state, {
         next_send_start_time: make_time(50 + 10),
         idle_timer: "idle_timer_stub",
-        current_recipient: [1, 2],
+        current_recipient: {message_type: "direct", ids: [1, 2]},
     });
     assert.deepEqual(events, {
         idle_callback: events.idle_callback,
@@ -179,11 +179,11 @@ run_test("basics", ({override, override_rewire}) => {
 
     // Start talking to users again.
     worker.get_current_time = returns_time(80);
-    call_handler([1, 2]);
+    call_handler({message_type: "direct", ids: [1, 2]});
     assert.deepEqual(typing_status.state, {
         next_send_start_time: make_time(80 + 10),
         idle_timer: "idle_timer_stub",
-        current_recipient: [1, 2],
+        current_recipient: {message_type: "direct", ids: [1, 2]},
     });
     assert.deepEqual(events, {
         idle_callback: events.idle_callback,
@@ -215,11 +215,11 @@ run_test("basics", ({override, override_rewire}) => {
 
     // Start talking to users again.
     worker.get_current_time = returns_time(170);
-    call_handler([1, 2]);
+    call_handler({message_type: "direct", ids: [1, 2]});
     assert.deepEqual(typing_status.state, {
         next_send_start_time: make_time(170 + 10),
         idle_timer: "idle_timer_stub",
-        current_recipient: [1, 2],
+        current_recipient: {message_type: "direct", ids: [1, 2]},
     });
     assert.deepEqual(events, {
         idle_callback: events.idle_callback,
@@ -233,15 +233,15 @@ run_test("basics", ({override, override_rewire}) => {
     worker.get_current_time = returns_time(171);
 
     worker.notify_server_start = (recipient) => {
-        assert.deepStrictEqual(recipient, [3, 4]);
+        assert.deepStrictEqual(recipient, {message_type: "direct", ids: [3, 4]});
         events.started = true;
     };
 
-    call_handler([3, 4]);
+    call_handler({message_type: "direct", ids: [3, 4]});
     assert.deepEqual(typing_status.state, {
         next_send_start_time: make_time(171 + 10),
         idle_timer: "idle_timer_stub",
-        current_recipient: [3, 4],
+        current_recipient: {message_type: "direct", ids: [3, 4]},
     });
     assert.deepEqual(events, {
         idle_callback: events.idle_callback,
@@ -343,12 +343,12 @@ run_test("stream_messages", ({override_rewire}) => {
     set_global("clearTimeout", clear_timeout);
 
     function notify_server_start(recipient) {
-        assert.deepStrictEqual(recipient, {stream_id: 3, topic: "test"});
+        assert.deepStrictEqual(recipient, {message_type: "stream", stream_id: 3, topic: "test"});
         events.started = true;
     }
 
     function notify_server_stop(recipient) {
-        assert.deepStrictEqual(recipient, {stream_id: 3, topic: "test"});
+        assert.deepStrictEqual(recipient, {message_type: "stream", stream_id: 3, topic: "test"});
         events.stopped = true;
     }
 
@@ -376,11 +376,11 @@ run_test("stream_messages", ({override_rewire}) => {
     };
 
     // Start typing stream message
-    call_handler({stream_id: 3, topic: "test"});
+    call_handler({message_type: "stream", stream_id: 3, topic: "test"});
     assert.deepEqual(typing_status.state, {
         next_send_start_time: make_time(5 + 10),
         idle_timer: "idle_timer_stub",
-        current_recipient: {stream_id: 3, topic: "test"},
+        current_recipient: {message_type: "stream", stream_id: 3, topic: "test"},
     });
     assert.deepEqual(events, {
         idle_callback: events.idle_callback,
@@ -392,11 +392,11 @@ run_test("stream_messages", ({override_rewire}) => {
 
     // type again 3 seconds later. Covers 'same_stream_and_topic' codepath.
     worker.get_current_time = returns_time(8);
-    call_handler({stream_id: 3, topic: "test"});
+    call_handler({message_type: "stream", stream_id: 3, topic: "test"});
     assert.deepEqual(typing_status.state, {
         next_send_start_time: make_time(5 + 10),
         idle_timer: "idle_timer_stub",
-        current_recipient: {stream_id: 3, topic: "test"},
+        current_recipient: {message_type: "stream", stream_id: 3, topic: "test"},
     });
     assert.deepEqual(events, {
         idle_callback: events.idle_callback,

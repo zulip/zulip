@@ -14,6 +14,10 @@ export function get_recipient_label(message) {
     // couple fields, both those constructed here and potentially
     // passed in.
 
+    if (message_lists.current === undefined) {
+        return "";
+    }
+
     if (message === undefined) {
         if (message_lists.current.visibly_empty()) {
             // For empty narrows where there's a clear reply target,
@@ -28,7 +32,7 @@ export function get_recipient_label(message) {
                 };
             } else if (narrow_state.pm_ids_string()) {
                 // TODO: This is a total hack.  Ideally, we'd rework
-                // this to not duplicate the actual compose_actions.js
+                // this to not duplicate the actual compose_actions.ts
                 // logic for what happens when you click the button,
                 // and not call into random modules with hacky fake
                 // "message" objects.
@@ -62,21 +66,21 @@ export function get_recipient_label(message) {
 function update_reply_button_state(disable = false) {
     $(".compose_reply_button").attr("disabled", disable);
     if (disable) {
-        $("#compose_buttons .compose_reply_button").attr(
-            "data-tooltip-template-id",
-            "compose_reply_button_disabled_tooltip_template",
+        $("#compose_buttons .compose-reply-button-wrapper").attr(
+            "data-reply-button-type",
+            "direct_disabled",
         );
         return;
     }
     if (narrow_state.is_message_feed_visible()) {
-        $("#compose_buttons .compose_reply_button").attr(
-            "data-tooltip-template-id",
-            "compose_reply_message_button_tooltip_template",
+        $("#compose_buttons .compose-reply-button-wrapper").attr(
+            "data-reply-button-type",
+            "selected_message",
         );
     } else {
-        $("#compose_buttons .compose_reply_button").attr(
-            "data-tooltip-template-id",
-            "compose_reply_selected_topic_button_tooltip_template",
+        $("#compose_buttons .compose-reply-button-wrapper").attr(
+            "data-reply-button-type",
+            "selected_conversation",
         );
     }
 }
@@ -125,38 +129,25 @@ export function update_buttons_for_private() {
         !narrow_state.pm_ids_string() ||
         people.user_can_direct_message(narrow_state.pm_ids_string())
     ) {
-        $("#new_conversation_button").attr(
-            "data-tooltip-template-id",
-            "new_direct_message_button_tooltip_template",
-        );
+        $("#new_conversation_button").attr("data-conversation-type", "direct");
         update_buttons(text_stream, is_direct_message_narrow);
         return;
     }
     // disable the [Message X] button when in a private narrow
     // if the user cannot dm the current recipient
     const disable_reply = true;
-    $("#compose_buttons .compose_reply_button").attr(
-        "data-tooltip-template-id",
-        "disable_reply_compose_reply_button_tooltip_template",
-    );
     update_buttons(text_stream, is_direct_message_narrow, disable_reply);
 }
 
 export function update_buttons_for_stream_views() {
     const text_stream = $t({defaultMessage: "Start new conversation"});
-    $("#new_conversation_button").attr(
-        "data-tooltip-template-id",
-        "new_topic_message_button_tooltip_template",
-    );
+    $("#new_conversation_button").attr("data-conversation-type", "stream");
     update_buttons(text_stream);
 }
 
-export function update_buttons_for_non_stream_views() {
+export function update_buttons_for_non_specific_views() {
     const text_stream = $t({defaultMessage: "Start new conversation"});
-    $("#new_conversation_button").attr(
-        "data-tooltip-template-id",
-        "new_stream_message_button_tooltip_template",
-    );
+    $("#new_conversation_button").attr("data-conversation-type", "non-specific");
     update_buttons(text_stream);
 }
 
@@ -184,7 +175,7 @@ export function initialize() {
     $(document).on("message_selected.zulip", () => {
         if (narrow_state.is_message_feed_visible()) {
             // message_selected events can occur with Recent Conversations
-            // open due to "All messages" loading in the background,
+            // open due to the combined feed view loading in the background,
             // so we only update if message feed is visible.
             update_reply_recipient_label();
         }
@@ -192,10 +183,18 @@ export function initialize() {
 
     // Click handlers for buttons in the compose box.
     $("body").on("click", ".compose_new_conversation_button", () => {
-        compose_actions.start("stream", {trigger: "clear topic button"});
+        compose_actions.start({
+            message_type: "stream",
+            trigger: "clear topic button",
+            keep_composebox_empty: true,
+        });
     });
 
     $("body").on("click", ".compose_new_direct_message_button", () => {
-        compose_actions.start("private", {trigger: "new direct message"});
+        compose_actions.start({
+            message_type: "private",
+            trigger: "new direct message",
+            keep_composebox_empty: true,
+        });
     });
 }

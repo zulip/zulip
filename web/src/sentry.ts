@@ -1,13 +1,22 @@
 import * as Sentry from "@sentry/browser";
-import _ from "lodash";
+import assert from "minimalistic-assert";
 
-import {page_params} from "./page_params";
+import {page_params} from "./base_page_params";
+import {current_user, realm} from "./state_data";
 
 type UserInfo = {
     id?: string;
     realm: string;
     role?: string;
 };
+
+const sentry_key =
+    // No parameter is the portico pages, empty string is the empty realm
+    page_params.realm_sentry_key === undefined
+        ? "www"
+        : page_params.realm_sentry_key === ""
+          ? "(root)"
+          : page_params.realm_sentry_key;
 
 export function normalize_path(path: string, is_portico = false): string {
     if (path === undefined) {
@@ -30,45 +39,36 @@ export function shouldCreateSpanForRequest(url: string): boolean {
     return parsed.pathname !== "/json/events";
 }
 
-if (page_params.server_sentry_dsn) {
-    const url_matches = [/^\//];
-    if (document.currentScript instanceof HTMLScriptElement) {
-        url_matches.push(
-            new RegExp("^" + _.escapeRegExp(new URL(".", document.currentScript.src).href)),
-        );
-    }
-    if (page_params.realm_uri !== undefined) {
-        url_matches.push(new RegExp("^" + _.escapeRegExp(page_params.realm_uri) + "/"));
-    }
-    const sentry_key =
-        // No parameter is the portico pages, empty string is the empty realm
-        page_params.realm_sentry_key === undefined
-            ? "www"
-            : page_params.realm_sentry_key === ""
-              ? "(root)"
-              : page_params.realm_sentry_key;
-    const user_info: UserInfo = {
-        realm: sentry_key,
-    };
-    if (sentry_key !== "www") {
-        user_info.role = page_params.is_owner
-            ? "Organization owner"
-            : page_params.is_admin
-              ? "Organization administrator"
-              : page_params.is_moderator
-                ? "Moderator"
-                : page_params.is_guest
-                  ? "Guest"
-                  : page_params.is_spectator
-                    ? "Spectator"
-                    : page_params.user_id
-                      ? "Member"
-                      : "Logged out";
-        if (page_params.user_id) {
-            user_info.id = page_params.user_id.toString();
-        }
-    }
+export function initialize(): void {
+    // The current_user and realm structures are not available until this is
+    // called from ui_init.initialize_everything.
+    assert(page_params.page_type === "home");
 
+    const user_role = current_user.is_owner
+        ? "Organization owner"
+        : current_user.is_admin
+          ? "Organization administrator"
+          : current_user.is_moderator
+            ? "Moderator"
+            : current_user.is_guest
+              ? "Guest"
+              : page_params.is_spectator
+                ? "Spectator"
+                : current_user.user_id
+                  ? "Member"
+                  : "Logged out";
+    const user_info: UserInfo = {realm: sentry_key, role: user_role};
+    if (current_user.user_id) {
+        user_info.id = current_user.user_id.toString();
+    }
+    Sentry.setTags({
+        user_role,
+        server_version: realm.zulip_version,
+    });
+    Sentry.setUser(user_info);
+}
+
+if (page_params.server_sentry_dsn) {
     const sample_rates = new Map([
         // This is controlled by shouldCreateSpanForRequest, above, but also put here for consistency
         ["call GET /json/events", 0],
@@ -85,7 +85,6 @@ if (page_params.server_sentry_dsn) {
         release: "zulip-server@" + ZULIP_VERSION,
         integrations: [
             new Sentry.BrowserTracing({
-                tracePropagationTargets: url_matches,
                 startTransactionOnLocationChange: false,
                 beforeNavigate(context) {
                     return {
@@ -97,20 +96,22 @@ if (page_params.server_sentry_dsn) {
                 shouldCreateSpanForRequest,
             }),
         ],
-        allowUrls: url_matches,
         sampleRate: page_params.server_sentry_sample_rate ?? 0,
         tracesSampler(samplingContext) {
             const base_rate = page_params.server_sentry_trace_rate ?? 0;
             const name = samplingContext.transactionContext.name;
             return base_rate * (sample_rates.get(name) ?? 1);
         },
-        initialScope: {
-            tags: {
+        initialScope(scope) {
+            const user_info: UserInfo = {
                 realm: sentry_key,
-                user_role: user_info.role ?? "Browser",
-                server_version: page_params.zulip_version,
-            },
-            user: user_info,
+            };
+            scope.setTags({
+                realm: sentry_key,
+                user_role: "Browser",
+            });
+            scope.setUser(user_info);
+            return scope;
         },
     });
 } else {

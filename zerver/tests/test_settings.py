@@ -352,6 +352,8 @@ class ChangeSettingsTest(ZulipTestCase):
             web_mark_read_on_scroll_policy=2,
             user_list_style=2,
             web_stream_unreads_count_display_policy=2,
+            web_font_size_px=14,
+            web_line_height_percent=122,
             color_scheme=2,
             email_notifications_batching_period_seconds=100,
             notification_sound="ding",

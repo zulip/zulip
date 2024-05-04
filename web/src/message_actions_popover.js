@@ -1,5 +1,6 @@
 import ClipboardJS from "clipboard";
 import $ from "jquery";
+import assert from "minimalistic-assert";
 
 import render_actions_popover from "../templates/popovers/actions_popover.hbs";
 
@@ -23,7 +24,7 @@ import * as unread_ops from "./unread_ops";
 let message_actions_popover_keyboard_toggle = false;
 
 function get_action_menu_menu_items() {
-    const $current_actions_popover_elem = $("[data-tippy-root] .actions_popover");
+    const $current_actions_popover_elem = $("[data-tippy-root] #message-actions-menu-dropdown");
     if (!$current_actions_popover_elem) {
         blueslip.error("Trying to get menu items when action popover is closed.");
         return undefined;
@@ -70,9 +71,7 @@ export function toggle_message_actions_menu(message) {
 
 export function initialize() {
     popover_menus.register_popover_menu(".actions_hover .message-actions-menu-button", {
-        // 320px is our minimum supported width for mobile. We will allow the value to flex
-        // to a max of 350px but we shouldn't make the popover wider than this.
-        maxWidth: "min(max(320px, 100vw), 350px)",
+        theme: "popover-menu",
         placement: "bottom",
         popperOptions: {
             modifiers: [
@@ -95,6 +94,16 @@ export function initialize() {
             $row.addClass("has_actions_popover");
         },
         onMount(instance) {
+            const $row = $(instance.reference).closest(".message_row");
+            const message_id = rows.id($row);
+            let quote_content;
+            if (compose_reply.selection_within_message_id() === message_id) {
+                // If the user has selected text within this message, quote only that.
+                // We track the selection right now, before the popover option for Quote
+                // and reply is clicked, since by then the selection is lost, due to the
+                // change in focus.
+                quote_content = compose_reply.get_message_selection();
+            }
             if (message_actions_popover_keyboard_toggle) {
                 focus_first_action_popover_item();
                 message_actions_popover_keyboard_toggle = false;
@@ -105,24 +114,30 @@ export function initialize() {
             // instance.hide gets called.
             const $popper = $(instance.popper);
             $popper.one("click", ".respond_button", (e) => {
-                const message_id = $(e.currentTarget).data("message-id");
-                compose_reply.quote_and_reply({trigger: "popover respond", message_id});
+                compose_reply.quote_and_reply({
+                    trigger: "popover respond",
+                    message_id,
+                    quote_content,
+                });
                 e.preventDefault();
                 e.stopPropagation();
-                instance.hide();
+                popover_menus.hide_current_popover_if_visible(instance);
             });
 
             $popper.one("click", ".popover_edit_message, .popover_view_source", (e) => {
-                const message_id = $(e.currentTarget).data("message-id");
+                const message_id = Number($(e.currentTarget).attr("data-message-id"));
+                assert(message_lists.current !== undefined);
                 const $row = message_lists.current.get_row(message_id);
                 message_edit.start($row);
                 e.preventDefault();
                 e.stopPropagation();
-                instance.hide();
+                popover_menus.hide_current_popover_if_visible(instance);
             });
 
             $popper.one("click", ".popover_move_message", (e) => {
-                const message_id = $(e.currentTarget).data("message-id");
+                const message_id = Number($(e.currentTarget).attr("data-message-id"));
+                assert(message_lists.current !== undefined);
+                message_lists.current.select_id(message_id);
                 const message = message_lists.current.get(message_id);
                 stream_popover.build_move_topic_to_stream_popover(
                     message.stream_id,
@@ -132,35 +147,35 @@ export function initialize() {
                 );
                 e.preventDefault();
                 e.stopPropagation();
-                instance.hide();
+                popover_menus.hide_current_popover_if_visible(instance);
             });
 
             $popper.one("click", ".mark_as_unread", (e) => {
-                const message_id = $(e.currentTarget).data("message-id");
+                const message_id = Number($(e.currentTarget).attr("data-message-id"));
                 unread_ops.mark_as_unread_from_here(message_id);
                 e.preventDefault();
                 e.stopPropagation();
-                instance.hide();
+                popover_menus.hide_current_popover_if_visible(instance);
             });
 
             $popper.one("click", ".popover_toggle_collapse", (e) => {
-                const message_id = $(e.currentTarget).data("message-id");
-                const $row = message_lists.current.get_row(message_id);
-                const message = message_lists.current.get(rows.id($row));
-                if ($row) {
-                    if (message.collapsed) {
-                        condense.uncollapse($row);
-                    } else {
-                        condense.collapse($row);
-                    }
+                const message_id = Number($(e.currentTarget).attr("data-message-id"));
+                assert(message_lists.current !== undefined);
+                const message = message_lists.current.get(message_id);
+                assert(message !== undefined);
+                if (message.collapsed) {
+                    condense.uncollapse(message);
+                } else {
+                    condense.collapse(message);
                 }
                 e.preventDefault();
                 e.stopPropagation();
-                instance.hide();
+                popover_menus.hide_current_popover_if_visible(instance);
             });
 
             $popper.one("click", ".rehide_muted_user_message", (e) => {
-                const message_id = $(e.currentTarget).data("message-id");
+                const message_id = Number($(e.currentTarget).attr("data-message-id"));
+                assert(message_lists.current !== undefined);
                 const $row = message_lists.current.get_row(message_id);
                 const message = message_lists.current.get(rows.id($row));
                 const message_container = message_lists.current.view.message_containers.get(
@@ -171,27 +186,27 @@ export function initialize() {
                 }
                 e.preventDefault();
                 e.stopPropagation();
-                instance.hide();
+                popover_menus.hide_current_popover_if_visible(instance);
             });
 
             $popper.one("click", ".view_read_receipts", (e) => {
-                const message_id = $(e.currentTarget).data("message-id");
+                const message_id = Number($(e.currentTarget).attr("data-message-id"));
                 read_receipts.show_user_list(message_id);
                 e.preventDefault();
                 e.stopPropagation();
-                instance.hide();
+                popover_menus.hide_current_popover_if_visible(instance);
             });
 
             $popper.one("click", ".delete_message", (e) => {
-                const message_id = $(e.currentTarget).data("message-id");
+                const message_id = Number($(e.currentTarget).attr("data-message-id"));
                 message_edit.delete_message(message_id);
                 e.preventDefault();
                 e.stopPropagation();
-                instance.hide();
+                popover_menus.hide_current_popover_if_visible(instance);
             });
 
             $popper.one("click", ".reaction_button", (e) => {
-                const message_id = $(e.currentTarget).data("message-id");
+                const message_id = Number($(e.currentTarget).attr("data-message-id"));
                 // Don't propagate the click event since `toggle_emoji_popover` opens a
                 // emoji_picker which we don't want to hide after actions popover is hidden.
                 e.stopPropagation();
@@ -199,7 +214,7 @@ export function initialize() {
                 emoji_picker.toggle_emoji_popover(instance.reference.parentElement, message_id, {
                     placement: "bottom",
                 });
-                instance.hide();
+                popover_menus.hide_current_popover_if_visible(instance);
             });
 
             new ClipboardJS($popper.find(".copy_link")[0]).on("success", () => {
@@ -209,7 +224,7 @@ export function initialize() {
                     // We unfocus this so keyboard shortcuts, etc., will work again.
                     $(":focus").trigger("blur");
                 }, 0);
-                instance.hide();
+                popover_menus.hide_current_popover_if_visible(instance);
             });
         },
         onHidden(instance) {

@@ -45,9 +45,7 @@ with open("/proc/meminfo") as meminfo:
 ram_gb = float(ram_size) / 1024.0 / 1024.0
 if ram_gb < 1.5:
     print(
-        "You have insufficient RAM ({} GB) to run the Zulip development environment.".format(
-            round(ram_gb, 2)
-        )
+        f"You have insufficient RAM ({round(ram_gb, 2)} GB) to run the Zulip development environment."
     )
     print("We recommend at least 2 GB of RAM, and require at least 1.5 GB.")
     sys.exit(1)
@@ -76,18 +74,12 @@ except OSError:
 distro_info = parse_os_release()
 vendor = distro_info["ID"]
 os_version = distro_info["VERSION_ID"]
-if vendor == "debian" and os_version == "11":  # bullseye
-    POSTGRESQL_VERSION = "13"
-elif vendor == "debian" and os_version == "12":  # bookworm
+if vendor == "debian" and os_version == "12":  # bookworm
     POSTGRESQL_VERSION = "15"
-elif vendor == "ubuntu" and os_version == "20.04":  # focal
-    POSTGRESQL_VERSION = "12"
-elif vendor == "ubuntu" and os_version == "21.10":  # impish
-    POSTGRESQL_VERSION = "13"
 elif vendor == "ubuntu" and os_version == "22.04":  # jammy
     POSTGRESQL_VERSION = "14"
-elif vendor == "neon" and os_version == "20.04":  # KDE Neon
-    POSTGRESQL_VERSION = "12"
+elif vendor == "ubuntu" and os_version == "24.04":  # noble
+    POSTGRESQL_VERSION = "16"
 elif vendor == "fedora" and os_version == "38":
     POSTGRESQL_VERSION = "15"
 elif vendor == "rhel" and os_version.startswith("7."):
@@ -126,11 +118,8 @@ UBUNTU_COMMON_APT_DEPENDENCIES = [
     "default-jre-headless",  # Required by vnu-jar
     # Puppeteer dependencies from here
     "fonts-freefont-ttf",
-    "gconf-service",
-    "libappindicator1",
     "libatk-bridge2.0-0",
     "libgbm1",
-    "libgconf-2-4",
     "libgtk-3-0",
     "libx11-xcb1",
     "libxcb-dri3-0",
@@ -160,7 +149,7 @@ COMMON_YUM_DEPENDENCIES = [
 
 BUILD_GROONGA_FROM_SOURCE = False
 BUILD_PGROONGA_FROM_SOURCE = False
-if vendor == "debian" and os_version in ["12"] or vendor == "ubuntu" and os_version in []:
+if (vendor == "debian" and os_version in []) or (vendor == "ubuntu" and os_version in ["24.04"]):
     # For platforms without a PGroonga release, we need to build it
     # from source.
     BUILD_PGROONGA_FROM_SOURCE = True
@@ -176,14 +165,6 @@ if vendor == "debian" and os_version in ["12"] or vendor == "ubuntu" and os_vers
     ]
 elif "debian" in os_families():
     DEBIAN_DEPENDENCIES = UBUNTU_COMMON_APT_DEPENDENCIES
-    # The below condition is required since libappindicator is
-    # not available for Debian 11. "libgroonga1" is an
-    # additional dependency for postgresql-13-pgdg-pgroonga.
-    #
-    # See https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=895037
-    if vendor == "debian":
-        DEBIAN_DEPENDENCIES.remove("libappindicator1")
-        DEBIAN_DEPENDENCIES.append("libgroonga0")
 
     # If we are on an aarch64 processor, ninja will be built from source,
     # so cmake is required
@@ -286,11 +267,16 @@ def install_yum_deps(deps_to_install: List[str]) -> None:
     #        Requires: perl(IPC::Run)
     yum_extra_flags: List[str] = []
     if vendor == "rhel":
-        exitcode, subs_status = subprocess.getstatusoutput("sudo subscription-manager status")
-        if exitcode == 1:
+        proc = subprocess.run(
+            ["sudo", "subscription-manager", "status"],
+            stdout=subprocess.PIPE,
+            text=True,
+            check=False,
+        )
+        if proc.returncode == 1:
             # TODO this might overkill since `subscription-manager` is already
             # called in setup-yum-repo
-            if "Status" in subs_status:
+            if "Status" in proc.stdout:
                 # The output is well-formed
                 yum_extra_flags = ["--skip-broken"]
             else:

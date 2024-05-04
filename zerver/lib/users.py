@@ -38,7 +38,7 @@ from zerver.models import (
     UserProfile,
 )
 from zerver.models.groups import SystemGroups
-from zerver.models.realms import get_fake_email_domain
+from zerver.models.realms import get_fake_email_domain, require_unique_names
 from zerver.models.users import (
     active_non_guest_user_ids,
     active_user_ids,
@@ -50,7 +50,9 @@ from zerver.models.users import (
 )
 
 
-def check_full_name(full_name_raw: str) -> str:
+def check_full_name(
+    full_name_raw: str, *, user_profile: Optional[UserProfile], realm: Optional[Realm]
+) -> str:
     full_name = full_name_raw.strip()
     if len(full_name) > UserProfile.MAX_NAME_LENGTH:
         raise JsonableError(_("Name too long!"))
@@ -65,6 +67,26 @@ def check_full_name(full_name_raw: str) -> str:
     # ban them.
     if re.search(r"\|\d+$", full_name_raw):
         raise JsonableError(_("Invalid format!"))
+
+    if require_unique_names(realm):
+        normalized_user_full_name = unicodedata.normalize("NFKC", full_name).casefold()
+        users_query = UserProfile.objects.filter(realm=realm)
+        # We want to exclude the user's full name while checking for
+        # uniqueness.
+        if user_profile is not None:
+            existing_names = users_query.exclude(id=user_profile.id).values_list(
+                "full_name", flat=True
+            )
+        else:
+            existing_names = users_query.values_list("full_name", flat=True)
+
+        normalized_existing_names = [
+            unicodedata.normalize("NFKC", full_name).casefold() for full_name in existing_names
+        ]
+
+        if normalized_user_full_name in normalized_existing_names:
+            raise JsonableError(_("Unique names required in this organization."))
+
     return full_name
 
 
@@ -72,7 +94,7 @@ def check_full_name(full_name_raw: str) -> str:
 # name (e.g. you can get there by reactivating a deactivated bot after
 # making a new bot with the same name).  This is just a check designed
 # to make it unlikely to happen by accident.
-def check_bot_name_available(realm_id: int, full_name: str) -> None:
+def check_bot_name_available(realm_id: int, full_name: str, *, is_activation: bool) -> None:
     dup_exists = UserProfile.objects.filter(
         realm_id=realm_id,
         full_name=full_name.strip(),
@@ -80,7 +102,12 @@ def check_bot_name_available(realm_id: int, full_name: str) -> None:
     ).exists()
 
     if dup_exists:
-        raise JsonableError(_("Name is already in use!"))
+        if is_activation:
+            raise JsonableError(
+                f'There is already an active bot named "{full_name}" in this organization. To reactivate this bot, you must rename or deactivate the other one first.'
+            )
+        else:
+            raise JsonableError(_("Name is already in use!"))
 
 
 def check_short_name(short_name_raw: str) -> str:
@@ -542,7 +569,7 @@ def user_access_restricted_in_realm(target_user: UserProfile) -> bool:
         return False
 
     realm = target_user.realm
-    if realm.can_access_all_users_group.name == SystemGroups.EVERYONE:
+    if realm.can_access_all_users_group.named_user_group.name == SystemGroups.EVERYONE:
         return False
 
     return True
@@ -582,7 +609,7 @@ def check_can_access_user(
     subscribed_recipient_ids = Subscription.objects.filter(
         user_profile=user_profile,
         active=True,
-        recipient__type__in=[Recipient.STREAM, Recipient.HUDDLE],
+        recipient__type__in=[Recipient.STREAM, Recipient.DIRECT_MESSAGE_GROUP],
     ).values_list("recipient_id", flat=True)
 
     if Subscription.objects.filter(
@@ -628,7 +655,7 @@ def get_inaccessible_user_ids(
     subscribed_recipient_ids = Subscription.objects.filter(
         user_profile=acting_user,
         active=True,
-        recipient__type__in=[Recipient.STREAM, Recipient.HUDDLE],
+        recipient__type__in=[Recipient.STREAM, Recipient.DIRECT_MESSAGE_GROUP],
     ).values_list("recipient_id", flat=True)
 
     common_subscription_user_ids = (
@@ -701,7 +728,7 @@ def get_subscribers_of_target_user_subscriptions(
         Subscription.objects.filter(
             user_profile__in=target_user_ids,
             active=True,
-            recipient__type__in=[Recipient.STREAM, Recipient.HUDDLE],
+            recipient__type__in=[Recipient.STREAM, Recipient.DIRECT_MESSAGE_GROUP],
         )
         .order_by("user_profile_id")
         .values("user_profile_id", "recipient_id")
@@ -725,11 +752,12 @@ def get_subscribers_of_target_user_subscriptions(
     if include_deactivated_users_for_huddles:
         subs_in_target_user_subscriptions_query = subs_in_target_user_subscriptions_query.filter(
             Q(recipient__type=Recipient.STREAM, is_user_active=True)
-            | Q(recipient__type=Recipient.HUDDLE)
+            | Q(recipient__type=Recipient.DIRECT_MESSAGE_GROUP)
         )
     else:
         subs_in_target_user_subscriptions_query = subs_in_target_user_subscriptions_query.filter(
-            recipient__type__in=[Recipient.STREAM, Recipient.HUDDLE], is_user_active=True
+            recipient__type__in=[Recipient.STREAM, Recipient.DIRECT_MESSAGE_GROUP],
+            is_user_active=True,
         )
 
     subs_in_target_user_subscriptions = subs_in_target_user_subscriptions_query.order_by(
@@ -747,9 +775,9 @@ def get_subscribers_of_target_user_subscriptions(
     for user_id in target_user_ids:
         target_user_subbed_recipients = target_user_subscriptions_dict[user_id]
         for recipient_id in target_user_subbed_recipients:
-            users_subbed_to_target_user_subscriptions_dict[
-                user_id
-            ] |= subscribers_dict_by_recipient_ids[recipient_id]
+            users_subbed_to_target_user_subscriptions_dict[user_id] |= (
+                subscribers_dict_by_recipient_ids[recipient_id]
+            )
 
     return users_subbed_to_target_user_subscriptions_dict
 

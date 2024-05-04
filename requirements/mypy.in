@@ -11,7 +11,7 @@ types-boto
 types-chardet
 types-decorator
 types-jsonschema
-types-Markdown<3.5.0.3  # https://github.com/python/typeshed/pull/10972#pullrequestreview-1760743552
+types-Markdown
 types-oauthlib
 types-polib
 types-pika
@@ -23,9 +23,7 @@ types-python-dateutil
 types-PyYAML
 types-redis
 types-regex
-types-requests<2.31.0.7  # https://github.com/python/typeshed/issues/10825
+types-requests
 types-zxcvbn
 
-importlib-metadata ; python_version < "3.10"  # for SQLAlchemy
-
-django-stubs
+https://github.com/typeddjango/django-stubs/archive/e11955f05994e196dcee004811ce2e05ff230462.zip#egg=django-stubs==5.0.0.dev1+git  # https://github.com/typeddjango/django-stubs/issues/1493

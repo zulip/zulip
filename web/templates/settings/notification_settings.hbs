@@ -4,7 +4,7 @@
             <h3>{{t "Notification triggers" }}</h3>
             {{> settings_save_discard_widget section_name="general-notify-settings" show_only_indicator=(not for_realm_settings) }}
         </div>
-        <p>{{t "Configure how Zulip notifies you about new messages. In muted streams, stream notification settings apply only to unmuted topics." }}</p>
+        <p>{{t "Configure how Zulip notifies you about new messages. In muted channels, channel notification settings apply only to unmuted topics." }}</p>
         <table class="notification-table table table-bordered wrapped-table">
             <thead>
                 <tr>
@@ -65,7 +65,7 @@
         </div>
 
         <div class="input-group">
-            <label for="automatically_follow_topics_policy" class="dropdown-title">{{ settings_label.automatically_follow_topics_policy }}</label>
+            <label for="automatically_follow_topics_policy" class="settings-field-label">{{ settings_label.automatically_follow_topics_policy }}</label>
             <select name="automatically_follow_topics_policy" class="setting_automatically_follow_topics_policy prop-element settings_select bootstrap-focus-style"
               id="{{prefix}}automatically_follow_topics_policy" data-setting-widget-type="number">
                 {{> dropdown_options_widget option_values=automatically_follow_topics_policy_values}}
@@ -73,7 +73,7 @@
         </div>
 
         <div class="input-group">
-            <label for="automatically_unmute_topics_in_muted_streams_policy" class="dropdown-title">{{ settings_label.automatically_unmute_topics_in_muted_streams_policy }}</label>
+            <label for="automatically_unmute_topics_in_muted_streams_policy" class="settings-field-label">{{ settings_label.automatically_unmute_topics_in_muted_streams_policy }}</label>
             <select name="automatically_unmute_topics_in_muted_streams_policy" class="setting_automatically_unmute_topics_in_muted_streams_policy prop-element settings_select bootstrap-focus-style"
               id="{{prefix}}automatically_unmute_topics_in_muted_streams_policy" data-setting-widget-type="number">
                 {{> dropdown_options_widget option_values=automatically_unmute_topics_in_muted_streams_policy_values}}
@@ -128,7 +128,7 @@
         </div>
 
         <div class="input-group">
-            <label for="desktop_icon_count_display" class="dropdown-title">{{ settings_label.desktop_icon_count_display }}</label>
+            <label for="desktop_icon_count_display" class="settings-field-label">{{ settings_label.desktop_icon_count_display }}</label>
             <select name="desktop_icon_count_display" class="setting_desktop_icon_count_display prop-element settings_select bootstrap-focus-style" id="{{prefix}}desktop_icon_count_display" data-setting-widget-type="number">
                 {{> dropdown_options_widget option_values=desktop_icon_count_display_values}}
             </select>
@@ -173,7 +173,7 @@
 
         <div class="input-group time-limit-setting">
 
-            <label for="email_notifications_batching_period">
+            <label for="email_notifications_batching_period" class="settings-field-label">
                 {{t "Delay before sending message notification emails" }}
             </label>
             <select name="email_notifications_batching_period_seconds" class="setting_email_notifications_batching_period_seconds prop-element settings_select bootstrap-focus-style" id="{{prefix}}email_notifications_batching_period_seconds" data-setting-widget-type="time-limit">
@@ -195,7 +195,7 @@
         </div>
 
         <div class="input-group">
-            <label for="realm_name_in_email_notifications_policy" class="dropdown-title">{{ settings_label.realm_name_in_email_notifications_policy }}</label>
+            <label for="realm_name_in_email_notifications_policy" class="settings-field-label">{{ settings_label.realm_name_in_email_notifications_policy }}</label>
             <select name="realm_name_in_email_notifications_policy" class="setting_realm_name_in_email_notifications_policy prop-element settings_select bootstrap-focus-style" id="{{prefix}}realm_name_in_email_notifications_policy" data-setting-widget-type="number">
                 {{> dropdown_options_widget option_values=realm_name_in_email_notifications_policy_values}}
             </select>

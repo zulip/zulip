@@ -32,20 +32,24 @@ import responses
 from django.apps import apps
 from django.conf import settings
 from django.core.mail import EmailMessage
+from django.core.signals import got_request_exception
 from django.db import connection
 from django.db.migrations.executor import MigrationExecutor
 from django.db.migrations.state import StateApps
 from django.db.utils import IntegrityError
-from django.http import HttpRequest, HttpResponse
+from django.http import HttpRequest, HttpResponse, HttpResponseBase
 from django.http.response import ResponseHeaders
+from django.test import Client as TestClient
 from django.test import SimpleTestCase, TestCase, TransactionTestCase
-from django.test.client import BOUNDARY, MULTIPART_CONTENT, encode_multipart
+from django.test.client import BOUNDARY, MULTIPART_CONTENT, ClientHandler, encode_multipart
 from django.test.testcases import SerializeMixin
 from django.urls import resolve
 from django.utils import translation
 from django.utils.module_loading import import_string
 from django.utils.timezone import now as timezone_now
+from django_stubs_ext import ValuesQuerySet
 from fakeldap import MockLDAP
+from openapi_core.contrib.django import DjangoOpenAPIRequest, DjangoOpenAPIResponse
 from requests import PreparedRequest
 from two_factor.plugins.phonenumber.models import PhoneDevice
 from typing_extensions import override
@@ -63,7 +67,7 @@ from zerver.lib.initial_password import initial_password
 from zerver.lib.message import access_message
 from zerver.lib.notification_data import UserMessageNotificationsData
 from zerver.lib.per_request_cache import flush_per_request_caches
-from zerver.lib.rate_limiter import bounce_redis_key_prefix_for_testing
+from zerver.lib.redis_utils import bounce_redis_key_prefix_for_testing
 from zerver.lib.sessions import get_session_dict_user
 from zerver.lib.soft_deactivation import do_soft_deactivate_users
 from zerver.lib.stream_subscription import get_subscribed_stream_ids_for_user
@@ -95,6 +99,7 @@ from zerver.lib.webhooks.common import (
 from zerver.models import (
     Client,
     Message,
+    NamedUserGroup,
     PushDeviceToken,
     Reaction,
     Realm,
@@ -102,7 +107,6 @@ from zerver.models import (
     Recipient,
     Stream,
     Subscription,
-    UserGroup,
     UserGroupMembership,
     UserMessage,
     UserProfile,
@@ -112,7 +116,7 @@ from zerver.models.groups import SystemGroups
 from zerver.models.realms import clear_supported_auth_backends_cache, get_realm
 from zerver.models.streams import get_realm_stream, get_stream
 from zerver.models.users import get_system_bot, get_user, get_user_by_delivery_email
-from zerver.openapi.openapi import validate_against_openapi_schema, validate_request
+from zerver.openapi.openapi import validate_test_request, validate_test_response
 from zerver.tornado.event_queue import clear_client_event_queues_for_testing
 
 if settings.ZILENCER_ENABLED:
@@ -147,6 +151,49 @@ class UploadSerializeMixin(SerializeMixin):
         super().setUpClass()
 
 
+class ZulipClientHandler(ClientHandler):
+    @override
+    def get_response(self, request: HttpRequest) -> HttpResponseBase:
+        got_exception = False
+
+        def on_exception(**kwargs: object) -> None:
+            nonlocal got_exception
+            if kwargs["request"] is request:
+                got_exception = True
+
+        request.body  # noqa: B018 # prevents RawPostDataException
+        got_request_exception.connect(on_exception)
+        try:
+            response = super().get_response(request)
+        finally:
+            got_request_exception.disconnect(on_exception)
+
+        if (
+            not got_exception  # Django will reraise this exception
+            and request.method != "OPTIONS"
+            and isinstance(response, HttpResponse)
+            and not (
+                response.status_code == 302 and response.headers["Location"].startswith("/login/")
+            )
+        ):
+            openapi_request = DjangoOpenAPIRequest(request)
+            openapi_response = DjangoOpenAPIResponse(response)
+            response_validated = validate_test_response(openapi_request, openapi_response)
+            if response_validated:
+                validate_test_request(
+                    openapi_request,
+                    str(response.status_code),
+                    request.META.get("intentionally_undocumented", False),
+                )
+        return response
+
+
+class ZulipTestClient(TestClient):
+    def __init__(self) -> None:
+        super().__init__()
+        self.handler = ZulipClientHandler(enforce_csrf_checks=False)
+
+
 class ZulipTestCaseMixin(SimpleTestCase):
     # Ensure that the test system just shows us diffs
     maxDiff: Optional[int] = None
@@ -154,6 +201,7 @@ class ZulipTestCaseMixin(SimpleTestCase):
     # Override this to verify if the given extra console output matches the
     # expectation.
     expected_console_output: Optional[str] = None
+    client_class = ZulipTestClient
 
     @override
     def setUp(self) -> None:
@@ -239,7 +287,9 @@ Output:
     django_client to fool the regex.
     """
     DEFAULT_SUBDOMAIN = "zulip"
-    TOKENIZED_NOREPLY_REGEX = settings.TOKENIZED_NOREPLY_EMAIL_ADDRESS.format(token="[a-z0-9_]{24}")
+    TOKENIZED_NOREPLY_REGEX = settings.TOKENIZED_NOREPLY_EMAIL_ADDRESS.format(
+        token=r"[a-z0-9_]{24}"
+    )
 
     def set_http_headers(self, extra: Dict[str, str], skip_user_agent: bool = False) -> None:
         if "subdomain" in extra:
@@ -266,63 +316,6 @@ Output:
         elif "HTTP_USER_AGENT" not in extra:
             extra["HTTP_USER_AGENT"] = default_user_agent
 
-    def extract_api_suffix_url(self, url: str) -> Tuple[str, Dict[str, List[str]]]:
-        """
-        Function that extracts the URL after `/api/v1` or `/json` and also
-        returns the query data in the URL, if there is any.
-        """
-        url_split = url.split("?")
-        data = {}
-        if len(url_split) == 2:
-            data = parse_qs(url_split[1])
-        url = url_split[0]
-        url = url.replace("/json/", "/").replace("/api/v1/", "/")
-        return (url, data)
-
-    def validate_api_response_openapi(
-        self,
-        url: str,
-        method: str,
-        result: "TestHttpResponse",
-        data: Union[str, bytes, Mapping[str, Any]],
-        extra: Dict[str, str],
-        intentionally_undocumented: bool = False,
-    ) -> None:
-        """
-        Validates all API responses received by this test against Zulip's API documentation,
-        declared in zerver/openapi/zulip.yaml.  This powerful test lets us use Zulip's
-        extensive test coverage of corner cases in the API to ensure that we've properly
-        documented those corner cases.
-        """
-        if not url.startswith(("/json", "/api/v1")):
-            return
-        try:
-            content = orjson.loads(result.content)
-        except orjson.JSONDecodeError:
-            return
-        json_url = False
-        if url.startswith("/json"):
-            json_url = True
-        url, query_data = self.extract_api_suffix_url(url)
-        if len(query_data) != 0:
-            # In some cases the query parameters are defined in the URL itself. In such cases
-            # The `data` argument of our function is not used. Hence get `data` argument
-            # from url.
-            data = query_data
-        response_validated = validate_against_openapi_schema(
-            content, url, method, str(result.status_code)
-        )
-        if response_validated:
-            validate_request(
-                url,
-                method,
-                data,
-                extra,
-                json_url,
-                str(result.status_code),
-                intentionally_undocumented=intentionally_undocumented,
-            )
-
     @instrument_url
     def client_patch(
         self,
@@ -342,18 +335,15 @@ Output:
         extra["content_type"] = "application/x-www-form-urlencoded"
         django_client = self.client  # see WRAPPER_COMMENT
         self.set_http_headers(extra, skip_user_agent)
-        result = django_client.patch(
-            url, encoded, follow=follow, secure=secure, headers=headers, **extra
-        )
-        self.validate_api_response_openapi(
+        return django_client.patch(
             url,
-            "patch",
-            result,
-            info,
-            extra,
+            encoded,
+            follow=follow,
+            secure=secure,
+            headers=headers,
             intentionally_undocumented=intentionally_undocumented,
+            **extra,
         )
-        return result
 
     @instrument_url
     def client_patch_multipart(
@@ -378,24 +368,16 @@ Output:
         encoded = encode_multipart(BOUNDARY, dict(info))
         django_client = self.client  # see WRAPPER_COMMENT
         self.set_http_headers(extra, skip_user_agent)
-        result = django_client.patch(
+        return django_client.patch(
             url,
             encoded,
             content_type=MULTIPART_CONTENT,
             follow=follow,
             secure=secure,
             headers=headers,
+            intentionally_undocumented=intentionally_undocumented,
             **extra,
         )
-        self.validate_api_response_openapi(
-            url,
-            "patch",
-            result,
-            info,
-            extra,
-            intentionally_undocumented=intentionally_undocumented,
-        )
-        return result
 
     def json_patch(
         self,
@@ -477,18 +459,18 @@ Output:
         extra["content_type"] = "application/x-www-form-urlencoded"
         django_client = self.client  # see WRAPPER_COMMENT
         self.set_http_headers(extra, skip_user_agent)
-        result = django_client.delete(
-            url, encoded, follow=follow, secure=secure, headers=headers, **extra
-        )
-        self.validate_api_response_openapi(
+        return django_client.delete(
             url,
-            "delete",
-            result,
-            info,
-            extra,
+            encoded,
+            follow=follow,
+            secure=secure,
+            headers={
+                "Content-Type": "application/x-www-form-urlencoded",  # https://code.djangoproject.com/ticket/33230
+                **(headers or {}),
+            },
             intentionally_undocumented=intentionally_undocumented,
+            **extra,
         )
-        return result
 
     @instrument_url
     def client_options(
@@ -532,22 +514,33 @@ Output:
         secure: bool = False,
         headers: Optional[Mapping[str, Any]] = None,
         intentionally_undocumented: bool = False,
+        content_type: Optional[str] = None,
         **extra: str,
     ) -> "TestHttpResponse":
         django_client = self.client  # see WRAPPER_COMMENT
         self.set_http_headers(extra, skip_user_agent)
-        result = django_client.post(
-            url, info, follow=follow, secure=secure, headers=headers, **extra
-        )
-        self.validate_api_response_openapi(
+        encoded = info
+        if content_type is None:
+            if isinstance(info, dict) and not any(
+                hasattr(value, "read") and callable(value.read) for value in info.values()
+            ):
+                content_type = "application/x-www-form-urlencoded"
+                encoded = urlencode(info, doseq=True)
+            else:
+                content_type = MULTIPART_CONTENT
+        return django_client.post(
             url,
-            "post",
-            result,
-            info,
-            extra,
+            encoded,
+            follow=follow,
+            secure=secure,
+            headers={
+                "Content-Type": content_type,  # https://code.djangoproject.com/ticket/33230
+                **(headers or {}),
+            },
+            content_type=content_type,
             intentionally_undocumented=intentionally_undocumented,
+            **extra,
         )
-        return result
 
     @instrument_url
     def client_post_request(self, url: str, req: Any) -> "TestHttpResponse":
@@ -577,13 +570,15 @@ Output:
     ) -> "TestHttpResponse":
         django_client = self.client  # see WRAPPER_COMMENT
         self.set_http_headers(extra, skip_user_agent)
-        result = django_client.get(
-            url, info, follow=follow, secure=secure, headers=headers, **extra
+        return django_client.get(
+            url,
+            info,
+            follow=follow,
+            secure=secure,
+            headers=headers,
+            intentionally_undocumented=intentionally_undocumented,
+            **extra,
         )
-        self.validate_api_response_openapi(
-            url, "get", result, info, extra, intentionally_undocumented=intentionally_undocumented
-        )
-        return result
 
     example_user_map = dict(
         hamlet="hamlet@zulip.com",
@@ -850,6 +845,8 @@ Output:
             "default_stream_group": default_stream_groups,
             "source_realm_id": source_realm_id,
             "is_demo_organization": is_demo_organization,
+            "how_realm_creator_found_zulip": "other",
+            "how_realm_creator_found_zulip_extra_context": "I found it on the internet.",
         }
         if enable_marketing_emails is not None:
             payload["enable_marketing_emails"] = enable_marketing_emails
@@ -1251,7 +1248,7 @@ Output:
         """
         self.assertEqual(self.get_json_error(result, status_code=status_code), msg)
 
-    def assert_length(self, items: Collection[Any], count: int) -> None:
+    def assert_length(self, items: Collection[Any] | ValuesQuerySet[Any, Any], count: int) -> None:
         actual_count = len(items)
         if actual_count != count:  # nocoverage
             print("\nITEMS:\n")
@@ -1367,7 +1364,7 @@ Output:
         history_public_to_subscribers = get_default_value_for_history_public_to_subscribers(
             realm, invite_only, history_public_to_subscribers
         )
-        administrators_user_group = UserGroup.objects.get(
+        administrators_user_group = NamedUserGroup.objects.get(
             name=SystemGroups.ADMINISTRATORS, realm=realm, is_system_group=True
         )
 
@@ -1480,7 +1477,7 @@ Output:
         """
         Mark all messages within the topic associated with message `target_message_id` as resolved.
         """
-        message, _ = access_message(acting_user, target_message_id)
+        message = access_message(acting_user, target_message_id)
         return self.api_patch(
             acting_user,
             f"/api/v1/messages/{target_message_id}",
@@ -1565,10 +1562,8 @@ Output:
         markdown.__init__.do_convert.
         """
         with mock.patch(
-            "zerver.lib.markdown.timeout", side_effect=subprocess.CalledProcessError(1, [])
-        ), self.assertLogs(
-            level="ERROR"
-        ):  # For markdown_logger.exception
+            "zerver.lib.markdown.unsafe_timeout", side_effect=subprocess.CalledProcessError(1, [])
+        ), self.assertLogs(level="ERROR"):  # For markdown_logger.exception
             yield
 
     def create_default_device(
@@ -1977,7 +1972,7 @@ Output:
         self.send_personal_message(shiva, polonius)
         self.send_huddle_message(aaron, [polonius, zoe])
 
-        members_group = UserGroup.objects.get(name="role:members", realm=realm)
+        members_group = NamedUserGroup.objects.get(name="role:members", realm=realm)
         do_change_realm_permission_group_setting(
             realm, "can_access_all_users_group", members_group, acting_user=None
         )
@@ -1995,9 +1990,7 @@ class ZulipTestCase(ZulipTestCaseMixin, TestCase):
         # Some code might call process_notification using keyword arguments,
         # so mypy doesn't allow assigning lst.append to process_notification
         # So explicitly change parameter name to 'notice' to work around this problem
-        with mock.patch(
-            "zerver.tornado.event_queue.process_notification", lambda notice: lst.append(notice)
-        ):
+        with mock.patch("zerver.tornado.event_queue.process_notification", lst.append):
             # Some `send_event` calls need to be executed only after the current transaction
             # commits (using `on_commit` hooks). Because the transaction in Django tests never
             # commits (rather, gets rolled back after the test completes), such events would
@@ -2425,7 +2418,7 @@ class BouncerTestCase(ZulipTestCase):
     def add_mock_response(self) -> None:
         # Match any endpoint with the PUSH_NOTIFICATION_BOUNCER_URL.
         assert settings.PUSH_NOTIFICATION_BOUNCER_URL is not None
-        COMPILED_URL = re.compile(settings.PUSH_NOTIFICATION_BOUNCER_URL + ".*")
+        COMPILED_URL = re.compile(settings.PUSH_NOTIFICATION_BOUNCER_URL + r".*")
         responses.add_callback(responses.POST, COMPILED_URL, callback=self.request_callback)
         responses.add_callback(responses.GET, COMPILED_URL, callback=self.request_callback)
 

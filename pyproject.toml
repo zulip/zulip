@@ -48,7 +48,6 @@ local_partial_types = true
 plugins = [
     "mypy_django_plugin.main",
     "pydantic.mypy",
-    "returns.contrib.mypy.returns_plugin",
 ]
 
 [[tool.mypy.overrides]]
@@ -99,6 +98,11 @@ init_typed = true
 warn_required_dynamic_aliases = true
 
 [tool.ruff]
+line-length = 100
+src = [".", "tools"]
+target-version = "py38"
+
+[tool.ruff.lint]
 # See https://github.com/astral-sh/ruff#rules for error code definitions.
 select = [
     "ANN", # annotations
@@ -115,6 +119,7 @@ select = [
     "I", # import sorting
     "INT", # gettext
     "ISC", # string concatenation
+    "LOG", # logging
     "N", # naming
     "PERF", # performance
     "PGH", # pygrep-hooks
@@ -125,8 +130,11 @@ select = [
     "RSE", # raise
     "RUF", # Ruff
     "S", # security
+    "SLOT", # __slots__
     "SIM", # simplify
     "T10", # debugger
+    "TCH", # type-checking
+    "TID", # tidy imports
     "UP", # upgrade
     "W", # style warnings
     "YTT", # sys.version
@@ -145,6 +153,7 @@ ignore = [
     "E402", # Module level import not at top of file
     "E501", # Line too long
     "E731", # Do not assign a lambda expression, use a def
+    "ISC001", # Implicitly concatenated string literals on one line
     "N802", # Function name should be lowercase
     "N806", # Variable in function should be lowercase
     "PERF203", # `try`-`except` within a loop incurs performance overhead
@@ -179,14 +188,14 @@ ignore = [
     "SIM114", # Combine `if` branches using logical `or` operator
     "SIM117", # Use a single `with` statement with multiple contexts instead of nested `with` statements
     "SIM401", # Use `d.get(key, default)` instead of an `if` block
+    "TCH001", # Move application import into a type-checking block
+    "TCH002", # Move third-party import into a type-checking block
+    "TCH003", # Move standard library import into a type-checking block
 ]
-line-length = 100
-src = [".", "tools"]
-target-version = "py38"
 
-[tool.ruff.flake8-gettext]
+[tool.ruff.lint.flake8-gettext]
 extend-function-names = ["gettext_lazy"]
 
-[tool.ruff.isort]
+[tool.ruff.lint.isort]
 known-third-party = ["zulip"]
 split-on-trailing-comma = false

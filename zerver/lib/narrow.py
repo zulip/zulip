@@ -1,16 +1,13 @@
-import os
 import re
 from dataclasses import dataclass
 from typing import (
     Any,
     Callable,
-    Collection,
     Dict,
     Generic,
     Iterable,
     List,
     Optional,
-    Protocol,
     Sequence,
     Set,
     Tuple,
@@ -23,6 +20,7 @@ from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import connection
 from django.utils.translation import gettext as _
+from pydantic import BaseModel, model_validator
 from sqlalchemy.dialects import postgresql
 from sqlalchemy.engine import Connection, Row
 from sqlalchemy.sql import (
@@ -31,6 +29,7 @@ from sqlalchemy.sql import (
     Select,
     and_,
     column,
+    false,
     func,
     join,
     literal,
@@ -48,7 +47,7 @@ from typing_extensions import TypeAlias, override
 from zerver.lib.addressee import get_user_profiles, get_user_profiles_by_ids
 from zerver.lib.exceptions import ErrorCode, JsonableError
 from zerver.lib.message import get_first_visible_message_id
-from zerver.lib.narrow_helpers import NarrowTerm
+from zerver.lib.narrow_predicate import channel_operators, channels_operators
 from zerver.lib.recipient_users import recipient_for_user_profiles
 from zerver.lib.sqlalchemy_utils import get_sqlalchemy_connection
 from zerver.lib.streams import (
@@ -58,10 +57,8 @@ from zerver.lib.streams import (
     get_stream_by_narrow_operand_access_unchecked,
     get_web_public_streams_queryset,
 )
-from zerver.lib.topic import (
-    RESOLVED_TOPIC_PREFIX,
+from zerver.lib.topic_sqlalchemy import (
     get_resolved_topic_condition_sa,
-    get_topic_from_message_info,
     topic_column_sa,
     topic_match_sa,
 )
@@ -75,42 +72,93 @@ from zerver.lib.validator import (
     check_string_or_int,
     check_string_or_int_list,
 )
-from zerver.models import Realm, Recipient, Stream, Subscription, UserMessage, UserProfile
+from zerver.models import Huddle, Realm, Recipient, Stream, Subscription, UserMessage, UserProfile
 from zerver.models.streams import get_active_streams
 from zerver.models.users import (
     get_user_by_id_in_realm_including_cross_realm,
     get_user_including_cross_realm,
 )
 
-stop_words_list: Optional[List[str]] = None
 
+class NarrowParameter(BaseModel):
+    operator: str
+    operand: Any
+    negated: bool = False
 
-def read_stop_words() -> List[str]:
-    global stop_words_list
-    if stop_words_list is None:
-        file_path = os.path.join(
-            settings.DEPLOY_ROOT, "puppet/zulip/files/postgresql/zulip_english.stop"
-        )
-        with open(file_path) as f:
-            stop_words_list = f.read().splitlines()
+    @model_validator(mode="before")
+    @classmethod
+    def convert_term(cls, elem: Union[Dict[str, Any], List[str]]) -> Dict[str, Any]:
+        # We have to support a legacy tuple format.
+        if isinstance(elem, list):
+            if len(elem) != 2 or any(not isinstance(x, str) for x in elem):
+                raise ValueError("element is not a string pair")
+            return dict(operator=elem[0], operand=elem[1])
 
-    return stop_words_list
+        elif isinstance(elem, dict):
+            if "operand" not in elem or elem["operand"] is None:
+                raise ValueError("operand is missing")
 
+            if "operator" not in elem or elem["operator"] is None:
+                raise ValueError("operator is missing")
+            return elem
+        else:
+            raise ValueError("dict or list required")
 
-def check_narrow_for_events(narrow: Collection[NarrowTerm]) -> None:
-    for narrow_term in narrow:
-        operator = narrow_term.operator
-        if operator not in ["stream", "topic", "sender", "is"]:
-            raise JsonableError(_("Operator {operator} not supported.").format(operator=operator))
+    @model_validator(mode="after")
+    def validate_terms(self) -> "NarrowParameter":
+        # Make sure to sync this list to frontend also when adding a new operator that
+        # supports integer IDs. Relevant code is located in web/src/message_fetch.js
+        # in handle_operators_supporting_id_based_api function where you will need to
+        # update operators_supporting_id, or operators_supporting_ids array.
+        operators_supporting_id = [
+            *channel_operators,
+            "id",
+            "sender",
+            "group-pm-with",
+            "dm-including",
+        ]
+        operators_supporting_ids = ["pm-with", "dm"]
+        operators_non_empty_operand = {"search"}
+
+        operator = self.operator
+        if operator in operators_supporting_id:
+            operand_validator: Validator[object] = check_string_or_int
+        elif operator in operators_supporting_ids:
+            operand_validator = check_string_or_int_list
+        elif operator in operators_non_empty_operand:
+            operand_validator = check_required_string
+        else:
+            operand_validator = check_string
+
+        try:
+            self.operand = operand_validator("operand", self.operand)
+            self.operator = check_string("operator", self.operator)
+            if self.negated is not None:
+                self.negated = check_bool("negated", self.negated)
+        except ValidationError as error:
+            raise JsonableError(error.message)
+
+        # whitelist the fields we care about for now
+        return self
 
 
 def is_spectator_compatible(narrow: Iterable[Dict[str, Any]]) -> bool:
-    # This implementation should agree with the similar function in web/src/hash_util.js.
+    # This implementation should agree with is_spectator_compatible in hash_parser.ts.
+    supported_operators = [
+        *channel_operators,
+        *channels_operators,
+        "topic",
+        "sender",
+        "has",
+        "search",
+        "near",
+        "id",
+    ]
     for element in narrow:
         operator = element["operator"]
         if "operand" not in element:
             return False
-        if operator not in ["streams", "stream", "topic", "sender", "has", "search", "near", "id"]:
+        if operator not in supported_operators:
             return False
     return True
 
@@ -121,71 +169,13 @@ def is_web_public_narrow(narrow: Optional[Iterable[Dict[str, Any]]]) -> bool:
 
     return any(
         # Web-public queries are only allowed for limited types of narrows.
-        # term == {'operator': 'streams', 'operand': 'web-public', 'negated': False}
-        term["operator"] == "streams"
+        # term == {'operator': 'channels', 'operand': 'web-public', 'negated': False}
+        # or term == {'operator': 'streams', 'operand': 'web-public', 'negated': False}
+        term["operator"] in channels_operators
         and term["operand"] == "web-public"
         and term["negated"] is False
         for term in narrow
     )
-
-
-class NarrowPredicate(Protocol):
-    def __call__(self, *, message: Dict[str, Any], flags: List[str]) -> bool:
-        ...
-
-
-def build_narrow_predicate(
-    narrow: Collection[NarrowTerm],
-) -> NarrowPredicate:
-    """Changes to this function should come with corresponding changes to
-    NarrowLibraryTest."""
-    check_narrow_for_events(narrow)
-
-    def narrow_predicate(*, message: Dict[str, Any], flags: List[str]) -> bool:
-        def satisfies_operator(*, operator: str, operand: str) -> bool:
-            if operator == "stream":
-                if message["type"] != "stream":
-                    return False
-                if operand.lower() != message["display_recipient"].lower():
-                    return False
-            elif operator == "topic":
-                if message["type"] != "stream":
-                    return False
-                topic_name = get_topic_from_message_info(message)
-                if operand.lower() != topic_name.lower():
-                    return False
-            elif operator == "sender":
-                if operand.lower() != message["sender_email"].lower():
-                    return False
-            elif operator == "is" and operand in ["dm", "private"]:
-                # "is:private" is a legacy alias for "is:dm"
-                if message["type"] != "private":
-                    return False
-            elif operator == "is" and operand in ["starred"]:
-                if operand not in flags:
-                    return False
-            elif operator == "is" and operand == "unread":
-                if "read" in flags:
-                    return False
-            elif operator == "is" and operand in ["alerted", "mentioned"]:
-                if "mentioned" not in flags:
-                    return False
-            elif operator == "is" and operand == "resolved":
-                if message["type"] != "stream":
-                    return False
-                topic_name = get_topic_from_message_info(message)
-                if not topic_name.startswith(RESOLVED_TOPIC_PREFIX):
-                    return False
-            return True
-
-        for narrow_term in narrow:
-            # TODO: Eventually handle negated narrow terms.
-            if not satisfies_operator(operator=narrow_term.operator, operand=narrow_term.operand):
-                return False
-
-        return True
-
-    return narrow_predicate
 
 
 LARGER_THAN_MAX_MESSAGE_ID = 10000000000000000
@@ -269,8 +259,12 @@ class NarrowBuilder:
             "has": self.by_has,
             "in": self.by_in,
             "is": self.by_is,
-            "stream": self.by_stream,
-            "streams": self.by_streams,
+            "channel": self.by_channel,
+            # "stream" is a legacy alias for "channel"
+            "stream": self.by_channel,
+            "channels": self.by_channels,
+            # "streams" is a legacy alias for "channels"
+            "streams": self.by_channels,
             "topic": self.by_topic,
             "sender": self.by_sender,
             "near": self.by_near,
@@ -290,18 +284,20 @@ class NarrowBuilder:
             "pm_with": self.by_dm,
             "group_pm_with": self.by_group_pm_with,
         }
-        self.is_stream_narrow = False
+        self.is_channel_narrow = False
         self.is_dm_narrow = False
 
-    def check_not_both_stream_dm(
-        self, is_dm_narrow: bool = False, is_stream_narrow: bool = False
+    def check_not_both_channel_and_dm_narrow(
+        self, is_dm_narrow: bool = False, is_channel_narrow: bool = False
     ) -> None:
         if is_dm_narrow:
             self.is_dm_narrow = True
-        if is_stream_narrow:
-            self.is_stream_narrow = True
-        if self.is_stream_narrow and self.is_dm_narrow:
-            raise BadNarrowOperatorError("No message can be both a stream and a DM message")
+        if is_channel_narrow:
+            self.is_channel_narrow = True
+        if self.is_channel_narrow and self.is_dm_narrow:
+            raise BadNarrowOperatorError(
+                "No message can be both a channel message and direct message"
+            )
 
     def add_term(self, query: Select, term: Dict[str, Any]) -> Select:
         """
@@ -334,8 +330,24 @@ class NarrowBuilder:
         return method(query, operand, maybe_negate)
 
     def by_has(self, query: Select, operand: str, maybe_negate: ConditionTransform) -> Select:
-        if operand not in ["attachment", "image", "link"]:
+        if operand not in ["attachment", "image", "link", "reaction"]:
             raise BadNarrowOperatorError("unknown 'has' operand " + operand)
+
+        if operand == "reaction":
+            if self.msg_id_column.name == "message_id":
+                # If the initial query uses `zerver_usermessage`
+                check_col = literal_column("zerver_usermessage.message_id", Integer)
+            else:
+                # If the initial query doesn't use `zerver_usermessage`
+                check_col = literal_column("zerver_message.id", Integer)
+            exists_cond = (
+                select([1])
+                .select_from(table("zerver_reaction"))
+                .where(check_col == literal_column("zerver_reaction.message_id", Integer))
+                .exists()
+            )
+            return query.where(maybe_negate(exists_cond))
+
         col_name = "has_" + operand
         cond = column(col_name, Boolean)
         return query.where(maybe_negate(cond))
@@ -360,7 +372,7 @@ class NarrowBuilder:
 
         if operand in ["dm", "private"]:
             # "is:private" is a legacy alias for "is:dm"
-            self.check_not_both_stream_dm(is_dm_narrow=True)
+            self.check_not_both_channel_and_dm_narrow(is_dm_narrow=True)
             cond = column("flags", Integer).op("&")(UserMessage.flags.is_private.mask) != 0
             return query.where(maybe_negate(cond))
         elif operand == "starred":
@@ -407,69 +419,71 @@ class NarrowBuilder:
                     s[i] = "\\" + c
         return "".join(s)
 
-    def by_stream(
+    def by_channel(
         self, query: Select, operand: Union[str, int], maybe_negate: ConditionTransform
     ) -> Select:
-        self.check_not_both_stream_dm(is_stream_narrow=True)
+        self.check_not_both_channel_and_dm_narrow(is_channel_narrow=True)
 
         try:
             # Because you can see your own message history for
-            # private streams you are no longer subscribed to, we
+            # private channels you are no longer subscribed to, we
             # need get_stream_by_narrow_operand_access_unchecked here.
-            stream = get_stream_by_narrow_operand_access_unchecked(operand, self.realm)
+            channel = get_stream_by_narrow_operand_access_unchecked(operand, self.realm)
 
-            if self.is_web_public_query and not stream.is_web_public:
-                raise BadNarrowOperatorError("unknown web-public stream " + str(operand))
+            if self.is_web_public_query and not channel.is_web_public:
+                raise BadNarrowOperatorError("unknown web-public channel " + str(operand))
         except Stream.DoesNotExist:
-            raise BadNarrowOperatorError("unknown stream " + str(operand))
+            raise BadNarrowOperatorError("unknown channel " + str(operand))
 
         if self.realm.is_zephyr_mirror_realm:
             # MIT users expect narrowing to "social" to also show messages to
             # /^(un)*social(.d)*$/ (unsocial, ununsocial, social.d, ...).
 
             # In `ok_to_include_history`, we assume that a non-negated
-            # `stream` term for a public stream will limit the query to
-            # that specific stream.  So it would be a bug to hit this
-            # codepath after relying on this term there.  But all streams in
+            # `channel` term for a public channel will limit the query to
+            # that specific channel. So it would be a bug to hit this
+            # codepath after relying on this term there. But all channels in
             # a Zephyr realm are private, so that doesn't happen.
-            assert not stream.is_public()
+            assert not channel.is_public()
 
-            m = re.search(r"^(?:un)*(.+?)(?:\.d)*$", stream.name, re.IGNORECASE)
+            m = re.search(r"^(?:un)*(.+?)(?:\.d)*$", channel.name, re.IGNORECASE)
             # Since the regex has a `.+` in it and "" is invalid as a
-            # stream name, this will always match
+            # channel name, this will always match
             assert m is not None
-            base_stream_name = m.group(1)
+            base_channel_name = m.group(1)
 
-            matching_streams = get_active_streams(self.realm).filter(
-                name__iregex=rf"^(un)*{self._pg_re_escape(base_stream_name)}(\.d)*$"
+            matching_channels = get_active_streams(self.realm).filter(
+                name__iregex=rf"^(un)*{self._pg_re_escape(base_channel_name)}(\.d)*$"
             )
-            recipient_ids = [matching_stream.recipient_id for matching_stream in matching_streams]
+            recipient_ids = [
+                matching_channel.recipient_id for matching_channel in matching_channels
+            ]
             cond = column("recipient_id", Integer).in_(recipient_ids)
             return query.where(maybe_negate(cond))
 
-        recipient_id = stream.recipient_id
+        recipient_id = channel.recipient_id
         assert recipient_id is not None
         cond = column("recipient_id", Integer) == recipient_id
         return query.where(maybe_negate(cond))
 
-    def by_streams(self, query: Select, operand: str, maybe_negate: ConditionTransform) -> Select:
-        self.check_not_both_stream_dm(is_stream_narrow=True)
+    def by_channels(self, query: Select, operand: str, maybe_negate: ConditionTransform) -> Select:
+        self.check_not_both_channel_and_dm_narrow(is_channel_narrow=True)
 
         if operand == "public":
-            # Get all both subscribed and non-subscribed public streams
-            # but exclude any private subscribed streams.
+            # Get all both subscribed and non-subscribed public channels
+            # but exclude any private subscribed channels.
             recipient_queryset = get_public_streams_queryset(self.realm)
         elif operand == "web-public":
             recipient_queryset = get_web_public_streams_queryset(self.realm)
         else:
-            raise BadNarrowOperatorError("unknown streams operand " + operand)
+            raise BadNarrowOperatorError("unknown channels operand " + operand)
 
         recipient_ids = recipient_queryset.values_list("recipient_id", flat=True).order_by("id")
         cond = column("recipient_id", Integer).in_(recipient_ids)
         return query.where(maybe_negate(cond))
 
     def by_topic(self, query: Select, operand: str, maybe_negate: ConditionTransform) -> Select:
-        self.check_not_both_stream_dm(is_stream_narrow=True)
+        self.check_not_both_channel_and_dm_narrow(is_channel_narrow=True)
 
         if self.realm.is_zephyr_mirror_realm:
             # MIT users expect narrowing to topic "foo" to also show messages to /^foo(.d)*$/
@@ -547,7 +561,7 @@ class NarrowBuilder:
         assert not self.is_web_public_query
         assert self.user_profile is not None
 
-        self.check_not_both_stream_dm(is_dm_narrow=True)
+        self.check_not_both_channel_and_dm_narrow(is_dm_narrow=True)
 
         try:
             if isinstance(operand, str):
@@ -572,12 +586,16 @@ class NarrowBuilder:
                 forwarder_user_profile=None,
                 sender=self.user_profile,
                 allow_deactivated=True,
+                create=False,
             )
         except (JsonableError, ValidationError):
             raise BadNarrowOperatorError("unknown user in " + str(operand))
+        except Huddle.DoesNotExist:
+            # Group DM where huddle doesn't exist
+            return query.where(maybe_negate(false()))
 
         # Group direct message
-        if recipient.type == Recipient.HUDDLE:
+        if recipient.type == Recipient.DIRECT_MESSAGE_GROUP:
             cond = column("recipient_id", Integer) == recipient.id
             return query.where(maybe_negate(cond))
 
@@ -628,14 +646,14 @@ class NarrowBuilder:
             recipient_tuple["recipient_id"]
             for recipient_tuple in Subscription.objects.filter(
                 user_profile=self.user_profile,
-                recipient__type=Recipient.HUDDLE,
+                recipient__type=Recipient.DIRECT_MESSAGE_GROUP,
             ).values("recipient_id")
         ]
         narrow_recipient_ids = [
             recipient_tuple["recipient_id"]
             for recipient_tuple in Subscription.objects.filter(
                 user_profile=other_user,
-                recipient__type=Recipient.HUDDLE,
+                recipient__type=Recipient.DIRECT_MESSAGE_GROUP,
             ).values("recipient_id")
         ]
 
@@ -648,7 +666,7 @@ class NarrowBuilder:
         assert not self.is_web_public_query
         assert self.user_profile is not None
 
-        self.check_not_both_stream_dm(is_dm_narrow=True)
+        self.check_not_both_channel_and_dm_narrow(is_dm_narrow=True)
 
         try:
             if isinstance(operand, str):
@@ -699,7 +717,7 @@ class NarrowBuilder:
         assert not self.is_web_public_query
         assert self.user_profile is not None
 
-        self.check_not_both_stream_dm(is_dm_narrow=True)
+        self.check_not_both_channel_and_dm_narrow(is_dm_narrow=True)
 
         try:
             if isinstance(operand, str):
@@ -795,8 +813,8 @@ def narrow_parameter(var_name: str, json: str) -> OptionalNarrowListT:
             # in handle_operators_supporting_id_based_api function where you will need to
             # update operators_supporting_id, or operators_supporting_ids array.
             operators_supporting_id = [
+                *channel_operators,
                 "id",
-                "stream",
                 "sender",
                 "group-pm-with",
                 "dm-including",
@@ -846,17 +864,17 @@ def ok_to_include_history(
 ) -> bool:
     # There are occasions where we need to find Message rows that
     # have no corresponding UserMessage row, because the user is
-    # reading a public stream that might include messages that
+    # reading a public channel that might include messages that
     # were sent while the user was not subscribed, but which they are
     # allowed to see.  We have to be very careful about constructing
     # queries in those situations, so this function should return True
     # only if we are 100% sure that we're gonna add a clause to the
-    # query that narrows to a particular public stream on the user's realm.
+    # query that narrows to a particular public channel on the user's realm.
     # If we screw this up, then we can get into a nasty situation of
     # polluting our narrow results with messages from other realms.
 
     # For web-public queries, we are always returning history.  The
-    # analogues of the below stream access checks for whether streams
+    # analogues of the below channel access checks for whether channels
     # have is_web_public set and banning is operators in this code
     # path are done directly in NarrowBuilder.
     if is_web_public_query:
@@ -868,14 +886,14 @@ def ok_to_include_history(
     include_history = False
     if narrow is not None:
         for term in narrow:
-            if term["operator"] == "stream" and not term.get("negated", False):
+            if term["operator"] in channel_operators and not term.get("negated", False):
                 operand: Union[str, int] = term["operand"]
                 if isinstance(operand, str):
                     include_history = can_access_stream_history_by_name(user_profile, operand)
                 else:
                     include_history = can_access_stream_history_by_id(user_profile, operand)
             elif (
-                term["operator"] == "streams"
+                term["operator"] in channels_operators
                 and term["operand"] == "public"
                 and not term.get("negated", False)
                 and user_profile.can_access_public_streams()
@@ -891,12 +909,12 @@ def ok_to_include_history(
     return include_history
 
 
-def get_stream_from_narrow_access_unchecked(
+def get_channel_from_narrow_access_unchecked(
     narrow: OptionalNarrowListT, realm: Realm
 ) -> Optional[Stream]:
     if narrow is not None:
         for term in narrow:
-            if term["operator"] == "stream":
+            if term["operator"] in channel_operators:
                 return get_stream_by_narrow_operand_access_unchecked(term["operand"], realm)
     return None
 
@@ -905,21 +923,21 @@ def exclude_muting_conditions(
     user_profile: UserProfile, narrow: OptionalNarrowListT
 ) -> List[ClauseElement]:
     conditions: List[ClauseElement] = []
-    stream_id = None
+    channel_id = None
     try:
-        # Note: It is okay here to not check access to stream
-        # because we are only using the stream id to exclude data,
+        # Note: It is okay here to not check access to channel
+        # because we are only using the channel ID to exclude data,
         # not to include results.
-        stream = get_stream_from_narrow_access_unchecked(narrow, user_profile.realm)
-        if stream is not None:
-            stream_id = stream.id
+        channel = get_channel_from_narrow_access_unchecked(narrow, user_profile.realm)
+        if channel is not None:
+            channel_id = channel.id
     except Stream.DoesNotExist:
         pass
 
-    # Stream-level muting only applies when looking at views that
-    # include multiple streams, since we do want users to be able to
-    # browser messages within a muted stream.
-    if stream_id is None:
+    # Channel-level muting only applies when looking at views that
+    # include multiple channels, since we do want users to be able to
+    # browser messages within a muted channel.
+    if channel_id is None:
         rows = Subscription.objects.filter(
             user_profile=user_profile,
             active=True,
@@ -928,11 +946,11 @@ def exclude_muting_conditions(
         ).values("recipient_id")
         muted_recipient_ids = [row["recipient_id"] for row in rows]
         if len(muted_recipient_ids) > 0:
-            # Only add the condition if we have muted streams to simplify/avoid warnings.
+            # Only add the condition if we have muted channels to simplify/avoid warnings.
             condition = not_(column("recipient_id", Integer).in_(muted_recipient_ids))
             conditions.append(condition)
 
-    conditions = exclude_topic_mutes(conditions, user_profile, stream_id)
+    conditions = exclude_topic_mutes(conditions, user_profile, channel_id)
 
     # Muted user logic for hiding messages is implemented entirely
     # client-side. This is by design, as it allows UI to hint that
@@ -969,7 +987,8 @@ def get_base_query_for_search(
             # zerver_messages, since the user_profile_id limit in
             # usermessage is more selective, and the query planner
             # can't know about that cross-table correlation.
-            .where(column("user_profile_id", Integer) == literal(user_profile.id)).select_from(
+            .where(column("user_profile_id", Integer) == literal(user_profile.id))
+            .select_from(
                 join(
                     table("zerver_usermessage"),
                     table("zerver_message"),

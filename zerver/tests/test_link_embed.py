@@ -22,7 +22,7 @@ from zerver.lib.url_preview.parsers import GenericParser, OpenGraphParser
 from zerver.lib.url_preview.preview import get_link_embed_data
 from zerver.lib.url_preview.types import UrlEmbedData, UrlOEmbedData
 from zerver.models import Message, Realm, UserProfile
-from zerver.worker.queue_processors import FetchLinksEmbedData
+from zerver.worker.embed_links import FetchLinksEmbedData
 
 
 def reconstruct_url(url: str, maxwidth: int = 640, maxheight: int = 480) -> str:
@@ -196,9 +196,7 @@ class OpenGraphParserTestCase(ZulipTestCase):
           <head>
             <meta property="og:title" content="中文" />
           </head>
-        </html>""".encode(
-            "big5"
-        )
+        </html>""".encode("big5")
         parser = OpenGraphParser(html, "text/html; charset=Big5")
         result = parser.extract_data()
         self.assertEqual(result.title, "中文")
@@ -209,9 +207,7 @@ class OpenGraphParserTestCase(ZulipTestCase):
             <meta content-type="text/html; charset=Big5" />
             <meta property="og:title" content="中文" />
           </head>
-        </html>""".encode(
-            "big5"
-        )
+        </html>""".encode("big5")
         parser = OpenGraphParser(html, "text/html")
         result = parser.extract_data()
         self.assertEqual(result.title, "中文")
@@ -538,7 +534,7 @@ class PreviewTestCase(ZulipTestCase):
 
     @override_settings(CAMO_URI="")
     def test_inline_url_embed_preview(self) -> None:
-        with_preview = '<p><a href="http://test.org/">http://test.org/</a></p>\n<div class="message_embed"><a class="message_embed_image" href="http://test.org/" style="background-image: url(http\\:\\/\\/ia\\.media-imdb\\.com\\/images\\/rock\\.jpg)"></a><div class="data-container"><div class="message_embed_title"><a href="http://test.org/" title="The Rock">The Rock</a></div><div class="message_embed_description">Description text</div></div></div>'
+        with_preview = '<p><a href="http://test.org/">http://test.org/</a></p>\n<div class="message_embed"><a class="message_embed_image" href="http://test.org/" style="background-image: url(&quot;http://ia.media-imdb.com/images/rock.jpg&quot;)"></a><div class="data-container"><div class="message_embed_title"><a href="http://test.org/" title="The Rock">The Rock</a></div><div class="message_embed_description">Description text</div></div></div>'
         without_preview = '<p><a href="http://test.org/">http://test.org/</a></p>'
         msg = self._send_message_with_test_org_url(sender=self.example_user("hamlet"))
         self.assertEqual(msg.rendered_content, with_preview)
@@ -553,13 +549,11 @@ class PreviewTestCase(ZulipTestCase):
         self.assertEqual(msg.rendered_content, without_preview)
 
     def test_inline_url_embed_preview_with_camo(self) -> None:
-        camo_url = re.sub(
-            r"([^\w-])", r"\\\1", get_camo_url("http://ia.media-imdb.com/images/rock.jpg")
-        )
+        camo_url = get_camo_url("http://ia.media-imdb.com/images/rock.jpg")
         with_preview = (
-            '<p><a href="http://test.org/">http://test.org/</a></p>\n<div class="message_embed"><a class="message_embed_image" href="http://test.org/" style="background-image: url('
+            '<p><a href="http://test.org/">http://test.org/</a></p>\n<div class="message_embed"><a class="message_embed_image" href="http://test.org/" style="background-image: url(&quot;'
             + camo_url
-            + ')"></a><div class="data-container"><div class="message_embed_title"><a href="http://test.org/" title="The Rock">The Rock</a></div><div class="message_embed_description">Description text</div></div></div>'
+            + '&quot;)"></a><div class="data-container"><div class="message_embed_title"><a href="http://test.org/" title="The Rock">The Rock</a></div><div class="message_embed_description">Description text</div></div></div>'
         )
         msg = self._send_message_with_test_org_url(sender=self.example_user("hamlet"))
         self.assertEqual(msg.rendered_content, with_preview)
@@ -579,7 +573,7 @@ class PreviewTestCase(ZulipTestCase):
             event = patched.call_args[0][1]
 
         # Swap the URL out for one with characters that need CSS escaping
-        html = re.sub(r"rock\.jpg", "rock).jpg", self.open_graph_html)
+        html = re.sub(r"rock\.jpg", r"rock.jpg\\", self.open_graph_html)
         self.create_mock_response(url, body=html)
         with self.settings(TEST_SUITE=False):
             with self.assertLogs(level="INFO") as info_logs:
@@ -594,7 +588,7 @@ class PreviewTestCase(ZulipTestCase):
             '<p><a href="http://test.org/">http://test.org/</a></p>\n'
             '<div class="message_embed"><a class="message_embed_image" href="http://test.org/"'
             ' style="background-image:'
-            ' url(http\\:\\/\\/ia\\.media-imdb\\.com\\/images\\/rock\\)\\.jpg)"></a><div'
+            ' url(&quot;http://ia.media-imdb.com/images/rock.jpg\\\\&quot;)"></a><div'
             ' class="data-container"><div class="message_embed_title"><a href="http://test.org/"'
             ' title="The Rock">The Rock</a></div><div class="message_embed_description">Description'
             " text</div></div></div>"
@@ -618,7 +612,7 @@ class PreviewTestCase(ZulipTestCase):
 
     @override_settings(CAMO_URI="")
     def test_inline_url_embed_preview_with_relative_image_url(self) -> None:
-        with_preview_relative = '<p><a href="http://test.org/">http://test.org/</a></p>\n<div class="message_embed"><a class="message_embed_image" href="http://test.org/" style="background-image: url(http\\:\\/\\/test\\.org\\/images\\/rock\\.jpg)"></a><div class="data-container"><div class="message_embed_title"><a href="http://test.org/" title="The Rock">The Rock</a></div><div class="message_embed_description">Description text</div></div></div>'
+        with_preview_relative = '<p><a href="http://test.org/">http://test.org/</a></p>\n<div class="message_embed"><a class="message_embed_image" href="http://test.org/" style="background-image: url(&quot;http://test.org/images/rock.jpg&quot;)"></a><div class="data-container"><div class="message_embed_title"><a href="http://test.org/" title="The Rock">The Rock</a></div><div class="message_embed_description">Description text</div></div></div>'
         # Try case where the Open Graph image is a relative URL.
         msg = self._send_message_with_test_org_url(
             sender=self.example_user("prospero"), relative_url=True
@@ -744,9 +738,11 @@ class PreviewTestCase(ZulipTestCase):
 
         # HTML with a bad og:image metadata
         html = "\n".join(
-            line
-            if "og:image" not in line
-            else '<meta property="og:image" content="http://[bad url/" />'
+            (
+                line
+                if "og:image" not in line
+                else '<meta property="og:image" content="http://[bad url/" />'
+            )
             for line in self.open_graph_html.splitlines()
         )
         self.create_mock_response(url, body=html)
@@ -834,7 +830,7 @@ class PreviewTestCase(ZulipTestCase):
         assert msg.rendered_content is not None
         self.assertIn(cached_data.title, msg.rendered_content)
         assert cached_data.image is not None
-        self.assertIn(re.sub(r"([^\w-])", r"\\\1", cached_data.image), msg.rendered_content)
+        self.assertIn(cached_data.image, msg.rendered_content)
 
     @responses.activate
     @override_settings(INLINE_URL_EMBED_PREVIEW=True)
@@ -985,7 +981,7 @@ class PreviewTestCase(ZulipTestCase):
         with self.settings(TEST_SUITE=False):
             with self.assertLogs(level="INFO") as info_logs:
                 with mock.patch(
-                    "zerver.worker.queue_processors.url_preview.get_link_embed_data",
+                    "zerver.worker.embed_links.url_preview.get_link_embed_data",
                     lambda *args, **kwargs: mocked_data,
                 ):
                     FetchLinksEmbedData().consume(event)
@@ -1023,7 +1019,7 @@ class PreviewTestCase(ZulipTestCase):
         with self.settings(TEST_SUITE=False):
             with self.assertLogs(level="INFO") as info_logs:
                 with mock.patch(
-                    "zerver.worker.queue_processors.url_preview.get_link_embed_data",
+                    "zerver.worker.embed_links.url_preview.get_link_embed_data",
                     lambda *args, **kwargs: mocked_data,
                 ):
                     FetchLinksEmbedData().consume(event)

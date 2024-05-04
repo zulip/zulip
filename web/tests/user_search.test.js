@@ -2,15 +2,18 @@
 
 const {strict: assert} = require("assert");
 
-const {mock_esm, zrequire} = require("./lib/namespace");
+const {set_global, mock_esm, zrequire} = require("./lib/namespace");
 const {run_test, noop} = require("./lib/test");
 const $ = require("./lib/zjquery");
-const {page_params} = require("./lib/zpage_params");
+const {realm} = require("./lib/zpage_params");
 
 const fake_buddy_list = {
     scroll_container_selector: "#whatever",
-    $container: {
-        data() {},
+    $users_matching_view_container: {
+        attr() {},
+    },
+    $other_users_container: {
+        attr() {},
     },
     find_li() {},
     first_key() {},
@@ -21,6 +24,18 @@ const fake_buddy_list = {
 mock_esm("../src/buddy_list", {
     buddy_list: fake_buddy_list,
 });
+
+function mock_setTimeout() {
+    let set_timeout_function_called = false;
+    set_global("setTimeout", (func) => {
+        if (set_timeout_function_called) {
+            // This conditional is needed to avoid indefinite calls.
+            return;
+        }
+        set_timeout_function_called = true;
+        func();
+    });
+}
 
 const popovers = mock_esm("../src/popovers");
 const presence = mock_esm("../src/presence");
@@ -58,7 +73,7 @@ const all_user_ids = [alice.user_id, fred.user_id, jill.user_id, me.user_id];
 const ordered_user_ids = [me.user_id, alice.user_id, fred.user_id, jill.user_id];
 
 function test(label, f) {
-    run_test(label, ({override}) => {
+    run_test(label, (opts) => {
         people.init();
         people.add_active_user(alice);
         people.add_active_user(fred);
@@ -67,13 +82,18 @@ function test(label, f) {
         people.initialize_current_user(me.user_id);
         muted_users.set_muted_users([]);
         activity_ui.set_cursor_and_filter();
-        f({override});
+        f(opts);
     });
 }
 
 function set_input_val(val) {
-    $(".user-list-filter").val(val);
-    $(".user-list-filter").trigger("input");
+    $("input.user-list-filter").val(val);
+    $("input.user-list-filter").trigger("input");
+}
+
+function stub_buddy_list_empty_list_message_lengths() {
+    $("#buddy-list-users-matching-view .empty-list-message").length = 0;
+    $("#buddy-list-other-users .empty-list-message").length = 0;
 }
 
 test("clear_search", ({override}) => {
@@ -81,6 +101,8 @@ test("clear_search", ({override}) => {
     override(presence, "get_user_ids", () => all_user_ids);
     override(popovers, "hide_all", noop);
     override(resize, "resize_sidebars", noop);
+
+    stub_buddy_list_empty_list_message_lengths();
 
     // Empty because no users match this search string.
     override(fake_buddy_list, "populate", (user_ids) => {
@@ -94,20 +116,21 @@ test("clear_search", ({override}) => {
         assert.deepEqual(user_ids, {all_user_ids: ordered_user_ids});
     });
     $("#clear_search_people_button").trigger("click");
-    assert.equal($(".user-list-filter").val(), "");
+    assert.equal($("input.user-list-filter").val(), "");
     $("#clear_search_people_button").trigger("click");
     assert.ok($("#user_search_section").hasClass("notdisplayed"));
 });
 
 test("escape_search", ({override}) => {
-    page_params.realm_presence_disabled = true;
+    realm.realm_presence_disabled = true;
 
     override(resize, "resize_sidebars", noop);
     override(popovers, "hide_all", noop);
+    stub_buddy_list_empty_list_message_lengths();
 
     set_input_val("somevalue");
     activity_ui.escape_search();
-    assert.equal($(".user-list-filter").val(), "");
+    assert.equal($("input.user-list-filter").val(), "");
     activity_ui.escape_search();
     assert.ok($("#user_search_section").hasClass("notdisplayed"));
 
@@ -119,32 +142,34 @@ test("blur search right", ({override}) => {
     override(sidebar_ui, "show_userlist_sidebar", noop);
     override(popovers, "hide_all", noop);
     override(resize, "resize_sidebars", noop);
+    mock_setTimeout();
 
-    $(".user-list-filter").closest = (selector) => {
+    $("input.user-list-filter").closest = (selector) => {
         assert.equal(selector, ".app-main [class^='column-']");
         return $.create("right-sidebar").addClass("column-right");
     };
 
-    $(".user-list-filter").trigger("blur");
-    assert.equal($(".user-list-filter").is_focused(), false);
+    $("input.user-list-filter").trigger("blur");
+    assert.equal($("input.user-list-filter").is_focused(), false);
     activity_ui.initiate_search();
-    assert.equal($(".user-list-filter").is_focused(), true);
+    assert.equal($("input.user-list-filter").is_focused(), true);
 });
 
 test("blur search left", ({override}) => {
     override(sidebar_ui, "show_streamlist_sidebar", noop);
     override(popovers, "hide_all", noop);
     override(resize, "resize_sidebars", noop);
+    mock_setTimeout();
 
-    $(".user-list-filter").closest = (selector) => {
+    $("input.user-list-filter").closest = (selector) => {
         assert.equal(selector, ".app-main [class^='column-']");
         return $.create("right-sidebar").addClass("column-left");
     };
 
-    $(".user-list-filter").trigger("blur");
-    assert.equal($(".user-list-filter").is_focused(), false);
+    $("input.user-list-filter").trigger("blur");
+    assert.equal($("input.user-list-filter").is_focused(), false);
     activity_ui.initiate_search();
-    assert.equal($(".user-list-filter").is_focused(), true);
+    assert.equal($("input.user-list-filter").is_focused(), true);
 });
 
 test("filter_user_ids", ({override}) => {
@@ -159,7 +184,7 @@ test("filter_user_ids", ({override}) => {
 
     function test_filter(search_text, expected_users) {
         const expected_user_ids = expected_users.map((user) => user.user_id);
-        $(".user-list-filter").val(search_text);
+        $("input.user-list-filter").val(search_text);
         const filter_text = activity_ui.get_filter_text();
         assert.deepEqual(
             buddy_data.get_filtered_and_sorted_user_ids(filter_text),
@@ -202,13 +227,13 @@ test("filter_user_ids", ({override}) => {
 });
 
 test("click on user header to toggle display", ({override}) => {
-    const $user_filter = $(".user-list-filter");
+    const $user_filter = $("input.user-list-filter");
 
     override(popovers, "hide_all", noop);
     override(sidebar_ui, "show_userlist_sidebar", noop);
     override(resize, "resize_sidebars", noop);
 
-    page_params.realm_presence_disabled = true;
+    realm.realm_presence_disabled = true;
 
     assert.ok(!$("#user_search_section").hasClass("notdisplayed"));
 
@@ -218,7 +243,7 @@ test("click on user header to toggle display", ({override}) => {
     assert.ok($("#user_search_section").hasClass("notdisplayed"));
     assert.equal($user_filter.val(), "");
 
-    $(".user-list-filter").closest = (selector) => {
+    $("input.user-list-filter").closest = (selector) => {
         assert.equal(selector, ".app-main [class^='column-']");
         return $.create("sidebar").addClass("column-right");
     };
@@ -229,8 +254,8 @@ test("click on user header to toggle display", ({override}) => {
 
 test("searching", () => {
     assert.equal(activity_ui.searching(), false);
-    $(".user-list-filter").trigger("focus");
+    $("input.user-list-filter").trigger("focus");
     assert.equal(activity_ui.searching(), true);
-    $(".user-list-filter").trigger("blur");
+    $("input.user-list-filter").trigger("blur");
     assert.equal(activity_ui.searching(), false);
 });

@@ -1,5 +1,5 @@
 import assert from "minimalistic-assert";
-import z from "zod";
+import {z} from "zod";
 
 export type PollDataConfig = {
     message_sender_id: number;
@@ -148,7 +148,7 @@ export class PollData {
                     }
 
                     const key = `${sender_id},${idx}`;
-                    const votes = new Map();
+                    const votes = new Map<number, number>();
 
                     this.key_to_option.set(key, {
                         option,

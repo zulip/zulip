@@ -91,14 +91,16 @@ export function get_next_topic(
 
     function get_unmuted_topics(stream_name: string): string[] {
         const stream_id = stream_data.get_stream_id(stream_name);
+        const narrowed_steam_id = narrow_state.stream_id();
         assert(stream_id !== undefined);
         const topics = stream_topic_history.get_recent_topic_names(stream_id);
+        const narrowed_topic = narrow_state.topic();
         if (
-            narrow_state.active() &&
-            narrow_state.stream_id() === stream_id &&
+            narrowed_steam_id !== undefined &&
+            narrowed_topic !== undefined &&
+            narrowed_steam_id === stream_id &&
             _.isEqual(narrow_state.filter()?.sorted_term_types(), ["stream", "topic"]) &&
-            narrow_state.topic() !== undefined &&
-            !user_topics.is_topic_unmuted_or_followed(stream_id, narrow_state.topic()!)
+            !user_topics.is_topic_unmuted_or_followed(stream_id, narrowed_topic)
         ) {
             // Here we're using N within a muted stream starting from
             // a muted topic; advance to the next not-explicitly-muted

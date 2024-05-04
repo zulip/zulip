@@ -39,16 +39,6 @@ kbd {
     }
 }
 
-@media (width < $xl_min) {
-    .hide-xl {
-        display: none !important;
-    }
-
-    .show-xl {
-        display: block !important;
-    }
-}
-
 .light {
     font-weight: 300;
 }
@@ -165,6 +155,15 @@ input::placeholder {
             border-color: hsl(0deg 0% 60%);
             color: inherit;
             background-color: hsl(0deg 0% 95%);
+        }
+
+        &.add-subscription-button {
+            &:focus-visible {
+                border: 1px solid;
+                border-color: var(
+                    --color-border-add-subscription-button-focus
+                ) !important;
+            }
         }
 
         &.sea-green {
@@ -291,7 +290,7 @@ input::placeholder {
             }
 
             &.disabled {
-                pointer-events: none;
+                cursor: default;
                 color: hsl(0deg 0% 80%);
                 border-color: hsl(0deg 0% 87%);
             }
@@ -482,12 +481,6 @@ div.overlay {
     width: 10px;
     border-radius: 3px 0 0 3px;
     border-bottom: 0;
-}
-
-.stream_header_colorblock {
-    @extend .stream-selection-header-colorblock;
-    margin-bottom: 5px;
-    z-index: 1;
 }
 
 .edit-controls .fa-angle-right,
@@ -936,20 +929,6 @@ div.overlay {
     }
 }
 
-#settings_content,
-#stream_settings,
-#stream-creation,
-#edit_bot_modal {
-    .dropdown-list-widget .dropdown-list-wrapper {
-        width: fit-content;
-
-        & span {
-            min-width: 210px;
-            width: fit-content;
-        }
-    }
-}
-
 /* This includes css needed to display messages in an overlay. */
 .overlay-messages-container {
     position: relative;
@@ -1118,11 +1097,6 @@ div.overlay {
     outline: none;
     color: var(--color-text-default);
 
-    .fa-chevron-down {
-        position: relative;
-        top: -1px;
-    }
-
     &:disabled {
         cursor: not-allowed;
         background-color: hsl(0deg 0% 93%);
@@ -1174,6 +1148,7 @@ div.overlay {
     align-items: center;
     box-sizing: border-box;
     padding: 1px;
+    margin: 0 10px;
     height: 33px;
     gap: 2px;
     background-color: var(--color-background-tab-picker-container);
@@ -1211,6 +1186,135 @@ div.overlay {
         &:active:not(.selected-tab) {
             outline: 1px solid var(--color-outline-tab-picker-tab-option);
             outline-offset: -1px;
+        }
+    }
+}
+
+/**
+ * Use the "tab-picker-vertical" class in conjunction
+ * for a vertical tab picker.
+ */
+.tab-picker {
+    position: relative;
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: 1fr;
+    gap: var(--grid-gap-tab-picker);
+    box-sizing: border-box;
+    border-radius: 5px;
+    /* Using max-content ensures equal width tabs. */
+    min-width: max-content;
+    padding: 1px;
+    background-color: var(--color-background-tab-picker-container);
+    font-size: 16px;
+
+    input[type="radio"] {
+        display: none;
+    }
+
+    .tab-option-content {
+        z-index: 2;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        /* Avoids layout shift while showing a border when pressed.  */
+        border: 1px solid transparent;
+        border-radius: 4px;
+        box-sizing: border-box;
+        padding: 3px 7px;
+        color: var(--color-text-dropdown-menu);
+
+        & .zulip-icon {
+            /* Clear inherited position. */
+            position: static;
+            color: var(--color-icon-purple);
+        }
+    }
+
+    .tab-option:not(:checked) + .tab-option-content {
+        &:hover,
+        &:focus-visible {
+            background-color: var(
+                --color-background-tab-picker-tab-option-hover
+            );
+        }
+
+        &:active {
+            background-color: var(
+                --color-background-tab-picker-tab-option-active
+            );
+        }
+    }
+
+    .tab-option {
+        &:nth-of-type(1):checked ~ .slider {
+            --tab-selected-tab-picker: 0;
+        }
+
+        &:nth-of-type(2):checked ~ .slider {
+            --tab-selected-tab-picker: 1;
+        }
+
+        &:nth-of-type(3):checked ~ .slider {
+            --tab-selected-tab-picker: 2;
+        }
+
+        &:nth-of-type(4):checked ~ .slider {
+            --tab-selected-tab-picker: 3;
+        }
+
+        &:nth-of-type(5):checked ~ .slider {
+            --tab-selected-tab-picker: 4;
+        }
+        /* If a tab picker with more than 5 tabs is required,
+           extend this using the same pattern as above. */
+    }
+
+    .slider {
+        position: absolute;
+        z-index: 1;
+        inset: 0;
+        grid-column: 1 / 2;
+        grid-row: 1 / 2;
+        /* Move along X-axis: own width + gap between two tabs. */
+        transform: translateX(
+            calc(
+                (100% + var(--grid-gap-tab-picker)) *
+                    var(--tab-selected-tab-picker)
+            )
+        );
+        transition: transform 0.25s cubic-bezier(0.64, 0, 0.78, 0);
+        box-sizing: border-box;
+        border: 1px solid var(--color-outline-tab-picker-tab-option);
+        border-radius: 4px;
+        background-color: var(--color-background-tab-picker-selected-tab);
+    }
+
+    /* Detect if a user has enabled a setting on their device
+        to minimize the amount of non-essential motion. */
+    @media (prefers-reduced-motion) {
+        .slider {
+            transition: none;
+        }
+
+        .tab-option:not(:checked) + .tab-option-content:active {
+            border-color: var(--color-outline-tab-picker-tab-option);
+        }
+    }
+
+    /* Related to vertical tab picker. */
+    &.tab-picker-vertical {
+        grid-auto-flow: row;
+        grid-auto-rows: 1fr;
+
+        .slider {
+            /* Move along Y-axis: own height + gap between two tabs. */
+            transform: translateY(
+                calc(
+                    (100% + var(--grid-gap-tab-picker)) *
+                        var(--tab-selected-tab-picker)
+                )
+            );
         }
     }
 }

@@ -1,10 +1,10 @@
 import isUrl from "is-url";
 import $ from "jquery";
+import _ from "lodash";
 import TurndownService from "turndown";
 
 import * as compose_ui from "./compose_ui";
 import * as message_lists from "./message_lists";
-import {page_params} from "./page_params";
 import * as rows from "./rows";
 
 function find_boundary_tr($initial_tr, iterate_row) {
@@ -66,6 +66,9 @@ how modern browsers deal with copy/paste.  Just test
 your changes carefully.
 */
 function construct_copy_div($div, start_id, end_id) {
+    if (message_lists.current === undefined) {
+        return;
+    }
     const copy_rows = rows.visible_range(start_id, end_id);
 
     const $start_row = copy_rows[0];
@@ -81,18 +84,22 @@ function construct_copy_div($div, start_id, end_id) {
         // so we have to add new recipient's bar to final copied message
         // and wouldn't forget to add start_recipient's bar at the beginning of final message
         if (recipient_row_id !== last_recipient_row_id) {
-            $div.append(construct_recipient_header($row));
+            construct_recipient_header($row).appendTo($div);
             last_recipient_row_id = recipient_row_id;
             should_include_start_recipient_header = true;
         }
         const message = message_lists.current.get(rows.id($row));
         const $content = $(message.content);
-        $content.first().prepend(message.sender_full_name + ": ");
+        $content.first().prepend(
+            $("<span>")
+                .text(message.sender_full_name + ": ")
+                .contents(),
+        );
         $div.append($content);
     }
 
     if (should_include_start_recipient_header) {
-        $div.prepend(construct_recipient_header($start_row));
+        construct_recipient_header($start_row).prependTo($div);
     }
 }
 
@@ -311,14 +318,29 @@ function image_to_zulip_markdown(_content, node) {
     return src ? "[" + title + "](" + src + ")" : node.getAttribute("alt") || "";
 }
 
+function within_single_element(html_fragment) {
+    return (
+        html_fragment.childNodes.length === 1 &&
+        html_fragment.firstElementChild &&
+        html_fragment.firstElementChild.innerHTML
+    );
+}
+
+export function is_white_space_pre(paste_html) {
+    const html_fragment = new DOMParser()
+        .parseFromString(paste_html, "text/html")
+        .querySelector("body");
+    return (
+        within_single_element(html_fragment) &&
+        html_fragment.firstElementChild.style.whiteSpace === "pre"
+    );
+}
+
 export function paste_handler_converter(paste_html) {
     const copied_html_fragment = new DOMParser()
         .parseFromString(paste_html, "text/html")
         .querySelector("body");
-    const copied_within_single_element =
-        copied_html_fragment.childNodes.length === 1 &&
-        copied_html_fragment.firstElementChild &&
-        copied_html_fragment.firstElementChild.innerHTML;
+    const copied_within_single_element = within_single_element(copied_html_fragment);
     const outer_elements_to_retain = ["PRE", "UL", "OL", "A", "CODE"];
     // If the entire selection copied is within a single HTML element (like an
     // `h1`), we don't want to retain its styling, except when it is needed to
@@ -385,55 +407,6 @@ export function paste_handler_converter(paste_html) {
             return prefix + content + (node.nextSibling && !/\n$/.test(content) ? "\n" : "");
         },
     });
-    turndownService.addRule("zulipCodeBlock", {
-        // We create a new rule to exclusively handle code blocks in Zulip messages since
-        // the `fencedCodeBlock` rule in upstream won't work for them. The reason is that
-        // `fencedCodeBlock` only works for `pre` elements that have `code` elements as
-        // their 1st child, while Zulip code blocks have an empty span as the 1st child
-        // of the `pre` element, and then the `code` element. This new rule is a variation
-        // of upstream's `fencedCodeBlock` rule.
-
-        // We modify the filter of upstream's `fencedCodeBlock` rule to only apply to
-        // Zulip code blocks with the Zulip specific class of `zulip-code-block`.
-        filter(node, options) {
-            return (
-                options.codeBlockStyle === "fenced" &&
-                node.nodeName === "CODE" &&
-                node.parentElement?.nodeName === "PRE" &&
-                node.parentElement.parentElement?.classList.contains("zulip-code-block")
-            );
-        },
-
-        // We modify the replacement of upstream's `fencedCodeBlock` rule only slightly
-        // to extract and add the language of the code block (if any) to the fence.
-        replacement(content, node, options) {
-            const language = node.closest(".codehilite")?.dataset?.codeLanguage || "";
-
-            const fenceChar = options.fence.charAt(0);
-            let fenceSize = 3;
-            const fenceInCodeRegex = new RegExp("^" + fenceChar + "{3,}", "gm");
-
-            let match;
-            while ((match = fenceInCodeRegex.exec(content))) {
-                if (match[0].length >= fenceSize) {
-                    fenceSize = match[0].length + 1;
-                }
-            }
-
-            const fence = fenceChar.repeat(fenceSize);
-
-            return (
-                "\n\n" +
-                fence +
-                language +
-                "\n" +
-                content.replace(/\n$/, "") +
-                "\n" +
-                fence +
-                "\n\n"
-            );
-        },
-    });
     turndownService.addRule("zulipImagePreview", {
         filter(node) {
             // select image previews in Zulip messages
@@ -446,13 +419,11 @@ export function paste_handler_converter(paste_html) {
             // We parse the copied html to then check if the generating link (which, if
             // present, always comes before the preview in the copied html) is also there.
 
-            // If the preview has an aria-label, it means it does have a named link in the
-            // message, and if the 1st element with the same image link in the copied html
+            // If the 1st element with the same image link in the copied html
             // does not have the `message_inline_image` class, it means it is the generating
             // link, and not the preview, meaning the generating link is copied as well.
             const copied_html = new DOMParser().parseFromString(paste_html, "text/html");
             if (
-                node.firstChild.hasAttribute("aria-label") &&
                 !copied_html
                     .querySelector("a[href='" + node.firstChild.getAttribute("href") + "']")
                     ?.parentNode?.classList.contains("message_inline_image")
@@ -481,20 +452,30 @@ export function paste_handler_converter(paste_html) {
         },
     });
 
-    // We override the original upstream implementation of this rule to turn any
-    // single line code blocks into inline markdown code. Everything else is the same.
+    // We override the original upstream implementation of this rule to make
+    // several tweaks:
+    // - We turn any single line code blocks into inline markdown code.
+    // - We generalise the filter condition to allow a `pre` element with a
+    // `code` element as its only non-empty child, which applies to Zulip code
+    // blocks too.
+    // - For Zulip code blocks, we extract the language of the code block (if
+    // any) correctly.
+    // Everything else works the same.
     turndownService.addRule("fencedCodeBlock", {
         filter(node, options) {
             return (
                 options.codeBlockStyle === "fenced" &&
                 node.nodeName === "PRE" &&
-                node.firstChild &&
-                node.firstChild.nodeName === "CODE"
+                [...node.childNodes].filter((child) => child.textContent.trim() !== "").length ===
+                    1 &&
+                [...node.childNodes].find((child) => child.textContent.trim() !== "").nodeName ===
+                    "CODE"
             );
         },
 
         replacement(_content, node, options) {
-            const code = node.firstChild.textContent;
+            const codeElement = [...node.childNodes].find((child) => child.nodeName === "CODE");
+            const code = codeElement.textContent;
 
             // We convert single line code inside a code block to inline markdown code,
             // and the code for this is taken from upstream's `code` rule.
@@ -515,8 +496,10 @@ export function paste_handler_converter(paste_html) {
                 return delimiter + extraSpace + code + extraSpace + delimiter;
             }
 
-            const className = node.firstChild.getAttribute("class") || "";
-            const language = (className.match(/language-(\S+)/) || [null, ""])[1];
+            const className = codeElement.getAttribute("class") || "";
+            const language = node.parentElement?.classList.contains("zulip-code-block")
+                ? node.closest(".codehilite")?.dataset?.codeLanguage || ""
+                : (className.match(/language-(\S+)/) || [null, ""])[1];
 
             const fenceChar = options.fence.charAt(0);
             let fenceSize = 3;
@@ -578,6 +561,16 @@ function is_safe_url_paste_target($textarea) {
     return true;
 }
 
+export function maybe_transform_html(html, text) {
+    if (is_white_space_pre(html)) {
+        // Copied content styled with `white-space: pre` is pasted as is
+        // but formatted as code. We need this for content copied from
+        // VS Code like sources.
+        return "<pre><code>" + _.escape(text) + "</code></pre>";
+    }
+    return html;
+}
+
 export function paste_handler(event) {
     const clipboardData = event.originalEvent.clipboardData;
     if (!clipboardData) {
@@ -592,7 +585,7 @@ export function paste_handler(event) {
     if (clipboardData.getData) {
         const $textarea = $(event.currentTarget);
         const paste_text = clipboardData.getData("text");
-        const paste_html = clipboardData.getData("text/html");
+        let paste_html = clipboardData.getData("text/html");
         // Trim the paste_text to accommodate sloppy copying
         const trimmed_paste_text = paste_text.trim();
 
@@ -613,11 +606,11 @@ export function paste_handler(event) {
         if (
             !compose_ui.cursor_inside_code_block($textarea) &&
             paste_html &&
-            !compose_ui.shift_pressed &&
-            page_params.development_environment
+            !compose_ui.shift_pressed
         ) {
             event.preventDefault();
             event.stopPropagation();
+            paste_html = maybe_transform_html(paste_html, paste_text);
             const text = paste_handler_converter(paste_html);
             compose_ui.insert_and_scroll_into_view(text, $textarea);
         }

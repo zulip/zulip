@@ -4,7 +4,7 @@ const {strict: assert} = require("assert");
 
 const {mock_esm, zrequire} = require("./lib/namespace");
 const {run_test} = require("./lib/test");
-const {page_params, user_settings} = require("./lib/zpage_params");
+const {current_user, realm, user_settings} = require("./lib/zpage_params");
 
 const stream_topic_history = mock_esm("../src/stream_topic_history");
 
@@ -20,7 +20,6 @@ const compose_state = zrequire("compose_state");
 const emoji = zrequire("emoji");
 const pygments_data = zrequire("pygments_data");
 const util = zrequire("util");
-const actual_pygments_data = {...pygments_data};
 const ct = zrequire("composebox_typeahead");
 const th = zrequire("typeahead_helper");
 
@@ -31,6 +30,20 @@ function assertSameEmails(lst1, lst2) {
         lst1.map((r) => r.email),
         lst2.map((r) => r.email),
     );
+}
+
+function user_item(user) {
+    return {
+        ...user,
+        type: "user",
+    };
+}
+
+function user_or_mention_item(user_or_mention) {
+    return {
+        ...user_or_mention,
+        type: "user_or_mention",
+    };
 }
 
 const a_bot = {
@@ -56,6 +69,7 @@ const b_user_1 = {
     is_bot: false,
     user_id: 3,
 };
+const b_user_1_item = user_item(b_user_1);
 
 const b_user_2 = {
     email: "b_user_2@zulip.net",
@@ -72,6 +86,7 @@ const b_user_3 = {
     is_bot: false,
     user_id: 5,
 };
+const b_user_3_item = user_item(b_user_3);
 
 const b_bot = {
     email: "b_bot@example.com",
@@ -88,6 +103,7 @@ const zman = {
     is_bot: false,
     user_id: 7,
 };
+const zman_item = user_item(zman);
 
 const matches = [a_bot, a_user, b_user_1, b_user_2, b_user_3, b_bot, zman];
 
@@ -116,14 +132,14 @@ function test(label, f) {
         recent_senders.clear_for_testing();
         peer_data.clear_for_testing();
         people.clear_recipient_counts_for_testing();
-        page_params.is_admin = false;
-        page_params.realm_is_zephyr_mirror_realm = false;
+        current_user.is_admin = false;
+        realm.realm_is_zephyr_mirror_realm = false;
 
         f(helpers);
     });
 }
 
-test("sort_streams", ({override}) => {
+test("sort_streams", ({override, override_rewire}) => {
     let test_streams = [
         {
             stream_id: 101,
@@ -131,6 +147,7 @@ test("sort_streams", ({override}) => {
             pin_to_top: false,
             stream_weekly_traffic: 0,
             subscribed: true,
+            is_muted: false,
         },
         {
             stream_id: 102,
@@ -138,6 +155,7 @@ test("sort_streams", ({override}) => {
             pin_to_top: false,
             stream_weekly_traffic: 100,
             subscribed: true,
+            is_muted: false,
         },
         {
             stream_id: 103,
@@ -145,6 +163,7 @@ test("sort_streams", ({override}) => {
             pin_to_top: false,
             stream_weekly_traffic: 0,
             subscribed: true,
+            is_muted: true,
         },
         {
             stream_id: 104,
@@ -152,6 +171,7 @@ test("sort_streams", ({override}) => {
             pin_to_top: true,
             stream_weekly_traffic: 100,
             subscribed: true,
+            is_muted: false,
         },
         {
             stream_id: 105,
@@ -159,6 +179,15 @@ test("sort_streams", ({override}) => {
             pin_to_top: false,
             stream_weekly_traffic: 0,
             subscribed: true,
+            is_muted: false,
+        },
+        {
+            stream_id: 106,
+            name: "dead (almost)",
+            pin_to_top: false,
+            stream_weekly_traffic: 2,
+            subscribed: true,
+            is_muted: false,
         },
     ];
 
@@ -174,14 +203,17 @@ test("sort_streams", ({override}) => {
         "stream_has_topics",
         (stream_id) => ![105, 205].includes(stream_id),
     );
+    override_rewire(compose_state, "stream_name", () => "Dev");
 
     test_streams = th.sort_streams(test_streams, "d");
-    assert.deepEqual(test_streams[0].name, "Denmark"); // Pinned streams first
-    assert.deepEqual(test_streams[1].name, "Docs"); // Active streams next
-    assert.deepEqual(test_streams[2].name, "Derp"); // Less subscribers
-    assert.deepEqual(test_streams[3].name, "Dev"); // Alphabetically last
-    assert.deepEqual(test_streams[4].name, "dead"); // Inactive streams last
+    assert.deepEqual(test_streams[0].name, "Dev"); // Stream being composed to
+    assert.deepEqual(test_streams[1].name, "Denmark"); // Pinned stream
+    assert.deepEqual(test_streams[2].name, "Docs"); // Active stream
+    assert.deepEqual(test_streams[3].name, "dead (almost)"); // Relatively inactive stream
+    assert.deepEqual(test_streams[4].name, "dead"); // Completely inactive stream
+    assert.deepEqual(test_streams[5].name, "Derp"); // Muted stream last
 
+    override_rewire(compose_state, "stream_name", () => "Different");
     // Test sort streams with description
     test_streams = [
         {
@@ -272,16 +304,14 @@ test("sort_streams", ({override}) => {
     assert.deepEqual(test_streams[5].name, "Mew"); // Unsubscribed and no match
 });
 
-test("sort_languages", () => {
-    Object.assign(pygments_data, {
-        langs: {
-            python: {priority: 26},
-            javascript: {priority: 27},
-            php: {priority: 16},
-            pascal: {priority: 15},
-            perl: {priority: 3},
-            css: {priority: 21},
-        },
+test("sort_languages", ({override_rewire}) => {
+    override_rewire(pygments_data, "langs", {
+        python: {priority: 26},
+        javascript: {priority: 27},
+        php: {priority: 16},
+        pascal: {priority: 15},
+        perl: {priority: 3},
+        css: {priority: 21},
     });
 
     let test_langs = ["pascal", "perl", "php", "python", "javascript"];
@@ -296,14 +326,15 @@ test("sort_languages", () => {
     test_langs = th.sort_languages(test_langs, "p");
 
     assert.deepEqual(test_langs, ["php", "python", "pascal", "perl", "javascript"]);
+});
 
+test("sort_languages on actual data", () => {
     // Some final tests on the actual pygments data to check ordering.
     //
     // We may eventually want to use human-readable names like
     // "JavaScript" with several machine-readable aliases for what the
     // user typed, which might help provide a better user experience.
-    Object.assign(pygments_data, actual_pygments_data);
-    test_langs = ["j", "java", "javascript", "js"];
+    let test_langs = ["j", "java", "javascript", "js"];
 
     // Sort according to priority only.
     test_langs = th.sort_languages(test_langs, "jav");
@@ -323,8 +354,12 @@ test("sort_languages", () => {
 });
 
 function get_typeahead_result(query, current_stream_id, current_topic) {
+    const users = people.get_realm_users().map((user) => ({
+        ...user,
+        type: "user",
+    }));
     const result = th.sort_recipients({
-        users: people.get_realm_users(),
+        users,
         query,
         current_stream_id,
         current_topic,
@@ -339,9 +374,9 @@ test("sort_recipients", () => {
         "b_user_2@zulip.net",
         "b_user_3@zulip.net",
         "b_bot@example.com",
+        "a_bot@zulip.com",
         "a_user@zulip.org",
         "zman@test.net",
-        "a_bot@zulip.com",
     ]);
 
     // Typeahead for direct message [query, "", ""]
@@ -394,9 +429,9 @@ test("sort_recipients", () => {
         subscriber_email_2,
         subscriber_email_1,
         "b_user_1@zulip.net",
+        "a_bot@zulip.com",
         "zman@test.net",
         "a_user@zulip.org",
-        "a_bot@zulip.com",
     ]);
 
     recent_senders.process_stream_message({
@@ -418,9 +453,9 @@ test("sort_recipients", () => {
         "b_user_3@zulip.net",
         "a_user@zulip.org",
         "b_bot@example.com",
-        "a_bot@zulip.com",
         "b_user_1@zulip.net",
         "b_user_2@zulip.net",
+        "a_bot@zulip.com",
     ]);
 });
 
@@ -433,15 +468,17 @@ test("sort_recipients all mention", () => {
 
     // Test person email is "all" or "everyone"
     const test_objs = [...matches, all_obj];
-
+    const user_and_mention_items = test_objs.map((user_or_mention) =>
+        user_or_mention_item(user_or_mention),
+    );
     const results = th.sort_recipients({
-        users: test_objs,
+        users: user_and_mention_items,
         query: "a",
         current_stream_id: linux_sub.stream_id,
         current_topic: "Linux topic",
     });
 
-    assertSameEmails(results, [all_obj, a_bot, a_user, b_user_1, b_user_2, b_user_3, b_bot, zman]);
+    assertSameEmails(results, [all_obj, a_user, a_bot, b_user_1, b_user_2, b_user_3, zman, b_bot]);
 });
 
 test("sort_recipients pm counts", () => {
@@ -468,8 +505,8 @@ test("sort_recipients pm counts", () => {
 
     assert.deepEqual(get_typeahead_result("b", linux_sub.stream_id, "Linux topic"), [
         "b_user_3@zulip.net",
-        "b_user_1@zulip.net",
         "b_user_2@zulip.net",
+        "b_user_1@zulip.net",
         "b_bot@example.com",
         "a_bot@zulip.com",
         "a_user@zulip.org",
@@ -483,20 +520,23 @@ test("sort_recipients pm counts", () => {
 
     // get some line coverage
     assert.equal(
-        th.compare_people_for_relevance(b_user_1, b_user_3, compare, linux_sub.stream_id),
+        th.compare_people_for_relevance(b_user_1_item, b_user_3_item, compare, linux_sub.stream_id),
         1,
     );
     assert.equal(
-        th.compare_people_for_relevance(b_user_3, b_user_1, compare, linux_sub.stream_id),
+        th.compare_people_for_relevance(b_user_3_item, b_user_1_item, compare, linux_sub.stream_id),
         -1,
     );
 });
 
 test("sort_recipients dup bots", () => {
     const dup_objects = [...matches, a_bot];
-
+    const user_items = dup_objects.map((user) => ({
+        ...user,
+        type: "user",
+    }));
     const recipients = th.sort_recipients({
-        users: dup_objects,
+        users: user_items,
         query: "b",
         current_stream_id: undefined,
         current_topic: "",
@@ -507,10 +547,10 @@ test("sort_recipients dup bots", () => {
         "b_user_2@zulip.net",
         "b_user_3@zulip.net",
         "b_bot@example.com",
+        "a_bot@zulip.com",
+        "a_bot@zulip.com",
         "a_user@zulip.org",
         "zman@test.net",
-        "a_bot@zulip.com",
-        "a_bot@zulip.com",
     ];
     assert.deepEqual(recipients_email, expected);
 });
@@ -521,9 +561,11 @@ test("sort_recipients dup alls", () => {
 
     // full_name starts with same character but emails are 'all'
     const test_objs = [all_obj, a_user, all_obj];
-
+    const user_and_mention_items = test_objs.map((user_or_mention) =>
+        user_or_mention_item(user_or_mention),
+    );
     const recipients = th.sort_recipients({
-        users: test_objs,
+        users: user_and_mention_items,
         query: "a",
         current_stream_id: linux_sub.stream_id,
         current_topic: "Linux topic",
@@ -539,9 +581,11 @@ test("sort_recipients dup alls direct message", () => {
 
     // full_name starts with same character but emails are 'all'
     const test_objs = [all_obj, a_user, all_obj];
-
+    const user_and_mention_items = test_objs.map((user_or_mention) =>
+        user_or_mention_item(user_or_mention),
+    );
     const recipients = th.sort_recipients({
-        users: test_objs,
+        users: user_and_mention_items,
         query: "a",
     });
 
@@ -551,9 +595,14 @@ test("sort_recipients dup alls direct message", () => {
 
 test("sort_recipients subscribers", () => {
     // b_user_2 is a subscriber and b_user_1 is not.
+    peer_data.add_subscriber(dev_sub.stream_id, b_user_2.user_id);
     const small_matches = [b_user_2, b_user_1];
+    const user_items = small_matches.map((user) => ({
+        ...user,
+        type: "user",
+    }));
     const recipients = th.sort_recipients({
-        users: small_matches,
+        users: user_items,
         query: "b",
         current_stream_id: dev_sub.stream_id,
         current_topic: "Dev topic",
@@ -563,12 +612,47 @@ test("sort_recipients subscribers", () => {
     assert.deepEqual(recipients_email, expected);
 });
 
+test("sort_recipients recent senders", () => {
+    // b_user_2 is the only recent sender, b_user_3 is the only pm partner
+    // and all are subscribed to the stream Linux.
+    const small_matches = [b_user_1, b_user_2, b_user_3];
+    peer_data.add_subscriber(linux_sub.stream_id, b_user_1.user_id);
+    peer_data.add_subscriber(linux_sub.stream_id, b_user_2.user_id);
+    peer_data.add_subscriber(linux_sub.stream_id, b_user_3.user_id);
+    recent_senders.process_stream_message({
+        sender_id: b_user_2.user_id,
+        stream_id: linux_sub.stream_id,
+        topic: "Linux topic",
+        id: (next_id += 1),
+    });
+    pm_conversations.set_partner(b_user_3.user_id);
+    const user_items = small_matches.map((user) => ({
+        ...user,
+        type: "user",
+    }));
+    const recipients = th.sort_recipients({
+        users: user_items,
+        query: "b",
+        current_stream_id: linux_sub.stream_id,
+        current_topic: "Linux topic",
+    });
+    const recipients_email = recipients.map((person) => person.email);
+    // Prefer recent sender over pm partner
+    const expected = ["b_user_2@zulip.net", "b_user_3@zulip.net", "b_user_1@zulip.net"];
+    assert.deepEqual(recipients_email, expected);
+});
+
 test("sort_recipients pm partners", () => {
     // b_user_3 is a pm partner and b_user_2 is not and
     // both are not subscribed to the stream Linux.
+    pm_conversations.set_partner(b_user_3.user_id);
     const small_matches = [b_user_3, b_user_2];
+    const user_items = small_matches.map((user) => ({
+        ...user,
+        type: "user",
+    }));
     const recipients = th.sort_recipients({
-        users: small_matches,
+        users: user_items,
         query: "b",
         current_stream_id: linux_sub.stream_id,
         current_topic: "Linux topic",
@@ -584,11 +668,13 @@ test("sort broadcast mentions for stream message type", () => {
     // actually had a bug where the sort would
     // randomly rearrange them)
     compose_state.set_message_type("stream");
-    const results = th.sort_people_for_relevance(ct.broadcast_mentions().reverse(), "", "");
+    const mentions = ct.broadcast_mentions().reverse();
+    const mention_items = mentions.map((mention) => user_or_mention_item(mention));
+    const results = th.sort_people_for_relevance(mention_items, "", "");
 
     assert.deepEqual(
         results.map((r) => r.email),
-        ["all", "everyone", "stream", "topic"],
+        ["all", "everyone", "stream", "channel", "topic"],
     );
 
     // Reverse the list to test actual sorting
@@ -597,18 +683,22 @@ test("sort broadcast mentions for stream message type", () => {
     const test_objs = [...ct.broadcast_mentions()].reverse();
     test_objs.unshift(zman);
     test_objs.push(a_user);
-
-    const results2 = th.sort_people_for_relevance(test_objs, "", "");
+    const user_or_mention_items = test_objs.map((user_or_mention) =>
+        user_or_mention_item(user_or_mention),
+    );
+    const results2 = th.sort_people_for_relevance(user_or_mention_items, "", "");
 
     assert.deepEqual(
         results2.map((r) => r.email),
-        ["all", "everyone", "stream", "topic", a_user.email, zman.email],
+        ["all", "everyone", "stream", "channel", "topic", a_user.email, zman.email],
     );
 });
 
 test("sort broadcast mentions for direct message type", () => {
     compose_state.set_message_type("private");
-    const results = th.sort_people_for_relevance(ct.broadcast_mentions().reverse(), "", "");
+    const mentions = ct.broadcast_mentions().reverse();
+    const mention_items = mentions.map((mention) => user_or_mention_item(mention));
+    const results = th.sort_people_for_relevance(mention_items, "", "");
 
     assert.deepEqual(
         results.map((r) => r.email),
@@ -618,8 +708,10 @@ test("sort broadcast mentions for direct message type", () => {
     const test_objs = [...ct.broadcast_mentions()].reverse();
     test_objs.unshift(zman);
     test_objs.push(a_user);
-
-    const results2 = th.sort_people_for_relevance(test_objs, "", "");
+    const user_or_mention_items = test_objs.map((user_or_mention) =>
+        user_or_mention_item(user_or_mention),
+    );
+    const results2 = th.sort_people_for_relevance(user_or_mention_items, "", "");
 
     assert.deepEqual(
         results2.map((r) => r.email),
@@ -633,19 +725,21 @@ test("test compare directly for stream message type", () => {
     // coverage is subject to the whims of how JS sorts.
     compose_state.set_message_type("stream");
     const all_obj = ct.broadcast_mentions()[0];
+    const all_obj_item = user_or_mention_item(all_obj);
 
-    assert.equal(th.compare_people_for_relevance(all_obj, all_obj), 0);
-    assert.equal(th.compare_people_for_relevance(all_obj, zman), -1);
-    assert.equal(th.compare_people_for_relevance(zman, all_obj), 1);
+    assert.equal(th.compare_people_for_relevance(all_obj_item, all_obj_item), 0);
+    assert.equal(th.compare_people_for_relevance(all_obj_item, zman_item), -1);
+    assert.equal(th.compare_people_for_relevance(zman_item, all_obj_item), 1);
 });
 
 test("test compare directly for direct message", () => {
     compose_state.set_message_type("private");
     const all_obj = ct.broadcast_mentions()[0];
+    const all_obj_item = user_or_mention_item(all_obj);
 
-    assert.equal(th.compare_people_for_relevance(all_obj, all_obj), 0);
-    assert.equal(th.compare_people_for_relevance(all_obj, zman), 1);
-    assert.equal(th.compare_people_for_relevance(zman, all_obj), -1);
+    assert.equal(th.compare_people_for_relevance(all_obj_item, all_obj_item), 0);
+    assert.equal(th.compare_people_for_relevance(all_obj_item, zman_item), 1);
+    assert.equal(th.compare_people_for_relevance(zman_item, all_obj_item), -1);
 });
 
 test("highlight_with_escaping", () => {
@@ -680,7 +774,7 @@ test("highlight_with_escaping", () => {
 
 test("render_person when emails hidden", ({mock_template}) => {
     // Test render_person with regular person, under hidden email visibility case
-    page_params.custom_profile_field_types = {
+    realm.custom_profile_field_types = {
         PRONOUNS: {id: 8, name: "Pronouns"},
     };
     let rendered = false;
@@ -697,7 +791,7 @@ test("render_person when emails hidden", ({mock_template}) => {
 test("render_person", ({mock_template}) => {
     // Test render_person with regular person
     a_user.delivery_email = "a_user_delivery@zulip.org";
-    page_params.custom_profile_field_types = {
+    realm.custom_profile_field_types = {
         PRONOUNS: {id: 8, name: "Pronouns"},
     };
     let rendered = false;
@@ -722,6 +816,7 @@ test("render_person special_item_text", ({mock_template}) => {
         is_bot: false,
         user_id: 7,
         special_item_text: "special_text",
+        is_broadcast: true,
     };
 
     rendered = false;
@@ -848,12 +943,18 @@ test("compare_language", () => {
     assert.equal(th.compare_language("abap", "amdgpu"), util.strcmp("abap", "amdgpu"));
 
     // Test with languages that aren't in the generated pygments data.
-    assert.equal(actual_pygments_data.langs.custom_a, undefined);
-    assert.equal(actual_pygments_data.langs.custom_b, undefined);
+    assert.equal(pygments_data.langs.custom_a, undefined);
+    assert.equal(pygments_data.langs.custom_b, undefined);
     // Since custom_a has no popularity score, it gets sorted behind python.
     assert.equal(th.compare_language("custom_a", "python"), 1);
     assert.equal(th.compare_language("python", "custom_a"), -1);
     // Whenever there is a tie, even in the case neither have a popularity
     // score, then alphabetical order is used to break the tie.
     assert.equal(th.compare_language("custom_a", "custom_b"), util.strcmp("custom_a", "custom_b"));
+});
+
+// TODO: This is incomplete for testing this function, and
+// should be filled out more. This case was added for codecov.
+test("compare_by_pms", () => {
+    assert.equal(th.compare_by_pms(a_user, a_user), 0);
 });

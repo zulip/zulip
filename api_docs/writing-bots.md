@@ -17,23 +17,41 @@ On this page you'll find:
 
 ## Installing a development version of the Zulip bots package
 
-1. `git clone https://github.com/zulip/python-zulip-api.git` - clone the [python-zulip-api](
-  https://github.com/zulip/python-zulip-api) repository.
+{start_tabs}
 
-2. `cd python-zulip-api` - navigate into your cloned repository.
+1. Clone the [python-zulip-api](https://github.com/zulip/python-zulip-api)
+   repository:
 
-3. `python3 ./tools/provision` - install all requirements in a Python virtualenv.
+    ```
+    git clone https://github.com/zulip/python-zulip-api.git
+    ```
 
-4. The output of `provision` will end with a command of the form `source .../activate`;
-   run that command to enter the new virtualenv.
+1. Navigate into your cloned repository:
 
-5. *Finished*. You should now see the name of your venv preceding your prompt,
-   e.g. `(zulip-api-py3-venv)`.
+    ```
+    cd python-zulip-api
+    ```
 
-*Hint: `provision` installs the `zulip`, `zulip_bots`, and
- `zulip_botserver` packages in developer mode. This enables you to
- modify these packages and then run your modified code without
- having to first re-install the packages or re-provision.*
+1. Install all requirements in a Python virtualenv:
+
+    ```
+    python3 ./tools/provision
+    ```
+
+1. Run the command provided in the final output of the `provision` process to
+   enter the new virtualenv. The command will be of the form `source .../activate`.
+
+1. You should now see the name of your virtualenv preceding your prompt e.g.,
+   `(zulip-api-py3-venv)`.
+
+!!! tip ""
+
+    `provision` installs the `zulip`, `zulip_bots`, and
+    `zulip_botserver` packages in developer mode. This enables you to
+    modify these packages and then run your modified code without
+    having to first re-install the packages or re-provision.
+
+{end_tabs}
 
 ## Writing a bot
 
@@ -512,3 +530,10 @@ The long-term plan for this bot system is to allow the same
   received from Zulip's outgoing webhooks integration.
 * For bots merged into the mainline Zulip codebase, enabled via a
   button in the Zulip web UI, with no code deployment effort required.
+
+## Related articles
+
+* [Non-webhook integrations](/api/non-webhook-integrations)
+* [Running bots](/api/running-bots)
+* [Deploying bots](/api/deploying-bots)
+* [Configuring the Python bindings](/api/configuring-python-bindings)

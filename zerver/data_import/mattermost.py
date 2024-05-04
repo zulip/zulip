@@ -2,6 +2,7 @@
 spec:
 https://docs.mattermost.com/administration/bulk-export.html
 """
+
 import logging
 import os
 import random
@@ -316,7 +317,7 @@ def get_mentioned_user_ids(raw_message: Dict[str, Any], user_id_mapper: IdMapper
     content = raw_message["content"]
 
     # usernames can be of the form user.name, user_name, username., username_, user.name_ etc
-    matches = re.findall("(?<=^|(?<=[^a-zA-Z0-9-_.]))@(([A-Za-z0-9]+[_.]?)+)", content)
+    matches = re.findall(r"(?<=^|(?<=[^a-zA-Z0-9-_.]))@(([A-Za-z0-9]+[_.]?)+)", content)
 
     for match in matches:
         possible_username = match[0]
@@ -458,7 +459,7 @@ def process_raw_message_batch(
             )
         elif "huddle_name" in raw_message:
             recipient_id = get_recipient_id_from_receiver_name(
-                raw_message["huddle_name"], Recipient.HUDDLE
+                raw_message["huddle_name"], Recipient.DIRECT_MESSAGE_GROUP
             )
         elif "pm_members" in raw_message:
             members = raw_message["pm_members"]
@@ -573,8 +574,8 @@ def process_posts(
         content = post_dict["message"]
 
         if masking_content:
-            content = re.sub("[a-z]", "x", content)
-            content = re.sub("[A-Z]", "X", content)
+            content = re.sub(r"[a-z]", "x", content)
+            content = re.sub(r"[A-Z]", "X", content)
 
         if "reactions" in post_dict:
             reactions = post_dict["reactions"] or []
@@ -672,7 +673,7 @@ def write_message_data(
     for d in zerver_recipient:
         if d["type"] == Recipient.STREAM:
             stream_id_to_recipient_id[d["type_id"]] = d["id"]
-        elif d["type"] == Recipient.HUDDLE:
+        elif d["type"] == Recipient.DIRECT_MESSAGE_GROUP:
             huddle_id_to_recipient_id[d["type_id"]] = d["id"]
         if d["type"] == Recipient.PERSONAL:
             user_id_to_recipient_id[d["type_id"]] = d["id"]
@@ -681,7 +682,7 @@ def write_message_data(
         if recipient_type == Recipient.STREAM:
             receiver_id = stream_id_mapper.get(receiver_name)
             recipient_id = stream_id_to_recipient_id[receiver_id]
-        elif recipient_type == Recipient.HUDDLE:
+        elif recipient_type == Recipient.DIRECT_MESSAGE_GROUP:
             receiver_id = huddle_id_mapper.get(receiver_name)
             recipient_id = huddle_id_to_recipient_id[receiver_id]
         elif recipient_type == Recipient.PERSONAL:
@@ -805,7 +806,7 @@ def write_emoticon_data(
 
 
 def create_username_to_user_mapping(
-    user_data_list: List[Dict[str, Any]]
+    user_data_list: List[Dict[str, Any]],
 ) -> Dict[str, Dict[str, Any]]:
     username_to_user = {}
     for user in user_data_list:

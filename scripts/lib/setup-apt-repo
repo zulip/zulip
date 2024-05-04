@@ -86,6 +86,12 @@ fi
 # Hash to check if the configuration is changed by the script later.
 hashes=$(sha256sum "$SOURCES_FILE" "$PREF_FILE" 2>/dev/null || true)
 
+if [ -e "$LIST_PATH/$LIST.pref" ]; then
+    cp "$LIST_PATH/$LIST.pref" "$PREF_FILE"
+else
+    rm -f "$PREF_FILE"
+fi
+
 pre_setup_deps=(apt-transport-https ca-certificates gnupg curl)
 if ! apt-get -dy install "${pre_setup_deps[@]}"; then
     apt-get update
@@ -94,12 +100,6 @@ apt-get -y install "${pre_setup_deps[@]}"
 
 apt-key add "$LIST_PATH/"*.asc
 cp "$LIST_PATH/$release.list" "$SOURCES_FILE"
-
-if [ -e "$LIST_PATH/$LIST.pref" ]; then
-    cp "$LIST_PATH/$LIST.pref" "$PREF_FILE"
-else
-    rm -f "$PREF_FILE"
-fi
 
 if [ -e "$LIST_PATH/custom.sh" ]; then
     export LIST_PATH

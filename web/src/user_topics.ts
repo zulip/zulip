@@ -19,7 +19,7 @@ type ServerUserTopic = z.infer<typeof user_topic_schema>;
 
 export type UserTopic = {
     stream_id: number;
-    stream: string | undefined;
+    stream: string;
     topic: string;
     date_updated: number;
     date_updated_str: string;
@@ -37,6 +37,7 @@ const user_topic_schema = z.object({
 const all_user_topics = new Map<
     number,
     FoldDict<{
+        stream_name: string;
         date_updated: number;
         visibility_policy: number;
     }>
@@ -51,6 +52,7 @@ export const all_visibility_policies = {
 
 export function update_user_topics(
     stream_id: number,
+    stream_name: string,
     topic: string,
     visibility_policy: number,
     date_updated: number,
@@ -64,7 +66,7 @@ export function update_user_topics(
             all_user_topics.set(stream_id, sub_dict);
         }
         const time = get_time_from_date_muted(date_updated);
-        sub_dict.set(topic, {date_updated: time, visibility_policy});
+        sub_dict.set(topic, {date_updated: time, visibility_policy, stream_name});
     }
 }
 
@@ -95,14 +97,14 @@ export function is_topic_unmuted_or_followed(stream_id: number, topic: string): 
 export function get_user_topics_for_visibility_policy(visibility_policy: number): UserTopic[] {
     const topics: UserTopic[] = [];
     for (const [stream_id, sub_dict] of all_user_topics) {
-        const stream = sub_store.maybe_get_stream_name(stream_id);
         for (const topic of sub_dict.keys()) {
             if (sub_dict.get(topic)!.visibility_policy === visibility_policy) {
-                const date_updated = sub_dict.get(topic)!.date_updated;
+                const topic_dict = sub_dict.get(topic)!;
+                const date_updated = topic_dict.date_updated;
                 const date_updated_str = timerender.render_now(new Date(date_updated)).time_str;
                 topics.push({
                     stream_id,
-                    stream,
+                    stream: topic_dict.stream_name,
                     topic,
                     date_updated,
                     date_updated_str,
@@ -210,7 +212,7 @@ export function set_user_topic(user_topic: ServerUserTopic): void {
         return;
     }
 
-    update_user_topics(stream_id, topic, user_topic.visibility_policy, date_updated);
+    update_user_topics(stream_id, stream_name, topic, user_topic.visibility_policy, date_updated);
 }
 
 export function set_user_topics(user_topics: ServerUserTopic[]): void {

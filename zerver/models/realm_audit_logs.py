@@ -6,7 +6,7 @@ from django.db import models
 from django.db.models import CASCADE, Q
 from typing_extensions import override
 
-from zerver.models.groups import UserGroup
+from zerver.models.groups import NamedUserGroup
 from zerver.models.realms import Realm
 from zerver.models.streams import Stream
 from zerver.models.users import UserProfile
@@ -130,6 +130,7 @@ class AbstractRealmAuditLog(models.Model):
     # value used for the same purpose in RealmAuditLog (e.g.
     # REALM_DEACTIVATED = 201, and REMOTE_SERVER_DEACTIVATED = 10201).
     REMOTE_SERVER_DEACTIVATED = 10201
+    REMOTE_SERVER_REACTIVATED = 10202
     REMOTE_SERVER_PLAN_TYPE_CHANGED = 10204
     REMOTE_SERVER_DISCOUNT_CHANGED = 10209
     REMOTE_SERVER_SPONSORSHIP_APPROVED = 10210
@@ -143,6 +144,7 @@ class AbstractRealmAuditLog(models.Model):
     REMOTE_REALM_VALUE_UPDATED = 20001
     REMOTE_PLAN_TRANSFERRED_SERVER_TO_REALM = 20002
     REMOTE_REALM_LOCALLY_DELETED = 20003
+    REMOTE_REALM_LOCALLY_DELETED_RESTORED = 20004
 
     event_type = models.PositiveSmallIntegerField()
 
@@ -159,6 +161,18 @@ class AbstractRealmAuditLog(models.Model):
         REALM_REACTIVATED,
         REALM_IMPORTED,
     ]
+
+    HOW_REALM_CREATOR_FOUND_ZULIP_OPTIONS = {
+        "existing_user": "At an organization that's using it",
+        "search_engine": "Search engine",
+        "review_site": "Review site",
+        "personal_recommendation": "Personal recommendation",
+        "hacker_news": "Hacker News",
+        "ad": "Advertisement",
+        "other": "Other",
+        "forgot": "Don't remember",
+        "refuse_to_answer": "Prefer not to say",
+    }
 
     class Meta:
         abstract = True
@@ -205,24 +219,18 @@ class RealmAuditLog(AbstractRealmAuditLog):
         on_delete=CASCADE,
     )
     modified_user_group = models.ForeignKey(
-        UserGroup,
+        NamedUserGroup,
         null=True,
         on_delete=CASCADE,
     )
     event_last_message_id = models.IntegerField(null=True)
 
-    @override
-    def __str__(self) -> str:
-        if self.modified_user is not None:
-            return f"{self.modified_user!r} {self.event_type} {self.event_time} {self.id}"
-        if self.modified_stream is not None:
-            return f"{self.modified_stream!r} {self.event_type} {self.event_time} {self.id}"
-        if self.modified_user_group is not None:
-            return f"{self.modified_user_group!r} {self.event_type} {self.event_time} {self.id}"
-        return f"{self.realm!r} {self.event_type} {self.event_time} {self.id}"
-
     class Meta:
         indexes = [
+            models.Index(
+                name="zerver_realmauditlog_realm__event_type__event_time",
+                fields=["realm", "event_type", "event_time"],
+            ),
             models.Index(
                 name="zerver_realmauditlog_user_subscriptions_idx",
                 fields=["modified_user", "modified_stream"],
@@ -233,5 +241,15 @@ class RealmAuditLog(AbstractRealmAuditLog):
                         AbstractRealmAuditLog.SUBSCRIPTION_DEACTIVATED,
                     ]
                 ),
-            )
+            ),
         ]
+
+    @override
+    def __str__(self) -> str:
+        if self.modified_user is not None:
+            return f"{self.modified_user!r} {self.event_type} {self.event_time} {self.id}"
+        if self.modified_stream is not None:
+            return f"{self.modified_stream!r} {self.event_type} {self.event_time} {self.id}"
+        if self.modified_user_group is not None:
+            return f"{self.modified_user_group!r} {self.event_type} {self.event_time} {self.id}"
+        return f"{self.realm!r} {self.event_type} {self.event_time} {self.id}"

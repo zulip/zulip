@@ -8,7 +8,7 @@ from urllib.request import urlopen
 
 import yaml
 
-from .zulip_tools import parse_os_release, run
+from .zulip_tools import run
 
 ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 ZULIP_SRV_PATH = "/srv"
@@ -89,11 +89,6 @@ def install_puppet_module(
             tarball.write(tarball_content)
             tarball.flush()
 
-        # This is to suppress Puppet warnings with ruby 2.7.
-        distro_info = parse_os_release()
-        puppet_env = os.environ.copy()
-        if (distro_info["ID"], distro_info["VERSION_ID"]) in [("ubuntu", "20.04")]:
-            puppet_env["RUBYOPT"] = "-W0"
         run(
             [
                 "puppet",
@@ -104,5 +99,4 @@ def install_puppet_module(
                 tarball.name,
                 "--ignore-dependencies",
             ],
-            env=puppet_env,
         )

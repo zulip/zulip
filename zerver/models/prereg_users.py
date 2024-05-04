@@ -1,6 +1,3 @@
-from datetime import timedelta
-from typing import Optional, Union
-
 from django.contrib.contenttypes.fields import GenericRelation
 from django.db import models
 from django.db.models import CASCADE, Q, QuerySet
@@ -8,7 +5,6 @@ from django.db.models.functions import Upper
 from django.utils.timezone import now as timezone_now
 
 from confirmation import settings as confirmation_settings
-from zerver.lib.types import UnspecifiedValue
 from zerver.models.constants import MAX_LANGUAGE_ID_LENGTH
 from zerver.models.realms import Realm
 from zerver.models.users import UserProfile
@@ -115,7 +111,6 @@ class PreregistrationUser(models.Model):
 
 def filter_to_valid_prereg_users(
     query: QuerySet[PreregistrationUser],
-    invite_expires_in_minutes: Union[Optional[int], UnspecifiedValue] = UnspecifiedValue(),
 ) -> QuerySet[PreregistrationUser]:
     """
     If invite_expires_in_days is specified, we return only those PreregistrationUser
@@ -125,20 +120,9 @@ def filter_to_valid_prereg_users(
     revoked_value = confirmation_settings.STATUS_REVOKED
 
     query = query.exclude(status__in=[used_value, revoked_value])
-    if invite_expires_in_minutes is None:
-        # Since invite_expires_in_minutes is None, we're invitation will never
-        # expire, we do not need to check anything else and can simply return
-        # after excluding objects with active and revoked status.
-        return query
-
-    assert invite_expires_in_minutes is not None
-    if not isinstance(invite_expires_in_minutes, UnspecifiedValue):
-        lowest_datetime = timezone_now() - timedelta(minutes=invite_expires_in_minutes)
-        return query.filter(invited_at__gte=lowest_datetime)
-    else:
-        return query.filter(
-            Q(confirmation__expiry_date=None) | Q(confirmation__expiry_date__gte=timezone_now())
-        )
+    return query.filter(
+        Q(confirmation__expiry_date=None) | Q(confirmation__expiry_date__gte=timezone_now())
+    )
 
 
 class MultiuseInvite(models.Model):

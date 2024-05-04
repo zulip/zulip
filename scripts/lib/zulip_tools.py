@@ -16,8 +16,10 @@ import sys
 import time
 import uuid
 from datetime import datetime, timedelta
-from typing import IO, Any, Dict, List, Sequence, Set
+from typing import IO, Any, Dict, List, Optional, Sequence, Set, Union, overload
 from urllib.parse import SplitResult
+
+import zoneinfo
 
 DEPLOYMENTS_DIR = "/home/zulip/deployments"
 LOCK_DIR = os.path.join(DEPLOYMENTS_DIR, "lock")
@@ -31,7 +33,7 @@ FAIL = "\033[91m"
 ENDC = "\033[0m"
 BLACKONYELLOW = "\x1b[0;30;43m"
 WHITEONRED = "\x1b[0;37;41m"
-BOLDRED = "\x1B[1;31m"
+BOLDRED = "\x1b[1;31m"
 BOLD = "\x1b[1m"
 GRAY = "\x1b[90m"
 
@@ -470,11 +472,6 @@ def os_families() -> Set[str]:
 
 
 def get_tzdata_zi() -> IO[str]:
-    if sys.version_info < (3, 9):  # nocoverage
-        from backports import zoneinfo
-    else:  # nocoverage
-        import zoneinfo
-
     for path in zoneinfo.TZPATH:
         filename = os.path.join(path, "tzdata.zi")
         if os.path.exists(filename):
@@ -563,10 +560,10 @@ def assert_not_running_as_root() -> None:
     if is_root():
         pwent = get_zulip_pwent()
         msg = (
-            "{shortname} should not be run as root. Use `su {user}` to switch to the 'zulip'\n"
-            "user before rerunning this, or use \n  su {user} -c '{name} ...'\n"
+            f"{os.path.basename(script_name)} should not be run as root. Use `su {pwent.pw_name}` to switch to the 'zulip'\n"
+            f"user before rerunning this, or use \n  su {pwent.pw_name} -c '{script_name} ...'\n"
             "to switch users and run this as a single command."
-        ).format(name=script_name, shortname=os.path.basename(script_name), user=pwent.pw_name)
+        )
         print(msg)
         sys.exit(1)
 
@@ -583,24 +580,36 @@ def assert_running_as_root(strip_lib_from_paths: bool = False) -> None:
         sys.exit(1)
 
 
+@overload
 def get_config(
     config_file: configparser.RawConfigParser,
     section: str,
     key: str,
-    default_value: str = "",
-) -> str:
-    if config_file.has_option(section, key):
-        return config_file.get(section, key)
-    return default_value
-
-
-def get_config_bool(
-    config_file: configparser.RawConfigParser, section: str, key: str, default_value: bool = False
-) -> bool:
+    default_value: None = None,
+) -> Optional[str]: ...
+@overload
+def get_config(
+    config_file: configparser.RawConfigParser,
+    section: str,
+    key: str,
+    default_value: str,
+) -> str: ...
+@overload
+def get_config(
+    config_file: configparser.RawConfigParser, section: str, key: str, default_value: bool
+) -> bool: ...
+def get_config(
+    config_file: configparser.RawConfigParser,
+    section: str,
+    key: str,
+    default_value: Union[str, bool, None] = None,
+) -> Union[str, bool, None]:
     if config_file.has_option(section, key):
         val = config_file.get(section, key)
-        # This list is parallel to puppet/zulip/lib/puppet/parser/functions/zulipconf.rb
-        return val in ["1", "y", "t", "true", "yes", "enable", "enabled"]
+        if isinstance(default_value, bool):
+            # This list is parallel to puppet/zulip/lib/puppet/functions/zulipconf.rb
+            return val.lower() in ["1", "y", "t", "true", "yes", "enable", "enabled"]
+        return val
     return default_value
 
 
@@ -682,16 +691,16 @@ def start_arg_parser(action: str, add_help: bool = False) -> argparse.ArgumentPa
     parser.add_argument(
         "--skip-checks", action="store_true", help="Skip syntax and database checks"
     )
+    parser.add_argument(
+        "--skip-client-reloads",
+        action="store_true",
+        help="Do not send reload events to web clients",
+    )
     if action == "restart":
         parser.add_argument(
             "--less-graceful",
             action="store_true",
             help="Restart with more concern for expediency than minimizing availability interruption",
-        )
-        parser.add_argument(
-            "--skip-tornado",
-            action="store_true",
-            help="Do not restart Tornado processes",
         )
     return parser
 

@@ -5,12 +5,14 @@ from typing import Any, DefaultDict, Dict, Iterable, List, Optional, Sequence, S
 
 from django.conf import settings
 from django.db import transaction
-from django.db.models import Exists, Max, OuterRef, QuerySet
+from django.db.models import Exists, F, Max, OuterRef, QuerySet
+from django.db.models.functions import Greatest
 from django.utils.timezone import now as timezone_now
 from sentry_sdk import capture_exception
 
 from zerver.lib.logging_util import log_to_file
 from zerver.lib.queue import queue_json_publish
+from zerver.lib.user_message import bulk_insert_all_ums
 from zerver.lib.utils import assert_is_not_none
 from zerver.models import (
     Message,
@@ -38,15 +40,8 @@ def filter_by_subscription_history(
     user_profile: UserProfile,
     all_stream_messages: DefaultDict[int, List[MissingMessageDict]],
     all_stream_subscription_logs: DefaultDict[int, List[RealmAuditLog]],
-) -> List[UserMessage]:
-    user_messages_to_insert: List[UserMessage] = []
-    seen_message_ids: Set[int] = set()
-
-    def store_user_message_to_insert(message: MissingMessageDict) -> None:
-        if message["id"] not in seen_message_ids:
-            user_message = UserMessage(user_profile=user_profile, message_id=message["id"], flags=0)
-            user_messages_to_insert.append(user_message)
-            seen_message_ids.add(message["id"])
+) -> List[int]:
+    message_ids: Set[int] = set()
 
     for stream_id, stream_messages_raw in all_stream_messages.items():
         stream_subscription_logs = all_stream_subscription_logs[stream_id]
@@ -82,7 +77,7 @@ def filter_by_subscription_history(
                 # subscribed immediately before the event.
                 for stream_message in stream_messages:
                     if stream_message["id"] <= event_last_message_id:
-                        store_user_message_to_insert(stream_message)
+                        message_ids.add(stream_message["id"])
                     else:
                         break
             elif log_entry.event_type in (
@@ -110,9 +105,8 @@ def filter_by_subscription_history(
             RealmAuditLog.SUBSCRIPTION_ACTIVATED,
             RealmAuditLog.SUBSCRIPTION_CREATED,
         ):
-            for stream_message in stream_messages:
-                store_user_message_to_insert(stream_message)
-    return user_messages_to_insert
+            message_ids.update(stream_message["id"] for stream_message in stream_messages)
+    return sorted(message_ids)
 
 
 def add_missing_messages(user_profile: UserProfile) -> None:
@@ -238,19 +232,20 @@ def add_missing_messages(user_profile: UserProfile) -> None:
     # subscription logs and then store all UserMessage objects for bulk insert
     # This function does not perform any SQL related task and gets all the data
     # required for its operation in its params.
-    user_messages_to_insert = filter_by_subscription_history(
+    message_ids_to_insert = filter_by_subscription_history(
         user_profile, stream_messages, all_stream_subscription_logs
     )
 
     # Doing a bulk create for all the UserMessage objects stored for creation.
-    while len(user_messages_to_insert) > 0:
-        messages, user_messages_to_insert = (
-            user_messages_to_insert[0:BULK_CREATE_BATCH_SIZE],
-            user_messages_to_insert[BULK_CREATE_BATCH_SIZE:],
+    while len(message_ids_to_insert) > 0:
+        message_ids, message_ids_to_insert = (
+            message_ids_to_insert[0:BULK_CREATE_BATCH_SIZE],
+            message_ids_to_insert[BULK_CREATE_BATCH_SIZE:],
         )
-        UserMessage.objects.bulk_create(messages)
-        user_profile.last_active_message_id = messages[-1].message_id
-        user_profile.save(update_fields=["last_active_message_id"])
+        bulk_insert_all_ums(user_ids=[user_profile.id], message_ids=message_ids, flags=0)
+        UserProfile.objects.filter(id=user_profile.id).update(
+            last_active_message_id=Greatest(F("last_active_message_id"), message_ids[-1])
+        )
 
 
 def do_soft_deactivate_user(user_profile: UserProfile) -> None:
@@ -272,7 +267,7 @@ def do_soft_deactivate_user(user_profile: UserProfile) -> None:
 
 
 def do_soft_deactivate_users(
-    users: Union[Sequence[UserProfile], QuerySet[UserProfile]]
+    users: Union[Sequence[UserProfile], QuerySet[UserProfile]],
 ) -> List[UserProfile]:
     BATCH_SIZE = 100
     users_soft_deactivated = []
@@ -405,27 +400,35 @@ def queue_soft_reactivation(user_profile_id: int) -> None:
 
 
 def soft_reactivate_if_personal_notification(
-    user_profile: UserProfile, unique_triggers: Set[str], mentioned_user_group_name: Optional[str]
+    user_profile: UserProfile,
+    unique_triggers: Set[str],
+    mentioned_user_group_members_count: Optional[int],
 ) -> None:
     """When we're about to send an email/push notification to a
     long_term_idle user, it's very likely that the user will try to
     return to Zulip. As a result, it makes sense to optimistically
     soft-reactivate that user, to give them a good return experience.
 
-    It's important that we do nothing for stream wildcard or group mentions,
-    because soft-reactivating an entire realm would be very expensive
-    (and we can't easily check the group's size). The caller is
-    responsible for passing a mentioned_user_group_name that is None
-    for messages that contain both a personal mention and a group
-    mention.
+    It's important that we do nothing for stream wildcard or large
+    group mentions (size > 'settings.MAX_GROUP_SIZE_FOR_MENTION_REACTIVATION'),
+    because soft-reactivating an entire realm or a large group would be
+    very expensive. The caller is responsible for passing a
+    mentioned_user_group_members_count that is None for messages that
+    contain both a personal mention and a group mention.
     """
     if not user_profile.long_term_idle:
         return
 
     direct_message = NotificationTriggers.DIRECT_MESSAGE in unique_triggers
-    personal_mention = (
-        NotificationTriggers.MENTION in unique_triggers and mentioned_user_group_name is None
-    )
+
+    personal_mention = False
+    small_group_mention = False
+    if NotificationTriggers.MENTION in unique_triggers:
+        if mentioned_user_group_members_count is None:
+            personal_mention = True
+        elif mentioned_user_group_members_count <= settings.MAX_GROUP_SIZE_FOR_MENTION_REACTIVATION:
+            small_group_mention = True
+
     topic_wildcard_mention = any(
         trigger in unique_triggers
         for trigger in [
@@ -433,7 +436,12 @@ def soft_reactivate_if_personal_notification(
             NotificationTriggers.TOPIC_WILDCARD_MENTION_IN_FOLLOWED_TOPIC,
         ]
     )
-    if not direct_message and not personal_mention and not topic_wildcard_mention:
+    if (
+        not direct_message
+        and not personal_mention
+        and not small_group_mention
+        and not topic_wildcard_mention
+    ):
         return
 
     queue_soft_reactivation(user_profile.id)

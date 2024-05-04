@@ -1,4 +1,5 @@
 """Webhooks for external integrations."""
+
 from typing import List
 
 from django.http import HttpRequest, HttpResponse

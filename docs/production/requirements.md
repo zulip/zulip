@@ -4,9 +4,8 @@ To run a Zulip server, you will need:
 
 - A dedicated machine or VM
 - A supported OS:
-  - Ubuntu 20.04
   - Ubuntu 22.04
-  - Debian 11
+  - Ubuntu 24.04
   - Debian 12
 - A supported CPU architecture:
   - x86-64
@@ -37,7 +36,7 @@ on issues you'll encounter](install-existing-server.md).
 
 #### Operating system
 
-Ubuntu 20.04, Ubuntu 22.04, Debian 11, and Debian 12
+Ubuntu 22.04, Ubuntu 24.04, and Debian 12
 are supported for running Zulip in production. You can also
 run Zulip on other platforms that support Docker using
 [docker-zulip][docker-zulip-homepage].
@@ -119,7 +118,7 @@ access to incoming port 22 for SSH access for remote access.
 
 [ssrf]: https://owasp.org/www-community/attacks/Server_Side_Request_Forgery
 [smokescreen-proxy]: deployment.md#customizing-the-outgoing-http-proxy
-[reverse-proxy]: deployment.md#putting-the-zulip-application-behind-a-reverse-proxy
+[reverse-proxy]: reverse-proxies.md
 
 ## Credentials needed
 

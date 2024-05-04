@@ -52,6 +52,6 @@ Organizations can [configure](/help/restrict-moving-messages) which
 ## Related articles
 
 * [Move content to another topic](/help/move-content-to-another-topic)
-* [Move content to another stream](/help/move-content-to-another-stream)
+* [Move content to another channel](/help/move-content-to-another-channel)
 * [Resolve a topic](/help/resolve-a-topic)
 * [Restrict moving messages](/help/restrict-moving-messages)

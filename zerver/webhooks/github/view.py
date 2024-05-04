@@ -1,11 +1,12 @@
 import re
+from datetime import datetime, timezone
 from typing import Callable, Dict, Optional
 
 from django.http import HttpRequest, HttpResponse
-from returns.curry import partial
 
 from zerver.decorator import log_unsupported_webhook_event, webhook_view
 from zerver.lib.exceptions import UnsupportedWebhookEventTypeError
+from zerver.lib.partial import partial
 from zerver.lib.response import json_success
 from zerver.lib.typed_endpoint import JsonBodyPayload, typed_endpoint
 from zerver.lib.validator import WildValue, check_bool, check_int, check_none_or, check_string
@@ -160,9 +161,11 @@ def get_issue_body(helper: Helper) -> str:
         action=action,
         url=issue["html_url"].tame(check_string),
         number=issue["number"].tame(check_int),
-        message=None
-        if action in ("assigned", "unassigned")
-        else issue["body"].tame(check_none_or(check_string)),
+        message=(
+            None
+            if action in ("assigned", "unassigned")
+            else issue["body"].tame(check_none_or(check_string))
+        ),
         title=issue["title"].tame(check_string) if include_title else None,
     )
 
@@ -248,7 +251,7 @@ def get_change_deployment_status_body(helper: Helper) -> str:
     )
 
 
-def get_create_or_delete_body(helper: Helper, action: str) -> str:
+def get_create_or_delete_body(action: str, helper: Helper) -> str:
     payload = helper.payload
     ref_type = payload["ref_type"].tame(check_string)
     return "{} {} {} {}.".format(
@@ -635,6 +638,82 @@ def get_ping_body(helper: Helper) -> str:
     return get_setup_webhook_message("GitHub", get_sender_name(payload))
 
 
+def get_cancelled_body(helper: Helper) -> str:
+    payload = helper.payload
+    template = "{user_name} cancelled their {subscription} subscription."
+    return template.format(
+        user_name=get_sender_name(payload),
+        subscription=get_subscription(payload),
+    ).rstrip()
+
+
+def get_created_body(helper: Helper) -> str:
+    payload = helper.payload
+    template = "{user_name} subscribed for {subscription}."
+    return template.format(
+        user_name=get_sender_name(payload),
+        subscription=get_subscription(payload),
+    ).rstrip()
+
+
+def get_edited_body(helper: Helper) -> str:
+    payload = helper.payload
+    template = "{user_name} changed who can see their sponsorship from {prior_privacy_level} to {privacy_level}."
+    return template.format(
+        user_name=get_sender_name(payload),
+        prior_privacy_level=payload["changes"]["privacy_level"]["from"].tame(check_string),
+        privacy_level=payload["sponsorship"]["privacy_level"].tame(check_string),
+    ).rstrip()
+
+
+def get_pending_cancellation_body(helper: Helper) -> str:
+    payload = helper.payload
+    template = "{user_name}'s {subscription} subscription will be cancelled on {effective_date}."
+    return template.format(
+        user_name=get_sender_name(payload),
+        subscription=get_subscription(payload),
+        effective_date=get_effective_date(payload),
+    ).rstrip()
+
+
+def get_pending_tier_change_body(helper: Helper) -> str:
+    payload = helper.payload
+    template = "{user_name}'s subscription will change from {prior_subscription} to {subscription} on {effective_date}."
+    return template.format(
+        user_name=get_sender_name(payload),
+        prior_subscription=get_prior_subscription(payload),
+        subscription=get_subscription(payload),
+        effective_date=get_effective_date(payload),
+    ).rstrip()
+
+
+def get_tier_changed_body(helper: Helper) -> str:
+    payload = helper.payload
+    template = "{user_name} changed their subscription from {prior_subscription} to {subscription}."
+    return template.format(
+        user_name=get_sender_name(payload),
+        prior_subscription=get_prior_subscription(payload),
+        subscription=get_subscription(payload),
+    ).rstrip()
+
+
+def get_subscription(payload: WildValue) -> str:
+    return payload["sponsorship"]["tier"]["name"].tame(check_string)
+
+
+def get_effective_date(payload: WildValue) -> str:
+    effective_date = payload["effective_date"].tame(check_string)[:10]
+    return (
+        datetime.strptime(effective_date, "%Y-%m-%d")
+        .replace(tzinfo=timezone.utc)
+        .strftime("%B %d, %Y")
+    )
+
+
+def get_prior_subscription(payload: WildValue) -> str:
+    return payload["changes"]["tier"]["from"]["name"].tame(check_string)
+
+
 def get_repository_name(payload: WildValue) -> str:
     return payload["repository"]["name"].tame(check_string)
 
@@ -726,6 +805,8 @@ def get_topic_based_on_type(payload: WildValue, event: str) -> str:
             number=payload["discussion"]["number"].tame(check_int),
             title=payload["discussion"]["title"].tame(check_string),
         )
+    elif event in SPONSORS_EVENT_TYPES:
+        return "sponsors"
 
     return get_repository_name(payload)
 
@@ -733,9 +814,9 @@ def get_topic_based_on_type(payload: WildValue, event: str) -> str:
 EVENT_FUNCTION_MAPPER: Dict[str, Callable[[Helper], str]] = {
     "commit_comment": get_commit_comment_body,
     "closed_pull_request": get_closed_pull_request_body,
-    "create": partial(get_create_or_delete_body, action="created"),
+    "create": partial(get_create_or_delete_body, "created"),
     "check_run": get_check_run_body,
-    "delete": partial(get_create_or_delete_body, action="deleted"),
+    "delete": partial(get_create_or_delete_body, "deleted"),
     "deployment": get_deployment_body,
     "deployment_status": get_change_deployment_status_body,
     "discussion": get_discussion_body,
@@ -748,7 +829,8 @@ EVENT_FUNCTION_MAPPER: Dict[str, Callable[[Helper], str]] = {
     "issues": get_issue_body,
     "member": get_member_body,
     "membership": get_membership_body,
-    "opened_or_update_pull_request": get_opened_or_update_pull_request_body,
+    "opened_pull_request": get_opened_or_update_pull_request_body,
+    "updated_pull_request": get_opened_or_update_pull_request_body,
     "assigned_or_unassigned_pull_request": get_assigned_or_unassigned_pull_request_body,
     "page_build": get_page_build_body,
     "ping": get_ping_body,
@@ -768,7 +850,22 @@ EVENT_FUNCTION_MAPPER: Dict[str, Callable[[Helper], str]] = {
     "team": get_team_body,
     "team_add": get_add_team_body,
     "watch": get_watch_body,
+    "cancelled": get_cancelled_body,
+    "created": get_created_body,
+    "edited": get_edited_body,
+    "pending_cancellation": get_pending_cancellation_body,
+    "pending_tier_change": get_pending_tier_change_body,
+    "tier_changed": get_tier_changed_body,
 }
+
+SPONSORS_EVENT_TYPES = [
+    "cancelled",
+    "created",
+    "edited",
+    "pending_cancellation",
+    "pending_tier_change",
+    "tier_changed",
+]
 
 IGNORED_EVENTS = [
     "check_suite",
@@ -855,8 +952,10 @@ def get_zulip_event_name(
     """
     if header_event == "pull_request":
         action = payload["action"].tame(check_string)
-        if action in ("opened", "synchronize", "reopened", "edited"):
-            return "opened_or_update_pull_request"
+        if action in ("opened", "reopened"):
+            return "opened_pull_request"
+        elif action in ("synchronize", "edited"):
+            return "updated_pull_request"
         if action in ("assigned", "unassigned"):
             return "assigned_or_unassigned_pull_request"
         if action == "closed":

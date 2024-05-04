@@ -26,27 +26,39 @@ See also \`reset-to-pull-request\`.
 EOF
 }
 
-args="$(getopt -o '' --long help,merge -n "$0" -- "$@")"
-eval "set -- $args"
-
 merge=
+args=()
 
-while true; do
-    case "$1" in
-        --help)
-            usage
-            exit 0
-            ;;
-        --merge)
-            merge=t
-            shift
-            ;;
-        --)
-            shift
-            break
-            ;;
-    esac
+while ((OPTIND <= $#)); do
+    if getopts ":-:" opt; then
+        case $opt in
+            -)
+                case "$OPTARG" in
+                    help)
+                        usage
+                        exit 0
+                        ;;
+                    merge)
+                        merge=t
+                        ;;
+                    *)
+                        echo "Invalid option: --$OPTARG" >&2
+                        exit 1
+                        ;;
+                esac
+                ;;
+            \?)
+                echo "Invalid option: -$OPTARG" >&2
+                exit 1
+                ;;
+        esac
+    else
+        args+=("${!OPTIND}")
+        ((OPTIND++))
+    fi
 done
+
+set -- "${args[@]}"
 
 remote_default="$(git config zulip.zulipRemote || echo upstream)"
 pseudo_remote="$(git config zulip.prPseudoRemote || echo)"

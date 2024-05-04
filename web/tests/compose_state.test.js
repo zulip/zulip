@@ -2,7 +2,6 @@
 
 const {strict: assert} = require("assert");
 
-const {mock_stream_header_colorblock} = require("./lib/compose");
 const {mock_esm, zrequire} = require("./lib/namespace");
 const {run_test, noop} = require("./lib/test");
 const $ = require("./lib/zjquery");
@@ -25,7 +24,6 @@ run_test("private_message_recipient", ({override}) => {
 });
 
 run_test("has_full_recipient", ({override}) => {
-    mock_stream_header_colorblock();
     $(`#compose_banners .topic_resolved`).remove = noop;
     $(".narrow_to_compose_recipients").toggleClass = noop;
 

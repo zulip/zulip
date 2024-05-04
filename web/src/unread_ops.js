@@ -1,5 +1,6 @@
 import $ from "jquery";
 import _ from "lodash";
+import assert from "minimalistic-assert";
 
 import render_confirm_mark_all_as_read from "../templates/confirm_dialog/confirm_mark_all_as_read.hbs";
 
@@ -15,7 +16,6 @@ import * as message_lists from "./message_lists";
 import * as message_store from "./message_store";
 import * as message_viewport from "./message_viewport";
 import * as modals from "./modals";
-import * as narrow_state from "./narrow_state";
 import * as overlays from "./overlays";
 import * as people from "./people";
 import * as recent_view_ui from "./recent_view_ui";
@@ -56,7 +56,8 @@ export function confirm_mark_all_as_read() {
     });
 }
 
-function bulk_mark_messages_as_read(narrow, args = {}) {
+function bulk_update_read_flags_for_narrow(narrow, op, args = {}) {
+    let response_html;
     args = {
         // We use an anchor of "oldest", not "first_unread", because
         // "first_unread" will be the oldest non-muted unread message,
@@ -76,7 +77,7 @@ function bulk_mark_messages_as_read(narrow, args = {}) {
         include_anchor: false,
         num_before: 0,
         num_after: args.num_after,
-        op: "add",
+        op,
         flag: "read",
         narrow: JSON.stringify(narrow),
     };
@@ -89,16 +90,24 @@ function bulk_mark_messages_as_read(narrow, args = {}) {
             if (!data.found_newest) {
                 // If we weren't able to make everything as read in a
                 // single API request, then show a loading indicator.
-                ui_report.loading(
-                    $t_html(
+                if (op === "add") {
+                    response_html = $t_html(
                         {
                             defaultMessage:
                                 "{N, plural, one {Working… {N} message marked as read so far.} other {Working… {N} messages marked as read so far.}}",
                         },
                         {N: messages_read_till_now},
-                    ),
-                    $("#request-progress-status-banner"),
-                );
+                    );
+                } else {
+                    response_html = $t_html(
+                        {
+                            defaultMessage:
+                                "{N, plural, one {Working… {N} message marked as unread so far.} other {Working… {N} messages marked as unread so far.}}",
+                        },
+                        {N: messages_read_till_now},
+                    );
+                }
+                ui_report.loading(response_html, $("#request-progress-status-banner"));
                 if (!loading_indicator_displayed) {
                     loading.make_indicator(
                         $("#request-progress-status-banner .loading-indicator"),
@@ -107,7 +116,7 @@ function bulk_mark_messages_as_read(narrow, args = {}) {
                     loading_indicator_displayed = true;
                 }
 
-                bulk_mark_messages_as_read(narrow, {
+                bulk_update_read_flags_for_narrow(narrow, op, {
                     ...args,
                     anchor: data.last_processed_id,
                     messages_read_till_now,
@@ -116,17 +125,24 @@ function bulk_mark_messages_as_read(narrow, args = {}) {
             } else {
                 if (loading_indicator_displayed) {
                     // Only show the success message if a progress banner was displayed.
-                    ui_report.loading(
-                        $t_html(
+                    if (op === "add") {
+                        response_html = $t_html(
                             {
                                 defaultMessage:
                                     "{N, plural, one {Done! {N} message marked as read.} other {Done! {N} messages marked as read.}}",
                             },
                             {N: messages_read_till_now},
-                        ),
-                        $("#request-progress-status-banner"),
-                        true,
-                    );
+                        );
+                    } else {
+                        response_html = $t_html(
+                            {
+                                defaultMessage:
+                                    "{N, plural, one {Done! {N} message marked as unread.} other {Done! {N} messages marked as unread.}}",
+                            },
+                            {N: messages_read_till_now},
+                        );
+                    }
+                    ui_report.loading(response_html, $("#request-progress-status-banner"), true);
                     loading_indicator_displayed = false;
                 }
 
@@ -152,11 +168,15 @@ function bulk_mark_messages_as_read(narrow, args = {}) {
             } else if (xhr.responseJSON?.code === "RATE_LIMIT_HIT") {
                 // If we hit the rate limit, just continue without showing any error.
                 const milliseconds_to_wait = 1000 * xhr.responseJSON["retry-after"];
-                setTimeout(() => bulk_mark_messages_as_read(narrow, args), milliseconds_to_wait);
+                setTimeout(
+                    () => bulk_update_read_flags_for_narrow(narrow, op, args),
+                    milliseconds_to_wait,
+                );
             } else {
                 // TODO: Ideally this would be a ui_report.error();
                 // the user needs to know that our operation failed.
-                blueslip.error("Failed to mark messages as read", {
+                const operation = op === "add" ? "read" : "unread";
+                blueslip.error(`Failed to mark messages as ${operation}`, {
                     status: xhr.status,
                     body: xhr.responseText,
                 });
@@ -181,6 +201,7 @@ export function mark_as_unread_from_here(
     num_after = INITIAL_BATCH_SIZE - 1,
     narrow,
 ) {
+    assert(message_lists.current !== undefined);
     if (narrow === undefined) {
         narrow = JSON.stringify(message_lists.current.data.filter.terms());
     }
@@ -276,10 +297,6 @@ export function mark_as_unread_from_here(
     });
 }
 
-export function resume_reading() {
-    message_lists.current.resume_reading();
-}
-
 export function process_read_messages_event(message_ids) {
     /*
         This code has a lot in common with notify_server_messages_read,
@@ -296,12 +313,6 @@ export function process_read_messages_event(message_ids) {
     }
 
     for (const message_id of message_ids) {
-        if (message_lists.current.narrowed) {
-            // I'm not sure this entirely makes sense for all server
-            // notifications.
-            unread.set_messages_read_in_narrow(true);
-        }
-
         unread.mark_as_read(message_id);
 
         const message = message_store.get(message_id);
@@ -322,10 +333,6 @@ export function process_unread_messages_event({message_ids, message_details}) {
     message_ids = unread.get_read_message_ids(message_ids);
     if (message_ids.length === 0) {
         return;
-    }
-
-    if (message_lists.current.narrowed) {
-        unread.set_messages_read_in_narrow(false);
     }
 
     for (const message_id of message_ids) {
@@ -384,6 +391,7 @@ export function process_unread_messages_event({message_ids, message_details}) {
     recent_view_ui.complete_rerender();
 
     if (
+        message_lists.current !== undefined &&
         !message_lists.current.can_mark_messages_read() &&
         message_lists.current.has_unread_messages()
     ) {
@@ -404,10 +412,6 @@ export function notify_server_messages_read(messages, options = {}) {
     message_flags.send_read(messages);
 
     for (const message of messages) {
-        if (message_lists.current.narrowed) {
-            unread.set_messages_read_in_narrow(true);
-        }
-
         unread.mark_as_read(message.id);
         process_newly_read_message(message, options);
     }
@@ -419,14 +423,21 @@ export function notify_server_message_read(message, options) {
     notify_server_messages_read([message], options);
 }
 
-export function process_scrolled_to_bottom() {
-    if (!narrow_state.is_message_feed_visible()) {
-        // First, verify the current message list is visible.
+function process_scrolled_to_bottom() {
+    if (message_lists.current === undefined) {
+        // First, verify that user is narrowed to a list of messages.
         return;
     }
 
     if (message_lists.current.can_mark_messages_read()) {
-        mark_current_list_as_read();
+        // Mark all the messages in this message feed as read.
+        //
+        // Important: We have not checked definitively whether there
+        // are further messages that we're waiting on the server to
+        // return that would appear below the visible part of the
+        // feed, so it would not be correct to instead ask the server
+        // to mark all messages matching this entire narrow as read.
+        notify_server_messages_read(message_lists.current.all_messages());
         return;
     }
 
@@ -439,23 +450,25 @@ export function process_scrolled_to_bottom() {
 }
 
 // If we ever materially change the algorithm for this function, we
-// may need to update notifications.received_messages as well.
+// may need to update message_notifications.received_messages as well.
 export function process_visible() {
-    if (viewport_is_visible_and_focused() && message_viewport.bottom_message_visible()) {
+    if (
+        message_lists.current !== undefined &&
+        viewport_is_visible_and_focused() &&
+        message_viewport.bottom_rendered_message_visible() &&
+        message_lists.current.view.is_fetched_end_rendered()
+    ) {
         process_scrolled_to_bottom();
     }
 }
 
-export function mark_current_list_as_read(options) {
-    notify_server_messages_read(message_lists.current.all_messages(), options);
-}
-
 export function mark_stream_as_read(stream_id) {
-    bulk_mark_messages_as_read(
+    bulk_update_read_flags_for_narrow(
         [
             {operator: "is", operand: "unread", negated: false},
-            {operator: "stream", operand: stream_id},
+            {operator: "channel", operand: stream_id},
         ],
+        "add",
         {
             stream_id,
         },
@@ -463,12 +476,27 @@ export function mark_stream_as_read(stream_id) {
 }
 
 export function mark_topic_as_read(stream_id, topic) {
-    bulk_mark_messages_as_read(
+    bulk_update_read_flags_for_narrow(
         [
             {operator: "is", operand: "unread", negated: false},
-            {operator: "stream", operand: stream_id},
+            {operator: "channel", operand: stream_id},
             {operator: "topic", operand: topic},
         ],
+        "add",
+        {
+            stream_id,
+            topic,
+        },
+    );
+}
+
+export function mark_topic_as_unread(stream_id, topic) {
+    bulk_update_read_flags_for_narrow(
+        [
+            {operator: "channel", operand: stream_id},
+            {operator: "topic", operand: topic},
+        ],
+        "remove",
         {
             stream_id,
             topic,
@@ -477,7 +505,7 @@ export function mark_topic_as_read(stream_id, topic) {
 }
 
 export function mark_all_as_read() {
-    bulk_mark_messages_as_read(all_unread_messages_narrow);
+    bulk_update_read_flags_for_narrow(all_unread_messages_narrow, "add");
 }
 
 export function mark_pm_as_read(user_ids_string) {

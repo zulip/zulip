@@ -101,12 +101,12 @@ When changing Zulip's Markdown syntax, you need to update several
 places:
 
 - The backend Markdown processor (`zerver/lib/markdown/__init__.py`).
-- The frontend Markdown processor (`web/src/markdown.js` and sometimes
+- The frontend Markdown processor (`web/src/markdown.ts` and sometimes
   `web/third/marked/lib/marked.js`), or `markdown.contains_backend_only_syntax` if
   your changes won't be supported in the frontend processor.
 - If desired, the typeahead logic in `web/src/composebox_typeahead.js`.
 - The test suite, probably via adding entries to `zerver/tests/fixtures/markdown_test_cases.json`.
-- The in-app Markdown documentation (`markdown_help_rows` in `web/src/info_overlay.js`).
+- The in-app Markdown documentation (`markdown_help_rows` in `web/src/info_overlay.ts`).
 - The list of changes to Markdown at the end of this document.
 
 Important considerations for any changes are:

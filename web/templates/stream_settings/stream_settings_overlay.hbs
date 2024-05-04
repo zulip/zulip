@@ -3,7 +3,7 @@
         <div class="subscriptions-container overlay-container">
             <div class="subscriptions-header">
                 <div class="fa fa-chevron-left"></div>
-                <span class="subscriptions-title">{{t 'Streams' }}</span>
+                <span class="subscriptions-title">{{t 'Channels' }}</span>
                 <div class="exit">
                     <span class="exit-sign">&times;</span>
                 </div>
@@ -21,7 +21,7 @@
                 </div>
                 <div class="input-append stream_name_search_section" id="stream_filter">
                     <input type="text" name="stream_name" id="search_stream_name" class="filter_text_input" autocomplete="off"
-                      placeholder="{{t 'Filter streams' }}" value=""/>
+                      placeholder="{{t 'Filter channels' }}" value=""/>
                     <button type="button" class="btn clear_search_button" id="clear_search_stream_name">
                         <i class="fa fa-remove" aria-hidden="true"></i>
                     </button>
@@ -29,17 +29,17 @@
                 <div class="no-streams-to-show">
                     <div class="subscribed_streams_tab_empty_text">
                         <span>
-                            {{t 'You are not subscribed to any streams.'}}
+                            {{t 'You are not subscribed to any channels.'}}
                             {{#if can_view_all_streams}}
-                            <a href="#streams/all">{{t 'View all streams'}}</a>
+                            <a href="#channels/all">{{t 'View all channels'}}</a>
                             {{/if}}
                         </span>
                     </div>
                     <div class="all_streams_tab_empty_text">
                         <span>
-                            {{t 'There are no streams you can view in this organization.'}}
+                            {{t 'There are no channels you can view in this organization.'}}
                             {{#if can_create_streams}}
-                                <a href="#streams/new">{{t 'Create a stream'}}</a>
+                                <a href="#channels/new">{{t 'Create a channel'}}</a>
                             {{/if}}
                         </span>
                     </div>
@@ -49,15 +49,15 @@
             </div>
             <div class="right">
                 <div class="display-type">
-                    <div id="stream_settings_title" class="stream-info-title">{{t 'Stream settings' }}</div>
+                    <div id="stream_settings_title" class="stream-info-title">{{t 'Channel settings' }}</div>
                 </div>
                 <div class="nothing-selected">
                     {{#if can_create_streams}}
-                    <button type="button" class="create_stream_button animated-purple-button">{{t 'Create stream' }}</button>
+                    <button type="button" class="create_stream_button animated-purple-button">{{t 'Create channel' }}</button>
                     <span>
                         {{#tr}}
-                            First time? Read our <z-link>guidelines</z-link> for creating and naming streams.
-                            {{#*inline "z-link"}}<a href="/help/getting-your-organization-started-with-zulip#create-streams" target="_blank" rel="noopener noreferrer">{{> @partial-block}}</a>{{/inline}}
+                            First time? Read our <z-link>guidelines</z-link> for creating and naming channels.
+                            {{#*inline "z-link"}}<a href="/help/getting-your-organization-started-with-zulip#create-channels" target="_blank" rel="noopener noreferrer">{{> @partial-block}}</a>{{/inline}}
                         {{/tr}}
                     </span>
                     {{/if}}

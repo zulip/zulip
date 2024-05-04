@@ -195,11 +195,16 @@ export class CachedValue<T> {
 }
 
 export function find_stream_wildcard_mentions(message_content: string): string | null {
-    const mention = message_content.match(/(^|\s)(@\*{2}(all|everyone|stream)\*{2})($|\s)/);
+    // We cannot use the exact same regex as the server side uses (in zerver/lib/mention.py)
+    // because Safari < 16.4 does not support look-behind assertions.  Reframe the lookbehind of a
+    // negative character class as a start-of-string or positive character class.
+    const mention = message_content.match(
+        /(?:^|[\s"'(/<[{])(@\*{2}(all|everyone|stream|channel)\*{2})/,
+    );
     if (mention === null) {
         return null;
     }
-    return mention[3];
+    return mention[2];
 }
 
 export const move_array_elements_to_front = function util_move_array_elements_to_front<T>(
@@ -268,6 +273,29 @@ export function convert_message_topic(message: Message): void {
     if (message.type === "stream" && message.topic === undefined) {
         message.topic = message.subject;
     }
+}
+
+// TODO: When "stream" is renamed to "channel", update these stream
+// synonym helper functions for the reverse logic.
+export function is_stream_synonym(text: string): boolean {
+    return text === "channel";
+}
+
+export function is_streams_synonym(text: string): boolean {
+    return text === "channels";
+}
+
+// For parts of the codebase that have been converted to use
+// channel/channels internally, this is used to convert those
+// back into stream/streams for external presentation.
+export function canonicalize_stream_synonyms(text: string): string {
+    if (is_stream_synonym(text.toLowerCase())) {
+        return "stream";
+    }
+    if (is_streams_synonym(text.toLowerCase())) {
+        return "streams";
+    }
+    return text;
 }
 
 let inertDocument: Document | undefined;
@@ -410,9 +438,12 @@ export function call_function_periodically(callback: () => void, delay: number):
     // calling "callback".
     setTimeout(() => {
         call_function_periodically(callback, delay);
-    }, delay);
 
-    callback();
+        // Do the callback after scheduling the next call, so that we
+        // are certain to call it again even if the callback throws an
+        // exception.
+        callback();
+    }, delay);
 }
 
 export function get_string_diff(string1: string, string2: string): [number, number, number] {

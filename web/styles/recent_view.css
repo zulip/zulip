@@ -47,8 +47,18 @@
                 box-shadow: 0 3px 0 var(--color-outline-focus);
             }
 
-            .change_visibility_policy i {
-                display: block;
+            &.change_visibility_policy.visibility-policy-popover-visible {
+                .zulip-icon-inherit {
+                    opacity: 0.4;
+                }
+            }
+
+            &.change_visibility_policy .zulip-icon-inherit {
+                opacity: 0;
+
+                &:focus {
+                    opacity: 0.2;
+                }
             }
         }
 
@@ -241,16 +251,6 @@
             align-items: center;
         }
 
-        .flex_container .left_part {
-            flex-wrap: wrap;
-
-            .user_status_icon_wrapper {
-                display: inline-flex;
-                align-items: center;
-                flex-direction: row;
-            }
-        }
-
         .flex_container .right_part {
             margin-left: auto;
             display: inline-flex;
@@ -342,6 +342,10 @@
 
             &:hover {
                 background-color: hsl(210deg 100% 97%);
+
+                .change_visibility_policy .zulip-icon-inherit {
+                    opacity: 0.4;
+                }
             }
         }
 

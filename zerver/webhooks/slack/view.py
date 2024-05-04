@@ -1,13 +1,14 @@
+from typing import Optional
+
 from django.http import HttpRequest
 from django.http.response import HttpResponse
 from django.utils.translation import gettext as _
 
-from zerver.actions.message_send import check_send_stream_message
 from zerver.decorator import webhook_view
 from zerver.lib.exceptions import JsonableError
-from zerver.lib.request import RequestNotes
 from zerver.lib.response import json_success
 from zerver.lib.typed_endpoint import typed_endpoint
+from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.models import UserProfile
 
 ZULIP_MESSAGE_TEMPLATE = "**{message_sender}**: {text}"
@@ -23,20 +24,39 @@ def api_slack_webhook(
     user_name: str,
     text: str,
     channel_name: str,
-    stream: str = "slack",
-    channels_map_to_topics: str = "1",
+    channels_map_to_topics: Optional[str] = None,
 ) -> HttpResponse:
-    if channels_map_to_topics not in VALID_OPTIONS.values():
+    content = ZULIP_MESSAGE_TEMPLATE.format(message_sender=user_name, text=text)
+    topic_name = "Message from Slack"
+
+    if channels_map_to_topics is None:
+        check_send_webhook_message(
+            request,
+            user_profile,
+            topic_name,
+            content,
+        )
+    elif channels_map_to_topics == VALID_OPTIONS["SHOULD_BE_MAPPED"]:
+        # If the webhook URL has a user_specified_topic,
+        # then this topic-channel mapping will not be used.
+        topic_name = f"channel: {channel_name}"
+        check_send_webhook_message(
+            request,
+            user_profile,
+            topic_name,
+            content,
+        )
+    elif channels_map_to_topics == VALID_OPTIONS["SHOULD_NOT_BE_MAPPED"]:
+        # This stream-channel mapping will be used even if
+        # there is a stream specified in the webhook URL.
+        check_send_webhook_message(
+            request,
+            user_profile,
+            topic_name,
+            content,
+            stream=channel_name,
+        )
+    else:
         raise JsonableError(_("Error: channels_map_to_topics parameter other than 0 or 1"))
 
-    if channels_map_to_topics == VALID_OPTIONS["SHOULD_BE_MAPPED"]:
-        topic_name = f"channel: {channel_name}"
-    else:
-        stream = channel_name
-        topic_name = _("Message from Slack")
-
-    content = ZULIP_MESSAGE_TEMPLATE.format(message_sender=user_name, text=text)
-    client = RequestNotes.get_notes(request).client
-    assert client is not None
-    check_send_stream_message(user_profile, client, stream, topic_name, content)
     return json_success(request)

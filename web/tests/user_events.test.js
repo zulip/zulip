@@ -6,9 +6,10 @@ const {mock_esm, zrequire} = require("./lib/namespace");
 const {run_test, noop} = require("./lib/test");
 const blueslip = require("./lib/zblueslip");
 const $ = require("./lib/zjquery");
-const {page_params} = require("./lib/zpage_params");
+const {current_user} = require("./lib/zpage_params");
 
 const message_live_update = mock_esm("../src/message_live_update");
+const navbar_alerts = mock_esm("../src/navbar_alerts");
 const settings_account = mock_esm("../src/settings_account", {
     maybe_update_deactivate_account_button() {},
     update_email() {},
@@ -25,9 +26,6 @@ mock_esm("../src/activity_ui", {
     redraw() {},
 });
 mock_esm("../src/compose_state", {
-    update_email() {},
-});
-mock_esm("../src/narrow_state", {
     update_email() {},
 });
 mock_esm("../src/pm_list", {
@@ -49,7 +47,7 @@ mock_esm("../src/settings_streams", {
     maybe_disable_widgets() {},
 });
 
-page_params.is_admin = true;
+current_user.is_admin = true;
 
 const people = zrequire("people");
 const settings_config = zrequire("settings_config");
@@ -71,7 +69,7 @@ function initialize() {
 
 initialize();
 
-run_test("updates", () => {
+run_test("updates", ({override}) => {
     let person;
 
     const isaac = {
@@ -82,6 +80,7 @@ run_test("updates", () => {
     };
     people.add_active_user(isaac);
 
+    override(navbar_alerts, "maybe_show_empty_required_profile_fields_alert", noop);
     user_events.update_person({
         user_id: isaac.user_id,
         role: settings_config.user_role_values.guest.code,
@@ -127,21 +126,21 @@ run_test("updates", () => {
     person = people.get_by_email(me.email);
     assert.ok(person.is_billing_admin);
     assert.equal(person.role, settings_config.user_role_values.member.code);
-    assert.ok(page_params.is_billing_admin);
+    assert.ok(current_user.is_billing_admin);
 
     user_events.update_person({user_id: me.user_id, is_billing_admin: false});
     person = people.get_by_email(me.email);
     assert.equal(person.user_id, me.user_id);
     assert.ok(!person.is_billing_admin);
     assert.equal(person.role, settings_config.user_role_values.member.code);
-    assert.ok(!page_params.is_billing_admin);
+    assert.ok(!current_user.is_billing_admin);
 
     user_events.update_person({user_id: isaac.user_id, is_billing_admin: false});
     person = people.get_by_email(isaac.email);
     assert.equal(person.user_id, isaac.user_id);
     assert.ok(!person.is_billing_admin);
     assert.equal(person.role, settings_config.user_role_values.owner.code);
-    assert.ok(!page_params.is_billing_admin);
+    assert.ok(!current_user.is_billing_admin);
 
     let user_id;
     let full_name;
@@ -161,7 +160,7 @@ run_test("updates", () => {
         user_id: me.user_id,
         role: settings_config.user_role_values.member.code,
     });
-    assert.ok(!page_params.is_admin);
+    assert.ok(!current_user.is_admin);
 
     user_events.update_person({user_id: me.user_id, full_name: "Me V2"});
     assert.equal(people.my_full_name(), "Me V2");

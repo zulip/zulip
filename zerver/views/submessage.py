@@ -24,7 +24,7 @@ def process_submessage(
     msg_type: str = REQ(),
     content: str = REQ(),
 ) -> HttpResponse:
-    message, user_message = access_message(user_profile, message_id, lock_message=True)
+    message = access_message(user_profile, message_id, lock_message=True)
 
     verify_submessage_sender(
         message_id=message.id,
@@ -49,7 +49,7 @@ def process_submessage(
 
     if widget_type == "todo":
         try:
-            validate_todo_data(todo_data=widget_data)
+            validate_todo_data(todo_data=widget_data, is_widget_author=is_widget_author)
         except ValidationError as error:
             raise JsonableError(error.message)
 

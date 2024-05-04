@@ -7,14 +7,15 @@ import render_selected_stream_title from "../templates/stream_settings/selected_
 import * as channel from "./channel";
 import * as confirm_dialog from "./confirm_dialog";
 import * as dropdown_widget from "./dropdown_widget";
+import * as hash_util from "./hash_util";
 import {$t, $t_html} from "./i18n";
 import * as loading from "./loading";
 import * as overlays from "./overlays";
-import {page_params} from "./page_params";
 import * as peer_data from "./peer_data";
 import * as people from "./people";
 import * as settings_config from "./settings_config";
 import * as settings_data from "./settings_data";
+import {current_user} from "./state_data";
 import * as stream_ui_updates from "./stream_ui_updates";
 import * as ui_report from "./ui_report";
 import * as user_groups from "./user_groups";
@@ -24,8 +25,10 @@ export function set_right_panel_title(sub) {
     if (settings_data.using_dark_theme()) {
         title_icon_color = "#dddeee";
     }
+
+    const preview_url = hash_util.by_stream_url(sub.stream_id);
     $("#subscription_overlay .stream-info-title").html(
-        render_selected_stream_title({sub, title_icon_color}),
+        render_selected_stream_title({sub, title_icon_color, preview_url}),
     );
 }
 
@@ -33,7 +36,9 @@ export const show_subs_pane = {
     nothing_selected() {
         $(".settings, #stream-creation").hide();
         $(".nothing-selected").show();
-        $("#subscription_overlay .stream-info-title").text($t({defaultMessage: "Stream settings"}));
+        $("#subscription_overlay .stream-info-title").text(
+            $t({defaultMessage: "Channel settings"}),
+        );
     },
     settings(sub) {
         $(".settings, #stream-creation").hide();
@@ -43,7 +48,7 @@ export const show_subs_pane = {
     create_stream() {
         $(".nothing-selected, .settings, #stream-creation").hide();
         $("#stream-creation").show();
-        $("#subscription_overlay .stream-info-title").text($t({defaultMessage: "Create stream"}));
+        $("#subscription_overlay .stream-info-title").text($t({defaultMessage: "Create channel"}));
     },
 };
 
@@ -83,7 +88,7 @@ export function dropdown_setup() {
         },
         default_text: $t({defaultMessage: "No user groups"}),
         default_id: user_groups.get_user_group_from_name("role:administrators").id,
-        unique_id_type: dropdown_widget.DATA_TYPES.NUMBER,
+        unique_id_type: dropdown_widget.DataTypes.NUMBER,
     });
 }
 
@@ -137,8 +142,8 @@ export function ajaxSubscribe(stream, color, $stream_row) {
                 true_stream_name = res.already_subscribed[people.my_current_email()][0];
                 ui_report.success(
                     $t_html(
-                        {defaultMessage: "Already subscribed to {stream}"},
-                        {stream: true_stream_name},
+                        {defaultMessage: "Already subscribed to {channel}"},
+                        {channel: true_stream_name},
                     ),
                     $(".stream_change_property_info"),
                 );
@@ -205,7 +210,9 @@ export function unsubscribe_from_private_stream(sub) {
         let $stream_row;
         if (overlays.streams_open()) {
             $stream_row = $(
-                "#streams_overlay_container div.stream-row[data-stream-id='" + sub.stream_id + "']",
+                "#channels_overlay_container div.stream-row[data-stream-id='" +
+                    sub.stream_id +
+                    "']",
             );
         }
 
@@ -225,7 +232,7 @@ export function unsubscribe_from_private_stream(sub) {
 export function sub_or_unsub(sub, $stream_row) {
     if (sub.subscribed) {
         // TODO: This next line should allow guests to access web-public streams.
-        if (sub.invite_only || page_params.is_guest) {
+        if (sub.invite_only || current_user.is_guest) {
             unsubscribe_from_private_stream(sub);
             return;
         }

@@ -313,7 +313,9 @@ export class MessageListView {
     _RENDER_THRESHOLD = 50;
 
     _add_message_list_to_DOM() {
-        $("#message-lists-container").append(render_message_list({message_list_id: this.list.id}));
+        $("#message-lists-container").append(
+            $(render_message_list({message_list_id: this.list.id})),
+        );
     }
 
     _get_msg_timestring(message_container) {
@@ -355,9 +357,6 @@ export class MessageListView {
         //   * `edited_alongside_sender` -- when label appears alongside sender info.
         //   * `edited_status_msg`       -- when label appears for a "/me" message.
         const last_edit_timestr = this._get_msg_timestring(message_container);
-        const include_sender = message_container.include_sender;
-        const is_hidden = message_container.is_hidden;
-        const status_message = Boolean(message_container.status_message);
         const edit_history_details = analyze_edit_history(message_container.msg, last_edit_timestr);
 
         if (
@@ -377,10 +376,12 @@ export class MessageListView {
         }
 
         message_container.last_edit_timestr = last_edit_timestr;
-        message_container.edited_in_left_col = !include_sender && !is_hidden;
-        message_container.edited_alongside_sender = include_sender && !status_message;
-        message_container.edited_status_msg = include_sender && status_message;
         message_container.moved = edit_history_details.moved && !edit_history_details.edited;
+        message_container.modified = true;
+    }
+
+    is_current_message_list() {
+        return this.list === message_lists.current;
     }
 
     set_calculated_message_container_variables(message_container, is_revealed) {
@@ -476,7 +477,7 @@ export class MessageListView {
         // we can infer that whenever the historical flag flips
         // between adjacent messages, the current user must have
         // (un)subscribed in between those messages.
-        if (!this.list.data.filter.has_operator("stream")) {
+        if (!this.list.data.filter.has_operator("channel")) {
             return;
         }
         if (last_msg_container === undefined) {
@@ -750,7 +751,7 @@ export class MessageListView {
             $message_rows.find(".message_inline_image img").on("error", (e) => {
                 $(e.target)
                     .closest(".message_inline_image")
-                    .replaceWith(render_login_to_view_image_button());
+                    .replaceWith($(render_login_to_view_image_button()));
             });
         }
     }
@@ -801,6 +802,18 @@ export class MessageListView {
                 message_list_id: this.list.id,
             }),
         );
+    }
+
+    set_edited_notice_locations(message_container) {
+        // Based on the variables that define the overall message's HTML layout, set
+        // variables defining where the message-edited notices should be placed.
+        const include_sender = message_container.include_sender;
+        const is_hidden = message_container.is_hidden;
+        const status_message = Boolean(message_container.status_message);
+        message_container.message_edit_notices_in_left_col = !include_sender && !is_hidden;
+        message_container.message_edit_notices_alongside_sender = include_sender && !status_message;
+        message_container.message_edit_notices_for_status_message =
+            include_sender && status_message;
     }
 
     render(messages, where, messages_are_new) {
@@ -866,6 +879,7 @@ export class MessageListView {
         let $last_group_row;
 
         for (const message_container of message_containers) {
+            this.set_edited_notice_locations(message_container);
             this.message_containers.set(message_container.msg.id, message_container);
         }
 
@@ -997,13 +1011,17 @@ export class MessageListView {
         }
 
         if (list === message_lists.current && messages_are_new) {
+            let sent_by_me = false;
+            if (messages.some((message) => message.sent_by_me)) {
+                sent_by_me = true;
+            }
             if (started_scrolled_up) {
                 return {
                     need_user_to_scroll: true,
                 };
             }
             const new_messages_height = this._new_messages_height(new_dom_elements);
-            const need_user_to_scroll = this._maybe_autoscroll(new_messages_height);
+            const need_user_to_scroll = this._maybe_autoscroll(new_messages_height, sent_by_me);
 
             if (need_user_to_scroll) {
                 return {
@@ -1047,10 +1065,11 @@ export class MessageListView {
         return scroll_limit;
     }
 
-    _maybe_autoscroll(new_messages_height) {
+    _maybe_autoscroll(new_messages_height, sent_by_me) {
         // If we are near the bottom of our feed (the bottom is visible) and can
         // scroll up without moving the pointer out of the viewport, do so, by
-        // up to the amount taken up by the new message.
+        // up to the amount taken up by the new message. For messages sent by
+        // the current user, we scroll it into view.
         //
         // returns `true` if we need the user to scroll
 
@@ -1082,6 +1101,13 @@ export class MessageListView {
             // If a popover is active, then we are pretty sure the
             // incoming message is not from the user themselves, so
             // we don't need to tell users to scroll down.
+            return false;
+        }
+
+        if (sent_by_me) {
+            // For messages sent by the current user we always autoscroll,
+            // updating the selected row if needed.
+            message_viewport.system_initiated_animate_scroll(new_messages_height, true);
             return false;
         }
 
@@ -1152,7 +1178,7 @@ export class MessageListView {
     }
 
     update_render_window(selected_idx, check_for_changed) {
-        const new_start = Math.max(selected_idx - this._RENDER_WINDOW_SIZE / 2, 0);
+        const new_start = Math.max(selected_idx - Math.floor(this._RENDER_WINDOW_SIZE / 2), 0);
         if (check_for_changed && new_start === this._render_win_start) {
             return false;
         }
@@ -1243,12 +1269,11 @@ export class MessageListView {
     }
 
     _find_message_group(message_group_id) {
-        // Ideally, we'd maintain this data structure with a hash
-        // table or at least a pointer from the message containers (in
-        // either case, updating the data structure when message
-        // groups are merged etc.), but we only call this from flows
-        // like message editing, so it's not a big performance
-        // problem.
+        // Finds the message group with a given message group ID.
+        //
+        // This function does a linear search, so be careful to avoid
+        // calling it in a loop. If you need that, we'll need to add a
+        // hash table to make this O(1) runtime.
         return this._message_groups.find(
             // Since we don't have a way to get a message group from
             // the containing message container, we just do a search
@@ -1439,13 +1464,47 @@ export class MessageListView {
         this.message_containers.clear();
     }
 
+    last_rendered_message() {
+        return this.list.data._items[this._render_win_end - 1];
+    }
+
+    is_fetched_end_rendered() {
+        return this._render_win_end === this.list.num_items();
+    }
+
+    is_end_rendered() {
+        // Used as a helper in checks for whether a given scroll
+        // position is actually the very end of this view. It could
+        // fail to be for two reasons: Either some newer messages are
+        // not rendered due to a render window, or we haven't finished
+        // fetching the newest messages for this view from the server.
+        return this.is_fetched_end_rendered() && this.list.data.fetch_status.has_found_newest();
+    }
+
+    first_rendered_message() {
+        return this.list.data._items[this._render_win_start];
+    }
+
+    is_fetched_start_rendered() {
+        return this._render_win_start === 0;
+    }
+
+    is_start_rendered() {
+        // Used as a helper in checks for whether a given scroll
+        // position is actually the very start of this view. It could
+        // fail to be for two reasons: Either some older messages are
+        // not rendered due to a render window, or we haven't finished
+        // fetching the oldest messages for this view from the server.
+        return this.is_fetched_start_rendered() && this.list.data.fetch_status.has_found_oldest();
+    }
+
     get_row(id) {
         const $row = this._rows.get(id);
 
         if ($row === undefined) {
             // For legacy reasons we need to return an empty
             // jQuery object here.
-            return $(undefined);
+            return $();
         }
 
         return $row;
@@ -1538,8 +1597,22 @@ export class MessageListView {
             /* No headers are present */
             return;
         }
-        /* Intentionally remove sticky headers class here to make calculations simpler. */
-        $(".sticky_header").removeClass("sticky_header");
+
+        const $current_sticky_header = $(".sticky_header");
+        if ($current_sticky_header.length === 1) {
+            // Reset the date on the header in case we changed it.
+            const message_group_id = rows
+                .get_message_recipient_row($current_sticky_header)
+                .attr("id");
+            const group = this._find_message_group(message_group_id);
+            if (group !== undefined) {
+                const rendered_date = group.date;
+                $current_sticky_header.find(".recipient_row_date").html(rendered_date);
+                /* Intentionally remove sticky headers class here to make calculations simpler. */
+            }
+            $current_sticky_header.removeClass("sticky_header");
+        }
+
         /* visible_top is navbar top position + height for us. */
         const visible_top = message_viewport.message_viewport_info().visible_top;
         /* We need date to be properly visible on the header, so partially visible headers

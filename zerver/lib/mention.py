@@ -7,7 +7,7 @@ from django.conf import settings
 from django.db.models import Q
 
 from zerver.lib.users import get_inaccessible_user_ids
-from zerver.models import UserGroup, UserProfile
+from zerver.models import NamedUserGroup, UserProfile
 from zerver.models.streams import get_linkable_streams
 
 BEFORE_MENTION_ALLOWED_REGEX = r"(?<![^\s\'\"\(\{\[\/<])"
@@ -22,7 +22,7 @@ USER_GROUP_MENTIONS_RE = re.compile(
 )
 
 topic_wildcards = frozenset(["topic"])
-stream_wildcards = frozenset(["all", "everyone", "stream"])
+stream_wildcards = frozenset(["all", "everyone", "stream", "channel"])
 
 
 @dataclass
@@ -265,11 +265,11 @@ class MentionData:
         return self.has_topic_wildcards
 
     def init_user_group_data(self, realm_id: int, content: str) -> None:
-        self.user_group_name_info: Dict[str, UserGroup] = {}
+        self.user_group_name_info: Dict[str, NamedUserGroup] = {}
         self.user_group_members: Dict[int, List[int]] = {}
         user_group_names = possible_user_group_mentions(content)
         if user_group_names:
-            for group in UserGroup.objects.filter(
+            for group in NamedUserGroup.objects.filter(
                 realm_id=realm_id, name__in=user_group_names, is_system_group=False
             ).prefetch_related("direct_members"):
                 self.user_group_name_info[group.name.lower()] = group
@@ -293,7 +293,7 @@ class MentionData:
         """
         return set(self.user_id_info.keys())
 
-    def get_user_group(self, name: str) -> Optional[UserGroup]:
+    def get_user_group(self, name: str) -> Optional[NamedUserGroup]:
         return self.user_group_name_info.get(name.lower(), None)
 
     def get_group_members(self, user_group_id: int) -> List[int]:

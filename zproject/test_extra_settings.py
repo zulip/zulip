@@ -15,7 +15,6 @@ from .settings import (
     EXTERNAL_HOST,
     LOCAL_DATABASE_PASSWORD,
     LOGGING,
-    MIDDLEWARE,
 )
 
 FULL_STACK_ZULIP_TEST = "FULL_STACK_ZULIP_TEST" in os.environ
@@ -129,7 +128,7 @@ if not PUPPETEER_TESTS:
     set_loglevel("zerver.lib.push_notifications", "WARNING")
     set_loglevel("zerver.lib.digest", "ERROR")
     set_loglevel("zerver.lib.email_mirror", "ERROR")
-    set_loglevel("zerver.worker.queue_processors", "WARNING")
+    set_loglevel("zerver.worker", "WARNING")
     set_loglevel("stripe", "WARNING")
 
 # Enable file:/// hyperlink support by default in tests
@@ -269,13 +268,3 @@ SCIM_CONFIG: Dict[str, SCIMConfigDict] = {
         "name_formatted_included": True,
     }
 }
-
-
-while len(MIDDLEWARE) < 19:
-    # The following middleware serves to skip having exactly 17 or 18
-    # middlewares, which can segfault Python 3.11 when running with
-    # coverage enabled; see
-    # https://github.com/python/cpython/issues/106092
-    MIDDLEWARE += [
-        "zerver.middleware.ZulipNoopMiddleware",
-    ]

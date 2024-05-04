@@ -5,6 +5,7 @@ import render_bankruptcy_alert_content from "../templates/navbar_alerts/bankrupt
 import render_configure_email_alert_content from "../templates/navbar_alerts/configure_outgoing_email.hbs";
 import render_demo_organization_deadline_content from "../templates/navbar_alerts/demo_organization_deadline.hbs";
 import render_desktop_notifications_alert_content from "../templates/navbar_alerts/desktop_notifications.hbs";
+import render_empty_required_profile_fields from "../templates/navbar_alerts/empty_required_profile_fields.hbs";
 import render_insecure_desktop_app_alert_content from "../templates/navbar_alerts/insecure_desktop_app.hbs";
 import render_navbar_alert_wrapper from "../templates/navbar_alerts/navbar_alert_wrapper.hbs";
 import render_profile_incomplete_alert_content from "../templates/navbar_alerts/profile_incomplete.hbs";
@@ -14,6 +15,8 @@ import * as desktop_notifications from "./desktop_notifications";
 import * as keydown_util from "./keydown_util";
 import {localstorage} from "./localstorage";
 import {page_params} from "./page_params";
+import * as people from "./people";
+import {current_user, realm} from "./state_data";
 import {should_display_profile_incomplete_alert} from "./timerender";
 import * as unread from "./unread";
 import * as unread_ops from "./unread_ops";
@@ -69,6 +72,29 @@ export function should_show_server_upgrade_notification(ls) {
     return Date.now() > upgrade_nag_dismissal_duration;
 }
 
+export function maybe_show_empty_required_profile_fields_alert() {
+    const $navbar_alert = $("#navbar_alerts_wrapper").children(".alert").first();
+    const empty_required_profile_fields_exist = realm.custom_profile_fields
+        .map((f) => ({
+            ...f,
+            value: people.my_custom_profile_data(f.id)?.value,
+        }))
+        .find((f) => f.required && !f.value);
+    if (!empty_required_profile_fields_exist) {
+        if ($navbar_alert.data("process") === "profile-missing-required") {
+            $navbar_alert.hide();
+        }
+        return;
+    }
+
+    if (!$navbar_alert?.length || $navbar_alert.is(":hidden")) {
+        open({
+            data_process: "profile-missing-required",
+            rendered_alert_content_html: render_empty_required_profile_fields(),
+        });
+    }
+}
+
 export function dismiss_upgrade_nag(ls) {
     $(".alert[data-process='server-needs-upgrade'").hide();
     if (localstorage.supported()) {
@@ -77,19 +103,19 @@ export function dismiss_upgrade_nag(ls) {
 }
 
 export function check_profile_incomplete() {
-    if (!page_params.is_admin) {
+    if (!current_user.is_admin) {
         return false;
     }
-    if (!should_display_profile_incomplete_alert(page_params.realm_date_created)) {
+    if (!should_display_profile_incomplete_alert(realm.realm_date_created)) {
         return false;
     }
 
-    // Eventually, we might also check page_params.realm_icon_source,
+    // Eventually, we might also check realm.realm_icon_source,
     // but it feels too aggressive to ask users to do change that
     // since their organization might not have a logo yet.
     if (
-        page_params.realm_description === "" ||
-        /^Organization imported from [A-Za-z]+[!.]$/.test(page_params.realm_description)
+        realm.realm_description === "" ||
+        /^Organization imported from [A-Za-z]+[!.]$/.test(realm.realm_description)
     ) {
         return true;
     }
@@ -109,7 +135,7 @@ export function show_profile_incomplete(is_profile_incomplete) {
 
 export function get_demo_organization_deadline_days_remaining() {
     const now = new Date(Date.now());
-    const deadline = new Date(page_params.demo_organization_scheduled_deletion_date * 1000);
+    const deadline = new Date(realm.demo_organization_scheduled_deletion_date * 1000);
     const day = 24 * 60 * 60 * 1000; // hours * minutes * seconds * milliseconds
     const days_remaining = Math.round(Math.abs(deadline - now) / day);
     return days_remaining;
@@ -118,7 +144,7 @@ export function get_demo_organization_deadline_days_remaining() {
 export function initialize() {
     const ls = localstorage();
 
-    if (page_params.demo_organization_scheduled_deletion_date) {
+    if (realm.demo_organization_scheduled_deletion_date) {
         const days_remaining = get_demo_organization_deadline_days_remaining();
         open({
             data_process: "demo-organization-deadline",
@@ -133,7 +159,7 @@ export function initialize() {
             custom_class: "red",
             rendered_alert_content_html: render_insecure_desktop_app_alert_content(),
         });
-    } else if (page_params.server_needs_upgrade) {
+    } else if (realm.server_needs_upgrade) {
         if (should_show_server_upgrade_notification(ls)) {
             open({
                 data_process: "server-needs-upgrade",
@@ -141,7 +167,7 @@ export function initialize() {
                 rendered_alert_content_html: render_server_needs_upgrade_alert_content(),
             });
         }
-    } else if (page_params.warn_no_email === true && page_params.is_admin) {
+    } else if (page_params.warn_no_email === true && current_user.is_admin) {
         // if email has not been set up and the user is the admin,
         // display a warning to tell them to set up an email server.
         open({
@@ -170,6 +196,8 @@ export function initialize() {
             data_process: "profile-incomplete",
             rendered_alert_content_html: render_profile_incomplete_alert_content(),
         });
+    } else {
+        maybe_show_empty_required_profile_fields_alert();
     }
 
     // Configure click handlers.
@@ -207,6 +235,9 @@ export function initialize() {
             show_step($process, 2);
         } else {
             $(this).closest(".alert").hide();
+            if ($process.data("process") !== "profile-missing-required") {
+                maybe_show_empty_required_profile_fields_alert();
+            }
         }
         $(window).trigger("resize");
     });

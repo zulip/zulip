@@ -1,7 +1,7 @@
 import "./common";
 
 // Import third party jQuery plugins
-import "../../third/bootstrap-typeahead/typeahead";
+import "../bootstrap_typeahead";
 import "jquery-caret-plugin/dist/jquery.caret";
 import "../../third/jquery-idle/jquery.idle";
 import "spectrum-colorpicker";
@@ -10,16 +10,14 @@ import "jquery-validation";
 // Import app JS
 import "../setup";
 import "../reload";
-import "../hotkey";
-import "../desktop_notifications";
-import "../server_events";
 import "../templates";
-import "../settings";
-import "../desktop_integration";
 import "../zulip_test";
 
 // Import styles
 import "tippy.js/dist/tippy.css";
+// Adds color inheritance to the borders when using the default CSS Arrow.
+// https://atomiks.github.io/tippyjs/v6/themes/#arrow-border
+import "tippy.js/dist/border.css";
 import "tippy.js/themes/light-border.css";
 import "spectrum-colorpicker/spectrum.css";
 import "katex/dist/katex.css";
@@ -27,11 +25,14 @@ import "flatpickr/dist/flatpickr.css";
 import "flatpickr/dist/plugins/confirmDate/confirmDate.css";
 import "../../third/bootstrap/css/bootstrap.app.css";
 import "../../third/bootstrap-typeahead/typeahead.css";
+import "../../styles/app_variables.css";
 import "../../styles/tooltips.css";
 import "../../styles/components.css";
 import "../../styles/app_components.css";
 import "../../styles/rendered_markdown.css";
 import "../../styles/zulip.css";
+import "../../styles/message_view_header.css";
+import "../../styles/message_header.css";
 import "../../styles/message_row.css";
 import "../../styles/modal.css";
 import "../../styles/settings.css";

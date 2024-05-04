@@ -45,9 +45,11 @@ def generate_topics(num_topics: int) -> List[str]:
         resolved_topic_probability = 0.05
 
     return [
-        RESOLVED_TOPIC_PREFIX + topic_name
-        if random.random() < resolved_topic_probability
-        else topic_name
+        (
+            RESOLVED_TOPIC_PREFIX + topic_name
+            if random.random() < resolved_topic_probability
+            else topic_name
+        )
         for topic_name in topic_names
     ]
 

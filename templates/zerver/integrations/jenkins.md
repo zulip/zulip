@@ -53,7 +53,7 @@ To learn more, see the [plugin's README](https://github.com/jenkinsci/zulip-plug
    If not, create the stream and make sure you're subscribed to it.
 
 1. Are your API key and email address correct? Test them
-   using [our curl API](/api).
+   using [our curl API](/api/).
 
 1. Configure a Jenkins log recorder for **jenkins.plugins.zulip**
    and check why your messages fail to send.

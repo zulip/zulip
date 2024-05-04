@@ -4,7 +4,7 @@
 <span class="message_sender">
     {{#if include_sender}}
         <span class="sender_info_hover sender_name" role="button" tabindex="0">
-            <span class="view_user_card_tooltip sender_name_text" data-tooltip-template-id="view-user-card-tooltip-template">
+            <span class="view_user_card_tooltip sender_name_text" data-is-bot="{{sender_is_bot}}">
                 {{> user_full_name name=msg/sender_full_name should_add_guest_user_indicator=should_add_guest_indicator_for_sender}}
             </span>
             {{#unless status_message}}
@@ -16,25 +16,25 @@
         {{/if}}
         {{#if status_message}}
             <span class="rendered_markdown status-message">{{rendered_markdown status_message}}</span>
-            {{#if edited_status_msg}}
+            {{#if message_edit_notices_for_status_message}}
                 {{> edited_notice}}
             {{/if}}
         {{/if}}
-        {{#if edited_alongside_sender}}
+        {{#if message_edit_notices_alongside_sender}}
             {{> edited_notice}}
         {{/if}}
     {{/if}}
 </span>
 
-<a {{#unless msg/locally_echoed}}href="{{ msg/url }}"{{/unless}} class="message_time{{#if status_message}} status-time{{/if}}">
+<a {{#unless msg/locally_echoed}}href="{{ msg/url }}"{{/unless}} class="message-time">
     {{#unless include_sender}}
     <span class="copy-paste-text">&nbsp;</span>
     {{/unless}}
     {{timestr}}
 </a>
 
-{{#if msg/locally_echoed}}
-    <span class="fa fa-circle-o-notch slow-send-spinner hidden"></span>
+{{#if (and (not msg/failed_request) msg/locally_echoed)}}
+    <span data-tooltip-template-id="slow-send-spinner-tooltip-template" class="fa fa-circle-o-notch slow-send-spinner{{#unless msg/show_slow_send_spinner }} hidden{{/unless}}"></span>
 {{/if}}
 
 {{> message_controls}}
@@ -55,7 +55,7 @@
     {{/unless}}
 {{/unless}}
 
-{{#if edited_in_left_col}}
+{{#if message_edit_notices_in_left_col}}
 {{> edited_notice}}
 {{/if}}
 

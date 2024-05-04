@@ -20,12 +20,12 @@ import * as loading from "./loading";
 import * as markdown from "./markdown";
 import * as message_events from "./message_events";
 import * as onboarding_steps from "./onboarding_steps";
-import {page_params} from "./page_params";
 import * as people from "./people";
 import * as rendered_markdown from "./rendered_markdown";
 import * as scheduled_messages from "./scheduled_messages";
 import * as sent_messages from "./sent_messages";
 import * as server_events from "./server_events";
+import {current_user} from "./state_data";
 import * as transmit from "./transmit";
 import {user_settings} from "./user_settings";
 import * as util from "./util";
@@ -78,7 +78,7 @@ export function show_preview_area() {
     );
 }
 
-export function create_message_object() {
+export function create_message_object(message_content = compose_state.message_content()) {
     // Topics are optional, and we provide a placeholder if one isn't given.
     let topic = compose_state.topic();
     if (topic === "") {
@@ -88,9 +88,9 @@ export function create_message_object() {
     // Changes here must also be kept in sync with echo.try_deliver_locally
     const message = {
         type: compose_state.get_message_type(),
-        content: compose_state.message_content(),
-        sender_id: page_params.user_id,
-        queue_id: page_params.queue_id,
+        content: message_content,
+        sender_id: current_user.user_id,
+        queue_id: server_events.queue_id,
         stream_id: undefined,
     };
     message.topic = "";
@@ -144,13 +144,11 @@ export function clear_compose_box() {
 
 export function send_message_success(request, data) {
     if (!request.locally_echoed) {
-        if ($("textarea#compose-textarea").data("draft-id")) {
-            drafts.draft_model.deleteDraft($("textarea#compose-textarea").data("draft-id"));
-        }
         clear_compose_box();
     }
 
     echo.reify_message_id(request.local_id, data.id);
+    drafts.draft_model.deleteDraft(request.draft_id);
 
     if (request.type === "stream") {
         if (data.automatic_new_visibility_policy) {
@@ -160,7 +158,6 @@ export function send_message_success(request, data) {
             // topic has been automatically unmuted or followed. No need to
             // suggest the user to unmute. Show the banner and return.
             compose_notifications.notify_automatic_new_visibility_policy(request, data);
-            onboarding_steps.post_onboarding_step_as_read("visibility_policy_banner");
             return;
         }
 
@@ -178,6 +175,14 @@ export function send_message(request = create_message_object()) {
     } else {
         request.to = JSON.stringify([request.to]);
     }
+
+    // Silently save / update a draft to ensure the message is not lost in case send fails.
+    // We delete the draft on successful send.
+    request.draft_id = drafts.update_draft({
+        no_notify: true,
+        update_count: false,
+        is_sending_saving: true,
+    });
 
     let local_id;
     let locally_echoed;
@@ -244,6 +249,10 @@ export function send_message(request = create_message_object()) {
         // We might not have updated the draft count because we assumed the
         // message would send. Ensure that the displayed count is correct.
         drafts.sync_count();
+
+        const draft = drafts.draft_model.getDraft(request.draft_id);
+        draft.is_sending_saving = false;
+        drafts.draft_model.editDraft(request.draft_id, draft);
     }
 
     transmit.send_message(request, success, error);
@@ -332,7 +341,7 @@ export function render_and_show_preview($preview_spinner, $preview_content_box, 
             // Handle previews of /me messages
             rendered_preview_html =
                 "<p><strong>" +
-                _.escape(page_params.full_name) +
+                _.escape(current_user.full_name) +
                 "</strong>" +
                 rendered_content.slice("<p>/me".length);
         } else {
@@ -358,10 +367,7 @@ export function render_and_show_preview($preview_spinner, $preview_content_box, 
             // wrong, users will see a brief flicker of the locally
             // echoed frontend rendering before receiving the
             // authoritative backend rendering from the server).
-            const message_obj = {
-                raw_content: content,
-            };
-            markdown.apply_markdown(message_obj);
+            markdown.render(content);
         }
         channel.post({
             url: "/json/messages/render",
@@ -405,9 +411,15 @@ function schedule_message_to_custom_date() {
         scheduled_delivery_timestamp,
     };
 
+    const draft_id = drafts.update_draft({
+        no_notify: true,
+        update_count: false,
+        is_sending_saving: true,
+    });
+
     const $banner_container = $("#compose_banners");
     const success = function (data) {
-        drafts.draft_model.deleteDraft($("textarea#compose-textarea").data("draft-id"));
+        drafts.draft_model.deleteDraft(draft_id);
         clear_compose_box();
         const new_row_html = render_success_message_scheduled_banner({
             scheduled_message_id: data.scheduled_message_id,
@@ -426,6 +438,9 @@ function schedule_message_to_custom_date() {
             $banner_container,
             $("textarea#compose-textarea"),
         );
+        const draft = drafts.draft_model.getDraft(draft_id);
+        draft.is_sending_saving = false;
+        drafts.draft_model.editDraft(draft_id, draft);
     };
 
     channel.post({

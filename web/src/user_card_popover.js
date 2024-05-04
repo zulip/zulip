@@ -1,6 +1,7 @@
 import ClipboardJS from "clipboard";
 import {parseISO} from "date-fns";
 import $ from "jquery";
+import assert from "minimalistic-assert";
 import tippy from "tippy.js";
 
 import render_confirm_mute_user from "../templates/confirm_dialog/confirm_mute_user.hbs";
@@ -10,6 +11,7 @@ import render_user_card_popover_for_unknown_user from "../templates/popovers/use
 import render_user_card_popover_manage_menu from "../templates/popovers/user_card/user_card_popover_manage_menu.hbs";
 
 import * as blueslip from "./blueslip";
+import * as browser_history from "./browser_history";
 import * as buddy_data from "./buddy_data";
 import * as channel from "./channel";
 import * as compose_actions from "./compose_actions";
@@ -32,6 +34,7 @@ import {hide_all} from "./popovers";
 import * as rows from "./rows";
 import * as settings_config from "./settings_config";
 import * as sidebar_ui from "./sidebar_ui";
+import {current_user, realm} from "./state_data";
 import * as timerender from "./timerender";
 import * as ui_report from "./ui_report";
 import * as ui_util from "./ui_util";
@@ -255,8 +258,8 @@ function get_user_card_popover_data(
         );
     }
     // Filtering out only those profile fields that can be display in the popover and are not empty.
-    const field_types = page_params.custom_profile_field_types;
-    const display_profile_fields = page_params.custom_profile_fields
+    const field_types = realm.custom_profile_field_types;
+    const display_profile_fields = realm.custom_profile_fields
         .map((f) => user_profile.get_custom_profile_field_data(user, f, field_types))
         .filter((f) => f.display_in_profile_summary && f.value !== undefined && f.value !== null);
 
@@ -265,7 +268,7 @@ function get_user_card_popover_data(
         can_send_private_message:
             is_active &&
             !is_me &&
-            page_params.realm_private_message_policy !==
+            realm.realm_private_message_policy !==
                 settings_config.private_message_policy_values.disabled.code,
         display_profile_fields,
         has_message_context,
@@ -349,11 +352,13 @@ function show_user_card_popover(
 
                 $popover.addClass(get_popover_classname(template_class));
                 $popover_title.append(
-                    render_user_card_popover_avatar({
-                        // See the load_medium_avatar comment for important background.
-                        user_avatar: people.small_avatar_url_for_person(user),
-                        user_is_guest: user.is_guest,
-                    }),
+                    $(
+                        render_user_card_popover_avatar({
+                            // See the load_medium_avatar comment for important background.
+                            user_avatar: people.small_avatar_url_for_person(user),
+                            user_is_guest: user.is_guest,
+                        }),
+                    ),
                 );
             },
             onHidden() {
@@ -479,7 +484,7 @@ function toggle_user_card_popover_manage_menu(element, user) {
 
     const args = {
         can_mute: muting_allowed && !is_muted,
-        can_manage_user: page_params.is_admin && !is_me && !is_system_bot,
+        can_manage_user: current_user.is_admin && !is_me && !is_system_bot,
         can_unmute: muting_allowed && is_muted,
         is_active: people.is_active_user_for_popover(user.user_id),
         is_bot: user.is_bot,
@@ -567,6 +572,7 @@ export function toggle_sender_info() {
         $sender = $message.find(".message_sender");
     }
 
+    assert(message_lists.current !== undefined);
     const message = message_lists.current.get(rows.id($message));
     const user = people.get_by_user_id(message.sender_id);
     toggle_user_card_popover_for_message($sender[0], user, message, () => {
@@ -642,6 +648,7 @@ function register_click_handlers() {
     $("#main_div").on("click", ".sender_name, .inline_profile_picture", function (e) {
         const $row = $(this).closest(".message_row");
         e.stopPropagation();
+        assert(message_lists.current !== undefined);
         const message = message_lists.current.get(rows.id($row));
         const user = people.get_by_user_id(message.sender_id);
         toggle_user_card_popover_for_message(this, user, message);
@@ -657,6 +664,7 @@ function register_click_handlers() {
         }
         const $row = $(this).closest(".message_row");
         e.stopPropagation();
+        assert(message_lists.current !== undefined);
         const message = message_lists.current.get(rows.id($row));
         let user;
         if (id_string) {
@@ -680,11 +688,11 @@ function register_click_handlers() {
     $("body").on("click", ".user-card-popover-actions .narrow_to_private_messages", (e) => {
         const user_id = elem_to_user_id($(e.target).parents("ul"));
         const email = people.get_by_user_id(user_id).email;
+        narrow.by("dm", email, {trigger: "user sidebar popover"});
         hide_all();
         if (overlays.any_active()) {
             overlays.close_active();
         }
-        narrow.by("dm", email, {trigger: "user sidebar popover"});
         e.stopPropagation();
         e.preventDefault();
     });
@@ -692,11 +700,11 @@ function register_click_handlers() {
     $("body").on("click", ".user-card-popover-actions .narrow_to_messages_sent", (e) => {
         const user_id = elem_to_user_id($(e.target).parents("ul"));
         const email = people.get_by_user_id(user_id).email;
+        narrow.by("sender", email, {trigger: "user sidebar popover"});
         hide_all();
         if (overlays.any_active()) {
             overlays.close_active();
         }
-        narrow.by("sender", email, {trigger: "user sidebar popover"});
         e.stopPropagation();
         e.preventDefault();
     });
@@ -738,14 +746,17 @@ function register_click_handlers() {
 
     $("body").on("click", ".user-card-popover-actions .view_full_user_profile", (e) => {
         const user_id = elem_to_user_id($(e.target).parents("ul"));
-        const user = people.get_by_user_id(user_id);
-        user_profile.show_user_profile(user);
+        browser_history.go_to_location(`user/${user_id}`);
         e.stopPropagation();
         e.preventDefault();
     });
     $("body").on("click", ".user-card-popover-root .mention_user", (e) => {
         if (!compose_state.composing()) {
-            compose_actions.start("stream", {trigger: "sidebar user actions"});
+            compose_actions.start({
+                message_type: "stream",
+                trigger: "sidebar user actions",
+                keep_composebox_empty: true,
+            });
         }
         const user_id = elem_to_user_id($(e.target).parents("ul"));
         const name = people.get_by_user_id(user_id).full_name;
@@ -759,7 +770,10 @@ function register_click_handlers() {
 
     $("body").on("click", ".message-user-card-popover-root .mention_user", (e) => {
         if (!compose_state.composing()) {
-            compose_reply.respond_to_message({trigger: "user sidebar popover"});
+            compose_reply.respond_to_message({
+                trigger: "user sidebar popover",
+                keep_composebox_empty: true,
+            });
         }
         const user_id = elem_to_user_id($(e.target).parents("ul"));
         const name = people.get_by_user_id(user_id).full_name;
@@ -809,13 +823,13 @@ function register_click_handlers() {
     $("body").on("click", ".update_status_text", open_user_status_modal);
 
     // Clicking on one's own status emoji should open the user status modal.
-    $("#buddy-list-users-matching-view").on(
+    $(".buddy-list-section").on(
         "click",
         ".user_sidebar_entry_me .status-emoji",
         open_user_status_modal,
     );
 
-    $("#buddy-list-users-matching-view").on("click", ".user-list-sidebar-menu-icon", (e) => {
+    $(".buddy-list-section").on("click", ".user-list-sidebar-menu-icon", (e) => {
         e.stopPropagation();
         const $target = $(e.currentTarget).closest("li");
 
@@ -841,7 +855,8 @@ function register_click_handlers() {
     $("body").on("click", ".respond_personal_button, .compose_private_message", (e) => {
         const user_id = elem_to_user_id($(e.target).parents("ul"));
         const email = people.get_by_user_id(user_id).email;
-        compose_actions.start("private", {
+        compose_actions.start({
+            message_type: "private",
             trigger: "popover send private",
             private_message_recipient: email,
         });

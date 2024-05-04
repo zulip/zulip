@@ -21,7 +21,7 @@
                         <div class="text">{{t "Account & privacy" }}</div>
                     </li>
                     <li tabindex="0" data-section="preferences">
-                        <i class="icon fa fa-clock-o" aria-hidden="true"></i>
+                        <i class="icon fa fa-sliders" aria-hidden="true"></i>
                         <div class="text">{{t "Preferences" }}</div>
                     </li>
                     <li tabindex="0" data-section="notifications">
@@ -126,7 +126,7 @@
                     {{#unless is_guest}}
                     <li class="collapse-org-settings {{#unless is_admin}}hide-org-settings{{/unless}}" tabindex="0" data-section="default-streams-list">
                         <i class="icon fa fa-exchange" aria-hidden="true"></i>
-                        <div class="text">{{t "Default streams" }}</div>
+                        <div class="text">{{t "Default channels" }}</div>
                         {{#unless is_admin}}
                         <i class="locked fa fa-lock tippy-zulip-tooltip" data-tippy-content="{{t 'Only organization administrators can edit these settings.' }}"></i>
                         {{/unless}}

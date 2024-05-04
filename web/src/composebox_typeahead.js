@@ -4,6 +4,7 @@ import _ from "lodash";
 import * as typeahead from "../shared/src/typeahead";
 import render_topic_typeahead_hint from "../templates/topic_typeahead_hint.hbs";
 
+import * as bootstrap_typeahead from "./bootstrap_typeahead";
 import * as bulleted_numbered_list_util from "./bulleted_numbered_list_util";
 import * as compose_pm_pill from "./compose_pm_pill";
 import * as compose_state from "./compose_state";
@@ -20,6 +21,7 @@ import * as people from "./people";
 import * as realm_playground from "./realm_playground";
 import * as rows from "./rows";
 import * as settings_data from "./settings_data";
+import {realm} from "./state_data";
 import * as stream_data from "./stream_data";
 import * as stream_topic_history from "./stream_topic_history";
 import * as stream_topic_history_util from "./stream_topic_history_util";
@@ -46,9 +48,26 @@ export const max_num_items = 8;
 
 export let emoji_collection = [];
 
-export function update_emoji_data() {
+let completing;
+let token;
+
+export function get_or_set_token_for_testing(val) {
+    if (val !== undefined) {
+        token = val;
+    }
+    return token;
+}
+
+export function get_or_set_completing_for_tests(val) {
+    if (val !== undefined) {
+        completing = val;
+    }
+    return completing;
+}
+
+export function update_emoji_data(initial_emojis) {
     emoji_collection = [];
-    for (const emoji_dict of emoji.emojis_by_name.values()) {
+    for (const emoji_dict of initial_emojis) {
         const {reaction_type} = emoji.get_emoji_details_by_name(emoji_dict.name);
         if (emoji_dict.is_realm_emoji === true) {
             emoji_collection.push({
@@ -87,24 +106,12 @@ function get_language_matcher(query) {
     };
 }
 
-export function query_matches_person(query, person) {
-    return (
-        typeahead.query_matches_string(query, person.full_name, " ") ||
-        (Boolean(person.delivery_email) &&
-            typeahead.query_matches_string(query, people.get_visible_email(person), " "))
-    );
-}
-
-export function query_matches_name(query, user_group_or_stream) {
-    return typeahead.query_matches_string(query, user_group_or_stream.name, " ");
-}
-
 function get_stream_or_user_group_matcher(query) {
     // Case-insensitive.
     query = typeahead.clean_query_lowercase(query);
 
     return function (user_group_or_stream) {
-        return query_matches_name(query, user_group_or_stream);
+        return typeahead_helper.query_matches_name(query, user_group_or_stream);
     };
 }
 
@@ -113,8 +120,8 @@ function get_slash_matcher(query) {
 
     return function (item) {
         return (
-            typeahead.query_matches_string(query, item.name, " ") ||
-            typeahead.query_matches_string(query, item.aliases, " ")
+            typeahead.query_matches_string_in_order(query, item.name, " ") ||
+            typeahead.query_matches_string_in_order(query, item.aliases, " ")
         );
     };
 }
@@ -127,7 +134,7 @@ function get_topic_matcher(query) {
             topic,
         };
 
-        return typeahead.query_matches_string(query, obj.topic, " ");
+        return typeahead.query_matches_string_in_order(query, obj.topic, " ");
     };
 }
 
@@ -384,7 +391,7 @@ function get_wildcard_string(mention) {
     if (mention === "topic") {
         return $t({defaultMessage: "Notify topic"});
     }
-    return $t({defaultMessage: "Notify stream"});
+    return $t({defaultMessage: "Notify channel"});
 }
 
 export function broadcast_mentions() {
@@ -392,7 +399,9 @@ export function broadcast_mentions() {
     if (compose_state.get_message_type() === "private") {
         wildcard_mention_array = ["all", "everyone"];
     } else if (compose_validate.stream_wildcard_mention_allowed()) {
-        wildcard_mention_array = ["all", "everyone", "stream", "topic"];
+        // TODO: Eventually remove "stream" wildcard from typeahead suggestions
+        // once the rename of stream to channel has settled for users.
+        wildcard_mention_array = ["all", "everyone", "stream", "channel", "topic"];
     } else if (compose_validate.topic_wildcard_mention_allowed()) {
         wildcard_mention_array = ["topic"];
     }
@@ -470,6 +479,7 @@ export const slash_commands = [
         text: $t({defaultMessage: "/todo (Create a collaborative to-do list)"}),
         name: "todo",
         aliases: "",
+        placeholder: $t({defaultMessage: "Task list"}),
     },
 ];
 
@@ -513,8 +523,16 @@ export function get_person_suggestions(query, opts) {
         if (opts.want_broadcast) {
             persons = [...persons, ...broadcast_mentions()];
         }
+        // `sort_recipients` and other functions like `user_pill.get_user_ids`
+        // are shared with the pill typeahead which has only users, and we
+        // need a way to differentiate these mentons-or-users from just users,
+        // to help with typing.
+        const person_items = persons.map((person) => ({
+            ...person,
+            type: "user_or_mention",
+        }));
 
-        return persons.filter((item) => query_matches_person(query, item));
+        return person_items.filter((item) => typeahead_helper.query_matches_person(query, item));
     }
 
     let groups;
@@ -535,7 +553,9 @@ export function get_person_suggestions(query, opts) {
         groups = user_groups.get_realm_user_groups();
     }
 
-    const filtered_groups = groups.filter((item) => query_matches_name(query, item));
+    const filtered_groups = groups.filter((item) =>
+        typeahead_helper.query_matches_name(query, item),
+    );
 
     /*
         Let's say you're on a big realm and type
@@ -581,9 +601,9 @@ export function get_person_suggestions(query, opts) {
     });
 }
 
-export function get_stream_topic_data(hacky_this) {
+export function get_stream_topic_data(input_element) {
     const opts = {};
-    const $message_row = hacky_this.$element.closest(".message_row");
+    const $message_row = input_element.$element.closest(".message_row");
     if ($message_row.length === 1) {
         // we are editing a message so we try to use its keys.
         const msg = message_store.get(rows.id($message_row));
@@ -598,7 +618,7 @@ export function get_stream_topic_data(hacky_this) {
     return opts;
 }
 
-export function get_sorted_filtered_items(query) {
+export function get_sorted_filtered_items(query, input_element) {
     /*
         This is just a "glue" function to work
         around bootstrap.  We want to control these
@@ -622,19 +642,13 @@ export function get_sorted_filtered_items(query) {
         several years ago.)
     */
 
-    const fetcher = get_candidates.bind(this);
-    const big_results = fetcher(query);
+    const big_results = get_candidates(query, input_element);
 
     if (!big_results) {
         return false;
     }
 
-    // We are still hacking info onto the "this" from
-    // bootstrap.  Yuck.
-    const completing = this.completing;
-    const token = this.token;
-
-    const opts = get_stream_topic_data(this);
+    const opts = get_stream_topic_data(input_element);
 
     if (completing === "mention" || completing === "silent_mention") {
         return filter_and_sort_mentions(big_results.is_silent, token, opts);
@@ -653,8 +667,19 @@ export function filter_and_sort_candidates(completing, candidates, token) {
     return sorted_results;
 }
 
-export function get_candidates(query) {
-    const split = split_at_cursor(query, this.$element);
+const ALLOWED_MARKDOWN_FEATURES = {
+    mention: true,
+    emoji: true,
+    silent_mention: true,
+    slash: true,
+    stream: true,
+    syntax: true,
+    topic: true,
+    timestamp: true,
+};
+
+export function get_candidates(query, input_element) {
+    const split = split_at_cursor(query, input_element.$element);
     let current_token = tokenize_compose_str(split[0]);
     if (current_token === "") {
         return false;
@@ -674,15 +699,17 @@ export function get_candidates(query) {
 
     // Start syntax highlighting autocompleter if the first three characters are ```
     const syntax_token = current_token.slice(0, 3);
-    if (this.options.completions.syntax && (syntax_token === "```" || syntax_token === "~~~")) {
+    if (ALLOWED_MARKDOWN_FEATURES.syntax && (syntax_token === "```" || syntax_token === "~~~")) {
         // Only autocomplete if user starts typing a language after ```
-        if (current_token.length === 3) {
+        // unless the fence was added via the code formatting button.
+        if (current_token.length === 3 && !compose_ui.code_formatting_button_triggered) {
             return false;
         }
 
         // If the only input is a space, don't autocomplete
         current_token = current_token.slice(3);
         if (current_token === " ") {
+            compose_ui.set_code_formatting_button_triggered(false);
             return false;
         }
 
@@ -690,14 +717,20 @@ export function get_candidates(query) {
         if (current_token[0] === " ") {
             current_token = current_token.slice(1);
         }
-        this.completing = "syntax";
-        this.token = current_token;
-        return realm_playground.get_pygments_typeahead_list_for_composebox();
+        completing = "syntax";
+        token = current_token;
+        // If the code formatting button was triggered, we want to show a blank option
+        // to improve the discoverability of the possibility of specifying a language.
+        const language_list = compose_ui.code_formatting_button_triggered
+            ? ["", ...realm_playground.get_pygments_typeahead_list_for_composebox()]
+            : realm_playground.get_pygments_typeahead_list_for_composebox();
+        compose_ui.set_code_formatting_button_triggered(false);
+        return language_list;
     }
 
     // Only start the emoji autocompleter if : is directly after one
     // of the whitespace or punctuation chars we split on.
-    if (this.options.completions.emoji && current_token[0] === ":") {
+    if (ALLOWED_MARKDOWN_FEATURES.emoji && current_token[0] === ":") {
         // We don't want to match non-emoji emoticons such
         // as :P or :-p
         // Also, if the user has only typed a colon and nothing after,
@@ -709,27 +742,27 @@ export function get_candidates(query) {
         if (current_token[1] === " ") {
             return false;
         }
-        this.completing = "emoji";
-        this.token = current_token.slice(1);
+        completing = "emoji";
+        token = current_token.slice(1);
         return emoji_collection;
     }
 
-    if (this.options.completions.mention && current_token[0] === "@") {
+    if (ALLOWED_MARKDOWN_FEATURES.mention && current_token[0] === "@") {
         current_token = current_token.slice(1);
-        this.completing = "mention";
+        completing = "mention";
         // Silent mentions
         let is_silent = false;
         if (current_token.startsWith("_")) {
-            this.completing = "silent_mention";
+            completing = "silent_mention";
             is_silent = true;
             current_token = current_token.slice(1);
         }
         current_token = filter_mention_name(current_token);
         if (!current_token && typeof current_token === "boolean") {
-            this.completing = null;
+            completing = null;
             return false;
         }
-        this.token = current_token;
+        token = current_token;
         return {is_silent};
     }
 
@@ -738,15 +771,15 @@ export function get_candidates(query) {
         return commands;
     }
 
-    if (this.options.completions.slash && current_token[0] === "/") {
+    if (ALLOWED_MARKDOWN_FEATURES.slash && current_token[0] === "/") {
         current_token = current_token.slice(1);
 
-        this.completing = "slash";
-        this.token = current_token;
+        completing = "slash";
+        token = current_token;
         return get_slash_commands_data();
     }
 
-    if (this.options.completions.stream && current_token[0] === "#") {
+    if (ALLOWED_MARKDOWN_FEATURES.stream && current_token[0] === "#") {
         if (current_token.length === 1) {
             return false;
         }
@@ -761,19 +794,19 @@ export function get_candidates(query) {
             return false;
         }
 
-        this.completing = "stream";
-        this.token = current_token;
+        completing = "stream";
+        token = current_token;
         return stream_data.get_unsorted_subs();
     }
 
-    if (this.options.completions.topic) {
+    if (ALLOWED_MARKDOWN_FEATURES.topic) {
         // Stream regex modified from marked.js
         // Matches '#**stream name** >' at the end of a split.
         const stream_regex = /#\*\*([^*>]+)\*\*\s?>$/;
         const should_jump_inside_typeahead = stream_regex.test(split[0]);
         if (should_jump_inside_typeahead) {
-            this.completing = "topic_jump";
-            this.token = ">";
+            completing = "topic_jump";
+            token = ">";
             // We return something so that the typeahead is shown, but ultimately
             return [""];
         }
@@ -782,38 +815,38 @@ export function get_candidates(query) {
         const stream_topic_regex = /#\*\*([^*>]+)>([^*]*)$/;
         const should_begin_typeahead = stream_topic_regex.test(split[0]);
         if (should_begin_typeahead) {
-            this.completing = "topic_list";
+            completing = "topic_list";
             const tokens = stream_topic_regex.exec(split[0]);
             if (tokens[1]) {
                 const stream_name = tokens[1];
-                this.token = tokens[2] || "";
+                token = tokens[2] || "";
 
                 // Don't autocomplete if there is a space following '>'
-                if (this.token[0] === " ") {
+                if (token[0] === " ") {
                     return false;
                 }
 
                 const stream_id = stream_data.get_stream_id(stream_name);
                 const topic_list = topics_seen_for(stream_id);
-                if (should_show_custom_query(this.token, topic_list)) {
-                    topic_list.push(this.token);
+                if (should_show_custom_query(token, topic_list)) {
+                    topic_list.push(token);
                 }
                 return topic_list;
             }
         }
     }
-    if (this.options.completions.timestamp) {
+    if (ALLOWED_MARKDOWN_FEATURES.timestamp) {
         const time_jump_regex = /<time(:([^>]*?)>?)?$/;
         if (time_jump_regex.test(split[0])) {
-            this.completing = "time_jump";
+            completing = "time_jump";
             return [$t({defaultMessage: "Mention a time-zone-aware time"})];
         }
     }
     return false;
 }
 
-export function content_highlighter(item) {
-    switch (this.completing) {
+export function content_highlighter_html(item) {
+    switch (completing) {
         case "emoji":
             return typeahead_helper.render_emoji(item);
         case "mention":
@@ -839,18 +872,18 @@ export function content_highlighter(item) {
     }
 }
 
-export function content_typeahead_selected(item, event) {
-    const pieces = split_at_cursor(this.query, this.$element);
+export function content_typeahead_selected(item, query, input_element, event) {
+    const pieces = split_at_cursor(query, input_element.$element);
     let beginning = pieces[0];
     let rest = pieces[1];
-    const $textbox = this.$element;
+    const $textbox = input_element.$element;
     // Accepting some typeahead selections, like polls, will generate
     // placeholder text that is selected, in order to clarify for the
     // user what a given parameter is for. This object stores the
     // highlight offsets for that purpose.
     const highlight = {};
 
-    switch (this.completing) {
+    switch (completing) {
         case "emoji":
             // leading and trailing spaces are required for emoji,
             // except if it begins a message or a new line.
@@ -859,17 +892,15 @@ export function content_typeahead_selected(item, event) {
                 beginning.charAt(beginning.lastIndexOf(":") - 1) === " " ||
                 beginning.charAt(beginning.lastIndexOf(":") - 1) === "\n"
             ) {
-                beginning =
-                    beginning.slice(0, -this.token.length - 1) + ":" + item.emoji_name + ": ";
+                beginning = beginning.slice(0, -token.length - 1) + ":" + item.emoji_name + ": ";
             } else {
-                beginning =
-                    beginning.slice(0, -this.token.length - 1) + " :" + item.emoji_name + ": ";
+                beginning = beginning.slice(0, -token.length - 1) + " :" + item.emoji_name + ": ";
             }
             break;
         case "silent_mention":
         case "mention": {
-            const is_silent = this.completing === "silent_mention";
-            beginning = beginning.slice(0, -this.token.length - 1);
+            const is_silent = completing === "silent_mention";
+            beginning = beginning.slice(0, -token.length - 1);
             if (beginning.endsWith("@_*")) {
                 beginning = beginning.slice(0, -3);
             } else if (beginning.endsWith("@*") || beginning.endsWith("@_")) {
@@ -905,7 +936,7 @@ export function content_typeahead_selected(item, event) {
             break;
         }
         case "slash":
-            beginning = beginning.slice(0, -this.token.length - 1) + "/" + item.name + " ";
+            beginning = beginning.slice(0, -token.length - 1) + "/" + item.name + " ";
             if (item.placeholder) {
                 beginning = beginning + item.placeholder;
                 highlight.start = item.name.length + 2;
@@ -913,7 +944,7 @@ export function content_typeahead_selected(item, event) {
             }
             break;
         case "stream":
-            beginning = beginning.slice(0, -this.token.length - 1);
+            beginning = beginning.slice(0, -token.length - 1);
             if (beginning.endsWith("#*")) {
                 beginning = beginning.slice(0, -2);
             }
@@ -931,7 +962,7 @@ export function content_typeahead_selected(item, event) {
         case "syntax": {
             // Isolate the end index of the triple backticks/tildes, including
             // possibly a space afterward
-            const backticks = beginning.length - this.token.length;
+            const backticks = beginning.length - token.length;
             beginning = beginning.slice(0, backticks) + item;
             if (item === "spoiler") {
                 // to add in and highlight placeholder "Header"
@@ -962,9 +993,9 @@ export function content_typeahead_selected(item, event) {
         }
         case "topic_list": {
             // Stream + topic mention typeahead; close the stream+topic mention syntax
-            // with the topic and the final **.  Note that this.token.length can be 0
+            // with the topic and the final **.  Note that token.length can be 0
             // if we are completing from `**streamname>`.
-            const start = beginning.length - this.token.length;
+            const start = beginning.length - token.length;
             beginning = beginning.slice(0, start) + item + "** ";
             break;
         }
@@ -987,7 +1018,7 @@ export function content_typeahead_selected(item, event) {
                 $textbox.caret(beginning.length, beginning.length);
                 compose_ui.autosize_textarea($textbox);
             };
-            flatpickr.show_flatpickr(this.$element[0], on_timestamp_selection, timestamp);
+            flatpickr.show_flatpickr(input_element.$element[0], on_timestamp_selection, timestamp);
             return beginning + rest;
         }
     }
@@ -1056,7 +1087,7 @@ export function sort_results(completing, matches, token) {
 }
 
 export function compose_automated_selection() {
-    if (this.completing === "topic_jump") {
+    if (completing === "topic_jump") {
         // automatically jump inside stream mention on typing > just after
         // a stream mention, to begin stream+topic mention typeahead (topic_list).
         return true;
@@ -1065,7 +1096,7 @@ export function compose_automated_selection() {
 }
 
 export function compose_trigger_selection(event) {
-    if (this.completing === "stream" && event.key === ">") {
+    if (completing === "stream" && event.key === ">") {
         // complete stream typeahead partially to immediately start the topic_list typeahead.
         return true;
     }
@@ -1073,16 +1104,20 @@ export function compose_trigger_selection(event) {
 }
 
 export function initialize_topic_edit_typeahead(form_field, stream_name, dropup) {
+    const bootstrap_typeahead_input = {
+        $element: form_field,
+        type: "input",
+    };
     const options = {
         fixed: true,
         dropup,
-        highlighter(item) {
+        highlighter_html(item) {
             return typeahead_helper.render_typeahead_item({primary: item});
         },
-        sorter(items) {
-            const sorted = typeahead_helper.sorter(this.query, items, (x) => x);
-            if (sorted.length > 0 && !sorted.includes(this.query)) {
-                sorted.unshift(this.query);
+        sorter(items, query) {
+            const sorted = typeahead_helper.sorter(query, items, (x) => x);
+            if (sorted.length > 0 && !sorted.includes(query)) {
+                sorted.unshift(query);
             }
             return sorted;
         },
@@ -1092,12 +1127,12 @@ export function initialize_topic_edit_typeahead(form_field, stream_name, dropup)
         },
         items: 5,
     };
-    form_field.typeahead(options);
+    bootstrap_typeahead.create(bootstrap_typeahead_input, options);
 }
 
 function get_header_html() {
     let tip_text = "";
-    switch (this.completing) {
+    switch (completing) {
         case "stream":
             tip_text = $t({defaultMessage: "Press > for list of topics"});
             break;
@@ -1105,10 +1140,10 @@ function get_header_html() {
             tip_text = $t({defaultMessage: "Silent mentions do not trigger notifications."});
             break;
         case "syntax":
-            if (page_params.realm_default_code_block_language !== "") {
+            if (realm.realm_default_code_block_language !== "") {
                 tip_text = $t(
                     {defaultMessage: "Default is {language}. Use 'text' to disable highlighting."},
-                    {language: page_params.realm_default_code_block_language},
+                    {language: realm.realm_default_code_block_language},
                 );
                 break;
             }
@@ -1120,18 +1155,11 @@ function get_header_html() {
 }
 
 export function initialize_compose_typeahead(selector) {
-    const completions = {
-        mention: true,
-        emoji: true,
-        silent_mention: true,
-        slash: true,
-        stream: true,
-        syntax: true,
-        topic: true,
-        timestamp: true,
+    const bootstrap_typeahead_input = {
+        $element: $(selector),
+        type: "input",
     };
-
-    $(selector).typeahead({
+    bootstrap_typeahead.create(bootstrap_typeahead_input, {
         items: max_num_items,
         dropup: true,
         fixed: true,
@@ -1140,7 +1168,7 @@ export function initialize_compose_typeahead(selector) {
         // O(n) behavior in the number of users in the organization
         // inside the typeahead library.
         source: get_sorted_filtered_items,
-        highlighter: content_highlighter,
+        highlighter_html: content_highlighter_html,
         matcher() {
             return true;
         },
@@ -1149,33 +1177,34 @@ export function initialize_compose_typeahead(selector) {
         },
         updater: content_typeahead_selected,
         stopAdvance: true, // Do not advance to the next field on a Tab or Enter
-        completions,
         automated: compose_automated_selection,
         trigger_selection: compose_trigger_selection,
-        header: get_header_html,
+        header_html: get_header_html,
     });
 }
 
 export function initialize({on_enter_send}) {
-    update_emoji_data();
-
     // These handlers are at the "form" level so that they are called after typeahead
     $("form#send_message_form").on("keydown", (e) => handle_keydown(e, {on_enter_send}));
     $("form#send_message_form").on("keyup", handle_keyup);
 
-    $("input#stream_message_recipient_topic").typeahead({
+    const stream_message_typeahead_input = {
+        $element: $("input#stream_message_recipient_topic"),
+        type: "input",
+    };
+    bootstrap_typeahead.create(stream_message_typeahead_input, {
         source() {
             return topics_seen_for(compose_state.stream_id());
         },
         items: 3,
         fixed: true,
-        highlighter(item) {
+        highlighter_html(item) {
             return typeahead_helper.render_typeahead_item({primary: item});
         },
-        sorter(items) {
-            const sorted = typeahead_helper.sorter(this.query, items, (x) => x);
-            if (!sorted.includes(this.query)) {
-                sorted.unshift(this.query);
+        sorter(items, query) {
+            const sorted = typeahead_helper.sorter(query, items, (x) => x);
+            if (sorted.length > 0 && !sorted.includes(query)) {
+                sorted.unshift(query);
             }
             return sorted;
         },
@@ -1185,15 +1214,19 @@ export function initialize({on_enter_send}) {
             }
             return false;
         },
-        header: render_topic_typeahead_hint,
+        header_html: render_topic_typeahead_hint,
     });
 
-    $("#private_message_recipient").typeahead({
+    const private_message_typeahead_input = {
+        $element: $("#private_message_recipient"),
+        type: "contenteditable",
+    };
+    bootstrap_typeahead.create(private_message_typeahead_input, {
         source: get_pm_people,
         items: max_num_items,
         dropup: true,
         fixed: true,
-        highlighter(item) {
+        highlighter_html(item) {
             return typeahead_helper.render_person_or_user_group(item);
         },
         matcher() {

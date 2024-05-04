@@ -4,13 +4,24 @@ const {strict: assert} = require("assert");
 
 const {zrequire} = require("./lib/namespace");
 const {run_test} = require("./lib/test");
-const {page_params} = require("./lib/zpage_params");
 
 const copy_and_paste = zrequire("copy_and_paste");
 
-run_test("paste_handler_converter", () => {
-    page_params.development_environment = true;
+run_test("maybe_transform_html", () => {
+    // Copied HTML from VS Code
+    let paste_html = `<div style="color: #cccccc;background-color: #1f1f1f;font-family: 'Droid Sans Mono', 'monospace', monospace;font-weight: normal;font-size: 14px;line-height: 19px;white-space: pre;"><div><span style="color: #c586c0;">if</span><span style="color: #cccccc;"> (</span><span style="color: #9cdcfe;">$preview_src</span><span style="color: #cccccc;">.</span><span style="color: #dcdcaa;">endsWith</span><span style="color: #cccccc;">(</span><span style="color: #ce9178;">"&amp;size=full"</span><span style="color: #cccccc;">))</span></div></div>`;
+    let paste_text = `if ($preview_src.endsWith("&size=full"))`;
+    const escaped_paste_text = "if ($preview_src.endsWith(&quot;&amp;size=full&quot;))";
+    const expected_output = "<pre><code>" + escaped_paste_text + "</code></pre>";
+    assert.equal(copy_and_paste.maybe_transform_html(paste_html, paste_text), expected_output);
 
+    // Untransformed HTML
+    paste_html = "<div><div>Hello</div><div>World!</div></div>";
+    paste_text = "Hello\nWorld!";
+    assert.equal(copy_and_paste.maybe_transform_html(paste_html, paste_text), paste_html);
+});
+
+run_test("paste_handler_converter", () => {
     /*
         Pasting from another Zulip message
     */
@@ -29,10 +40,10 @@ run_test("paste_handler_converter", () => {
     assert.equal(copy_and_paste.paste_handler_converter(input), "The `JSDOM` constructor");
 
     // A python code block
-    input = `<meta http-equiv="content-type" content="text/html; charset=utf-8"><p style="margin: 3px 0px; color: rgb(221, 222, 238); font-family: &quot;Source Sans 3&quot;, sans-serif; font-size: 14px; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; background-color: rgb(33, 45, 59); text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial;">zulip code block in python</p><div class="codehilite zulip-code-block" data-code-language="Python" style="background-color: rgb(33, 45, 59); display: block !important; border: none !important; background-image: none !important; background-position: initial !important; background-size: initial !important; background-repeat: initial !important; background-attachment: initial !important; background-origin: initial !important; background-clip: initial !important; color: rgb(221, 222, 238); font-family: &quot;Source Sans 3&quot;, sans-serif; font-size: 14px; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial;"><pre style="padding: 5px 7px 3px; font-family: &quot;Source Code Pro&quot;, monospace; font-size: 0.825em; color: rgb(163, 206, 255); border-radius: 4px; display: block; margin: 5px 0px; line-height: 1.4; word-break: break-all; overflow-wrap: normal; white-space: pre; background-color: rgb(29, 38, 48); border: 1px solid rgba(0, 0, 0, 0.15); direction: ltr; overflow-x: auto;"><span></span><code style="font-family: &quot;Source Code Pro&quot;, monospace; font-size: inherit; unicode-bidi: embed; direction: ltr; color: rgb(163, 206, 255); white-space: inherit; padding: 0px; background-color: rgb(29, 38, 48); border: 0px rgba(0, 0, 0, 0.5); border-radius: 3px; overflow-x: scroll;"><span class="nb" style="color: rgb(239, 239, 143);">print</span><span class="p" style="color: rgb(65, 113, 113);">(</span><span class="s2" style="color: rgb(204, 147, 147);">"hello world"</span><span class="p" style="color: rgb(65, 113, 113);">)</span></code></pre></div></meta>`;
+    input = `<meta http-equiv="content-type" content="text/html; charset=utf-8"><p>zulip code block in python</p><div class="codehilite zulip-code-block" data-code-language="Python"><pre><span></span><code><span class="nb">print</span><span class="p">(</span><span class="s2">"hello"</span><span class="p">)</span>\n<span class="nb">print</span><span class="p">(</span><span class="s2">"world"</span><span class="p">)</span></code></pre></div></meta>`;
     assert.equal(
         copy_and_paste.paste_handler_converter(input),
-        'zulip code block in python\n\n```Python\nprint("hello world")\n```',
+        'zulip code block in python\n\n```Python\nprint("hello")\nprint("world")\n```',
     );
 
     // Single line in a code block
@@ -117,14 +128,6 @@ run_test("paste_handler_converter", () => {
     input =
         '<div class="ace-line gutter-author-d-iz88z86z86za0dz67zz78zz78zz74zz68zjz80zz71z9iz90za3z66zs0z65zz65zq8z75zlaz81zcz66zj6g2mz78zz76zmz66z22z75zfcz69zz66z ace-ltr focused-line" dir="auto" id="editor-3-ace-line-41"><span>Test list:</span></div><div class="ace-line gutter-author-d-iz88z86z86za0dz67zz78zz78zz74zz68zjz80zz71z9iz90za3z66zs0z65zz65zq8z75zlaz81zcz66zj6g2mz78zz76zmz66z22z75zfcz69zz66z line-list-type-bullet ace-ltr" dir="auto" id="editor-3-ace-line-42"><ul class="listtype-bullet listindent1 list-bullet1"><li><span class="ace-line-pocket-zws" data-faketext="" data-contentcollector-ignore-space-at="end"></span><span class="ace-line-pocket" data-faketext="" contenteditable="false"></span><span class="ace-line-pocket-zws" data-faketext="" data-contentcollector-ignore-space-at="start"></span><span>Item 1</span></li></ul></div><div class="ace-line gutter-author-d-iz88z86z86za0dz67zz78zz78zz74zz68zjz80zz71z9iz90za3z66zs0z65zz65zq8z75zlaz81zcz66zj6g2mz78zz76zmz66z22z75zfcz69zz66z line-list-type-bullet ace-ltr" dir="auto" id="editor-3-ace-line-43"><ul class="listtype-bullet listindent1 list-bullet1"><li><span class="ace-line-pocket-zws" data-faketext="" data-contentcollector-ignore-space-at="end"></span><span class="ace-line-pocket" data-faketext="" contenteditable="false"></span><span class="ace-line-pocket-zws" data-faketext="" data-contentcollector-ignore-space-at="start"></span><span>Item 2</span></li></ul></div>';
     assert.equal(copy_and_paste.paste_handler_converter(input), "Test list:\n* Item 1\n* Item 2");
-
-    // Pasting code from VS Code / Gmail
-    input =
-        '<meta http-equiv="content-type" content="text/html; charset=utf-8"><div style="color: #ffffff;background-color: #002451;font-family: Consolas, &quot;Courier New&quot;, monospace;font-weight: normal;font-size: 14px;line-height: 19px;white-space: pre;"><div><span style="color: #ebbbff;">const</span><span style="color: #ffffff;"> </span><span style="color: #ff9da4;">compose_ui</span><span style="color: #ffffff;"> </span><span style="color: #99ffff;">=</span><span style="color: #ffffff;"> </span><span style="color: #bbdaff;">mock_esm</span><span style="color: #ffffff;">(</span><span style="color: #d1f1a9;">"../src/compose_ui"</span><span style="color: #ffffff;">);</span></div><div><span style="color: #bbdaff;">set_global</span><span style="color: #ffffff;">(</span><span style="color: #d1f1a9;">"document"</span><span style="color: #ffffff;">, </span><span style="color: #ff9da4;">document</span><span style="color: #ffffff;">);</span></div></div>';
-    assert.equal(
-        copy_and_paste.paste_handler_converter(input),
-        'const compose_ui = mock_esm("../src/compose_ui");\n\nset_global("document", document);',
-    );
 
     // Pasting from Google Sheets (remove <style> elements completely)
     input =

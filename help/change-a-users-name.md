@@ -16,7 +16,7 @@ Organization administrators can always change any user's name.
 
 {!manage-this-user.md!}
 
-1. Under **Full name**, enter a new name.
+1. Under **Name**, enter a new name.
 
 {!save-changes.md!}
 
@@ -29,7 +29,7 @@ Organization administrators can always change any user's name.
 1. Find the user you would like to manage. Click the **pencil**
    (<i class="fa fa-pencil"></i>) to the right of their name.
 
-1. Under **Full name**, enter a new name.
+1. Under **Name**, enter a new name.
 
 {!save-changes.md!}
 

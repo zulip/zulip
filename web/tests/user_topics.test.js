@@ -55,64 +55,139 @@ test("edge_cases", () => {
 
 test("add_and_remove_mutes", () => {
     assert.ok(!user_topics.is_topic_muted(devel.stream_id, "java"));
-    user_topics.update_user_topics(devel.stream_id, "java", all_visibility_policies.MUTED);
+    user_topics.update_user_topics(
+        devel.stream_id,
+        devel.name,
+        "java",
+        all_visibility_policies.MUTED,
+    );
     assert.ok(user_topics.is_topic_muted(devel.stream_id, "java"));
 
     // test idempotency
-    user_topics.update_user_topics(devel.stream_id, "java", all_visibility_policies.MUTED);
+    user_topics.update_user_topics(
+        devel.stream_id,
+        devel.name,
+        "java",
+        all_visibility_policies.MUTED,
+    );
     assert.ok(user_topics.is_topic_muted(devel.stream_id, "java"));
 
-    user_topics.update_user_topics(devel.stream_id, "java", all_visibility_policies.INHERIT);
+    user_topics.update_user_topics(
+        devel.stream_id,
+        devel.name,
+        "java",
+        all_visibility_policies.INHERIT,
+    );
     assert.ok(!user_topics.is_topic_muted(devel.stream_id, "java"));
 
     // test idempotency
-    user_topics.update_user_topics(devel.stream_id, "java", all_visibility_policies.INHERIT);
+    user_topics.update_user_topics(
+        devel.stream_id,
+        devel.name,
+        "java",
+        all_visibility_policies.INHERIT,
+    );
     assert.ok(!user_topics.is_topic_muted(devel.stream_id, "java"));
 
     // test unknown stream is harmless too
-    user_topics.update_user_topics(unknown.stream_id, "java", all_visibility_policies.INHERIT);
+    user_topics.update_user_topics(
+        unknown.stream_id,
+        unknown.name,
+        "java",
+        all_visibility_policies.INHERIT,
+    );
     assert.ok(!user_topics.is_topic_muted(unknown.stream_id, "java"));
 });
 
 test("add_and_remove_unmutes", () => {
     assert.ok(!user_topics.is_topic_unmuted(devel.stream_id, "java"));
-    user_topics.update_user_topics(devel.stream_id, "java", all_visibility_policies.UNMUTED);
+    user_topics.update_user_topics(
+        devel.stream_id,
+        devel.name,
+        "java",
+        all_visibility_policies.UNMUTED,
+    );
     assert.ok(user_topics.is_topic_unmuted(devel.stream_id, "java"));
 
     // test idempotency
-    user_topics.update_user_topics(devel.stream_id, "java", all_visibility_policies.UNMUTED);
+    user_topics.update_user_topics(
+        devel.stream_id,
+        devel.name,
+        "java",
+        all_visibility_policies.UNMUTED,
+    );
     assert.ok(user_topics.is_topic_unmuted(devel.stream_id, "java"));
 
-    user_topics.update_user_topics(devel.stream_id, "java", all_visibility_policies.INHERIT);
+    user_topics.update_user_topics(
+        devel.stream_id,
+        devel.name,
+        "java",
+        all_visibility_policies.INHERIT,
+    );
     assert.ok(!user_topics.is_topic_unmuted(devel.stream_id, "java"));
 
     // test idempotency
-    user_topics.update_user_topics(devel.stream_id, "java", all_visibility_policies.INHERIT);
+    user_topics.update_user_topics(
+        devel.stream_id,
+        devel.name,
+        "java",
+        all_visibility_policies.INHERIT,
+    );
     assert.ok(!user_topics.is_topic_unmuted(devel.stream_id, "java"));
 
     // test unknown stream is harmless too
-    user_topics.update_user_topics(unknown.stream_id, "java", all_visibility_policies.INHERIT);
+    user_topics.update_user_topics(
+        unknown.stream_id,
+        unknown.name,
+        "java",
+        all_visibility_policies.INHERIT,
+    );
     assert.ok(!user_topics.is_topic_unmuted(unknown.stream_id, "java"));
 });
 
 test("add_and_remove_follows", () => {
     assert.ok(!user_topics.is_topic_followed(devel.stream_id, "java"));
-    user_topics.update_user_topics(devel.stream_id, "java", all_visibility_policies.FOLLOWED);
+    user_topics.update_user_topics(
+        devel.stream_id,
+        devel.name,
+        "java",
+        all_visibility_policies.FOLLOWED,
+    );
     assert.ok(user_topics.is_topic_followed(devel.stream_id, "java"));
 
     // test idempotency
-    user_topics.update_user_topics(devel.stream_id, "java", all_visibility_policies.FOLLOWED);
+    user_topics.update_user_topics(
+        devel.stream_id,
+        devel.name,
+        "java",
+        all_visibility_policies.FOLLOWED,
+    );
     assert.ok(user_topics.is_topic_followed(devel.stream_id, "java"));
 
-    user_topics.update_user_topics(devel.stream_id, "java", all_visibility_policies.INHERIT);
+    user_topics.update_user_topics(
+        devel.stream_id,
+        devel.name,
+        "java",
+        all_visibility_policies.INHERIT,
+    );
     assert.ok(!user_topics.is_topic_followed(devel.stream_id, "java"));
 
     // test idempotency
-    user_topics.update_user_topics(devel.stream_id, "java", all_visibility_policies.INHERIT);
+    user_topics.update_user_topics(
+        devel.stream_id,
+        devel.name,
+        "java",
+        all_visibility_policies.INHERIT,
+    );
     assert.ok(!user_topics.is_topic_followed(devel.stream_id, "java"));
 
     // test unknown stream is harmless too
-    user_topics.update_user_topics(unknown.stream_id, "java", all_visibility_policies.INHERIT);
+    user_topics.update_user_topics(
+        unknown.stream_id,
+        unknown.name,
+        "java",
+        all_visibility_policies.INHERIT,
+    );
     assert.ok(!user_topics.is_topic_followed(unknown.stream_id, "java"));
 });
 
@@ -125,12 +200,14 @@ test("get_mutes", () => {
     );
     user_topics.update_user_topics(
         office.stream_id,
+        office.name,
         "gossip",
         all_visibility_policies.MUTED,
         1577836800,
     );
     user_topics.update_user_topics(
         devel.stream_id,
+        devel.name,
         "java",
         all_visibility_policies.MUTED,
         1577836700,
@@ -168,12 +245,14 @@ test("get_unmutes", () => {
     );
     user_topics.update_user_topics(
         office.stream_id,
+        office.name,
         "gossip",
         all_visibility_policies.UNMUTED,
         1577836800,
     );
     user_topics.update_user_topics(
         devel.stream_id,
+        devel.name,
         "java",
         all_visibility_policies.UNMUTED,
         1577836700,
@@ -211,12 +290,14 @@ test("get_follows", () => {
     );
     user_topics.update_user_topics(
         office.stream_id,
+        office.name,
         "gossip",
         all_visibility_policies.FOLLOWED,
         1577836800,
     );
     user_topics.update_user_topics(
         devel.stream_id,
+        devel.name,
         "java",
         all_visibility_policies.FOLLOWED,
         1577836700,

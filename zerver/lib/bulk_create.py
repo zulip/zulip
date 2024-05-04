@@ -1,19 +1,19 @@
 from typing import Any, Collection, Dict, Iterable, List, Optional, Set, Tuple, Type, Union
 
-from django.db.models import Model
+from django.db.models import Model, QuerySet
 from django.utils.timezone import now as timezone_now
 
 from zerver.lib.create_user import create_user_profile, get_display_email_address
 from zerver.lib.initial_password import initial_password
 from zerver.lib.streams import render_stream_description
 from zerver.models import (
+    NamedUserGroup,
     Realm,
     RealmAuditLog,
     RealmUserDefault,
     Recipient,
     Stream,
     Subscription,
-    UserGroup,
     UserGroupMembership,
     UserProfile,
 )
@@ -127,10 +127,10 @@ def bulk_create_users(
 
     Subscription.objects.bulk_create(subscriptions_to_create)
 
-    full_members_system_group = UserGroup.objects.get(
+    full_members_system_group = NamedUserGroup.objects.get(
         name=SystemGroups.FULL_MEMBERS, realm=realm, is_system_group=True
     )
-    members_system_group = UserGroup.objects.get(
+    members_system_group = NamedUserGroup.objects.get(
         name=SystemGroups.MEMBERS, realm=realm, is_system_group=True
     )
     group_memberships_to_create: List[UserGroupMembership] = []
@@ -152,7 +152,7 @@ def bulk_create_users(
         RealmAuditLog(
             realm=realm,
             modified_user=membership.user_profile,
-            modified_user_group=membership.user_group,
+            modified_user_group=membership.user_group.named_user_group,
             event_type=RealmAuditLog.USER_GROUP_DIRECT_USER_MEMBERSHIP_ADDED,
             event_time=now,
             acting_user=None,
@@ -163,7 +163,9 @@ def bulk_create_users(
 
 def bulk_set_users_or_streams_recipient_fields(
     model: Type[Model],
-    objects: Union[Collection[UserProfile], Collection[Stream]],
+    objects: Union[
+        Collection[UserProfile], QuerySet[UserProfile], Collection[Stream], QuerySet[Stream]
+    ],
     recipients: Optional[Iterable[Recipient]] = None,
 ) -> None:
     assert model in [UserProfile, Stream]
@@ -196,7 +198,7 @@ def bulk_create_streams(realm: Realm, stream_dict: Dict[str, Dict[str, Any]]) ->
     existing_streams = {
         name.lower() for name in Stream.objects.filter(realm=realm).values_list("name", flat=True)
     }
-    administrators_user_group = UserGroup.objects.get(
+    administrators_user_group = NamedUserGroup.objects.get(
         name=SystemGroups.ADMINISTRATORS, is_system_group=True, realm=realm
     )
     streams_to_create: List[Stream] = []

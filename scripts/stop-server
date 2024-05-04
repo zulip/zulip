@@ -18,12 +18,16 @@ from scripts.lib.zulip_tools import (
     WARNING,
     has_application_server,
     has_process_fts_updates,
+    su_to_zulip,
 )
 
 deploy_path = os.path.realpath(os.path.join(os.path.dirname(__file__), ".."))
 os.chdir(deploy_path)
 
-if pwd.getpwuid(os.getuid()).pw_name != "zulip":
+username = pwd.getpwuid(os.getuid()).pw_name
+if username == "root":
+    su_to_zulip()
+elif username != "zulip":
     logging.error("Must be run as user 'zulip'.")
     sys.exit(1)
 

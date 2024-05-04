@@ -11,6 +11,12 @@ async function get_stream_li(page: Page, stream_name: string): Promise<string> {
 
 async function expect_home(page: Page): Promise<void> {
     const message_list_id = await common.get_current_msg_list_id(page, true);
+    await page.waitForSelector(`.message-list[data-message-list-id='${message_list_id}']`, {
+        visible: true,
+    });
+    // Assert that there is only one message list.
+    assert.equal((await page.$$(".message-list")).length, 1);
+    assert.strictEqual(await page.title(), "Combined feed - Zulip Dev - Zulip");
     await common.check_messages_sent(page, message_list_id, [
         ["Verona > test", ["verona test a", "verona test b"]],
         ["Verona > other topic", ["verona other topic c"]],
@@ -107,10 +113,6 @@ async function un_narrow(page: Page): Promise<void> {
         await page.keyboard.press("Escape");
     }
     await page.click("#left-sidebar-navigation-list .top_left_all_messages");
-    await page.waitForSelector(".message-list .message_row", {visible: true});
-    // Assert that there is only one message list.
-    assert.equal((await page.$$(".message-list")).length, 1);
-    assert.strictEqual(await page.title(), "All messages - Zulip Dev - Zulip");
 }
 
 async function un_narrow_by_clicking_org_icon(page: Page): Promise<void> {
@@ -220,7 +222,7 @@ async function search_tests(page: Page): Promise<void> {
     await search_and_check(
         page,
         "Verona",
-        "Stream",
+        "Channel",
         expect_verona_stream,
         "#Verona - Zulip Dev - Zulip",
     );
@@ -304,7 +306,7 @@ async function expect_all_direct_messages(page: Page): Promise<void> {
         await common.get_text_from_selector(page, "#new_conversation_button"),
         "Start new conversation",
     );
-    assert.strictEqual(await page.title(), "All direct messages - Zulip Dev - Zulip");
+    assert.strictEqual(await page.title(), "Direct message feed - Zulip Dev - Zulip");
 }
 
 async function test_narrow_by_clicking_the_left_sidebar(page: Page): Promise<void> {
@@ -322,6 +324,7 @@ async function test_narrow_by_clicking_the_left_sidebar(page: Page): Promise<voi
     await expect_all_direct_messages(page);
 
     await un_narrow(page);
+    await expect_home(page);
 }
 
 async function arrow(page: Page, direction: "Up" | "Down"): Promise<void> {
@@ -422,24 +425,21 @@ async function test_stream_search_filters_stream_list(page: Page): Promise<void>
 async function test_users_search(page: Page): Promise<void> {
     console.log("Search users using right sidebar");
     async function assert_in_list(page: Page, name: string): Promise<void> {
-        await page.waitForSelector(
-            `#buddy-list-users-matching-view li [data-name="${CSS.escape(name)}"]`,
-            {
-                visible: true,
-            },
-        );
+        await page.waitForSelector(`#buddy-list-other-users li [data-name="${CSS.escape(name)}"]`, {
+            visible: true,
+        });
     }
 
     async function assert_selected(page: Page, name: string): Promise<void> {
         await page.waitForSelector(
-            `#buddy-list-users-matching-view li.highlighted_user [data-name="${CSS.escape(name)}"]`,
+            `#buddy-list-other-users li.highlighted_user [data-name="${CSS.escape(name)}"]`,
             {visible: true},
         );
     }
 
     async function assert_not_selected(page: Page, name: string): Promise<void> {
         await page.waitForSelector(
-            `#buddy-list-users-matching-view li.highlighted_user [data-name="${CSS.escape(name)}"]`,
+            `#buddy-list-other-users li.highlighted_user [data-name="${CSS.escape(name)}"]`,
             {hidden: true},
         );
     }
@@ -451,9 +451,7 @@ async function test_users_search(page: Page): Promise<void> {
 
     // Enter the search box and test selected suggestion navigation
     await page.click("#user_filter_icon");
-    await page.waitForSelector("#buddy-list-users-matching-view .highlighted_user", {
-        visible: true,
-    });
+    await page.waitForSelector("#buddy-list-other-users .highlighted_user", {visible: true});
     await assert_selected(page, "Desdemona");
     await assert_not_selected(page, "Cordelia, Lear's daughter");
     await assert_not_selected(page, "King Hamlet");
@@ -475,12 +473,9 @@ async function test_users_search(page: Page): Promise<void> {
     await arrow(page, "Down");
 
     // Now Iago must be highlighted
-    await page.waitForSelector(
-        '#buddy-list-users-matching-view li.highlighted_user [data-name="Iago"]',
-        {
-            visible: true,
-        },
-    );
+    await page.waitForSelector('#buddy-list-other-users li.highlighted_user [data-name="Iago"]', {
+        visible: true,
+    });
     await assert_not_selected(page, "King Hamlet");
     await assert_not_selected(page, "aaron");
     await assert_not_selected(page, "Desdemona");
@@ -493,7 +488,7 @@ async function test_users_search(page: Page): Promise<void> {
 
 async function test_narrow_public_streams(page: Page): Promise<void> {
     const stream_id = await common.get_stream_id(page, "Denmark");
-    await page.goto(`http://zulip.zulipdev.com:9981/#streams/${stream_id}/Denmark`);
+    await page.goto(`http://zulip.zulipdev.com:9981/#channels/${stream_id}/Denmark`);
     await page.waitForSelector("button.sub_unsub_button", {visible: true});
     await page.click("button.sub_unsub_button");
     await page.waitForSelector(

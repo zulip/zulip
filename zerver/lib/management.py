@@ -1,9 +1,11 @@
 # Library code for use in management commands
 import logging
+import os
+import sys
 from argparse import ArgumentParser, RawTextHelpFormatter, _ActionsContainer
 from dataclasses import dataclass
-from functools import reduce
-from typing import Any, Dict, Optional
+from functools import reduce, wraps
+from typing import Any, Dict, Optional, Protocol
 
 from django.conf import settings
 from django.core import validators
@@ -12,6 +14,7 @@ from django.core.management.base import BaseCommand, CommandError, CommandParser
 from django.db.models import Q, QuerySet
 from typing_extensions import override
 
+from zerver.lib.context_managers import lockfile_nonblocking
 from zerver.lib.initial_password import initial_password
 from zerver.models import Client, Realm, UserProfile
 from zerver.models.clients import get_client
@@ -36,6 +39,31 @@ def check_config() -> None:
             pass
 
         raise CommandError(f"Error: You must set {setting_name} in /etc/zulip/settings.py.")
+
+
+class HandleMethod(Protocol):
+    def __call__(self, *args: Any, **kwargs: Any) -> None: ...
+
+
+def abort_unless_locked(handle_func: HandleMethod) -> HandleMethod:
+    @wraps(handle_func)
+    def our_handle(self: BaseCommand, *args: Any, **kwargs: Any) -> None:
+        os.makedirs(settings.LOCKFILE_DIRECTORY, exist_ok=True)
+        # Trim out just the last part of the module name, which is the
+        # command name, to use as the lockfile name;
+        # `zerver.management.commands.send_zulip_update_announcements`
+        # becomes `/srv/zulip-locks/send_zulip_update_announcements.lock`
+        lockfile_name = handle_func.__module__.split(".")[-1]
+        lockfile_path = settings.LOCKFILE_DIRECTORY + "/" + lockfile_name + ".lock"
+        with lockfile_nonblocking(lockfile_path) as lock_acquired:
+            if not lock_acquired:  # nocoverage
+                self.stdout.write(
+                    self.style.ERROR(f"Lock {lockfile_path} is unavailable; exiting.")
+                )
+                sys.exit(1)
+            handle_func(self, *args, **kwargs)
+
+    return our_handle
 
 
 @dataclass

@@ -4,6 +4,7 @@ from unittest import mock
 from django.utils.timezone import now as timezone_now
 
 from zerver.actions.alert_words import do_add_alert_words
+from zerver.lib.mention import stream_wildcards
 from zerver.lib.soft_deactivation import (
     add_missing_messages,
     do_auto_soft_deactivate_users,
@@ -398,7 +399,7 @@ class SoftDeactivationMessageTest(ZulipTestCase):
         idle_user_msg_list = get_user_messages(long_term_idle_user)
         idle_user_msg_count = len(idle_user_msg_list)
         self.assertNotEqual(idle_user_msg_list[-1], sent_message)
-        with self.assert_database_query_count(6):
+        with self.assert_database_query_count(5):
             add_missing_messages(long_term_idle_user)
         idle_user_msg_list = get_user_messages(long_term_idle_user)
         self.assert_length(idle_user_msg_list, idle_user_msg_count + 1)
@@ -747,15 +748,10 @@ class SoftDeactivationMessageTest(ZulipTestCase):
 
         # Test UserMessage row is created while user is deactivated if
         # there is a stream wildcard mention such as @all or @everyone
-        assert_stream_message_sent_to_idle_user(
-            "Test @**all** mention", possible_stream_wildcard_mention=True
-        )
-        assert_stream_message_sent_to_idle_user(
-            "Test @**everyone** mention", possible_stream_wildcard_mention=True
-        )
-        assert_stream_message_sent_to_idle_user(
-            "Test @**stream** mention", possible_stream_wildcard_mention=True
-        )
+        for stream_wildcard in stream_wildcards:
+            assert_stream_message_sent_to_idle_user(
+                f"Test @**{stream_wildcard}** mention", possible_stream_wildcard_mention=True
+            )
         assert_stream_message_not_sent_to_idle_user("Test @**bogus** mention")
 
         # Test UserMessage row is created while user is deactivated if

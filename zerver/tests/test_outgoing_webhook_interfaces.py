@@ -7,7 +7,7 @@ from typing_extensions import override
 
 from zerver.lib.avatar import get_gravatar_url
 from zerver.lib.exceptions import JsonableError
-from zerver.lib.message import MessageDict
+from zerver.lib.message_cache import MessageDict
 from zerver.lib.outgoing_webhook import get_service_interface_class, process_success_response
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.timestamp import datetime_to_timestamp

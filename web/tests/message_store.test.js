@@ -5,7 +5,7 @@ const {strict: assert} = require("assert");
 const {mock_esm, set_global, zrequire} = require("./lib/namespace");
 const {run_test, noop} = require("./lib/test");
 const blueslip = require("./lib/zblueslip");
-const {page_params} = require("./lib/zpage_params");
+const {current_user, realm} = require("./lib/zpage_params");
 
 mock_esm("../src/stream_topic_history", {
     add_message: noop,
@@ -17,8 +17,8 @@ mock_esm("../src/recent_senders", {
 });
 
 set_global("document", "document-stub");
-page_params.realm_allow_message_editing = true;
-page_params.is_admin = true;
+realm.realm_allow_message_editing = true;
+current_user.is_admin = true;
 
 const util = zrequire("util");
 const people = zrequire("people");
@@ -220,7 +220,7 @@ test("errors", ({disallow_rewire}) => {
     blueslip.expect("error", "Unknown user id", 1); // From person.js
 
     // Expect each to throw two blueslip errors
-    // One from message_store.js, one from person.js
+    // One from message_store.ts, one from person.js
     const emails = message_store.get_pm_emails(message);
     assert.equal(emails, "?");
 

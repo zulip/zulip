@@ -1,3 +1,4 @@
+import itertools
 import logging
 import os
 import posixpath
@@ -188,7 +189,7 @@ def slack_workspace_to_realm(
     zerver_realmemoji, emoji_url_map = build_realmemoji(custom_emoji_list, realm_id)
     realm["zerver_realmemoji"] = zerver_realmemoji
 
-    # See https://zulip.com/help/set-default-streams-for-new-users
+    # See https://zulip.com/help/set-default-channels-for-new-users
     # for documentation on zerver_defaultstream
     realm["zerver_userprofile"] = zerver_userprofile
 
@@ -610,7 +611,9 @@ def channels_to_zerver_stream(
 
             added_mpims[mpim["name"]] = (mpim["id"], huddle_id_count)
 
-            recipient = build_recipient(huddle_id_count, recipient_id_count, Recipient.HUDDLE)
+            recipient = build_recipient(
+                huddle_id_count, recipient_id_count, Recipient.DIRECT_MESSAGE_GROUP
+            )
             realm["zerver_recipient"].append(recipient)
             slack_recipient_name_to_zulip_recipient_id[mpim["name"]] = recipient_id_count
 
@@ -754,17 +757,7 @@ def convert_slack_workspace_messages(
         zerver_subscription=realm["zerver_subscription"],
     )
 
-    while True:
-        message_data = []
-        _counter = 0
-        for msg in all_messages:
-            _counter += 1
-            message_data.append(msg)
-            if _counter == chunk_size:
-                break
-        if len(message_data) == 0:
-            break
-
+    while message_data := list(itertools.islice(all_messages, chunk_size)):
         (
             zerver_message,
             zerver_usermessage,
@@ -1318,7 +1311,7 @@ def fetch_team_icons(
     records = []
 
     team_icons_dict = team_info_dict["icon"]
-    if "image_default" in team_icons_dict and team_icons_dict["image_default"]:
+    if team_icons_dict.get("image_default", False):
         return []
 
     icon_url = (

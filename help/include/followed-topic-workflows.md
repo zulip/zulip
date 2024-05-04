@@ -3,15 +3,15 @@
   spend a few minutes checking on on the conversations that need
   your attention.
 
-- No more stressing about missing a reply to your message in streams
+- No more stressing about missing a reply to your message in channels
   you don't regularly read. You can [automatically
   follow](/help/follow-a-topic#automatically-follow-topics) topics you
   start or participate in.
 
-- You can also [mute](/help/mute-a-stream) the streams you don't
+- You can also [mute](/help/mute-a-channel) the channels you don't
   regularly read, and [automatically follow or
   unmute](/help/follow-a-topic#automatically-follow-topics) topics you
-  start or participate in. In muted streams, topics you follow are
+  start or participate in. In muted channels, topics you follow are
   automatically treated as [unmuted](/help/mute-a-topic), so it will
   be easy to see when someone responds to your message.
 

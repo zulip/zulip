@@ -6,12 +6,11 @@ const {mock_esm, zrequire} = require("./lib/namespace");
 const {run_test} = require("./lib/test");
 const blueslip = require("./lib/zblueslip");
 const $ = require("./lib/zjquery");
-const {page_params} = require("./lib/zpage_params");
+const {page_params, realm} = require("./lib/zpage_params");
 
 const hash_util = zrequire("hash_util");
 const compose_state = zrequire("compose_state");
 const narrow_banner = zrequire("narrow_banner");
-const narrow_state = zrequire("narrow_state");
 const people = zrequire("people");
 const stream_data = zrequire("stream_data");
 const {Filter} = zrequire("../src/filter");
@@ -20,6 +19,7 @@ const narrow_title = zrequire("narrow_title");
 const settings_config = zrequire("settings_config");
 const recent_view_util = zrequire("recent_view_util");
 const inbox_util = zrequire("inbox_util");
+const message_lists = zrequire("message_lists");
 
 mock_esm("../src/compose_banner", {
     clear_search_view_banner() {},
@@ -43,7 +43,11 @@ function set_filter(terms) {
         operator: op[0],
         operand: op[1],
     }));
-    narrow_state.set_current_filter(new Filter(terms));
+    message_lists.set_current({
+        data: {
+            filter: new Filter(terms),
+        },
+    });
 }
 
 const me = {
@@ -199,11 +203,11 @@ run_test("urls", () => {
 });
 
 run_test("show_empty_narrow_message", ({mock_template}) => {
-    page_params.stop_words = [];
+    realm.stop_words = [];
 
     mock_template("empty_feed_notice.hbs", true, (_data, html) => html);
 
-    narrow_state.reset_current_filter();
+    message_lists.set_current(undefined);
     narrow_banner.show_empty_narrow_message();
     assert.equal(
         $(".empty_feed_notice_main").html(),
@@ -218,7 +222,7 @@ run_test("show_empty_narrow_message", ({mock_template}) => {
     narrow_banner.show_empty_narrow_message();
     assert.equal(
         $(".empty_feed_notice_main").html(),
-        empty_narrow_html("translated: This stream does not exist or is private."),
+        empty_narrow_html("translated: This channel does not exist or is private."),
     );
 
     // for non-subbed public stream
@@ -228,8 +232,8 @@ run_test("show_empty_narrow_message", ({mock_template}) => {
     assert.equal(
         $(".empty_feed_notice_main").html(),
         empty_narrow_html(
-            "translated: You aren't subscribed to this stream and nobody has talked about that yet!",
-            'translated HTML: <button class="button white rounded stream_sub_unsub_button sea-green" type="button" name="subscription">Subscribe</button>',
+            "translated: There are no messages here.",
+            'translated HTML: Why not <a href="#" class="empty_feed_compose_stream">start the conversation</a>?',
         ),
     );
 
@@ -292,7 +296,7 @@ run_test("show_empty_narrow_message", ({mock_template}) => {
     );
 
     // organization has disabled sending direct messages
-    page_params.realm_private_message_policy =
+    realm.realm_private_message_policy =
         settings_config.private_message_policy_values.disabled.code;
     set_filter([["is", "dm"]]);
     narrow_banner.show_empty_narrow_message();
@@ -304,7 +308,7 @@ run_test("show_empty_narrow_message", ({mock_template}) => {
     );
 
     // sending direct messages enabled
-    page_params.realm_private_message_policy =
+    realm.realm_private_message_policy =
         settings_config.private_message_policy_values.by_anyone.code;
     set_filter([["is", "dm"]]);
     narrow_banner.show_empty_narrow_message();
@@ -331,7 +335,7 @@ run_test("show_empty_narrow_message", ({mock_template}) => {
     );
 
     // organization has disabled sending direct messages
-    page_params.realm_private_message_policy =
+    realm.realm_private_message_policy =
         settings_config.private_message_policy_values.disabled.code;
 
     // prioritize information about invalid user(s) in narrow/search
@@ -384,7 +388,7 @@ run_test("show_empty_narrow_message", ({mock_template}) => {
     );
 
     // sending direct messages enabled
-    page_params.realm_private_message_policy =
+    realm.realm_private_message_policy =
         settings_config.private_message_policy_values.by_anyone.code;
     set_filter([["dm", "alice@example.com"]]);
     narrow_banner.show_empty_narrow_message();
@@ -404,7 +408,7 @@ run_test("show_empty_narrow_message", ({mock_template}) => {
         $(".empty_feed_notice_main").html(),
         empty_narrow_html(
             "translated: You have not sent any direct messages to yourself yet!",
-            'translated HTML: Why not <a href="#" class="empty_feed_compose_private">start a conversation with yourself</a>?',
+            "translated HTML: Use this space for personal notes, or to test out Zulip features.",
         ),
     );
 
@@ -419,7 +423,7 @@ run_test("show_empty_narrow_message", ({mock_template}) => {
     );
 
     // organization has disabled sending direct messages
-    page_params.realm_private_message_policy =
+    realm.realm_private_message_policy =
         settings_config.private_message_policy_values.disabled.code;
 
     // prioritize information about invalid user in narrow/search
@@ -449,7 +453,7 @@ run_test("show_empty_narrow_message", ({mock_template}) => {
     );
 
     // sending direct messages enabled
-    page_params.realm_private_message_policy =
+    realm.realm_private_message_policy =
         settings_config.private_message_policy_values.by_anyone.code;
     set_filter([["dm-including", "alice@example.com"]]);
     narrow_banner.show_empty_narrow_message();
@@ -520,16 +524,16 @@ run_test("show_empty_narrow_message", ({mock_template}) => {
     narrow_banner.show_empty_narrow_message();
     assert.equal(
         $(".empty_feed_notice_main").html(),
-        empty_narrow_html("translated: This stream does not exist or is private."),
+        empty_narrow_html("translated: This channel does not exist or is private."),
     );
 });
 
 run_test("show_empty_narrow_message_with_search", ({mock_template}) => {
-    page_params.stop_words = [];
+    realm.stop_words = [];
 
     mock_template("empty_feed_notice.hbs", true, (_data, html) => html);
 
-    narrow_state.reset_current_filter();
+    message_lists.set_current(undefined);
     set_filter([["search", "grail"]]);
     narrow_banner.show_empty_narrow_message();
     assert.match($(".empty_feed_notice_main").html(), /<span>grail<\/span>/);
@@ -541,7 +545,7 @@ run_test("hide_empty_narrow_message", () => {
 });
 
 run_test("show_search_stopwords", ({mock_template}) => {
-    page_params.stop_words = ["what", "about"];
+    realm.stop_words = ["what", "about"];
 
     mock_template("empty_feed_notice.hbs", true, (_data, html) => html);
 
@@ -553,7 +557,7 @@ run_test("show_search_stopwords", ({mock_template}) => {
             {query_word: "grail", is_stop_word: false},
         ],
     };
-    narrow_state.reset_current_filter();
+    message_lists.set_current(undefined);
     set_filter([["search", "what about grail"]]);
     narrow_banner.show_empty_narrow_message();
     assert.equal(
@@ -607,7 +611,7 @@ run_test("show_search_stopwords", ({mock_template}) => {
 });
 
 run_test("show_invalid_narrow_message", ({mock_template}) => {
-    narrow_state.reset_current_filter();
+    message_lists.set_current(undefined);
     mock_template("empty_feed_notice.hbs", true, (_data, html) => html);
 
     stream_data.add_sub({name: "streamA", stream_id: 88});
@@ -622,7 +626,7 @@ run_test("show_invalid_narrow_message", ({mock_template}) => {
         $(".empty_feed_notice_main").html(),
         empty_narrow_html(
             "translated: No search results.",
-            "translated HTML: <p>You are searching for messages that belong to more than one stream, which is not possible.</p>",
+            "translated HTML: <p>You are searching for messages that belong to more than one channel, which is not possible.</p>",
         ),
     );
 
@@ -688,7 +692,7 @@ run_test("narrow_to_compose_target streams", ({override_rewire}) => {
     assert.equal(args.called, true);
     assert.equal(args.opts.trigger, "narrow_to_compose_target");
     assert.deepEqual(args.terms, [
-        {operator: "stream", operand: "ROME"},
+        {operator: "channel", operand: "ROME"},
         {operator: "topic", operand: "one"},
     ]);
 
@@ -698,7 +702,7 @@ run_test("narrow_to_compose_target streams", ({override_rewire}) => {
     narrow.to_compose_target();
     assert.equal(args.called, true);
     assert.deepEqual(args.terms, [
-        {operator: "stream", operand: "ROME"},
+        {operator: "channel", operand: "ROME"},
         {operator: "topic", operand: "four"},
     ]);
 
@@ -707,14 +711,14 @@ run_test("narrow_to_compose_target streams", ({override_rewire}) => {
     args.called = false;
     narrow.to_compose_target();
     assert.equal(args.called, true);
-    assert.deepEqual(args.terms, [{operator: "stream", operand: "ROME"}]);
+    assert.deepEqual(args.terms, [{operator: "channel", operand: "ROME"}]);
 
     // Test with no topic
     compose_state.topic(undefined);
     args.called = false;
     narrow.to_compose_target();
     assert.equal(args.called, true);
-    assert.deepEqual(args.terms, [{operator: "stream", operand: "ROME"}]);
+    assert.deepEqual(args.terms, [{operator: "channel", operand: "ROME"}]);
 });
 
 run_test("narrow_to_compose_target direct messages", ({override, override_rewire}) => {
@@ -785,7 +789,7 @@ run_test("narrow_compute_title", () => {
 
     inbox_util.set_visible(false);
     filter = new Filter([{operator: "in", operand: "home"}]);
-    assert.equal(narrow_title.compute_narrow_title(filter), "translated: All messages");
+    assert.equal(narrow_title.compute_narrow_title(filter), "translated: Combined feed");
 
     // Search & uncommon narrows
     filter = new Filter([{operator: "search", operand: "potato"}]);
@@ -811,7 +815,10 @@ run_test("narrow_compute_title", () => {
     assert.equal(narrow_title.compute_narrow_title(filter), "#Foo");
 
     filter = new Filter([{operator: "stream", operand: "Elephant"}]);
-    assert.equal(narrow_title.compute_narrow_title(filter), "translated: Unknown stream #Elephant");
+    assert.equal(
+        narrow_title.compute_narrow_title(filter),
+        "translated: Unknown channel #Elephant",
+    );
 
     // Direct messages with narrows
     const joe = {

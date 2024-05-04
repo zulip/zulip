@@ -105,7 +105,7 @@ class TypingValidateStreamIdTopicArgumentsTest(ZulipTestCase):
             "/api/v1/typing",
             {"type": "stream", "op": "start", "topic": "test"},
         )
-        self.assert_json_error(result, "Missing stream_id")
+        self.assert_json_error(result, "Missing 'stream_id' argument")
 
     def test_invalid_stream_id(self) -> None:
         """
@@ -145,7 +145,7 @@ class TypingValidateStreamIdTopicArgumentsTest(ZulipTestCase):
                 "topic": topic_name,
             },
         )
-        self.assert_json_error(result, "Invalid stream ID")
+        self.assert_json_error(result, "Invalid channel ID")
 
 
 class TypingHappyPathTestDirectMessages(ZulipTestCase):
@@ -367,6 +367,26 @@ class TypingHappyPathTestDirectMessages(ZulipTestCase):
 
 
 class TypingHappyPathTestStreams(ZulipTestCase):
+    def test_valid_type_and_op_parameters(self) -> None:
+        recipient_type_name = ["channel", "stream"]
+        operator_type = ["start", "stop"]
+        sender = self.example_user("hamlet")
+        stream_name = self.get_streams(sender)[0]
+        stream_id = self.get_stream_id(stream_name)
+        topic_name = "Some topic"
+
+        for recipient_type in recipient_type_name:
+            for operator in operator_type:
+                params = dict(
+                    type=recipient_type,
+                    op=operator,
+                    stream_id=str(stream_id),
+                    topic=topic_name,
+                )
+
+                result = self.api_post(sender, "/api/v1/typing", params)
+                self.assert_json_success(result)
+
     def test_start(self) -> None:
         sender = self.example_user("hamlet")
         stream_name = self.get_streams(sender)[0]
@@ -563,5 +583,40 @@ class TestSendTypingNotificationsSettings(ZulipTestCase):
         # No events should be sent now
         with self.capture_send_event_calls(expected_num_events=0) as events:
             result = self.api_post(sender, "/api/v1/typing", params)
-        self.assert_json_error(result, "User has disabled typing notifications for stream messages")
+        self.assert_json_error(
+            result, "User has disabled typing notifications for channel messages"
+        )
         self.assertEqual(events, [])
+
+    def test_typing_notifications_disabled(self) -> None:
+        sender = self.example_user("hamlet")
+        stream_name = self.get_streams(sender)[0]
+        stream_id = self.get_stream_id(stream_name)
+        topic_name = "Some topic"
+
+        aaron = self.example_user("aaron")
+        iago = self.example_user("iago")
+        for user in [aaron, iago]:
+            self.subscribe(user, stream_name)
+
+        aaron.receives_typing_notifications = False
+        aaron.save()
+
+        params = dict(
+            type="stream",
+            op="start",
+            stream_id=str(stream_id),
+            topic=topic_name,
+        )
+
+        with self.capture_send_event_calls(expected_num_events=1) as events:
+            result = self.api_post(sender, "/api/v1/typing", params)
+        self.assert_json_success(result)
+        self.assert_length(events, 1)
+
+        event_user_ids = set(events[0]["users"])
+
+        # Only users who have typing notifications enabled would receive
+        # notifications.
+        self.assertNotIn(aaron.id, event_user_ids)
+        self.assertIn(iago.id, event_user_ids)

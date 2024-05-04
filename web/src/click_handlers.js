@@ -1,4 +1,5 @@
 import $ from "jquery";
+import assert from "minimalistic-assert";
 import tippy from "tippy.js";
 
 // You won't find every click handler here, but it's a good place to start!
@@ -24,6 +25,7 @@ import * as narrow_state from "./narrow_state";
 import * as navigate from "./navigate";
 import {page_params} from "./page_params";
 import * as pm_list from "./pm_list";
+import * as popover_menus from "./popover_menus";
 import * as reactions from "./reactions";
 import * as recent_view_ui from "./recent_view_ui";
 import * as rows from "./rows";
@@ -60,6 +62,7 @@ export function initialize() {
             if (!id) {
                 return;
             }
+            assert(message_lists.current !== undefined);
             message_lists.current.select_id(id);
             setTimeout(() => {
                 // The algorithm to trigger long tap is that first, we check
@@ -179,6 +182,7 @@ export function initialize() {
         const $row = $(this).closest(".message_row");
         const id = rows.id($row);
 
+        assert(message_lists.current !== undefined);
         message_lists.current.select_id(id);
 
         if (message_edit.is_editing(id)) {
@@ -259,6 +263,7 @@ export function initialize() {
     });
 
     $("body").on("click", ".reveal_hidden_message", (e) => {
+        assert(message_lists.current !== undefined);
         const message_id = rows.id($(e.currentTarget).closest(".message_row"));
         message_lists.current.view.reveal_hidden_message(message_id);
         e.stopPropagation();
@@ -284,15 +289,22 @@ export function initialize() {
         navigate.to_end();
     });
 
+    $("body").on("click", ".message_row", function () {
+        $(".selected_msg_for_touchscreen").removeClass("selected_msg_for_touchscreen");
+        $(this).addClass("selected_msg_for_touchscreen");
+    });
+
     // MESSAGE EDITING
 
-    $("body").on("click", ".edit_content_button, .view_source_button", function (e) {
+    $("body").on("click", ".edit_content_button", function (e) {
+        assert(message_lists.current !== undefined);
         const $row = message_lists.current.get_row(rows.id($(this).closest(".message_row")));
         message_lists.current.select_id(rows.id($row));
         message_edit.start($row);
         e.stopPropagation();
     });
     $("body").on("click", ".move_message_button", function (e) {
+        assert(message_lists.current !== undefined);
         const $row = message_lists.current.get_row(rows.id($(this).closest(".message_row")));
         const message_id = rows.id($row);
         const message = message_lists.current.get(message_id);
@@ -311,7 +323,7 @@ export function initialize() {
     });
     $("body").on("click", ".topic_edit_save", function (e) {
         const $recipient_row = $(this).closest(".recipient_row");
-        message_edit.save_inline_topic_edit($recipient_row);
+        message_edit.try_save_inline_topic_edit($recipient_row);
         e.stopPropagation();
     });
     $("body").on("click", ".topic_edit_cancel", function (e) {
@@ -447,6 +459,7 @@ export function initialize() {
         const $group = rows.get_closest_group(narrow_link_elem);
         const msg_id = rows.id_for_recipient_row($group);
 
+        assert(message_lists.current !== undefined);
         const nearest = message_lists.current.get(msg_id);
         const selected = message_lists.current.selected_message();
         if (util.same_recipient(nearest, selected)) {
@@ -456,7 +469,7 @@ export function initialize() {
     }
 
     $("#message_feed_container").on("click", ".narrows_by_recipient", function (e) {
-        if (e.metaKey || e.ctrlKey) {
+        if (e.metaKey || e.ctrlKey || e.shiftKey) {
             return;
         }
         e.preventDefault();
@@ -465,7 +478,7 @@ export function initialize() {
     });
 
     $("#message_feed_container").on("click", ".narrows_by_topic", function (e) {
-        if (e.metaKey || e.ctrlKey) {
+        if (e.metaKey || e.ctrlKey || e.shiftKey) {
             return;
         }
         e.preventDefault();
@@ -474,18 +487,20 @@ export function initialize() {
     });
 
     // SIDEBARS
-    $("#buddy-list-users-matching-view")
-        .expectOne()
-        .on("click", ".selectable_sidebar_block", (e) => {
-            const $li = $(e.target).parents("li");
+    $(".buddy-list-section").on("click", ".selectable_sidebar_block", (e) => {
+        if (e.metaKey || e.ctrlKey || e.shiftKey) {
+            return;
+        }
 
-            activity_ui.narrow_for_user({$li});
+        const $li = $(e.target).parents("li");
 
-            e.preventDefault();
-            e.stopPropagation();
-            sidebar_ui.hide_userlist_sidebar();
-            $(".tooltip").remove();
-        });
+        activity_ui.narrow_for_user({$li});
+
+        e.preventDefault();
+        e.stopPropagation();
+        sidebar_ui.hide_userlist_sidebar();
+        $(".tooltip").remove();
+    });
 
     // Doesn't show tooltip on touch devices.
     function do_render_buddy_list_tooltip(
@@ -537,7 +552,7 @@ export function initialize() {
                     for (const mutation of mutationsList) {
                         // Hide instance if reference is in the removed node list.
                         if (check_reference_removed(mutation, instance)) {
-                            instance.hide();
+                            popover_menus.hide_current_popover_if_visible(instance);
                         }
                     }
                 };
@@ -549,7 +564,7 @@ export function initialize() {
     }
 
     // BUDDY LIST TOOLTIPS (not displayed on touch devices)
-    $("#buddy-list-users-matching-view").on("mouseenter", ".selectable_sidebar_block", (e) => {
+    $(".buddy-list-section").on("mouseenter", ".selectable_sidebar_block", (e) => {
         e.stopPropagation();
         const $elem = $(e.currentTarget).closest(".user_sidebar_entry").find(".user-presence-link");
         const user_id_string = $elem.attr("data-user-id");
@@ -557,7 +572,7 @@ export function initialize() {
 
         // `target_node` is the `ul` element since it stays in DOM even after updates.
         function get_target_node() {
-            return document.querySelector("#buddy-list-users-matching-view");
+            return $(e.target).parents(".buddy-list-section")[0];
         }
 
         function check_reference_removed(mutation, instance) {
@@ -573,6 +588,27 @@ export function initialize() {
             get_target_node,
             check_reference_removed,
         );
+
+        /*
+           The following implements a little tooltip giving the name for status emoji
+           when hovering them in the right sidebar. This requires special logic, to avoid
+           conflicting with the main tooltip or showing duplicate tooltips.
+        */
+        $(".user-presence-link .status-emoji-name").off("mouseenter").off("mouseleave");
+        $(".user-presence-link .status-emoji-name").on("mouseenter", () => {
+            const instance = $elem.parent()[0]._tippy;
+            if (instance && instance.state.isVisible) {
+                instance.destroy();
+            }
+        });
+        $(".user-presence-link .status-emoji-name").on("mouseleave", () => {
+            do_render_buddy_list_tooltip(
+                $elem.parent(),
+                title_data,
+                get_target_node,
+                check_reference_removed,
+            );
+        });
     });
 
     // DIRECT MESSAGE LIST TOOLTIPS (not displayed on touch devices)
@@ -606,6 +642,27 @@ export function initialize() {
             check_reference_removed,
             check_subtree,
         );
+
+        /*
+           The following implements a little tooltip giving the name for status emoji
+           when hovering them in the left sidebar. This requires special logic, to avoid
+           conflicting with the main tooltip or showing duplicate tooltips.
+        */
+        $(".dm-user-status .status-emoji-name").off("mouseenter").off("mouseleave");
+        $(".dm-user-status .status-emoji-name").on("mouseenter", () => {
+            const instance = $elem[0]._tippy;
+            if (instance && instance.state.isVisible) {
+                instance.destroy();
+            }
+        });
+        $(".dm-user-status .status-emoji-name").on("mouseleave", () => {
+            do_render_buddy_list_tooltip(
+                $elem,
+                title_data,
+                get_target_node,
+                check_reference_removed,
+            );
+        });
     });
 
     // Recent conversations direct messages (Not displayed on small widths)
@@ -655,11 +712,17 @@ export function initialize() {
     // COMPOSE
 
     $("body").on("click", ".empty_feed_compose_stream", (e) => {
-        compose_actions.start("stream", {trigger: "empty feed message"});
+        compose_actions.start({
+            message_type: "stream",
+            trigger: "empty feed message",
+        });
         e.preventDefault();
     });
     $("body").on("click", ".empty_feed_compose_private", (e) => {
-        compose_actions.start("private", {trigger: "empty feed message"});
+        compose_actions.start({
+            message_type: "private",
+            trigger: "empty feed message",
+        });
         e.preventDefault();
     });
 
@@ -719,7 +782,7 @@ export function initialize() {
         ".direct-messages-container.zoom-out #private_messages_section_header",
         (e) => {
             if ($(e.target).closest("#show_all_private_messages").length === 1) {
-                // Let the browser handle the "all direct messages" widget.
+                // Let the browser handle the "direct message feed" widget.
                 return;
             }
 
@@ -787,6 +850,10 @@ export function initialize() {
     });
 
     $("body").on("click", "#header-container .brand", (e) => {
+        if (e.metaKey || e.ctrlKey || e.shiftKey) {
+            return;
+        }
+
         e.preventDefault();
         e.stopPropagation();
 
@@ -832,7 +899,6 @@ export function initialize() {
                 // should not have any effect on the compose
                 // state.
                 !$(e.target).closest(".overlay").length &&
-                !$(e.target).closest(".popover").length &&
                 !$(e.target).closest(".micromodal").length &&
                 !$(e.target).closest("[data-tippy-root]").length &&
                 !$(e.target).closest(".typeahead").length &&
@@ -851,7 +917,7 @@ export function initialize() {
     // Workaround for Bootstrap issue #5900, which basically makes dropdowns
     // unclickable on mobile devices.
     // https://github.com/twitter/bootstrap/issues/5900
-    $("a.dropdown-toggle, .dropdown-menu a").on("touchstart", (e) => {
+    $(".dropdown-menu a").on("touchstart", (e) => {
         e.stopPropagation();
     });
 

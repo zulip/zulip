@@ -7,6 +7,8 @@ const _ = require("lodash");
 const {set_global, zrequire} = require("./lib/namespace");
 const {run_test} = require("./lib/test");
 
+const blueslip = zrequire("blueslip");
+
 set_global("document", {});
 const util = zrequire("util");
 
@@ -44,6 +46,14 @@ run_test("lower_bound", () => {
     assert.equal(util.lower_bound(arr, 15, compare), 1);
     assert.equal(util.lower_bound(arr, 50, compare), 4);
     assert.equal(util.lower_bound(arr, 55, compare), 5);
+});
+
+run_test("lower_same", () => {
+    assert.ok(util.lower_same("abc", "AbC"));
+    assert.ok(!util.lower_same("abbc", "AbC"));
+
+    blueslip.expect("error", "Cannot compare strings; at least one value is undefined");
+    util.lower_same("abc", undefined);
 });
 
 run_test("same_recipient", () => {
@@ -158,6 +168,10 @@ run_test("wildcard_mentions_regexp", () => {
 
     const messages_with_everyone_mentions = [
         "@**everyone**",
+        '"@**everyone**"',
+        "@**everyone**: Look at this!",
+        "The <@**everyone**> channel",
+        'I have to say "@**everyone**" to ding the bell',
         "some text before @**everyone** some text after",
         "@**everyone** some text after only",
         "some text before only @**everyone**",
@@ -168,6 +182,13 @@ run_test("wildcard_mentions_regexp", () => {
         "some text before @**stream** some text after",
         "@**stream** some text after only",
         "some text before only @**stream**",
+    ];
+
+    const messages_with_channel_mentions = [
+        "@**channel**",
+        "some text before @**channel** some text after",
+        "@**channel** some text after only",
+        "some text before only @**channel**",
     ];
 
     const messages_with_topic_mentions = [
@@ -204,6 +225,15 @@ run_test("wildcard_mentions_regexp", () => {
         "some_email@**stream**.com",
     ];
 
+    const messages_without_channel_mentions = [
+        "some text before @channel some text after",
+        "@channel",
+        "`@channel`",
+        "some_email@channel.com",
+        "`@**channel**`",
+        "some_email@**channel**.com",
+    ];
+
     let i;
     for (i = 0; i < messages_with_all_mentions.length; i += 1) {
         assert.ok(util.find_stream_wildcard_mentions(messages_with_all_mentions[i]));
@@ -215,6 +245,10 @@ run_test("wildcard_mentions_regexp", () => {
 
     for (i = 0; i < messages_with_stream_mentions.length; i += 1) {
         assert.ok(util.find_stream_wildcard_mentions(messages_with_stream_mentions[i]));
+    }
+
+    for (i = 0; i < messages_with_channel_mentions.length; i += 1) {
+        assert.ok(util.find_stream_wildcard_mentions(messages_with_channel_mentions[i]));
     }
 
     for (i = 0; i < messages_with_topic_mentions.length; i += 1) {
@@ -231,6 +265,10 @@ run_test("wildcard_mentions_regexp", () => {
 
     for (i = 0; i < messages_without_stream_mentions.length; i += 1) {
         assert.ok(!util.find_stream_wildcard_mentions(messages_without_stream_mentions[i]));
+    }
+
+    for (i = 0; i < messages_without_channel_mentions.length; i += 1) {
+        assert.ok(!util.find_stream_wildcard_mentions(messages_without_channel_mentions[i]));
     }
 });
 

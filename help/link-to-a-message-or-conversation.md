@@ -1,7 +1,7 @@
 # Link to a message or conversation
 
 Zulip makes it easy to share links to messages, topics, and streams. You can
-link from one Zulip [conversation](/help/recent-conversations) to another, or
+link from one Zulip [conversation](/help/reading-conversations) to another, or
 share links to Zulip conversations in issue trackers, emails, or other external
 tools.
 
@@ -46,7 +46,7 @@ Viewing a topic via a message link will never mark messages as read.
 
 These links will still work even when the message is
 [moved to another topic](/help/move-content-to-another-topic)
-or [stream](/help/move-content-to-another-stream) or
+or [channel](/help/move-content-to-another-channel) or
 if its [topic is resolved](/help/resolve-a-topic).
 
 Zulip uses the same permanent link syntax when [quoting a
@@ -109,11 +109,11 @@ message](/help/quote-and-reply).
 
 {tab|mobile}
 
-{!stream-long-press-menu.md!}
+{!channel-long-press-menu.md!}
 
 1. Tap **Copy link to stream**.
 
-{!stream-long-press-menu-tip.md!}
+{!channel-long-press-menu-tip.md!}
 
 {end_tabs}
 

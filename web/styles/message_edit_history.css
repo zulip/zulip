@@ -1,37 +1,26 @@
-#message-edit-history {
-    .message_top_line {
-        float: right;
-    }
-
-    .date_row > span {
+.message-edit-history-container {
+    .header-body {
         display: flex;
         align-items: center;
-        white-space: nowrap;
+        flex-direction: row;
+        justify-content: space-between;
+        gap: 5px;
 
-        &::before,
-        &::after {
-            width: 100%;
-            margin: 0;
+        @media (width < $lg_min) {
+            display: block;
         }
     }
 
-    .message_time {
-        position: static;
-    }
-
-    .message_author {
-        position: relative;
-    }
-
-    .author_details {
-        display: block;
-        font-size: 12px;
-        padding: 1px;
-        text-align: right;
-    }
-
-    .messagebox-content {
-        padding: 0 10px;
+    .message-edit-history-list {
+        /*
+        styles are based on drafts-list
+        see web/styles/drafts.css
+        */
+        & h2 {
+            font-size: 1.1em;
+            line-height: normal;
+            margin-bottom: 5px;
+        }
     }
 
     .message_edit_history_content {
@@ -46,5 +35,31 @@
             text-decoration: line-through;
             word-break: break-all;
         }
+    }
+
+    .messagebox-content {
+        display: block !important;
+
+        .message_content {
+            cursor: default !important;
+        }
+    }
+
+    #message-history-error {
+        /*
+        styles are based on .model_content
+        see web/styles/modal.css
+        */
+        font-size: 1rem;
+        display: none;
+        margin: 10px;
+    }
+
+    .overlay_loading_indicator_style {
+        width: 100% !important;
+        height: 100% !important;
+        display: flex;
+        justify-content: center;
+        align-items: center;
     }
 }

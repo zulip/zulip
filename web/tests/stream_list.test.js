@@ -5,20 +5,17 @@ const {strict: assert} = require("assert");
 const {mock_esm, set_global, zrequire} = require("./lib/namespace");
 const {run_test, noop} = require("./lib/test");
 const $ = require("./lib/zjquery");
-const {page_params, user_settings} = require("./lib/zpage_params");
+const {current_user, page_params, user_settings} = require("./lib/zpage_params");
 
 set_global("document", "document-stub");
 
-page_params.is_admin = false;
+current_user.is_admin = false;
 page_params.realm_users = [];
 
 // We use this with override.
 let unread_unmuted_count;
 let stream_has_any_unread_mentions;
 
-mock_esm("../src/narrow_state", {
-    active: () => false,
-});
 const topic_list = mock_esm("../src/topic_list");
 const scroll_util = mock_esm("../src/scroll_util", {
     scroll_element_into_container() {},
@@ -162,9 +159,9 @@ test_ui("create_sidebar_row", ({override_rewire, mock_template}) => {
 
     assert.ok(topics_closed);
     const expected_elems = [
-        $pinned_subheader.html(), // separator
+        $pinned_subheader, // separator
         $devel_sidebar, // pinned
-        $active_subheader.html(), // separator
+        $active_subheader, // separator
         $social_sidebar, // not pinned
     ];
 
@@ -378,11 +375,11 @@ test_ui("zoom_in_and_zoom_out", ({mock_template}) => {
     };
     stream_list.initialize_stream_cursor();
 
-    mock_template("filter_topics.hbs", false, () => "filter-topics-stub");
+    mock_template("filter_topics.hbs", false, () => "<filter-topics-stub>");
     let filter_topics_appended = false;
     $stream_li1.children = () => ({
-        append(html) {
-            assert.equal(html, "filter-topics-stub");
+        append($element) {
+            assert.equal($element.selector, "<filter-topics-stub>");
             filter_topics_appended = true;
         },
     });
@@ -507,14 +504,14 @@ test_ui("sort_streams", ({override_rewire, mock_template}) => {
     const $active_subheader = $("<active-subheader-stub>");
     const $inactive_subheader = $("<inactive-subheader-stub>");
     const expected_elems = [
-        $pinned_subheader.html(),
+        $pinned_subheader,
         $("<devel-sidebar-row-stub>"),
         $("<Rome-sidebar-row-stub>"),
         $("<test-sidebar-row-stub>"),
-        $active_subheader.html(),
+        $active_subheader,
         $("<announce-sidebar-row-stub>"),
         $("<Denmark-sidebar-row-stub>"),
-        $inactive_subheader.html(),
+        $inactive_subheader,
         $("<cars-sidebar-row-stub>"),
     ];
 
@@ -594,10 +591,10 @@ test_ui("separators_only_pinned_and_dormant", ({override_rewire, mock_template})
     const $pinned_subheader = $("<pinned-subheader-stub>");
     const $inactive_subheader = $("<inactive-subheader-stub>");
     const expected_elems = [
-        $pinned_subheader.html(), // pinned
+        $pinned_subheader, // pinned
         $("<devel-sidebar-row-stub>"),
         $("<Rome-sidebar-row-stub>"),
-        $inactive_subheader.html(), // dormant
+        $inactive_subheader, // dormant
         $("<Denmark-sidebar-row-stub>"),
     ];
 

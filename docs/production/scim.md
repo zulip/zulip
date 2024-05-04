@@ -48,3 +48,23 @@ The Zulip server-side configuration is straightforward:
    Use the value `Bearer <secret token>` using the `bearer_token` you've generated
    earlier as the `API token` that the SCIM IdP will ask for when configuring
    authentication details.
+
+## Additional options
+
+- To enable the creation of guest accounts without automatically subscribing them to any initial streams,
+  add `"create_guests_without_streams": True` to your client's config dict in `SCIM_CONFIG`.
+  This option is particularly useful for organizations that prefer to manually invite new guest users
+  to the appropriate streams.
+
+  Example configuration with the additional option:
+
+  ```
+  SCIM_CONFIG = {
+     "subdomain": {
+        "bearer_token": "<secret token>",
+        "scim_client_name": "okta",
+        "name_formatted_included": False,
+        "create_guests_without_streams": True,
+     }
+  }
+  ```

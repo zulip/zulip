@@ -7,7 +7,7 @@ from typing import Any, Collection, Dict, Iterator, List, Optional, Set, Tuple
 
 from django.conf import settings
 from django.db import transaction
-from django.db.models import Exists, OuterRef
+from django.db.models import Exists, OuterRef, QuerySet
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
 from typing_extensions import TypeAlias
@@ -19,7 +19,7 @@ from zerver.lib.logging_util import log_to_file
 from zerver.lib.message import get_last_message_id
 from zerver.lib.queue import queue_json_publish
 from zerver.lib.send_email import FromAddress, send_future_email
-from zerver.lib.url_encoding import encode_stream
+from zerver.lib.url_encoding import stream_narrow_url
 from zerver.models import (
     Message,
     Realm,
@@ -87,7 +87,7 @@ class DigestTopic:
 
 
 # Changes to this should also be reflected in
-# zerver/worker/queue_processors.py:DigestWorker.consume()
+# zerver/worker/digest_emails.py:DigestWorker.consume()
 def queue_digest_user_ids(user_ids: List[int], cutoff: datetime) -> None:
     # Convert cutoff to epoch seconds for transit.
     event = {"user_ids": user_ids, "cutoff": cutoff.strftime("%s")}
@@ -255,18 +255,16 @@ def gather_new_streams(
     else:
         new_streams = [stream for stream in recently_created_streams if stream.is_web_public]
 
-    base_url = f"{realm.uri}/#narrow/stream/"
-
-    streams_html = []
-    streams_plain = []
+    channels_html = []
+    channels_plain = []
 
     for stream in new_streams:
-        narrow_url = base_url + encode_stream(stream.id, stream.name)
-        stream_link = f"<a href='{narrow_url}'>{stream.name}</a>"
-        streams_html.append(stream_link)
-        streams_plain.append(stream.name)
+        narrow_url = stream_narrow_url(realm, stream)
+        channel_link = f"<a href='{narrow_url}'>{stream.name}</a>"
+        channels_html.append(channel_link)
+        channels_plain.append(stream.name)
 
-    return len(new_streams), {"html": streams_html, "plain": streams_plain}
+    return len(new_streams), {"html": channels_html, "plain": channels_plain}
 
 
 def enough_traffic(hot_conversations: str, new_streams: int) -> bool:
@@ -331,7 +329,7 @@ def get_slim_stream_id_map(realm: Realm) -> Dict[int, Stream]:
 
 
 def bulk_get_digest_context(
-    users: Collection[UserProfile], cutoff: float
+    users: Collection[UserProfile] | QuerySet[UserProfile], cutoff: float
 ) -> Iterator[Tuple[UserProfile, Dict[str, Any]]]:
     # We expect a non-empty list of users all from the same realm.
     assert users
@@ -376,7 +374,7 @@ def bulk_get_digest_context(
             recently_created_streams=recently_created_streams,
             can_access_public=user.can_access_public_streams(),
         )
-        context["new_streams"] = new_streams
+        context["new_channels"] = new_streams
         context["new_streams_count"] = new_streams_count
 
         yield user, context

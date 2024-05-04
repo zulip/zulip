@@ -3,6 +3,7 @@
 Fetch contributors data from GitHub using their API, convert it to structured
 JSON data for the /team/ page contributors section.
 """
+
 import argparse
 import json
 import logging
@@ -106,15 +107,29 @@ def update_contributor_data_file() -> None:
     # the total count, including those that should *not* have tabs on the team
     # page (e.g. if they are deprecated).
     repo_names = [
+        "docker-zulip",
+        "errbot-backend-zulip",
+        "github-actions-zulip",
+        "hubot-zulip",
+        "puppet-zulip",
         "python-zulip-api",
+        "trello-to-zulip",
+        "swift-zulip-api",
+        "zulint",
         "zulip",
-        "zulip-android",
+        "zulip-android-legacy",
+        "zulip-architecture",
+        "zulip-archive",
+        "zulip-csharp",
         "zulip-desktop",
+        "zulip-desktop-legacy",
         "zulip-flutter",
         "zulip-ios-legacy",
         "zulip-js",
         "zulip-mobile",
+        "zulip-redmine-plugin",
         "zulip-terminal",
+        "zulip-zapier",
         "zulipbot",
     ]
 

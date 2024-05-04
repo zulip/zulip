@@ -61,7 +61,7 @@ export function visible_range(start_id: number, end_id: number): JQuery[] {
     let $row = message_lists.current.get_row(start_id);
     let msg_id = id($row);
 
-    while (msg_id !== undefined && msg_id <= end_id) {
+    while (msg_id <= end_id) {
         rows.push($row);
 
         if (msg_id >= end_id) {
@@ -78,10 +78,9 @@ export function is_overlay_row($row: JQuery): boolean {
     return $row.closest(".overlay-message-row").length >= 1;
 }
 
-export function id($message_row: JQuery): number | undefined {
+export function id($message_row: JQuery): number {
     if (is_overlay_row($message_row)) {
-        blueslip.error("Drafts and scheduled messages have no message id.");
-        return undefined;
+        throw new Error("Drafts and scheduled messages have no message id.");
     }
 
     if ($message_row.length !== 1) {
@@ -97,12 +96,11 @@ export function id($message_row: JQuery): number | undefined {
     return Number.parseFloat(message_id);
 }
 
-export function local_echo_id($message_row: JQuery): string | undefined {
+export function local_echo_id($message_row: JQuery): string {
     const message_id = $message_row.attr("data-message-id");
 
     if (message_id === undefined) {
-        blueslip.error("Calling code passed rows.local_id a row with no `data-message-id` attr.");
-        return undefined;
+        throw new Error("Calling code passed rows.local_id a row with no `data-message-id` attr.");
     }
 
     if (!message_id.includes(".0")) {
@@ -112,7 +110,7 @@ export function local_echo_id($message_row: JQuery): string | undefined {
     return message_id;
 }
 
-export function get_message_id(elem: string): number | undefined {
+export function get_message_id(elem: HTMLElement): number {
     // Gets the message_id for elem, where elem is a DOM
     // element inside a message.  This is typically used
     // in click handlers for things like the reaction button.
@@ -148,11 +146,8 @@ export function get_message_recipient_header($message_row: JQuery): JQuery {
     return $message_row.parent(".recipient_row").find(".message_header").expectOne();
 }
 
-export function recipient_from_group(message_group: string): Message | undefined {
-    const message_id = id($(message_group).children(".message_row").first().expectOne());
-    if (message_id === undefined) {
-        return undefined;
-    }
+export function recipient_from_group($message_group: JQuery): Message | undefined {
+    const message_id = id($message_group.children(".message_row").first().expectOne());
     return message_store.get(message_id);
 }
 
@@ -160,7 +155,7 @@ export function is_header_of_row_sticky($recipient_row: JQuery): boolean {
     return $recipient_row.find(".message_header").hasClass("sticky_header");
 }
 
-export function id_for_recipient_row($recipient_row: JQuery): number | undefined {
+export function id_for_recipient_row($recipient_row: JQuery): number {
     if (is_header_of_row_sticky($recipient_row)) {
         const msg_id = message_lists.current?.view.sticky_recipient_message_id;
         if (msg_id !== undefined) {

@@ -14,7 +14,16 @@ import * as unread_ui from "./unread_ui";
 let hide_scroll_to_bottom_timer;
 export function hide_scroll_to_bottom() {
     const $show_scroll_to_bottom_button = $("#scroll-to-bottom-button-container");
-    if (message_viewport.bottom_message_visible() || message_lists.current.visibly_empty()) {
+    if (message_lists.current === undefined) {
+        // Scroll to bottom button is not for non-message views.
+        $show_scroll_to_bottom_button.removeClass("show");
+        return;
+    }
+
+    if (
+        message_viewport.bottom_rendered_message_visible() ||
+        message_lists.current.visibly_empty()
+    ) {
         // If last message is visible, just hide the
         // scroll to bottom button.
         $show_scroll_to_bottom_button.removeClass("show");
@@ -34,7 +43,7 @@ export function hide_scroll_to_bottom() {
 }
 
 export function show_scroll_to_bottom_button() {
-    if (message_viewport.bottom_message_visible()) {
+    if (message_viewport.bottom_rendered_message_visible()) {
         // Only show scroll to bottom button when
         // last message is not visible in the
         // current scroll position.
@@ -57,12 +66,15 @@ $(document).on("keydown", (e) => {
 
 export function scroll_finished() {
     message_scroll_state.set_actively_scrolling(false);
-    message_lists.current.view.update_sticky_recipient_headers();
     hide_scroll_to_bottom();
 
-    if (!narrow_state.is_message_feed_visible()) {
+    if (message_lists.current === undefined) {
         return;
     }
+
+    // It's possible that we are in transit and message_lists.current is not defined.
+    // We still want the rest of the code to run but it's fine to skip this.
+    message_lists.current.view.update_sticky_recipient_headers();
 
     if (compose_banner.scroll_to_message_banner_message_id !== null) {
         const $message_row = message_lists.current.get_row(
@@ -79,13 +91,19 @@ export function scroll_finished() {
         message_scroll_state.set_update_selection_on_next_scroll(true);
     }
 
-    if (message_viewport.at_top()) {
+    if (message_viewport.at_rendered_top()) {
+        // Subtle note: While we've only checked that we're at the
+        // very top of the render window (i.e. there may be some more
+        // cached messages to render), it's a good idea to fetch
+        // additional message history even if we're not actually at
+        // the edge of what we already have from the server.
         message_fetch.maybe_load_older_messages({
             msg_list: message_lists.current,
         });
     }
 
-    if (message_viewport.at_bottom()) {
+    if (message_viewport.at_rendered_bottom()) {
+        // See the similar message_viewport.at_rendered_top block.
         message_fetch.maybe_load_newer_messages({
             msg_list: message_lists.current,
         });
@@ -117,6 +135,10 @@ export function initialize() {
     $(document).on(
         "scroll",
         _.throttle(() => {
+            if (message_lists.current === undefined) {
+                return;
+            }
+
             unread_ops.process_visible();
             message_lists.current.view.update_sticky_recipient_headers();
             scroll_finish();
@@ -152,6 +174,20 @@ export function initialize() {
                 message_lists.current === event.msg_list
             ) {
                 unread_ui.notify_messages_remain_unread();
+            }
+        }
+    });
+
+    const $show_scroll_to_bottom_button = $("#scroll-to-bottom-button-container").expectOne();
+    // Delete the tippy tooltip whenever the fadeout animation for
+    // this button is finished. This is necessary because the fading animation
+    // confuses Tippy's built-in `data-reference-hidden` feature.
+    $show_scroll_to_bottom_button.on("transitionend", (e) => {
+        if (e.originalEvent.propertyName === "visibility") {
+            const tooltip = $("#scroll-to-bottom-button-clickable-area")[0]._tippy;
+            // make sure the tooltip exists and the class is not currently showing
+            if (tooltip && !$show_scroll_to_bottom_button.hasClass("show")) {
+                tooltip.destroy();
             }
         }
     });

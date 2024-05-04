@@ -2,17 +2,70 @@
     --color-background-modal: hsl(0deg 0% 98%);
 }
 
-#dev-emails-container {
-    .header {
+#dev-email-log-container {
+    .dev-email-log-header {
         position: fixed;
+        font-family: sans-serif;
+        font-size: 14px;
     }
 
-    .config-options {
+    .dev-email-log-header,
+    .dev-forward-email-alert {
+        padding: 10px;
+        border: 1px solid hsl(190deg 65% 84%);
+        border-radius: 4px;
+        background-color: hsl(200deg 65% 91%);
+        color: hsl(200deg 50% 45%);
+    }
+
+    .dev-email-log-actions,
+    .dev-forward-email-alert {
+        & a {
+            color: hsl(200deg 50% 45%);
+
+            &:hover {
+                color: hsl(200deg 56% 33%);
+            }
+        }
+    }
+
+    .dev-email-log-actions {
+        padding-bottom: 5px;
+    }
+
+    .dev-email-log-text-only {
         text-align: right;
     }
 
-    .emails {
+    .dev-email-log-content {
         padding-top: 100px;
+        max-width: 1000px;
+
+        & h4 {
+            color: hsl(0deg 0% 20%);
+            margin: 2px 10px;
+        }
+
+        .email-text,
+        .email-html {
+            margin: 10px;
+        }
+
+        .email-text pre {
+            font-family: Monaco, Menlo, Consolas, "Courier New", monospace;
+            color: hsl(0deg 0% 20%);
+            display: block;
+            padding: 9.5px;
+            margin: 0 0 10px;
+            font-size: 13px;
+            line-height: 20px;
+            word-break: break-all;
+            word-wrap: break-word;
+            white-space: pre-wrap;
+            background-color: hsl(0deg 0% 96%);
+            border: 1px solid hsl(0deg 0% 75%);
+            border-radius: 4px;
+        }
     }
 
     #smtp_form_status,
@@ -23,10 +76,14 @@
     #forward_email_modal {
         .modal__content label {
             font-size: 1rem;
+            display: block;
+            margin-bottom: 5px;
+            cursor: pointer;
         }
 
-        #forward_address_sections {
-            margin-top: 20px;
+        #forward_address_sections,
+        .dev-forward-email-alert {
+            margin: 5px 0;
         }
 
         & label.radio {

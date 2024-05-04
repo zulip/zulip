@@ -19,8 +19,8 @@ One can install the Zulip development environment directly on a Linux
 host by following these instructions. Currently supported platforms
 are:
 
-- Ubuntu 20.04, 22.04
-- Debian 11, 12
+- Ubuntu 22.04, 24.04
+- Debian 12
 - CentOS 7 (beta)
 - Fedora 38 (beta)
 - RHEL 7 (beta)
@@ -66,7 +66,7 @@ ignoring the parts about `vagrant` (since you're not using it).
 ## Installing using Vagrant with VirtualBox on Windows 10
 
 :::{note}
-We recommend using [WSL 2 for Windows development](setup-recommended.md#windows-10-or-11)
+We recommend using [WSL 2 for Windows development](setup-recommended.md)
 because it is easier to set up and provides a substantially better experience.
 :::
 

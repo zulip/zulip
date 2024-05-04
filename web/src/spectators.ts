@@ -9,9 +9,10 @@ import $ from "jquery";
 
 import render_login_to_access_modal from "../templates/login_to_access.hbs";
 
+import {page_params} from "./base_page_params";
 import * as browser_history from "./browser_history";
 import * as modals from "./modals";
-import {page_params} from "./page_params";
+import {realm} from "./state_data";
 
 export function current_hash_as_next(): string {
     return `next=/${encodeURIComponent(window.location.hash)}`;
@@ -29,15 +30,17 @@ export function login_to_access(empty_narrow?: boolean): void {
     // Hide all overlays, popover and go back to the previous hash if the
     // hash has changed.
     const login_link = build_login_link();
-    const realm_name = page_params.realm_name;
+    const realm_name = realm.realm_name;
 
     $("body").append(
-        render_login_to_access_modal({
-            signup_link: "/register/",
-            login_link,
-            empty_narrow,
-            realm_name,
-        }),
+        $(
+            render_login_to_access_modal({
+                signup_link: "/register/",
+                login_link,
+                empty_narrow,
+                realm_name,
+            }),
+        ),
     );
 
     modals.open("login_to_access_modal", {

@@ -1,6 +1,5 @@
 import logging
 import re
-from email.errors import HeaderParseError
 from email.headerregistry import Address
 from typing import Any, Dict, List, Optional, Tuple
 
@@ -26,16 +25,18 @@ from zerver.actions.user_settings import do_change_password
 from zerver.lib.email_validation import (
     email_allowed_for_realm,
     email_reserved_for_system_bots_error,
+    validate_is_not_disposable,
 )
 from zerver.lib.exceptions import JsonableError, RateLimitedError
 from zerver.lib.i18n import get_language_list
-from zerver.lib.name_restrictions import is_disposable_domain, is_reserved_subdomain
+from zerver.lib.name_restrictions import is_reserved_subdomain
 from zerver.lib.rate_limiter import RateLimitedObject, rate_limit_request_by_ip
 from zerver.lib.send_email import FromAddress, send_email
 from zerver.lib.soft_deactivation import queue_soft_reactivation
 from zerver.lib.subdomains import get_subdomain, is_root_domain_available
 from zerver.lib.users import check_full_name
 from zerver.models import Realm, UserProfile
+from zerver.models.realm_audit_logs import RealmAuditLog
 from zerver.models.realms import (
     DisposableEmailError,
     DomainNotAllowedForRealmError,
@@ -100,7 +101,7 @@ def check_subdomain_available(subdomain: str, allow_reserved_subdomain: bool = F
         raise ValidationError(error_strings["unavailable"])
     if subdomain[0] == "-" or subdomain[-1] == "-":
         raise ValidationError(error_strings["extremal dash"])
-    if not re.match("^[a-z0-9-]*$", subdomain):
+    if not re.match(r"^[a-z0-9-]*$", subdomain):
         raise ValidationError(error_strings["bad character"])
     if len(subdomain) < 3:
         raise ValidationError(error_strings["too short"])
@@ -126,11 +127,8 @@ def email_not_system_bot(email: str) -> None:
 
 def email_is_not_disposable(email: str) -> None:
     try:
-        domain = Address(addr_spec=email).domain
-    except (HeaderParseError, ValueError):
-        raise ValidationError(_("Please use your real email address."))
-
-    if is_disposable_domain(domain):
+        validate_is_not_disposable(email)
+    except DisposableEmailError:
         raise ValidationError(_("Please use your real email address."))
 
 
@@ -143,6 +141,8 @@ class RealmDetailsForm(forms.Form):
     realm_name = forms.CharField(max_length=Realm.MAX_REALM_NAME_LENGTH)
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
+        # Since the superclass doesn't accept random extra kwargs, we
+        # remove it from the kwargs dict before initializing.
         self.realm_creation = kwargs["realm_creation"]
         del kwargs["realm_creation"]
 
@@ -183,6 +183,7 @@ class RegistrationForm(RealmDetailsForm):
         # Since the superclass doesn't except random extra kwargs, we
         # remove it from the kwargs dict before initializing.
         self.realm_creation = kwargs["realm_creation"]
+        self.realm = kwargs.pop("realm", None)
 
         super().__init__(*args, **kwargs)
         if settings.TERMS_OF_SERVICE_VERSION is not None:
@@ -199,10 +200,25 @@ class RegistrationForm(RealmDetailsForm):
             choices=[(lang["code"], lang["name"]) for lang in get_language_list()],
             required=self.realm_creation,
         )
+        self.fields["how_realm_creator_found_zulip"] = forms.ChoiceField(
+            choices=RealmAuditLog.HOW_REALM_CREATOR_FOUND_ZULIP_OPTIONS.items(),
+            required=self.realm_creation,
+        )
+        self.fields["how_realm_creator_found_zulip_other_text"] = forms.CharField(
+            max_length=100, required=False
+        )
+        self.fields["how_realm_creator_found_zulip_where_ad"] = forms.CharField(
+            max_length=100, required=False
+        )
+        self.fields["how_realm_creator_found_zulip_which_organization"] = forms.CharField(
+            max_length=100, required=False
+        )
 
     def clean_full_name(self) -> str:
         try:
-            return check_full_name(self.cleaned_data["full_name"])
+            return check_full_name(
+                full_name_raw=self.cleaned_data["full_name"], user_profile=None, realm=self.realm
+            )
         except JsonableError as e:
             raise ValidationError(e.msg)
 

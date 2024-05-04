@@ -2,6 +2,12 @@
     --color-background-modal: hsl(0deg 0% 98%);
 }
 
+[data-tippy-root] .tippy-box .tippy-content {
+    font-size: 14px;
+    font-weight: normal;
+    color: hsl(0deg 0% 100%);
+}
+
 body {
     background-color: hsl(0deg 0% 98%);
     font-family: "Source Sans 3 VF", sans-serif;
@@ -704,9 +710,8 @@ input#total:checked ~ #tab-total,
 input#server:checked ~ #tab-server,
 input#desktop:checked ~ #tab-desktop,
 input#mobile:checked ~ #tab-mobile,
-input#python-zulip-api:checked ~ #tab-python-zulip-api,
-input#zulip-js:checked ~ #tab-zulip-js,
-input#zulipbot:checked ~ #tab-zulipbot,
+input#api-clients:checked ~ #tab-api-clients,
+input#devtools:checked ~ #tab-devtools,
 input#terminal:checked ~ #tab-terminal {
     display: block;
 
@@ -993,6 +998,17 @@ input.new-organization-button {
     }
 }
 
+#config_error_page {
+    .pitch {
+        text-align: center;
+        width: 100%;
+    }
+
+    .white-box {
+        max-width: 600px;
+    }
+}
+
 .error_page {
     min-height: calc(100vh - 290px);
     height: 100%;
@@ -1048,6 +1064,25 @@ input.new-organization-button {
 .hourglass-img {
     width: initial !important;
     margin-bottom: 25px !important;
+}
+
+#skip-navigation {
+    background-color: hsl(170deg 47% 33%);
+    color: hsl(0deg 0% 100%);
+    border-radius: 4px;
+    display: inline-block;
+    font-weight: 600;
+    left: 330px;
+    outline: none;
+    padding: 5px 12px;
+    position: absolute;
+    top: -1000px;
+    z-index: 100;
+}
+
+#skip-navigation:focus-visible {
+    text-underline-offset: 2px;
+    top: 25px;
 }
 
 @media (width <= 800px) {
@@ -1122,6 +1157,14 @@ input.new-organization-button {
         &:not(.show) a.highlighted {
             background-color: transparent;
         }
+    }
+
+    #skip-navigation {
+        left: 80px;
+    }
+
+    #skip-navigation:focus-visible {
+        top: 30px;
     }
 }
 
@@ -1213,6 +1256,14 @@ input.new-organization-button {
     .header-main {
         max-width: 100vw;
         padding: 0 10px;
+    }
+
+    #skip-navigation {
+        left: 60px;
+    }
+
+    #skip-navigation:focus-visible {
+        top: 10px;
     }
 }
 

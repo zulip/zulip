@@ -92,7 +92,7 @@ contributors, and more than 75 with 100+ commits." %}
                     <label for="total"><i class="zulip-icon zulip-icon-globe" aria-hidden="true"></i>&nbsp; Total</label>
 
                     <input id="server" type="radio" name="tabs" />
-                    <label for="server"><i class="fa fa-server" aria-hidden="true"></i>&nbsp; Server</label>
+                    <label for="server"><i class="fa fa-server" aria-hidden="true"></i>&nbsp; Server & Web</label>
 
                     <input id="desktop" type="radio" name="tabs" />
                     <label for="desktop"><i class="fa fa-desktop" aria-hidden="true"></i>&nbsp; Desktop</label>
@@ -100,18 +100,14 @@ contributors, and more than 75 with 100+ commits." %}
                     <input id="mobile" type="radio" name="tabs" />
                     <label for="mobile"><i class="fa fa-mobile" aria-hidden="true"></i>&nbsp; Mobile</label>
 
-                    <input id="python-zulip-api" type="radio" name="tabs" />
-                    <label for="python-zulip-api"><i class="fa fa-code" aria-hidden="true"></i>&nbsp; Python API</label>
-
-                    <input id="zulip-js" type="radio" name="tabs" />
-                    <label for="zulip-js"><i class="fa fa-code" aria-hidden="true"></i>&nbsp; JS API</label>
-
-                    <input id="zulipbot" type="radio" name="tabs" />
-                    <label for="zulipbot"><i class="fa fa-at" aria-hidden="true"></i>&nbsp; Zulipbot</label>
-
                     <input id="terminal" type="radio" name="tabs" />
                     <label for="terminal"><i class="fa fa-terminal" aria-hidden="true"></i>&nbsp; Terminal</label>
 
+                    <input id="api-clients" type="radio" name="tabs" />
+                    <label for="api-clients"><i class="fa fa-code" aria-hidden="true"></i>&nbsp; Integrations</label>
+
+                    <input id="devtools" type="radio" name="tabs" />
+                    <label for="devtools"><i class="fa fa-at" aria-hidden="true"></i>&nbsp; Devtools</label>
                     <div id="tab-total" class="contributors">
                         <div class="contributors-grid"></div>
                     </div>
@@ -124,16 +120,13 @@ contributors, and more than 75 with 100+ commits." %}
                     <div id="tab-mobile" class="contributors">
                         <div class="contributors-grid"></div>
                     </div>
-                    <div id="tab-python-zulip-api" class="contributors">
-                        <div class="contributors-grid"></div>
-                    </div>
-                    <div id="tab-zulip-js" class="contributors">
-                        <div class="contributors-grid"></div>
-                    </div>
-                    <div id="tab-zulipbot" class="contributors">
-                        <div class="contributors-grid"></div>
-                    </div>
                     <div id="tab-terminal" class="contributors">
+                        <div class="contributors-grid"></div>
+                    </div>
+                    <div id="tab-api-clients" class="contributors">
+                        <div class="contributors-grid"></div>
+                    </div>
+                    <div id="tab-devtools" class="contributors">
                         <div class="contributors-grid"></div>
                     </div>
                 </div>
@@ -167,16 +160,18 @@ contributors, and more than 75 with 100+ commits." %}
 
                 <script type="text/template" id="count-template">
                     <p class="contributor-count">
-                        <%= contributor_count %> contributors to
-                        <a href="<%= repo_url %>" target="_blank" rel="noopener noreferrer">
-                            zulip/<%= repo_name %>
+                        <%= contributor_count %> contributors
+                        (<%= hundred_plus_contributor_count %> with 100+ commits) to
+                        <% repo_list.forEach(function(repo_name, index) { %>
+                        <a href="<%= repo_url_list[index] %>" target="_blank" rel="noopener noreferrer">
+                            zulip/<%= repo_name %><% if (index < repo_list.length - 1) { %>, <% } %>
                         </a>
-                        (<%= hundred_plus_contributor_count %> with 100+ commits)
+                            <% }); %>
                     </p>
                 </script>
 
                 <p class="last-updated">
-                    Last updated: {{ date }}
+                    Last updated: {{ date }}. <a href="https://zulip.readthedocs.io/en/latest/contributing/counting-contributions.html" target="_blank" rel="noopener noreferrer">Methodology</a>.
                 </p>
             </div>
         </div>

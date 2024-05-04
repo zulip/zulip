@@ -72,7 +72,9 @@ def do_bulk_backfill_extra_data(
         old_value = audit_log_entry.extra_data_json  # type: ignore[attr-defined] # The migration cannot depend on zerver.models, which contains the real type of the RealmAuditLog model, so it cannot be properly typed.
         new_value = ast.literal_eval(audit_log_entry.extra_data)  # type: ignore[attr-defined] # Explained above.
         if old_value not in ({}, new_value):
-            inconsistent_extra_data_json.append((audit_log_entry.id, audit_log_entry.extra_data, old_value, new_value))  # type: ignore[attr-defined] # Explained above.
+            inconsistent_extra_data_json.append(
+                (audit_log_entry.id, audit_log_entry.extra_data, old_value, new_value)  # type: ignore[attr-defined] # Explained above.
+            )
         audit_log_entry.extra_data_json = new_value  # type: ignore[attr-defined] # Explained above.
     audit_log_model._default_manager.bulk_update(
         python_valued_audit_log_entries, fields=["extra_data_json"]

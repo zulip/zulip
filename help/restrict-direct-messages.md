@@ -3,7 +3,7 @@
 {!admin-only.md!}
 
 In Zulip, users can exchange direct messages with other users,
-[bots](/help/bots-and-integrations) and themselves. Organization
+[bots](/help/bots-overview) and themselves. Organization
 administrators can configure who is allowed to use direct messages.
 
 ## Configure who can use direct messages
@@ -35,4 +35,4 @@ Zulip's new user onboarding experience). Consider also [restricting
 bot creation](/help/restrict-bot-creation) when using this feature.
 
 * Restricting direct messages does not automatically [restrict creating
-private streams](/help/configure-who-can-create-streams).
+private channels](/help/configure-who-can-create-channels).

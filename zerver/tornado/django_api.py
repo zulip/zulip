@@ -9,10 +9,10 @@ from django.conf import settings
 from django.db import transaction
 from requests.adapters import ConnectionError, HTTPAdapter
 from requests.models import PreparedRequest, Response
-from returns.curry import partial
 from typing_extensions import override
 from urllib3.util import Retry
 
+from zerver.lib.partial import partial
 from zerver.lib.queue import queue_json_publish
 from zerver.models import Client, Realm, UserProfile
 from zerver.tornado.sharding import (
@@ -155,9 +155,12 @@ def send_notification_http(port: int, data: Mapping[str, Any]) -> None:
 
         process_notification(data)
     else:
+        # This codepath is only used when running full-stack puppeteer
+        # tests, which don't have RabbitMQ but do have a separate
+        # Tornado process.
         tornado_url = get_tornado_url(port)
         requests_client().post(
-            tornado_url + "/notify_tornado",
+            tornado_url + "/api/internal/notify_tornado",
             data=dict(data=orjson.dumps(data), secret=settings.SHARED_SECRET),
         )
 

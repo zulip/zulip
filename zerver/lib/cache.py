@@ -26,7 +26,6 @@ from django.conf import settings
 from django.core.cache import caches
 from django.core.cache.backends.base import BaseCache
 from django.db.models import Q
-from django.http import HttpRequest
 from django_stubs_ext import QuerySetAny
 from typing_extensions import ParamSpec
 
@@ -431,8 +430,8 @@ def user_profile_cache_key(email: str, realm: "Realm") -> str:
     return user_profile_cache_key_id(email, realm.id)
 
 
-def user_profile_delivery_email_cache_key(delivery_email: str, realm: "Realm") -> str:
-    return f"user_profile_by_delivery_email:{hashlib.sha1(delivery_email.strip().encode()).hexdigest()}:{realm.id}"
+def user_profile_delivery_email_cache_key(delivery_email: str, realm_id: int) -> str:
+    return f"user_profile_by_delivery_email:{hashlib.sha1(delivery_email.strip().encode()).hexdigest()}:{realm_id}"
 
 
 def bot_profile_cache_key(email: str, realm_id: int) -> str:
@@ -486,6 +485,10 @@ def get_realm_used_upload_space_cache_key(realm_id: int) -> str:
     return f"realm_used_upload_space:{realm_id}"
 
 
+def get_realm_seat_count_cache_key(realm_id: int) -> str:
+    return f"realm_seat_count:{realm_id}"
+
+
 def active_user_ids_cache_key(realm_id: int) -> str:
     return f"active_user_ids:{realm_id}"
 
@@ -515,7 +518,7 @@ def bot_dicts_in_realm_cache_key(realm_id: int) -> str:
     return f"bot_dicts_in_realm:{realm_id}"
 
 
-def delete_user_profile_caches(user_profiles: Iterable["UserProfile"], realm: "Realm") -> None:
+def delete_user_profile_caches(user_profiles: Iterable["UserProfile"], realm_id: int) -> None:
     # Imported here to avoid cyclic dependency.
     from zerver.lib.users import get_all_api_keys
     from zerver.models.users import is_cross_realm_bot_email
@@ -524,11 +527,11 @@ def delete_user_profile_caches(user_profiles: Iterable["UserProfile"], realm: "R
     for user_profile in user_profiles:
         keys.append(user_profile_by_id_cache_key(user_profile.id))
         keys += map(user_profile_by_api_key_cache_key, get_all_api_keys(user_profile))
-        keys.append(user_profile_cache_key(user_profile.email, realm))
-        keys.append(user_profile_delivery_email_cache_key(user_profile.delivery_email, realm))
+        keys.append(user_profile_cache_key_id(user_profile.email, realm_id))
+        keys.append(user_profile_delivery_email_cache_key(user_profile.delivery_email, realm_id))
         if user_profile.is_bot and is_cross_realm_bot_email(user_profile.email):
             # Handle clearing system bots from their special cache.
-            keys.append(bot_profile_cache_key(user_profile.email, realm.id))
+            keys.append(bot_profile_cache_key(user_profile.email, realm_id))
             keys.append(get_cross_realm_dicts_key())
 
     cache_delete_many(keys)
@@ -563,7 +566,7 @@ def flush_user_profile(
     **kwargs: object,
 ) -> None:
     user_profile = instance
-    delete_user_profile_caches([user_profile], user_profile.realm)
+    delete_user_profile_caches([user_profile], user_profile.realm_id)
 
     # Invalidate our active_users_in_realm info dict if any user has changed
     # the fields in the dict or become (in)active
@@ -603,7 +606,7 @@ def flush_realm(
 ) -> None:
     realm = instance
     users = realm.get_active_users()
-    delete_user_profile_caches(users, realm)
+    delete_user_profile_caches(users, realm.id)
 
     if (
         from_deletion
@@ -651,9 +654,8 @@ def flush_stream(
 
     stream = instance
 
-    if (
-        update_fields is None
-        or "name" in update_fields
+    if update_fields is None or (
+        "name" in update_fields
         and UserProfile.objects.filter(
             Q(default_sending_stream=stream) | Q(default_events_register_stream=stream)
         ).exists()
@@ -681,10 +683,8 @@ def to_dict_cache_key(message: "Message", realm_id: Optional[int] = None) -> str
     return to_dict_cache_key_id(message.id)
 
 
-def open_graph_description_cache_key(content: bytes, request: HttpRequest) -> str:
-    return "open_graph_description_path:{}".format(
-        hashlib.sha1(request.META["PATH_INFO"].encode()).hexdigest()
-    )
+def open_graph_description_cache_key(content: bytes, request_url: str) -> str:
+    return f"open_graph_description_path:{hashlib.sha1(request_url.encode()).hexdigest()}"
 
 
 def flush_message(*, instance: "Message", **kwargs: object) -> None:
@@ -724,7 +724,8 @@ class IgnoreUnhashableLruCacheWrapper(Generic[ParamT, ReturnT]):
 
         try:
             return self.cached_function(
-                *args, **kwargs  # type: ignore[arg-type] # might be unhashable
+                *args,
+                **kwargs,  # type: ignore[arg-type] # might be unhashable
             )
         except TypeError:
             # args or kwargs contains an element which is unhashable. In
@@ -750,7 +751,7 @@ def ignore_unhashable_lru_cache(
     internal_decorator = lru_cache(maxsize=maxsize, typed=typed)
 
     def decorator(
-        user_function: Callable[ParamT, ReturnT]
+        user_function: Callable[ParamT, ReturnT],
     ) -> IgnoreUnhashableLruCacheWrapper[ParamT, ReturnT]:
         return IgnoreUnhashableLruCacheWrapper(user_function, internal_decorator(user_function))
 

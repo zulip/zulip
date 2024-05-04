@@ -41,20 +41,47 @@ When reporting your issue, please include the following information:
 
 ### Requirements
 
-Installing the Zulip development environment with Vagrant requires
-downloading several hundred megabytes of dependencies. You will need
-an active internet connection throughout the entire installation
-processes. (See [Specifying a proxy](#specifying-a-proxy) if you need
-a proxy to access the internet.)
+Installing the Zulip development environment requires downloading several
+hundred megabytes of dependencies. You will need an active internet
+connection throughout the entire installation processes. (See
+[Specifying a proxy](#specifying-a-proxy) if you need a proxy to access
+the internet.)
 
-- **All**: 2GB available RAM, Active broadband internet connection,
-  [GitHub account](#step-0-set-up-git--github).
-- **macOS**: macOS (10.11 El Capitan or newer recommended)
-- **Ubuntu LTS**: 20.04 or 22.04
-- **Debian**: 11 or 12
-- **Fedora**: tested for 36
-- **Windows**: Windows 64-bit (Windows 10 recommended), hardware
-  virtualization enabled (VT-x or AMD-V), administrator access.
+- 2GB available RAM
+- active broadband internet connection
+- [GitHub account](#step-0-set-up-git--github)
+
+::::{tab-set}
+
+:::{tab-item} Windows
+:sync: os-windows
+:name: windows-10-or-11
+
+- Windows 64-bit (Windows 10 recommended)
+- hardware virtualization enabled (VT-x or AMD-V)
+- administrator access
+  :::
+
+:::{tab-item} macOS
+:sync: os-mac
+
+- macOS (10.11 El Capitan or newer recommended)
+  :::
+
+:::{tab-item} Ubuntu/Debian
+:sync: os-ubuntu
+
+- Ubuntu 22.04, or 24.04
+- Debian 12
+  :::
+
+:::{tab-item} Fedora
+:sync: os-fedora
+
+- tested for Fedora 36
+  :::
+
+::::
 
 Other Linux distributions work great too, but we don't maintain
 documentation for installing Vagrant and Docker on those systems, so
@@ -69,99 +96,18 @@ Follow our [Git guide][set-up-git] in order to install Git, set up a
 GitHub account, create an SSH key to access code on GitHub
 efficiently, etc. Be sure to create an SSH key and add it to your
 GitHub account using
-[these instructions](https://help.github.com/en/articles/generating-an-ssh-key).
+[these instructions](https://docs.github.com/en/authentication/connecting-to-github-with-ssh).
 
 ### Step 1: Install prerequisites
 
-Jump to:
+::::{tab-set}
 
-- [macOS](#macos)
-- [Ubuntu](#ubuntu)
-- [Debian](#debian)
-- [Fedora](#fedora)
-- [Windows](#windows-10-or-11)
-
-#### macOS
-
-1. Install [Vagrant][vagrant-dl] (latest).
-2. Install [Docker Desktop](https://docs.docker.com/desktop/mac/install/) (latest).
-
-Now you are ready for [Step 2: Get Zulip code](#step-2-get-zulip-code).
-
-#### Ubuntu
-
-##### 1. Install Vagrant, Docker, and Git
-
-```console
-christie@ubuntu-desktop:~
-$ sudo apt install vagrant docker.io git
-```
-
-##### 2. Add yourself to the `docker` group:
-
-```console
-christie@ubuntu-desktop:~
-$ sudo adduser $USER docker
-Adding user `christie' to group `docker' ...
-Adding user christie to group docker
-Done.
-```
-
-You will need to reboot for this change to take effect. If it worked,
-you will see `docker` in your list of groups:
-
-```console
-christie@ubuntu-desktop:~
-$ groups | grep docker
-christie adm cdrom sudo dip plugdev lpadmin sambashare docker
-```
-
-##### 3. Make sure the Docker daemon is running:
-
-If you had previously installed and removed an older version of
-Docker, an [Ubuntu
-bug](https://bugs.launchpad.net/ubuntu/+source/docker.io/+bug/1844894)
-may prevent Docker from being automatically enabled and started after
-installation. You can check using the following:
-
-```console
-$ systemctl status docker
-● docker.service - Docker Application Container Engine
-   Loaded: loaded (/lib/systemd/system/docker.service; enabled; vendor preset: enabled)
-   Active: active (running) since Mon 2019-07-15 23:20:46 IST; 18min ago
-```
-
-If the service is not running, you'll see `Active: inactive (dead)` on
-the second line, and will need to enable and start the Docker service
-using the following:
-
-```bash
-sudo systemctl unmask docker
-sudo systemctl enable docker
-sudo systemctl start docker
-```
-
-Now you are ready for [Step 2: Get Zulip code](#step-2-get-zulip-code).
-
-#### Debian
-
-The setup for Debian is the same as that [for Ubuntu above](#ubuntu).
-
-#### Fedora
-
-The setup for Fedora is mostly equivalent to the [setup for Ubuntu](#ubuntu).
-The only difference is the installation of Docker. Fedora does not include the
-official `docker-ce` package (named `docker.io` in the
-[setup for Ubuntu](#ubuntu)) in their repositories. They provide the package
-`moby-engine` which you can choose instead. In case you prefer the official
-docker distribution, you can follow
-[their documentation to install Docker on Fedora](https://docs.docker.com/engine/install/fedora/).
-
-#### Windows 10 or 11
+:::{tab-item} Windows
+:sync: os-windows
 
 Zulip's development environment is most easily set up on Windows using
 the Windows Subsystem for Linux ([WSL
-2](https://docs.microsoft.com/en-us/windows/wsl/wsl2-about))
+2](https://learn.microsoft.com/en-us/windows/wsl/compare-versions))
 installation method described here. We require version 0.67.6+ of WSL 2.
 
 1. Enable virtualization through your BIOS settings. This sequence
@@ -171,95 +117,103 @@ installation method described here. We require version 0.67.6+ of WSL 2.
 1. [Install WSL 2](https://docs.microsoft.com/en-us/windows/wsl/setup/environment).
 
 1. It is required to enable `systemd` for WSL 2 to manage the database, cache and other services.
-   To configure it, please follow [this instruction](https://learn.microsoft.com/en-us/windows/wsl/wsl-config#systemd-support).
+   To configure it, please follow [these instructions](https://learn.microsoft.com/en-us/windows/wsl/wsl-config#systemd-support).
    Then, you will need to restart WSL 2 before continuing.
 
 1. Launch the Ubuntu shell as an administrator and run the following command:
 
-   ```bash
-   sudo apt update && sudo apt upgrade
+   ```console
+   $ sudo apt update && sudo apt upgrade
    ```
 
 1. Install dependencies with the following command:
 
-   ```bash
-   sudo apt install rabbitmq-server memcached redis-server postgresql
+   ```console
+   $ sudo apt install rabbitmq-server memcached redis-server postgresql
    ```
 
 1. Open `/etc/rabbitmq/rabbitmq-env.conf` using e.g.:
 
-   ```bash
-   sudo nano /etc/rabbitmq/rabbitmq-env.conf
+   ```console
+   $ sudo nano /etc/rabbitmq/rabbitmq-env.conf
    ```
 
    Confirm the following lines are at the end of your file, and add
-   them if not present. Then save your changes (`Ctrl+O`, then `Enter`
-   to confirm the path), and exit `nano` (`Ctrl+X`).
+   them if not present:
 
    ```ini
    NODE_IP_ADDRESS=127.0.0.1
    NODE_PORT=5672
    ```
 
+   Then save your changes (`Ctrl+O`, then `Enter` to confirm the path),
+   and exit `nano` (`Ctrl+X`).
+
 1. Run the command below to make sure you are inside the WSL disk and not
    in a Windows mounted disk. You will run into permission issues if you
-   run `provision` from `zulip` in a Windows mounted disk.
+   run `./tools/provision` from `zulip` in a Windows mounted disk.
 
-   ```bash
-   cd ~  # or cd /home/USERNAME
+   ```console
+   $ cd ~  # or cd /home/USERNAME
    ```
-
-1. [Create your fork](../git/cloning.md#step-1a-create-your-fork) of
-   the [Zulip server repository](https://github.com/zulip/zulip).
 
 1. [Create a new SSH key][create-ssh-key] for the WSL 2 virtual
    machine and add it to your GitHub account. Note that SSH keys
    linked to your Windows computer will not work within the virtual
    machine.
 
-1. Clone and connect to the Zulip upstream repository:
-
-   ```bash
-   git clone --config pull.rebase git@github.com:YOURUSERNAME/zulip.git ~/zulip
-   cd zulip
-   git remote add -f upstream https://github.com/zulip/zulip.git
-   ```
-
-1. Run the following to install the Zulip development environment and
-   start it. (If Windows Firewall creates popups to block services,
-   simply click **Allow access**.)
-
-   ```bash
-   # Install/update the Zulip development environment
-   ./tools/provision
-   # Enter the Zulip Python environment
-   source /srv/zulip-py3-venv/bin/activate
-   # Start the development server
-   ./tools/run-dev
-   ```
-
-1. If you are facing problems or you see error messages after running `./tools/run-dev`,
-   you can try running `./tools/provision` again.
-
-1. The [Visual Studio Code Remote -
-   WSL](https://code.visualstudio.com/docs/remote/wsl) extension is
-   recommended for editing files when developing with WSL. When you
-   have it installed, you can run:
-
-   ```bash
-   code .
-   ```
-
-   to open VS Code connected to your WSL environment.
-
-1. You're done! Now you're ready for [Step 4: Developing](#step-4-developing),
-   ignoring the parts about `vagrant` (since you're not using it).
-
 WSL 2 can be uninstalled by following [Microsoft's documentation][uninstall-wsl]
 
 [create-ssh-key]: https://docs.github.com/en/authentication/connecting-to-github-with-ssh/adding-a-new-ssh-key-to-your-github-account
-[uninstall-wsl]: https://docs.microsoft.com/en-us/windows/wsl/faq#how-do-i-uninstall-a-wsl-distribution-
+[uninstall-wsl]: https://learn.microsoft.com/en-us/windows/wsl/faq#how-do-i-uninstall-a-wsl-distribution-
 [windows-bios-virtualization]: https://www.thewindowsclub.com/disable-hardware-virtualization-in-windows-10
+
+:::
+
+:::{tab-item} macOS
+:sync: os-mac
+
+1. Install [Vagrant][vagrant-dl] (latest).
+2. Install [Docker Desktop](https://docs.docker.com/desktop/mac/install/) (latest).
+   :::
+
+:::{tab-item} Ubuntu/Debian
+:sync: os-ubuntu
+
+##### 1. Install Vagrant, Docker, and Git
+
+```console
+$ sudo apt install vagrant docker.io git
+```
+
+```{include} setup/install-docker.md
+
+```
+
+:::
+
+:::{tab-item} Fedora
+:sync: os-fedora
+
+##### 1. Install Vagrant, Docker, and Git
+
+```console
+$ sudo yum install vagrant git moby-engine
+```
+
+Fedora does not include the
+official `docker-ce` package in their repositories. They provide the package
+`moby-engine` which you can choose instead. In case you prefer the official
+docker distribution, you can follow
+[their documentation to install Docker on Fedora](https://docs.docker.com/engine/install/fedora/).
+
+```{include} setup/install-docker.md
+
+```
+
+:::
+
+::::
 
 ### Step 2: Get Zulip code
 
@@ -272,10 +226,10 @@ WSL 2 can be uninstalled by following [Microsoft's documentation][uninstall-wsl]
    [clone your fork of the Zulip repository](../git/cloning.md#step-1b-clone-to-your-machine) and
    [connect the Zulip upstream repository](../git/cloning.md#step-1c-connect-your-fork-to-zulip-upstream):
 
-```bash
-git clone --config pull.rebase git@github.com:YOURUSERNAME/zulip.git
-cd zulip
-git remote add -f upstream https://github.com/zulip/zulip.git
+```console
+$ git clone --config pull.rebase git@github.com:YOURUSERNAME/zulip.git
+$ cd zulip
+$ git remote add -f upstream https://github.com/zulip/zulip.git
 ```
 
 This will create a `zulip` directory and download the Zulip code into it.
@@ -295,134 +249,131 @@ Checking connectivity... done.
 Checking out files: 100% (1912/1912), done.
 ```
 
-Now you are ready for [Step 3: Start the development
-environment](#step-3-start-the-development-environment).
-
 ### Step 3: Start the development environment
+
+::::{tab-set}
+
+:::{tab-item} Windows (WSL)
+:sync: os-windows
+
+Run the following to install the Zulip development environment and
+start it. (If Windows Firewall creates popups to block services,
+simply click **Allow access**.)
+
+```console
+$ # Install/update the Zulip development environment
+$ ./tools/provision
+$ # Enter the Zulip Python environment
+$ source /srv/zulip-py3-venv/bin/activate
+$ # Start the development server
+$ ./tools/run-dev
+```
+
+If you are facing problems or you see error messages after running `./tools/run-dev`,
+you can try running `./tools/provision` again.
+:::
+
+:::{tab-item} Windows (VM)
+:sync: os-windows-vm
 
 Change into the zulip directory and tell Vagrant to start the Zulip
 development environment with `vagrant up`:
 
-```bash
-# On Windows:
-cd zulip
-vagrant plugin install vagrant-vbguest
-vagrant up --provider=virtualbox
-
-# On macOS or Linux:
-cd zulip
-vagrant up --provider=docker
+```console
+$ cd zulip
+$ vagrant plugin install vagrant-vbguest
+$ vagrant up --provider=virtualbox
 ```
 
-:::{warning}
-There is a [known upstream issue on macOS](https://chat.zulip.org/#narrow/stream/21-provision-help/topic/provision.20error.20ERR_PNPM_LINKING_FAILED/near/1649241)
-that can cause provisioning to fail with `ERR_PNPM_LINKING_FAILED` or other errors. The temporary
-fix is to open the Docker desktop app's settings panel, and choose `osxfs (legacy)` under "Choose
-file sharing implementation for your containers." Once Docker restarts, you should be able to
-successfully run `vagrant up --provider=docker`. Back in Docker, you can return to using VirtioFS
-for better system performance while developing, but you may need to revert to `osxfs (legacy)`
-whenever you need to re-provision.
-:::
+```{include} setup/vagrant-up.md
 
-The first time you run this command it will take some time because Vagrant
-does the following:
-
-- downloads the base Ubuntu 20.04 virtual machine image (for macOS and Windows)
-  or container (for Linux)
-- configures this virtual machine/container for use with Zulip,
-- creates a shared directory mapping your clone of the Zulip code inside the
-  virtual machine/container at `~/zulip`
-- runs the `tools/provision` script inside the virtual machine/container, which
-  downloads all required dependencies, sets up the python environment for
-  the Zulip development server, and initializes a default test
-  database. We call this process "provisioning", and it is documented
-  in some detail in our [dependencies documentation](../subsystems/dependencies.md).
-
-You will need an active internet connection during the entire
-process. (See [Specifying a proxy](#specifying-a-proxy) if you need a
-proxy to access the internet.) `vagrant up` can fail while
-provisioning if your Internet connection is unreliable. To retry, you
-can use `vagrant provision` (`vagrant up` will just boot the guest
-without provisioning after the first time). Other common issues are
-documented in the
-[Troubleshooting and common errors](#troubleshooting-and-common-errors)
-section. If that doesn't help, please visit
-[#provision help](https://chat.zulip.org/#narrow/stream/21-provision-help)
-in the [Zulip development community server](https://zulip.com/development-community/) for
-real-time help.
+```
 
 On Windows, you will see the message
 `The system cannot find the path specified.` several times. This is
 normal and is not a problem.
 
-Once `vagrant up` has completed, connect to the development
-environment with `vagrant ssh`:
+```{include} setup/vagrant-ssh.md
 
-```console
-christie@win10 ~/zulip
-$ vagrant ssh
 ```
 
-You should see output that starts like this:
+:::
+
+:::{tab-item} macOS
+:sync: os-mac
+
+Change into the zulip directory and tell Vagrant to start the Zulip
+development environment with `vagrant up`:
 
 ```console
-Welcome to Ubuntu 20.04.4 LTS (GNU/Linux 5.4.0-107-generic x86_64)
+$ cd zulip
+$ vagrant up --provider=docker
 ```
 
-Congrats, you're now inside the Zulip development environment!
+**Important note**: There is a [known upstream issue on
+macOS](https://chat.zulip.org/#narrow/stream/21-provision-help/topic/provision.20error.20ERR_PNPM_LINKING_FAILED/near/1649241)
+that can cause provisioning to fail with `ERR_PNPM_LINKING_FAILED` or
+other errors. The temporary fix is to open the Docker desktop app's
+settings panel, and choose `osxfs (legacy)` under "Choose file sharing
+implementation for your containers." Once Docker restarts, you should
+be able to successfully run `vagrant up --provider=docker`. Back in
+Docker, you can return to using VirtioFS for better system performance
+while developing, but you may need to revert to `osxfs (legacy)`
+whenever you need to re-provision.
 
-You can confirm this by looking at the command prompt, which starts
-with `(zulip-py3-venv)vagrant@`. If it just starts with `vagrant@`, your
-provisioning failed and you should look at the
-[troubleshooting section](#troubleshooting-and-common-errors).
+```{include} setup/vagrant-up.md
 
-Next, start the Zulip server:
+```
+
+```{include} setup/vagrant-ssh.md
+
+```
+
+:::
+
+:::{tab-item} Ubuntu/Debian
+:sync: os-ubuntu
+
+Change into the zulip directory and tell Vagrant to start the Zulip
+development environment with `vagrant up`:
 
 ```console
-(zulip-py3-venv) vagrant@vagrant:/srv/zulip
-$ ./tools/run-dev
+$ cd zulip
+$ vagrant up --provider=docker
 ```
 
-You will see something like:
+```{include} setup/vagrant-up.md
+
+```
+
+```{include} setup/vagrant-ssh.md
+
+```
+
+:::
+
+:::{tab-item} Fedora
+:sync: os-fedora
+
+Change into the zulip directory and tell Vagrant to start the Zulip
+development environment with `vagrant up`:
 
 ```console
-Starting Zulip on:
-
-        http://localhost:9991/
-
-Internal ports:
-   9991: Development server proxy (connect here)
-   9992: Django
-   9993: Tornado
-   9994: webpack
-
-Tornado server (re)started on port 9993
-
-2023-12-15 20:57:14.206 INFO [process_queue] 13 queue worker threads were launched
-frontend:
-  frontend (webpack 5.89.0) compiled successfully in 8054 ms
+$ cd zulip
+$ vagrant up --provider=docker
 ```
 
-Now the Zulip server should be running and accessible. Verify this by
-navigating to <http://localhost:9991/devlogin> in the browser on your main machine.
+```{include} setup/vagrant-up.md
 
-You should see something like this:
-
-![Image of Zulip devlogin](../images/zulip-devlogin.png)
-
-The Zulip server will continue to run and send output to the terminal window.
-When you navigate to Zulip in your browser, check your terminal and you
-should see something like:
-
-```console
-2016-05-04 18:21:57,547 INFO     127.0.0.1       GET     302 582ms (+start: 417ms) / (unauth@zulip via ?)
-[04/May/2016 18:21:57]"GET / HTTP/1.0" 302 0
-2016-05-04 18:21:57,568 INFO     127.0.0.1       GET     301   4ms /login (unauth@zulip via ?)
-[04/May/2016 18:21:57]"GET /login HTTP/1.0" 301 0
-2016-05-04 18:21:57,819 INFO     127.0.0.1       GET     200 209ms (db: 7ms/2q) /login/ (unauth@zulip via ?)
 ```
 
-Now you're ready for [Step 4: Developing](#step-4-developing).
+```{include} setup/vagrant-ssh.md
+
+```
+
+:::
+
+::::
 
 ### Step 4: Developing
 
@@ -445,6 +396,63 @@ run `tools/lint` often to make sure you're following our coding style
 (or use `tools/setup-git-repo` to run it on just the changed files
 automatically whenever you commit).
 
+#### VSCode setup (optional)
+
+::::{tab-set}
+
+:::{tab-item} Windows (WSL)
+:sync: os-windows
+
+The [Visual Studio Code Remote -
+WSL](https://code.visualstudio.com/docs/remote/wsl) extension is
+recommended for editing files when developing with WSL. When you
+have it installed, you can run:
+
+```console
+$ code .
+```
+
+to open VS Code connected to your WSL environment. See the [Remote development in WSL][remote-wsl] tutorial for more information.
+:::
+
+:::{tab-item} Windows (VM)
+:sync: os-windows-vm
+
+```{include} setup/vscode-vagrant.md
+
+```
+
+:::
+
+:::{tab-item} macOS
+:sync: os-mac
+
+```{include} setup/vscode-vagrant.md
+
+```
+
+:::
+
+:::{tab-item} Ubuntu/Debian
+:sync: os-ubuntu
+
+```{include} setup/vscode-vagrant.md
+
+```
+
+:::
+
+:::{tab-item} Fedora
+:sync: os-fedora
+
+```{include} setup/vscode-vagrant.md
+
+```
+
+:::
+
+::::
+
 #### Understanding run-dev debugging output
 
 It's good to have the terminal running `./tools/run-dev` up as you work since error
@@ -465,18 +473,22 @@ guide][rtd-git-guide].
 
 #### Maintaining the development environment
 
+::::{tab-set}
+
+:::{tab-item} Windows (WSL)
+:sync: os-windows
+
 If after rebasing onto a new version of the Zulip server, you receive
 new errors while starting the Zulip server or running tests, this is
 probably not because Zulip's `main` branch is broken. Instead, this
 is likely because we've recently merged changes to the development
 environment provisioning process that you need to apply to your
 development environment. To update your environment, you'll need to
-re-provision your Vagrant machine using `vagrant provision` (this just
-runs `tools/provision` from your Zulip checkout inside the Vagrant
-guest); this should complete in about a minute.
+re-provision using `tools/provision` from your Zulip checkout; this
+should complete in about a minute.
 
 After provisioning, you'll want to
-[(re)start the Zulip development server](#step-3-start-the-development-environment).
+[(re)start the Zulip development server](/development/setup-recommended.md#step-3-start-the-development-environment).
 
 If you run into any trouble, [#provision
 help](https://chat.zulip.org/#narrow/stream/21-provision-help) in the
@@ -484,80 +496,197 @@ help](https://chat.zulip.org/#narrow/stream/21-provision-help) in the
 server](https://zulip.com/development-community/) is a great place to ask for
 help.
 
+:::
+
+:::{tab-item} Windows (VM)
+:sync: os-windows-vm
+
+```{include} setup/vagrant-update.md
+
+```
+
+:::
+
+:::{tab-item} macOS
+:sync: os-mac
+
+```{include} setup/vagrant-update.md
+
+```
+
+:::
+
+:::{tab-item} Ubuntu/Debian
+:sync: os-ubuntu
+
+```{include} setup/vagrant-update.md
+
+```
+
+:::
+
+:::{tab-item} Fedora
+:sync: os-fedora
+
+```{include} setup/vagrant-update.md
+
+```
+
+:::
+
+::::
+
 #### Rebuilding the development environment
 
-If you ever want to recreate your development environment again from
-scratch (e.g. to test a change you've made to the provisioning
-process, or because you think something is broken), you can do so
-using `vagrant destroy` and then `vagrant up`. This will usually be
-much faster than the original `vagrant up` since the base image is
-already cached on your machine (it takes about 5 minutes to run with a
-fast Internet connection).
+::::{tab-set}
 
-Any additional programs (e.g. Zsh, emacs, etc.) or configuration that
-you may have installed in the development environment will be lost
-when you recreate it. To address this, you can create a script called
-`tools/custom_provision` in your Zulip Git checkout; and place any
-extra setup commands there. Vagrant will run `tools/custom_provision`
-every time you run `vagrant provision` (or create a Vagrant guest via
-`vagrant up`).
+:::{tab-item} Windows (WSL)
+:sync: os-windows
+
+```{include} setup/vagrant-rebuild.md
+
+```
+
+:::
+
+:::{tab-item} Windows (VM)
+:sync: os-windows-vm
+
+```{include} setup/vagrant-rebuild.md
+
+```
+
+:::
+
+:::{tab-item} macOS
+:sync: os-mac
+
+```{include} setup/vagrant-rebuild.md
+
+```
+
+:::
+
+:::{tab-item} Ubuntu/Debian
+:sync: os-ubuntu
+
+```{include} setup/vagrant-rebuild.md
+
+```
+
+:::
+
+:::{tab-item} Fedora
+:sync: os-fedora
+
+```{include} setup/vagrant-rebuild.md
+
+```
+
+:::
+
+::::
 
 #### Shutting down the development environment for use later
 
-To shut down but preserve the development environment so you can use
-it again later use `vagrant halt` or `vagrant suspend`.
+::::{tab-set}
 
-You can do this from the same Terminal/Git BASH window that is running
-run-dev by pressing ^C to halt the server and then typing `exit`. Or you
-can halt Vagrant from another Terminal/Git BASH window.
+:::{tab-item} Windows (WSL)
+:sync: os-windows
 
-From the window where run-dev is running:
+On Windows with WSL 2, you do not need to shut down the environment. Simply
+close your terminal window(s).
+:::
 
-```console
-2016-05-04 18:33:13,330 INFO     127.0.0.1       GET     200  92ms /register/ (unauth@zulip via ?)
-^C
-KeyboardInterrupt
-(zulip-py3-venv) vagrant@vagrant:/srv/zulip$ exit
-logout
-Connection to 127.0.0.1 closed.
-christie@win10 ~/zulip
+:::{tab-item} Windows (VM)
+:sync: os-windows-vm
+
+```{include} setup/vagrant-halt.md
+
 ```
 
-Now you can suspend the development environment:
+:::
 
-```console
-christie@win10 ~/zulip
-$ vagrant suspend
-==> default: Saving VM state and suspending execution...
+:::{tab-item} macOS
+:sync: os-mac
+
+```{include} setup/vagrant-halt.md
+
 ```
 
-If `vagrant suspend` doesn't work, try `vagrant halt`:
+:::
 
-```console
-christie@win10 ~/zulip
-$ vagrant halt
-==> default: Attempting graceful shutdown of VM...
+:::{tab-item} Ubuntu/Debian
+:sync: os-ubuntu
+
+```{include} setup/vagrant-halt.md
+
 ```
 
-Check out the Vagrant documentation to learn more about
-[suspend](https://www.vagrantup.com/docs/cli/suspend.html) and
-[halt](https://www.vagrantup.com/docs/cli/halt.html).
+:::
+
+:::{tab-item} Fedora
+:sync: os-fedora
+
+```{include} setup/vagrant-halt.md
+
+```
+
+:::
+
+::::
 
 #### Resuming the development environment
 
-When you're ready to work on Zulip again, run `vagrant up` (no need to
-pass the `--provider` option required above). You will also need to
-connect to the virtual machine with `vagrant ssh` and re-start the
-Zulip server:
+::::{tab-set}
 
-```console
-christie@win10 ~/zulip
-$ vagrant up
-$ vagrant ssh
+:::{tab-item} Windows (WSL)
+:sync: os-windows
 
-(zulip-py3-venv) vagrant@vagrant:/srv/zulip
-$ ./tools/run-dev
+On Windows with WSL 2, to resume developing you just need to open a new Git
+BASH window. Then change into your `zulip` folder and verify the Python
+environment was properly activated (you will see `(zulip-py3-venv)`). If the
+`(zulip-py3-venv)` part is missing, run
+`source /srv/zulip-py3-venv/bin/activate`.
+:::
+
+:::{tab-item} Windows (VM)
+:sync: os-windows-vm
+
+```{include} setup/vagrant-resume.md
+
 ```
+
+:::
+
+:::{tab-item} macOS
+:sync: os-mac
+
+```{include} setup/vagrant-resume.md
+
+```
+
+:::
+
+:::{tab-item} Ubuntu/Debian
+:sync: os-ubuntu
+
+```{include} setup/vagrant-resume.md
+
+```
+
+:::
+
+:::{tab-item} Fedora
+:sync: os-fedora
+
+```{include} setup/vagrant-resume.md
+
+```
+
+:::
+
+::::
 
 ### Next steps
 
@@ -634,9 +763,9 @@ was:
 
 If this error starts happening unexpectedly, then just run:
 
-```bash
-vagrant halt
-vagrant up
+```console
+$ vagrant halt
+$ vagrant up
 ```
 
 to reboot the guest. After this, you can do `vagrant provision` and
@@ -665,8 +794,8 @@ When running `vagrant up` or `provision`, if you see the following error:
 It means that your local apt repository has been corrupted, which can
 usually be resolved by executing the command:
 
-```bash
-apt-get -f install
+```console
+$ apt-get -f install
 ```
 
 #### ssh connection closed by remote host
@@ -729,11 +858,9 @@ then print out the custom settings for this virtual machine with
 `vboxmanage getextradata YOURVMNAME enumerate`:
 
 ```console
-christie@win10 ~/zulip
 $ vboxmanage list vms
 "zulip_default_1462498139595_55484" {5a65199d-8afa-4265-b2f6-6b1f162f157d}
 
-christie@win10 ~/zulip
 $ vboxmanage getextradata zulip_default_1462498139595_55484 enumerate
 Key: VBoxInternal2/SharedFoldersEnableSymlinksCreate/srv_zulip, Value: 1
 Key: supported, Value: false
@@ -747,8 +874,8 @@ If `vboxmanage enumerate` prints nothing, or shows a value of 0 for
 VBoxInternal2/SharedFoldersEnableSymlinksCreate/srv_zulip, then enable
 symbolic links by running this command in Terminal/Git BASH/Cygwin:
 
-```bash
-vboxmanage setextradata YOURVMNAME VBoxInternal2/SharedFoldersEnableSymlinksCreate/srv_zulip 1
+```console
+$ vboxmanage setextradata YOURVMNAME VBoxInternal2/SharedFoldersEnableSymlinksCreate/srv_zulip 1
 ```
 
 The virtual machine needs to be shut down when you run this command.
@@ -762,7 +889,6 @@ Virtualbox as the virtualization provider. You can fix this by
 explicitly passing the virtualbox provider to `vagrant up`:
 
 ```console
-christie@win10 ~/zulip
 $ vagrant up --provide=virtualbox
 ```
 
@@ -843,7 +969,7 @@ Once you've provisioned successfully, you'll get output like this:
 
 ```console
 Zulip development environment setup succeeded!
-(zulip-py3-venv) vagrant@vagrant-base-trusty-amd64:~/zulip$
+(zulip-py3-venv) vagrant@vagrant:/srv/zulip$
 ```
 
 If the `(zulip-py3-venv)` part is missing, this is because your
@@ -912,8 +1038,8 @@ the VirtualBox Guest Additions for Linux on Windows hosts. You can
 check the running version of VirtualBox Guest Additions with this
 command:
 
-```bash
-vagrant ssh -- 'sudo modinfo -F version vboxsf'
+```console
+$ vagrant ssh -- 'sudo modinfo -F version vboxsf'
 ```
 
 The bug has not been fixed upstream as of this writing, but you may be
@@ -927,10 +1053,10 @@ VBOXADD_VERSION 5.2.44
 
 Then run these commands (yes, reload is needed twice):
 
-```bash
-vagrant plugin install vagrant-vbguest
-vagrant reload
-vagrant reload --provision
+```console
+$ vagrant plugin install vagrant-vbguest
+$ vagrant reload
+$ vagrant reload --provision
 ```
 
 ### Specifying an Ubuntu mirror
@@ -953,8 +1079,8 @@ If you need to use a proxy server to access the Internet, you will
 need to specify the proxy settings before running `vagrant up`.
 First, install the Vagrant plugin `vagrant-proxyconf`:
 
-```bash
-vagrant plugin install vagrant-proxyconf
+```console
+$ vagrant plugin install vagrant-proxyconf
 ```
 
 Then create `~/.zulip-vagrant-config` and add the following lines to
@@ -1055,6 +1181,8 @@ remove the `GUEST_CPUS` and `GUEST_MEMORY_MB` lines from
 
 [vagrant-dl]: https://www.vagrantup.com/downloads.html
 [install-advanced]: setup-advanced.md
+[remote-wsl]: https://code.visualstudio.com/docs/remote/wsl-tutorial
+[remote-ssh]: https://code.visualstudio.com/docs/remote/ssh-tutorial
 [rtd-git-guide]: ../git/index.md
 [rtd-testing]: ../testing/testing.md
 [rtd-using-dev-env]: using.md

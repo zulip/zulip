@@ -75,6 +75,9 @@ from zerver.models.users import get_user, get_user_by_delivery_email, get_user_p
 from zilencer.models import RemoteRealm, RemoteZulipServer, RemoteZulipServerAuditLog
 from zilencer.views import update_remote_realm_data_for_server
 
+# Disable the push notifications bouncer to avoid enqueuing updates in
+# maybe_enqueue_audit_log_upload during early setup.
+settings.PUSH_NOTIFICATION_BOUNCER_URL = None
 settings.USING_TORNADO = False
 # Disable using memcached caches to avoid 'unsupported pickle
 # protocol' errors if `populate_db` is run with a different Python
@@ -339,10 +342,10 @@ class Command(BaseCommand):
                 enable_spectator_access=True,
             )
             RealmDomain.objects.create(realm=zulip_realm, domain="zulip.com")
-            assert zulip_realm.notifications_stream is not None
-            zulip_realm.notifications_stream.name = "Verona"
-            zulip_realm.notifications_stream.description = "A city in Italy"
-            zulip_realm.notifications_stream.save(update_fields=["name", "description"])
+            assert zulip_realm.new_stream_announcements_stream is not None
+            zulip_realm.new_stream_announcements_stream.name = "Verona"
+            zulip_realm.new_stream_announcements_stream.description = "A city in Italy"
+            zulip_realm.new_stream_announcements_stream.save(update_fields=["name", "description"])
 
             realm_user_default = RealmUserDefault.objects.get(realm=zulip_realm)
             realm_user_default.enter_sends = True
@@ -966,7 +969,9 @@ class Command(BaseCommand):
                 zulip_stream_dict: Dict[str, Dict[str, Any]] = {
                     "devel": {"description": "For developing"},
                     # ビデオゲーム - VideoGames (japanese)
-                    "ビデオゲーム": {"description": f"Share your favorite video games!  {raw_emojis[2]}"},
+                    "ビデオゲーム": {
+                        "description": f"Share your favorite video games!  {raw_emojis[2]}"
+                    },
                     "announce": {
                         "description": "For announcements",
                         "stream_post_policy": Stream.STREAM_POST_POLICY_ADMINS,
@@ -977,8 +982,9 @@ class Command(BaseCommand):
                     "test": {"description": "For testing `code`"},
                     "errors": {"description": "For errors"},
                     # 조리법 - Recipes (Korean), Пельмени - Dumplings (Russian)
-                    "조리법 "
-                    + raw_emojis[0]: {"description": "Everything cooking, from pasta to Пельмени"},
+                    "조리법 " + raw_emojis[0]: {
+                        "description": "Everything cooking, from pasta to Пельмени"
+                    },
                 }
 
                 extra_stream_names = [
@@ -1025,9 +1031,17 @@ class Command(BaseCommand):
                     }
 
                 bulk_create_streams(zulip_realm, zulip_stream_dict)
-                # Now that we've created the notifications stream, configure it properly.
-                zulip_realm.notifications_stream = get_stream("announce", zulip_realm)
-                zulip_realm.save(update_fields=["notifications_stream"])
+                # Now that we've created the new_stream_announcements_stream, configure it properly.
+                # By default, 'New stream' & 'Zulip update' announcements are sent to the same stream.
+                announce_stream = get_stream("announce", zulip_realm)
+                zulip_realm.new_stream_announcements_stream = announce_stream
+                zulip_realm.zulip_update_announcements_stream = announce_stream
+                zulip_realm.save(
+                    update_fields=[
+                        "new_stream_announcements_stream",
+                        "zulip_update_announcements_stream",
+                    ]
+                )
 
                 # Add a few default streams
                 for default_stream_name in ["design", "devel", "social", "support"]:
@@ -1112,7 +1126,7 @@ def get_recipient_by_id(rid: int) -> Recipient:
 # - multiple messages per subject
 # - both single and multi-line content
 def generate_and_send_messages(
-    data: Tuple[int, Sequence[Sequence[int]], Mapping[str, Any], int]
+    data: Tuple[int, Sequence[Sequence[int]], Mapping[str, Any], int],
 ) -> int:
     realm = get_realm("zulip")
     (tot_messages, personals_pairs, options, random_seed) = data
@@ -1133,7 +1147,9 @@ def generate_and_send_messages(
         recipient.id
         for recipient in Recipient.objects.filter(type=Recipient.STREAM, type_id__in=stream_ids)
     ]
-    recipient_huddles: List[int] = [h.id for h in Recipient.objects.filter(type=Recipient.HUDDLE)]
+    recipient_huddles: List[int] = [
+        h.id for h in Recipient.objects.filter(type=Recipient.DIRECT_MESSAGE_GROUP)
+    ]
 
     huddle_members: Dict[int, List[int]] = {}
     for h in recipient_huddles:
@@ -1178,10 +1194,10 @@ def generate_and_send_messages(
             elif message_type == Recipient.STREAM:
                 message.subject = saved_data["subject"]
                 message.recipient = get_recipient_by_id(recipient_id)
-            elif message_type == Recipient.HUDDLE:
+            elif message_type == Recipient.DIRECT_MESSAGE_GROUP:
                 message.recipient = get_recipient_by_id(recipient_id)
         elif randkey <= random_max * options["percent_huddles"] / 100.0:
-            message_type = Recipient.HUDDLE
+            message_type = Recipient.DIRECT_MESSAGE_GROUP
             message.recipient = get_recipient_by_id(random.choice(recipient_huddles))
         elif (
             randkey
@@ -1194,7 +1210,7 @@ def generate_and_send_messages(
             message_type = Recipient.STREAM
             message.recipient = get_recipient_by_id(random.choice(recipient_streams))
 
-        if message_type == Recipient.HUDDLE:
+        if message_type == Recipient.DIRECT_MESSAGE_GROUP:
             sender_id = random.choice(huddle_members[message.recipient.id])
             message.sender = get_user_profile_by_id(sender_id)
         elif message_type == Recipient.PERSONAL:

@@ -22,6 +22,7 @@ from zerver.lib.user_groups import (
     create_system_user_groups_for_realm,
     get_role_based_system_groups_dict,
 )
+from zerver.lib.zulip_update_announcements import get_latest_zulip_update_announcements_level
 from zerver.models import (
     DefaultStream,
     PreregistrationRealm,
@@ -34,7 +35,7 @@ from zerver.models import (
 )
 from zerver.models.realms import get_org_type_display_name, get_realm
 from zerver.models.users import get_system_bot
-from zproject.backends import all_implemented_backend_names
+from zproject.backends import all_default_backend_names
 
 if settings.CORPORATE_ENABLED:
     from corporate.lib.support import get_realm_support_url
@@ -125,7 +126,7 @@ def set_default_for_realm_permission_group_settings(realm: Realm) -> None:
 
     for setting_name, permission_configuration in Realm.REALM_PERMISSION_GROUP_SETTINGS.items():
         group_name = permission_configuration.default_group_name
-        setattr(realm, setting_name, system_groups_dict[group_name])
+        setattr(realm, setting_name, system_groups_dict[group_name].usergroup_ptr)
 
     realm.save(update_fields=list(Realm.REALM_PERMISSION_GROUP_SETTINGS.keys()))
 
@@ -166,6 +167,8 @@ def do_create_realm(
     enable_read_receipts: Optional[bool] = None,
     enable_spectator_access: Optional[bool] = None,
     prereg_realm: Optional[PreregistrationRealm] = None,
+    how_realm_creator_found_zulip: Optional[str] = None,
+    how_realm_creator_found_zulip_extra_context: Optional[str] = None,
 ) -> Realm:
     if string_id in [settings.SOCIAL_AUTH_SUBDOMAIN, settings.SELF_HOSTING_MANAGEMENT_SUBDOMAIN]:
         raise AssertionError(
@@ -242,6 +245,10 @@ def do_create_realm(
             realm=realm,
             event_type=RealmAuditLog.REALM_CREATED,
             event_time=realm.date_created,
+            extra_data={
+                "how_realm_creator_found_zulip": how_realm_creator_found_zulip,
+                "how_realm_creator_found_zulip_extra_context": how_realm_creator_found_zulip_extra_context,
+            },
         )
 
         realm_default_email_address_visibility = RealmUserDefault.EMAIL_ADDRESS_VISIBILITY_EVERYONE
@@ -261,39 +268,51 @@ def do_create_realm(
         create_system_user_groups_for_realm(realm)
         set_default_for_realm_permission_group_settings(realm)
 
-        # We create realms with all authentications methods enabled by default.
         RealmAuthenticationMethod.objects.bulk_create(
             [
                 RealmAuthenticationMethod(name=backend_name, realm=realm)
-                for backend_name in all_implemented_backend_names()
+                for backend_name in all_default_backend_names()
             ]
         )
 
         maybe_enqueue_audit_log_upload(realm)
 
     # Create stream once Realm object has been saved
-    notifications_stream = ensure_stream(
+    new_stream_announcements_stream = ensure_stream(
         realm,
         Realm.DEFAULT_NOTIFICATION_STREAM_NAME,
         stream_description="Everyone is added to this stream by default. Welcome! :octopus:",
         acting_user=None,
     )
-    realm.notifications_stream = notifications_stream
+    # By default, 'New stream' & 'Zulip update' announcements are sent to the same stream.
+    realm.new_stream_announcements_stream = new_stream_announcements_stream
+    realm.zulip_update_announcements_stream = new_stream_announcements_stream
 
     # With the current initial streams situation, the only public
-    # stream is the notifications_stream.
-    DefaultStream.objects.create(stream=notifications_stream, realm=realm)
+    # stream is the new_stream_announcements_stream.
+    DefaultStream.objects.create(stream=new_stream_announcements_stream, realm=realm)
 
-    signup_notifications_stream = ensure_stream(
+    signup_announcements_stream = ensure_stream(
         realm,
         Realm.INITIAL_PRIVATE_STREAM_NAME,
         invite_only=True,
         stream_description="A private stream for core team members.",
         acting_user=None,
     )
-    realm.signup_notifications_stream = signup_notifications_stream
+    realm.signup_announcements_stream = signup_announcements_stream
 
-    realm.save(update_fields=["notifications_stream", "signup_notifications_stream"])
+    # New realm is initialized with the latest zulip update announcements
+    # level as it shouldn't receive a bunch of old updates.
+    realm.zulip_update_announcements_level = get_latest_zulip_update_announcements_level()
+
+    realm.save(
+        update_fields=[
+            "new_stream_announcements_stream",
+            "signup_announcements_stream",
+            "zulip_update_announcements_stream",
+            "zulip_update_announcements_level",
+        ]
+    )
 
     if plan_type is None and settings.BILLING_ENABLED:
         # We use acting_user=None for setting the initial plan type.
@@ -312,13 +331,7 @@ def do_create_realm(
         support_url = get_realm_support_url(realm)
         organization_type = get_org_type_display_name(realm.org_type)
 
-        message = "[{name}]({support_link}) ([{subdomain}]({realm_link})). Organization type: {type}".format(
-            name=realm.name,
-            subdomain=realm.display_subdomain,
-            realm_link=realm.uri,
-            support_link=support_url,
-            type=organization_type,
-        )
+        message = f"[{realm.name}]({support_url}) ([{realm.display_subdomain}]({realm.uri})). Organization type: {organization_type}"
         topic_name = "new organizations"
 
         try:

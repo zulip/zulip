@@ -55,8 +55,6 @@ def render_stats(
     realm: Optional[Realm],
     *,
     title: Optional[str] = None,
-    for_installation: bool = False,
-    remote: bool = False,
     analytics_ready: bool = True,
 ) -> HttpResponse:
     assert request.user.is_authenticated
@@ -76,21 +74,20 @@ def render_stats(
         guest_users = None
         space_used = None
 
-    page_params = dict(
-        data_url_suffix=data_url_suffix,
-        for_installation=for_installation,
-        remote=remote,
-        upload_space_used=space_used,
-        guest_users=guest_users,
-    )
-
     request_language = get_and_set_request_language(
         request,
         request.user.default_language,
         translation.get_language_from_path(request.path_info),
     )
 
-    page_params["translation_data"] = get_language_translation_data(request_language)
+    # Sync this with stats_params_schema in base_page_params.ts.
+    page_params = dict(
+        page_type="stats",
+        data_url_suffix=data_url_suffix,
+        upload_space_used=space_used,
+        guest_users=guest_users,
+        translation_data=get_language_translation_data(request_language),
+    )
 
     return render(
         request,
@@ -198,7 +195,7 @@ def get_chart_data_for_remote_realm(
 @require_server_admin
 def stats_for_installation(request: HttpRequest) -> HttpResponse:
     assert request.user.is_authenticated
-    return render_stats(request, "/installation", None, title="installation", for_installation=True)
+    return render_stats(request, "/installation", None, title="installation")
 
 
 @require_server_admin
@@ -210,8 +207,6 @@ def stats_for_remote_installation(request: HttpRequest, remote_server_id: int) -
         f"/remote/{server.id}/installation",
         None,
         title=f"remote installation {server.hostname}",
-        for_installation=True,
-        remote=True,
     )
 
 
@@ -315,8 +310,8 @@ def get_chart_data(
         tables = (aggregate_table, UserCount)
         subgroup_to_label = {
             stats[0]: {
-                "public_stream": _("Public streams"),
-                "private_stream": _("Private streams"),
+                "public_stream": _("Public channels"),
+                "private_stream": _("Private channels"),
                 "private_message": _("Direct messages"),
                 "huddle_message": _("Group direct messages"),
             }
@@ -341,7 +336,7 @@ def get_chart_data(
     elif chart_name == "messages_sent_by_stream":
         if stream is None:
             raise JsonableError(
-                _("Missing stream for chart: {chart_name}").format(chart_name=chart_name)
+                _("Missing channel for chart: {chart_name}").format(chart_name=chart_name)
             )
         stats = [COUNT_STATS["messages_in_stream:is_bot:day"]]
         tables = (aggregate_table, StreamCount)
@@ -384,11 +379,13 @@ def get_chart_data(
                 _("No analytics data available. Please contact your server administrator.")
             )
         if start is None:
-            first = aggregate_table_remote.objects.filter(server=server).first()
+            first = (
+                aggregate_table_remote.objects.filter(server=server).order_by("remote_id").first()
+            )
             assert first is not None
             start = first.end_time
         if end is None:
-            last = aggregate_table_remote.objects.filter(server=server).last()
+            last = aggregate_table_remote.objects.filter(server=server).order_by("remote_id").last()
             assert last is not None
             end = last.end_time
     else:
@@ -488,9 +485,7 @@ def sort_by_totals(value_arrays: Dict[str, List[int]]) -> List[str]:
 def sort_client_labels(data: Dict[str, Dict[str, List[int]]]) -> List[str]:
     realm_order = sort_by_totals(data["everyone"])
     user_order = sort_by_totals(data["user"])
-    label_sort_values: Dict[str, float] = {}
-    for i, label in enumerate(realm_order):
-        label_sort_values[label] = i
+    label_sort_values: Dict[str, float] = {label: i for i, label in enumerate(realm_order)}
     for i, label in enumerate(user_order):
         label_sort_values[label] = min(i - 0.1, label_sort_values.get(label, i))
     return [label for label, sort_value in sorted(label_sort_values.items(), key=lambda x: x[1])]

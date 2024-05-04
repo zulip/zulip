@@ -30,28 +30,22 @@ jobs:
         include:
           # Base images are built using `tools/ci/Dockerfile.prod.template`.
           # The comments at the top explain how to build and upload these images.
-          # Ubuntu 20.04 ships with Python 3.8.10.
-          - docker_image: zulip/ci:focal
-            name: Ubuntu 20.04 (Python 3.8, backend + frontend)
-            os: focal
-            include_documentation_tests: false
-            include_frontend_tests: true
-          # Debian 11 ships with Python 3.9.2.
-          - docker_image: zulip/ci:bullseye
-            name: Debian 11 (Python 3.9, backend + documentation)
-            os: bullseye
-            include_documentation_tests: true
-            include_frontend_tests: false
-          # Ubuntu 22.04 ships with Python 3.10.4.
+          # Ubuntu 22.04 ships with Python 3.10.12.
           - docker_image: zulip/ci:jammy
-            name: Ubuntu 22.04 (Python 3.10, backend)
+            name: Ubuntu 22.04 (Python 3.10, backend + frontend)
             os: jammy
             include_documentation_tests: false
-            include_frontend_tests: false
+            include_frontend_tests: true
           # Debian 12 ships with Python 3.11.2.
           - docker_image: zulip/ci:bookworm
-            name: Debian 12 (Python 3.11, backend)
+            name: Debian 12 (Python 3.11, backend + documentation)
             os: bookworm
+            include_documentation_tests: true
+            include_frontend_tests: false
+          # Ubuntu 24.04 ships with Python 3.12.2.
+          - docker_image: zulip/ci:noble
+            name: Ubuntu 24.04 (Python 3.12, backend)
+            os: noble
             include_documentation_tests: false
             include_frontend_tests: false
 
@@ -68,7 +62,7 @@ jobs:
       HOME: /home/github/
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Create cache directories
         run: |
@@ -77,20 +71,20 @@ jobs:
           sudo chown -R github "${dirs[@]}"
 
       - name: Restore pnpm store
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: /__w/.pnpm-store
           key: v1-pnpm-store-${{ matrix.os }}-${{ hashFiles('pnpm-lock.yaml') }}
 
       - name: Restore python cache
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: /srv/zulip-venv-cache
           key: v1-venv-${{ matrix.os }}-${{ hashFiles('requirements/dev.txt') }}
           restore-keys: v1-venv-${{ matrix.os }}
 
       - name: Restore emoji cache
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: /srv/zulip-emoji-cache
           key: v1-emoji-${{ matrix.os }}-${{ hashFiles('tools/setup/emoji/emoji_map.json', 'tools/setup/emoji/build_emoji', 'tools/setup/emoji/emoji_setup_utils.py', 'tools/setup/emoji/emoji_names.py', 'package.json') }}
@@ -173,7 +167,7 @@ jobs:
       - name: Run backend tests
         run: |
           source tools/ci/activate-venv
-          ./tools/test-backend --coverage --xml-report --no-html-report --include-webhooks --include-transaction-tests --no-cov-cleanup --ban-console-output
+          ./tools/test-backend ${{ matrix.os != 'bookworm' && '--coverage' || '' }} --xml-report --no-html-report --include-webhooks --include-transaction-tests --no-cov-cleanup --ban-console-output
 
       - name: Run mypy
         run: |
@@ -221,7 +215,7 @@ jobs:
           fi
 
       - name: Test locked requirements
-        if: ${{ matrix.os == 'focal' }}
+        if: ${{ matrix.os == 'jammy' }}
         run: |
           . /srv/zulip-py3-venv/bin/activate && \
           ./tools/test-locked-requirements
@@ -231,14 +225,15 @@ jobs:
         # Only upload coverage when both frontend and backend
         # tests are run.
         if: ${{ matrix.include_frontend_tests }}
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@v4
         with:
           files: var/coverage.xml,var/node-coverage/lcov.info
+          token: ${{ secrets.CODECOV_TOKEN }}
 
       - name: Store Puppeteer artifacts
         # Upload these on failure, as well
         if: ${{ always() && matrix.include_frontend_tests }}
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: puppeteer
           path: ./var/puppeteer

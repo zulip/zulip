@@ -59,8 +59,7 @@ const message_viewport = mock_esm("../src/message_viewport");
 const unread_ui = mock_esm("../src/unread_ui");
 
 message_lists.current = {view: {}};
-message_lists.home = {view: {}};
-message_lists.all_rendered_message_lists = () => [message_lists.home, message_lists.current];
+message_lists.all_rendered_message_lists = () => [message_lists.current];
 
 const message_store = zrequire("message_store");
 const stream_data = zrequire("stream_data");
@@ -100,14 +99,13 @@ run_test("unread_ops", ({override}) => {
     $("#message_feed_container").show();
 
     // Make our "test" message appear visible.
-    override(message_viewport, "bottom_message_visible", () => true);
+    override(message_viewport, "bottom_rendered_message_visible", () => true);
 
     // Set message_lists.current containing messages that can be marked read
     override(message_lists.current, "all_messages", () => test_messages);
 
     // Ignore these interactions for now:
     override(message_lists.current.view, "show_message_as_read", noop);
-    override(message_lists.home.view, "show_message_as_read", noop);
     override(desktop_notifications, "close_notification", noop);
     override(unread_ui, "update_unread_counts", noop);
     override(unread_ui, "notify_messages_remain_unread", noop);
@@ -125,6 +123,7 @@ run_test("unread_ops", ({override}) => {
     // data setup).
     override(message_lists.current, "can_mark_messages_read", () => can_mark_messages_read);
     override(message_lists.current, "has_unread_messages", () => true);
+    override(message_lists.current.view, "is_fetched_end_rendered", () => true);
 
     // First, test for a message list that cannot read messages.
     can_mark_messages_read = false;
@@ -134,6 +133,12 @@ run_test("unread_ops", ({override}) => {
 
     // Now flip the boolean, and get to the main thing we are testing.
     can_mark_messages_read = true;
+    // Don't mark messages as read until all messages in the narrow are fetched and rendered.
+    override(message_lists.current.view, "is_fetched_end_rendered", () => false);
+    unread_ops.process_visible();
+    assert.deepEqual(channel_post_opts, undefined);
+
+    override(message_lists.current.view, "is_fetched_end_rendered", () => true);
     unread_ops.process_visible();
 
     // The most important side effect of the above call is that

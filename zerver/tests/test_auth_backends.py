@@ -110,11 +110,11 @@ from zerver.models import (
     CustomProfileField,
     CustomProfileFieldValue,
     MultiuseInvite,
+    NamedUserGroup,
     PreregistrationUser,
     Realm,
     RealmDomain,
     Stream,
-    UserGroup,
     UserProfile,
 )
 from zerver.models.realms import clear_supported_auth_backends_cache, get_realm
@@ -1541,7 +1541,8 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase, ABC):
         realm = get_realm("zulip")
 
         iago = self.example_user("iago")
-        do_invite_users(iago, [email], [], invite_expires_in_minutes=2 * 24 * 60)
+        with self.captureOnCommitCallbacks(execute=True):
+            do_invite_users(iago, [email], [], invite_expires_in_minutes=2 * 24 * 60)
 
         account_data_dict = self.get_account_data_dict(email=email, name=name)
         result = self.social_auth_test(
@@ -1883,13 +1884,14 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase, ABC):
         name = "Alice Jones"
 
         invite_expires_in_minutes = 2 * 24 * 60
-        do_invite_users(
-            iago,
-            [email],
-            [],
-            invite_expires_in_minutes=invite_expires_in_minutes,
-            invite_as=PreregistrationUser.INVITE_AS["REALM_ADMIN"],
-        )
+        with self.captureOnCommitCallbacks(execute=True):
+            do_invite_users(
+                iago,
+                [email],
+                [],
+                invite_expires_in_minutes=invite_expires_in_minutes,
+                invite_as=PreregistrationUser.INVITE_AS["REALM_ADMIN"],
+            )
         now = timezone_now() + timedelta(days=3)
 
         subdomain = "zulip"
@@ -4654,7 +4656,7 @@ class GoogleAuthBackendTest(SocialAuthBase):
         self.assert_in_response('action="http://zulip.testserver/accounts/do_confirm/', result)
 
         url = re.findall(
-            'action="(http://zulip.testserver/accounts/do_confirm[^"]*)"',
+            r'action="(http://zulip.testserver/accounts/do_confirm[^"]*)"',
             result.content.decode(),
         )[0]
         confirmation = Confirmation.objects.all().first()
@@ -7167,24 +7169,80 @@ class TestAdminSetBackends(ZulipTestCase):
         self.assertTrue(password_auth_enabled(realm))
         self.assertTrue(dev_auth_enabled(realm))
 
-    def test_supported_backends_only_updated(self) -> None:
+    def test_only_supported_backends_allowed(self) -> None:
         # Log in as admin
         self.login("desdemona")
-        # Set some supported and unsupported backends
-        result = self.client_patch(
-            "/json/realm",
-            {
-                "authentication_methods": orjson.dumps(
-                    {"Email": False, "Dev": True, "GitHub": False}
-                ).decode()
-            },
-        )
-        self.assert_json_success(result)
-        realm = get_realm("zulip")
-        # Check that unsupported backend is not enabled
-        self.assertFalse(github_auth_enabled(realm))
-        self.assertTrue(dev_auth_enabled(realm))
-        self.assertFalse(password_auth_enabled(realm))
+
+        with self.settings(
+            AUTHENTICATION_BACKENDS=(
+                "zproject.backends.EmailAuthBackend",
+                "zproject.backends.DevAuthBackend",
+            )
+        ):
+            result = self.client_patch(
+                "/json/realm",
+                {
+                    "authentication_methods": orjson.dumps(
+                        # Github is not a supported authentication backend right now.
+                        {"Email": False, "Dev": True, "GitHub": False}
+                    ).decode()
+                },
+            )
+            self.assert_json_error(
+                result, "Invalid authentication method: GitHub. Valid methods are: ['Dev', 'Email']"
+            )
+
+            # Also protects from completely invalid input like a backend name that doesn't exist.
+            result = self.client_patch(
+                "/json/realm",
+                {"authentication_methods": orjson.dumps({"NoSuchBackend": True}).decode()},
+            )
+            self.assert_json_error(
+                result,
+                "Invalid authentication method: NoSuchBackend. Valid methods are: ['Dev', 'Email']",
+            )
+
+        with self.settings(
+            AUTHENTICATION_BACKENDS=(
+                "zproject.backends.EmailAuthBackend",
+                "zproject.backends.DevAuthBackend",
+                "zproject.backends.AzureADAuthBackend",
+            ),
+        ):
+            realm = get_realm("zulip")
+            self.assertEqual(
+                realm.authentication_methods_dict(), {"Dev": True, "Email": True, "AzureAD": True}
+            )
+
+            # AzureAD is not available without a Standard plan, but we start off with it enabled.
+            # Disabling the backend should work.
+            result = self.client_patch(
+                "/json/realm",
+                {
+                    "authentication_methods": orjson.dumps(
+                        # Github is not a supported authentication backend right now.
+                        {"Email": True, "Dev": True, "AzureAD": False}
+                    ).decode()
+                },
+            )
+            self.assert_json_success(result)
+            self.assertEqual(
+                realm.authentication_methods_dict(), {"Dev": True, "Email": True, "AzureAD": False}
+            )
+
+            # However, due to the lack of the necessary plan, enabling will fail.
+            result = self.client_patch(
+                "/json/realm",
+                {
+                    "authentication_methods": orjson.dumps(
+                        # Github is not a supported authentication backend right now.
+                        {"Email": True, "Dev": True, "AzureAD": True}
+                    ).decode()
+                },
+            )
+            self.assert_json_error(
+                result, "Authentication method AzureAD is not available on your current plan."
+            )
 
 
 class EmailValidatorTestCase(ZulipTestCase):
@@ -7242,9 +7300,7 @@ class LDAPBackendTest(ZulipTestCase):
             "zproject.backends.ZulipLDAPAuthBackend.get_or_build_user", side_effect=error
         ), mock.patch("django_auth_ldap.backend._LDAPUser._authenticate_user_dn"), self.assertLogs(
             "django_auth_ldap", "WARNING"
-        ) as warn_log, self.assertLogs(
-            "django.request", level="ERROR"
-        ):
+        ) as warn_log, self.assertLogs("django.request", level="ERROR"):
             response = self.client_post("/login/", data)
             self.assertEqual(response.status_code, 500)
             self.assert_in_response("Configuration error", response)
@@ -7443,15 +7499,19 @@ class LDAPGroupSyncTest(ZulipTestCase):
             },
             LDAP_APPEND_DOMAIN="zulip.com",
         ), self.assertLogs("zulip.ldap", "DEBUG") as zulip_ldap_log:
-            self.assertFalse(UserGroup.objects.filter(realm=realm, name="cool_test_group").exists())
+            self.assertFalse(
+                NamedUserGroup.objects.filter(realm=realm, name="cool_test_group").exists()
+            )
 
             create_user_group_in_database(
                 "cool_test_group", [], realm, acting_user=None, description="Created by LDAP sync"
             )
 
-            self.assertTrue(UserGroup.objects.filter(realm=realm, name="cool_test_group").exists())
+            self.assertTrue(
+                NamedUserGroup.objects.filter(realm=realm, name="cool_test_group").exists()
+            )
 
-            user_group = UserGroup.objects.get(realm=realm, name="cool_test_group")
+            user_group = NamedUserGroup.objects.get(realm=realm, name="cool_test_group")
 
             self.assertFalse(
                 is_user_in_group(
@@ -7482,7 +7542,7 @@ class LDAPGroupSyncTest(ZulipTestCase):
 
             self.assertTrue(
                 is_user_in_group(
-                    UserGroup.objects.get(realm=realm, name="cool_test_group"),
+                    NamedUserGroup.objects.get(realm=realm, name="cool_test_group"),
                     cordelia,
                     direct_member_only=True,
                 )
@@ -7493,7 +7553,7 @@ class LDAPGroupSyncTest(ZulipTestCase):
 
             self.assertFalse(
                 is_user_in_group(
-                    UserGroup.objects.get(realm=realm, name="cool_test_group"),
+                    NamedUserGroup.objects.get(realm=realm, name="cool_test_group"),
                     cordelia,
                     direct_member_only=True,
                 )

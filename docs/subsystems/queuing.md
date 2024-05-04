@@ -35,14 +35,12 @@ custom integration defined in `zerver/lib/queue.py`.
 
 To add a new queue processor:
 
-- Define the processor in `zerver/worker/queue_processors.py` using
-  the `@assign_queue` decorator; it's pretty easy to get the template
-  for an existing similar queue processor. This suffices to test your
-  queue worker in the Zulip development environment
-  (`tools/run-dev` will automatically restart the queue processors
-  and start running your new queue processor code). You can also run
-  a single queue processor manually using e.g.
-  `./manage.py process_queue --queue=user_activity`.
+- Define the processor in `zerver/worker/` using the `@assign_queue` decorator;
+  it's pretty easy to get the template for an existing similar queue
+  processor. This suffices to test your queue worker in the Zulip development
+  environment (`tools/run-dev` will automatically restart the queue processors
+  and start running your new queue processor code). You can also run a single
+  queue processor manually using e.g. `./manage.py process_queue --queue=user_activity`.
 
 - So that supervisord will know to run the queue processor in
   production, you will need to add to the `queues` variable in
@@ -52,7 +50,7 @@ To add a new queue processor:
 The queue will automatically be added to the list of queues tracked by
 `scripts/nagios/check-rabbitmq-consumers`, so Nagios can properly
 check whether a queue processor is running for your queue. You still
-need to update the sample Nagios configuration in `puppet/zulip_ops`
+need to update the sample Nagios configuration in `puppet/kandra`
 manually.
 
 ### Publishing events into a queue

@@ -5,7 +5,7 @@ const {strict: assert} = require("assert");
 const {mock_esm, zrequire} = require("./lib/namespace");
 const {run_test, noop} = require("./lib/test");
 const $ = require("./lib/zjquery");
-const {page_params} = require("./lib/zpage_params");
+const {current_user, realm} = require("./lib/zpage_params");
 
 const loading = mock_esm("../src/loading");
 
@@ -52,8 +52,8 @@ const settings_profile_fields = zrequire("settings_profile_fields");
 function test_populate(opts, template_data) {
     const fields_data = opts.fields_data;
 
-    page_params.custom_profile_field_types = custom_profile_field_types;
-    page_params.is_admin = opts.is_admin;
+    realm.custom_profile_field_types = custom_profile_field_types;
+    current_user.is_admin = opts.is_admin;
     const $table = $("#admin_profile_fields_table");
     const $rows = $.create("rows");
     const $form = $.create("forms");
@@ -79,15 +79,15 @@ function test_populate(opts, template_data) {
 }
 
 run_test("populate_profile_fields", ({mock_template}) => {
-    page_params.custom_profile_fields = {};
-    page_params.realm_default_external_accounts = JSON.stringify({});
+    realm.custom_profile_fields = {};
+    realm.realm_default_external_accounts = JSON.stringify({});
 
     $("#admin_profile_fields_table .display_in_profile_summary_false").toggleClass = noop;
 
     const template_data = [];
     mock_template("settings/admin_profile_field_list.hbs", false, (data) => {
         template_data.push(data);
-        return "whatever";
+        return "<admin-profile-field-list-stub>";
     });
 
     const fields_data = [
@@ -99,6 +99,7 @@ run_test("populate_profile_fields", ({mock_template}) => {
             field_data: "",
             display_in_profile_summary: false,
             valid_to_display_in_summary: true,
+            required: false,
         },
         {
             type: SELECT_ID,
@@ -117,6 +118,7 @@ run_test("populate_profile_fields", ({mock_template}) => {
             ]),
             display_in_profile_summary: false,
             valid_to_display_in_summary: true,
+            required: false,
         },
         {
             type: EXTERNAL_ACCOUNT_ID,
@@ -128,6 +130,7 @@ run_test("populate_profile_fields", ({mock_template}) => {
             }),
             display_in_profile_summary: true,
             valid_to_display_in_summary: true,
+            required: false,
         },
         {
             type: EXTERNAL_ACCOUNT_ID,
@@ -140,6 +143,7 @@ run_test("populate_profile_fields", ({mock_template}) => {
             }),
             display_in_profile_summary: true,
             valid_to_display_in_summary: true,
+            required: false,
         },
     ];
     const expected_template_data = [
@@ -154,9 +158,10 @@ run_test("populate_profile_fields", ({mock_template}) => {
                 is_external_account_field: false,
                 display_in_profile_summary: false,
                 valid_to_display_in_summary: true,
+                required: false,
             },
             can_modify: true,
-            realm_default_external_accounts: page_params.realm_default_external_accounts,
+            realm_default_external_accounts: realm.realm_default_external_accounts,
         },
         {
             profile_field: {
@@ -172,9 +177,10 @@ run_test("populate_profile_fields", ({mock_template}) => {
                 is_external_account_field: false,
                 display_in_profile_summary: false,
                 valid_to_display_in_summary: true,
+                required: false,
             },
             can_modify: true,
-            realm_default_external_accounts: page_params.realm_default_external_accounts,
+            realm_default_external_accounts: realm.realm_default_external_accounts,
         },
         {
             profile_field: {
@@ -187,9 +193,10 @@ run_test("populate_profile_fields", ({mock_template}) => {
                 is_external_account_field: true,
                 display_in_profile_summary: true,
                 valid_to_display_in_summary: true,
+                required: false,
             },
             can_modify: true,
-            realm_default_external_accounts: page_params.realm_default_external_accounts,
+            realm_default_external_accounts: realm.realm_default_external_accounts,
         },
         {
             profile_field: {
@@ -202,9 +209,10 @@ run_test("populate_profile_fields", ({mock_template}) => {
                 is_external_account_field: true,
                 display_in_profile_summary: true,
                 valid_to_display_in_summary: true,
+                required: false,
             },
             can_modify: true,
-            realm_default_external_accounts: page_params.realm_default_external_accounts,
+            realm_default_external_accounts: realm.realm_default_external_accounts,
         },
     ];
 

@@ -1,11 +1,14 @@
 import ClipboardJS from "clipboard";
 import $ from "jquery";
+import assert from "minimalistic-assert";
 
 import * as resolved_topic from "../shared/src/resolved_topic";
 import render_wildcard_mention_not_allowed_error from "../templates/compose_banner/wildcard_mention_not_allowed_error.hbs";
 import render_delete_message_modal from "../templates/confirm_dialog/confirm_delete_message.hbs";
+import render_confirm_merge_topics_with_rename from "../templates/confirm_dialog/confirm_merge_topics_with_rename.hbs";
 import render_confirm_moving_messages_modal from "../templates/confirm_dialog/confirm_moving_messages.hbs";
 import render_message_edit_form from "../templates/message_edit_form.hbs";
+import render_message_moved_widget_body from "../templates/message_moved_widget_body.hbs";
 import render_resolve_topic_time_limit_error_modal from "../templates/resolve_topic_time_limit_error_modal.hbs";
 import render_topic_edit_form from "../templates/topic_edit_form.hbs";
 
@@ -23,7 +26,9 @@ import * as confirm_dialog from "./confirm_dialog";
 import {show_copied_confirmation} from "./copied_tooltip";
 import * as dialog_widget from "./dialog_widget";
 import * as echo from "./echo";
+import * as feedback_widget from "./feedback_widget";
 import * as giphy from "./giphy";
+import * as hash_util from "./hash_util";
 import {$t, $t_html} from "./i18n";
 import * as keydown_util from "./keydown_util";
 import * as loading from "./loading";
@@ -32,12 +37,14 @@ import * as message_lists from "./message_lists";
 import * as message_live_update from "./message_live_update";
 import * as message_store from "./message_store";
 import * as message_viewport from "./message_viewport";
-import {page_params} from "./page_params";
 import * as people from "./people";
 import * as resize from "./resize";
 import * as rows from "./rows";
 import * as settings_data from "./settings_data";
+import {current_user, realm} from "./state_data";
 import * as stream_data from "./stream_data";
+import * as stream_topic_history from "./stream_topic_history";
+import * as sub_store from "./sub_store";
 import * as timerender from "./timerender";
 import * as ui_report from "./ui_report";
 import * as upload from "./upload";
@@ -70,18 +77,18 @@ export function is_topic_editable(message, edit_limit_seconds_buffer = 0) {
     // Organization admins and moderators can edit message topics indefinitely,
     // irrespective of the topic editing deadline, if edit_topic_policy allows
     // them to do so.
-    if (page_params.is_admin || page_params.is_moderator) {
+    if (current_user.is_admin || current_user.is_moderator) {
         return true;
     }
 
-    if (page_params.realm_move_messages_within_stream_limit_seconds === null) {
+    if (realm.realm_move_messages_within_stream_limit_seconds === null) {
         // This means no time limit for editing topics.
         return true;
     }
 
     // If you're using community topic editing, there's a deadline.
     return (
-        page_params.realm_move_messages_within_stream_limit_seconds +
+        realm.realm_move_messages_within_stream_limit_seconds +
             edit_limit_seconds_buffer +
             (message.timestamp - Date.now() / 1000) >
         0
@@ -128,7 +135,7 @@ export function is_content_editable(message, edit_limit_seconds_buffer = 0) {
         return false;
     }
 
-    if (!page_params.realm_allow_message_editing) {
+    if (!realm.realm_allow_message_editing) {
         return false;
     }
 
@@ -140,12 +147,12 @@ export function is_content_editable(message, edit_limit_seconds_buffer = 0) {
         return false;
     }
 
-    if (page_params.realm_message_content_edit_limit_seconds === null) {
+    if (realm.realm_message_content_edit_limit_seconds === null) {
         return true;
     }
 
     if (
-        page_params.realm_message_content_edit_limit_seconds +
+        realm.realm_message_content_edit_limit_seconds +
             edit_limit_seconds_buffer +
             (message.timestamp - Date.now() / 1000) >
         0
@@ -167,7 +174,7 @@ export function is_message_sent_by_my_bot(message) {
 }
 
 export function get_deletability(message) {
-    if (page_params.is_admin) {
+    if (current_user.is_admin) {
         return true;
     }
 
@@ -181,14 +188,13 @@ export function get_deletability(message) {
         return false;
     }
 
-    if (page_params.realm_message_content_delete_limit_seconds === null) {
+    if (realm.realm_message_content_delete_limit_seconds === null) {
         // This means no time limit for message deletion.
         return true;
     }
 
     if (
-        page_params.realm_message_content_delete_limit_seconds +
-            (message.timestamp - Date.now() / 1000) >
+        realm.realm_message_content_delete_limit_seconds + (message.timestamp - Date.now() / 1000) >
         0
     ) {
         return true;
@@ -212,17 +218,17 @@ export function is_stream_editable(message, edit_limit_seconds_buffer = 0) {
     // Organization admins and moderators can edit stream indefinitely,
     // irrespective of the stream editing deadline, if
     // move_messages_between_streams_policy allows them to do so.
-    if (page_params.is_admin || page_params.is_moderator) {
+    if (current_user.is_admin || current_user.is_moderator) {
         return true;
     }
 
-    if (page_params.realm_move_messages_between_streams_limit_seconds === null) {
+    if (realm.realm_move_messages_between_streams_limit_seconds === null) {
         // This means no time limit for editing streams.
         return true;
     }
 
     return (
-        page_params.realm_move_messages_between_streams_limit_seconds +
+        realm.realm_move_messages_between_streams_limit_seconds +
             edit_limit_seconds_buffer +
             (message.timestamp - Date.now() / 1000) >
         0
@@ -383,7 +389,7 @@ function handle_inline_topic_edit_keydown(e) {
             return;
         }
         const $row = $(e.target).closest(".recipient_row");
-        save_inline_topic_edit($row);
+        try_save_inline_topic_edit($row);
         e.stopPropagation();
         e.preventDefault();
     } else if (e.key === "Escape") {
@@ -428,12 +434,12 @@ function create_copy_to_clipboard_handler($row, source, message_id) {
 }
 
 function edit_message($row, raw_content) {
+    assert(message_lists.current !== undefined);
+    const message = message_lists.current.get(rows.id($row));
     $row.find(".message_reactions").hide();
     condense.hide_message_expander($row);
     condense.hide_message_condenser($row);
     const content_top = $row.find(".message_controls")[0].getBoundingClientRect().top;
-
-    const message = message_lists.current.get(rows.id($row));
 
     // We potentially got to this function by clicking a button that implied the
     // user would be able to edit their message.  Give a little bit of buffer in
@@ -444,7 +450,7 @@ function edit_message($row, raw_content) {
     // If you change this number also change edit_limit_buffer in
     // zerver.actions.message_edit.check_update_message
     const seconds_left_buffer = 5;
-    const max_file_upload_size = page_params.max_file_upload_size_mib;
+    const max_file_upload_size = realm.max_file_upload_size_mib;
     let file_upload_enabled = false;
 
     if (max_file_upload_size > 0) {
@@ -460,8 +466,8 @@ function edit_message($row, raw_content) {
             content: raw_content,
             file_upload_enabled,
             giphy_enabled: giphy.is_giphy_enabled(),
-            minutes_to_edit: Math.floor(page_params.realm_message_content_edit_limit_seconds / 60),
-            max_message_length: page_params.max_message_length,
+            minutes_to_edit: Math.floor(realm.realm_message_content_edit_limit_seconds / 60),
+            max_message_length: realm.max_message_length,
         }),
     );
 
@@ -504,7 +510,7 @@ function edit_message($row, raw_content) {
     }
 
     // Add tooltip and timer
-    if (is_editable && page_params.realm_message_content_edit_limit_seconds > 0) {
+    if (is_editable && realm.realm_message_content_edit_limit_seconds > 0) {
         $row.find(".message-edit-timer").show();
 
         // Give them at least 10 seconds.
@@ -512,7 +518,7 @@ function edit_message($row, raw_content) {
         // zerver.actions.message_edit.check_update_message
         const min_seconds_to_edit = 10;
         let seconds_left =
-            page_params.realm_message_content_edit_limit_seconds +
+            realm.realm_message_content_edit_limit_seconds +
             (message.timestamp - Date.now() / 1000);
         seconds_left = Math.floor(Math.max(seconds_left, min_seconds_to_edit));
 
@@ -576,14 +582,14 @@ function start_edit_with_content($row, content, edit_box_open_callback) {
         edit_box_open_callback();
     }
     const row_id = rows.id($row);
-    const upload_object = upload.setup_upload({
+    upload.setup_upload({
         mode: "edit",
         row: row_id,
     });
-    upload.upload_objects_by_message_edit_row.set(row_id, upload_object);
 }
 
 export function start($row, edit_box_open_callback) {
+    assert(message_lists.current !== undefined);
     const message = message_lists.current.get(rows.id($row));
     if (message === undefined) {
         blueslip.error("Couldn't find message ID for edit", {row_id: rows.id($row)});
@@ -675,7 +681,7 @@ function get_resolve_topic_time_limit_error_string(time_limit, time_limit_unit, 
 
 function handle_resolve_topic_failure_due_to_time_limit(topic_is_resolved) {
     const time_limit_for_resolving_topic = timerender.get_time_limit_setting_in_appropriate_unit(
-        page_params.realm_move_messages_within_stream_limit_seconds,
+        realm.realm_move_messages_within_stream_limit_seconds,
     );
     const resolve_topic_time_limit_error_string = get_resolve_topic_time_limit_error_string(
         time_limit_for_resolving_topic.value,
@@ -758,9 +764,10 @@ export function toggle_resolve_topic(
 }
 
 export function start_inline_topic_edit($recipient_row) {
+    assert(message_lists.current !== undefined);
     const $form = $(
         render_topic_edit_form({
-            max_topic_length: page_params.max_topic_length,
+            max_topic_length: realm.max_topic_length,
         }),
     );
     message_lists.current.show_edit_topic_on_recipient_row($recipient_row, $form);
@@ -787,22 +794,16 @@ export function is_editing(id) {
 }
 
 export function end_inline_topic_edit($row) {
+    assert(message_lists.current !== undefined);
     message_lists.current.hide_edit_topic_on_recipient_row($row);
 }
 
-function remove_uploads_from_row(row_id) {
-    const uploads_for_row = upload.upload_objects_by_message_edit_row.get(row_id);
-    // We need to cancel all uploads, reset their progress,
-    // and clear the files upon ending the edit.
-    uploads_for_row?.cancelAll();
-    // Since we removed all the uploads from the row, we should
-    // now remove the corresponding upload object from the store.
-    upload.upload_objects_by_message_edit_row.delete(row_id);
-}
-
 export function end_message_row_edit($row) {
+    assert(message_lists.current !== undefined);
     const row_id = rows.id($row);
-    remove_uploads_from_row(row_id);
+
+    // Clean up the upload handler
+    upload.deactivate_upload({mode: "edit", row: row_id});
 
     const message = message_lists.current.get(row_id);
     if (message !== undefined && currently_editing_messages.has(message.id)) {
@@ -841,8 +842,8 @@ export function end_message_row_edit($row) {
 }
 
 export function end_message_edit(message_id) {
-    const $row = message_lists.current.get_row(message_id);
-    if ($row.length > 0) {
+    const $row = message_lists.current?.get_row(message_id);
+    if (message_lists.current !== undefined && $row.length > 0) {
         end_message_row_edit($row);
     } else if (currently_editing_messages.has(message_id)) {
         // We should delete the message_id from currently_editing_messages
@@ -851,9 +852,9 @@ export function end_message_edit(message_id) {
     }
 }
 
-export function save_inline_topic_edit($row) {
-    const msg_list = message_lists.current;
-    let message_id = rows.id_for_recipient_row($row);
+export function try_save_inline_topic_edit($row) {
+    assert(message_lists.current !== undefined);
+    const message_id = rows.id_for_recipient_row($row);
     const message = message_lists.current.get(message_id);
 
     const old_topic = message.topic;
@@ -867,13 +868,30 @@ export function save_inline_topic_edit($row) {
         return;
     }
 
+    const $message_header = $row.find(".message_header").expectOne();
+    const stream_id = Number.parseInt($message_header.attr("data-stream-id"), 10);
+    const stream_topics = stream_topic_history.get_recent_topic_names(stream_id);
+    if (stream_topics.includes(new_topic)) {
+        confirm_dialog.launch({
+            html_heading: $t_html({defaultMessage: "Merge with another topic?"}),
+            html_body: render_confirm_merge_topics_with_rename({
+                topic_name: new_topic,
+            }),
+            focus_submit_on_open: false,
+            on_click: () => do_save_inline_topic_edit($row, message, new_topic),
+        });
+    } else {
+        do_save_inline_topic_edit($row, message, new_topic);
+    }
+}
+
+export function do_save_inline_topic_edit($row, message, new_topic) {
+    const msg_list = message_lists.current;
     show_topic_edit_spinner($row);
 
     if (message.locally_echoed) {
-        if (topic_changed) {
-            echo.edit_locally(message, {new_topic});
-            $row = message_lists.current.get_row(message_id);
-        }
+        message = echo.edit_locally(message, {new_topic});
+        $row = message_lists.current.get_row(message.id);
         end_inline_topic_edit($row);
         return;
     }
@@ -925,7 +943,6 @@ export function save_inline_topic_edit($row) {
             }
             loading.destroy_indicator($spinner);
             if (msg_list === message_lists.current) {
-                message_id = rows.id_for_recipient_row($row);
                 const message = channel.xhr_error_message(
                     $t({defaultMessage: "Error saving edit"}),
                     xhr,
@@ -937,6 +954,7 @@ export function save_inline_topic_edit($row) {
 }
 
 export function save_message_row_edit($row) {
+    assert(message_lists.current !== undefined);
     const $banner_container = compose_banner.get_compose_banner_container(
         $row.find(".message_edit_form textarea"),
     );
@@ -946,7 +964,7 @@ export function save_message_row_edit($row) {
     );
     const msg_list = message_lists.current;
     let message_id = rows.id($row);
-    const message = message_lists.current.get(message_id);
+    let message = message_lists.current.get(message_id);
     let changed = false;
     let edit_locally_echoed = false;
 
@@ -981,7 +999,7 @@ export function save_message_row_edit($row) {
     if (message.locally_echoed) {
         if (new_content !== message.raw_content) {
             // `edit_locally` handles the case where `new_topic/new_stream_id` is undefined
-            echo.edit_locally(message, {
+            message = echo.edit_locally(message, {
                 raw_content: new_content,
             });
             $row = message_lists.current.get_row(message_id);
@@ -1027,7 +1045,7 @@ export function save_message_row_edit($row) {
         // the message is acknowledged by the server.
         message.local_edit_timestamp = Math.round(Date.now() / 1000);
 
-        echo.edit_locally(message, currently_echoing_messages.get(message_id));
+        message = echo.edit_locally(message, currently_echoing_messages.get(message_id));
 
         $row = message_lists.current.get_row(message_id);
         end_message_row_edit($row);
@@ -1054,14 +1072,14 @@ export function save_message_row_edit($row) {
                 message_id = rows.id($row);
 
                 if (edit_locally_echoed) {
-                    const echoed_message = message_store.get(message_id);
+                    let echoed_message = message_store.get(message_id);
                     const echo_data = currently_echoing_messages.get(message_id);
 
                     delete echoed_message.local_edit_timestamp;
                     currently_echoing_messages.delete(message_id);
 
                     // Restore the original content.
-                    echo.edit_locally(echoed_message, {
+                    echoed_message = echo.edit_locally(echoed_message, {
                         content: echo_data.orig_content,
                         raw_content: echo_data.orig_raw_content,
                         mentioned: echo_data.mentioned,
@@ -1111,12 +1129,20 @@ export function save_message_row_edit($row) {
 }
 
 export function maybe_show_edit($row, id) {
+    if (message_lists.current === undefined) {
+        return;
+    }
+
     if (currently_editing_messages.has(id)) {
         message_lists.current.show_edit_message($row, currently_editing_messages.get(id));
     }
 }
 
 export function edit_last_sent_message() {
+    if (message_lists.current === undefined) {
+        return;
+    }
+
     const msg = message_lists.current.get_last_message_sent_by_me();
 
     if (!msg) {
@@ -1215,7 +1241,8 @@ export function delete_topic(stream_id, topic_name, failures = 0) {
     });
 }
 
-export function handle_narrow_deactivated() {
+export function restore_edit_state_after_message_view_change() {
+    assert(message_lists.current !== undefined);
     for (const [idx, elem] of currently_editing_messages) {
         if (message_lists.current.get(idx) !== undefined) {
             const $row = message_lists.current.get_row(idx);
@@ -1257,6 +1284,25 @@ function handle_message_move_failure_due_to_time_limit(xhr, handle_confirm, on_h
     });
 }
 
+function show_message_moved_toast(toast_params) {
+    const new_stream_name = sub_store.maybe_get_stream_name(toast_params.new_stream_id);
+    const stream_topic = `#${new_stream_name} > ${toast_params.new_topic_name}`;
+    const new_location_url = hash_util.by_stream_topic_url(
+        toast_params.new_stream_id,
+        toast_params.new_topic_name,
+    );
+    feedback_widget.show({
+        populate($container) {
+            const widget_body_html = render_message_moved_widget_body({
+                stream_topic,
+                new_location_url,
+            });
+            $container.html(widget_body_html);
+        },
+        title_text: $t({defaultMessage: "Message moved"}),
+    });
+}
+
 export function move_topic_containing_message_to_stream(
     message_id,
     new_stream_id,
@@ -1264,6 +1310,7 @@ export function move_topic_containing_message_to_stream(
     send_notification_to_new_thread,
     send_notification_to_old_thread,
     propagate_mode,
+    toast_params,
 ) {
     function reset_modal_ui() {
         currently_topic_editing_messages = currently_topic_editing_messages.filter(
@@ -1297,6 +1344,9 @@ export function move_topic_containing_message_to_stream(
             // from server_events.js.
             reset_modal_ui();
             dialog_widget.close();
+            if (toast_params) {
+                show_message_moved_toast(toast_params);
+            }
         },
         error(xhr) {
             reset_modal_ui();
@@ -1343,7 +1393,7 @@ export function with_first_message_id(stream_id, topic_name, success_cb, error_c
         num_before: 1,
         num_after: 0,
         narrow: JSON.stringify([
-            {operator: "stream", operand: stream_id},
+            {operator: "channel", operand: stream_id},
             {operator: "topic", operand: topic_name},
         ]),
     };
@@ -1352,7 +1402,7 @@ export function with_first_message_id(stream_id, topic_name, success_cb, error_c
         url: "/json/messages",
         data,
         success(data) {
-            const message_id = data.messages[0].id;
+            const message_id = data.messages[0]?.id;
             success_cb(message_id);
         },
         error: error_cb,
@@ -1371,7 +1421,7 @@ export function is_message_oldest_or_newest(
         num_before: 1,
         num_after: 1,
         narrow: JSON.stringify([
-            {operator: "stream", operand: stream_id},
+            {operator: "channel", operand: stream_id},
             {operator: "topic", operand: topic_name},
         ]),
     };

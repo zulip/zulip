@@ -3,9 +3,11 @@ import * as color_data from "./color_data";
 import {FoldDict} from "./fold_dict";
 import {page_params} from "./page_params";
 import * as peer_data from "./peer_data";
+import type {User} from "./people";
 import * as people from "./people";
 import * as settings_config from "./settings_config";
 import * as settings_data from "./settings_data";
+import {current_user, realm} from "./state_data";
 import * as sub_store from "./sub_store";
 import type {
     ApiStreamSubscription,
@@ -182,10 +184,15 @@ export function get_sub(stream_name: string): StreamSubscription | undefined {
 }
 
 export function get_sub_by_id(stream_id: number): StreamSubscription | undefined {
-    if (!stream_id) {
+    return stream_info.get(stream_id);
+}
+
+export function maybe_get_creator_details(creator_id: number | null): User | undefined {
+    if (creator_id === null) {
         return undefined;
     }
-    return stream_info.get(stream_id);
+
+    return people.get_user_by_id_assert_valid(creator_id);
 }
 
 export function get_stream_id(name: string): number | undefined {
@@ -456,7 +463,10 @@ export function canonicalized_name(stream_name: string): string {
     return stream_name.toString().toLowerCase();
 }
 
-export function get_color(stream_id: number): string {
+export function get_color(stream_id: number | undefined): string {
+    if (stream_id === undefined) {
+        return DEFAULT_COLOR;
+    }
     const sub = get_sub_by_id(stream_id);
     if (sub === undefined) {
         return DEFAULT_COLOR;
@@ -482,8 +492,8 @@ export function is_stream_muted_by_name(stream_name: string): boolean {
     return sub.is_muted;
 }
 
-export function is_notifications_stream_muted(): boolean {
-    return is_muted(page_params.realm_notifications_stream_id);
+export function is_new_stream_announcements_stream_muted(): boolean {
+    return is_muted(realm.realm_new_stream_announcements_stream_id);
 }
 
 export function can_toggle_subscription(sub: StreamSubscription): boolean {
@@ -498,13 +508,14 @@ export function can_toggle_subscription(sub: StreamSubscription): boolean {
     // deactivated streams are automatically made private during the
     // archive stream process.
     return (
-        (sub.subscribed || (!page_params.is_guest && !sub.invite_only)) && !page_params.is_spectator
+        (sub.subscribed || (!current_user.is_guest && !sub.invite_only)) &&
+        !page_params.is_spectator
     );
 }
 
 export function can_access_stream_email(sub: StreamSubscription): boolean {
     return (
-        (sub.subscribed || sub.is_web_public || (!page_params.is_guest && !sub.invite_only)) &&
+        (sub.subscribed || sub.is_web_public || (!current_user.is_guest && !sub.invite_only)) &&
         !page_params.is_spectator
     );
 }
@@ -521,19 +532,19 @@ export function can_preview(sub: StreamSubscription): boolean {
 }
 
 export function can_change_permissions(sub: StreamSubscription): boolean {
-    return page_params.is_admin && (!sub.invite_only || sub.subscribed);
+    return current_user.is_admin && (!sub.invite_only || sub.subscribed);
 }
 
 export function can_view_subscribers(sub: StreamSubscription): boolean {
     // Guest users can't access subscribers of any(public or private) non-subscribed streams.
-    return page_params.is_admin || sub.subscribed || (!page_params.is_guest && !sub.invite_only);
+    return current_user.is_admin || sub.subscribed || (!current_user.is_guest && !sub.invite_only);
 }
 
 export function can_subscribe_others(sub: StreamSubscription): boolean {
     // User can add other users to stream if stream is public or user is subscribed to stream
     // and realm level setting allows user to add subscribers.
     return (
-        !page_params.is_guest &&
+        !current_user.is_guest &&
         (!sub.invite_only || sub.subscribed) &&
         settings_data.user_can_subscribe_other_users()
     );
@@ -567,7 +578,7 @@ export function can_unsubscribe_others(sub: StreamSubscription): boolean {
         return false;
     }
 
-    if (page_params.is_admin) {
+    if (current_user.is_admin) {
         return true;
     }
 
@@ -582,7 +593,7 @@ export function can_post_messages_in_stream(stream: StreamSubscription): boolean
         return false;
     }
 
-    if (page_params.is_admin) {
+    if (current_user.is_admin) {
         return true;
     }
 
@@ -590,7 +601,7 @@ export function can_post_messages_in_stream(stream: StreamSubscription): boolean
         return false;
     }
 
-    if (page_params.is_moderator) {
+    if (current_user.is_moderator) {
         return true;
     }
 
@@ -599,7 +610,7 @@ export function can_post_messages_in_stream(stream: StreamSubscription): boolean
     }
 
     if (
-        page_params.is_guest &&
+        current_user.is_guest &&
         stream.stream_post_policy !== settings_config.stream_post_policy_values.everyone.code
     ) {
         return false;
@@ -612,7 +623,7 @@ export function can_post_messages_in_stream(stream: StreamSubscription): boolean
     if (
         stream.stream_post_policy ===
             settings_config.stream_post_policy_values.non_new_members.code &&
-        days < page_params.realm_waiting_period_threshold
+        days < realm.realm_waiting_period_threshold
     ) {
         return false;
     }
@@ -762,7 +773,7 @@ export function create_sub_from_server_data(
     delete attrs.subscribers;
 
     sub = {
-        render_subscribers: !page_params.realm_is_zephyr_mirror_realm || attrs.invite_only,
+        render_subscribers: !realm.realm_is_zephyr_mirror_realm || attrs.invite_only,
         newly_subscribed: false,
         is_muted: false,
         desktop_notifications: null,
@@ -802,16 +813,16 @@ export function get_streams_for_admin(): StreamSubscription[] {
 
 /*
   This module provides a common helper for finding the notification
-  stream, but we don't own the data.  The `page_params` structure
+  stream, but we don't own the data.  The `realm` structure
   is the authoritative source of this data, and it will be updated by
   server_events_dispatch in case of changes.
 */
-export function realm_has_notifications_stream(): boolean {
-    return page_params.realm_notifications_stream_id !== -1;
+export function realm_has_new_stream_announcements_stream(): boolean {
+    return realm.realm_new_stream_announcements_stream_id !== -1;
 }
 
-export function get_notifications_stream(): string {
-    const stream_id = page_params.realm_notifications_stream_id;
+export function get_new_stream_announcements_stream(): string {
+    const stream_id = realm.realm_new_stream_announcements_stream_id;
     if (stream_id !== -1) {
         const stream_obj = sub_store.get(stream_id);
         if (stream_obj) {
@@ -826,7 +837,7 @@ export function get_notifications_stream(): string {
 export function initialize(params: StreamInitParams): void {
     /*
         We get `params` data, which is data that we "own"
-        and which has already been removed from `page_params`.
+        and which has already been removed from `state_data`.
         We only use it in this function to populate other
         data structures.
     */
@@ -837,10 +848,10 @@ export function initialize(params: StreamInitParams): void {
     const realm_default_streams = params.realm_default_streams;
 
     /*
-        We also consume some data directly from `page_params`.
+        We also consume some data directly from `realm`.
         This data can be accessed by any other module,
         and we consider the authoritative source to be
-        `page_params`.  Some of this data should eventually
+        `realm`.  Some of this data should eventually
         be fully handled by stream_data.
     */
 

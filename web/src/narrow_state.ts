@@ -1,37 +1,19 @@
 import * as blueslip from "./blueslip";
 import {Filter} from "./filter";
-import type {Term} from "./filter";
-import * as inbox_util from "./inbox_util";
+import * as message_lists from "./message_lists";
 import {page_params} from "./page_params";
 import * as people from "./people";
-import * as recent_view_util from "./recent_view_util";
+import type {NarrowTerm} from "./state_data";
 import * as stream_data from "./stream_data";
 import type {StreamSubscription} from "./sub_store";
 import * as unread from "./unread";
 
-let current_filter: Filter | undefined;
-
-export let has_shown_message_list_view = false;
-
-export function reset_current_filter(): void {
-    current_filter = undefined;
-}
-
-export function set_current_filter(filter: Filter | undefined): void {
-    current_filter = filter;
-}
-
-export function active(): boolean {
-    return current_filter !== undefined;
-}
-
 export function filter(): Filter | undefined {
-    // Both, `All messages` and
-    // `Recent Conversations` have `current_filter=undefined`
-    return current_filter;
+    // `Recent Conversations` and `Inbox` return undefined;
+    return message_lists.current?.data.filter;
 }
 
-export function search_terms(): Term[] {
+export function search_terms(current_filter: Filter | undefined = filter()): NarrowTerm[] {
     if (current_filter === undefined) {
         if (page_params.narrow !== undefined) {
             return new Filter(page_params.narrow).terms();
@@ -42,32 +24,42 @@ export function search_terms(): Term[] {
 }
 
 export function is_message_feed_visible(): boolean {
-    return !recent_view_util.is_visible() && !inbox_util.is_visible();
+    // It's important that `message_lists.current` is the
+    // source of truth for this since during the initial app load,
+    // `message_lists.current` is `undefined` and we don't want
+    // to return `true` if we haven't loaded the message feed yet.
+    return message_lists.current !== undefined;
 }
 
-export function update_email(user_id: number, new_email: string): void {
+export function update_email(
+    user_id: number,
+    new_email: string,
+    current_filter: Filter | undefined = filter(),
+): void {
     if (current_filter !== undefined) {
         current_filter.update_email(user_id, new_email);
     }
 }
 
 /* Search terms we should send to the server. */
-export function public_search_terms(): Term[] | undefined {
+export function public_search_terms(
+    current_filter: Filter | undefined = filter(),
+): NarrowTerm[] | undefined {
     if (current_filter === undefined) {
         return undefined;
     }
     return current_filter.public_terms();
 }
 
-export function search_string(): string {
-    return Filter.unparse(search_terms());
+export function search_string(filter?: Filter): string {
+    return Filter.unparse(search_terms(filter));
 }
 
-// Collect terms which appear only once into an object,
+// Collect terms which appear only once into a map,
 // and discard those which appear more than once.
-function collect_single(terms: Term[]): Map<string, string> {
-    const seen = new Map();
-    const result = new Map();
+function collect_single(terms: NarrowTerm[]): Map<string, string> {
+    const seen = new Set<string>();
+    const result = new Map<string, string>();
 
     for (const term of terms) {
         const key = term.operator;
@@ -75,7 +67,7 @@ function collect_single(terms: Term[]): Map<string, string> {
             result.delete(key);
         } else {
             result.set(key, term.operand);
-            seen.set(key, true);
+            seen.add(key);
         }
     }
 
@@ -99,7 +91,7 @@ export function set_compose_defaults(): {
     // Set the stream, topic, and/or direct message recipient
     // if they are uniquely specified in the narrow view.
 
-    if (single.has("stream")) {
+    if (single.has("channel")) {
         // The raw stream name from collect_single may be an arbitrary
         // unvalidated string from the URL fragment and thus not be valid.
         // So we look up the resolved stream and return that if appropriate.
@@ -123,11 +115,11 @@ export function set_compose_defaults(): {
     return opts;
 }
 
-export function stream_name(): string | undefined {
+export function stream_name(current_filter: Filter | undefined = filter()): string | undefined {
     if (current_filter === undefined) {
         return undefined;
     }
-    const stream_operands = current_filter.operands("stream");
+    const stream_operands = current_filter.operands("channel");
     if (stream_operands.length === 1) {
         const name = stream_operands[0];
 
@@ -138,11 +130,13 @@ export function stream_name(): string | undefined {
     return undefined;
 }
 
-export function stream_sub(): StreamSubscription | undefined {
+export function stream_sub(
+    current_filter: Filter | undefined = filter(),
+): StreamSubscription | undefined {
     if (current_filter === undefined) {
         return undefined;
     }
-    const stream_operands = current_filter.operands("stream");
+    const stream_operands = current_filter.operands("channel");
     if (stream_operands.length !== 1) {
         return undefined;
     }
@@ -153,15 +147,15 @@ export function stream_sub(): StreamSubscription | undefined {
     return sub;
 }
 
-export function stream_id(): number | undefined {
-    const sub = stream_sub();
+export function stream_id(filter?: Filter): number | undefined {
+    const sub = stream_sub(filter);
     if (sub === undefined) {
         return undefined;
     }
     return sub.stream_id;
 }
 
-export function topic(): string | undefined {
+export function topic(current_filter: Filter | undefined = filter()): string | undefined {
     if (current_filter === undefined) {
         return undefined;
     }
@@ -172,10 +166,10 @@ export function topic(): string | undefined {
     return undefined;
 }
 
-export function pm_ids_string(): string | undefined {
+export function pm_ids_string(filter?: Filter): string | undefined {
     // If you are narrowed to a group direct message with
     // users 4, 5, and 99, this will return "4,5,99"
-    const emails_string = pm_emails_string();
+    const emails_string = pm_emails_string(filter);
 
     if (!emails_string) {
         return undefined;
@@ -186,7 +180,15 @@ export function pm_ids_string(): string | undefined {
     return user_ids_string;
 }
 
-export function pm_emails_string(): string | undefined {
+export function pm_ids_set(filter?: Filter): Set<number> {
+    const ids_string = pm_ids_string(filter);
+    const pm_ids_list = ids_string ? people.user_ids_string_to_ids_array(ids_string) : [];
+    return new Set(pm_ids_list);
+}
+
+export function pm_emails_string(
+    current_filter: Filter | undefined = filter(),
+): string | undefined {
     if (current_filter === undefined) {
         return undefined;
     }
@@ -199,9 +201,9 @@ export function pm_emails_string(): string | undefined {
     return operands[0];
 }
 
-export function get_first_unread_info():
-    | {flavor: "cannot_compute" | "not_found"}
-    | {flavor: "found"; msg_id: number} {
+export function get_first_unread_info(
+    current_filter: Filter | undefined = filter(),
+): {flavor: "cannot_compute" | "not_found"} | {flavor: "found"; msg_id: number} {
     if (current_filter === undefined) {
         // we don't yet support the all-messages view
         blueslip.error("unexpected call to get_first_unread_info");
@@ -220,7 +222,7 @@ export function get_first_unread_info():
         };
     }
 
-    const unread_ids = _possible_unread_message_ids();
+    const unread_ids = _possible_unread_message_ids(current_filter);
 
     if (unread_ids === undefined) {
         // _possible_unread_message_ids() only works for certain narrows
@@ -243,7 +245,9 @@ export function get_first_unread_info():
     };
 }
 
-export function _possible_unread_message_ids(): number[] | undefined {
+export function _possible_unread_message_ids(
+    current_filter: Filter | undefined = filter(),
+): number[] | undefined {
     // This function currently only returns valid results for
     // certain types of narrows, mostly left sidebar narrows.
     // For more complicated narrows we may return undefined.
@@ -259,17 +263,17 @@ export function _possible_unread_message_ids(): number[] | undefined {
     let topic_name;
     let current_filter_pm_string;
 
-    if (current_filter.can_bucket_by("stream", "topic")) {
-        sub = stream_sub();
-        topic_name = topic();
+    if (current_filter.can_bucket_by("channel", "topic")) {
+        sub = stream_sub(current_filter);
+        topic_name = topic(current_filter);
         if (sub === undefined || topic_name === undefined) {
             return [];
         }
         return unread.get_msg_ids_for_topic(sub.stream_id, topic_name);
     }
 
-    if (current_filter.can_bucket_by("stream")) {
-        sub = stream_sub();
+    if (current_filter.can_bucket_by("channel")) {
+        sub = stream_sub(current_filter);
         if (sub === undefined) {
             return [];
         }
@@ -277,7 +281,7 @@ export function _possible_unread_message_ids(): number[] | undefined {
     }
 
     if (current_filter.can_bucket_by("dm")) {
-        current_filter_pm_string = pm_ids_string();
+        current_filter_pm_string = pm_ids_string(current_filter);
         if (current_filter_pm_string === undefined) {
             return [];
         }
@@ -308,16 +312,16 @@ export function _possible_unread_message_ids(): number[] | undefined {
     return undefined;
 }
 
-// Are we narrowed to direct messages: all direct messages
-// or direct messages with particular people.
-export function narrowed_to_pms(): boolean {
+// Are we narrowed to direct messages: the direct message feed or a
+// specific direct message conversation.
+export function narrowed_to_pms(current_filter: Filter | undefined = filter()): boolean {
     if (current_filter === undefined) {
         return false;
     }
     return current_filter.has_operator("dm") || current_filter.has_operand("is", "dm");
 }
 
-export function narrowed_by_pm_reply(): boolean {
+export function narrowed_by_pm_reply(current_filter: Filter | undefined = filter()): boolean {
     if (current_filter === undefined) {
         return false;
     }
@@ -325,14 +329,14 @@ export function narrowed_by_pm_reply(): boolean {
     return terms.length === 1 && current_filter.has_operator("dm");
 }
 
-export function narrowed_by_topic_reply(): boolean {
+export function narrowed_by_topic_reply(current_filter: Filter | undefined = filter()): boolean {
     if (current_filter === undefined) {
         return false;
     }
     const terms = current_filter.terms();
     return (
         terms.length === 2 &&
-        current_filter.operands("stream").length === 1 &&
+        current_filter.operands("channel").length === 1 &&
         current_filter.operands("topic").length === 1
     );
 }
@@ -340,58 +344,34 @@ export function narrowed_by_topic_reply(): boolean {
 // We auto-reply under certain conditions, namely when you're narrowed
 // to a 1:1 or group direct message conversation, and when you're
 // narrowed to some stream/topic pair.
-export function narrowed_by_reply(): boolean {
-    return narrowed_by_pm_reply() || narrowed_by_topic_reply();
+export function narrowed_by_reply(filter?: Filter): boolean {
+    return narrowed_by_pm_reply(filter) || narrowed_by_topic_reply(filter);
 }
 
-export function narrowed_by_stream_reply(): boolean {
+export function narrowed_by_stream_reply(current_filter: Filter | undefined = filter()): boolean {
     if (current_filter === undefined) {
         return false;
     }
     const terms = current_filter.terms();
-    return terms.length === 1 && current_filter.operands("stream").length === 1;
+    return terms.length === 1 && current_filter.operands("channel").length === 1;
 }
 
-export function narrowed_to_topic(): boolean {
+export function narrowed_to_topic(current_filter: Filter | undefined = filter()): boolean {
     if (current_filter === undefined) {
         return false;
     }
-    return current_filter.has_operator("stream") && current_filter.has_operator("topic");
+    return current_filter.has_operator("channel") && current_filter.has_operator("topic");
 }
 
-export function narrowed_to_search(): boolean {
-    return current_filter !== undefined && current_filter.is_keyword_search();
-}
-
-export function narrowed_to_starred(): boolean {
-    if (current_filter === undefined) {
-        return false;
-    }
-    return current_filter.has_operand("is", "starred");
-}
-
-export function excludes_muted_topics(): boolean {
-    return (
-        !narrowed_to_topic() &&
-        !narrowed_to_search() &&
-        !narrowed_to_pms() &&
-        !narrowed_to_starred()
-    );
-}
-
-export function is_for_stream_id(stream_id: number): boolean {
+export function is_for_stream_id(stream_id: number, filter?: Filter): boolean {
     // This is not perfect, since we still track narrows by
     // name, not id, but at least the interface is good going
     // forward.
-    const narrow_sub = stream_sub();
+    const narrow_sub = stream_sub(filter);
 
     if (narrow_sub === undefined) {
         return false;
     }
 
     return stream_id === narrow_sub.stream_id;
-}
-
-export function set_has_shown_message_list_view(): void {
-    has_shown_message_list_view = true;
 }

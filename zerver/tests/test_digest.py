@@ -186,7 +186,7 @@ class TestDigestEmailMessages(ZulipTestCase):
         kwargs = mock_send_future_email.call_args[1]
         self.assertEqual(kwargs["to_user_ids"], [polonius.id])
 
-        new_stream_names = kwargs["context"]["new_streams"]["plain"]
+        new_stream_names = kwargs["context"]["new_channels"]["plain"]
         self.assertTrue("web_public_stream" in new_stream_names)
 
     def test_no_logging(self) -> None:
@@ -379,9 +379,7 @@ class TestDigestEmailMessages(ZulipTestCase):
                 realm, "digest_weekday", timezone_now().weekday(), acting_user=None
             )
             cutoff = timezone_now() - timedelta(days=0)
-            with mock.patch(
-                "zerver.worker.queue_processors.bulk_handle_digest_email"
-            ) as queue_mock:
+            with mock.patch("zerver.worker.digest_emails.bulk_handle_digest_email") as queue_mock:
                 enqueue_emails(cutoff)
             return 0 if queue_mock.call_args is None else len(queue_mock.call_args[0][0])
 
@@ -403,7 +401,7 @@ class TestDigestEmailMessages(ZulipTestCase):
 
         # Check that all users without a UserActivityInterval entry are considered
         # inactive users and get enqueued.
-        with mock.patch("zerver.worker.queue_processors.bulk_handle_digest_email") as queue_mock:
+        with mock.patch("zerver.worker.digest_emails.bulk_handle_digest_email") as queue_mock:
             _enqueue_emails_for_realm(realm, cutoff)
 
         num_queued_users = len(queue_mock.call_args[0][0])
@@ -418,7 +416,7 @@ class TestDigestEmailMessages(ZulipTestCase):
             )
 
         # Now we expect no users, due to recent activity.
-        with mock.patch("zerver.worker.queue_processors.bulk_handle_digest_email") as queue_mock:
+        with mock.patch("zerver.worker.digest_emails.bulk_handle_digest_email") as queue_mock:
             _enqueue_emails_for_realm(realm, cutoff)
 
         self.assertEqual(queue_mock.call_count, 0)
@@ -427,7 +425,7 @@ class TestDigestEmailMessages(ZulipTestCase):
         last_visit = timezone_now() - timedelta(days=7)
         UserActivityInterval.objects.all().update(start=last_visit, end=last_visit)
 
-        with mock.patch("zerver.worker.queue_processors.bulk_handle_digest_email") as queue_mock:
+        with mock.patch("zerver.worker.digest_emails.bulk_handle_digest_email") as queue_mock:
             _enqueue_emails_for_realm(realm, cutoff)
 
         num_queued_users = len(queue_mock.call_args[0][0])

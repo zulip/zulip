@@ -51,7 +51,7 @@ and set a password for their account.
 1. Enter your email address.
 
 1. *(optional)* If the name on the account is still a placeholder,
-   edit the **Full name** field.
+   edit the **Name** field.
 
 1. Click **Add**.
 
@@ -73,7 +73,7 @@ permanent organization:
 
 * Users will be logged out of existing sessions on the web, mobile and
   desktop apps and need to log in again.
-* Any [API clients](/api) or [integrations](/integrations/) will need
+* Any [API clients](/api/) or [integrations](/integrations/) will need
   to be updated to point to the new organization URL.
 
 {start_tabs}

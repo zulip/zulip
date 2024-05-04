@@ -12,12 +12,12 @@ import * as inbox_ui from "./inbox_ui";
 import * as inbox_util from "./inbox_util";
 import * as info_overlay from "./info_overlay";
 import * as message_fetch from "./message_fetch";
-import * as message_lists from "./message_lists";
 import * as message_viewport from "./message_viewport";
 import * as modals from "./modals";
 import * as narrow from "./narrow";
 import * as overlays from "./overlays";
 import {page_params} from "./page_params";
+import * as people from "./people";
 import * as popovers from "./popovers";
 import * as recent_view_ui from "./recent_view_ui";
 import * as recent_view_util from "./recent_view_util";
@@ -27,9 +27,11 @@ import * as settings_panel_menu from "./settings_panel_menu";
 import * as settings_toggle from "./settings_toggle";
 import * as sidebar_ui from "./sidebar_ui";
 import * as spectators from "./spectators";
+import {current_user} from "./state_data";
 import * as stream_settings_ui from "./stream_settings_ui";
 import * as ui_report from "./ui_report";
 import * as user_group_edit from "./user_group_edit";
+import * as user_profile from "./user_profile";
 import {user_settings} from "./user_settings";
 
 // Read https://zulip.readthedocs.io/en/latest/subsystems/hashchange-system.html
@@ -52,16 +54,49 @@ function maybe_hide_inbox() {
 }
 
 function show_all_message_view() {
-    narrow.deactivate();
+    // Don't export this function outside of this module since
+    // `change_hash` is false here which means it is should only
+    // be called after hash is updated in the URL.
+    narrow.activate([{operator: "in", operand: "home"}], {
+        trigger: "hashchange",
+        change_hash: false,
+        then_select_id: history.state?.narrow_pointer,
+        then_select_offset: history.state?.narrow_offset,
+    });
 }
 
-export function set_hash_to_home_view() {
+function is_somebody_else_profile_open() {
+    return (
+        user_profile.get_user_id_if_user_profile_modal_open() !== undefined &&
+        user_profile.get_user_id_if_user_profile_modal_open() !== people.my_current_user_id()
+    );
+}
+
+export function set_hash_to_home_view(triggered_by_escape_key = false) {
     let home_view_hash = `#${user_settings.web_home_view}`;
     if (home_view_hash === "#recent_topics") {
         home_view_hash = "#recent";
     }
 
+    if (home_view_hash === "#all_messages") {
+        home_view_hash = "#feed";
+    }
+
     if (window.location.hash !== home_view_hash) {
+        const hash_before_current = browser_history.old_hash();
+        if (
+            triggered_by_escape_key &&
+            home_view_hash === "#feed" &&
+            (hash_before_current === "" || hash_before_current === "#feed")
+        ) {
+            // If the previous view was the user's Combined Feed home
+            // view, and this change was triggered by escape keypress,
+            // then we simulate the back button in order to reuse
+            // existing code for restoring the user's scroll position.
+            window.history.back();
+            return;
+        }
+
         // We want to set URL with no hash here. It is not possible
         // to do so with `window.location.hash` since it will set an empty
         // hash. So, we use `pushState` which simply updates the current URL
@@ -145,7 +180,6 @@ function do_hashchange_normal(from_reload) {
             if (from_reload) {
                 blueslip.debug("We are narrowing as part of a reload.");
                 if (message_fetch.initial_narrow_pointer !== undefined) {
-                    message_lists.home.pre_narrow_offset = message_fetch.initial_offset;
                     narrow_opts.then_select_id = message_fetch.initial_narrow_pointer;
                     narrow_opts.then_select_offset = message_fetch.initial_narrow_offset;
                 }
@@ -183,6 +217,14 @@ function do_hashchange_normal(from_reload) {
             inbox_ui.show();
             break;
         case "#all_messages":
+            // "#all_messages" was renamed to "#feed" in 2024. Unlike
+            // the recent hash rename, there are likely few links that
+            // would break if this compatibility code was removed, but
+            // there's little cost to keeping it.
+            show_all_message_view();
+            window.location.replace("#feed");
+            break;
+        case "#feed":
             show_all_message_view();
             break;
         case "#keyboard-shortcuts":
@@ -190,6 +232,7 @@ function do_hashchange_normal(from_reload) {
         case "#search-operators":
         case "#drafts":
         case "#invite":
+        case "#channels":
         case "#streams":
         case "#organization":
         case "#settings":
@@ -209,11 +252,11 @@ function do_hashchange_overlay(old_hash) {
         // show the user's home view behind it.
         show_home_view();
     }
-    const base = hash_parser.get_current_hash_category();
+    let base = hash_parser.get_current_hash_category();
     const old_base = hash_parser.get_hash_category(old_hash);
     let section = hash_parser.get_current_hash_section();
 
-    if (base === "groups" && page_params.is_guest) {
+    if (base === "groups" && current_user.is_guest) {
         // The #groups settings page is unfinished, and disabled in production.
         show_home_view();
         return;
@@ -237,29 +280,48 @@ function do_hashchange_overlay(old_hash) {
         );
     }
 
-    if (base === "streams" && !section) {
-        history.replaceState(null, "", browser_history.get_full_url("streams/subscribed"));
+    // In 2024, stream was renamed to channel in the Zulip API and UI.
+    // Because pre-change Welcome Bot and Notification Bot messages
+    // included links to "/#streams/all" and "/#streams/new", we'll
+    // need to support "streams" as an overlay hash as an alias for
+    // "channels" permanently.
+    if (base === "streams" || base === "channels") {
+        const valid_hash = hash_util.validate_channels_settings_hash(window.location.hash);
+        // Here valid_hash will always return "channels" as the base.
+        // So, if we update the history because the valid hash does
+        // not match the window.location.hash, then we also reset the
+        // base string we're tracking for the hash.
+        if (valid_hash !== window.location.hash) {
+            history.replaceState(null, "", browser_history.get_full_url(valid_hash));
+            section = hash_parser.get_current_hash_section();
+            base = hash_parser.get_current_hash_category();
+        }
     }
 
-    if (base === "groups" && !section) {
-        history.replaceState(null, "", browser_history.get_full_url("groups/your"));
+    if (base === "groups") {
+        const valid_hash = hash_util.validate_group_settings_hash(window.location.hash);
+        if (valid_hash !== window.location.hash) {
+            history.replaceState(null, "", browser_history.get_full_url(valid_hash));
+            section = hash_parser.get_current_hash_section();
+        }
     }
 
-    // Start by handling the specific case of going
-    // from something like streams/all to streams_subscribed.
+    // Start by handling the specific case of going from
+    // something like "#channels/all" to "#channels/subscribed".
     //
     // In most situations we skip by this logic and load
     // the new overlay.
     if (coming_from_overlay && base === old_base) {
-        if (base === "streams") {
-            // e.g. #streams/29/social/subscribers
-            const right_side_tab = hash_parser.get_current_nth_hash_section(4);
-            stream_settings_ui.change_state(section, right_side_tab);
+        if (base === "channels") {
+            // e.g. #channels/29/social/subscribers
+            const right_side_tab = hash_parser.get_current_nth_hash_section(3);
+            stream_settings_ui.change_state(section, undefined, right_side_tab);
             return;
         }
 
         if (base === "groups") {
-            user_group_edit.change_state(section);
+            const right_side_tab = hash_parser.get_current_nth_hash_section(3);
+            user_group_edit.change_state(section, undefined, right_side_tab);
         }
 
         if (base === "settings") {
@@ -318,15 +380,36 @@ function do_hashchange_overlay(old_hash) {
         browser_history.set_hash_before_overlay(old_hash);
     }
 
-    if (base === "streams") {
-        // e.g. #streams/29/social/subscribers
-        const right_side_tab = hash_parser.get_current_nth_hash_section(4);
-        stream_settings_ui.launch(section, right_side_tab);
+    if (base === "channels") {
+        // e.g. #channels/29/social/subscribers
+        const right_side_tab = hash_parser.get_current_nth_hash_section(3);
+
+        if (is_somebody_else_profile_open()) {
+            stream_settings_ui.launch(section, "all-streams", right_side_tab);
+            return;
+        }
+
+        // We pass left_side_tab as undefined in change_state to
+        // select the tab based on user's subscriptions. "Subscribed" is
+        // selected if user is subscribed to the stream being edited.
+        // Otherwise "All streams" is selected.
+        stream_settings_ui.launch(section, undefined, right_side_tab);
         return;
     }
 
     if (base === "groups") {
-        user_group_edit.launch(section);
+        const right_side_tab = hash_parser.get_current_nth_hash_section(3);
+
+        if (is_somebody_else_profile_open()) {
+            user_group_edit.launch(section, "all-groups", right_side_tab);
+            return;
+        }
+
+        // We pass left_side_tab as undefined in change_state to
+        // select the tab based on user's membership. "My groups" is
+        // selected if user is a member of group being edited.
+        // Otherwise "All groups" is selected.
+        user_group_edit.launch(section, undefined, right_side_tab);
         return;
     }
 
@@ -370,6 +453,15 @@ function do_hashchange_overlay(old_hash) {
 
     if (base === "scheduled") {
         scheduled_messages_overlay_ui.launch();
+    }
+    if (base === "user") {
+        const user_id = Number.parseInt(hash_parser.get_current_hash_section(), 10);
+        if (!people.is_known_user_id(user_id)) {
+            user_profile.show_user_profile_access_error_modal();
+        } else {
+            const user = people.get_by_user_id(user_id);
+            user_profile.show_user_profile(user);
+        }
     }
 }
 

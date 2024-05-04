@@ -13,6 +13,7 @@ import {page_params} from "./page_params";
 import * as reload_state from "./reload_state";
 import * as settings_config from "./settings_config";
 import * as settings_data from "./settings_data";
+import {current_user, realm} from "./state_data";
 import * as timerender from "./timerender";
 import {user_settings} from "./user_settings";
 import * as util from "./util";
@@ -27,6 +28,8 @@ export type User = {
     delivery_email: string | null;
     email: string;
     full_name: string;
+    // used for caching result of remove_diacritics.
+    name_with_diacritics_removed?: string;
     date_joined: string;
     is_active: boolean;
     is_owner: boolean;
@@ -39,8 +42,10 @@ export type User = {
     avatar_url?: string | null;
     avatar_version: number;
     profile_data: Record<number, ProfileData>;
-    is_missing_server_data?: boolean; // used for fake user objects.
-    is_inaccessible_user?: boolean; // used for inaccessible user objects.
+    // used for fake user objects.
+    is_missing_server_data?: boolean;
+    // used for inaccessible user objects.
+    is_inaccessible_user?: boolean;
 } & (
     | {
           is_bot: false;
@@ -206,7 +211,7 @@ export function get_bot_owner_user(user: User & {is_bot: true}): User | undefine
 
 export function can_admin_user(user: User): boolean {
     return (
-        (user.is_bot && user.bot_owner_id !== null && user.bot_owner_id === page_params.user_id) ||
+        (user.is_bot && user.bot_owner_id !== null && user.bot_owner_id === current_user.user_id) ||
         is_my_user_id(user.user_id)
     );
 }
@@ -274,10 +279,6 @@ export function is_known_user_id(user_id: number): boolean {
         return false;
     }
     return true;
-}
-
-export function is_known_user(user: User): boolean {
-    return user && is_known_user_id(user.user_id);
 }
 
 function sort_numerically(user_ids: number[]): number[] {
@@ -394,7 +395,7 @@ export function emails_to_full_names_string(emails: string[]): string {
 }
 
 export function get_user_time(user_id: number): string | undefined {
-    const user_timezone = get_by_user_id(user_id)!.timezone;
+    const user_timezone = get_by_user_id(user_id).timezone;
     if (user_timezone) {
         try {
             return new Date().toLocaleTimeString(user_settings.default_language, {
@@ -799,13 +800,13 @@ export function sender_is_guest(message: Message): boolean {
     return false;
 }
 
-export function user_is_bot(user_id: number): boolean {
-    const user = get_by_user_id(user_id);
-    return user.is_bot;
+export function is_valid_bot_user(user_id: number): boolean {
+    const user = maybe_get_user_by_id(user_id, true);
+    return user?.is_bot ?? false;
 }
 
 export function should_add_guest_user_indicator(user_id: number): boolean {
-    if (!page_params.realm_enable_guest_user_indicator) {
+    if (!realm.realm_enable_guest_user_indicator) {
         return false;
     }
 
@@ -818,14 +819,17 @@ export function user_can_direct_message(recipient_ids_string: string): boolean {
     // message to the target user (or group of users) represented by a
     // user ids string.
 
-    // Regardless of policy, we allow sending direct messages to bots.
+    // Regardless of policy, we allow sending direct messages to bots and to self.
     const recipient_ids = user_ids_string_to_ids_array(recipient_ids_string);
-    if (recipient_ids.length === 1 && user_is_bot(recipient_ids[0])) {
+    if (
+        recipient_ids.length === 1 &&
+        (is_valid_bot_user(recipient_ids[0]) || is_my_user_id(recipient_ids[0]))
+    ) {
         return true;
     }
 
     if (
-        page_params.realm_private_message_policy ===
+        realm.realm_private_message_policy ===
         settings_config.private_message_policy_values.disabled.code
     ) {
         return false;
@@ -883,7 +887,7 @@ export function sender_info_for_recent_view_row(sender_ids: number[]): SenderInf
     const senders_info = [];
     for (const id of sender_ids) {
         // TODO: Better handling for optional values w/o the assertion.
-        const person = get_by_user_id(id)!;
+        const person = get_by_user_id(id);
         const sender: SenderInfo = {
             ...person,
             avatar_url_small: small_avatar_url_for_person(person),
@@ -992,7 +996,7 @@ export function is_active_user_for_popover(user_id: number): boolean {
 }
 
 export function is_current_user_only_owner(): boolean {
-    if (!page_params.is_owner) {
+    if (!current_user.is_owner) {
         return false;
     }
 
@@ -1204,9 +1208,12 @@ export function build_termlet_matcher(termlet: string): (user: User) => boolean 
 
     return function (user: User): boolean {
         let full_name = user.full_name;
+        // Only ignore diacritics if the query is plain ascii
         if (is_ascii) {
-            // Only ignore diacritics if the query is plain ascii
-            full_name = typeahead.remove_diacritics(full_name);
+            if (user.name_with_diacritics_removed === undefined) {
+                user.name_with_diacritics_removed = typeahead.remove_diacritics(full_name);
+            }
+            full_name = user.name_with_diacritics_removed;
         }
         const names = full_name.toLowerCase().split(" ");
 
@@ -1231,11 +1238,8 @@ export function build_person_matcher(query: string): (user: User) => boolean {
     };
 }
 
-export function filter_people_by_search_terms(
-    users: User[],
-    search_terms: string[],
-): Map<number, User> {
-    const filtered_users = new Map();
+export function filter_people_by_search_terms(users: User[], search_terms: string[]): Set<number> {
+    const filtered_users = new Set<number>();
 
     // Build our matchers outside the loop to avoid some
     // search overhead that is not user-specific.
@@ -1244,17 +1248,11 @@ export function filter_people_by_search_terms(
     // Loop through users and populate filtered_users only
     // if they include search_terms
     for (const user of users) {
-        const person = get_by_email(user.email);
-        // Get person object (and ignore errors)
-        if (!person?.full_name) {
-            continue;
-        }
-
         // Return user emails that include search terms
         const match = matchers.some((matcher) => matcher(user));
 
         if (match) {
-            filtered_users.set(person.user_id, true);
+            filtered_users.add(user.user_id);
         }
     }
 
@@ -1362,21 +1360,27 @@ export function is_duplicate_full_name(full_name: string): boolean {
     return ids !== undefined && ids.size > 1;
 }
 
-export function get_mention_syntax(full_name: string, user_id: number, silent: boolean): string {
+export function get_mention_syntax(full_name: string, user_id?: number, silent = false): string {
     let mention = "";
     if (silent) {
         mention += "@_**";
     } else {
         mention += "@**";
     }
-    mention += full_name;
-    if (!user_id) {
+    const wildcard_match = full_name_matches_wildcard_mention(full_name);
+    // TODO: Eventually remove "stream" wildcard from typeahead suggestions
+    // once the rename of stream to channel has settled for users.
+    // Until then, when selected, replace with "channel" wildcard.
+    if (wildcard_match && user_id === undefined && full_name === "stream") {
+        mention += "channel";
+    } else {
+        mention += full_name;
+    }
+
+    if (user_id === undefined && !wildcard_match) {
         blueslip.warn("get_mention_syntax called without user_id.");
     }
-    if (
-        (is_duplicate_full_name(full_name) || full_name_matches_wildcard_mention(full_name)) &&
-        user_id
-    ) {
+    if ((is_duplicate_full_name(full_name) || wildcard_match) && user_id !== undefined) {
         mention += `|${user_id}`;
     }
     mention += "**";
@@ -1384,7 +1388,7 @@ export function get_mention_syntax(full_name: string, user_id: number, silent: b
 }
 
 function full_name_matches_wildcard_mention(full_name: string): boolean {
-    return ["all", "everyone", "stream"].includes(full_name);
+    return ["all", "everyone", "stream", "channel", "topic"].includes(full_name);
 }
 
 export function _add_user(person: User): void {
@@ -1452,7 +1456,7 @@ export function remove_inaccessible_user(user_id: number): void {
     active_user_dict.delete(user_id);
 
     // Create unknown user object for the inaccessible user.
-    const email = "user" + user_id + "@" + page_params.realm_bot_domain;
+    const email = "user" + user_id + "@" + realm.realm_bot_domain;
     const unknown_user = make_user(user_id, email, INACCESSIBLE_USER_NAME);
     _add_user(unknown_user);
 }
@@ -1519,7 +1523,7 @@ export function make_user(user_id: number, email: string, full_name: string): Us
 }
 
 export function add_inaccessible_user(user_id: number): User {
-    const email = "user" + user_id + "@" + page_params.realm_bot_domain;
+    const email = "user" + user_id + "@" + realm.realm_bot_domain;
     const unknown_user = make_user(user_id, email, INACCESSIBLE_USER_NAME);
     _add_user(unknown_user);
     return unknown_user;
@@ -1601,9 +1605,25 @@ export function matches_user_settings_search(person: User, value: string): boole
     return safe_lower(person.full_name).includes(value) || safe_lower(email).includes(value);
 }
 
-export function filter_for_user_settings_search(persons: User[], query: string): User[] {
+function matches_user_settings_role(person: User, role_code: number): boolean {
+    if (role_code === 0 || role_code === person.role) {
+        return true;
+    }
+    return false;
+}
+
+type SettingsUsersFilterQuery = {
+    text_search: string;
+    role_code: number;
+};
+
+export function predicate_for_user_settings_filters(
+    person: User,
+    query: SettingsUsersFilterQuery,
+): boolean {
     /*
-        TODO: For large realms, we can optimize this a couple
+        TODO: For text_search:
+              For large realms, we can optimize this a couple
               different ways.  For realms that don't show
               emails, we can make a simpler filter predicate
               that works solely with full names.  And we can
@@ -1613,7 +1633,10 @@ export function filter_for_user_settings_search(persons: User[], query: string):
 
               See #13554 for more context.
     */
-    return persons.filter((person) => matches_user_settings_search(person, query));
+    return (
+        matches_user_settings_search(person, query.text_search) &&
+        matches_user_settings_role(person, query.role_code)
+    );
 }
 
 export function maybe_incr_recipient_count(
@@ -1653,6 +1676,7 @@ export function set_full_name(person_obj: User, new_full_name: string): void {
     track_duplicate_full_name(new_full_name, person_obj.user_id);
     people_by_name_dict.set(new_full_name, person_obj);
     person_obj.full_name = new_full_name;
+    person_obj.name_with_diacritics_removed = undefined;
 }
 
 export function set_custom_profile_field_data(
@@ -1723,7 +1747,7 @@ export function get_custom_fields_by_type(
         return null;
     }
     const filteredProfileData: ProfileData[] = [];
-    for (const field of page_params.custom_profile_fields) {
+    for (const field of realm.custom_profile_fields) {
         if (field.type === field_type) {
             filteredProfileData.push(profile_data[field.id]);
         }

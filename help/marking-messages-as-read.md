@@ -9,11 +9,21 @@ configure whether messages are marked as read automatically when you scroll.
 
 ## Configure whether messages are automatically marked as read
 
-You may want to configure whether or not the Zulip app will automatically
-mark messages as read. For example, it can be useful to set the mobile app to
-never mark messages as read if you often want to follow up on messages when you
-are at your computer. You will still be able to
-[manually](#mark-all-messages-as-read) mark messages as read.
+You can choose how messages are automatically marked as read in the Zulip web
+and mobile apps. You can configure the mobile app differently from the
+web/desktop app.
+
+- **Always**: Messages are marked as read whenever you scroll through them in
+  the app. You may be used to this from other chat applications.
+- **Never**: Messages are marked as read only
+  [manually](#mark-all-messages-as-read). For example, if you often need to
+  follow up on messages at your computer after reading them in the mobile app,
+  you can choose this option for the mobile app.
+- **Only in conversation views**: In Zulip, a **conversation** is a [direct
+  message](/help/direct-messages) thread (one-on-one or with a group), or a
+  [topic in a channel](/help/channels-and-topics). This option makes it
+  convenient to preview new messages in a stream, or skim [Combined
+  feed](/help/combined-feed), and later read each topic in detail.
 
 {start_tabs}
 
@@ -23,7 +33,7 @@ are at your computer. You will still be able to
 
 1. Under **Advanced**, click on the **Automatically mark messages as
    read** dropdown, and select **Always**, **Never** or **Only in
-   [conversation](/help/recent-conversations) views**.
+   [conversation](/help/reading-conversations) views**.
 
 {tab|mobile}
 
@@ -34,7 +44,7 @@ are at your computer. You will still be able to
 1. Tap **Mark messages as read on scroll**.
 
 1. Select **Always**, **Never** or **Only in
-   [conversation](/help/recent-conversations) views**.
+   [conversation](/help/reading-conversations) views**.
 
 {end_tabs}
 
@@ -59,7 +69,7 @@ stream or topic as read**.
 
 {tab|via-left-sidebar}
 
-1. Hover over a stream, topic, or **All messages** in the left sidebar.
+1. Hover over a stream, topic, or **Combined feed** in the left sidebar.
 
 1. Click on the **ellipsis** (<i class="zulip-icon zulip-icon-more-vertical"></i>).
 
@@ -90,7 +100,7 @@ stream or topic as read**.
 
 {tab|mobile}
 
-1. Tap a stream, topic, or the **All messages**
+1. Tap a stream, topic, or the **Combined feed**
    (<img src="/static/images/help/mobile-globe-icon.svg" alt="globe" class="help-center-icon"/>)
    tab.
 

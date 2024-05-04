@@ -1,6 +1,8 @@
 import configparser
 import os
-from typing import Optional, overload
+from typing import Optional, Union, overload
+
+from scripts.lib.zulip_tools import get_config as get_config_from_file
 
 
 class ZulipSettingsError(Exception):
@@ -23,17 +25,11 @@ else:
 
 
 @overload
-def get_secret(key: str, default_value: str, development_only: bool = False) -> str:
-    ...
-
-
-@overload
 def get_secret(
-    key: str, default_value: Optional[str] = None, development_only: bool = False
-) -> Optional[str]:
-    ...
-
-
+    key: str, default_value: None = None, development_only: bool = False
+) -> Optional[str]: ...
+@overload
+def get_secret(key: str, default_value: str, development_only: bool = False) -> str: ...
 def get_secret(
     key: str, default_value: Optional[str] = None, development_only: bool = False
 ) -> Optional[str]:
@@ -52,17 +48,15 @@ def get_mandatory_secret(key: str) -> str:
 
 
 @overload
-def get_config(section: str, key: str, default_value: str) -> str:
-    ...
-
-
+def get_config(section: str, key: str, default_value: None = None) -> Optional[str]: ...
 @overload
-def get_config(section: str, key: str, default_value: Optional[str] = None) -> Optional[str]:
-    ...
-
-
-def get_config(section: str, key: str, default_value: Optional[str] = None) -> Optional[str]:
-    return config_file.get(section, key, fallback=default_value)
+def get_config(section: str, key: str, default_value: str) -> str: ...
+@overload
+def get_config(section: str, key: str, default_value: bool) -> bool: ...
+def get_config(
+    section: str, key: str, default_value: Union[str, bool, None] = None
+) -> Union[str, bool, None]:
+    return get_config_from_file(config_file, section, key, default_value)
 
 
 def get_from_file_if_exists(path: str) -> str:

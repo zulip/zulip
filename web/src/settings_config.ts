@@ -1,8 +1,9 @@
 import Handlebars from "handlebars/runtime";
 
+import {page_params} from "./base_page_params";
 import {$t, $t_html} from "./i18n";
-import {page_params} from "./page_params";
 import type {RealmDefaultSettings} from "./realm_user_settings_defaults";
+import {realm} from "./state_data";
 import type {StreamSpecificNotificationSettings} from "./sub_store";
 import {StreamPostPolicy} from "./sub_store";
 import type {
@@ -75,15 +76,15 @@ export const user_list_style_values = {
 export const web_stream_unreads_count_display_policy_values = {
     all_streams: {
         code: 1,
-        description: $t({defaultMessage: "All streams"}),
+        description: $t({defaultMessage: "All channels"}),
     },
     unmuted_streams: {
         code: 2,
-        description: $t({defaultMessage: "Unmuted streams and topics"}),
+        description: $t({defaultMessage: "Unmuted channels and topics"}),
     },
     no_streams: {
         code: 3,
-        description: $t({defaultMessage: "No streams"}),
+        description: $t({defaultMessage: "No channels"}),
     },
 };
 
@@ -98,7 +99,7 @@ export const web_home_view_values = {
     },
     all_messages: {
         code: "all_messages",
-        description: $t({defaultMessage: "All messages"}),
+        description: $t({defaultMessage: "Combined feed"}),
     },
 };
 
@@ -132,9 +133,12 @@ export type DisplaySettings = {
     settings: {
         user_display_settings: string[];
     };
+    render_group?: boolean;
     render_only: {
-        high_contrast_mode: boolean;
-        dense_mode: boolean;
+        dense_mode?: boolean;
+        high_contrast_mode?: boolean;
+        web_font_size_px?: boolean;
+        web_line_height_percent?: boolean;
     };
 };
 
@@ -144,13 +148,26 @@ export const get_all_preferences = (): DisplaySettings => ({
         user_display_settings: [
             "dense_mode",
             "high_contrast_mode",
-            "fluid_layout_width",
             "starred_message_counts",
+            "receives_typing_notifications",
+            "fluid_layout_width",
         ],
     },
     render_only: {
-        high_contrast_mode: page_params.development_environment,
         dense_mode: page_params.development_environment,
+        high_contrast_mode: page_params.development_environment,
+    },
+});
+
+/* istanbul ignore next */
+export const get_information_density_preferences = (): DisplaySettings => ({
+    render_group: page_params.development_environment,
+    render_only: {
+        web_font_size_px: page_params.development_environment,
+        web_line_height_percent: page_params.development_environment,
+    },
+    settings: {
+        user_display_settings: ["web_font_size_px", "web_line_height_percent"],
     },
 });
 
@@ -537,9 +554,17 @@ const user_role_array = Object.values(user_role_values);
 export const user_role_map = new Map(user_role_array.map((role) => [role.code, role.description]));
 
 export const preferences_settings_labels = {
+    default_language_settings_label: $t({defaultMessage: "Language"}),
     dense_mode: $t({defaultMessage: "Dense mode"}),
+    display_emoji_reaction_users: new Handlebars.SafeString(
+        $t_html({
+            defaultMessage:
+                "Display names of reacting users when few users have reacted to a message",
+        }),
+    ),
     fluid_layout_width: $t({defaultMessage: "Use full width on wide screens"}),
     high_contrast_mode: $t({defaultMessage: "High contrast mode"}),
+    receives_typing_notifications: $t({defaultMessage: "Show when other users are typing"}),
     starred_message_counts: $t({defaultMessage: "Show counts for starred messages"}),
     twenty_four_hour_time: $t({defaultMessage: "Time format"}),
     translate_emoticons: new Handlebars.SafeString(
@@ -547,25 +572,26 @@ export const preferences_settings_labels = {
             defaultMessage: "Convert emoticons before sending (<code>:)</code> becomes 😃)",
         }),
     ),
-    display_emoji_reaction_users: new Handlebars.SafeString(
-        $t_html({
-            defaultMessage:
-                "Display names of reacting users when few users have reacted to a message",
-        }),
-    ),
     web_escape_navigates_to_home_view: $t({defaultMessage: "Escape key navigates to home view"}),
-    default_language_settings_label: $t({defaultMessage: "Language"}),
+    web_font_size_px: $t({defaultMessage: "Message-area font size (px)"}),
+    web_line_height_percent: $t({defaultMessage: "Message-area line height (%)"}),
 };
 
 export const notification_settings_labels = {
-    enable_online_push_notifications: $t({
-        defaultMessage: "Send mobile notifications even if I'm online",
+    automatically_follow_topics_policy: $t({
+        defaultMessage: "Automatically follow topics",
     }),
-    pm_content_in_desktop_notifications: $t({
-        defaultMessage: "Include content of direct messages in desktop notifications",
+    automatically_follow_topics_where_mentioned: $t({
+        defaultMessage: "Automatically follow topics where I'm mentioned",
+    }),
+    automatically_unmute_topics_in_muted_streams_policy: $t({
+        defaultMessage: "Automatically unmute topics in muted channels",
     }),
     desktop_icon_count_display: $t({
         defaultMessage: "Unread count badge (appears in desktop sidebar and browser tab)",
+    }),
+    enable_online_push_notifications: $t({
+        defaultMessage: "Send mobile notifications even if I'm online",
     }),
     enable_digest_emails: $t({defaultMessage: "Send digest emails when I'm away"}),
     enable_login_emails: $t({
@@ -577,17 +603,11 @@ export const notification_settings_labels = {
     message_content_in_email_notifications: $t({
         defaultMessage: "Include message content in message notification emails",
     }),
+    pm_content_in_desktop_notifications: $t({
+        defaultMessage: "Include content of direct messages in desktop notifications",
+    }),
     realm_name_in_email_notifications_policy: $t({
         defaultMessage: "Include organization name in subject of message notification emails",
-    }),
-    automatically_follow_topics_policy: $t({
-        defaultMessage: "Automatically follow topics",
-    }),
-    automatically_unmute_topics_in_muted_streams_policy: $t({
-        defaultMessage: "Automatically unmute topics in muted streams",
-    }),
-    automatically_follow_topics_where_mentioned: $t({
-        defaultMessage: "Automatically follow topics where I'm mentioned",
     }),
 };
 
@@ -611,7 +631,7 @@ export const realm_user_settings_defaults_labels = {
         defaultMessage: "Let recipients see when a user is typing direct messages",
     }),
     realm_send_stream_typing_notifications: $t({
-        defaultMessage: "Let recipients see when a user is typing stream messages",
+        defaultMessage: "Let recipients see when a user is typing channel messages",
     }),
 };
 
@@ -630,12 +650,12 @@ export const general_notifications_table_labels = {
         "all_mentions",
     ],
     stream: {
-        is_muted: $t({defaultMessage: "Mute stream"}),
+        is_muted: $t({defaultMessage: "Mute channel"}),
         desktop_notifications: $t({defaultMessage: "Visual desktop notifications"}),
         audible_notifications: $t({defaultMessage: "Audible desktop notifications"}),
         push_notifications: $t({defaultMessage: "Mobile notifications"}),
         email_notifications: $t({defaultMessage: "Email notifications"}),
-        pin_to_top: $t({defaultMessage: "Pin stream to top of left sidebar"}),
+        pin_to_top: $t({defaultMessage: "Pin channel to top of left sidebar"}),
         wildcard_mentions_notify: $t({defaultMessage: "Notifications for @all/@everyone mentions"}),
     },
 };
@@ -805,7 +825,7 @@ export function get_notifications_table_row_data(
             is_mobile_checkbox: false,
         };
         if (column === "mobile") {
-            checkbox.is_disabled = !page_params.realm_push_notifications_enabled;
+            checkbox.is_disabled = !realm.realm_push_notifications_enabled;
             checkbox.is_mobile_checkbox = true;
         }
         return checkbox;
@@ -829,7 +849,7 @@ export type AllNotifications = {
 export const all_notifications = (settings_object: Settings): AllNotifications => ({
     general_settings: [
         {
-            label: $t({defaultMessage: "Streams"}),
+            label: $t({defaultMessage: "Channels"}),
             notification_settings: get_notifications_table_row_data(
                 stream_notification_settings,
                 settings_object,
@@ -857,8 +877,8 @@ export const all_notifications = (settings_object: Settings): AllNotifications =
         other_email_settings,
     },
     show_push_notifications_tooltip: {
-        push_notifications: !page_params.realm_push_notifications_enabled,
-        enable_online_push_notifications: !page_params.realm_push_notifications_enabled,
+        push_notifications: !realm.realm_push_notifications_enabled,
+        enable_online_push_notifications: !realm.realm_push_notifications_enabled,
     },
 });
 
@@ -946,7 +966,7 @@ export const user_topic_visibility_policy_values = {
     },
     inherit: {
         code: 0,
-        description: $t({defaultMessage: "Default for stream"}),
+        description: $t({defaultMessage: "Default for channel"}),
     },
 };
 

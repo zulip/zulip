@@ -10,7 +10,7 @@
                 </h1>
                 <button class="modal__close" aria-label="{{t 'Close modal' }}" data-micromodal-close></button>
             </header>
-            <main class="modal__content" data-simplebar>
+            <main class="modal__content" data-simplebar {{#if always_visible_scrollbar}}data-simplebar-auto-hide="false"{{/if}}>
                 <div class="alert" id="dialog_error"></div>
                 {{{ html_body }}}
             </main>

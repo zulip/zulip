@@ -3,8 +3,8 @@
 ```
 Named link: [Zulip homepage](zulip.com)
 A URL (links automatically): zulip.com
-Stream link: #**stream name**
-Stream and topic link: #**stream name>topic name**
+Channel link: #**channel name**
+Channel and topic link: #**channel name>topic name**
 Custom linkifier: For example, #2468 can automatically link to an issue in your tracker.
 ```
 

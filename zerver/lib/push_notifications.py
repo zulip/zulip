@@ -7,7 +7,7 @@ import logging
 import re
 from dataclasses import dataclass
 from email.headerregistry import Address
-from functools import lru_cache
+from functools import cache
 from typing import (
     TYPE_CHECKING,
     Any,
@@ -26,7 +26,7 @@ import gcm
 import lxml.html
 import orjson
 from django.conf import settings
-from django.db import IntegrityError, transaction
+from django.db import transaction
 from django.db.models import F, Q
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
@@ -42,9 +42,11 @@ from zerver.lib.avatar import absolute_avatar_url, get_avatar_for_inaccessible_u
 from zerver.lib.display_recipient import get_display_recipient
 from zerver.lib.emoji_utils import hex_codepoint_to_emoji
 from zerver.lib.exceptions import ErrorCode, JsonableError
-from zerver.lib.message import access_message, huddle_users
+from zerver.lib.message import access_message_and_usermessage, huddle_users
+from zerver.lib.notification_data import get_mentioned_user_group
 from zerver.lib.outgoing_http import OutgoingSession
 from zerver.lib.remote_server import (
+    record_push_notifications_recently_working,
     send_json_to_push_bouncer,
     send_server_data_to_push_bouncer,
     send_to_push_bouncer,
@@ -61,7 +63,6 @@ from zerver.models import (
     Realm,
     Recipient,
     Stream,
-    UserGroup,
     UserMessage,
     UserProfile,
 )
@@ -162,7 +163,7 @@ def has_apns_credentials() -> bool:
     return settings.APNS_TOKEN_KEY_FILE is not None or settings.APNS_CERT_FILE is not None
 
 
-@lru_cache(maxsize=None)
+@cache
 def get_apns_context() -> Optional[APNsContext]:
     # We lazily do this import as part of optimizing Zulip's base
     # import time.
@@ -291,9 +292,9 @@ def send_apple_push_notification(
     if have_missing_app_id:
         devices = [device for device in devices if device.ios_app_id is not None]
 
-    async def send_all_notifications() -> Iterable[
-        Tuple[DeviceToken, Union[aioapns.common.NotificationResult, BaseException]]
-    ]:
+    async def send_all_notifications() -> (
+        Iterable[Tuple[DeviceToken, Union[aioapns.common.NotificationResult, BaseException]]]
+    ):
         requests = [
             aioapns.NotificationRequest(
                 apns_topic=device.ios_app_id,
@@ -610,7 +611,20 @@ def send_notifications_to_bouncer(
         "apple_devices": [device.token for device in apple_devices],
     }
     # Calls zilencer.views.remote_server_notify_push
-    response_data = send_json_to_push_bouncer("POST", "push/notify", post_data)
+
+    try:
+        response_data = send_json_to_push_bouncer("POST", "push/notify", post_data)
+    except PushNotificationsDisallowedByBouncerError as e:
+        logger.warning("Bouncer refused to send push notification: %s", e.reason)
+        do_set_realm_property(
+            user_profile.realm,
+            "push_notifications_enabled",
+            False,
+            acting_user=None,
+        )
+        do_set_push_notifications_enabled_end_timestamp(user_profile.realm, None, acting_user=None)
+        return
+
     assert isinstance(response_data["total_android_devices"], int)
     assert isinstance(response_data["total_apple_devices"], int)
 
@@ -649,15 +663,18 @@ def send_notifications_to_bouncer(
         # The server may have updated our understanding of whether
         # push notifications will work.
         assert isinstance(remote_realm_dict, dict)
+        can_push = remote_realm_dict["can_push"]
         do_set_realm_property(
             user_profile.realm,
             "push_notifications_enabled",
-            remote_realm_dict["can_push"],
+            can_push,
             acting_user=None,
         )
         do_set_push_notifications_enabled_end_timestamp(
             user_profile.realm, remote_realm_dict["expected_end_timestamp"], acting_user=None
         )
+        if can_push:
+            record_push_notifications_recently_working()
 
     logger.info(
         "Sent mobile push notifications for user %s through bouncer: %s via FCM devices, %s via APNs devices",
@@ -674,7 +691,7 @@ def send_notifications_to_bouncer(
 
 def add_push_device_token(
     user_profile: UserProfile, token_str: str, kind: int, ios_app_id: Optional[str] = None
-) -> PushDeviceToken:
+) -> None:
     logger.info(
         "Registering push device: %d %r %d %r", user_profile.id, token_str, kind, ios_app_id
     )
@@ -684,45 +701,42 @@ def add_push_device_token(
     # These can be used to discern whether the user has any mobile
     # devices configured, and is also where we will store encryption
     # keys for mobile push notifications.
-    try:
-        with transaction.atomic():
-            token = PushDeviceToken.objects.create(
+    PushDeviceToken.objects.bulk_create(
+        [
+            PushDeviceToken(
                 user_id=user_profile.id,
-                kind=kind,
                 token=token_str,
+                kind=kind,
                 ios_app_id=ios_app_id,
                 # last_updated is to be renamed to date_created.
                 last_updated=timezone_now(),
-            )
-    except IntegrityError:
-        token = PushDeviceToken.objects.get(
-            user_id=user_profile.id,
-            kind=kind,
-            token=token_str,
-        )
+            ),
+        ],
+        ignore_conflicts=True,
+    )
+
+    if not uses_notification_bouncer():
+        return
 
     # If we're sending things to the push notification bouncer
     # register this user with them here
-    if uses_notification_bouncer():
-        post_data = {
-            "server_uuid": settings.ZULIP_ORG_ID,
-            "user_uuid": str(user_profile.uuid),
-            "realm_uuid": str(user_profile.realm.uuid),
-            # user_id is sent so that the bouncer can delete any pre-existing registrations
-            # for this user+device to avoid duplication upon adding the uuid registration.
-            "user_id": str(user_profile.id),
-            "token": token_str,
-            "token_kind": kind,
-        }
+    post_data = {
+        "server_uuid": settings.ZULIP_ORG_ID,
+        "user_uuid": str(user_profile.uuid),
+        "realm_uuid": str(user_profile.realm.uuid),
+        # user_id is sent so that the bouncer can delete any pre-existing registrations
+        # for this user+device to avoid duplication upon adding the uuid registration.
+        "user_id": str(user_profile.id),
+        "token": token_str,
+        "token_kind": kind,
+    }
 
-        if kind == PushDeviceToken.APNS:
-            post_data["ios_app_id"] = ios_app_id
+    if kind == PushDeviceToken.APNS:
+        post_data["ios_app_id"] = ios_app_id
 
-        logger.info("Sending new push device to bouncer: %r", post_data)
-        # Calls zilencer.views.register_remote_push_device
-        send_to_push_bouncer("POST", "push/register", post_data)
-
-    return token
+    logger.info("Sending new push device to bouncer: %r", post_data)
+    # Calls zilencer.views.register_remote_push_device
+    send_to_push_bouncer("POST", "push/register", post_data)
 
 
 def remove_push_device_token(user_profile: UserProfile, token_str: str, kind: int) -> None:
@@ -867,7 +881,9 @@ def get_mobile_push_content(rendered_content: str) -> str:
 
     def format_as_quote(quote_text: str) -> str:
         return "".join(
-            f"> {line}\n" for line in quote_text.splitlines() if line  # Remove empty lines
+            f"> {line}\n"
+            for line in quote_text.splitlines()
+            if line  # Remove empty lines
         )
 
     def render_olist(ol: lxml.html.HtmlElement) -> str:
@@ -907,13 +923,7 @@ def get_mobile_push_content(rendered_content: str) -> str:
         return plain_text
 
     if settings.PUSH_NOTIFICATION_REDACT_CONTENT:
-        return (
-            "*"
-            + _(
-                "This organization has disabled including message content in mobile push notifications"
-            )
-            + "*"
-        )
+        return _("New message")
 
     elem = lxml.html.fragment_fromstring(rendered_content, create_parent=True)
     change_katex_to_raw_latex(elem)
@@ -979,7 +989,7 @@ def get_message_payload(
         data["stream"] = get_message_stream_name_from_database(message)
         data["stream_id"] = message.recipient.type_id
         data["topic"] = message.topic_name()
-    elif message.recipient.type == Recipient.HUDDLE:
+    elif message.recipient.type == Recipient.DIRECT_MESSAGE_GROUP:
         data["recipient_type"] = "private"
         data["pm_users"] = huddle_users(message.recipient.id)
     else:  # Recipient.PERSONAL
@@ -992,7 +1002,7 @@ def get_apns_alert_title(message: Message) -> str:
     """
     On an iOS notification, this is the first bolded line.
     """
-    if message.recipient.type == Recipient.HUDDLE:
+    if message.recipient.type == Recipient.DIRECT_MESSAGE_GROUP:
         recipients = get_display_recipient(message.recipient)
         assert isinstance(recipients, list)
         return ", ".join(sorted(r["full_name"] for r in recipients))
@@ -1257,7 +1267,7 @@ def handle_remove_push_notification(user_profile_id: int, message_ids: List[int]
 def handle_push_notification(user_profile_id: int, missed_message: Dict[str, Any]) -> None:
     """
     missed_message is the event received by the
-    zerver.worker.queue_processors.PushNotificationWorker.consume function.
+    zerver.worker.missedmessage_mobile_notifications.PushNotificationWorker.consume function.
     """
     if not push_notifications_configured():
         return
@@ -1283,7 +1293,7 @@ def handle_push_notification(user_profile_id: int, missed_message: Dict[str, Any
 
     with transaction.atomic(savepoint=False):
         try:
-            (message, user_message) = access_message(
+            (message, user_message) = access_message_and_usermessage(
                 user_profile, missed_message["message_id"], lock_message=True
             )
         except JsonableError:
@@ -1341,18 +1351,22 @@ def handle_push_notification(user_profile_id: int, missed_message: Dict[str, Any
     if trigger == "private_message":
         trigger = NotificationTriggers.DIRECT_MESSAGE  # nocoverage
 
-    mentioned_user_group_name = None
-    # mentioned_user_group_id will be None if the user is personally mentioned
+    # mentioned_user_group will be None if the user is personally mentioned
     # regardless whether they are a member of the mentioned user group in the
     # message or not.
-    mentioned_user_group_id = missed_message.get("mentioned_user_group_id")
-
-    if mentioned_user_group_id is not None:
-        user_group = UserGroup.objects.get(id=mentioned_user_group_id, realm=user_profile.realm)
-        mentioned_user_group_name = user_group.name
+    mentioned_user_group_id = None
+    mentioned_user_group_name = None
+    mentioned_user_group_members_count = None
+    mentioned_user_group = get_mentioned_user_group([missed_message], user_profile)
+    if mentioned_user_group is not None:
+        mentioned_user_group_id = mentioned_user_group.id
+        mentioned_user_group_name = mentioned_user_group.name
+        mentioned_user_group_members_count = mentioned_user_group.members_count
 
     # Soft reactivate if pushing to a long_term_idle user that is personally mentioned
-    soft_reactivate_if_personal_notification(user_profile, {trigger}, mentioned_user_group_name)
+    soft_reactivate_if_personal_notification(
+        user_profile, {trigger}, mentioned_user_group_members_count
+    )
 
     if message.is_stream_message():
         # This will almost always be True. The corner case where you
@@ -1504,3 +1518,8 @@ class InvalidRemotePushDeviceTokenError(JsonableError):
     @override
     def msg_format() -> str:
         return _("Device not recognized by the push bouncer")
+
+
+class PushNotificationsDisallowedByBouncerError(Exception):
+    def __init__(self, reason: str) -> None:
+        self.reason = reason

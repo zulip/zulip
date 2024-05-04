@@ -1,7 +1,9 @@
 <div id="mark_as_read_turned_off_banner" class="main-view-banner home-error-bar info">
     <p id="mark_as_read_turned_off_content" class="banner_content">
         {{#tr}}
-            Messages will not be automatically marked as read because this is not a conversation view. <z-link>Change setting</z-link>
+            Messages will not be automatically marked as read because this is not a
+            <z-conversation-view>conversation</z-conversation-view> view. <z-link>Change setting</z-link>
+            {{#*inline "z-conversation-view"}}<a href='/help/reading-conversations'>{{> @partial-block}}</a>{{/inline}}
             {{#*inline "z-link"}}<a href='/#settings/preferences'>{{> @partial-block}}</a>{{/inline}}
         {{/tr}}
     </p>

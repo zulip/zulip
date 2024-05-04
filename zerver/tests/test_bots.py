@@ -148,7 +148,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
 
         self.assert_num_bots_equal(num_bots)
 
-        with self.assert_database_query_count(3):
+        with self.assert_database_query_count(4):
             users_result = self.client_get("/json/users")
 
         self.assert_json_success(users_result)
@@ -472,7 +472,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
             "default_sending_stream": "Denmark",
         }
         result = self.client_post("/json/bots", bot_info)
-        self.assert_json_error(result, "Invalid stream name 'Denmark'")
+        self.assert_json_error(result, "Invalid channel name 'Denmark'")
 
     def test_add_bot_with_default_events_register_stream(self) -> None:
         bot_email = "hambot-bot@zulip.testserver"
@@ -556,7 +556,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
             "default_events_register_stream": "Denmark",
         }
         result = self.client_post("/json/bots", bot_info)
-        self.assert_json_error(result, "Invalid stream name 'Denmark'")
+        self.assert_json_error(result, "Invalid channel name 'Denmark'")
 
     def test_add_bot_with_default_all_public_streams(self) -> None:
         self.login("hamlet")
@@ -668,6 +668,36 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         result = self.client_delete(f"/json/users/{self.get_bot_user(email).id}")
         self.assert_json_error(result, "No such user")
         self.assert_num_bots_equal(1)
+
+    def test_activate_bot_with_duplicate_name(self) -> None:
+        self.login("iago")
+        # Create a bot and then deactivate it
+        original_name = "Hamlet"
+        bot_info = {
+            "full_name": original_name,
+            "short_name": "hambot",
+        }
+        result = self.client_post("/json/bots", bot_info)
+        self.assert_json_success(result)
+        bot_email = "hambot-bot@zulip.testserver"
+        bot = self.get_bot_user(bot_email)
+        do_deactivate_user(bot, False, acting_user=None)
+        self.assertFalse(
+            UserProfile.objects.filter(is_bot=True, id=bot.id, is_active=True).exists()
+        )
+
+        # Create another bot with the same name
+        bot_info2 = {
+            "full_name": original_name,
+            "short_name": "hambot2",
+        }
+        result = self.client_post("/json/bots", bot_info2)
+        self.assert_json_success(result)
+        result = self.client_post(f"/json/users/{bot.id}/reactivate")
+        self.assert_json_error(
+            result,
+            'There is already an active bot named "Hamlet" in this organization. To reactivate this bot, you must rename or deactivate the other one first.',
+        )
 
     def test_bot_permissions(self) -> None:
         self.login("hamlet")
@@ -1373,7 +1403,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         }
         email = "hambot-bot@zulip.testserver"
         result = self.client_patch(f"/json/bots/{self.get_bot_user(email).id}", bot_info)
-        self.assert_json_error(result, "Invalid stream name 'Denmark'")
+        self.assert_json_error(result, "Invalid channel name 'Denmark'")
 
     def test_patch_bot_to_stream_not_found(self) -> None:
         self.login("hamlet")
@@ -1388,7 +1418,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         }
         email = "hambot-bot@zulip.testserver"
         result = self.client_patch(f"/json/bots/{self.get_bot_user(email).id}", bot_info)
-        self.assert_json_error(result, "Invalid stream name 'missing'")
+        self.assert_json_error(result, "Invalid channel name 'missing'")
 
     def test_patch_bot_events_register_stream(self) -> None:
         hamlet = self.example_user("hamlet")
@@ -1423,7 +1453,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         self.subscribe(bot_user, stream_name)
         bot_info = dict(default_events_register_stream=stream_name)
         result = self.client_patch(url, bot_info)
-        self.assert_json_error_contains(result, "Invalid stream name")
+        self.assert_json_error_contains(result, "Invalid channel name")
 
         # Subscribing the owner allows us to patch the stream.
         self.subscribe(hamlet, stream_name)
@@ -1490,7 +1520,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         }
         email = "hambot-bot@zulip.testserver"
         result = self.client_patch(f"/json/bots/{self.get_bot_user(email).id}", bot_info)
-        self.assert_json_error(result, "Invalid stream name 'Denmark'")
+        self.assert_json_error(result, "Invalid channel name 'Denmark'")
 
     def test_patch_bot_events_register_stream_none(self) -> None:
         self.login("hamlet")
@@ -1530,7 +1560,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         }
         email = "hambot-bot@zulip.testserver"
         result = self.client_patch(f"/json/bots/{self.get_bot_user(email).id}", bot_info)
-        self.assert_json_error(result, "Invalid stream name 'missing'")
+        self.assert_json_error(result, "Invalid channel name 'missing'")
 
     def test_patch_bot_default_all_public_streams_true(self) -> None:
         self.login("hamlet")

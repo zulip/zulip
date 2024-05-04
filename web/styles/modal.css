@@ -4,8 +4,8 @@
        other "Nah, forget it" actions. */
     --color-exit-button-text: hsl(0deg 0% 0%);
     --color-exit-button-border: hsl(300deg 2% 11% / 30%);
-    --color-exit-button-background: hsl(0deg 0% 100%);
-    --color-exit-button-background-interactive: hsl(0deg 0% 97%);
+    --color-exit-button-background: hsl(226deg 1% 42% / 20%);
+    --color-exit-button-background-interactive: hsl(226deg 1% 42% / 27%);
 }
 
 .modal__overlay {
@@ -70,7 +70,8 @@
     }
 
     .user_profile_manage_own_edit_button,
-    .user_profile_manage_others_edit_button {
+    .user_profile_manage_others_edit_button,
+    .user_profile_manage_own_copy_link_button {
         color: hsl(200deg 100% 50%);
         cursor: pointer;
 
@@ -128,6 +129,7 @@
 
     &:disabled {
         cursor: not-allowed;
+        opacity: 0.5;
     }
 }
 
@@ -150,10 +152,6 @@
     margin-left: 12px;
     background-color: hsl(240deg 96% 68%);
     color: hsl(0deg 0% 100%) !important;
-
-    &:disabled {
-        background-color: hsl(0deg 0% 65%);
-    }
 }
 
 #read_receipts_error,
@@ -209,7 +207,7 @@
         margin: auto;
     }
 
-    #read_receipts_list {
+    .read_receipts_list {
         margin-left: 0;
 
         & li {
@@ -261,12 +259,6 @@
     .email-body {
         margin-left: 20px;
         margin-top: 20px;
-    }
-}
-
-#select_stream_widget {
-    .dropdown-toggle:disabled {
-        pointer-events: none;
     }
 }
 
@@ -352,7 +344,7 @@
 .modal_select {
     height: 30px;
     width: 220px;
-    padding: 0 6px;
+    padding: 0 25px 0 6px;
     color: hsl(0deg 0% 33%);
     border-radius: 4px;
     border: 1px solid hsl(0deg 0% 80%);
@@ -366,6 +358,10 @@
         settings pages, because the background of the modal is brighter than the setting page. */
         background-color: hsl(0deg 0% 90%);
     }
+}
+
+.modal-field-label {
+    margin-bottom: var(--margin-bottom-field-description);
 }
 
 .dropdown-widget-button {
@@ -471,4 +467,43 @@
             }
         }
     }
+}
+
+#introduce-zulip-view-modal {
+    i {
+        vertical-align: middle;
+    }
+
+    .keyboard-button {
+        color: var(--color-hotkey-hint);
+        font-size: 12px;
+        font-weight: 500;
+        padding: 2px 4px;
+        border-radius: 3px;
+        border: 1px solid var(--color-hotkey-hint);
+    }
+}
+
+#generate-integration-url-modal {
+    #integrations-event-container {
+        .integration-all-events-buttons {
+            display: flex;
+            gap: 10px;
+            margin: 5px 0 10px;
+        }
+
+        #integrations-event-options {
+            .integration-event-wrapper {
+                margin: 5px 0;
+            }
+
+            .integration-event-name {
+                word-break: break-all;
+            }
+        }
+    }
+}
+
+#invite_users_option_tabs_container {
+    margin-bottom: 20px;
 }

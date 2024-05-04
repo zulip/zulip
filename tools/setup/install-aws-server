@@ -11,7 +11,7 @@ Installs an empty Ubuntu server in AWS with a Zulip server role.
  * server is the local part of the hostname (e.g. postgres0)
 
  * roles is a comma-separated list of Puppet profile names; these
-   will get 'zulip_ops::profile::' prepended to them, and passed
+   will get 'kandra::profile::' prepended to them, and passed
    to scripts/lib/install -- e.g. 'postgresql'
  * branch is used to override the default branch to install from.
  * username is the name of the AWS SSH key pair to allow logins as
@@ -25,9 +25,7 @@ repo_url=git@github.com:zulip/zulip.git
 [aws]
 zone_id=Z2U988IEXAMPLE
 security_groups=sg-01234567
-image_id=ami-0dc45e3d9be6ab7b5
 instance_type=m4.large
-ssh_secret_id=prod/git/deploy
 EOF
 }
 
@@ -77,9 +75,10 @@ SERVER="$1"
 
 set -x
 
-cd "$(dirname "$0")"
+cd "$(dirname "$0")/../.."
 
-source ./bootstrap-awscli.sh
+./puppet/kandra/files/install-aws-cli
+AWS=/srv/zulip-aws-tools/bin/aws
 
 zulip_install_config_file="$HOME/.zulip-install-server.conf"
 if [ ! -f "$zulip_install_config_file" ]; then
@@ -90,12 +89,12 @@ fi
 REPO_URL=$(crudini --get "$zulip_install_config_file" repo repo_url)
 
 for role in ${ROLES//,/ }; do
-    if ! [ -f "../../puppet/zulip_ops/manifests/profile/$role.pp" ]; then
-        echo "No such role zulip_ops::profile::$role !"
+    if ! [ -f "./puppet/kandra/manifests/profile/$role.pp" ]; then
+        echo "No such role kandra::profile::$role !"
         exit 1
     fi
 done
-FULL_ROLES=$(echo "$ROLES" | perl -pe '$_=join(",",map{"zulip_ops::profile::$_"} split ",")')
+FULL_ROLES=$(echo "$ROLES" | perl -pe '$_=join(",",map{"kandra::profile::$_"} split ",")')
 
 function lookup() {
     KEY="$1"
@@ -105,12 +104,16 @@ function lookup() {
 
 AWS_ZONE_ID=$(lookup zone_id)
 SECURITY_GROUPS=$(lookup security_groups)
-AMI_ID=$(lookup image_id)
 INSTANCE_TYPE=$(lookup instance_type)
 IAM_PROFILE=$(lookup iam_profile)
-SSH_SECRET_ID=$(lookup ssh_secret_id)
 AZ=$(lookup availability_zone)
 DISK_SIZE=$(lookup disk_size)
+
+# Determine the architecture
+ARCH=$($AWS ec2 describe-instance-types --instance-types "$INSTANCE_TYPE" --query 'InstanceTypes[*].ProcessorInfo.SupportedArchitectures[0]' --output text)
+
+# Lookup the latest 22.04 image
+AMI_ID=$($AWS ec2 describe-images --owners 099720109477 --filters 'Name=name,Values=ubuntu/images/hvm-ssd/ubuntu-*-22.04*' "Name=architecture,Values=$ARCH" --query 'sort_by(Images, &CreationDate)[-1].ImageId' --output text)
 
 # Verify it doesn't exist already
 ZONE_NAME=$($AWS route53 get-hosted-zone --id "$AWS_ZONE_ID" | jq -r '.HostedZone.Name')
@@ -134,6 +137,7 @@ EXTRA_ARGS+=(
     --monitoring Enabled=true
     --placement "AvailabilityZone=$AZ"
     --block-device-mappings "DeviceName=/dev/sda1,Ebs={VolumeSize=$DISK_SIZE,VolumeType=gp3,Throughput=125,Iops=3000,Encrypted=true}"
+    --metadata-options "InstanceMetadataTags=enabled"
 )
 
 if [ -n "$DEBUG_KEY" ]; then
@@ -151,8 +155,11 @@ BOOTDATA=$(mktemp)
     echo "FULL_ROLES=$FULL_ROLES"
     echo "REPO_URL=$REPO_URL"
     echo "BRANCH=$BRANCH"
-    echo "SSH_SECRET_ID=$SSH_SECRET_ID"
-    sed '/^AWS=/ r ./bootstrap-awscli.sh' bootstrap-aws-installer
+    # Replace anything which looks like FOO="inline!bar/baz" with the
+    # output of pack-local-script, which will make "$FOO" inside the
+    # $BOOTDATA be the path to that script (smuggled inline and
+    # unpacked before use).
+    perl -ple 's|^(\w+)="inline!([^"]+)"|qx(./tools/setup/pack-local-script $1 $2)|e' ./tools/setup/bootstrap-aws-installer
 } >>"$BOOTDATA"
 
 TAG_ROLE_NAMES="$ROLES"

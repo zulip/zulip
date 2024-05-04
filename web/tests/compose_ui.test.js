@@ -6,7 +6,7 @@ const {$t} = require("./lib/i18n");
 const {mock_esm, set_global, zrequire} = require("./lib/namespace");
 const {run_test, noop} = require("./lib/test");
 const $ = require("./lib/zjquery");
-const {page_params} = require("./lib/zpage_params");
+const {realm} = require("./lib/zpage_params");
 
 set_global("navigator", {});
 
@@ -105,7 +105,7 @@ run_test("insert_syntax_and_focus", ({override}) => {
     $("textarea#compose-textarea")[0] = "compose-textarea";
     // Since we are using a third party library, we just
     // need to ensure it is being called with the right params.
-    override(text_field_edit, "insert", (elt, syntax) => {
+    override(text_field_edit, "insertTextIntoField", (elt, syntax) => {
         assert.equal(elt, "compose-textarea");
         assert.equal(syntax, ":octopus: ");
     });
@@ -116,7 +116,7 @@ run_test("smart_insert", ({override}) => {
     let $textbox = make_textbox("abc");
     $textbox.caret(4);
     function override_with_expected_syntax(expected_syntax) {
-        override(text_field_edit, "insert", (elt, syntax) => {
+        override(text_field_edit, "insertTextIntoField", (elt, syntax) => {
             assert.equal(elt, "textarea");
             assert.equal(syntax, expected_syntax);
         });
@@ -159,7 +159,7 @@ run_test("smart_insert", ({override}) => {
 run_test("replace_syntax", ({override}) => {
     const $textbox = make_textbox("aBca$$");
     $textbox.caret(2);
-    override(text_field_edit, "replace", (elt, old_syntax, new_syntax) => {
+    override(text_field_edit, "replaceFieldText", (elt, old_syntax, new_syntax) => {
         assert.equal(elt, "textarea");
         assert.equal(old_syntax, "a");
         assert.equal(new_syntax(), "A");
@@ -168,7 +168,7 @@ run_test("replace_syntax", ({override}) => {
     compose_ui.replace_syntax("a", "A", $textbox);
     assert.equal(prev_caret, $textbox.caret());
 
-    override(text_field_edit, "replace", (elt, old_syntax, new_syntax) => {
+    override(text_field_edit, "replaceFieldText", (elt, old_syntax, new_syntax) => {
         assert.equal(elt, "textarea");
         assert.equal(old_syntax, "Bca");
         assert.equal(new_syntax(), "$$\\pi$$");
@@ -188,7 +188,7 @@ run_test("compute_placeholder_text", () => {
         message_type: "stream",
         stream_id: undefined,
         topic: "",
-        private_message_recipient: "",
+        direct_message_user_ids: [],
     };
 
     // Stream narrows
@@ -217,14 +217,14 @@ run_test("compute_placeholder_text", () => {
         message_type: "private",
         stream_id: undefined,
         topic: "",
-        private_message_recipient: "",
+        direct_message_user_ids: [],
     };
     assert.equal(
         compose_ui.compute_placeholder_text(opts),
         $t({defaultMessage: "Compose your message here"}),
     );
 
-    opts.private_message_recipient = "bob@zulip.com";
+    opts.direct_message_user_ids = [bob.user_id];
     user_status.set_status_text({
         user_id: bob.user_id,
         status_text: "out to lunch",
@@ -234,7 +234,7 @@ run_test("compute_placeholder_text", () => {
         $t({defaultMessage: "Message Bob (out to lunch)"}),
     );
 
-    opts.private_message_recipient = "alice@zulip.com";
+    opts.direct_message_user_ids = [alice.user_id];
     user_status.set_status_text({
         user_id: alice.user_id,
         status_text: "",
@@ -242,20 +242,20 @@ run_test("compute_placeholder_text", () => {
     assert.equal(compose_ui.compute_placeholder_text(opts), $t({defaultMessage: "Message Alice"}));
 
     // group direct message
-    opts.private_message_recipient = "alice@zulip.com,bob@zulip.com";
+    opts.direct_message_user_ids = [alice.user_id, bob.user_id];
     assert.equal(
         compose_ui.compute_placeholder_text(opts),
         $t({defaultMessage: "Message Alice and Bob"}),
     );
 
     alice.is_guest = true;
-    page_params.realm_enable_guest_user_indicator = true;
+    realm.realm_enable_guest_user_indicator = true;
     assert.equal(
         compose_ui.compute_placeholder_text(opts),
         $t({defaultMessage: "Message translated: Alice (guest) and Bob"}),
     );
 
-    page_params.realm_enable_guest_user_indicator = false;
+    realm.realm_enable_guest_user_indicator = false;
     assert.equal(
         compose_ui.compute_placeholder_text(opts),
         $t({defaultMessage: "Message Alice and Bob"}),
@@ -327,7 +327,7 @@ run_test("quote_and_reply", ({override, override_rewire}) => {
     };
     $("textarea#compose-textarea")[0] = "compose-textarea";
     $("textarea#compose-textarea").attr("id", "compose-textarea");
-    override(text_field_edit, "insert", (elt, syntax) => {
+    override(text_field_edit, "insertTextIntoField", (elt, syntax) => {
         assert.equal(elt, "compose-textarea");
         assert.equal(syntax, "\n\ntranslated: [Quoting…]\n\n");
     });
@@ -351,7 +351,7 @@ run_test("quote_and_reply", ({override, override_rewire}) => {
     }
 
     function override_with_quote_text(quote_text) {
-        override(text_field_edit, "replace", (elt, old_syntax, new_syntax) => {
+        override(text_field_edit, "replaceFieldText", (elt, old_syntax, new_syntax) => {
             assert.equal(elt, "compose-textarea");
             assert.equal(old_syntax, "translated: [Quoting…]");
             assert.equal(
@@ -376,7 +376,7 @@ run_test("quote_and_reply", ({override, override_rewire}) => {
 
     // If the caret is initially positioned at 0, it should not
     // add newlines before the quoted message.
-    override(text_field_edit, "insert", (elt, syntax) => {
+    override(text_field_edit, "insertTextIntoField", (elt, syntax) => {
         assert.equal(elt, "compose-textarea");
         assert.equal(syntax, "translated: [Quoting…]\n\n");
     });
@@ -402,6 +402,7 @@ run_test("quote_and_reply", ({override, override_rewire}) => {
     // quoting a message, the quoted message should be placed
     // at the beginning of compose-box.
     override(message_lists.current, "selected_id", () => 100);
+    override_rewire(compose_reply, "selection_within_message_id", () => undefined);
     compose_reply.quote_and_reply({});
 
     quote_text = "Testing with compose-box closed initially.";
@@ -429,7 +430,7 @@ run_test("quote_and_reply", ({override, override_rewire}) => {
 
     // When there is already 1 newline before and after the caret,
     // only 1 newline is added before and after the quoted message.
-    override(text_field_edit, "insert", (elt, syntax) => {
+    override(text_field_edit, "insertTextIntoField", (elt, syntax) => {
         assert.equal(elt, "compose-textarea");
         assert.equal(syntax, "\ntranslated: [Quoting…]\n");
     });
@@ -446,7 +447,7 @@ run_test("quote_and_reply", ({override, override_rewire}) => {
 
     // When there are many (>=2) newlines before and after the caret,
     // no newline is added before or after the quoted message.
-    override(text_field_edit, "insert", (elt, syntax) => {
+    override(text_field_edit, "insertTextIntoField", (elt, syntax) => {
         assert.equal(elt, "compose-textarea");
         assert.equal(syntax, "translated: [Quoting…]");
     });
@@ -508,6 +509,7 @@ $textarea.get = () => ({
             length: end - start,
         });
     },
+    click() {},
 });
 
 // The argument `text_representation` is a string representing the text
@@ -544,13 +546,18 @@ function get_textarea_state() {
     return before_text + selected_text + after_text;
 }
 
-run_test("format_text - bold and italic", ({override}) => {
-    override(text_field_edit, "set", (_field, text) => {
-        $textarea.val = () => text;
-    });
+run_test("format_text - bold and italic", ({override, override_rewire}) => {
+    override_rewire(
+        compose_ui,
+        "insert_and_scroll_into_view",
+        (content, _textarea, replace_all) => {
+            assert.ok(replace_all);
+            $textarea.val = () => content;
+        },
+    );
     override(
         text_field_edit,
-        "wrapSelection",
+        "wrapFieldSelection",
         (_field, syntax_start, syntax_end = syntax_start) => {
             const new_val =
                 $textarea.val().slice(0, $textarea.range().start) +
@@ -634,10 +641,15 @@ run_test("format_text - bold and italic", ({override}) => {
     assert.equal(get_textarea_state(), "before <**abc**> after");
 });
 
-run_test("format_text - bulleted and numbered lists", ({override}) => {
-    override(text_field_edit, "set", (_field, text) => {
-        $textarea.val = () => text;
-    });
+run_test("format_text - bulleted and numbered lists", ({override_rewire}) => {
+    override_rewire(
+        compose_ui,
+        "insert_and_scroll_into_view",
+        (content, _textarea, replace_all) => {
+            assert.ok(replace_all);
+            $textarea.val = () => content;
+        },
+    );
 
     // Toggling on bulleted list
     init_textarea_state("<first_item\nsecond_item>");
@@ -686,11 +698,16 @@ run_test("format_text - bulleted and numbered lists", ({override}) => {
     assert.equal(get_textarea_state(), "<first_item\nsecond_item>");
 });
 
-run_test("format_text - strikethrough", ({override}) => {
-    override(text_field_edit, "set", (_field, text) => {
-        $textarea.val = () => text;
-    });
-    override(text_field_edit, "wrapSelection", (_field, syntax_start, syntax_end) => {
+run_test("format_text - strikethrough", ({override, override_rewire}) => {
+    override_rewire(
+        compose_ui,
+        "insert_and_scroll_into_view",
+        (content, _textarea, replace_all) => {
+            assert.ok(replace_all);
+            $textarea.val = () => content;
+        },
+    );
+    override(text_field_edit, "wrapFieldSelection", (_field, syntax_start, syntax_end) => {
         const new_val =
             $textarea.val().slice(0, $textarea.range().start) +
             syntax_start +
@@ -733,11 +750,16 @@ run_test("format_text - strikethrough", ({override}) => {
     assert.equal(get_textarea_state(), "before <abc> after");
 });
 
-run_test("format_text - latex", ({override}) => {
-    override(text_field_edit, "set", (_field, text) => {
-        $textarea.val = () => text;
-    });
-    override(text_field_edit, "wrapSelection", (_field, syntax_start, syntax_end) => {
+run_test("format_text - latex", ({override, override_rewire}) => {
+    override_rewire(
+        compose_ui,
+        "insert_and_scroll_into_view",
+        (content, _textarea, replace_all) => {
+            assert.ok(replace_all);
+            $textarea.val = () => content;
+        },
+    );
+    override(text_field_edit, "wrapFieldSelection", (_field, syntax_start, syntax_end) => {
         const new_val =
             $textarea.val().slice(0, $textarea.range().start) +
             syntax_start +
@@ -799,11 +821,16 @@ run_test("format_text - latex", ({override}) => {
     assert.equal(get_textarea_state(), "Before\n<abc\ndef>\nAfter");
 });
 
-run_test("format_text - code", ({override}) => {
-    override(text_field_edit, "set", (_field, text) => {
-        $textarea.val = () => text;
-    });
-    override(text_field_edit, "wrapSelection", (_field, syntax_start, syntax_end) => {
+run_test("format_text - code", ({override, override_rewire}) => {
+    override_rewire(
+        compose_ui,
+        "insert_and_scroll_into_view",
+        (content, _textarea, replace_all) => {
+            assert.ok(replace_all);
+            $textarea.val = () => content;
+        },
+    );
+    override(text_field_edit, "wrapFieldSelection", (_field, syntax_start, syntax_end) => {
         const new_val =
             $textarea.val().slice(0, $textarea.range().start) +
             syntax_start +
@@ -834,17 +861,17 @@ run_test("format_text - code", ({override}) => {
     compose_ui.format_text($textarea, "code");
     assert.equal(
         get_textarea_state(),
-        "Before\nBefore \n```\n<this should\nbe code>\n```\n After\nAfter",
+        "Before\nBefore \n```|\nthis should\nbe code\n```\n After\nAfter",
     );
 
     init_textarea_state("<abc\ndef>");
     compose_ui.format_text($textarea, "code");
-    assert.equal(get_textarea_state(), "```\n<abc\ndef>\n```");
+    assert.equal(get_textarea_state(), "```|\nabc\ndef\n```");
 
     // Code, no selection
     init_textarea_state("|");
     compose_ui.format_text($textarea, "code");
-    assert.equal(get_textarea_state(), "```\n|\n```");
+    assert.equal(get_textarea_state(), "```|\n\n```");
 
     // Undo code selected text, syntax not selected
     init_textarea_state("before `<abc>` after");
@@ -865,11 +892,16 @@ run_test("format_text - code", ({override}) => {
     assert.equal(get_textarea_state(), "before\n<abc\ndef>\nafter");
 });
 
-run_test("format_text - quote", ({override}) => {
-    override(text_field_edit, "set", (_field, text) => {
-        $textarea.val = () => text;
-    });
-    override(text_field_edit, "wrapSelection", (_field, syntax_start, syntax_end) => {
+run_test("format_text - quote", ({override, override_rewire}) => {
+    override_rewire(
+        compose_ui,
+        "insert_and_scroll_into_view",
+        (content, _textarea, replace_all) => {
+            assert.ok(replace_all);
+            $textarea.val = () => content;
+        },
+    );
+    override(text_field_edit, "wrapFieldSelection", (_field, syntax_start, syntax_end) => {
         const new_val =
             $textarea.val().slice(0, $textarea.range().start) +
             syntax_start +
@@ -924,11 +956,16 @@ run_test("format_text - quote", ({override}) => {
     assert.equal(get_textarea_state(), "before\n<abc\ndef>\nafter");
 });
 
-run_test("format_text - spoiler", ({override}) => {
-    override(text_field_edit, "set", (_field, text) => {
-        $textarea.val = () => text;
-    });
-    override(text_field_edit, "wrapSelection", (_field, syntax_start, syntax_end) => {
+run_test("format_text - spoiler", ({override, override_rewire}) => {
+    override_rewire(
+        compose_ui,
+        "insert_and_scroll_into_view",
+        (content, _textarea, replace_all) => {
+            assert.ok(replace_all);
+            $textarea.val = () => content;
+        },
+    );
+    override(text_field_edit, "wrapFieldSelection", (_field, syntax_start, syntax_end) => {
         const new_val =
             $textarea.val().slice(0, $textarea.range().start) +
             syntax_start +
@@ -991,11 +1028,16 @@ run_test("format_text - spoiler", ({override}) => {
     assert.equal(get_textarea_state(), "before\n<abc>\nafter");
 });
 
-run_test("format_text - link", ({override}) => {
-    override(text_field_edit, "set", (_field, text) => {
-        $textarea.val = () => text;
-    });
-    override(text_field_edit, "wrapSelection", (_field, syntax_start, syntax_end) => {
+run_test("format_text - link", ({override, override_rewire}) => {
+    override_rewire(
+        compose_ui,
+        "insert_and_scroll_into_view",
+        (content, _textarea, replace_all) => {
+            assert.ok(replace_all);
+            $textarea.val = () => content;
+        },
+    );
+    override(text_field_edit, "wrapFieldSelection", (_field, syntax_start, syntax_end) => {
         const new_val =
             $textarea.val().slice(0, $textarea.range().start) +
             syntax_start +
@@ -1208,24 +1250,29 @@ run_test("right-to-left", () => {
 
 const get_focus_area = compose_ui._get_focus_area;
 run_test("get_focus_area", () => {
-    assert.equal(get_focus_area("private", {}), "#private_message_recipient");
+    assert.equal(get_focus_area({message_type: "private"}), "#private_message_recipient");
     assert.equal(
-        get_focus_area("private", {
+        get_focus_area({
+            message_type: "private",
             private_message_recipient: "bob@example.com",
         }),
         "textarea#compose-textarea",
     );
-    assert.equal(get_focus_area("stream", {}), "#compose_select_recipient_widget_wrapper");
     assert.equal(
-        get_focus_area("stream", {stream_name: "fun", stream_id: 4}),
+        get_focus_area({message_type: "stream"}),
+        "#compose_select_recipient_widget_wrapper",
+    );
+    assert.equal(
+        get_focus_area({message_type: "stream", stream_name: "fun", stream_id: 4}),
         "input#stream_message_recipient_topic",
     );
     assert.equal(
-        get_focus_area("stream", {stream_name: "fun", stream_id: 4, topic: "more"}),
+        get_focus_area({message_type: "stream", stream_name: "fun", stream_id: 4, topic: "more"}),
         "textarea#compose-textarea",
     );
     assert.equal(
-        get_focus_area("stream", {
+        get_focus_area({
+            message_type: "stream",
             stream_id: 4,
             topic: "more",
             trigger: "clear topic button",

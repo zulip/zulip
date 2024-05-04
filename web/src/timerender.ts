@@ -7,7 +7,6 @@ import {
     parseISO,
 } from "date-fns";
 import $ from "jquery";
-import _ from "lodash";
 
 import render_markdown_time_tooltip from "../templates/markdown_time_tooltip.hbs";
 
@@ -343,8 +342,7 @@ function maybe_add_update_list_entry(entry: UpdateEntry): void {
 }
 
 function render_date_span($elem: JQuery, rendered_time: TimeRender): JQuery {
-    $elem.text("");
-    $elem.append(_.escape(rendered_time.time_str));
+    $elem.text(rendered_time.time_str);
     return $elem.attr("data-tippy-content", rendered_time.formal_time_str);
 }
 
@@ -359,7 +357,7 @@ export function render_date(time: Date): JQuery {
     const className = `timerender${next_timerender_id}`;
     next_timerender_id += 1;
     const rendered_time = render_now(time);
-    let $node = $("<span>").attr("class", className);
+    let $node = $("<span>").attr("class", `timerender-content ${className}`);
     $node = render_date_span($node, rendered_time);
     maybe_add_update_list_entry({
         needs_update: rendered_time.needs_update,
@@ -423,8 +421,21 @@ export function get_full_time(timestamp: number): string {
     return formatISO(timestamp * 1000);
 }
 
-export function get_timestamp_for_flatpickr(timestring: string): Date {
+function get_current_time_to_hour(): Date {
+    const timestamp = new Date();
+    timestamp.setMinutes(0, 0);
+    return timestamp;
+}
+
+export function get_timestamp_for_flatpickr(timestring?: string): Date {
     let timestamp;
+
+    // timestring is undefined when first opening the picker from the
+    // compose box button.
+    if (timestring === undefined) {
+        return get_current_time_to_hour();
+    }
+
     try {
         // If there's already a valid time in the compose box,
         // we use it to initialize the flatpickr instance.
@@ -432,8 +443,7 @@ export function get_timestamp_for_flatpickr(timestring: string): Date {
     } finally {
         // Otherwise, default to showing the current time to the hour.
         if (!timestamp || !isValid(timestamp)) {
-            timestamp = new Date();
-            timestamp.setMinutes(0, 0);
+            timestamp = get_current_time_to_hour();
         }
     }
     return timestamp;

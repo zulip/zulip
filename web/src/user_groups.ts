@@ -1,9 +1,10 @@
 import * as blueslip from "./blueslip";
 import {FoldDict} from "./fold_dict";
 import * as group_permission_settings from "./group_permission_settings";
-import {page_params} from "./page_params";
 import * as settings_config from "./settings_config";
-import type {User, UserGroupUpdateEvent} from "./types";
+import {current_user} from "./state_data";
+import type {UserOrMention} from "./typeahead_helper";
+import type {UserGroupUpdateEvent} from "./types";
 
 export type UserGroup = {
     description: string;
@@ -66,6 +67,10 @@ export function get_user_group_from_id(group_id: number): UserGroup {
     return user_group;
 }
 
+export function maybe_get_user_group_from_id(group_id: number): UserGroup | undefined {
+    return user_group_by_id_dict.get(group_id);
+}
+
 export function update(event: UserGroupUpdateEvent): void {
     const group = get_user_group_from_id(event.group_id);
     if (event.data.name !== undefined) {
@@ -99,7 +104,7 @@ export function get_user_groups_allowed_to_mention(): UserGroup[] {
     const user_groups = get_realm_user_groups();
     return user_groups.filter((group) => {
         const can_mention_group_id = group.can_mention_group;
-        return is_user_in_group(can_mention_group_id, page_params.user_id);
+        return is_user_in_group(can_mention_group_id, current_user.user_id);
     });
 }
 
@@ -166,7 +171,9 @@ export function initialize(params: {realm_user_groups: UserGroupRaw[]}): void {
     }
 }
 
-export function is_user_group(item: User | UserGroup): item is UserGroup {
+export function is_user_group(
+    item: (UserOrMention & {members: undefined}) | UserGroup,
+): item is UserGroup {
     return item.members !== undefined;
 }
 

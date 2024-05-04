@@ -144,9 +144,6 @@ LANGUAGE_CODE = "en-us"
 # to load the internationalization machinery.
 USE_I18N = True
 
-# If you set this to False, Django will not use time-zone-aware datetimes.
-USE_TZ = True
-
 # this directory will be used to store logs for development environment
 DEVELOPMENT_LOG_DIRECTORY = os.path.join(DEPLOY_ROOT, "var", "log")
 
@@ -178,8 +175,6 @@ MIDDLEWARE = [
     # Make sure 2FA middlewares come after authentication middleware.
     "django_otp.middleware.OTPMiddleware",  # Required by two factor auth.
     "two_factor.middleware.threadlocals.ThreadLocals",  # Required by Twilio
-    # Needs to be after CommonMiddleware, which sets Content-Length
-    "zerver.middleware.FinalizeOpenGraphDescription",
 ]
 
 AUTH_USER_MODEL = "zerver.UserProfile"
@@ -280,6 +275,11 @@ DATABASES: Dict[str, Dict[str, Any]] = {
         "OPTIONS": {
             "connection_factory": TimeTrackingConnection,
             "cursor_factory": TimeTrackingCursor,
+            # The default is null, which means no timeout; 2 is the
+            # minimum allowed value.  We set this low, so we move on
+            # quickly, in the case that the server is running but
+            # unable to handle new connections for some reason.
+            "connect_timeout": 2,
         },
     }
 }
@@ -295,6 +295,8 @@ elif REMOTE_POSTGRES_HOST != "":
         HOST=REMOTE_POSTGRES_HOST,
         PORT=REMOTE_POSTGRES_PORT,
     )
+    if "," in REMOTE_POSTGRES_HOST:
+        DATABASES["default"]["OPTIONS"]["target_session_attrs"] = "read-write"
     if get_secret("postgres_password") is not None:
         DATABASES["default"].update(
             PASSWORD=get_secret("postgres_password"),
@@ -311,7 +313,7 @@ elif (
         PASSWORD=get_secret("postgres_password"),
         HOST="localhost",
     )
-POSTGRESQL_MISSING_DICTIONARIES = bool(get_config("postgresql", "missing_dictionaries", None))
+POSTGRESQL_MISSING_DICTIONARIES = get_config("postgresql", "missing_dictionaries", False)
 
 DEFAULT_AUTO_FIELD = "django.db.models.AutoField"
 
@@ -415,20 +417,21 @@ LANGUAGE_COOKIE_SAMESITE: Final = "Lax"
 if DEVELOPMENT:
     # Use fast password hashing for creating testing users when not
     # PRODUCTION.  Saves a bunch of time.
-    PASSWORD_HASHERS = (
+    PASSWORD_HASHERS = [
+        "django.contrib.auth.hashers.MD5PasswordHasher",
         "django.contrib.auth.hashers.SHA1PasswordHasher",
         "django.contrib.auth.hashers.PBKDF2PasswordHasher",
-    )
+    ]
     # Also we auto-generate passwords for the default users which you
     # can query using ./manage.py print_initial_password
     INITIAL_PASSWORD_SALT = get_secret("initial_password_salt")
 else:
     # For production, use the best password hashing algorithm: Argon2
     # Zulip was originally on PBKDF2 so we need it for compatibility
-    PASSWORD_HASHERS = (
+    PASSWORD_HASHERS = [
         "django.contrib.auth.hashers.Argon2PasswordHasher",
         "django.contrib.auth.hashers.PBKDF2PasswordHasher",
-    )
+    ]
 
 ########################################################################
 # API/BOT SETTINGS
@@ -519,6 +522,14 @@ INTERNAL_BOT_DOMAIN = "zulip.com"
 
 # This needs to be synced with the Camo installation
 CAMO_KEY = get_secret("camo_key") if CAMO_URI != "" else None
+
+########################################################################
+# KATEX SERVER SETTINGS
+########################################################################
+
+KATEX_SERVER = get_config("application_server", "katex_server", False)
+KATEX_SERVER_PORT = get_config("application_server", "katex_server_port", "9700")
+
 
 ########################################################################
 # STATIC CONTENT AND MINIFICATION SETTINGS
@@ -676,7 +687,6 @@ QUEUE_ERROR_DIR = zulip_path("/var/log/zulip/queue_error")
 QUEUE_STATS_DIR = zulip_path("/var/log/zulip/queue_stats")
 DIGEST_LOG_PATH = zulip_path("/var/log/zulip/digest.log")
 ANALYTICS_LOG_PATH = zulip_path("/var/log/zulip/analytics.log")
-ANALYTICS_LOCK_DIR = zulip_path("/home/zulip/deployments/analytics-lock-dir")
 WEBHOOK_LOG_PATH = zulip_path("/var/log/zulip/webhooks_errors.log")
 WEBHOOK_ANOMALOUS_PAYLOADS_LOG_PATH = zulip_path("/var/log/zulip/webhooks_anomalous_payloads.log")
 WEBHOOK_UNSUPPORTED_EVENTS_LOG_PATH = zulip_path("/var/log/zulip/webhooks_unsupported_events.log")
@@ -688,6 +698,10 @@ AUTH_LOG_PATH = zulip_path("/var/log/zulip/auth.log")
 SCIM_LOG_PATH = zulip_path("/var/log/zulip/scim.log")
 
 ZULIP_WORKER_TEST_FILE = zulip_path("/var/log/zulip/zulip-worker-test-file")
+
+LOCKFILE_DIRECTORY = (
+    "/srv/zulip-locks" if not DEVELOPMENT else os.path.join(os.path.join(DEPLOY_ROOT, "var/locks"))
+)
 
 
 if IS_WORKER:
@@ -1161,6 +1175,10 @@ CROSS_REALM_BOT_EMAILS = {
     "welcome-bot@zulip.com",
     "emailgateway@zulip.com",
 }
+
+MOBILE_NOTIFICATIONS_SHARDS = int(
+    get_config("application_server", "mobile_notification_shards", "1")
+)
 
 TWO_FACTOR_PATCH_ADMIN = False
 

@@ -7,7 +7,11 @@
                     <span class="stream-privacy-modified-color-{{stream_id}} stream-privacy filter-icon"  style="color: {{stream_privacy_icon_color}}">
                         {{> stream_privacy}}
                     </span>
-                    {{stream_name}}
+                    {{#if stream_name}}
+                        {{stream_name}}
+                    {{else}}
+                        &nbsp;
+                    {{/if}}
                 </div>
                 <span class="stream_topic_separator"><i class="zulip-icon zulip-icon-chevron-right"></i></span>
                 <span class="stream_topic">

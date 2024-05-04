@@ -21,17 +21,29 @@ from corporate.views.event_status import (
     remote_server_event_status,
     remote_server_event_status_page,
 )
+from corporate.views.installation_activity import (
+    get_installation_activity,
+    get_integrations_activity,
+)
 from corporate.views.portico import (
     app_download_link_redirect,
     apps_view,
     communities_view,
+    customer_portal,
     hello_view,
+    invoices_page,
     landing_view,
     plans_view,
+    remote_realm_customer_portal,
+    remote_realm_invoices_page,
     remote_realm_plans_page,
+    remote_server_customer_portal,
+    remote_server_invoices_page,
     remote_server_plans_page,
     team_view,
 )
+from corporate.views.realm_activity import get_realm_activity
+from corporate.views.remote_activity import get_remote_server_activity
 from corporate.views.remote_billing_page import (
     remote_billing_legacy_server_confirm_login,
     remote_billing_legacy_server_from_login_confirmation_link,
@@ -56,7 +68,7 @@ from corporate.views.sponsorship import (
     sponsorship,
     sponsorship_page,
 )
-from corporate.views.support import support_request
+from corporate.views.support import demo_request, remote_servers_support, support, support_request
 from corporate.views.upgrade import (
     remote_realm_upgrade,
     remote_realm_upgrade_page,
@@ -65,6 +77,7 @@ from corporate.views.upgrade import (
     upgrade,
     upgrade_page,
 )
+from corporate.views.user_activity import get_user_activity
 from corporate.views.webhook import stripe_webhook
 from zerver.lib.rest import rest_path
 from zerver.lib.url_redirects import LANDING_PAGE_REDIRECTS
@@ -76,11 +89,22 @@ i18n_urlpatterns: Any = [
     path("jobs/", TemplateView.as_view(template_name="corporate/jobs.html")),
     # Billing
     path("billing/", billing_page, name="billing_page"),
+    path("invoices/", invoices_page, name="invoices_page"),
+    path("customer_portal/", customer_portal, name="customer_portal_page"),
     path("sponsorship/", sponsorship_page, name="sponsorship_request"),
     path("upgrade/", upgrade_page, name="upgrade_page"),
     path("support/", support_request),
+    path("request-demo/", demo_request),
     path("billing/event_status/", event_status_page, name="event_status_page"),
     path("stripe/webhook/", stripe_webhook, name="stripe_webhook"),
+    # Server admin (user_profile.is_staff) visible stats pages
+    path("activity", get_installation_activity),
+    path("activity/integrations", get_integrations_activity),
+    path("activity/support", support, name="support"),
+    path("realm_activity/<realm_str>/", get_realm_activity),
+    path("user_activity/<user_profile_id>/", get_user_activity),
+    path("activity/remote", get_remote_server_activity),
+    path("activity/remote/support", remote_servers_support, name="remote_servers_support"),
 ]
 
 v1_api_and_json_patterns = [
@@ -135,6 +159,11 @@ landing_page_urls = [
         {"template_name": "corporate/case-studies/idrift-case-study.html"},
     ),
     path(
+        "case-studies/gut-contact/",
+        landing_view,
+        {"template_name": "corporate/case-studies/gut-contact-case-study.html"},
+    ),
+    path(
         "case-studies/end-point/",
         landing_view,
         {"template_name": "corporate/case-studies/end-point-case-study.html"},
@@ -143,6 +172,11 @@ landing_page_urls = [
         "case-studies/atolio/",
         landing_view,
         {"template_name": "corporate/case-studies/atolio-case-study.html"},
+    ),
+    path(
+        "case-studies/semsee/",
+        landing_view,
+        {"template_name": "corporate/case-studies/semsee-case-study.html"},
     ),
     path(
         "case-studies/tum/",
@@ -260,6 +294,26 @@ urlpatterns += [
         "server/<server_uuid>/billing/event_status/",
         remote_server_event_status_page,
         name="remote_server_event_status_page",
+    ),
+    path(
+        "realm/<realm_uuid>/invoices/",
+        remote_realm_invoices_page,
+        name="remote_realm_invoices_page",
+    ),
+    path(
+        "server/<server_uuid>/invoices/",
+        remote_server_invoices_page,
+        name="remote_server_invoices_page",
+    ),
+    path(
+        "realm/<realm_uuid>/customer_portal/",
+        remote_realm_customer_portal,
+        name="remote_realm_customer_portal_page",
+    ),
+    path(
+        "server/<server_uuid>/customer_portal/",
+        remote_server_customer_portal,
+        name="remote_server_customer_portal_page",
     ),
     # Remote variants of above API endpoints.
     path("json/realm/<realm_uuid>/billing/sponsorship", remote_realm_sponsorship),

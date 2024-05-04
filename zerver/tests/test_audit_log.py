@@ -34,9 +34,10 @@ from zerver.actions.realm_settings import (
     do_deactivate_realm,
     do_reactivate_realm,
     do_set_realm_authentication_methods,
-    do_set_realm_notifications_stream,
+    do_set_realm_new_stream_announcements_stream,
     do_set_realm_property,
-    do_set_realm_signup_notifications_stream,
+    do_set_realm_signup_announcements_stream,
+    do_set_realm_zulip_update_announcements_stream,
 )
 from zerver.actions.streams import (
     bulk_add_subscriptions,
@@ -74,12 +75,12 @@ from zerver.lib.types import LinkifierDict, RealmPlaygroundDict
 from zerver.lib.utils import assert_is_not_none
 from zerver.models import (
     Message,
+    NamedUserGroup,
     Realm,
     RealmAuditLog,
     RealmPlayground,
     Recipient,
     Subscription,
-    UserGroup,
     UserProfile,
 )
 from zerver.models.groups import SystemGroups
@@ -556,15 +557,15 @@ class TestRealmAuditLog(ZulipTestCase):
             1,
         )
 
-    def test_set_realm_notifications_stream(self) -> None:
+    def test_set_realm_new_stream_announcements_stream(self) -> None:
         now = timezone_now()
         realm = get_realm("zulip")
         user = self.example_user("hamlet")
-        old_value = realm.notifications_stream_id
+        old_value = realm.new_stream_announcements_stream_id
         stream_name = "test"
         stream = self.make_stream(stream_name, realm)
 
-        do_set_realm_notifications_stream(realm, stream, stream.id, acting_user=user)
+        do_set_realm_new_stream_announcements_stream(realm, stream, stream.id, acting_user=user)
         self.assertEqual(
             RealmAuditLog.objects.filter(
                 realm=realm,
@@ -574,21 +575,21 @@ class TestRealmAuditLog(ZulipTestCase):
                 extra_data={
                     RealmAuditLog.OLD_VALUE: old_value,
                     RealmAuditLog.NEW_VALUE: stream.id,
-                    "property": "notifications_stream",
+                    "property": "new_stream_announcements_stream",
                 },
             ).count(),
             1,
         )
 
-    def test_set_realm_signup_notifications_stream(self) -> None:
+    def test_set_realm_signup_announcements_stream(self) -> None:
         now = timezone_now()
         realm = get_realm("zulip")
         user = self.example_user("hamlet")
-        old_value = realm.signup_notifications_stream_id
+        old_value = realm.signup_announcements_stream_id
         stream_name = "test"
         stream = self.make_stream(stream_name, realm)
 
-        do_set_realm_signup_notifications_stream(realm, stream, stream.id, acting_user=user)
+        do_set_realm_signup_announcements_stream(realm, stream, stream.id, acting_user=user)
         self.assertEqual(
             RealmAuditLog.objects.filter(
                 realm=realm,
@@ -598,7 +599,31 @@ class TestRealmAuditLog(ZulipTestCase):
                 extra_data={
                     RealmAuditLog.OLD_VALUE: old_value,
                     RealmAuditLog.NEW_VALUE: stream.id,
-                    "property": "signup_notifications_stream",
+                    "property": "signup_announcements_stream",
+                },
+            ).count(),
+            1,
+        )
+
+    def test_set_realm_zulip_update_announcements_stream(self) -> None:
+        now = timezone_now()
+        realm = get_realm("zulip")
+        user = self.example_user("hamlet")
+        old_value = realm.zulip_update_announcements_stream_id
+        stream_name = "test"
+        stream = self.make_stream(stream_name, realm)
+
+        do_set_realm_zulip_update_announcements_stream(realm, stream, stream.id, acting_user=user)
+        self.assertEqual(
+            RealmAuditLog.objects.filter(
+                realm=realm,
+                event_type=RealmAuditLog.REALM_PROPERTY_CHANGED,
+                event_time__gte=now,
+                acting_user=user,
+                extra_data={
+                    RealmAuditLog.OLD_VALUE: old_value,
+                    RealmAuditLog.NEW_VALUE: stream.id,
+                    "property": "zulip_update_announcements_stream",
                 },
             ).count(),
             1,
@@ -1060,13 +1085,13 @@ class TestRealmAuditLog(ZulipTestCase):
         realm = do_create_realm(string_id="test", name="foo")
 
         # The expected number of system user group is the total number of roles
-        # from UserGroup.SYSTEM_USER_GROUP_ROLE_MAP in addition to
+        # from NamedUserGroup.SYSTEM_USER_GROUP_ROLE_MAP in addition to
         # full_members_system_group, everyone_on_internet_system_group and
         # nobody_system_group.
-        expected_system_user_group_count = len(UserGroup.SYSTEM_USER_GROUP_ROLE_MAP) + 3
+        expected_system_user_group_count = len(NamedUserGroup.SYSTEM_USER_GROUP_ROLE_MAP) + 3
 
         system_user_group_ids = sorted(
-            UserGroup.objects.filter(
+            NamedUserGroup.objects.filter(
                 realm=realm,
                 is_system_group=True,
             ).values_list("id", flat=True)
@@ -1118,33 +1143,11 @@ class TestRealmAuditLog(ZulipTestCase):
             self.assertEqual(supergroup_id, expected_supergroup_id)
             self.assertEqual(subgroup_id, expected_subgroup_id)
 
-        audit_log_entries = sorted(
-            RealmAuditLog.objects.filter(
-                realm=realm,
-                event_type=RealmAuditLog.USER_GROUP_GROUP_BASED_SETTING_CHANGED,
-                event_time__gte=now,
-                acting_user=None,
-            ).values_list("modified_user_group_id", "extra_data")
-        )
-        nobody_group = UserGroup.objects.get(name=SystemGroups.NOBODY, realm=realm)
-        for (user_group_id, extra_data), expected_user_group_id in zip(
-            audit_log_entries, logged_system_group_ids
-        ):
-            self.assertEqual(user_group_id, expected_user_group_id)
-            self.assertDictEqual(
-                extra_data,
-                {
-                    RealmAuditLog.OLD_VALUE: None,
-                    RealmAuditLog.NEW_VALUE: nobody_group.id,
-                    "property": "can_mention_group",
-                },
-            )
-
     def test_user_group_creation(self) -> None:
         hamlet = self.example_user("hamlet")
         cordelia = self.example_user("cordelia")
         now = timezone_now()
-        public_group = UserGroup.objects.get(
+        public_group = NamedUserGroup.objects.get(
             name=SystemGroups.EVERYONE_ON_INTERNET, realm=hamlet.realm
         )
         user_group = check_add_user_group(
@@ -1175,24 +1178,6 @@ class TestRealmAuditLog(ZulipTestCase):
         self.assert_length(audit_log_entries, 2)
         self.assertEqual(audit_log_entries[0].modified_user, hamlet)
         self.assertEqual(audit_log_entries[1].modified_user, cordelia)
-
-        audit_log_entries = RealmAuditLog.objects.filter(
-            acting_user=hamlet,
-            realm=hamlet.realm,
-            event_time__gte=now,
-            event_type=RealmAuditLog.USER_GROUP_GROUP_BASED_SETTING_CHANGED,
-        )
-        self.assert_length(audit_log_entries, len(UserGroup.GROUP_PERMISSION_SETTINGS))
-        self.assertListEqual(
-            [audit_log.extra_data for audit_log in audit_log_entries],
-            [
-                {
-                    RealmAuditLog.OLD_VALUE: None,
-                    RealmAuditLog.NEW_VALUE: public_group.id,
-                    "property": "can_mention_group",
-                }
-            ],
-        )
 
     def test_change_user_group_memberships(self) -> None:
         hamlet = self.example_user("hamlet")
@@ -1327,7 +1312,7 @@ class TestRealmAuditLog(ZulipTestCase):
         )
 
         old_group = user_group.can_mention_group
-        new_group = UserGroup.objects.get(
+        new_group = NamedUserGroup.objects.get(
             name=SystemGroups.EVERYONE_ON_INTERNET, realm=user_group.realm
         )
         self.assertNotEqual(old_group.id, new_group.id)

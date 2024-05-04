@@ -14,7 +14,12 @@ from zerver.actions.message_edit import check_update_message
 from zerver.context_processors import get_valid_realm_from_request
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.html_diff import highlight_html_differences
-from zerver.lib.message import access_message, access_web_public_message, messages_for_ids
+from zerver.lib.message import (
+    access_message,
+    access_message_and_usermessage,
+    access_web_public_message,
+    messages_for_ids,
+)
 from zerver.lib.request import RequestNotes
 from zerver.lib.response import json_success
 from zerver.lib.timestamp import datetime_to_timestamp
@@ -97,7 +102,7 @@ def get_message_edit_history(
 ) -> HttpResponse:
     if not user_profile.realm.allow_edit_history:
         raise JsonableError(_("Message edit history is disabled in this organization"))
-    message, ignored_user_message = access_message(user_profile, message_id)
+    message = access_message(user_profile, message_id)
 
     # Extract the message edit history from the message
     if message.edit_history is not None:
@@ -175,7 +180,7 @@ def delete_message_backend(
     # concurrently are serialized properly with deleting the message; this prevents a deadlock
     # that would otherwise happen because of the other transaction holding a lock on the `Message`
     # row.
-    message, ignored_user_message = access_message(user_profile, message_id, lock_message=True)
+    message = access_message(user_profile, message_id, lock_message=True)
     validate_can_delete_message(user_profile, message)
     try:
         do_delete_messages(user_profile.realm, [message])
@@ -197,7 +202,7 @@ def json_fetch_raw_message(
         message = access_web_public_message(realm, message_id)
         user_profile = None
     else:
-        (message, user_message) = access_message(maybe_user_profile, message_id)
+        (message, user_message) = access_message_and_usermessage(maybe_user_profile, message_id)
         user_profile = maybe_user_profile
 
     flags = ["read"]

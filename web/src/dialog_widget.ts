@@ -63,6 +63,7 @@ export type DialogWidgetConfig = {
     post_render?: () => void;
     loading_spinner?: boolean;
     update_submit_disabled_state_on_change?: boolean;
+    always_visible_scrollbar?: boolean;
 };
 
 type RequestOpts = {
@@ -130,6 +131,9 @@ export function launch(conf: DialogWidgetConfig): void {
     //   submit button when clicked.
     // * update_submit_disabled_state_on_change: If true, updates state of submit button
     //   on valid input change in modal.
+    // * always_visible_scrollbar: Whether the scrollbar is always visible if modal body
+    //   has scrollable content. Default behaviour is to hide the scrollbar when it is
+    //   not in use.
 
     const html_submit_button = conf.html_submit_button ?? $t_html({defaultMessage: "Save changes"});
     const html_exit_button = conf.html_exit_button ?? $t_html({defaultMessage: "Cancel"});
@@ -141,6 +145,7 @@ export function launch(conf: DialogWidgetConfig): void {
         html_body: conf.html_body,
         id: conf.id,
         single_footer_button: conf.single_footer_button,
+        always_visible_scrollbar: conf.always_visible_scrollbar,
     });
     const $dialog = $(html);
     $("body").append($dialog);
@@ -156,9 +161,13 @@ export function launch(conf: DialogWidgetConfig): void {
         $inputs.each(function () {
             const property_name = $(this).attr("name")!;
             if (property_name) {
-                if ($(this).is("input[type='file']") && $(this).prop("files")?.length) {
+                if (
+                    this instanceof HTMLInputElement &&
+                    this.type === "file" &&
+                    this.files?.length
+                ) {
                     // If the input is a file input and a file has been selected, set value to file object
-                    current_values[property_name] = $(this).prop("files")[0];
+                    current_values[property_name] = this.files[0];
                 } else if (property_name === "edit_bot_owner") {
                     current_values[property_name] = $(this).find(".dropdown_widget_value").text();
                 } else {
@@ -229,7 +238,7 @@ export function launch(conf: DialogWidgetConfig): void {
 export function submit_api_request(
     request_method: AjaxRequestHandler,
     url: string,
-    data: Parameters<AjaxRequestHandler>[0]["data"] = {},
+    data: Omit<Parameters<AjaxRequestHandler>[0]["data"], "undefined">,
     {
         failure_msg_html = $t_html({defaultMessage: "Failed"}),
         success_continuation,

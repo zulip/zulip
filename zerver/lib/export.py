@@ -14,7 +14,7 @@ import subprocess
 import tempfile
 from contextlib import suppress
 from datetime import datetime
-from functools import lru_cache
+from functools import cache
 from typing import Any, Callable, Dict, Iterable, List, Mapping, Optional, Set, Tuple, TypedDict
 
 import orjson
@@ -45,6 +45,7 @@ from zerver.models import (
     Huddle,
     Message,
     MutedUser,
+    NamedUserGroup,
     OnboardingStep,
     Reaction,
     Realm,
@@ -137,6 +138,7 @@ ALL_ZULIP_TABLES = {
     "zerver_missedmessageemailaddress",
     "zerver_multiuseinvite",
     "zerver_multiuseinvite_streams",
+    "zerver_namedusergroup",
     "zerver_onboardingstep",
     "zerver_preregistrationrealm",
     "zerver_preregistrationuser",
@@ -565,9 +567,7 @@ def export_from_config(
     if config.custom_tables:
         exported_tables = config.custom_tables
     else:
-        assert (
-            table is not None
-        ), """
+        assert table is not None, """
             You must specify config.custom_tables if you
             are not specifying config.table"""
         exported_tables = [table]
@@ -779,6 +779,14 @@ def get_realm_config() -> Config:
     )
 
     Config(
+        table="zerver_namedusergroup",
+        model=NamedUserGroup,
+        normal_parent=realm_config,
+        include_rows="realm_for_sharding_id__in",
+        exclude=["realm", "direct_members", "direct_subgroups"],
+    )
+
+    Config(
         table="zerver_usergroupmembership",
         model=UserGroupMembership,
         normal_parent=user_groups_config,
@@ -839,8 +847,6 @@ def get_realm_config() -> Config:
         id_source=("_user_subscription", "recipient"),
     )
 
-    #
-
     stream_config = Config(
         table="zerver_stream",
         model=Stream,
@@ -863,8 +869,6 @@ def get_realm_config() -> Config:
         normal_parent=stream_recipient_config,
         include_rows="recipient_id__in",
     )
-
-    #
 
     Config(
         custom_tables=[
@@ -1113,7 +1117,7 @@ def custom_fetch_huddle_objects(response: TableData, context: Context) -> None:
 
     # First we get all huddles involving someone in the realm.
     realm_huddle_subs = Subscription.objects.select_related("recipient").filter(
-        recipient__type=Recipient.HUDDLE, user_profile__in=user_profile_ids
+        recipient__type=Recipient.DIRECT_MESSAGE_GROUP, user_profile__in=user_profile_ids
     )
     realm_huddle_recipient_ids = {sub.recipient_id for sub in realm_huddle_subs}
 
@@ -1715,9 +1719,8 @@ def export_files_from_s3(
 def export_uploads_from_local(
     realm: Realm, local_dir: Path, output_dir: Path, attachments: List[Attachment]
 ) -> None:
-    count = 0
     records = []
-    for attachment in attachments:
+    for count, attachment in enumerate(attachments, 1):
         # Use 'mark_sanitized' to work around false positive caused by Pysa
         # thinking that 'realm' (and thus 'attachment' and 'attachment.path_id')
         # are user controlled
@@ -1740,8 +1743,6 @@ def export_uploads_from_local(
             content_type=None,
         )
         records.append(record)
-
-        count += 1
 
         if count % 100 == 0:
             logging.info("Finished %s", count)
@@ -1831,9 +1832,8 @@ def get_emoji_path(realm_emoji: RealmEmoji) -> str:
 def export_emoji_from_local(
     realm: Realm, local_dir: Path, output_dir: Path, realm_emojis: List[RealmEmoji]
 ) -> None:
-    count = 0
     records = []
-    for realm_emoji in realm_emojis:
+    for count, realm_emoji in enumerate(realm_emojis, 1):
         emoji_path = get_emoji_path(realm_emoji)
 
         # Use 'mark_sanitized' to work around false positive caused by Pysa
@@ -1862,7 +1862,6 @@ def export_emoji_from_local(
         )
         records.append(record)
 
-        count += 1
         if count % 100 == 0:
             logging.info("Finished %s", count)
 
@@ -2243,7 +2242,7 @@ def chunkify(lst: List[int], chunk_size: int) -> List[List[int]]:
 def export_messages_single_user(
     user_profile: UserProfile, *, output_dir: Path, reaction_message_ids: Set[int]
 ) -> None:
-    @lru_cache(maxsize=None)
+    @cache
     def get_recipient(recipient_id: int) -> str:
         recipient = Recipient.objects.get(id=recipient_id)
 
@@ -2268,7 +2267,8 @@ def export_messages_single_user(
     )
 
     my_subscriptions = Subscription.objects.filter(
-        user_profile=user_profile, recipient__type__in=[Recipient.PERSONAL, Recipient.HUDDLE]
+        user_profile=user_profile,
+        recipient__type__in=[Recipient.PERSONAL, Recipient.DIRECT_MESSAGE_GROUP],
     )
     my_recipient_ids = [sub.recipient_id for sub in my_subscriptions]
     messages_to_me = Message.objects.filter(

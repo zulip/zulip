@@ -1,9 +1,8 @@
 class zulip::profile::memcached {
   include zulip::profile::base
   include zulip::sasl_modules
-  include zulip::systemd_daemon_reload
 
-  case $::os['family'] {
+  case $facts['os']['family'] {
     'Debian': {
       $memcached_packages = [ 'memcached', 'sasl2-bin' ]
       $memcached_user = 'memcache'
@@ -19,6 +18,7 @@ class zulip::profile::memcached {
   package { $memcached_packages: ensure => installed }
 
   $memcached_max_item_size = zulipconf('memcached', 'max_item_size', '1m')
+  $memcached_size_reporting = zulipconf('memcached', 'size_reporting', false)
   $memcached_memory = zulipconf('memcached', 'memory', $zulip::common::total_memory_mb / 8)
   file { '/etc/sasl2':
     ensure => directory,
@@ -92,6 +92,6 @@ saslpasswd2 -p -f /etc/sasl2/memcached-sasldb2 \
   service { 'memcached':
     ensure    => running,
     subscribe => File['/etc/memcached.conf'],
-    require   => [File['/run/memcached'], Class['zulip::systemd_daemon_reload']],
+    require   => File['/run/memcached'],
   }
 }

@@ -41,6 +41,11 @@ class Command(BaseCommand):
     def add_arguments(self, parser: CommandParser) -> None:
         parser.add_argument("--autoreload", action="store_true", help="Enable Tornado autoreload")
         parser.add_argument(
+            "--immediate-reloads",
+            action="store_true",
+            help="Tell web app clients to immediately reload after Tornado starts",
+        )
+        parser.add_argument(
             "addrport",
             help="[port number or ipaddr:port]",
         )
@@ -102,7 +107,8 @@ class Command(BaseCommand):
 
                 # We pass display_num_errors=False, since Django will
                 # likely display similar output anyway.
-                self.check(display_num_errors=False)
+                if not options["skip_checks"]:
+                    self.check(display_num_errors=False)
                 print(f"Tornado server (re)started on port {port}")
 
                 if settings.USING_RABBITMQ:
@@ -127,7 +133,8 @@ class Command(BaseCommand):
                 from zerver.tornado.ioloop_logging import logging_data
 
                 logging_data["port"] = str(port)
-                await setup_event_queue(http_server, port)
+                send_reloads = options.get("immediate_reloads", False)
+                await setup_event_queue(http_server, port, send_reloads)
                 stack.callback(dump_event_queues, port)
                 add_client_gc_hook(missedmessage_hook)
                 if settings.USING_RABBITMQ:

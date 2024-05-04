@@ -4,19 +4,23 @@ import _ from "lodash";
 import render_inbox_row from "../templates/inbox_view/inbox_row.hbs";
 import render_inbox_stream_container from "../templates/inbox_view/inbox_stream_container.hbs";
 import render_inbox_view from "../templates/inbox_view/inbox_view.hbs";
+import render_introduce_zulip_view_modal from "../templates/introduce_zulip_view_modal.hbs";
 import render_user_with_status_icon from "../templates/user_with_status_icon.hbs";
 
 import * as buddy_data from "./buddy_data";
 import * as compose_closed_ui from "./compose_closed_ui";
 import * as compose_state from "./compose_state";
+import * as dialog_widget from "./dialog_widget";
 import * as dropdown_widget from "./dropdown_widget";
 import * as hash_util from "./hash_util";
+import {$t_html} from "./i18n";
 import {is_visible, set_visible} from "./inbox_util";
 import * as keydown_util from "./keydown_util";
 import * as left_sidebar_navigation_area from "./left_sidebar_navigation_area";
 import {localstorage} from "./localstorage";
 import * as message_store from "./message_store";
 import * as modals from "./modals";
+import * as onboarding_steps from "./onboarding_steps";
 import * as overlays from "./overlays";
 import * as people from "./people";
 import * as popovers from "./popovers";
@@ -26,8 +30,10 @@ import * as stream_data from "./stream_data";
 import * as sub_store from "./sub_store";
 import * as unread from "./unread";
 import * as unread_ops from "./unread_ops";
+import {user_settings} from "./user_settings";
 import * as user_status from "./user_status";
 import * as user_topics from "./user_topics";
+import * as user_topics_ui from "./user_topics_ui";
 import * as util from "./util";
 import * as views_util from "./views_util";
 
@@ -86,11 +92,29 @@ export function show() {
     views_util.show({
         highlight_view_in_left_sidebar: left_sidebar_navigation_area.highlight_inbox_view,
         $view: $("#inbox-view"),
-        update_compose: compose_closed_ui.set_standard_text_for_reply_button,
+        update_compose: compose_closed_ui.update_buttons_for_non_specific_views,
         is_visible,
         set_visible,
         complete_rerender,
     });
+
+    if (onboarding_steps.ONE_TIME_NOTICES_TO_DISPLAY.has("intro_inbox_view_modal")) {
+        const html_body = render_introduce_zulip_view_modal({
+            zulip_view: "inbox",
+            current_home_view_and_escape_navigation_enabled:
+                user_settings.web_home_view === "inbox" &&
+                user_settings.web_escape_navigates_to_home_view,
+        });
+        dialog_widget.launch({
+            html_heading: $t_html({defaultMessage: "Welcome to your <b>inbox</b>!"}),
+            html_body,
+            html_submit_button: $t_html({defaultMessage: "Continue"}),
+            on_click() {},
+            single_footer_button: true,
+            focus_submit_on_open: true,
+        });
+        onboarding_steps.post_onboarding_step_as_read("intro_inbox_view_modal");
+    }
 }
 
 export function hide() {
@@ -146,13 +170,12 @@ function format_dm(user_ids_string, unread_count, latest_msg_id) {
 
     const reply_to = people.user_ids_string_to_emails_string(user_ids_string);
     const rendered_dm_with = recipient_ids
-        .map((recipient_id) =>
-            render_user_with_status_icon({
-                name: people.get_display_full_name(recipient_id),
-                status_emoji_info: user_status.get_status_emoji(recipient_id),
-            }),
-        )
-        .sort();
+        .map((recipient_id) => ({
+            name: people.get_display_full_name(recipient_id),
+            status_emoji_info: user_status.get_status_emoji(recipient_id),
+        }))
+        .sort((a, b) => util.strcmp(a.name, b.name))
+        .map((user_info) => render_user_with_status_icon(user_info));
 
     let user_circle_class;
     let is_bot = false;
@@ -184,7 +207,7 @@ function insert_dms(keys_to_insert) {
     // If we need to insert at the top, we do it separately to avoid edge case in loop below.
     if (keys_to_insert.includes(sorted_keys[0])) {
         $("#inbox-direct-messages-container").prepend(
-            render_inbox_row(dms_dict.get(sorted_keys[0])),
+            $(render_inbox_row(dms_dict.get(sorted_keys[0]))),
         );
     }
 
@@ -195,7 +218,7 @@ function insert_dms(keys_to_insert) {
 
         if (keys_to_insert.includes(key)) {
             const $previous_row = get_row_from_conversation_key(sorted_keys[i - 1]);
-            $previous_row.after(render_inbox_row(dms_dict.get(key)));
+            $previous_row.after($(render_inbox_row(dms_dict.get(key))));
         }
     }
 }
@@ -218,7 +241,7 @@ function rerender_dm_inbox_row_if_needed(new_dm_data, old_dm_data, dm_keys_to_in
     for (const property in new_dm_data) {
         if (new_dm_data[property] !== old_dm_data[property]) {
             const $rendered_row = get_row_from_conversation_key(new_dm_data.conversation_key);
-            $rendered_row.replaceWith(render_inbox_row(new_dm_data));
+            $rendered_row.replaceWith($(render_inbox_row(new_dm_data)));
             return;
         }
     }
@@ -271,7 +294,7 @@ function rerender_stream_inbox_header_if_needed(new_stream_data, old_stream_data
     for (const property in new_stream_data) {
         if (new_stream_data[property] !== old_stream_data[property]) {
             const $rendered_row = get_stream_header_row(new_stream_data.stream_id);
-            $rendered_row.replaceWith(render_inbox_row(new_stream_data));
+            $rendered_row.replaceWith($(render_inbox_row(new_stream_data)));
             return;
         }
     }
@@ -310,7 +333,7 @@ function insert_stream(stream_id, topic_dict) {
     });
 
     if (stream_index === 0) {
-        $("#inbox-streams-container").prepend(rendered_stream);
+        $("#inbox-streams-container").prepend($(rendered_stream));
     } else {
         const previous_stream_key = sorted_stream_keys[stream_index - 1];
         $(rendered_stream).insertAfter(get_stream_container(previous_stream_key));
@@ -326,7 +349,7 @@ function insert_topics(keys, stream_key) {
         const $stream = get_stream_container(stream_key);
         $stream
             .find(".inbox-topic-container")
-            .prepend(render_inbox_row(stream_topics_data.get(sorted_keys[0])));
+            .prepend($(render_inbox_row(stream_topics_data.get(sorted_keys[0]))));
     }
 
     for (const [i, key] of sorted_keys.entries()) {
@@ -336,7 +359,7 @@ function insert_topics(keys, stream_key) {
 
         if (keys.includes(key)) {
             const $previous_row = get_row_from_conversation_key(sorted_keys[i - 1]);
-            $previous_row.after(render_inbox_row(stream_topics_data.get(key)));
+            $previous_row.after($(render_inbox_row(stream_topics_data.get(key))));
         }
     }
 }
@@ -357,7 +380,7 @@ function rerender_topic_inbox_row_if_needed(new_topic_data, old_topic_data, topi
     for (const property in new_topic_data) {
         if (new_topic_data[property] !== old_topic_data[property]) {
             const $rendered_row = get_row_from_conversation_key(new_topic_data.conversation_key);
-            $rendered_row.replaceWith(render_inbox_row(new_topic_data));
+            $rendered_row.replaceWith($(render_inbox_row(new_topic_data)));
             return;
         }
     }
@@ -433,7 +456,7 @@ function reset_data() {
     const include_per_topic_max_msg_id = true;
     const unread_stream_message = unread.get_unread_topics(include_per_topic_max_msg_id);
     const unread_stream_msg_count = unread_stream_message.stream_unread_messages;
-    const unread_streams_dict = unread_stream_message.stream_count;
+    const unread_streams_dict = unread_stream_message.topic_counts;
 
     let has_dms_post_filter = false;
     if (unread_dms_count) {
@@ -741,6 +764,21 @@ export function get_focused_row_message() {
     return {message};
 }
 
+export function toggle_topic_visibility_policy() {
+    const inbox_message = get_focused_row_message();
+    if (inbox_message.message !== undefined) {
+        user_topics_ui.toggle_topic_visibility_policy(inbox_message.message);
+        if (inbox_message.message.type === "stream") {
+            // means mute/unmute action is taken
+            const $elt = $(".inbox-header"); // Select the element with class "inbox-header"
+            const $focusElement = $elt.find(get_focus_class_for_header()).first();
+            focus_clicked_list_element($focusElement);
+            return true;
+        }
+    }
+    return false;
+}
+
 function is_row_a_header($row) {
     return $row.hasClass("inbox-header");
 }
@@ -914,12 +952,15 @@ export function change_focused_element(input_key) {
         }
     } else if (is_filters_dropdown_focused()) {
         switch (input_key) {
+            case "vim_down":
             case "down_arrow":
                 set_list_focus();
                 return true;
+            case "vim_left":
             case "left_arrow":
                 focus_inbox_search();
                 return true;
+            case "vim_right":
             case "right_arrow":
             case "tab":
                 focus_inbox_search();
@@ -928,6 +969,12 @@ export function change_focused_element(input_key) {
                 // Let user focus outside inbox view.
                 current_focus_id = "";
                 return false;
+            case "escape":
+                if (get_all_rows().length === 0) {
+                    return false;
+                }
+                set_list_focus();
+                return true;
         }
     } else {
         switch (input_key) {
@@ -983,7 +1030,7 @@ export function update() {
 
     const include_per_topic_max_msg_id = true;
     const unread_stream_message = unread.get_unread_topics(include_per_topic_max_msg_id);
-    const unread_streams_dict = unread_stream_message.stream_count;
+    const unread_streams_dict = unread_stream_message.topic_counts;
 
     let has_dms_post_filter = false;
     const dm_keys_to_insert = [];
@@ -1223,6 +1270,10 @@ export function initialize() {
     );
 
     $("body").on("keydown", ".inbox-header", (e) => {
+        if (e.metaKey || e.ctrlKey) {
+            return;
+        }
+
         if (keydown_util.is_enter_event(e)) {
             e.preventDefault();
             e.stopPropagation();
@@ -1242,6 +1293,10 @@ export function initialize() {
     });
 
     $("body").on("keydown", ".inbox-row", (e) => {
+        if (e.metaKey || e.ctrlKey) {
+            return;
+        }
+
         if (keydown_util.is_enter_event(e)) {
             e.preventDefault();
             e.stopPropagation();
@@ -1252,6 +1307,10 @@ export function initialize() {
     });
 
     $("body").on("click", "#inbox-list .inbox-left-part-wrapper", (e) => {
+        if (e.metaKey || e.ctrlKey || e.shiftKey) {
+            return;
+        }
+
         const $elt = $(e.currentTarget);
         col_focus = COLUMNS.RECIPIENT;
         focus_clicked_list_element($elt);

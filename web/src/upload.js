@@ -1,9 +1,11 @@
 import {Uppy} from "@uppy/core";
 import XHRUpload from "@uppy/xhr-upload";
 import $ from "jquery";
+import assert from "minimalistic-assert";
 
 import render_upload_banner from "../templates/compose_banner/upload_banner.hbs";
 
+import * as blueslip from "./blueslip";
 import * as compose_actions from "./compose_actions";
 import * as compose_banner from "./compose_banner";
 import * as compose_reply from "./compose_reply";
@@ -13,12 +15,16 @@ import * as compose_validate from "./compose_validate";
 import {csrf_token} from "./csrf";
 import {$t} from "./i18n";
 import * as message_lists from "./message_lists";
-import {page_params} from "./page_params";
 import * as rows from "./rows";
+import {realm} from "./state_data";
 
 let drag_drop_img = null;
-export let compose_upload_object;
-export const upload_objects_by_message_edit_row = new Map();
+let compose_upload_object;
+const upload_objects_by_message_edit_row = new Map();
+
+export function compose_upload_cancel() {
+    compose_upload_object.cancelAll();
+}
 
 // Show the upload button only if the browser supports it.
 export function feature_check($upload_button) {
@@ -117,6 +123,7 @@ export function get_item(key, config, file_id) {
             case "source":
                 return "message-edit-file-input";
             case "drag_drop_container":
+                assert(message_lists.current !== undefined);
                 return $(
                     `#message-row-${message_lists.current.id}-${CSS.escape(
                         config.row,
@@ -183,7 +190,7 @@ export async function upload_files(uppy, config, files) {
     if (files.length === 0) {
         return;
     }
-    if (page_params.max_file_upload_size_mib === 0) {
+    if (realm.max_file_upload_size_mib === 0) {
         show_error_message(
             config,
             $t({
@@ -259,7 +266,7 @@ export function setup_upload(config) {
         debug: false,
         autoProceed: true,
         restrictions: {
-            maxFileSize: page_params.max_file_upload_size_mib * 1024 * 1024,
+            maxFileSize: realm.max_file_upload_size_mib * 1024 * 1024,
         },
         locale: {
             strings: {
@@ -268,7 +275,7 @@ export function setup_upload(config) {
                         defaultMessage:
                             "%'{file}' exceeds the maximum file size for attachments ({variable} MB).",
                     },
-                    {variable: `${page_params.max_file_upload_size_mib}`},
+                    {variable: `${realm.max_file_upload_size_mib}`},
                 ),
                 failedToUpload: $t({defaultMessage: "Failed to upload %'{file}'"}),
             },
@@ -291,6 +298,10 @@ export function setup_upload(config) {
             },
         },
     });
+
+    if (config.mode === "edit") {
+        upload_objects_by_message_edit_row.set(config.row, uppy);
+    }
 
     uppy.on("upload-progress", (file, progress) => {
         const percent_complete = (100 * progress.bytesUploaded) / progress.bytesTotal;
@@ -325,7 +336,10 @@ export function setup_upload(config) {
         event.stopPropagation();
         const files = event.originalEvent.dataTransfer.files;
         if (config.mode === "compose" && !compose_state.composing()) {
-            compose_reply.respond_to_message({trigger: "file drop or paste"});
+            compose_reply.respond_to_message({
+                trigger: "file drop or paste",
+                keep_composebox_empty: true,
+            });
         }
         upload_files(uppy, config, files);
     });
@@ -352,7 +366,10 @@ export function setup_upload(config) {
         // present a plain-text version of the file name.
         event.preventDefault();
         if (config.mode === "compose" && !compose_state.composing()) {
-            compose_reply.respond_to_message({trigger: "file drop or paste"});
+            compose_reply.respond_to_message({
+                trigger: "file drop or paste",
+                keep_composebox_empty: true,
+            });
         }
         upload_files(uppy, config, files);
     });
@@ -364,15 +381,15 @@ export function setup_upload(config) {
         }
         const split_url = url.split("/");
         const filename = split_url.at(-1);
-        const filename_url = "[" + filename + "](" + url + ")";
+        const syntax_to_insert = "[" + filename + "](" + url + ")";
         const $text_area = get_item("textarea", config);
         const replacement_successful = compose_ui.replace_syntax(
             get_translated_status(file),
-            filename_url,
+            syntax_to_insert,
             $text_area,
         );
         if (!replacement_successful) {
-            compose_ui.insert_syntax_and_focus(filename_url, $text_area);
+            compose_ui.insert_syntax_and_focus(syntax_to_insert, $text_area);
         }
 
         compose_ui.autosize_textarea($text_area);
@@ -437,6 +454,40 @@ export function setup_upload(config) {
     return uppy;
 }
 
+export function deactivate_upload(config) {
+    // Remove event listeners added for handling uploads.
+    $(get_item("file_input_identifier", config)).off("change");
+    get_item("banner_container", config).off("click");
+    get_item("drag_drop_container", config).off("dragover dragenter drop paste");
+
+    let uppy;
+
+    if (config.mode === "edit") {
+        uppy = upload_objects_by_message_edit_row.get(config.row);
+    } else if (config.mode === "compose") {
+        uppy = compose_upload_object;
+    }
+
+    if (!uppy) {
+        return;
+    }
+
+    try {
+        // Uninstall all plugins and close down the Uppy instance.
+        // Also runs uppy.cancelAll() before uninstalling - which
+        // cancels all uploads, resets progress and removes all files.
+        uppy.close();
+    } catch (error) {
+        blueslip.error("Failed to close upload object.", {config}, error);
+    }
+
+    if (config.mode === "edit") {
+        // Since we removed all the uploads from the row, we should
+        // now remove the corresponding upload object from the store.
+        upload_objects_by_message_edit_row.delete(config.row);
+    }
+}
+
 export function initialize() {
     compose_upload_object = setup_upload({
         mode: "compose",
@@ -478,7 +529,7 @@ export function initialize() {
             upload_files(compose_upload_object, {mode: "compose"}, files);
         } else if ($last_drag_drop_edit_container.length !== 0) {
             // A message edit box is open; drop there.
-            const row_id = rows.get_message_id($last_drag_drop_edit_container);
+            const row_id = rows.get_message_id($last_drag_drop_edit_container[0]);
             const $drag_drop_container = get_item("drag_drop_container", {
                 mode: "edit",
                 row: row_id,
@@ -489,13 +540,20 @@ export function initialize() {
             const edit_upload_object = upload_objects_by_message_edit_row.get(row_id);
 
             upload_files(edit_upload_object, {mode: "edit", row: row_id}, files);
-        } else if (message_lists.current.selected_message()) {
+        } else if (message_lists.current?.selected_message()) {
             // Start a reply to selected message, if viewing a message feed.
-            compose_reply.respond_to_message({trigger: "drag_drop_file"});
+            compose_reply.respond_to_message({
+                trigger: "drag_drop_file",
+                keep_composebox_empty: true,
+            });
             upload_files(compose_upload_object, {mode: "compose"}, files);
         } else {
             // Start a new message in other views.
-            compose_actions.start("stream", {trigger: "drag_drop_file"});
+            compose_actions.start({
+                message_type: "stream",
+                trigger: "drag_drop_file",
+                keep_composebox_empty: true,
+            });
             upload_files(compose_upload_object, {mode: "compose"}, files);
         }
     });

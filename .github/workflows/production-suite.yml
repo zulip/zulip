@@ -39,13 +39,13 @@ jobs:
   production_build:
     # This job builds a release tarball from the current commit, which
     # will be used for all of the following install/upgrade tests.
-    name: Ubuntu 20.04 production build
+    name: Ubuntu 22.04 production build
     runs-on: ubuntu-latest
 
     # Docker images are built from 'tools/ci/Dockerfile'; the comments at
     # the top explain how to build and upload these images.
-    # Ubuntu 20.04 ships with Python 3.8.10.
-    container: zulip/ci:focal
+    # Ubuntu 22.04 ships with Python 3.10.12.
+    container: zulip/ci:jammy
 
     steps:
       - name: Add required permissions
@@ -64,7 +64,7 @@ jobs:
           # cache action to work. It is owned by root currently.
           sudo chmod -R 0777 /__w/_temp/
 
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Create cache directories
         run: |
@@ -73,30 +73,30 @@ jobs:
           sudo chown -R github "${dirs[@]}"
 
       - name: Restore pnpm store
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: /__w/.pnpm-store
-          key: v1-pnpm-store-focal-${{ hashFiles('pnpm-lock.yaml') }}
+          key: v1-pnpm-store-jammy-${{ hashFiles('pnpm-lock.yaml') }}
 
       - name: Restore python cache
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: /srv/zulip-venv-cache
-          key: v1-venv-focal-${{ hashFiles('requirements/dev.txt') }}
-          restore-keys: v1-venv-focal
+          key: v1-venv-jammy-${{ hashFiles('requirements/dev.txt') }}
+          restore-keys: v1-venv-jammy
 
       - name: Restore emoji cache
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: /srv/zulip-emoji-cache
-          key: v1-emoji-focal-${{ hashFiles('tools/setup/emoji/emoji_map.json') }}-${{ hashFiles('tools/setup/emoji/build_emoji') }}-${{ hashFiles('tools/setup/emoji/emoji_setup_utils.py') }}-${{ hashFiles('tools/setup/emoji/emoji_names.py') }}-${{ hashFiles('package.json') }}
-          restore-keys: v1-emoji-focal
+          key: v1-emoji-jammy-${{ hashFiles('tools/setup/emoji/emoji_map.json') }}-${{ hashFiles('tools/setup/emoji/build_emoji') }}-${{ hashFiles('tools/setup/emoji/emoji_setup_utils.py') }}-${{ hashFiles('tools/setup/emoji/emoji_names.py') }}-${{ hashFiles('package.json') }}
+          restore-keys: v1-emoji-jammy
 
       - name: Build production tarball
         run: ./tools/ci/production-build
 
       - name: Upload production build artifacts for install jobs
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: production-tarball
           path: /tmp/production-build
@@ -135,25 +135,20 @@ jobs:
         include:
           # Docker images are built from 'tools/ci/Dockerfile'; the comments at
           # the top explain how to build and upload these images.
-          - docker_image: zulip/ci:focal
-            name: Ubuntu 20.04 production install and PostgreSQL upgrade with pgroonga
-            os: focal
-            extra-args: ""
-
           - docker_image: zulip/ci:jammy
-            name: Ubuntu 22.04 production install
+            name: Ubuntu 22.04 production install and PostgreSQL upgrade with pgroonga
             os: jammy
             extra-args: ""
 
-          - docker_image: zulip/ci:bullseye
-            name: Debian 11 production install with custom db name and user
-            os: bullseye
-            extra-args: --test-custom-db
+          - docker_image: zulip/ci:noble
+            name: Ubuntu 24.04 production install
+            os: noble
+            extra-args: ""
 
           - docker_image: zulip/ci:bookworm
-            name: Debian 12 production install
+            name: Debian 12 production install with custom db name and user
             os: bookworm
-            extra-args: ""
+            extra-args: --test-custom-db
 
     name: ${{ matrix.name  }}
     container:
@@ -164,7 +159,7 @@ jobs:
 
     steps:
       - name: Download built production tarball
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: production-tarball
           path: /tmp
@@ -176,7 +171,7 @@ jobs:
           # cache action to work. It is owned by root currently.
           sudo chmod -R 0777 /__w/_temp/
 
-          # Since actions/download-artifact@v2 loses all the permissions
+          # Since actions/download-artifact@v4 loses all the permissions
           # of the tarball uploaded by the upload artifact fix those.
           chmod +x /tmp/production-upgrade-pg
           chmod +x /tmp/production-pgroonga
@@ -197,19 +192,19 @@ jobs:
         run: sudo /tmp/production-verify ${{ matrix.extra-args }}
 
       - name: Install pgroonga
-        if: ${{ matrix.os == 'focal' }}
+        if: ${{ matrix.os == 'jammy' }}
         run: sudo /tmp/production-pgroonga
 
       - name: Verify install after installing pgroonga
-        if: ${{ matrix.os == 'focal' }}
+        if: ${{ matrix.os == 'jammy' }}
         run: sudo /tmp/production-verify ${{ matrix.extra-args }}
 
       - name: Upgrade postgresql
-        if: ${{ matrix.os == 'focal' }}
+        if: ${{ matrix.os == 'jammy' }}
         run: sudo /tmp/production-upgrade-pg
 
       - name: Verify install after upgrading postgresql
-        if: ${{ matrix.os == 'focal' }}
+        if: ${{ matrix.os == 'jammy' }}
         run: sudo /tmp/production-verify ${{ matrix.extra-args }}
 
       - name: Generate failure report string
@@ -242,15 +237,6 @@ jobs:
         include:
           # Docker images are built from 'tools/ci/Dockerfile.prod'; the comments at
           # the top explain how to build and upload these images.
-          - docker_image: zulip/ci:focal-3.2
-            name: 3.2 Version Upgrade
-            os: focal
-          - docker_image: zulip/ci:bullseye-4.2
-            name: 4.2 Version Upgrade
-            os: bullseye
-          - docker_image: zulip/ci:bullseye-5.0
-            name: 5.0 Version Upgrade
-            os: bullseye
           - docker_image: zulip/ci:jammy-6.0
             name: 6.0 Version Upgrade
             os: jammy
@@ -270,7 +256,7 @@ jobs:
 
     steps:
       - name: Download built production tarball
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: production-tarball
           path: /tmp
@@ -282,7 +268,7 @@ jobs:
           # cache action to work. It is owned by root currently.
           sudo chmod -R 0777 /__w/_temp/
 
-          # Since actions/download-artifact@v2 loses all the permissions
+          # Since actions/download-artifact@v4 loses all the permissions
           # of the tarball uploaded by the upload artifact fix those.
           chmod +x /tmp/production-upgrade
           chmod +x /tmp/production-verify

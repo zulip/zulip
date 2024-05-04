@@ -27,12 +27,12 @@ from zerver.lib.timestamp import floor_to_day
 from zerver.lib.upload import upload_message_attachment_from_request
 from zerver.models import (
     Client,
+    NamedUserGroup,
     Realm,
     RealmAuditLog,
     Recipient,
     Stream,
     Subscription,
-    UserGroup,
     UserProfile,
 )
 from zerver.models.groups import SystemGroups
@@ -114,7 +114,7 @@ class Command(BaseCommand):
             force_date_joined=installation_time,
         )
 
-        administrators_user_group = UserGroup.objects.get(
+        administrators_user_group = NamedUserGroup.objects.get(
             name=SystemGroups.ADMINISTRATORS, realm=realm, is_system_group=True
         )
         stream = Stream.objects.create(

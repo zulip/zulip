@@ -41,7 +41,7 @@ from zerver.models import Attachment, Recipient, Stream, UserProfile
 from zerver.models.realms import get_realm
 from zerver.models.streams import get_stream
 from zerver.models.users import get_system_bot
-from zerver.worker.queue_processors import MirrorWorker
+from zerver.worker.email_mirror import MirrorWorker
 
 if TYPE_CHECKING:
     from django.test.client import _MonkeyPatchedWSGIResponse as TestHttpResponse
@@ -490,9 +490,9 @@ and other things
         incoming_valid_message = EmailMessage()
         incoming_valid_message.set_content("TestStreamEmailMessages body")
         incoming_valid_message["Subject"] = "TestStreamEmailMessages subject"
-        incoming_valid_message[
-            "From"
-        ] = "Test =?utf-8?b?VXNlcsOzxIXEmQ==?= <=?utf-8?q?hamlet=5F=C4=99?=@zulip.com>"
+        incoming_valid_message["From"] = (
+            "Test =?utf-8?b?VXNlcsOzxIXEmQ==?= <=?utf-8?q?hamlet=5F=C4=99?=@zulip.com>"
+        )
         incoming_valid_message["To"] = stream_to_address
         incoming_valid_message["Reply-to"] = self.example_email("othello")
 
@@ -1027,7 +1027,7 @@ class TestMissedMessageEmailMessages(ZulipTestCase):
         incoming_valid_message["To"] = mm_address
         incoming_valid_message["Reply-to"] = self.example_email("othello")
 
-        with self.assert_database_query_count(17):
+        with self.assert_database_query_count(16):
             process_message(incoming_valid_message)
 
         # confirm that Hamlet got the message
@@ -1072,7 +1072,7 @@ class TestMissedMessageEmailMessages(ZulipTestCase):
         incoming_valid_message["To"] = mm_address
         incoming_valid_message["Reply-to"] = self.example_email("cordelia")
 
-        with self.assert_database_query_count(22):
+        with self.assert_database_query_count(21):
             process_message(incoming_valid_message)
 
         # Confirm Iago received the message.
@@ -1081,7 +1081,7 @@ class TestMissedMessageEmailMessages(ZulipTestCase):
 
         self.assertEqual(message.content, "TestMissedHuddleMessageEmailMessages body")
         self.assertEqual(message.sender, self.example_user("cordelia"))
-        self.assertEqual(message.recipient.type, Recipient.HUDDLE)
+        self.assertEqual(message.recipient.type, Recipient.DIRECT_MESSAGE_GROUP)
 
         # Confirm Othello received the message.
         user_profile = self.example_user("othello")
@@ -1089,7 +1089,7 @@ class TestMissedMessageEmailMessages(ZulipTestCase):
 
         self.assertEqual(message.content, "TestMissedHuddleMessageEmailMessages body")
         self.assertEqual(message.sender, self.example_user("cordelia"))
-        self.assertEqual(message.recipient.type, Recipient.HUDDLE)
+        self.assertEqual(message.recipient.type, Recipient.DIRECT_MESSAGE_GROUP)
 
     def test_receive_missed_stream_message_email_messages(self) -> None:
         # build dummy messages for message notification email reply
@@ -1124,7 +1124,7 @@ class TestMissedMessageEmailMessages(ZulipTestCase):
         incoming_valid_message["To"] = mm_address
         incoming_valid_message["Reply-to"] = user_profile.delivery_email
 
-        with self.assert_database_query_count(18):
+        with self.assert_database_query_count(17):
             process_message(incoming_valid_message)
 
         # confirm that Hamlet got the message
@@ -1174,7 +1174,7 @@ class TestMissedMessageEmailMessages(ZulipTestCase):
 
         self.assertEqual(
             message.content,
-            "Error sending message to stream announce via message notification email reply:\nOnly organization administrators can send to this stream.",
+            "Error sending message to channel announce via message notification email reply:\nOnly organization administrators can send to this channel.",
         )
         self.assertEqual(
             message.sender,
@@ -1543,7 +1543,7 @@ class TestEmailMirrorTornadoView(ZulipTestCase):
 
         with mock_queue_publish("zerver.lib.email_mirror.queue_json_publish") as m:
             m.side_effect = check_queue_json_publish
-            return self.client_post("/email_mirror_message", post_data)
+            return self.client_post("/api/internal/email_mirror_message", post_data)
 
     def test_success_stream(self) -> None:
         stream = get_stream("Denmark", get_realm("zulip"))

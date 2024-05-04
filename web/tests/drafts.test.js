@@ -2,16 +2,16 @@
 
 const {strict: assert} = require("assert");
 
-const {mock_stream_header_colorblock} = require("./lib/compose");
 const {mock_banners} = require("./lib/compose_banner");
-const {mock_esm, set_global, zrequire, with_overrides} = require("./lib/namespace");
+const {mock_esm, set_global, zrequire} = require("./lib/namespace");
 const {run_test, noop} = require("./lib/test");
 const $ = require("./lib/zjquery");
 const {user_settings} = require("./lib/zpage_params");
 
-const blueslip = zrequire("blueslip");
+const user_pill = mock_esm("../src/user_pill");
+const messages_overlay_ui = mock_esm("../src/messages_overlay_ui");
+
 const compose_pm_pill = zrequire("compose_pm_pill");
-const user_pill = zrequire("user_pill");
 const people = zrequire("people");
 const compose_state = zrequire("compose_state");
 const compose_recipient = zrequire("compose_recipient");
@@ -31,7 +31,7 @@ set_global("setTimeout", (f, delay) => {
     f();
 });
 mock_esm("../src/markdown", {
-    apply_markdown: noop,
+    render: noop,
 });
 mock_esm("../src/overlays", {
     open_overlay: noop,
@@ -62,26 +62,37 @@ user_settings.twenty_four_hour_time = false;
 const {localstorage} = zrequire("localstorage");
 const drafts = zrequire("drafts");
 const drafts_overlay_ui = zrequire("drafts_overlay_ui");
-const messages_overlay_ui = zrequire("messages_overlay_ui");
 const timerender = zrequire("timerender");
 
+const mock_current_timestamp = 1234;
+const stream_id = 30;
+
 const draft_1 = {
-    stream_id: 30,
+    stream_id,
     topic: "topic",
     type: "stream",
     content: "Test stream message",
+    updatedAt: mock_current_timestamp,
+    is_sending_saving: false,
+    drafts_version: 1,
 };
 const draft_2 = {
     private_message_recipient: "aaron@zulip.com",
     reply_to: "aaron@zulip.com",
     type: "private",
     content: "Test direct message",
+    updatedAt: mock_current_timestamp,
+    is_sending_saving: false,
+    drafts_version: 1,
 };
 const short_msg = {
-    stream_id: 30,
+    stream_id,
     topic: "topic",
     type: "stream",
     content: "a",
+    updatedAt: mock_current_timestamp,
+    is_sending_saving: false,
+    drafts_version: 1,
 };
 
 function test(label, f) {
@@ -92,73 +103,105 @@ function test(label, f) {
     });
 }
 
-test("draft_model add", ({override}) => {
-    const draft_model = drafts.draft_model;
+// There were some buggy drafts that had their topics
+// renamed to `undefined` in #23238.
+// TODO/compatibility: The next two tests can be deleted
+// when we get to delete drafts.fix_drafts_with_undefined_topics.
+//
+// This test must run before others, so that
+// fixed_buggy_drafts is false.
+test("fix buggy drafts", ({override_rewire}) => {
+    override_rewire(drafts, "set_count", noop);
+
+    const stream_A = {
+        subscribed: false,
+        name: "A",
+        stream_id: 1,
+    };
+    stream_data.add_sub(stream_A);
+    const stream_B = {
+        subscribed: false,
+        name: "B",
+        stream_id: 2,
+    };
+    stream_data.add_sub(stream_B);
+
+    const buggy_draft = {
+        stream_id: stream_B.stream_id,
+        topic: undefined,
+        type: "stream",
+        content: "Test stream message",
+        updatedAt: Date.now(),
+    };
+    const data = {id1: buggy_draft};
     const ls = localstorage();
-    assert.equal(ls.get("draft"), undefined);
+    ls.set("drafts", data);
+    const draft_model = drafts.draft_model;
 
-    const $unread_count = $("<unread-count-stub>");
-    $(".top_left_drafts").set_find_results(".unread_count", $unread_count);
+    // The draft is fixed in this codepath.
+    drafts.rename_stream_recipient(
+        stream_B.stream_id,
+        "old_topic",
+        stream_A.stream_id,
+        "new_topic",
+    );
 
-    override(Date, "now", () => 1);
-    const expected = {...draft_1};
-    expected.updatedAt = 1;
-    const id = draft_model.addDraft({...draft_1});
-    assert.deepEqual(draft_model.getDraft(id), expected);
+    const draft = draft_model.getDraft("id1");
+    assert.equal(draft.stream_id, stream_B.stream_id);
+    assert.equal(draft.topic, "");
 });
 
-test("draft_model edit", () => {
+test("draft_model add", ({override_rewire}) => {
     const draft_model = drafts.draft_model;
     const ls = localstorage();
     assert.equal(ls.get("draft"), undefined);
-    let id;
 
     const $unread_count = $("<unread-count-stub>");
     $(".top_left_drafts").set_find_results(".unread_count", $unread_count);
+    override_rewire(drafts, "update_compose_draft_count", noop);
 
-    with_overrides(({override}) => {
-        override(Date, "now", () => 1);
-        const expected = {...draft_1};
-        expected.updatedAt = 1;
-        id = draft_model.addDraft({...draft_1});
-        assert.deepEqual(draft_model.getDraft(id), expected);
-    });
-
-    with_overrides(({override}) => {
-        override(Date, "now", () => 2);
-        const expected = {...draft_2};
-        expected.updatedAt = 2;
-        draft_model.editDraft(id, {...draft_2});
-        assert.deepEqual(draft_model.getDraft(id), expected);
-    });
+    const id = draft_model.addDraft(draft_1);
+    assert.deepEqual(draft_model.getDraft(id), draft_1);
 });
 
-test("draft_model delete", ({override}) => {
+test("draft_model edit", ({override_rewire}) => {
     const draft_model = drafts.draft_model;
     const ls = localstorage();
     assert.equal(ls.get("draft"), undefined);
 
     const $unread_count = $("<unread-count-stub>");
     $(".top_left_drafts").set_find_results(".unread_count", $unread_count);
+    override_rewire(drafts, "update_compose_draft_count", noop);
 
-    override(Date, "now", () => 1);
-    const expected = {...draft_1};
-    expected.updatedAt = 1;
-    const id = draft_model.addDraft({...draft_1});
-    assert.deepEqual(draft_model.getDraft(id), expected);
+    const id = draft_model.addDraft(draft_1);
+    assert.deepEqual(draft_model.getDraft(id), draft_1);
+
+    draft_model.editDraft(id, draft_2);
+    assert.deepEqual(draft_model.getDraft(id), draft_2);
+});
+
+test("draft_model delete", ({override_rewire}) => {
+    const draft_model = drafts.draft_model;
+    const ls = localstorage();
+    assert.equal(ls.get("draft"), undefined);
+
+    const $unread_count = $("<unread-count-stub>");
+    $(".top_left_drafts").set_find_results(".unread_count", $unread_count);
+    override_rewire(drafts, "update_compose_draft_count", noop);
+
+    const id = draft_model.addDraft(draft_1);
+    assert.deepEqual(draft_model.getDraft(id), draft_1);
 
     draft_model.deleteDraft(id);
     assert.deepEqual(draft_model.getDraft(id), false);
 });
 
-test("snapshot_message", ({override_rewire}) => {
-    override_rewire(user_pill, "get_user_ids", () => [aaron.user_id]);
+test("snapshot_message", ({override, override_rewire}) => {
+    override(user_pill, "get_user_ids", () => [aaron.user_id]);
     override_rewire(compose_pm_pill, "set_from_emails", noop);
     mock_banners();
 
     $(".narrow_to_compose_recipients").toggleClass = noop;
-
-    mock_stream_header_colorblock();
 
     let curr_draft;
 
@@ -180,6 +223,8 @@ test("snapshot_message", ({override_rewire}) => {
     };
     stream_data.add_sub(stream);
     compose_state.set_stream_id(stream.stream_id);
+
+    override(Date, "now", () => mock_current_timestamp);
 
     curr_draft = draft_1;
     set_compose_state();
@@ -204,6 +249,7 @@ test("initialize", ({override_rewire}) => {
         let called = false;
         override_rewire(drafts, "update_draft", () => {
             called = true;
+            return 100;
         });
         f();
         assert.ok(called);
@@ -213,15 +259,18 @@ test("initialize", ({override_rewire}) => {
     $(".top_left_drafts").set_find_results(".unread_count", $unread_count);
 
     drafts.initialize();
+    drafts.initialize_ui();
     drafts_overlay_ui.initialize();
 });
 
-test("remove_old_drafts", () => {
+test("remove_old_drafts", ({override_rewire}) => {
     const draft_3 = {
         topic: "topic",
         type: "stream",
         content: "Test stream message",
         updatedAt: Date.now(),
+        is_sending_saving: false,
+        drafts_version: 1,
     };
     const draft_4 = {
         private_message_recipient: "aaron@zulip.com",
@@ -229,6 +278,8 @@ test("remove_old_drafts", () => {
         type: "private",
         content: "Test direct message",
         updatedAt: new Date().setDate(-30),
+        is_sending_saving: false,
+        drafts_version: 1,
     };
     const draft_model = drafts.draft_model;
     const ls = localstorage();
@@ -238,6 +289,7 @@ test("remove_old_drafts", () => {
 
     const $unread_count = $("<unread-count-stub>");
     $(".top_left_drafts").set_find_results(".unread_count", $unread_count);
+    override_rewire(drafts, "update_compose_draft_count", noop);
 
     drafts.remove_old_drafts();
     assert.deepEqual(draft_model.get(), {id3: draft_3});
@@ -249,7 +301,7 @@ test("update_draft", ({override, override_rewire}) => {
     assert.equal(draft_id, undefined);
 
     override_rewire(compose_pm_pill, "set_from_emails", noop);
-    override_rewire(user_pill, "get_user_ids", () => [aaron.user_id]);
+    override(user_pill, "get_user_ids", () => [aaron.user_id]);
     compose_state.set_message_type("private");
     compose_state.message_content("dummy content");
     compose_state.private_message_recipient(aaron.email);
@@ -257,6 +309,7 @@ test("update_draft", ({override, override_rewire}) => {
     const $container = $(".top_left_drafts");
     const $child = $(".unread_count");
     $container.set_find_results(".unread_count", $child);
+    override_rewire(drafts, "update_compose_draft_count", noop);
 
     tippy_args = {
         content: "translated: Saved as draft",
@@ -306,6 +359,7 @@ test("update_draft", ({override, override_rewire}) => {
 
 test("rename_stream_recipient", ({override_rewire}) => {
     override_rewire(drafts, "set_count", noop);
+    override_rewire(drafts, "update_compose_draft_count", noop);
 
     const stream_A = {
         subscribed: false,
@@ -388,73 +442,7 @@ test("rename_stream_recipient", ({override_rewire}) => {
     assert_draft("id4", stream_B.stream_id, "e");
 });
 
-// There were some buggy drafts that had their topics
-// renamed to `undefined` in #23238.
-// TODO/compatibility: The next two tests can be deleted
-// when we get to delete drafts.fix_drafts_with_undefined_topics.
-test("catch_buggy_draft_error", () => {
-    const stream_A = {
-        subscribed: false,
-        name: "A",
-        stream_id: 1,
-    };
-    stream_data.add_sub(stream_A);
-    const stream_B = {
-        subscribed: false,
-        name: "B",
-        stream_id: 2,
-    };
-    stream_data.add_sub(stream_B);
-
-    const buggy_draft = {
-        stream_id: stream_B.stream_id,
-        topic: undefined,
-        type: "stream",
-        content: "Test stream message",
-        updatedAt: Date.now(),
-    };
-    const data = {id1: buggy_draft};
-    const ls = localstorage();
-    ls.set("drafts", data);
-    const draft_model = drafts.draft_model;
-
-    // An error is logged but the draft isn't fixed in this codepath.
-    blueslip.expect("error", "Cannot compare strings; at least one value is undefined");
-    drafts.rename_stream_recipient(
-        stream_B.stream_id,
-        "old_topic",
-        stream_A.stream_id,
-        "new_topic",
-    );
-    const draft = draft_model.getDraft("id1");
-    assert.equal(draft.stream_id, stream_B.stream_id);
-    assert.equal(draft.topic, undefined);
-});
-
-test("fix_buggy_draft", ({override_rewire}) => {
-    override_rewire(drafts, "set_count", noop);
-
-    const buggy_draft = {
-        stream_id: 1,
-        // This is the bug: topic never be undefined for a stream
-        // message draft.
-        topic: undefined,
-        type: "stream",
-        content: "Test stream message",
-        updatedAt: Date.now(),
-    };
-    const data = {id1: buggy_draft};
-    const ls = localstorage();
-    ls.set("drafts", data);
-    const draft_model = drafts.draft_model;
-
-    drafts.fix_drafts_with_undefined_topics();
-    const draft = draft_model.getDraft("id1");
-    assert.equal(draft.stream_id, buggy_draft.stream_id);
-    assert.equal(draft.topic, "");
-});
-
-test("delete_all_drafts", () => {
+test("delete_all_drafts", ({override_rewire}) => {
     const draft_model = drafts.draft_model;
     const ls = localstorage();
     const data = {draft_1, draft_2, short_msg};
@@ -463,12 +451,13 @@ test("delete_all_drafts", () => {
 
     const $unread_count = $("<unread-count-stub>");
     $(".top_left_drafts").set_find_results(".unread_count", $unread_count);
+    override_rewire(drafts, "update_compose_draft_count", noop);
 
     drafts.delete_all_drafts();
     assert.deepEqual(draft_model.get(), {});
 });
 
-test("format_drafts", ({override_rewire, mock_template}) => {
+test("format_drafts", ({override, override_rewire, mock_template}) => {
     override_rewire(stream_data, "get_color", () => "#FFFFFF");
     function feb12() {
         return new Date(1549958107000); // 2/12/2019 07:55:07 AM (UTC+0)
@@ -484,6 +473,8 @@ test("format_drafts", ({override_rewire, mock_template}) => {
         content: "Test stream message",
         stream_id: 30,
         updatedAt: feb12().getTime(),
+        is_sending_saving: false,
+        drafts_version: 1,
     };
     const draft_2 = {
         private_message_recipient: "aaron@zulip.com",
@@ -491,6 +482,8 @@ test("format_drafts", ({override_rewire, mock_template}) => {
         type: "private",
         content: "Test direct message",
         updatedAt: date(-1),
+        is_sending_saving: false,
+        drafts_version: 1,
     };
     const draft_3 = {
         topic: "topic",
@@ -498,6 +491,8 @@ test("format_drafts", ({override_rewire, mock_template}) => {
         stream_id: 40,
         content: "Test stream message 2",
         updatedAt: date(-10),
+        is_sending_saving: false,
+        drafts_version: 1,
     };
     const draft_4 = {
         private_message_recipient: "aaron@zulip.com",
@@ -505,6 +500,8 @@ test("format_drafts", ({override_rewire, mock_template}) => {
         type: "private",
         content: "Test direct message 2",
         updatedAt: date(-5),
+        is_sending_saving: false,
+        drafts_version: 1,
     };
     const draft_5 = {
         private_message_recipient: "aaron@zulip.com",
@@ -512,6 +509,8 @@ test("format_drafts", ({override_rewire, mock_template}) => {
         type: "private",
         content: "Test direct message 3",
         updatedAt: date(-2),
+        is_sending_saving: false,
+        drafts_version: 1,
     };
 
     const expected = [
@@ -585,7 +584,7 @@ test("format_drafts", ({override_rewire, mock_template}) => {
         return {name: "stream 2", stream_id, invite_only: false, is_web_public: false};
     });
 
-    override_rewire(user_pill, "get_user_ids", () => []);
+    override(user_pill, "get_user_ids", () => []);
     compose_state.set_message_type("private");
     compose_state.private_message_recipient(null);
 
@@ -596,7 +595,7 @@ test("format_drafts", ({override_rewire, mock_template}) => {
         return "<draft table stub>";
     });
 
-    override_rewire(messages_overlay_ui, "set_initial_element", noop);
+    override(messages_overlay_ui, "set_initial_element", noop);
 
     const $unread_count = $("<unread-count-stub>");
     $(".top_left_drafts").set_find_results(".unread_count", $unread_count);
@@ -625,7 +624,7 @@ test("format_drafts", ({override_rewire, mock_template}) => {
     drafts_overlay_ui.launch();
 });
 
-test("filter_drafts", ({override_rewire, mock_template}) => {
+test("filter_drafts", ({override, override_rewire, mock_template}) => {
     override_rewire(stream_data, "get_color", () => "#FFFFFF");
     function feb12() {
         return new Date(1549958107000); // 2/12/2019 07:55:07 AM (UTC+0)
@@ -641,6 +640,8 @@ test("filter_drafts", ({override_rewire, mock_template}) => {
         content: "Test stream message",
         stream_id: 30,
         updatedAt: feb12().getTime(),
+        is_sending_saving: false,
+        drafts_version: 1,
     };
     const pm_draft_1 = {
         private_message_recipient: "aaron@zulip.com",
@@ -648,6 +649,8 @@ test("filter_drafts", ({override_rewire, mock_template}) => {
         type: "private",
         content: "Test direct message",
         updatedAt: date(-1),
+        is_sending_saving: false,
+        drafts_version: 1,
     };
     const stream_draft_2 = {
         topic: "topic",
@@ -655,6 +658,8 @@ test("filter_drafts", ({override_rewire, mock_template}) => {
         stream_id: 40,
         content: "Test stream message 2",
         updatedAt: date(-10),
+        is_sending_saving: false,
+        drafts_version: 1,
     };
     const pm_draft_2 = {
         private_message_recipient: "aaron@zulip.com",
@@ -662,6 +667,8 @@ test("filter_drafts", ({override_rewire, mock_template}) => {
         type: "private",
         content: "Test direct message 2",
         updatedAt: date(-5),
+        is_sending_saving: false,
+        drafts_version: 1,
     };
     const pm_draft_3 = {
         private_message_recipient: "aaron@zulip.com",
@@ -669,6 +676,8 @@ test("filter_drafts", ({override_rewire, mock_template}) => {
         type: "private",
         content: "Test direct message 3",
         updatedAt: date(-2),
+        is_sending_saving: false,
+        drafts_version: 1,
     };
 
     const expected_pm_drafts = [
@@ -758,12 +767,12 @@ test("filter_drafts", ({override_rewire, mock_template}) => {
         return "<draft table stub>";
     });
 
-    override_rewire(messages_overlay_ui, "set_initial_element", noop);
+    override(messages_overlay_ui, "set_initial_element", noop);
 
     const $unread_count = $("<unread-count-stub>");
     $(".top_left_drafts").set_find_results(".unread_count", $unread_count);
 
-    override_rewire(user_pill, "get_user_ids", () => [aaron.user_id]);
+    override(user_pill, "get_user_ids", () => [aaron.user_id]);
     override_rewire(compose_pm_pill, "set_from_emails", noop);
     compose_state.set_message_type("private");
     compose_state.private_message_recipient(aaron.email);

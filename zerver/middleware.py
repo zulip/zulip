@@ -22,17 +22,16 @@ from django.utils.translation import gettext as _
 from django_scim.middleware import SCIMAuthCheckMiddleware
 from django_scim.settings import scim_settings
 from sentry_sdk import set_tag
-from typing_extensions import Concatenate, ParamSpec, override
+from typing_extensions import Annotated, Concatenate, ParamSpec, override
 
 from zerver.lib.cache import get_remote_cache_requests, get_remote_cache_time
-from zerver.lib.db import reset_queries
+from zerver.lib.db_connections import reset_queries
 from zerver.lib.debug import maybe_tracemalloc_listen
 from zerver.lib.exceptions import ErrorCode, JsonableError, MissingAuthenticationError, WebhookError
-from zerver.lib.html_to_text import get_content_description
 from zerver.lib.markdown import get_markdown_requests, get_markdown_time
 from zerver.lib.per_request_cache import flush_per_request_caches
 from zerver.lib.rate_limiter import RateLimitResult
-from zerver.lib.request import REQ, RequestNotes, has_request_variables
+from zerver.lib.request import RequestNotes
 from zerver.lib.response import (
     AsynchronousResponse,
     json_response,
@@ -40,6 +39,7 @@ from zerver.lib.response import (
     json_unauthorized,
 )
 from zerver.lib.subdomains import get_subdomain
+from zerver.lib.typed_endpoint import INTENTIONALLY_UNDOCUMENTED, ApiParamConfig, typed_endpoint
 from zerver.lib.user_agent import parse_user_agent
 from zerver.models import Realm
 from zerver.models.realms import get_realm
@@ -226,15 +226,18 @@ def write_log_line(
         logger.info("status=%3d, data=%s, uid=%s", status_code, error_data, requester_for_logs)
 
 
-# We take advantage of `has_request_variables` being called multiple times
+# We take advantage of `typed_endpoint` being called multiple times
 # when processing a request in order to process any `client` parameter that
 # may have been sent in the request content.
-@has_request_variables
+@typed_endpoint
 def parse_client(
     request: HttpRequest,
     # As `client` is a common element to all API endpoints, we choose
     # not to document on every endpoint's individual parameters.
-    req_client: Optional[str] = REQ("client", default=None, intentionally_undocumented=True),
+    *,
+    req_client: Annotated[
+        Optional[str], ApiParamConfig("client", documentation_status=INTENTIONALLY_UNDOCUMENTED)
+    ] = None,
 ) -> Tuple[str, Optional[str]]:
     # If the API request specified a client in the request content,
     # that has priority. Otherwise, extract the client from the
@@ -665,28 +668,6 @@ class DetectProxyMisconfiguration(MiddlewareMixin):
             raise ProxyMisconfigurationError(proxy_state_header)
 
 
-def alter_content(request: HttpRequest, content: bytes) -> bytes:
-    first_paragraph_text = get_content_description(content, request)
-    placeholder_open_graph_description = RequestNotes.get_notes(
-        request
-    ).placeholder_open_graph_description
-    assert placeholder_open_graph_description is not None
-    return content.replace(
-        placeholder_open_graph_description.encode(),
-        first_paragraph_text.encode(),
-    )
-
-
-class FinalizeOpenGraphDescription(MiddlewareMixin):
-    def process_response(
-        self, request: HttpRequest, response: HttpResponseBase
-    ) -> HttpResponseBase:
-        if RequestNotes.get_notes(request).placeholder_open_graph_description is not None:
-            assert isinstance(response, HttpResponse)
-            response.content = alter_content(request, response.content)
-        return response
-
-
 def validate_scim_bearer_token(request: HttpRequest) -> bool:
     """
     This function verifies the request is allowed to make SCIM requests on this subdomain,
@@ -754,7 +735,3 @@ class ZulipSCIMAuthCheckMiddleware(SCIMAuthCheckMiddleware):
             return response
 
         return None
-
-
-class ZulipNoopMiddleware(MiddlewareMixin):
-    pass

@@ -187,6 +187,7 @@ def upgrade_page(
     request: HttpRequest,
     manual_license_management: bool = REQ(default=False, json_validator=check_bool),
     tier: int = REQ(default=CustomerPlan.TIER_CLOUD_STANDARD, json_validator=check_int),
+    setup_payment_by_invoice: bool = REQ(default=False, json_validator=check_bool),
 ) -> HttpResponse:
     user = request.user
     assert user.is_authenticated
@@ -194,9 +195,14 @@ def upgrade_page(
     if not settings.BILLING_ENABLED or user.is_guest:
         return render(request, "404.html", status=404)
 
+    billing_modality = "charge_automatically"
+    if setup_payment_by_invoice:
+        billing_modality = "send_invoice"
+
     initial_upgrade_request = InitialUpgradeRequest(
         manual_license_management=manual_license_management,
         tier=tier,
+        billing_modality=billing_modality,
     )
     billing_session = RealmBillingSession(user)
     redirect_url, context = billing_session.get_initial_upgrade_context(initial_upgrade_request)
@@ -204,7 +210,7 @@ def upgrade_page(
     if redirect_url:
         return HttpResponseRedirect(redirect_url)
 
-    response = render(request, "corporate/upgrade.html", context=context)
+    response = render(request, "corporate/billing/upgrade.html", context=context)
     return response
 
 
@@ -217,11 +223,17 @@ def remote_realm_upgrade_page(
     manual_license_management: Json[bool] = False,
     success_message: str = "",
     tier: str = str(CustomerPlan.TIER_SELF_HOSTED_BUSINESS),
+    setup_payment_by_invoice: Json[bool] = False,
 ) -> HttpResponse:
+    billing_modality = "charge_automatically"
+    if setup_payment_by_invoice:  # nocoverage
+        billing_modality = "send_invoice"
+
     initial_upgrade_request = InitialUpgradeRequest(
         manual_license_management=manual_license_management,
         tier=int(tier),
         success_message=success_message,
+        billing_modality=billing_modality,
     )
     try:
         redirect_url, context = billing_session.get_initial_upgrade_context(initial_upgrade_request)
@@ -231,7 +243,7 @@ def remote_realm_upgrade_page(
     if redirect_url:  # nocoverage
         return HttpResponseRedirect(redirect_url)
 
-    response = render(request, "corporate/upgrade.html", context=context)
+    response = render(request, "corporate/billing/upgrade.html", context=context)
     return response
 
 
@@ -244,11 +256,17 @@ def remote_server_upgrade_page(
     manual_license_management: Json[bool] = False,
     success_message: str = "",
     tier: str = str(CustomerPlan.TIER_SELF_HOSTED_BUSINESS),
+    setup_payment_by_invoice: Json[bool] = False,
 ) -> HttpResponse:
+    billing_modality = "charge_automatically"
+    if setup_payment_by_invoice:  # nocoverage
+        billing_modality = "send_invoice"
+
     initial_upgrade_request = InitialUpgradeRequest(
         manual_license_management=manual_license_management,
         tier=int(tier),
         success_message=success_message,
+        billing_modality=billing_modality,
     )
     try:
         redirect_url, context = billing_session.get_initial_upgrade_context(initial_upgrade_request)
@@ -258,5 +276,5 @@ def remote_server_upgrade_page(
     if redirect_url:  # nocoverage
         return HttpResponseRedirect(redirect_url)
 
-    response = render(request, "corporate/upgrade.html", context=context)
+    response = render(request, "corporate/billing/upgrade.html", context=context)
     return response

@@ -73,6 +73,7 @@
         "no-implied-eval": "error",
         "no-inner-declarations": "off",
         "no-iterator": "error",
+        "no-jquery/no-append-html": "error",
         "no-jquery/no-constructor-attributes": "error",
         "no-jquery/no-parse-html-literal": "error",
         "no-label-var": "error",
@@ -198,6 +199,8 @@
                 "@typescript-eslint/no-use-before-define": ["error", {"functions": false}],
                 "@typescript-eslint/parameter-properties": "error",
                 "@typescript-eslint/promise-function-async": "error",
+                "@typescript-eslint/restrict-plus-operands": ["error", {}],
+                "@typescript-eslint/restrict-template-expressions": ["error", {}],
                 "no-undef": "error"
             }
         },
@@ -276,6 +279,12 @@
                     }
                 ],
                 "unicorn/prefer-string-replace-all": "off"
+            }
+        },
+        {
+            "files": ["web/server/**"],
+            "env": {
+                "node": true
             }
         }
     ]

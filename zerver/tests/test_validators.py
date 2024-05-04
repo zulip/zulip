@@ -1,5 +1,5 @@
 import re
-from typing import TYPE_CHECKING, Any, Dict, List, Tuple
+from typing import Any, Dict, List, Tuple
 
 from django.conf import settings
 from django.core.exceptions import ValidationError
@@ -32,9 +32,6 @@ from zerver.lib.validator import (
 )
 
 if settings.ZILENCER_ENABLED:
-    pass
-
-if TYPE_CHECKING:
     pass
 
 
@@ -127,7 +124,9 @@ class ValidatorTestCase(ZulipTestCase):
             to_non_negative_int("x", "-1")
         with self.assertRaisesRegex(ValueError, re.escape("5 is too large (max 4)")):
             to_non_negative_int("x", "5", max_int_size=4)
-        with self.assertRaisesRegex(ValueError, re.escape(f"{2**32} is too large (max {2**32-1})")):
+        with self.assertRaisesRegex(
+            ValueError, re.escape(f"{2**32} is too large (max {2**32 - 1})")
+        ):
             to_non_negative_int("x", str(2**32))
 
     def test_check_float(self) -> None:

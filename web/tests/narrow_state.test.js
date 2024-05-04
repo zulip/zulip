@@ -10,18 +10,26 @@ const people = zrequire("people");
 const {Filter} = zrequire("../src/filter");
 const stream_data = zrequire("stream_data");
 const narrow_state = zrequire("narrow_state");
+const message_lists = zrequire("message_lists");
 
 function set_filter(raw_terms) {
     const terms = raw_terms.map((op) => ({
         operator: op[0],
         operand: op[1],
     }));
-    narrow_state.set_current_filter(new Filter(terms));
+    const filter = new Filter(terms);
+    message_lists.set_current({
+        data: {
+            filter,
+        },
+    });
+
+    return filter;
 }
 
 function test(label, f) {
     run_test(label, ({override}) => {
-        narrow_state.reset_current_filter();
+        message_lists.set_current(undefined);
         stream_data.clear_subscriptions();
         f({override});
     });
@@ -29,7 +37,7 @@ function test(label, f) {
 
 test("stream", () => {
     assert.equal(narrow_state.public_search_terms(), undefined);
-    assert.ok(!narrow_state.active());
+    assert.ok(!narrow_state.filter());
     assert.equal(narrow_state.stream_id(), undefined);
 
     const test_stream = {name: "Test", stream_id: 15};
@@ -42,7 +50,7 @@ test("stream", () => {
         ["topic", "Bar"],
         ["search", "yo"],
     ]);
-    assert.ok(narrow_state.active());
+    assert.ok(narrow_state.filter());
 
     assert.equal(narrow_state.stream_name(), "Test");
     assert.equal(narrow_state.stream_id(), 15);
@@ -51,14 +59,14 @@ test("stream", () => {
     assert.ok(narrow_state.is_for_stream_id(test_stream.stream_id));
 
     const expected_terms = [
-        {negated: false, operator: "stream", operand: "Test"},
+        {negated: false, operator: "channel", operand: "Test"},
         {negated: false, operator: "topic", operand: "Bar"},
         {negated: false, operator: "search", operand: "yo"},
     ];
 
     const public_terms = narrow_state.public_search_terms();
     assert.deepEqual(public_terms, expected_terms);
-    assert.equal(narrow_state.search_string(), "stream:Test topic:Bar yo");
+    assert.equal(narrow_state.search_string(), "channel:Test topic:Bar yo");
 });
 
 test("narrowed", () => {
@@ -66,31 +74,25 @@ test("narrowed", () => {
     assert.ok(!narrow_state.narrowed_by_reply());
     assert.ok(!narrow_state.narrowed_by_pm_reply());
     assert.ok(!narrow_state.narrowed_by_topic_reply());
-    assert.ok(!narrow_state.narrowed_to_search());
     assert.ok(!narrow_state.narrowed_to_topic());
     assert.ok(!narrow_state.narrowed_by_stream_reply());
     assert.equal(narrow_state.stream_sub(), undefined);
-    assert.ok(!narrow_state.narrowed_to_starred());
 
     set_filter([["stream", "Foo"]]);
     assert.ok(!narrow_state.narrowed_to_pms());
     assert.ok(!narrow_state.narrowed_by_reply());
     assert.ok(!narrow_state.narrowed_by_pm_reply());
     assert.ok(!narrow_state.narrowed_by_topic_reply());
-    assert.ok(!narrow_state.narrowed_to_search());
     assert.ok(!narrow_state.narrowed_to_topic());
     assert.ok(narrow_state.narrowed_by_stream_reply());
-    assert.ok(!narrow_state.narrowed_to_starred());
 
     set_filter([["dm", "steve@zulip.com"]]);
     assert.ok(narrow_state.narrowed_to_pms());
     assert.ok(narrow_state.narrowed_by_reply());
     assert.ok(narrow_state.narrowed_by_pm_reply());
     assert.ok(!narrow_state.narrowed_by_topic_reply());
-    assert.ok(!narrow_state.narrowed_to_search());
     assert.ok(!narrow_state.narrowed_to_topic());
     assert.ok(!narrow_state.narrowed_by_stream_reply());
-    assert.ok(!narrow_state.narrowed_to_starred());
 
     set_filter([
         ["stream", "Foo"],
@@ -100,30 +102,24 @@ test("narrowed", () => {
     assert.ok(narrow_state.narrowed_by_reply());
     assert.ok(!narrow_state.narrowed_by_pm_reply());
     assert.ok(narrow_state.narrowed_by_topic_reply());
-    assert.ok(!narrow_state.narrowed_to_search());
     assert.ok(narrow_state.narrowed_to_topic());
     assert.ok(!narrow_state.narrowed_by_stream_reply());
-    assert.ok(!narrow_state.narrowed_to_starred());
 
     set_filter([["search", "grail"]]);
     assert.ok(!narrow_state.narrowed_to_pms());
     assert.ok(!narrow_state.narrowed_by_reply());
     assert.ok(!narrow_state.narrowed_by_pm_reply());
     assert.ok(!narrow_state.narrowed_by_topic_reply());
-    assert.ok(narrow_state.narrowed_to_search());
     assert.ok(!narrow_state.narrowed_to_topic());
     assert.ok(!narrow_state.narrowed_by_stream_reply());
-    assert.ok(!narrow_state.narrowed_to_starred());
 
     set_filter([["is", "starred"]]);
     assert.ok(!narrow_state.narrowed_to_pms());
     assert.ok(!narrow_state.narrowed_by_reply());
     assert.ok(!narrow_state.narrowed_by_pm_reply());
     assert.ok(!narrow_state.narrowed_by_topic_reply());
-    assert.ok(!narrow_state.narrowed_to_search());
     assert.ok(!narrow_state.narrowed_to_topic());
     assert.ok(!narrow_state.narrowed_by_stream_reply());
-    assert.ok(narrow_state.narrowed_to_starred());
 });
 
 test("terms", () => {
@@ -134,7 +130,7 @@ test("terms", () => {
     ]);
     let result = narrow_state.search_terms();
     assert.equal(result.length, 3);
-    assert.equal(result[0].operator, "stream");
+    assert.equal(result[0].operator, "channel");
     assert.equal(result[0].operand, "Foo");
 
     assert.equal(result[1].operator, "topic");
@@ -143,38 +139,39 @@ test("terms", () => {
     assert.equal(result[2].operator, "search");
     assert.equal(result[2].operand, "yo");
 
-    narrow_state.reset_current_filter();
+    message_lists.set_current(undefined);
     result = narrow_state.search_terms();
     assert.equal(result.length, 0);
 
     page_params.narrow = [{operator: "stream", operand: "Foo"}];
     result = narrow_state.search_terms();
     assert.equal(result.length, 1);
-    assert.equal(result[0].operator, "stream");
+    assert.equal(result[0].operator, "channel");
     assert.equal(result[0].operand, "Foo");
 });
 
 test("excludes_muted_topics", () => {
-    set_filter([["stream", "devel"]]);
-    assert.ok(narrow_state.excludes_muted_topics());
+    let filter = set_filter([["stream", "devel"]]);
+    assert.ok(filter.excludes_muted_topics());
 
-    narrow_state.reset_current_filter(); // not narrowed, basically
-    assert.ok(narrow_state.excludes_muted_topics());
+    // Combined feed view.
+    filter = set_filter([["in", "home"]]);
+    assert.ok(filter.excludes_muted_topics());
 
-    set_filter([
+    filter = set_filter([
         ["stream", "devel"],
         ["topic", "mac"],
     ]);
-    assert.ok(!narrow_state.excludes_muted_topics());
+    assert.ok(!filter.excludes_muted_topics());
 
-    set_filter([["search", "whatever"]]);
-    assert.ok(!narrow_state.excludes_muted_topics());
+    filter = set_filter([["search", "whatever"]]);
+    assert.ok(!filter.excludes_muted_topics());
 
-    set_filter([["is", "private"]]);
-    assert.ok(!narrow_state.excludes_muted_topics());
+    filter = set_filter([["is", "private"]]);
+    assert.ok(!filter.excludes_muted_topics());
 
-    set_filter([["is", "starred"]]);
-    assert.ok(!narrow_state.excludes_muted_topics());
+    filter = set_filter([["is", "starred"]]);
+    assert.ok(!filter.excludes_muted_topics());
 });
 
 test("set_compose_defaults", () => {
@@ -246,7 +243,7 @@ test("update_email", () => {
     const filter = narrow_state.filter();
     assert.deepEqual(filter.operands("dm"), ["showell@foo.com"]);
     assert.deepEqual(filter.operands("sender"), ["showell@foo.com"]);
-    assert.deepEqual(filter.operands("stream"), ["steve@foo.com"]);
+    assert.deepEqual(filter.operands("channel"), ["steve@foo.com"]);
 });
 
 test("topic", () => {
@@ -271,7 +268,7 @@ test("topic", () => {
     ]);
     assert.equal(narrow_state.topic(), undefined);
 
-    narrow_state.set_current_filter(undefined);
+    message_lists.set_current(undefined);
     assert.equal(narrow_state.topic(), undefined);
 });
 
@@ -302,20 +299,24 @@ test("pm_ids_string", () => {
     // This function will return undefined unless we're clearly
     // narrowed to a specific direct message (including group
     // direct messages) with real users.
-    narrow_state.set_current_filter(undefined);
+    message_lists.set_current(undefined);
     assert.equal(narrow_state.pm_ids_string(), undefined);
+    assert.deepStrictEqual(narrow_state.pm_ids_set(), new Set());
 
     set_filter([
         ["stream", "Foo"],
         ["topic", "Bar"],
     ]);
     assert.equal(narrow_state.pm_ids_string(), undefined);
+    assert.deepStrictEqual(narrow_state.pm_ids_set(), new Set());
 
     set_filter([["dm", ""]]);
     assert.equal(narrow_state.pm_ids_string(), undefined);
+    assert.deepStrictEqual(narrow_state.pm_ids_set(), new Set());
 
     set_filter([["dm", "bogus@foo.com"]]);
     assert.equal(narrow_state.pm_ids_string(), undefined);
+    assert.deepStrictEqual(narrow_state.pm_ids_set(), new Set());
 
     const alice = {
         email: "alice@foo.com",
@@ -334,4 +335,5 @@ test("pm_ids_string", () => {
 
     set_filter([["dm", "bob@foo.com,alice@foo.com"]]);
     assert.equal(narrow_state.pm_ids_string(), "444,555");
+    assert.deepStrictEqual(narrow_state.pm_ids_set(), new Set([444, 555]));
 });

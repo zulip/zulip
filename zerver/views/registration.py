@@ -1,6 +1,6 @@
 import logging
 from contextlib import suppress
-from typing import Any, Dict, Iterable, List, Optional, Tuple, Union
+from typing import Any, Dict, Iterable, List, Optional, Set, Tuple, Union
 from urllib.parse import urlencode, urljoin
 
 import orjson
@@ -82,6 +82,7 @@ from zerver.models import (
     UserProfile,
 )
 from zerver.models.constants import MAX_LANGUAGE_ID_LENGTH
+from zerver.models.realm_audit_logs import RealmAuditLog
 from zerver.models.realms import (
     DisposableEmailError,
     DomainNotAllowedForRealmError,
@@ -393,7 +394,10 @@ def registration_helper(
             # so they can be directly registered without having to go through
             # this interstitial.
             form = RegistrationForm(
-                {"full_name": ldap_full_name}, initial=initial_data, realm_creation=realm_creation
+                {"full_name": ldap_full_name},
+                initial=initial_data,
+                realm_creation=realm_creation,
+                realm=realm,
             )
             request.session["authenticated_full_name"] = ldap_full_name
             name_validated = True
@@ -406,6 +410,7 @@ def registration_helper(
             form = RegistrationForm(
                 initial={"full_name": hesiod_name if "@" not in hesiod_name else ""},
                 realm_creation=realm_creation,
+                realm=realm,
             )
             name_validated = True
         elif prereg_user is not None and prereg_user.full_name:
@@ -416,21 +421,26 @@ def registration_helper(
                     {"full_name": prereg_user.full_name},
                     initial=initial_data,
                     realm_creation=realm_creation,
+                    realm=realm,
                 )
             else:
                 initial_data["full_name"] = prereg_user.full_name
                 form = RegistrationForm(
                     initial=initial_data,
                     realm_creation=realm_creation,
+                    realm=realm,
                 )
         elif form_full_name is not None:
             initial_data["full_name"] = form_full_name
             form = RegistrationForm(
                 initial=initial_data,
                 realm_creation=realm_creation,
+                realm=realm,
             )
         else:
-            form = RegistrationForm(initial=initial_data, realm_creation=realm_creation)
+            form = RegistrationForm(
+                initial=initial_data, realm_creation=realm_creation, realm=realm
+            )
     else:
         postdata = request.POST.copy()
         if name_changes_disabled(realm):
@@ -442,7 +452,7 @@ def registration_helper(
                 name_validated = True
             except KeyError:
                 pass
-        form = RegistrationForm(postdata, realm_creation=realm_creation)
+        form = RegistrationForm(postdata, realm_creation=realm_creation, realm=realm)
 
     if not (password_auth_enabled(realm) and password_required):
         form["password"].field.required = False
@@ -464,6 +474,32 @@ def registration_helper(
             realm_type = form.cleaned_data["realm_type"]
             realm_default_language = form.cleaned_data["realm_default_language"]
             is_demo_organization = form.cleaned_data["is_demo_organization"]
+            how_realm_creator_found_zulip = RealmAuditLog.HOW_REALM_CREATOR_FOUND_ZULIP_OPTIONS[
+                form.cleaned_data["how_realm_creator_found_zulip"]
+            ]
+            how_realm_creator_found_zulip_extra_context = ""
+            if (
+                how_realm_creator_found_zulip
+                == RealmAuditLog.HOW_REALM_CREATOR_FOUND_ZULIP_OPTIONS["other"]
+            ):
+                how_realm_creator_found_zulip_extra_context = form.cleaned_data[
+                    "how_realm_creator_found_zulip_other_text"
+                ]
+            elif (
+                how_realm_creator_found_zulip
+                == RealmAuditLog.HOW_REALM_CREATOR_FOUND_ZULIP_OPTIONS["ad"]
+            ):
+                how_realm_creator_found_zulip_extra_context = form.cleaned_data[
+                    "how_realm_creator_found_zulip_where_ad"
+                ]
+            elif (
+                how_realm_creator_found_zulip
+                == RealmAuditLog.HOW_REALM_CREATOR_FOUND_ZULIP_OPTIONS["existing_user"]
+            ):
+                how_realm_creator_found_zulip_extra_context = form.cleaned_data[
+                    "how_realm_creator_found_zulip_which_organization"
+                ]
+
             realm = do_create_realm(
                 string_id,
                 realm_name,
@@ -471,6 +507,8 @@ def registration_helper(
                 default_language=realm_default_language,
                 is_demo_organization=is_demo_organization,
                 prereg_realm=prereg_realm,
+                how_realm_creator_found_zulip=how_realm_creator_found_zulip,
+                how_realm_creator_found_zulip_extra_context=how_realm_creator_found_zulip_extra_context,
             )
         assert realm is not None
 
@@ -686,6 +724,7 @@ def registration_helper(
         "email_address_visibility_moderators": RealmUserDefault.EMAIL_ADDRESS_VISIBILITY_MODERATORS,
         "email_address_visibility_nobody": RealmUserDefault.EMAIL_ADDRESS_VISIBILITY_NOBODY,
         "email_address_visibility_options_dict": UserProfile.EMAIL_ADDRESS_VISIBILITY_ID_TO_NAME_MAP,
+        "how_realm_creator_found_zulip_options": RealmAuditLog.HOW_REALM_CREATOR_FOUND_ZULIP_OPTIONS.items(),
     }
     # Add context for realm creation part of the form.
     context.update(get_realm_create_form_context())
@@ -1104,24 +1143,62 @@ def find_account(request: HttpRequest) -> HttpResponse:
             # one outgoing email per provided email address, with each
             # email listing all of the accounts that email address has
             # with the current Zulip server.
+            emails_account_found: Set[str] = set()
             context: Dict[str, Dict[str, Any]] = {}
             for user in user_profiles:
                 key = user.delivery_email.lower()
                 context.setdefault(key, {})
                 context[key].setdefault("realms", [])
                 context[key]["realms"].append(user.realm)
-                context[key]["external_host"] = settings.EXTERNAL_HOST
                 # This value will end up being the last user ID among
                 # matching accounts; since it's only used for minor
                 # details like language, that arbitrary choice is OK.
                 context[key]["to_user_id"] = user.id
+                emails_account_found.add(user.delivery_email)
+
+            # Links in find_team emails use the server's information
+            # and not any particular realm's information.
+            external_host_base_url = f"{settings.EXTERNAL_URI_SCHEME}{settings.EXTERNAL_HOST}"
+            help_base_url = f"{external_host_base_url}/help"
+            help_reset_password_link = (
+                f"{help_base_url}/change-your-password#if-youve-forgotten-or-never-had-a-password"
+            )
+            help_logging_in_link = f"{help_base_url}/logging-in#find-the-zulip-log-in-url"
+            find_accounts_link = f"{external_host_base_url}/accounts/find/"
 
             for delivery_email, realm_context in context.items():
-                realm_context["email"] = delivery_email
                 send_email(
                     "zerver/emails/find_team",
                     to_user_ids=[realm_context["to_user_id"]],
-                    context=realm_context,
+                    context={
+                        "account_found": True,
+                        "external_host": settings.EXTERNAL_HOST,
+                        "corporate_enabled": settings.CORPORATE_ENABLED,
+                        "help_reset_password_link": help_reset_password_link,
+                        "realms": realm_context["realms"],
+                        "email": delivery_email,
+                    },
+                    from_address=FromAddress.SUPPORT,
+                    request=request,
+                )
+
+            emails_lower_with_account = {email.lower() for email in emails_account_found}
+            emails_without_account: Set[str] = {
+                email for email in emails if email.lower() not in emails_lower_with_account
+            }
+            if emails_without_account:
+                send_email(
+                    "zerver/emails/find_team",
+                    to_emails=list(emails_without_account),
+                    context=(
+                        {
+                            "account_found": False,
+                            "external_host": settings.EXTERNAL_HOST,
+                            "corporate_enabled": settings.CORPORATE_ENABLED,
+                            "find_accounts_link": find_accounts_link,
+                            "help_logging_in_link": help_logging_in_link,
+                        }
+                    ),
                     from_address=FromAddress.SUPPORT,
                     request=request,
                 )

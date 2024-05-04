@@ -1,0 +1,45 @@
+#!/usr/bin/env bash
+
+set -eu
+
+ARCH=$(uname -m)
+
+AWS_CLI_VERSION="2.13.15"
+if [ "$ARCH" == "x86_64" ]; then
+    AWS_CLI_SHA="45d2e0f304eb0f57e6b58ffc0664879c0bc1cf8365fd2f64bcb5f3bbf2e9434f"
+elif [ "$ARCH" == "aarch64" ]; then
+    AWS_CLI_SHA="74ae95fcc50f7a96cf9479969343fc8a95ff06da23403162cc9249fae79f3bfc"
+else
+    echo "Unsupported architecture: $ARCH"
+    exit 1
+fi
+
+# Check if we're already installed
+if [ -L "/srv/zulip-aws-tools/v2/current" ] \
+    && [ "$(readlink /srv/zulip-aws-tools/v2/current)" = "/srv/zulip-aws-tools/v2/$AWS_CLI_VERSION" ]; then
+    exit 0
+fi
+
+# If not running in the initial host bootstrap, and was called with
+# arguments, this is just a check.
+if [ -z "${RUNNING_IN_CLOUD_INIT+x}" ] && [[ $# -gt 0 ]]; then
+    exit 1
+fi
+
+mkdir -p /srv/zulip-aws-tools
+
+cd /srv/zulip-aws-tools || exit 1
+rm -rf awscli.zip awscli.zip.sha256 aws/
+curl -fL --retry 3 "https://awscli.amazonaws.com/awscli-exe-linux-$ARCH-$AWS_CLI_VERSION.zip" -o awscli.zip
+echo "$AWS_CLI_SHA  awscli.zip" >awscli.zip.sha256
+sha256sum -c awscli.zip.sha256
+unzip -q awscli.zip
+
+cd ./aws || exit 1
+./install -i /srv/zulip-aws-tools -b /srv/zulip-aws-tools/bin -u
+echo "$AWS_CLI_VERSION" >/srv/zulip-aws-tools/version
+
+(
+    cd /srv/zulip-aws-tools/
+    rm -rf awscli.zip awscli.zip.sha256 aws/
+)

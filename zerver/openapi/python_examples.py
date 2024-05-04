@@ -303,6 +303,66 @@ def get_user_by_email(client: Client) -> None:
     validate_against_openapi_schema(result, "/users/{email}", "get", "200")
 
 
+@openapi_test_function("/invites:get")
+def get_invitations(client: Client) -> None:
+    # {code_example|start}
+    # Get all invitations
+    result = client.call_endpoint(url="/invites", method="GET")
+    # {code_example|end}
+
+    validate_against_openapi_schema(result, "/invites", "get", "200")
+
+
+@openapi_test_function("/invites:post")
+def send_invitations(client: Client) -> None:
+    # {code_example|start}
+    # Send invitations
+    request = {
+        "invitee_emails": "example@zulip.com, logan@zulip.com",
+        "invite_expires_in_minutes": 60 * 24 * 10,  # 10 days
+        "invite_as": 400,
+        "stream_ids": [1, 8, 9],
+    }
+    result = client.call_endpoint(url="/invites", method="POST", request=request)
+    # {code_example|end}
+
+    validate_against_openapi_schema(result, "/invites", "post", "200")
+
+
+@openapi_test_function("/invites/multiuse:post")
+def create_reusable_invitation_link(client: Client) -> None:
+    # {code_example|start}
+    # Create reusable invitation link
+    request = {
+        "invite_expires_in_minutes": 60 * 24 * 10,  # 10 days
+        "invite_as": 400,
+        "stream_ids": [1, 8, 9],
+    }
+    result = client.call_endpoint(url="/invites/multiuse", method="POST", request=request)
+    # {code_example|end}
+
+    validate_against_openapi_schema(result, "/invites/multiuse", "post", "200")
+
+
+@openapi_test_function("/invites/{invite_id}:delete")
+def revoke_email_invitation(client: Client) -> None:
+    request = {
+        "invitee_emails": "delete-invite@zulip.com",
+        "invite_expires_in_minutes": 14400,  # 10 days
+        "invite_as": 400,
+        "stream_ids": [1, 8, 9],
+    }
+    result = client.call_endpoint(url="/invites", method="POST", request=request)
+
+    # {code_example|start}
+    # Revoke email invitation
+    invite_id = 3
+    result = client.call_endpoint(url=f"/invites/{invite_id}", method="DELETE")
+    # {code_example|end}
+
+    validate_against_openapi_schema(result, "/invites/{invite_id}", "delete", "200")
+
+
 @openapi_test_function("/users/{user_id}:get")
 def get_single_user(client: Client) -> None:
     ensure_users([8], ["cordelia"])
@@ -1658,6 +1718,13 @@ def test_errors(client: Client) -> None:
     test_invalid_stream_error(client)
 
 
+def test_invitations(client: Client) -> None:
+    send_invitations(client)
+    revoke_email_invitation(client)
+    create_reusable_invitation_link(client)
+    get_invitations(client)
+
+
 def test_the_api(client: Client, nonadmin_client: Client, owner_client: Client) -> None:
     get_user_agent(client)
     test_users(client, owner_client)
@@ -1666,6 +1733,7 @@ def test_the_api(client: Client, nonadmin_client: Client, owner_client: Client) 
     test_queues(client)
     test_server_organizations(client)
     test_errors(client)
+    test_invitations(client)
 
     sys.stdout.flush()
     if REGISTERED_TEST_FUNCTIONS != CALLED_TEST_FUNCTIONS:

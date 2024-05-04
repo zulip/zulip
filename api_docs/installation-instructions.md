@@ -40,3 +40,7 @@ No download required!
 
 See also [user-contributed client libraries](/api/client-libraries)
 for many other languages.
+
+## Related articles
+
+* [Configuring the Python bindings](/api/configuring-python-bindings)

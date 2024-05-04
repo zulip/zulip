@@ -7,7 +7,6 @@ import * as drafts from "./drafts";
 import * as hash_util from "./hash_util";
 import {localstorage} from "./localstorage";
 import * as message_lists from "./message_lists";
-import * as narrow_state from "./narrow_state";
 import {page_params} from "./page_params";
 import * as reload_state from "./reload_state";
 import * as ui_report from "./ui_report";
@@ -27,7 +26,7 @@ function call_reload_hooks() {
     }
 }
 
-function preserve_state(send_after_reload, save_pointer, save_narrow, save_compose) {
+function preserve_state(send_after_reload, save_compose) {
     if (!localstorage.supported()) {
         // If local storage is not supported by the browser, we can't
         // save the browser's position across reloads (since there's
@@ -41,9 +40,7 @@ function preserve_state(send_after_reload, save_pointer, save_narrow, save_compo
         return;
     }
 
-    if (!message_lists.home) {
-        // If we haven't yet initialized the message_lists module,
-        // we can't preserve state across reloads.
+    if (!$("#app-loading").hasClass("loaded")) {
         blueslip.log("Can't preserve state; message_lists not yet initialized.");
         return;
     }
@@ -71,32 +68,14 @@ function preserve_state(send_after_reload, save_pointer, save_narrow, save_compo
         }
     }
 
-    if (save_pointer) {
-        const pointer = message_lists.home.selected_id();
-        if (pointer !== -1) {
-            url += "+pointer=" + pointer;
+    if (message_lists.current !== undefined) {
+        const narrow_pointer = message_lists.current.selected_id();
+        if (narrow_pointer !== -1) {
+            url += "+narrow_pointer=" + narrow_pointer;
         }
-    }
-
-    if (save_narrow) {
-        const $row = message_lists.home.selected_row();
-        if (!narrow_state.active()) {
-            if ($row.length > 0) {
-                url += "+offset=" + $row.get_offset_to_window().top;
-            }
-        } else {
-            url += "+offset=" + message_lists.home.pre_narrow_offset;
-
-            // narrow_state.active() is true, so this is the current
-            // narrowed message list.
-            const narrow_pointer = message_lists.current.selected_id();
-            if (narrow_pointer !== -1) {
-                url += "+narrow_pointer=" + narrow_pointer;
-            }
-            const $narrow_row = message_lists.current.selected_row();
-            if ($narrow_row.length > 0) {
-                url += "+narrow_offset=" + $narrow_row.get_offset_to_window().top;
-            }
+        const $narrow_row = message_lists.current.selected_row();
+        if ($narrow_row.length > 0) {
+            url += "+narrow_offset=" + $narrow_row.get_offset_to_window().top;
         }
     }
 
@@ -149,19 +128,17 @@ function delete_stale_tokens(ls) {
     );
 }
 
-function do_reload_app(send_after_reload, save_pointer, save_narrow, save_compose, message_html) {
+function do_reload_app(send_after_reload, save_compose, message_html) {
     if (reload_state.is_in_progress()) {
         blueslip.log("do_reload_app: Doing nothing since reload_in_progress");
         return;
     }
 
     // TODO: we should completely disable the UI here
-    if (save_pointer || save_narrow || save_compose) {
-        try {
-            preserve_state(send_after_reload, save_pointer, save_narrow, save_compose);
-        } catch (error) {
-            blueslip.error("Failed to preserve state", undefined, error);
-        }
+    try {
+        preserve_state(send_after_reload, save_compose);
+    } catch (error) {
+        blueslip.error("Failed to preserve state", undefined, error);
     }
 
     // TODO: We need a better API for showing messages.
@@ -175,10 +152,17 @@ function do_reload_app(send_after_reload, save_pointer, save_narrow, save_compos
     // broken state and cause lots of confusing tracebacks.  So, we
     // set ourselves to try reloading a bit later, both periodically
     // and when the user focuses the window.
-    $(window).one("focus", () => {
-        blueslip.log("Retrying on-focus page reload");
-        window.location.reload(true);
-    });
+    setTimeout(() => {
+        // We add this handler after a bit of delay, because in some
+        // browsers, processing window.location.reload causes the
+        // window to gain focus, and duplicate reload attempts result
+        // in the browser sending duplicate requests to `/`.
+        $(window).one("focus", () => {
+            blueslip.log("Retrying on-focus page reload");
+
+            window.location.reload(true);
+        });
+    }, 5000);
 
     function retry_reload() {
         blueslip.log("Retrying page reload due to 30s timer");
@@ -197,14 +181,12 @@ function do_reload_app(send_after_reload, save_pointer, save_narrow, save_compos
 
 export function initiate({
     immediate = false,
-    save_pointer = true,
-    save_narrow = true,
     save_compose = true,
     send_after_reload = false,
     message_html = "Reloading ...",
 }) {
     if (immediate) {
-        do_reload_app(send_after_reload, save_pointer, save_narrow, save_compose, message_html);
+        do_reload_app(send_after_reload, save_compose, message_html);
     }
 
     if (reload_state.is_pending() || reload_state.is_in_progress()) {
@@ -241,7 +223,7 @@ export function initiate({
     let compose_started_handler;
 
     function reload_from_idle() {
-        do_reload_app(false, save_pointer, save_narrow, save_compose, message_html);
+        do_reload_app(false, save_compose, message_html);
     }
 
     // Make sure we always do a reload eventually after
@@ -295,8 +277,6 @@ reload_state.set_csrf_failed_handler(() => {
 
     initiate({
         immediate: true,
-        save_pointer: true,
-        save_narrow: true,
         save_compose: true,
     });
 });

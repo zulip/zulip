@@ -66,24 +66,40 @@ function need_to_mock_template_error(filename) {
 }
 
 function load(request, parent, isMain) {
+    let module;
+
     const filename = Module._resolveFilename(request, parent, isMain);
     if (module_mocks.has(filename)) {
         used_module_mocks.add(filename);
-        const obj = module_mocks.get(filename);
-        return obj;
-    }
-
-    if (filename.endsWith(".hbs") && filename.startsWith(template_path + path.sep)) {
+        module = module_mocks.get(filename);
+    } else if (filename.endsWith(".hbs") && filename.startsWith(template_path + path.sep)) {
         const actual_render = actual_load(request, parent, isMain);
-
-        return template_stub({filename, actual_render});
+        module = template_stub({filename, actual_render});
+    } else if (filename === jquery_path && parent.filename !== real_jquery_path) {
+        module = jquery_function || $;
+    } else {
+        module = actual_load(request, parent, isMain);
     }
 
-    if (filename === jquery_path && parent.filename !== real_jquery_path) {
-        return jquery_function || $;
+    if (
+        (typeof module === "object" || typeof module === "function") &&
+        "__esModule" in module &&
+        "__Rewire__" in module
+    ) {
+        /* istanbul ignore next */
+        function error_immutable() {
+            throw new Error(`${filename} is an immutable ES module`);
+        }
+        return new Proxy(module, {
+            defineProperty: error_immutable,
+            deleteProperty: error_immutable,
+            preventExtensions: error_immutable,
+            set: error_immutable,
+            setPrototypeOf: error_immutable,
+        });
     }
 
-    return actual_load(request, parent, isMain);
+    return module;
 }
 
 function template_stub({filename, actual_render}) {

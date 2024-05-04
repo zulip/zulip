@@ -1,8 +1,9 @@
 import $ from "jquery";
+import assert from "minimalistic-assert";
 
+import * as activity_ui from "./activity_ui";
 import * as blueslip from "./blueslip";
 import * as color_data from "./color_data";
-import * as compose_fade from "./compose_fade";
 import * as compose_recipient from "./compose_recipient";
 import * as message_lists from "./message_lists";
 import * as message_view_header from "./message_view_header";
@@ -146,7 +147,9 @@ export function mark_subscribed(sub, subscribers, color) {
     message_view_header.maybe_rerender_title_area_for_stream(sub);
 
     if (narrow_state.is_for_stream_id(sub.stream_id)) {
+        assert(message_lists.current !== undefined);
         message_lists.current.update_trailing_bookend();
+        activity_ui.build_user_sidebar();
     }
 
     // The new stream in sidebar might need its unread counts
@@ -177,11 +180,14 @@ export function mark_unsubscribed(sub) {
     if (narrow_state.is_for_stream_id(sub.stream_id)) {
         // Update UI components if we just unsubscribed from the
         // currently viewed stream.
+        assert(message_lists.current !== undefined);
         message_lists.current.update_trailing_bookend();
 
         // This update would likely be better implemented by having it
         // disappear whenever no unread messages remain.
         unread_ui.hide_unread_banner();
+
+        activity_ui.build_user_sidebar();
     }
 
     // Unread messages in the now-unsubscribe stream need to be
@@ -209,6 +215,8 @@ export function process_subscriber_update(user_ids, stream_ids) {
         const sub = sub_store.get(stream_id);
         stream_settings_ui.update_subscribers_ui(sub);
     }
-    compose_fade.update_faded_users();
     user_profile.update_user_profile_streams_list_for_users(user_ids);
+    if (stream_ids.includes(narrow_state.stream_id())) {
+        activity_ui.build_user_sidebar();
+    }
 }

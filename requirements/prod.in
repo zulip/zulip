@@ -4,3 +4,6 @@
 -r common.in
 # Used for running the Zulip production Django server
 uWSGI
+
+# Used for monitoring memcached
+prometheus_client

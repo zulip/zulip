@@ -14,7 +14,7 @@ from zerver.actions.message_send import (
 )
 from zerver.actions.reactions import do_add_reaction
 from zerver.lib.emoji import get_emoji_data
-from zerver.lib.message import SendMessageRequest
+from zerver.lib.message import SendMessageRequest, remove_single_newlines
 from zerver.models import Message, Realm, UserProfile
 from zerver.models.users import get_system_bot
 
@@ -137,7 +137,7 @@ def bot_commands(no_help_command: bool = False) -> str:
         "apps",
         "profile",
         "theme",
-        "streams",
+        "channels",
         "topics",
         "message formatting",
         "keyboard shortcuts",
@@ -172,19 +172,20 @@ def select_welcome_bot_response(human_response_lower: str) -> str:
     elif human_response_lower in ["stream", "streams", "channel", "channels"]:
         return "".join(
             [
-                _(
-                    "In Zulip, streams [determine who gets a message](/help/streams-and-topics). "
-                    "They are similar to channels in other chat apps."
+                _("In Zulip, channels [determine who gets a message]({help_link}).").format(
+                    help_link="/help/channels-and-topics"
                 )
                 + "\n\n",
-                _("[Browse and subscribe to streams](#streams/all)."),
+                _("[Browse and subscribe to channels]({settings_link}).").format(
+                    settings_link="#channels/all"
+                ),
             ]
         )
     elif human_response_lower in ["topic", "topics"]:
         return "".join(
             [
                 _(
-                    "In Zulip, topics [tell you what a message is about](/help/streams-and-topics). "
+                    "In Zulip, topics [tell you what a message is about](/help/channels-and-topics). "
                     "They are light-weight subjects, very similar to the subject line of an email."
                 )
                 + "\n\n",
@@ -268,36 +269,38 @@ def send_initial_realm_messages(realm: Realm) -> None:
     # view slightly less overwhelming
     with override_language(realm.default_language):
         content_of_private_streams_topic_name = (
-            _("This is a private stream, as indicated by the lock icon next to the stream name.")
+            _("This is a private channel, as indicated by the lock icon next to the channel name.")
             + " "
-            + _("Private streams are only visible to stream members.")
+            + _("Private channels are only visible to channel members.")
             + "\n"
             "\n"
             + _(
-                "To manage this stream, go to [Stream settings]({stream_settings_url}) "
-                "and click on `{initial_private_stream_name}`."
+                "To manage this channel, go to [Channel settings]({channel_settings_url}) "
+                "and click on `{initial_private_channel_name}`."
             )
         ).format(
-            stream_settings_url="#streams/subscribed",
-            initial_private_stream_name=Realm.INITIAL_PRIVATE_STREAM_NAME,
+            channel_settings_url="#channels/subscribed",
+            initial_private_channel_name=Realm.INITIAL_PRIVATE_STREAM_NAME,
         )
 
         content1_of_topic_demonstration_topic_name = (
             _(
-                "This is a message on stream #**{default_notification_stream_name}** with the "
+                "This is a message on channel #**{default_notification_channel_name}** with the "
                 "topic `topic demonstration`."
             )
-        ).format(default_notification_stream_name=Realm.DEFAULT_NOTIFICATION_STREAM_NAME)
+        ).format(default_notification_channel_name=Realm.DEFAULT_NOTIFICATION_STREAM_NAME)
 
         content2_of_topic_demonstration_topic_name = (
             _("Topics are a lightweight tool to keep conversations organized.")
             + " "
-            + _("You can learn more about topics at [Streams and topics]({about_topics_help_url}).")
-        ).format(about_topics_help_url="/help/streams-and-topics")
+            + _(
+                "You can learn more about topics at [Channels and topics]({about_topics_help_url})."
+            )
+        ).format(about_topics_help_url="/help/channels-and-topics")
 
         content_of_swimming_turtles_topic_name = (
             _(
-                "This is a message on stream #**{default_notification_stream_name}** with the "
+                "This is a message on channel #**{default_notification_channel_name}** with the "
                 "topic `swimming turtles`."
             )
             + "\n"
@@ -310,14 +313,31 @@ def send_initial_realm_messages(realm: Realm) -> None:
             previous message."
             )
         ).format(
-            default_notification_stream_name=Realm.DEFAULT_NOTIFICATION_STREAM_NAME,
+            default_notification_channel_name=Realm.DEFAULT_NOTIFICATION_STREAM_NAME,
             start_topic_help_url="/help/starting-a-new-topic",
+        )
+
+        content_of_zulip_update_announcements_topic_name = remove_single_newlines(
+            (
+                _("""
+Welcome! To help you learn about new features and configuration options,
+this topic will receive messages about important changes in Zulip.
+
+You can read these update messages whenever it's convenient, or
+[mute]({mute_topic_help_url}) this topic if you are not interested.
+If your organization does not want to receive these announcements,
+they can be disabled. [Learn more]({zulip_update_announcements_help_url}).
+            """)
+            ).format(
+                zulip_update_announcements_help_url="/help/configure-automated-notices#zulip-update-announcements",
+                mute_topic_help_url="/help/mute-a-topic",
+            )
         )
 
     welcome_messages: List[Dict[str, str]] = [
         {
             "stream": Realm.INITIAL_PRIVATE_STREAM_NAME,
-            "topic_name": "private streams",
+            "topic_name": "private channels",
             "content": content_of_private_streams_topic_name,
         },
         {
@@ -334,6 +354,11 @@ def send_initial_realm_messages(realm: Realm) -> None:
             "stream": realm.DEFAULT_NOTIFICATION_STREAM_NAME,
             "topic_name": "swimming turtles",
             "content": content_of_swimming_turtles_topic_name,
+        },
+        {
+            "stream": Realm.DEFAULT_NOTIFICATION_STREAM_NAME,
+            "topic_name": str(Realm.ZULIP_UPDATE_ANNOUNCEMENTS_TOPIC_NAME),
+            "content": content_of_zulip_update_announcements_topic_name,
         },
     ]
 

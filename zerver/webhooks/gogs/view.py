@@ -173,8 +173,7 @@ def api_gogs_webhook(
 
 
 class FormatPullRequestEvent(Protocol):
-    def __call__(self, payload: WildValue, include_title: bool) -> str:
-        ...
+    def __call__(self, payload: WildValue, include_title: bool) -> str: ...
 
 
 def gogs_webhook_main(

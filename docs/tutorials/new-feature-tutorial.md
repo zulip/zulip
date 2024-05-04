@@ -262,8 +262,8 @@ Running migrations:
   Applying zerver.NNNN_realm_mandatory_topics... OK
 ```
 
-Once you've run the migration, restart memcached on your development
-server (`/etc/init.d/memcached restart`) and then [restart the development server](../development/remote.md#running-the-development-server)
+Once you've run the migration, flush memcached on your development
+server (`./scripts/setup/flush-memcached`) and then [restart the development server](../development/remote.md#running-the-development-server)
 to avoid interacting with cached objects.
 
 ### Handle database interactions
@@ -545,11 +545,11 @@ Then add the new form control in `web/src/admin.js`.
 
  export function build_page() {
      const options = {
-         custom_profile_field_types: page_params.custom_profile_field_types,
-         full_name: page_params.full_name,
-         realm_name: page_params.realm_name,
+         custom_profile_field_types: realm.custom_profile_field_types,
+         full_name: current_user.full_name,
+         realm_name: realm.realm_name,
          // ...
-+        realm_mandatory_topics: page_params.realm_mandatory_topics,
++        realm_mandatory_topics: realm.realm_mandatory_topics,
          // ...
 ```
 

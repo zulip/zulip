@@ -3,7 +3,7 @@ from typing import Callable, Optional
 from urllib.parse import urlencode, urljoin
 
 from django.conf import settings
-from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
+from django.http import HttpRequest, HttpResponse, HttpResponseRedirect, JsonResponse
 from django.shortcuts import render
 from django.urls import reverse
 from typing_extensions import Concatenate, ParamSpec
@@ -22,13 +22,23 @@ from zilencer.models import RemoteRealm
 ParamT = ParamSpec("ParamT")
 
 
+def session_expired_ajax_response(login_url: str) -> JsonResponse:  # nocoverage
+    return JsonResponse(
+        {
+            "error_message": "Remote billing authentication expired",
+            "login_url": login_url,
+        },
+        status=401,
+    )
+
+
 def is_self_hosting_management_subdomain(request: HttpRequest) -> bool:
     subdomain = get_subdomain(request)
     return subdomain == settings.SELF_HOSTING_MANAGEMENT_SUBDOMAIN
 
 
 def self_hosting_management_endpoint(
-    view_func: Callable[Concatenate[HttpRequest, ParamT], HttpResponse]
+    view_func: Callable[Concatenate[HttpRequest, ParamT], HttpResponse],
 ) -> Callable[Concatenate[HttpRequest, ParamT], HttpResponse]:
     @wraps(view_func)
     def _wrapped_view_func(
@@ -42,7 +52,7 @@ def self_hosting_management_endpoint(
 
 
 def authenticated_remote_realm_management_endpoint(
-    view_func: Callable[Concatenate[HttpRequest, RemoteRealmBillingSession, ParamT], HttpResponse]
+    view_func: Callable[Concatenate[HttpRequest, RemoteRealmBillingSession, ParamT], HttpResponse],
 ) -> Callable[Concatenate[HttpRequest, ParamT], HttpResponse]:
     @wraps(view_func)
     def _wrapped_view_func(
@@ -104,6 +114,10 @@ def authenticated_remote_realm_management_endpoint(
                 query = urlencode({"next_page": page_type})
                 url = append_url_query_string(url, query)
 
+            # Return error for AJAX requests with url.
+            if request.headers.get("x-requested-with") == "XMLHttpRequest":  # nocoverage
+                return session_expired_ajax_response(url)
+
             return HttpResponseRedirect(url)
 
         billing_session = RemoteRealmBillingSession(
@@ -133,14 +147,12 @@ def get_next_page_param_from_request_path(request: HttpRequest) -> Optional[str]
     if page_type in REMOTE_BILLING_VALID_NEXT_PAGES:
         return page_type
 
-    # Should be impossible to reach here. If this is reached, it must mean
-    # we have a registered endpoint that doesn't have a VALID_NEXT_PAGES entry
-    # or the parsing logic above is failing.
-    raise AssertionError(f"Unknown page type: {page_type}")
+    # page_type is not where we want user to go after a login, so just render the default page.
+    return None  # nocoverage
 
 
 def authenticated_remote_server_management_endpoint(
-    view_func: Callable[Concatenate[HttpRequest, RemoteServerBillingSession, ParamT], HttpResponse]
+    view_func: Callable[Concatenate[HttpRequest, RemoteServerBillingSession, ParamT], HttpResponse],
 ) -> Callable[Concatenate[HttpRequest, ParamT], HttpResponse]:
     @wraps(view_func)
     def _wrapped_view_func(
@@ -175,6 +187,10 @@ def authenticated_remote_server_management_endpoint(
             if page_type is not None:
                 query = urlencode({"next_page": page_type})
                 url = append_url_query_string(url, query)
+
+            # Return error for AJAX requests with url.
+            if request.headers.get("x-requested-with") == "XMLHttpRequest":  # nocoverage
+                return session_expired_ajax_response(url)
 
             return HttpResponseRedirect(url)
 

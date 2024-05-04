@@ -6,6 +6,7 @@ const {mock_esm, zrequire} = require("./lib/namespace");
 const {run_test, noop} = require("./lib/test");
 const $ = require("./lib/zjquery");
 
+const bootstrap_typeahead = mock_esm("../src/bootstrap_typeahead");
 const narrow_state = mock_esm("../src/narrow_state");
 const search_suggestion = mock_esm("../src/search_suggestion");
 
@@ -17,17 +18,7 @@ mock_esm("../src/filter", {
 
 const search = zrequire("search");
 
-run_test("clear_search_form", () => {
-    $("#search_query").val("noise");
-    $("#search_query").trigger("click");
-
-    search.clear_search_form();
-
-    assert.equal($("#search_query").is_focused(), false);
-    assert.equal($("#search_query").val(), "");
-});
-
-run_test("initialize", ({override_rewire, mock_template}) => {
+run_test("initialize", ({override, override_rewire, mock_template}) => {
     const $search_query_box = $("#search_query");
     const $searchbox_form = $("#searchbox_form");
 
@@ -45,7 +36,8 @@ run_test("initialize", ({override_rewire, mock_template}) => {
     search_suggestion.max_num_of_search_results = 999;
     let terms;
 
-    $search_query_box.typeahead = (opts) => {
+    override(bootstrap_typeahead, "create", (input_element, opts) => {
+        assert.equal(input_element.$element, $search_query_box);
         assert.equal(opts.items, 999);
         assert.equal(opts.naturalSearch, true);
         assert.equal(opts.helpOnEmptyStrings, true);
@@ -80,10 +72,10 @@ run_test("initialize", ({override_rewire, mock_template}) => {
 
             /* Test highlighter */
             let expected_value = `<div class="search_list_item">\n    <span>Search for ver</span>\n</div>\n`;
-            assert.equal(opts.highlighter(source[0]), expected_value);
+            assert.equal(opts.highlighter_html(source[0]), expected_value);
 
             expected_value = `<div class="search_list_item">\n    <span>Stream <strong>Ver</strong>ona</span>\n</div>\n`;
-            assert.equal(opts.highlighter(source[1]), expected_value);
+            assert.equal(opts.highlighter_html(source[1]), expected_value);
 
             /* Test sorter */
             assert.equal(opts.sorter(search_suggestions.strings), search_suggestions.strings);
@@ -156,16 +148,16 @@ run_test("initialize", ({override_rewire, mock_template}) => {
 
             /* Test highlighter */
             let expected_value = `<div class="search_list_item">\n    <span>Search for zo</span>\n</div>\n`;
-            assert.equal(opts.highlighter(source[0]), expected_value);
+            assert.equal(opts.highlighter_html(source[0]), expected_value);
 
             expected_value = `<div class="search_list_item">\n    <span>sent by</span>\n    <span class="pill-container pill-container-btn">\n        <div class='pill ' tabindex=0>\n    <img class="pill-image" src="https://secure.gravatar.com/avatar/0f030c97ab51312c7bbffd3966198ced?d&#x3D;identicon&amp;version&#x3D;1&amp;s&#x3D;50" />\n    <span class="pill-label">\n        <span class="pill-value">&lt;strong&gt;Zo&lt;/strong&gt;e</span></span>\n    <div class="exit">\n        <span aria-hidden="true">&times;</span>\n    </div>\n</div>\n    </span>\n</div>\n`;
-            assert.equal(opts.highlighter(source[1]), expected_value);
+            assert.equal(opts.highlighter_html(source[1]), expected_value);
 
             expected_value = `<div class="search_list_item">\n    <span>direct messages with</span>\n    <span class="pill-container pill-container-btn">\n        <div class='pill ' tabindex=0>\n    <img class="pill-image" src="https://secure.gravatar.com/avatar/0f030c97ab51312c7bbffd3966198ced?d&#x3D;identicon&amp;version&#x3D;1&amp;s&#x3D;50" />\n    <span class="pill-label">\n        <span class="pill-value">&lt;strong&gt;Zo&lt;/strong&gt;e</span></span>\n    <div class="exit">\n        <span aria-hidden="true">&times;</span>\n    </div>\n</div>\n    </span>\n</div>\n`;
-            assert.equal(opts.highlighter(source[2]), expected_value);
+            assert.equal(opts.highlighter_html(source[2]), expected_value);
 
             expected_value = `<div class="search_list_item">\n    <span>group direct messages including</span>\n    <span class="pill-container pill-container-btn">\n        <div class='pill ' tabindex=0>\n    <img class="pill-image" src="https://secure.gravatar.com/avatar/0f030c97ab51312c7bbffd3966198ced?d&#x3D;identicon&amp;version&#x3D;1&amp;s&#x3D;50" />\n    <span class="pill-label">\n        <span class="pill-value">&lt;strong&gt;Zo&lt;/strong&gt;e</span></span>\n    <div class="exit">\n        <span aria-hidden="true">&times;</span>\n    </div>\n</div>\n    </span>\n</div>\n`;
-            assert.equal(opts.highlighter(source[3]), expected_value);
+            assert.equal(opts.highlighter_html(source[3]), expected_value);
 
             /* Test sorter */
             assert.equal(opts.sorter(search_suggestions.strings), search_suggestions.strings);
@@ -216,7 +208,7 @@ run_test("initialize", ({override_rewire, mock_template}) => {
             $search_query_box.off("blur");
         }
         return {};
-    };
+    });
 
     search.initialize({
         on_narrow_search(raw_terms, options) {
@@ -314,7 +306,7 @@ run_test("initialize", ({override_rewire, mock_template}) => {
     assert.ok(is_blurred);
 });
 
-run_test("initiate_search", () => {
+run_test("initiate_search", ({override}) => {
     // open typeahead and select text when navbar is open
     // this implicitly expects the code to used the chained
     // function calls, which is something to keep in mind if
@@ -322,12 +314,9 @@ run_test("initiate_search", () => {
     narrow_state.filter = () => ({is_keyword_search: () => false});
     let typeahead_forced_open = false;
     let is_searchbox_text_selected = false;
-    $("#search_query").typeahead = (lookup) => {
-        if (lookup === "lookup") {
-            typeahead_forced_open = true;
-        }
-        return $("#search_query");
-    };
+    override(bootstrap_typeahead, "lookup", () => {
+        typeahead_forced_open = true;
+    });
     $("#search_query").on("select", () => {
         is_searchbox_text_selected = true;
     });

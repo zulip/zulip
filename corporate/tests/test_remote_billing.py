@@ -23,14 +23,15 @@ from corporate.models import (
     get_customer_by_remote_server,
 )
 from corporate.views.remote_billing_page import generate_confirmation_link_for_server_deactivation
-from zerver.actions.realm_settings import do_deactivate_realm
 from zerver.lib.exceptions import RemoteRealmServerMismatchError
 from zerver.lib.rate_limiter import RateLimitedIPAddr
 from zerver.lib.remote_server import send_server_data_to_push_bouncer
+from zerver.lib.send_email import FromAddress
 from zerver.lib.test_classes import BouncerTestCase
 from zerver.lib.test_helpers import ratelimit_rule
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.models import Realm, UserProfile
+from zerver.models.realms import get_realm
 from zilencer.models import (
     PreregistrationRemoteRealmBillingUser,
     PreregistrationRemoteServerBillingUser,
@@ -56,7 +57,10 @@ class RemoteRealmBillingTestCase(BouncerTestCase):
         # This only matters if first_time_login is True, since otherwise
         # there's no confirmation link to be clicked:
         return_without_clicking_confirmation_link: bool = False,
-        server_on_active_plan_error: bool = False,
+        # This is in order to return the response early, right after accessing the
+        # authentication url for the user. This is useful for tests who expect an
+        # an error there.
+        return_from_auth_url: bool = False,
     ) -> "TestHttpResponse":
         now = timezone_now()
 
@@ -74,8 +78,7 @@ class RemoteRealmBillingTestCase(BouncerTestCase):
         with time_machine.travel(now, tick=False):
             result = self.client_get(signed_auth_url, subdomain="selfhosting")
 
-        if server_on_active_plan_error:
-            self.assert_in_response("Plan management not available", result)
+        if return_from_auth_url:
             return result
 
         if first_time_login:
@@ -188,6 +191,17 @@ class RemoteRealmBillingTestCase(BouncerTestCase):
 class SelfHostedBillingEndpointBasicTest(RemoteRealmBillingTestCase):
     @responses.activate
     def test_self_hosted_billing_endpoints(self) -> None:
+        # An ordinary user doesn't have access to these endpoints.
+        self.login("hamlet")
+        for url in [
+            "/self-hosted-billing/",
+            "/json/self-hosted-billing",
+            "/self-hosted-billing/not-configured/",
+        ]:
+            result = self.client_get(url)
+            self.assert_json_error(result, "Must be an organization owner")
+
+        # Login as an organization owner to gain access.
         self.login("desdemona")
 
         self.add_mock_response()
@@ -196,12 +210,41 @@ class SelfHostedBillingEndpointBasicTest(RemoteRealmBillingTestCase):
         self_hosted_billing_json_url = "/json/self-hosted-billing"
 
         with self.settings(PUSH_NOTIFICATION_BOUNCER_URL=None):
-            result = self.client_get(self_hosted_billing_url)
-            self.assertEqual(result.status_code, 404)
-            self.assert_in_response("Page not found (404)", result)
+            with self.settings(CORPORATE_ENABLED=True):
+                result = self.client_get(self_hosted_billing_url)
+                self.assertEqual(result.status_code, 404)
+                self.assert_in_response("Page not found (404)", result)
 
-            result = self.client_get(self_hosted_billing_json_url)
-            self.assert_json_error(result, "Server doesn't use the push notification service", 404)
+            with self.settings(CORPORATE_ENABLED=False):
+                result = self.client_get(self_hosted_billing_url)
+                self.assertEqual(result.status_code, 302)
+                redirect_url = result["Location"]
+                self.assertEqual(redirect_url, "/self-hosted-billing/not-configured/")
+
+                with self.assertLogs("django.request"):
+                    result = self.client_get(redirect_url)
+                    self.assert_in_response(
+                        "This server is not configured to use push notifications.", result
+                    )
+
+            with self.settings(CORPORATE_ENABLED=True):
+                result = self.client_get(self_hosted_billing_json_url)
+                self.assert_json_error(
+                    result, "Server doesn't use the push notification service", 404
+                )
+
+            with self.settings(CORPORATE_ENABLED=False):
+                result = self.client_get(self_hosted_billing_json_url)
+                self.assert_json_success(result)
+
+                redirect_url = result.json()["billing_access_url"]
+                self.assertEqual(redirect_url, "/self-hosted-billing/not-configured/")
+
+                with self.assertLogs("django.request"):
+                    result = self.client_get(redirect_url)
+                    self.assert_in_response(
+                        "This server is not configured to use push notifications.", result
+                    )
 
         with mock.patch(
             "zerver.views.push_notifications.send_to_push_bouncer",
@@ -237,6 +280,28 @@ class SelfHostedBillingEndpointBasicTest(RemoteRealmBillingTestCase):
 
 @override_settings(PUSH_NOTIFICATION_BOUNCER_URL="https://push.zulip.org.example.com")
 class RemoteBillingAuthenticationTest(RemoteRealmBillingTestCase):
+    def test_self_hosted_config_error_page(self) -> None:
+        self.login("desdemona")
+
+        with self.settings(
+            CORPORATE_ENABLED=False, PUSH_NOTIFICATION_BOUNCER_URL=None
+        ), self.assertLogs("django.request"):
+            result = self.client_get("/self-hosted-billing/not-configured/")
+            self.assertEqual(result.status_code, 500)
+            self.assert_in_response(
+                "This server is not configured to use push notifications.", result
+            )
+
+        # The page doesn't make sense if PUSH_NOTIFICATION_BOUNCER_URL is configured.
+        with self.settings(CORPORATE_ENABLED=False):
+            result = self.client_get("/self-hosted-billing/not-configured/")
+            self.assertEqual(result.status_code, 404)
+
+        # Also doesn't make sense on zulipchat.com (where CORPORATE_ENABLED is True).
+        with self.settings(CORPORATE_ENABLED=True, PUSH_NOTIFICATION_BOUNCER_URL=None):
+            result = self.client_get("/self-hosted-billing/not-configured/")
+            self.assertEqual(result.status_code, 404)
+
     @responses.activate
     def test_remote_billing_authentication_flow(self) -> None:
         self.login("desdemona")
@@ -659,97 +724,6 @@ class RemoteBillingAuthenticationTest(RemoteRealmBillingTestCase):
         )
 
     @responses.activate
-    def test_transfer_legacy_plan_from_server_to_all_realms(self) -> None:
-        self.login("desdemona")
-        desdemona = self.example_user("desdemona")
-
-        # Assert current server is not on any plan.
-        self.assertIsNone(get_customer_by_remote_server(self.server))
-
-        start_date = timezone_now()
-        end_date = add_months(timezone_now(), 10)
-
-        # Migrate server to legacy to plan.
-        server_billing_session = RemoteServerBillingSession(self.server)
-        server_billing_session.migrate_customer_to_legacy_plan(start_date, end_date)
-
-        server_customer = server_billing_session.get_customer()
-        assert server_customer is not None
-        server_plan = get_current_plan_by_customer(server_customer)
-        assert server_plan is not None
-        self.assertEqual(self.server.plan_type, RemoteZulipServer.PLAN_TYPE_SELF_MANAGED_LEGACY)
-        self.assertEqual(server_plan.tier, CustomerPlan.TIER_SELF_HOSTED_LEGACY)
-        self.assertEqual(server_plan.status, CustomerPlan.ACTIVE)
-
-        # There are four test realms on this server:
-        # <Realm: zulipinternal 1>, <Realm: zephyr 3>, <Realm: lear 4>, <Realm: zulip 2>
-        self.assert_length(Realm.objects.all(), 4)
-
-        # Make lear deactivated, to have verification for that case.
-        do_deactivate_realm(Realm.objects.get(string_id="lear"), acting_user=None)
-
-        # Delete any existing remote realms.
-        RemoteRealm.objects.all().delete()
-
-        # First, set a sponsorship as pending.
-        # TODO: Ideally, we'd submit a proper sponsorship request.
-        server_customer.sponsorship_pending = True
-        server_customer.save()
-
-        # Send server data to push bouncer.
-        self.add_mock_response()
-        send_server_data_to_push_bouncer(consider_usage_statistics=False)
-
-        # Login to plan management.
-        result = self.execute_remote_billing_authentication_flow(
-            desdemona, server_on_active_plan_error=True
-        )
-        self.assertEqual(result.status_code, 200)
-
-        # RemoteRealm objects should be created for all realms on the server.
-        self.assert_length(RemoteRealm.objects.all(), 4)
-
-        # Server's plan should not have been migrated yet.
-        self.server.refresh_from_db()
-        self.assertEqual(self.server.plan_type, RemoteZulipServer.PLAN_TYPE_SELF_MANAGED_LEGACY)
-
-        # Now clear sponsorship_pending.
-        # TODO: Ideally, this would approve the sponsorship.
-        server_customer.sponsorship_pending = False
-        server_customer.save()
-
-        # Login to plan management. Performs customer migration from server to realms.
-        result = self.execute_remote_billing_authentication_flow(
-            desdemona, server_on_active_plan_error=False
-        )
-        self.assertEqual(result.status_code, 302)
-
-        # Server plan status was reset
-        self.server.refresh_from_db()
-        self.assertEqual(self.server.plan_type, RemoteZulipServer.PLAN_TYPE_SELF_MANAGED)
-        # Check no CustomerPlan exists for server.
-        self.assertIsNone(get_current_plan_by_customer(server_customer))
-
-        # Check legacy CustomerPlan exists for all realms except bot realm.
-        no_customer_plan_realms = set()
-        for remote_realm in RemoteRealm.objects.all():
-            if remote_realm.is_system_bot_realm or remote_realm.realm_deactivated:
-                self.assertIsNone(get_customer_by_remote_realm(remote_realm))
-                no_customer_plan_realms.add(remote_realm.host.split(".")[0])
-                continue
-
-            customer = get_customer_by_remote_realm(remote_realm)
-            assert customer is not None
-            plan = get_current_plan_by_customer(customer)
-            assert plan is not None
-            self.assertEqual(remote_realm.plan_type, RemoteRealm.PLAN_TYPE_SELF_MANAGED_LEGACY)
-            self.assertEqual(plan.tier, CustomerPlan.TIER_SELF_HOSTED_LEGACY)
-            self.assertEqual(plan.status, CustomerPlan.ACTIVE)
-            self.assertEqual(plan.billing_cycle_anchor, start_date)
-            self.assertEqual(plan.end_date, end_date)
-        self.assertEqual(no_customer_plan_realms, {"zulipinternal", "lear"})
-
-    @responses.activate
     def test_transfer_legacy_plan_scheduled_for_upgrade_from_server_to_realm(
         self,
     ) -> None:
@@ -800,9 +774,10 @@ class RemoteBillingAuthenticationTest(RemoteRealmBillingTestCase):
 
         # Login to plan management.
         result = self.execute_remote_billing_authentication_flow(
-            desdemona, server_on_active_plan_error=True
+            desdemona, return_from_auth_url=True
         )
         self.assertEqual(result.status_code, 200)
+        self.assert_in_response("Plan management not available", result)
 
         # Server plan status stayed the same.
         self.server.refresh_from_db()
@@ -826,7 +801,7 @@ class RemoteBillingAuthenticationTest(RemoteRealmBillingTestCase):
 
         # Login to plan management. Performs customer migration from server to realms.
         result = self.execute_remote_billing_authentication_flow(
-            desdemona, server_on_active_plan_error=False
+            desdemona, return_from_auth_url=False
         )
         self.assertEqual(result.status_code, 302)
 
@@ -839,27 +814,183 @@ class RemoteBillingAuthenticationTest(RemoteRealmBillingTestCase):
             ["zephyr.testserver", "lear.testserver"],
         )
 
-        # Check legacy CustomerPlan exists for all realms except bot realm.
-        for remote_realm in RemoteRealm.objects.filter(realm_deactivated=False):
-            if remote_realm.is_system_bot_realm:
-                self.assertIsNone(get_customer_by_remote_realm(remote_realm))
-                continue
+        # Check legacy CustomerPlan exists for the one non-deactivated "real" realm
+        # and does not for the bot realm.
 
-            self.assertEqual(remote_realm.host, "zulip.testserver")
-            customer = get_customer_by_remote_realm(remote_realm)
-            assert customer is not None
-            # Customer got transferred from server to realm.
-            self.assertEqual(customer, server_customer)
-            plan = get_current_plan_by_customer(customer)
-            assert plan is not None
-            self.assertEqual(remote_realm.plan_type, RemoteRealm.PLAN_TYPE_SELF_MANAGED_LEGACY)
-            self.assertEqual(plan.tier, CustomerPlan.TIER_SELF_HOSTED_LEGACY)
-            self.assertEqual(plan.status, CustomerPlan.SWITCH_PLAN_TIER_AT_PLAN_END)
-            self.assertEqual(plan.billing_cycle_anchor, start_date)
-            self.assertEqual(plan.end_date, end_date)
-            self.assertEqual(
-                RemoteRealmBillingSession(remote_realm).get_next_plan(plan), server_next_plan
+        # Sanity check that the setup for this test is the way we think it is.
+        self.assertEqual(RemoteRealm.objects.filter(realm_deactivated=False).count(), 2)
+        # These queries have a unique result, so we can use .get().
+        remote_realm_with_plan = RemoteRealm.objects.get(
+            realm_deactivated=False, is_system_bot_realm=False
+        )
+        system_bot_remote_realm = RemoteRealm.objects.get(
+            realm_deactivated=False, is_system_bot_realm=True
+        )
+
+        self.assertIsNone(get_customer_by_remote_realm(system_bot_remote_realm))
+
+        self.assertEqual(remote_realm_with_plan.host, "zulip.testserver")
+        customer = get_customer_by_remote_realm(remote_realm_with_plan)
+        assert customer is not None
+        # Customer got transferred from server to realm.
+        self.assertEqual(customer, server_customer)
+        plan = get_current_plan_by_customer(customer)
+        assert plan is not None
+        self.assertEqual(
+            remote_realm_with_plan.plan_type, RemoteRealm.PLAN_TYPE_SELF_MANAGED_LEGACY
+        )
+        self.assertEqual(plan.tier, CustomerPlan.TIER_SELF_HOSTED_LEGACY)
+        self.assertEqual(plan.status, CustomerPlan.SWITCH_PLAN_TIER_AT_PLAN_END)
+        self.assertEqual(plan.billing_cycle_anchor, start_date)
+        self.assertEqual(plan.end_date, end_date)
+        self.assertEqual(
+            RemoteRealmBillingSession(remote_realm_with_plan).get_next_plan(plan), server_next_plan
+        )
+
+    @responses.activate
+    def test_transfer_plan_from_server_to_realm_when_realm_has_customer(
+        self,
+    ) -> None:
+        self.login("desdemona")
+        desdemona = self.example_user("desdemona")
+        zulip_realm = get_realm("zulip")
+
+        server_billing_session = RemoteServerBillingSession(self.server)
+        server_customer = server_billing_session.update_or_create_customer(
+            stripe_customer_id="cus_123server"
+        )
+        server_plan = CustomerPlan.objects.create(
+            customer=server_customer,
+            billing_cycle_anchor=timezone_now(),
+            billing_schedule=CustomerPlan.BILLING_SCHEDULE_ANNUAL,
+            tier=CustomerPlan.TIER_SELF_HOSTED_COMMUNITY,
+            status=CustomerPlan.ACTIVE,
+        )
+        self.server.plan_type = RemoteZulipServer.PLAN_TYPE_COMMUNITY
+        self.server.save(update_fields=["plan_type"])
+
+        # Delete any existing remote realms.
+        RemoteRealm.objects.all().delete()
+
+        # We want there to be only a single (non-system bot) realm on the server for our setup.
+        Realm.objects.exclude(string_id__in=["zulip", "zulipinternal"]).update(deactivated=True)
+
+        # Send server data to push bouncer.
+        self.add_mock_response()
+        send_server_data_to_push_bouncer(consider_usage_statistics=False)
+
+        # Let's create a plan for the realm. This will conflict with the server plan.
+        remote_realm = RemoteRealm.objects.get(uuid=zulip_realm.uuid)
+        realm_billing_session = RemoteRealmBillingSession(remote_realm)
+        realm_customer = realm_billing_session.update_or_create_customer(
+            stripe_customer_id="cus_123realm"
+        )
+        realm_plan = CustomerPlan.objects.create(
+            customer=realm_customer,
+            billing_cycle_anchor=timezone_now(),
+            billing_schedule=CustomerPlan.BILLING_SCHEDULE_ANNUAL,
+            tier=CustomerPlan.TIER_SELF_HOSTED_LEGACY,
+            status=CustomerPlan.ACTIVE,
+        )
+        remote_realm.plan_type = RemoteRealm.PLAN_TYPE_SELF_MANAGED_LEGACY
+        remote_realm.save(update_fields=["plan_type"])
+
+        with self.assertLogs("zilencer.views", "WARN") as mock_warn:
+            result = self.execute_remote_billing_authentication_flow(
+                desdemona, return_from_auth_url=True
             )
+        self.assertEqual(
+            mock_warn.output,
+            [
+                f"WARNING:zilencer.views:Failed to migrate customer from server (id: {remote_realm.server.id}) to realm (id: {remote_realm.id}): "
+                "RemoteRealm customer already exists and plans can't be migrated automatically."
+            ],
+        )
+        self.assert_json_error(
+            result,
+            f"Couldn't reconcile billing data between server and realm. Please contact {FromAddress.SUPPORT}",
+        )
+
+        # If the realm's plan is ENDED, it's safe to move the server plan over.
+        realm_plan.status = CustomerPlan.ENDED
+        realm_plan.save(update_fields=["status"])
+        # However, not if the server's status indicates that there's some kind
+        # of plan change queued up after the plan, since that state would be
+        # harder and more risky to try to migrate.
+        server_plan.status = CustomerPlan.SWITCH_PLAN_TIER_AT_PLAN_END
+        server_plan.save(update_fields=["status"])
+
+        with self.assertLogs("zilencer.views", "WARN") as mock_warn:
+            result = self.execute_remote_billing_authentication_flow(
+                desdemona, return_from_auth_url=True
+            )
+        self.assertEqual(
+            mock_warn.output,
+            [
+                f"WARNING:zilencer.views:Failed to migrate customer from server (id: {remote_realm.server.id}) to realm (id: {remote_realm.id}): "
+                "RemoteRealm customer already exists and plans can't be migrated automatically."
+            ],
+        )
+        self.assert_json_error(
+            result,
+            f"Couldn't reconcile billing data between server and realm. Please contact {FromAddress.SUPPORT}",
+        )
+
+        # Now we simulate a regular, ACTIVE plan for the server again. Such a plan can be
+        # migrated, but we run into the last issue: the realm's customer already has a
+        # stripe_customer_id. We wouldn't want to overwrite it, so we error out.
+        server_plan.status = CustomerPlan.ACTIVE
+        server_plan.save(update_fields=["status"])
+        # Sanity check the assumption that stripe_customer_id is as expected for realm_customer.
+        realm_customer.refresh_from_db()
+        self.assertEqual(realm_customer.stripe_customer_id, "cus_123realm")
+
+        with self.assertLogs("zilencer.views", "WARN") as mock_warn:
+            result = self.execute_remote_billing_authentication_flow(
+                desdemona, return_from_auth_url=True
+            )
+        self.assertEqual(
+            mock_warn.output,
+            [
+                f"WARNING:zilencer.views:Failed to migrate customer from server (id: {remote_realm.server.id}) to realm (id: {remote_realm.id}): "
+                "RemoteRealm customer already exists and plans can't be migrated automatically."
+            ],
+        )
+        self.assert_json_error(
+            result,
+            f"Couldn't reconcile billing data between server and realm. Please contact {FromAddress.SUPPORT}",
+        )
+
+        # Finally, set the stripe_customer_id to None for the realm's customer.
+        # Having an ACTIVE plan for the server and an ENDED plan for the realm, we now have
+        # a simple case, where the migration should proceed.
+        realm_customer.stripe_customer_id = None
+        realm_customer.save(update_fields=["stripe_customer_id"])
+        result = self.execute_remote_billing_authentication_flow(
+            desdemona, return_from_auth_url=False
+        )
+        self.assertEqual(result.status_code, 302)
+
+        # Server plan status was reset
+        self.server.refresh_from_db()
+        self.assertEqual(self.server.plan_type, RemoteZulipServer.PLAN_TYPE_SELF_MANAGED)
+
+        # The Customer objects remain as they were.
+        self.assertEqual(get_customer_by_remote_realm(remote_realm), realm_customer)
+        self.assertEqual(get_customer_by_remote_server(self.server), server_customer)
+
+        # The plan that used to be for the server, has been migrated to the realm customer:
+        self.assertEqual(get_current_plan_by_customer(server_customer), None)
+        self.assertEqual(get_current_plan_by_customer(realm_customer), server_plan)
+
+        remote_realm.refresh_from_db()
+        self.assertEqual(remote_realm.plan_type, RemoteRealm.PLAN_TYPE_COMMUNITY)
+
+        realm_customer.refresh_from_db()
+        self.assertEqual(realm_customer.stripe_customer_id, "cus_123server")
+
+        server_customer.refresh_from_db()
+        self.assertEqual(server_customer.stripe_customer_id, None)
 
     @responses.activate
     def test_transfer_business_plan_from_server_to_realm(
@@ -901,9 +1032,10 @@ class RemoteBillingAuthenticationTest(RemoteRealmBillingTestCase):
 
         # Login to plan management.
         result = self.execute_remote_billing_authentication_flow(
-            desdemona, server_on_active_plan_error=True
+            desdemona, return_from_auth_url=True
         )
         self.assertEqual(result.status_code, 200)
+        self.assert_in_response("Plan management not available", result)
 
         # Server plan status stayed the same.
         self.server.refresh_from_db()
@@ -927,7 +1059,7 @@ class RemoteBillingAuthenticationTest(RemoteRealmBillingTestCase):
 
         # Login to plan management. Performs customer migration from server to realms.
         result = self.execute_remote_billing_authentication_flow(
-            desdemona, server_on_active_plan_error=False
+            desdemona, return_from_auth_url=False
         )
         self.assertEqual(result.status_code, 302)
 
@@ -936,21 +1068,29 @@ class RemoteBillingAuthenticationTest(RemoteRealmBillingTestCase):
         self.assertEqual(self.server.plan_type, RemoteZulipServer.PLAN_TYPE_SELF_MANAGED)
 
         # Check business CustomerPlan exists for all realms except bot realm.
-        for remote_realm in RemoteRealm.objects.filter(realm_deactivated=False):
-            if remote_realm.is_system_bot_realm:
-                self.assertIsNone(get_customer_by_remote_realm(remote_realm))
-                continue
 
-            self.assertEqual(remote_realm.host, "zulip.testserver")
-            customer = get_customer_by_remote_realm(remote_realm)
-            assert customer is not None
-            # Customer got transferred from server to realm.
-            self.assertEqual(customer, server_customer)
-            plan = get_current_plan_by_customer(customer)
-            assert plan is not None
-            self.assertEqual(remote_realm.plan_type, RemoteRealm.PLAN_TYPE_BUSINESS)
-            self.assertEqual(plan.tier, CustomerPlan.TIER_SELF_HOSTED_BUSINESS)
-            self.assertEqual(plan.status, CustomerPlan.ACTIVE)
+        # Sanity check that the setup for this test is the way we think it is.
+        self.assertEqual(RemoteRealm.objects.filter(realm_deactivated=False).count(), 2)
+        # These queries have a unique result, so we can use .get().
+        remote_realm_with_plan = RemoteRealm.objects.get(
+            realm_deactivated=False, is_system_bot_realm=False
+        )
+        system_bot_remote_realm = RemoteRealm.objects.get(
+            realm_deactivated=False, is_system_bot_realm=True
+        )
+
+        self.assertIsNone(get_customer_by_remote_realm(system_bot_remote_realm))
+
+        self.assertEqual(remote_realm_with_plan.host, "zulip.testserver")
+        customer = get_customer_by_remote_realm(remote_realm_with_plan)
+        assert customer is not None
+        # Customer got transferred from server to realm.
+        self.assertEqual(customer, server_customer)
+        plan = get_current_plan_by_customer(customer)
+        assert plan is not None
+        self.assertEqual(remote_realm_with_plan.plan_type, RemoteRealm.PLAN_TYPE_BUSINESS)
+        self.assertEqual(plan.tier, CustomerPlan.TIER_SELF_HOSTED_BUSINESS)
+        self.assertEqual(plan.status, CustomerPlan.ACTIVE)
 
     @responses.activate
     def test_transfer_plan_from_server_to_realm_edge_cases(self) -> None:
@@ -1000,9 +1140,10 @@ class RemoteBillingAuthenticationTest(RemoteRealmBillingTestCase):
 
         # Login to plan management.
         result = self.execute_remote_billing_authentication_flow(
-            desdemona, server_on_active_plan_error=True
+            desdemona, return_from_auth_url=True
         )
         self.assertEqual(result.status_code, 200)
+        self.assert_in_response("Plan management not available", result)
 
         # Server stays on the same plan.
         server_plan = get_current_plan_by_customer(server_customer)
@@ -1019,9 +1160,10 @@ class RemoteBillingAuthenticationTest(RemoteRealmBillingTestCase):
 
         # Login to plan management.
         result = self.execute_remote_billing_authentication_flow(
-            desdemona, server_on_active_plan_error=True
+            desdemona, return_from_auth_url=True
         )
         self.assertEqual(result.status_code, 200)
+        self.assert_in_response("Plan management not available", result)
 
         # Server stays on the same plan.
         server_customer.refresh_from_db()

@@ -57,12 +57,12 @@ def billing_page(
     context: Dict[str, Any] = {
         "admin_access": user.has_billing_access,
         "has_active_plan": False,
-        "org_name": user.realm.name,
+        "org_name": billing_session.org_name(),
         "billing_base_url": "",
     }
 
     if not user.has_billing_access:
-        return render(request, "corporate/billing.html", context=context)
+        return render(request, "corporate/billing/billing.html", context=context)
 
     if user.realm.plan_type == user.realm.PLAN_TYPE_STANDARD_FREE:
         return HttpResponseRedirect(reverse("sponsorship_request"))
@@ -83,10 +83,12 @@ def billing_page(
 
     main_context = billing_session.get_billing_page_context()
     if main_context:
+        if main_context.get("current_plan_downgraded") is True:
+            return HttpResponseRedirect(reverse("plans"))
         context.update(main_context)
         context["success_message"] = success_message
 
-    return render(request, "corporate/billing.html", context=context)
+    return render(request, "corporate/billing/billing.html", context=context)
 
 
 @authenticated_remote_realm_management_endpoint
@@ -102,7 +104,7 @@ def remote_realm_billing_page(
         # We wouldn't be here if user didn't have access.
         "admin_access": billing_session.has_billing_access(),
         "has_active_plan": False,
-        "org_name": billing_session.remote_realm.name,
+        "org_name": billing_session.org_name(),
         "billing_base_url": billing_session.billing_base_url,
     }
 
@@ -142,10 +144,12 @@ def remote_realm_billing_page(
         return billing_session.missing_data_error_page(request)
 
     if main_context:
+        if main_context.get("current_plan_downgraded") is True:
+            return HttpResponseRedirect(reverse("remote_realm_plans_page", args=(realm_uuid,)))
         context.update(main_context)
         context["success_message"] = success_message
 
-    return render(request, "corporate/billing.html", context=context)
+    return render(request, "corporate/billing/billing.html", context=context)
 
 
 @authenticated_remote_server_management_endpoint
@@ -160,7 +164,7 @@ def remote_server_billing_page(
         # We wouldn't be here if user didn't have access.
         "admin_access": billing_session.has_billing_access(),
         "has_active_plan": False,
-        "org_name": billing_session.remote_server.hostname,
+        "org_name": billing_session.org_name(),
         "billing_base_url": billing_session.billing_base_url,
     }
 
@@ -215,10 +219,17 @@ def remote_server_billing_page(
         return billing_session.missing_data_error_page(request)
 
     if main_context:
+        if main_context.get("current_plan_downgraded") is True:
+            return HttpResponseRedirect(
+                reverse(
+                    "remote_server_plans_page",
+                    kwargs={"server_uuid": billing_session.remote_server.uuid},
+                )
+            )
         context.update(main_context)
         context["success_message"] = success_message
 
-    return render(request, "corporate/billing.html", context=context)
+    return render(request, "corporate/billing/billing.html", context=context)
 
 
 @require_billing_access
@@ -319,7 +330,9 @@ def remote_server_deactivate_page(
         "action_url": reverse(remote_server_deactivate_page, args=[str(remote_server.uuid)]),
     }
     if request.method == "GET":
-        return render(request, "corporate/remote_billing_server_deactivate.html", context=context)
+        return render(
+            request, "corporate/billing/remote_billing_server_deactivate.html", context=context
+        )
 
     assert request.method == "POST"
     if confirmed is None:  # nocoverage
@@ -330,10 +343,12 @@ def remote_server_deactivate_page(
         do_deactivate_remote_server(remote_server, billing_session)
     except ServerDeactivateWithExistingPlanError:  # nocoverage
         context["show_existing_plan_error"] = "true"
-        return render(request, "corporate/remote_billing_server_deactivate.html", context=context)
+        return render(
+            request, "corporate/billing/remote_billing_server_deactivate.html", context=context
+        )
 
     return render(
         request,
-        "corporate/remote_billing_server_deactivated_success.html",
+        "corporate/billing/remote_billing_server_deactivated_success.html",
         context={"server_hostname": remote_server.hostname},
     )

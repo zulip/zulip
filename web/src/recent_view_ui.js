@@ -1,6 +1,8 @@
 import $ from "jquery";
 import _ from "lodash";
 
+import * as typeahead from "../shared/src/typeahead";
+import render_introduce_zulip_view_modal from "../templates/introduce_zulip_view_modal.hbs";
 import render_recent_view_filters from "../templates/recent_view_filters.hbs";
 import render_recent_view_row from "../templates/recent_view_row.hbs";
 import render_recent_view_body from "../templates/recent_view_table.hbs";
@@ -10,9 +12,10 @@ import * as blueslip from "./blueslip";
 import * as buddy_data from "./buddy_data";
 import * as compose_closed_ui from "./compose_closed_ui";
 import * as compose_state from "./compose_state";
+import * as dialog_widget from "./dialog_widget";
 import * as dropdown_widget from "./dropdown_widget";
 import * as hash_util from "./hash_util";
-import {$t} from "./i18n";
+import {$t, $t_html} from "./i18n";
 import * as left_sidebar_navigation_area from "./left_sidebar_navigation_area";
 import * as ListWidget from "./list_widget";
 import * as loading from "./loading";
@@ -21,6 +24,7 @@ import * as message_store from "./message_store";
 import * as message_util from "./message_util";
 import * as modals from "./modals";
 import * as muted_users from "./muted_users";
+import * as onboarding_steps from "./onboarding_steps";
 import * as overlays from "./overlays";
 import {page_params} from "./page_params";
 import * as people from "./people";
@@ -35,6 +39,7 @@ import * as sub_store from "./sub_store";
 import * as timerender from "./timerender";
 import * as ui_util from "./ui_util";
 import * as unread from "./unread";
+import {user_settings} from "./user_settings";
 import * as user_status from "./user_status";
 import * as user_topics from "./user_topics";
 import * as views_util from "./views_util";
@@ -398,14 +403,7 @@ export function hide_loading_indicator() {
 }
 
 export function process_messages(messages, msg_list_data) {
-    // This code path processes messages from 3 sources:
-    // 1. Newly sent messages from the server_events system. This is safe to
-    //    process because we always will have the latest previously sent messages.
-    // 2. Messages in all_messages_data, the main cache of contiguous
-    //    message history that the client maintains.
-    // 3. Latest messages fetched specifically for Recent view when
-    //    the browser first loads. We will be able to remove this once
-    //    all_messages_data is fetched in a better order.
+    // Always synced with messages in all_messages_data.
 
     let conversation_data_updated = false;
     if (messages.length > 0) {
@@ -631,8 +629,7 @@ export function topic_in_search_results(keyword, stream_name, topic) {
         return true;
     }
     const text = (stream_name + " " + topic).toLowerCase();
-    const search_words = keyword.toLowerCase().split(/\s+/);
-    return search_words.every((word) => text.includes(word));
+    return typeahead.query_matches_string_in_any_order(keyword, text, " ");
 }
 
 export function update_topics_of_deleted_message_ids(message_ids) {
@@ -1064,12 +1061,30 @@ export function show() {
         // We want to show `new stream message` instead of
         // `new topic`, which we are already doing in this
         // function. So, we reuse it here.
-        update_compose: compose_closed_ui.update_buttons_for_non_stream_views,
+        update_compose: compose_closed_ui.update_buttons_for_non_specific_views,
         is_recent_view: true,
         is_visible: recent_view_util.is_visible,
         set_visible: recent_view_util.set_visible,
         complete_rerender,
     });
+
+    if (onboarding_steps.ONE_TIME_NOTICES_TO_DISPLAY.has("intro_recent_view_modal")) {
+        const html_body = render_introduce_zulip_view_modal({
+            zulip_view: "recent_conversations",
+            current_home_view_and_escape_navigation_enabled:
+                user_settings.web_home_view === "recent_topics" &&
+                user_settings.web_escape_navigates_to_home_view,
+        });
+        dialog_widget.launch({
+            html_heading: $t_html({defaultMessage: "Welcome to <b>recent conversations</b>!"}),
+            html_body,
+            html_submit_button: $t_html({defaultMessage: "Continue"}),
+            on_click() {},
+            single_footer_button: true,
+            focus_submit_on_open: true,
+        });
+        onboarding_steps.post_onboarding_step_as_read("intro_recent_view_modal");
+    }
 }
 
 function filter_buttons() {
@@ -1526,6 +1541,10 @@ export function initialize({
     });
 
     $("body").on("click", "td.recent_topic_stream", (e) => {
+        if (e.metaKey || e.ctrlKey || e.shiftKey) {
+            return;
+        }
+
         e.stopPropagation();
         const topic_row_index = $(e.target).closest("tr").index();
         focus_clicked_element(topic_row_index, COLUMNS.stream);
@@ -1533,6 +1552,10 @@ export function initialize({
     });
 
     $("body").on("click", "td.recent_topic_name", (e) => {
+        if (e.metaKey || e.ctrlKey || e.shiftKey) {
+            return;
+        }
+
         e.stopPropagation();
         // The element's parent may re-render while it is being passed to
         // other functions, so, we get topic_key first.

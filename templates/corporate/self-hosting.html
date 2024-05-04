@@ -26,7 +26,9 @@
             <a href="#plans-and-pricing" class="button">
                 {{ _('Plans & pricing') }}
             </a>
-            <a href="https://zulip.readthedocs.io/en/stable/production/install.html" class="button">Install Zulip {{ latest_release_version }}</a>
+            <a href="https://zulip.readthedocs.io/en/stable/production/install.html" class="button">
+                Install Zulip Server {{ latest_release_version }}
+            </a>
             <a href="/for/business/" class="button">
                 {{ _('Zulip for business') }}
             </a>
@@ -38,18 +40,17 @@
             <div class="feature-half">
                 <div class="feature-text">
                     <h1>
-                        100% free and open-source software.
+                        100% open-source software.
                     </h1>
                     <p>
                         When you self-host Zulip, you get <a href="https://github.com/zulip/zulip#readme">
-                        the same software</a> as our <a href="/plans/">Zulip
-                        Cloud Standard</a> customers.
+                        the same software</a> as our <a href="/plans/">Zulip Cloud</a> customers.
                     </p>
                     <p>
                         Unlike the competition, you don't pay for
                         <a href="https://zulip.readthedocs.io/en/stable/production/authentication-methods.html">SAML
                             authentication</a>, <a href="https://zulip.readthedocs.io/en/stable/production/authentication-methods.html#synchronizing-data">LDAP
-                        sync</a>, or advanced <a href="/help/roles-and-permissions">roles</a> and <a href="/help/stream-permissions">permissions</a>. There
+                        sync</a>, or advanced <a href="/help/roles-and-permissions">roles</a> and <a href="/help/channel-permissions">permissions</a>. There
                         is no “open core” catch — just freely available world-class software.
                     </p>
                 </div>
@@ -156,6 +157,14 @@
                         or with prebuilt images for <a href="https://marketplace.digitalocean.com/apps/zulip">Digital Ocean</a>
                         and <a href="https://render.com/docs/deploy-zulip">Render</a>.
                     </p>
+                    <div class="intro_quote quote-in-feature-text">
+                        <blockquote>
+                            Zulip was quite easy to set up, and worked instantly. 1000 people — no problem.
+                            <div class="author">
+                                &mdash;  Erik Dittert, Head of IT at <a href="/case-studies/gut-contact/">GUT contact</a>
+                            </div>
+                        </blockquote>
+                    </div>
                 </div>
             </div>
             <div class="feature-half md-display">
@@ -238,7 +247,7 @@
                     </h1>
                     <p>
                         <a href="/api/incoming-webhooks-overview">Creating custom integrations</a> is a breeze with
-                        our well-documented <a href="/api">REST API</a>.
+                        our well-documented <a href="/api/">REST API</a>.
                     </p>
                     <p>
                         Zulip makes it easy to
@@ -257,14 +266,15 @@
                         Amazing support experience.
                     </h1>
                     <p>
-                        <a href="mailto:sales@zulip.com">Contact Sales</a> to
-                        discuss Enterprise support offerings.
+                        We love getting feedback! Stop by <a href="/development-community/">our friendly
+                        development community</a> to ask for help or suggest
+                        improvements.
                     </p>
                     <p>
-                        We provide free, interactive support for the vast
-                        majority of questions about running a Zulip server. Stop by <a href="/development-community/">our friendly
-                        development community</a> to ask for help or suggest
-                        improvements!
+                        A variety of support services are available for Zulip
+                        Business and Zulip Enterprise customers. Contact <a
+                        href="mailto:sales@zulip.com">sales@zulip.com</a> with
+                        any questions.
                     </p>
                 </div>
             </div>
@@ -272,7 +282,10 @@
     </div>
 
     <div class="portico-pricing showing-self-hosted">
+        {% with %}
+        {% set rendering_page="self_hosting" %}
         {% include "corporate/pricing_model.html" %}
+        {% endwith %}
     </div>
 
 </div>

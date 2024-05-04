@@ -43,6 +43,7 @@ type InputPill<T> = {
 };
 
 type InputPillStore<T> = {
+    onTextInputHook?: () => void;
     pills: InputPill<T>[];
     pill_config: InputPillCreateOptions<T>["pill_config"];
     $parent: JQuery;
@@ -50,7 +51,7 @@ type InputPillStore<T> = {
     create_item_from_text: InputPillCreateOptions<T>["create_item_from_text"];
     get_text_from_item: InputPillCreateOptions<T>["get_text_from_item"];
     onPillCreate?: () => void;
-    removePillFunction?: (pill: InputPill<T>) => void;
+    onPillRemove?: (pill: InputPill<T>) => void;
     createPillonPaste?: () => void;
 };
 
@@ -72,9 +73,11 @@ export type InputPillContainer<T> = {
     items: () => InputPillItem<T>[];
     onPillCreate: (callback: () => void) => void;
     onPillRemove: (callback: (pill: InputPill<T>) => void) => void;
+    onTextInputHook: (callback: () => void) => void;
     createPillonPaste: (callback: () => void) => void;
     clear: () => void;
     clear_text: () => void;
+    getCurrentText: () => string | null;
     is_pending: () => boolean;
     _get_pills_for_testing: () => InputPill<T>[];
 };
@@ -107,6 +110,10 @@ export function create<T>(opts: InputPillCreateOptions<T>): InputPillContainer<T
 
         clear_text() {
             store.$input.text("");
+        },
+
+        getCurrentText() {
+            return store.$input.text();
         },
 
         is_pending() {
@@ -214,8 +221,8 @@ export function create<T>(opts: InputPillCreateOptions<T>): InputPillContainer<T
             if (idx !== undefined) {
                 store.pills[idx].$element.remove();
                 const pill = store.pills.splice(idx, 1);
-                if (store.removePillFunction !== undefined) {
-                    store.removePillFunction(pill[0]);
+                if (store.onPillRemove !== undefined) {
+                    store.onPillRemove(pill[0]);
                 }
 
                 // This is needed to run the "change" event handler registered in
@@ -240,8 +247,8 @@ export function create<T>(opts: InputPillCreateOptions<T>): InputPillContainer<T
 
             if (pill) {
                 pill.$element.remove();
-                if (!quiet && store.removePillFunction !== undefined) {
-                    store.removePillFunction(pill);
+                if (!quiet && store.onPillRemove !== undefined) {
+                    store.onPillRemove(pill);
                 }
             }
         },
@@ -302,7 +309,7 @@ export function create<T>(opts: InputPillCreateOptions<T>): InputPillContainer<T
     };
 
     {
-        store.$parent.on("keydown", ".input", (e) => {
+        store.$parent.on("keydown", ".input", function (this: HTMLElement, e) {
             if (keydown_util.is_enter_event(e)) {
                 // regardless of the value of the input, the ENTER keyword
                 // should be ignored in favor of keeping content to one line
@@ -311,7 +318,7 @@ export function create<T>(opts: InputPillCreateOptions<T>): InputPillContainer<T
 
                 // if there is input, grab the input, make a pill from it,
                 // and append the pill, then clear the input.
-                const value = funcs.value(e.target).trim();
+                const value = funcs.value(this).trim();
                 if (value.length > 0) {
                     // append the pill and by proxy create the pill object.
                     const ret = funcs.appendPill(value);
@@ -321,21 +328,20 @@ export function create<T>(opts: InputPillCreateOptions<T>): InputPillContainer<T
                     // incorrect.
                     if (ret) {
                         // clear the input.
-                        funcs.clear(e.target);
+                        funcs.clear(this);
                         e.stopPropagation();
                     }
                 }
 
                 return;
             }
-
             const selection = window.getSelection();
             // If no text is selected, and the cursor is just to the
             // right of the last pill (with or without text in the
             // input), then backspace deletes the last pill.
             if (
                 e.key === "Backspace" &&
-                (funcs.value(e.target).length === 0 ||
+                (funcs.value(this).length === 0 ||
                     (selection?.anchorOffset === 0 && selection?.toString()?.length === 0))
             ) {
                 e.preventDefault();
@@ -364,6 +370,13 @@ export function create<T>(opts: InputPillCreateOptions<T>): InputPillContainer<T
 
                 return;
             }
+        });
+
+        // Register our `onTextInputHook` to be called on "input" events so that
+        // the hook receives the updated text content of the input unlike the "keydown"
+        // event which does not have the updated text content.
+        store.$parent.on("input", ".input", () => {
+            store.onTextInputHook?.();
         });
 
         // handle events while hovering on ".pill" elements.
@@ -403,7 +416,7 @@ export function create<T>(opts: InputPillCreateOptions<T>): InputPillContainer<T
 
             // get text representation of clipboard
             assert(e.originalEvent instanceof ClipboardEvent);
-            const text = e.originalEvent.clipboardData?.getData("text/plain");
+            const text = e.originalEvent.clipboardData?.getData("text/plain").replaceAll("\n", ",");
 
             // insert text manually
             document.execCommand("insertText", false, text);
@@ -415,7 +428,7 @@ export function create<T>(opts: InputPillCreateOptions<T>): InputPillContainer<T
 
         // when the "×" is clicked on a pill, it should delete that pill and then
         // select the next pill (or input).
-        store.$parent.on("click", ".exit", function (e) {
+        store.$parent.on("click", ".exit", function (this: HTMLElement, e) {
             e.stopPropagation();
             const $pill = $(this).closest(".pill");
             const $next = $pill.next();
@@ -430,9 +443,8 @@ export function create<T>(opts: InputPillCreateOptions<T>): InputPillContainer<T
             }
         });
 
-        store.$parent.on("copy", ".pill", (e) => {
-            const element: HTMLElement = e.currentTarget;
-            const {item} = funcs.getByElement(element)!;
+        store.$parent.on("copy", ".pill", function (this: HTMLElement, e) {
+            const {item} = funcs.getByElement(this)!;
             assert(e.originalEvent instanceof ClipboardEvent);
             e.originalEvent.clipboardData?.setData("text/plain", store.get_text_from_item(item));
             e.preventDefault();
@@ -445,6 +457,7 @@ export function create<T>(opts: InputPillCreateOptions<T>): InputPillContainer<T
         appendValidatedData: funcs.appendValidatedData.bind(funcs),
 
         getByElement: funcs.getByElement.bind(funcs),
+        getCurrentText: funcs.getCurrentText.bind(funcs),
         items: funcs.items.bind(funcs),
 
         onPillCreate(callback) {
@@ -452,7 +465,11 @@ export function create<T>(opts: InputPillCreateOptions<T>): InputPillContainer<T
         },
 
         onPillRemove(callback) {
-            store.removePillFunction = callback;
+            store.onPillRemove = callback;
+        },
+
+        onTextInputHook(callback) {
+            store.onTextInputHook = callback;
         },
 
         createPillonPaste(callback) {

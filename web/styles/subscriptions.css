@@ -168,6 +168,7 @@ h4.user_group_setting_subsection_title {
             }
 
             .subscriber_list_remove {
+                padding-right: 16px;
                 display: inline-block;
             }
 
@@ -237,6 +238,14 @@ h4.user_group_setting_subsection_title {
 
     .search {
         max-width: 160px;
+    }
+
+    @media (max-width: $ms_min) {
+        float: none;
+        display: flex;
+        justify-content: flex-start;
+        align-items: center;
+        margin: 0 0 5px;
     }
 }
 
@@ -398,6 +407,15 @@ h4.user_group_setting_subsection_title {
             text-align: center;
             font-weight: 600;
             border-bottom: 1px solid hsl(0deg 0% 87%);
+
+            & a {
+                color: inherit;
+
+                &:hover {
+                    color: inherit;
+                    text-decoration: none;
+                }
+            }
 
             &.preview::after {
                 content: "Preview";
@@ -932,14 +950,14 @@ h4.user_group_setting_subsection_title {
         }
     }
 
-    .stream-email-box {
+    .stream_details_box {
+        > .stream_details_subsection {
+            margin: 0 0 10px; /* mimic paragraph spacing */
+        }
+
         .stream_email_address_error {
             vertical-align: top;
             margin-left: 15px;
-        }
-
-        .copy_email_button {
-            padding: 10px 15px;
         }
     }
 

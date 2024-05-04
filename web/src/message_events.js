@@ -1,4 +1,5 @@
 import $ from "jquery";
+import assert from "minimalistic-assert";
 
 import * as alert_words from "./alert_words";
 import {all_messages_data} from "./all_messages_data";
@@ -19,13 +20,13 @@ import * as message_store from "./message_store";
 import * as message_util from "./message_util";
 import * as narrow from "./narrow";
 import * as narrow_state from "./narrow_state";
-import {page_params} from "./page_params";
 import * as pm_list from "./pm_list";
 import * as recent_senders from "./recent_senders";
 import * as recent_view_ui from "./recent_view_ui";
 import * as recent_view_util from "./recent_view_util";
 import * as starred_messages from "./starred_messages";
 import * as starred_messages_ui from "./starred_messages_ui";
+import {realm} from "./state_data";
 import * as stream_list from "./stream_list";
 import * as stream_topic_history from "./stream_topic_history";
 import * as sub_store from "./sub_store";
@@ -165,7 +166,6 @@ export function insert_new_messages(messages, sent_by_this_client) {
     message_notifications.received_messages(messages);
     stream_list.update_streams_sidebar();
     pm_list.update_private_messages();
-    recent_view_ui.process_messages(messages);
 }
 
 export function update_messages(events) {
@@ -204,7 +204,7 @@ export function update_messages(events) {
             // edits have edit_history logged for both before any
             // potential narrowing as part of the topic edit loop.
             if (event.orig_content !== undefined) {
-                if (page_params.realm_allow_edit_history) {
+                if (realm.realm_allow_edit_history) {
                     // Note that we do this for topic edits separately, below.
                     // If an event changed both content and topic, we'll generate
                     // two client-side events, which is probably good for display.
@@ -273,8 +273,10 @@ export function update_messages(events) {
             const orig_topic = util.get_edit_event_orig_topic(event);
 
             const current_filter = narrow_state.filter();
-            const current_selected_id = message_lists.current.selected_id();
-            const selection_changed_topic = event.message_ids.includes(current_selected_id);
+            const current_selected_id = message_lists.current?.selected_id();
+            const selection_changed_topic =
+                message_lists.current !== undefined &&
+                event.message_ids.includes(current_selected_id);
             const event_messages = [];
             for (const message_id of event.message_ids) {
                 // We don't need to concern ourselves updating data structures
@@ -305,7 +307,7 @@ export function update_messages(events) {
             }
 
             for (const moved_message of event_messages) {
-                if (page_params.realm_allow_edit_history) {
+                if (realm.realm_allow_edit_history) {
                     /* Simulate the format of server-generated edit
                      * history events. This logic ensures that all
                      * messages that were moved are displayed as such
@@ -403,7 +405,7 @@ export function update_messages(events) {
                     // The fix is likely somewhat involved, so punting for now.
                     const new_stream_name = sub_store.get(new_stream_id).name;
                     new_filter = new_filter.filter_with_new_params({
-                        operator: "stream",
+                        operator: "channel",
                         operand: new_stream_name,
                     });
                     changed_narrow = true;
@@ -450,9 +452,10 @@ export function update_messages(events) {
                     // list and then pass these to the remove messages codepath.
                     // While we can pass all our messages to the add messages
                     // codepath as the filtering is done within the method.
+                    assert(message_lists.current !== undefined);
                     message_lists.current.remove_and_rerender(message_ids_to_remove);
                     message_lists.current.add_messages(event_messages);
-                } else {
+                } else if (message_lists.current !== undefined) {
                     // Remove existing message that were updated, since
                     // they may not be a part of the filter now. Also,
                     // this will help us rerender them via
@@ -528,7 +531,6 @@ export function update_messages(events) {
     // propagated edits to be updated (since the topic edits can have
     // changed the correct grouping of messages).
     if (any_topic_edited || any_stream_changed) {
-        message_lists.home.update_muting_and_rerender();
         // However, we don't need to rerender message_list if
         // we just changed the narrow earlier in this function.
         //
@@ -538,8 +540,15 @@ export function update_messages(events) {
         // edit.  Doing so could save significant work, since most
         // topic edits will not match the current topic narrow in
         // large organizations.
-        if (!changed_narrow && message_lists.current.narrowed) {
-            message_lists.current.update_muting_and_rerender();
+
+        for (const list of message_lists.all_rendered_message_lists()) {
+            if (changed_narrow && list === message_lists.current) {
+                // Avoid updating current message list if user switched to a different narrow and
+                // we don't want to preserver the rendered state for the current one.
+                continue;
+            }
+
+            list.view.rerender_messages(messages_to_rerender, any_message_content_edited);
         }
     } else {
         // If the content of the message was edited, we do a special animation.

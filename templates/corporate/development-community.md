@@ -86,7 +86,7 @@ off the discussion by [starting a new topic](/help/starting-a-new-topic)
 in the appropriate stream! Don’t stress too much about picking the
 right place if you’re not sure; anyone in the community can edit a
 topic name, and [moderators](/help/roles-and-permissions) can [move a
-topic to a different stream](/help/move-content-to-another-stream).
+topic to a different stream](/help/move-content-to-another-channel).
 
 ## Streams for everyone
 
@@ -243,9 +243,10 @@ topic](/help/starting-a-new-topic). Here are examples for linking
 to issue 1234 in the main Zulip project repositories:
 
 - [Server and web app][server-web-repository]: `#1234`
-- [Mobile client][mobile-repository]: `#M1234`
+- [Flutter mobile client][flutter-repository]: `#F1234`
 - [Terminal client][terminal-repository]: `#T1234`
 - [Desktop client][desktop-repository]: `#D1234`
+- [React Native mobile client][mobile-repository]: `#M1234`
 
 ## New features are tested here
 
@@ -258,6 +259,7 @@ feature.
 
 [release-lifecycle]: https://zulip.readthedocs.io/en/latest/overview/release-lifecycle.html
 [server-web-repository]: https://github.com/zulip/zulip
+[flutter-repository]: https://github.com/zulip/zulip-flutter
 [mobile-repository]: https://github.com/zulip/zulip-mobile
 [terminal-repository]: https://github.com/zulip/zulip-terminal
 [desktop-repository]: https://github.com/zulip/zulip-desktop

@@ -2,11 +2,11 @@ from html.parser import HTMLParser
 from typing import Callable, Dict, List, Tuple
 
 from django.http import HttpRequest, HttpResponse
-from returns.curry import partial
 from typing_extensions import override
 
 from zerver.decorator import return_success_on_head_request, webhook_view
 from zerver.lib.exceptions import UnsupportedWebhookEventTypeError
+from zerver.lib.partial import partial
 from zerver.lib.response import json_success
 from zerver.lib.typed_endpoint import JsonBodyPayload, typed_endpoint
 from zerver.lib.validator import WildValue, check_int, check_none_or, check_string
@@ -173,8 +173,8 @@ def get_conversation_admin_assigned_message(payload: WildValue) -> Tuple[str, st
 
 
 def get_conversation_admin_message(
-    payload: WildValue,
     action: str,
+    payload: WildValue,
 ) -> Tuple[str, str]:
     assignee = payload["data"]["item"]["assignee"]
     user = payload["data"]["item"]["user"]
@@ -187,8 +187,8 @@ def get_conversation_admin_message(
 
 
 def get_conversation_admin_reply_message(
-    payload: WildValue,
     action: str,
+    payload: WildValue,
 ) -> Tuple[str, str]:
     assignee = payload["data"]["item"]["assignee"]
     user = payload["data"]["item"]["user"]
@@ -270,8 +270,8 @@ def get_user_email_updated_message(payload: WildValue) -> Tuple[str, str]:
 
 
 def get_user_tagged_message(
-    payload: WildValue,
     action: str,
+    payload: WildValue,
 ) -> Tuple[str, str]:
     user = payload["data"]["item"]["user"]
     tag = payload["data"]["item"]["tag"]
@@ -298,16 +298,12 @@ EVENT_TO_FUNCTION_MAPPER: Dict[str, Callable[[WildValue], Tuple[str, str]]] = {
     "contact.tag.created": get_contact_tag_created_message,
     "contact.tag.deleted": get_contact_tag_deleted_message,
     "conversation.admin.assigned": get_conversation_admin_assigned_message,
-    "conversation.admin.closed": partial(get_conversation_admin_message, action="closed"),
-    "conversation.admin.opened": partial(get_conversation_admin_message, action="opened"),
-    "conversation.admin.snoozed": partial(get_conversation_admin_message, action="snoozed"),
-    "conversation.admin.unsnoozed": partial(get_conversation_admin_message, action="unsnoozed"),
-    "conversation.admin.replied": partial(
-        get_conversation_admin_reply_message, action="replied to"
-    ),
-    "conversation.admin.noted": partial(
-        get_conversation_admin_reply_message, action="added a note to"
-    ),
+    "conversation.admin.closed": partial(get_conversation_admin_message, "closed"),
+    "conversation.admin.opened": partial(get_conversation_admin_message, "opened"),
+    "conversation.admin.snoozed": partial(get_conversation_admin_message, "snoozed"),
+    "conversation.admin.unsnoozed": partial(get_conversation_admin_message, "unsnoozed"),
+    "conversation.admin.replied": partial(get_conversation_admin_reply_message, "replied to"),
+    "conversation.admin.noted": partial(get_conversation_admin_reply_message, "added a note to"),
     "conversation.admin.single.created": get_conversation_admin_single_created_message,
     "conversation.user.created": get_conversation_user_created_message,
     "conversation.user.replied": get_conversation_user_replied_message,
@@ -315,8 +311,8 @@ EVENT_TO_FUNCTION_MAPPER: Dict[str, Callable[[WildValue], Tuple[str, str]]] = {
     "user.created": get_user_created_message,
     "user.deleted": get_user_deleted_message,
     "user.email.updated": get_user_email_updated_message,
-    "user.tag.created": partial(get_user_tagged_message, action="added to"),
-    "user.tag.deleted": partial(get_user_tagged_message, action="removed from"),
+    "user.tag.created": partial(get_user_tagged_message, "added to"),
+    "user.tag.deleted": partial(get_user_tagged_message, "removed from"),
     "user.unsubscribed": get_user_unsubscribed_message,
     # Note that we do not have a payload for visitor.signed_up
     # but it should be identical to contact.signed_up

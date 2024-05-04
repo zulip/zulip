@@ -108,6 +108,7 @@ OptionalTopic: TypeAlias = Annotated[
     StringConstraints(strip_whitespace=True),
     ApiParamConfig(whence="topic", aliases=("subject",)),
 ]
+ApnsAppId: TypeAlias = Annotated[str, StringConstraints(pattern="^[.a-zA-Z0-9-]+$")]
 
 # Reusable annotation metadata for Annotated types
 
@@ -278,7 +279,7 @@ def parse_single_parameter(
 
 
 def parse_view_func_signature(
-    view_func: Callable[Concatenate[HttpRequest, ParamT], object]
+    view_func: Callable[Concatenate[HttpRequest, ParamT], object],
 ) -> ViewFuncInfo:
     """This is responsible for inspecting the function signature and getting the
     metadata from the parameters. We want to keep this function as pure as
@@ -330,6 +331,8 @@ ERROR_TEMPLATES = {
     "string_too_short": _("{var_name} is too short."),
     "string_type": _("{var_name} is not a string"),
     "unexpected_keyword_argument": _('Argument "{argument}" at {var_name} is unexpected'),
+    "string_pattern_mismatch": _("{var_name} has invalid format"),
+    "string_fixed_length": _("{var_name} is not length {length}"),
 }
 
 

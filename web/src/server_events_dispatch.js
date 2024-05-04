@@ -1,4 +1,5 @@
 import $ from "jquery";
+import assert from "minimalistic-assert";
 
 import * as activity_ui from "./activity_ui";
 import * as alert_words from "./alert_words";
@@ -14,13 +15,13 @@ import * as compose_call_ui from "./compose_call_ui";
 import * as compose_pm_pill from "./compose_pm_pill";
 import * as compose_recipient from "./compose_recipient";
 import * as compose_state from "./compose_state";
-import * as composebox_typeahead from "./composebox_typeahead";
 import * as dark_theme from "./dark_theme";
 import * as emoji from "./emoji";
 import * as emoji_picker from "./emoji_picker";
 import * as gear_menu from "./gear_menu";
 import * as giphy from "./giphy";
 import * as hotspots from "./hotspots";
+import * as information_density from "./information_density";
 import * as left_sidebar_navigation_area from "./left_sidebar_navigation_area";
 import * as linkifiers from "./linkifiers";
 import * as message_edit from "./message_edit";
@@ -33,7 +34,6 @@ import * as narrow_title from "./narrow_title";
 import * as navbar_alerts from "./navbar_alerts";
 import * as onboarding_steps from "./onboarding_steps";
 import * as overlays from "./overlays";
-import {page_params} from "./page_params";
 import * as peer_data from "./peer_data";
 import * as people from "./people";
 import * as pm_list from "./pm_list";
@@ -50,6 +50,7 @@ import * as scheduled_messages_ui from "./scheduled_messages_ui";
 import * as scroll_bar from "./scroll_bar";
 import * as settings_account from "./settings_account";
 import * as settings_bots from "./settings_bots";
+import * as settings_components from "./settings_components";
 import * as settings_config from "./settings_config";
 import * as settings_emoji from "./settings_emoji";
 import * as settings_exports from "./settings_exports";
@@ -67,6 +68,7 @@ import * as settings_users from "./settings_users";
 import * as sidebar_ui from "./sidebar_ui";
 import * as starred_messages from "./starred_messages";
 import * as starred_messages_ui from "./starred_messages_ui";
+import {current_user, realm} from "./state_data";
 import * as stream_data from "./stream_data";
 import * as stream_events from "./stream_events";
 import * as stream_list from "./stream_list";
@@ -99,9 +101,10 @@ export function dispatch_normal_event(event) {
             break;
 
         case "custom_profile_fields":
-            page_params.custom_profile_fields = event.fields;
-            settings_profile_fields.populate_profile_fields(page_params.custom_profile_fields);
+            realm.custom_profile_fields = event.fields;
+            settings_profile_fields.populate_profile_fields(realm.custom_profile_fields);
             settings_account.add_custom_profile_fields_to_settings();
+            navbar_alerts.maybe_show_empty_required_profile_fields_alert();
             break;
 
         case "default_streams":
@@ -134,7 +137,7 @@ export function dispatch_normal_event(event) {
         }
 
         case "has_zoom_token":
-            page_params.has_zoom_token = event.value;
+            current_user.has_zoom_token = event.value;
             if (event.value) {
                 for (const callback of compose_call.zoom_token_callbacks.values()) {
                     callback();
@@ -146,8 +149,8 @@ export function dispatch_normal_event(event) {
         case "onboarding_steps":
             hotspots.load_new(onboarding_steps.filter_new_hotspots(event.onboarding_steps));
             onboarding_steps.update_notice_to_display(event.onboarding_steps);
-            page_params.onboarding_steps = page_params.onboarding_steps
-                ? [...page_params.onboarding_steps, ...event.onboarding_steps]
+            current_user.onboarding_steps = current_user.onboarding_steps
+                ? [...current_user.onboarding_steps, ...event.onboarding_steps]
                 : event.onboarding_steps;
             break;
 
@@ -165,10 +168,13 @@ export function dispatch_normal_event(event) {
             activity_ui.update_presence_info(event.user_id, event.presence, event.server_timestamp);
             break;
 
-        case "restart": {
+        case "restart":
+            realm.zulip_version = event.zulip_version;
+            realm.zulip_merge_base = event.zulip_merge_base;
+            break;
+
+        case "web_reload_client": {
             const reload_options = {
-                save_pointer: true,
-                save_narrow: true,
                 save_compose: true,
                 message_html: "The application has been updated; reloading!",
             };
@@ -228,14 +234,16 @@ export function dispatch_normal_event(event) {
                 move_messages_between_streams_policy: noop,
                 name: narrow_title.redraw_title,
                 name_changes_disabled: settings_account.update_name_change_display,
-                notifications_stream_id: stream_ui_updates.update_announce_stream_option,
+                new_stream_announcements_stream_id: stream_ui_updates.update_announce_stream_option,
                 org_type: noop,
                 private_message_policy: compose_recipient.check_posting_policy_for_compose_box,
                 push_notifications_enabled: noop,
+                require_unique_names: noop,
                 send_welcome_emails: noop,
                 message_content_allowed_in_email_notifications: noop,
                 enable_spectator_access: noop,
-                signup_notifications_stream_id: noop,
+                signup_announcements_stream_id: noop,
+                zulip_update_announcements_stream_id: noop,
                 emails_restricted_to_domains: noop,
                 video_chat_provider: compose_call_ui.update_audio_and_video_chat_button_display,
                 jitsi_server_url: compose_call_ui.update_audio_and_video_chat_button_display,
@@ -249,7 +257,7 @@ export function dispatch_normal_event(event) {
             switch (event.op) {
                 case "update":
                     if (Object.hasOwn(realm_settings, event.property)) {
-                        page_params["realm_" + event.property] = event.value;
+                        realm["realm_" + event.property] = event.value;
                         realm_settings[event.property]();
                         settings_org.sync_realm_settings(event.property);
 
@@ -283,7 +291,7 @@ export function dispatch_normal_event(event) {
                     switch (event.property) {
                         case "default":
                             for (const [key, value] of Object.entries(event.data)) {
-                                page_params["realm_" + key] = value;
+                                realm["realm_" + key] = value;
                                 if (Object.hasOwn(realm_settings, key)) {
                                     settings_org.sync_realm_settings(key);
                                 }
@@ -300,13 +308,13 @@ export function dispatch_normal_event(event) {
                             }
                             if (event.data.authentication_methods !== undefined) {
                                 settings_org.populate_auth_methods(
-                                    event.data.authentication_methods,
+                                    settings_components.realm_authentication_methods_to_boolean_dict(),
                                 );
                             }
                             break;
                         case "icon":
-                            page_params.realm_icon_url = event.data.icon_url;
-                            page_params.realm_icon_source = event.data.icon_source;
+                            realm.realm_icon_url = event.data.icon_url;
+                            realm.realm_icon_source = event.data.icon_source;
                             realm_icon.rerender();
                             {
                                 const electron_bridge = window.electron_bridge;
@@ -319,13 +327,13 @@ export function dispatch_normal_event(event) {
                             }
                             break;
                         case "logo":
-                            page_params.realm_logo_url = event.data.logo_url;
-                            page_params.realm_logo_source = event.data.logo_source;
+                            realm.realm_logo_url = event.data.logo_url;
+                            realm.realm_logo_source = event.data.logo_source;
                             realm_logo.render();
                             break;
                         case "night_logo":
-                            page_params.realm_night_logo_url = event.data.night_logo_url;
-                            page_params.realm_night_logo_source = event.data.night_logo_source;
+                            realm.realm_night_logo_url = event.data.night_logo_url;
+                            realm.realm_night_logo_source = event.data.night_logo_source;
                             realm_logo.render();
                             break;
                         default:
@@ -346,7 +354,7 @@ export function dispatch_normal_event(event) {
                     window.location.href = "/accounts/deactivated/";
                     break;
             }
-            if (page_params.is_admin) {
+            if (current_user.is_admin) {
                 // Update the UI notice about the user's profile being
                 // incomplete, as we might have filled in the missing field(s).
                 navbar_alerts.show_profile_incomplete(navbar_alerts.check_profile_incomplete());
@@ -381,7 +389,6 @@ export function dispatch_normal_event(event) {
             // And then let other widgets know.
             settings_emoji.populate_emoji();
             emoji_picker.rebuild_catalog();
-            composebox_typeahead.update_emoji_data();
             break;
 
         case "realm_export":
@@ -389,15 +396,15 @@ export function dispatch_normal_event(event) {
             break;
 
         case "realm_linkifiers":
-            page_params.realm_linkifiers = event.realm_linkifiers;
-            linkifiers.update_linkifier_rules(page_params.realm_linkifiers);
-            settings_linkifiers.populate_linkifiers(page_params.realm_linkifiers);
+            realm.realm_linkifiers = event.realm_linkifiers;
+            linkifiers.update_linkifier_rules(realm.realm_linkifiers);
+            settings_linkifiers.populate_linkifiers(realm.realm_linkifiers);
             break;
 
         case "realm_playgrounds":
-            page_params.realm_playgrounds = event.realm_playgrounds;
-            realm_playground.update_playgrounds(page_params.realm_playgrounds);
-            settings_playgrounds.populate_playgrounds(page_params.realm_playgrounds);
+            realm.realm_playgrounds = event.realm_playgrounds;
+            realm_playground.update_playgrounds(realm.realm_playgrounds);
+            settings_playgrounds.populate_playgrounds(realm.realm_playgrounds);
             break;
 
         case "realm_domains":
@@ -405,36 +412,30 @@ export function dispatch_normal_event(event) {
                 let i;
                 switch (event.op) {
                     case "add":
-                        page_params.realm_domains.push(event.realm_domain);
-                        settings_org.populate_realm_domains_label(page_params.realm_domains);
-                        settings_realm_domains.populate_realm_domains_table(
-                            page_params.realm_domains,
-                        );
+                        realm.realm_domains.push(event.realm_domain);
+                        settings_org.populate_realm_domains_label(realm.realm_domains);
+                        settings_realm_domains.populate_realm_domains_table(realm.realm_domains);
                         break;
                     case "change":
-                        for (i = 0; i < page_params.realm_domains.length; i += 1) {
-                            if (page_params.realm_domains[i].domain === event.realm_domain.domain) {
-                                page_params.realm_domains[i].allow_subdomains =
+                        for (i = 0; i < realm.realm_domains.length; i += 1) {
+                            if (realm.realm_domains[i].domain === event.realm_domain.domain) {
+                                realm.realm_domains[i].allow_subdomains =
                                     event.realm_domain.allow_subdomains;
                                 break;
                             }
                         }
-                        settings_org.populate_realm_domains_label(page_params.realm_domains);
-                        settings_realm_domains.populate_realm_domains_table(
-                            page_params.realm_domains,
-                        );
+                        settings_org.populate_realm_domains_label(realm.realm_domains);
+                        settings_realm_domains.populate_realm_domains_table(realm.realm_domains);
                         break;
                     case "remove":
-                        for (i = 0; i < page_params.realm_domains.length; i += 1) {
-                            if (page_params.realm_domains[i].domain === event.domain) {
-                                page_params.realm_domains.splice(i, 1);
+                        for (i = 0; i < realm.realm_domains.length; i += 1) {
+                            if (realm.realm_domains[i].domain === event.domain) {
+                                realm.realm_domains.splice(i, 1);
                                 break;
                             }
                         }
-                        settings_org.populate_realm_domains_label(page_params.realm_domains);
-                        settings_realm_domains.populate_realm_domains_table(
-                            page_params.realm_domains,
-                        );
+                        settings_org.populate_realm_domains_label(realm.realm_domains);
+                        settings_realm_domains.populate_realm_domains_table(realm.realm_domains);
                         break;
                     default:
                         blueslip.error("Unexpected event type realm_domains/" + event.op);
@@ -468,7 +469,7 @@ export function dispatch_normal_event(event) {
                 case "update":
                     user_events.update_person(event.person);
                     settings_account.maybe_update_deactivate_account_button();
-                    if (people.user_is_bot(event.person.user_id)) {
+                    if (people.is_valid_bot_user(event.person.user_id)) {
                         settings_users.update_bot_data(event.person.user_id);
                     }
                     break;
@@ -548,6 +549,7 @@ export function dispatch_normal_event(event) {
                             stream.stream_id,
                         );
                         if (is_narrowed_to_stream) {
+                            assert(message_lists.current !== undefined);
                             message_lists.current.update_trailing_bookend();
                         }
                         stream_data.delete_sub(stream.stream_id);
@@ -561,13 +563,19 @@ export function dispatch_normal_event(event) {
                         }
                         settings_streams.update_default_streams_table();
                         stream_data.remove_default_stream(stream.stream_id);
-                        if (page_params.realm_notifications_stream_id === stream.stream_id) {
-                            page_params.realm_notifications_stream_id = -1;
-                            settings_org.sync_realm_settings("notifications_stream_id");
+                        if (realm.realm_new_stream_announcements_stream_id === stream.stream_id) {
+                            realm.realm_new_stream_announcements_stream_id = -1;
+                            settings_org.sync_realm_settings("new_stream_announcements_stream_id");
                         }
-                        if (page_params.realm_signup_notifications_stream_id === stream.stream_id) {
-                            page_params.realm_signup_notifications_stream_id = -1;
-                            settings_org.sync_realm_settings("signup_notifications_stream_id");
+                        if (realm.realm_signup_announcements_stream_id === stream.stream_id) {
+                            realm.realm_signup_announcements_stream_id = -1;
+                            settings_org.sync_realm_settings("signup_announcements_stream_id");
+                        }
+                        if (realm.realm_zulip_update_announcements_stream_id === stream.stream_id) {
+                            realm.realm_zulip_update_announcements_stream_id = -1;
+                            settings_org.sync_realm_settings(
+                                "zulip_update_announcements_stream_id",
+                            );
                         }
                     }
                     stream_list.update_subscribe_to_more_streams_link();
@@ -639,7 +647,7 @@ export function dispatch_normal_event(event) {
             }
             break;
         case "typing":
-            if (event.sender.user_id === page_params.user_id) {
+            if (event.sender.user_id === current_user.user_id) {
                 // typing notifications are sent to the user who is typing
                 // as well as recipients; we ignore such self-generated events.
                 return;
@@ -684,6 +692,8 @@ export function dispatch_normal_event(event) {
 
             const user_display_settings = [
                 "color_scheme",
+                "web_font_size_px",
+                "web_line_height_percent",
                 "default_language",
                 "web_home_view",
                 "demote_inactive_streams",
@@ -693,6 +703,7 @@ export function dispatch_normal_event(event) {
                 "web_escape_navigates_to_home_view",
                 "fluid_layout_width",
                 "high_contrast_mode",
+                "receives_typing_notifications",
                 "timezone",
                 "twenty_four_hour_time",
                 "translate_emoticons",
@@ -734,6 +745,8 @@ export function dispatch_normal_event(event) {
                 }
             }
             if (event.property === "twenty_four_hour_time") {
+                // Recalculate timestamp column width
+                message_lists.calculate_timestamp_widths();
                 // Rerender the whole message list UI
                 for (const msg_list of message_lists.all_rendered_message_lists()) {
                     msg_list.rerender();
@@ -756,8 +769,14 @@ export function dispatch_normal_event(event) {
                 activity_ui.build_user_sidebar();
             }
             if (event.property === "dense_mode") {
-                $("body").toggleClass("less_dense_mode");
-                $("body").toggleClass("more_dense_mode");
+                $("body").toggleClass("less-dense-mode");
+                $("body").toggleClass("more-dense-mode");
+            }
+            if (
+                event.property === "web_font_size_px" ||
+                event.property === "web_line_height_percent"
+            ) {
+                information_density.set_base_typography_css_variables();
             }
             if (event.property === "web_mark_read_on_scroll_policy") {
                 unread_ui.update_unread_banner();
@@ -779,6 +798,12 @@ export function dispatch_normal_event(event) {
             }
             if (event.property === "starred_message_counts") {
                 starred_messages_ui.rerender_ui();
+            }
+            if (
+                event.property === "receives_typing_notifications" &&
+                !user_settings.receives_typing_notifications
+            ) {
+                typing_events.disable_typing_notification();
             }
             if (event.property === "fluid_layout_width") {
                 scroll_bar.set_layout_width();
@@ -817,7 +842,7 @@ export function dispatch_normal_event(event) {
             if (event.property === "presence_enabled") {
                 user_settings.presence_enabled = event.value;
                 $("#user_presence_enabled").prop("checked", user_settings.presence_enabled);
-                activity_ui.redraw_user(page_params.user_id);
+                activity_ui.redraw_user(current_user.user_id);
                 break;
             }
             if (event.property === "email_address_visibility") {

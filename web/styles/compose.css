@@ -56,8 +56,13 @@
             line-height: var(--line-height-compose-buttons);
         }
 
-        #left_bar_compose_reply_button_big {
+        .compose-reply-button-wrapper {
             flex-grow: 1;
+            overflow: hidden;
+        }
+
+        #left_bar_compose_reply_button_big {
+            width: 100%;
             text-align: left;
             overflow: hidden;
             white-space: nowrap;
@@ -158,10 +163,6 @@
             #compose_select_recipient_widget {
                 border-radius: 4px !important;
             }
-
-            .stream_header_colorblock {
-                display: none;
-            }
         }
 
         .topic-marker-container {
@@ -176,14 +177,10 @@
                little layout shifts with pills. */
             flex: 0 0 auto;
             height: var(--compose-recipient-box-min-height);
-            /* Round up natural width to next whole pixel. */
-            width: 23px;
 
-            .fa-angle-right {
-                font-size: 0.9em;
-                -webkit-text-stroke: 0.05em;
-                align-self: center;
-                margin: 0 5px;
+            .zulip-icon-chevron-right {
+                font-size: 16px;
+                color: var(--color-compose-chevron-arrow);
             }
         }
 
@@ -207,6 +204,9 @@
 
     #compose-direct-recipient {
         flex-grow: 1;
+        display: grid;
+        grid-template-columns: 1fr;
+        align-items: stretch;
     }
 
     .message_header {
@@ -307,14 +307,16 @@
 
 #compose-limit-indicator {
     font-size: 12px;
-    color: hsl(39deg 100% 50%);
+    color: var(--color-limit-indicator);
+    width: max-content;
 
-    /* Keep the limit indicator
-       just above the send button */
+    /* Keep the limit indicator just above
+       and aligned with the send button */
     margin-top: auto;
+    padding: 3px 3px 3px 0;
 
     &.over_limit {
-        color: hsl(0deg 76% 65%);
+        color: var(--color-limit-indicator-over-limit);
         font-weight: bold;
     }
 }
@@ -755,7 +757,9 @@ textarea.new_message_textarea,
 }
 
 #compose_recipient_box {
-    display: flex;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: stretch;
     flex: 1 1 0;
     border-radius: 3px;
     background: hsl(0deg 0% 100%);
@@ -777,12 +781,7 @@ textarea.new_message_textarea,
 
     /* Styles for input in the recipient_box */
     #stream_message_recipient_topic {
-        /* Override inherited widths; flexbox will ensure
-           that it grows to fit. */
-        width: 0;
-        flex: 1 1 0;
-
-        /* Override flexbox's effective `max-content` min-width */
+        /* Override grid's effective `max-content` min-width */
         overflow: hidden;
         text-overflow: ellipsis;
 
@@ -790,6 +789,8 @@ textarea.new_message_textarea,
         outline: none;
 
         padding: 4px 6px;
+        /* Reset height to let `align-items: stretch` on the grid parent handle this. */
+        height: auto;
     }
 
     /* Styles for new conversation button in the recipient_box */
@@ -823,12 +824,12 @@ textarea.new_message_textarea,
 }
 
 #compose_select_recipient_widget {
-    border-radius: 0 4px 4px 0;
     width: auto;
     outline: none;
 
     &.dropdown-widget-button {
         padding: 0 6px;
+        border-radius: 4px;
     }
 }
 
@@ -966,6 +967,7 @@ textarea.new_message_textarea,
       `align-self: center` to center only
       themselves, where necessary. */
     min-height: var(--compose-recipient-box-min-height);
+    min-width: 0;
 }
 
 .compose-control-buttons-container {
@@ -1112,14 +1114,7 @@ textarea.new_message_textarea,
 
         & button {
             pointer-events: none;
-        }
-
-        #compose-send-button {
-            background-color: hsl(0deg 0% 65%);
-        }
-
-        #send_later {
-            color: hsl(0deg 0% 65%);
+            opacity: 0.5;
         }
     }
 }
@@ -1158,13 +1153,8 @@ textarea.new_message_textarea,
     justify-content: flex-start;
     height: var(--compose-recipient-box-min-height);
 
-    .stream_header_colorblock {
-        margin: 0;
-    }
-
     .dropdown_widget_value {
         flex-grow: 1;
-        overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
         color: var(--color-text-default);
@@ -1178,20 +1168,22 @@ textarea.new_message_textarea,
         }
     }
 
-    .fa-chevron-down {
+    .zulip-icon-chevron-down {
         padding-left: 5px;
-        color: hsl(0deg 0% 58%);
+        color: var(--color-compose-chevron-arrow);
         font-weight: lighter;
     }
 
-    /* This is the "Select a stream" default message */
+    /* This is the "Select a channel" default message */
     .text-warning {
         color: inherit;
     }
 }
 
-.dropdown-menu {
-    & ul {
+.typeahead.dropdown-menu {
+    background: hsl(0deg 0% 100%);
+
+    .typeahead-menu {
         list-style: none;
         margin: 0;
         background-color: var(--color-background-popover);
@@ -1209,10 +1201,6 @@ textarea.new_message_textarea,
 
     #typeahead-header-text {
         font-size: 12px;
-    }
-
-    &.typeahead {
-        background: hsl(0deg 0% 100%);
     }
 }
 
@@ -1329,41 +1317,27 @@ textarea.new_message_textarea,
        as 100% of the container width, plus
        the 8px from the negative left margin. */
     max-width: calc(100% + 8px);
-    /* Set an ellipsis when the translated
-       version of `Drafts` exceeds the width,
-       and keep button text to a single line. */
-    white-space: nowrap;
-    overflow-x: hidden;
-    text-overflow: ellipsis;
+    display: flex;
+    gap: 2px;
+
+    .compose-drafts-text {
+        /* Set an ellipsis when the translated
+           version of `Drafts` exceeds the width,
+           and keep button text to a single line. */
+        white-space: nowrap;
+        overflow-x: hidden;
+        text-overflow: ellipsis;
+        flex-grow: 1;
+    }
 
     @media (width < $mc_min) {
-        margin-left: 0;
-        /* With no negative left margin,
-           hold the max width to 100%. */
-        max-width: 100%;
+        /* Reduce the padding on the sides so the
+        button's edge isn't too close to the textarea */
+        margin-left: -3px;
+        max-width: calc(100% + 3px);
         /* Align the `Drafts` text with the
            send icon below. */
-        padding: 0 5px;
-    }
-}
-
-@media (width < $xl_min) {
-    #compose-content {
-        margin-right: 7px;
-    }
-}
-
-@media (width < $md_min) {
-    #compose-content {
-        margin-right: 7px;
-        margin-left: 7px;
-    }
-}
-
-@media (width < $mm_min) {
-    #compose-content {
-        margin-right: 5px;
-        margin-left: 5px;
+        padding: 0 3px;
     }
 }
 
