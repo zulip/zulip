@@ -2,8 +2,8 @@ import * as blueslip from "./blueslip";
 import * as people from "./people";
 import type {RawReaction} from "./reactions";
 import type {Submessage, TopicLink} from "./types";
-import * as util from "./util";
 import type {UserStatusEmojiInfo} from "./user_status";
+import * as util from "./util";
 
 
 const stored_messages = new Map<number, Message>();
