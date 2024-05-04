@@ -2232,14 +2232,14 @@ one or more new messages.
             )
         assert expected_message is not None and expected_topic_name is not None
 
-        self.assert_stream_message(
+        self.assert_channel_message(
             message=msg,
             stream_name=self.CHANNEL_NAME,
             topic_name=expected_topic_name,
             content=expected_message,
         )
 
-    def assert_stream_message(
+    def assert_channel_message(
         self,
         message: Message,
         stream_name: str,

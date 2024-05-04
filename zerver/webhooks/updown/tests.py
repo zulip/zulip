@@ -38,7 +38,7 @@ class UpdownHookTests(WebhookTestCase):
         )
 
         msg = self.get_second_to_last_message()
-        self.assert_stream_message(
+        self.assert_channel_message(
             message=msg,
             stream_name=self.CHANNEL_NAME,
             topic_name=topic_name,
@@ -46,7 +46,7 @@ class UpdownHookTests(WebhookTestCase):
         )
 
         msg = self.get_last_message()
-        self.assert_stream_message(
+        self.assert_channel_message(
             message=msg,
             stream_name=self.CHANNEL_NAME,
             topic_name=topic_name,

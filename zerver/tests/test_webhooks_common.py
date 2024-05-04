@@ -173,7 +173,7 @@ class WebhookURLConfigurationTestCase(WebhookTestCase):
         expected_message = "Hello! I am happy to be here! :smile:\nThe Wikipedia featured article for today is **[Marilyn Monroe](https://en.wikipedia.org/wiki/Marilyn_Monroe)**"
 
         msg = self.get_last_message()
-        self.assert_stream_message(
+        self.assert_channel_message(
             message=msg,
             stream_name="helloworld_renamed",
             topic_name=expected_topic_name,
