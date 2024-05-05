@@ -2,6 +2,7 @@ import $ from "jquery";
 import assert from "minimalistic-assert";
 import type {PopperElement, Props} from "tippy.js";
 import tippy from "tippy.js";
+import {z} from "zod";
 
 import render_compose_banner from "../templates/compose_banner/compose_banner.hbs";
 
@@ -375,18 +376,21 @@ function get_message_retention_setting_value(
     return check_valid_number_input(custom_input_val);
 }
 
-type FieldData = Record<string, Record<string, string> | string>;
+const select_field_data_schema = z.record(z.object({text: z.string(), order: z.string()}));
+type SelectFieldData = z.output<typeof select_field_data_schema>;
 
 function read_select_field_data_from_form(
     $profile_field_form: JQuery,
-    old_field_data: FieldData,
-): FieldData {
-    const field_data: FieldData = {};
+    old_field_data: unknown,
+): SelectFieldData {
+    const field_data: SelectFieldData = {};
     let field_order = 1;
 
     const old_option_value_map = new Map<string, string>();
     if (old_field_data !== undefined) {
-        for (const [value, choice] of Object.entries(old_field_data)) {
+        for (const [value, choice] of Object.entries(
+            select_field_data_schema.parse(old_field_data),
+        )) {
             assert(typeof choice !== "string");
             old_option_value_map.set(choice.text, value);
         }
@@ -412,11 +416,14 @@ function read_select_field_data_from_form(
     return field_data;
 }
 
-function read_external_account_field_data($profile_field_form: JQuery): FieldData {
-    const field_data: FieldData = {};
-    field_data.subtype = $profile_field_form
-        .find<HTMLSelectOneElement>("select:not([multiple])[name=external_acc_field_type]")
-        .val()!;
+type ExternalAccountFieldData = {subtype: string; url_pattern?: string};
+
+function read_external_account_field_data($profile_field_form: JQuery): ExternalAccountFieldData {
+    const field_data: ExternalAccountFieldData = {
+        subtype: $profile_field_form
+            .find<HTMLSelectOneElement>("select:not([multiple])[name=external_acc_field_type]")
+            .val()!,
+    };
     if (field_data.subtype === "custom") {
         field_data.url_pattern = $profile_field_form
             .find<HTMLInputElement>("input[name=url_pattern]")
@@ -425,10 +432,12 @@ function read_external_account_field_data($profile_field_form: JQuery): FieldDat
     return field_data;
 }
 
+type FieldData = SelectFieldData | ExternalAccountFieldData;
+
 export function read_field_data_from_form(
     field_type_id: number,
     $profile_field_form: JQuery,
-    old_field_data: FieldData,
+    old_field_data: unknown,
 ): FieldData | undefined {
     const field_types = realm.custom_profile_field_types;
 
