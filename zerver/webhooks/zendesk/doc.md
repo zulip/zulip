@@ -6,7 +6,7 @@
 
     `{{ api_url }}/v1/external/zendesk?ticket_title={% raw %}{{ ticket.title }}&ticket_id={{ ticket.id }}{% endraw %}`
 
-1. {!append-stream-name.md!}
+1. {!append-channel-name.md!}
 
 1. Next, in Zendesk, open your **Admin** view via gear in the bottom-left
     corner. In the **Admin** view, click on **Extensions**, then click
