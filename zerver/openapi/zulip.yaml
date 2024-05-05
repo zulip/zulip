@@ -19577,7 +19577,10 @@ components:
             Currently it's value not allowed to be `true` of `Long text` and `Person picker`
             [profile field types](/help/custom-profile-fields#profile-field-types).
 
+            This field is only included when its value is `true`.
+
             **Changes**: New in Zulip 6.0 (feature level 146).
+          default: false
         required:
           type: boolean
           description: |
@@ -19589,6 +19592,12 @@ components:
             banner to any user who has not set a value for a required field.
 
             **Changes**: New in Zulip 9.0 (feature level 244).
+      required:
+        - id
+        - type
+        - order
+        - name
+        - hint
     OnboardingStep:
       type: object
       additionalProperties: false
