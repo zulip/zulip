@@ -4,7 +4,7 @@ Get Zulip notifications for your Buildbot builds!
 
     This integration requires Buildbot version 2.2.0 or higher.
 
-1. {!create-stream.md!}
+1. {!create-channel.md!}
 
 1. {!create-an-incoming-webhook.md!}
 

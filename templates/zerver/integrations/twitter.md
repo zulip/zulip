@@ -2,7 +2,7 @@ Fetch tweets from Twitter in Zulip! This is great for seeing and
 discussing who is talking about you, friends, competitors, or
 important topics in real time.
 
-1.  {!create-stream.md!}
+1.  {!create-channel.md!}
 
 1.  {!create-an-incoming-webhook.md!}
 

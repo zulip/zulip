@@ -2,7 +2,7 @@ Front lets you manage all of your communication channels in one place,
 and helps your team collaborate around every message. Follow these steps
 to receive Front notifications without leaving Zulip!
 
-1. {!create-stream.md!}
+1. {!create-channel.md!}
 
 1. {!create-an-incoming-webhook.md!}
 

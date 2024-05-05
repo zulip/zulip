@@ -2,7 +2,7 @@ Zulip supports both Git and Mercurial notifications from
 Bitbucket. This integration is for the old-style Bitbucket
 webhooks used by Bitbucket Enterprise.
 
-{!create-stream.md!}
+{!create-channel.md!}
 
 The integration will use the default stream `commits` if no
 stream is supplied in the hook; you still need to create the

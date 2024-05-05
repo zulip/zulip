@@ -1,6 +1,6 @@
 Get Zulip notifications from {{ integration_display_name }} via Hubot!
 
-1.  {!create-stream.md!}
+1.  {!create-channel.md!}
 
 1.  Next, [install Hubot](hubot), and test it to make sure it is working.
 

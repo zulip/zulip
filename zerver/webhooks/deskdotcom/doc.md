@@ -1,4 +1,4 @@
-1. {!create-stream.md!}
+1. {!create-channel.md!}
 
     Keep in mind you still need to create the stream first even
     if you are using this recommendation.
