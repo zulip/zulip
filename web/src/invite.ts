@@ -2,6 +2,7 @@ import ClipboardJS from "clipboard";
 import {add} from "date-fns";
 import $ from "jquery";
 import assert from "minimalistic-assert";
+import {z} from "zod";
 
 import copy_invite_link from "../templates/copy_invite_link.hbs";
 import render_invitation_failed_error from "../templates/invitation_failed_error.hbs";
@@ -151,17 +152,26 @@ function submit_invitation_form(): void {
             }
         },
         error(xhr) {
-            if (xhr.responseJSON?.errors === undefined) {
+            const parsed = z
+                .object({
+                    result: z.literal("error"),
+                    code: z.literal("INVITATION_FAILED"),
+                    msg: z.string(),
+                    errors: z.array(z.tuple([z.string(), z.string(), z.boolean()])),
+                    sent_invitations: z.boolean(),
+                    license_limit_reached: z.boolean(),
+                    daily_limit_reached: z.boolean(),
+                })
+                .safeParse(xhr.responseJSON);
+            if (!parsed.success) {
                 // There was a fatal error, no partial processing occurred.
                 ui_report.error("", xhr, $invite_status);
             } else {
                 // Some users were not invited.
-                const response_body = xhr.responseJSON;
                 const invitee_emails_errored = [];
                 const error_list = [];
                 let is_invitee_deactivated = false;
-                for (const value of response_body.errors) {
-                    const [email, error_message, deactivated] = value;
+                for (const [email, error_message, deactivated] of parsed.data.errors) {
                     error_list.push(`${email}: ${error_message}`);
                     if (deactivated) {
                         is_invitee_deactivated = true;
@@ -170,17 +180,17 @@ function submit_invitation_form(): void {
                 }
 
                 const error_response = render_invitation_failed_error({
-                    error_message: response_body.msg,
+                    error_message: parsed.data.msg,
                     error_list,
                     is_admin: current_user.is_admin,
                     is_invitee_deactivated,
-                    license_limit_reached: response_body.license_limit_reached,
+                    license_limit_reached: parsed.data.license_limit_reached,
                     has_billing_access: current_user.is_owner || current_user.is_billing_admin,
-                    daily_limit_reached: response_body.daily_limit_reached,
+                    daily_limit_reached: parsed.data.daily_limit_reached,
                 });
                 ui_report.message(error_response, $invite_status, "alert-error");
 
-                if (response_body.sent_invitations) {
+                if (parsed.data.sent_invitations) {
                     for (const email of invitee_emails_errored) {
                         pills.appendValue(email);
                     }
