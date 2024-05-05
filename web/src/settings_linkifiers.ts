@@ -129,15 +129,15 @@ function handle_linkifier_api_error(
     // dictionaries. This logic parses them.
     const errors = xhr.responseJSON.errors;
     if (errors.pattern !== undefined) {
-        xhr.responseJSON.msg = errors.pattern;
+        xhr.responseJSON.msg = errors.pattern[0];
         ui_report.error($t_html({defaultMessage: "Failed"}), xhr, pattern_status);
     }
     if (errors.url_template !== undefined) {
-        xhr.responseJSON.msg = errors.url_template;
+        xhr.responseJSON.msg = errors.url_template[0];
         ui_report.error($t_html({defaultMessage: "Failed"}), xhr, template_status);
     }
     if (errors.__all__ !== undefined) {
-        xhr.responseJSON.msg = errors.__all__;
+        xhr.responseJSON.msg = errors.__all__[0];
         ui_report.error($t_html({defaultMessage: "Failed"}), xhr, linkifier_status);
     }
 }
