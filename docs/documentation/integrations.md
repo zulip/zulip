@@ -102,7 +102,7 @@ Here are a few common macros used to document Zulip's integrations:
   every incoming webhook by using attributes in the `WebhookIntegration` class
   in [zerver/lib/integrations.py][integrations-file].
 
-- `{!append-stream-name.md!}` macro - Recommends appending `&stream=stream_name`
+- `{!append-channel-name.md!}` macro - Recommends appending `&stream=stream_name`
   to a URL in cases where supplying a stream name in the URL is optional.
   Supplying a stream name is optional for most Zulip integrations. If you use
   `{!generate-integration-url.md!}`, this macro need not be used.
