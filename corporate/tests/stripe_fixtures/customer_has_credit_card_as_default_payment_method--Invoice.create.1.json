@@ -61,7 +61,7 @@
         "discounts": [],
         "id": "il_NORMALIZED00000000000002",
         "invoice": "in_NORMALIZED00000000000002",
-        "invoice_item": "ii_NORMALIZED00000000000002",
+        "invoice_item": "ii_NORMALIZED00000000000004",
         "livemode": false,
         "metadata": {},
         "object": "line_item",
@@ -111,6 +111,7 @@
   "livemode": false,
   "metadata": {
     "billing_schedule": "1",
+    "current_plan_id": "None",
     "license_management": "automatic",
     "licenses": "6",
     "on_free_trial": "False",

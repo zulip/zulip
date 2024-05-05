@@ -1,5 +1,121 @@
 {
-  "data": [],
+  "data": [
+    {
+      "api_version": "2020-08-27",
+      "created": 1000000000,
+      "data": {
+        "object": {
+          "amount": 120000,
+          "currency": "usd",
+          "customer": "cus_NORMALIZED0003",
+          "date": 1000000000,
+          "description": "Zulip Business - renewal",
+          "discountable": false,
+          "discounts": [],
+          "id": "ii_NORMALIZED00000000000007",
+          "invoice": null,
+          "livemode": false,
+          "metadata": {},
+          "object": "invoiceitem",
+          "period": {
+            "end": 1362193445,
+            "start": 1330657445
+          },
+          "plan": null,
+          "price": {
+            "active": false,
+            "billing_scheme": "per_unit",
+            "created": 1000000000,
+            "currency": "usd",
+            "custom_unit_amount": null,
+            "id": "price_NORMALIZED00000000000006",
+            "livemode": false,
+            "lookup_key": null,
+            "metadata": {},
+            "nickname": null,
+            "object": "price",
+            "product": "prod_NORMALIZED0006",
+            "recurring": null,
+            "tax_behavior": "unspecified",
+            "tiers_mode": null,
+            "transform_quantity": null,
+            "type": "one_time",
+            "unit_amount": 120000,
+            "unit_amount_decimal": "120000"
+          },
+          "proration": false,
+          "quantity": 1,
+          "subscription": null,
+          "tax_rates": [],
+          "test_clock": null,
+          "unit_amount": 120000,
+          "unit_amount_decimal": "120000"
+        }
+      },
+      "id": "evt_1PCzUGDEQaroqDjs28W0eC1y",
+      "livemode": false,
+      "object": "event",
+      "pending_webhooks": 0,
+      "request": {
+        "id": "req_NORMALIZED0015",
+        "idempotency_key": "0fc0f07c-5578-4229-800e-acff064d6288"
+      },
+      "type": "invoiceitem.created"
+    },
+    {
+      "api_version": "2020-08-27",
+      "created": 1000000000,
+      "data": {
+        "object": {
+          "address": null,
+          "balance": 0,
+          "created": 1000000000,
+          "currency": null,
+          "default_currency": null,
+          "default_source": null,
+          "delinquent": false,
+          "description": "zulip (Zulip Dev)",
+          "discount": null,
+          "email": "hamlet@zulip.com",
+          "id": "cus_NORMALIZED0004",
+          "invoice_prefix": "NORMA03",
+          "invoice_settings": {
+            "custom_fields": null,
+            "default_payment_method": "pm_1PCzUEDEQaroqDjsoELzNcqJ",
+            "footer": null,
+            "rendering_options": null
+          },
+          "livemode": false,
+          "metadata": {
+            "realm_id": "1",
+            "realm_str": "zulip"
+          },
+          "name": null,
+          "next_invoice_sequence": 1,
+          "object": "customer",
+          "phone": null,
+          "preferred_locales": [],
+          "shipping": null,
+          "tax_exempt": "none",
+          "test_clock": null
+        },
+        "previous_attributes": {
+          "invoice_settings": {
+            "default_payment_method": null
+          }
+        }
+      },
+      "id": "evt_1PCzUGDEQaroqDjsJ95CGkYj",
+      "livemode": false,
+      "object": "event",
+      "pending_webhooks": 0,
+      "request": {
+        "id": "req_NORMALIZED0016",
+        "idempotency_key": "9335c9b7-6b6b-44f8-8974-0acd9335dbfd"
+      },
+      "type": "customer.updated"
+    }
+  ],
   "has_more": false,
   "object": "list",
   "url": "/v1/events"

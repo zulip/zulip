@@ -1,5 +1,59 @@
 {
-  "data": [],
+  "data": [
+    {
+      "api_version": "2020-08-27",
+      "created": 1000000000,
+      "data": {
+        "object": {
+          "address": null,
+          "balance": -7200,
+          "created": 1000000000,
+          "currency": "usd",
+          "default_currency": "usd",
+          "default_source": null,
+          "delinquent": false,
+          "description": "lear (Lear & Co.)",
+          "discount": null,
+          "email": "king@lear.org",
+          "id": "cus_NORMALIZED0006",
+          "invoice_prefix": "NORMA05",
+          "invoice_settings": {
+            "custom_fields": null,
+            "default_payment_method": null,
+            "footer": null,
+            "rendering_options": null
+          },
+          "livemode": false,
+          "metadata": {
+            "realm_id": "2",
+            "realm_str": "lear"
+          },
+          "name": null,
+          "next_invoice_sequence": 1,
+          "object": "customer",
+          "phone": null,
+          "preferred_locales": [],
+          "shipping": null,
+          "tax_exempt": "none",
+          "test_clock": null
+        },
+        "previous_attributes": {
+          "balance": 0,
+          "currency": null,
+          "default_currency": null
+        }
+      },
+      "id": "evt_1PCzSSDEQaroqDjsMZtvQAdz",
+      "livemode": false,
+      "object": "event",
+      "pending_webhooks": 2,
+      "request": {
+        "id": "req_NORMALIZED0020",
+        "idempotency_key": "561910a4-c9af-4ef0-a0e8-e5f9412a0963"
+      },
+      "type": "customer.updated"
+    }
+  ],
   "has_more": false,
   "object": "list",
   "url": "/v1/events"

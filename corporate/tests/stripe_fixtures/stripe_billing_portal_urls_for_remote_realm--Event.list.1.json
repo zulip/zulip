@@ -5,83 +5,59 @@
       "created": 1000000000,
       "data": {
         "object": {
-          "amount": 984000,
-          "amount_capturable": 0,
-          "amount_details": {
-            "tip": {}
+          "ach_credit_transfer": {
+            "account_number": "test_NORMALIZED01",
+            "bank_name": "TEST BANK",
+            "fingerprint": "NORMALIZED000002",
+            "refund_account_holder_name": null,
+            "refund_account_holder_type": null,
+            "refund_routing_number": null,
+            "routing_number": "110000000",
+            "swift_code": "TSTEZ122"
           },
-          "amount_received": 0,
-          "application": null,
-          "application_fee_amount": null,
-          "automatic_payment_methods": null,
-          "canceled_at": null,
-          "cancellation_reason": null,
-          "capture_method": "automatic",
-          "charges": {
-            "data": [],
-            "has_more": false,
-            "object": "list",
-            "total_count": 0,
-            "url": "/v1/charges?payment_intent=pi_NORMALIZED00000000000001"
-          },
-          "client_secret": "pi_NORMALIZED00000000000001_secret_rfb5U1ApnuQl7hBsKf77WdFm1",
-          "confirmation_method": "automatic",
+          "amount": null,
+          "client_secret": "src_client_secret_NORMALIZED00000000000001",
           "created": 1000000000,
           "currency": "usd",
           "customer": "cus_NORMALIZED0002",
-          "description": "Payment for Invoice",
-          "id": "pi_NORMALIZED00000000000001",
-          "invoice": "in_NORMALIZED00000000000001",
-          "last_payment_error": null,
-          "latest_charge": null,
+          "flow": "receiver",
+          "id": "src_NORMALIZED00000000000001",
           "livemode": false,
           "metadata": {},
-          "next_action": null,
-          "object": "payment_intent",
-          "on_behalf_of": null,
-          "payment_method": null,
-          "payment_method_configuration_details": null,
-          "payment_method_options": {
-            "card": {
-              "installments": null,
-              "mandate_options": null,
-              "network": null,
-              "request_three_d_secure": "automatic"
-            },
-            "cashapp": {},
-            "wechat_pay": {
-              "app_id": null,
-              "client": null
-            }
+          "object": "source",
+          "owner": {
+            "address": null,
+            "email": "amount_0@stripe.com",
+            "name": null,
+            "phone": null,
+            "verified_address": null,
+            "verified_email": null,
+            "verified_name": null,
+            "verified_phone": null
           },
-          "payment_method_types": [
-            "ach_credit_transfer",
-            "card",
-            "cashapp",
-            "wechat_pay"
-          ],
-          "processing": null,
-          "receipt_email": "hamlet@zulip.com",
-          "review": null,
-          "setup_future_usage": null,
-          "shipping": null,
-          "source": null,
-          "statement_descriptor": "Zulip Cloud Standard",
-          "statement_descriptor_suffix": null,
-          "status": "requires_payment_method",
-          "transfer_data": null,
-          "transfer_group": null
+          "receiver": {
+            "address": "000000000-test_NORMALIZED01",
+            "amount_charged": 0,
+            "amount_received": 0,
+            "amount_returned": 0,
+            "refund_attributes_method": "email",
+            "refund_attributes_status": "missing"
+          },
+          "statement_descriptor": null,
+          "status": "pending",
+          "type": "ach_credit_transfer",
+          "usage": "reusable"
         }
       },
-      "id": "evt_3P41lMDEQaroqDjs1JI1yF3Z",
+      "id": "evt_1PCzU9DEQaroqDjsSF5K7Eh9",
       "livemode": false,
       "object": "event",
       "pending_webhooks": 0,
       "request": {
-        "id": "req_NORMALIZED0001",
-        "idempotency_key": "745a2cf8-fad8-495c-88d6-98c2e0b9cd4f"
+        "id": null,
+        "idempotency_key": "181d3c2d-29ee-4a4e-aee3-31bd3f4c687f"
       },
-      "type": "payment_intent.created"
+      "type": "customer.source.created"
     }
   ],
   "has_more": true,

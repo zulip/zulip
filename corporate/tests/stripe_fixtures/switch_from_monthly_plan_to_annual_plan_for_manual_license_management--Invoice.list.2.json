@@ -43,9 +43,9 @@
       "ending_balance": 0,
       "footer": null,
       "from_invoice": null,
-      "hosted_invoice_url": "https://invoice.stripe.com/i/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QdHBTZ2hiejRsZDlzd2xFYlhaZlJzV3lZbnI3UU5jLDEwMzI5ODgyMQ0200KcMt1PWg?s=ap",
+      "hosted_invoice_url": "https://invoice.stripe.com/i/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9RMzVoRVM1MkVxS1R6Z2pVd3JRWDRxcFd6RDZwOXNnLDEwNTQzNTAwNA0200krHI6tP2?s=ap",
       "id": "in_NORMALIZED00000000000002",
-      "invoice_pdf": "https://pay.stripe.com/invoice/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QdHBTZ2hiejRsZDlzd2xFYlhaZlJzV3lZbnI3UU5jLDEwMzI5ODgyMQ0200KcMt1PWg/pdf?s=ap",
+      "invoice_pdf": "https://pay.stripe.com/invoice/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9RMzVoRVM1MkVxS1R6Z2pVd3JRWDRxcFd6RDZwOXNnLDEwNTQzNTAwNA0200krHI6tP2/pdf?s=ap",
       "issuer": {
         "type": "self"
       },
@@ -206,9 +206,9 @@
       "ending_balance": 0,
       "footer": null,
       "from_invoice": null,
-      "hosted_invoice_url": "https://invoice.stripe.com/i/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QdHBTVFZ1WjluRVBJNmpLMTFrTjlRU20wbjl3WVY5LDEwMzI5ODgyMQ0200VFfGR0sY?s=ap",
+      "hosted_invoice_url": "https://invoice.stripe.com/i/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9RMzVoUUc4TnJjcUdST3Z0WWlnY3VHYUVwbGY3SjY4LDEwNTQzNTAwNA0200kYxHJvhk?s=ap",
       "id": "in_NORMALIZED00000000000001",
-      "invoice_pdf": "https://pay.stripe.com/invoice/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QdHBTVFZ1WjluRVBJNmpLMTFrTjlRU20wbjl3WVY5LDEwMzI5ODgyMQ0200VFfGR0sY/pdf?s=ap",
+      "invoice_pdf": "https://pay.stripe.com/invoice/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9RMzVoUUc4TnJjcUdST3Z0WWlnY3VHYUVwbGY3SjY4LDEwNTQzNTAwNA0200kYxHJvhk/pdf?s=ap",
       "issuer": {
         "type": "self"
       },
@@ -276,6 +276,7 @@
       "livemode": false,
       "metadata": {
         "billing_schedule": "2",
+        "current_plan_id": "None",
         "license_management": "manual",
         "licenses": "35",
         "on_free_trial": "False",

@@ -111,6 +111,7 @@
   "livemode": false,
   "metadata": {
     "billing_schedule": "1",
+    "current_plan_id": "None",
     "license_management": "manual",
     "licenses": "40",
     "on_free_trial": "False",

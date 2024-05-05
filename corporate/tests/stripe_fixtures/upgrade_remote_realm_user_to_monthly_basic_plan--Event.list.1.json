@@ -5,28 +5,48 @@
       "created": 1000000000,
       "data": {
         "object": {
-          "configuration": "bpc_1P41lbDEQaroqDjsvWEhvfll",
+          "address": null,
+          "balance": 0,
           "created": 1000000000,
-          "customer": "cus_NORMALIZED0002",
-          "flow": null,
-          "id": "bps_1P41lbDEQaroqDjsrOHUC1qK",
+          "currency": null,
+          "default_currency": null,
+          "default_source": null,
+          "delinquent": false,
+          "description": "zulip (Zulip Dev)",
+          "discount": null,
+          "email": "hamlet@zulip.com",
+          "id": "cus_NORMALIZED0002",
+          "invoice_prefix": "NORMA02",
+          "invoice_settings": {
+            "custom_fields": null,
+            "default_payment_method": null,
+            "footer": null,
+            "rendering_options": null
+          },
           "livemode": false,
-          "locale": null,
-          "object": "billing_portal.session",
-          "on_behalf_of": null,
-          "return_url": "http://selfhosting.testserver/server/6cde5f7a-1f7e-4978-9716-49f69ebfc9fe/billing/",
-          "url": "https://billing.stripe.com/p/session/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QdHBRRlFmS2pvdlVLNTlKMXVZT2F3YjJ1RTBFek9Z0100NZJPJQi2"
+          "metadata": {
+            "realm_id": "1",
+            "realm_str": "zulip"
+          },
+          "name": null,
+          "next_invoice_sequence": 1,
+          "object": "customer",
+          "phone": null,
+          "preferred_locales": [],
+          "shipping": null,
+          "tax_exempt": "none",
+          "test_clock": null
         }
       },
-      "id": "evt_1P41lbDEQaroqDjsQIXJHeUv",
+      "id": "evt_1PCzUODEQaroqDjsWSZEZ44r",
       "livemode": false,
       "object": "event",
-      "pending_webhooks": 1,
+      "pending_webhooks": 0,
       "request": {
         "id": "req_NORMALIZED0001",
-        "idempotency_key": "d2d261d1-c350-4c62-8631-72453e7acfd9"
+        "idempotency_key": "b347c259-28d0-4298-98df-75378fddf2b8"
       },
-      "type": "billing_portal.session.created"
+      "type": "customer.created"
     }
   ],
   "has_more": true,

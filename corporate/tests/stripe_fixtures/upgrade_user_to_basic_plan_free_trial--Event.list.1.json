@@ -5,59 +5,191 @@
       "created": 1000000000,
       "data": {
         "object": {
-          "ach_credit_transfer": {
-            "account_number": "test_NORMALIZED01",
-            "bank_name": "TEST BANK",
-            "fingerprint": "NORMALIZED000002",
-            "refund_account_holder_name": null,
-            "refund_account_holder_type": null,
-            "refund_routing_number": null,
-            "routing_number": "110000000",
-            "swift_code": "TSTEZ122"
+          "amount": 36830,
+          "amount_capturable": 0,
+          "amount_details": {
+            "tip": {}
           },
-          "amount": null,
-          "client_secret": "src_client_secret_NORMALIZED00000000000001",
+          "amount_received": 36830,
+          "application": null,
+          "application_fee_amount": null,
+          "automatic_payment_methods": null,
+          "canceled_at": null,
+          "cancellation_reason": null,
+          "capture_method": "automatic",
+          "charges": {
+            "data": [
+              {
+                "amount": 36830,
+                "amount_captured": 36830,
+                "amount_refunded": 0,
+                "application": null,
+                "application_fee": null,
+                "application_fee_amount": null,
+                "balance_transaction": "txn_NORMALIZED00000000000001",
+                "billing_details": {
+                  "address": {
+                    "city": "San Francisco",
+                    "country": "US",
+                    "line1": "123 Main St",
+                    "line2": null,
+                    "postal_code": "94105",
+                    "state": "CA"
+                  },
+                  "email": null,
+                  "name": "John Doe",
+                  "phone": null
+                },
+                "calculated_statement_descriptor": "ZULIP CLOUD STANDARD",
+                "captured": true,
+                "created": 1000000000,
+                "currency": "usd",
+                "customer": "cus_NORMALIZED0002",
+                "description": "Payment for Invoice",
+                "destination": null,
+                "dispute": null,
+                "disputed": false,
+                "failure_balance_transaction": null,
+                "failure_code": null,
+                "failure_message": null,
+                "fraud_details": {},
+                "id": "ch_NORMALIZED00000000000001",
+                "invoice": "in_NORMALIZED00000000000001",
+                "livemode": false,
+                "metadata": {},
+                "object": "charge",
+                "on_behalf_of": null,
+                "order": null,
+                "outcome": {
+                  "network_status": "approved_by_network",
+                  "reason": null,
+                  "risk_level": "normal",
+                  "risk_score": 0,
+                  "seller_message": "Payment complete.",
+                  "type": "authorized"
+                },
+                "paid": true,
+                "payment_intent": "pi_NORMALIZED00000000000001",
+                "payment_method": "pm_1PCyRtDEQaroqDjsVzra0tEA",
+                "payment_method_details": {
+                  "card": {
+                    "amount_authorized": 36830,
+                    "brand": "visa",
+                    "checks": {
+                      "address_line1_check": "pass",
+                      "address_postal_code_check": "pass",
+                      "cvc_check": null
+                    },
+                    "country": "US",
+                    "exp_month": 5,
+                    "exp_year": 2025,
+                    "extended_authorization": {
+                      "status": "disabled"
+                    },
+                    "fingerprint": "NORMALIZED000001",
+                    "funding": "credit",
+                    "incremental_authorization": {
+                      "status": "unavailable"
+                    },
+                    "installments": null,
+                    "last4": "4242",
+                    "mandate": null,
+                    "multicapture": {
+                      "status": "unavailable"
+                    },
+                    "network": "visa",
+                    "network_token": {
+                      "used": false
+                    },
+                    "overcapture": {
+                      "maximum_amount_capturable": 36830,
+                      "status": "unavailable"
+                    },
+                    "three_d_secure": null,
+                    "wallet": null
+                  },
+                  "type": "card"
+                },
+                "radar_options": {},
+                "receipt_email": "hamlet@zulip.com",
+                "receipt_number": null,
+                "receipt_url": "https://pay.stripe.com/receipts/invoices/CAcaFwoVYWNjdF8xN3ZUa3dERVFhcm9xRGpzKJPq3LEGMgYKw74qPxo6LBb52gH-A1Eghnjk7MesmIfS5IDUuGkMFo7E2orWQHYMU7XM_u49icNtF8g-?s=ap",
+                "refunded": false,
+                "refunds": {
+                  "data": [],
+                  "has_more": false,
+                  "object": "list",
+                  "total_count": 0,
+                  "url": "/v1/charges/ch_NORMALIZED00000000000001/refunds"
+                },
+                "review": null,
+                "shipping": null,
+                "source": null,
+                "source_transfer": null,
+                "statement_descriptor": "Zulip Cloud Standard",
+                "statement_descriptor_suffix": null,
+                "status": "succeeded",
+                "transfer_data": null,
+                "transfer_group": null
+              }
+            ],
+            "has_more": false,
+            "object": "list",
+            "total_count": 1,
+            "url": "/v1/charges?payment_intent=pi_NORMALIZED00000000000001"
+          },
+          "client_secret": "pi_NORMALIZED00000000000001_secret_qqSq4MAW8L5rmm0Dpid3ob02K",
+          "confirmation_method": "automatic",
           "created": 1000000000,
           "currency": "usd",
           "customer": "cus_NORMALIZED0002",
-          "flow": "receiver",
-          "id": "src_NORMALIZED00000000000001",
+          "description": "Payment for Invoice",
+          "id": "pi_NORMALIZED00000000000001",
+          "invoice": "in_NORMALIZED00000000000001",
+          "last_payment_error": null,
+          "latest_charge": "ch_NORMALIZED00000000000001",
           "livemode": false,
           "metadata": {},
-          "object": "source",
-          "owner": {
-            "address": null,
-            "email": "amount_0@stripe.com",
-            "name": null,
-            "phone": null,
-            "verified_address": null,
-            "verified_email": null,
-            "verified_name": null,
-            "verified_phone": null
+          "next_action": null,
+          "object": "payment_intent",
+          "on_behalf_of": null,
+          "payment_method": "pm_1PCyRtDEQaroqDjsVzra0tEA",
+          "payment_method_configuration_details": null,
+          "payment_method_options": {
+            "card": {
+              "installments": null,
+              "mandate_options": null,
+              "network": null,
+              "request_three_d_secure": "automatic"
+            },
+            "cashapp": {}
           },
-          "receiver": {
-            "address": "000000000-test_NORMALIZED01",
-            "amount_charged": 0,
-            "amount_received": 0,
-            "amount_returned": 0,
-            "refund_attributes_method": "email",
-            "refund_attributes_status": "missing"
-          },
-          "statement_descriptor": null,
-          "status": "pending",
-          "type": "ach_credit_transfer",
-          "usage": "reusable"
+          "payment_method_types": [
+            "card",
+            "cashapp"
+          ],
+          "processing": null,
+          "receipt_email": "hamlet@zulip.com",
+          "review": null,
+          "setup_future_usage": null,
+          "shipping": null,
+          "source": null,
+          "statement_descriptor": "Zulip Cloud Standard",
+          "statement_descriptor_suffix": null,
+          "status": "succeeded",
+          "transfer_data": null,
+          "transfer_group": null
         }
       },
-      "id": "evt_1P41lrDEQaroqDjs30aUV3z6",
+      "id": "evt_3PCyS8DEQaroqDjs1uxIBYby",
       "livemode": false,
       "object": "event",
       "pending_webhooks": 2,
       "request": {
         "id": null,
-        "idempotency_key": "9356275b-4c74-43ce-a161-94e02eca8a19"
+        "idempotency_key": "in_NORMALIZED00000000000001-initial_attempt-6fdf70616ea296c2c"
       },
-      "type": "customer.source.created"
+      "type": "payment_intent.succeeded"
     }
   ],
   "has_more": true,

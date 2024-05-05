@@ -1,5 +1,116 @@
 {
-  "data": [],
+  "data": [
+    {
+      "api_version": "2020-08-27",
+      "created": 1000000000,
+      "data": {
+        "object": {
+          "ach_credit_transfer": {
+            "account_number": "test_NORMALIZED01",
+            "bank_name": "TEST BANK",
+            "fingerprint": "NORMALIZED000002",
+            "refund_account_holder_name": null,
+            "refund_account_holder_type": null,
+            "refund_routing_number": null,
+            "routing_number": "110000000",
+            "swift_code": "TSTEZ122"
+          },
+          "amount": null,
+          "client_secret": "src_client_secret_NORMALIZED00000000000001",
+          "created": 1000000000,
+          "currency": "usd",
+          "customer": "cus_NORMALIZED0003",
+          "flow": "receiver",
+          "id": "src_NORMALIZED00000000000001",
+          "livemode": false,
+          "metadata": {},
+          "object": "source",
+          "owner": {
+            "address": null,
+            "email": "amount_0@stripe.com",
+            "name": null,
+            "phone": null,
+            "verified_address": null,
+            "verified_email": null,
+            "verified_name": null,
+            "verified_phone": null
+          },
+          "receiver": {
+            "address": "000000000-test_NORMALIZED01",
+            "amount_charged": 0,
+            "amount_received": 0,
+            "amount_returned": 0,
+            "refund_attributes_method": "email",
+            "refund_attributes_status": "missing"
+          },
+          "statement_descriptor": null,
+          "status": "pending",
+          "type": "ach_credit_transfer",
+          "usage": "reusable"
+        }
+      },
+      "id": "evt_1PCzTlDEQaroqDjsAmURD7kV",
+      "livemode": false,
+      "object": "event",
+      "pending_webhooks": 0,
+      "request": {
+        "id": null,
+        "idempotency_key": "7c399dff-8de3-4664-84e2-a0af8311ed76"
+      },
+      "type": "customer.source.created"
+    },
+    {
+      "api_version": "2020-08-27",
+      "created": 1000000000,
+      "data": {
+        "object": {
+          "address": null,
+          "balance": 0,
+          "created": 1000000000,
+          "currency": "usd",
+          "default_currency": "usd",
+          "default_source": "src_NORMALIZED00000000000001",
+          "delinquent": false,
+          "description": "test-realm-8 (test-realm-8)",
+          "discount": null,
+          "email": "user-0-test-realm-8@zulip.com",
+          "id": "cus_NORMALIZED0003",
+          "invoice_prefix": "NORMA02",
+          "invoice_settings": {
+            "custom_fields": null,
+            "default_payment_method": null,
+            "footer": null,
+            "rendering_options": null
+          },
+          "livemode": false,
+          "metadata": {
+            "realm_id": "1",
+            "realm_str": "test-realm-8"
+          },
+          "name": null,
+          "next_invoice_sequence": 3,
+          "object": "customer",
+          "phone": null,
+          "preferred_locales": [],
+          "shipping": null,
+          "tax_exempt": "none",
+          "test_clock": null
+        },
+        "previous_attributes": {
+          "default_source": null
+        }
+      },
+      "id": "evt_1PCzTlDEQaroqDjsmalJ998t",
+      "livemode": false,
+      "object": "event",
+      "pending_webhooks": 0,
+      "request": {
+        "id": null,
+        "idempotency_key": "7c399dff-8de3-4664-84e2-a0af8311ed76"
+      },
+      "type": "customer.updated"
+    }
+  ],
   "has_more": false,
   "object": "list",
   "url": "/v1/events"

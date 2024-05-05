@@ -1,6 +1,5 @@
 from dataclasses import dataclass
 from datetime import datetime, timedelta
-from decimal import Decimal
 from typing import Optional, TypedDict, Union
 from urllib.parse import urlencode, urljoin, urlunsplit
 
@@ -16,6 +15,7 @@ from corporate.lib.stripe import (
     RemoteRealmBillingSession,
     RemoteServerBillingSession,
     get_configured_fixed_price_plan_offer,
+    get_price_per_license,
     get_push_status_for_remote_request,
     start_of_next_billing_cycle,
 )
@@ -58,7 +58,10 @@ class SponsorshipRequestDict(TypedDict):
 @dataclass
 class SponsorshipData:
     sponsorship_pending: bool = False
-    default_discount: Optional[Decimal] = None
+    monthly_discounted_price: Optional[int] = None
+    annual_discounted_price: Optional[int] = None
+    original_monthly_plan_price: Optional[int] = None
+    original_annual_plan_price: Optional[int] = None
     minimum_licenses: Optional[int] = None
     required_plan_tier: Optional[int] = None
     latest_sponsorship_request: Optional[SponsorshipRequestDict] = None
@@ -122,10 +125,24 @@ def get_realm_support_url(realm: Realm) -> str:
 
 def get_customer_sponsorship_data(customer: Customer) -> SponsorshipData:
     pending = customer.sponsorship_pending
-    discount = customer.default_discount
     licenses = customer.minimum_licenses
     plan_tier = customer.required_plan_tier
     sponsorship_request = None
+    monthly_discounted_price = None
+    annual_discounted_price = None
+    original_monthly_plan_price = None
+    original_annual_plan_price = None
+    if customer.monthly_discounted_price:
+        monthly_discounted_price = customer.monthly_discounted_price
+    if customer.annual_discounted_price:
+        annual_discounted_price = customer.annual_discounted_price
+    if plan_tier is not None:
+        original_monthly_plan_price = get_price_per_license(
+            plan_tier, CustomerPlan.BILLING_SCHEDULE_MONTHLY
+        )
+        original_annual_plan_price = get_price_per_license(
+            plan_tier, CustomerPlan.BILLING_SCHEDULE_ANNUAL
+        )
     if pending:
         last_sponsorship_request = (
             ZulipSponsorshipRequest.objects.filter(customer=customer).order_by("id").last()
@@ -151,7 +168,10 @@ def get_customer_sponsorship_data(customer: Customer) -> SponsorshipData:
 
     return SponsorshipData(
         sponsorship_pending=pending,
-        default_discount=discount,
+        monthly_discounted_price=monthly_discounted_price,
+        annual_discounted_price=annual_discounted_price,
+        original_monthly_plan_price=original_monthly_plan_price,
+        original_annual_plan_price=original_annual_plan_price,
         minimum_licenses=licenses,
         required_plan_tier=plan_tier,
         latest_sponsorship_request=sponsorship_request,

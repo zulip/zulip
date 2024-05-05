@@ -5,52 +5,56 @@
       "created": 1000000000,
       "data": {
         "object": {
-          "application": null,
-          "automatic_payment_methods": null,
-          "cancellation_reason": null,
-          "client_secret": "seti_1P41k7DEQaroqDjs9mRnXfi1_secret_PtpOH4M1wMAQWzYZwUX3qdmKERxaaFx",
+          "address": null,
+          "balance": 0,
           "created": 1000000000,
-          "customer": "cus_NORMALIZED0005",
-          "description": null,
-          "flow_directions": null,
-          "id": "seti_1P41k7DEQaroqDjs9mRnXfi1",
-          "last_setup_error": null,
-          "latest_attempt": "setatt_1P41k7DEQaroqDjsduvRWVod",
-          "livemode": false,
-          "mandate": null,
-          "metadata": {},
-          "next_action": null,
-          "object": "setup_intent",
-          "on_behalf_of": null,
-          "payment_method": "pm_1P41k7DEQaroqDjskbayF3WS",
-          "payment_method_configuration_details": null,
-          "payment_method_options": {
-            "card": {
-              "mandate_options": null,
-              "network": null,
-              "request_three_d_secure": "automatic"
-            }
+          "currency": null,
+          "default_currency": null,
+          "default_source": null,
+          "delinquent": false,
+          "description": "zulip (Zulip Dev)",
+          "discount": null,
+          "email": "hamlet@zulip.com",
+          "id": "cus_NORMALIZED0002",
+          "invoice_prefix": "NORMA02",
+          "invoice_settings": {
+            "custom_fields": null,
+            "default_payment_method": "pm_1PCzSvDEQaroqDjs0bYNHlWJ",
+            "footer": null,
+            "rendering_options": null
           },
-          "payment_method_types": [
-            "card"
-          ],
-          "single_use_mandate": null,
-          "status": "succeeded",
-          "usage": "off_session"
+          "livemode": false,
+          "metadata": {
+            "realm_id": "1",
+            "realm_str": "zulip"
+          },
+          "name": null,
+          "next_invoice_sequence": 1,
+          "object": "customer",
+          "phone": null,
+          "preferred_locales": [],
+          "shipping": null,
+          "tax_exempt": "none",
+          "test_clock": null
+        },
+        "previous_attributes": {
+          "invoice_settings": {
+            "default_payment_method": "pm_1PCzSrDEQaroqDjsYiHh73t3"
+          }
         }
       },
-      "id": "evt_1P41k8DEQaroqDjsnZKGMiIG",
+      "id": "evt_1PCzSxDEQaroqDjsdEnNKyZ9",
       "livemode": false,
       "object": "event",
       "pending_webhooks": 0,
       "request": {
         "id": "req_NORMALIZED0039",
-        "idempotency_key": "b08bc8c2-5c70-40c0-a784-a5a290e0b216"
+        "idempotency_key": "6e04871f-72cf-49f7-a1c9-fbcae6167b4b"
       },
-      "type": "setup_intent.succeeded"
+      "type": "customer.updated"
     }
   ],
-  "has_more": true,
+  "has_more": false,
   "object": "list",
   "url": "/v1/events"
 }

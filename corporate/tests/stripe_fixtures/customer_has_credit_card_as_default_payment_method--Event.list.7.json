@@ -5,62 +5,77 @@
       "created": 1000000000,
       "data": {
         "object": {
-          "amount": 8050,
+          "amount": 10000,
+          "amount_capturable": 0,
+          "amount_details": {
+            "tip": {}
+          },
+          "amount_received": 0,
+          "application": null,
+          "application_fee_amount": null,
+          "automatic_payment_methods": null,
+          "canceled_at": null,
+          "cancellation_reason": null,
+          "capture_method": "automatic",
+          "charges": {
+            "data": [],
+            "has_more": false,
+            "object": "list",
+            "total_count": 0,
+            "url": "/v1/charges?payment_intent=pi_NORMALIZED00000000000005"
+          },
+          "client_secret": "pi_NORMALIZED00000000000005_secret_NUVwWd09LEmpGrowuz5RVe6RC",
+          "confirmation_method": "automatic",
+          "created": 1000000000,
           "currency": "usd",
-          "customer": "cus_NORMALIZED0004",
-          "date": 1000000000,
-          "description": "Zulip Basic - renewal",
-          "discountable": false,
-          "discounts": [],
-          "id": "ii_NORMALIZED00000000000007",
-          "invoice": null,
+          "customer": "cus_NORMALIZED0005",
+          "description": "Payment for Invoice",
+          "id": "pi_NORMALIZED00000000000005",
+          "invoice": "in_NORMALIZED00000000000005",
+          "last_payment_error": null,
+          "latest_charge": null,
           "livemode": false,
           "metadata": {},
-          "object": "invoiceitem",
-          "period": {
-            "end": 1330657445,
-            "start": 1328151845
+          "next_action": null,
+          "object": "payment_intent",
+          "on_behalf_of": null,
+          "payment_method": null,
+          "payment_method_configuration_details": null,
+          "payment_method_options": {
+            "card": {
+              "installments": null,
+              "mandate_options": null,
+              "network": null,
+              "request_three_d_secure": "automatic"
+            },
+            "cashapp": {}
           },
-          "plan": null,
-          "price": {
-            "active": false,
-            "billing_scheme": "per_unit",
-            "created": 1000000000,
-            "currency": "usd",
-            "custom_unit_amount": null,
-            "id": "price_NORMALIZED00000000000006",
-            "livemode": false,
-            "lookup_key": null,
-            "metadata": {},
-            "nickname": null,
-            "object": "price",
-            "product": "prod_NORMALIZED0006",
-            "recurring": null,
-            "tax_behavior": "unspecified",
-            "tiers_mode": null,
-            "transform_quantity": null,
-            "type": "one_time",
-            "unit_amount": 350,
-            "unit_amount_decimal": "350"
-          },
-          "proration": false,
-          "quantity": 23,
-          "subscription": null,
-          "tax_rates": [],
-          "test_clock": null,
-          "unit_amount": 350,
-          "unit_amount_decimal": "350"
+          "payment_method_types": [
+            "card",
+            "cashapp"
+          ],
+          "processing": null,
+          "receipt_email": "hamlet@zulip.com",
+          "review": null,
+          "setup_future_usage": null,
+          "shipping": null,
+          "source": null,
+          "statement_descriptor": "Zulip Basic",
+          "statement_descriptor_suffix": null,
+          "status": "requires_payment_method",
+          "transfer_data": null,
+          "transfer_group": null
         }
       },
-      "id": "evt_1P41kNDEQaroqDjsu45aZHLO",
+      "id": "evt_3PCzTIDEQaroqDjs1AUVHVpP",
       "livemode": false,
       "object": "event",
       "pending_webhooks": 0,
       "request": {
-        "id": "req_NORMALIZED0019",
-        "idempotency_key": "1a00e08a-e247-4983-a71a-e16459b63b37"
+        "id": "req_NORMALIZED0022",
+        "idempotency_key": "89ce983b-888b-4230-a947-c94ea2126ed0"
       },
-      "type": "invoiceitem.created"
+      "type": "payment_intent.created"
     }
   ],
   "has_more": false,

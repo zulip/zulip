@@ -41,9 +41,9 @@
   "ending_balance": 0,
   "footer": null,
   "from_invoice": null,
-  "hosted_invoice_url": "https://invoice.stripe.com/i/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QdHBTUHA0N056a21wTjlLNEJNVWRCWkR3QUw3bFdJLDEwMzI5ODg0MA0200ozKyjLZX?s=ap",
+  "hosted_invoice_url": "https://invoice.stripe.com/i/acct_NORMALIZED000001/test_NORMALIZED02a3dERVFhcm9xRGpzLF9RMzVpR0ZrcHRvOTdwdnE1TGI2QllWcnJHTWN3UUhrLDEwNTQzNTAyMw02004GbnfguS?s=ap",
   "id": "in_NORMALIZED00000000000001",
-  "invoice_pdf": "https://pay.stripe.com/invoice/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QdHBTUHA0N056a21wTjlLNEJNVWRCWkR3QUw3bFdJLDEwMzI5ODg0MA0200ozKyjLZX/pdf?s=ap",
+  "invoice_pdf": "https://pay.stripe.com/invoice/acct_NORMALIZED000001/test_NORMALIZED02a3dERVFhcm9xRGpzLF9RMzVpR0ZrcHRvOTdwdnE1TGI2QllWcnJHTWN3UUhrLDEwNTQzNTAyMw02004GbnfguS/pdf?s=ap",
   "issuer": {
     "type": "self"
   },
@@ -111,6 +111,7 @@
   "livemode": false,
   "metadata": {
     "billing_schedule": "1",
+    "current_plan_id": "None",
     "license_management": "manual",
     "licenses": "100",
     "on_free_trial": "False",

@@ -1,0 +1,84 @@
+{
+  "data": [
+    {
+      "api_version": "2020-08-27",
+      "created": 1000000000,
+      "data": {
+        "object": {
+          "amount": 10000,
+          "amount_capturable": 0,
+          "amount_details": {
+            "tip": {}
+          },
+          "amount_received": 0,
+          "application": null,
+          "application_fee_amount": null,
+          "automatic_payment_methods": null,
+          "canceled_at": null,
+          "cancellation_reason": null,
+          "capture_method": "automatic",
+          "charges": {
+            "data": [],
+            "has_more": false,
+            "object": "list",
+            "total_count": 0,
+            "url": "/v1/charges?payment_intent=pi_NORMALIZED00000000000004"
+          },
+          "client_secret": "pi_NORMALIZED00000000000004_secret_NUVwWd09LEmpGrowuz5RVe6RC",
+          "confirmation_method": "automatic",
+          "created": 1000000000,
+          "currency": "usd",
+          "customer": "cus_NORMALIZED0002",
+          "description": "Payment for Invoice",
+          "id": "pi_NORMALIZED00000000000004",
+          "invoice": "in_NORMALIZED00000000000004",
+          "last_payment_error": null,
+          "latest_charge": null,
+          "livemode": false,
+          "metadata": {},
+          "next_action": null,
+          "object": "payment_intent",
+          "on_behalf_of": null,
+          "payment_method": null,
+          "payment_method_configuration_details": null,
+          "payment_method_options": {
+            "card": {
+              "installments": null,
+              "mandate_options": null,
+              "network": null,
+              "request_three_d_secure": "automatic"
+            },
+            "cashapp": {}
+          },
+          "payment_method_types": [
+            "card",
+            "cashapp"
+          ],
+          "processing": null,
+          "receipt_email": "hamlet@zulip.com",
+          "review": null,
+          "setup_future_usage": null,
+          "shipping": null,
+          "source": null,
+          "statement_descriptor": "Zulip Basic",
+          "statement_descriptor_suffix": null,
+          "status": "requires_payment_method",
+          "transfer_data": null,
+          "transfer_group": null
+        }
+      },
+      "id": "evt_3PCzTIDEQaroqDjs1AUVHVpP",
+      "livemode": false,
+      "object": "event",
+      "pending_webhooks": 2,
+      "request": {
+        "id": "req_NORMALIZED0021",
+        "idempotency_key": "89ce983b-888b-4230-a947-c94ea2126ed0"
+      },
+      "type": "payment_intent.created"
+    }
+  ],
+  "has_more": false,
+  "object": "list",
+  "url": "/v1/events"
+}

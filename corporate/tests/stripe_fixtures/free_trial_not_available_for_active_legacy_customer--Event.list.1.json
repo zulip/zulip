@@ -5,59 +5,62 @@
       "created": 1000000000,
       "data": {
         "object": {
-          "ach_credit_transfer": {
-            "account_number": "test_NORMALIZED01",
-            "bank_name": "TEST BANK",
-            "fingerprint": "NORMALIZED000002",
-            "refund_account_holder_name": null,
-            "refund_account_holder_type": null,
-            "refund_routing_number": null,
-            "routing_number": "110000000",
-            "swift_code": "TSTEZ122"
-          },
-          "amount": null,
-          "client_secret": "src_client_secret_NORMALIZED00000000000001",
-          "created": 1000000000,
+          "amount": 17442,
           "currency": "usd",
           "customer": "cus_NORMALIZED0002",
-          "flow": "receiver",
-          "id": "src_NORMALIZED00000000000001",
+          "date": 1000000000,
+          "description": "Additional license (Apr 11, 2012 - Jan 2, 2013)",
+          "discountable": false,
+          "discounts": [],
+          "id": "ii_NORMALIZED00000000000001",
+          "invoice": null,
           "livemode": false,
           "metadata": {},
-          "object": "source",
-          "owner": {
-            "address": null,
-            "email": "amount_0@stripe.com",
-            "name": null,
-            "phone": null,
-            "verified_address": null,
-            "verified_email": null,
-            "verified_name": null,
-            "verified_phone": null
+          "object": "invoiceitem",
+          "period": {
+            "end": 1357095845,
+            "start": 1334113445
           },
-          "receiver": {
-            "address": "000000000-test_NORMALIZED01",
-            "amount_charged": 0,
-            "amount_received": 0,
-            "amount_returned": 0,
-            "refund_attributes_method": "email",
-            "refund_attributes_status": "missing"
+          "plan": null,
+          "price": {
+            "active": false,
+            "billing_scheme": "per_unit",
+            "created": 1000000000,
+            "currency": "usd",
+            "custom_unit_amount": null,
+            "id": "price_NORMALIZED00000000000001",
+            "livemode": false,
+            "lookup_key": null,
+            "metadata": {},
+            "nickname": null,
+            "object": "price",
+            "product": "prod_NORMALIZED0001",
+            "recurring": null,
+            "tax_behavior": "unspecified",
+            "tiers_mode": null,
+            "transform_quantity": null,
+            "type": "one_time",
+            "unit_amount": 5814,
+            "unit_amount_decimal": "5814"
           },
-          "statement_descriptor": null,
-          "status": "pending",
-          "type": "ach_credit_transfer",
-          "usage": "reusable"
+          "proration": false,
+          "quantity": 3,
+          "subscription": null,
+          "tax_rates": [],
+          "test_clock": null,
+          "unit_amount": 5814,
+          "unit_amount_decimal": "5814"
         }
       },
-      "id": "evt_1P41jXDEQaroqDjsowiiDTZm",
+      "id": "evt_1PCzSTDEQaroqDjsZiTs9uPo",
       "livemode": false,
       "object": "event",
       "pending_webhooks": 0,
       "request": {
-        "id": null,
-        "idempotency_key": "e23b4cd2-7f13-426e-9215-7d6c1718a6c2"
+        "id": "req_NORMALIZED0001",
+        "idempotency_key": "5a65e3cb-4318-4a83-af68-addf7e240270"
       },
-      "type": "customer.source.created"
+      "type": "invoiceitem.created"
     }
   ],
   "has_more": true,

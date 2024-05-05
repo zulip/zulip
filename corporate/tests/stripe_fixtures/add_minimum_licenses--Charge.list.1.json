@@ -51,18 +51,18 @@
       },
       "paid": true,
       "payment_intent": "pi_NORMALIZED00000000000001",
-      "payment_method": "pm_1P41jcDEQaroqDjsHNtzJ3O2",
+      "payment_method": "pm_1PCzSZDEQaroqDjsTXX2wqQp",
       "payment_method_details": {
         "card": {
           "amount_authorized": 100000,
           "brand": "visa",
           "checks": {
-            "address_line1_check": null,
-            "address_postal_code_check": null,
+            "address_line1_check": "pass",
+            "address_postal_code_check": "pass",
             "cvc_check": "pass"
           },
           "country": "US",
-          "exp_month": 4,
+          "exp_month": 5,
           "exp_year": 2025,
           "extended_authorization": {
             "status": "disabled"
@@ -94,7 +94,7 @@
       "radar_options": {},
       "receipt_email": "hamlet@zulip.com",
       "receipt_number": null,
-      "receipt_url": "https://pay.stripe.com/receipts/invoices/CAcaFwoVYWNjdF8xN3ZUa3dERVFhcm9xRGpzKJG42rAGMgYvegmfXeQ6LBZrTUhwHfcf2OyvxdQuDXP7L2uWj9KCEMm9elbd83T4POE_hZVHd3tvKeHf?s=ap",
+      "receipt_url": "https://pay.stripe.com/receipts/invoices/CAcaFwoVYWNjdF8xN3ZUa3dERVFhcm9xRGpzKJ3p3LEGMgYgNuyvduY6LBauam21fcXQouVV7NjZ9KrJGkpPFogmGmm3Z3hJSYVxRwSg46WZeOSpp_GX?s=ap",
       "refunded": false,
       "refunds": {
         "data": [],

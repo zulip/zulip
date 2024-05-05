@@ -41,9 +41,9 @@
   "ending_balance": 0,
   "footer": null,
   "from_invoice": null,
-  "hosted_invoice_url": "https://invoice.stripe.com/i/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QdHBOY04wa0lOdDhaWVdra2VDZjg4ZnBrVzYxTzZaLDEwMzI5ODUzOQ0200bq5A7Zti?s=ap",
+  "hosted_invoice_url": "https://invoice.stripe.com/i/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9RMzVkbVhJMnRFUGVSUnEyVDBsbjVEYlQ2SFRyR09JLDEwNTQzNDc0Ng0200dtZfnCiv?s=ap",
   "id": "in_NORMALIZED00000000000002",
-  "invoice_pdf": "https://pay.stripe.com/invoice/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9QdHBOY04wa0lOdDhaWVdra2VDZjg4ZnBrVzYxTzZaLDEwMzI5ODUzOQ0200bq5A7Zti/pdf?s=ap",
+  "invoice_pdf": "https://pay.stripe.com/invoice/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9RMzVkbVhJMnRFUGVSUnEyVDBsbjVEYlQ2SFRyR09JLDEwNTQzNDc0Ng0200dtZfnCiv/pdf?s=ap",
   "issuer": {
     "type": "self"
   },
@@ -76,13 +76,13 @@
           "created": 1000000000,
           "currency": "usd",
           "custom_unit_amount": null,
-          "id": "price_NORMALIZED00000000000001",
+          "id": "price_NORMALIZED00000000000002",
           "livemode": false,
           "lookup_key": null,
           "metadata": {},
           "nickname": null,
           "object": "price",
-          "product": "prod_NORMALIZED0001",
+          "product": "prod_NORMALIZED0002",
           "recurring": null,
           "tax_behavior": "unspecified",
           "tiers_mode": null,
@@ -111,6 +111,7 @@
   "livemode": false,
   "metadata": {
     "billing_schedule": "1",
+    "current_plan_id": "None",
     "license_management": "manual",
     "licenses": "123",
     "on_free_trial": "False",
@@ -166,5 +167,5 @@
   "total_excluding_tax": 984000,
   "total_tax_amounts": [],
   "transfer_data": null,
-  "webhooks_delivered_at": 1000000000
+  "webhooks_delivered_at": null
 }

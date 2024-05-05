@@ -43,13 +43,13 @@
           "discount": null,
           "discounts": [],
           "due_date": null,
-          "effective_at": null,
-          "ending_balance": null,
+          "effective_at": 1000000000,
+          "ending_balance": 0,
           "footer": null,
           "from_invoice": null,
-          "hosted_invoice_url": null,
+          "hosted_invoice_url": "https://invoice.stripe.com/i/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9RMzVldGI1OVd6S3JUaWI3YTZMVzl1U3RKckUxN0xKLDEwNTQzNDgwOQ0200lhhyWrbL?s=ap",
           "id": "in_NORMALIZED00000000000001",
-          "invoice_pdf": null,
+          "invoice_pdf": "https://pay.stripe.com/invoice/acct_NORMALIZED000001/test_NORMALIZED01a3dERVFhcm9xRGpzLF9RMzVldGI1OVd6S3JUaWI3YTZMVzl1U3RKckUxN0xKLDEwNTQzNDgwOQ0200lhhyWrbL/pdf?s=ap",
           "issuer": {
             "type": "self"
           },
@@ -117,12 +117,12 @@
           "livemode": false,
           "metadata": {},
           "next_payment_attempt": 1000000000,
-          "number": null,
+          "number": "NORMALI-0001",
           "object": "invoice",
           "on_behalf_of": null,
           "paid": false,
           "paid_out_of_band": false,
-          "payment_intent": null,
+          "payment_intent": "pi_NORMALIZED00000000000001",
           "payment_settings": {
             "default_mandate": null,
             "payment_method_options": null,
@@ -137,7 +137,7 @@
           "rendering": {
             "amount_tax_display": null,
             "pdf": {
-              "page_size": "auto"
+              "page_size": "letter"
             }
           },
           "rendering_options": null,
@@ -145,9 +145,9 @@
           "shipping_details": null,
           "starting_balance": 0,
           "statement_descriptor": "Zulip Cloud Standard",
-          "status": "draft",
+          "status": "open",
           "status_transitions": {
-            "finalized_at": null,
+            "finalized_at": 1000000000,
             "marked_uncollectible_at": null,
             "paid_at": null,
             "voided_at": null
@@ -168,15 +168,15 @@
           "webhooks_delivered_at": null
         }
       },
-      "id": "evt_1P41kGDEQaroqDjsf0J1kKLJ",
+      "id": "evt_1PCzTBDEQaroqDjsWNqbffIw",
       "livemode": false,
       "object": "event",
-      "pending_webhooks": 2,
+      "pending_webhooks": 0,
       "request": {
         "id": "req_NORMALIZED0001",
-        "idempotency_key": "79777ef7-e74f-40d3-9253-d78a047c9591"
+        "idempotency_key": "422a9596-e077-4166-a09d-60bfa40c12ba"
       },
-      "type": "invoice.created"
+      "type": "invoice.finalized"
     }
   ],
   "has_more": true,
