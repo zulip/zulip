@@ -4,7 +4,7 @@ If you're hosting your WordPress blog yourself (i.e., not on WordPress.com),
 first install the
 [HookPress plugin](https://wordpress.org/plugins/hookpress/) (experimental).
 
-1. {!create-stream.md!}
+1. {!create-channel.md!}
 
 1. {!create-an-incoming-webhook.md!}
 

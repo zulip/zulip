@@ -71,14 +71,14 @@ always create a new macro by adding a new file to that folder.
 
 Here are a few common macros used to document Zulip's integrations:
 
-- `{!create-stream.md!}` macro - Recommends that users create a dedicated
+- `{!create-channel.md!}` macro - Recommends that users create a dedicated
   stream for a given integration. Usually the first step is setting up an
   integration or incoming webhook. For an example rendering, see **Step 1** of
   [the docs for Zulip's GitHub integration][github-integration].
 
 - `{!create-an-incoming-webhook.md!}` macro - Instructs users to create a bot
   for a given integration and select **Incoming webhook** as the **Bot type**.
-  This macro is usually used right after `{!create-stream!}`. For an example
+  This macro is usually used right after `{!create-channel.md!}`. For an example
   rendering, see **Step 2** of [the docs for Zulip's Zendesk integration][zendesk].
 
 - `{!create-a-generic-bot.md!}` macro - Instructs users to create a bot
@@ -87,7 +87,7 @@ Here are a few common macros used to document Zulip's integrations:
 
 - `{!create-an-incoming-webhook.md!}` macro - Instructs users to create a bot
   for a given integration and select **Incoming webhook** as the **Bot type**.
-  This macro is usually used right after `{!create-stream!}`. For an example
+  This macro is usually used right after `{!create-channel.md!}`. For an example
   rendering, see **Step 2** of [the docs for Zulip's GitHub integration][github-integration].
 
   **Note:** If special configuration is

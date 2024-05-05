@@ -5,7 +5,7 @@ Receive Zabbix notifications in Zulip!
     **Note:** This guide is for Zabbix 5.4 and above; some older Zabbix versions have a
     different workflow for creating an outgoing webhook.
 
-1. {!create-stream.md!}
+1. {!create-channel.md!}
 
 1. {!create-an-incoming-webhook.md!}
 

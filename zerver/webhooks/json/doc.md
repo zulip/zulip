@@ -3,7 +3,7 @@ particularly useful when you want to capture a webhook payload as part
 of [writing an incoming webhook
 integration](/api/incoming-webhooks-overview).
 
-1. {!create-stream.md!}
+1. {!create-channel.md!}
 
 1. {!create-an-incoming-webhook.md!}
 

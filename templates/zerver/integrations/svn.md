@@ -1,7 +1,7 @@
 It is easy to send Zulips on SVN commits, by configuring a
 post-commit hook. To do this:
 
-1. {!create-stream.md!}
+1. {!create-channel.md!}
 
 1. {!download-python-bindings.md!}
 

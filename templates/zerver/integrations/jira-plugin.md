@@ -3,7 +3,7 @@ Jira provided by Atlassian, we recommend using the
 [web-hook method](./jira) above instead. This plugin supports older
 versions of Jira.*
 
-{!create-stream.md!}
+{!create-channel.md!}
 
 ### Plugin mechanism
 
