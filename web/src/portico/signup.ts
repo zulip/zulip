@@ -1,5 +1,6 @@
 import $ from "jquery";
 import assert from "minimalistic-assert";
+import {z} from "zod";
 
 import * as common from "../common";
 import {$t} from "../i18n";
@@ -194,8 +195,9 @@ $(() => {
     function check_subdomain_available(subdomain: string): void {
         const url = "/json/realm/subdomain/" + subdomain;
         void $.get(url, (response) => {
-            if (response.msg !== "available") {
-                $("#id_team_subdomain_error_client").html(response.msg);
+            const {msg} = z.object({msg: z.string()}).parse(response);
+            if (msg !== "available") {
+                $("#id_team_subdomain_error_client").html(msg);
                 $("#id_team_subdomain_error_client").show();
             }
         });
