@@ -379,7 +379,7 @@ def integration_doc(request: HttpRequest, integration_name: str = REQ()) -> Http
 
     context["integration_name"] = integration.name
     context["integration_display_name"] = integration.display_name
-    context["recommended_stream_name"] = integration.stream_name
+    context["recommended_channel_name"] = integration.stream_name
     if isinstance(integration, WebhookIntegration):
         context["integration_url"] = integration.url[3:]
         all_event_types = get_all_event_types_for_integration(integration)

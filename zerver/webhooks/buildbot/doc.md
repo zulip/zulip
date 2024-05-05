@@ -15,7 +15,7 @@ Get Zulip notifications for your Buildbot builds!
 
         zs = reporters.ZulipStatusPush('{{ zulip_url }}',
                                        token='api_key',
-                                       stream='{{ recommended_stream_name }}')
+                                       stream='{{ recommended_channel_name }}')
         c['services'].append(zs)
 
     When adding the new reporter, modify the code above such that `api_key`
