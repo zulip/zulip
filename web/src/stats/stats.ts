@@ -1378,11 +1378,13 @@ function get_chart_data(
         data,
         success(data) {
             callback(data);
-            update_last_full_update(data.end_times);
+            const {end_times} = z.object({end_times: z.array(z.number())}).parse(data);
+            update_last_full_update(end_times);
         },
         error(xhr) {
-            if (xhr.responseJSON?.msg) {
-                $("#id_stats_errors").show().text(xhr.responseJSON.msg);
+            const parsed = z.object({msg: z.string()}).safeParse(xhr.responseJSON);
+            if (parsed.success) {
+                $("#id_stats_errors").show().text(parsed.data.msg);
             }
         },
     });
