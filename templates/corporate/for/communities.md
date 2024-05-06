@@ -143,7 +143,7 @@ can help your community succeed too!
 >  night and day. Slack is a no-go for many due to not being FLOSS,
 >  and I’m concerned about vendor lock-in if they were to stop being
 >  so generous. Slack’s threading model is much worse than Zulip’s
->  IMO. The streams/topics flow is an incredibly intuitive way to keep
+>  IMO. The channels/topics flow is an incredibly intuitive way to keep
 >  track of everything that is going on.”
 
 > — RJ Ryan, Mixxx Developer
