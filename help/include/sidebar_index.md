@@ -9,10 +9,9 @@
 ## Getting started
 * [Joining an organization](/help/join-a-zulip-organization)
 * [Set up your account](/help/set-up-your-account)
-* [Channels and topics](/help/channels-and-topics)
+* [Introduction to topics](/help/channels-and-topics)
 * [Finding a conversation to read](/help/finding-a-conversation-to-read)
 * [Reading conversations](/help/reading-conversations)
-* [Starting a new topic](/help/starting-a-new-topic)
 * [Starting a new direct message](/help/starting-a-new-direct-message)
 * [Replying to messages](/help/replying-to-messages)
 * [Messaging tips & tricks](/help/messaging-tips)
@@ -124,8 +123,7 @@
 * [User groups](/help/user-groups)
 * [Find administrators](/help/find-administrators)
 
-## Channels & topics
-* [Channels and topics](/help/channels-and-topics)
+## Channels
 * [Browse and subscribe to channels](/help/browse-and-subscribe-to-channels)
 * [Unsubscribe from a channel](/help/unsubscribe-from-a-channel)
 * [Create a channel](/help/create-a-channel)
@@ -133,13 +131,15 @@
 * [Add or remove users from a channel](/help/add-or-remove-users-from-a-channel)
 * [Pin a channel](/help/pin-a-channel)
 * [Change the color of a channel](/help/change-the-color-of-a-channel)
-* [Start a new topic](/help/starting-a-new-topic)
+* [Move content to another channel](/help/move-content-to-another-channel)
+* [Manage inactive channels](/help/manage-inactive-channels)
+
+## Topics
+* [Introduction to topics](/help/channels-and-topics)
 * [Rename a topic](/help/rename-a-topic)
 * [Resolve a topic](/help/resolve-a-topic)
 * [Move content to another topic](/help/move-content-to-another-topic)
-* [Move content to another channel](/help/move-content-to-another-channel)
 * [Delete a topic](/help/delete-a-topic)
-* [Manage inactive channels](/help/manage-inactive-channels)
 
 ## Notifications
 * [Channel notifications](/help/channel-notifications)
