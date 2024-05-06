@@ -54,7 +54,7 @@ Usually, this involves a few steps:
   screenshot using `manage.py send_webhook_fixture_message`. When generating the
   screenshot of a sample message using this method, give your test bot a nice
   name like "GitHub Bot", use the project's logo as the bot's avatar, and take
-  the screenshot showing the stream/topic bar for the message, not just the
+  the screenshot showing the channel/topic bar for the message, not just the
   message body.
 
 ## Markdown macros
@@ -72,7 +72,7 @@ always create a new macro by adding a new file to that folder.
 Here are a few common macros used to document Zulip's integrations:
 
 - `{!create-channel.md!}` macro - Recommends that users create a dedicated
-  stream for a given integration. Usually the first step is setting up an
+  channel for a given integration. Usually the first step is setting up an
   integration or incoming webhook. For an example rendering, see **Step 1** of
   [the docs for Zulip's GitHub integration][github-integration].
 
@@ -102,9 +102,9 @@ Here are a few common macros used to document Zulip's integrations:
   every incoming webhook by using attributes in the `WebhookIntegration` class
   in [zerver/lib/integrations.py][integrations-file].
 
-- `{!append-channel-name.md!}` macro - Recommends appending `&stream=stream_name`
-  to a URL in cases where supplying a stream name in the URL is optional.
-  Supplying a stream name is optional for most Zulip integrations. If you use
+- `{!append-channel-name.md!}` macro - Recommends appending `&stream=channel_name`
+  to a URL in cases where supplying a channel name in the URL is optional.
+  Supplying a channel name is optional for most Zulip integrations. If you use
   `{!generate-integration-url.md!}`, this macro need not be used.
 
 - `{!append-topic.md!}` macro - Recommends appending `&topic=my_topic` to a URL
@@ -211,9 +211,9 @@ Most doc files should start with a generic sentence about the
 integration, for example, "Get `webhook name` notifications in Zulip!"
 A typical doc will then have the following steps.
 
-##### "Create the stream" step
+##### "Create the channel" step
 
-- Use the `create-stream` macro. This step should be omitted if the
+- Use the `create-channel` macro. This step should be omitted if the
   integration only supports notifications via direct messages.
 
 ##### "Create the bot" step
