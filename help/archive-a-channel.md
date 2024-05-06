@@ -44,7 +44,7 @@ than archiving them.
 ## Unarchiving archived channels
 
 If you are self-hosting, you can unarchive an archived channel using the
-`unarchive_stream` [management command][management-command]. This will restore
+`unarchive_channel` [management command][management-command]. This will restore
 it as a private channel with shared history, and subscribe all organization
 owners to it. If you are using Zulip Cloud, you can [contact us](/help/contact-support)
 for help.
