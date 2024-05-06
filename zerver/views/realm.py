@@ -463,7 +463,7 @@ def update_realm(
             raise JsonableError(str(err.message))
 
         do_change_realm_subdomain(realm, string_id, acting_user=user_profile)
-        data["realm_uri"] = realm.uri
+        data["realm_uri"] = realm.url
 
     if org_type is not None:
         do_change_realm_org_type(realm, org_type, acting_user=user_profile)

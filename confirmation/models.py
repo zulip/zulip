@@ -201,7 +201,7 @@ def confirmation_url(
     url_args = dict(url_args)
     url_args["confirmation_key"] = confirmation_key
     return urljoin(
-        settings.ROOT_DOMAIN_URI if realm is None else realm.uri,
+        settings.ROOT_DOMAIN_URI if realm is None else realm.url,
         reverse(_properties[confirmation_type].url_name, kwargs=url_args),
     )
 

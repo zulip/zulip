@@ -1,7 +1,7 @@
 <div class="realm-support-information">
     <span class="cloud-label">Cloud realm</span>
     <h3><img src="{{ realm_icon_url(realm) }}" class="support-realm-icon" /> {{ realm.name }}</h3>
-    <b>URL</b>: <a target="_blank" rel="noopener noreferrer" href="{{ realm.uri }}">{{ realm.uri }}</a> |
+    <b>URL</b>: <a target="_blank" rel="noopener noreferrer" href="{{ realm.url }}">{{ realm.url }}</a> |
     <a target="_blank" rel="noopener noreferrer" href="/stats/realm/{{ realm.string_id }}/">stats</a> |
     <a target="_blank" rel="noopener noreferrer" href="/realm_activity/{{ realm.string_id }}/">activity</a><br />
     <b>Date created</b>: {{ realm.date_created|timesince }} ago<br />

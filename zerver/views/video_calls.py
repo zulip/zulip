@@ -109,7 +109,7 @@ def complete_zoom_user(
     ),
 ) -> HttpResponse:
     if get_subdomain(request) != state["realm"]:
-        return redirect(urljoin(get_realm(state["realm"]).uri, request.get_full_path()))
+        return redirect(urljoin(get_realm(state["realm"]).url, request.get_full_path()))
     return complete_zoom_user_in_realm(request)
 
 

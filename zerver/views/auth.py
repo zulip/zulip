@@ -394,7 +394,7 @@ def login_or_register_remote_user(request: HttpRequest, result: ExternalAuthResu
         if is_free_trial_offer_enabled(False):
             redirect_to = reverse("upgrade_page")
 
-    redirect_to = get_safe_redirect_to(redirect_to, user_profile.realm.uri)
+    redirect_to = get_safe_redirect_to(redirect_to, user_profile.realm.url)
     return HttpResponseRedirect(redirect_to)
 
 
@@ -460,7 +460,7 @@ def finish_mobile_flow(request: HttpRequest, user_profile: UserProfile, otp: str
 def create_response_for_otp_flow(
     key: str, otp: str, user_profile: UserProfile, encrypted_key_field_name: str
 ) -> HttpResponse:
-    realm_uri = user_profile.realm.uri
+    realm_uri = user_profile.realm.url
 
     # Check if the mobile URI is overridden in settings, if so, replace it
     # This block should only apply to the mobile flow, so we if add others, this
@@ -747,7 +747,7 @@ def log_into_subdomain(request: HttpRequest, token: str) -> HttpResponse:
 def redirect_and_log_into_subdomain(result: ExternalAuthResult) -> HttpResponse:
     token = result.store_data()
     realm = get_realm(result.data_dict["subdomain"])
-    subdomain_login_uri = realm.uri + reverse(log_into_subdomain, args=[token])
+    subdomain_login_uri = realm.url + reverse(log_into_subdomain, args=[token])
     return redirect(subdomain_login_uri)
 
 
@@ -809,7 +809,7 @@ class TwoFactorLoginView(BaseTwoFactorLoginView):
         update_login_page_context(self.request, context)
 
         realm = get_realm_from_request(self.request)
-        redirect_to = realm.uri if realm else "/"
+        redirect_to = realm.url if realm else "/"
         context["next"] = self.request.POST.get(
             "next",
             self.request.GET.get("next", redirect_to),
@@ -821,9 +821,9 @@ class TwoFactorLoginView(BaseTwoFactorLoginView):
         Log in the user and redirect to the desired page.
 
         We need to override this function so that we can redirect to
-        realm.uri instead of '/'.
+        realm.url instead of '/'.
         """
-        realm_uri = self.get_user().realm.uri
+        realm_uri = self.get_user().realm.url
         # This mock.patch business is an unpleasant hack that we'd
         # ideally like to remove by instead patching the upstream
         # module to support better configurability of the
@@ -852,10 +852,10 @@ def login_page(
     is_preview = "preview" in request.GET
     if settings.TWO_FACTOR_AUTHENTICATION_ENABLED:
         if request.user.is_authenticated and is_2fa_verified(request.user):
-            redirect_to = get_safe_redirect_to(next, request.user.realm.uri)
+            redirect_to = get_safe_redirect_to(next, request.user.realm.url)
             return HttpResponseRedirect(redirect_to)
     elif request.user.is_authenticated and not is_preview:
-        redirect_to = get_safe_redirect_to(next, request.user.realm.uri)
+        redirect_to = get_safe_redirect_to(next, request.user.realm.url)
         return HttpResponseRedirect(redirect_to)
     if is_subdomain_root_or_alias(request) and settings.ROOT_DOMAIN_LANDING_PAGE:
         redirect_url = reverse("realm_redirect")
@@ -882,7 +882,7 @@ def login_page(
         if realm and "new_realm" in request.POST:
             # If we're switching realms, redirect to that realm, but
             # only if it actually exists.
-            return HttpResponseRedirect(realm.uri)
+            return HttpResponseRedirect(realm.url)
 
     if "username" in request.POST:
         extra_context["email"] = request.POST["username"]
@@ -917,7 +917,7 @@ def social_auth_subdomain_login_page(request: HttpRequest) -> HttpResponse:
     if origin_subdomain is not None:
         try:
             origin_realm = get_realm(origin_subdomain)
-            return HttpResponseRedirect(origin_realm.uri)
+            return HttpResponseRedirect(origin_realm.url)
         except Realm.DoesNotExist:
             pass
 

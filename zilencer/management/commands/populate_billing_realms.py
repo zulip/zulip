@@ -578,5 +578,5 @@ def populate_remote_realms(customer_profile: CustomerProfile) -> Dict[str, str]:
 
     return {
         "unique_id": customer_profile.unique_id,
-        "login_url": local_realm.uri + "/self-hosted-billing/",
+        "login_url": local_realm.url + "/self-hosted-billing/",
     }

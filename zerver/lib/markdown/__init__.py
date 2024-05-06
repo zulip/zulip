@@ -2655,7 +2655,7 @@ def do_convert(
             realm_alert_words_automaton=realm_alert_words_automaton,
             mention_data=mention_data,
             active_realm_emoji=active_realm_emoji,
-            realm_uri=message_realm.uri,
+            realm_uri=message_realm.url,
             sent_by_bot=sent_by_bot,
             stream_names=stream_name_info,
             translate_emoticons=translate_emoticons,

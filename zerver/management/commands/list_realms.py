@@ -39,12 +39,12 @@ Usage examples:
                 if realm.deactivated:
                     print(
                         self.style.ERROR(
-                            outer_format.format(realm.id, display_string_id, realm.name, realm.uri)
+                            outer_format.format(realm.id, display_string_id, realm.name, realm.url)
                         )
                     )
                     deactivated = True
                 else:
-                    print(outer_format.format(realm.id, display_string_id, realm.name, realm.uri))
+                    print(outer_format.format(realm.id, display_string_id, realm.name, realm.url))
             if deactivated:
                 print(self.style.WARNING("\nRed rows represent deactivated realms."))
             sys.exit(0)

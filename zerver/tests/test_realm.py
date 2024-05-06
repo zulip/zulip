@@ -322,7 +322,7 @@ class RealmTest(ZulipTestCase):
 
         placeholder_realm = get_realm("zulip")
         self.assertTrue(placeholder_realm.deactivated)
-        self.assertEqual(placeholder_realm.deactivated_redirect, user.realm.uri)
+        self.assertEqual(placeholder_realm.deactivated_redirect, user.realm.url)
 
         realm_audit_log = RealmAuditLog.objects.filter(
             event_type=RealmAuditLog.REALM_SUBDOMAIN_CHANGED, acting_user=iago

@@ -795,7 +795,7 @@ class LoginTest(ZulipTestCase):
         realm = user_profile.realm
         self.assertTrue(email_auth_enabled(realm))
 
-        url = f"{realm.uri}/login/?" + urlencode({"is_deactivated": user_profile.delivery_email})
+        url = f"{realm.url}/login/?" + urlencode({"is_deactivated": user_profile.delivery_email})
         result = self.client_get(url)
         self.assertEqual(result.status_code, 200)
         self.assert_in_response(
@@ -2143,7 +2143,7 @@ class UserSignUpTest(ZulipTestCase):
 
         # Verify that we were served a redirect to the app.
         self.assertEqual(result.status_code, 302)
-        self.assertEqual(result["Location"], f"{realm.uri}/")
+        self.assertEqual(result["Location"], f"{realm.url}/")
 
         # Verify that we successfully logged in.
         user_profile = get_user_by_delivery_email(email, realm)
@@ -4208,7 +4208,7 @@ class TestLoginPage(ZulipTestCase):
 
         result = self.client_get("/login/", {"next": "/upgrade/"})
         self.assertEqual(result.status_code, 302)
-        self.assertEqual(result["Location"], f"{hamlet.realm.uri}/upgrade/")
+        self.assertEqual(result["Location"], f"{hamlet.realm.url}/upgrade/")
 
     @patch("django.http.HttpRequest.get_host")
     def test_login_page_works_without_subdomains(self, mock_get_host: MagicMock) -> None:
@@ -4250,7 +4250,7 @@ class TestLoginPage(ZulipTestCase):
         session.save()
         result = self.client_get("http://auth.testserver/login/")
         self.assertEqual(result.status_code, 302)
-        self.assertEqual(result["Location"], zulip_realm.uri)
+        self.assertEqual(result["Location"], zulip_realm.url)
 
         session = self.client.session
         session["subdomain"] = "invalid"

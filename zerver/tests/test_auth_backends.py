@@ -1166,7 +1166,7 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase, ABC):
             self.assertEqual(result.status_code, 302)
             self.assertEqual(
                 result["Location"],
-                f"{user_profile.realm.uri}/login/?"
+                f"{user_profile.realm.url}/login/?"
                 + urlencode({"is_deactivated": user_profile.delivery_email}),
             )
         self.assertEqual(
@@ -1215,7 +1215,7 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase, ABC):
             ],
         )
         self.assertEqual(result.status_code, 302)
-        self.assertEqual(result["Location"], realm.uri + "/register/")
+        self.assertEqual(result["Location"], realm.url + "/register/")
 
     def test_user_cannot_log_into_nonexisting_realm(self) -> None:
         account_data_dict = self.get_account_data_dict(email=self.email, name=self.name)
@@ -2842,7 +2842,7 @@ class SAMLAuthBackendTest(SocialAuthBase):
             warn_log.output, [self.logger_output("SAML got invalid email argument.", "warning")]
         )
         self.assertEqual(result.status_code, 302)
-        self.assertEqual(result["Location"], realm.uri + "/register/")
+        self.assertEqual(result["Location"], realm.url + "/register/")
 
     def test_social_auth_saml_multiple_idps_configured(self) -> None:
         # Set up a new SOCIAL_AUTH_SAML_ENABLED_IDPS dict with two idps.
@@ -3984,7 +3984,7 @@ class GitHubAuthBackendTest(SocialAuthBase):
                 account_data_dict, subdomain=subdomain, email_data=email_data
             )
             self.assertEqual(result.status_code, 302)
-            self.assertEqual(result["Location"], realm.uri + "/login/")
+            self.assertEqual(result["Location"], realm.url + "/login/")
         self.assertEqual(
             m.output,
             [
@@ -4006,7 +4006,7 @@ class GitHubAuthBackendTest(SocialAuthBase):
         ), self.assertLogs(self.logger_string, level="INFO") as mock_info:
             result = self.social_auth_test(account_data_dict, subdomain=subdomain)
             self.assertEqual(result.status_code, 302)
-            self.assertEqual(result["Location"], realm.uri + "/login/")
+            self.assertEqual(result["Location"], realm.url + "/login/")
         self.assertEqual(
             mock_info.output,
             [
@@ -4042,7 +4042,7 @@ class GitHubAuthBackendTest(SocialAuthBase):
         ), self.assertLogs(self.logger_string, level="INFO") as mock_info:
             result = self.social_auth_test(account_data_dict, subdomain=subdomain)
             self.assertEqual(result.status_code, 302)
-            self.assertEqual(result["Location"], realm.uri + "/login/")
+            self.assertEqual(result["Location"], realm.url + "/login/")
         self.assertEqual(
             mock_info.output,
             [
@@ -4292,7 +4292,7 @@ class GitHubAuthBackendTest(SocialAuthBase):
                 email_data=email_data,
             )
             self.assertEqual(result.status_code, 302)
-            self.assertEqual(result["Location"], realm.uri + "/login/")
+            self.assertEqual(result["Location"], realm.url + "/login/")
         self.assertEqual(
             m.output,
             [
@@ -4345,7 +4345,7 @@ class GitHubAuthBackendTest(SocialAuthBase):
                 email_data=email_data,
             )
             self.assertEqual(result.status_code, 302)
-            self.assertEqual(result["Location"], realm.uri + "/login/")
+            self.assertEqual(result["Location"], realm.url + "/login/")
         self.assertEqual(
             m.output,
             [
@@ -4377,7 +4377,7 @@ class GitHubAuthBackendTest(SocialAuthBase):
                 email_data=email_data,
             )
             self.assertEqual(result.status_code, 302)
-            self.assertEqual(result["Location"], realm.uri + "/login/")
+            self.assertEqual(result["Location"], realm.url + "/login/")
         self.assertEqual(
             m.output,
             [
@@ -4433,7 +4433,7 @@ class GoogleAuthBackendTest(SocialAuthBase):
         with self.assertLogs(self.logger_string, level="WARNING") as m:
             result = self.social_auth_test(account_data_dict, subdomain=subdomain)
             self.assertEqual(result.status_code, 302)
-            self.assertEqual(result["Location"], realm.uri + "/login/")
+            self.assertEqual(result["Location"], realm.url + "/login/")
         self.assertEqual(
             m.output,
             [
@@ -5341,7 +5341,7 @@ class TestTwoFactor(ZulipTestCase):
             self.assertEqual(result.status_code, 302)
             self.assertEqual(result["Location"], "http://zulip.testserver")
 
-            # Going to login page should redirect to `realm.uri` if user is
+            # Going to login page should redirect to `realm.url` if user is
             # already logged in.
             result = self.client_get("/accounts/login/")
             self.assertEqual(result.status_code, 302)

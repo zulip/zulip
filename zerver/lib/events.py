@@ -309,7 +309,7 @@ def fetch_initial_state_data(
         state["realm_icon_source"] = realm.icon_source
         add_realm_logo_fields(state, realm)
 
-        state["realm_uri"] = realm.uri
+        state["realm_uri"] = realm.url
         state["realm_bot_domain"] = realm.get_bot_domain()
         state["realm_available_video_chat_providers"] = realm.VIDEO_CHAT_PROVIDERS
         state["settings_send_digest_emails"] = settings.SEND_DIGEST_EMAILS
