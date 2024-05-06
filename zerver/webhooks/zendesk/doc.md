@@ -27,7 +27,7 @@
     ![](/static/images/integrations/zendesk/003.png)
 
 1. Now, select **Test Target** and click **Submit**. A test message should
-    appear in the `zendesk` stream. If the message was received, save the
+    appear in the `zendesk` channel. If the message was received, save the
     target by selecting **Create target** and clicking **Submit**.
 
 1. From here, add a new trigger. You'll do this for every action you want

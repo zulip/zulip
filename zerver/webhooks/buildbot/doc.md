@@ -19,7 +19,7 @@ Get Zulip notifications for your Buildbot builds!
         c['services'].append(zs)
 
     When adding the new reporter, modify the code above such that `api_key`
-    is the API key of your Zulip bot, and `stream` is set to the stream name
+    is the API key of your Zulip bot, and `stream` is set to the channel name
     you want the notifications sent to.
 
 [1]: https://docs.buildbot.net/latest/manual/configuration/reporters/zulip_status.html
