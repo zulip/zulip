@@ -27,7 +27,7 @@ problematic behavior.
 ### Restrict permissions for making changes
 
 * Restrict who can [create channels](/help/configure-who-can-create-channels), or
-  monitor new streams by enabling [new stream
+  monitor new channels by enabling [new channel
   announcements](/help/configure-automated-notices#new-channel-announcements).
 * Restrict who can [add custom emoji](/help/custom-emoji#change-who-can-add-custom-emoji).
 * Restrict who can [move messages to another
@@ -73,7 +73,7 @@ organization's policy choices.
   user](/help/view-messages-sent-by-a-user).
 * Delete messages, [archive channels](/help/archive-a-channel), and
   [unsubscribe users from channels](/help/add-or-remove-users-from-a-channel).
-* [Move topics](/help/rename-a-topic), including between streams, when
+* [Move topics](/help/rename-a-topic), including between channels, when
   users start conversations in the wrong place.
 * [Change users' names](/help/change-a-users-name) (e.g., to "Name (Spammer)")
   for users who sent spam direct messages to many community members.

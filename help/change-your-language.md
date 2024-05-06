@@ -4,7 +4,7 @@
 
 ## Change the language of the Zulip app
 
-Note that this will not change stream names, topic names, or the language of
+Note that this will not change channel names, topic names, or the language of
 messages you receive.
 
 {start_tabs}

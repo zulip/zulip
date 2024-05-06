@@ -4,7 +4,7 @@
 
 !!! keyboard_tip ""
 
-    Use <kbd>S</kbd> (go to stream) or <kbd>Shift</kbd> +
+    Use <kbd>S</kbd> (go to channel) or <kbd>Shift</kbd> +
     <kbd>S</kbd> (go to conversation) to zoom in, and <kbd>A</kbd> to
     get back to **Combined feed**.
 

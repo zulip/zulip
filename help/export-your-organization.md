@@ -70,7 +70,7 @@ channel](/help/channel-permissions) messages and [direct
 messages](/help/direct-messages) where *at least one of the recipients* has
 given consent.
 
-Users who do not provide consent will have their settings and stream
+Users who do not provide consent will have their settings and channel
 subscriptions exported, but will have no personalized message history.
 
 {start_tabs}

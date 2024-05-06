@@ -3,7 +3,7 @@
 {!admin-only.md!}
 
 Zulip lets you configure which [roles](/help/roles-and-permissions) can edit
-message topics and move topics between streams. In general, allowing all
+message topics and move topics between channels. In general, allowing all
 organization members to edit message topics is highly recommended because:
 
 - It allows the community to keep conversations organized, even if some members
@@ -15,7 +15,7 @@ You can let users edit topics without a time limit, or prohibit topic editing on
 older messages to avoid potential abuse. The time limit will never apply to
 administrators and moderators.
 
-Permissions for moving messages between streams can be configured separately.
+Permissions for moving messages between channels can be configured separately.
 
 ## Configure who can edit topics
 
@@ -55,13 +55,13 @@ Permissions for moving messages between streams can be configured separately.
 {settings_tab|organization-permissions}
 
 1. Under **Moving messages**, configure **Who can move messages to another
-   stream**.
+   channel**.
 
 {!save-changes.md!}
 
 {end_tabs}
 
-## Set a time limit for moving messages between streams
+## Set a time limit for moving messages between channels
 
 !!! tip ""
     The time limit you set will not apply to administrators and moderators.
@@ -71,7 +71,7 @@ Permissions for moving messages between streams can be configured separately.
 {settings_tab|organization-permissions}
 
 1. Under **Moving messages**, configure **Time limit for  moving messages
-   between streams**.
+   between channels**.
 
 {!save-changes.md!}
 

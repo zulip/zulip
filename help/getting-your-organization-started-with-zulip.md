@@ -53,13 +53,13 @@ us know!
 
 {!create-channels-intro.md!}
 
-### How to create a stream
+### How to create a channel
 
 {start_tabs}
 
 {relative|channel|all}
 
-1. Click **Create stream** on the right.
+1. Click **Create channel** on the right.
 
 1. Fill out the requested info, and click **Create**.
 

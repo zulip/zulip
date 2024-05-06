@@ -4,7 +4,7 @@
 
 Zulip has a beta feature to send weekly emails to users who haven't
 been active for 5 or more days.  These emails include details on new
-streams created and highlights of traffic (of subscribed streams) that
+channels created and highlights of traffic (of subscribed channels) that
 can intrigue users.
 
 This feature is disabled by default, but an organization administrator

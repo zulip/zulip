@@ -40,8 +40,8 @@ Organizations can [configure](/help/restrict-moving-messages) which
 
 1. Edit the topic name.
 
-1. _(optional)_  If using the **Move topic** menu, select the destination stream
-   for the topic from the streams dropdown list.
+1. _(optional)_  If using the **Move topic** menu, select the destination channel
+   for the topic from the channels dropdown list.
 
 1. Toggle whether automated notices should be sent.
 

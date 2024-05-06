@@ -13,15 +13,15 @@ in the Zulip app to add more to your repertoire as needed.
 * [Message actions](#message-actions)
 * [Drafts](#drafts)
 * [Menus](#menus)
-* [Stream settings](#stream-settings)
+* [Channel settings](#channel-settings)
 
 ## The basics
 
 * **Reply to message**: <kbd>R</kbd> or <kbd>Enter</kbd> — Reply to the
   selected message (outlined in blue).
 
-* **New stream message**: <kbd>C</kbd> — Start a new topic in the current
-  stream.
+* **New channel message**: <kbd>C</kbd> — Start a new topic in the current
+  channel.
 
 * **New direct message**: <kbd>X</kbd>
 
@@ -60,7 +60,7 @@ in the Zulip app to add more to your repertoire as needed.
 
 * **Search messages**: <kbd>/</kbd> or <kbd>Ctrl</kbd> + <kbd>K</kbd>
 
-* **Filter streams**: <kbd>Q</kbd>
+* **Filter channels**: <kbd>Q</kbd>
 
 * **Search people**: <kbd>W</kbd>
 
@@ -94,13 +94,13 @@ in the Zulip app to add more to your repertoire as needed.
 
 * **Go to topic or DM conversation**: <kbd>S</kbd>
 
-* **Go to stream from topic view**: <kbd>S</kbd>
+* **Go to channel from topic view**: <kbd>S</kbd>
 
 * **Go to your direct message feed**: <kbd>Shift</kbd> + <kbd>P</kbd>
 
 * **Zoom to message in conversation context**: <kbd>Z</kbd> — This view does not mark messages as read.
 
-* **Cycle between stream views**: <kbd>Shift</kbd> + <kbd>A</kbd>
+* **Cycle between channel views**: <kbd>Shift</kbd> + <kbd>A</kbd>
   (previous) and <kbd>Shift</kbd> + <kbd>D</kbd> (next)
 
 * **Go to Combined feed**: <kbd>A</kbd> — Shows all unmuted messages.
@@ -109,8 +109,8 @@ in the Zulip app to add more to your repertoire as needed.
 
 ## Composing messages
 
-* **New stream message**: <kbd>C</kbd> — For starting a new topic in a
-  stream.
+* **New channel message**: <kbd>C</kbd> — For starting a new topic in a
+  channel.
 
 * **New direct message**: <kbd>X</kbd>
 
@@ -226,25 +226,25 @@ Keyboard navigation (e.g. arrow keys) works as expected.
 
 * **Toggle message actions menu**: <kbd>I</kbd>
 
-## Stream settings
+## Channel settings
 
-* **Scroll through streams**: <kbd class="arrow-key">↑</kbd> and
+* **Scroll through channels**: <kbd class="arrow-key">↑</kbd> and
   <kbd class="arrow-key">↓</kbd>
 
     !!! tip ""
 
-        Pressing <kbd class="arrow-key">↑</kbd> from the first stream
-        in the list moves you to the **Filter streams** input.
+        Pressing <kbd class="arrow-key">↑</kbd> from the first channel
+        in the list moves you to the **Filter channels** input.
 
 * **Switch between tabs**: <kbd class="arrow-key">←</kbd> and
   <kbd class="arrow-key">→</kbd> — Switch between the **Subscribed**
-  and **All streams** tabs.
+  and **All channels** tabs.
 
-* **Create new stream**: <kbd>N</kbd>
+* **Create new channel**: <kbd>N</kbd>
 
-### For a selected stream
+### For a selected channel
 
-* **View stream messages**: <kbd>Shift</kbd> + <kbd>V</kbd>
+* **View channel messages**: <kbd>Shift</kbd> + <kbd>V</kbd>
 
 * **Toggle subscription**: <kbd>Shift</kbd> + <kbd>S</kbd>
 

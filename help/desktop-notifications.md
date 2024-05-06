@@ -10,7 +10,7 @@ trigger desktop notifications.
 
 {settings_tab|notifications}
 
-1. Toggle the checkboxes for **Streams** and **DMs, mentions, and alerts**
+1. Toggle the checkboxes for **Channels** and **DMs, mentions, and alerts**
    in the **Desktop** column of the **Notification triggers** table.
 
 {end_tabs}

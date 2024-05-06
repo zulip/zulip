@@ -19,7 +19,7 @@ all be changed later.
 * **Who can mention this group?**: Configures who is allowed to
   [mention this group](/help/mention-a-user-or-group).
 
-* **Choose members**: You can copy the membership from an existing stream or
+* **Choose members**: You can copy the membership from an existing channel or
   user group, add all users, or enter users one by one.
 
 ## Related articles
