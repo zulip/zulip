@@ -241,7 +241,7 @@ export function get_first_unread_info(
 
     return {
         flavor: "found",
-        msg_id: unread_ids[0],
+        msg_id,
     };
 }
 
