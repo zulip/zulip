@@ -1,9 +1,8 @@
-In Zulip, channels determine who gets a message. Topics tell you what the
-message is about.
+Zulip is designed around conversations that are labeled with **topics**, to make
+communication feel organized and efficient. It’s easy to get an overview of what
+conversations are happening, and to read one conversation at a time.
 
-Topics are light-weight subjects, very similar to the subject line of an email.
-Like in email or a forum, messages about the same topic are shown together as a
-conversational thread. Here is what it looks like in Zulip.
+Here is what topics look like in Zulip.
 
 ![Channels and topics](/static/images/help/streams-and-topics.png)
 
