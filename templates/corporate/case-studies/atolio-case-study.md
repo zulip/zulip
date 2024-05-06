@@ -99,9 +99,9 @@ Slack before, they need onboarding too.”
 ## Easy to integrate
 
 To make Zulip a central hub for updates about what’s happening, Atolio has
-integrated Zulip with its engineering tools. In a #tickets stream, a topic is
+integrated Zulip with its engineering tools. In a #tickets channel, a topic is
 created automatically for each ticket, so there is a dedicated space to discuss
-the issue at hand. There are topics in other Zulip streams for automated
+the issue at hand. There are topics in other Zulip channels for automated
 deployment announcements, and for bot posts when pull requests are opened or
 merged.
 
