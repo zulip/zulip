@@ -1,9 +1,10 @@
 # After editing this file, you MUST afterward run
 # /tools/update-locked-requirements to update requirements/dev.txt.
 # See requirements/README.md for more detail.
-mypy==1.5.*  # https://github.com/dry-python/returns/issues/1711
+mypy
 
 boto3-stubs[s3,ses,sns,sqs]
+django-stubs==4.2.*
 lxml-stubs
 SQLAlchemy[mypy]
 types-beautifulsoup4
@@ -27,5 +28,3 @@ types-requests<2.31.0.7  # https://github.com/python/typeshed/issues/10825
 types-zxcvbn
 
 importlib-metadata ; python_version < "3.10"  # for SQLAlchemy
-
-django-stubs
