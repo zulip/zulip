@@ -1,7 +1,7 @@
 import assert from "minimalistic-assert";
 
 import * as blueslip from "./blueslip";
-import * as bootstrap_typeahead from "./bootstrap_typeahead";
+import {Typeahead} from "./bootstrap_typeahead";
 import type {TypeaheadInputElement} from "./bootstrap_typeahead";
 import * as people from "./people";
 import type {User} from "./people";
@@ -53,7 +53,7 @@ export function set_up(
         $element: $input,
         type: "contenteditable",
     };
-    bootstrap_typeahead.create(bootstrap_typeahead_input, {
+    new Typeahead(bootstrap_typeahead_input, {
         items: 5,
         fixed: true,
         dropup: true,

@@ -4,7 +4,7 @@ import _ from "lodash";
 import * as typeahead from "../shared/src/typeahead";
 import render_topic_typeahead_hint from "../templates/topic_typeahead_hint.hbs";
 
-import * as bootstrap_typeahead from "./bootstrap_typeahead";
+import {Typeahead} from "./bootstrap_typeahead";
 import * as bulleted_numbered_list_util from "./bulleted_numbered_list_util";
 import * as compose_pm_pill from "./compose_pm_pill";
 import * as compose_state from "./compose_state";
@@ -1108,7 +1108,7 @@ export function initialize_topic_edit_typeahead(form_field, stream_name, dropup)
         $element: form_field,
         type: "input",
     };
-    const options = {
+    new Typeahead(bootstrap_typeahead_input, {
         fixed: true,
         dropup,
         highlighter_html(item) {
@@ -1126,8 +1126,7 @@ export function initialize_topic_edit_typeahead(form_field, stream_name, dropup)
             return topics_seen_for(stream_id);
         },
         items: 5,
-    };
-    bootstrap_typeahead.create(bootstrap_typeahead_input, options);
+    });
 }
 
 function get_header_html() {
@@ -1159,7 +1158,7 @@ export function initialize_compose_typeahead(selector) {
         $element: $(selector),
         type: "input",
     };
-    bootstrap_typeahead.create(bootstrap_typeahead_input, {
+    new Typeahead(bootstrap_typeahead_input, {
         items: max_num_items,
         dropup: true,
         fixed: true,
@@ -1192,7 +1191,7 @@ export function initialize({on_enter_send}) {
         $element: $("input#stream_message_recipient_topic"),
         type: "input",
     };
-    bootstrap_typeahead.create(stream_message_typeahead_input, {
+    new Typeahead(stream_message_typeahead_input, {
         source() {
             return topics_seen_for(compose_state.stream_id());
         },
@@ -1221,7 +1220,7 @@ export function initialize({on_enter_send}) {
         $element: $("#private_message_recipient"),
         type: "contenteditable",
     };
-    bootstrap_typeahead.create(private_message_typeahead_input, {
+    new Typeahead(private_message_typeahead_input, {
         source: get_pm_people,
         items: max_num_items,
         dropup: true,

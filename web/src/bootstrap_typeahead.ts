@@ -188,7 +188,7 @@ export type TypeaheadInputElement =
           type: "input";
       };
 
-class Typeahead<ItemType extends string | object> {
+export class Typeahead<ItemType extends string | object> {
     input_element: TypeaheadInputElement;
     items: number;
     matcher: (item: ItemType, query: string) => boolean;
@@ -726,15 +726,3 @@ type TypeaheadOptions<ItemType> = {
         event?: JQuery.ClickEvent | JQuery.KeyUpEvent | JQuery.KeyDownEvent,
     ) => string | undefined;
 };
-
-export function create<ItemType extends string | object>(
-    input_element: TypeaheadInputElement,
-    options: TypeaheadOptions<ItemType>,
-): void {
-    input_element.$element.data("typeahead", new Typeahead(input_element, options));
-}
-
-export function lookup($element: JQuery): void {
-    const typeahead = $element.data("typeahead");
-    typeahead.lookup();
-}
