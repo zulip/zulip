@@ -403,7 +403,7 @@ def do_send_user_invite_email(
     *,
     confirmation: Optional[Confirmation] = None,
     event_time: Optional[datetime] = None,
-    invite_expires_in_minutes: Optional[int] = None,
+    invite_expires_in_minutes: Optional[float] = None,
 ) -> None:
     # Take a lock on the realm, so we can check for invitation limits without races
     realm_id = assert_is_not_none(prereg_user.realm_id)
