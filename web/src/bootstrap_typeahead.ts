@@ -225,6 +225,7 @@ class Typeahead<ItemType extends string | object> {
     stopAdvance: boolean;
     advanceKeyCodes: number[];
     parentElement?: string;
+    values: WeakMap<HTMLElement, ItemType>;
 
     constructor(input_element: TypeaheadInputElement, options: TypeaheadOptions<ItemType>) {
         this.input_element = input_element;
@@ -259,6 +260,7 @@ class Typeahead<ItemType extends string | object> {
         this.helpOnEmptyStrings = options.helpOnEmptyStrings ?? false;
         this.naturalSearch = options.naturalSearch ?? false;
         this.parentElement = options.parentElement;
+        this.values = new WeakMap();
 
         if (this.fixed) {
             this.$container.css("position", "fixed");
@@ -270,7 +272,8 @@ class Typeahead<ItemType extends string | object> {
     }
 
     select(e?: JQuery.ClickEvent | JQuery.KeyUpEvent | JQuery.KeyDownEvent): this {
-        const val = this.$menu.find(".active").data("typeahead-value");
+        const val = this.values.get(this.$menu.find(".active")[0]);
+        assert(val !== undefined);
         if (this.input_element.type === "contenteditable") {
             this.input_element.$element
                 .text(this.updater(val, this.query, this.input_element, e) ?? "")
@@ -294,7 +297,8 @@ class Typeahead<ItemType extends string | object> {
     }
 
     set_value(): void {
-        const val = this.$menu.find(".active").data("typeahead-value");
+        const val = this.values.get(this.$menu.find(".active")[0]);
+        assert(typeof val === "string");
         if (this.input_element.type === "contenteditable") {
             this.input_element.$element.text(val);
         } else {
@@ -408,7 +412,8 @@ class Typeahead<ItemType extends string | object> {
 
     render(final_items: ItemType[], matching_items: ItemType[]): this {
         const $items: JQuery[] = final_items.map((item) => {
-            const $i = $(ITEM_HTML).data("typeahead-value", item);
+            const $i = $(ITEM_HTML);
+            this.values.set($i[0], item);
             const item_html = this.highlighter_html(item, this.query) ?? "";
             const $item_html = $i.find("a").html(item_html);
 
