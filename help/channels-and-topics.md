@@ -1,6 +1,6 @@
 # Introduction to topics
 
-{!channels-and-topics.md!}
+{!topics-intro.md!}
 
 ## When to start a new topic
 
