@@ -87,7 +87,7 @@
 
     & li {
         list-style: none;
-        margin: 2px 2px 6px 0;
+        margin: 0 2px 6px 0;
     }
 
     & ul {
@@ -125,7 +125,6 @@
 .poll-widget {
     .poll-option {
         font-weight: 400;
-        font-size: 14px;
     }
 
     /* For the box-shadow to be visible on the left */
@@ -135,23 +134,15 @@
 
     & span.poll-option {
         font-weight: 600;
-        padding-top: 28px;
     }
 
     .poll-vote {
-        /* This is to ensure that even when the list of poll-names overflows,
-        the voting button remains clickable and on top of all other containers. */
-        position: relative;
-        z-index: 1;
-
         color: hsl(156deg 41% 40%);
         border-color: hsl(156deg 28% 70%);
         border-style: solid;
         font-weight: 600;
         border-radius: 3px;
         margin-right: 4px;
-        padding-left: 2px; /* padding for Chromium browsers */
-        padding-right: 2px;
         min-width: 25px;
         height: 25px;
         font-size: 13px;
@@ -170,8 +161,6 @@
     .poll-names {
         color: hsl(0deg 0% 45%);
         padding-left: 4px;
-        padding-top: 28px;
-        font-size: 14px;
     }
 }
 
