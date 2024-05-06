@@ -71,6 +71,16 @@ function update_due_today(schedule: string): void {
 
     const unit_price = prices[schedule_typed] / num_months;
     $("#due-today .due-today-unit-price").text(helpers.format_money(unit_price));
+    $(".billing-page-discount").hide();
+    if (schedule === "annual" && page_params.percent_off_annual_price) {
+        $(".billing-page-selected-schedule-discount").text(page_params.percent_off_annual_price);
+        $(".billing-page-discount").show();
+    }
+
+    if (schedule === "monthly" && page_params.percent_off_monthly_price) {
+        $(".billing-page-selected-schedule-discount").text(page_params.percent_off_monthly_price);
+        $(".billing-page-discount").show();
+    }
 }
 
 function update_due_today_for_remote_server(start_date: string): void {

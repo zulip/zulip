@@ -122,7 +122,6 @@
     <div class="current-plan-container">
         {% with %}
             {% set plan_data = realm_support_data[realm.id].plan_data %}
-            {% set format_discount = format_discount %}
             {% set dollar_amount = dollar_amount %}
             {% include 'corporate/support/current_plan_details.html' %}
         {% endwith %}

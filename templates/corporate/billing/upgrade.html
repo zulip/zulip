@@ -176,14 +176,13 @@
                                     {{ 'user' if seat_count == 1 else 'users' }}
                                 </span> x
                                 <span class="due-today-duration"></span>)
-                                {% if discount_percent %}
-                                <br/>
-                                <i class="billing-page-discount">Includes: {{ discount_percent }}% discount</i>
-                                {% endif %}
                                 {% if page_params.flat_discounted_months > 0 %}
                                 <br/>
                                 <span class="flat-discount-minus-sign">−</span>
                                 <span class="flat-discount-separator">$<span class="flat-discounted-price"></span>/month off</span> <i class="billing-page-discount">({{ page_params.flat_discounted_months }} {{ "month" if page_params.flat_discounted_months == 1 else "months" }} remaining)</i>
+                                {% else %}
+                                <br/>
+                                <i class="billing-page-discount hide">Includes: <span class="billing-page-selected-schedule-discount"></span>% discount</i>
                                 {% endif %}
                                 <h1>$<span class="due-today-price"></span></h1>
                                 {% if page_params.free_trial_days and not manual_license_management %}

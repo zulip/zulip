@@ -2,7 +2,6 @@ import uuid
 from contextlib import suppress
 from dataclasses import dataclass
 from datetime import timedelta
-from decimal import Decimal
 from operator import attrgetter
 from typing import Any, Dict, Iterable, List, Optional, Union
 from urllib.parse import urlencode, urlsplit
@@ -34,7 +33,6 @@ from corporate.lib.stripe import (
     cents_to_dollar_string,
     do_deactivate_remote_server,
     do_reactivate_remote_server,
-    format_discount_percentage,
 )
 from corporate.lib.support import (
     CloudSupportData,
@@ -66,7 +64,6 @@ from zerver.lib.validator import (
     check_date,
     check_string,
     check_string_in,
-    to_decimal,
     to_non_negative_int,
 )
 from zerver.models import (
@@ -339,7 +336,8 @@ def support(
     request: HttpRequest,
     realm_id: Optional[int] = REQ(default=None, converter=to_non_negative_int),
     plan_type: Optional[int] = REQ(default=None, converter=to_non_negative_int),
-    discount: Optional[Decimal] = REQ(default=None, converter=to_decimal),
+    monthly_discounted_price: Optional[int] = REQ(default=None, converter=to_non_negative_int),
+    annual_discounted_price: Optional[int] = REQ(default=None, converter=to_non_negative_int),
     minimum_licenses: Optional[int] = REQ(default=None, converter=to_non_negative_int),
     required_plan_tier: Optional[int] = REQ(default=None, converter=to_non_negative_int),
     new_subdomain: Optional[str] = REQ(default=None),
@@ -371,7 +369,11 @@ def support(
         keys = set(request.POST.keys())
         if "csrfmiddlewaretoken" in keys:
             keys.remove("csrfmiddlewaretoken")
-        if len(keys) != 2:
+        REQUIRED_KEYS = 2
+        if monthly_discounted_price is not None or annual_discounted_price is not None:
+            REQUIRED_KEYS = 3
+
+        if len(keys) != REQUIRED_KEYS:
             raise JsonableError(_("Invalid parameters"))
 
         assert realm_id is not None
@@ -386,10 +388,11 @@ def support(
                 support_type=SupportType.update_sponsorship_status,
                 sponsorship_status=sponsorship_pending,
             )
-        elif discount is not None:
+        elif monthly_discounted_price is not None or annual_discounted_price is not None:
             support_view_request = SupportViewRequest(
                 support_type=SupportType.attach_discount,
-                discount=discount,
+                monthly_discounted_price=monthly_discounted_price,
+                annual_discounted_price=annual_discounted_price,
             )
         elif minimum_licenses is not None:
             support_view_request = SupportViewRequest(
@@ -563,7 +566,6 @@ def support(
 
     context["get_realm_owner_emails_as_string"] = get_realm_owner_emails_as_string
     context["get_realm_admin_emails_as_string"] = get_realm_admin_emails_as_string
-    context["format_discount"] = format_discount_percentage
     context["dollar_amount"] = cents_to_dollar_string
     context["realm_icon_url"] = realm_icon_url
     context["Confirmation"] = Confirmation
@@ -625,7 +627,8 @@ def remote_servers_support(
     query: Optional[str] = REQ("q", default=None),
     remote_server_id: Optional[int] = REQ(default=None, converter=to_non_negative_int),
     remote_realm_id: Optional[int] = REQ(default=None, converter=to_non_negative_int),
-    discount: Optional[Decimal] = REQ(default=None, converter=to_decimal),
+    monthly_discounted_price: Optional[int] = REQ(default=None, converter=to_non_negative_int),
+    annual_discounted_price: Optional[int] = REQ(default=None, converter=to_non_negative_int),
     minimum_licenses: Optional[int] = REQ(default=None, converter=to_non_negative_int),
     required_plan_tier: Optional[int] = REQ(default=None, converter=to_non_negative_int),
     fixed_price: Optional[int] = REQ(default=None, converter=to_non_negative_int),
@@ -674,10 +677,11 @@ def remote_servers_support(
                 support_type=SupportType.update_sponsorship_status,
                 sponsorship_status=sponsorship_pending,
             )
-        elif discount is not None:
+        elif monthly_discounted_price is not None or annual_discounted_price is not None:
             support_view_request = SupportViewRequest(
                 support_type=SupportType.attach_discount,
-                discount=discount,
+                monthly_discounted_price=monthly_discounted_price,
+                annual_discounted_price=annual_discounted_price,
             )
         elif minimum_licenses is not None:
             support_view_request = SupportViewRequest(
@@ -826,7 +830,6 @@ def remote_servers_support(
     context["remote_realms_support_data"] = realm_support_data
     context["get_plan_type_name"] = get_plan_type_string
     context["get_org_type_display_name"] = get_org_type_display_name
-    context["format_discount"] = format_discount_percentage
     context["format_optional_datetime"] = format_optional_datetime
     context["dollar_amount"] = cents_to_dollar_string
     context["server_analytics_link"] = remote_installation_stats_link
