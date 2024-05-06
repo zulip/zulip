@@ -1,4 +1,8 @@
-# Browse and subscribe to channels
+# Introduction to channels
+
+{!channels-intro.md!}
+
+## Browse and subscribe to channels
 
 {start_tabs}
 
@@ -40,3 +44,5 @@
 ## Related articles
 
 * [Channels and topics](/help/channels-and-topics)
+* [Create channels](/help/create-channels)
+* [Channel permissions](/help/channel-permissions)

@@ -124,7 +124,7 @@
 * [Find administrators](/help/find-administrators)
 
 ## Channels
-* [Browse and subscribe to channels](/help/browse-and-subscribe-to-channels)
+* [Introduction to channels](/help/introduction-to-channels)
 * [Unsubscribe from a channel](/help/unsubscribe-from-a-channel)
 * [Create a channel](/help/create-a-channel)
 * [View channel subscribers](/help/view-channel-subscribers)

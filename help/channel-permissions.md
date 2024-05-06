@@ -1,7 +1,8 @@
 # Channel privacy settings
 
-Channels are similar to chat rooms, IRC channels, or email lists in that they
-determine who receives a message. Zulip supports a few types of channels:
+{!channels-intro.md!}
+
+Zulip supports a few types of channels:
 
 * **Public** (<i class="zulip-icon zulip-icon-hashtag"></i>):
   Members can join and view the complete message history.

@@ -1,7 +1,7 @@
 # Read receipts
 
 Read receipts let you check who has read a message. You can see read receipts
-for any message, including both [channel messages](/help/channels-and-topics)
+for any message, including both [channel messages](/help/introduction-to-channels)
 and [direct messages](/help/direct-messages).
 
 With privacy in mind, Zulip lets you [control][configure-personal-read-recipts]

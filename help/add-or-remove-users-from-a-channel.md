@@ -148,7 +148,7 @@ subscribe the user.
 
 ## Related articles
 
-* [Browse and subscribe to channels](/help/browse-and-subscribe-to-channels)
+* [Introduction to channels](/help/introduction-to-channels)
 * [Unsubscribe from a channel][unsubscribe]
 * [Manage a user's channel subscriptions](/help/manage-user-channel-subscriptions)
 * [Restrict channel invitations](/help/configure-who-can-invite-to-channels)
