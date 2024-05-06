@@ -161,27 +161,32 @@ export function initialize_custom_date_type_fields(element_id) {
 }
 
 export function initialize_custom_pronouns_type_fields(element_id) {
-    const commonly_used_pronouns = [
-        $t({defaultMessage: "he/him"}),
-        $t({defaultMessage: "she/her"}),
-        $t({defaultMessage: "they/them"}),
-    ];
-    const bootstrap_typeahead_input = {
-        $element: $(element_id).find(".pronouns_type_field"),
-        type: "input",
-    };
-    new Typeahead(bootstrap_typeahead_input, {
-        items: 3,
-        fixed: true,
-        helpOnEmptyStrings: true,
-        source() {
-            return commonly_used_pronouns;
-        },
-        sorter(items, query) {
-            return bootstrap_typeahead.defaultSorter(items, query);
-        },
-        highlighter_html(item) {
-            return typeahead_helper.render_typeahead_item({primary: item});
-        },
+
+    $(element_id).find(".pronouns_type_field").each((_, pronounField) => {
+        const commonly_used_pronouns = [
+            $t({defaultMessage: "he/him"}),
+            $t({defaultMessage: "she/her"}),
+            $t({defaultMessage: "they/them"}),
+        ];
+
+        const bootstrap_typeahead_input = {
+            $element: $(pronounField),
+            type: "input",
+        };
+
+        bootstrap_typeahead.create(bootstrap_typeahead_input, {
+            items: 3,
+            fixed: true,
+            helpOnEmptyStrings: true,
+            source() {
+                return commonly_used_pronouns;
+            },
+            sorter(items, query) {
+                return bootstrap_typeahead.defaultSorter(items, query);
+            },
+            highlighter_html(item) {
+                return typeahead_helper.render_typeahead_item({primary: item});
+            },
+        });
     });
 }
