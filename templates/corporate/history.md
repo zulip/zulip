@@ -196,7 +196,7 @@ Zulip Cloud increased an incredible 40x in the month after Slack’s
   dedicated [Zulip for Education](/for/education/) offering.
 
 > “Zulip has the best user experience of all the chat apps I’ve tried. With the
-> discussion organized by topic within each stream, Zulip is the only app that
+> discussion organized by topic within each channel, Zulip is the only app that
 > makes hundreds of conversations manageable.”
 >
 > — [Tobias Lasser](https://ciip.in.tum.de/people/lasser.html), lecturer at the
