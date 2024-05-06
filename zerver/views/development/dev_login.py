@@ -83,7 +83,7 @@ def dev_direct_login(
     realm = get_realm(subdomain)
 
     if request.POST.get("prefers_web_public_view") == "Anonymous login":
-        redirect_to = get_safe_redirect_to(next, realm.uri)
+        redirect_to = get_safe_redirect_to(next, realm.url)
         return HttpResponseRedirect(redirect_to)
 
     email = request.POST["direct_email"]
@@ -93,7 +93,7 @@ def dev_direct_login(
     assert isinstance(user_profile, UserProfile)
     do_login(request, user_profile)
 
-    redirect_to = get_safe_redirect_to(next, user_profile.realm.uri)
+    redirect_to = get_safe_redirect_to(next, user_profile.realm.url)
     return HttpResponseRedirect(redirect_to)
 
 
@@ -154,12 +154,12 @@ def api_dev_list_users(request: HttpRequest) -> HttpResponse:
         request,
         data=dict(
             direct_admins=[
-                dict(email=u.delivery_email, realm_uri=u.realm.uri)
+                dict(email=u.delivery_email, realm_uri=u.realm.url)
                 for u in users
                 if u.is_realm_admin
             ],
             direct_users=[
-                dict(email=u.delivery_email, realm_uri=u.realm.uri)
+                dict(email=u.delivery_email, realm_uri=u.realm.url)
                 for u in users
                 if not u.is_realm_admin
             ],

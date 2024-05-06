@@ -213,7 +213,7 @@ def handle_reupload_emojis_event(realm: Realm, logger: logging.Logger) -> None: 
         assert emoji_filename is not None
         emoji_url = get_emoji_url(emoji_filename, realm_emoji.realm_id)
         if emoji_url.startswith("/"):
-            emoji_url = urljoin(realm_emoji.realm.uri, emoji_url)
+            emoji_url = urljoin(realm_emoji.realm.url, emoji_url)
 
         emoji_file_content = get_emoji_file_content(session, emoji_url, realm_emoji.id, logger)
 

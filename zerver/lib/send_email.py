@@ -612,7 +612,7 @@ def send_custom_email(
         context: Dict[str, object] = {
             "realm": user_profile.realm,
             "realm_string_id": user_profile.realm.string_id,
-            "realm_uri": user_profile.realm.uri,
+            "realm_uri": user_profile.realm.url,
             "realm_name": user_profile.realm.name,
         }
         if add_context is not None:

@@ -9,7 +9,7 @@
 
 
 {% for realm in realms %}
-* {{ realm.name }}: {{ realm.uri }}
+* {{ realm.name }}: {{ realm.url }}
 {% endfor %}
 
 {% trans %}If you have trouble logging in, you can reset your password.{% endtrans %}

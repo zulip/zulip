@@ -36,7 +36,7 @@ def test_generated_curl_examples_for_success(client: Client) -> None:
     # A limited Markdown engine that just processes the code example syntax.
     realm = get_realm("zulip")
     md_engine = markdown.Markdown(
-        extensions=[markdown_extension.makeExtension(api_url=realm.uri + "/api")]
+        extensions=[markdown_extension.makeExtension(api_url=realm.url + "/api")]
     )
 
     # We run our curl tests in alphabetical order (except that we

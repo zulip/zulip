@@ -1620,13 +1620,13 @@ class ZulipRemoteUserBackend(ZulipAuthMixin, RemoteUserBackend, ExternalAuthMeth
 
 def redirect_to_signup(realm: Realm) -> HttpResponseRedirect:
     signup_url = reverse("register")
-    redirect_url = realm.uri + signup_url
+    redirect_url = realm.url + signup_url
     return HttpResponseRedirect(redirect_url)
 
 
 def redirect_to_login(realm: Realm) -> HttpResponseRedirect:
     login_url = reverse("login_page", kwargs={"template_name": "zerver/login.html"})
-    redirect_url = realm.uri + login_url
+    redirect_url = realm.url + login_url
     return HttpResponseRedirect(redirect_url)
 
 
@@ -1635,7 +1635,7 @@ def redirect_deactivated_user_to_login(realm: Realm, email: str) -> HttpResponse
     # a deactivated account on a test server.
     login_url = reverse("login_page", kwargs={"template_name": "zerver/login.html"})
     redirect_url = append_url_query_string(
-        realm.uri + login_url, urlencode({"is_deactivated": email})
+        realm.url + login_url, urlencode({"is_deactivated": email})
     )
     return HttpResponseRedirect(redirect_url)
 

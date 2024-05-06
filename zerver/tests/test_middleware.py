@@ -207,7 +207,7 @@ class OpenGraphTest(ZulipTestCase):
         open_graph_image = assert_is_not_none(bs.select_one('meta[property="og:image"]')).get(
             "content"
         )
-        self.assertEqual(open_graph_image, f"{realm.uri}{realm_icon}")
+        self.assertEqual(open_graph_image, f"{realm.url}{realm_icon}")
 
     def test_login_page_realm_icon_absolute_url(self) -> None:
         realm = get_realm("zulip")

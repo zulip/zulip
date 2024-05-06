@@ -112,9 +112,9 @@ class CloudSupportData:
 
 
 def get_realm_support_url(realm: Realm) -> str:
-    support_realm_uri = get_realm(settings.STAFF_SUBDOMAIN).uri
+    support_realm_url = get_realm(settings.STAFF_SUBDOMAIN).url
     support_url = urljoin(
-        support_realm_uri,
+        support_realm_url,
         urlunsplit(("", "", reverse("support"), urlencode({"q": realm.string_id}), "")),
     )
     return support_url

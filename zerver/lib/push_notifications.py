@@ -948,7 +948,7 @@ def get_base_payload(user_profile: UserProfile) -> Dict[str, Any]:
     # These will let the app support logging into multiple realms and servers.
     data["server"] = settings.EXTERNAL_HOST
     data["realm_id"] = user_profile.realm.id
-    data["realm_uri"] = user_profile.realm.uri
+    data["realm_uri"] = user_profile.realm.url
     data["realm_name"] = user_profile.realm.name
     data["user_id"] = user_profile.id
 

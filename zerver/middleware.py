@@ -579,7 +579,7 @@ class HostDomainMiddleware(MiddlewareMixin):
             formal_host = request_notes.realm.host
             if host != formal_host and not host.startswith(formal_host + ":"):
                 return HttpResponseRedirect(
-                    urljoin(request_notes.realm.uri, request.get_full_path())
+                    urljoin(request_notes.realm.url, request.get_full_path())
                 )
         return None
 

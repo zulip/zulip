@@ -757,7 +757,7 @@ def login_and_go_to_home(request: HttpRequest, user_profile: UserProfile) -> Htt
     do_login(request, user_profile)
     # Using 'mark_sanitized' to work around false positive where Pysa thinks
     # that 'user_profile' is user-controlled
-    return HttpResponseRedirect(mark_sanitized(user_profile.realm.uri) + reverse("home"))
+    return HttpResponseRedirect(mark_sanitized(user_profile.realm.url) + reverse("home"))
 
 
 def prepare_activation_url(
@@ -1216,7 +1216,7 @@ def realm_redirect(request: HttpRequest, next: str = REQ(default="")) -> HttpRes
         if form.is_valid():
             subdomain = form.cleaned_data["subdomain"]
             realm = get_realm(subdomain)
-            redirect_to = urljoin(realm.uri, settings.HOME_NOT_LOGGED_IN)
+            redirect_to = urljoin(realm.url, settings.HOME_NOT_LOGGED_IN)
 
             if next:
                 redirect_to = append_url_query_string(

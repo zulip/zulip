@@ -145,7 +145,7 @@ def send_bot_mock_message(
     data, _, _ = get_fixture_info(fixture_path)
 
     assert bot.bot_owner is not None
-    url = f"{bot.bot_owner.realm.uri}"
+    url = f"{bot.bot_owner.realm.url}"
     client = zulip.Client(email=bot.email, api_key=bot.api_key, site=url)
 
     try:
@@ -180,7 +180,7 @@ def send_bot_payload_message(
 
     assert isinstance(bot.bot_owner, UserProfile)
     stream = integration.stream_name or "devel"
-    url = f"{bot.bot_owner.realm.uri}/{integration.url}"
+    url = f"{bot.bot_owner.realm.url}/{integration.url}"
     params = {"api_key": bot.api_key, "stream": stream}
     params.update(config.extra_params)
 
@@ -226,7 +226,7 @@ def capture_last_message_screenshot(bot: UserProfile, image_path: str) -> None:
         return
     message_id = str(message.id)
     screenshot_script = os.path.join(TOOLS_DIR, "message-screenshot.js")
-    subprocess.check_call(["node", screenshot_script, message_id, image_path, realm.uri])
+    subprocess.check_call(["node", screenshot_script, message_id, image_path, realm.url])
 
 
 def generate_screenshot_from_config(

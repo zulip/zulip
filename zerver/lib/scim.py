@@ -380,13 +380,13 @@ def base_scim_location_getter(request: HttpRequest, *args: Any, **kwargs: Any) -
 
     Since SCIM synchronization is scoped to an individual realm, we
     need these locations to be namespaced within the realm's domain
-    namespace, which is conveniently accessed via realm.uri.
+    namespace, which is conveniently accessed via realm.url.
     """
 
     realm = RequestNotes.get_notes(request).realm
     assert realm is not None
 
-    return realm.uri
+    return realm.url
 
 
 class ConflictError(scim_exceptions.IntegrityError):

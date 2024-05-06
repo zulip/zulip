@@ -361,7 +361,7 @@ def generate_password_reset_url(
     token = token_generator.make_token(user_profile)
     uid = urlsafe_base64_encode(str(user_profile.id).encode())
     endpoint = reverse("password_reset_confirm", kwargs=dict(uidb64=uid, token=token))
-    return f"{user_profile.realm.uri}{endpoint}"
+    return f"{user_profile.realm.url}{endpoint}"
 
 
 class ZulipPasswordResetForm(PasswordResetForm):
@@ -431,7 +431,7 @@ class ZulipPasswordResetForm(PasswordResetForm):
 
         context = {
             "email": email,
-            "realm_uri": realm.uri,
+            "realm_uri": realm.url,
             "realm_name": realm.name,
         }
 
