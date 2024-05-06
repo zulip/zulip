@@ -86,14 +86,6 @@ $(() => {
         }
     });
 
-    $("body").on("click", ".top-menu-mobile", (e) => {
-        if (e.target.open) {
-            document.body.classList.add("_full-height-no-scroll");
-        } else {
-            document.body.classList.remove("_full-height-no-scroll");
-        }
-    });
-
     /* Used by navbar of non-corporate URLs. */
     $(".portico-header li.logout").on("click", () => {
         $("#logout_form").trigger("submit");
