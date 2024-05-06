@@ -162,7 +162,7 @@ a lasting record for the community. “We even used a Zulip topic to coordinate
 for lunch, to let people have their uninterrupted focus time,” John says.
 
 Since 2015, John has stayed connected with the RC alumni community on Zulip. “We
-have a stream for alumni checkins, where each alum uses a dedicated topic to
+have a channel for alumni checkins, where each alum uses a dedicated topic to
 post updates,” John explains. Some alums drop by weekly, while others might come
 around once a year.  “You can leave a note, and it’s OK if your friend reads it
 a few months later,” John says. “Compare that with Slack, where if someone
