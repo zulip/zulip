@@ -2,7 +2,7 @@
 
 There are many ways to interact with a Zulip message.
 
-![Streams and topics](/static/images/help/message-actions.png)
+![Message actions](/static/images/help/message-actions.png)
 
 ## Related articles
 * [User cards](/help/user-cards)
