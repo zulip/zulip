@@ -389,8 +389,9 @@ type UpdateDraftOptions = {
 };
 
 export function update_draft(opts: UpdateDraftOptions = {}): string | undefined {
-    const draft_id = $("textarea#compose-textarea").data("draft-id");
-    const old_draft = draft_model.getDraft(draft_id);
+    const draft_id: unknown = $("textarea#compose-textarea").data("draft-id");
+    assert(draft_id === undefined || typeof draft_id === "string");
+    const old_draft = draft_id === undefined ? undefined : draft_model.getDraft(draft_id);
 
     const no_notify = opts.no_notify ?? false;
     const draft = snapshot_message();
