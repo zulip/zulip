@@ -1,5 +1,4 @@
-In Zulip, channels determine who gets a message. They are similar to
-channels in IRC/Slack/Discord, chat rooms, and email lists.
+{!channels-intro.md!}
 
 We recommend setting up some channels before inviting other users to
 join Zulip, so that you can [automatically subscribe

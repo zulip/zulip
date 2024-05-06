@@ -7,9 +7,6 @@
   pertaining to the marketing team, `#help/<team name>` for
   `<team name>`'s internal support channel, etc.
 
-* A `#zulip help` channel can be useful for providing internal Zulip
-  support and answering questions about Zulip.
-
 * For open source projects or other volunteer organizations, consider
   adding default channels like `#announce` for announcements, `#new
   members` for new members to introduce themselves and be welcomed,
