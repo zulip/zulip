@@ -5,7 +5,7 @@ Organizations can [configure][configure-moving-permissions] which
 [roles](/help/roles-and-permissions) have permission to move messages between
 channels.
 
-[configure-moving-permissions]: /help/restrict-moving-messages#configure-who-can-move-messages-to-another-stream
+[configure-moving-permissions]: /help/restrict-moving-messages#configure-who-can-move-messages-to-another-channel
 
 To help others find moved content, you can have the [notification
 bot][notification-bot] send automated notices to the source topic, the
