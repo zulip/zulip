@@ -10,7 +10,7 @@ unsubscribe other users to channels.
 
 {start_tabs}
 
-{tab|via-stream-settings}
+{tab|via-channel-settings}
 
 {relative|channel|all}
 

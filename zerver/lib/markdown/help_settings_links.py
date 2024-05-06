@@ -69,10 +69,10 @@ link_mapping = {
         "Bots",
         "/#organization/bot-list-admin",
     ],
-    "default-streams-list": [
+    "default-channels-list": [
         "Organization settings",
-        "Default streams",
-        "/#organization/default-streams-list",
+        "Default channels",
+        "/#organization/default-channels-list",
     ],
     "linkifier-settings": [
         "Organization settings",

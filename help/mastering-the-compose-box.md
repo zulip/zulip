@@ -17,7 +17,7 @@ will be sent.
 
 {start_tabs}
 
-{tab|stream-compose}
+{tab|channel-compose}
 
 {!start-composing.md!}
 

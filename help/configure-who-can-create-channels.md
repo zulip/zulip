@@ -20,7 +20,7 @@ unadvertised web-public channel in a legitimate organization.
 
 {start_tabs}
 
-{tab|public-streams}
+{tab|public-channels}
 
 {settings_tab|organization-permissions}
 
@@ -28,7 +28,7 @@ unadvertised web-public channel in a legitimate organization.
 
 {!save-changes.md!}
 
-{tab|private-streams}
+{tab|private-channels}
 
 {settings_tab|organization-permissions}
 
@@ -36,7 +36,7 @@ unadvertised web-public channel in a legitimate organization.
 
 {!save-changes.md!}
 
-{tab|web-public-streams}
+{tab|web-public-channels}
 
 {settings_tab|organization-permissions}
 
