@@ -12,7 +12,7 @@ class zulip_ops::profile::zmirror_personals {
     'python3-typing-extensions',
   ]
   package { $zmirror_packages:
-    ensure  => installed,
+    ensure => installed,
   }
 
   file { '/etc/krb5.conf':

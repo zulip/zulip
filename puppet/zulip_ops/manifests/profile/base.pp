@@ -51,7 +51,7 @@ class zulip_ops::profile::base {
     mode   => '0644',
     source => 'puppet:///modules/zulip_ops/apt/apt.conf.d/50unattended-upgrades',
   }
-  if $::os['distro']['release']['major'] == '22.04' {
+  if $facts['os']['distro']['release']['major'] == '22.04' {
     file { '/etc/needrestart/conf.d/zulip.conf':
       ensure => file,
       mode   => '0644',
@@ -86,7 +86,7 @@ class zulip_ops::profile::base {
   }
 
   service { 'ssh':
-    ensure     => running,
+    ensure => running,
   }
 
   file { '/etc/ssh/sshd_config':
