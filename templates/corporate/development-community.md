@@ -113,7 +113,7 @@ topic to a different stream](/help/move-content-to-another-channel).
   for sending test messages without inconveniencing other users :). We
   recommend muting this stream when not using it.
 
-## Streams for Zulip users and administrators
+## Channels for Zulip users and administrators
 
 - [#user questions](https://chat.zulip.org/#narrow/stream/138-user-questions) is
   for questions about how to configure your Zulip organization, and accomplish
