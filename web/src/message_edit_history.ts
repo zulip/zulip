@@ -311,7 +311,11 @@ export function initialize(): void {
         }
     });
 
-    $("body").on("focus", "#message-history-overlay .overlay-message-info-box", (e) => {
-        messages_overlay_ui.activate_element(e.target, keyboard_handling_context);
-    });
+    $("body").on(
+        "focus",
+        "#message-history-overlay .overlay-message-info-box",
+        function (this: HTMLElement) {
+            messages_overlay_ui.activate_element(this, keyboard_handling_context);
+        },
+    );
 }
