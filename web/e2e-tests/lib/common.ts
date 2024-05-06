@@ -26,7 +26,7 @@ export const is_firefox = process.env.PUPPETEER_PRODUCT === "firefox";
 let realm_url = "http://zulip.zulipdev.com:9981/";
 const gps = new StackTraceGPS({ajax: async (url) => (await fetch(url)).text()});
 
-let last_current_msg_list_id: number | null = null;
+let last_current_msg_list_id: number | undefined;
 
 export const pm_recipient = {
     async set(page: Page, recipient: string): Promise<void> {
@@ -231,27 +231,30 @@ export function has_class_x(class_name: string): string {
     return `contains(concat(" ", @class, " "), " ${class_name} ")`;
 }
 
-export async function get_stream_id(page: Page, stream_name: string): Promise<number> {
+export async function get_stream_id(page: Page, stream_name: string): Promise<number | undefined> {
     return await page.evaluate(
         (stream_name: string) => zulip_test.get_stream_id(stream_name),
         stream_name,
     );
 }
 
-export async function get_user_id_from_name(page: Page, name: string): Promise<number> {
+export async function get_user_id_from_name(page: Page, name: string): Promise<number | undefined> {
     if (fullname[name] !== undefined) {
         name = fullname[name];
     }
     return await page.evaluate((name: string) => zulip_test.get_user_id_from_name(name), name);
 }
 
-export async function get_internal_email_from_name(page: Page, name: string): Promise<string> {
+export async function get_internal_email_from_name(
+    page: Page,
+    name: string,
+): Promise<string | undefined> {
     if (fullname[name] !== undefined) {
         name = fullname[name];
     }
     return await page.evaluate((fullname: string) => {
         const user_id = zulip_test.get_user_id_from_name(fullname);
-        return zulip_test.get_person_by_user_id(user_id).email;
+        return user_id === undefined ? undefined : zulip_test.get_person_by_user_id(user_id).email;
     }, name);
 }
 
@@ -359,7 +362,7 @@ export async function wait_for_fully_processed_message(page: Page, content: stri
                     - does it look to have been
                       re-rendered based on server info?
             */
-            const last_msg = zulip_test.current_msg_list.last();
+            const last_msg = zulip_test.current_msg_list?.last();
             if (last_msg === undefined) {
                 return false;
             }
@@ -463,7 +466,9 @@ export async function send_message(
     }
 
     // Close the compose box after sending the message.
-    await page.evaluate(() => zulip_test.cancel_compose());
+    await page.evaluate(() => {
+        zulip_test.cancel_compose();
+    });
     // Make sure the compose box is closed.
     await page.waitForSelector("#compose-textarea", {hidden: true});
 }
@@ -731,12 +736,18 @@ export async function get_current_msg_list_id(
         // NOTE: This only checks if the current message list id changed from the last call to this function,
         // so, make sure to have a call to this function before changing to the narrow that you want to check.
         await page.waitForFunction(
-            (last_current_msg_list_id) =>
-                zulip_test.current_msg_list.id !== last_current_msg_list_id,
+            (last_current_msg_list_id) => {
+                const current_msg_list = zulip_test.current_msg_list;
+                return (
+                    current_msg_list !== undefined &&
+                    current_msg_list.id !== last_current_msg_list_id
+                );
+            },
             {},
             last_current_msg_list_id,
         );
     }
-    last_current_msg_list_id = await page.evaluate(() => zulip_test.current_msg_list.id);
-    return last_current_msg_list_id!;
+    last_current_msg_list_id = await page.evaluate(() => zulip_test.current_msg_list?.id);
+    assert(last_current_msg_list_id !== undefined);
+    return last_current_msg_list_id;
 }

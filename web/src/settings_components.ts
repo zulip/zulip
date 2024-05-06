@@ -2,6 +2,7 @@ import $ from "jquery";
 import assert from "minimalistic-assert";
 import type {PopperElement, Props} from "tippy.js";
 import tippy from "tippy.js";
+import {z} from "zod";
 
 import render_compose_banner from "../templates/compose_banner/compose_banner.hbs";
 
@@ -16,6 +17,7 @@ import type {CustomProfileField} from "./state_data";
 import {realm} from "./state_data";
 import * as stream_data from "./stream_data";
 import type {StreamSubscription} from "./sub_store";
+import type {HTMLSelectOneElement} from "./types";
 import type {UserGroup} from "./user_groups";
 import * as util from "./util";
 
@@ -248,9 +250,7 @@ export function change_element_block_display_property(
 
 export function is_video_chat_provider_jitsi_meet(): boolean {
     const video_chat_provider_id = Number.parseInt(
-        $<HTMLSelectElement & {type: "select-one"}>(
-            "select:not([multiple])#id_realm_video_chat_provider",
-        ).val()!,
+        $<HTMLSelectOneElement>("select:not([multiple])#id_realm_video_chat_provider").val()!,
         10,
     );
     const jitsi_meet_id = realm.realm_available_video_chat_providers.jitsi_meet.id;
@@ -376,18 +376,21 @@ function get_message_retention_setting_value(
     return check_valid_number_input(custom_input_val);
 }
 
-type FieldData = Record<string, Record<string, string> | string>;
+const select_field_data_schema = z.record(z.object({text: z.string(), order: z.string()}));
+type SelectFieldData = z.output<typeof select_field_data_schema>;
 
 function read_select_field_data_from_form(
     $profile_field_form: JQuery,
-    old_field_data: FieldData,
-): FieldData {
-    const field_data: FieldData = {};
+    old_field_data: unknown,
+): SelectFieldData {
+    const field_data: SelectFieldData = {};
     let field_order = 1;
 
-    const old_option_value_map = new Map();
+    const old_option_value_map = new Map<string, string>();
     if (old_field_data !== undefined) {
-        for (const [value, choice] of Object.entries(old_field_data)) {
+        for (const [value, choice] of Object.entries(
+            select_field_data_schema.parse(old_field_data),
+        )) {
             assert(typeof choice !== "string");
             old_option_value_map.set(choice.text, value);
         }
@@ -395,14 +398,16 @@ function read_select_field_data_from_form(
     $profile_field_form.find("div.choice-row").each(function (this: HTMLElement) {
         const text = $(this).find("input")[0].value;
         if (text) {
-            if (old_option_value_map.get(text) !== undefined) {
+            let value = old_option_value_map.get(text);
+            if (value !== undefined) {
                 // Resetting the data-value in the form is
                 // important if the user removed an option string
                 // and then added it back again before saving
                 // changes.
-                $(this).attr("data-value", old_option_value_map.get(text));
+                $(this).attr("data-value", value);
+            } else {
+                value = $(this).attr("data-value")!;
             }
-            const value = $(this).attr("data-value")!;
             field_data[value] = {text, order: field_order.toString()};
             field_order += 1;
         }
@@ -411,11 +416,14 @@ function read_select_field_data_from_form(
     return field_data;
 }
 
-function read_external_account_field_data($profile_field_form: JQuery): FieldData {
-    const field_data: FieldData = {};
-    field_data.subtype = $profile_field_form
-        .find<HTMLSelectElement & {type: "select-one"}>("select[name=external_acc_field_type]")
-        .val()!;
+type ExternalAccountFieldData = {subtype: string; url_pattern?: string};
+
+function read_external_account_field_data($profile_field_form: JQuery): ExternalAccountFieldData {
+    const field_data: ExternalAccountFieldData = {
+        subtype: $profile_field_form
+            .find<HTMLSelectOneElement>("select:not([multiple])[name=external_acc_field_type]")
+            .val()!,
+    };
     if (field_data.subtype === "custom") {
         field_data.url_pattern = $profile_field_form
             .find<HTMLInputElement>("input[name=url_pattern]")
@@ -424,10 +432,12 @@ function read_external_account_field_data($profile_field_form: JQuery): FieldDat
     return field_data;
 }
 
+type FieldData = SelectFieldData | ExternalAccountFieldData;
+
 export function read_field_data_from_form(
     field_type_id: number,
     $profile_field_form: JQuery,
-    old_field_data: FieldData,
+    old_field_data: unknown,
 ): FieldData | undefined {
     const field_types = realm.custom_profile_field_types;
 
@@ -658,19 +668,22 @@ function get_input_type($input_elem: JQuery, input_type?: string): string {
     if (input_type !== undefined && ["boolean", "string", "number"].includes(input_type)) {
         return input_type;
     }
-    return $input_elem.data("setting-widget-type");
+    input_type = $input_elem.attr("data-setting-widget-type");
+    assert(input_type !== undefined);
+    return input_type;
 }
 
 export function get_input_element_value(
     input_elem: HTMLElement,
     input_type?: string,
-): number | string | null | undefined {
+): boolean | number | string | null | undefined {
     const $input_elem = $(input_elem);
     input_type = get_input_type($input_elem, input_type);
     let input_value;
     switch (input_type) {
         case "boolean":
-            return $(input_elem).prop("checked");
+            assert(input_elem instanceof HTMLInputElement);
+            return input_elem.checked;
         case "string":
             assert(
                 input_elem instanceof HTMLInputElement ||
@@ -739,9 +752,9 @@ export function get_auth_method_list_data(): Record<string, boolean> {
     const $auth_method_rows = $("#id_realm_authentication_methods").find("div.method_row");
 
     for (const method_row of $auth_method_rows) {
-        new_auth_methods[$(method_row).data("method")] = $(method_row)
-            .find("input")
-            .prop("checked");
+        const method = $(method_row).attr("data-method");
+        assert(method !== undefined);
+        new_auth_methods[method] = $(method_row).find<HTMLInputElement>("input")[0].checked;
     }
 
     return new_auth_methods;
@@ -967,7 +980,7 @@ function should_disable_save_button_for_jitsi_server_url_setting(): boolean {
         return false;
     }
 
-    const $dropdown_elem = $<HTMLSelectElement & {type: "select-one"}>(
+    const $dropdown_elem = $<HTMLSelectOneElement>(
         "select:not([multiple])#id_realm_jitsi_server_url",
     );
     const $custom_input_elem = $<HTMLInputElement>("input#id_realm_jitsi_server_url_custom_input");
@@ -983,9 +996,7 @@ function should_disable_save_button_for_time_limit_settings(
 ): boolean {
     let disable_save_btn = false;
     for (const setting_elem of time_limit_settings) {
-        const $dropdown_elem = $(setting_elem).find<HTMLSelectElement & {type: "select-one"}>(
-            "select:not([multiple])",
-        );
+        const $dropdown_elem = $(setting_elem).find<HTMLSelectOneElement>("select:not([multiple])");
         const $custom_input_elem = $(setting_elem).find<HTMLInputElement>(
             "input.time-limit-custom-input",
         );

@@ -476,7 +476,7 @@
         background-color: hsl(0deg 86% 14%) !important;
     }
 
-    #compose-direct-recipient.pill-container {
+    #compose-direct-recipient .pill-container {
         background-color: hsl(0deg 0% 0% / 20%);
     }
 
@@ -1021,6 +1021,10 @@
         background-color: hsl(212deg 25% 15%);
         border-color: hsl(0deg 0% 0% / 50%);
         color: inherit;
+
+        & a:hover {
+            color: hsl(0deg 0% 100%);
+        }
     }
 
     /* Search highlight used in both topics and rendered_markdown */

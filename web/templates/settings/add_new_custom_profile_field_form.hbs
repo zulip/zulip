@@ -1,7 +1,7 @@
 <form class="admin-profile-field-form new-style" id="add-new-custom-profile-field-form">
     <div class="new-profile-field-form wrapper">
         <div class="input-group">
-            <label for="profile_field_type" >{{t "Type" }}</label>
+            <label for="profile_field_type" class="modal-field-label">{{t "Type" }}</label>
             <select id="profile_field_type" name="field_type" class="modal_select bootstrap-focus-style">
                 {{#each custom_profile_field_types}}
                     <option value='{{this.id}}'>{{this.name}}</option>
@@ -9,7 +9,7 @@
             </select>
         </div>
         <div class="input-group" id="profile_field_external_accounts">
-            <label for="profile_field_external_accounts_type" >{{t "External account type" }}</label>
+            <label for="profile_field_external_accounts_type" class="modal-field-label">{{t "External account type" }}</label>
             <select id="profile_field_external_accounts_type" name="external_acc_field_type" class="modal_select bootstrap-focus-style">
                 {{#each realm_default_external_accounts}}
                     <option value='{{@key}}'>{{this.text}}</option>
@@ -18,22 +18,22 @@
             </select>
         </div>
         <div class="input-group">
-            <label for="profile_field_name" >{{t "Label" }}</label>
+            <label for="profile_field_name" class="modal-field-label">{{t "Label" }}</label>
             <input type="text" id="profile_field_name" class="modal_text_input" name="name" autocomplete="off" maxlength="40" />
         </div>
         <div class="input-group">
-            <label for="profile_field_hint" >{{t "Hint (up to 80 characters)" }}</label>
+            <label for="profile_field_hint" class="modal-field-label">{{t "Hint (up to 80 characters)" }}</label>
             <input type="text" id="profile_field_hint" class="modal_text_input" name="hint" autocomplete="off" maxlength="80" />
             <div class="alert" id="admin-profile-field-hint-status"></div>
         </div>
         <div class="input-group" id="profile_field_choices_row">
-            <label for="profile_field_choices" >{{t "Field choices" }}</label>
+            <label for="profile_field_choices" class="modal-field-label">{{t "Field choices" }}</label>
             <table class="profile_field_choices_table">
                 <tbody id="profile_field_choices" class="profile-field-choices"></tbody>
             </table>
         </div>
         <div class="input-group" id="custom_external_account_url_pattern">
-            <label for="custom_field_url_pattern" >{{t "URL pattern" }}</label>
+            <label for="custom_field_url_pattern" class="modal-field-label">{{t "URL pattern" }}</label>
             <input type="url" id="custom_field_url_pattern" class="modal_url_input" name="url_pattern" autocomplete="off" maxlength="1024" placeholder="https://example.com/path/%(username)s"/>
         </div>
         <div class="input-group">

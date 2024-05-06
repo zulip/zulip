@@ -448,13 +448,11 @@ function reset_data() {
     topics_dict = new Map();
     streams_dict = new Map();
 
-    const include_per_bucket_max_msg_id = true;
-    const unread_dms = unread.get_unread_pm(include_per_bucket_max_msg_id);
+    const unread_dms = unread.get_unread_pm();
     const unread_dms_count = unread_dms.total_count;
     const unread_dms_dict = unread_dms.pm_dict;
 
-    const include_per_topic_max_msg_id = true;
-    const unread_stream_message = unread.get_unread_topics(include_per_topic_max_msg_id);
+    const unread_stream_message = unread.get_unread_topics();
     const unread_stream_msg_count = unread_stream_message.stream_unread_messages;
     const unread_streams_dict = unread_stream_message.topic_counts;
 
@@ -1023,13 +1021,11 @@ export function update() {
         return;
     }
 
-    const include_per_bucket_max_msg_id = true;
-    const unread_dms = unread.get_unread_pm(include_per_bucket_max_msg_id);
+    const unread_dms = unread.get_unread_pm();
     const unread_dms_count = unread_dms.total_count;
     const unread_dms_dict = unread_dms.pm_dict;
 
-    const include_per_topic_max_msg_id = true;
-    const unread_stream_message = unread.get_unread_topics(include_per_topic_max_msg_id);
+    const unread_stream_message = unread.get_unread_topics();
     const unread_streams_dict = unread_stream_message.topic_counts;
 
     let has_dms_post_filter = false;

@@ -159,7 +159,7 @@ run_test("set_up", ({mock_template, override, override_rewire}) => {
     }
 
     let opts = {};
-    override(bootstrap_typeahead, "create", (input_element, config) => {
+    override(bootstrap_typeahead, "Typeahead", (input_element, config) => {
         assert.equal(input_element.$element, $fake_input);
         assert.equal(config.items, 5);
         assert.ok(config.fixed);

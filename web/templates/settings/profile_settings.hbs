@@ -6,9 +6,9 @@
                 <div class="full-name-change-container">
                     <div class="input-group inline-block grid user-name-parent">
                         <div class="user-name-section inline-block">
-                            <label for="full_name" class="title inline-block">{{t "Name" }}</label>
+                            <label for="full_name" class="settings-field-label inline-block">{{t "Name" }}</label>
                             <div class="alert-notification full-name-status"></div>
-                            <div class="field_hint">{{t "How your account is displayed in Zulip." }}</div>
+                            <div class="settings-profile-user-field-hint">{{t "How your account is displayed in Zulip." }}</div>
                             <div id="full_name_input_container" {{#unless user_can_change_name}}class="disabled_setting_tooltip"{{/unless}}>
                                 <input id="full_name" name="full_name" class="settings_text_input" type="text" value="{{ current_user.full_name }}" {{#unless user_can_change_name}}disabled="disabled"{{/unless}} maxlength="60" />
                             </div>
@@ -18,7 +18,7 @@
 
                 <form class="timezone-setting-form">
                     <div class="input-group grid">
-                        <label for="timezone" class="dropdown-title inline-block">{{t "Time zone" }}</label>
+                        <label for="timezone" class="settings-field-label inline-block">{{t "Time zone" }}</label>
                         <div class="alert-notification timezone-setting-status"></div>
                         <div class="timezone-input">
                             <select name="timezone" id="user_timezone" class="bootstrap-focus-style settings_select">

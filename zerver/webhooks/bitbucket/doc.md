@@ -2,11 +2,11 @@ Zulip supports both Git and Mercurial notifications from
 Bitbucket. This integration is for the old-style Bitbucket
 webhooks used by Bitbucket Enterprise.
 
-{!create-stream.md!}
+{!create-channel.md!}
 
-The integration will use the default stream `commits` if no
-stream is supplied in the hook; you still need to create the
-stream even if you are using this default.
+The integration will use the default channel `commits` if no
+channel is supplied in the hook; you still need to create the
+channel even if you are using this default.
 
 Next, from your repository's web page, go to the **Administration**
 page and choose **Hooks** on the left-hand side. Choose the **POST**
@@ -16,9 +16,9 @@ hook from the list presented and click **Add hook**.
 
 {!git-append-branches.md!}
 
-By default, notifications are sent to the `commits` stream. To
-send notifications to a different stream, append
-`?stream=stream_name` to the URL.
+By default, notifications are sent to the `commits` channel. To
+send notifications to a different channel, append
+`?stream=channel_name` to the URL.
 
 {!congrats.md!}
 

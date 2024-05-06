@@ -99,7 +99,7 @@ including [mentions and alerts](/help/dm-mention-alert-notifications).
 ## Related articles
 
 * [Delete a topic](/help/delete-a-topic)
-* [Archive a stream](/help/archive-a-stream)
+* [Archive a channel](/help/archive-a-channel)
 * [Message retention policy](/help/message-retention-policy)
 * [Edit a message](/help/edit-a-message)
 * [Restrict message editing and deletion](/help/restrict-message-editing-and-deletion)

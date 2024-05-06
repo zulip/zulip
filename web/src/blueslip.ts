@@ -112,15 +112,8 @@ export function error(msg: string, more_info?: object | undefined, original_erro
 if (page_params.development_environment) {
     $(window).on("error", (event: JQuery.TriggeredEvent) => {
         const {originalEvent} = event;
-        if (!(originalEvent instanceof ErrorEvent)) {
-            return;
+        if (originalEvent instanceof ErrorEvent && originalEvent.error instanceof Error) {
+            void display_stacktrace(originalEvent.error);
         }
-
-        const ex = originalEvent.error;
-        if (!ex) {
-            return;
-        }
-
-        void display_stacktrace(ex);
     });
 }

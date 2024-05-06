@@ -1,7 +1,7 @@
-This integration currently supports getting notifications to a stream of your Zulip instance,
+This integration currently supports getting notifications to a channel of your Zulip instance,
 when a new member signs-up on an **Open Collective** page.
 
-1. {!create-stream.md!}
+1. {!create-channel.md!}
 
 1. {!create-an-incoming-webhook.md!}
 

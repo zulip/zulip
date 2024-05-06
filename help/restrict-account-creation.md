@@ -110,5 +110,5 @@ Regardless of whether invitations are required, you can:
 
 * [Configure authentication methods](/help/configure-authentication-methods)
 * [Invite new users](/help/invite-new-users)
-* [Set default streams for new users](/help/set-default-streams-for-new-users)
+* [Set default channels for new users](/help/set-default-channels-for-new-users)
 * [Configure default new user settings](/help/configure-default-new-user-settings)

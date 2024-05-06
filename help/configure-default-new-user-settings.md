@@ -35,7 +35,7 @@ preference settings, including the following:
       minimizes the need to [mention](/help/mention-a-user-or-group) other users
       to get their attention.
 
-[default-notifications]: /help/stream-notifications#configure-default-notifications-for-all-streams
+[default-notifications]: /help/channel-notifications#configure-default-notifications-for-all-channels
 
 ## Configure default settings for new users
 
@@ -69,5 +69,5 @@ API](/api/create-user).
 
 * [Setting up your organization](/help/getting-your-organization-started-with-zulip)
 * [Customize settings for new users](/help/customize-settings-for-new-users)
-* [Set default streams for new users](/help/set-default-streams-for-new-users)
+* [Set default channels for new users](/help/set-default-channels-for-new-users)
 * [Invite users to join](/help/invite-users-to-join)

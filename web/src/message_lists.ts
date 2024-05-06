@@ -1,6 +1,5 @@
 import $ from "jquery";
 
-import * as blueslip from "./blueslip";
 import * as inbox_util from "./inbox_util";
 import type {MessageListData} from "./message_list_data";
 import type {Message} from "./message_store";
@@ -39,7 +38,6 @@ export type MessageList = {
     selected_idx: () => number;
     all_messages: () => Message[];
     get: (id: number) => Message | undefined;
-    pre_narrow_offset?: number;
     can_mark_messages_read_without_setting: () => boolean;
     rerender_view: () => void;
     resume_reading: () => void;
@@ -50,6 +48,7 @@ export type MessageList = {
         messages: Message[],
         append_opts: {messages_are_new: boolean},
     ) => RenderInfo | undefined;
+    last: () => Message | undefined;
 };
 
 export let current: MessageList | undefined;
@@ -107,31 +106,6 @@ export function update_recipient_bar_background_color(): void {
         msg_list.view.update_recipient_bar_background_color();
     }
     inbox_util.update_stream_colors();
-}
-
-export function save_pre_narrow_offset_for_reload(): void {
-    // Only save the pre_narrow_offset if the message list will be cached if user
-    // switches to a different narrow, otherwise the pre_narrow_offset would just be lost when
-    // user switches to a different narrow. In case of a reload, offset for the current
-    // message is captured and restored by `reload` library.
-    if (!current?.preserve_rendered_state) {
-        return;
-    }
-
-    if (current.selected_id() !== -1) {
-        if (current.selected_row().length === 0) {
-            const current_message = current.get(current.selected_id());
-            blueslip.debug("narrow.activate missing selected row", {
-                selected_id: current.selected_id(),
-                selected_idx: current.selected_idx(),
-                selected_idx_exact:
-                    current_message && current.all_messages().indexOf(current_message),
-                render_start: current.view._render_win_start,
-                render_end: current.view._render_win_end,
-            });
-        }
-        current.pre_narrow_offset = current.selected_row().get_offset_to_window().top;
-    }
 }
 
 export function calculate_timestamp_widths(): void {

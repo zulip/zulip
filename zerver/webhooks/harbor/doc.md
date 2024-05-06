@@ -2,7 +2,7 @@ Get Zulip notifications for your [Harbor](https://goharbor.io/) projects!
 
 Harbor's webhooks feature is available in version 1.9 and later.
 
-1. {!create-stream.md!}
+1. {!create-channel.md!}
 
 1. {!create-an-incoming-webhook.md!}
 

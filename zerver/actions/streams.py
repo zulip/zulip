@@ -1181,7 +1181,7 @@ def send_change_stream_permission_notification(
         )
         notification_string = notification_string.format(
             user=user_mention,
-            help_link="/help/stream-permissions",
+            help_link="/help/channel-permissions",
             old_policy=old_policy_name,
             new_policy=new_policy_name,
         )
@@ -1359,7 +1359,7 @@ def send_change_stream_post_policy_notification(
         )
         notification_string = notification_string.format(
             user=user_mention,
-            help_link="/help/stream-sending-policy",
+            help_link="/help/channel-posting-policy",
             old_policy=Stream.POST_POLICIES[old_post_policy],
             new_policy=Stream.POST_POLICIES[new_post_policy],
         )

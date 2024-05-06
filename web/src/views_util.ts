@@ -72,8 +72,6 @@ export function show(opts: {
     complete_rerender: () => void;
     is_recent_view?: boolean;
 }): void {
-    message_lists.save_pre_narrow_offset_for_reload();
-
     if (opts.is_visible()) {
         // If we're already visible, E.g. because the user hit Esc
         // while already in the view, do nothing.

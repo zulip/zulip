@@ -26,36 +26,95 @@ feature development or integrations, etc., should contact
 Paid plan discounts are available in a variety of situations; see
 [below](#paid-plan-discounts) for details.
 
-### Upgrades for legacy customers
+## Upgrade to a paid plan
 
-On December 15, 2023, it was
-[announced](https://blog.zulip.com/2023/12/15/new-plans-for-self-hosted-customers/)
-that self-hosted customers will no longer get unlimited free access to Zulip's
-[Mobile Push Notification
-Service](https://zulip.readthedocs.io/en/stable/production/mobile-push-notifications.html).
-Legacy customers can continue using the notification service for free (no action
-required) until February 15, 2024.
+### Start a free trial
 
-To continue using the service after that date, organizations with more than 10
-users must upgrade to a paid plan or the Community plan. When you upgrade to a
-paid plan, you can start the plan right away (if you‘d like your technical
-support to start immediately), or schedule a February 15 start date.
+**New customers** are eligible for a free 30-day trial of Zulip Basic. An
+organization is considered to be a new customer if:
 
-If your organization needs more time to sign up for a plan, please contact
-[sales@zulip.com](mailto:sales@zulip.com) to request extended free access to the
-Mobile Push Notification Service.
+- It was not registered for Zulip's [Mobile Push Notification
+  Service](https://zulip.readthedocs.io/en/stable/production/mobile-push-notifications.html)
+  prior to December 12, 2023, and
+- It has never previously signed up for a self-hosted Zulip plan (Basic, Business,
+  Community or Enterprise).
+
+{start_tabs}
+
+{tab|v8}
+
+{!register-server.md!}
+
+{!self-hosted-log-in.md!}
+
+1. On the page listing Zulip's self-hosted plans, click the **Start 30-day
+   trial** button at the bottom of the **Basic** plan.
+
+1. Click **Add card** to enter your payment details.
+
+1. Click **Start 30-day trial** to start your free trial.
 
 !!! tip ""
-    An email announcing this change was sent to the registered contact email
-    address for all legacy customers. If you did not receive this email, please
-    [update](https://zulip.readthedocs.io/en/latest/production/mobile-push-notifications.html#updating-your-server-s-registration)
-    your contact information.
 
-Any Zulip server that registered for Zulip's [Mobile Push Notification
-Service](https://zulip.readthedocs.io/en/stable/production/mobile-push-notifications.html)
-prior to December 15, 2023 is considered to be a legacy customer.
+    Once you start the trial, you can switch between monthly and annual billing
+    on your organization's billing page.
 
-#### Do I have to upgrade my server first?
+{tab|all-versions}
+
+{!legacy-log-in-intro.md!}
+
+{!register-server-legacy.md!}
+
+{!legacy-log-in.md!}
+
+1. On the page listing Zulip's self-hosted plans, click the **Start 30-day
+   trial** button at the bottom of the **Basic** plan.
+
+1. Click **Add card** to enter your payment details.
+
+1. Click **Start 30-day trial** to start your free trial.
+
+!!! tip ""
+
+    Once you start the trial, you can switch between monthly and annual billing
+    on your organization's billing page.
+
+{end_tabs}
+
+### Upgrade directly to a paid plan
+
+{!self-hosted-billing-multiple-organizations.md!}
+
+{start_tabs}
+
+{tab|v8}
+
+{!self-hosted-billing-admin-only.md!}
+
+{!self-hosted-log-in.md!}
+
+1. On the page listing Zulip's self-hosted plans, click the button at the bottom
+   of the plan you would like to purchase.
+
+{!plan-upgrade-steps.md!}
+
+!!! warn ""
+
+    If your server hosts more than one organization, commercial
+    support for server-wide configurations requires upgrading the
+    organization with the largest number of users.
+
+{tab|all-versions}
+
+{!legacy-log-in-intro.md!}
+
+{!legacy-log-in.md!}
+
+{!plan-upgrade-steps.md!}
+
+{end_tabs}
+
+### Do I have to upgrade my server first?
 
 While upgrading your Zulip server to version 8.0+ makes it more convenient to
 manage your plan, you do not have to upgrade your Zulip installation in order to
@@ -78,162 +137,6 @@ If you upgrade your server after signing up for a plan, you will be able to
 transfer your plan to an organization on your server. If your server has one
 organization on it, this will happen automatically. Otherwise, contact
 [support@zulip.com](mailto:support@zulip.com) for help.
-
-#### Upgrading to a paid plan
-
-{!self-hosted-billing-multiple-organizations.md!}
-
-{start_tabs}
-
-{tab|v8}
-
-{!self-hosted-billing-admin-only.md!}
-
-{!self-hosted-log-in.md!}
-
-1. On the page listing Zulip's self-hosted plans, click the button at the bottom
-   of the plan you would like to purchase.
-
-1. Select your preferred option from the **Payment schedule** dropdown.
-
-1. Under **Plan start date**, select **February 15, 2024** or **Today**.
-
-1. Click **Add card** to enter your payment details.
-
-1. Click the **Purchase** or **Schedule upgrade** button to complete your
-   purchase.
-
-!!! warn ""
-
-    If your server hosts more than one organization, commercial
-    support for server-wide configurations requires upgrading the
-    organization with the largest number of users.
-
-{tab|all-versions}
-
-{!legacy-log-in-intro.md!}
-
-{!legacy-log-in.md!}
-
-1. Select your preferred option from the **Payment schedule** dropdown.
-
-1. Under **Plan start date**, select **February 15, 2024** or **Today**.
-
-1. Click **Add card** to enter your payment details.
-
-1. Click the **Purchase** or **Schedule upgrade** button to complete your
-   purchase.
-
-{end_tabs}
-
-### Upgrades for new customers
-
-#### Upgrade to Zulip Basic
-
-**New customers** are eligible for a free 30-day trial of Zulip Basic. An
-organization is considered to be a new customer if:
-
-- It was not registered for Zulip's [Mobile Push Notification
-  Service](https://zulip.readthedocs.io/en/stable/production/mobile-push-notifications.html)
-  prior to December 12, 2023, and
-- It has never previously signed up for a self-hosted Zulip plan (Basic, Business,
-  Community or Enterprise).
-
-{!self-hosted-billing-multiple-organizations.md!}
-
-{start_tabs}
-
-{tab|v8}
-
-{!register-server.md!}
-
-{!self-hosted-log-in.md!}
-
-1. On the page listing Zulip's self-hosted plans, click the **Start 30-day
-   trial** button at the bottom of the **Basic** plan.
-
-1. Click **Add card** to enter your payment details.
-
-1. Click **Start 30-day trial** to start your free trial.
-
-!!! tip ""
-
-    Once you start the trial, you can switch between monthly and annual billing
-    on your organization's billing page.
-
-{tab|all-versions}
-
-{!legacy-log-in-intro.md!}
-
-{!register-server-legacy.md!}
-
-{!legacy-log-in.md!}
-
-1. On the page listing Zulip's self-hosted plans, click the **Start 30-day
-   trial** button at the bottom of the **Basic** plan.
-
-1. Click **Add card** to enter your payment details.
-
-1. Click **Start 30-day trial** to start your free trial.
-
-!!! tip ""
-
-    Once you start the trial, you can switch between monthly and annual billing
-    on your organization's billing page.
-
-{end_tabs}
-
-#### Upgrade to Zulip Business
-
-{!self-hosted-billing-multiple-organizations.md!}
-
-{start_tabs}
-
-{tab|v8}
-
-{!register-server.md!}
-
-{!self-hosted-log-in.md!}
-
-1. On the page listing Zulip's self-hosted plans, click the **Upgrade to Business** button
-   at the bottom of the **Business** plan.
-
-1. Select your preferred option from the **Payment schedule** dropdown.
-
-1. Click **Add card** to enter your payment details.
-
-1. Click the **Purchase** button to complete your purchase.
-
-!!! warn ""
-
-    If your server hosts more than one organization, commercial
-    support for server-wide configurations requires upgrading the
-    organization with the largest number of users.
-
-{tab|all-versions}
-
-{!legacy-log-in-intro.md!}
-
-{!register-server-legacy.md!}
-
-{!legacy-log-in.md!}
-
-1. On the page listing Zulip's self-hosted plans, click the **Upgrade to Business** button
-   at the bottom of the **Business** plan.
-
-1. Select your preferred option from the **Payment schedule** dropdown.
-
-1. Click **Add card** to enter your payment details.
-
-1. Click the **Purchase** button to complete your purchase.
-
-!!! tip ""
-
-    Once you start the trial, you can switch between monthly and annual billing
-    on your organization's billing page.
-
-{end_tabs}
-
 
 ## Manage billing
 

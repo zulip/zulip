@@ -114,7 +114,7 @@
                     <label for="copy_stream_email_button" class="title inline-block">Email address</label>
                     <p class="field-hint">
                         {{t "You can use email to send messages to Zulip channels."}}
-                        {{> ../help_link_widget link="/help/message-a-stream-by-email" }}
+                        {{> ../help_link_widget link="/help/message-a-channel-by-email" }}
                     </p>
                     <button class="button small rounded copy_email_button" id="copy_stream_email_button" type="button">
                         <span class="copy_button">{{t "Generate email address" }}</span>
@@ -144,7 +144,7 @@
                     </div>
                 {{/each}}
                 <div class="input-group">
-                    <label for="streamcolor">{{t "Channel color" }}</label>
+                    <label for="streamcolor" class="settings-field-label">{{t "Channel color" }}</label>
                     <span class="sub_setting_control">
                         <input stream_id="{{sub.stream_id}}" class="colorpicker" id="streamcolor" type="text" value="{{sub.color}}" tabindex="-1" />
                     </span>

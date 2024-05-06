@@ -5,7 +5,7 @@ TOPIC_BRANCH_EVENTS = "sandbox / {branch}"
 
 
 class Bitbucket3HookTests(WebhookTestCase):
-    STREAM_NAME = "bitbucket3"
+    CHANNEL_NAME = "bitbucket3"
     URL_TEMPLATE = "/api/v1/external/bitbucket3?stream={stream}&api_key={api_key}"
     WEBHOOK_DIR_NAME = "bitbucket3"
 
@@ -81,7 +81,7 @@ class Bitbucket3HookTests(WebhookTestCase):
         branch1_content = """[hypro999](http://139.59.64.214:7990/users/hypro999) pushed to branch branch1. Head is now 3980c2be32a7e23c795741d5dc1a2eecb9b85d6d."""
         master_content = """[hypro999](http://139.59.64.214:7990/users/hypro999) pushed to branch master. Head is now fc43d13cff1abb28631196944ba4fc4ad06a2cf2."""
 
-        self.subscribe(self.test_user, self.STREAM_NAME)
+        self.subscribe(self.test_user, self.CHANNEL_NAME)
         payload = self.get_body("repo_push_update_multiple_branches")
 
         msg = self.send_webhook_payload(
@@ -92,17 +92,17 @@ class Bitbucket3HookTests(WebhookTestCase):
         )
 
         msg = self.get_second_to_last_message()
-        self.assert_stream_message(
+        self.assert_channel_message(
             message=msg,
-            stream_name=self.STREAM_NAME,
+            channel_name=self.CHANNEL_NAME,
             topic_name=TOPIC_BRANCH_EVENTS.format(branch="branch1"),
             content=branch1_content,
         )
 
         msg = self.get_last_message()
-        self.assert_stream_message(
+        self.assert_channel_message(
             message=msg,
-            stream_name=self.STREAM_NAME,
+            channel_name=self.CHANNEL_NAME,
             topic_name=TOPIC_BRANCH_EVENTS.format(branch="master"),
             content=master_content,
         )

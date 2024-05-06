@@ -2,7 +2,7 @@ from zerver.lib.test_classes import WebhookTestCase
 
 
 class GrooveHookTests(WebhookTestCase):
-    STREAM_NAME = "groove"
+    CHANNEL_NAME = "groove"
     URL_TEMPLATE = "/api/v1/external/groove?stream={stream}&api_key={api_key}"
     WEBHOOK_DIR_NAME = "groove"
 
@@ -64,7 +64,7 @@ The content of the body goes here.
     # This simulates the condition when a ticket
     # is assigned to no one.
     def test_groove_ticket_assigned_no_one(self) -> None:
-        self.subscribe(self.test_user, self.STREAM_NAME)
+        self.subscribe(self.test_user, self.CHANNEL_NAME)
         result = self.client_post(
             self.url,
             self.get_body("ticket_assigned__no_one"),

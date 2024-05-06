@@ -208,7 +208,7 @@ def create_subscription_events(data: TableData, realm_id: int) -> None:
     type event for all the existing Stream subscriptions.
 
     This is needed for all the export tools which do not include the
-    table `zerver_realmauditlog` (Slack, Gitter, etc.) because the appropriate
+    table `zerver_realmauditlog` (e.g. Slack) because the appropriate
     data about when a user was subscribed is not exported by the third-party
     service.
     """
@@ -855,10 +855,6 @@ def import_uploads(
                 # so, it is an error, default_user_profile_id will be
                 # None, and we assert.  For emoji / realm icons, we
                 # fall back to default_user_profile_id.
-                # default_user_profile_id can be None in Gitter
-                # imports, which do not create any owners; but Gitter
-                # does not have emoji which we would need to allocate
-                # a user to.
                 assert default_user_profile_id is not None
                 metadata["user_profile_id"] = str(default_user_profile_id)
             else:

@@ -133,7 +133,7 @@ configuration change), or [turn this feature off]({organization_settings_url}) a
             zulip_update_announcements_stream=realm.zulip_update_announcements_stream.name,
             topic_name=topic_name,
             organization_settings_url="/#organization/organization-settings",
-            move_content_another_stream_help_url="/help/move-content-to-another-stream",
+            move_content_another_stream_help_url="/help/move-content-to-another-channel",
         )
     return internal_prep_huddle_message(
         realm, sender, remove_single_newlines(content), recipient_users=administrators

@@ -10,10 +10,10 @@ const {realm} = require("./lib/zpage_params");
 const fake_buddy_list = {
     scroll_container_selector: "#whatever",
     $users_matching_view_container: {
-        data() {},
+        attr() {},
     },
     $other_users_container: {
-        data() {},
+        attr() {},
     },
     find_li() {},
     first_key() {},

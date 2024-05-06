@@ -14,14 +14,14 @@
     <div class="input-group">
         <div id="invite_users_option_tabs_container" class="new-style"></div>
         <div id="invitee_emails_container">
-            <label for="invitee_emails">{{t "Emails (one on each line or comma-separated)" }}</label>
+            <label for="invitee_emails" class="modal-field-label">{{t "Emails (one on each line or comma-separated)" }}</label>
             <div class="pill-container">
                 <div class="input" contenteditable="true"></div>
             </div>
         </div>
     </div>
     <div class="input-group">
-        <label for="expires_in">{{t "Invitation expires after" }}</label>
+        <label for="expires_in" class="modal-field-label">{{t "Invitation expires after" }}</label>
         <select id="expires_in" class="invite-expires-in modal_select bootstrap-focus-style">
             {{#each expires_in_options}}
                 <option {{#if this.default }}selected{{/if}} name="expires_in" value="{{this.value}}">{{this.description}}</option>
@@ -29,7 +29,7 @@
         </select>
         <p id="expires_on"></p>
         <div id="custom-invite-expiration-time" class="dependent-settings-block">
-            <label for="expires_in">{{t "Custom time" }}</label>
+            <label for="expires_in" class="modal-field-label">{{t "Custom time" }}</label>
             <input type="text" autocomplete="off" name="custom-expiration-time" id="custom-expiration-time-input" class="custom-expiration-time inline-block" value="" maxlength="3"/>
             <select class="custom-expiration-time modal_select bootstrap-focus-style" id="custom-expiration-time-unit">
                 {{#each time_choices}}
@@ -40,7 +40,7 @@
         </div>
     </div>
     <div class="input-group">
-        <label for="invite_as">{{t "Users join as" }}
+        <label for="invite_as" class="modal-field-label">{{t "Users join as" }}
             {{> help_link_widget link="/help/roles-and-permissions" }}
         </label>
         <select id="invite_as" class="invite-as modal_select bootstrap-focus-style">

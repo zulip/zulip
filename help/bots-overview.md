@@ -39,7 +39,7 @@ The **bot type** determines what the bot can do.
 
 Bot type | Permissions | Common uses
 ---|---|---
-Generic | Like a normal user account | Automating tasks, bots that listen to all messages on a stream
+Generic | Like a normal user account | Automating tasks, bots that listen to all messages on a channel
 Incoming webhook | Limited to only sending messages into Zulip | Automated notifications into Zulip
 Outgoing webhook | Generic bot that also receives new messages via HTTP post requests | Third party integrations, most custom bots
 
@@ -49,16 +49,16 @@ bot can.
 
 A few more details:
 
-* Bots can send messages to any stream that their owner can,
-  inheriting their owner's [sending permissions](/help/stream-sending-policy).
+* Bots can send messages to any channel that their owner can,
+  inheriting their owner's [sending permissions](/help/channel-posting-policy).
 
-* Bots can be subscribed to streams, and their role can be modified if
+* Bots can be subscribed to channels, and their role can be modified if
   they need to have permission to do administrative actions.
 
-* [Stream permissions](/help/stream-permissions) are the same for bots
-  as for other users. Therefore, for private streams with protected
+* [Channel permissions](/help/channel-permissions) are the same for bots
+  as for other users. Therefore, for private channels with protected
   history, a bot can only access messages sent after it subscribed
-  to the stream.
+  to the channel.
 
 * **Generic**: A generic bot is like a normal Zulip user account that
   cannot log in via a browser.  Note that if you truly want to
@@ -66,7 +66,7 @@ A few more details:
   account), you'll need to use your **personal API key**.
 
 * **Outgoing webhook**: The bot can read direct messages where the bot is a
-  participant, and stream messages where the bot is [mentioned](/help/mention-a-user-or-group). When the
+  participant, and channel messages where the bot is [mentioned](/help/mention-a-user-or-group). When the
   bot is DM'd or mentioned, it POSTs the message content to a URL of your
   choice. The POST request format can be in a Zulip format or a
   Slack-compatible format.

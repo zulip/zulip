@@ -3,7 +3,7 @@
 The Zulip web app displays typing notifications in [conversation
 views](/help/reading-conversations) and [**All direct
 messages**](/help/direct-messages#access-all-dms). Typing
-notifications are not shown in streams with more than 100
+notifications are not shown in channels with more than 100
 subscribers. The mobile app displays typing notifications in direct
 message conversations.
 
@@ -25,7 +25,7 @@ configure Zulip to not send typing notifications.
 {settings_tab|account-and-privacy}
 
 1. Under **Privacy**, toggle **Let recipients see when I'm typing direct
-   messages** and **Let recipients see when I'm typing messages in streams**.
+   messages** and **Let recipients see when I'm typing messages in channels**.
 
 {end_tabs}
 

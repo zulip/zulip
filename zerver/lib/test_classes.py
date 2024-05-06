@@ -2080,7 +2080,7 @@ class WebhookTestCase(ZulipTestCase):
       important for ensuring we document all fully supported event types.
     """
 
-    STREAM_NAME: Optional[str] = None
+    CHANNEL_NAME: Optional[str] = None
     TEST_USER_EMAIL = "webhook-bot@zulip.com"
     URL_TEMPLATE: str
     WEBHOOK_DIR_NAME: Optional[str] = None
@@ -2148,7 +2148,7 @@ You can fix this by adding "{complete_event_type}" to ALL_EVENT_TYPES for this w
             self.patch.start()
             self.addCleanup(self.patch.stop)
 
-    def api_stream_message(
+    def api_channel_message(
         self,
         user: UserProfile,
         fixture_name: str,
@@ -2185,7 +2185,7 @@ You can fix this by adding "{complete_event_type}" to ALL_EVENT_TYPES for this w
         We use `fixture_name` to find the payload data in of our test
         fixtures.  Then we verify that a message gets sent to a stream:
 
-            self.STREAM_NAME: stream name
+            self.CHANNEL_NAME: stream name
             expected_topic_name: topic name
             expected_message: content
 
@@ -2197,8 +2197,8 @@ You can fix this by adding "{complete_event_type}" to ALL_EVENT_TYPES for this w
 
         When no message is expected to be sent, set `expect_noop` to True.
         """
-        assert self.STREAM_NAME is not None
-        self.subscribe(self.test_user, self.STREAM_NAME)
+        assert self.CHANNEL_NAME is not None
+        self.subscribe(self.test_user, self.CHANNEL_NAME)
 
         payload = self.get_payload(fixture_name)
         if content_type is not None:
@@ -2232,21 +2232,21 @@ one or more new messages.
             )
         assert expected_message is not None and expected_topic_name is not None
 
-        self.assert_stream_message(
+        self.assert_channel_message(
             message=msg,
-            stream_name=self.STREAM_NAME,
+            channel_name=self.CHANNEL_NAME,
             topic_name=expected_topic_name,
             content=expected_message,
         )
 
-    def assert_stream_message(
+    def assert_channel_message(
         self,
         message: Message,
-        stream_name: str,
+        channel_name: str,
         topic_name: str,
         content: str,
     ) -> None:
-        self.assert_message_stream_name(message, stream_name)
+        self.assert_message_stream_name(message, channel_name)
         self.assertEqual(message.topic_name(), topic_name)
         self.assertEqual(message.content, content)
 
@@ -2291,9 +2291,9 @@ one or more new messages.
         url = self.URL_TEMPLATE
         if url.find("api_key") >= 0:
             api_key = get_api_key(self.test_user)
-            url = self.URL_TEMPLATE.format(api_key=api_key, stream=self.STREAM_NAME)
+            url = self.URL_TEMPLATE.format(api_key=api_key, stream=self.CHANNEL_NAME)
         else:
-            url = self.URL_TEMPLATE.format(stream=self.STREAM_NAME)
+            url = self.URL_TEMPLATE.format(stream=self.CHANNEL_NAME)
 
         has_arguments = kwargs or args
         if has_arguments and url.find("?") == -1:

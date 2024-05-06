@@ -86,7 +86,7 @@ off the discussion by [starting a new topic](/help/starting-a-new-topic)
 in the appropriate stream! Don’t stress too much about picking the
 right place if you’re not sure; anyone in the community can edit a
 topic name, and [moderators](/help/roles-and-permissions) can [move a
-topic to a different stream](/help/move-content-to-another-stream).
+topic to a different stream](/help/move-content-to-another-channel).
 
 ## Streams for everyone
 
@@ -113,7 +113,7 @@ topic to a different stream](/help/move-content-to-another-stream).
   for sending test messages without inconveniencing other users :). We
   recommend muting this stream when not using it.
 
-## Streams for Zulip users and administrators
+## Channels for Zulip users and administrators
 
 - [#user questions](https://chat.zulip.org/#narrow/stream/138-user-questions) is
   for questions about how to configure your Zulip organization, and accomplish

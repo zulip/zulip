@@ -289,11 +289,11 @@ export function initialize(): void {
         }
     });
 
-    $("body").on("click", ".message_edit_notice", (e) => {
+    $("body").on("click", ".message_edit_notice", function (this: HTMLElement, e) {
         e.stopPropagation();
         e.preventDefault();
 
-        const message_id = rows.id($(e.currentTarget).closest(".message_row"));
+        const message_id = rows.id($(this).closest(".message_row"));
         assert(message_lists.current !== undefined);
         const $row = message_lists.current.get_row(message_id);
         const row_id = rows.id($row);
@@ -311,7 +311,11 @@ export function initialize(): void {
         }
     });
 
-    $("body").on("focus", "#message-history-overlay .overlay-message-info-box", (e) => {
-        messages_overlay_ui.activate_element(e.target, keyboard_handling_context);
-    });
+    $("body").on(
+        "focus",
+        "#message-history-overlay .overlay-message-info-box",
+        function (this: HTMLElement) {
+            messages_overlay_ui.activate_element(this, keyboard_handling_context);
+        },
+    );
 }

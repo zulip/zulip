@@ -383,8 +383,9 @@ export function initialize(): void {
                 );
             },
             error(xhr) {
-                if (xhr.responseJSON?.msg) {
-                    $("#org-billing-frequency-change-error").text(xhr.responseJSON.msg);
+                const parsed = z.object({msg: z.string()}).safeParse(xhr.responseJSON);
+                if (parsed.success) {
+                    $("#org-billing-frequency-change-error").text(parsed.data.msg);
                 }
             },
         });

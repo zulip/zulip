@@ -1,7 +1,7 @@
 Get Beeminder notifications in Zulip whenever you're going
 to derail from your goal!
 
-1. {!create-stream.md!}
+1. {!create-channel.md!}
 
 1. {!create-an-incoming-webhook.md!}
 

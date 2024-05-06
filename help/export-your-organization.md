@@ -12,12 +12,12 @@ Zulip Cloud service to your own servers. Two types of data exports are available
 to all Zulip Cloud organizations:
 
 * [**Export of public data**](#export-of-public-data): Complete data for your
-   organization *other than* [private stream](/help/stream-permissions) messages
+   organization *other than* [private channel](/help/channel-permissions) messages
    and [direct messages](/help/direct-messages).
 
 * [**Full export with member consent**](#full-export-with-member-consent):
   Everything in the export of public data, plus all the [private
-  stream](/help/stream-permissions) messages and [direct
+  channel](/help/channel-permissions) messages and [direct
   messages](/help/direct-messages) of members who opt in to have their data
   exported.
 
@@ -66,11 +66,11 @@ file from that page.
 In addition to your organization's public data, this export includes all the
 messages received by any user in the organization who consents to the data
 export. In particular, it includes any [private
-stream](/help/stream-permissions) messages and [direct
+channel](/help/channel-permissions) messages and [direct
 messages](/help/direct-messages) where *at least one of the recipients* has
 given consent.
 
-Users who do not provide consent will have their settings and stream
+Users who do not provide consent will have their settings and channel
 subscriptions exported, but will have no personalized message history.
 
 {start_tabs}
@@ -88,7 +88,7 @@ subscriptions exported, but will have no personalized message history.
 
 1. You will receive an archive in the `.tar.gz` format containing all public
    information for your organization, plus [private
-   stream](/help/stream-permissions) messages and [direct
+   channel](/help/channel-permissions) messages and [direct
    messages](/help/direct-messages) for users who gave consent.
 
 1. Import the tarball using [Zulip's logical data import tool][import-only].

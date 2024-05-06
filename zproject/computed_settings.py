@@ -1176,6 +1176,10 @@ CROSS_REALM_BOT_EMAILS = {
     "emailgateway@zulip.com",
 }
 
+MOBILE_NOTIFICATIONS_SHARDS = int(
+    get_config("application_server", "mobile_notification_shards", "1")
+)
+
 TWO_FACTOR_PATCH_ADMIN = False
 
 # Allow the environment to override the default DSN

@@ -313,7 +313,7 @@ export function update_notification_setting_checkbox(notification_name) {
     if (!$stream_row.length) {
         return;
     }
-    const stream_id = $stream_row.data("stream-id");
+    const stream_id = Number($stream_row.attr("data-stream-id"));
     $(`#${CSS.escape(notification_name)}_${CSS.escape(stream_id)}`).prop(
         "checked",
         stream_data.receives_notifications(stream_id, notification_name),

@@ -1,9 +1,9 @@
 # Reading strategies
 
-In Zulip, streams determine who gets a message. Topics tell you what
+In Zulip, channels determine who gets a message. Topics tell you what
 the message is about. If you are not yet familiar with Zulip's topics,
-we recommend first reading about [streams and
-topics](/help/streams-and-topics).
+we recommend first reading about [channels and
+topics](/help/channels-and-topics).
 
 This article describes a few ways to efficiently read through messages
 in Zulip.
@@ -38,7 +38,7 @@ in Zulip.
 
 You can improve your workflow for catching up on messages by taking advantage of
 [following topics](/help/follow-a-topic), as well as muting and unmuting
-[streams](/help/mute-a-stream) and [topics](/help/mute-a-topic). Some example
+[channels](/help/mute-a-channel) and [topics](/help/mute-a-topic). Some example
 workflows:
 
 {!followed-topic-workflows.md!}
@@ -73,9 +73,9 @@ You can see all your direct messages in one place.
 
 {end_tabs}
 
-### Stream view
+### Channel view
 
-Sometimes it's useful to scroll through all the messages in a stream,
+Sometimes it's useful to scroll through all the messages in a channel,
 especially in situations where you just want a general idea of what's going
 on.
 
@@ -83,14 +83,14 @@ on.
 
 {tab|desktop-web}
 
-1. Find the stream you want to read in the left sidebar. If you don't see it
-   right away, you can search for a stream by clicking on **STREAMS** in the
+1. Find the channel you want to read in the left sidebar. If you don't see it
+   right away, you can search for a channel by clicking on **CHANNELS** in the
    left sidebar, or using the <kbd>Q</kbd> [keyboard
    shortcut](/help/keyboard-shortcuts).
 
-1. Click on the stream name in the left sidebar.
+1. Click on the channel name in the left sidebar.
 
-1. Read messages in the stream, starting from your first unread message. You can
+1. Read messages in the channel, starting from your first unread message. You can
   scroll using your mouse, the arrow keys, <kbd>End</kbd>, or page up/down.
 
 1. You can click on a topic in the left sidebar or a message recipient bar to

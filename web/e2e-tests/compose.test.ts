@@ -78,10 +78,9 @@ async function test_reply_by_click_prepopulates_private_message_recipient(
     assert.ok(private_message !== null);
     await private_message.click();
     await page.waitForSelector("#private_message_recipient", {visible: true});
-    await common.pm_recipient.expect(
-        page,
-        await common.get_internal_email_from_name(page, "cordelia"),
-    );
+    const email = await common.get_internal_email_from_name(page, "cordelia");
+    assert(email !== undefined);
+    await common.pm_recipient.expect(page, email);
     await close_compose_box(page);
 }
 

@@ -23,6 +23,7 @@ from confirmation.models import Confirmation, confirmation_url
 from confirmation.settings import STATUS_USED
 from corporate.lib.activity import format_optional_datetime, remote_installation_stats_link
 from corporate.lib.stripe import (
+    BILLING_SUPPORT_EMAIL,
     RealmBillingSession,
     RemoteRealmBillingSession,
     RemoteServerBillingSession,
@@ -55,6 +56,7 @@ from zerver.actions.users import do_delete_user_preserving_messages
 from zerver.decorator import require_server_admin, zulip_login_required
 from zerver.forms import check_subdomain_available
 from zerver.lib.exceptions import JsonableError
+from zerver.lib.rate_limiter import rate_limit_request_by_ip
 from zerver.lib.realm_icon import realm_icon_url
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.send_email import FromAddress, send_email
@@ -166,6 +168,8 @@ def demo_request(request: HttpRequest) -> HttpResponse:
         form = DemoRequestForm(post_data)
 
         if form.is_valid():
+            rate_limit_request_by_ip(request, domain="sends_email_by_ip")
+
             email_context = {
                 "full_name": form.cleaned_data["full_name"],
                 "email": form.cleaned_data["email"],
@@ -176,10 +180,10 @@ def demo_request(request: HttpRequest) -> HttpResponse:
                 "expected_user_count": form.cleaned_data["expected_user_count"],
                 "message": form.cleaned_data["message"],
             }
-            # Sent to the server's support team, so this email is not user-facing.
+            # Sent to the server's sales team, so this email is not user-facing.
             send_email(
                 "zerver/emails/demo_request",
-                to_emails=[FromAddress.SUPPORT],
+                to_emails=[BILLING_SUPPORT_EMAIL],
                 from_name="Zulip demo request",
                 from_address=FromAddress.tokenized_no_reply_address(),
                 reply_to_email=email_context["email"],

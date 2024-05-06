@@ -173,7 +173,7 @@ def select_welcome_bot_response(human_response_lower: str) -> str:
         return "".join(
             [
                 _("In Zulip, channels [determine who gets a message]({help_link}).").format(
-                    help_link="/help/streams-and-topics"
+                    help_link="/help/channels-and-topics"
                 )
                 + "\n\n",
                 _("[Browse and subscribe to channels]({settings_link}).").format(
@@ -185,7 +185,7 @@ def select_welcome_bot_response(human_response_lower: str) -> str:
         return "".join(
             [
                 _(
-                    "In Zulip, topics [tell you what a message is about](/help/streams-and-topics). "
+                    "In Zulip, topics [tell you what a message is about](/help/channels-and-topics). "
                     "They are light-weight subjects, very similar to the subject line of an email."
                 )
                 + "\n\n",
@@ -296,7 +296,7 @@ def send_initial_realm_messages(realm: Realm) -> None:
             + _(
                 "You can learn more about topics at [Channels and topics]({about_topics_help_url})."
             )
-        ).format(about_topics_help_url="/help/streams-and-topics")
+        ).format(about_topics_help_url="/help/channels-and-topics")
 
         content_of_swimming_turtles_topic_name = (
             _(

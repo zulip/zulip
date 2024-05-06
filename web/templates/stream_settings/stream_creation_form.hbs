@@ -6,7 +6,7 @@
             <div id="stream_creating_indicator"></div>
             <div class="stream-creation-body">
                 <section class="block">
-                    <label for="create_stream_name">
+                    <label for="create_stream_name" class="settings-field-label">
                         {{t "Channel name" }}
                     </label>
                     <input type="text" name="stream_name" id="create_stream_name" class="settings_text_input"
@@ -14,9 +14,9 @@
                     <div id="stream_name_error" class="stream_creation_error"></div>
                 </section>
                 <section class="block">
-                    <label for="create_stream_description">
+                    <label for="create_stream_description" class="settings-field-label">
                         {{t "Channel description" }}
-                        {{> ../help_link_widget link="/help/change-the-stream-description" }}
+                        {{> ../help_link_widget link="/help/change-the-channel-description" }}
                     </label>
                     <input type="text" name="stream_description" id="create_stream_description" class="settings_text_input"
                       placeholder="{{t 'Channel description' }}" value="" autocomplete="off" maxlength="{{ max_stream_description_length }}" />

@@ -4,7 +4,7 @@ from zerver.lib.test_classes import WebhookTestCase
 
 
 class FreshdeskHookTests(WebhookTestCase):
-    STREAM_NAME = "freshdesk"
+    CHANNEL_NAME = "freshdesk"
     URL_TEMPLATE = "/api/v1/external/freshdesk?stream={stream}"
     WEBHOOK_DIR_NAME = "freshdesk"
 
@@ -26,7 +26,7 @@ Test ticket description ☃.
 * **Status**: Pending
 """.strip()
 
-        self.api_stream_message(
+        self.api_channel_message(
             self.test_user,
             "ticket_created",
             expected_topic_name,
@@ -46,7 +46,7 @@ Requester Bob <requester-bob@example.com> updated [ticket #11](http://test1234zz
 * **Status**: Resolved -> Waiting on Customer
 """.strip()
 
-        self.api_stream_message(
+        self.api_channel_message(
             self.test_user,
             "status_changed",
             expected_topic_name,
@@ -65,7 +65,7 @@ Requester Bob <requester-bob@example.com> updated [ticket #11](http://test1234zz
 
 * **Priority**: High -> Low
 """.strip()
-        self.api_stream_message(
+        self.api_channel_message(
             self.test_user,
             "priority_changed",
             expected_topic_name,
@@ -99,7 +99,7 @@ Requester Bob <requester-bob@example.com> updated [ticket #11](http://test1234zz
 Requester Bob <requester-bob@example.com> added a {} note to \
 [ticket #11](http://test1234zzz.freshdesk.com/helpdesk/tickets/11).
 """.strip().format(note_type)
-        self.api_stream_message(
+        self.api_channel_message(
             self.test_user,
             fixture,
             expected_topic_name,
@@ -123,7 +123,7 @@ Requester Bob <requester-bob@example.com> added a {} note to \
         expected_message = """
 Requester \u2603 Bob <requester-bob@example.com> created [ticket #12](http://test1234zzz.freshdesk.com/helpdesk/tickets/12):\n\n``` quote\nThere are too many cat pictures on the internet \u2603. We need more guinea pigs.\nExhibit 1:\n\n  \n\n[guinea_pig.png](http://cdn.freshdesk.com/data/helpdesk/attachments/production/12744808/original/guinea_pig.png)\n```\n\n* **Type**: Problem\n* **Priority**: Urgent\n* **Status**: Open
 """.strip()
-        self.api_stream_message(
+        self.api_channel_message(
             self.test_user,
             "inline_images",
             expected_topic_name,

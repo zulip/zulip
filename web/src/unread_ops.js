@@ -311,11 +311,6 @@ export function process_read_messages_event(message_ids) {
     if (message_ids.length === 0) {
         return;
     }
-    if (message_lists.current?.narrowed) {
-        // I'm not sure this entirely makes sense for all server
-        // notifications.
-        unread.set_messages_read_in_narrow(true);
-    }
 
     for (const message_id of message_ids) {
         unread.mark_as_read(message_id);
@@ -338,10 +333,6 @@ export function process_unread_messages_event({message_ids, message_details}) {
     message_ids = unread.get_read_message_ids(message_ids);
     if (message_ids.length === 0) {
         return;
-    }
-
-    if (message_lists.current?.narrowed) {
-        unread.set_messages_read_in_narrow(false);
     }
 
     for (const message_id of message_ids) {
@@ -419,10 +410,6 @@ export function notify_server_messages_read(messages, options = {}) {
     }
 
     message_flags.send_read(messages);
-
-    if (message_lists.current?.narrowed) {
-        unread.set_messages_read_in_narrow(true);
-    }
 
     for (const message of messages) {
         unread.mark_as_read(message.id);

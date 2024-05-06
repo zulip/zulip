@@ -540,18 +540,12 @@ input[type="checkbox"] {
     margin-top: 10px;
 }
 
-.language_selection_widget {
-    .title {
-        margin-bottom: 3px;
-    }
+.language_selection_widget .language_selection_button {
+    text-decoration: none;
+    color: hsl(0deg 0% 20%);
 
-    .language_selection_button {
-        text-decoration: none;
-        color: hsl(0deg 0% 20%);
-
-        .fa.fa-pencil {
-            margin-left: 5px;
-        }
+    .fa.fa-pencil {
+        margin-left: 5px;
     }
 }
 
@@ -1488,7 +1482,7 @@ $option_title_width: 180px;
     gap: 15px;
 
     .jitsi_server_url_custom_input_label {
-        margin-bottom: 3px;
+        margin-bottom: var(--margin-bottom-field-description);
     }
 }
 
@@ -1532,13 +1526,6 @@ $option_title_width: 180px;
     #show_my_user_profile_modal i {
         padding-left: 2px;
         vertical-align: middle;
-    }
-
-    .custom_user_field,
-    .user-name-section {
-        .settings-profile-field-user-hint {
-            color: var(--color-text-settings-field-hint);
-        }
     }
 }
 
@@ -1596,8 +1583,23 @@ $option_title_width: 180px;
     }
 }
 
-.dropdown-title {
-    margin-bottom: 3px;
+.settings-field-label {
+    margin-bottom: var(--margin-bottom-field-description);
+}
+
+.settings-profile-user-field-hint {
+    color: var(--color-text-settings-field-hint);
+    /* We effectively eliminate the margin-bottom on
+       .settings-field-label by pulling .field-hint
+       up a corresponding negative value. This cinches
+       things up a little tighter, given the generous
+       line-height (20px) on <label> elements, though
+       note well that that comes care of Bootstrap. */
+    margin-top: calc(var(--margin-bottom-field-description) * -1.5);
+    /* Maintain the same margin-bottom value as appears
+       with .settings-field-label to display text-input
+       combinations uniformly throughout the settings UI. */
+    margin-bottom: var(--margin-bottom-field-description);
 }
 
 .profile-field-choices {

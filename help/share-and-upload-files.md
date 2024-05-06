@@ -62,7 +62,7 @@ People reading the message can click on the preview to
 
 {tab|mobile}
 
-1. Navigate to a stream, topic, or direct message view.
+1. Navigate to a channel, topic, or direct message view.
 
 1. Tap the
    **paperclip** (<img src="/static/images/help/mobile-paperclip-icon.svg" alt="paperclip" class="help-center-icon"/>),
@@ -93,7 +93,7 @@ You can share files from other apps on Zulip.
    (<img src="/static/images/logo/zulip-icon-circle.svg" alt="logo" class="help-center-icon"/>)
    logo.
 
-1. Select a stream name and topic name, or tap the
+1. Select a channel name and topic name, or tap the
    **Direct message** tab and **Choose recipients**.
 
 1. _(optional)_ Write a message.

@@ -3,6 +3,7 @@ from collections import defaultdict
 from dataclasses import asdict, dataclass, field
 from typing import List, Optional, Set
 
+from django.conf import settings
 from django.db import transaction
 from django.db.models import F
 from django.utils.timezone import now as timezone_now
@@ -247,14 +248,16 @@ def do_clear_mobile_push_notifications_for_ids(
         messages_by_user[user_id].append(message_id)
 
     for user_profile_id, event_message_ids in messages_by_user.items():
-        queue_json_publish(
-            "missedmessage_mobile_notifications",
-            {
-                "type": "remove",
-                "user_profile_id": user_profile_id,
-                "message_ids": event_message_ids,
-            },
-        )
+        notice = {
+            "type": "remove",
+            "user_profile_id": user_profile_id,
+            "message_ids": event_message_ids,
+        }
+        if settings.MOBILE_NOTIFICATIONS_SHARDS > 1:  # nocoverage
+            shard_id = user_profile_id % settings.MOBILE_NOTIFICATIONS_SHARDS + 1
+            queue_json_publish(f"missedmessage_mobile_notifications_shard{shard_id}", notice)
+        else:
+            queue_json_publish("missedmessage_mobile_notifications", notice)
 
 
 def do_update_message_flags(

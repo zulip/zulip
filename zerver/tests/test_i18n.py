@@ -22,10 +22,11 @@ if TYPE_CHECKING:
 class EmailTranslationTestCase(ZulipTestCase):
     def test_email_translation(self) -> None:
         def check_translation(phrase: str, request_type: str, *args: Any, **kwargs: Any) -> None:
-            if request_type == "post":
-                self.client_post(*args, **kwargs)
-            elif request_type == "patch":
-                self.client_patch(*args, **kwargs)
+            with self.captureOnCommitCallbacks(execute=True):
+                if request_type == "post":
+                    self.client_post(*args, **kwargs)
+                elif request_type == "patch":
+                    self.client_patch(*args, **kwargs)
 
             email_message = mail.outbox[0]
             self.assertIn(phrase, email_message.body)

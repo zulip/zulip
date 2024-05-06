@@ -29,7 +29,7 @@ function get_chosen_default_streams() {
     // Return the set of stream id's of streams chosen in the default stream modal.
     return new Set(
         $("#default-stream-choices .choice-row .dropdown_widget_value")
-            .map((_i, elem) => $(elem).data("stream-id")?.toString())
+            .map((_i, elem) => Number($(elem).attr("data-stream-id")).toString())
             .get(),
     );
 }
@@ -58,7 +58,7 @@ function create_choice_row() {
         const $stream_dropdown_widget = $(`#${CSS.escape(stream_dropdown_widget_name)}_widget`);
         const $stream_name = $stream_dropdown_widget.find(".dropdown_widget_value");
         $stream_name.text(selected_stream_name);
-        $stream_name.data("stream-id", selected_stream_id);
+        $stream_name.attr("data-stream-id", selected_stream_id);
 
         add_choice_row($stream_dropdown_widget);
         dropdown.hide();
@@ -212,7 +212,7 @@ function show_add_default_streams_modal() {
         html_heading: $t_html({defaultMessage: "Add default channels"}),
         html_body,
         html_submit_button: $t_html({defaultMessage: "Add"}),
-        help_link: "/help/set-default-streams-for-new-users",
+        help_link: "/help/set-default-channels-for-new-users",
         id: "add-default-stream-modal",
         loading_spinner: true,
         on_click: add_default_streams,

@@ -8,7 +8,7 @@
     {% set owner_emails_string = get_realm_owner_emails_as_string(realm) %}
     <b>Owners</b>: {{ owner_emails_string }}
     {% if owner_emails_string %}
-    <a title="Copy emails" class="copy-button" data-copytext="{{ owner_emails_string }}">
+    <a title="Copy emails" class="copy-button" data-clipboard-text="{{ owner_emails_string }}">
         <i class="fa fa-copy"></i>
     </a>
     {% endif %}
@@ -16,7 +16,7 @@
     {% set admin_emails_string = get_realm_admin_emails_as_string(realm) %}
     <b>Admins</b>: {{ admin_emails_string }}
     {% if admin_emails_string %}
-    <a title="Copy emails" class="copy-button" data-copytext="{{ admin_emails_string }}">
+    <a title="Copy emails" class="copy-button" data-clipboard-text="{{ admin_emails_string }}">
         <i class="fa fa-copy"></i>
     </a>
     {% endif %}
@@ -24,7 +24,7 @@
     {% set first_human_user = realm.get_first_human_user() %}
     {% if first_human_user %}
     <b>First human user</b>: {{ first_human_user.delivery_email  }}
-    <a title="Copy emails" class="copy-button" data-copytext="{{ first_human_user.delivery_email }}">
+    <a title="Copy emails" class="copy-button" data-clipboard-text="{{ first_human_user.delivery_email }}">
         <i class="fa fa-copy"></i>
     </a>
     {% else %}

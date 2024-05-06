@@ -173,13 +173,13 @@ export function update_count_in_dom(
 }
 
 class StreamSidebar {
-    rows = new Map(); // stream id -> row widget
+    rows = new Map<number, StreamSidebarRow>(); // stream id -> row widget
 
     set_row(stream_id: number, widget: StreamSidebarRow): void {
         this.rows.set(stream_id, widget);
     }
 
-    get_row(stream_id: number): StreamSidebarRow {
+    get_row(stream_id: number): StreamSidebarRow | undefined {
         return this.rows.get(stream_id);
     }
 
@@ -254,6 +254,7 @@ export function build_stream_list(force_rerender: boolean): void {
 
     function add_sidebar_li(stream_id: number): void {
         const sidebar_row = stream_sidebar.get_row(stream_id);
+        assert(sidebar_row !== undefined);
         sidebar_row.update_whether_active();
         elems.push(sidebar_row.get_li());
     }

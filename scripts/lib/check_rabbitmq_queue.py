@@ -2,11 +2,15 @@ import json
 import os
 import re
 import subprocess
+import sys
 import time
 from collections import defaultdict
 from typing import Any, DefaultDict, Dict, List
 
 ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+sys.path.append(ZULIP_PATH)
+from scripts.lib.zulip_tools import get_config, get_config_file
 
 normal_queues = [
     "deferred_work",
@@ -15,7 +19,6 @@ normal_queues = [
     "email_senders",
     "embed_links",
     "embedded_bots",
-    "invites",
     "missedmessage_emails",
     "missedmessage_mobile_notifications",
     "outgoing_webhooks",
@@ -23,6 +26,10 @@ normal_queues = [
     "user_activity_interval",
     "user_presence",
 ]
+
+mobile_notification_shards = int(
+    get_config(get_config_file(), "application_server", "mobile_notification_shards", "1")
+)
 
 OK = 0
 WARNING = 1
@@ -155,7 +162,13 @@ def check_rabbitmq_queues() -> None:
         text=True,
     ).strip()
     queue_stats: Dict[str, Dict[str, Any]] = {}
-    queues_to_check = set(normal_queues).intersection(set(queues_with_consumers))
+    check_queues = normal_queues
+    if mobile_notification_shards > 1:
+        check_queues += [
+            f"missedmessage_mobile_notifications_shard{d}"
+            for d in range(1, mobile_notification_shards + 1)
+        ]
+    queues_to_check = set(check_queues).intersection(set(queues_with_consumers))
     for queue in queues_to_check:
         fn = queue + ".stats"
         file_path = os.path.join(queue_stats_dir, fn)

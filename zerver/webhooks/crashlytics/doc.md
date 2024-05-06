@@ -1,7 +1,7 @@
 Zulip supports integration with Crashlytics and can notify you
 about Crashlytics issues.
 
-1. {!create-stream.md!}
+1. {!create-channel.md!}
 
 1. {!create-an-incoming-webhook.md!}
 

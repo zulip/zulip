@@ -91,7 +91,7 @@ export function scroll_finished() {
         message_scroll_state.set_update_selection_on_next_scroll(true);
     }
 
-    if (message_viewport.at_rendered_top()) {
+    if (message_lists.current.view.should_fetch_older_messages()) {
         // Subtle note: While we've only checked that we're at the
         // very top of the render window (i.e. there may be some more
         // cached messages to render), it's a good idea to fetch
@@ -102,7 +102,7 @@ export function scroll_finished() {
         });
     }
 
-    if (message_viewport.at_rendered_bottom()) {
+    if (message_lists.current.view.should_fetch_newer_messages()) {
         // See the similar message_viewport.at_rendered_top block.
         message_fetch.maybe_load_newer_messages({
             msg_list: message_lists.current,

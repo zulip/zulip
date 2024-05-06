@@ -93,7 +93,7 @@ class TutorialTests(ZulipTestCase):
         for content in messages:
             self.send_personal_message(user, bot, content)
             expected_response = (
-                "In Zulip, channels [determine who gets a message](/help/streams-and-topics).\n\n"
+                "In Zulip, channels [determine who gets a message](/help/channels-and-topics).\n\n"
                 "[Browse and subscribe to channels](#channels/all)."
             )
             self.assertEqual(most_recent_message(user).content, expected_response)
@@ -106,7 +106,7 @@ class TutorialTests(ZulipTestCase):
         for content in messages:
             self.send_personal_message(user, bot, content)
             expected_response = (
-                "In Zulip, topics [tell you what a message is about](/help/streams-and-topics). "
+                "In Zulip, topics [tell you what a message is about](/help/channels-and-topics). "
                 "They are light-weight subjects, very similar to the subject line of an email.\n\n"
                 "Check out [Recent conversations](#recent) to see what's happening! "
                 'You can return to this conversation by clicking "Direct messages" in the upper left.'

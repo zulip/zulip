@@ -380,6 +380,10 @@ export class MessageListView {
         message_container.modified = true;
     }
 
+    is_current_message_list() {
+        return this.list === message_lists.current;
+    }
+
     set_calculated_message_container_variables(message_container, is_revealed) {
         set_timestr(message_container);
 
@@ -1185,6 +1189,30 @@ export class MessageListView {
             this.list.num_items(),
         );
         return true;
+    }
+
+    should_fetch_older_messages() {
+        const selected_idx = this.list.selected_idx();
+        // We fetch older messages when the user is near the top of the
+        // rendered message feed and there are older messages to fetch.
+        return (
+            // Make sure we have no cached message left to render.
+            this._render_win_start === 0 &&
+            selected_idx - this._render_win_start < this._RENDER_THRESHOLD &&
+            !this.list.data.fetch_status.has_found_oldest()
+        );
+    }
+
+    should_fetch_newer_messages() {
+        const selected_idx = this.list.selected_idx();
+        // We fetch new messages when the user is near the bottom of the
+        // rendered message feed and there are newer messages to fetch.
+        return (
+            // Make sure we have no cached message left to render.
+            this._render_win_end === this.list.num_items() &&
+            this._render_win_end - selected_idx <= this._RENDER_THRESHOLD &&
+            !this.list.data.fetch_status.has_found_newest()
+        );
     }
 
     maybe_rerender() {

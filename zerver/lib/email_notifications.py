@@ -858,7 +858,7 @@ def enqueue_welcome_emails(user: UserProfile, realm_creation: bool = False) -> N
             unsubscribe_link=unsubscribe_link,
             move_messages_link=realm_url + "/help/move-content-to-another-topic",
             rename_topics_link=realm_url + "/help/rename-a-topic",
-            move_channels_link=realm_url + "/help/move-content-to-another-stream",
+            move_channels_link=realm_url + "/help/move-content-to-another-channel",
         )
 
         send_future_email(

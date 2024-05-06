@@ -1,7 +1,7 @@
 import _ from "lodash";
 import assert from "minimalistic-assert";
 
-import * as hash_util from "./hash_util";
+import * as browser_history from "./browser_history";
 import * as message_lists from "./message_lists";
 import * as narrow_state from "./narrow_state";
 
@@ -17,7 +17,7 @@ function _save_narrow_state(): void {
     assert(message_lists.current !== undefined);
     // We don't want to save state in the middle of a narrow change
     // to the wrong hash.
-    if (hash_util.search_terms_to_hash(current_filter.terms()) !== window.location.hash) {
+    if (browser_history.state.changing_hash) {
         return;
     }
 

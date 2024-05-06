@@ -1195,7 +1195,6 @@ ul {
     border-radius: 6px;
 
     .simplebar-content {
-        min-width: var(--popover-menu-min-width);
         /* Set the popover menu width equal to the width of the
         longest menu item, thus letting the menu items control
         the width of the menu. */
@@ -1294,6 +1293,29 @@ ul {
     .zulip-icon {
         position: relative;
         top: -1px;
+    }
+}
+
+#help-menu-dropdown,
+#gear-menu-dropdown,
+#personal-menu-dropdown {
+    .simplebar-content {
+        min-width: var(--navbar-popover-menu-min-width);
+    }
+}
+
+#message-actions-menu-dropdown {
+    --popover-menu-max-width: 350px;
+
+    .simplebar-content {
+        min-width: var(--message-actions-popover-min-width);
+    }
+}
+
+#stream-actions-menu-popover,
+#topic-actions-menu-popover {
+    .simplebar-content {
+        min-width: var(--topic-actions-popover-min-width);
     }
 }
 
@@ -1465,8 +1487,4 @@ ul.popover-menu-outer-list {
         outline: 1px solid var(--color-outline-focus) !important;
         outline-offset: -1px;
     }
-}
-
-#message-actions-menu-dropdown {
-    --popover-menu-max-width: 350px;
 }

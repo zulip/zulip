@@ -14,7 +14,7 @@ it, you'll never want to use a different team chat app!
 
 ## Learn about Zulip topics
 
-{!streams-and-topics.md!}
+{!channels-and-topics.md!}
 
 ## Reading your messages
 

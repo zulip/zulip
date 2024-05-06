@@ -1,7 +1,8 @@
 # Documented in https://zulip.readthedocs.io/en/latest/subsystems/queuing.html
 import logging
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 
+from django.conf import settings
 from typing_extensions import override
 
 from zerver.lib.push_notifications import (
@@ -22,6 +23,17 @@ class PushNotificationsWorker(QueueProcessingWorker):
     # SIGALRM to limit how long a consume takes, as SIGALRM does not
     # play well with asyncio.
     MAX_CONSUME_SECONDS = None
+
+    @override
+    def __init__(
+        self,
+        threaded: bool = False,
+        disable_timeout: bool = False,
+        worker_num: Optional[int] = None,
+    ) -> None:
+        if settings.MOBILE_NOTIFICATIONS_SHARDS > 1 and worker_num is not None:  # nocoverage
+            self.queue_name = self.queue_name + f"_shard{worker_num}"
+        super().__init__(threaded, disable_timeout, worker_num)
 
     @override
     def start(self) -> None:

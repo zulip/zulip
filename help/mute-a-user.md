@@ -37,7 +37,7 @@ have the following effects:
 * **Recent conversations** and other features that display avatars will
   show a generic user symbol in place of a muted user's profile picture.
 
-* To avoid interfering with administration tasks, stream and
+* To avoid interfering with administration tasks, channel and
   organization settings display muted users' names and other details.
 
 !!! tip ""
@@ -89,5 +89,5 @@ From there, you can also search for and **unmute** users.
 
 * [Deactivate a user](/help/deactivate-or-reactivate-a-user)
 * [Moderating open organizations](/help/moderating-open-organizations)
-* [Mute or unmute a stream](/help/mute-a-stream)
+* [Mute or unmute a channel](/help/mute-a-channel)
 * [Mute or unmute a topic](/help/mute-a-topic)

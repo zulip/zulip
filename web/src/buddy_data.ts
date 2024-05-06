@@ -343,10 +343,7 @@ function filter_user_ids(user_filter_text: string, user_ids: number[]): number[]
     search_terms = search_terms.map((s) => s.trim());
 
     const persons = user_ids.map((user_id) => people.get_by_user_id(user_id));
-
-    const user_id_dict = people.filter_people_by_search_terms(persons, search_terms);
-
-    return [...user_id_dict.keys()];
+    return [...people.filter_people_by_search_terms(persons, search_terms)];
 }
 
 function get_filtered_user_id_list(user_filter_text: string): number[] {

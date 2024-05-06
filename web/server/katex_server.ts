@@ -73,36 +73,39 @@ app.use((ctx, _next) => {
         ctx.status = 404;
         return;
     }
-    if (ctx.request.body === undefined) {
+    const body: unknown = ctx.request.body;
+    if (typeof body !== "object" || body === null) {
         ctx.status = 400;
         ctx.type = "text/plain";
         ctx.body = "Missing POST body";
         return;
     }
-    const given_secret = ctx.request.body.shared_secret;
-    if (typeof given_secret !== "string" || !compare_secret(given_secret)) {
+    if (
+        !("shared_secret" in body) ||
+        typeof body.shared_secret !== "string" ||
+        !compare_secret(body.shared_secret)
+    ) {
         ctx.status = 403;
         ctx.type = "text/plain";
         ctx.body = "Invalid 'shared_secret' argument";
         return;
     }
 
-    const content = ctx.request.body.content;
-    const is_display = ctx.request.body.is_display === "true";
+    const is_display = "is_display" in body && body.is_display === "true";
 
-    if (typeof content !== "string") {
+    if (!("content" in body) || typeof body.content !== "string") {
         ctx.status = 400;
         ctx.type = "text/plain";
         ctx.body = "Invalid 'content' argument";
         return;
     }
+    const content = body.content;
 
     httpRequestSizeBytes.labels(String(is_display)).observe(Buffer.byteLength(content, "utf8"));
     try {
-        ctx.body = katex.renderToString(content, {displayMode: is_display});
-        httpResponseSizeBytes
-            .labels(String(is_display))
-            .observe(Buffer.byteLength(ctx.body, "utf8"));
+        const output = katex.renderToString(content, {displayMode: is_display});
+        ctx.body = output;
+        httpResponseSizeBytes.labels(String(is_display)).observe(Buffer.byteLength(output, "utf8"));
     } catch (error) {
         if (error instanceof katex.ParseError) {
             ctx.status = 400;

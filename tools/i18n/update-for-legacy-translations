@@ -1,0 +1,242 @@
+#!/usr/bin/env python3
+import json
+import os
+import re
+from subprocess import check_output
+from typing import Dict, List
+
+LEGACY_STRINGS_MAP = {
+    "<p>You are searching for messages that belong to more than one channel, which is not possible.</p>": "<p>You are searching for messages that belong to more than one stream, which is not possible.</p>",
+    "<strong>{name}</strong> <i>(guest)</i> is not subscribed to this channel. They will not be notified if you mention them.": "<strong>{name}</strong> <i>(guest)</i> is not subscribed to this stream. They will not be notified if you mention them.",
+    "<strong>{name}</strong> <i>(guest)</i> is not subscribed to this channel. They will not be notified unless you subscribe them.": "<strong>{name}</strong> <i>(guest)</i> is not subscribed to this stream. They will not be notified unless you subscribe them.",
+    "<strong>{name}</strong> is not subscribed to this channel. They will not be notified if you mention them.": "<strong>{name}</strong> is not subscribed to this stream. They will not be notified if you mention them.",
+    "<strong>{name}</strong> is not subscribed to this channel. They will not be notified unless you subscribe them.": "<strong>{name}</strong> is not subscribed to this stream. They will not be notified unless you subscribe them.",
+    "<z-link>Click here</z-link> to learn about exporting private channels and direct messages.": "<z-link>Click here</z-link> to learn about exporting private streams and direct messages.",
+    "<z-user></z-user> will have the same properties as it did prior to deactivation, including role, owner and channel subscriptions.": "<z-user></z-user> will have the same properties as it did prior to deactivation, including role, owner and stream subscriptions.",
+    "<z-user></z-user> will have the same role, channel subscriptions, user group memberships, and other settings and permissions as they did prior to deactivation.": "<z-user></z-user> will have the same role, stream subscriptions, user group memberships, and other settings and permissions as they did prior to deactivation.",
+    "A channel with this name already exists.": "A stream with this name already exists.",
+    "Add default channels": "Add default streams",
+    "Add members. Use usergroup or #channelname to bulk add members.": "Add members. Use usergroup or #streamname to bulk add members.",
+    "Add channel": "Add stream",
+    "Add channels": "Add streams",
+    "Add subscribers. Use usergroup or #channelname to bulk add subscribers.": "Add subscribers. Use usergroup or #streamname to bulk add subscribers.",
+    "All messages including muted channels": "All messages including muted streams",
+    "All channels": "All streams",
+    "Allow creating web-public streams (visible to anyone on the Internet)": "Allow creating web-public streams (visible to anyone on the Internet)",
+    # "Already subscribed to {channel}": "Already subscribed to {stream}",
+    "Announce new channel in": "Announce new stream in",
+    "Archive channel": "Archive stream",
+    "Archiving channel <z-stream></z-stream> will immediately unsubscribe everyone. This action cannot be undone.": "Archiving stream <z-stream></z-stream> will immediately unsubscribe everyone. This action cannot be undone.",
+    "Archiving this channel will also disable settings that were configured to use this channel:": "Archiving this stream will also disable settings that were configured to use this stream:",
+    # "Are you sure you want to create channel ''''{channel_name}'''' and subscribe {count} users to it?": "Are you sure you want to create stream ''''{stream_name}'''' and subscribe {count} users to it?",
+    # "Are you sure you want to send @-mention notifications to the <strong>{subscriber_count}</strong> users subscribed to #{channel_name}? If not, please edit your message to remove the <strong>@{wildcard_mention}</strong> mention.": "Are you sure you want to send @-mention notifications to the <strong>{subscriber_count}</strong> users subscribed to #{stream_name}? If not, please edit your message to remove the <strong>@{stream_wildcard_mention}</strong> mention.",
+    "Automatically unmute topics in muted channels": "Automatically unmute topics in muted streams",
+    "Back to channels": "Back to streams",
+    "Because you are removing the last subscriber from a private channel, it will be automatically <z-link>archived</z-link>.": "Because you are removing the last subscriber from a private stream, it will be automatically <z-link>archived</z-link>.",
+    "Because you are the only subscriber, this channel will be automatically <z-link>archived</z-link>.": "Because you are the only subscriber, this stream will be automatically <z-link>archived</z-link>.",
+    "Browse 1 more channel": "Browse 1 more stream",
+    "Browse channels": "Browse streams",
+    "Browse {can_subscribe_stream_count} more channels": "Browse {can_subscribe_stream_count} more streams",
+    "Cannot subscribe to private channel <z-stream></z-stream>": "Cannot subscribe to private stream <z-stream></z-stream>",
+    "Cannot view channel": "Cannot view stream",
+    "Choose a name for the new channel.": "Choose a name for the new stream.",
+    "Configure how Zulip notifies you about new messages. In muted channels, channel notification settings apply only to unmuted topics.": "Configure how Zulip notifies you about new messages. In muted streams, stream notification settings apply only to unmuted topics.",
+    "Configure the default channels new users are subscribed to when joining your organization.": "Configure the default streams new users are subscribed to when joining your organization.",
+    "Consider <z-link>searching all public channels</z-link>.": "Consider <z-link>searching all public streams</z-link>.",
+    "Create a channel": "Create a stream",
+    "Create new channel": "Create new stream",
+    "Create channel": "Create stream",
+    "Creating channel...": "Creating stream...",
+    "Currently viewing the entire channel.": "Currently viewing the entire stream.",
+    "Cycle between channel views": "Cycle between stream views",
+    "Default for channel": "Default for stream",
+    "Default channels": "Default streams",
+    "Default channels for new users cannot be made private.": "Default streams for new users cannot be made private.",
+    "Default channels for this organization": "Default streams for this organization",
+    "Demote inactive channels": "Demote inactive streams",
+    # "Edit #{channel_name}": "Edit #{stream_name}",
+    "Edit channel name and description": "Edit stream name and description",
+    "Error creating channel": "Error creating stream",
+    # "Error in unsubscribing from #{channel_name}": "Error in unsubscribing from #{stream_name}",
+    # "Error removing user from #{channel_name}": "Error removing user from #{stream_name}",
+    "Error removing user from this channel.": "Error removing user from this stream.",
+    "Exports all users, settings, and all data visible in public channels.": "Exports all users, settings, and all data visible in public streams.",
+    "Failed adding one or more channels.": "Failed adding one or more streams.",
+    "Filter default channels": "Filter default streams",
+    "Filter channels": "Filter streams",
+    "First time? Read our <z-link>guidelines</z-link> for creating and naming channels.": "First time? Read our <z-link>guidelines</z-link> for creating and naming streams.",
+    "Generate channel email address": "Generate stream email address",
+    "Go to channel from topic view": "Go to stream from topic view",
+    "Go to channel settings": "Go to stream settings",
+    "However, it will no longer be subscribed to the private channels that you are not subscribed to.": "However, it will no longer be subscribed to the private streams that you are not subscribed to.",
+    "In muted channels, channel notification settings apply only to unmuted topics.": "In muted streams, stream notification settings apply only to unmuted topics.",
+    "In this channel": "In this stream",
+    "Includes muted channels and topics": "Includes muted streams and topics",
+    "Invalid channel ID": "Invalid stream ID",
+    "Let recipients see when I'm typing messages in channels": "Let recipients see when I'm typing messages in streams",
+    "Let recipients see when a user is typing channel messages": "Let recipients see when a user is typing stream messages",
+    "Log in to browse more channels": "Log in to browse more streams",
+    # "Message #{channel_name}": "Message #{stream_name}",
+    # "Message #{channel_name} > {topic_name}": "Message #{stream_name} > {topic_name}",
+    "Messages in all public channels": "Messages in all public streams",
+    "Mute channel": "Mute stream",
+    "Narrow to messages on channel <z-value></z-value>.": "Narrow to messages on stream <z-value></z-value>.",
+    "New channel announcements": "New stream announcements",
+    "New channel message": "New stream message",
+    "New channel notifications": "New stream notifications",
+    "No default channels match your current filter.": "No default streams match your current filter.",
+    "No matching channels": "No matching streams",
+    "No channel subscribers match your current filter.": "No stream subscribers match your current filter.",
+    "No channel subscriptions.": "No stream subscriptions.",
+    "No channels": "No streams",
+    "Notify channel": "Notify stream",
+    # "Now following <z-link>{channel_topic}</z-link>.": "Now following <z-link>{stream_topic}</z-link>.",
+    "Once you leave this channel, you will not be able to rejoin.": "Once you leave this stream, you will not be able to rejoin.",
+    "Only channel members can add users to a private channel.": "Only stream members can add users to a private stream.",
+    "Only subscribers can access or join private channels, so you will lose access to this channel if you convert it to a private channel while not subscribed to it.": "Only subscribers can access or join private streams, so you will lose access to this stream if you convert it to a private stream while not subscribed to it.",
+    "Only subscribers to this channel can edit channel permissions.": "Only subscribers to this stream can edit stream permissions.",
+    "Pin channel to top": "Pin stream to top",
+    "Pin channel to top of left sidebar": "Pin stream to top of left sidebar",
+    "Please specify a channel.": "Please specify a stream.",
+    "Private channels cannot be default channels for new users.": "Private streams cannot be default streams for new users.",
+    "Receives new channel announcements": "Receives new stream announcements",
+    "Require topics in channel messages": "Require topics in stream messages",
+    "CHANNELS": "STREAMS",
+    "Scroll through channels": "Scroll through streams",
+    "Search all public channels in the organization.": "Search all public streams in the organization.",
+    "Select a channel": "Select a stream",
+    "Select a channel below or change topic name.": "Select a stream below or change topic name.",
+    "Select a channel to subscribe": "Select a stream to subscribe",
+    "Select channel": "Select stream",
+    "Channel": "Stream",
+    "Channel <b><z-stream></z-stream></b> created!": "Stream <b><z-stream></z-stream></b> created!",
+    "Channel ID": "Stream ID",
+    "Channel color": "Stream color",
+    "Channel created recently": "Stream created recently",
+    "Channel creation": "Stream creation",
+    "Channel description": "Stream description",
+    "Channel details": "Stream details",
+    "Channel email address:": "Stream email address:",
+    "Channel name": "Stream name",
+    "Channel permissions": "Stream permissions",
+    "Channel settings": "Stream settings",
+    "Channel successfully created!": "Stream successfully created!",
+    "Channels": "Streams",
+    "Channels they should join": "Streams they should join",
+    "Subscribe to/unsubscribe from selected channel": "Subscribe to/unsubscribe from selected stream",
+    "Subscribe {full_name} to channels": "Subscribe {full_name} to streams",
+    "Subscribed channels": "Subscribed streams",
+    # "The channel <b>#{channel_name}</b> does not exist. Manage your subscriptions <z-link>on your Channels page</z-link>.": "The stream <b>#{stream_name}</b> does not exist. Manage your subscriptions <z-link>on your Streams page</z-link>.",
+    "The channel description cannot contain newline characters.": "The stream description cannot contain newline characters.",
+    "The topic <strong>{topic_name}</strong> already exists in this channel. Are you sure you want to combine messages from these topics? This cannot be undone.": "The topic <strong>{topic_name}</strong> already exists in this stream. Are you sure you want to combine messages from these topics? This cannot be undone.",
+    "There are no default channels.": "There are no default streams.",
+    "There are no channels you can view in this organization.": "There are no streams you can view in this organization.",
+    "This change will make this channel's entire message history accessible according to the new configuration.": "This change will make this stream's entire message history accessible according to the new configuration.",
+    "This channel does not exist or is private.": "This stream does not exist or is private.",
+    "This channel does not yet have a description.": "This stream does not yet have a description.",
+    "This channel has been archived.": "This stream has been archived.",
+    "This channel has no subscribers.": "This stream has no subscribers.",
+    "This channel has {sub_count, plural, =0 {no subscribers} one {# subscriber} other {# subscribers}}.": "This stream has {sub_count, plural, =0 {no subscribers} one {# subscriber} other {# subscribers}}.",
+    "Time limit for moving messages between channels": "Time limit for moving messages between streams",
+    "Unknown channel": "Unknown stream",
+    "Unknown channel #{search_text}": "Unknown stream #{search_text}",
+    "Unmute channel": "Unmute stream",
+    # "Unmuted <z-link>{channel_topic}</z-link>.": "Unmuted <z-link>{stream_topic}</z-link>.",
+    "Unmuted channels and topics": "Unmuted streams and topics",
+    "Unpin channel from top": "Unpin stream from top",
+    "Use channel settings to unsubscribe from private channels.": "Use stream settings to unsubscribe from private streams.",
+    "Use channel settings to unsubscribe the last user from a private channel.": "Use stream settings to unsubscribe the last user from a private stream.",
+    "View all channels": "View all streams",
+    "View channel": "View stream",
+    "View channel messages": "View stream messages",
+    "View channels": "View streams",
+    # "Warning: <strong>#{channel_name}</strong> is a private channel.": "Warning: <strong>#{stream_name}</strong> is a private stream.",
+    "Which parts of the email should be included in the Zulip message sent to this channel?": "Which parts of the email should be included in the Zulip message sent to this stream?",
+    "Who can access the channel?": "Who can access the stream?",
+    "Who can add users to channels": "Who can add users to streams",
+    "Who can create private channels": "Who can create private streams",
+    "Who can create public channels": "Who can create public streams",
+    "Who can create web-public channels": "Who can create web-public streams",
+    "Who can move messages to another channel": "Who can move messages to another stream",
+    "Who can post to the channel?": "Who can post to the stream?",
+    "Who can unsubscribe others from this channel?": "Who can unsubscribe others from this stream?",
+    "You are not currently subscribed to this channel.": "You are not currently subscribed to this stream.",
+    "You are not subscribed to any channels.": "You are not subscribed to any streams.",
+    "You are not subscribed to channel <z-stream-name></z-stream-name>.": "You are not subscribed to stream <z-stream-name></z-stream-name>.",
+    # "You aren't subscribed to this channel and nobody has talked about that yet!": "You aren't subscribed to this stream and nobody has talked about that yet!",
+    "You can use email to send messages to Zulip channels.": "You can use email to send messages to Zulip streams.",
+    "You cannot create a channel with no subscribers.": "You cannot create a stream with no subscribers.",
+    "You do not have permission to add other users to channels in this organization.": "You do not have permission to add other users to streams in this organization.",
+    "You do not have permission to move messages to another channel in this organization.": "You do not have permission to move messages to another stream in this organization.",
+    "You do not have permission to post in this channel.": "You do not have permission to post in this stream.",
+    # "You do not have permission to use <b>@{wildcard_mention_string}</b> mentions in this channel.": "You do not have permission to use <b>@{stream_wildcard_mention}</b> mentions in this stream.",
+    "You must be an organization administrator to create a channel without subscribing.": "You must be an organization administrator to create a stream without subscribing.",
+    "You subscribed to channel <z-stream-name></z-stream-name>.": "You subscribed to stream <z-stream-name></z-stream-name>.",
+    "You unsubscribed from channel <z-stream-name></z-stream-name>.": "You unsubscribed from stream <z-stream-name></z-stream-name>.",
+    "You're not subscribed to this channel. You will not be notified if other users reply to your message.": "You're not subscribed to this stream. You will not be notified if other users reply to your message.",
+    "Your message was sent to a channel you have muted.": "Your message was sent to a stream you have muted.",
+    "back to channels": "back to streams",
+}
+
+
+def get_json_filename(locale: str) -> str:
+    return f"locale/{locale}/translations.json"
+
+
+def get_legacy_filename(locale: str) -> str:
+    return f"locale/{locale}/legacy_stream_translations.json"
+
+
+def get_locales() -> List[str]:
+    output = check_output(["git", "ls-files", "locale"], text=True)
+    tracked_files = output.split()
+    regex = re.compile(r"locale/(\w+)/LC_MESSAGES/django.po")
+    locales = []
+    for tracked_file in tracked_files:
+        matched = regex.search(tracked_file)
+        if matched and matched.group(1) != "en_GB":
+            locales.append(matched.group(1))
+
+    return locales
+
+
+def get_translations(path: str) -> Dict[str, str]:
+    with open(path) as raw_resource_file:
+        translations = json.load(raw_resource_file)
+
+    return translations
+
+
+def update_for_legacy_stream_translations(
+    current: Dict[str, str], legacy: Dict[str, str], path: str
+) -> None:
+    number_of_updates = 0
+    updated_translations: Dict[str, str] = {}
+    for line in current:
+        # If the string has a legacy string mapped and see if it's
+        # not currently translated (e.g. an empty string), then use
+        # the legacy translated string (which might be an empty string).
+        if line in LEGACY_STRINGS_MAP and current[line] == "":
+            legacy_string = LEGACY_STRINGS_MAP[line]
+            if legacy_string in legacy:
+                updated_translations[line] = legacy[legacy_string]
+                number_of_updates += 1
+        else:
+            updated_translations[line] = current[line]
+
+    # Only replace file content if we've made any updates for legacy
+    # translated strings.
+    if number_of_updates > 0:
+        with open(path, "w") as f:
+            json.dump(updated_translations, f, ensure_ascii=False, indent=2, sort_keys=True)
+            f.write("\n")
+        print(f"Updated {number_of_updates} strings in: {path}")
+
+
+for locale in get_locales():
+    current = get_json_filename(locale)
+    legacy = get_legacy_filename(locale)
+    if os.path.exists(current) and os.path.exists(legacy):
+        current_translations = get_translations(current)
+        legacy_translations = get_translations(legacy)
+        update_for_legacy_stream_translations(current_translations, legacy_translations, current)

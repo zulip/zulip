@@ -183,7 +183,7 @@ export function warn_if_private_stream_is_linked(
     );
 
     const existing_stream_warnings = [...$existing_stream_warnings_area].map((stream_row) =>
-        Number.parseInt($(stream_row).data("stream-id"), 10),
+        Number($(stream_row).attr("data-stream-id")),
     );
 
     if (!existing_stream_warnings.includes(linked_stream.stream_id)) {
@@ -223,7 +223,7 @@ export function warn_if_mentioning_unsubscribed_user(
         );
 
         const existing_invites = [...$existing_invites_area].map((user_row) =>
-            Number.parseInt($(user_row).data("user-id"), 10),
+            Number($(user_row).attr("data-user-id")),
         );
 
         const can_subscribe_other_users = settings_data.user_can_subscribe_other_users();

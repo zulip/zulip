@@ -70,9 +70,12 @@ function open_linkifier_edit_form(linkifier_id: number): void {
             },
             error_continuation(xhr: JQuery.jqXHR<unknown>) {
                 $change_linkifier_button.prop("disabled", false);
-                if (xhr.responseJSON?.errors) {
+                const parsed = z
+                    .object({errors: z.record(z.array(z.string()).optional())})
+                    .safeParse(xhr.responseJSON);
+                if (parsed.success) {
                     handle_linkifier_api_error(
-                        xhr,
+                        parsed.data.errors,
                         $pattern_status,
                         $template_status,
                         $dialog_error_element,
@@ -119,7 +122,7 @@ function update_linkifiers_order(): void {
 }
 
 function handle_linkifier_api_error(
-    xhr: JQuery.jqXHR<unknown>,
+    errors: Record<string, string[] | undefined>,
     pattern_status: JQuery,
     template_status: JQuery,
     linkifier_status: JQuery,
@@ -127,18 +130,26 @@ function handle_linkifier_api_error(
     // The endpoint uses the Django ValidationError system for error
     // handling, which returns somewhat complicated error
     // dictionaries. This logic parses them.
-    const errors = xhr.responseJSON.errors;
     if (errors.pattern !== undefined) {
-        xhr.responseJSON.msg = errors.pattern;
-        ui_report.error($t_html({defaultMessage: "Failed"}), xhr, pattern_status);
+        ui_report.error(
+            $t_html({defaultMessage: "Failed: {error}"}, {error: errors.pattern[0]}),
+            undefined,
+            pattern_status,
+        );
     }
     if (errors.url_template !== undefined) {
-        xhr.responseJSON.msg = errors.url_template;
-        ui_report.error($t_html({defaultMessage: "Failed"}), xhr, template_status);
+        ui_report.error(
+            $t_html({defaultMessage: "Failed: {error}"}, {error: errors.url_template[0]}),
+            undefined,
+            template_status,
+        );
     }
     if (errors.__all__ !== undefined) {
-        xhr.responseJSON.msg = errors.__all__;
-        ui_report.error($t_html({defaultMessage: "Failed"}), xhr, linkifier_status);
+        ui_report.error(
+            $t_html({defaultMessage: "Failed: {error}"}, {error: errors.__all__[0]}),
+            undefined,
+            linkifier_status,
+        );
     }
 }
 
@@ -263,9 +274,12 @@ export function build_page(): void {
                 },
                 error(xhr) {
                     $add_linkifier_button.prop("disabled", false);
-                    if (xhr.responseJSON?.errors) {
+                    const parsed = z
+                        .object({errors: z.record(z.array(z.string()).optional())})
+                        .safeParse(xhr.responseJSON);
+                    if (parsed.success) {
                         handle_linkifier_api_error(
-                            xhr,
+                            parsed.data.errors,
                             $pattern_status,
                             $template_status,
                             $linkifier_status,

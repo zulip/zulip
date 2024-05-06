@@ -1224,11 +1224,8 @@ export function build_person_matcher(query: string): (user: User) => boolean {
     };
 }
 
-export function filter_people_by_search_terms(
-    users: User[],
-    search_terms: string[],
-): Map<number, User> {
-    const filtered_users = new Map();
+export function filter_people_by_search_terms(users: User[], search_terms: string[]): Set<number> {
+    const filtered_users = new Set<number>();
 
     // Build our matchers outside the loop to avoid some
     // search overhead that is not user-specific.
@@ -1241,7 +1238,7 @@ export function filter_people_by_search_terms(
         const match = matchers.some((matcher) => matcher(user));
 
         if (match) {
-            filtered_users.set(user.user_id, true);
+            filtered_users.add(user.user_id);
         }
     }
 

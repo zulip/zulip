@@ -799,7 +799,7 @@ test("initialize", ({override, override_rewire, mock_template}) => {
     let topic_typeahead_called = false;
     let pm_recipient_typeahead_called = false;
     let compose_textarea_typeahead_called = false;
-    override(bootstrap_typeahead, "create", (input_element, options) => {
+    override(bootstrap_typeahead, "Typeahead", (input_element, options) => {
         switch (input_element.$element) {
             case $("input#stream_message_recipient_topic"): {
                 override_rewire(stream_topic_history, "get_recent_topic_names", (stream_id) => {

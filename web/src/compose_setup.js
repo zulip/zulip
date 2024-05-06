@@ -18,6 +18,7 @@ import * as flatpickr from "./flatpickr";
 import {$t_html} from "./i18n";
 import * as message_edit from "./message_edit";
 import * as narrow from "./narrow";
+import * as onboarding_steps from "./onboarding_steps";
 import {page_params} from "./page_params";
 import * as poll_modal from "./poll_modal";
 import * as popovers from "./popovers";
@@ -212,13 +213,19 @@ export function initialize() {
         },
     );
 
+    const automatic_new_visibility_policy_banner_selector = `.${CSS.escape(compose_banner.CLASSNAMES.automatic_new_visibility_policy)}`;
     $("body").on(
         "click",
-        `.${CSS.escape(
-            compose_banner.CLASSNAMES.automatic_new_visibility_policy,
-        )} .main-view-banner-action-button`,
+        `${automatic_new_visibility_policy_banner_selector} .main-view-banner-action-button`,
         (event) => {
             event.preventDefault();
+            if ($(event.target).attr("data-action") === "mark-as-read") {
+                $(event.target)
+                    .parents(`${automatic_new_visibility_policy_banner_selector}`)
+                    .remove();
+                onboarding_steps.post_onboarding_step_as_read("visibility_policy_banner");
+                return;
+            }
             window.location.href = "/#settings/notifications";
         },
     );
@@ -245,8 +252,8 @@ export function initialize() {
             const {$banner_container} = get_input_info(event);
             const $invite_row = $(event.target).parents(".main-view-banner");
 
-            const user_id = Number.parseInt($invite_row.data("user-id"), 10);
-            const stream_id = Number.parseInt($invite_row.data("stream-id"), 10);
+            const user_id = Number($invite_row.attr("data-user-id"));
+            const stream_id = Number($invite_row.attr("data-stream-id"));
 
             function success() {
                 $invite_row.remove();
@@ -326,13 +333,13 @@ export function initialize() {
         compose_call_ui.generate_and_insert_audio_or_video_call_link($(e.target), true);
     });
 
-    $("body").on("click", ".time_pick", (e) => {
+    $("body").on("click", ".time_pick", function (e) {
         e.preventDefault();
         e.stopPropagation();
 
         let $target_textarea;
         let edit_message_id;
-        const compose_click_target = compose_ui.get_compose_click_target(e);
+        const compose_click_target = compose_ui.get_compose_click_target(this);
         if ($(compose_click_target).parents(".message_edit_form").length === 1) {
             edit_message_id = rows.id($(compose_click_target).parents(".message_row"));
             $target_textarea = $(`#edit_form_${CSS.escape(edit_message_id)} .message_edit_content`);
@@ -465,10 +472,10 @@ export function initialize() {
         compose_recipient.update_placeholder_text();
     });
 
-    $("body").on("click", ".formatting_button", (e) => {
-        const $compose_click_target = $(compose_ui.get_compose_click_target(e));
+    $("body").on("click", ".formatting_button", function (e) {
+        const $compose_click_target = $(compose_ui.get_compose_click_target(this));
         const $textarea = $compose_click_target.closest("form").find("textarea");
-        const format_type = $(e.target).attr("data-format-type");
+        const format_type = $(this).attr("data-format-type");
         compose_ui.format_text($textarea, format_type);
         popovers.hide_all();
         $textarea.trigger("focus");

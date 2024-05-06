@@ -25,7 +25,7 @@ organization](/help/configure-default-new-user-settings) to
 [**Combined feed**](/help/combined-feed).
 
 - The **Inbox** view works best if you regularly clear all unread messages in
-streams you follow.
+channels you follow.
 
 - **Recent conversations** works well for getting an overview of recent activity.
 

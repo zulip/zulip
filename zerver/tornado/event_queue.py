@@ -959,7 +959,13 @@ def maybe_enqueue_notifications(
         notice["type"] = "add"
         notice["mentioned_user_group_id"] = mentioned_user_group_id
         if not already_notified.get("push_notified"):
-            queue_json_publish("missedmessage_mobile_notifications", notice)
+            if settings.MOBILE_NOTIFICATIONS_SHARDS > 1:
+                shard_id = (
+                    user_notifications_data.user_id % settings.MOBILE_NOTIFICATIONS_SHARDS + 1
+                )
+                queue_json_publish(f"missedmessage_mobile_notifications_shard{shard_id}", notice)
+            else:
+                queue_json_publish("missedmessage_mobile_notifications", notice)
             notified["push_notified"] = True
 
     # Send missed_message emails if a direct message or a

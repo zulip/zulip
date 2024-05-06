@@ -190,16 +190,17 @@ class InviteUserBase(ZulipTestCase):
         if invite_expires_in is None:
             invite_expires_in = orjson.dumps(None).decode()
 
-        return self.client_post(
-            "/json/invites",
-            {
-                "invitee_emails": invitee_emails,
-                "invite_expires_in_minutes": invite_expires_in,
-                "stream_ids": orjson.dumps(stream_ids).decode(),
-                "invite_as": invite_as,
-            },
-            subdomain=realm.string_id if realm else "zulip",
-        )
+        with self.captureOnCommitCallbacks(execute=True):
+            return self.client_post(
+                "/json/invites",
+                {
+                    "invitee_emails": invitee_emails,
+                    "invite_expires_in_minutes": invite_expires_in,
+                    "stream_ids": orjson.dumps(stream_ids).decode(),
+                    "invite_as": invite_as,
+                },
+                subdomain=realm.string_id if realm else "zulip",
+            )
 
 
 class InviteUserTest(InviteUserBase):
@@ -1480,32 +1481,38 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
         ]
 
         invite_expires_in_minutes = 2 * 24 * 60
-        do_invite_users(
-            self.user_profile,
-            ["foo@zulip.com"],
-            streams,
-            invite_expires_in_minutes=invite_expires_in_minutes,
-        )
+        with self.captureOnCommitCallbacks(execute=True):
+            do_invite_users(
+                self.user_profile,
+                ["foo@zulip.com"],
+                streams,
+                invite_expires_in_minutes=invite_expires_in_minutes,
+            )
         prereg_user = PreregistrationUser.objects.get(email="foo@zulip.com")
-        do_invite_users(
-            self.user_profile,
-            ["foo@zulip.com"],
-            streams,
-            invite_expires_in_minutes=invite_expires_in_minutes,
-        )
-        do_invite_users(
-            self.user_profile,
-            ["foo@zulip.com"],
-            streams,
-            invite_expires_in_minutes=invite_expires_in_minutes,
-        )
+        with self.captureOnCommitCallbacks(execute=True):
+            do_invite_users(
+                self.user_profile,
+                ["foo@zulip.com"],
+                streams,
+                invite_expires_in_minutes=invite_expires_in_minutes,
+            )
+            do_invite_users(
+                self.user_profile,
+                ["foo@zulip.com"],
+                streams,
+                invite_expires_in_minutes=invite_expires_in_minutes,
+            )
 
         # Also send an invite from a different realm.
         lear = get_realm("lear")
         lear_user = self.lear_user("cordelia")
-        do_invite_users(
-            lear_user, ["foo@zulip.com"], [], invite_expires_in_minutes=invite_expires_in_minutes
-        )
+        with self.captureOnCommitCallbacks(execute=True):
+            do_invite_users(
+                lear_user,
+                ["foo@zulip.com"],
+                [],
+                invite_expires_in_minutes=invite_expires_in_minutes,
+            )
 
         invites = PreregistrationUser.objects.filter(email__iexact="foo@zulip.com")
         self.assert_length(invites, 4)
@@ -1710,36 +1717,37 @@ class InvitationsTestCase(InviteUserBase):
         ]
 
         invite_expires_in_minutes = 2 * 24 * 60
-        do_invite_users(
-            user_profile,
-            ["TestOne@zulip.com"],
-            streams,
-            invite_expires_in_minutes=invite_expires_in_minutes,
-        )
-        do_invite_users(
-            user_profile,
-            ["TestTwo@zulip.com"],
-            streams,
-            invite_expires_in_minutes=invite_expires_in_minutes,
-        )
-        do_invite_users(
-            hamlet,
-            ["TestThree@zulip.com"],
-            streams,
-            invite_expires_in_minutes=invite_expires_in_minutes,
-        )
-        do_invite_users(
-            othello,
-            ["TestFour@zulip.com"],
-            streams,
-            invite_expires_in_minutes=invite_expires_in_minutes,
-        )
-        do_invite_users(
-            self.mit_user("sipbtest"),
-            ["TestOne@mit.edu"],
-            [],
-            invite_expires_in_minutes=invite_expires_in_minutes,
-        )
+        with self.captureOnCommitCallbacks(execute=True):
+            do_invite_users(
+                user_profile,
+                ["TestOne@zulip.com"],
+                streams,
+                invite_expires_in_minutes=invite_expires_in_minutes,
+            )
+            do_invite_users(
+                user_profile,
+                ["TestTwo@zulip.com"],
+                streams,
+                invite_expires_in_minutes=invite_expires_in_minutes,
+            )
+            do_invite_users(
+                hamlet,
+                ["TestThree@zulip.com"],
+                streams,
+                invite_expires_in_minutes=invite_expires_in_minutes,
+            )
+            do_invite_users(
+                othello,
+                ["TestFour@zulip.com"],
+                streams,
+                invite_expires_in_minutes=invite_expires_in_minutes,
+            )
+            do_invite_users(
+                self.mit_user("sipbtest"),
+                ["TestOne@mit.edu"],
+                [],
+                invite_expires_in_minutes=invite_expires_in_minutes,
+            )
         do_create_multiuse_invite_link(
             user_profile, PreregistrationUser.INVITE_AS["MEMBER"], invite_expires_in_minutes
         )
@@ -1769,14 +1777,17 @@ class InvitationsTestCase(InviteUserBase):
         ]
 
         invite_expires_in_minutes = 2 * 24 * 60
-        do_invite_users(
-            user_profile,
-            ["TestOne@zulip.com"],
-            streams,
-            invite_expires_in_minutes=invite_expires_in_minutes,
-        )
+        with self.captureOnCommitCallbacks(execute=True):
+            do_invite_users(
+                user_profile,
+                ["TestOne@zulip.com"],
+                streams,
+                invite_expires_in_minutes=invite_expires_in_minutes,
+            )
 
-        with time_machine.travel((timezone_now() - timedelta(days=3)), tick=False):
+        with time_machine.travel(
+            (timezone_now() - timedelta(days=3)), tick=False
+        ), self.captureOnCommitCallbacks(execute=True):
             do_invite_users(
                 user_profile,
                 ["TestTwo@zulip.com"],
@@ -1819,7 +1830,9 @@ class InvitationsTestCase(InviteUserBase):
             get_stream(stream_name, user_profile.realm) for stream_name in ["Denmark", "Scotland"]
         ]
 
-        with time_machine.travel((timezone_now() - timedelta(days=1000)), tick=False):
+        with time_machine.travel(
+            (timezone_now() - timedelta(days=1000)), tick=False
+        ), self.captureOnCommitCallbacks(execute=True):
             # Testing the invitation with expiry date set to "None" exists
             # after a large amount of days.
             do_invite_users(
@@ -2055,7 +2068,8 @@ class InvitationsTestCase(InviteUserBase):
         original_timestamp = scheduledemail_filter.values_list("scheduled_timestamp", flat=True)
 
         # Resend invite
-        result = self.client_post("/json/invites/" + str(prereg_user.id) + "/resend")
+        with self.captureOnCommitCallbacks(execute=True):
+            result = self.client_post("/json/invites/" + str(prereg_user.id) + "/resend")
         self.assertEqual(
             ScheduledEmail.objects.filter(
                 address__iexact=invitee, type=ScheduledEmail.INVITATION_REMINDER
@@ -2101,7 +2115,8 @@ class InvitationsTestCase(InviteUserBase):
         original_timestamp = scheduledemail_filter.values_list("scheduled_timestamp", flat=True)
 
         # Resend invite
-        result = self.client_post("/json/invites/" + str(prereg_user.id) + "/resend")
+        with self.captureOnCommitCallbacks(execute=True):
+            result = self.client_post("/json/invites/" + str(prereg_user.id) + "/resend")
         self.assertEqual(
             ScheduledEmail.objects.filter(
                 address__iexact=invitee, type=ScheduledEmail.INVITATION_REMINDER
@@ -2153,7 +2168,8 @@ class InvitationsTestCase(InviteUserBase):
         self.assert_json_error(error_result, "Must be an organization owner")
 
         self.login("desdemona")
-        result = self.client_post("/json/invites/" + str(prereg_user.id) + "/resend")
+        with self.captureOnCommitCallbacks(execute=True):
+            result = self.client_post("/json/invites/" + str(prereg_user.id) + "/resend")
         self.assert_json_success(result)
 
         self.assertEqual(
@@ -2180,7 +2196,8 @@ class InvitationsTestCase(InviteUserBase):
         self.check_sent_emails([invitee])
         mail.outbox.pop()
 
-        result = self.client_post("/json/invites/" + str(prereg_user.id) + "/resend")
+        with self.captureOnCommitCallbacks(execute=True):
+            result = self.client_post("/json/invites/" + str(prereg_user.id) + "/resend")
         self.assert_json_success(result)
         self.check_sent_emails([invitee])
 

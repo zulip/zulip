@@ -112,10 +112,10 @@ export function toggle_user_group_info_popover(
 }
 
 export function register_click_handlers(): void {
-    $("#main_div").on("click", ".user-group-mention", (e) => {
+    $("#main_div").on("click", ".user-group-mention", function (this: HTMLElement, e) {
         e.stopPropagation();
 
-        const $elt = $(e.currentTarget);
+        const $elt = $(this);
         const $row = $elt.closest(".message_row");
         const message_id = rows.id($row);
 
@@ -124,7 +124,7 @@ export function register_click_handlers(): void {
         assert(message !== undefined);
 
         try {
-            toggle_user_group_info_popover(e.currentTarget, message.id);
+            toggle_user_group_info_popover(this, message.id);
         } catch {
             // This user group has likely been deleted.
             blueslip.info("Unable to find user group in message" + message.sender_id);

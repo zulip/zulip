@@ -538,7 +538,9 @@ def custom_email_sender(
     # First, we render the Markdown input file just like our
     # user-facing docs with render_markdown_path.
     with open(plain_text_template_path, "w") as f:
-        f.write(parsed_email_template.get_payload())
+        payload = parsed_email_template.get_payload()
+        assert isinstance(payload, str)
+        f.write(payload)
 
     from zerver.lib.templates import render_markdown_path
 

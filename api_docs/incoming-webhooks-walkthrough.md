@@ -328,7 +328,7 @@ class `HelloWorldHookTests`:
 
 ```python
 class HelloWorldHookTests(WebhookTestCase):
-    STREAM_NAME = "test"
+    CHANNEL_NAME = "test"
     URL_TEMPLATE = "/api/v1/external/helloworld?&api_key={api_key}&stream={stream}"
     DIRECT_MESSAGE_URL_TEMPLATE = "/api/v1/external/helloworld?&api_key={api_key}"
     WEBHOOK_DIR_NAME = "helloworld"
@@ -347,14 +347,14 @@ class HelloWorldHookTests(WebhookTestCase):
         )
 ```
 
-In the above example, `STREAM_NAME`, `URL_TEMPLATE`, and `WEBHOOK_DIR_NAME` refer
+In the above example, `CHANNEL_NAME`, `URL_TEMPLATE`, and `WEBHOOK_DIR_NAME` refer
 to class attributes from the base class, `WebhookTestCase`. These are needed by
 the helper function `check_webhook` to determine how to execute
-your test. `STREAM_NAME` should be set to your default stream. If it doesn't exist,
+your test. `CHANNEL_NAME` should be set to your default stream. If it doesn't exist,
 `check_webhook` will create it while executing your test.
 
 If your test expects a stream name from a test fixture, the value in the fixture
-and the value you set for `STREAM_NAME` must match. The test helpers use `STREAM_NAME`
+and the value you set for `CHANNEL_NAME` must match. The test helpers use `CHANNEL_NAME`
 to create the destination stream, and then create the message to send using the
 value from the fixture. If these don't match, the test will fail.
 
@@ -532,10 +532,10 @@ def test_unknown_action_no_data(self) -> None:
     # return if no params are sent. The fixture for this test is an empty file.
 
     # subscribe to the target stream
-    self.subscribe(self.test_user, self.STREAM_NAME)
+    self.subscribe(self.test_user, self.CHANNEL_NAME)
 
     # post to the webhook url
-    post_params = {'stream_name': self.STREAM_NAME,
+    post_params = {'stream_name': self.CHANNEL_NAME,
                    'content_type': 'application/x-www-form-urlencoded'}
     result = self.client_post(self.url, 'unknown_action', **post_params)
 
@@ -549,7 +549,7 @@ the webhook returns an error, the test fails. Instead, explicitly do the
 setup it would have done, and check the result yourself.
 
 Here, `subscribe_to_stream` is a test helper that uses `TEST_USER_EMAIL` and
-`STREAM_NAME` (attributes from the base class) to register the user to receive
+`CHANNEL_NAME` (attributes from the base class) to register the user to receive
 messages in the given stream. If the stream doesn't exist, it creates it.
 
 `client_post`, another helper, performs the HTTP POST that calls the incoming
@@ -592,7 +592,7 @@ attribute `TOPIC` as a keyword argument to `build_webhook_url`, like so:
 ```python
 class QuerytestHookTests(WebhookTestCase):
 
-    STREAM_NAME = 'querytest'
+    CHANNEL_NAME = 'querytest'
     TOPIC = "Default topic"
     URL_TEMPLATE = "/api/v1/external/querytest?api_key={api_key}&stream={stream}"
     FIXTURE_DIR_NAME = 'querytest'

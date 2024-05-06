@@ -87,6 +87,8 @@ export function by_stream_topic_url(stream_id: number, topic: string): string {
 // corresponding hash: the # component
 // of the narrow URL
 export function search_terms_to_hash(terms?: NarrowTerm[]): string {
+    // Note: This does not return the correct hash for combined feed, recent and inbox view.
+    // These views can have multiple hashes that lead to them, so this function cannot support them.
     let hash = "#";
 
     if (terms !== undefined) {
@@ -154,7 +156,7 @@ export function search_public_streams_notice_url(terms: NarrowTerm[]): string {
     return search_terms_to_hash([public_operator, ...terms]);
 }
 
-export function parse_narrow(hash: string): NarrowTerm[] | undefined {
+export function parse_narrow(hash: string[]): NarrowTerm[] | undefined {
     // This will throw an exception when passed an invalid hash
     // at the decodeHashComponent call, handle appropriately.
     let i;
