@@ -48,7 +48,7 @@ Permissions for moving messages between streams can be configured separately.
 
 {end_tabs}
 
-## Configure who can move messages to another stream
+## Configure who can move messages to another channel
 
 {start_tabs}
 

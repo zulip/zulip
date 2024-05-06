@@ -170,13 +170,13 @@ how to assign roles and permissions for a class.
 - Set [who can edit the topic of any message](/help/restrict-moving-messages).
   (Recommended: (default) Members for small classes;
   Admins and moderators for large classes)
-- Set [who can move messages between streams][move-between-streams].
+- Set [who can move messages between channels][move-between-channels].
   (Recommended: Admins and moderators)
 - Set [who can create and manage user groups][user-group-permissions].
   (Recommended: Admins and moderators)
 
 [user-group-permissions]: /help/manage-user-groups#configure-who-can-create-and-manage-user-groups
-[move-between-streams]: /help/restrict-moving-messages#configure-who-can-move-messages-to-another-stream
+[move-between-channels]: /help/restrict-moving-messages#configure-who-can-move-messages-to-another-channel
 
 #### Recommended roles and permissions for a department
 
@@ -200,7 +200,7 @@ how to assign roles and permissions for a class.
   (Recommended: Admins and moderators)
 - Set [who can edit the topic of any message](/help/restrict-moving-messages).
   (Recommended: Admins and moderators)
-- Set [who can move messages between streams][move-between-streams].
+- Set [who can move messages between channels][move-between-channels].
   (Recommended: Admins and moderators)
 - Set [who can create and manage user groups][user-group-permissions].
   (Recommended: Admins and moderators)
