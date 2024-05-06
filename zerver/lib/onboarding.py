@@ -314,7 +314,7 @@ def send_initial_realm_messages(realm: Realm) -> None:
             )
         ).format(
             default_notification_channel_name=Realm.DEFAULT_NOTIFICATION_STREAM_NAME,
-            start_topic_help_url="/help/starting-a-new-topic",
+            start_topic_help_url="/help/channels-and-topics#how-to-start-a-new-topic",
         )
 
         content_of_zulip_update_announcements_topic_name = remove_single_newlines(
