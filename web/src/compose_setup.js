@@ -333,13 +333,13 @@ export function initialize() {
         compose_call_ui.generate_and_insert_audio_or_video_call_link($(e.target), true);
     });
 
-    $("body").on("click", ".time_pick", (e) => {
+    $("body").on("click", ".time_pick", function (e) {
         e.preventDefault();
         e.stopPropagation();
 
         let $target_textarea;
         let edit_message_id;
-        const compose_click_target = compose_ui.get_compose_click_target(e);
+        const compose_click_target = compose_ui.get_compose_click_target(this);
         if ($(compose_click_target).parents(".message_edit_form").length === 1) {
             edit_message_id = rows.id($(compose_click_target).parents(".message_row"));
             $target_textarea = $(`#edit_form_${CSS.escape(edit_message_id)} .message_edit_content`);
@@ -472,10 +472,10 @@ export function initialize() {
         compose_recipient.update_placeholder_text();
     });
 
-    $("body").on("click", ".formatting_button", (e) => {
-        const $compose_click_target = $(compose_ui.get_compose_click_target(e));
+    $("body").on("click", ".formatting_button", function (e) {
+        const $compose_click_target = $(compose_ui.get_compose_click_target(this));
         const $textarea = $compose_click_target.closest("form").find("textarea");
-        const format_type = $(e.target).attr("data-format-type");
+        const format_type = $(this).attr("data-format-type");
         compose_ui.format_text($textarea, format_type);
         popovers.hide_all();
         $textarea.trigger("focus");
