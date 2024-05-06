@@ -254,7 +254,7 @@ export function create<Key, Item = Key>(
     $container: JQuery,
     list: Key[],
     opts: ListWidgetOpts<Key, Item>,
-): ListWidget<Key, Item> | undefined {
+): ListWidget<Key, Item> {
     if (opts.name && DEFAULTS.instances.get(opts.name)) {
         // Clear event handlers for prior widget.
         const old_widget = DEFAULTS.instances.get(opts.name)!;
