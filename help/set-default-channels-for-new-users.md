@@ -10,7 +10,7 @@ that default set.
 
 {start_tabs}
 
-{settings_tab|default-streams-list}
+{settings_tab|default-channels-list}
 
 2. Under **Add new default channel**, enter the name of a channel.
 
@@ -22,7 +22,7 @@ that default set.
 
 {start_tabs}
 
-{settings_tab|default-streams-list}
+{settings_tab|default-channels-list}
 
 2. Find the channel you would like to remove, and click **Remove from default**.
 
