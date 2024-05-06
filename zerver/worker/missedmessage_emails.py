@@ -116,6 +116,7 @@ class MissedMessageWorker(QueueProcessingWorker):
         super().start()
 
     def work(self) -> None:
+        backoff = 1
         while True:
             with sentry_sdk.start_transaction(
                 op="task",
@@ -128,11 +129,31 @@ class MissedMessageWorker(QueueProcessingWorker):
                     finished = self.background_loop()
                     if finished:
                         break
+                    # Success running the background loop; reset our backoff
+                    backoff = 1
                 except Exception:
                     logging.exception(
                         "Exception in MissedMessage background worker; restarting the loop",
                         stack_info=True,
                     )
+
+                    # We want to sleep, with backoff, before retrying
+                    # the background loop; there may be
+                    # non-recoverable errors which cause immediate
+                    # exceptions, and we should avoid fast
+                    # crash-looping.  Instead of using time.sleep,
+                    # which would block this thread and delay attempts
+                    # to exit, we wait on the condition variable.
+                    # With has_timeout set, this will only be notified
+                    # by .stop(), below.
+                    #
+                    # Generally, delays in this background process are
+                    # acceptable, so long as they at least
+                    # occasionally retry.
+                    with self.cv:
+                        self.has_timeout = True
+                        self.cv.wait(timeout=backoff)
+                    backoff = min(30, backoff * 2)
 
     def background_loop(self) -> bool:
         with self.cv:
