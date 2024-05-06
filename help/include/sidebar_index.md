@@ -124,15 +124,14 @@
 * [Find administrators](/help/find-administrators)
 
 ## Channels
-* [Browse and subscribe to channels](/help/browse-and-subscribe-to-channels)
-* [Unsubscribe from a channel](/help/unsubscribe-from-a-channel)
+* [Introduction to channels](/help/browse-and-subscribe-to-channels)
 * [Create a channel](/help/create-a-channel)
-* [View channel subscribers](/help/view-channel-subscribers)
-* [Add or remove users from a channel](/help/add-or-remove-users-from-a-channel)
 * [Pin a channel](/help/pin-a-channel)
 * [Change the color of a channel](/help/change-the-color-of-a-channel)
-* [Move content to another channel](/help/move-content-to-another-channel)
+* [Unsubscribe from a channel](/help/unsubscribe-from-a-channel)
 * [Manage inactive channels](/help/manage-inactive-channels)
+* [Move content to another channel](/help/move-content-to-another-channel)
+* [View channel subscribers](/help/view-channel-subscribers)
 
 ## Topics
 * [Introduction to topics](/help/channels-and-topics)
@@ -200,6 +199,7 @@
 * [Restrict permissions of new members](/help/restrict-permissions-of-new-members)
 
 ## Channel management
+* [Create a channel](/help/create-a-channel)
 * [Channel permissions](/help/channel-permissions)
 * [Public access option](/help/public-access-option)
 * [Channel posting policy](/help/channel-posting-policy)
