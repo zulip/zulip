@@ -1,13 +1,12 @@
 Receive Zulip notifications for your Taiga projects!
 
+{start_tabs}
+
 1. {!create-stream.md!}
 
 1. {!create-an-incoming-webhook.md!}
 
-1. {!generate-integration-url.md!}
-
-    Make sure to specify the topic in the URL above. Otherwise, the
-    default topic `General` will be used.
+1. {!generate-webhook-url-basic.md!}
 
 1. Go to your **Projects Dashboard** on Taiga, and select the project you'd like to
    receive notifications for. Go to **Admin**, and click on  **Integrations**.
@@ -17,6 +16,12 @@ Receive Zulip notifications for your Taiga projects!
    URL constructed above, and set **Secret key** to the API key of the bot created
    above. Save the form.
 
+{end_tabs}
+
 {!congrats.md!}
 
 ![](/static/images/integrations/taiga/001.png)
+
+### Related documentation
+
+{!webhooks-url-specification.md!}

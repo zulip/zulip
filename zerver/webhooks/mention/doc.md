@@ -1,10 +1,12 @@
 Get Mention notifications within Zulip via Zapier!
 
+{start_tabs}
+
 1. {!create-stream.md!}
 
 1. {!create-an-incoming-webhook.md!}
 
-1. {!generate-integration-url.md!}
+1. {!generate-webhook-url-basic.md!}
 
 1. Go to your Mention feed, and click on your profile in the top-right
    corner. Select **Settings**. Click on **Integrations**. Select the
@@ -22,6 +24,12 @@ Get Mention notifications within Zulip via Zapier!
    above, and set **Payload Type** to **JSON**. After **Test this Step**,
    click **Finish**.
 
+{end_tabs}
+
 {!congrats.md!}
 
 ![](/static/images/integrations/mention/001.png)
+
+### Related documentation
+
+{!webhooks-url-specification.md!}

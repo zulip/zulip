@@ -1,10 +1,12 @@
 Get Zulip notifications for the stories in your Pivotal Tracker project!
 
+{start_tabs}
+
 1. {!create-stream.md!}
 
 1. {!create-an-incoming-webhook.md!}
 
-1. {!generate-integration-url.md!}
+1. {!generate-webhook-url-basic.md!}
 
 1. Go to your Pivotal project's **Settings** page, and click on **Webhooks**.
 
@@ -13,6 +15,12 @@ Get Zulip notifications for the stories in your Pivotal Tracker project!
    version 5, but version 5 contains more information and allows
    Zulip to format more useful messages. Click **Add**.
 
+{end_tabs}
+
 {!congrats.md!}
 
 ![](/static/images/integrations/pivotal/001.png)
+
+### Related documentation
+
+{!webhooks-url-specification.md!}

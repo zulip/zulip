@@ -1,10 +1,12 @@
 Get Zulip notifications for your TeamCity builds!
 
+{start_tabs}
+
 1. {!create-stream.md!}
 
 1. {!create-an-incoming-webhook.md!}
 
-1. {!generate-integration-url.md!}
+1. {!generate-webhook-url-basic.md!}
 
 1. Install the [tcWebHooks plugin](https://github.com/tcplugins/tcWebHooks/releases)
    onto your TeamCity server. Follow the plugin instructions in your
@@ -28,6 +30,8 @@ Get Zulip notifications for your TeamCity builds!
 
 [1]: https://confluence.jetbrains.com/display/TCD9/Installing+Additional+Plugins
 
+{end_tabs}
+
 {!congrats.md!}
 
 ![](/static/images/integrations/teamcity/001.png)
@@ -40,3 +44,7 @@ address or full name), that Zulip user will receive a direct message
 with the result of their personal build.
 
 ![](/static/images/integrations/teamcity/002.png)
+
+### Related documentation
+
+{!webhooks-url-specification.md!}

@@ -10,12 +10,20 @@ mirroring content from a Slack instance into Zulip.
      integrations, which take advantage of Zulip's topics. There may also be
      some quirks when Slack's formatting system is translated into Zulip's.
 
+{start_tabs}
+
 1. {!create-stream.md!}
 
 1. {!create-an-incoming-webhook.md!}
 
-1. {!generate-integration-url.md!}
+1. {!generate-webhook-url-basic.md!}
 
 1. Use your new webhook URL any place that you would use a Slack webhook.
 
-**Congratulations! You're done!**
+{end_tabs}
+
+{!congrats.md!}
+
+### Related documentation
+
+{!webhooks-url-specification.md!}

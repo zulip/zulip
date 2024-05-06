@@ -1,10 +1,12 @@
 Get Zulip notifications for your Opsgenie events!
 
+{start_tabs}
+
 1. {!create-stream.md!}
 
 1. {!create-an-incoming-webhook.md!}
 
-1. {!generate-integration-url.md!}
+1. {!generate-webhook-url-basic.md!}
 
 1. Go to <https://app.opsgenie.com/integration>. Click on
    **Add New Integrations**, and select **Webhook**.
@@ -13,6 +15,12 @@ Get Zulip notifications for your Opsgenie events!
    **Webhook URL** to the URL constructed above, and click on
    **Save Integration**.
 
+{end_tabs}
+
 {!congrats.md!}
 
 ![](/static/images/integrations/opsgenie/000.png)
+
+### Related documentation
+
+{!webhooks-url-specification.md!}

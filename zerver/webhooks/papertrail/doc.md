@@ -1,10 +1,12 @@
 Get Zulip notifications for your Papertrail logs!
 
+{start_tabs}
+
 1. {!create-stream.md!}
 
 1. {!create-an-incoming-webhook.md!}
 
-1. {!generate-integration-url.md!}
+1. {!generate-webhook-url-basic.md!}
 
 1. On your Papertrail dashboard, search for the logs you'd like
    to set up alerts for, and click on **Save Search**. Provide a
@@ -15,6 +17,12 @@ Get Zulip notifications for your Papertrail logs!
    Set **URL** to the URL constructed above, and click
    **Create Alert**.
 
+{end_tabs}
+
 {!congrats.md!}
 
 ![](/static/images/integrations/papertrail/001.png)
+
+### Related documentation
+
+{!webhooks-url-specification.md!}

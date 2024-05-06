@@ -2,19 +2,27 @@ See your Thinkst Canary and Canarytoken alerts in Zulip! This integration works 
 Canarytokens from Thinkst's paid product, not [canarytokens.org][canarytokens] - see the
 [Canarytokens](/integrations/doc/canarytoken) integration for those!
 
+{start_tabs}
+
 1. {!create-stream.md!}
 
 1. {!create-an-incoming-webhook.md!}
 
-1. {!generate-integration-url.md!}
+1. {!generate-webhook-url-basic.md!}
 
 1. Go to your Thinkst Canary settings, and click on **Webhooks** on
    the left sidebar. Select the **Generic** tab. Press
    **Add Generic Webhook** and enter the constructed URL above. Finally,
    click **Save**.
 
+{end_tabs}
+
 {!congrats.md!}
 
 ![](/static/images/integrations/thinkst/001.png)
 
 [canarytokens]: https://canarytokens.org
+
+### Related documentation
+
+{!webhooks-url-specification.md!}

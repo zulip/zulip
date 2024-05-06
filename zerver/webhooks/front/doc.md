@@ -2,11 +2,13 @@ Front lets you manage all of your communication channels in one place,
 and helps your team collaborate around every message. Follow these steps
 to receive Front notifications without leaving Zulip!
 
+{start_tabs}
+
 1. {!create-stream.md!}
 
 1. {!create-an-incoming-webhook.md!}
 
-1. {!generate-integration-url.md!}
+1. {!generate-webhook-url-basic.md!}
 
 1. Go to the **Settings** page of your Front organization. Click on the
 **Integrations** tab, and enable the **Webhooks** integration. Click on
@@ -20,6 +22,12 @@ constructed above.
 `https://app.frontapp.com/open/cnv_{id}`. This step is necessary to map
 Front conversations to topics in Zulip.
 
+{end_tabs}
+
 {!congrats.md!}
 
 ![](/static/images/integrations/front/001.png)
+
+### Related documentation
+
+{!webhooks-url-specification.md!}

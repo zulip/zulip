@@ -1,10 +1,12 @@
 Get Zulip notifications for Stripe events!
 
+{start_tabs}
+
 1. {!create-stream.md!}
 
 1. {!create-an-incoming-webhook.md!}
 
-1. {!generate-integration-url.md!}
+1. {!generate-webhook-url-basic.md!}
 
 1. On your Stripe Dashboard, click on **Developers** on the left
    sidebar. Click on **Webhooks**, and click on **+ Add endpoint**.
@@ -23,12 +25,18 @@ Sources, Subscriptions, Files, Invoices and Invoice items.
 
 {% if 'http:' in external_url_scheme %}
 
-!!! tip ""
 
-    Note that Stripe will only accept HTTPS webhooks!
+
+   **Note**: Stripe will only accept HTTPS webhooks!
 
 {% endif %}
+
+{end_tabs}
 
 {!congrats.md!}
 
 ![](/static/images/integrations/stripe/001.png)
+
+### Related documentation
+
+{!webhooks-url-specification.md!}

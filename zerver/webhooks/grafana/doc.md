@@ -1,10 +1,12 @@
 See your Grafana dashboard alerts in Zulip!
 
+{start_tabs}
+
 1. {!create-stream.md!}
 
 1. {!create-an-incoming-webhook.md!}
 
-1. {!generate-integration-url.md!}
+1. {!generate-webhook-url-basic.md!}
 
 ### Instructions for Grafana 8.3 and above
 
@@ -43,6 +45,12 @@ See your Grafana dashboard alerts in Zulip!
 1. Return to **Notification channels**. You may now click **Send Test** and
    you will see a Grafana test alert notification in Zulip.
 
+{end_tabs}
+
 {!congrats.md!}
 
 ![](/static/images/integrations/grafana/001.png)
+
+### Related documentation
+
+{!webhooks-url-specification.md!}

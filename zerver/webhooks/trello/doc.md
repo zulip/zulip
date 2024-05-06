@@ -7,11 +7,13 @@ Get Zulip notifications from your Trello boards!
 
 [1]: ./zapier
 
+{start_tabs}
+
 1. {!create-stream.md!}
 
 1. {!create-an-incoming-webhook.md!}
 
-1. {!generate-integration-url.md!}
+1. {!generate-webhook-url-basic.md!}
 
 1. **Log in to Trello**, and collect the following three items:
 
@@ -62,6 +64,12 @@ Get Zulip notifications from your Trello boards!
 
 [2]: https://raw.githubusercontent.com/zulip/python-zulip-api/main/zulip/integrations/trello/zulip_trello.py
 
+{end_tabs}
+
 {!congrats.md!}
 
 ![](/static/images/integrations/trello/001.png)
+
+### Related documentation
+
+{!webhooks-url-specification.md!}
