@@ -3,15 +3,13 @@ import $ from "jquery";
 const EXTRA_SUBMENU_BOTTOM_PADDING = 16;
 
 $(() => {
-    function on_tab_menu_selection_change(
-        event?: JQuery.ChangeEvent<HTMLElement> | JQuery.ClickEvent<HTMLElement>,
-    ): void {
+    function on_tab_menu_selection_change(changed_element?: HTMLElement): void {
         // Pass event to open menu and if it is undefined, we close the menu.
-        if (!event) {
+        if (!changed_element) {
             $("#top-menu-submenu-backdrop").css("height", "0px");
             return;
         }
-        const el = event.target.parentElement.querySelector(".top-menu-submenu");
+        const el = changed_element.parentElement!.querySelector<HTMLElement>(".top-menu-submenu");
         if (el) {
             $("#top-menu-submenu-backdrop").css(
                 "height",
@@ -61,8 +59,8 @@ $(() => {
         $("#logout_form").trigger("submit");
     });
 
-    $(".top-menu-tab-input").on("click", (e) => {
-        on_tab_menu_selection_change(e);
+    $(".top-menu-tab-input").on("click", function (this: HTMLElement) {
+        on_tab_menu_selection_change(this);
     });
 
     $(".top-menu-tab-unselect").on("click", () => {
