@@ -173,7 +173,7 @@ def select_welcome_bot_response(human_response_lower: str) -> str:
         return "".join(
             [
                 _("In Zulip, channels [determine who gets a message]({help_link}).").format(
-                    help_link="/help/channels-and-topics"
+                    help_link="/help/introduction-to-channels"
                 )
                 + "\n\n",
                 _("[Browse and subscribe to channels]({settings_link}).").format(

@@ -10,7 +10,7 @@ You can:
   app, and you can always get back to it by clicking on “Recent conversations”
   in the upper left.
 - **Click on the name of a**
-  [**channel**](/help/channels-and-topics) on the left to open a
+  [**channel**](/help/introduction-to-channels) on the left to open a
   list of recent conversation topics. For example, you can explore discussions
   of changes to the design of the Zulip app in
   [#design](https://chat.zulip.org/#narrow/stream/101-design), or see ongoing

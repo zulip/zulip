@@ -212,7 +212,7 @@ For example, `test*` matches every event that starts with `test`.
     For a list of supported events, see a specific [integration's
     documentation](/integrations) page.
 
-[browse-streams]: /help/browse-and-subscribe-to-channels
+[browse-streams]: /help/introduction-to-channels#browse-and-subscribe-to-channels
 [add-bot]: /help/add-a-bot-or-integration
 [url-encoder]: https://www.urlencoder.org/
 

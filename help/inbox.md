@@ -54,4 +54,4 @@ In the web app, you can control whether the **Inbox** includes all topics, just
 * [Combined feed](/help/combined-feed)
 * [Mute or unmute a channel](/help/mute-a-channel)
 * [Mute or unmute a topic](/help/mute-a-topic)
-* [Browse and subscribe to channels](/help/browse-and-subscribe-to-channels)
+* [Introduction to channels](/help/introduction-to-channels)
