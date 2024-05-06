@@ -73,11 +73,6 @@ $(() => {
         on_tab_menu_selection_change();
     });
 
-    $("body").on("change", "top-menu-tab-input", (e) => {
-        $("#top-menu-tab-close").prop("checked", true);
-        on_tab_menu_selection_change(e);
-    });
-
     // Helps make the keyboard navigation work.
     $("body").on("keydown", ".nav-menu-label, .top-menu-tab-label-unselect", (e) => {
         if (e.key === "Enter") {
