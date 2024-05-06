@@ -580,7 +580,7 @@ export class Typeahead<ItemType extends string | object> {
 
                 this.select(e);
 
-                if (e.currentTarget.id === "stream_message_recipient_topic") {
+                if (this.input_element.$element[0].id === "stream_message_recipient_topic") {
                     assert(this.input_element.type === "input");
                     // Move the cursor to the end of the topic
                     const topic_length = this.input_element.$element.val()!.length;
@@ -612,7 +612,7 @@ export class Typeahead<ItemType extends string | object> {
                 // when shift (keycode 16) + tabbing to the topic field
                 if (
                     pseudo_keycode === 16 &&
-                    e.currentTarget.id === "stream_message_recipient_topic"
+                    this.input_element.$element[0].id === "stream_message_recipient_topic"
                 ) {
                     return;
                 }
