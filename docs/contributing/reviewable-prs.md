@@ -33,8 +33,8 @@ to understand and difficult to make dangerous mistakes. Our linters, tests, code
 style guidelines, [testing philosophy](../testing/philosophy.md), [commit
 discipline](../contributing/commit-discipline.md), this documentation, and our
 attention to detail in [code review](../contributing/review-process.md) are all
-essential elements of this strategy. Following these guidelines is essential if
-you're like your work to be merged into the project.
+important elements of this strategy. Following these guidelines is essential if
+you'd like your work to be merged into the project.
 
 If any part of your contribution is from someone else (code snippets, images,
 sounds, or any other copyrightable work, modified or unmodified), be sure to
