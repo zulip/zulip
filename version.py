@@ -48,4 +48,4 @@ API_FEATURE_LEVEL = 256
 #   historical commits sharing the same major version, in which case a
 #   minor version bump suffices.
 
-PROVISION_VERSION = (269, 3)  # last bumped 2024-04-29 for adding pyasyncore
+PROVISION_VERSION = (270, 0)  # last bumped 2024-04-30 for Python requirements upgrade
