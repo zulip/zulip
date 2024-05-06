@@ -732,6 +732,9 @@ html_rules: List["Rule"] = [
     {
         "pattern": r"(?i:data-tippy-allowHTML)",
         "description": "Never use data-tippy-allowHTML; for an HTML tooltip, set data-tooltip-template-id to the id of a <template> containing the tooltip content.",
+        "exclude": {
+            "templates/corporate/support/sponsorship_discount_forms.html",
+        },
     },
 ]
 

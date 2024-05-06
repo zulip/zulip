@@ -48,7 +48,6 @@
     <div class="remote-support-sponsorship-container">
         {% with %}
             {% set sponsorship_data = support_data[remote_realm.id].sponsorship_data %}
-            {% set format_discount = format_discount %}
             {% include 'corporate/support/sponsorship_details.html' %}
         {% endwith %}
     </div>
@@ -58,7 +57,6 @@
             {% set sponsorship_data = support_data[remote_realm.id].sponsorship_data %}
             {% set remote_id = remote_realm.id %}
             {% set remote_type = "remote_realm_id" %}
-            {% set format_discount = format_discount %}
             {% set has_fixed_price = support_data[remote_realm.id].plan_data.has_fixed_price %}
             {% include 'corporate/support/sponsorship_forms_support.html' %}
         {% endwith %}
@@ -69,7 +67,6 @@
     <div class="current-plan-container">
         {% with %}
             {% set plan_data = support_data[remote_realm.id].plan_data %}
-            {% set format_discount = format_discount %}
             {% set dollar_amount = dollar_amount %}
             {% include 'corporate/support/current_plan_details.html' %}
         {% endwith %}
@@ -87,7 +84,6 @@
     <div class="next-plan-container">
         {% with %}
             {% set plan_data = support_data[remote_realm.id].plan_data %}
-            {% set format_discount = format_discount %}
             {% set dollar_amount = dollar_amount %}
             {% set remote_id = remote_realm.id %}
             {% set remote_type = "remote_realm_id" %}

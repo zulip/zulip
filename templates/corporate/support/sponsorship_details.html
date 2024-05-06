@@ -2,7 +2,7 @@
     <p class="support-section-header">💸 Discount and sponsorship information:</p>
     <b>Sponsorship pending</b>: {{ sponsorship_data.sponsorship_pending }}<br />
     {% if sponsorship_data.default_discount %}
-        <b>Discount</b>: {{ format_discount(sponsorship_data.default_discount) }}%<br />
+        <b>Discount</b>: {{ sponsorship_data.default_discount }}%<br />
     {% else %}
         <b>Discount</b>: None<br />
     {% endif %}

@@ -41,7 +41,6 @@ from django.utils.crypto import get_random_string
 from django.utils.timezone import now as timezone_now
 from typing_extensions import ParamSpec, override
 
-from corporate.lib.activity import get_realms_with_default_discount_dict
 from corporate.lib.stripe import (
     DEFAULT_INVOICE_DAYS_UNTIL_DUE,
     MAX_INVOICED_LICENSES,
@@ -4542,7 +4541,7 @@ class StripeTest(StripeTestCase):
             user=self.example_user("iago"), realm=realm, support_session=True
         )
         billing_session.set_required_plan_tier(CustomerPlan.TIER_CLOUD_STANDARD)
-        billing_session.attach_discount_to_customer(Decimal(20))
+        billing_session.attach_discount_to_customer(640, 6400)
         rows.append(Row(realm, Realm.PLAN_TYPE_SELF_HOSTED, None, None, 0, False))
 
         # no active paid plan or invoices (no action)
@@ -5122,8 +5121,15 @@ class BillingHelpersTest(ZulipTestCase):
         anchor = datetime(2019, 12, 31, 1, 2, 3, tzinfo=timezone.utc)
         month_later = datetime(2020, 1, 31, 1, 2, 3, tzinfo=timezone.utc)
         year_later = datetime(2020, 12, 31, 1, 2, 3, tzinfo=timezone.utc)
+        customer_with_discount = Customer.objects.create(
+            realm=get_realm("lear"),
+            monthly_discounted_price=600,
+            annual_discounted_price=6000,
+            required_plan_tier=CustomerPlan.TIER_CLOUD_STANDARD,
+        )
+        customer_no_discount = Customer.objects.create(realm=get_realm("zulip"))
         test_cases = [
-            # test all possibilities, since there aren't that many
+            # Annual standard no customer
             (
                 (
                     CustomerPlan.TIER_CLOUD_STANDARD,
@@ -5132,34 +5138,34 @@ class BillingHelpersTest(ZulipTestCase):
                 ),
                 (anchor, month_later, year_later, 8000),
             ),
-            (
-                (CustomerPlan.TIER_CLOUD_STANDARD, CustomerPlan.BILLING_SCHEDULE_ANNUAL, 85),
-                (anchor, month_later, year_later, 1200),
-            ),
-            (
-                (
-                    CustomerPlan.TIER_CLOUD_STANDARD,
-                    CustomerPlan.BILLING_SCHEDULE_MONTHLY,
-                    None,
-                ),
-                (anchor, month_later, month_later, 800),
-            ),
-            (
-                (CustomerPlan.TIER_CLOUD_STANDARD, CustomerPlan.BILLING_SCHEDULE_MONTHLY, 85),
-                (anchor, month_later, month_later, 120),
-            ),
+            # Annual standard with discount
             (
                 (
                     CustomerPlan.TIER_CLOUD_STANDARD,
                     CustomerPlan.BILLING_SCHEDULE_ANNUAL,
-                    None,
+                    customer_with_discount,
+                ),
+                (anchor, month_later, year_later, 6000),
+            ),
+            # Annual standard customer but no discount
+            (
+                (
+                    CustomerPlan.TIER_CLOUD_STANDARD,
+                    CustomerPlan.BILLING_SCHEDULE_ANNUAL,
+                    customer_no_discount,
                 ),
                 (anchor, month_later, year_later, 8000),
             ),
+            # Annual plus customer with discount but different tier than required for discount
             (
-                (CustomerPlan.TIER_CLOUD_STANDARD, CustomerPlan.BILLING_SCHEDULE_ANNUAL, 85),
-                (anchor, month_later, year_later, 1200),
+                (
+                    CustomerPlan.TIER_CLOUD_PLUS,
+                    CustomerPlan.BILLING_SCHEDULE_ANNUAL,
+                    customer_with_discount,
+                ),
+                (anchor, month_later, year_later, 12000),
             ),
+            # Monthly standard no customer
             (
                 (
                     CustomerPlan.TIER_CLOUD_STANDARD,
@@ -5168,43 +5174,56 @@ class BillingHelpersTest(ZulipTestCase):
                 ),
                 (anchor, month_later, month_later, 800),
             ),
+            # Monthly standard with discount
             (
                 (
                     CustomerPlan.TIER_CLOUD_STANDARD,
                     CustomerPlan.BILLING_SCHEDULE_MONTHLY,
-                    85,
+                    customer_with_discount,
                 ),
-                (anchor, month_later, month_later, 120),
+                (anchor, month_later, month_later, 600),
             ),
-            # test exact math of Decimals; 800 * (1 - 87.25) = 101.9999999..
+            # Monthly standard customer but no discount
             (
                 (
                     CustomerPlan.TIER_CLOUD_STANDARD,
                     CustomerPlan.BILLING_SCHEDULE_MONTHLY,
-                    87.25,
+                    customer_no_discount,
                 ),
-                (anchor, month_later, month_later, 102),
+                (anchor, month_later, month_later, 800),
             ),
-            # test dropping of fractional cents; without the int it's 102.8
+            # Monthly plus customer with discount but different tier than required for discount
             (
                 (
-                    CustomerPlan.TIER_CLOUD_STANDARD,
+                    CustomerPlan.TIER_CLOUD_PLUS,
                     CustomerPlan.BILLING_SCHEDULE_MONTHLY,
-                    87.15,
+                    customer_with_discount,
                 ),
-                (anchor, month_later, month_later, 102),
+                (anchor, month_later, month_later, 1200),
             ),
         ]
         with time_machine.travel(anchor, tick=False):
-            for (tier, billing_schedule, discount), output in test_cases:
+            for (tier, billing_schedule, customer), output in test_cases:
                 output_ = compute_plan_parameters(
                     tier,
                     billing_schedule,
-                    None if discount is None else Decimal(discount),
+                    customer,
                 )
                 self.assertEqual(output_, output)
 
     def test_get_price_per_license(self) -> None:
+        standard_discounted_customer = Customer.objects.create(
+            realm=get_realm("lear"),
+            monthly_discounted_price=400,
+            annual_discounted_price=4000,
+            required_plan_tier=CustomerPlan.TIER_CLOUD_STANDARD,
+        )
+        plus_discounted_customer = Customer.objects.create(
+            realm=get_realm("zulip"),
+            monthly_discounted_price=600,
+            annual_discounted_price=6000,
+            required_plan_tier=CustomerPlan.TIER_CLOUD_PLUS,
+        )
         self.assertEqual(
             get_price_per_license(
                 CustomerPlan.TIER_CLOUD_STANDARD, CustomerPlan.BILLING_SCHEDULE_ANNUAL
@@ -5221,7 +5240,7 @@ class BillingHelpersTest(ZulipTestCase):
             get_price_per_license(
                 CustomerPlan.TIER_CLOUD_STANDARD,
                 CustomerPlan.BILLING_SCHEDULE_MONTHLY,
-                discount=Decimal(50),
+                standard_discounted_customer,
             ),
             400,
         )
@@ -5242,7 +5261,16 @@ class BillingHelpersTest(ZulipTestCase):
             get_price_per_license(
                 CustomerPlan.TIER_CLOUD_PLUS,
                 CustomerPlan.BILLING_SCHEDULE_MONTHLY,
-                discount=Decimal(50),
+                # Wrong tier so discount not applied.
+                standard_discounted_customer,
+            ),
+            1200,
+        )
+        self.assertEqual(
+            get_price_per_license(
+                CustomerPlan.TIER_CLOUD_PLUS,
+                CustomerPlan.BILLING_SCHEDULE_MONTHLY,
+                plus_discounted_customer,
             ),
             600,
         )
@@ -5431,37 +5459,6 @@ class BillingHelpersTest(ZulipTestCase):
                     f"{remote_server.id}, server is already active."
                 ],
             )
-
-
-class AnalyticsHelpersTest(ZulipTestCase):
-    def test_get_realms_to_default_discount_dict(self) -> None:
-        Customer.objects.create(realm=get_realm("zulip"), stripe_customer_id="cus_1")
-        lear_customer = Customer.objects.create(realm=get_realm("lear"), stripe_customer_id="cus_2")
-        lear_customer.default_discount = Decimal(30)
-        lear_customer.save(update_fields=["default_discount"])
-        zephyr_customer = Customer.objects.create(
-            realm=get_realm("zephyr"), stripe_customer_id="cus_3"
-        )
-        zephyr_customer.default_discount = Decimal(0)
-        zephyr_customer.save(update_fields=["default_discount"])
-        remote_server = RemoteZulipServer.objects.create(
-            uuid=str(uuid.uuid4()),
-            api_key="magic_secret_api_key",
-            hostname="demo.example.com",
-            contact_email="email@example.com",
-        )
-        remote_customer = Customer.objects.create(
-            remote_server=remote_server, stripe_customer_id="cus_4"
-        )
-        remote_customer.default_discount = Decimal(50)
-        remote_customer.save(update_fields=["default_discount"])
-
-        self.assertEqual(
-            get_realms_with_default_discount_dict(),
-            {
-                "lear": Decimal("30.0000"),
-            },
-        )
 
 
 class LicenseLedgerTest(StripeTestCase):
@@ -6039,19 +6036,33 @@ class TestSupportBillingHelpers(StripeTestCase):
 
         # Cannot attach discount without a required_plan_tier set.
         with self.assertRaises(AssertionError):
-            billing_session.attach_discount_to_customer(Decimal(85))
+            billing_session.attach_discount_to_customer(
+                monthly_discounted_price=120,
+                annual_discounted_price=1200,
+            )
         billing_session.update_or_create_customer()
 
         with self.assertRaises(AssertionError):
-            billing_session.attach_discount_to_customer(Decimal(85))
+            billing_session.attach_discount_to_customer(
+                monthly_discounted_price=120,
+                annual_discounted_price=1200,
+            )
 
         billing_session.set_required_plan_tier(CustomerPlan.TIER_CLOUD_STANDARD)
-        billing_session.attach_discount_to_customer(Decimal(85))
+        billing_session.attach_discount_to_customer(
+            monthly_discounted_price=120,
+            annual_discounted_price=1200,
+        )
         realm_audit_log = RealmAuditLog.objects.filter(
             event_type=RealmAuditLog.REALM_DISCOUNT_CHANGED
         ).last()
         assert realm_audit_log is not None
-        expected_extra_data = {"old_discount": None, "new_discount": str(Decimal("85"))}
+        expected_extra_data = {
+            "new_annual_discounted_price": 1200,
+            "new_monthly_discounted_price": 120,
+            "old_annual_discounted_price": 0,
+            "old_monthly_discounted_price": 0,
+        }
         self.assertEqual(realm_audit_log.extra_data, expected_extra_data)
         self.login_user(user)
         # Check that the discount appears in page_params
@@ -6071,14 +6082,17 @@ class TestSupportBillingHelpers(StripeTestCase):
             [item.amount for item in invoice.lines],
         )
         # Check CustomerPlan reflects the discount
-        plan = CustomerPlan.objects.get(price_per_license=1200, discount=Decimal(85))
+        plan = CustomerPlan.objects.get(price_per_license=1200, discount="85")
 
         # Attach discount to existing Stripe customer
         plan.status = CustomerPlan.ENDED
         plan.save(update_fields=["status"])
         billing_session = RealmBillingSession(support_admin, realm=user.realm, support_session=True)
         billing_session.set_required_plan_tier(CustomerPlan.TIER_CLOUD_STANDARD)
-        billing_session.attach_discount_to_customer(Decimal(25))
+        billing_session.attach_discount_to_customer(
+            monthly_discounted_price=600,
+            annual_discounted_price=6000,
+        )
         with time_machine.travel(self.now, tick=False):
             self.add_card_and_upgrade(
                 user, license_management="automatic", billing_modality="charge_automatically"
@@ -6095,12 +6109,16 @@ class TestSupportBillingHelpers(StripeTestCase):
         plan = CustomerPlan.objects.get(price_per_license=6000, discount=Decimal(25))
 
         billing_session = RealmBillingSession(support_admin, realm=user.realm, support_session=True)
-        billing_session.attach_discount_to_customer(Decimal(50))
+        billing_session.attach_discount_to_customer(
+            monthly_discounted_price=400,
+            annual_discounted_price=4000,
+        )
         plan.refresh_from_db()
         self.assertEqual(plan.price_per_license, 4000)
-        self.assertEqual(plan.discount, 50)
+        self.assertEqual(plan.discount, "50")
         customer.refresh_from_db()
-        self.assertEqual(customer.default_discount, 50)
+        self.assertEqual(customer.monthly_discounted_price, 400)
+        self.assertEqual(customer.annual_discounted_price, 4000)
         # Fast forward the next_invoice_date to next year.
         plan.next_invoice_date = self.next_year
         plan.save(update_fields=["next_invoice_date"])
@@ -6114,8 +6132,10 @@ class TestSupportBillingHelpers(StripeTestCase):
         ).last()
         assert realm_audit_log is not None
         expected_extra_data = {
-            "old_discount": str(Decimal("25.0000")),
-            "new_discount": str(Decimal("50")),
+            "new_annual_discounted_price": 4000,
+            "new_monthly_discounted_price": 400,
+            "old_annual_discounted_price": 6000,
+            "old_monthly_discounted_price": 600,
         }
         self.assertEqual(realm_audit_log.extra_data, expected_extra_data)
         self.assertEqual(realm_audit_log.acting_user, support_admin)
@@ -6146,7 +6166,10 @@ class TestSupportBillingHelpers(StripeTestCase):
             billing_session.process_support_view_request(support_view_request)
 
         billing_session.set_required_plan_tier(CustomerPlan.TIER_CLOUD_STANDARD)
-        billing_session.attach_discount_to_customer(Decimal(50))
+        billing_session.attach_discount_to_customer(
+            monthly_discounted_price=400,
+            annual_discounted_price=4000,
+        )
         message = billing_session.process_support_view_request(support_view_request)
         self.assertEqual("Minimum licenses for zulip changed to 25 from 0.", message)
         realm_audit_log = RealmAuditLog.objects.filter(
@@ -6202,16 +6225,34 @@ class TestSupportBillingHelpers(StripeTestCase):
         customer = billing_session.get_customer()
         assert customer is not None
         self.assertEqual(customer.required_plan_tier, valid_plan_tier)
-        self.assertEqual(customer.default_discount, None)
+        self.assertEqual(customer.monthly_discounted_price, 0)
+        self.assertEqual(customer.annual_discounted_price, 0)
 
         # Check that discount is only applied to set plan tier
-        billing_session.attach_discount_to_customer(Decimal(50))
+        billing_session.attach_discount_to_customer(
+            monthly_discounted_price=400,
+            annual_discounted_price=4000,
+        )
         customer.refresh_from_db()
-        self.assertEqual(customer.default_discount, Decimal(50))
-        discount_for_standard_plan = customer.get_discount_for_plan_tier(valid_plan_tier)
-        self.assertEqual(discount_for_standard_plan, customer.default_discount)
-        discount_for_plus_plan = customer.get_discount_for_plan_tier(CustomerPlan.TIER_CLOUD_PLUS)
-        self.assertEqual(discount_for_plus_plan, None)
+        self.assertEqual(customer.monthly_discounted_price, 400)
+        self.assertEqual(customer.annual_discounted_price, 4000)
+
+        monthly_discounted_price = customer.get_discounted_price_for_plan(
+            valid_plan_tier, CustomerPlan.BILLING_SCHEDULE_MONTHLY
+        )
+        self.assertEqual(monthly_discounted_price, customer.monthly_discounted_price)
+        annual_discounted_price = customer.get_discounted_price_for_plan(
+            valid_plan_tier, CustomerPlan.BILLING_SCHEDULE_ANNUAL
+        )
+        self.assertEqual(annual_discounted_price, customer.annual_discounted_price)
+        monthly_discounted_price = customer.get_discounted_price_for_plan(
+            CustomerPlan.TIER_CLOUD_PLUS, CustomerPlan.BILLING_SCHEDULE_MONTHLY
+        )
+        self.assertEqual(monthly_discounted_price, None)
+        annual_discounted_price = customer.get_discounted_price_for_plan(
+            CustomerPlan.TIER_CLOUD_PLUS, CustomerPlan.BILLING_SCHEDULE_ANNUAL
+        )
+        self.assertEqual(annual_discounted_price, None)
 
         # Try to set invalid plan tier
         invalid_plan_tier = CustomerPlan.TIER_SELF_HOSTED_BASE
@@ -6232,15 +6273,22 @@ class TestSupportBillingHelpers(StripeTestCase):
         ):
             billing_session.process_support_view_request(support_view_request)
 
-        billing_session.attach_discount_to_customer(Decimal(0))
+        billing_session.attach_discount_to_customer(
+            monthly_discounted_price=0,
+            annual_discounted_price=0,
+        )
         message = billing_session.process_support_view_request(support_view_request)
         self.assertEqual("Required plan tier for zulip set to None.", message)
         customer.refresh_from_db()
         self.assertIsNone(customer.required_plan_tier)
-        discount_for_standard_plan = customer.get_discount_for_plan_tier(valid_plan_tier)
-        self.assertEqual(discount_for_standard_plan, customer.default_discount)
-        discount_for_plus_plan = customer.get_discount_for_plan_tier(CustomerPlan.TIER_CLOUD_PLUS)
-        self.assertEqual(discount_for_plus_plan, customer.default_discount)
+        discount_for_standard_plan = customer.get_discounted_price_for_plan(
+            valid_plan_tier, CustomerPlan.BILLING_SCHEDULE_MONTHLY
+        )
+        self.assertEqual(discount_for_standard_plan, None)
+        discount_for_plus_plan = customer.get_discounted_price_for_plan(
+            CustomerPlan.TIER_CLOUD_PLUS, CustomerPlan.BILLING_SCHEDULE_MONTHLY
+        )
+        self.assertEqual(discount_for_plus_plan, None)
         realm_audit_log = RealmAuditLog.objects.filter(
             event_type=RealmAuditLog.CUSTOMER_PROPERTY_CHANGED
         ).last()
