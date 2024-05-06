@@ -245,10 +245,14 @@ faster as you build experience.
 
 ### Submitting a pull request
 
-See the [pull request review
-process](https://zulip.readthedocs.io/en/latest/contributing/review-process.html)
-guide for detailed instructions on how to submit a pull request, and information
-on the stages of review your PR will go through.
+See the [guide on submitting a pull
+request](https://zulip.readthedocs.io/en/latest/contributing/reviewable-prs.html)
+for detailed instructions on how to present your proposed changes to Zulip.
+
+The [pull request review process
+guide](https://zulip.readthedocs.io/en/latest/contributing/review-process.html)
+explains the stages of review your PR will go through, and offers guidance on
+how to help the review process move forward.
 
 ### Beyond the first issue
 
