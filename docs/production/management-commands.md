@@ -125,9 +125,9 @@ There are dozens of useful management commands under
 - `./manage.py export_single_user`: does a limited version of the [main
   export tools](export-and-import.md) containing just
   the messages accessible by a single user.
-- `./manage.py unarchive_stream`:
+- `./manage.py unarchive_channel`:
   [Reactivates](https://zulip.com/help/archive-a-stream#unarchiving-archived-streams)
-  an archived stream.
+  an archived channel.
 - `./manage.py reactivate_realm`: Reactivates a realm.
 - `./manage.py deactivate_user`: Deactivates a user. This can be done
   more easily in Zulip's organization administrator UI.
