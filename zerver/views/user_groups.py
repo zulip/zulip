@@ -1,10 +1,11 @@
-from typing import Dict, List, Optional, Sequence, Union
+from typing import List, Optional, Sequence, Union
 
 from django.conf import settings
 from django.db import transaction
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import gettext as _
 from django.utils.translation import override as override_language
+from pydantic import Json
 
 from zerver.actions.message_send import do_send_messages, internal_prep_private_message
 from zerver.actions.user_groups import (
@@ -23,7 +24,7 @@ from zerver.lib.exceptions import JsonableError
 from zerver.lib.mention import MentionBackend, silent_mention_syntax_for_user
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
-from zerver.lib.types import Validator
+from zerver.lib.typed_endpoint import PathOnly, typed_endpoint
 from zerver.lib.user_groups import (
     AnonymousSettingGroupDict,
     access_user_group_by_id,
@@ -39,51 +40,34 @@ from zerver.lib.user_groups import (
     user_groups_in_realm_serialized,
 )
 from zerver.lib.users import access_user_by_id, user_ids_to_users
-from zerver.lib.validator import check_bool, check_dict_only, check_int, check_list, check_union
+from zerver.lib.validator import check_bool, check_int, check_list
 from zerver.models import NamedUserGroup, UserGroup, UserProfile
 from zerver.models.users import get_system_bot
 from zerver.views.streams import compose_views
 
 
 def parse_group_setting_value(
-    setting_value: Union[int, Dict[str, List[int]]],
+    setting_value: Union[int, AnonymousSettingGroupDict],
 ) -> Union[int, AnonymousSettingGroupDict]:
     if isinstance(setting_value, int):
         return setting_value
 
-    if len(setting_value["direct_members"]) == 0 and len(setting_value["direct_subgroups"]) == 1:
-        return setting_value["direct_subgroups"][0]
+    if len(setting_value.direct_members) == 0 and len(setting_value.direct_subgroups) == 1:
+        return setting_value.direct_subgroups[0]
 
-    return AnonymousSettingGroupDict(
-        direct_members=setting_value["direct_members"],
-        direct_subgroups=setting_value["direct_subgroups"],
-    )
-
-
-check_group_setting: Validator[Union[int, Dict[str, List[int]]]] = check_union(
-    [
-        check_int,
-        check_dict_only(
-            [
-                ("direct_members", check_list(check_int)),
-                ("direct_subgroups", check_list(check_int)),
-            ]
-        ),
-    ]
-)
+    return setting_value
 
 
 @require_user_group_edit_permission
-@has_request_variables
+@typed_endpoint
 def add_user_group(
     request: HttpRequest,
     user_profile: UserProfile,
-    name: str = REQ(),
-    members: Sequence[int] = REQ(json_validator=check_list(check_int), default=[]),
-    description: str = REQ(),
-    can_mention_group: Optional[Union[Dict[str, List[int]], int]] = REQ(
-        json_validator=check_group_setting, default=None
-    ),
+    *,
+    name: str,
+    members: Json[Sequence[int]],
+    description: str,
+    can_mention_group: Optional[Json[Union[AnonymousSettingGroupDict, int]]] = None,
 ) -> HttpResponse:
     user_profiles = user_ids_to_users(members, user_profile.realm)
     name = check_user_group_name(name)
@@ -152,16 +136,15 @@ def check_setting_value_changed(
 
 @transaction.atomic
 @require_user_group_edit_permission
-@has_request_variables
+@typed_endpoint
 def edit_user_group(
     request: HttpRequest,
     user_profile: UserProfile,
-    user_group_id: int = REQ(json_validator=check_int, path_only=True),
-    name: Optional[str] = REQ(default=None),
-    description: Optional[str] = REQ(default=None),
-    can_mention_group: Optional[Union[Dict[str, List[int]], int]] = REQ(
-        json_validator=check_group_setting, default=None
-    ),
+    *,
+    user_group_id: PathOnly[int],
+    name: Optional[str] = None,
+    description: Optional[str] = None,
+    can_mention_group: Optional[Json[Union[int, AnonymousSettingGroupDict]]] = None,
 ) -> HttpResponse:
     if name is None and description is None and can_mention_group is None:
         raise JsonableError(_("No new data supplied"))
