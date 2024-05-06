@@ -109,7 +109,7 @@ class zulip_ops::profile::nagios {
     '/etc/nagios4/conf.d/hostgroups_nagios2.cfg',
     '/etc/nagios4/conf.d/localhost_nagios2.cfg',
   ]:
-    ensure     => absent,
+    ensure => absent,
   }
 
   file { '/etc/nagios4/conf.d/zulip_nagios.cfg':
