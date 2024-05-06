@@ -1119,13 +1119,13 @@ export function show_compose_spinner(): void {
     $(".compose-submit-button").addClass("disable-btn");
 }
 
-export function get_compose_click_target(e: JQuery.ClickEvent): Element {
+export function get_compose_click_target(element: HTMLElement): Element {
     const compose_control_buttons_popover = popover_menus.get_compose_control_buttons_popover();
     if (
         compose_control_buttons_popover &&
-        $(compose_control_buttons_popover.popper).has(e.target).length
+        $(compose_control_buttons_popover.popper).has(element).length
     ) {
         return compose_control_buttons_popover.reference;
     }
-    return e.target;
+    return element;
 }

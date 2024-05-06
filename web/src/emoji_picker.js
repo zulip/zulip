@@ -761,11 +761,11 @@ function register_click_handlers() {
         handle_emoji_clicked($(e.currentTarget), e);
     });
 
-    $("body").on("click", ".emoji_map", (e) => {
+    $("body").on("click", ".emoji_map", function (e) {
         e.preventDefault();
         e.stopPropagation();
 
-        const compose_click_target = compose_ui.get_compose_click_target(e);
+        const compose_click_target = compose_ui.get_compose_click_target(this);
         if ($(compose_click_target).parents(".message_edit_form").length === 1) {
             // Store message id in global variable edit_message_id so that
             // its value can be further used to correctly find the message textarea element.
