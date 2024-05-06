@@ -9,7 +9,7 @@
 
 1. The `api_key` parameter should correspond to your bot's key. The `stream`
     parameter is not necessarily required; if not given, it will default to
-    the `homeassistant` stream.
+    the `homeassistant` channel.
 
 1. And the URL under `resource` should start with:
 
