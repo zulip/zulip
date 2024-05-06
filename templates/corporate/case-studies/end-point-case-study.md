@@ -73,9 +73,9 @@ tools) keeps everyone informed.
 Tipton](https://www.endpointdev.com/team/joanne-tipton/), a senior team manager
 at End Point. “I’m on it all day. I need to have an idea of all the things that
 are going on, so the [desktop notifications](/help/desktop-notifications) are
-invaluable.” There are 130 streams in the organization, and managers are
-subscribed to most of them. Joanne takes advantage of per-stream flexibility for
-notifications, turning on notification sounds just for low-traffic streams where
+invaluable.” There are 130 channels in the organization, and managers are
+subscribed to most of them. Joanne takes advantage of per-channel flexibility for
+notifications, turning on notification sounds just for low-traffic channels where
 every message is important.
 
 > “Zulip is my lifeline.”
@@ -97,7 +97,7 @@ times per week.”
 > Director of Immersive & Geospatial division at End Point
 
 Zulip also enables real-time system monitoring, with error alerts sent into a
-dedicated stream for each system. Alejandro relies on Zulip’s clear record of
+dedicated channel for each system. Alejandro relies on Zulip’s clear record of
 what’s been happening with each installation, which combines automated alerts
 with discussion by the team. “I use [search](/help/search-for-messages) quite a
 bit,” Alejandro says. “Being able to filter by user and search term, and look at
