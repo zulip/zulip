@@ -38,21 +38,21 @@ for wildcard mentions.
 !!! tip ""
 
     Unlike personal mentions, wildcard mentions do not trigger notifications
-    in muted streams or topics.
+    in muted channels or topics.
 
 {start_tabs}
 
 {settings_tab|notifications}
 
 1.  In the **Notification triggers** table, toggle the **@all** checkbox for
-    **Streams** or **Followed topics**.
+    **Channels** or **Followed topics**.
 
 {end_tabs}
 
 Additionally, you can override this configuration for individual
-streams in your [Channel settings](/help/channel-notifications), and
+channels in your [Channel settings](/help/channel-notifications), and
 administrators can [restrict use of wildcard
-mentions](/help/restrict-wildcard-mentions) in large streams.
+mentions](/help/restrict-wildcard-mentions) in large channels.
 
 ## Alert words
 

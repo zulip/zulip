@@ -129,7 +129,7 @@ keep in mind about the import process:
   imported.
 
 - Messages from Rocket.Chat Discussions are imported as topics
-  inside the Zulip stream corresponding to the parent channel of the
+  inside the Zulip channel corresponding to the parent channel of the
   Rocket.Chat Discussion.
 
 - Messages from Rocket.Chat Discussions having direct channels

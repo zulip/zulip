@@ -15,4 +15,4 @@
 * [Replying to messages](/help/replying-to-messages)
 * [Messaging tips & tricks](/help/messaging-tips)
 * [Rename a topic](/help/rename-a-topic)
-* [Require topics in stream messages](/help/require-topics)
+* [Require topics in channel messages](/help/require-topics)

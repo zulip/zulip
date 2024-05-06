@@ -12,7 +12,7 @@ There are many ways to use this feature, including:
 - You can mark messages as unread when you [subscribe to a
   channel](/help/browse-and-subscribe-to-channels). This makes it
   [convenient](/help/reading-strategies) to review all the recent
-  conversations in that stream.
+  conversations in that channel.
 
 - Mark the results of your [search](/help/search-for-messages) as unread to
   review them at leisure.
