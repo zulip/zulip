@@ -32,6 +32,7 @@ import * as util from "./util";
 // that pop up from the left sidebar.
 let stream_popover_instance = null;
 let stream_widget_value;
+let move_topic_to_stream_topic_typeahead;
 
 function get_popover_menu_items(sidebar_elem) {
     if (!sidebar_elem) {
@@ -489,8 +490,12 @@ export async function build_move_topic_to_stream_popover(
         const $topic_input = $("#move_topic_form .move_messages_edit_topic");
         const new_stream_id = Number(stream_widget_value, 10);
         const new_stream_name = sub_store.get(new_stream_id).name;
-        $topic_input.data("typeahead").unlisten();
-        composebox_typeahead.initialize_topic_edit_typeahead($topic_input, new_stream_name, false);
+        move_topic_to_stream_topic_typeahead?.unlisten();
+        move_topic_to_stream_topic_typeahead = composebox_typeahead.initialize_topic_edit_typeahead(
+            $topic_input,
+            new_stream_name,
+            false,
+        );
     }
 
     function render_selected_stream() {
@@ -523,7 +528,7 @@ export async function build_move_topic_to_stream_popover(
         $("#move_topic_modal .dialog_submit_button").prop("disabled", true);
 
         const $topic_input = $("#move_topic_form .move_messages_edit_topic");
-        composebox_typeahead.initialize_topic_edit_typeahead(
+        move_topic_to_stream_topic_typeahead = composebox_typeahead.initialize_topic_edit_typeahead(
             $topic_input,
             current_stream_name,
             false,
@@ -581,6 +586,9 @@ export async function build_move_topic_to_stream_popover(
         on_click: move_topic,
         loading_spinner: true,
         on_shown: focus_on_move_modal_render,
+        on_hidden() {
+            move_topic_to_stream_topic_typeahead = undefined;
+        },
         post_render: move_topic_post_render,
     });
 }

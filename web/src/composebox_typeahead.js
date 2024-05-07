@@ -1108,7 +1108,7 @@ export function initialize_topic_edit_typeahead(form_field, stream_name, dropup)
         $element: form_field,
         type: "input",
     };
-    new Typeahead(bootstrap_typeahead_input, {
+    return new Typeahead(bootstrap_typeahead_input, {
         fixed: true,
         dropup,
         highlighter_html(item) {
