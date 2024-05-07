@@ -482,7 +482,6 @@ export class Typeahead<ItemType extends string | object> {
         for (const event_ of events) {
             $(this.input_element.$element).off(event_);
         }
-        this.input_element.$element.removeData("typeahead");
     }
 
     resizeHandler(): void {
