@@ -178,13 +178,13 @@ beautifulsoup4==4.12.3 \
     #   -r requirements/common.in
     #   pyoembed
     #   zulip-bots
-boto3==1.34.98 \
-    --hash=sha256:030e43b8efe22b4cf10b9f3ef9e30cd4cf9ef9784b26efe9a4583339f2b2bcec \
-    --hash=sha256:28c10956033fa79e64529f48c3b62db86d5e4b77024a7343764b6bde6b553543
+boto3==1.34.100 \
+    --hash=sha256:016f6d66900bb1a835dea2063f1e91fc7057dbf7fb7df8add0706f0da9492631 \
+    --hash=sha256:bbe2bb0dfcd92380da2a2fa2c2f586ba06c118b796380b2d0f3d0ebd103ec28d
     # via -r requirements/common.in
-botocore==1.34.98 \
-    --hash=sha256:4cee65df02f4b0be08ad1401965cc89efafebc50ef0727d2d17083c7f1ed2831 \
-    --hash=sha256:631c0031d8ce922b5752ab395ead896a0281b0dc74745a754d0351a27c5d83de
+botocore==1.34.100 \
+    --hash=sha256:513bea60c6531af8e1ae1fdb2947e3ef99712f39c58f4656b5efef9cb6f75a13 \
+    --hash=sha256:ee516fb9e9e906d311f2a9921afaf79c594db239a5b4b626e89e6960401aad0b
     # via
     #   boto3
     #   s3transfer
@@ -438,9 +438,9 @@ distro==1.9.0 \
     --hash=sha256:2fa77c6fd8940f116ee1d6b94a2f90b13b5ea8d019b98bc8bafdcabcdd9bdbed \
     --hash=sha256:7bffd925d65168f85027d8da9af6bddab658135b840670a223589bc0c8ef02b2
     # via zulip
-django[argon2]==4.2.12 \
-    --hash=sha256:6a6b4aff8a2db2dc7dcc5650cb2c7a7a0d1eb38e2aa2335fdf001e41801e9797 \
-    --hash=sha256:7640e86835d44ae118c2916a803d8081f40e214ee18a5a92a0202994ca60a4b4
+django[argon2]==4.2.13 \
+    --hash=sha256:837e3cf1f6c31347a1396a3f6b65688f2b4bb4a11c580dcb628b5afe527b68a5 \
+    --hash=sha256:a17fcba2aad3fc7d46fdb23215095dbbd64e6174bf4589171e732b18b07e426a
     # via
     #   -r requirements/common.in
     #   django-auth-ldap
