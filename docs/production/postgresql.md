@@ -168,6 +168,35 @@ su zulip -c '/home/zulip/deployments/current/scripts/setup/initialize-database'
 su zulip -c '/home/zulip/deployments/current/manage.py generate_realm_creation_link'
 ```
 
+## PostgreSQL warm standby
+
+Zulip's configuration allows for [warm standby database
+replicas][warm-standby] as a disaster recovery solution; see the
+linked PostgreSQL documentation for details on this type of
+deployment. Zulip's configuration builds on top of `wal-g`, our
+[streaming database backup solution][wal-g], and thus requires that it
+be configured for the primary and all secondary warm standby replicas.
+
+In addition to having `wal-g` backups configured, warm standby
+replicas should configure the hostname of their primary replica, and
+username to use for replication, in `/etc/zulip/zulip.conf`:
+
+```ini
+[postgresql]
+replication_user = replicator
+replication_primary = hostname-of-primary.example.com
+```
+
+The `postgres` user on the replica will need to be able to
+authenticate as the `replication_user` user, which may require further
+configuration of `pg_hba.conf` and client certificates on the replica.
+If you are using password authentication, you can set a
+`postgresql_replication_password` secret in
+`/etc/zulip/zulip-secrets.conf`.
+
+[warm-standby]: https://www.postgresql.org/docs/current/warm-standby.html
+[wal-g]: export-and-import.md#database-only-backup-tools
+
 ## PostgreSQL vacuuming alerts
 
 The `autovac_freeze` PostgreSQL alert from `check_postgres` is particularly
