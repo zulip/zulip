@@ -63,7 +63,7 @@ service (or back):
   decommissioning a Zulip organization.
 
 - It's possible to set up [PostgreSQL streaming
-  replication](deployment.md#postgresql-warm-standby)
+  replication](postgresql.md#postgresql-warm-standby)
   and the [S3 file upload
   backend](upload-backends.md#s3-backend-configuration)
   as part of a high availability environment.
@@ -526,7 +526,7 @@ it may be minutes before the backup is saved into S3 -- see
 [`archive_timeout`][archive-timeout] for how to set an upper bound on this.
 
 If you need always-current backup availability, Zulip also has
-[built-in database replication support](deployment.md#postgresql-warm-standby).
+[built-in database replication support](postgresql.md#postgresql-warm-standby).
 
 You can (and should) monitor that backups are running regularly via
 the Nagios plugin installed into
