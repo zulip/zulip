@@ -53,6 +53,10 @@
     {{t 'Send' }}
     {{tooltip_hotkey_hints "Ctrl" "Enter"}}
 </template>
+<template id="preview-tooltip">
+    {{t 'Preview' }}
+    {{tooltip_hotkey_hints "Alt" "P"}}
+</template>
 <template id="add-global-time-tooltip">
     <div>
         <div>{{t "Add global time" }}</div>
@@ -64,6 +68,18 @@
         <span>{{t "Add poll" }}</span><br/>
         <span class="tooltip-inner-content italic">{{t "A poll must be an entire message." }}</span>
     </div>
+</template>
+<template id="link-tooltip">
+    {{t 'Link' }}
+    {{tooltip_hotkey_hints "Ctrl" "Shift" "L"}}
+</template>
+<template id="bold-tooltip">
+    {{t 'Bold' }}
+    {{tooltip_hotkey_hints "Ctrl" "B"}}
+</template>
+<template id="italic-tooltip">
+    {{t 'Italic' }}
+    {{tooltip_hotkey_hints "Ctrl" "I"}}
 </template>
 <template id="delete-draft-tooltip-template">
     {{t 'Delete draft' }}
