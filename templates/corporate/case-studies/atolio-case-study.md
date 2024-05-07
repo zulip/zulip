@@ -85,7 +85,7 @@ two and continue from there.
 
 When new team members join the company, the onboarding process welcomes them to
 Zulip and the company’s communication culture. An internal Wiki introduces
-Zulip’s [topic-based threading](/help/channels-and-topics), [search
+Zulip’s [topic-based threading](/help/introduction-to-topics), [search
 tools](/help/search-for-messages), and some handy [keyboard
 shortcuts](/help/keyboard-shortcuts), with pointers to [Zulip’s help
 center](/help/) for more information. Gareth hasn’t seen much difference between

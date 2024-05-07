@@ -3,7 +3,7 @@
 In Zulip, channels determine who gets a message. Topics tell you what
 the message is about. If you are not yet familiar with Zulip's topics,
 we recommend first reading about [channels](introduction-to-channels) and
-[topics](/help/channels-and-topics).
+[topics](/help/introduction-to-topics).
 
 This article describes a few ways to efficiently read through messages
 in Zulip.

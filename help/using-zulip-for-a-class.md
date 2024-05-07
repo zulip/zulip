@@ -42,7 +42,7 @@ from today’s lecture. [lecture notes 10/2.pdf]() You can view a recording of t
 
 In Zulip, channels determine who receives a message. Topics are
 light-weight subjects for individual conversations. You can more about
-[channels](introduction-to-channels) and [topics](/help/channels-and-topics).
+[channels](introduction-to-channels) and [topics](/help/introduction-to-topics).
 
 Zulip works best when each conversation has its own topic. When you
 have a question to ask, simply start a new topic! For example, one

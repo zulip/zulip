@@ -185,7 +185,7 @@ def select_welcome_bot_response(human_response_lower: str) -> str:
         return "".join(
             [
                 _(
-                    "In Zulip, topics [tell you what a message is about](/help/channels-and-topics). "
+                    "In Zulip, topics [tell you what a message is about](/help/introduction-to-topics). "
                     "They are light-weight subjects, very similar to the subject line of an email."
                 )
                 + "\n\n",
@@ -294,9 +294,9 @@ def send_initial_realm_messages(realm: Realm) -> None:
             _("Topics are a lightweight tool to keep conversations organized.")
             + " "
             + _(
-                "You can learn more about topics at [Channels and topics]({about_topics_help_url})."
+                "You can learn more about topics at [Introduction to topics]({about_topics_help_url})."
             )
-        ).format(about_topics_help_url="/help/channels-and-topics")
+        ).format(about_topics_help_url="/help/introduction-to-topics")
 
         content_of_swimming_turtles_topic_name = (
             _(
@@ -314,7 +314,7 @@ def send_initial_realm_messages(realm: Realm) -> None:
             )
         ).format(
             default_notification_channel_name=Realm.DEFAULT_NOTIFICATION_STREAM_NAME,
-            start_topic_help_url="/help/channels-and-topics#how-to-start-a-new-topic",
+            start_topic_help_url="/help/introduction-to-topics#how-to-start-a-new-topic",
         )
 
         content_of_zulip_update_announcements_topic_name = remove_single_newlines(

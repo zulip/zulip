@@ -40,7 +40,7 @@ feedback.
 - Send test messages to [#test
   here](https://chat.zulip.org/#narrow/stream/7-test-here) or as a PM
   to yourself to avoid disturbing others.
-- Start a [new topic](/help/channels-and-topics) unless you’re replying
+- Start a [new topic](/help/introduction-to-topics) unless you’re replying
   to an existing conversation. If you see a new user talking about
   something unrelated on an existing topic, [move the messages to an
   appropriate new topic](/help/move-content-to-another-topic).
@@ -82,7 +82,7 @@ feedback.
 # Where do I send my message?
 
 This section describes popular public channels on chat.zulip.org. Kick
-off the discussion by starting a [new topic](/help/channels-and-topics)
+off the discussion by starting a [new topic](/help/introduction-to-topics)
 in the appropriate channel! Don’t stress too much about picking the
 right place if you’re not sure; anyone in the community can edit a
 topic name, and [moderators](/help/roles-and-permissions) can [move a
@@ -239,7 +239,7 @@ on public channels you’re not subscribed to.
 We've set up [custom linkifiers](/help/add-a-custom-linkifier)
 so that it's easy to link to issues and pull requests in Zulip
 project repositories when composing a message or starting a
-[new topic](/help/channels-and-topics). Here are examples for linking
+[new topic](/help/introduction-to-topics). Here are examples for linking
 to issue 1234 in the main Zulip project repositories:
 
 - [Server and web app][server-web-repository]: `#1234`

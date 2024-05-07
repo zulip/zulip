@@ -1,6 +1,6 @@
 # Resolve a topic
 
-Zulip's [topics](/help/channels-and-topics) are very
+Zulip's [topics](/help/introduction-to-topics) are very
 helpful for customer support, answering questions, investigating
 issues and production errors, as well as other workflows.
 Resolving topics makes it easy to track the status of each question,
