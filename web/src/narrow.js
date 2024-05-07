@@ -49,13 +49,13 @@ import * as spectators from "./spectators";
 import {realm} from "./state_data";
 import * as stream_data from "./stream_data";
 import * as stream_list from "./stream_list";
+import * as submessage from "./submessage";
 import * as topic_generator from "./topic_generator";
 import * as typing_events from "./typing_events";
 import * as unread_ops from "./unread_ops";
 import * as unread_ui from "./unread_ui";
 import {user_settings} from "./user_settings";
 import * as util from "./util";
-import * as widgetize from "./widgetize";
 
 const LARGER_THAN_MAX_MESSAGE_ID = 10000000000000000;
 
@@ -499,7 +499,7 @@ export function activate(raw_terms, opts) {
             // Reset the collapsed status of messages rows.
             condense.condense_and_collapse(message_lists.current.view.$list.find(".message_row"));
             message_edit.restore_edit_state_after_message_view_change();
-            widgetize.set_widgets_for_list();
+            submessage.process_widget_rows_in_list(message_lists.current);
             message_feed_top_notices.update_top_of_narrow_notices(msg_list);
 
             // We may need to scroll to the selected message after swapping

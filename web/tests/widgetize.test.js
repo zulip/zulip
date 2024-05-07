@@ -73,7 +73,7 @@ function test(label, f) {
     });
 }
 
-test("activate", ({override}) => {
+test("activate", () => {
     // Both widgetize.activate and widgetize.handle_event are tested
     // here to use the "caching" of widgets
     const $row = $.create("<stub message row>");
@@ -108,7 +108,6 @@ test("activate", ({override}) => {
     is_event_handled = false;
     assert.ok(!widgetize.widget_contents.has(opts.message.id));
 
-    $message_content.set_find_results(".widget-content", false);
     widgetize.activate(opts);
 
     assert.ok(is_widget_elem_inserted);
@@ -116,23 +115,11 @@ test("activate", ({override}) => {
     assert.ok(is_event_handled);
     assert.equal(widgetize.widget_contents.get(opts.message.id), $widget_elem);
 
-    is_widget_elem_inserted = false;
-    is_widget_activated = false;
-    is_event_handled = false;
-
-    $message_content.set_find_results(".widget-content", false);
-    widgetize.activate(opts);
-
-    assert.ok(is_widget_elem_inserted);
-    assert.ok(!is_widget_activated);
-    assert.ok(!is_event_handled);
-
     message_lists.current = undefined;
     is_widget_elem_inserted = false;
     is_widget_activated = false;
     is_event_handled = false;
 
-    $message_content.set_find_results(".widget-content", false);
     widgetize.activate(opts);
 
     assert.ok(!is_widget_elem_inserted);
@@ -179,16 +166,4 @@ test("activate", ({override}) => {
     post_activate_event.message_id = 1000;
     widgetize.handle_event(post_activate_event);
     assert.ok(!is_event_handled);
-
-    message_lists.current = {id: 2};
-    /* Test narrow change message update */
-    override(message_lists.current, "get", (idx) => {
-        assert.equal(idx, 2001);
-        return {};
-    });
-    override(message_lists.current, "get_row", (idx) => {
-        assert.equal(idx, 2001);
-        return $row;
-    });
-    widgetize.set_widgets_for_list();
 });

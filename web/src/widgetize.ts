@@ -47,15 +47,7 @@ export function clear_for_testing(): void {
 
 function set_widget_in_message($row: JQuery, $widget_elem: JQuery): void {
     const $content_holder = $row.find(".message_content");
-
-    // Avoid adding the $widget_elem if it already exists.
-    // This can happen when the app loads in the "Recent Conversations"
-    // view and the user changes the view to "Combined feed".
-    // This is important since jQuery removes all the event handlers
-    // on `empty()`ing an element.
-    if ($content_holder.find(".widget-content").length === 0) {
-        $content_holder.empty().append($widget_elem);
-    }
+    $content_holder.empty().append($widget_elem);
 }
 
 export function activate(in_opts: WidgetOptions): void {
@@ -86,15 +78,9 @@ export function activate(in_opts: WidgetOptions): void {
         return;
     }
 
-    let $widget_elem = widget_contents.get(message.id);
-    if ($widget_elem) {
-        set_widget_in_message($row, $widget_elem);
-        return;
-    }
-
     // We depend on our widgets to use templates to build
     // the HTML that will eventually go in this div.
-    $widget_elem = $("<div>").addClass("widget-content");
+    const $widget_elem = $("<div>").addClass("widget-content");
 
     widgets.get(widget_type)!.activate({
         $elem: $widget_elem,
@@ -111,15 +97,6 @@ export function activate(in_opts: WidgetOptions): void {
     // interacted with it.)
     if (events.length > 0) {
         $widget_elem.handle_events(events);
-    }
-}
-
-export function set_widgets_for_list(): void {
-    for (const [idx, $widget_elem] of widget_contents) {
-        if (message_lists.current?.get(idx) !== undefined) {
-            const $row = message_lists.current.get_row(idx);
-            set_widget_in_message($row, $widget_elem);
-        }
     }
 }
 

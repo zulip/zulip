@@ -2,6 +2,7 @@ import {z} from "zod";
 
 import * as blueslip from "./blueslip";
 import * as channel from "./channel";
+import type {MessageList} from "./message_lists";
 import * as message_store from "./message_store";
 import type {Message} from "./message_store";
 import type {Submessage} from "./types";
@@ -85,6 +86,14 @@ export function get_message_events(message: Message): SubmessageEvents | undefin
     }));
     const clean_events = submessages_event_schema.parse(events);
     return clean_events;
+}
+
+export function process_widget_rows_in_list(list: MessageList | undefined): void {
+    for (const message_id of widgetize.widget_contents.keys()) {
+        if (list?.get(message_id) !== undefined) {
+            process_submessages({message_id, $row: list.get_row(message_id)});
+        }
+    }
 }
 
 export function process_submessages(in_opts: {$row: JQuery; message_id: number}): void {
