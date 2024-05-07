@@ -43,6 +43,6 @@
 
 ## Related articles
 
-* [Channels and topics](/help/channels-and-topics)
+* [Introduction to topics](/help/introduction-to-topics)
 * [Create channels](/help/create-channels)
 * [Channel permissions](/help/channel-permissions)

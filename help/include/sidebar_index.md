@@ -9,7 +9,7 @@
 ## Getting started
 * [Joining an organization](/help/join-a-zulip-organization)
 * [Set up your account](/help/set-up-your-account)
-* [Introduction to topics](/help/channels-and-topics)
+* [Introduction to topics](/help/introduction-to-topics)
 * [Finding a conversation to read](/help/finding-a-conversation-to-read)
 * [Reading conversations](/help/reading-conversations)
 * [Starting a new direct message](/help/starting-a-new-direct-message)
@@ -134,7 +134,7 @@
 * [View channel subscribers](/help/view-channel-subscribers)
 
 ## Topics
-* [Introduction to topics](/help/channels-and-topics)
+* [Introduction to topics](/help/introduction-to-topics)
 * [Rename a topic](/help/rename-a-topic)
 * [Resolve a topic](/help/resolve-a-topic)
 * [Move content to another topic](/help/move-content-to-another-topic)

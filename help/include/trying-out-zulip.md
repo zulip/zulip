@@ -37,7 +37,7 @@ It's also easy to try out Zulip for yourself.
       [channels](/help/introduction-to-channels), including a dedicated channel for
       questions and feedback about using Zulip.
 
-    - Educate others about how to use Zulip's [topics](/help/channels-and-topics),
+    - Educate others about how to use Zulip's [topics](/help/introduction-to-topics),
       and how to [move](/help/move-content-to-another-topic) any messages that
       belong elsewhere.
 

@@ -21,4 +21,4 @@ specified topic.
 
 ## Related articles
 
-* [Channels and topics](/help/channels-and-topics)
+* [Introduction to topics](/help/introduction-to-topics)

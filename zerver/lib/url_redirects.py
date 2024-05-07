@@ -118,7 +118,10 @@ HELP_DOCUMENTATION_REDIRECTS: List[URLRedirect] = [
     URLRedirect("/help/rename-a-stream", "/help/rename-a-channel"),
     URLRedirect("/help/change-the-stream-description", "/help/change-the-channel-description"),
     URLRedirect("/help/change-the-privacy-of-a-stream", "/help/change-the-privacy-of-a-channel"),
-    URLRedirect("/help/starting-a-new-topic", "/help/channels-and-topics#how-to-start-a-new-topic"),
+    URLRedirect("/help/channels-and-topics", "/help/introduction-to-topics"),
+    URLRedirect(
+        "/help/starting-a-new-topic", "/help/introduction-to-topics#how-to-start-a-new-topic"
+    ),
     URLRedirect(
         "/help/browse-and-subscribe-to-channels",
         "/help/introduction-to-channels#browse-and-subscribe-to-channels",

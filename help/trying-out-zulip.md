@@ -8,4 +8,4 @@
 * [Setting up your organization](/help/getting-your-organization-started-with-zulip)
 * [Zulip Cloud or self-hosting?](/help/zulip-cloud-or-self-hosting)
 * [Migrating from other chat tools](/help/migrating-from-other-chat-tools)
-* [Channels and topics](/help/channels-and-topics)
+* [Introduction to topics](/help/introduction-to-topics)
