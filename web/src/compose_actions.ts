@@ -124,7 +124,7 @@ function clear_box(): void {
     compose_state.set_recipient_edited_manually(false);
     clear_textarea();
     compose_validate.check_overflow_text();
-    $("textarea#compose-textarea").removeData("draft-id");
+    drafts.set_compose_draft_id(undefined);
     $("textarea#compose-textarea").toggleClass("invalid", false);
     compose_ui.autosize_textarea($("textarea#compose-textarea"));
     compose_banner.clear_errors();
@@ -338,7 +338,7 @@ export function start(raw_opts: ComposeActionsStartOpts): void {
     show_compose_box(opts);
 
     if (opts.draft_id) {
-        $("textarea#compose-textarea").data("draft-id", opts.draft_id);
+        drafts.set_compose_draft_id(opts.draft_id);
     }
 
     const $clear_topic_button = $("#recipient_box_clear_topic_button");

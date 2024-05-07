@@ -382,6 +382,12 @@ function maybe_notify(no_notify: boolean): void {
     }
 }
 
+export let compose_draft_id: string | undefined;
+
+export function set_compose_draft_id(draft_id: string | undefined): void {
+    compose_draft_id = draft_id;
+}
+
 type UpdateDraftOptions = {
     no_notify?: boolean;
     update_count?: boolean;
@@ -389,8 +395,7 @@ type UpdateDraftOptions = {
 };
 
 export function update_draft(opts: UpdateDraftOptions = {}): string | undefined {
-    const draft_id: unknown = $("textarea#compose-textarea").data("draft-id");
-    assert(draft_id === undefined || typeof draft_id === "string");
+    const draft_id = compose_draft_id;
     const old_draft = draft_id === undefined ? undefined : draft_model.getDraft(draft_id);
 
     const no_notify = opts.no_notify ?? false;
@@ -428,7 +433,7 @@ export function update_draft(opts: UpdateDraftOptions = {}): string | undefined 
     // We have never saved a draft for this message, so add one.
     const update_count = opts.update_count ?? true;
     const new_draft_id = draft_model.addDraft(draft, update_count);
-    $("textarea#compose-textarea").data("draft-id", new_draft_id);
+    compose_draft_id = new_draft_id;
     maybe_notify(no_notify);
 
     return new_draft_id;
