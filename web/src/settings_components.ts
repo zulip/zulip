@@ -13,6 +13,7 @@ import {$t} from "./i18n";
 import {realm_user_settings_defaults} from "./realm_user_settings_defaults";
 import * as scroll_util from "./scroll_util";
 import * as settings_config from "./settings_config";
+import * as settings_data from "./settings_data";
 import type {CustomProfileField} from "./state_data";
 import {realm} from "./state_data";
 import * as stream_data from "./stream_data";
@@ -891,6 +892,79 @@ export function check_property_changed(
             }
     }
     return current_val !== proposed_val;
+}
+
+export function populate_data_for_request(
+    subsection: JQuery,
+    for_realm_default_settings: boolean,
+    sub: StreamSubscription | undefined,
+    group: UserGroup | undefined,
+    custom_profile_field?: CustomProfileField | undefined,
+): Record<string, string | boolean | number> {
+    let data: Record<string, string | boolean | number> = {};
+    const properties_elements = get_subsection_property_elements(subsection);
+    for (const input_elem of properties_elements) {
+        const $input_elem = $(input_elem);
+        if (
+            check_property_changed(
+                input_elem,
+                for_realm_default_settings,
+                sub,
+                group,
+                custom_profile_field,
+            )
+        ) {
+            const input_value = get_input_element_value(input_elem);
+            if (input_value !== undefined && input_value !== null) {
+                let property_name: string;
+                if (
+                    for_realm_default_settings ||
+                    sub !== undefined ||
+                    group !== undefined ||
+                    custom_profile_field !== undefined
+                ) {
+                    property_name = extract_property_name($input_elem, for_realm_default_settings);
+                } else if ($input_elem.attr("id")!.startsWith("id_authmethod")) {
+                    // Authentication Method component IDs include authentication method name
+                    // for uniqueness, anchored to "id_authmethod" prefix, e.g. "id_authmethodapple_<property_name>".
+                    // We need to strip that whole construct down to extract the actual property name.
+                    // The [\da-z]+ part of the regexp covers the auth method name itself.
+                    // We assume it's not an empty string and can contain only digits and lowercase ASCII letters,
+                    // this is ensured by a respective allowlist-based filter in populate_auth_methods().
+                    const match_array = /^id_authmethod[\da-z]+_(.*)$/.exec(
+                        $input_elem.attr("id")!,
+                    );
+                    assert(match_array !== null);
+                    property_name = match_array[1];
+                } else {
+                    const match_array = /^id_realm_(.*)$/.exec($input_elem.attr("id")!);
+                    assert(match_array !== null);
+                    property_name = match_array[1];
+                }
+
+                if (property_name === "stream_privacy") {
+                    data = {
+                        ...data,
+                        ...settings_data.get_request_data_for_stream_privacy(
+                            input_value.toString(),
+                        ),
+                    };
+                    continue;
+                }
+
+                if (property_name === "can_mention_group") {
+                    data[property_name] = JSON.stringify({
+                        new: input_value,
+                        old: group!.can_mention_group,
+                    });
+                    continue;
+                }
+                data[property_name] = input_value;
+            }
+        }
+    }
+
+    return data;
 }
 
 function switching_to_private(

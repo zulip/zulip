@@ -703,7 +703,11 @@ export function initialize() {
                 $save_button.closest(".subscription_settings.show").attr("data-stream-id"),
             );
             const sub = sub_store.get(stream_id);
-            const data = settings_org.populate_data_for_request($subsection_elem, false, sub);
+            const data = settings_components.populate_data_for_request(
+                $subsection_elem,
+                false,
+                sub,
+            );
 
             const url = "/json/streams/" + stream_id;
             if (
