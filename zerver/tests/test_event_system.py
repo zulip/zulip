@@ -171,6 +171,7 @@ class EventsEndpointTest(ZulipTestCase):
         result = self.client_post("/json/register")
         result_dict = self.assert_json_success(result)
         self.assertEqual(result_dict["queue_id"], None)
+        self.assertEqual(result_dict["realm_url"], "http://zulip.testserver")
         self.assertEqual(result_dict["realm_uri"], "http://zulip.testserver")
 
         result = self.client_post("/json/register")

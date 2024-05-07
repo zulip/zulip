@@ -1120,7 +1120,7 @@ def api_get_server_settings(request: HttpRequest) -> HttpResponse:
     for settings_item in [
         "email_auth_enabled",
         "require_email_format_usernames",
-        "realm_uri",
+        "realm_url",
         "realm_name",
         "realm_icon",
         "realm_description",
@@ -1129,6 +1129,8 @@ def api_get_server_settings(request: HttpRequest) -> HttpResponse:
     ]:
         if context[settings_item] is not None:
             result[settings_item] = context[settings_item]
+    # TODO/compatibility: Backwards-compatibility name for realm_url.
+    result["realm_uri"] = result["realm_url"]
     return json_success(request, data=result)
 
 

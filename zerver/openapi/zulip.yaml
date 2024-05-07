@@ -15257,10 +15257,23 @@ paths:
                           organization. Useful for UI for creating bots.
                       realm_uri:
                         type: string
+                        deprecated: true
+                        description: |
+                          Present if `realm` is present in `fetch_event_types`.
+
+                          The URL for the organization. Alias of `realm_url`.
+
+                          **Changes**: Deprecated in Zulip 9.0 (feature level 257). The term
+                          "URI" is deprecated in [web standards](https://url.spec.whatwg.org/#goals).
+                      realm_url:
+                        type: string
                         description: |
                           Present if `realm` is present in `fetch_event_types`.
 
                           The URL for the organization.
+
+                          **Changes**: New in Zulip 9.0 (feature level 257), replacing the
+                          deprecated `realm_uri`.
                       realm_available_video_chat_providers:
                         type: object
                         description: |
@@ -16657,8 +16670,19 @@ paths:
                           [ldap-auth]: https://zulip.readthedocs.io/en/latest/production/authentication-methods.html#ldap-including-active-directory
                       realm_uri:
                         type: string
+                        deprecated: true
+                        description: |
+                          The organization's canonical URL. Alias of `realm_url`.
+
+                          **Changes**: Deprecated in Zulip 9.0 (feature level 257). The term
+                          "URI" is deprecated in [web standards](https://url.spec.whatwg.org/#goals).
+                      realm_url:
+                        type: string
                         description: |
                           The organization's canonical URL.
+
+                          **Changes**: New in Zulip 9.0 (feature level 257), replacing the
+                          deprecated `realm_uri`.
                       realm_name:
                         type: string
                         description: |
@@ -16708,6 +16732,7 @@ paths:
                         "email_auth_enabled": true,
                         "require_email_format_usernames": true,
                         "realm_uri": "http://localhost:9991",
+                        "realm_url": "http://localhost:9991",
                         "realm_name": "Zulip Dev",
                         "realm_icon": "https://secure.gravatar.com/avatar/62429d594b6ffc712f54aee976a18b44?d=identicon",
                         "realm_description": "<p>The Zulip development environment default organization.  It's great for testing!</p>",

@@ -949,6 +949,7 @@ def get_base_payload(user_profile: UserProfile) -> Dict[str, Any]:
     data["server"] = settings.EXTERNAL_HOST
     data["realm_id"] = user_profile.realm.id
     data["realm_uri"] = user_profile.realm.url
+    data["realm_url"] = user_profile.realm.url
     data["realm_name"] = user_profile.realm.name
     data["user_id"] = user_profile.id
 

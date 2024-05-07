@@ -5218,6 +5218,7 @@ class FetchAuthBackends(ZulipTestCase):
                     ("email_auth_enabled", check_bool),
                     ("is_incompatible", check_bool),
                     ("require_email_format_usernames", check_bool),
+                    ("realm_url", check_string),
                     ("realm_uri", check_string),
                     ("zulip_version", check_string),
                     ("zulip_merge_base", check_string),
@@ -5241,6 +5242,7 @@ class FetchAuthBackends(ZulipTestCase):
         result = self.client_get(
             "/api/v1/server_settings", subdomain="", HTTP_USER_AGENT="ZulipInvalid"
         )
+
         response_dict = self.assert_json_success(result)
         self.assertTrue(response_dict["is_incompatible"])
 
