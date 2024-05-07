@@ -489,7 +489,6 @@ export async function build_move_topic_to_stream_popover(
         const $topic_input = $("#move_topic_form .move_messages_edit_topic");
         const new_stream_id = Number(stream_widget_value, 10);
         const new_stream_name = sub_store.get(new_stream_id).name;
-        $topic_input.data("typeahead").unlisten();
         composebox_typeahead.initialize_topic_edit_typeahead($topic_input, new_stream_name, false);
     }
 
