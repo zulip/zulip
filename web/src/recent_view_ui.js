@@ -409,9 +409,7 @@ export function show_loading_indicator() {
 
 export function hide_loading_indicator() {
     $("#recent_view_bottom_whitespace").hide();
-    loading.destroy_indicator($("#recent_view_loading_messages_indicator"), {
-        abs_positioned: false,
-    });
+    loading.destroy_indicator($("#recent_view_loading_messages_indicator"));
 }
 
 export function process_messages(messages, msg_list_data) {
