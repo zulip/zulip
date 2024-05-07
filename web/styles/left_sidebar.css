@@ -410,9 +410,20 @@ li.show-more-topics {
     }
 }
 
-#login-link-container .login_button {
+#login-link-container {
+    color: var(--color-text-url);
     display: flex;
     align-items: center;
+
+    &:hover {
+        cursor: pointer;
+        color: var(--color-text-url-hover);
+
+        &.login_button .login-text {
+            color: var(--color-text-url-hover);
+            text-decoration: underline;
+        }
+    }
 }
 
 ul.filters {

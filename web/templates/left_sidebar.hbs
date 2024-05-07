@@ -183,12 +183,14 @@
                 {{#unless is_guest }}
                     <div id="subscribe-to-more-streams"></div>
                 {{/unless}}
-                <div id="login-link-container" class="only-visible-for-spectators">
-                    <a class="login_button">
+                <div class="only-visible-for-spectators">
+                    <div id="login-link-container" class="login_button">
                         <i class="zulip-icon zulip-icon-log-in" aria-hidden="true"></i>
                         {{~!-- squash whitespace --~}}
-                        {{t 'Log in to browse more channels'}}
-                    </a>
+                        <a class="login-text">
+                            {{t 'Log in to browse more channels'}}
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>
