@@ -17,7 +17,7 @@ import * as dropdown_widget from "./dropdown_widget";
 import * as hash_util from "./hash_util";
 import {$t, $t_html} from "./i18n";
 import * as left_sidebar_navigation_area from "./left_sidebar_navigation_area";
-import * as ListWidget from "./list_widget";
+import * as list_widget from "./list_widget";
 import * as loading from "./loading";
 import {localstorage} from "./localstorage";
 import * as message_store from "./message_store";
@@ -1033,9 +1033,9 @@ export function complete_rerender() {
 
     const $container = $("#recent_view_table table tbody");
     $container.empty();
-    topics_widget = ListWidget.create($container, mapped_topic_values, {
+    topics_widget = list_widget.create($container, mapped_topic_values, {
         name: "recent_view_table",
-        get_item: ListWidget.default_get_item,
+        get_item: list_widget.default_get_item,
         $parent_container: $("#recent_view_table"),
         modifier_html(item) {
             return render_recent_view_row(format_conversation(item));
@@ -1051,7 +1051,7 @@ export function complete_rerender() {
             stream_sort,
             topic_sort,
             unread_sort,
-            ...ListWidget.generic_sort_functions("numeric", ["last_msg_id"]),
+            ...list_widget.generic_sort_functions("numeric", ["last_msg_id"]),
         },
         html_selector: get_topic_row,
         $simplebar_container: $("#recent_view_table .table_fix_head"),
