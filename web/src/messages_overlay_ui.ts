@@ -23,8 +23,8 @@ export function activate_element(elem: HTMLElement, context: Context): void {
     elem.focus();
 }
 
-export function get_focused_element_id(context: Context): string {
-    return row_with_focus(context).attr(context.id_attribute_name)!;
+export function get_focused_element_id(context: Context): string | undefined {
+    return row_with_focus(context).attr(context.id_attribute_name);
 }
 
 export function focus_on_sibling_element(context: Context): void {
