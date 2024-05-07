@@ -248,5 +248,5 @@ impact Zulip's scalability, this [performance and scalability design
 document](../subsystems/performance.md) may also be of interest.
 
 [s3-uploads]: upload-backends.md#s3-backend-configuration
-[streaming-replication]: deployment.md#postgresql-warm-standby
+[streaming-replication]: postgresql.md#postgresql-warm-standby
 [contact-support]: https://zulip.com/help/contact-support

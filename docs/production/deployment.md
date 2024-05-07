@@ -206,8 +206,8 @@ the following after unpacking a Zulip production release tarball:
 ```
 
 To run the database on a separate server, including a cloud provider's managed
-PostgreSQL instance (e.g. AWS RDS), see out [dedicated PostgreSQL
-documentation][postgresql].
+PostgreSQL instance (e.g. AWS RDS), or with a warm-standby replica for
+reliability, see our [dedicated PostgreSQL documentation][postgresql].
 
 [standalone.pp]: https://github.com/zulip/zulip/blob/main/puppet/zulip/manifests/profile/standalone.pp
 [zulipchat-puppet]: https://github.com/zulip/zulip/tree/main/puppet/kandra/manifests
@@ -301,32 +301,3 @@ some other proxy, you can override this default by setting
 `S3_SKIP_PROXY = False` in `/etc/zulip/settings.py`.
 
 [s3]: upload-backends.md#s3-backend-configuration
-
-## PostgreSQL warm standby
-
-Zulip's configuration allows for [warm standby database
-replicas][warm-standby] as a disaster recovery solution; see the
-linked PostgreSQL documentation for details on this type of
-deployment. Zulip's configuration builds on top of `wal-g`, our
-[streaming database backup solution][wal-g], and thus requires that it
-be configured for the primary and all secondary warm standby replicas.
-
-In addition to having `wal-g` backups configured, warm standby
-replicas should configure the hostname of their primary replica, and
-username to use for replication, in `/etc/zulip/zulip.conf`:
-
-```ini
-[postgresql]
-replication_user = replicator
-replication_primary = hostname-of-primary.example.com
-```
-
-The `postgres` user on the replica will need to be able to
-authenticate as the `replication_user` user, which may require further
-configuration of `pg_hba.conf` and client certificates on the replica.
-If you are using password authentication, you can set a
-`postgresql_replication_password` secret in
-`/etc/zulip/zulip-secrets.conf`.
-
-[warm-standby]: https://www.postgresql.org/docs/current/warm-standby.html
-[wal-g]: export-and-import.md#database-only-backup-tools
