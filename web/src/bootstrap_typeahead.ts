@@ -346,6 +346,27 @@ export class Typeahead<ItemType extends string | object> {
             maxWidth: "none",
             theme: "popover-menu",
             placement: this.dropup ? "top-start" : "bottom-start",
+            popperOptions: {
+                modifiers: [
+                    {
+                        // This will only work if there is enough space on the fallback placement, otherwise
+                        // `preventOverflow` will be used to position it in the visible space.
+                        name: "flip",
+                        options: {
+                            fallbackPlacements: ["top-start", "bottom-start"],
+                        },
+                    },
+                    {
+                        name: "preventOverflow",
+                        options: {
+                            // This seems required to prevent overflow, maybe because our placements are
+                            // not the usual top, bottom, left, right.
+                            // https://popper.js.org/docs/v2/modifiers/prevent-overflow/#altaxis
+                            altAxis: true,
+                        },
+                    },
+                ],
+            },
             interactive: true,
             appendTo: () => document.body,
             showOnCreate: true,

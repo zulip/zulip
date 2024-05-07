@@ -10,6 +10,7 @@ import {
     wrapFieldSelection,
 } from "text-field-edit";
 
+import type {Typeahead} from "./bootstrap_typeahead";
 import * as bulleted_numbered_list_util from "./bulleted_numbered_list_util";
 import * as common from "./common";
 import {$t} from "./i18n";
@@ -58,7 +59,12 @@ type SelectedLinesSections = {
 export let compose_spinner_visible = false;
 export let shift_pressed = false; // true or false
 export let code_formatting_button_triggered = false; // true or false
+export let compose_textarea_typeahead: Typeahead<object> | undefined;
 let full_size_status = false; // true or false
+
+export function set_compose_textarea_typeahead(typeahead: Typeahead<object>): void {
+    compose_textarea_typeahead = typeahead;
+}
 
 export function set_code_formatting_button_triggered(value: boolean): void {
     code_formatting_button_triggered = value;
@@ -67,6 +73,10 @@ export function set_code_formatting_button_triggered(value: boolean): void {
 // Some functions to handle the full size status explicitly
 export function set_full_size(is_full: boolean): void {
     full_size_status = is_full;
+    // Show typeahead at bottom of textarea on compose full size.
+    if (compose_textarea_typeahead) {
+        compose_textarea_typeahead.dropup = !is_full;
+    }
 }
 
 export function is_full_size(): boolean {

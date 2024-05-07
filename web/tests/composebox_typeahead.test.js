@@ -17,6 +17,7 @@ const compose_ui = mock_esm("../src/compose_ui", {
     },
     cursor_inside_code_block: () => false,
     set_code_formatting_button_triggered: noop,
+    set_compose_textarea_typeahead: noop,
 });
 const compose_validate = mock_esm("../src/compose_validate", {
     validate_message_length: () => true,
