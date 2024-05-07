@@ -1,0 +1,10 @@
+.more-dense-mode {
+    .rendered_markdown .emoji {
+        /* "Eyeballed" styles to compensate for inline-block emoji
+          positioning in messages where the height of the emoji
+          exceeds the line-height in the message area. */
+        position: relative;
+        margin-top: -7px;
+        top: 3px;
+    }
+}

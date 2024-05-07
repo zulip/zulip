@@ -76,6 +76,10 @@
     --markdown-interelement-doubled-space-px: calc(
         var(--markdown-interelement-space-px) * 2
     );
+    /* We do not enforce a minimum box size for inline
+       emoji outside of legacy .more-dense-mode */
+    --inline-emoji-min-height: 0;
+    --inline-emoji-min-width: 0;
 
     .more-dense-mode {
         /* The legacy values here are not altered by JavaScript */
@@ -84,6 +88,8 @@
         --markdown-interelement-space-px: 5px;
         --markdown-interelement-doubled-space-px: 10px;
         --message-box-markdown-aligned-vertical-space: 5px;
+        --inline-emoji-min-height: 20px;
+        --inline-emoji-min-width: 20px;
     }
 
     /*
