@@ -22,6 +22,8 @@ import * as stream_data from "./stream_data";
 import * as user_status from "./user_status";
 import * as util from "./util";
 
+export const DEFAULT_COMPOSE_PLACEHOLDER = $t({defaultMessage: "Compose your message here"});
+
 export type ComposeTriggeredOptions = {
     trigger: string;
 } & (
@@ -333,7 +335,7 @@ export function compute_placeholder_text(opts: ComposePlaceholderOptions): strin
         }
         return $t({defaultMessage: "Message {recipient_names}"}, {recipient_names});
     }
-    return $t({defaultMessage: "Compose your message here"});
+    return DEFAULT_COMPOSE_PLACEHOLDER;
 }
 
 export function set_compose_box_top(set_top: boolean): void {
