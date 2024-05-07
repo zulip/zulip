@@ -191,6 +191,7 @@ def zulip_default_context(request: HttpRequest) -> Dict[str, Any]:
         "external_host": settings.EXTERNAL_HOST,
         "external_url_scheme": settings.EXTERNAL_URI_SCHEME,
         "realm_uri": realm_uri,
+        "realm_url": realm_uri,
         "realm_name": realm_name,
         "realm_icon": realm_icon,
         "root_domain_url": settings.ROOT_DOMAIN_URI,

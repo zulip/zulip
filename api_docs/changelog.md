@@ -20,6 +20,16 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 9.0
 
+**Feature level 257**:
+
+* [`POST /register`](/api/register-queue),
+  [`POST /server_settings`](/api/get-server-settings), `PATCH /realm`:
+  `realm_uri` was renamed to `realm_url`, but remains available as a
+  deprecated alias for backwards-compatibility.
+* Mobile push notification payloads, similarly, have a new `realm_url`,
+  replacing `realm_uri`, which remains available as a deprecated alias
+  for backwards-compatibility.
+
 **Feature level 256**
 
 * [`GET /events`](/api/get-events): Stream update events with a new
