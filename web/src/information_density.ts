@@ -7,6 +7,10 @@ export function set_base_typography_css_variables(): void {
     const line_height_percent = user_settings.web_line_height_percent;
     const line_height_unitless = line_height_percent / 100;
     const line_height_px = line_height_unitless * font_size_px;
+    /* This pixel value is necessary to ensure that elements that take
+       particular heights (e.g., inline emoji, or vote counts on polls)
+       will always fit within a particular line height. */
+    const line_height_px_min = Math.floor(line_height_px);
     /* This percentage is a legacy value, rounding up from .294;
        additional logic might be useful to make this adjustable;
        likewise with the doubled value. */
@@ -15,6 +19,7 @@ export function set_base_typography_css_variables(): void {
 
     $(":root").css("--base-line-height-unitless", line_height_unitless);
     $(":root").css("--base-font-size-px", `${font_size_px}px`);
+    $(":root").css("--line-height-fitted-length-px", `${line_height_px_min}px`);
     $(":root").css("--markdown-interelement-space-px", `${markdown_interelement_space_px}px`);
     $(":root").css(
         "--markdown-interelement-doubled-space-px",

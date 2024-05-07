@@ -67,6 +67,11 @@
     /* The legacy values here are updated via JavaScript */
     --base-font-size-px: 14px;
     --base-line-height-unitless: 1.214;
+    /* This length value is for establishing heights, possibly
+       also widths in the case of square elements, that will always
+       fit with the line-height (e.g., inline emoji, or vote counts
+       on polls) */
+    --line-height-fitted-length-px: 16px;
     --markdown-interelement-space-px: 5px;
     --markdown-interelement-doubled-space-px: calc(
         var(--markdown-interelement-space-px) * 2
