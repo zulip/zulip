@@ -260,13 +260,7 @@ function human_info(person) {
     info.is_current_user = people.is_my_user_id(person.user_id);
     info.cannot_deactivate = info.is_current_user || (person.is_owner && !current_user.is_owner);
     info.display_email = person.delivery_email;
-
-    if (info.is_active) {
-        // TODO: We might just want to show this
-        // for deactivated users, too, even though
-        // it might usually just be undefined.
-        info.last_active_date = get_last_active(person);
-    }
+    info.last_active_date = get_last_active(person);
 
     return info;
 }
@@ -321,6 +315,7 @@ section.active.create_table = (active_users) => {
         get_item: people.get_by_user_id,
         modifier_html(item) {
             const info = human_info(item);
+            info.display_last_active_in_table = true;
             return render_admin_user_list(info);
         },
         filter: {
@@ -355,6 +350,7 @@ section.deactivated.create_table = (deactivated_users) => {
             get_item: people.get_by_user_id,
             modifier_html(item) {
                 const info = human_info(item);
+                info.display_last_active_in_table = false;
                 return render_admin_user_list(info);
             },
             filter: {
