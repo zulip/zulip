@@ -52,7 +52,7 @@ function restore_draft(draft_id) {
 
 function remove_draft($draft_row) {
     // Deletes the draft and removes it from the list
-    const draft_id = $draft_row.data("draft-id");
+    const draft_id = $draft_row.attr("data-draft-id");
 
     drafts.draft_model.deleteDraft(draft_id);
 
@@ -91,7 +91,7 @@ const keyboard_handling_context = {
         // It restores draft that is focused.
         const draft_id_arrow = this.get_items_ids();
         const focused_draft_id = messages_overlay_ui.get_focused_element_id(this);
-        if (Object.hasOwn(document.activeElement.parentElement.dataset, "draftId")) {
+        if (focused_draft_id !== undefined) {
             restore_draft(focused_draft_id);
         } else {
             const first_draft = draft_id_arrow.at(-1);
@@ -188,7 +188,7 @@ export function launch() {
             e.stopPropagation();
 
             const $draft_row = $(this).closest(".overlay-message-row");
-            const draft_id = $draft_row.data("draft-id");
+            const draft_id = $draft_row.attr("data-draft-id");
             restore_draft(draft_id);
         });
 
