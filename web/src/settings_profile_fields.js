@@ -14,8 +14,7 @@ import * as dialog_widget from "./dialog_widget";
 import {$t, $t_html} from "./i18n";
 import * as loading from "./loading";
 import * as people from "./people";
-import {read_field_data_from_form} from "./settings_components";
-import {populate_data_for_request} from "./settings_org";
+import * as settings_components from "./settings_components";
 import * as settings_ui from "./settings_ui";
 import {current_user, realm} from "./state_data";
 import * as ui_report from "./ui_report";
@@ -207,7 +206,7 @@ function open_custom_profile_field_form_modal() {
     function create_profile_field() {
         let field_data = {};
         const field_type = $("#profile_field_type").val();
-        field_data = read_field_data_from_form(
+        field_data = settings_components.read_field_data_from_form(
             Number.parseInt(field_type, 10),
             $(".new-profile-field-form"),
         );
@@ -344,7 +343,13 @@ function set_up_external_account_field_edit_form($profile_field_form, url_patter
 }
 
 function disable_submit_btn_if_no_property_changed($profile_field_form, field) {
-    const data = populate_data_for_request($profile_field_form, false, undefined, undefined, field);
+    const data = settings_components.populate_data_for_request(
+        $profile_field_form,
+        false,
+        undefined,
+        undefined,
+        field,
+    );
     let save_changes_button_disabled = false;
     if (Object.keys(data).length === 0 || data.field_data === "{}") {
         save_changes_button_disabled = true;
@@ -466,7 +471,7 @@ function open_edit_form_modal(e) {
     function submit_form() {
         const $profile_field_form = $("#edit-custom-profile-field-form-" + field_id);
 
-        const data = populate_data_for_request(
+        const data = settings_components.populate_data_for_request(
             $profile_field_form,
             false,
             undefined,

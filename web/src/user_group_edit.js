@@ -928,7 +928,7 @@ export function initialize() {
 
             const group_id = $save_button.closest(".user_group_settings_wrapper").data("group-id");
             const group = user_groups.get_user_group_from_id(group_id);
-            const data = settings_org.populate_data_for_request(
+            const data = settings_components.populate_data_for_request(
                 $subsection_elem,
                 false,
                 undefined,
