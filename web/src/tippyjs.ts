@@ -389,6 +389,20 @@ export function initialize(): void {
     });
 
     tippy.delegate("body", {
+        target: [
+            "[data-tab-key='not-subscribed'].disabled",
+            "[data-tab-key='all-streams'].disabled",
+        ].join(","),
+        content: $t({
+            defaultMessage: "You can only view channels that you are subscribed to.",
+        }),
+        appendTo: () => document.body,
+        onHidden(instance) {
+            instance.destroy();
+        },
+    });
+
+    tippy.delegate("body", {
         target: ".default-stream.default_stream_private_tooltip",
         content: $t({
             defaultMessage: "Private channels cannot be default channels for new users.",
