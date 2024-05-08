@@ -94,6 +94,7 @@
 * [Send invitations](/api/send-invites)
 * [Create a reusable invitation link](/api/create-invite-link)
 * [Revoke an email invitation](/api/revoke-email-invite)
+* [Revoke a reusable invitation link](/api/revoke-invite-link)
 
 #### Server & organizations
 

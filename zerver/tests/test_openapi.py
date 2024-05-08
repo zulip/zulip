@@ -240,7 +240,6 @@ class OpenAPIArgumentsTest(ZulipTestCase):
         "/default_stream_groups/{group_id}/streams",
         # Administer invitations
         "/invites/{prereg_id}/resend",
-        "/invites/multiuse/{invite_id}",
         # Single-stream settings alternative to the bulk endpoint
         # users/me/subscriptions/properties; probably should just be a
         # section of the same page.

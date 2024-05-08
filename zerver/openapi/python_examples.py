@@ -363,6 +363,24 @@ def revoke_email_invitation(client: Client) -> None:
     validate_against_openapi_schema(result, "/invites/{invite_id}", "delete", "200")
 
 
+@openapi_test_function("/invites/multiuse/{invite_id}:delete")
+def revoke_reusable_invitation_link(client: Client) -> None:
+    request = {
+        "invite_expires_in_minutes": 14400,  # 10 days
+        "invite_as": 400,
+        "stream_ids": [1, 8, 9],
+    }
+    result = client.call_endpoint(url="/invites/multiuse", method="POST", request=request)
+
+    # {code_example|start}
+    # Revoke reusable invitation link
+    invite_id = 2
+    result = client.call_endpoint(url=f"/invites/multiuse/{invite_id}", method="DELETE")
+    # {code_example|end}
+
+    validate_against_openapi_schema(result, "/invites/multiuse/{invite_id}", "delete", "200")
+
+
 @openapi_test_function("/users/{user_id}:get")
 def get_single_user(client: Client) -> None:
     ensure_users([8], ["cordelia"])
@@ -1722,6 +1740,7 @@ def test_invitations(client: Client) -> None:
     send_invitations(client)
     revoke_email_invitation(client)
     create_reusable_invitation_link(client)
+    revoke_reusable_invitation_link(client)
     get_invitations(client)
 
 

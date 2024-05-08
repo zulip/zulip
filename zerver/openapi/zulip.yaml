@@ -12218,6 +12218,58 @@ paths:
                           }
                         description: |
                           A typical failed JSON response for an invalid email invitation ID:
+  /invites/multiuse/{invite_id}:
+    delete:
+      operationId: revoke-invite-link
+      summary: Revoke a reusable invitation link
+      tags: ["invites"]
+      description: |
+        Revoke a [reusable invitation link](/help/invite-new-users#create-a-reusable-invitation-link).
+
+        A user can only revoke [invitations that they can
+        manage](/help/invite-new-users#manage-pending-invitations).
+
+        **Changes**: Prior to Zulip 8.0 (feature level 209), only organization
+        administrators were able to create and revoke reusable invitation links.
+      parameters:
+        - name: invite_id
+          in: path
+          description: |
+            The ID of the reusable invitation link to be revoked.
+          schema:
+            type: integer
+          example: 1
+          required: true
+      responses:
+        "200":
+          $ref: "#/components/responses/SimpleSuccess"
+        "400":
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - allOf:
+                      - $ref: "#/components/schemas/CodedError"
+                      - example:
+                          {
+                            "result": "error",
+                            "msg": "No such invitation",
+                            "code": "BAD_REQUEST",
+                          }
+                        description: |
+                          A typical failed JSON response for an invalid invitation link ID:
+                  - allOf:
+                      - $ref: "#/components/schemas/CodedError"
+                      - example:
+                          {
+                            "result": "error",
+                            "msg": "Invitation has already been revoked",
+                            "code": "BAD_REQUEST",
+                          }
+                        description: |
+                          A typical failed JSON response for when the invitation link has already
+                          been revoked:
   /register:
     post:
       operationId: register-queue
