@@ -34,8 +34,6 @@ parser.add_argument("--site", default="https://api.zulip.com")
 
 parser.add_argument("--insecure", action="store_true")
 
-parser.add_argument("config", nargs="?")
-
 options = parser.parse_args()
 
 sys.path.append("/home/zulip/deployments/current")
