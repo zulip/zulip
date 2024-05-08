@@ -587,6 +587,7 @@ def restore_data_from_archive(archive_transaction: ArchiveTransaction) -> int:
         restore_attachment_messages_from_archive(archive_transaction.id)
 
         archive_transaction.restored = True
+        archive_transaction.restored_timestamp = timezone_now()
         archive_transaction.save()
 
     logger.info("Finished. Restored %s messages", len(msg_ids))
