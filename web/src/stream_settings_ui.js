@@ -348,7 +348,7 @@ export function update_settings_for_unsubscribed(slim_sub) {
 }
 
 function triage_stream(left_panel_params, sub) {
-    if (left_panel_params.subscribed_only && !sub.subscribed) {
+    if (left_panel_params.show_subscribed && !sub.subscribed) {
         // reject non-subscribed streams
         return "rejected";
     }
@@ -443,7 +443,7 @@ export function update_empty_left_panel_message() {
     $(".no-streams-to-show").show();
 }
 
-// LeftPanelParams { input: String, subscribed_only: Boolean, sort_order: String }
+// LeftPanelParams { input: String, show_subscribed: Boolean, sort_order: String }
 export function redraw_left_panel(left_panel_params = get_left_panel_params()) {
     // We only get left_panel_params passed in from tests.  Real
     // code calls get_left_panel_params().
@@ -507,7 +507,7 @@ export function get_left_panel_params() {
     const input = $search_box.expectOne().val().trim();
     const params = {
         input,
-        subscribed_only: stream_ui_updates.subscribed_only,
+        show_subscribed: stream_ui_updates.show_subscribed,
         sort_order,
     };
     return params;
@@ -524,9 +524,9 @@ export function switch_stream_tab(tab_name) {
     */
 
     if (tab_name === "all-streams") {
-        stream_ui_updates.set_subscribed_only(false);
+        stream_ui_updates.set_show_subscribed(false);
     } else if (tab_name === "subscribed") {
-        stream_ui_updates.set_subscribed_only(true);
+        stream_ui_updates.set_show_subscribed(true);
     }
 
     redraw_left_panel();
@@ -597,7 +597,7 @@ export function setup_page(callback) {
 
         // Reset our internal state to reflect that we're initially in
         // the "Subscribed" tab if we're reopening "Stream settings".
-        stream_ui_updates.set_subscribed_only(true);
+        stream_ui_updates.set_show_subscribed(true);
         toggler = components.toggle({
             child_wants_focus: true,
             values: [
