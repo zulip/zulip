@@ -125,7 +125,7 @@ try:
 except Exception:
     report("CRITICAL", msg=f"Error subscribing to Zulips:\n{traceback.format_exc()}")
 msg_to_send = str(random.getrandbits(64))
-time_start = time.time()
+time_start = time.perf_counter()
 
 send_zulip(
     zulip_sender,
@@ -141,7 +141,7 @@ msg_content: List[str] = []
 
 while msg_to_send not in msg_content:
     messages = get_zulips()
-    seconds_diff = time.time() - time_start
+    seconds_diff = time.perf_counter() - time_start
 
     msg_content = [m["content"] for m in messages]
 
