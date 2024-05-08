@@ -377,8 +377,8 @@ function get_message_retention_setting_value(
     return check_valid_number_input(custom_input_val);
 }
 
-const select_field_data_schema = z.record(z.object({text: z.string(), order: z.string()}));
-type SelectFieldData = z.output<typeof select_field_data_schema>;
+export const select_field_data_schema = z.record(z.object({text: z.string(), order: z.string()}));
+export type SelectFieldData = z.output<typeof select_field_data_schema>;
 
 function read_select_field_data_from_form(
     $profile_field_form: JQuery,
@@ -417,7 +417,12 @@ function read_select_field_data_from_form(
     return field_data;
 }
 
-type ExternalAccountFieldData = {subtype: string; url_pattern?: string};
+export const external_account_field_schema = z.object({
+    subtype: z.string(),
+    url_pattern: z.optional(z.string()),
+});
+
+export type ExternalAccountFieldData = z.output<typeof external_account_field_schema>;
 
 function read_external_account_field_data($profile_field_form: JQuery): ExternalAccountFieldData {
     const field_data: ExternalAccountFieldData = {
@@ -433,7 +438,7 @@ function read_external_account_field_data($profile_field_form: JQuery): External
     return field_data;
 }
 
-type FieldData = SelectFieldData | ExternalAccountFieldData;
+export type FieldData = SelectFieldData | ExternalAccountFieldData;
 
 export function read_field_data_from_form(
     field_type_id: number,
