@@ -1420,6 +1420,17 @@ ul {
     }
 }
 
+ul.popover-menu-list {
+    list-style: none;
+    margin: 0;
+    padding: 4px 0;
+
+    li.popover-menu-separator {
+        margin: 4px 0;
+        border-bottom: solid 1px var(--color-border-popover-menu-separator);
+    }
+}
+
 ul.popover-menu-outer-list {
     list-style: none;
     margin: 0;
