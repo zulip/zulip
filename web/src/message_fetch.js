@@ -23,7 +23,7 @@ export let initial_narrow_offset;
 
 const consts = {
     // Because most views are centered on the first unread message,
-    // the user has a higher probability of wantingto scroll down
+    // the user has a higher probability of wanting to scroll down
     // than, so extra fetched history after the cursor is more likely
     // to be used and thus worth more to fetch.
     //
@@ -31,15 +31,27 @@ const consts = {
     // for a larger number of messages after the cursor is cheap.
     narrow_before: 60,
     narrow_after: 150,
-    initial_backfill_fetch_size: 1000,
-    maximum_initial_backfill_size: 15000,
+
+    // Batch sizes when at the top/bottom of a narrowed view.
     narrowed_view_backward_batch_size: 100,
     narrowed_view_forward_batch_size: 100,
-    recent_view_fetch_more_batch_size: 2000,
+
+    // Initial backfill parameters to populate message history.
+    initial_backfill_fetch_size: 1000,
     catch_up_batch_size: 2000,
+    // We fetch at least minimum_initial_backfill_size messages of
+    // history, but after that will stop fetching at either
+    // maximum_initial_backfill_size messages or
+    // target_days_of_history days, whichever comes first.
+    minimum_initial_backfill_size: 9000,
+    maximum_initial_backfill_size: 25000,
+    target_days_of_history: 180,
     // Delay in milliseconds after processing a catch-up request
     // before sending the next one.
     catch_up_backfill_delay: 150,
+
+    // Parameters for asking for more history in the recent view.
+    recent_view_fetch_more_batch_size: 2000,
 };
 
 function process_result(data, opts) {
@@ -487,6 +499,8 @@ export function set_initial_pointer_and_offset({narrow_pointer, narrow_offset}) 
 }
 
 export function initialize(finished_initial_fetch) {
+    const fetch_target_day_timestamp =
+        Date.now() / 1000 - consts.target_days_of_history * 24 * 60 * 60;
     // get the initial message list
     function load_more(data) {
         if (first_messages_fetch) {
@@ -498,6 +512,17 @@ export function initialize(finished_initial_fetch) {
         }
 
         if (data.found_oldest) {
+            return;
+        }
+
+        // Stop once we've hit the minimum backfill quantiy of
+        // messages if we've received a message older than
+        // `target_days_of_history`.
+        const latest_message = all_messages_data.first();
+        if (
+            all_messages_data.num_items() >= consts.minimum_initial_backfill_size &&
+            latest_message.timestamp < fetch_target_day_timestamp
+        ) {
             return;
         }
 
