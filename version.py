@@ -29,7 +29,7 @@ DESKTOP_WARNING_VERSION = "5.9.3"
 # the time we make the change, then bump it later as soon
 # as we notice; clients using API_FEATURE_LEVEL will just not
 # use the new feature/API until the bump.
-#
+
 # Changes should be accompanied by documentation explaining what the
 # new level means in api_docs/changelog.md, as well as "**Changes**"
 # entries in the endpoint's documentation in `zulip.yaml`.
