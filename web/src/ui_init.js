@@ -734,9 +734,16 @@ export function initialize_everything(state_data) {
         on_mark_pm_as_read: unread_ops.mark_pm_as_read,
         on_mark_topic_as_read: unread_ops.mark_topic_as_read,
         maybe_load_older_messages() {
+            recent_view_ui.set_backfill_in_progress(true);
             message_fetch.maybe_load_older_messages({
                 msg_list_data: all_messages_data,
                 recent_view: true,
+                // To have a hard anchor on our target of first unread message id,
+                // we pass it from here, otherwise it might get updated and lead to confusion.
+                //
+                // TODO: Ideally, muted unread messages would not
+                // count for this purpose.
+                first_unread_message_id: unread.get_all_msg_ids()[0],
             });
         },
     });

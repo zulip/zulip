@@ -46,6 +46,7 @@ import * as views_util from "./views_util";
 
 let topics_widget;
 let filters_dropdown_widget;
+export let is_backfill_in_progress = false;
 // Sets the number of avatars to display.
 // Rest of the avatars, if present, are displayed as {+x}
 const MAX_AVATAR = 4;
@@ -100,6 +101,11 @@ let is_initial_message_fetch_pending = true;
 
 export function set_initial_message_fetch_status(value) {
     is_initial_message_fetch_pending = value;
+}
+
+export function set_backfill_in_progress(value) {
+    is_backfill_in_progress = value;
+    update_load_more_banner();
 }
 
 export function clear_for_tests() {
@@ -199,18 +205,22 @@ function update_load_more_banner() {
         return;
     }
 
-    const $button = $(".recent-view-load-more-container .fetch-messages-button");
-    const $button_label = $(".recent-view-load-more-container .button-label");
     const $banner_text = $(".recent-view-load-more-container .last-fetched-message");
-
-    $button.toggleClass("notvisible", false);
-
     const time_obj = new Date(oldest_message_timestamp * 1000);
     const time_string = timerender.get_localized_date_or_time_for_format(
         time_obj,
         "full_weekday_dayofyear_year_time",
     );
     $banner_text.text($t({defaultMessage: "Showing messages since {time_string}."}, {time_string}));
+
+    if (is_backfill_in_progress) {
+        // Keep the button disabled and the loading indicator running
+        // until we've finished our recursive backfill.
+        return;
+    }
+    const $button = $(".recent-view-load-more-container .fetch-messages-button");
+    const $button_label = $(".recent-view-load-more-container .button-label");
+    $button.toggleClass("notvisible", false);
 
     $button_label.toggleClass("invisible", false);
     $button.prop("disabled", false);
@@ -1593,13 +1603,13 @@ export function initialize({
     });
 
     $("body").on("click", ".recent-view-load-more-container .fetch-messages-button", () => {
-        maybe_load_older_messages();
         $(".recent-view-load-more-container .button-label").toggleClass("invisible", true);
         $(".recent-view-load-more-container .fetch-messages-button").prop("disabled", true);
         loading.make_indicator(
             $(".recent-view-load-more-container .fetch-messages-button .loading-indicator"),
             {width: 20},
         );
+        maybe_load_older_messages();
     });
 
     $(document).on("compose_canceled.zulip", () => {

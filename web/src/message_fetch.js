@@ -52,6 +52,7 @@ const consts = {
 
     // Parameters for asking for more history in the recent view.
     recent_view_fetch_more_batch_size: 2000,
+    recent_view_minimum_load_more_fetch_size: 50000,
 };
 
 function process_result(data, opts) {
@@ -428,7 +429,39 @@ export function maybe_load_older_messages(opts) {
     if (!msg_list_data.fetch_status.can_load_older_messages()) {
         // We may already be loading old messages or already
         // got the oldest one.
+        if (opts.recent_view) {
+            recent_view_ui.set_backfill_in_progress(false);
+        }
         return;
+    }
+
+    if (opts.recent_view && recent_view_ui.is_backfill_in_progress) {
+        // The recent view "load more" button does a tail-recursive
+        // backfill, so that one doesn't have to click dozens of times
+        // to get a large amount of history.
+        //
+        // We can afford to do this in our server load budget, because
+        // this is a rare operation; prior to May 2024, Zulip fetched
+        // all history since the oldest unread unconditionally.
+
+        let fetched_substantial_history = false;
+        if (msg_list_data.num_items() >= consts.recent_view_minimum_load_more_fetch_size) {
+            fetched_substantial_history = true;
+        }
+
+        let found_first_unread = opts.first_unread_message_id === undefined;
+        // This is a soft check because `first_unread_message_id` can be deleted.
+        if (!found_first_unread && msg_list_data.first() <= opts.first_unread_message_id) {
+            found_first_unread = true;
+        }
+
+        if (fetched_substantial_history && found_first_unread) {
+            recent_view_ui.set_backfill_in_progress(false);
+            return;
+        }
+
+        opts.cont = () =>
+            setTimeout(() => maybe_load_older_messages(opts), consts.catch_up_backfill_delay);
     }
 
     do_backfill({
@@ -515,7 +548,7 @@ export function initialize(finished_initial_fetch) {
             return;
         }
 
-        // Stop once we've hit the minimum backfill quantiy of
+        // Stop once we've hit the minimum backfill quantity of
         // messages if we've received a message older than
         // `target_days_of_history`.
         const latest_message = all_messages_data.first();
