@@ -713,6 +713,15 @@ class Attachment(AbstractAttachment):
     # because ScheduledMessage is not subject to archiving.
     scheduled_messages = models.ManyToManyField("zerver.ScheduledMessage")
 
+    class Meta:
+        indexes = [
+            models.Index(
+                "realm",
+                "create_time",
+                name="zerver_attachment_realm_create_time",
+            ),
+        ]
+
     def is_claimed(self) -> bool:
         return self.messages.exists() or self.scheduled_messages.exists()
 
