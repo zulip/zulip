@@ -18,7 +18,7 @@ define zulip::cron(
       $proxy = ''
     }
   } else {
-    $pxoy = ''
+    $proxy = ''
   }
 
   $dsn = zulipconf('sentry', 'project_dsn', '')
