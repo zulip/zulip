@@ -19,14 +19,14 @@ class kandra::prod_app_frontend_once {
   }
 
   zulip::cron { 'check_send_receive_time':
-    hour    => '*',
-    minute  => '*',
-    command => '/usr/lib/nagios/plugins/zulip_app_frontend/check_send_receive_time --site=https://$(/home/zulip/deployments/current/scripts/get-django-setting NAGIOS_BOT_HOST) >/dev/null',
-  }
-  zulip::cron { 'check_user_zephyr_mirror_liveness':
     hour      => '*',
     minute    => '*',
-    command   => '/usr/lib/nagios/plugins/zulip_zephyr_mirror/check_user_zephyr_mirror_liveness >/dev/null',
+    command   => '/usr/lib/nagios/plugins/zulip_app_frontend/check_send_receive_time --site=https://$(/home/zulip/deployments/current/scripts/get-django-setting NAGIOS_BOT_HOST) >/dev/null',
     use_proxy => false,
+  }
+  zulip::cron { 'check_user_zephyr_mirror_liveness':
+    hour    => '*',
+    minute  => '*',
+    command => '/usr/lib/nagios/plugins/zulip_zephyr_mirror/check_user_zephyr_mirror_liveness >/dev/null',
   }
 }
