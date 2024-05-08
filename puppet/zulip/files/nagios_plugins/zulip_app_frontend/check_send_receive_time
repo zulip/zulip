@@ -64,7 +64,8 @@ def report(state: str, timestamp: Any = None, msg: Optional[str] = None) -> NoRe
     with open(state_file_path + ".tmp", "w") as f:
         f.write(f"{now}|{states[state]}|{state}|{msg}\n")
     os.rename(state_file_path + ".tmp", state_file_path)
-    print(f"{state}: {msg}")
+    if states[state] > 0:
+        print(f"{state}: {msg}")
     sys.exit(states[state])
 
 
