@@ -521,9 +521,9 @@ No changes; feature level used for Zulip 8.0 release.
   therefore the response did not include reusable invitation links for these
   users.
 
-* `DELETE /invites/multiuse/{invite_id}`: Non-admin users can now revoke
-  reusable invitation links they have created. Previously, only admin users could
-  create and revoke reusable invitation links.
+* [`DELETE /invites/multiuse/{invite_id}`](/api/revoke-invite-link): Non-admin
+  users can now revoke reusable invitation links they have created. Previously,
+  only admin users could create and revoke reusable invitation links.
 
 * [`GET /events`](/api/get-events): When the set of invitations in an
   organization changes, an `invites_changed` event is now sent to the
