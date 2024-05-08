@@ -872,14 +872,27 @@ export function toggle_view(event) {
     const active_data = stream_settings_components.get_active_data();
     const stream_filter_tab = active_data.$tabs.first().text();
 
-    if (event === "right_arrow" && stream_filter_tab === "Subscribed") {
-        toggler.goto("not-subscribed");
-    } else if (event === "right_arrow" && stream_filter_tab === "Not subscribed") {
-        toggler.goto("all-streams");
-    } else if (event === "left_arrow" && stream_filter_tab === "Not subscribed") {
-        toggler.goto("subscribed");
-    } else if (event === "left_arrow" && stream_filter_tab === "All channels") {
-        toggler.goto("not-subscribed");
+    switch (event) {
+        case "right_arrow":
+            switch (stream_filter_tab) {
+                case "Subscribed":
+                    toggler.goto("not-subscribed");
+                    break;
+                case "Not subscribed":
+                    toggler.goto("all-streams");
+                    break;
+            }
+            break;
+        case "left_arrow":
+            switch (stream_filter_tab) {
+                case "Not subscribed":
+                    toggler.goto("subscribed");
+                    break;
+                case "All channels":
+                    toggler.goto("not-subscribed");
+                    break;
+            }
+            break;
     }
 }
 
