@@ -579,7 +579,7 @@ GOOGLE_ANALYTICS_ID: Optional[str] = None
 IS_DEV_DROPLET = False
 
 # Used by puppet/kandra/files/cron.d/check_send_receive_time.
-NAGIOS_BOT_HOST = EXTERNAL_HOST
+NAGIOS_BOT_HOST = SYSTEM_BOT_REALM + "." + EXTERNAL_HOST
 
 # Use half of the available CPUs for data import purposes.
 DEFAULT_DATA_EXPORT_IMPORT_PARALLELISM = (len(os.sched_getaffinity(0)) // 2) or 1
