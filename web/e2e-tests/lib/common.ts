@@ -540,7 +540,7 @@ export async function open_streams_modal(page: Page): Promise<void> {
 
     await page.waitForSelector("#subscription_overlay.new-style", {visible: true});
     const url = await page_url_with_fragment(page);
-    assert.ok(url.includes("#channels/all"));
+    assert.ok(url.includes("#channels/notsubscribed"));
 }
 
 export async function open_personal_menu(page: Page): Promise<void> {
