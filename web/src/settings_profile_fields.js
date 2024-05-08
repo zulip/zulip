@@ -72,7 +72,7 @@ function delete_profile_field(e) {
     e.preventDefault();
     e.stopPropagation();
 
-    const profile_field_id = Number.parseInt($(e.currentTarget).attr("data-profile-field-id"), 10);
+    const profile_field_id = Number.parseInt($(this).attr("data-profile-field-id"), 10);
     const profile_field = get_profile_field(profile_field_id);
     const active_user_ids = people.get_active_user_ids();
     let users_using_deleting_profile_field = 0;
@@ -263,7 +263,7 @@ function open_custom_profile_field_form_modal() {
 }
 
 function add_choice_row(e) {
-    const $curr_choice_row = $(e.target).parent();
+    const $curr_choice_row = $(this).parent();
     if ($curr_choice_row.next().hasClass("choice-row")) {
         return;
     }
@@ -274,13 +274,13 @@ function add_choice_row(e) {
     create_choice_row(choices_div);
 }
 
-function delete_choice_row(e) {
-    const $row = $(e.currentTarget).parent();
+function delete_choice_row(row) {
+    const $row = $(row).parent();
     $row.remove();
 }
 
-function delete_choice_row_for_edit(e, $profile_field_form, field) {
-    delete_choice_row(e);
+function delete_choice_row_for_edit(row, $profile_field_form, field) {
+    delete_choice_row(row);
     disable_submit_btn_if_no_property_changed($profile_field_form, field);
 }
 
@@ -391,10 +391,10 @@ function set_up_select_field_edit_form($profile_field_form, field) {
     });
 }
 
-function open_edit_form_modal(e) {
+function open_edit_form_modal() {
     const field_types = realm.custom_profile_field_types;
 
-    const field_id = Number.parseInt($(e.currentTarget).attr("data-profile-field-id"), 10);
+    const field_id = Number.parseInt($(this).attr("data-profile-field-id"), 10);
     const field = get_profile_field(field_id);
 
     let field_data = {};
@@ -455,9 +455,9 @@ function open_edit_form_modal(e) {
             .on("input", ".choice-row input", add_choice_row);
         $profile_field_form
             .find(".edit_profile_field_choices_container")
-            .on("click", "button.delete-choice", (e) =>
-                delete_choice_row_for_edit(e, $profile_field_form, field),
-            );
+            .on("click", "button.delete-choice", function () {
+                delete_choice_row_for_edit(this, $profile_field_form, field);
+            });
 
         $("#edit-custom-profile-field-form-modal .dialog_submit_button").prop("disabled", true);
         // Setup onInput event listeners to disable/enable submit button,
@@ -535,11 +535,11 @@ function update_profile_fields_checkboxes() {
     );
 }
 
-function toggle_display_in_profile_summary_profile_field(e) {
-    const field_id = Number.parseInt($(e.currentTarget).attr("data-profile-field-id"), 10);
+function toggle_display_in_profile_summary_profile_field() {
+    const field_id = Number.parseInt($(this).attr("data-profile-field-id"), 10);
 
     const data = {
-        display_in_profile_summary: $(e.currentTarget).prop("checked"),
+        display_in_profile_summary: $(this).prop("checked"),
     };
     const $profile_field_status = $("#admin-profile-field-status").expectOne();
 
@@ -551,11 +551,11 @@ function toggle_display_in_profile_summary_profile_field(e) {
     );
 }
 
-function toggle_required(e) {
-    const field_id = Number.parseInt($(e.currentTarget).attr("data-profile-field-id"), 10);
+function toggle_required() {
+    const field_id = Number.parseInt($(this).attr("data-profile-field-id"), 10);
 
     const data = {
-        required: $(e.currentTarget).prop("checked"),
+        required: $(this).prop("checked"),
     };
     const $profile_field_status = $("#admin-profile-field-status").expectOne();
 
@@ -683,10 +683,10 @@ function set_up_select_field() {
         $("#profile_field_choices_row").hide();
     }
 
-    $("#profile_field_type").on("change", (e) => {
+    $("#profile_field_type").on("change", function () {
         // Hide error on field type change.
         $("#dialog_error").hide();
-        const selected_field_id = Number.parseInt($(e.target).val(), 10);
+        const selected_field_id = Number.parseInt($(this).val(), 10);
         if (selected_field_id === field_types.SELECT.id) {
             $("#profile_field_choices_row").show();
         } else {
@@ -695,7 +695,9 @@ function set_up_select_field() {
     });
 
     $("#profile_field_choices").on("input", ".choice-row input", add_choice_row);
-    $("#profile_field_choices").on("click", "button.delete-choice", delete_choice_row);
+    $("#profile_field_choices").on("click", "button.delete-choice", function () {
+        delete_choice_row(this);
+    });
 }
 
 function set_up_external_account_field() {
