@@ -37,7 +37,7 @@
         vertical-align: top;
 
         & input[type="checkbox"] {
-            ~ span {
+            ~ .custom-checkbox {
                 height: 12px;
                 width: 12px;
                 border: 2px solid hsl(156deg 28% 70%);
@@ -48,7 +48,7 @@
                 cursor: pointer;
             }
 
-            &:checked ~ span {
+            &:checked ~ .custom-checkbox {
                 background-image: url("../images/checkbox-white.svg");
                 background-size: 75%;
                 background-position: 50% 50%;
@@ -57,16 +57,16 @@
                 border: 2px solid hsl(156deg 41% 40%);
             }
 
-            &:disabled ~ span {
+            &:disabled ~ .custom-checkbox {
                 opacity: 0.5;
                 cursor: not-allowed;
             }
 
-            &:hover ~ span {
+            &:hover ~ .custom-checkbox {
                 border-color: hsl(156deg 30% 50%);
             }
 
-            &:focus ~ span {
+            &:focus ~ .custom-checkbox {
                 outline-color: hsl(0deg 0% 100% / 0%);
             }
         }
