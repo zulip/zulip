@@ -347,6 +347,7 @@ export class Typeahead<ItemType extends string | object> {
             theme: "popover-menu",
             placement: this.dropup ? "top-start" : "bottom-start",
             popperOptions: {
+                strategy: "fixed",
                 modifiers: [
                     {
                         // This will only work if there is enough space on the fallback placement, otherwise
