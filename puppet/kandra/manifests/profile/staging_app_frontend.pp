@@ -22,7 +22,7 @@ class kandra::profile::staging_app_frontend inherits kandra::profile::base {
   zulip::cron { 'check_send_receive_time':
     hour      => '*',
     minute    => '*',
-    command   => '/usr/lib/nagios/plugins/zulip_app_frontend/check_send_receive_time --site=https://$(/home/zulip/deployments/current/scripts/get-django-setting NAGIOS_BOT_HOST)',
+    command   => '/usr/lib/nagios/plugins/zulip_app_frontend/check_send_receive_time',
     use_proxy => false,
   }
 }

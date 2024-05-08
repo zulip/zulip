@@ -24,18 +24,6 @@ setup_path()
 import django
 import zulip
 
-usage = """Usage: send-receive.py [options] [config]
-
-       'config' is optional, if present will return config info.
-        Otherwise, returns the output data."""
-
-parser = argparse.ArgumentParser(usage=usage)
-parser.add_argument("--site", default="https://api.zulip.com")
-
-parser.add_argument("--insecure", action="store_true")
-
-options = parser.parse_args()
-
 sys.path.append("/home/zulip/deployments/current")
 os.environ["DJANGO_SETTINGS_MODULE"] = "zproject.settings"
 
@@ -45,6 +33,17 @@ from django.conf import settings
 
 from zerver.models.realms import get_realm
 from zerver.models.users import get_system_bot
+
+usage = """Usage: send-receive.py [options] [config]
+
+       'config' is optional, if present will return config info.
+        Otherwise, returns the output data."""
+
+parser = argparse.ArgumentParser(usage=usage)
+parser.add_argument("--site", default=f"https://{settings.NAGIOS_BOT_HOST}")
+parser.add_argument("--insecure", action="store_true")
+
+options = parser.parse_args()
 
 states = {
     "OK": 0,
