@@ -28,16 +28,16 @@ function settings_button_for_sub(sub) {
     );
 }
 
-export let subscribed_only = true;
+export let show_subscribed = true;
 
 export function is_subscribed_stream_tab_active() {
     // Returns true if "Subscribed" tab in stream settings is open
     // otherwise false.
-    return subscribed_only;
+    return show_subscribed;
 }
 
-export function set_subscribed_only(value) {
-    subscribed_only = value;
+export function set_show_subscribed(value) {
+    show_subscribed = value;
 }
 
 export function update_web_public_stream_privacy_option_state($container) {
