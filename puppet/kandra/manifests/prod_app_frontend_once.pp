@@ -5,7 +5,7 @@ class kandra::prod_app_frontend_once {
 
   zulip::cron { 'update-first-visible-message-id':
     hour   => '7',
-    minute => '*',
+    minute => '0',
     manage => 'calculate_first_visible_message_id --lookback-hours 30',
   }
 
