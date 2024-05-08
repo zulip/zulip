@@ -101,6 +101,15 @@ export const realm_schema = z.object({
     realm_create_public_stream_policy: z.number(),
     realm_create_web_public_stream_policy: z.number(),
     realm_default_code_block_language: z.string(),
+    realm_default_external_accounts: z.record(
+        z.string(),
+        z.object({
+            text: z.string(),
+            url_pattern: z.string(),
+            name: z.string(),
+            hint: z.string(),
+        }),
+    ),
     realm_default_language: z.string(),
     realm_delete_own_message_policy: z.number(),
     realm_description: z.string(),
