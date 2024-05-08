@@ -353,6 +353,11 @@ function triage_stream(left_panel_params, sub) {
         return "rejected";
     }
 
+    if (left_panel_params.show_not_subscribed && sub.subscribed) {
+        // reject subscribed streams
+        return "rejected";
+    }
+
     const search_terms = search_util.get_search_terms(left_panel_params.input);
 
     function match(attr) {
@@ -508,6 +513,7 @@ export function get_left_panel_params() {
     const params = {
         input,
         show_subscribed: stream_ui_updates.show_subscribed,
+        show_not_subscribed: stream_ui_updates.show_not_subscribed,
         sort_order,
     };
     return params;
@@ -523,10 +529,23 @@ export function switch_stream_tab(tab_name) {
         use `toggler.goto`.
     */
 
-    if (tab_name === "all-streams") {
-        stream_ui_updates.set_show_subscribed(false);
-    } else if (tab_name === "subscribed") {
-        stream_ui_updates.set_show_subscribed(true);
+    switch (tab_name) {
+        case "all-streams": {
+            stream_ui_updates.set_show_subscribed(false);
+            stream_ui_updates.set_show_not_subscribed(false);
+            break;
+        }
+        case "subscribed": {
+            stream_ui_updates.set_show_subscribed(true);
+            stream_ui_updates.set_show_not_subscribed(false);
+            break;
+        }
+        case "not-subscribed": {
+            stream_ui_updates.set_show_subscribed(false);
+            stream_ui_updates.set_show_not_subscribed(true);
+            break;
+        }
+        // No default
     }
 
     redraw_left_panel();
@@ -602,6 +621,7 @@ export function setup_page(callback) {
             child_wants_focus: true,
             values: [
                 {label: $t({defaultMessage: "Subscribed"}), key: "subscribed"},
+                {label: $t({defaultMessage: "Not subscribed"}), key: "not-subscribed"},
                 {label: $t({defaultMessage: "All channels"}), key: "all-streams"},
             ],
             callback(_value, key) {
@@ -615,6 +635,7 @@ export function setup_page(callback) {
         }
         if (current_user.is_guest) {
             toggler.disable_tab("all-streams");
+            toggler.disable_tab("not-subscribed");
         }
 
         // show the "Stream settings" header by default.
@@ -744,6 +765,12 @@ export function change_state(section, left_side_tab, right_side_tab) {
         return;
     }
 
+    if (section === "notsubscribed") {
+        toggler.goto("not-subscribed");
+        stream_edit.empty_right_panel();
+        return;
+    }
+
     // if the section is a valid number.
     if (/\d+/.test(section)) {
         const stream_id = Number.parseInt(section, 10);
@@ -846,9 +873,13 @@ export function toggle_view(event) {
     const stream_filter_tab = active_data.$tabs.first().text();
 
     if (event === "right_arrow" && stream_filter_tab === "Subscribed") {
+        toggler.goto("not-subscribed");
+    } else if (event === "right_arrow" && stream_filter_tab === "Not subscribed") {
         toggler.goto("all-streams");
-    } else if (event === "left_arrow" && stream_filter_tab === "All channels") {
+    } else if (event === "left_arrow" && stream_filter_tab === "Not subscribed") {
         toggler.goto("subscribed");
+    } else if (event === "left_arrow" && stream_filter_tab === "All channels") {
+        toggler.goto("not-subscribed");
     }
 }
 

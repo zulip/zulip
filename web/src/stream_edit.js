@@ -43,12 +43,22 @@ export function setup_subscriptions_tab_hash(tab_key_value) {
     if ($("#subscription_overlay .right").hasClass("show")) {
         return;
     }
-    if (tab_key_value === "all-streams") {
-        browser_history.update("#channels/all");
-    } else if (tab_key_value === "subscribed") {
-        browser_history.update("#channels/subscribed");
-    } else {
-        blueslip.debug("Unknown tab_key_value: " + tab_key_value);
+    switch (tab_key_value) {
+        case "all-streams": {
+            browser_history.update("#channels/all");
+            break;
+        }
+        case "subscribed": {
+            browser_history.update("#channels/subscribed");
+            break;
+        }
+        case "not-subscribed": {
+            browser_history.update("#channels/notsubscribed");
+            break;
+        }
+        default: {
+            blueslip.debug("Unknown tab_key_value: " + tab_key_value);
+        }
     }
 }
 
