@@ -42,7 +42,7 @@ export function activate({
     ) => void;
     extra_data: PollWidgetExtraData;
     message: Message;
-}): void {
+}): (events: Event[]) => void {
     const is_my_poll = people.is_my_user_id(message.sender_id);
     const poll_data = new PollData({
         message_sender_id: message.sender_id,
@@ -237,7 +237,7 @@ export function activate({
             });
     }
 
-    $elem.handle_events = function (events: Event[]) {
+    const handle_events = function (events: Event[]): void {
         for (const event of events) {
             poll_data.handle_event(event.sender_id, event.data);
         }
@@ -249,4 +249,6 @@ export function activate({
     build_widget();
     render_question();
     render_results();
+
+    return handle_events;
 }

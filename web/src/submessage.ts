@@ -89,7 +89,7 @@ export function get_message_events(message: Message): SubmessageEvents | undefin
 }
 
 export function process_widget_rows_in_list(list: MessageList | undefined): void {
-    for (const message_id of widgetize.widget_contents.keys()) {
+    for (const message_id of widgetize.widget_event_handlers.keys()) {
         if (list?.get(message_id) !== undefined) {
             process_submessages({message_id, $row: list.get_row(message_id)});
         }
