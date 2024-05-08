@@ -30,16 +30,18 @@ WHERE  id IN (WITH too_many_confirmations
 )
 """
 
-NO_CONFIRMATIONS = """
-DELETE FROM zerver_preregistrationuser
- WHERE NOT EXISTS(SELECT 1
-                    FROM confirmation_confirmation
-                   WHERE content_type_id = (SELECT id
-                                            FROM   django_content_type
-                                            WHERE  app_label = 'zerver'
-                                            AND    model = 'preregistrationuser')
-                     AND object_id = zerver_preregistrationuser.id)
-   AND referred_by_id IS NOT NULL
+NO_CONFIRMATIONS_TEMP_TABLE = """
+CREATE TEMPORARY TABLE zerver_0516_no_confirmations AS (
+  SELECT id FROM zerver_preregistrationuser
+   WHERE NOT EXISTS(SELECT 1
+                      FROM confirmation_confirmation
+                     WHERE content_type_id = (SELECT id
+                                              FROM   django_content_type
+                                              WHERE  app_label = 'zerver'
+                                              AND    model = 'preregistrationuser')
+                       AND object_id = zerver_preregistrationuser.id)
+     AND referred_by_id IS NOT NULL
+)
 """
 
 
@@ -55,5 +57,14 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.RunSQL(TOO_MANY_CONFIRMATIONS, elidable=True),
-        migrations.RunSQL(NO_CONFIRMATIONS, elidable=True),
+        migrations.RunSQL(NO_CONFIRMATIONS_TEMP_TABLE, elidable=True),
+        migrations.RunSQL(
+            "DELETE FROM zerver_preregistrationuser_streams WHERE preregistrationuser_id IN (SELECT id FROM zerver_0516_no_confirmations)",
+            elidable=True,
+        ),
+        migrations.RunSQL(
+            "DELETE FROM zerver_preregistrationuser WHERE id IN (SELECT id FROM zerver_0516_no_confirmations)",
+            elidable=True,
+        ),
+        migrations.RunSQL("DROP TABLE zerver_0516_no_confirmations", elidable=True),
     ]
