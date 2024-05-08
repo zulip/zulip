@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-03-14 18:32+0000\n"
+"POT-Creation-Date: 2024-05-08 19:59+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -129,124 +129,124 @@ msgstr ""
 msgid "Invalid remote server."
 msgstr ""
 
-#: corporate/lib/stripe.py:198
+#: corporate/lib/stripe.py:209
 #, python-brace-format
 msgid ""
 "You must purchase licenses for all active users in your organization "
 "(minimum {min_licenses})."
 msgstr ""
 
-#: corporate/lib/stripe.py:204
+#: corporate/lib/stripe.py:215
 #, python-brace-format
 msgid ""
 "Invoices with more than {max_licenses} licenses can't be processed from this "
 "page. To complete the upgrade, please contact {email}."
 msgstr ""
 
-#: corporate/lib/stripe.py:346
+#: corporate/lib/stripe.py:357
 msgid "No payment method on file."
 msgstr ""
 
-#: corporate/lib/stripe.py:354
+#: corporate/lib/stripe.py:365
 #, python-brace-format
 msgid "{brand} ending in {last4}"
 msgstr ""
 
-#: corporate/lib/stripe.py:362
+#: corporate/lib/stripe.py:373
 #, python-brace-format
 msgid "Unknown payment method. Please contact {email}."
 msgstr ""
 
-#: corporate/lib/stripe.py:378
+#: corporate/lib/stripe.py:389
 #, python-brace-format
 msgid "Something went wrong. Please contact {email}."
 msgstr ""
 
-#: corporate/lib/stripe.py:379
+#: corporate/lib/stripe.py:390
 msgid "Something went wrong. Please reload the page."
 msgstr ""
 
-#: corporate/lib/stripe.py:468
+#: corporate/lib/stripe.py:479
 msgid "Something went wrong. Please wait a few seconds and try again."
 msgstr ""
 
-#: corporate/lib/stripe.py:1218
+#: corporate/lib/stripe.py:1232
 msgid "Please add a credit card before starting your free trial."
 msgstr ""
 
-#: corporate/lib/stripe.py:1239
+#: corporate/lib/stripe.py:1253
 msgid "Please add a credit card to schedule upgrade."
 msgstr ""
 
-#: corporate/lib/stripe.py:1987
+#: corporate/lib/stripe.py:2005
 msgid ""
 "Unable to update the plan. The plan has been expired and replaced with a new "
 "plan."
 msgstr ""
 
-#: corporate/lib/stripe.py:1992
+#: corporate/lib/stripe.py:2010
 msgid "Unable to update the plan. The plan has ended."
 msgstr ""
 
-#: corporate/lib/stripe.py:2047
+#: corporate/lib/stripe.py:2065
 msgid ""
 "Cannot update licenses in the current billing period for free trial plan."
 msgstr ""
 
-#: corporate/lib/stripe.py:2052 corporate/lib/stripe.py:2080
+#: corporate/lib/stripe.py:2070 corporate/lib/stripe.py:2098
 msgid ""
 "Unable to update licenses manually. Your plan is on automatic license "
 "management."
 msgstr ""
 
-#: corporate/lib/stripe.py:2058
+#: corporate/lib/stripe.py:2076
 #, python-brace-format
 msgid ""
 "Your plan is already on {licenses} licenses in the current billing period."
 msgstr ""
 
-#: corporate/lib/stripe.py:2063
+#: corporate/lib/stripe.py:2081
 msgid "You cannot decrease the licenses in the current billing period."
 msgstr ""
 
-#: corporate/lib/stripe.py:2089
+#: corporate/lib/stripe.py:2107
 msgid ""
 "Cannot change the licenses for next billing cycle for a plan that is being "
 "downgraded."
 msgstr ""
 
-#: corporate/lib/stripe.py:2095
+#: corporate/lib/stripe.py:2113
 #, python-brace-format
 msgid ""
 "Your plan is already scheduled to renew with {licenses_at_next_renewal} "
 "licenses."
 msgstr ""
 
-#: corporate/lib/stripe.py:2110
+#: corporate/lib/stripe.py:2128
 msgid "Nothing to change."
 msgstr ""
 
-#: corporate/lib/stripe.py:2315
+#: corporate/lib/stripe.py:2338
 msgid "No customer for this organization!"
 msgstr ""
 
-#: corporate/lib/stripe.py:2324
+#: corporate/lib/stripe.py:2347
 msgid "Session not found"
 msgstr ""
 
-#: corporate/lib/stripe.py:2330 zerver/decorator.py:200
+#: corporate/lib/stripe.py:2353 zerver/decorator.py:200
 msgid "Must be a billing administrator or an organization owner"
 msgstr ""
 
-#: corporate/lib/stripe.py:2341
+#: corporate/lib/stripe.py:2364
 msgid "Payment intent not found"
 msgstr ""
 
-#: corporate/lib/stripe.py:2344
+#: corporate/lib/stripe.py:2367
 msgid "Pass stripe_session_id or stripe_payment_intent_id"
 msgstr ""
 
-#: corporate/lib/stripe.py:2893
+#: corporate/lib/stripe.py:2916
 #, python-brace-format
 msgid ""
 "Your organization's request for sponsored hosting has been approved! You "
@@ -3791,36 +3791,36 @@ msgid ""
 "invitation. We did send invitations to everyone else!"
 msgstr ""
 
-#: zerver/actions/message_edit.py:100 zerver/views/scheduled_messages.py:60
+#: zerver/actions/message_edit.py:102 zerver/views/scheduled_messages.py:60
 msgid "Nothing to change"
 msgstr ""
 
-#: zerver/actions/message_edit.py:104
+#: zerver/actions/message_edit.py:106
 msgid "Direct messages cannot be moved to streams."
 msgstr ""
 
-#: zerver/actions/message_edit.py:106
+#: zerver/actions/message_edit.py:108
 msgid "Direct messages cannot have topics."
 msgstr ""
 
-#: zerver/actions/message_edit.py:109
+#: zerver/actions/message_edit.py:111
 msgid "Invalid propagate_mode without topic edit"
 msgstr ""
 
-#: zerver/actions/message_edit.py:115
+#: zerver/actions/message_edit.py:117
 msgid "Cannot change message content while changing stream"
 msgstr ""
 
-#: zerver/actions/message_edit.py:119
+#: zerver/actions/message_edit.py:121
 msgid "Widgets cannot be edited."
 msgstr ""
 
-#: zerver/actions/message_edit.py:172
+#: zerver/actions/message_edit.py:174
 #, python-brace-format
 msgid "{user} has marked this topic as resolved."
 msgstr ""
 
-#: zerver/actions/message_edit.py:174
+#: zerver/actions/message_edit.py:176
 #, python-brace-format
 msgid "{user} has marked this topic as unresolved."
 msgstr ""
@@ -3884,22 +3884,22 @@ msgstr ""
 msgid "The time limit for editing this message's stream has passed"
 msgstr ""
 
-#: zerver/actions/message_flags.py:257
+#: zerver/actions/message_flags.py:265
 #, python-brace-format
 msgid "Invalid flag: '{flag}'"
 msgstr ""
 
-#: zerver/actions/message_flags.py:259
+#: zerver/actions/message_flags.py:267
 #, python-brace-format
 msgid "Flag not editable: '{flag}'"
 msgstr ""
 
-#: zerver/actions/message_flags.py:262
+#: zerver/actions/message_flags.py:270
 #, python-brace-format
 msgid "Invalid message flag operation: '{operation}'"
 msgstr ""
 
-#: zerver/actions/message_flags.py:337 zerver/lib/message.py:291
+#: zerver/actions/message_flags.py:345 zerver/lib/message.py:291
 #: zerver/lib/message.py:297
 msgid "Invalid message(s)"
 msgstr ""
@@ -3946,23 +3946,23 @@ msgid ""
 "stream exists but does not have any subscribers."
 msgstr ""
 
-#: zerver/actions/message_send.py:1540
+#: zerver/actions/message_send.py:1542
 msgid "Direct messages are disabled in this organization."
 msgstr ""
 
-#: zerver/actions/message_send.py:1550
+#: zerver/actions/message_send.py:1552
 msgid "You do not have permission to access some of the recipients."
 msgstr ""
 
-#: zerver/actions/message_send.py:1681
+#: zerver/actions/message_send.py:1683
 msgid "Topics are required in this organization"
 msgstr ""
 
-#: zerver/actions/message_send.py:1743
+#: zerver/actions/message_send.py:1745
 msgid "Widgets: API programmer sent invalid JSON content"
 msgstr ""
 
-#: zerver/actions/message_send.py:1749
+#: zerver/actions/message_send.py:1751
 #, python-brace-format
 msgid "Widgets: {error_msg}"
 msgstr ""
@@ -4900,55 +4900,55 @@ msgstr ""
 msgid "Invalid response format"
 msgstr ""
 
-#: zerver/lib/push_notifications.py:431
+#: zerver/lib/push_notifications.py:432
 msgid "Invalid GCM option to bouncer: priority {priority!r}"
 msgstr ""
 
-#: zerver/lib/push_notifications.py:441
+#: zerver/lib/push_notifications.py:442
 #, python-brace-format
 msgid "Invalid GCM options to bouncer: {options}"
 msgstr ""
 
 #. error
-#: zerver/lib/push_notifications.py:752 zilencer/views.py:252
+#: zerver/lib/push_notifications.py:756 zilencer/views.py:252
 msgid "Token does not exist"
 msgstr ""
 
-#: zerver/lib/push_notifications.py:928
+#: zerver/lib/push_notifications.py:932
 msgid ""
 "This organization has disabled including message content in mobile push "
 "notifications"
 msgstr ""
 
-#: zerver/lib/push_notifications.py:1041
+#: zerver/lib/push_notifications.py:1045
 #, python-brace-format
 msgid "{full_name} mentioned @{user_group_name}:"
 msgstr ""
 
-#: zerver/lib/push_notifications.py:1045
+#: zerver/lib/push_notifications.py:1049
 #, python-brace-format
 msgid "{full_name} mentioned you:"
 msgstr ""
 
-#: zerver/lib/push_notifications.py:1052
+#: zerver/lib/push_notifications.py:1056
 #, python-brace-format
 msgid "{full_name} mentioned everyone:"
 msgstr ""
 
-#: zerver/lib/push_notifications.py:1456
+#: zerver/lib/push_notifications.py:1460
 msgid "Test notification"
 msgstr ""
 
-#: zerver/lib/push_notifications.py:1457
+#: zerver/lib/push_notifications.py:1461
 #, python-brace-format
 msgid "This is a test notification from {realm_name} ({realm_uri})."
 msgstr ""
 
-#: zerver/lib/push_notifications.py:1509
+#: zerver/lib/push_notifications.py:1513
 msgid "Device not recognized"
 msgstr ""
 
-#: zerver/lib/push_notifications.py:1521
+#: zerver/lib/push_notifications.py:1525
 msgid "Device not recognized by the push bouncer"
 msgstr ""
 
@@ -4976,7 +4976,7 @@ msgstr ""
 msgid "You can't send direct messages outside of your organization."
 msgstr ""
 
-#: zerver/lib/remote_server.py:187
+#: zerver/lib/remote_server.py:192
 #, python-brace-format
 msgid "Push notifications bouncer error: {error}"
 msgstr ""
@@ -5858,11 +5858,11 @@ msgstr ""
 msgid "Too many messages requested (maximum {max_messages})."
 msgstr ""
 
-#: zerver/views/message_fetch.py:104 zerver/views/message_flags.py:85
+#: zerver/views/message_fetch.py:104 zerver/views/message_flags.py:84
 msgid "The anchor can only be excluded at an end of the range"
 msgstr ""
 
-#: zerver/views/message_flags.py:169
+#: zerver/views/message_flags.py:167
 #, python-brace-format
 msgid "No such topic '{topic}'"
 msgstr ""
@@ -6118,12 +6118,12 @@ msgstr ""
 msgid "**{policy}** stream created by {user_name}. **Description:**"
 msgstr ""
 
-#: zerver/views/streams.py:1059
+#: zerver/views/streams.py:1053
 #, python-brace-format
 msgid "Unknown subscription property: {property}"
 msgstr ""
 
-#: zerver/views/streams.py:1065
+#: zerver/views/streams.py:1059
 #, python-brace-format
 msgid "Not subscribed to stream id {stream_id}"
 msgstr ""
@@ -6439,7 +6439,7 @@ msgstr ""
 msgid "Unknown WordPress webhook action: {hook}"
 msgstr ""
 
-#: zerver/worker/queue_processors.py:1143
+#: zerver/worker/queue_processors.py:1145
 #, python-brace-format
 msgid ""
 "Your data export is complete. [View and download exports]"

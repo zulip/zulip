@@ -4,11 +4,11 @@
 # FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
 # 
 # Translators:
-# Transifex Bot <>, 2023
 # sung yong kim <hikimsy@gmail.com>, 2023
 # Jihoon Lee <ulla4571@gmail.com>, 2023
 # Ki Heo <reo119@marunet.co.kr>, 2023
 # 최진호 <jinho.choi.999@gmail.com>, 2023
+# Transifex Bot <>, 2024
 # 
 #, fuzzy
 msgid ""
@@ -17,7 +17,7 @@ msgstr ""
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2023-12-15 21:31+0000\n"
 "PO-Revision-Date: 2023-12-15 21:32+0000\n"
-"Last-Translator: 최진호 <jinho.choi.999@gmail.com>, 2023\n"
+"Last-Translator: Transifex Bot <>, 2024\n"
 "Language-Team: Korean (https://app.transifex.com/zulip/teams/53893/ko/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -166,20 +166,20 @@ msgstr "{last4}로 끝나는 {brand}  "
 #: corporate/lib/stripe.py:367
 #, python-brace-format
 msgid "Unknown payment method. Please contact {email}."
-msgstr "알수없는 지불 방법입니다. {email}로 연락 주세요."
+msgstr "알수없는 지불 방법입니다. {email}로 연락해주세요."
 
 #: corporate/lib/stripe.py:383
 #, python-brace-format
 msgid "Something went wrong. Please contact {email}."
-msgstr "문제가 발생했습니다. {email}로 연락 주세요."
+msgstr "문제가 발생했습니다. {email}로 연락해주세요."
 
 #: corporate/lib/stripe.py:384
 msgid "Something went wrong. Please reload the page."
-msgstr "무언가 잘못 되었습니다. 페이지를 새로고침해 주십시오."
+msgstr "무언가 잘못 되었습니다. 페이지를 새로고침하세요."
 
 #: corporate/lib/stripe.py:475
 msgid "Something went wrong. Please wait a few seconds and try again."
-msgstr "무언가 잘못 되었습니다. 몇 초간 기다린 후 다시 시도 해주세요."
+msgstr "무언가 잘못 되었습니다. 몇 초간 기다린 후 다시 시도 해보세요."
 
 #: corporate/lib/stripe.py:1225
 msgid "Please add a credit card before starting your free trial."

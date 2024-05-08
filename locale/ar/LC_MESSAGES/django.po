@@ -4,11 +4,11 @@
 # FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
 # 
 # Translators:
-# Transifex Bot <>, 2023
-# Tim Abbott <tabbott@kandralabs.com>, 2023
 # RanaJT, 2023
 # عبدالله نصار, 2023
 # najla seghaier <seghaier.najla95@gmail.com>, 2023
+# Transifex Bot <>, 2024
+# Tim Abbott <tabbott@kandralabs.com>, 2024
 # 
 #, fuzzy
 msgid ""
@@ -17,7 +17,7 @@ msgstr ""
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2023-12-15 21:31+0000\n"
 "PO-Revision-Date: 2023-12-15 21:32+0000\n"
-"Last-Translator: najla seghaier <seghaier.najla95@gmail.com>, 2023\n"
+"Last-Translator: Tim Abbott <tabbott@kandralabs.com>, 2024\n"
 "Language-Team: Arabic (https://app.transifex.com/zulip/teams/53893/ar/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -44,21 +44,21 @@ msgstr "تيارات خاصة"
 
 #: analytics/views/stats.py:319
 msgid "Direct messages"
-msgstr "الرسائل المباشرة "
+msgstr "الرسائل المباشرة"
 
 #: analytics/views/stats.py:320
 msgid "Group direct messages"
-msgstr ""
+msgstr "رسائل مباشرة للمجموعة"
 
 #: analytics/views/stats.py:343
 #, python-brace-format
 msgid "Missing stream for chart: {chart_name}"
-msgstr ""
+msgstr "التيار مفقود للرسم البياني: {chart_name}"
 
 #: analytics/views/stats.py:351
 #, python-brace-format
 msgid "Unknown chart name: {chart_name}"
-msgstr ""
+msgstr "اسم الرسم البياني غير معروف: {chart_name}"
 
 #: analytics/views/stats.py:361
 #, python-brace-format
@@ -157,11 +157,11 @@ msgstr ""
 #: corporate/lib/remote_billing_util.py:133
 #: corporate/lib/remote_billing_util.py:169
 msgid "Registration is deactivated"
-msgstr ""
+msgstr "تم إلغاء التسجيل"
 
 #: corporate/lib/remote_billing_util.py:166
 msgid "Invalid remote server."
-msgstr ""
+msgstr "ريموت سيرفر غير صالح"
 
 #: corporate/lib/stripe.py:203
 #, python-brace-format
@@ -179,7 +179,7 @@ msgstr ""
 
 #: corporate/lib/stripe.py:351
 msgid "No payment method on file."
-msgstr ""
+msgstr "لا يوجد طريقة دفع مسجلة"
 
 #: corporate/lib/stripe.py:359
 #, python-brace-format
@@ -206,11 +206,11 @@ msgstr "هناك خطأ ما. الرجاء الإنتظار لبضع دقائق 
 
 #: corporate/lib/stripe.py:1225
 msgid "Please add a credit card before starting your free trial."
-msgstr ""
+msgstr "يرجى إضافة بطاقة ائتمان قبل بدء الفترة التجريبية المجانية"
 
 #: corporate/lib/stripe.py:1246
 msgid "Please add a credit card to schedule upgrade."
-msgstr ""
+msgstr "يرجى إضافة بطاقة ائتمان لجدولة الترقية"
 
 #: corporate/lib/stripe.py:1994
 msgid ""
@@ -225,7 +225,7 @@ msgstr "غير قادر على تحديث الخطة. انتهت الخطة."
 #: corporate/lib/stripe.py:2054
 msgid ""
 "Cannot update licenses in the current billing period for free trial plan."
-msgstr ""
+msgstr "لا يمكن تحديث التراخيص في فترة الفوترة الحالية لخطة التجربة المجانية"
 
 #: corporate/lib/stripe.py:2059 corporate/lib/stripe.py:2087
 msgid ""
@@ -247,7 +247,7 @@ msgstr "لا يمكنك تقليل التراخيص في فترة الفوترة
 msgid ""
 "Cannot change the licenses for next billing cycle for a plan that is being "
 "downgraded."
-msgstr ""
+msgstr "لا يمكن تغيير التراخيص لدورة الفوترة القادمة لخطة تم تخفيضها"
 
 #: corporate/lib/stripe.py:2102
 #, python-brace-format

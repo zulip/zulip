@@ -4,10 +4,10 @@
 # FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
 # 
 # Translators:
-# Transifex Bot <>, 2023
 # Rafael Patronilo <rafael.patronilo@hotmail.com>, 2023
 # Andrei Bernardo Simoni <andrei_simoni@hotmail.com>, 2023
 # André Lopes Pereira <andrelopespereira@gmail.com>, 2023
+# Transifex Bot <>, 2024
 # 
 #, fuzzy
 msgid ""
@@ -16,7 +16,7 @@ msgstr ""
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2023-12-15 21:31+0000\n"
 "PO-Revision-Date: 2023-12-15 21:32+0000\n"
-"Last-Translator: André Lopes Pereira <andrelopespereira@gmail.com>, 2023\n"
+"Last-Translator: Transifex Bot <>, 2024\n"
 "Language-Team: Portuguese (https://app.transifex.com/zulip/teams/53893/pt/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -43,7 +43,7 @@ msgstr "Fluxos privados"
 
 #: analytics/views/stats.py:319
 msgid "Direct messages"
-msgstr ""
+msgstr "Mensagens diretas"
 
 #: analytics/views/stats.py:320
 msgid "Group direct messages"
@@ -587,7 +587,7 @@ msgstr "Faturamento"
 #: templates/zerver/change_email_address_visibility_modal.html:8
 #: templates/zerver/development/email_log.html:36
 msgid "Close modal"
-msgstr ""
+msgstr "Fechar modal"
 
 #: templates/corporate/billing.html:370 templates/corporate/billing.html:454
 #: templates/corporate/billing.html:482 templates/corporate/billing.html:510
@@ -2962,7 +2962,7 @@ msgstr ""
 
 #: templates/zerver/footer.html:25
 msgid "Business"
-msgstr ""
+msgstr "Negócios"
 
 #: templates/zerver/footer.html:26
 msgid "Education"
@@ -3957,7 +3957,7 @@ msgstr ""
 
 #: zerver/actions/message_send.py:1544
 msgid "Direct messages are disabled in this organization."
-msgstr ""
+msgstr "Mensagens diretas estão desabilitadas nesta organização."
 
 #: zerver/actions/message_send.py:1554
 msgid "You do not have permission to access some of the recipients."
@@ -5079,7 +5079,7 @@ msgstr "Por favor, escolha um: 'stream' ou 'stream_id'."
 #: zerver/lib/streams.py:432 zerver/lib/streams.py:500
 #: zerver/views/streams.py:391 zerver/views/user_topics.py:101
 msgid "Invalid stream ID"
-msgstr ""
+msgstr "ID de fluxo inválido"
 
 #: zerver/lib/streams.py:475
 #, python-brace-format
@@ -5569,11 +5569,11 @@ msgstr ""
 
 #: zerver/models.py:1795
 msgid "Admins, moderators, members and guests"
-msgstr ""
+msgstr "Admins, moderadores, membros e visitantes"
 
 #: zerver/models.py:1796
 msgid "Admins, moderators and members"
-msgstr ""
+msgstr "Administradores, moderadores e membros"
 
 #: zerver/models.py:1797
 msgid "Admins and moderators"
