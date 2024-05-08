@@ -194,6 +194,17 @@ If you are using password authentication, you can set a
 `postgresql_replication_password` secret in
 `/etc/zulip/zulip-secrets.conf`.
 
+To make fail-over to the warm-standby faster, without requiring a restart of
+Zulip services, you can configure Zulip with a comma-separated list of remote
+PostgreSQL servers to connect to; it will choose the first which accepts writes
+(i.e. is not a read-only replica). In the event that the primary fails, it will
+repeatedly retry the list, in order, until the replica is promoted and becomes
+writable. To configure this, in `/etc/zulip/settings.py`, set:
+
+```python3
+REMOTE_POSTGRES_HOST = 'primary-database-host,warm-standby-host'
+```
+
 [warm-standby]: https://www.postgresql.org/docs/current/warm-standby.html
 [wal-g]: export-and-import.md#database-only-backup-tools
 
