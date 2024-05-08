@@ -91,6 +91,7 @@ class ArchiveTransaction(models.Model):
     timestamp = models.DateTimeField(default=timezone_now, db_index=True)
     # Marks if the data archived in this transaction has been restored:
     restored = models.BooleanField(default=False, db_index=True)
+    restored_timestamp = models.DateTimeField(null=True, db_index=True)
 
     type = models.PositiveSmallIntegerField(db_index=True)
     # Valid types:
