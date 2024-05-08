@@ -35,14 +35,14 @@ type WidgetValue = Record<string, unknown> & {
         callback: (data: string) => void;
         message: Message;
         extra_data: WidgetExtraData;
-    }) => void;
+    }) => (events: Event[]) => void;
 };
 
 export const widgets = new Map<string, WidgetValue>();
-export const widget_contents = new Map<number, JQuery>();
+export const widget_event_handlers = new Map<number, (events: Event[]) => void>();
 
 export function clear_for_testing(): void {
-    widget_contents.clear();
+    widget_event_handlers.clear();
 }
 
 function set_widget_in_message($row: JQuery, $widget_elem: JQuery): void {
@@ -82,28 +82,28 @@ export function activate(in_opts: WidgetOptions): void {
     // the HTML that will eventually go in this div.
     const $widget_elem = $("<div>").addClass("widget-content");
 
-    widgets.get(widget_type)!.activate({
+    const event_handler = widgets.get(widget_type)!.activate({
         $elem: $widget_elem,
         callback,
         message,
         extra_data,
     });
 
-    widget_contents.set(message.id, $widget_elem);
+    widget_event_handlers.set(message.id, event_handler);
     set_widget_in_message($row, $widget_elem);
 
     // Replay any events that already happened.  (This is common
     // when you narrow to a message after other users have already
     // interacted with it.)
     if (events.length > 0) {
-        $widget_elem.handle_events(events);
+        event_handler(events);
     }
 }
 
 export function handle_event(widget_event: Event & {message_id: number}): void {
-    const $widget_elem = widget_contents.get(widget_event.message_id);
+    const event_handler = widget_event_handlers.get(widget_event.message_id);
 
-    if (!$widget_elem) {
+    if (!event_handler || message_lists.current?.get_row(widget_event.message_id).length === 0) {
         // It is common for submessage events to arrive on
         // messages that we don't yet have in view. We
         // just ignore them completely here.
@@ -112,5 +112,5 @@ export function handle_event(widget_event: Event & {message_id: number}): void {
 
     const events = [widget_event];
 
-    $widget_elem.handle_events(events);
+    event_handler(events);
 }
