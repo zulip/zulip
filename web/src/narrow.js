@@ -466,12 +466,25 @@ export function activate(raw_terms, opts) {
         }
         assert(msg_list !== undefined);
 
+        // Put the narrow terms in the URL fragment/hash.
+        //
+        // opts.change_hash will be false when the URL fragment was
+        // the source of this narrow, and the fragment was not a link to
+        // a specific target message ID that has been moved.
+        //
+        // This needs to be called at the same time as updating the
+        // current message list so that we don't need to think about
+        // bugs related to the URL fragment/hash being desynced from
+        // mesasge_lists.current.
+        if (opts.change_hash) {
+            save_narrow(terms, opts.trigger);
+        }
+
         // Show the new set of messages. It is important to set message_lists.current to
         // the view right as it's being shown, because we rely on message_lists.current
         // being shown for deciding when to condense messages.
         // From here on down, any calls to the narrow_state API will
         // reflect the requested narrow.
-
         message_lists.update_current_message_list(msg_list);
 
         let select_immediately;
@@ -572,14 +585,6 @@ export function activate(raw_terms, opts) {
                 msg_list: message_lists.current,
                 select_opts,
             });
-        }
-
-        // Put the narrow terms in the URL fragment.
-        // Disabled when the URL fragment was the source
-        // of this narrow, but not if the fragment had
-        // a target message ID that has been moved.
-        if (opts.change_hash) {
-            save_narrow(terms, opts.trigger);
         }
 
         handle_post_view_change(msg_list);
