@@ -7,9 +7,6 @@
 #
 # For details, see requirements/README.md .
 #
---no-binary lxml
---no-binary xmlsec
-
 aioapns==3.2 \
     --hash=sha256:40f6b2428816f7bb1a32668f50fe71d0289777a429b60fce44e8a08b90123508 \
     --hash=sha256:99416ed2916fb6302294188a2caf85ec2b8ea3b988f466add73f9dc2c7ca5dc2

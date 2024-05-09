@@ -128,14 +128,12 @@ social-auth-app-django
 social-auth-core[azuread,openidconnect,saml]
 python3-saml
 xmlsec<1.3.14  # https://github.com/xmlsec/python-xmlsec/issues/314
---no-binary=xmlsec
 
 # For encrypting a login token to the desktop app
 cryptography
 
 # Needed for messages' rendered content parsing in push notifications.
 lxml
---no-binary=lxml
 
 # Needed for 2-factor authentication
 django-two-factor-auth[call,phonenumberslite,sms]
