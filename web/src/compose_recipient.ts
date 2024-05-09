@@ -73,7 +73,7 @@ export function update_narrow_to_recipient_visibility(): void {
             !composing_to_current_topic_narrow() &&
             compose_state.has_full_recipient()
         ) {
-            $(".narrow_to_compose_recipients").toggleClass("invisible", false);
+            $(".conversation-arrow").toggleClass("narrow_to_compose_recipients", true);
             return;
         }
     } else if (message_type === "private") {
@@ -83,11 +83,11 @@ export function update_narrow_to_recipient_visibility(): void {
             !composing_to_current_private_message_narrow() &&
             compose_state.has_full_recipient()
         ) {
-            $(".narrow_to_compose_recipients").toggleClass("invisible", false);
+            $(".conversation-arrow").toggleClass("narrow_to_compose_recipients", true);
             return;
         }
     }
-    $(".narrow_to_compose_recipients").toggleClass("invisible", true);
+    $(".conversation-arrow").toggleClass("narrow_to_compose_recipients", false);
 }
 
 function update_fade(): void {
