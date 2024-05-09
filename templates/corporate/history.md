@@ -120,7 +120,20 @@ platforms. [Data imports](/help/import-from-slack) from Slack into
 Zulip Cloud increased an incredible 40x in the month after Slack’s
 [announcement](https://slack.com/blog/news/pricing-and-plan-updates).
 
+In 2023, Zulip earned first place in [GetApp’s Collaboration Software Category
+Leaders
+report](https://www.getapp.com/collaboration-software/web-collaboration/category-leaders/).
+With over 100 reviews on Capterra, Zulip's 4.8 star rating beat out reviews for
+other team chat apps, earning Capterra's [Best Value
+badge](https://www.capterra.com/p/197945/Zulip/).
+
 ## Press highlights
+
+- March 2023: A long-form [video
+  interview](https://www.youtube.com/watch?v=cbj59mVwErg) with Zulip’s founder
+  and project leader about Zulip’s history, our goals for the product and how we
+  approach its design, Zulip’s engineering philosophy, and more produced by
+  [FUTO](https://futo.org/).
 
 - March 2022:
   [Deep-dive](https://opensource.com/article/22/3/open-source-chat-zulip) into
@@ -173,6 +186,17 @@ Zulip Cloud increased an incredible 40x in the month after Slack’s
   [Podcast.__init__](https://www.pythonpodcast.com/about/).
 
 ## Major server releases and product announcements
+
+- December 2023: [Zulip Server 8.0
+  released](https://blog.zulip.com/2023/12/15/zulip-8-0-released/), with over
+  4700 new commits. 116 people contributed commits to Zulip since the 7.0
+  release. Zulip announces new [plans](/plans#self-hosted) for self-hosted
+  customers.
+
+- May 2023: [Zulip Server 7.0
+  released](https://blog.zulip.com/2023/05/31/zulip-7-0-released/), with over
+  3800 new commits. 107 people contributed commits to Zulip since the 6.0
+  release.
 
 - November 2022: [Zulip Server 6.0
   released](https://blog.zulip.com/2022/11/17/zulip-6-0-released/), with over
