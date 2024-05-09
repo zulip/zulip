@@ -5,6 +5,8 @@ import render_right_sidebar from "../templates/right_sidebar.hbs";
 
 import {buddy_list} from "./buddy_list";
 import {media_breakpoints_num} from "./css_variables";
+import * as message_lists from "./message_lists";
+import * as message_viewport from "./message_viewport";
 import {page_params} from "./page_params";
 import * as rendered_markdown from "./rendered_markdown";
 import * as resize from "./resize";
@@ -116,6 +118,14 @@ export function initialize(): void {
 
         if (window.innerWidth >= media_breakpoints_num.md) {
             $("body").toggleClass("hide-left-sidebar");
+            if (
+                message_lists.current !== undefined &&
+                window.innerWidth <= media_breakpoints_num.xl
+            ) {
+                // We expand the middle column width between md and xl breakpoints when the
+                // left sidebar is hidden. This can cause the pointer to move out of view.
+                message_viewport.scroll_to_selected();
+            }
             return;
         }
 

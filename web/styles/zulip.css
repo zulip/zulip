@@ -2026,6 +2026,13 @@ body:not(.hide-left-sidebar) {
             margin-right: 7px;
         }
     }
+
+    .hide-left-sidebar {
+        #compose-content,
+        .app-main .column-middle {
+            margin-left: 7px;
+        }
+    }
 }
 
 @media (width < $md_min) {
