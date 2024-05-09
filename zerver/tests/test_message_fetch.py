@@ -3166,7 +3166,7 @@ class GetOldMessagesTest(ZulipTestCase):
 
         narrow = [dict(operator="is", operand="resolved")]
         result = self.get_and_check_messages(
-            dict(narrow=orjson.dumps(narrow).decode(), anchor=anchor, num_before=1, num_after=1)
+            dict(narrow=orjson.dumps(narrow).decode(), anchor=anchor, num_before=0, num_after=0)
         )
         self.assert_length(result["messages"], 1)
         self.assertEqual(result["messages"][0]["id"], anchor)
