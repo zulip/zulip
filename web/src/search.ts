@@ -172,8 +172,8 @@ export function initialize({on_narrow_search}: {on_narrow_search: OnNarrowSearch
     // when an option is selected and we're closing search).
     // Instead we explicitly initiate search on click and on specific keyboard
     // shortcuts.
-    $search_query_box.on("click", (e: JQuery.ClickEvent): void => {
-        if ($(e.target).parents(".navbar-search.expanded").length === 0) {
+    $search_query_box.on("click", (): void => {
+        if ($("#searchbox .navbar-search.expanded").length === 0) {
             initiate_search();
         }
     });
