@@ -58,7 +58,9 @@ export function process_new_message(message) {
         case "private":
             message.is_private = true;
             message.reply_to = util.normalize_recipients(message_store.get_pm_emails(message));
-            message.display_reply_to = message_store.get_pm_full_names(message);
+            message.display_reply_to = message_store.get_pm_full_names(
+                people.pm_with_user_ids(message),
+            );
             message.pm_with_url = people.pm_with_url(message);
             message.to_user_ids = people.pm_reply_user_string(message);
 

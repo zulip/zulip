@@ -243,7 +243,9 @@ function populate_group_from_message_container(group, message_container) {
     } else if (group.is_private) {
         group.pm_with_url = message_container.pm_with_url;
         group.recipient_users = get_users_for_recipient_row(message_container.msg);
-        group.display_reply_to_for_tooltip = message_store.get_pm_full_names(message_container.msg);
+        group.display_reply_to_for_tooltip = message_store.get_pm_full_names(
+            people.pm_with_user_ids(message_container.msg),
+        );
     }
     group.display_recipient = message_container.msg.display_recipient;
     group.topic_links = message_container.msg.topic_links;

@@ -184,8 +184,8 @@ export function get_pm_emails(message: Message): string {
     return emails.join(", ");
 }
 
-export function get_pm_full_names(message: Message): string {
-    const user_ids = people.pm_with_user_ids(message) ?? [];
+export function get_pm_full_names(user_ids: number[]): string {
+    user_ids = people.sorted_other_user_ids(user_ids);
     const names = people.get_display_full_names(user_ids).sort();
 
     return names.join(", ");
