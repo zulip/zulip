@@ -96,6 +96,12 @@ let dropdown_filters = new Set();
 
 const recent_conversation_key_prefix = "recent_conversation:";
 
+let is_initial_message_fetch_pending = true;
+
+export function set_initial_message_fetch_status(value) {
+    is_initial_message_fetch_pending = value;
+}
+
 export function clear_for_tests() {
     filters.clear();
     dropdown_filters.clear();
@@ -340,6 +346,12 @@ export function revive_current_focus() {
     // After re-render, the current_focus_elem is no longer linked
     // to the focused element, this function attempts to revive the
     // link and focus to the element prior to the rerender.
+
+    // We want to set focus on table by default, but we have to wait for
+    // initial fetch for rows to appear otherwise focus is set to search input.
+    if (is_initial_message_fetch_pending) {
+        return false;
+    }
 
     // We try to avoid setting focus when user
     // is not focused on Recent Conversations.
