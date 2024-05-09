@@ -23,13 +23,6 @@ export type PollWidgetExtraData = {
     options?: string[];
 };
 
-declare global {
-    // eslint-disable-next-line @typescript-eslint/consistent-type-definitions
-    interface JQuery {
-        handle_events: (events: Event[]) => void;
-    }
-}
-
 export function activate({
     $elem,
     callback,
