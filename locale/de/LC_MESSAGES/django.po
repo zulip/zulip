@@ -1920,9 +1920,9 @@ msgstr "Hallo,"
 #, python-format
 msgid ""
 "We received a request to add the email address %(new_email)s to your Zulip "
-"demo organization account on %(realm_uri)s. To confirm this update and set a"
+"demo organization account on %(realm_url)s. To confirm this update and set a"
 " password for this account, please click below:"
-msgstr "Wir haben eine Anfrage erhalten, die E-Mail-Adresse %(new_email)s zu deinem Zulip-Demo-Organisationskonto auf %(realm_uri)s hinzuzufügen. Um diese Änderung zu bestätigen und ein Passwort für dieses Konto festzulegen, klicke bitte unten:"
+msgstr "Wir haben eine Anfrage erhalten, die E-Mail-Adresse %(new_email)s zu deinem Zulip-Demo-Organisationskonto auf %(realm_url)s hinzuzufügen. Um diese Änderung zu bestätigen und ein Passwort für dieses Konto festzulegen, klicke bitte unten:"
 
 #: templates/zerver/emails/confirm_demo_organization_email.html:11
 msgid "Confirm and set password"
@@ -1953,9 +1953,9 @@ msgstr "Falls du diese Änderung nicht vorgenommen hast, kontaktiere uns bitte s
 #, python-format
 msgid ""
 "We received a request to change the email address for the Zulip account on "
-"%(realm_uri)s from %(old_email)s to %(new_email)s. To confirm this change, "
+"%(realm_url)s from %(old_email)s to %(new_email)s. To confirm this change, "
 "please click below:"
-msgstr "Wir haben eine Anfrage erhalten, die E-Mail-Adresse für den Zulip-Account auf %(realm_uri)s von %(old_email)s zu %(new_email)s zu ändern. Falls du diese Änderung bestätigen möchtest, klicke bitte hier unten: "
+msgstr "Wir haben eine Anfrage erhalten, die E-Mail-Adresse für den Zulip-Account auf %(realm_url)s von %(old_email)s zu %(new_email)s zu ändern. Falls du diese Änderung bestätigen möchtest, klicke bitte hier unten: "
 
 #: templates/zerver/emails/confirm_new_email.html:11
 msgid "Confirm email change"
@@ -2775,8 +2775,8 @@ msgstr ""
 #, python-format
 msgid ""
 "Somebody (possibly you) requested a new password for the Zulip account "
-"%(email)s on %(realm_uri)s."
-msgstr "Jemand (möglicherweise du selbst) hat ein neues Passwort für dein Zulip-Konto %(email)s bei %(realm_uri)s angefordert."
+"%(email)s on %(realm_url)s."
+msgstr "Jemand (möglicherweise du selbst) hat ein neues Passwort für dein Zulip-Konto %(email)s bei %(realm_url)s angefordert."
 
 #: templates/zerver/emails/password_reset.html:13
 msgid "Click the button below to reset your password."

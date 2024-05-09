@@ -42,7 +42,7 @@ def common_context(user: UserProfile) -> Dict[str, Any]:
     have a request.
     """
     return {
-        "realm_uri": user.realm.url,
+        "realm_url": user.realm.url,
         "realm_name": user.realm.name,
         "root_domain_url": settings.ROOT_DOMAIN_URI,
         "external_url_scheme": settings.EXTERNAL_URI_SCHEME,

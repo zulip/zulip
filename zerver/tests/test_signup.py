@@ -1151,7 +1151,7 @@ class EmailUnsubscribeTests(ZulipTestCase):
         # Enqueue a fake digest email.
         context = {
             "name": "",
-            "realm_uri": "",
+            "realm_url": "",
             "unread_pms": [],
             "hot_conversations": [],
             "new_users": [],
