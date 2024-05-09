@@ -245,10 +245,8 @@ To restore from a manual backup, the process is basically the reverse of the abo
 This restoration process can also be used to migrate a Zulip
 installation from one server to another.
 
-We recommend running a disaster recovery test after setting up your
-backups to confirm that your backups are working. You may also want to
-monitor that they are up to date using the Nagios plugin at:
-`puppet/zulip/files/nagios_plugins/zulip_postgresql_backups/check_postgresql_backup`.
+We recommend running a disaster recovery test after setting up your backups to
+confirm that your backups are working.
 
 ## Data export
 
@@ -528,9 +526,9 @@ it may be minutes before the backup is saved into S3 -- see
 If you need always-current backup availability, Zulip also has
 [built-in database replication support](postgresql.md#postgresql-warm-standby).
 
-You can (and should) monitor that backups are running regularly via
-the Nagios plugin installed into
-`/usr/lib/nagios/plugins/zulip_postgresql_backups/check_postgresql_backup`.
+You can (and should) monitor that backups are running regularly, for instance
+via the Prometheus exporter found in
+`puppet/zulip/files/postgresql/wal-g-exporter`
 
 ### Streaming backups to S3
 
