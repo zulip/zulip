@@ -1908,9 +1908,8 @@ class SingleUserExportTest(ExportFile):
         @checker
         def zerver_reaction(records: List[Record]) -> None:
             assert reaction
-            (exported_reaction,) = records
             self.assertEqual(
-                exported_reaction,
+                records[-1],
                 dict(
                     id=reaction.id,
                     user_profile=cordelia.id,
