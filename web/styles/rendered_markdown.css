@@ -884,7 +884,7 @@
         margin-top: 0;
     }
 
-    & > :last-child {
+    & > :last-child:not(.message_inline_image) {
         margin-bottom: 0;
     }
 }
