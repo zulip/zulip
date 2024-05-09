@@ -226,7 +226,7 @@ test("errors", ({disallow_rewire}) => {
 
     assert.throws(
         () => {
-            message_store.get_pm_full_names(message);
+            message_store.get_pm_full_names(people.pm_with_user_ids(message));
         },
         {
             name: "Error",

@@ -513,7 +513,7 @@ export function pm_reply_to(message: Message): string | undefined {
     return reply_to;
 }
 
-function sorted_other_user_ids(user_ids: number[]): number[] {
+export function sorted_other_user_ids(user_ids: number[]): number[] {
     // This excludes your own user id unless you're the only user
     // (i.e. you sent a message to yourself).
 

@@ -38,11 +38,7 @@ export function get_recipient_label(message) {
                 return format_stream_recipient_label(stream_id, topic);
             } else if (narrow_state.pm_ids_string()) {
                 const user_ids = people.user_ids_string_to_ids_array(narrow_state.pm_ids_string());
-                const user_ids_dicts = user_ids.map((user_id) => ({id: user_id}));
-                return message_store.get_pm_full_names({
-                    type: "private",
-                    display_recipient: user_ids_dicts,
-                });
+                return message_store.get_pm_full_names(user_ids);
             }
         } else {
             message = message_lists.current.selected_message();
