@@ -55,13 +55,10 @@
                             <button type="button" class="close fa fa-times" id='compose_close' data-tooltip-template-id="compose_close_tooltip_template"></button>
                         </div>
                         <div id="compose-recipient" class="order-1">
-                            <div class="topic-marker-container order-1">
-                                <a role="button" class="narrow_to_compose_recipients zulip-icon zulip-icon-arrow-left-circle" data-tooltip-template-id="narrow_to_compose_recipients_tooltip"></a>
-                            </div>
                             {{> dropdown_widget_wrapper
                               widget_name="compose_select_recipient"}}
                             <div class="topic-marker-container">
-                                <i class="zulip-icon zulip-icon-chevron-right" aria-hidden="true"></i>
+                                <a role="button" class="conversation-arrow zulip-icon zulip-icon-chevron-right"></a>
                             </div>
                             <div id="compose_recipient_box">
                                 <input type="text" name="stream_message_recipient_topic" id="stream_message_recipient_topic" maxlength="{{ max_topic_length }}" value="" placeholder="{{t 'Topic' }}" autocomplete="off" tabindex="0" aria-label="{{t 'Topic' }}" />

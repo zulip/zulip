@@ -295,6 +295,12 @@
     --color-compose-chevron-arrow: hsl(0deg 0% 58%);
     --color-limit-indicator: hsl(38deg 100% 36%);
     --color-limit-indicator-over-limit: hsl(3deg 80% 40%);
+    --color-narrow-to-compose-recipients-background: hsl(227deg 100% 70% / 25%);
+    --color-narrow-to-compose-recipients-background-hover: hsl(
+        227deg 100% 70% / 35%
+    );
+    --color-narrow-to-compose-recipients: hsl(227deg 76% 64%);
+    --color-narrow-to-compose-recipients-hover: hsl(227deg 78% 59%);
 
     /* Text colors */
     --color-text-default: hsl(0deg 0% 20%);
@@ -615,6 +621,12 @@
     --color-background-popover: hsl(212deg 32% 14%);
     --color-limit-indicator: hsl(38deg 100% 70%);
     --color-limit-indicator-over-limit: hsl(3deg 80% 60%);
+    --color-narrow-to-compose-recipients-background: hsl(227deg 80% 60% / 25%);
+    --color-narrow-to-compose-recipients-background-hover: hsl(
+        227deg 80% 60% / 35%
+    );
+    --color-narrow-to-compose-recipients: hsl(224deg 28% 81%);
+    --color-narrow-to-compose-recipients-hover: hsl(221deg 100% 95%);
 
     /* Text colors */
     --color-text-default: hsl(0deg 0% 100% / 75%);

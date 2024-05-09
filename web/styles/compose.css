@@ -174,26 +174,31 @@
             flex: 0 0 auto;
             height: var(--compose-recipient-box-min-height);
 
-            .zulip-icon-chevron-right {
+            .conversation-arrow {
                 font-size: 16px;
+                line-height: 16px;
+                border-radius: 50%;
+                padding: 2px;
+                margin: 0 3px;
                 color: var(--color-compose-chevron-arrow);
-            }
-        }
+                text-decoration: none;
+                cursor: default;
+                transition: all 0.2s ease-in-out;
 
-        & a.narrow_to_compose_recipients {
-            background: transparent;
-            font-size: 18px;
-            padding: 0 1px;
-            align-self: center;
-            line-height: 20px;
-            opacity: 0.7;
-            border: 0;
-            margin-left: 3px;
-            text-decoration: none;
-            color: inherit;
+                &.narrow_to_compose_recipients {
+                    background: var(
+                        --color-narrow-to-compose-recipients-background
+                    );
+                    color: var(--color-narrow-to-compose-recipients);
+                    cursor: pointer;
 
-            &:hover {
-                opacity: 1;
+                    &:hover {
+                        background: var(
+                            --color-narrow-to-compose-recipients-background-hover
+                        );
+                        color: var(--color-narrow-to-compose-recipients-hover);
+                    }
+                }
             }
         }
     }
@@ -349,18 +354,17 @@
     align-items: center;
     height: var(--compose-recipient-box-min-height);
     /* Align to compose controls; that's 112px width,
-       minus 23px for the narrow indicator, but then
-       add back 6px of grid gap for 95px here.
+       plus 6px of grid gap for 118px here.
 
        TODO: Make variables here; expanded use of grid
        on the compose box will make these unnecessary,
        eventually. */
-    width: calc(112px - 23px + 6px);
+    width: calc(112px + 6px);
     justify-content: flex-end;
 
     @media ((width >= $sm_min) and (width < $mc_min)) {
         /* Align to compose controls at narrower widths */
-        width: calc(62px - 23px + 6px);
+        width: calc(62px + 6px);
     }
 
     @media (width < $sm_min) {
