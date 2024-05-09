@@ -703,13 +703,6 @@ h4.user_group_setting_subsection_title {
 
 #groups_overlay,
 #subscription_overlay {
-    #stream-creation {
-        .settings-sticky-footer {
-            display: flex;
-            justify-content: space-between;
-        }
-    }
-
     #user-group-creation,
     #stream-creation {
         overflow: auto;
@@ -738,6 +731,8 @@ h4.user_group_setting_subsection_title {
         }
 
         .settings-sticky-footer {
+            display: flex;
+            justify-content: space-between;
             position: absolute;
             bottom: 0;
             width: calc(100% - 27px);
