@@ -21,13 +21,13 @@
                         {{ _("The email address you are trying to sign up with is not valid.") }}
                     {% endif %}
                     {% if closed_domain %}
-                        {% trans %}The organization you are trying to join, <a href="{{ realm_uri }}">{{ realm_name }}</a>, does not allow signups using emails with your email domain.{% endtrans %}
+                        {% trans %}The organization you are trying to join, <a href="{{ realm_url }}">{{ realm_name }}</a>, does not allow signups using emails with your email domain.{% endtrans %}
                     {% endif %}
                     {% if disposable_emails_not_allowed %}
-                        {% trans %}The organization you are trying to join, <a href="{{ realm_uri }}">{{ realm_name }}</a>, does not allow signups using disposable email addresses.{% endtrans %}
+                        {% trans %}The organization you are trying to join, <a href="{{ realm_url }}">{{ realm_name }}</a>, does not allow signups using disposable email addresses.{% endtrans %}
                     {% endif %}
                     {% if email_contains_plus %}
-                        {% trans %}The organization you are trying to join, <a href="{{ realm_uri }}">{{ realm_name }}</a>, does not allow signups using emails that contain "+".{% endtrans %}
+                        {% trans %}The organization you are trying to join, <a href="{{ realm_url }}">{{ realm_name }}</a>, does not allow signups using emails that contain "+".{% endtrans %}
                     {% endif %}
                     {% if invalid_email %}
                     {{ _("Please sign up using a valid email address.") }}
