@@ -542,6 +542,9 @@ class RealmTest(ZulipTestCase):
         cordelia = self.example_user("cordelia")
         new_stream_announcements_stream = realm.get_new_stream_announcements_stream()
         assert new_stream_announcements_stream is not None
+        new_stream_announcements_stream_messages_count = Message.objects.filter(
+            realm_id=realm.id, recipient=new_stream_announcements_stream.recipient
+        ).count()
 
         create_stream_if_needed(realm, "Atlantis")
         self.subscribe(cordelia, "Atlantis")
@@ -558,7 +561,7 @@ class RealmTest(ZulipTestCase):
             get_stream("Atlantis", realm)
 
         stats = merge_streams(realm, denmark, new_stream_announcements_stream)
-        self.assertEqual(stats, (2, 1, 10))
+        self.assertEqual(stats, (2, new_stream_announcements_stream_messages_count, 10))
         self.assertIsNone(realm.get_new_stream_announcements_stream())
 
     def test_change_signup_announcements_stream(self) -> None:
