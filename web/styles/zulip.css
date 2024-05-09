@@ -1952,6 +1952,13 @@ select.invite-as {
 
 .hide-right-sidebar {
     @extend %hide-right-sidebar;
+
+    &.fluid_layout_width {
+        #compose-content,
+        .app-main .column-middle {
+            margin-right: 7px;
+        }
+    }
 }
 
 .hide-right-sidebar-by-visibility .app-main .column-right {
@@ -1983,6 +1990,13 @@ select.invite-as {
 
 .hide-left-sidebar {
     @extend %hide-left-sidebar;
+
+    &.fluid_layout_width {
+        #compose-content,
+        .app-main .column-middle {
+            margin-left: 7px;
+        }
+    }
 }
 
 body:not(.hide-left-sidebar) {
