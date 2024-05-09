@@ -8,6 +8,14 @@ import * as narrow_state from "./narrow_state";
 import * as people from "./people";
 import * as stream_data from "./stream_data";
 
+function format_stream_recipient_label(stream_id, topic) {
+    const stream = stream_data.get_sub_by_id(stream_id);
+    if (stream) {
+        return "#" + stream.name + " > " + topic;
+    }
+    return "";
+}
+
 export function get_recipient_label(message) {
     // TODO: This code path is bit of a type-checking disaster; we mix
     // actual message objects with fake objects containing just a
@@ -25,25 +33,16 @@ export function get_recipient_label(message) {
             // we label the button as replying to the thread.
             if (narrow_state.narrowed_to_topic()) {
                 const stream = narrow_state.stream_sub();
-                const stream_id = stream?.stream_id;
-                message = {
-                    stream_id,
-                    topic: narrow_state.topic(),
-                };
+                const stream_id = stream.stream_id;
+                const topic = narrow_state.topic();
+                return format_stream_recipient_label(stream_id, topic);
             } else if (narrow_state.pm_ids_string()) {
-                // TODO: This is a total hack.  Ideally, we'd rework
-                // this to not duplicate the actual compose_actions.ts
-                // logic for what happens when you click the button,
-                // and not call into random modules with hacky fake
-                // "message" objects.
                 const user_ids = people.user_ids_string_to_ids_array(narrow_state.pm_ids_string());
                 const user_ids_dicts = user_ids.map((user_id) => ({id: user_id}));
-                message = {
-                    display_reply_to: message_store.get_pm_full_names({
-                        type: "private",
-                        display_recipient: user_ids_dicts,
-                    }),
-                };
+                return message_store.get_pm_full_names({
+                    type: "private",
+                    display_recipient: user_ids_dicts,
+                });
             }
         } else {
             message = message_lists.current.selected_message();
@@ -52,10 +51,7 @@ export function get_recipient_label(message) {
 
     if (message) {
         if (message.stream_id && message.topic) {
-            const stream = stream_data.get_sub_by_id(message.stream_id);
-            if (stream) {
-                return "#" + stream.name + " > " + message.topic;
-            }
+            return format_stream_recipient_label(message.stream_id, message.topic);
         } else if (message.display_reply_to) {
             return message.display_reply_to;
         }
