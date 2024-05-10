@@ -35,7 +35,6 @@
         );
         border: 1px solid
             var(--color-compose-collapsed-reply-button-area-border);
-        transition: all 0.2s ease;
 
         &:hover,
         &:focus {
@@ -77,8 +76,6 @@
             margin: 1px;
             flex-shrink: 0;
 
-            transition: background-color 0.2s ease;
-
             color: var(--color-compose-embedded-button-text-color);
 
             &:hover {
@@ -111,7 +108,6 @@
 /* Main geometry for this element is in zulip.css */
 #compose-content {
     background-color: hsl(232deg 30% 92%);
-    transition: background-color 200ms linear;
     padding: 4px 4px 8px;
     border: 1px solid hsl(0deg 0% 0% / 10%);
     border-radius: 9px 9px 0 0;

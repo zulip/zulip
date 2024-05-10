@@ -115,7 +115,6 @@ input::placeholder {
         box-shadow: none;
 
         cursor: pointer;
-        transition: all 0.2s ease;
 
         /* -- button style variations -- */
         &.no-style {
