@@ -10151,6 +10151,96 @@ paths:
                           }
                         description: |
                           A typical failed JSON response for when the token does not exist:
+  /users/me/android_gcm_reg_id:
+    post:
+      operationId: add-fcm-token
+      summary: Add an FCM registration token
+      tags: ["users"]
+      description: |
+        This endpoint adds an FCM registration token for push notifications.
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                token:
+                  description: |
+                    The token provided by the device.
+                  type: string
+                  example: android-token
+              required:
+                - token
+      responses:
+        "200":
+          $ref: "#/components/responses/SimpleSuccess"
+        "400":
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/CodedError"
+                  - description: |
+                      A typical failed JSON response for when the token's length is invalid
+                      or is empty:
+                    example:
+                      {
+                        "result": "error",
+                        "msg": "Empty or invalid length token",
+                        "code": "BAD_REQUEST",
+                      }
+    delete:
+      operationId: remove-fcm-token
+      summary: Remove an FCM registration token
+      tags: ["users"]
+      description: |
+        This endpoint removes an FCM registration token for push notifications.
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                token:
+                  description: |
+                    The token provided by the device.
+                  type: string
+                  example: android-token
+              required:
+                - token
+      responses:
+        "200":
+          $ref: "#/components/responses/SimpleSuccess"
+        "400":
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - allOf:
+                      - $ref: "#/components/schemas/CodedError"
+                      - description: |
+                          A typical failed JSON response for when the token's length is invalid
+                          or is empty:
+                        example:
+                          {
+                            "result": "error",
+                            "msg": "Empty or invalid length token",
+                            "code": "BAD_REQUEST",
+                          }
+                  - allOf:
+                      - $ref: "#/components/schemas/CodedError"
+                      - example:
+                          {
+                            "result": "error",
+                            "msg": "Token does not exist",
+                            "code": "BAD_REQUEST",
+                          }
+                        description: |
+                          A typical failed JSON response for when the token does not exist:
   /users/{user_id}/subscriptions/{stream_id}:
     get:
       operationId: get-subscription-status

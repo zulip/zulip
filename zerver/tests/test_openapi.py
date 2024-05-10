@@ -248,8 +248,6 @@ class OpenAPIArgumentsTest(ZulipTestCase):
         #### Mobile-app only endpoints; important for mobile developers.
         # Mobile interface for development environment login
         "/dev_list_users",
-        # Registration for iOS/Android mobile push notifications.
-        "/users/me/android_gcm_reg_id",
         #### These personal settings endpoints have modest value to document:
         "/users/me/avatar",
         "/users/me/api_key/regenerate",
