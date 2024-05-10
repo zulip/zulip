@@ -1304,7 +1304,7 @@ class RealmCreationTest(ZulipTestCase):
         # Check welcome messages
         for stream_name, text, message_count in [
             (str(Realm.DEFAULT_NOTIFICATION_STREAM_NAME), "learn about new features", 3),
-            (str(Realm.ZULIP_SANDBOX_CHANNEL_NAME), "new conversation thread", 5),
+            (str(Realm.ZULIP_SANDBOX_CHANNEL_NAME), "Use this topic to try out", 5),
         ]:
             stream = get_stream(stream_name, realm)
             recipient = stream.recipient
