@@ -16,23 +16,33 @@
         <div class="inline-block">
 
             <div class="get-started">
-                <h1>{{ _("Deactivated organization") }}</h1>
+                {% if deactivated_redirect %}
+                    <h1>{{ _("Organization moved") }}</h1>
+                {% else %}
+                    <h1>{{ _("Deactivated organization") }}</h1>
+                {% endif %}
             </div>
 
             <div class="white-box deactivated-realm-container">
                 <p>
-                    {% trans %}
-                    The organization you are trying to join, {{ deactivated_domain_name }}, has been deactivated.
-                    {% endtrans %}
                     {% if deactivated_redirect %}
                         {% trans %}
-                        It has moved to <a href="{{ deactivated_redirect }}">{{ deactivated_redirect }}</a>.
+                        This organization has moved to <a href="{{ deactivated_redirect }}">{{ deactivated_redirect }}</a>.
                         {% endtrans %}
+                    {% else %}
+                        {% trans %}
+                        This organization has been deactivated.
+                        {% endtrans %}
+                        {% if is_self_hosting_management_page %}
+                            {% trans %}
+                            If you are an owner of this organization, you can <a href="mailto:{{ support_email }}">contact this Zulip server's administrators</a> to reactivate it.
+                            {% endtrans %}
+                        {% else %}
+                            {% trans %}
+                            If you are an owner of this organization, you can <a href="mailto:{{ support_email }}">contact Zulip support</a> to reactivate it.
+                            {% endtrans %}
+                        {% endif %}
                     {% endif %}
-                    {% trans %}
-                    Please contact <a href="mailto:{{ support_email }}">{{ support_email }}</a> to reactivate
-                    this group.
-                    {% endtrans %}
                 </p>
             </div>
 

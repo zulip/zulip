@@ -516,7 +516,7 @@ class PlansPageTest(ZulipTestCase):
         non_existent_domain = "moo"
         result = self.client_get("/plans/", subdomain=non_existent_domain)
         self.assertEqual(result.status_code, 404)
-        self.assert_in_response("does not exist", result)
+        self.assert_in_response("There is no Zulip organization at", result)
 
         realm = get_realm("zulip")
         realm.plan_type = Realm.PLAN_TYPE_STANDARD_FREE

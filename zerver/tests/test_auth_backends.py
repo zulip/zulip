@@ -1220,7 +1220,7 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase, ABC):
     def test_user_cannot_log_into_nonexisting_realm(self) -> None:
         account_data_dict = self.get_account_data_dict(email=self.email, name=self.name)
         result = self.social_auth_test(account_data_dict, subdomain="nonexistent")
-        self.assert_in_response("There is no Zulip organization hosted at this subdomain.", result)
+        self.assert_in_response("There is no Zulip organization at", result)
         self.assertEqual(result.status_code, 404)
 
     def test_user_cannot_log_into_wrong_subdomain(self) -> None:
