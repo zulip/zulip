@@ -59,6 +59,7 @@ const activity_ui = mock_esm("../src/activity_ui");
 const message_live_update = mock_esm("../src/message_live_update");
 const pm_list = mock_esm("../src/pm_list");
 const settings_users = mock_esm("../src/settings_users");
+const user_profile = mock_esm("../src/user_profile");
 
 // Use real versions of these modules.
 const people = zrequire("people");
@@ -137,6 +138,7 @@ run_test("update user with event", ({override}) => {
     override(pm_list, "update_private_messages", noop);
     override(settings_users, "update_user_data", noop);
     override(settings_users, "update_bot_data", noop);
+    override(user_profile, "update_profile_modal_ui", noop);
 
     // Dispatch the realm_user/update event, which will update
     // data structures and have other side effects that are

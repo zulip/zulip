@@ -8,6 +8,8 @@ import render_admin_human_form from "../templates/settings/admin_human_form.hbs"
 import render_edit_bot_form from "../templates/settings/edit_bot_form.hbs";
 import render_settings_edit_embedded_bot_service from "../templates/settings/edit_embedded_bot_service.hbs";
 import render_settings_edit_outgoing_webhook_service from "../templates/settings/edit_outgoing_webhook_service.hbs";
+import render_user_custom_profile_fields from "../templates/user_custom_profile_fields.hbs";
+import render_user_full_name from "../templates/user_full_name.hbs";
 import render_user_group_list_item from "../templates/user_group_list_item.hbs";
 import render_user_profile_modal from "../templates/user_profile_modal.hbs";
 import render_user_stream_list_item from "../templates/user_stream_list_item.hbs";
@@ -93,6 +95,37 @@ export function update_user_profile_streams_list_for_users(user_ids) {
         const user_streams = stream_data.get_streams_for_user(user_id).subscribed;
         user_streams.sort(compare_by_name);
         user_streams_list_widget.replace_list_data(user_streams);
+    }
+}
+
+export function update_profile_modal_ui(user, new_data) {
+    if (!(modals.any_active() && modals.active_modal() === "#user-profile-modal")) {
+        return;
+    }
+    const current_user_id = Number.parseInt(original_values.user_id, 10);
+    if (current_user_id !== user.user_id) {
+        return;
+    }
+    if (new_data.bot_owner_id !== undefined) {
+        const $bot_owner_field = $(".bot_owner_user_field");
+        $bot_owner_field.attr("data-field-id", new_data.bot_owner_id);
+    }
+    if (new_data.avatar_url !== undefined) {
+        $("#avatar").css("background-image", `url(${people.medium_avatar_url_for_person(user)})`);
+    }
+    if (new_data.delivery_email !== undefined) {
+        $("#email").find(".value").text(new_data.delivery_email);
+    }
+    if (new_data.role !== undefined && !user.is_bot) {
+        const user_type = settings_config.user_role_map.get(new_data.role);
+        $("#user-type").find(".value").text(user_type);
+    }
+    if (new_data.full_name !== undefined || new_data.role !== undefined) {
+        const user_type = {
+            name: user.full_name,
+            should_add_guest_user_indicator: people.should_add_guest_user_indicator(user.user_id),
+        };
+        $("#name .user-profile-name").html(render_user_full_name(user_type));
     }
 }
 
@@ -322,6 +355,30 @@ export function get_custom_profile_field_data(user, field, field_types) {
             profile_field.value = field_value.value;
     }
     return profile_field;
+}
+
+export function update_user_custom_profile_fields(user) {
+    if (!(modals.any_active() && modals.active_modal() === "#user-profile-modal")) {
+        return;
+    }
+    const current_user_id = Number.parseInt(original_values.user_id, 10);
+    if (current_user_id !== user.user_id) {
+        return;
+    }
+    const $custom_profile_field = $("#content");
+    const field_types = realm.custom_profile_field_types;
+
+    const profile_fields = realm.custom_profile_fields
+        .map((f) => get_custom_profile_field_data(user, f, field_types))
+        .filter((f) => f.name !== undefined);
+
+    const profile_data = {profile_fields};
+    $custom_profile_field.html(render_user_custom_profile_fields(profile_data));
+    custom_profile_fields_ui.initialize_custom_user_type_fields(
+        "#user-profile-modal #content",
+        user.user_id,
+        false,
+    );
 }
 
 export function hide_user_profile() {
