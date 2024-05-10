@@ -2930,11 +2930,8 @@ class NormalActionsTest(BaseAction):
         check_realm_deactivated("events[0]", events[0])
 
     def test_do_mark_onboarding_step_as_read(self) -> None:
-        self.user_profile.tutorial_status = UserProfile.TUTORIAL_WAITING
-        self.user_profile.save(update_fields=["tutorial_status"])
-
         with self.verify_action() as events:
-            do_mark_onboarding_step_as_read(self.user_profile, "intro_streams")
+            do_mark_onboarding_step_as_read(self.user_profile, "intro_inbox_view_modal")
         check_onboarding_steps("events[0]", events[0])
 
     def test_rename_stream(self) -> None:

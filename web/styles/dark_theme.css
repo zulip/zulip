@@ -923,14 +923,6 @@
         }
     }
 
-    /* Popover: */
-    .hotspot.overlay .hotspot-popover {
-        border-color: hsl(0deg 0% 0% / 20%) !important;
-        /* Based on the `.hotspot-popover` shadow in `hotspots.css`, but with a new
-    color. */
-        box-shadow: 0 5px 10px hsl(0deg 0% 0% / 40%);
-    }
-
     #user-profile-modal {
         #default-section {
             .default-field {
@@ -960,47 +952,6 @@
                 border-top: 1px solid hsl(0deg 0% 100% / 20%);
             }
         }
-    }
-
-    /* Arrows: */
-    .hotspot.overlay {
-        .hotspot-popover.arrow-right::before {
-            border-left-color: hsl(0deg 0% 0% / 20%);
-        }
-
-        .hotspot-popover.arrow-right::after {
-            border-left-color: hsl(212deg 28% 18%);
-        }
-
-        .hotspot-popover.arrow-bottom::before {
-            border-top-color: hsl(0deg 0% 0% / 20%);
-        }
-
-        .hotspot-popover.arrow-bottom::after {
-            border-top-color: hsl(212deg 28% 18%);
-        }
-
-        .hotspot-popover.arrow-left::before {
-            border-right-color: hsl(0deg 0% 0% / 20%);
-        }
-
-        .hotspot-popover.arrow-left::after {
-            border-right-color: hsl(212deg 28% 18%);
-        }
-
-        .hotspot-popover.arrow-top::before {
-            border-bottom-color: hsl(0deg 0% 0% / 20%);
-        }
-
-        .hotspot-popover.arrow-top::after {
-            border-bottom-color: hsl(212deg 28% 18%);
-        }
-    }
-
-    /* Content: */
-    .hotspot.overlay .hotspot-popover .hotspot-popover-content,
-    .hotspot.overlay .hotspot-popover .hotspot-popover-bottom {
-        background-color: var(--color-background);
     }
 
     .top-messages-logo {

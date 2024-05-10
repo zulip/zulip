@@ -20,7 +20,6 @@ import * as emoji from "./emoji";
 import * as emoji_picker from "./emoji_picker";
 import * as gear_menu from "./gear_menu";
 import * as giphy from "./giphy";
-import * as hotspots from "./hotspots";
 import * as information_density from "./information_density";
 import * as left_sidebar_navigation_area from "./left_sidebar_navigation_area";
 import * as linkifiers from "./linkifiers";
@@ -147,7 +146,6 @@ export function dispatch_normal_event(event) {
             break;
 
         case "onboarding_steps":
-            hotspots.load_new(onboarding_steps.filter_new_hotspots(event.onboarding_steps));
             onboarding_steps.update_notice_to_display(event.onboarding_steps);
             current_user.onboarding_steps = current_user.onboarding_steps
                 ? [...current_user.onboarding_steps, ...event.onboarding_steps]

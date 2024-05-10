@@ -2326,14 +2326,6 @@ paths:
                                   "onboarding_steps":
                                     [
                                       {
-                                        "type": "hotspot",
-                                        "name": "intro_compose",
-                                        "title": "Compose",
-                                        "description": "Click here to start a new conversation. Pick a topic (2-3 words is best), and give it a go!",
-                                        "delay": 0.5,
-                                        "has_trigger": false,
-                                      },
-                                      {
                                         "type": "one_time_notice",
                                         "name": "visibility_policy_banner",
                                       },
@@ -19854,43 +19846,15 @@ components:
         type:
           type: string
           description: |
-            The type of the onboarding step. Valid values are either
-            `"hotspot"` or `"one_time_notice"`.
+            The type of the onboarding step. Valid value is `"one_time_notice"`.
 
-            **Changes**: New in Zulip 8.0 (feature level 233).
+            **Changes**: Removed type `"hotspot"` in Zulip 9.0 (feature level 259).
+
+            New in Zulip 8.0 (feature level 233).
         name:
           type: string
           description: |
             The name of the onboarding step.
-        title:
-          type: string
-          description: |
-            The title of the onboarding step, as displayed to the user.
-
-            Only present for onboarding steps with type `"hotspot"`.
-        description:
-          type: string
-          description: |
-            The description of the onboarding step, as displayed to the
-            user.
-
-            Only present for onboarding steps with type `"hotspot"`.
-        delay:
-          type: number
-          description: |
-            The delay, in seconds, after which the user should be shown
-            the onboarding step.
-
-            Only present for onboarding steps with type `"hotspot"`.
-        has_trigger:
-          type: boolean
-          description: |
-            Identifies if the onboarding step will activate only when some
-            specific event occurs.
-
-            Only present for onboarding steps with type `"hotspot"`.
-
-            **Changes**: New in Zulip 8.0 (feature level 230).
     RealmAuthenticationMethod:
       type: object
       properties:

@@ -121,9 +121,6 @@ PASSWORD_MIN_GUESSES = 0
 TWO_FACTOR_CALL_GATEWAY = "two_factor.gateways.fake.Fake"
 TWO_FACTOR_SMS_GATEWAY = "two_factor.gateways.fake.Fake"
 
-# Set this True to send all hotspots in development
-ALWAYS_SEND_ALL_HOTSPOTS = False
-
 # FAKE_LDAP_MODE supports using a fake LDAP database in the
 # development environment, without needing an LDAP server!
 #

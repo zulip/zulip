@@ -32,7 +32,6 @@ const compose_pm_pill = mock_esm("../src/compose_pm_pill");
 const dark_theme = mock_esm("../src/dark_theme");
 const emoji_picker = mock_esm("../src/emoji_picker");
 const gear_menu = mock_esm("../src/gear_menu");
-const hotspots = mock_esm("../src/hotspots");
 const information_density = mock_esm("../src/information_density");
 const linkifiers = mock_esm("../src/linkifiers");
 const message_events = mock_esm("../src/message_events");
@@ -320,10 +319,9 @@ run_test("default_streams", ({override}) => {
     assert_same(args.realm_default_streams, event.default_streams);
 });
 
-run_test("onboarding_steps", ({override}) => {
+run_test("onboarding_steps", () => {
     current_user.onboarding_steps = [];
     const event = event_fixtures.onboarding_steps;
-    override(hotspots, "load_new", noop);
     dispatch(event);
     assert_same(current_user.onboarding_steps, event.onboarding_steps);
 });

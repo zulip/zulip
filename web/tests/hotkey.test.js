@@ -88,10 +88,6 @@ const settings_data = mock_esm("../src/settings_data");
 const stream_list = mock_esm("../src/stream_list");
 const stream_settings_ui = mock_esm("../src/stream_settings_ui");
 
-mock_esm("../src/hotspots", {
-    is_open: () => false,
-});
-
 mock_esm("../src/recent_view_ui", {
     is_in_focus: () => false,
 });

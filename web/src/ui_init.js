@@ -48,7 +48,6 @@ import * as gear_menu from "./gear_menu";
 import * as giphy from "./giphy";
 import * as hashchange from "./hashchange";
 import * as hotkey from "./hotkey";
-import * as hotspots from "./hotspots";
 import * as i18n from "./i18n";
 import * as inbox_ui from "./inbox_ui";
 import * as information_density from "./information_density";
@@ -877,7 +876,6 @@ export function initialize_everything(state_data) {
     drafts.initialize_ui();
     drafts_overlay_ui.initialize();
     onboarding_steps.initialize();
-    hotspots.initialize();
     typing.initialize();
     starred_messages_ui.initialize();
     user_status_ui.initialize();

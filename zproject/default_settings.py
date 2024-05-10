@@ -310,12 +310,9 @@ RATE_LIMITING_RULES: Dict[str, List[Tuple[int, int]]] = {}
 # Two factor authentication is not yet implementation-complete
 TWO_FACTOR_AUTHENTICATION_ENABLED = False
 
-# This is used to send all hotspots for convenient manual testing
-# in development mode.
-ALWAYS_SEND_ALL_HOTSPOTS = False
-
-# The new user tutorial is enabled by default, but can be disabled for
-# self-hosters who want to disable the tutorial entirely on their system.
+# The new user tutorial can be disabled for self-hosters who want to
+# disable the tutorial entirely on their system. Primarily useful for
+# products embedding Zulip as their chat feature.
 TUTORIAL_ENABLED = True
 
 # We log emails in development environment for accessing

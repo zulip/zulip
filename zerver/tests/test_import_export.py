@@ -836,10 +836,10 @@ class RealmImportExportTest(ExportFile):
         # Verify strange invariant for Reaction/RealmEmoji.
         self.assertEqual(reaction.emoji_code, str(realm_emoji.id))
 
-        # data to test import of hotspots
+        # data to test import of onboaring step
         OnboardingStep.objects.create(
             user=sample_user,
-            onboarding_step="intro_streams",
+            onboarding_step="intro_inbox_view_modal",
         )
 
         # data to test import of muted topic
@@ -1232,13 +1232,16 @@ class RealmImportExportTest(ExportFile):
             self.assertEqual(tups, {("hawaii", cordelia.full_name)})
             return tups
 
-        # test userhotspot
+        # test onboarding step
         @getter
-        def get_user_hotspots(r: Realm) -> Set[str]:
+        def get_onboarding_steps(r: Realm) -> Set[str]:
             user_id = get_user_id(r, "King Hamlet")
-            hotspots = OnboardingStep.objects.filter(user_id=user_id)
-            user_hotspots = {hotspot.onboarding_step for hotspot in hotspots}
-            return user_hotspots
+            onboarding_steps = set(
+                OnboardingStep.objects.filter(user_id=user_id).values_list(
+                    "onboarding_step", flat=True
+                )
+            )
+            return onboarding_steps
 
         # test muted topics
         @getter
