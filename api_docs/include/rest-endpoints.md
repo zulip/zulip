@@ -127,3 +127,5 @@
 * [Send a test notification to mobile device(s)](/api/test-notify)
 * [Add an APNs device token](/api/add-apns-token)
 * [Remove an APNs device token](/api/remove-apns-token)
+* [Add an FCM registration token](/api/add-fcm-token)
+* [Remove an FCM registration token](/api/remove-fcm-token)

@@ -1391,6 +1391,30 @@ def remove_apns_token(client: Client) -> None:
     validate_against_openapi_schema(result, "/users/me/apns_device_token", "delete", "200")
 
 
+@openapi_test_function("/users/me/android_gcm_reg_id:post")
+def add_fcm_token(client: Client) -> None:
+    # {code_example|start}
+    request = {"token": "android-token"}
+    result = client.call_endpoint(
+        url="/users/me/android_gcm_reg_id", method="POST", request=request
+    )
+    # {code_example|end}
+    validate_against_openapi_schema(result, "/users/me/android_gcm_reg_id", "post", "200")
+
+
+@openapi_test_function("/users/me/android_gcm_reg_id:delete")
+def remove_fcm_token(client: Client) -> None:
+    # {code_example|start}
+    request = {
+        "token": "android-token",
+    }
+    result = client.call_endpoint(
+        url="/users/me/android_gcm_reg_id", method="DELETE", request=request
+    )
+    # {code_example|end}
+    validate_against_openapi_schema(result, "/users/me/android_gcm_reg_id", "delete", "200")
+
+
 @openapi_test_function("/typing:post")
 def set_typing_status(client: Client) -> None:
     ensure_users([10, 11], ["hamlet", "iago"])
@@ -1682,6 +1706,8 @@ def test_users(client: Client, owner_client: Client) -> None:
     remove_alert_words(client)
     add_apns_token(client)
     remove_apns_token(client)
+    add_fcm_token(client)
+    remove_fcm_token(client)
 
 
 def test_streams(client: Client, nonadmin_client: Client) -> None:
