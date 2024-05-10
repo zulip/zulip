@@ -62,7 +62,6 @@ from zerver.views.email_mirror import email_mirror_message
 from zerver.views.events_register import events_register_backend
 from zerver.views.health import health
 from zerver.views.home import accounts_accept_terms, desktop_home, home
-from zerver.views.hotspots import mark_onboarding_step_as_read
 from zerver.views.invite import (
     generate_multiuse_invite_backend,
     get_user_invites,
@@ -87,6 +86,7 @@ from zerver.views.message_flags import (
 )
 from zerver.views.message_send import render_message_backend, send_message_backend, zcommand_backend
 from zerver.views.muted_users import mute_user, unmute_user
+from zerver.views.onboarding_steps import mark_onboarding_step_as_read
 from zerver.views.presence import (
     get_presence_backend,
     get_statuses_for_realm,

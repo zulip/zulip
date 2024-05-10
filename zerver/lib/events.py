@@ -20,7 +20,6 @@ from zerver.lib.compatibility import is_outdated_server
 from zerver.lib.default_streams import get_default_streams_for_realm_as_dicts
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.external_accounts import get_default_external_accounts
-from zerver.lib.hotspots import get_next_onboarding_steps
 from zerver.lib.integrations import (
     EMBEDDED_BOTS,
     WEBHOOK_INTEGRATIONS,
@@ -40,6 +39,7 @@ from zerver.lib.message import (
 from zerver.lib.muted_users import get_user_mutes
 from zerver.lib.narrow_helpers import NarrowTerm, read_stop_words
 from zerver.lib.narrow_predicate import check_narrow_for_events
+from zerver.lib.onboarding_steps import get_next_onboarding_steps
 from zerver.lib.presence import get_presence_for_user, get_presences_for_realm
 from zerver.lib.realm_icon import realm_icon_url
 from zerver.lib.realm_logo import get_realm_logo_source, get_realm_logo_url

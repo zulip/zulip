@@ -6,8 +6,8 @@ import orjson
 from django.contrib.auth.models import UserManager
 from django.utils.timezone import now as timezone_now
 
-from zerver.lib.hotspots import copy_onboarding_steps
 from zerver.lib.i18n import get_default_language_for_new_user
+from zerver.lib.onboarding_steps import copy_onboarding_steps
 from zerver.lib.timezone import canonicalize_timezone
 from zerver.lib.upload import copy_avatar
 from zerver.models import (
