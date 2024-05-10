@@ -289,40 +289,34 @@ or even move a topic [to a different channel]({move_content_another_channel_help
         )
 
         content2_of_moving_messages_topic_name = _("""
-:point_right: Try moving this message to another topic and back!
+:point_right: Try moving this message to another topic and back.
 """)
 
         content1_of_welcome_to_zulip_topic_name = _("""
-Zulip is organized to help you communicate more efficiently.
-""")
+Zulip is organized to help you communicate more efficiently. Conversations are
+labeled with topics, which summarize what the conversation is about.
 
-        content2_of_welcome_to_zulip_topic_name = (
-            _("""
-In Zulip, **channels** determine who gets a message.
-
-Each conversation in a channel is labeled with a **topic**.  This message is in
-the #**{zulip_discussion_channel_name}** channel, in the "{topic_name}" topic, as you can
-see in the left sidebar and above.
-""")
-        ).format(
+For example, this message is in the “{topic_name}” topic in the
+#**{zulip_discussion_channel_name}** channel, as you can see in the left sidebar
+and above.
+""").format(
             zulip_discussion_channel_name=str(Realm.ZULIP_DISCUSSION_CHANNEL_NAME),
             topic_name=_("welcome to Zulip!"),
         )
 
-        content3_of_welcome_to_zulip_topic_name = _("""
+        content2_of_welcome_to_zulip_topic_name = _("""
 You can read Zulip one conversation at a time, seeing each message in context,
 no matter how many other conversations are going on.
 """)
 
-        content4_of_welcome_to_zulip_topic_name = _("""
+        content3_of_welcome_to_zulip_topic_name = _("""
 :point_right: When you're ready, check out your [Inbox](/#inbox) for other
-conversations with unread messages. You can come back to this conversation
-if you need to from your **Starred** messages.
+conversations with unread messages.
 """)
 
         content1_of_start_conversation_topic_name = _("""
 To kick off a new conversation, click **Start new conversation** below.
-The new conversation thread won’t interrupt ongoing discussions.
+The new conversation thread will be labeled with its own topic.
 """)
 
         content2_of_start_conversation_topic_name = _("""
@@ -359,11 +353,11 @@ Link to a conversation: #**{zulip_discussion_channel_name}>{topic_name}**
         )
 
         content1_of_greetings_topic_name = _("""
-This **greetings** topic is a great place to say "hi" :wave: to your teammates.
+This **greetings** topic is a great place to say “hi” :wave: to your teammates.
 """)
 
         content2_of_greetings_topic_name = _("""
-:point_right:  Click on any message to start a reply in the same topic.
+:point_right: Click on this message to start a new message in the same conversation.
 """)
 
         content_of_zulip_update_announcements_topic_name = (
@@ -412,6 +406,17 @@ they can be disabled. [Learn more]({zulip_update_announcements_help_url}).
         ]
     ]
 
+    # Suggestion to test messaging features.
+    # Dependency on knowing how to send messages.
+    welcome_messages += [
+        {
+            "channel_name": str(realm.ZULIP_SANDBOX_CHANNEL_NAME),
+            "topic_name": _("experiments"),
+            "content": content,
+        }
+        for content in [content1_of_experiments_topic_name, content2_of_experiments_topic_name]
+    ]
+
     # Suggestion to start your first new conversation.
     welcome_messages += [
         {
@@ -424,17 +429,6 @@ they can be disabled. [Learn more]({zulip_update_announcements_help_url}).
             content2_of_start_conversation_topic_name,
             content3_of_start_conversation_topic_name,
         ]
-    ]
-
-    # Suggestion to test messaging features.
-    # Dependency on knowing how to send messages.
-    welcome_messages += [
-        {
-            "channel_name": str(realm.ZULIP_SANDBOX_CHANNEL_NAME),
-            "topic_name": _("experiments"),
-            "content": content,
-        }
-        for content in [content1_of_experiments_topic_name, content2_of_experiments_topic_name]
     ]
 
     # Suggestion to send first message as a hi to your team.
@@ -458,7 +452,6 @@ they can be disabled. [Learn more]({zulip_update_announcements_help_url}).
             content1_of_welcome_to_zulip_topic_name,
             content2_of_welcome_to_zulip_topic_name,
             content3_of_welcome_to_zulip_topic_name,
-            content4_of_welcome_to_zulip_topic_name,
         ]
     ]
 
@@ -482,7 +475,7 @@ they can be disabled. [Learn more]({zulip_update_announcements_help_url}).
     # This is a bit hacky, but works and is kinda a 1-off thing.
     greetings_message = (
         Message.objects.select_for_update()
-        .filter(id__in=message_ids, content__icontains='a great place to say "hi"')
+        .filter(id__in=message_ids, content__icontains="a great place to say “hi”")
         .first()
     )
     assert greetings_message is not None
