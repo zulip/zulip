@@ -138,16 +138,23 @@
 
     /* Emoji; sized to be easily understood while not overwhelming text. */
     .emoji {
-        height: calc(20em / 14);
-        width: calc(20em / 14);
-        /* "Eyeballed" styles to compensate for inline-block emoji
-          positioning in messages.
-          By coordinating the emoji height and width above with the
-          `line-height` on messages in the future, these properties
-          should no longer be necessary: */
-        position: relative;
-        margin-top: -7px;
-        top: 3px;
+        /* The box for emoji is kept below a certain maximum, regardless
+           of more open line-heights. This prevents emoji from sizing
+           excessively larger than the surrounding text's content area. */
+        height: calc(
+            min(
+                var(--base-maximum-block-height-em),
+                var(--length-line-fitted-block)
+            )
+        );
+        width: calc(
+            min(
+                var(--base-maximum-block-height-em),
+                var(--length-line-fitted-block)
+            )
+        );
+        /* We set the alignment programmatically, as an em value. */
+        vertical-align: var(--line-fitted-vertical-align-offset-em);
     }
 
     /* Mentions and alert words */
