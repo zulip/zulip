@@ -49,7 +49,7 @@ export function confirm_mark_all_as_read() {
     const html_body = render_confirm_mark_all_as_read();
 
     confirm_dialog.launch({
-        html_heading: $t_html({defaultMessage: "Mark all messages as read?"}),
+        html_heading: $t_html({defaultMessage: "Choose messages to mark as read"}),
         html_body,
         on_click: mark_all_as_read,
         loading_spinner: true,
