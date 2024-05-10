@@ -28,7 +28,6 @@ body {
     font-family: "Source Sans 3 VF", sans-serif;
     color: var(--color-text-default);
     background-color: var(--color-background);
-    transition: background-color 200ms linear;
 
     /* Implementation for fluid layout width setting. */
     .header-main,
