@@ -75,11 +75,16 @@
     --base-font-size-px: 14px;
     --base-line-height-unitless: 1.214;
     --base-maximum-block-height-em: 1.425em;
-    --base-inline-block-vertical-alignment-em: 0;
+    --line-fitted-vertical-align-offset-em: 0;
     --markdown-interelement-space-px: 5px;
     --markdown-interelement-doubled-space-px: calc(
         var(--markdown-interelement-space-px) * 2
     );
+    /* Certain elements need to be fitted perfectly to
+       the line height; the length here can be used to set
+       precise heights, and in the case of square elements,
+       a matching precise width as well. */
+    --length-line-fitted-block: calc(var(--base-line-height-unitless) * 1em);
 
     /* Legacy values */
     --legacy-body-line-height-unitless: calc(20 / 14);
