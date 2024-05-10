@@ -318,7 +318,7 @@ No changes; feature level used for Zulip 8.0 release.
 
 **Feature level 223**
 
-* `POST /users/me/apns_device_token`:
+* [`POST /users/me/apns_device_token`](/api/add-apns-token):
   The `appid` parameter is now required.
   Previously it defaulted to the server setting `ZULIP_IOS_APP_ID`,
   defaulting to "org.zulip.Zulip".

@@ -10034,7 +10034,118 @@ paths:
                           }
                         description: |
                           An example JSON response for when the user is not previously muted:
+  /users/me/apns_device_token:
+    post:
+      operationId: add-apns-token
+      summary: Add an APNs device token
+      tags: ["users"]
+      description: |
+        This endpoint adds an APNs device token to register for iOS push notifications.
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                token:
+                  description: |
+                    The token provided by the device.
+                  type: string
+                  example: apple-tokenbb
+                appid:
+                  description: |
+                    The ID of the Zulip app that is making the request.
 
+                    **Changes**: In Zulip 8.0 (feature level 223), this parameter was made
+                    required. Previously, if it was unspecified, the server would use a default
+                    value (based on the `ZULIP_IOS_APP_ID` server setting, which
+                    defaulted to `"org.zulip.Zulip"`).
+                  type: string
+                  example: org.zulip.Zulip
+              required:
+                - token
+                - appid
+      responses:
+        "200":
+          $ref: "#/components/responses/SimpleSuccess"
+        "400":
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - allOf:
+                      - $ref: "#/components/schemas/CodedError"
+                      - description: |
+                          A typical failed JSON response for when the token's length is invalid
+                          or it is empty:
+                        example:
+                          {
+                            "result": "error",
+                            "msg": "Empty or invalid length token",
+                            "code": "BAD_REQUEST",
+                          }
+                  - allOf:
+                      - $ref: "#/components/schemas/CodedError"
+                      - example:
+                          {
+                            "result": "error",
+                            "msg": "Invalid APNS token",
+                            "code": "BAD_REQUEST",
+                          }
+                        description: |
+                          A typical failed JSON response for when the APNs token is invalid:
+    delete:
+      operationId: remove-apns-token
+      summary: Remove an APNs device token
+      tags: ["users"]
+      description: |
+        This endpoint removes an APNs device token for iOS push notifications.
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                token:
+                  description: |
+                    The token provided by the device.
+                  type: string
+                  example: apple-tokenbb
+              required:
+                - token
+      responses:
+        "200":
+          $ref: "#/components/responses/SimpleSuccess"
+        "400":
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - allOf:
+                      - $ref: "#/components/schemas/CodedError"
+                      - description: |
+                          A typical failed JSON response for when the token's length is invalid
+                          or it is empty:
+                        example:
+                          {
+                            "result": "error",
+                            "msg": "Empty or invalid length token",
+                            "code": "BAD_REQUEST",
+                          }
+                  - allOf:
+                      - $ref: "#/components/schemas/CodedError"
+                      - example:
+                          {
+                            "result": "error",
+                            "msg": "Token does not exist",
+                            "code": "BAD_REQUEST",
+                          }
+                        description: |
+                          A typical failed JSON response for when the token does not exist:
   /users/{user_id}/subscriptions/{stream_id}:
     get:
       operationId: get-subscription-status
