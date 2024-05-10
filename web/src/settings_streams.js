@@ -36,7 +36,7 @@ function get_chosen_default_streams() {
 
 function create_choice_row() {
     const $container = $("#default-stream-choices");
-    const value = settings_profile_fields.get_value_for_new_option("#default-stream-choices");
+    const value = settings_profile_fields.get_value_for_new_option($container);
     const stream_dropdown_widget_name = `select_default_stream_${value}`;
     const row_html = render_default_stream_choice({value, stream_dropdown_widget_name});
     $container.append($(row_html));
