@@ -20,6 +20,16 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 9.0
 
+**Feature level 259**:
+
+* [`POST /register`](/api/register-queue), [`GET /events`](/api/get-events):
+  For the `onboarding_steps` event type, an array of onboarding steps
+  to be displayed to clients is sent. Onboarding step now has one-time
+  notices as the only valid type. Prior to this, both hotspots and
+  one-time notices were valid types of onboarding steps. There is no compatibility
+  support, as we expect that only official Zulip clients will interact with
+  this data. Currently, no client other than the Zulip web app uses this.
+
 **Feature level 258**:
 
 * [`GET /user_groups`](/api/get-user-groups), [`POST

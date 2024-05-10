@@ -24,7 +24,6 @@ import * as gear_menu from "./gear_menu";
 import * as giphy from "./giphy";
 import * as hash_util from "./hash_util";
 import * as hashchange from "./hashchange";
-import * as hotspots from "./hotspots";
 import * as inbox_ui from "./inbox_ui";
 import * as lightbox from "./lightbox";
 import * as list_util from "./list_util";
@@ -454,11 +453,6 @@ export function process_enter_key(e) {
         return true;
     }
 
-    if (hotspots.is_open()) {
-        $(e.target).find(".hotspot.overlay.show .hotspot-confirm").trigger("click");
-        return false;
-    }
-
     if (emoji_picker.is_open()) {
         return emoji_picker.navigate("enter", e);
     }
@@ -783,10 +777,6 @@ export function process_hotkey(e, hotkey) {
     }
 
     if (overlays.settings_open() && !user_card_popover.user_card.is_open()) {
-        return false;
-    }
-
-    if (hotspots.is_open()) {
         return false;
     }
 

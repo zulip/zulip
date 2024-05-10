@@ -338,13 +338,7 @@ _onboarding_steps = DictType(
     required_keys=[
         ("type", str),
         ("name", str),
-    ],
-    optional_keys=[
-        ("title", str),
-        ("description", str),
-        ("delay", NumberType()),
-        ("has_trigger", bool),
-    ],
+    ]
 )
 
 onboarding_steps_event = event_dict_type(

@@ -1313,9 +1313,9 @@ class UserProfileTest(ZulipTestCase):
 
         OnboardingStep.objects.filter(user=cordelia).delete()
         OnboardingStep.objects.filter(user=iago).delete()
-        hotspots_completed = {"intro_streams", "intro_topics"}
-        for hotspot in hotspots_completed:
-            OnboardingStep.objects.create(user=cordelia, onboarding_step=hotspot)
+        onboarding_steps_completed = {"intro_inbox_view_modal", "intro_recent_view_modal"}
+        for onboarding_step in onboarding_steps_completed:
+            OnboardingStep.objects.create(user=cordelia, onboarding_step=onboarding_step)
 
         # Check that we didn't send an realm_user update events to
         # users; this work is happening before the user account is
@@ -1357,10 +1357,10 @@ class UserProfileTest(ZulipTestCase):
         self.assertEqual(cordelia.enter_sends, False)
         self.assertEqual(hamlet.enter_sends, True)
 
-        hotspots = set(
+        onboarding_steps = set(
             OnboardingStep.objects.filter(user=iago).values_list("onboarding_step", flat=True)
         )
-        self.assertEqual(hotspots, hotspots_completed)
+        self.assertEqual(onboarding_steps, onboarding_steps_completed)
 
     def test_copy_default_settings_from_realm_user_default(self) -> None:
         cordelia = self.example_user("cordelia")
