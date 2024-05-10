@@ -1,8 +1,8 @@
 from typing_extensions import override
 
 from zerver.actions.create_user import do_create_user
-from zerver.actions.hotspots import do_mark_onboarding_step_as_read
-from zerver.lib.hotspots import ONE_TIME_NOTICES, get_next_onboarding_steps
+from zerver.actions.onboarding_steps import do_mark_onboarding_step_as_read
+from zerver.lib.onboarding_steps import ONE_TIME_NOTICES, get_next_onboarding_steps
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.models import OnboardingStep
 from zerver.models.realms import get_realm

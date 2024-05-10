@@ -43,7 +43,6 @@ from zerver.actions.default_streams import (
     do_remove_streams_from_default_stream_group,
     lookup_default_stream_groups,
 )
-from zerver.actions.hotspots import do_mark_onboarding_step_as_read
 from zerver.actions.invites import (
     do_create_multiuse_invite_link,
     do_invite_users,
@@ -54,6 +53,7 @@ from zerver.actions.message_delete import do_delete_messages
 from zerver.actions.message_edit import do_update_embedded_data, do_update_message
 from zerver.actions.message_flags import do_update_message_flags
 from zerver.actions.muted_users import do_mute_user, do_unmute_user
+from zerver.actions.onboarding_steps import do_mark_onboarding_step_as_read
 from zerver.actions.presence import do_update_user_presence
 from zerver.actions.reactions import do_add_reaction, do_remove_reaction
 from zerver.actions.realm_domains import (

@@ -1,4 +1,4 @@
-from zerver.lib.hotspots import get_next_onboarding_steps
+from zerver.lib.onboarding_steps import get_next_onboarding_steps
 from zerver.models import OnboardingStep, UserProfile
 from zerver.tornado.django_api import send_event
 
