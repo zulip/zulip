@@ -74,6 +74,8 @@
     /* The legacy values here are updated via JavaScript */
     --base-font-size-px: 14px;
     --base-line-height-unitless: 1.214;
+    --base-maximum-block-height-em: 1.425em;
+    --base-inline-block-vertical-alignment-em: 0;
     --markdown-interelement-space-px: 5px;
     --markdown-interelement-doubled-space-px: calc(
         var(--markdown-interelement-space-px) * 2
