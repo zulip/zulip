@@ -1568,9 +1568,7 @@ class TestRequestNotes(ZulipTestCase):
         with mock.patch("zerver.views.home.zulip_login_required") as mock_home_real:
             result = self.client_get("/", subdomain="invalid")
             self.assertEqual(result.status_code, 404)
-            self.assert_in_response(
-                "There is no Zulip organization hosted at this subdomain.", result
-            )
+            self.assert_in_response("There is no Zulip organization at", result)
             mock_home_real.assert_not_called()
 
 
