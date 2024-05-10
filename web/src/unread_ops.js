@@ -56,6 +56,23 @@ export function confirm_mark_all_as_read() {
     });
 }
 
+export function mark_selected_options_as_read() {
+    muted_topics = $("#muted_topics").prop("checked");
+    topics_not_followed = $("#topics_not_followed").prop("checked");
+    all_messages = $("#all_messages").prop("checked");
+    if (all_messages) {
+        mark_all_as_read();
+        return;
+    }
+    let narrow_options = [{operator: "is", operand: "unread", negated: false}];
+    if (muted_topics) {
+        narrow_options.push({operator: "topic", operand: "muted"});
+    }
+    if (topics_not_followed) {
+        narrow_options.push({operator: "topic", operand: "followed", negated: true});
+    }
+}
+
 function bulk_update_read_flags_for_narrow(narrow, op, args = {}) {
     let response_html;
     args = {
