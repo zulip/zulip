@@ -287,12 +287,13 @@ function do_mark_unread_by_narrow(
             }
         },
         error(xhr) {
-            handle_mark_unread_from_here_error(
-                xhr,
+            const error_options = {
                 message_id,
+                include_anchor,
                 messages_marked_unread_till_now,
                 narrow,
-            );
+            };
+            handle_mark_unread_from_here_error(xhr, error_options);
         },
     });
 }
@@ -307,7 +308,8 @@ function do_mark_unread_by_ids(message_ids_to_update) {
             }
         },
         error(xhr) {
-            handle_mark_unread_from_here_error(xhr, undefined, 0, undefined, message_ids_to_update);
+            const error_options = {message_ids_to_update};
+            handle_mark_unread_from_here_error(xhr, error_options);
         },
     });
 }
@@ -332,29 +334,29 @@ function finish_loading(messages_marked_unread_till_now) {
     );
 }
 
-function handle_mark_unread_from_here_error(
-    xhr,
-    message_id,
-    messages_marked_unread_till_now,
-    narrow,
-    message_ids_to_update = undefined,
-) {
+function handle_mark_unread_from_here_error(xhr, options) {
     if (xhr.readyState === 0) {
         // client cancelled the request
     } else if (xhr.responseJSON?.code === "RATE_LIMIT_HIT") {
         // If we hit the rate limit, just continue without showing any error.
         const milliseconds_to_wait = 1000 * xhr.responseJSON["retry-after"];
-        if (message_ids_to_update !== undefined) {
+        if (options.message_ids_to_update !== undefined) {
             setTimeout(() => {
-                do_mark_unread_by_ids(message_ids_to_update);
+                do_mark_unread_by_ids(options.message_ids_to_update);
             }, milliseconds_to_wait);
         } else {
+            assert(
+                options.message_id !== undefined &&
+                    options.narrow !== undefined &&
+                    options.messages_marked_unread_till_now !== undefined &&
+                    options.include_anchor !== undefined,
+            );
             setTimeout(() => {
                 do_mark_unread_by_narrow(
-                    message_id,
-                    false,
-                    messages_marked_unread_till_now,
-                    narrow,
+                    options.message_id,
+                    options.include_anchor,
+                    options.messages_marked_unread_till_now,
+                    options.narrow,
                 );
             }, milliseconds_to_wait);
         }
