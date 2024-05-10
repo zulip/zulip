@@ -271,7 +271,7 @@ function add_choice_row(e) {
     // which will not have the delete button so that there is at least one option present.
     $curr_choice_row.find("button.delete-choice").show();
     const choices_div = e.delegateTarget;
-    create_choice_row(choices_div);
+    create_choice_row($(choices_div));
 }
 
 function delete_choice_row(row) {
@@ -665,7 +665,7 @@ export function do_populate_profile_fields(profile_fields_data) {
 function set_up_select_field() {
     const field_types = realm.custom_profile_field_types;
 
-    create_choice_row("#profile_field_choices");
+    create_choice_row($("#profile_field_choices"));
 
     if (current_user.is_admin) {
         const choice_list = $("#profile_field_choices")[0];
