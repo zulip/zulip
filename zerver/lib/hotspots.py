@@ -141,14 +141,16 @@ def get_next_onboarding_steps(user: UserProfile) -> List[Dict[str, Any]]:
     return onboarding_steps
 
 
-def copy_hotspots(source_profile: UserProfile, target_profile: UserProfile) -> None:
-    for userhotspot in frozenset(OnboardingStep.objects.filter(user=source_profile)):
+def copy_onboarding_steps(source_profile: UserProfile, target_profile: UserProfile) -> None:
+    for onboarding_step in frozenset(OnboardingStep.objects.filter(user=source_profile)):
         OnboardingStep.objects.create(
             user=target_profile,
-            onboarding_step=userhotspot.onboarding_step,
-            timestamp=userhotspot.timestamp,
+            onboarding_step=onboarding_step.onboarding_step,
+            timestamp=onboarding_step.timestamp,
         )
 
+    # TODO: The 'tutorial_status' and 'onboarding_steps' fields
+    # of 'UserProfile' model are no longer used. Remove them.
     target_profile.tutorial_status = source_profile.tutorial_status
     target_profile.onboarding_steps = source_profile.onboarding_steps
     target_profile.save(update_fields=["tutorial_status", "onboarding_steps"])
