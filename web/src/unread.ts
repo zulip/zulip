@@ -26,6 +26,7 @@ import * as util from "./util";
 // for more details on how this system is designed.
 
 export let old_unreads_missing = false;
+export let first_unread_unmuted_message_id = Number.POSITIVE_INFINITY;
 
 export function clear_old_unreads_missing(): void {
     old_unreads_missing = false;
@@ -112,13 +113,19 @@ class UnreadDirectMessageCounter {
         this.reverse_lookup.delete(message_id);
     }
 
-    get_counts(): DirectMessageCountInfo {
+    get_counts(update_first_unmuted_message_id = false): DirectMessageCountInfo {
         const pm_dict = new Map<string, number>(); // Hash by user_ids_string -> count Optional[, max_id]
         let total_count = 0;
         for (const [user_ids_string, id_set] of this.bucketer) {
             const count = id_set.size;
             pm_dict.set(user_ids_string, count);
             total_count += count;
+            if (update_first_unmuted_message_id) {
+                first_unread_unmuted_message_id = Math.min(
+                    first_unread_unmuted_message_id,
+                    ...id_set,
+                );
+            }
         }
         return {
             total_count,
@@ -300,7 +307,7 @@ class UnreadTopicCounter {
         };
     }
 
-    get_counts(): UnreadStreamCounts {
+    get_counts(update_first_unmuted_message_id = false): UnreadStreamCounts {
         let stream_unread_messages = 0;
         let followed_topic_unread_messages = 0;
         const stream_counts_by_id = new Map<number, StreamCountInfo>(); // hash by stream_id -> count
@@ -317,7 +324,10 @@ class UnreadTopicCounter {
             // get_stream_count_info calculates both the number of
             // unmuted unread as well as the number of muted
             // unreads.
-            const stream_count_info = this.get_stream_count_info(stream_id);
+            const stream_count_info = this.get_stream_count_info(
+                stream_id,
+                update_first_unmuted_message_id,
+            );
             stream_counts_by_id.set(stream_id, stream_count_info);
             stream_unread_messages += stream_count_info.unmuted_count;
             followed_topic_unread_messages += stream_count_info.followed_count;
@@ -371,7 +381,10 @@ class UnreadTopicCounter {
         return result;
     }
 
-    get_stream_count_info(stream_id: number): StreamCountInfo {
+    get_stream_count_info(
+        stream_id: number,
+        update_first_unmuted_message_id = false,
+    ): StreamCountInfo {
         const per_stream_bucketer = this.bucketer.get(stream_id);
 
         if (!per_stream_bucketer) {
@@ -396,12 +409,24 @@ class UnreadTopicCounter {
 
             if (user_topics.is_topic_unmuted_or_followed(stream_id, topic)) {
                 unmuted_count += topic_count;
+                if (update_first_unmuted_message_id) {
+                    first_unread_unmuted_message_id = Math.min(
+                        first_unread_unmuted_message_id,
+                        ...msgs,
+                    );
+                }
             } else if (user_topics.is_topic_muted(stream_id, topic)) {
                 muted_count += topic_count;
             } else if (sub?.is_muted) {
                 muted_count += topic_count;
             } else {
                 unmuted_count += topic_count;
+                if (update_first_unmuted_message_id) {
+                    first_unread_unmuted_message_id = Math.min(
+                        first_unread_unmuted_message_id,
+                        ...msgs,
+                    );
+                }
             }
         }
         const stream_count = {
@@ -877,8 +902,12 @@ export type FullUnreadCountsData = {
 // pretty cheap, even if you don't care about all the counts, and you
 // should strive to keep it free of side effects on globals or DOM.
 export function get_counts(): FullUnreadCountsData {
-    const topic_res = unread_topic_counter.get_counts();
-    const pm_res = unread_direct_message_counter.get_counts();
+    const update_first_unmuted_message_id = true;
+    // Reset the first_unread_unmuted_message_id, to ensure it is always capture the
+    // minimum of current unread messages between topics and DMs.
+    first_unread_unmuted_message_id = Number.POSITIVE_INFINITY;
+    const topic_res = unread_topic_counter.get_counts(update_first_unmuted_message_id);
+    const pm_res = unread_direct_message_counter.get_counts(update_first_unmuted_message_id);
 
     return {
         direct_message_count: pm_res.total_count,

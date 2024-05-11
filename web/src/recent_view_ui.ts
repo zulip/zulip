@@ -1632,7 +1632,7 @@ export function initialize({
     on_click_participant: (avatar_element: Element, participant_user_id: number) => void;
     on_mark_pm_as_read: (user_ids_string: string) => void;
     on_mark_topic_as_read: (stream_id: number, topic: string) => void;
-    maybe_load_older_messages: () => void;
+    maybe_load_older_messages: (first_unread_unmuted_message_id: number) => void;
 }): void {
     load_filters();
 
@@ -1813,7 +1813,7 @@ export function initialize({
             $(".recent-view-load-more-container .fetch-messages-button .loading-indicator"),
             {width: 20},
         );
-        maybe_load_older_messages();
+        maybe_load_older_messages(unread.first_unread_unmuted_message_id);
     });
 
     $(document).on("compose_canceled.zulip", () => {
