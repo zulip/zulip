@@ -475,7 +475,11 @@ export function activate(raw_terms, opts) {
         // This needs to be called at the same time as updating the
         // current message list so that we don't need to think about
         // bugs related to the URL fragment/hash being desynced from
-        // mesasge_lists.current.
+        // message_lists.current.
+        //
+        // It's fine for the hash change to happen anytime before updating
+        // the current message list as we are trying to emulate the `hashchange`
+        // workflow we have which calls `narrow.activate` after hash is updated.
         if (opts.change_hash) {
             update_hash_to_match_filter(filter, opts.trigger);
         }
