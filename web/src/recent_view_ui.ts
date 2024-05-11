@@ -1022,9 +1022,7 @@ function stream_sort(a: Row, b: Row): number {
             return sort_comparator(a_stream_name, b_stream_name);
         }
         assert(a_msg.type === "private");
-        assert(a_msg.display_reply_to !== undefined);
         assert(b_msg.type === "private");
-        assert(b_msg.display_reply_to !== undefined);
         return sort_comparator(a_msg.display_reply_to, b_msg.display_reply_to);
     }
     // if type is not same sort between "private" and "stream"
@@ -1035,7 +1033,6 @@ function topic_sort_key(conversation_data: ConversationData): string {
     const message = message_store.get(conversation_data.last_msg_id);
     assert(message !== undefined);
     if (message.type === "private") {
-        assert(message.display_reply_to !== undefined);
         return message.display_reply_to;
     }
     return message.topic;
