@@ -297,7 +297,7 @@ export class BuddyList extends BuddyListConf {
         );
         if ($("#buddy-list-users-matching-view .empty-list-message").length) {
             const empty_list_widget_html = render_empty_list_widget_for_list({
-                matching_view_empty_list_message,
+                empty_list_message: matching_view_empty_list_message,
             });
             $("#buddy-list-users-matching-view").html(empty_list_widget_html);
         }
@@ -308,7 +308,7 @@ export class BuddyList extends BuddyListConf {
         );
         if ($("#buddy-list-other-users .empty-list-message").length) {
             const empty_list_widget_html = render_empty_list_widget_for_list({
-                other_users_empty_list_message,
+                empty_list_message: other_users_empty_list_message,
             });
             $("#buddy-list-other-users").html(empty_list_widget_html);
         }
