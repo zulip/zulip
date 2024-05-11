@@ -120,7 +120,6 @@ export type Message = (
     // Added in `message_helper.process_new_message`.
     sent_by_me: boolean;
     reply_to: string;
-    display_reply_to?: string;
 
     // These properties are used in `message_list_view.js`.
     starred_status: string;
@@ -139,6 +138,7 @@ export type Message = (
               is_stream: false;
               pm_with_url: string;
               to_user_ids: string;
+              display_reply_to: string;
           }
         | {
               type: "stream";
@@ -146,6 +146,7 @@ export type Message = (
               is_stream: true;
               stream: string;
               topic: string;
+              display_reply_to: undefined;
           }
     );
 
