@@ -4,9 +4,10 @@ from typing import Optional
 from django.http import HttpRequest, HttpResponse
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
+from pydantic import AfterValidator, Json, StringConstraints
+from typing_extensions import Annotated, Literal
 
 from zerver.actions.user_topics import do_set_user_topic_visibility_policy
-from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.streams import (
     access_stream_by_id,
@@ -15,7 +16,8 @@ from zerver.lib.streams import (
     access_stream_to_remove_visibility_policy_by_name,
     check_for_exactly_one_stream_arg,
 )
-from zerver.lib.validator import check_capped_string, check_int, check_int_in, check_string_in
+from zerver.lib.typed_endpoint import typed_endpoint
+from zerver.lib.typed_endpoint_validators import check_int_in
 from zerver.models import UserProfile, UserTopic
 from zerver.models.constants import MAX_TOPIC_NAME_LENGTH
 
@@ -61,14 +63,15 @@ def unmute_topic(
     )
 
 
-@has_request_variables
+@typed_endpoint
 def update_muted_topic(
     request: HttpRequest,
     user_profile: UserProfile,
-    stream_id: Optional[int] = REQ(json_validator=check_int, default=None),
-    stream: Optional[str] = REQ(default=None),
-    topic: str = REQ(str_validator=check_capped_string(MAX_TOPIC_NAME_LENGTH)),
-    op: str = REQ(str_validator=check_string_in(["add", "remove"])),
+    *,
+    stream_id: Optional[Json[int]] = None,
+    stream: Optional[str] = None,
+    topic: Annotated[str, StringConstraints(max_length=MAX_TOPIC_NAME_LENGTH)],
+    op: Literal["add", "remove"],
 ) -> HttpResponse:
     check_for_exactly_one_stream_arg(stream_id=stream_id, stream=stream)
 
@@ -90,13 +93,19 @@ def update_muted_topic(
     return json_success(request)
 
 
-@has_request_variables
+@typed_endpoint
 def update_user_topic(
     request: HttpRequest,
     user_profile: UserProfile,
-    stream_id: int = REQ(json_validator=check_int),
-    topic: str = REQ(str_validator=check_capped_string(MAX_TOPIC_NAME_LENGTH)),
-    visibility_policy: int = REQ(json_validator=check_int_in(UserTopic.VisibilityPolicy.values)),
+    *,
+    stream_id: Json[int],
+    topic: Annotated[str, StringConstraints(max_length=MAX_TOPIC_NAME_LENGTH)],
+    visibility_policy: Json[
+        Annotated[
+            int,
+            AfterValidator(lambda x: check_int_in(x, UserTopic.VisibilityPolicy.values)),
+        ]
+    ],
 ) -> HttpResponse:
     if visibility_policy == UserTopic.VisibilityPolicy.INHERIT:
         error = _("Invalid channel ID")
