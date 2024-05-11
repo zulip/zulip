@@ -2462,6 +2462,92 @@ class StreamAdminTest(ZulipTestCase):
         stream = get_stream("stream_name2", realm)
         self.assertEqual(stream.can_remove_subscribers_group.id, moderators_system_group.id)
 
+    def test_change_stream_topic_access_group(self) -> None:
+        user_profile = self.example_user("iago")
+        realm = user_profile.realm
+        stream = self.subscribe(user_profile, "stream_name1")
+
+        moderators_system_group = NamedUserGroup.objects.get(
+            name="role:moderators", realm=realm, is_system_group=True
+        )
+        self.login("shiva")
+        result = self.client_patch(
+            f"/json/streams/{stream.id}",
+            {"stream_topic_access_group": orjson.dumps(moderators_system_group.id).decode()},
+        )
+        self.assert_json_error(result, "Must be an organization administrator")
+
+        self.login("iago")
+        result = self.client_patch(
+            f"/json/streams/{stream.id}",
+            {"stream_topic_access_group": orjson.dumps(moderators_system_group.id).decode()},
+        )
+        self.assert_json_success(result)
+        stream = get_stream("stream_name1", realm)
+        self.assertEqual(stream.stream_topic_access_group.id, moderators_system_group.id)
+
+        # This setting can only be set to system groups.
+        hamletcharacters_group = NamedUserGroup.objects.get(name="hamletcharacters", realm=realm)
+        result = self.client_patch(
+            f"/json/streams/{stream.id}",
+            {"stream_topic_access_group": orjson.dumps(hamletcharacters_group.id).decode()},
+        )
+        self.assert_json_error(result, "'stream_topic_access_group' must be a system user group.")
+
+        internet_group = NamedUserGroup.objects.get(
+            name="role:internet", is_system_group=True, realm=realm
+        )
+        result = self.client_patch(
+            f"/json/streams/{stream.id}",
+            {"stream_topic_access_group": orjson.dumps(internet_group.id).decode()},
+        )
+        self.assert_json_error(
+            result,
+            "'stream_topic_access_group' setting cannot be set to 'role:internet' group.",
+        )
+
+        owners_group = NamedUserGroup.objects.get(
+            name="role:owners", is_system_group=True, realm=realm
+        )
+        result = self.client_patch(
+            f"/json/streams/{stream.id}",
+            {"stream_topic_access_group": orjson.dumps(owners_group.id).decode()},
+        )
+        self.assert_json_error(
+            result,
+            "'stream_topic_access_group' setting cannot be set to 'role:owners' group.",
+        )
+
+        nobody_group = NamedUserGroup.objects.get(
+            name="role:nobody", is_system_group=True, realm=realm
+        )
+        result = self.client_patch(
+            f"/json/streams/{stream.id}",
+            {"stream_topic_access_group": orjson.dumps(nobody_group.id).decode()},
+        )
+        self.assert_json_error(
+            result,
+            "'stream_topic_access_group' setting cannot be set to 'role:nobody' group.",
+        )
+
+        # For private streams, even admins must be subscribed to the stream to change
+        # stream_topic_access_group setting.
+        stream = self.make_stream("stream_name2", invite_only=True)
+        result = self.client_patch(
+            f"/json/streams/{stream.id}",
+            {"stream_topic_access_group": orjson.dumps(moderators_system_group.id).decode()},
+        )
+        self.assert_json_error(result, "Invalid channel ID")
+
+        self.subscribe(user_profile, "stream_name2")
+        result = self.client_patch(
+            f"/json/streams/{stream.id}",
+            {"stream_topic_access_group": orjson.dumps(moderators_system_group.id).decode()},
+        )
+        self.assert_json_success(result)
+        stream = get_stream("stream_name2", realm)
+        self.assertEqual(stream.stream_topic_access_group.id, moderators_system_group.id)
+
     def test_stream_message_retention_days_on_stream_creation(self) -> None:
         """
         Only admins can create streams with message_retention_days

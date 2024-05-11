@@ -243,6 +243,9 @@ def update_stream_backend(
     can_remove_subscribers_group_id: Optional[int] = REQ(
         "can_remove_subscribers_group", json_validator=check_int, default=None
     ),
+    stream_topic_access_group_id: Optional[int] = REQ(
+        "stream_topic_access_group", json_validator=check_int, default=None
+    ),
 ) -> HttpResponse:
     # We allow realm administrators to to update the stream name and
     # description even for private streams.
