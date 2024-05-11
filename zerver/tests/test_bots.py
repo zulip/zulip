@@ -1721,7 +1721,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         # invalid URL test case.
         bot_info["payload_url"] = orjson.dumps("http://127.0.0.:5002").decode()
         result = self.client_post("/json/bots", bot_info)
-        self.assert_json_error(result, "payload_url is not a URL")
+        self.assert_json_error(result, "Invalid payload_url: Value error, Not a URL")
 
     def test_get_bot_handler(self) -> None:
         # Test for valid service.
@@ -1804,7 +1804,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
             user_profile=self.example_user("hamlet"),
             service_name="followup",
             config_data=orjson.dumps({"invalid": ["config", "value"]}).decode(),
-            assert_json_error_msg="config_data contains a value that is not a string",
+            assert_json_error_msg='config_data["invalid"] is not a string',
             **extras,
         )
 
