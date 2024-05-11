@@ -86,11 +86,11 @@ export function changehash(newhash, trigger) {
     browser_history.set_hash(newhash);
 }
 
-export function save_narrow(terms, trigger) {
+export function update_hash_to_match_filter(filter, trigger) {
     if (browser_history.state.changing_hash && trigger !== "retarget message location") {
         return;
     }
-    const new_hash = hash_util.search_terms_to_hash(terms);
+    const new_hash = hash_util.search_terms_to_hash(filter.terms());
     changehash(new_hash, trigger);
 }
 
@@ -477,7 +477,7 @@ export function activate(raw_terms, opts) {
         // bugs related to the URL fragment/hash being desynced from
         // mesasge_lists.current.
         if (opts.change_hash) {
-            save_narrow(terms, opts.trigger);
+            update_hash_to_match_filter(filter, opts.trigger);
         }
 
         // Show the new set of messages. It is important to set message_lists.current to
