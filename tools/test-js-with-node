@@ -248,7 +248,7 @@ EXEMPT_FILES = make_set(
         "web/src/subscriber_api.ts",
         "web/src/timerender.ts",
         "web/src/tippyjs.ts",
-        "web/src/todo_widget.js",
+        "web/src/todo_widget.ts",
         "web/src/topic_list.ts",
         "web/src/topic_popover.js",
         "web/src/tutorial.js",

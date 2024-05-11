@@ -1,10 +1,13 @@
 import $ from "jquery";
+import assert from "minimalistic-assert";
+import {z} from "zod";
 
 import render_widgets_todo_widget from "../templates/widgets/todo_widget.hbs";
 import render_widgets_todo_widget_tasks from "../templates/widgets/todo_widget_tasks.hbs";
 
 import * as blueslip from "./blueslip";
 import {$t} from "./i18n";
+import type {Message} from "./message_store";
 import {page_params} from "./page_params";
 import * as people from "./people";
 import {todo_widget_extra_data_schema} from "./submessage";
@@ -13,9 +16,81 @@ import {todo_widget_extra_data_schema} from "./submessage";
 // to a todo list. We arbitrarily pick this value.
 const MAX_IDX = 1000;
 
+type Task = {
+    completed: boolean;
+    task: string;
+    desc: string;
+    idx: number;
+    key: string;
+};
+
+type TodoEvent = {
+    data: InboundData;
+    sender_id: number;
+    message_id?: number;
+};
+
+type InboundData = Record<string, unknown> & {type: string};
+
+export type NewTaskOutboundData = {
+    type: string;
+    task: string;
+    desc: string;
+    key: number;
+    completed: boolean;
+};
+
+export type StrikeOutboundData = {
+    type: string;
+    key: string;
+};
+
+export type NewTaskListTitleOutboundData = {
+    type: string;
+    title: string;
+};
+
+export type TodoHandle = {
+    [key: string]: {
+        outbound: (...args: string[]) => InboundData | undefined;
+        inbound: (sender_id: number | string, data: InboundData) => void;
+    };
+    new_task_list_title: {
+        outbound: (title: string) => NewTaskListTitleOutboundData | undefined;
+        inbound: (sender_id: number | string, data: InboundData) => void;
+    };
+    new_task: {
+        outbound: (task: string, desc: string) => NewTaskOutboundData | undefined;
+        inbound: (sender_id: number | string, data: InboundData) => void;
+    };
+    strike: {
+        outbound: (key: string) => StrikeOutboundData;
+        inbound: (sender_id: number | string, data: InboundData) => void;
+    };
+};
+
+const inbound_new_task_schema = z.object({
+    key: z.number(),
+    task: z.string(),
+    desc: z.string(),
+    completed: z.boolean(),
+    type: z.literal("new_task"),
+});
+
+const inbound_strike_schema = z.object({
+    key: z.string(),
+    type: z.literal("strike"),
+});
+
 export class TaskData {
-    task_map = new Map();
+    task_map = new Map<string, Task>();
     my_idx = 1;
+    me: number;
+    task_list_title = "";
+    input_mode: boolean;
+    is_my_task_list: boolean;
+    message_sender_id: number;
+    report_error_function: (msg: string, more_info?: unknown) => void;
 
     constructor({
         message_sender_id,
@@ -24,6 +99,13 @@ export class TaskData {
         task_list_title,
         tasks,
         report_error_function,
+    }: {
+        message_sender_id: number;
+        current_user_id: number;
+        is_my_task_list: boolean;
+        task_list_title: string;
+        tasks: {task: string; desc: string}[];
+        report_error_function: (msg: string, more_info?: unknown) => void;
     }) {
         this.message_sender_id = message_sender_id;
         this.me = current_user_id;
@@ -43,55 +125,56 @@ export class TaskData {
                 key: i,
                 task: data.task,
                 desc: data.desc,
+                completed: false,
+                type: "new_task",
             });
         }
     }
 
-    set_task_list_title(new_title) {
+    set_task_list_title(new_title: string): void {
         this.input_mode = false;
         this.task_list_title = new_title;
     }
 
-    get_task_list_title() {
+    get_task_list_title(): string {
         return this.task_list_title;
     }
 
-    set_input_mode() {
+    set_input_mode(): void {
         this.input_mode = true;
     }
 
-    clear_input_mode() {
+    clear_input_mode(): void {
         this.input_mode = false;
     }
 
-    get_input_mode() {
+    get_input_mode(): boolean {
         return this.input_mode;
     }
 
-    get_widget_data() {
+    get_widget_data(): {all_tasks: Task[]} {
         const all_tasks = [...this.task_map.values()];
 
         const widget_data = {
             all_tasks,
         };
-
         return widget_data;
     }
 
-    name_in_use(name) {
+    name_in_use(name: string): boolean {
         for (const item of this.task_map.values()) {
             if (item.task === name) {
                 return true;
             }
         }
-
         return false;
     }
 
-    handle = {
+    // eslint-disable-next-line @typescript-eslint/member-ordering
+    handle: TodoHandle = {
         new_task_list_title: {
-            outbound: (title) => {
-                const event = {
+            outbound: (title: string) => {
+                const event: NewTaskListTitleOutboundData = {
                     type: "new_task_list_title",
                     title,
                 };
@@ -101,7 +184,7 @@ export class TaskData {
                 return undefined;
             },
 
-            inbound: (sender_id, data) => {
+            inbound: (sender_id: number | string, data: InboundData) => {
                 // Only the message author can edit questions.
                 if (sender_id !== this.message_sender_id) {
                     this.report_error_function(
@@ -120,9 +203,9 @@ export class TaskData {
         },
 
         new_task: {
-            outbound: (task, desc) => {
+            outbound: (task: string, desc: string) => {
                 this.my_idx += 1;
-                const event = {
+                const event: NewTaskOutboundData = {
                     type: "new_task",
                     key: this.my_idx,
                     task,
@@ -136,9 +219,10 @@ export class TaskData {
                 return undefined;
             },
 
-            inbound: (sender_id, data) => {
+            inbound: (sender_id: number | string, raw_data: InboundData): void => {
                 // All readers may add tasks. For legacy reasons, the
                 // inbound idx is called key in the event.
+                const data = inbound_new_task_schema.parse(raw_data);
                 const idx = data.key;
                 const task = data.task;
                 const desc = data.desc;
@@ -181,8 +265,8 @@ export class TaskData {
         },
 
         strike: {
-            outbound(key) {
-                const event = {
+            outbound(key: string) {
+                const event: StrikeOutboundData = {
                     type: "strike",
                     key,
                 };
@@ -190,8 +274,9 @@ export class TaskData {
                 return event;
             },
 
-            inbound: (_sender_id, data) => {
+            inbound: (_sender_id: number | string, raw_data: InboundData): void => {
                 // All message readers may strike/unstrike todo tasks.
+                const data = inbound_strike_schema.parse(raw_data);
                 const key = data.key;
                 if (typeof key !== "string") {
                     blueslip.warn("todo widget: bad type for inbound strike key");
@@ -210,9 +295,9 @@ export class TaskData {
         },
     };
 
-    handle_event(sender_id, data) {
+    handle_event(sender_id: number, data: InboundData): void {
         const type = data.type;
-        if (this.handle[type] && this.handle[type].inbound) {
+        if (this.handle[type]?.inbound !== undefined) {
             this.handle[type].inbound(sender_id, data);
         } else {
             blueslip.warn(`todo widget: unknown inbound type: ${type}`);
@@ -220,14 +305,31 @@ export class TaskData {
     }
 }
 
-export function activate({$elem, callback, extra_data, message}) {
+export function activate({
+    $elem,
+    callback,
+    extra_data,
+    message,
+}: {
+    $elem: JQuery;
+    callback: (
+        data: NewTaskOutboundData | StrikeOutboundData | NewTaskListTitleOutboundData | undefined,
+    ) => void;
+    extra_data: {
+        task_list_title?: string;
+        tasks?: {task: string; desc: string}[];
+    } | null;
+    message: Message;
+}): (events: TodoEvent[]) => void {
     const parse_result = todo_widget_extra_data_schema.safeParse(extra_data);
     if (!parse_result.success) {
         blueslip.warn("invalid todo extra data", parse_result.error.issues);
-        return () => {};
+        return () => {
+            /* intentionally empty */
+        };
     }
     const {data} = parse_result;
-    const {task_list_title = "", tasks = []} = data || {};
+    const {task_list_title = "", tasks = []} = data ?? {};
     const is_my_task_list = people.is_my_user_id(message.sender_id);
     const task_data = new TaskData({
         message_sender_id: message.sender_id,
@@ -238,12 +340,13 @@ export function activate({$elem, callback, extra_data, message}) {
         report_error_function: blueslip.warn,
     });
 
-    function update_edit_controls() {
-        const has_title = $elem.find("input.todo-task-list-title").val().trim() !== "";
+    function update_edit_controls(): void {
+        const has_title =
+            $elem.find<HTMLInputElement>("input.todo-task-list-title").val()?.trim() !== "";
         $elem.find("button.todo-task-list-title-check").toggle(has_title);
     }
 
-    function render_task_list_title() {
+    function render_task_list_title(): void {
         const task_list_title = task_data.get_task_list_title();
         const input_mode = task_data.get_input_mode();
         const can_edit = is_my_task_list && !input_mode;
@@ -256,7 +359,7 @@ export function activate({$elem, callback, extra_data, message}) {
         $elem.find(".todo-task-list-title-bar").toggle(input_mode);
     }
 
-    function start_editing() {
+    function start_editing(): void {
         task_data.set_input_mode();
 
         const task_list_title = task_data.get_task_list_title();
@@ -265,14 +368,15 @@ export function activate({$elem, callback, extra_data, message}) {
         $elem.find("input.todo-task-list-title").trigger("focus");
     }
 
-    function abort_edit() {
+    function abort_edit(): void {
         task_data.clear_input_mode();
         render_task_list_title();
     }
 
-    function submit_task_list_title() {
-        const $task_list_title_input = $elem.find("input.todo-task-list-title");
-        let new_task_list_title = $task_list_title_input.val().trim();
+    function submit_task_list_title(): void {
+        const $task_list_title_input = $elem.find<HTMLInputElement>("input.todo-task-list-title");
+        let new_task_list_title = $task_list_title_input.val()?.trim();
+        assert(new_task_list_title !== undefined, "task list title should not be undefined");
         const old_task_list_title = task_data.get_task_list_title();
 
         // We should disable the button for blank task list title,
@@ -295,7 +399,7 @@ export function activate({$elem, callback, extra_data, message}) {
         callback(data);
     }
 
-    function build_widget() {
+    function build_widget(): void {
         const html = render_widgets_todo_widget();
         $elem.html(html);
 
@@ -336,8 +440,10 @@ export function activate({$elem, callback, extra_data, message}) {
         $elem.find("button.add-task").on("click", (e) => {
             e.stopPropagation();
             $elem.find(".widget-error").text("");
-            const task = $elem.find("input.add-task").val().trim();
-            const desc = $elem.find("input.add-desc").val().trim();
+            const task = $elem?.find<HTMLInputElement>("input.add-task")?.val()?.trim();
+            assert(task !== undefined, "taskValue is undefined");
+            const desc = $elem?.find<HTMLInputElement>("input.add-desc")?.val()?.trim();
+            assert(desc !== undefined, "descValue is undefined");
 
             if (task === "") {
                 return;
@@ -357,7 +463,7 @@ export function activate({$elem, callback, extra_data, message}) {
         });
     }
 
-    function render_results() {
+    function render_results(): void {
         const widget_data = task_data.get_widget_data();
         const html = render_widgets_todo_widget_tasks(widget_data);
         $elem.find("ul.todo-widget").html(html);
@@ -377,13 +483,13 @@ export function activate({$elem, callback, extra_data, message}) {
                 return;
             }
             const key = $(e.target).attr("data-key");
-
+            assert(key !== undefined, "key is undefined");
             const data = task_data.handle.strike.outbound(key);
             callback(data);
         });
     }
 
-    const handle_events = function (events) {
+    const handle_events = function (events: TodoEvent[]): void {
         for (const event of events) {
             task_data.handle_event(event.sender_id, event.data);
         }
