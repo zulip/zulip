@@ -475,7 +475,9 @@ they can be disabled. [Learn more]({zulip_update_announcements_help_url}).
     # This is a bit hacky, but works and is kinda a 1-off thing.
     greetings_message = (
         Message.objects.select_for_update()
-        .filter(id__in=message_ids, content__icontains="a great place to say “hi”")
+        .filter(
+            id__in=message_ids, content=remove_single_newlines(content1_of_greetings_topic_name)
+        )
         .first()
     )
     assert greetings_message is not None
