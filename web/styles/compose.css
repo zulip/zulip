@@ -1519,6 +1519,16 @@ textarea.new_message_textarea,
     }
 }
 
+.split_messages_toggle {
+    display: inline-block;
+    color: var(--color-text-default);
+}
+
+#split_messages_checkbox {
+    margin-bottom: 2px;
+    cursor: pointer;
+}
+
 .split_message_enumerated {
     padding-left: 5px;
     padding-top: 2px;
