@@ -271,28 +271,27 @@ def send_initial_realm_messages(realm: Realm) -> None:
     # at least one message.
     welcome_bot = get_system_bot(settings.WELCOME_BOT, realm.id)
 
-    with override_language(realm.default_language):
-        # Content is declared here to apply translation properly.
-        #
-        # remove_single_newlines needs to be called on any multiline
-        # strings for them to render properly.
-        content1_of_moving_messages_topic_name = (
-            _("""
+    # Content is declared here to apply translation properly.
+    #
+    # remove_single_newlines needs to be called on any multiline
+    # strings for them to render properly.
+    content1_of_moving_messages_topic_name = (
+        _("""
 If anything is out of place, it’s easy to [move messages]({move_content_another_topic_help_url}),
 [rename]({rename_topic_help_url}) and [split]({move_content_another_topic_help_url}) topics,
 or even move a topic [to a different channel]({move_content_another_channel_help_url}).
 """)
-        ).format(
-            move_content_another_topic_help_url="/help/move-content-to-another-topic",
-            rename_topic_help_url="/help/rename-a-topic",
-            move_content_another_channel_help_url="/help/move-content-to-another-channel",
-        )
+    ).format(
+        move_content_another_topic_help_url="/help/move-content-to-another-topic",
+        rename_topic_help_url="/help/rename-a-topic",
+        move_content_another_channel_help_url="/help/move-content-to-another-channel",
+    )
 
-        content2_of_moving_messages_topic_name = _("""
+    content2_of_moving_messages_topic_name = _("""
 :point_right: Try moving this message to another topic and back.
 """)
 
-        content1_of_welcome_to_zulip_topic_name = _("""
+    content1_of_welcome_to_zulip_topic_name = _("""
 Zulip is organized to help you communicate more efficiently. Conversations are
 labeled with topics, which summarize what the conversation is about.
 
@@ -300,41 +299,41 @@ For example, this message is in the “{topic_name}” topic in the
 #**{zulip_discussion_channel_name}** channel, as you can see in the left sidebar
 and above.
 """).format(
-            zulip_discussion_channel_name=str(Realm.ZULIP_DISCUSSION_CHANNEL_NAME),
-            topic_name=_("welcome to Zulip!"),
-        )
+        zulip_discussion_channel_name=str(Realm.ZULIP_DISCUSSION_CHANNEL_NAME),
+        topic_name=_("welcome to Zulip!"),
+    )
 
-        content2_of_welcome_to_zulip_topic_name = _("""
+    content2_of_welcome_to_zulip_topic_name = _("""
 You can read Zulip one conversation at a time, seeing each message in context,
 no matter how many other conversations are going on.
 """)
 
-        content3_of_welcome_to_zulip_topic_name = _("""
+    content3_of_welcome_to_zulip_topic_name = _("""
 :point_right: When you're ready, check out your [Inbox](/#inbox) for other
 conversations with unread messages.
 """)
 
-        content1_of_start_conversation_topic_name = _("""
+    content1_of_start_conversation_topic_name = _("""
 To kick off a new conversation, click **Start new conversation** below.
 The new conversation thread will be labeled with its own topic.
 """)
 
-        content2_of_start_conversation_topic_name = _("""
+    content2_of_start_conversation_topic_name = _("""
 For a good topic name, think about finishing the sentence: “Hey, can we chat about…?”
 """)
 
-        content3_of_start_conversation_topic_name = _("""
+    content3_of_start_conversation_topic_name = _("""
 :point_right: Try starting a new conversation in this channel.
 """)
 
-        content1_of_experiments_topic_name = (
-            _("""
+    content1_of_experiments_topic_name = (
+        _("""
 :point_right:  Use this topic to try out [Zulip's messaging features]({format_message_help_url}).
 """)
-        ).format(format_message_help_url="/help/format-your-message-using-markdown")
+    ).format(format_message_help_url="/help/format-your-message-using-markdown")
 
-        content2_of_experiments_topic_name = (
-            _("""
+    content2_of_experiments_topic_name = (
+        _("""
 ```spoiler Want to see some examples?
 
 ````python
@@ -347,21 +346,21 @@ print("code blocks")
 Link to a conversation: #**{zulip_discussion_channel_name}>{topic_name}**
 ```
 """)
-        ).format(
-            zulip_discussion_channel_name=str(Realm.ZULIP_DISCUSSION_CHANNEL_NAME),
-            topic_name=_("welcome to Zulip!"),
-        )
+    ).format(
+        zulip_discussion_channel_name=str(Realm.ZULIP_DISCUSSION_CHANNEL_NAME),
+        topic_name=_("welcome to Zulip!"),
+    )
 
-        content1_of_greetings_topic_name = _("""
+    content1_of_greetings_topic_name = _("""
 This **greetings** topic is a great place to say “hi” :wave: to your teammates.
 """)
 
-        content2_of_greetings_topic_name = _("""
+    content2_of_greetings_topic_name = _("""
 :point_right: Click on this message to start a new message in the same conversation.
 """)
 
-        content_of_zulip_update_announcements_topic_name = (
-            _("""
+    content_of_zulip_update_announcements_topic_name = (
+        _("""
 Welcome! To help you learn about new features and configuration options,
 this topic will receive messages about important changes in Zulip.
 
@@ -369,11 +368,11 @@ You can read these update messages whenever it's convenient, or
 [mute]({mute_topic_help_url}) this topic if you are not interested.
 If your organization does not want to receive these announcements,
 they can be disabled. [Learn more]({zulip_update_announcements_help_url}).
-            """)
-        ).format(
-            zulip_update_announcements_help_url="/help/configure-automated-notices#zulip-update-announcements",
-            mute_topic_help_url="/help/mute-a-topic",
-        )
+        """)
+    ).format(
+        zulip_update_announcements_help_url="/help/configure-automated-notices#zulip-update-announcements",
+        mute_topic_help_url="/help/mute-a-topic",
+    )
 
     welcome_messages: List[Dict[str, str]] = []
 
