@@ -12,10 +12,13 @@ import {
 } from "text-field-edit";
 import {z} from "zod";
 
+import render_enumerated_split_message_part from "../templates/enumerated_split_message_part.hbs";
+
 import type {Typeahead} from "./bootstrap_typeahead.ts";
 import * as bulleted_numbered_list_util from "./bulleted_numbered_list_util.ts";
 import * as channel from "./channel.ts";
 import * as common from "./common.ts";
+import * as compose_split_messages from "./compose_split_messages.ts";
 import * as compose_textarea from "./compose_textarea.ts";
 import type {TypeaheadSuggestion} from "./composebox_typeahead.ts";
 import {$t, $t_html} from "./i18n.ts";
@@ -1219,7 +1222,11 @@ export function render_and_show_preview(
     $preview_content_box: JQuery,
     content: string,
 ): void {
-    function show_preview(rendered_content: string, raw_content?: string): void {
+    function show_preview(
+        rendered_content: string,
+        message_number?: number,
+        raw_content?: string,
+    ): void {
         // content is passed to check for status messages ("/me ...")
         // and will be undefined in case of errors
         let rendered_preview_html;
@@ -1234,43 +1241,68 @@ export function render_and_show_preview(
             rendered_preview_html = rendered_content;
         }
 
-        $preview_content_box.html(postprocess_content(rendered_preview_html));
+        if (message_number) {
+            // A positive number means that the message should be
+            // enumerated.
+            const enumerated_rendered_preview_html = render_enumerated_split_message_part({
+                message_number,
+                rendered_preview_html,
+            });
+            $preview_content_box.append($(postprocess_content(enumerated_rendered_preview_html)));
+        } else {
+            $preview_content_box.html(postprocess_content(rendered_preview_html));
+        }
+
         rendered_markdown.update_elements($preview_content_box);
     }
 
     if (content.length === 0) {
         show_preview($t_html({defaultMessage: "Nothing to preview"}));
     } else {
-        if (markdown.contains_backend_only_syntax(content)) {
-            const $spinner = $preview_spinner.expectOne();
-            loading.make_indicator($spinner);
-        } else {
-            // For messages that don't appear to contain syntax that
-            // is only supported by our backend Markdown processor, we
-            // render using the frontend Markdown processor (but still
-            // render server-side to ensure the preview is accurate;
-            // if the `markdown.contains_backend_only_syntax` logic is
-            // wrong, users will see a brief flicker of the locally
-            // echoed frontend rendering before receiving the
-            // authoritative backend rendering from the server).
-            markdown.render(content);
+        render_message_part(content, 1);
+        function render_message_part(whole_content: string, message_number: number): void {
+            const [content, remaining_content] =
+                compose_split_messages.split_message(whole_content);
+            if (!remaining_content && message_number === 1) {
+                // if no content remains on splitting the message once,
+                // it means that the message will not be split into parts
+                // and we should not enumerate the parts.
+                message_number = 0;
+            }
+            if (markdown.contains_backend_only_syntax(content)) {
+                const $spinner = $preview_spinner.expectOne();
+                loading.make_indicator($spinner);
+            } else {
+                // For messages that don't appear to contain syntax that
+                // is only supported by our backend Markdown processor, we
+                // render using the frontend Markdown processor (but still
+                // render server-side to ensure the preview is accurate;
+                // if the `markdown.contains_backend_only_syntax` logic is
+                // wrong, users will see a brief flicker of the locally
+                // echoed frontend rendering before receiving the
+                // authoritative backend rendering from the server).
+                markdown.render(content);
+            }
+            void channel.post({
+                url: "/json/messages/render",
+                data: {content},
+                success(response_data) {
+                    const data = message_render_response_schema.parse(response_data);
+                    if (markdown.contains_backend_only_syntax(content)) {
+                        loading.destroy_indicator($preview_spinner);
+                    }
+                    show_preview(data.rendered, message_number, content);
+                    if (remaining_content) {
+                        render_message_part(remaining_content, message_number + 1);
+                    }
+                },
+                error() {
+                    if (markdown.contains_backend_only_syntax(content)) {
+                        loading.destroy_indicator($preview_spinner);
+                    }
+                    show_preview($t_html({defaultMessage: "Failed to generate preview"}));
+                },
+            });
         }
-        void channel.post({
-            url: "/json/messages/render",
-            data: {content},
-            success(response_data) {
-                const data = message_render_response_schema.parse(response_data);
-                if (markdown.contains_backend_only_syntax(content)) {
-                    loading.destroy_indicator($preview_spinner);
-                }
-                show_preview(data.rendered, content);
-            },
-            error() {
-                if (markdown.contains_backend_only_syntax(content)) {
-                    loading.destroy_indicator($preview_spinner);
-                }
-                show_preview($t_html({defaultMessage: "Failed to generate preview"}));
-            },
-        });
     }
 }
