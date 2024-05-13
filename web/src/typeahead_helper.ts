@@ -7,7 +7,7 @@ import render_typeahead_list_item from "../templates/typeahead_list_item.hbs";
 
 import * as buddy_data from "./buddy_data";
 import * as compose_state from "./compose_state";
-import type {InputPillContainer} from "./input_pill";
+import type {InputPillContainer, InputPillItem} from "./input_pill";
 import * as people from "./people";
 import type {PseudoMentionUser, User} from "./people";
 import * as pm_conversations from "./pm_conversations";
@@ -30,6 +30,11 @@ export type UserOrMention = PseudoMentionUser | (User & {is_broadcast: undefined
 export type UserOrMentionPillData = UserOrMention & {type: "user_or_mention"};
 
 export type CombinedPillContainer = InputPillContainer<StreamPill | UserGroupPill | UserPill>;
+
+export type CombinedPillItem =
+    | InputPillItem<UserPill>
+    | InputPillItem<UserGroupPill>
+    | InputPillItem<StreamPill>;
 
 // Returns an array of direct message recipients, removing empty elements.
 // For example, "a,,b, " => ["a", "b"]
