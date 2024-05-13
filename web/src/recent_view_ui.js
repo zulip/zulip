@@ -442,7 +442,13 @@ export function process_messages(messages, msg_list_data) {
 
     // Only rerender if conversation data actually changed.
     if (conversation_data_updated) {
-        complete_rerender();
+        if (messages.length === 1) {
+            // inplace_rerender for a single message
+            const topic_key = recent_view_util.get_key_from_message(messages[0]);
+            inplace_rerender(topic_key);
+        } else {
+            complete_rerender();
+        }
     }
 }
 
