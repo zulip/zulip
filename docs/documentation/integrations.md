@@ -44,10 +44,10 @@ Usually, this involves a few steps:
   the message to provide an example message in the documentation.
 
   If your new integration is an incoming webhook integration, you can generate
-  the screenshot using `tools/generate-integration-docs-screenshot`:
+  the screenshot using `tools/screenshots/generate-integration-docs-screenshot`:
 
   ```bash
-  ./tools/generate-integration-docs-screenshot --integration integrationname
+  ./tools/screenshots/generate-integration-docs-screenshot --integration integrationname
   ```
 
   If you have trouble using this tool, you can also manually generate the
