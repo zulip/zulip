@@ -81,6 +81,18 @@ them. [Learn more]({typing_notifications_help_url}).
             save_draft_help_url="/help/view-and-edit-your-message-drafts#save-a-draft-and-start-a-new-message",
         ),
     ),
+    ZulipUpdateAnnouncement(
+        level=4,
+        message="""
+- To simplify Zulip for new users, **Streams** have been renamed to
+**Channels**. The functionality remains exactly the same, and bots do not need
+to be updated. [Learn more]({introduction_to_channels_help_url}).
+
+- Topics and messages now load much faster when you open the web or desktop app.
+""".format(
+            introduction_to_channels_help_url="/help/introduction-to-channels",
+        ),
+    ),
 ]
 
 
