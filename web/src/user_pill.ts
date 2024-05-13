@@ -4,7 +4,7 @@ import * as input_pill from "./input_pill";
 import type {User} from "./people";
 import * as people from "./people";
 import {realm} from "./state_data";
-import type {CombinedPillContainer} from "./typeahead_helper";
+import type {CombinedPillContainer, CombinedPillItem} from "./typeahead_helper";
 import * as user_status from "./user_status";
 
 // This will be used for pills for things like composing
@@ -22,15 +22,18 @@ export type UserPillData = User & {type: "user"};
 
 export function create_item_from_email(
     email: string,
-    current_items: InputPillItem<UserPill>[],
+    current_items: CombinedPillItem[],
     pill_config?: InputPillConfig | undefined,
 ): InputPillItem<UserPill> | undefined {
     // For normal Zulip use, we need to validate the email for our realm.
+    const filtered_current_items = current_items.flatMap((item) =>
+        item.type === "user" ? item : [],
+    );
     const user = people.get_by_email(email);
 
     if (!user) {
         if (realm.realm_is_zephyr_mirror_realm) {
-            const existing_emails = current_items.map((item) => item.email);
+            const existing_emails = filtered_current_items.map((item) => item.email);
 
             if (existing_emails.includes(email)) {
                 return undefined;
@@ -54,7 +57,7 @@ export function create_item_from_email(
         return undefined;
     }
 
-    const existing_ids = current_items.map((item) => item.user_id);
+    const existing_ids = filtered_current_items.map((item) => item.user_id);
 
     if (existing_ids.includes(user.user_id)) {
         return undefined;
