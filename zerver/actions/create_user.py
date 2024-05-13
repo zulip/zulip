@@ -582,7 +582,8 @@ def do_create_user(
     if realm_creation:
         from zerver.lib.onboarding import send_initial_realm_messages
 
-        send_initial_realm_messages(realm)
+        with override_language(realm.default_language):
+            send_initial_realm_messages(realm)
 
     return user_profile
 
