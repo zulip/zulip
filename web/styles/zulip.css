@@ -795,7 +795,7 @@ strong {
    + https://github.com/zulip/zulip/commit/7a3a3be7e547d3e8f0ed00820835104867f2433d
    basic idea of this fix is to remove decorations from :hover and apply them only
    on :focus. */
-.typeahead-menu {
+.typeahead.dropdown-menu .typeahead-menu {
     & li {
         word-break: break-word;
 
@@ -805,7 +805,7 @@ strong {
             clear: both;
             font-weight: normal;
             line-height: 20px;
-            color: hsl(0deg 0% 20%);
+            color: var(--color-dropdown-item);
             white-space: nowrap;
 
             /* hidden text just to maintain line height for a blank option */
@@ -816,19 +816,10 @@ strong {
                 }
             }
 
-            &:hover {
-                text-decoration: none;
-            }
-
+            &:hover,
             &:focus {
-                color: hsl(0deg 0% 100%);
                 text-decoration: none;
-                background-color: hsl(200deg 100% 38%);
-                background-image: linear-gradient(
-                    to bottom,
-                    hsl(200deg 100% 40%),
-                    hsl(200deg 100% 35%)
-                );
+                outline: 0;
             }
 
             /* styles defined for user_circle here only deal with positioning of user_presence_circle
@@ -849,23 +840,12 @@ strong {
     }
 
     .active > a {
-        color: hsl(0deg 0% 100%);
-        text-decoration: none;
-        background-color: hsl(200deg 100% 38%);
-        background-image: linear-gradient(
-            to bottom,
-            hsl(200deg 100% 40%),
-            hsl(200deg 100% 35%)
-        );
-        outline: 0;
-
-        .user_circle_empty {
-            border-color: hsl(0deg 0% 25%);
+        &,
+        &:hover,
+        &:focus {
+            color: var(--color-active-dropdown-item);
+            background-color: var(--background-color-active-dropdown-item);
         }
-    }
-
-    .active > a:hover {
-        text-decoration: none;
     }
 }
 
@@ -1362,20 +1342,11 @@ div.focused-message-list {
 }
 
 .typeahead.dropdown-menu {
-    /* Use default color until some other typeahead overrides it. */
-    color: var(--color-text-default);
-
-    a {
-        color: inherit;
-
-        strong.typeahead-strong-section {
-            white-space: pre;
-        }
+    a strong.typeahead-strong-section {
+        white-space: pre;
     }
 
     .active {
-        color: hsl(0deg 0% 100%);
-
         .unsubscribed_icon {
             display: block;
             float: right;
@@ -2273,23 +2244,31 @@ body:not(.hide-left-sidebar) {
         .dropdown-list {
             list-style: none;
             margin: 0;
-
-            .list-item:focus {
-                background-color: hsl(220deg 12% 4.9% / 5%);
-                outline: none;
-            }
         }
+    }
 
-        .no-dropdown-items {
-            color: hsl(0deg 0% 60%);
-            display: none;
-        }
+    .no-dropdown-items {
+        color: hsl(0deg 0% 60%);
+        display: none;
+        padding: 3px 10px 3px 8px;
+        font-weight: 400;
+        line-height: 20px;
+        white-space: normal;
     }
 }
 
-.dropdown-list-container .dropdown-list-item-common-styles {
+.dropdown-list-container .list-item {
+    color: var(--color-dropdown-item);
+
+    &:focus {
+        background-color: var(--background-color-active-dropdown-item);
+        outline: none;
+    }
+}
+
+.dropdown-list-container .dropdown-list .dropdown-list-item-common-styles {
     display: block;
-    color: hsl(0deg 0% 20%);
+    color: var(--color-dropdown-item);
     padding: 3px 10px 3px 8px;
     font-weight: 400;
     line-height: 20px;
@@ -2302,13 +2281,11 @@ body:not(.hide-left-sidebar) {
         padding-right: 2px;
     }
 
+    &:focus,
     &:hover {
+        color: var(--color-dropdown-item);
         text-decoration: none;
-        background-color: hsl(220deg 12% 4.9% / 5%);
-    }
-
-    &:focus {
-        text-decoration: none;
+        background-color: var(--background-color-active-dropdown-item);
         outline: none;
     }
 }

@@ -568,8 +568,12 @@
     width: 220px;
 }
 
-.recent-view-filter-dropdown-list-container .dropdown-list-item-common-styles,
-.inbox-filter-dropdown-list-container .dropdown-list-item-common-styles {
+.recent-view-filter-dropdown-list-container
+    .dropdown-list
+    .dropdown-list-item-common-styles,
+.inbox-filter-dropdown-list-container
+    .dropdown-list
+    .dropdown-list-item-common-styles {
     padding: 5px 10px;
     display: flex;
     flex-direction: column;

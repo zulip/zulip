@@ -1288,12 +1288,9 @@ textarea.new_message_textarea {
 }
 
 .typeahead.dropdown-menu {
-    background: hsl(0deg 0% 100%);
-
     .typeahead-menu {
         list-style: none;
-        margin: 0;
-        background-color: var(--color-background-popover);
+        margin: 4px 0;
     }
 
     .typeahead-header {
@@ -1307,6 +1304,7 @@ textarea.new_message_textarea {
     }
 
     #typeahead-header-text {
+        color: var(--color-dropdown-item);
         font-size: 12px;
     }
 }

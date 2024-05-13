@@ -341,7 +341,7 @@ export class Typeahead<ItemType extends string | object> {
                 // and wraps it if it overflows the visible container.
                 maxWidth: "none",
                 delay: [0, 0],
-                theme: "popover-menu",
+                theme: "dropdown-widget",
                 placement: this.dropup ? "top-start" : "bottom-start",
                 popperOptions: {
                     strategy: "fixed",
@@ -373,7 +373,7 @@ export class Typeahead<ItemType extends string | object> {
                 // We expect the typeahead creator to handle when to hide / show the typeahead.
                 trigger: "manual",
                 arrow: false,
-                offset: [0, 0],
+                offset: [0, 2],
                 // We have event handlers to hide the typeahead, so we
                 // don't want tippy to hide it for us.
                 hideOnClick: false,

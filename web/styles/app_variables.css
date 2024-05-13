@@ -627,6 +627,11 @@
     --color-background-emoji-picker-emoji-reacted-focus: hsl(195deg 55% 88%);
     /* Same color as background color of header / footer */
     --color-border-emoji-picker-tippy-arrow: hsl(0deg 0% 93%);
+
+    /* Dropdown constants */
+    --color-dropdown-item: hsl(0deg 0% 20%);
+    --color-active-dropdown-item: hsl(0deg 0% 0%);
+    --background-color-active-dropdown-item: hsl(220deg 12% 4.9% / 5%);
 }
 
 %dark-theme {
@@ -975,6 +980,11 @@
     --color-border-add-subscription-button-focus: hsl(0deg 0% 67%);
     /* Same color as background color of header / footer */
     --color-border-emoji-picker-tippy-arrow: hsl(211.58deg 33.33% 11.18%);
+
+    /* Dropdown constants */
+    --color-dropdown-item: hsl(0deg 0% 75%);
+    --color-active-dropdown-item: hsl(0deg 0% 90%);
+    --background-color-active-dropdown-item: hsl(220deg 12% 100% / 7%);
 }
 
 @media screen {
