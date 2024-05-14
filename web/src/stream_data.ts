@@ -415,6 +415,13 @@ export function update_can_remove_subscribers_group_id(
     sub.can_remove_subscribers_group = can_remove_subscribers_group_id;
 }
 
+export function update_can_access_stream_topics_group_id(
+    sub: StreamSubscription,
+    can_access_stream_topics_group_id: number,
+): void {
+    sub.can_access_stream_topics_group = can_access_stream_topics_group_id;
+}
+
 export function receives_notifications(
     stream_id: number,
     notification_name: keyof StreamSpecificNotificationSettings,

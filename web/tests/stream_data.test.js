@@ -455,11 +455,13 @@ test("stream_settings", () => {
     stream_data.update_stream_post_policy(sub, 1);
     stream_data.update_message_retention_setting(sub, -1);
     stream_data.update_can_remove_subscribers_group_id(sub, moderators_group.id);
+    stream_data.update_can_access_stream_topics_group_id(sub, admins_group.id);
     assert.equal(sub.invite_only, false);
     assert.equal(sub.history_public_to_subscribers, false);
     assert.equal(sub.stream_post_policy, settings_config.stream_post_policy_values.everyone.code);
     assert.equal(sub.message_retention_days, -1);
     assert.equal(sub.can_remove_subscribers_group, moderators_group.id);
+    assert.equal(sub.can_access_stream_topics_group, admins_group.id);
 
     // For guest user only retrieve subscribed streams
     sub_rows = stream_settings_data.get_updated_unsorted_subs();
