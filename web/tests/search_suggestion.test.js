@@ -49,6 +49,12 @@ const jeff = {
     full_name: "Jeff Zoolipson",
 };
 
+const walter = {
+    email: "walter@zulip.com",
+    user_id: 104,
+    full_name: "Walter Ignore",
+};
+
 const example_avatar_url = "http://example.com/example.png";
 
 function init() {
@@ -60,6 +66,7 @@ function init() {
     people.add_active_user(ted);
     people.add_active_user(alice);
     people.add_active_user(jeff);
+    people.add_active_user(walter);
 
     people.initialize_current_user(me.user_id);
 
@@ -127,17 +134,18 @@ test("dm_suggestions", ({override, mock_template}) => {
         "dm:jeff@zulip.com",
         "dm:myself@zulip.com",
         "dm:ted@zulip.com",
+        "dm:walter@zulip.com",
     ];
     assert.deepEqual(suggestions.strings, expected);
 
-    query = "is:dm al";
+    query = "is:dm wa";
     suggestions = get_suggestions(query);
     expected = [
-        "is:dm al",
-        "is:dm is:alerted",
-        "is:dm sender:alice@zulip.com",
-        "is:dm dm:alice@zulip.com",
-        "is:dm dm-including:alice@zulip.com",
+        "is:dm wa",
+        "is:dm is:watched",
+        "is:dm sender:walter@zulip.com",
+        "is:dm dm:walter@zulip.com",
+        "is:dm dm-including:walter@zulip.com",
         "is:dm",
     ];
     assert.deepEqual(suggestions.strings, expected);
@@ -208,19 +216,19 @@ test("dm_suggestions", ({override, mock_template}) => {
     assert.deepEqual(suggestions.strings, expected);
 
     // Make sure suggestions still work if preceding tokens
-    query = "is:alerted sender:ted@zulip.com";
+    query = "is:watched sender:ted@zulip.com";
     suggestions = get_suggestions(query);
-    expected = ["is:alerted sender:ted@zulip.com", "is:alerted"];
+    expected = ["is:watched sender:ted@zulip.com", "is:watched"];
     assert.deepEqual(suggestions.strings, expected);
 
-    query = "is:starred has:link is:dm al";
+    query = "is:starred has:link is:dm wa";
     suggestions = get_suggestions(query);
     expected = [
-        "is:starred has:link is:dm al",
-        "is:starred has:link is:dm is:alerted",
-        "is:starred has:link is:dm sender:alice@zulip.com",
-        "is:starred has:link is:dm dm:alice@zulip.com",
-        "is:starred has:link is:dm dm-including:alice@zulip.com",
+        "is:starred has:link is:dm wa",
+        "is:starred has:link is:dm is:watched",
+        "is:starred has:link is:dm sender:walter@zulip.com",
+        "is:starred has:link is:dm dm:walter@zulip.com",
+        "is:starred has:link is:dm dm-including:walter@zulip.com",
         "is:starred has:link is:dm",
         "is:starred has:link",
         "is:starred",
@@ -264,6 +272,7 @@ test("group_suggestions", ({mock_template}) => {
         "dm:bob@zulip.com,alice@zulip.com",
         "dm:bob@zulip.com,jeff@zulip.com",
         "dm:bob@zulip.com,ted@zulip.com",
+        "dm:bob@zulip.com,walter@zulip.com",
     ];
     assert.deepEqual(suggestions.strings, expected);
 
@@ -302,6 +311,7 @@ test("group_suggestions", ({mock_template}) => {
         "is:dm -dm:bob@zulip.com,alice@zulip.com",
         "is:dm -dm:bob@zulip.com,jeff@zulip.com",
         "is:dm -dm:bob@zulip.com,ted@zulip.com",
+        "is:dm -dm:bob@zulip.com,walter@zulip.com",
     ];
     assert.deepEqual(suggestions.strings, expected);
 
@@ -330,6 +340,7 @@ test("group_suggestions", ({mock_template}) => {
         "dm:bob@zulip.com,alice@zulip.com",
         "dm:bob@zulip.com,jeff@zulip.com",
         "dm:bob@zulip.com,ted@zulip.com",
+        "dm:bob@zulip.com,walter@zulip.com",
     ];
     assert.deepEqual(suggestions.strings, expected);
 
@@ -377,6 +388,7 @@ test("group_suggestions", ({mock_template}) => {
         "dm:bob@zulip.com,ted@zulip.com",
         "dm:bob@zulip.com,alice@zulip.com",
         "dm:bob@zulip.com,jeff@zulip.com",
+        "dm:bob@zulip.com,walter@zulip.com",
     ];
     assert.deepEqual(suggestions.strings, expected);
 
@@ -388,6 +400,7 @@ test("group_suggestions", ({mock_template}) => {
         "dm:bob@zulip.com,ted@zulip.com,",
         "dm:bob@zulip.com,ted@zulip.com,jeff@zulip.com",
         "dm:bob@zulip.com,ted@zulip.com,alice@zulip.com",
+        "dm:bob@zulip.com,ted@zulip.com,walter@zulip.com",
     ];
     assert.deepEqual(suggestions.strings, expected);
 
@@ -401,6 +414,7 @@ test("group_suggestions", ({mock_template}) => {
         "dm:jeff@zulip.com,alice@zulip.com",
         "dm:jeff@zulip.com,bob@zulip.com",
         "dm:jeff@zulip.com,ted@zulip.com",
+        "dm:jeff@zulip.com,walter@zulip.com",
     ];
     assert.deepEqual(suggestions.strings, expected);
 
@@ -423,7 +437,7 @@ test("empty_query_suggestions", () => {
         "is:dm",
         "is:starred",
         "is:mentioned",
-        "is:alerted",
+        "is:watched",
         "is:unread",
         "is:resolved",
         "sender:myself@zulip.com",
@@ -442,7 +456,7 @@ test("empty_query_suggestions", () => {
     assert.equal(describe("is:dm"), "Direct messages");
     assert.equal(describe("is:starred"), "Starred messages");
     assert.equal(describe("is:mentioned"), "@-mentions");
-    assert.equal(describe("is:alerted"), "Alerted messages");
+    assert.equal(describe("is:watched"), "Watched messages");
     assert.equal(describe("is:unread"), "Unread messages");
     assert.equal(describe("is:resolved"), "Topics marked as resolved");
     assert.equal(describe("sender:myself@zulip.com"), "Sent by me");
@@ -503,11 +517,11 @@ test("has_suggestions", ({override, mock_template}) => {
     expected = ["att", "has:attachment"];
     assert.deepEqual(suggestions.strings, expected);
 
-    query = "channel:Denmark is:alerted has:lin";
+    query = "channel:Denmark is:watched has:lin";
     suggestions = get_suggestions(query);
     expected = [
-        "channel:Denmark is:alerted has:link",
-        "channel:Denmark is:alerted",
+        "channel:Denmark is:watched has:link",
+        "channel:Denmark is:watched",
         "channel:Denmark",
     ];
     assert.deepEqual(suggestions.strings, expected);
@@ -527,12 +541,15 @@ test("check_is_suggestions", ({override, mock_template}) => {
         "is:dm",
         "is:starred",
         "is:mentioned",
-        "is:alerted",
+        "is:watched",
         "is:unread",
         "is:resolved",
         "sender:alice@zulip.com",
+        "sender:walter@zulip.com",
         "dm:alice@zulip.com",
+        "dm:walter@zulip.com",
         "dm-including:alice@zulip.com",
+        "dm-including:walter@zulip.com",
         "has:image",
     ];
     assert.deepEqual(suggestions.strings, expected);
@@ -544,7 +561,7 @@ test("check_is_suggestions", ({override, mock_template}) => {
     assert.equal(describe("is:dm"), "Direct messages");
     assert.equal(describe("is:starred"), "Starred messages");
     assert.equal(describe("is:mentioned"), "@-mentions");
-    assert.equal(describe("is:alerted"), "Alerted messages");
+    assert.equal(describe("is:watched"), "Watched messages");
     assert.equal(describe("is:unread"), "Unread messages");
     assert.equal(describe("is:resolved"), "Topics marked as resolved");
 
@@ -555,7 +572,7 @@ test("check_is_suggestions", ({override, mock_template}) => {
         "-is:dm",
         "-is:starred",
         "-is:mentioned",
-        "-is:alerted",
+        "-is:watched",
         "-is:unread",
         "-is:resolved",
     ];
@@ -564,7 +581,7 @@ test("check_is_suggestions", ({override, mock_template}) => {
     assert.equal(describe("-is:dm"), "Exclude direct messages");
     assert.equal(describe("-is:starred"), "Exclude starred messages");
     assert.equal(describe("-is:mentioned"), "Exclude @-mentions");
-    assert.equal(describe("-is:alerted"), "Exclude alerted messages");
+    assert.equal(describe("-is:watched"), "Exclude watched messages");
     assert.equal(describe("-is:unread"), "Exclude unread messages");
     assert.equal(describe("-is:resolved"), "Exclude topics marked as resolved");
 
@@ -572,7 +589,7 @@ test("check_is_suggestions", ({override, mock_template}) => {
 
     query = "is:";
     suggestions = get_suggestions(query);
-    expected = ["is:dm", "is:starred", "is:mentioned", "is:alerted", "is:unread", "is:resolved"];
+    expected = ["is:dm", "is:starred", "is:mentioned", "is:watched", "is:unread", "is:resolved"];
     assert.deepEqual(suggestions.strings, expected);
 
     query = "is:st";
@@ -739,13 +756,13 @@ test("topic_suggestions", ({override, mock_template}) => {
     expected = ["-topic:te", "channel:office -topic:team", "channel:office -topic:test"];
     assert.deepEqual(suggestions.strings, expected);
 
-    suggestions = get_suggestions("is:alerted channel:devel is:starred topic:");
+    suggestions = get_suggestions("is:watched channel:devel is:starred topic:");
     expected = [
-        "is:alerted channel:devel is:starred topic:",
-        "is:alerted channel:devel is:starred topic:REXX",
-        "is:alerted channel:devel is:starred",
-        "is:alerted channel:devel",
-        "is:alerted",
+        "is:watched channel:devel is:starred topic:",
+        "is:watched channel:devel is:starred topic:REXX",
+        "is:watched channel:devel is:starred",
+        "is:watched channel:devel",
+        "is:watched",
     ];
     assert.deepEqual(suggestions.strings, expected);
 
@@ -1025,13 +1042,13 @@ test("operator_suggestions", ({override, mock_template}) => {
     expected = ["-s", "-sender:myself@zulip.com", "-sender:", "-channel:"];
     assert.deepEqual(suggestions.strings, expected);
 
-    query = "channel:Denmark is:alerted -f";
+    query = "channel:Denmark is:watched -f";
     suggestions = get_suggestions(query);
     expected = [
-        "channel:Denmark is:alerted -f",
-        "channel:Denmark is:alerted -sender:myself@zulip.com",
-        "channel:Denmark is:alerted -sender:",
-        "channel:Denmark is:alerted",
+        "channel:Denmark is:watched -f",
+        "channel:Denmark is:watched -sender:myself@zulip.com",
+        "channel:Denmark is:watched -sender:",
+        "channel:Denmark is:watched",
         "channel:Denmark",
     ];
     assert.deepEqual(suggestions.strings, expected);

@@ -219,7 +219,7 @@ class NarrowBuilderTest(ZulipTestCase):
         self._do_add_term_test(term, "WHERE (flags & %(flags_1)s) = %(param_1)s")
 
     def test_add_term_using_is_operator_and_non_dm_operand(self) -> None:
-        for operand in ["starred", "mentioned", "alerted"]:
+        for operand in ["starred", "mentioned", "alerted", "watched"]:
             term = dict(operator="is", operand=operand)
             self._do_add_term_test(term, "WHERE (flags & %(flags_1)s) != %(param_1)s")
 
@@ -241,6 +241,14 @@ class NarrowBuilderTest(ZulipTestCase):
         self._do_add_term_test(term, where_clause, params)
 
         term = dict(operator="is", operand="alerted", negated=True)
+        where_clause = "WHERE (flags & %(flags_1)s) = %(param_1)s"
+        params = dict(
+            flags_1=UserMessage.flags.has_alert_word.mask,
+            param_1=0,
+        )
+        self._do_add_term_test(term, where_clause, params)
+
+        term = dict(operator="is", operand="watched", negated=True)
         where_clause = "WHERE (flags & %(flags_1)s) = %(param_1)s"
         params = dict(
             flags_1=UserMessage.flags.has_alert_word.mask,
@@ -867,9 +875,34 @@ class NarrowLibraryTest(ZulipTestCase):
             )
         )
 
+        self.assertFalse(
+            narrow_predicate(
+                message={},
+                flags=["watched"],
+            )
+        )
+
         ###
 
         narrow_predicate = build_narrow_predicate([NarrowTerm(operator="is", operand="alerted")])
+
+        self.assertTrue(
+            narrow_predicate(
+                message={},
+                flags=["mentioned"],
+            )
+        )
+
+        self.assertFalse(
+            narrow_predicate(
+                message={},
+                flags=["starred"],
+            )
+        )
+
+        ###
+
+        narrow_predicate = build_narrow_predicate([NarrowTerm(operator="is", operand="watched")])
 
         self.assertTrue(
             narrow_predicate(
@@ -1097,6 +1130,7 @@ class IncludeHistoryTest(ZulipTestCase):
         narrow = [
             dict(operator="channels", operand="public"),
             dict(operator="is", operand="alerted"),
+            dict(operator="is", operand="watched"),
         ]
         self.assertFalse(ok_to_include_history(narrow, user_profile, False))
         narrow = [

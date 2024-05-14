@@ -90,9 +90,9 @@ import * as user_topics_ui from "./user_topics_ui";
 export function dispatch_normal_event(event) {
     const noop = function () {};
     switch (event.type) {
-        case "alert_words":
-            alert_words.set_words(event.alert_words);
-            alert_words_ui.rerender_alert_words_ui();
+        case "watched_phrases":
+            alert_words.set_watched_phrases(event.watched_phrases);
+            alert_words_ui.rerender_watched_phrases_ui();
             break;
 
         case "attachment":

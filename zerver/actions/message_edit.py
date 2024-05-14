@@ -269,7 +269,7 @@ def send_message_moved_breadcrumbs(
 def get_mentions_for_message_updates(message_id: int) -> Set[int]:
     # We exclude UserMessage.flags.historical rows since those
     # users did not receive the message originally, and thus
-    # probably are not relevant for reprocessed alert_words,
+    # probably are not relevant for reprocessed watched_phrases,
     # mentions and similar rendering features.  This may be a
     # decision we change in the future.
     mentioned_user_ids = (
@@ -296,7 +296,7 @@ def update_user_message_flags(
     topic_participant_user_ids: AbstractSet[int] = set(),
 ) -> None:
     mentioned_ids = rendering_result.mentions_user_ids
-    ids_with_alert_words = rendering_result.user_ids_with_alert_words
+    ids_with_watched_phrases = rendering_result.user_ids_with_watched_phrases
     changed_ums: Set[UserMessage] = set()
 
     def update_flag(um: UserMessage, should_set: bool, flag: int) -> None:
@@ -310,7 +310,7 @@ def update_user_message_flags(
                 changed_ums.add(um)
 
     for um in ums:
-        has_alert_word = um.user_profile_id in ids_with_alert_words
+        has_alert_word = um.user_profile_id in ids_with_watched_phrases
         update_flag(um, has_alert_word, UserMessage.flags.has_alert_word)
 
         mentioned = um.user_profile_id in mentioned_ids

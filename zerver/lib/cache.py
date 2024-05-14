@@ -616,8 +616,8 @@ def flush_realm(
         cache_delete(realm_user_dicts_cache_key(realm.id))
         cache_delete(active_user_ids_cache_key(realm.id))
         cache_delete(bot_dicts_in_realm_cache_key(realm.id))
-        cache_delete(realm_alert_words_cache_key(realm.id))
-        cache_delete(realm_alert_words_automaton_cache_key(realm.id))
+        cache_delete(realm_watched_phrases_cache_key(realm.id))
+        cache_delete(realm_watched_phrases_automaton_cache_key(realm.id))
         cache_delete(active_non_guest_user_ids_cache_key(realm.id))
         cache_delete(realm_rendered_description_cache_key(realm))
         cache_delete(realm_text_description_cache_key(realm))
@@ -626,12 +626,12 @@ def flush_realm(
         cache_delete(realm_text_description_cache_key(realm))
 
 
-def realm_alert_words_cache_key(realm_id: int) -> str:
-    return f"realm_alert_words:{realm_id}"
+def realm_watched_phrases_cache_key(realm_id: int) -> str:
+    return f"realm_watched_phrases:{realm_id}"
 
 
-def realm_alert_words_automaton_cache_key(realm_id: int) -> str:
-    return f"realm_alert_words_automaton:{realm_id}"
+def realm_watched_phrases_automaton_cache_key(realm_id: int) -> str:
+    return f"realm_watched_phrases_automaton:{realm_id}"
 
 
 def realm_rendered_description_cache_key(realm: "Realm") -> str:

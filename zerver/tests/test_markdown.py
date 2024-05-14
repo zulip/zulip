@@ -16,14 +16,14 @@ from markdown import Markdown
 from responses import matchers
 from typing_extensions import override
 
-from zerver.actions.alert_words import do_add_alert_words
+from zerver.actions.alert_words import do_add_watched_phrases
 from zerver.actions.create_realm import do_create_realm
 from zerver.actions.realm_emoji import do_remove_realm_emoji
 from zerver.actions.realm_settings import do_set_realm_property
 from zerver.actions.user_groups import check_add_user_group
 from zerver.actions.user_settings import do_change_user_setting
 from zerver.actions.users import change_user_is_active
-from zerver.lib.alert_words import get_alert_word_automaton
+from zerver.lib.alert_words import WatchedPhraseData, get_watched_phrases_automaton
 from zerver.lib.camo import get_camo_url
 from zerver.lib.create_user import create_user
 from zerver.lib.emoji import codepoint_to_name, get_emoji_url
@@ -1729,17 +1729,23 @@ class MarkdownTest(ZulipTestCase):
                     [{"id": linkifier.id, "pattern": "whatever", "url_template": "whatever"}],
                 )
 
-    def test_alert_words(self) -> None:
+    def test_watched_phrases(self) -> None:
         user_profile = self.example_user("othello")
-        do_add_alert_words(user_profile, ["ALERTWORD", "scaryword"])
+        do_add_watched_phrases(
+            user_profile,
+            [
+                WatchedPhraseData(watched_phrase="ALERTWORD"),
+                WatchedPhraseData(watched_phrase="scaryword"),
+            ],
+        )
         msg = Message(
             sender=user_profile, sending_client=get_client("test"), realm=user_profile.realm
         )
-        realm_alert_words_automaton = get_alert_word_automaton(user_profile.realm)
+        realm_watched_phrases_automaton = get_watched_phrases_automaton(user_profile.realm)
 
         def render(msg: Message, content: str) -> MessageRenderingResult:
             return render_message_markdown(
-                msg, content, realm_alert_words_automaton=realm_alert_words_automaton
+                msg, content, realm_watched_phrases_automaton=realm_watched_phrases_automaton
             )
 
         content = "We have an ALERTWORD day today!"
@@ -1747,7 +1753,7 @@ class MarkdownTest(ZulipTestCase):
         self.assertEqual(
             rendering_result.rendered_content, "<p>We have an ALERTWORD day today!</p>"
         )
-        self.assertEqual(rendering_result.user_ids_with_alert_words, {user_profile.id})
+        self.assertEqual(rendering_result.user_ids_with_watched_phrases, {user_profile.id})
 
         msg = Message(
             sender=user_profile, sending_client=get_client("test"), realm=user_profile.realm
@@ -1757,33 +1763,33 @@ class MarkdownTest(ZulipTestCase):
         self.assertEqual(
             rendering_result.rendered_content, "<p>We have a NOTHINGWORD day today!</p>"
         )
-        self.assertEqual(rendering_result.user_ids_with_alert_words, set())
+        self.assertEqual(rendering_result.user_ids_with_watched_phrases, set())
 
-    def test_alert_words_returns_user_ids_with_alert_words(self) -> None:
-        alert_words_for_users: Dict[str, List[str]] = {
-            "hamlet": ["how"],
-            "cordelia": ["this possible"],
-            "iago": ["hello"],
-            "prospero": ["hello"],
-            "othello": ["how are you"],
-            "aaron": ["hey"],
+    def test_watched_phrases_returns_user_ids_with_watched_phrases(self) -> None:
+        watched_phrases_for_users: Dict[str, List[WatchedPhraseData]] = {
+            "hamlet": [WatchedPhraseData(watched_phrase="how")],
+            "cordelia": [WatchedPhraseData(watched_phrase="this possible")],
+            "iago": [WatchedPhraseData(watched_phrase="hello")],
+            "prospero": [WatchedPhraseData(watched_phrase="hello")],
+            "othello": [WatchedPhraseData(watched_phrase="how are you")],
+            "aaron": [WatchedPhraseData(watched_phrase="hey")],
         }
         user_profiles: Dict[str, UserProfile] = {}
-        for username, alert_words in alert_words_for_users.items():
+        for username, watched_phrases in watched_phrases_for_users.items():
             user_profile = self.example_user(username)
             user_profiles.update({username: user_profile})
-            do_add_alert_words(user_profile, alert_words)
+            do_add_watched_phrases(user_profile, watched_phrases)
         sender_user_profile = self.example_user("polonius")
         msg = Message(
             sender=sender_user_profile,
             sending_client=get_client("test"),
             realm=sender_user_profile.realm,
         )
-        realm_alert_words_automaton = get_alert_word_automaton(sender_user_profile.realm)
+        realm_watched_phrases_automaton = get_watched_phrases_automaton(sender_user_profile.realm)
 
         def render(msg: Message, content: str) -> MessageRenderingResult:
             return render_message_markdown(
-                msg, content, realm_alert_words_automaton=realm_alert_words_automaton
+                msg, content, realm_watched_phrases_automaton=realm_watched_phrases_automaton
             )
 
         content = "hello how is this possible how are you doing today"
@@ -1796,32 +1802,38 @@ class MarkdownTest(ZulipTestCase):
             user_profiles["othello"].id,
         }
         # All users except aaron have their alert word appear in the message content
-        self.assertEqual(rendering_result.user_ids_with_alert_words, expected_user_ids)
+        self.assertEqual(rendering_result.user_ids_with_watched_phrases, expected_user_ids)
 
-    def test_alert_words_returns_user_ids_with_alert_words_1(self) -> None:
-        alert_words_for_users: Dict[str, List[str]] = {
-            "hamlet": ["provisioning", "Prod deployment"],
-            "cordelia": ["test", "Prod"],
-            "iago": ["prod"],
-            "prospero": ["deployment"],
-            "othello": ["last"],
+    def test_watched_phrases_returns_user_ids_with_watched_phrases_1(self) -> None:
+        watched_phrases_for_users: Dict[str, List[WatchedPhraseData]] = {
+            "hamlet": [
+                WatchedPhraseData(watched_phrase="provisioning"),
+                WatchedPhraseData(watched_phrase="Prod deployment"),
+            ],
+            "cordelia": [
+                WatchedPhraseData(watched_phrase="test"),
+                WatchedPhraseData(watched_phrase="Prod"),
+            ],
+            "iago": [WatchedPhraseData(watched_phrase="prod")],
+            "prospero": [WatchedPhraseData(watched_phrase="deployment")],
+            "othello": [WatchedPhraseData(watched_phrase="last")],
         }
         user_profiles: Dict[str, UserProfile] = {}
-        for username, alert_words in alert_words_for_users.items():
+        for username, watched_phrases in watched_phrases_for_users.items():
             user_profile = self.example_user(username)
             user_profiles.update({username: user_profile})
-            do_add_alert_words(user_profile, alert_words)
+            do_add_watched_phrases(user_profile, watched_phrases)
         sender_user_profile = self.example_user("polonius")
         msg = Message(
             sender=sender_user_profile,
             sending_client=get_client("test"),
             realm=sender_user_profile.realm,
         )
-        realm_alert_words_automaton = get_alert_word_automaton(sender_user_profile.realm)
+        realm_watched_phrases_automaton = get_watched_phrases_automaton(sender_user_profile.realm)
 
         def render(msg: Message, content: str) -> MessageRenderingResult:
             return render_message_markdown(
-                msg, content, realm_alert_words_automaton=realm_alert_words_automaton
+                msg, content, realm_watched_phrases_automaton=realm_watched_phrases_automaton
             )
 
         content = """Hello, everyone. Prod deployment has been completed
@@ -1838,32 +1850,39 @@ class MarkdownTest(ZulipTestCase):
             user_profiles["othello"].id,
         }
         # All users have their alert word appear in the message content
-        self.assertEqual(rendering_result.user_ids_with_alert_words, expected_user_ids)
+        self.assertEqual(rendering_result.user_ids_with_watched_phrases, expected_user_ids)
 
-    def test_alert_words_returns_user_ids_with_alert_words_in_french(self) -> None:
-        alert_words_for_users: Dict[str, List[str]] = {
-            "hamlet": ["réglementaire", "une politique", "une merveille"],
-            "cordelia": ["énormément", "Prod"],
-            "iago": ["prod"],
-            "prospero": ["deployment"],
-            "othello": ["last"],
+    def test_watched_phrases_returns_user_ids_with_watched_phrases_in_french(self) -> None:
+        watched_phrases_for_users: Dict[str, List[WatchedPhraseData]] = {
+            "hamlet": [
+                WatchedPhraseData(watched_phrase="réglementaire"),
+                WatchedPhraseData(watched_phrase="une politique"),
+                WatchedPhraseData(watched_phrase="une merveille"),
+            ],
+            "cordelia": [
+                WatchedPhraseData(watched_phrase="énormément"),
+                WatchedPhraseData(watched_phrase="Prod"),
+            ],
+            "iago": [WatchedPhraseData(watched_phrase="prod")],
+            "prospero": [WatchedPhraseData(watched_phrase="deployment")],
+            "othello": [WatchedPhraseData(watched_phrase="last")],
         }
         user_profiles: Dict[str, UserProfile] = {}
-        for username, alert_words in alert_words_for_users.items():
+        for username, watched_phrases in watched_phrases_for_users.items():
             user_profile = self.example_user(username)
             user_profiles.update({username: user_profile})
-            do_add_alert_words(user_profile, alert_words)
+            do_add_watched_phrases(user_profile, watched_phrases)
         sender_user_profile = self.example_user("polonius")
         msg = Message(
             sender=sender_user_profile,
             sending_client=get_client("test"),
             realm=sender_user_profile.realm,
         )
-        realm_alert_words_automaton = get_alert_word_automaton(sender_user_profile.realm)
+        realm_watched_phrases_automaton = get_watched_phrases_automaton(sender_user_profile.realm)
 
         def render(msg: Message, content: str) -> MessageRenderingResult:
             return render_message_markdown(
-                msg, content, realm_alert_words_automaton=realm_alert_words_automaton
+                msg, content, realm_watched_phrases_automaton=realm_watched_phrases_automaton
             )
 
         content = """This is to test out alert words work in languages with accented characters too
@@ -1873,10 +1892,10 @@ class MarkdownTest(ZulipTestCase):
         rendering_result = render(msg, content)
         expected_user_ids: Set[int] = {user_profiles["hamlet"].id, user_profiles["cordelia"].id}
         # Only hamlet and cordelia have their alert-words appear in the message content
-        self.assertEqual(rendering_result.user_ids_with_alert_words, expected_user_ids)
+        self.assertEqual(rendering_result.user_ids_with_watched_phrases, expected_user_ids)
 
-    def test_alert_words_returns_empty_user_ids_with_alert_words(self) -> None:
-        alert_words_for_users: Dict[str, List[str]] = {
+    def test_watched_phrases_returns_empty_user_ids_with_watched_phrases(self) -> None:
+        watched_phrases_for_users: Dict[str, List[WatchedPhraseData]] = {
             "hamlet": [],
             "cordelia": [],
             "iago": [],
@@ -1885,19 +1904,19 @@ class MarkdownTest(ZulipTestCase):
             "aaron": [],
         }
         user_profiles: Dict[str, UserProfile] = {}
-        for username, alert_words in alert_words_for_users.items():
+        for username, watched_phrases in watched_phrases_for_users.items():
             user_profile = self.example_user(username)
             user_profiles.update({username: user_profile})
-            do_add_alert_words(user_profile, alert_words)
+            do_add_watched_phrases(user_profile, watched_phrases)
         sender_user_profile = self.example_user("polonius")
         msg = Message(
             sender=user_profile, sending_client=get_client("test"), realm=user_profile.realm
         )
-        realm_alert_words_automaton = get_alert_word_automaton(sender_user_profile.realm)
+        realm_watched_phrases_automaton = get_watched_phrases_automaton(sender_user_profile.realm)
 
         def render(msg: Message, content: str) -> MessageRenderingResult:
             return render_message_markdown(
-                msg, content, realm_alert_words_automaton=realm_alert_words_automaton
+                msg, content, realm_watched_phrases_automaton=realm_watched_phrases_automaton
             )
 
         content = """hello how is this possible how are you doing today
@@ -1907,65 +1926,70 @@ class MarkdownTest(ZulipTestCase):
         rendering_result = render(msg, content)
         expected_user_ids: Set[int] = set()
         # None of the users have their alert-words appear in the message content
-        self.assertEqual(rendering_result.user_ids_with_alert_words, expected_user_ids)
+        self.assertEqual(rendering_result.user_ids_with_watched_phrases, expected_user_ids)
 
-    def get_mock_alert_words(self, num_words: int, word_length: int) -> List[str]:
-        alert_words = ["x" * word_length] * num_words  # type List[str]
-        return alert_words
+    def get_mock_watched_phrases(self, num_words: int, word_length: int) -> List[WatchedPhraseData]:
+        watched_phrase = "x" * word_length
+        watched_phrases = [
+            WatchedPhraseData(watched_phrase=watched_phrase)
+        ] * num_words  # type List[WatchedPhraseData]
+        return watched_phrases
 
-    def test_alert_words_with_empty_alert_words(self) -> None:
-        alert_words_for_users: Dict[str, List[str]] = {
+    def test_watched_phrases_with_empty_watched_phrases(self) -> None:
+        watched_phrases_for_users: Dict[str, List[WatchedPhraseData]] = {
             "hamlet": [],
             "cordelia": [],
             "iago": [],
             "othello": [],
         }
         user_profiles: Dict[str, UserProfile] = {}
-        for username, alert_words in alert_words_for_users.items():
+        for username, watched_phrases in watched_phrases_for_users.items():
             user_profile = self.example_user(username)
             user_profiles.update({username: user_profile})
-            do_add_alert_words(user_profile, alert_words)
+            do_add_watched_phrases(user_profile, watched_phrases)
         sender_user_profile = self.example_user("polonius")
         msg = Message(
             sender=sender_user_profile,
             sending_client=get_client("test"),
             realm=sender_user_profile.realm,
         )
-        realm_alert_words_automaton = get_alert_word_automaton(sender_user_profile.realm)
+        realm_watched_phrases_automaton = get_watched_phrases_automaton(sender_user_profile.realm)
 
         def render(msg: Message, content: str) -> MessageRenderingResult:
             return render_message_markdown(
-                msg, content, realm_alert_words_automaton=realm_alert_words_automaton
+                msg, content, realm_watched_phrases_automaton=realm_watched_phrases_automaton
             )
 
         content = """This is to test a empty alert words i.e. no user has any alert-words set"""
         rendering_result = render(msg, content)
         expected_user_ids: Set[int] = set()
-        self.assertEqual(rendering_result.user_ids_with_alert_words, expected_user_ids)
+        self.assertEqual(rendering_result.user_ids_with_watched_phrases, expected_user_ids)
 
-    def test_alert_words_returns_user_ids_with_alert_words_with_huge_alert_words(self) -> None:
-        alert_words_for_users: Dict[str, List[str]] = {
-            "hamlet": ["issue124"],
-            "cordelia": self.get_mock_alert_words(500, 10),
-            "iago": self.get_mock_alert_words(500, 10),
-            "othello": self.get_mock_alert_words(500, 10),
+    def test_watched_phrases_returns_user_ids_with_watched_phrases_with_huge_watched_phrases(
+        self,
+    ) -> None:
+        watched_phrases_for_users: Dict[str, List[WatchedPhraseData]] = {
+            "hamlet": [WatchedPhraseData(watched_phrase="issue124")],
+            "cordelia": self.get_mock_watched_phrases(500, 10),
+            "iago": self.get_mock_watched_phrases(500, 10),
+            "othello": self.get_mock_watched_phrases(500, 10),
         }
         user_profiles: Dict[str, UserProfile] = {}
-        for username, alert_words in alert_words_for_users.items():
+        for username, watched_phrases in watched_phrases_for_users.items():
             user_profile = self.example_user(username)
             user_profiles.update({username: user_profile})
-            do_add_alert_words(user_profile, alert_words)
+            do_add_watched_phrases(user_profile, watched_phrases)
         sender_user_profile = self.example_user("polonius")
         msg = Message(
             sender=sender_user_profile,
             sending_client=get_client("test"),
             realm=sender_user_profile.realm,
         )
-        realm_alert_words_automaton = get_alert_word_automaton(sender_user_profile.realm)
+        realm_watched_phrases_automaton = get_watched_phrases_automaton(sender_user_profile.realm)
 
         def render(msg: Message, content: str) -> MessageRenderingResult:
             return render_message_markdown(
-                msg, content, realm_alert_words_automaton=realm_alert_words_automaton
+                msg, content, realm_watched_phrases_automaton=realm_watched_phrases_automaton
             )
 
         content = """The code above will print 10 random values of numbers between 1 and 100.
@@ -1978,7 +2002,7 @@ class MarkdownTest(ZulipTestCase):
         rendering_result = render(msg, content)
         expected_user_ids: Set[int] = {user_profiles["hamlet"].id}
         # Only hamlet has alert-word 'issue124' present in the message content
-        self.assertEqual(rendering_result.user_ids_with_alert_words, expected_user_ids)
+        self.assertEqual(rendering_result.user_ids_with_watched_phrases, expected_user_ids)
 
     def test_default_code_block_language(self) -> None:
         realm = get_realm("zulip")

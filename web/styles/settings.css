@@ -560,11 +560,11 @@ input[type="checkbox"] {
     border-left: 0;
 }
 
-.remove-alert-word {
+.remove-watched-phrase {
     margin-top: 1px;
 }
 
-.alert_word_status_text {
+.watched_phrase_status_text {
     word-break: break-word;
 }
 
@@ -1035,7 +1035,7 @@ input[type="checkbox"] {
     margin: 2px 0 8px;
 }
 
-#add-alert-word {
+#add-watched-phrase {
     & form {
         margin-bottom: 4px;
     }
@@ -1061,19 +1061,19 @@ input[type="checkbox"] {
     width: 70%;
 }
 
-#alert-words-table {
+#watched-phrases-table {
     margin: 0;
 
     & li {
         list-style-type: none;
 
-        &.alert-word-item:first-child {
+        &.watched-phrase-item:first-child {
             background: none;
             margin-top: 8px;
         }
     }
 
-    .alert_word_listing .value {
+    .watched_phrase_listing .value {
         word-wrap: break-word;
         word-break: break-all;
         white-space: normal;

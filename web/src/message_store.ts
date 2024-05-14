@@ -88,7 +88,7 @@ export type MessageWithBooleans = (
     topic_wildcard_mentioned: boolean;
     collapsed: boolean;
     condensed?: boolean;
-    alerted: boolean;
+    watched: boolean;
 };
 
 export type MessageCleanReaction = {
@@ -210,7 +210,7 @@ export function set_message_booleans(message: Message): void {
     message.stream_wildcard_mentioned = convert_flag("stream_wildcard_mentioned");
     message.topic_wildcard_mentioned = convert_flag("topic_wildcard_mentioned");
     message.collapsed = convert_flag("collapsed");
-    message.alerted = convert_flag("has_alert_word");
+    message.watched = convert_flag("has_alert_word");
 
     // Once we have set boolean flags here, the `flags` attribute is
     // just a distraction, so we delete it.  (All the downstream code
@@ -233,7 +233,7 @@ export function update_booleans(message: Message, flags: string[]): void {
     message.mentioned_me_directly = convert_flag("mentioned");
     message.stream_wildcard_mentioned = convert_flag("stream_wildcard_mentioned");
     message.topic_wildcard_mentioned = convert_flag("topic_wildcard_mentioned");
-    message.alerted = convert_flag("has_alert_word");
+    message.watched = convert_flag("has_alert_word");
 }
 
 export function update_sender_full_name(user_id: number, new_name: string): void {

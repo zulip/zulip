@@ -198,8 +198,8 @@
         }
     }
 
-    .alert-word {
-        background-color: var(--color-background-alert-word);
+    .watched-phrase {
+        background-color: var(--color-background-watched-phrase);
     }
 
     /* Timestamps */

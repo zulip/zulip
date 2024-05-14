@@ -20,6 +20,15 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 9.0
 
+**Feature level 260**
+
+* [`POST /register`](/api/register-queue), [`GET /events`](/api/get-events):
+  Added new `watched_phrases` event as a part of migration of Alert words
+  to Watched phrases.
+*  `GET /users/me/watched_phrases`, `POST /users/me/watched_phrases`,
+  `DELETE /users/me/watched_phrases`: Added new endpoint as a part of
+  migration of Alert words to Watched phrases.
+
 **Feature level 259**:
 
 * [`POST /register`](/api/register-queue), [`GET /events`](/api/get-events):

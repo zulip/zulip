@@ -57,7 +57,7 @@ function debug_notification_source_value(message) {
         notification_source = "pm";
     } else if (message.mentioned) {
         notification_source = "mention";
-    } else if (message.alerted) {
+    } else if (message.watched) {
         notification_source = "alert";
     } else {
         notification_source = "stream";

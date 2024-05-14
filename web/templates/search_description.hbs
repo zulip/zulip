@@ -19,7 +19,7 @@
             {{~!-- squash whitespace --~}}
             {{this.verb}}@-mentions
             {{~!-- squash whitespace --~}}
-        {{else if (or (eq this.operand "starred") (eq this.operand "alerted") (eq this.operand "unread"))}}
+        {{else if (or (eq this.operand "starred") (eq this.operand "watched") (eq this.operand "unread"))}}
             {{~!-- squash whitespace --~}}
             {{this.verb}}{{this.operand}} messages
             {{~!-- squash whitespace --~}}

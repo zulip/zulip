@@ -16,7 +16,7 @@ from django.utils.timezone import now as timezone_now
 from typing_extensions import override
 
 from analytics.models import UserCount
-from zerver.actions.alert_words import do_add_alert_words
+from zerver.actions.alert_words import do_add_watched_phrases
 from zerver.actions.create_user import do_create_user
 from zerver.actions.custom_profile_fields import (
     do_update_user_custom_profile_data_if_changed,
@@ -38,6 +38,7 @@ from zerver.actions.user_status import do_update_user_status
 from zerver.actions.user_topics import do_set_user_topic_visibility_policy
 from zerver.actions.users import do_deactivate_user
 from zerver.lib import upload
+from zerver.lib.alert_words import WatchedPhraseData
 from zerver.lib.avatar_hash import user_avatar_path
 from zerver.lib.bot_config import set_bot_config
 from zerver.lib.bot_lib import StateHandler
@@ -460,14 +461,14 @@ class RealmImportExportTest(ExportFile):
             },
         )
 
-        exported_alert_words = data["zerver_alertword"]
+        exported_watched_phrases = data["zerver_alertword"]
 
         # We set up 4 alert words for Hamlet, Cordelia, etc.
         # when we populate the test database.
         num_zulip_users = 10
-        self.assert_length(exported_alert_words, num_zulip_users * 4)
+        self.assert_length(exported_watched_phrases, num_zulip_users * 4)
 
-        self.assertIn("robotics", {r["word"] for r in exported_alert_words})
+        self.assertIn("robotics", {r["watched_phrase"] for r in exported_watched_phrases})
 
         exported_realm_user_default = data["zerver_realmuserdefault"]
         self.assert_length(exported_realm_user_default, 1)
@@ -1211,8 +1212,8 @@ class RealmImportExportTest(ExportFile):
             return huddle_message.content
 
         @getter
-        def get_alertwords(r: Realm) -> Set[str]:
-            return {rec.word for rec in AlertWord.objects.filter(realm_id=r.id)}
+        def get_watched_phrases(r: Realm) -> Set[str]:
+            return {rec.watched_phrase for rec in AlertWord.objects.filter(realm_id=r.id)}
 
         @getter
         def get_realm_emoji_names(r: Realm) -> Set[str]:
@@ -1892,12 +1893,12 @@ class SingleUserExportTest(ExportFile):
         possible, just to make it a bit easier to read the test.
         """
 
-        do_add_alert_words(cordelia, ["pizza"])
-        do_add_alert_words(hamlet, ["bogus"])
+        do_add_watched_phrases(cordelia, [WatchedPhraseData(watched_phrase="pizza")])
+        do_add_watched_phrases(hamlet, [WatchedPhraseData(watched_phrase="bogus")])
 
         @checker
         def zerver_alertword(records: List[Record]) -> None:
-            self.assertEqual(records[-1]["word"], "pizza")
+            self.assertEqual(records[-1]["watched_phrase"], "pizza")
 
         favorite_city = try_add_realm_custom_profile_field(
             realm,

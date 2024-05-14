@@ -1155,7 +1155,7 @@ class FetchQueriesTest(ZulipTestCase):
 
         self.login_user(user)
 
-        with self.assert_database_query_count(42):
+        with self.assert_database_query_count(43):
             with mock.patch("zerver.lib.events.always_want") as want_mock:
                 fetch_initial_state_data(user)
 
@@ -1195,6 +1195,7 @@ class FetchQueriesTest(ZulipTestCase):
             user_status=1,
             user_topic=1,
             video_calls=0,
+            watched_phrases=1,
             giphy=0,
         )
 

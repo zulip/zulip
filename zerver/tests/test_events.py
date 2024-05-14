@@ -17,7 +17,7 @@ from dateutil.parser import parse as dateparser
 from django.utils.timezone import now as timezone_now
 from typing_extensions import override
 
-from zerver.actions.alert_words import do_add_alert_words, do_remove_alert_words
+from zerver.actions.alert_words import do_add_watched_phrases, do_remove_watched_phrases
 from zerver.actions.bots import (
     do_change_bot_owner,
     do_change_default_all_public_streams,
@@ -130,6 +130,7 @@ from zerver.actions.users import (
     do_update_outgoing_webhook_service,
 )
 from zerver.actions.video_calls import do_set_zoom_token
+from zerver.lib.alert_words import WatchedPhraseData
 from zerver.lib.drafts import DraftData, do_create_drafts, do_delete_draft, do_edit_draft
 from zerver.lib.event_schema import (
     check_alert_words,
@@ -200,6 +201,7 @@ from zerver.lib.event_schema import (
     check_user_settings_update,
     check_user_status,
     check_user_topic,
+    check_watched_phrases,
 )
 from zerver.lib.events import apply_events, fetch_initial_state_data, post_process_state
 from zerver.lib.markdown import render_message_markdown
@@ -1541,14 +1543,20 @@ class NormalActionsTest(BaseAction):
         check_user_group_add_members("events[0]", events[0])
         check_user_group_add_members("events[1]", events[1])
 
-    def test_alert_words_events(self) -> None:
-        with self.verify_action() as events:
-            do_add_alert_words(self.user_profile, ["alert_word"])
-        check_alert_words("events[0]", events[0])
+    def test_watched_phrases_events(self) -> None:
+        with self.verify_action(num_events=2) as events:
+            do_add_watched_phrases(
+                self.user_profile, [WatchedPhraseData(watched_phrase="watched_phrase")]
+            )
 
-        with self.verify_action() as events:
-            do_remove_alert_words(self.user_profile, ["alert_word"])
-        check_alert_words("events[0]", events[0])
+        check_watched_phrases("events[0]", events[0])
+        check_alert_words("events[1]", events[1])
+
+        with self.verify_action(num_events=2) as events:
+            do_remove_watched_phrases(self.user_profile, ["watched_phrase"])
+
+        check_watched_phrases("events[0]", events[0])
+        check_alert_words("events[1]", events[1])
 
     def test_away_events(self) -> None:
         client = get_client("website")

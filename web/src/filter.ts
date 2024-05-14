@@ -151,8 +151,8 @@ function message_matches_search_term(message: Message, operator: string, operand
                     return message.starred;
                 case "mentioned":
                     return message.mentioned;
-                case "alerted":
-                    return message.alerted;
+                case "watched":
+                    return message.watched;
                 case "unread":
                     return unread.message_unread(message);
                 case "resolved":
@@ -489,7 +489,7 @@ export class Filter {
             "sender",
             "near",
             "id",
-            "is-alerted",
+            "is-watched",
             "is-mentioned",
             "is-dm",
             "is-starred",
@@ -1041,8 +1041,8 @@ export class Filter {
                 // These cases return false for is_common_narrow, and therefore are not
                 // formatted in the message view header. They are used in narrow.js to
                 // update the browser title.
-                case "is-alerted":
-                    return $t({defaultMessage: "Alerted messages"});
+                case "is-watched":
+                    return $t({defaultMessage: "Watched messages"});
                 case "is-unread":
                     return $t({defaultMessage: "Unread messages"});
             }

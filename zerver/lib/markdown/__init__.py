@@ -122,9 +122,9 @@ class MessageRenderingResult:
     mentions_stream_wildcard: bool
     mentions_user_ids: Set[int]
     mentions_user_group_ids: Set[int]
-    alert_words: Set[str]
+    watched_phrases: Set[str]
     links_for_preview: Set[str]
-    user_ids_with_alert_words: Set[int]
+    user_ids_with_watched_phrases: Set[int]
     potential_attachment_path_ids: List[str]
 
 
@@ -132,7 +132,7 @@ class MessageRenderingResult:
 class DbData:
     mention_data: MentionData
     realm_uri: str
-    realm_alert_words_automaton: Optional[ahocorasick.Automaton]
+    realm_watched_phrases_automaton: Optional[ahocorasick.Automaton]
     active_realm_emoji: Dict[str, EmojiInfo]
     sent_by_bot: bool
     stream_names: Dict[str, int]
@@ -2076,19 +2076,21 @@ class AlertWordNotificationProcessor(markdown.preprocessors.Preprocessor):
             #
             # Our caller passes in the list of possible_words.  We
             # don't do any special rendering; we just append the alert words
-            # we find to the set self.zmd.zulip_rendering_result.user_ids_with_alert_words.
+            # we find to the set self.zmd.zulip_rendering_result.user_ids_with_watched_phrases.
 
-            realm_alert_words_automaton = db_data.realm_alert_words_automaton
+            realm_watched_phrases_automaton = db_data.realm_watched_phrases_automaton
 
-            if realm_alert_words_automaton is not None:
+            if realm_watched_phrases_automaton is not None:
                 content = "\n".join(lines).lower()
-                for end_index, (original_value, user_ids) in realm_alert_words_automaton.iter(
+                for end_index, (original_value, user_ids) in realm_watched_phrases_automaton.iter(
                     content
                 ):
                     if self.check_valid_start_position(
                         content, end_index - len(original_value)
                     ) and self.check_valid_end_position(content, end_index + 1):
-                        self.zmd.zulip_rendering_result.user_ids_with_alert_words.update(user_ids)
+                        self.zmd.zulip_rendering_result.user_ids_with_watched_phrases.update(
+                            user_ids
+                        )
         return lines
 
 
@@ -2562,7 +2564,7 @@ def privacy_clean_markdown(content: str) -> str:
 
 def do_convert(
     content: str,
-    realm_alert_words_automaton: Optional[ahocorasick.Automaton] = None,
+    realm_watched_phrases_automaton: Optional[ahocorasick.Automaton] = None,
     message: Optional[Message] = None,
     message_realm: Optional[Realm] = None,
     sent_by_bot: bool = False,
@@ -2612,9 +2614,9 @@ def do_convert(
         mentions_stream_wildcard=False,
         mentions_user_ids=set(),
         mentions_user_group_ids=set(),
-        alert_words=set(),
+        watched_phrases=set(),
         links_for_preview=set(),
-        user_ids_with_alert_words=set(),
+        user_ids_with_watched_phrases=set(),
         potential_attachment_path_ids=[],
     )
 
@@ -2652,7 +2654,7 @@ def do_convert(
             active_realm_emoji = {}
 
         _md_engine.zulip_db_data = DbData(
-            realm_alert_words_automaton=realm_alert_words_automaton,
+            realm_watched_phrases_automaton=realm_watched_phrases_automaton,
             mention_data=mention_data,
             active_realm_emoji=active_realm_emoji,
             realm_uri=message_realm.url,
@@ -2723,7 +2725,7 @@ def markdown_stats_finish() -> None:
 
 def markdown_convert(
     content: str,
-    realm_alert_words_automaton: Optional[ahocorasick.Automaton] = None,
+    realm_watched_phrases_automaton: Optional[ahocorasick.Automaton] = None,
     message: Optional[Message] = None,
     message_realm: Optional[Realm] = None,
     sent_by_bot: bool = False,
@@ -2736,7 +2738,7 @@ def markdown_convert(
     markdown_stats_start()
     ret = do_convert(
         content,
-        realm_alert_words_automaton,
+        realm_watched_phrases_automaton,
         message,
         message_realm,
         sent_by_bot,
@@ -2754,7 +2756,7 @@ def render_message_markdown(
     message: Message,
     content: str,
     realm: Optional[Realm] = None,
-    realm_alert_words_automaton: Optional[ahocorasick.Automaton] = None,
+    realm_watched_phrases_automaton: Optional[ahocorasick.Automaton] = None,
     url_embed_data: Optional[Dict[str, Optional[UrlEmbedData]]] = None,
     mention_data: Optional[MentionData] = None,
     email_gateway: bool = False,
@@ -2772,7 +2774,7 @@ def render_message_markdown(
 
     rendering_result = markdown_convert(
         content,
-        realm_alert_words_automaton=realm_alert_words_automaton,
+        realm_watched_phrases_automaton=realm_watched_phrases_automaton,
         message=message,
         message_realm=realm,
         sent_by_bot=sent_by_bot,

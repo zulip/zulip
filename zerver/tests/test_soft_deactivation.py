@@ -3,7 +3,8 @@ from unittest import mock
 
 from django.utils.timezone import now as timezone_now
 
-from zerver.actions.alert_words import do_add_alert_words
+from zerver.actions.alert_words import do_add_watched_phrases
+from zerver.lib.alert_words import WatchedPhraseData
 from zerver.lib.mention import stream_wildcards
 from zerver.lib.soft_deactivation import (
     add_missing_messages,
@@ -767,10 +768,12 @@ class SoftDeactivationMessageTest(ZulipTestCase):
 
         # Test UserMessage row is created while user is deactivated if there
         # is a alert word in message.
-        do_add_alert_words(long_term_idle_user, ["test_alert_word"])
-        assert_stream_message_sent_to_idle_user("Testing test_alert_word")
+        do_add_watched_phrases(
+            long_term_idle_user, [WatchedPhraseData(watched_phrase="test_watched_phrase")]
+        )
+        assert_stream_message_sent_to_idle_user("Testing test_watched_phrase")
 
-        do_add_alert_words(cordelia, ["cordelia"])
+        do_add_watched_phrases(cordelia, [WatchedPhraseData(watched_phrase="cordelia")])
         assert_stream_message_not_sent_to_idle_user("cordelia", false_alarm_row=True)
 
         # Test UserMessage row is not created while user is deactivated if

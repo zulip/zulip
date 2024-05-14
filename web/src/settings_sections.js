@@ -57,7 +57,7 @@ export function initialize() {
         settings_notifications.set_up(settings_notifications.user_settings_panel);
     });
     load_func_dict.set("your-bots", settings_bots.set_up);
-    load_func_dict.set("alert-words", alert_words_ui.set_up_alert_words);
+    load_func_dict.set("watched-phrases", alert_words_ui.set_up_watched_phrases);
     load_func_dict.set("uploaded-files", attachments_ui.set_up_attachments);
     load_func_dict.set("topics", settings_user_topics.set_up);
     load_func_dict.set("muted-users", settings_muted_users.set_up);
