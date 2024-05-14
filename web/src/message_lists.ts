@@ -11,6 +11,9 @@ import * as ui_util from "./ui_util";
 type MessageListView = {
     update_recipient_bar_background_color: () => void;
     rerender_messages: (messages: Message[], message_content_edited?: boolean) => void;
+    is_fetched_end_rendered: () => boolean;
+    show_message_as_read: (message: Message, options: {from?: "pointer" | "server"}) => void;
+    show_messages_as_unread: (message_ids: number[]) => void;
     _render_win_start: number;
     _render_win_end: number;
     sticky_recipient_message_id: number | undefined;
@@ -38,8 +41,11 @@ export type MessageList = {
     selected_idx: () => number;
     all_messages: () => Message[];
     get: (id: number) => Message | undefined;
+    has_unread_messages: () => boolean;
+    can_mark_messages_read: () => boolean;
     can_mark_messages_read_without_setting: () => boolean;
     rerender_view: () => void;
+    prevent_reading: () => void;
     resume_reading: () => void;
     data: MessageListData;
     select_id: (message_id: number, opts?: SelectIdOpts) => void;
