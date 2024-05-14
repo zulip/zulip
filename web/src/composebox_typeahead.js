@@ -1262,10 +1262,4 @@ export function initialize({on_enter_send}) {
     });
 
     initialize_compose_typeahead("textarea#compose-textarea");
-
-    $("#private_message_recipient").on("blur", function () {
-        const val = $(this).val();
-        const recipients = typeahead_helper.get_cleaned_pm_recipients(val);
-        $(this).val(recipients.join(", "));
-    });
 }

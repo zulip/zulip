@@ -36,14 +36,6 @@ export type CombinedPillItem =
     | InputPillItem<UserGroupPill>
     | InputPillItem<StreamPill>;
 
-// Returns an array of direct message recipients, removing empty elements.
-// For example, "a,,b, " => ["a", "b"]
-export function get_cleaned_pm_recipients(query_string: string): string[] {
-    let recipients = util.extract_pm_recipients(query_string);
-    recipients = recipients.filter((elem) => elem.match(/\S/));
-    return recipients;
-}
-
 export function build_highlight_regex(query: string): RegExp {
     const regex = new RegExp("(" + _.escapeRegExp(query) + ")", "ig");
     return regex;
