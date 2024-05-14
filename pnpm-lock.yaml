@@ -290,6 +290,9 @@ importers:
       '@types/co-body':
         specifier: ^6.1.3
         version: 6.1.3
+      '@types/is-url':
+        specifier: ^1.2.32
+        version: 1.2.32
       '@types/jquery':
         specifier: ^3.3.31
         version: 3.5.29
@@ -1816,6 +1819,9 @@ packages:
 
   '@types/http-proxy@1.17.14':
     resolution: {integrity: sha512-SSrD0c1OQzlFX7pGu1eXxSEjemej64aaNPRhhVYUGqXh0BtldAAx37MG8btcumvpgKyZp1F5Gn3JkktdxiFv6w==}
+
+  '@types/is-url@1.2.32':
+    resolution: {integrity: sha512-46VLdbWI8Sc+hPexQ6NLNR2YpoDyDZIpASHkJQ2Yr+Kf9Giw6LdCTkwOdsnHKPQeh7xTjTmSnxbE8qpxYuCiHA==}
 
   '@types/istanbul-lib-coverage@2.0.6':
     resolution: {integrity: sha512-2QF/t/auWm0lsy8XtKVPG19v3sSOQlJe/YHZgfjb/KBBHOGSV+J2q/S671rcq9uTBrLAXmZpqJiaQbMT+zNU1w==}
@@ -9064,6 +9070,8 @@ snapshots:
   '@types/http-proxy@1.17.14':
     dependencies:
       '@types/node': 20.12.7
+
+  '@types/is-url@1.2.32': {}
 
   '@types/istanbul-lib-coverage@2.0.6': {}
 
