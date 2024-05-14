@@ -26,16 +26,11 @@ export function create_item_from_email(
     pill_config?: InputPillConfig | undefined,
 ): InputPillItem<UserPill> | undefined {
     // For normal Zulip use, we need to validate the email for our realm.
-    const filtered_current_items = current_items.flatMap((item) =>
-        item.type === "user" ? item : [],
-    );
     const user = people.get_by_email(email);
 
     if (!user) {
         if (realm.realm_is_zephyr_mirror_realm) {
-            const existing_emails = filtered_current_items.map((item) => item.email);
-
-            if (existing_emails.includes(email)) {
+            if (current_items.some((item) => item.type === "user" && item.email === email)) {
                 return undefined;
             }
 
@@ -57,9 +52,7 @@ export function create_item_from_email(
         return undefined;
     }
 
-    const existing_ids = filtered_current_items.map((item) => item.user_id);
-
-    if (existing_ids.includes(user.user_id)) {
+    if (current_items.some((item) => item.type === "user" && item.user_id === user.user_id)) {
         return undefined;
     }
 
