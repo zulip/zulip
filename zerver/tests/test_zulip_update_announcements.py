@@ -122,9 +122,10 @@ class ZulipUpdateAnnouncementsTest(ZulipTestCase):
                 recipient__type_id=verona.id,
                 date_sent__gte=now + timedelta(days=10),
             ).order_by("id")
-            self.assert_length(stream_messages, 2)
-            self.assertEqual(stream_messages[0].content, "Announcement message 3.")
-            self.assertEqual(stream_messages[1].content, "Announcement message 4.")
+            self.assert_length(stream_messages, 3)
+            self.assertIn("To help you learn about new features", stream_messages[0].content)
+            self.assertEqual(stream_messages[1].content, "Announcement message 3.")
+            self.assertEqual(stream_messages[2].content, "Announcement message 4.")
             self.assertEqual(realm.zulip_update_announcements_level, 4)
 
     def test_send_zulip_update_announcements_with_stream_configured(self) -> None:
