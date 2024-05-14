@@ -222,6 +222,7 @@ def bulk_create_streams(realm: Realm, stream_dict: Dict[str, Dict[str, Any]]) ->
                     is_web_public=options.get("is_web_public", False),
                     is_in_zephyr_realm=realm.is_zephyr_mirror_realm,
                     can_remove_subscribers_group=administrators_user_group,
+                    creator=options.get("creator", None),
                 ),
             )
     # Sort streams by name before creating them so that we can have a
