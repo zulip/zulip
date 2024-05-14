@@ -292,7 +292,7 @@ function get_end_tr_from_endc($endc: JQuery<Node>): JQuery {
         // This handles the issue that Chrome seems to like selecting
         // the compose_close button when you go off the end of the
         // last message
-        return $(".message_row").last();
+        return rows.last_visible();
     }
 
     // Sometimes (especially when three click selecting in Chrome) the selection
@@ -313,7 +313,7 @@ function get_end_tr_from_endc($endc: JQuery<Node>): JQuery {
         // we can use the last message from the previous recipient_row.
         if ($endc.parents(".message_header").length > 0) {
             const $overflow_recipient_row = $endc.parents(".recipient_row").first();
-            return $overflow_recipient_row.prev(".recipient_row").last();
+            return $overflow_recipient_row.prev(".recipient_row").children(".message_row").last();
         }
         // If somehow we get here, do the default return.
     }
