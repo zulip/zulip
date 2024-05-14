@@ -874,6 +874,14 @@ export function populate_data_for_request(
                     };
                     continue;
                 }
+
+                if (property_name === "can_mention_group") {
+                    data[property_name] = JSON.stringify({
+                        new: input_value,
+                        old: group.can_mention_group,
+                    });
+                    continue;
+                }
                 data[property_name] = input_value;
             }
         }
