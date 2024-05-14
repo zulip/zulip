@@ -1447,11 +1447,6 @@ class RealmAPITest(ZulipTestCase):
         self.assert_json_success(result)
         return get_realm("zulip")  # refresh data
 
-    def update_with_api_multiple_value(self, data_dict: Dict[str, Any]) -> Realm:
-        result = self.client_patch("/json/realm", data_dict)
-        self.assert_json_success(result)
-        return get_realm("zulip")
-
     def do_test_realm_update_api(self, name: str) -> None:
         """Test updating realm properties.
 
@@ -1478,17 +1473,10 @@ class RealmAPITest(ZulipTestCase):
             wildcard_mention_policy=Realm.WILDCARD_MENTION_POLICY_TYPES,
             bot_creation_policy=Realm.BOT_CREATION_POLICY_TYPES,
             video_chat_provider=[
-                dict(
-                    video_chat_provider=orjson.dumps(
-                        Realm.VIDEO_CHAT_PROVIDERS["jitsi_meet"]["id"]
-                    ).decode(),
-                ),
+                Realm.VIDEO_CHAT_PROVIDERS["jitsi_meet"]["id"],
+                Realm.VIDEO_CHAT_PROVIDERS["disabled"]["id"],
             ],
-            jitsi_server_url=[
-                dict(
-                    jitsi_server_url=orjson.dumps("https://example.jit.si").decode(),
-                ),
-            ],
+            jitsi_server_url=["https://example.jit.si"],
             giphy_rating=[
                 Realm.GIPHY_RATING_OPTIONS["y"]["id"],
                 Realm.GIPHY_RATING_OPTIONS["r"]["id"],
@@ -1510,10 +1498,14 @@ class RealmAPITest(ZulipTestCase):
         if vals is None:
             raise AssertionError(f"No test created for {name}")
 
-        if name in ("video_chat_provider", "jitsi_server_url"):
-            self.set_up_db(name, vals[0][name])
-            realm = self.update_with_api_multiple_value(vals[0])
-            self.assertEqual(getattr(realm, name), orjson.loads(vals[0][name]))
+        if name == "jitsi_server_url":
+            realm = get_realm("zulip")
+            self.assertIsNone(realm.jitsi_server_url, None)
+            realm = self.update_with_api(name, orjson.dumps(vals[0]).decode())
+            self.assertEqual(realm.jitsi_server_url, vals[0])
+
+            realm = self.update_with_api(name, orjson.dumps("default").decode())
+            self.assertIsNone(realm.jitsi_server_url, None)
             return
 
         self.set_up_db(name, vals[0])
