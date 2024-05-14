@@ -27,10 +27,7 @@ export function create_item_from_group_name(
         return undefined;
     }
 
-    const in_current_items = current_items
-        .flatMap((item) => (item.type === "user_group" ? item : []))
-        .find((item) => item.id === group.id);
-    if (in_current_items !== undefined) {
+    if (current_items.some((item) => item.type === "user_group" && item.id === group.id)) {
         return undefined;
     }
 
@@ -46,16 +43,14 @@ export function get_group_name_from_item(item: InputPillItem<UserGroupPill>): st
     return item.group_name;
 }
 
-function get_user_ids_from_user_groups(items: InputPillItem<UserGroupPill>[]): number[] {
-    const group_ids = items.map((item) => item.id).filter(Boolean);
-    return group_ids.flatMap((group_id) => [
-        ...user_groups.get_user_group_from_id(group_id).members,
-    ]);
-}
-
 export function get_user_ids(pill_widget: UserGroupPillWidget | CombinedPillContainer): number[] {
-    const items = pill_widget.items().flatMap((item) => (item.type === "user_group" ? item : []));
-    let user_ids = get_user_ids_from_user_groups(items);
+    let user_ids = pill_widget
+        .items()
+        .flatMap((item) =>
+            item.type === "user_group"
+                ? [...user_groups.get_user_group_from_id(item.id).members]
+                : [],
+        );
     user_ids = [...new Set(user_ids)];
     user_ids.sort((a, b) => a - b);
 
