@@ -4,7 +4,7 @@ Zulip's real-time events API lets you write software that reacts
 immediately to events happening in Zulip.  This API is what powers the
 real-time updates in the Zulip web and mobile apps.  As a result, the
 events available via this API cover all changes to data displayed in
-the Zulip product, from new messages to stream descriptions to
+the Zulip product, from new messages to channel descriptions to
 emoji reactions to changes in user or organization-level settings.
 
 ## Using the events API

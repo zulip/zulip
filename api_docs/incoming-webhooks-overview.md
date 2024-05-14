@@ -137,7 +137,7 @@ below are for a webhook named `MyWebHook`.
 * Integrations that don't match a team's workflow can often be
   uselessly spammy.  Give careful thought to providing options for
   triggering Zulip messages only for certain message types, certain
-  projects, or sending different messages to different streams/topics,
+  projects, or sending different messages to different channels/topics,
   to make it easy for teams to configure the integration to support
   their workflow.
 
@@ -180,20 +180,20 @@ bot's API key, see the [API keys](/api/api-keys) documentation.
 
 ### stream
 
-The stream for the integration to send notifications to. Can be either
-the stream ID or the [URL-encoded][url-encoder] stream name. By default
+The channel for the integration to send notifications to. Can be either
+the channel ID or the [URL-encoded][url-encoder] channel name. By default
 the integration will send direct messages to the bot's owner.
 
 !!! tip ""
 
-    A stream ID can be found when [browsing streams][browse-streams]
+    A channel ID can be found when [browsing channels][browse-channels]
     in the web or desktop apps.
 
 ### topic
 
-The topic in the specified stream for the integration to send
+The topic in the specified channel for the integration to send
 notifications to. The topic should also be [URL-encoded][url-encoder].
-By default the integration will have a topic configured for stream
+By default the integration will have a topic configured for channel
 messages.
 
 ### only_events, exclude_events
@@ -212,7 +212,7 @@ For example, `test*` matches every event that starts with `test`.
     For a list of supported events, see a specific [integration's
     documentation](/integrations) page.
 
-[browse-streams]: /help/introduction-to-channels#browse-and-subscribe-to-channels
+[browse-channels]: /help/introduction-to-channels#browse-and-subscribe-to-channels
 [add-bot]: /help/add-a-bot-or-integration
 [url-encoder]: https://www.urlencoder.org/
 

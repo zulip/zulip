@@ -43,7 +43,7 @@ You'll need:
         INFO:root:starting message handling...
 
 1. Test your setup by [starting a new direct message](/help/starting-a-new-direct-message)
-   with the bot or [mentioning](/help/mention-a-user-or-group) the bot on a stream.
+   with the bot or [mentioning](/help/mention-a-user-or-group) the bot on a channel.
 
 !!! tip ""
 
