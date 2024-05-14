@@ -34,10 +34,7 @@ export function create_item_from_stream_name(
         return undefined;
     }
 
-    const existing_ids = current_items
-        .flatMap((item) => (item.type === "stream" ? item : []))
-        .map((item) => item.stream_id);
-    if (existing_ids.includes(sub.stream_id)) {
+    if (current_items.some((item) => item.type === "stream" && item.stream_id === sub.stream_id)) {
         return undefined;
     }
 
@@ -53,23 +50,13 @@ export function get_stream_name_from_item(item: InputPillItem<StreamPill>): stri
     return item.stream_name;
 }
 
-function get_user_ids_from_subs(items: InputPillItem<StreamPill>[]): number[] {
-    let user_ids: number[] = [];
-    for (const item of items) {
-        // only some of our items have streams (for copy-from-stream)
-        if (item.stream_id !== undefined) {
-            user_ids = [...user_ids, ...peer_data.get_subscribers(item.stream_id)];
-        }
-    }
-    return user_ids;
-}
-
 export function get_user_ids(pill_widget: StreamPillWidget | CombinedPillContainer): number[] {
-    const items = pill_widget.items().flatMap((item) => (item.type === "stream" ? item : []));
-    let user_ids = get_user_ids_from_subs(items);
+    let user_ids = pill_widget
+        .items()
+        .flatMap((item) =>
+            item.type === "stream" ? peer_data.get_subscribers(item.stream_id) : [],
+        );
     user_ids = [...new Set(user_ids)];
-
-    user_ids = user_ids.filter(Boolean);
     user_ids.sort((a, b) => a - b);
     return user_ids;
 }
