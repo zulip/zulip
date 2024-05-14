@@ -7,7 +7,7 @@ import * as sub_store from "./sub_store";
 
 let message_type: "stream" | "private" | undefined;
 let recipient_edited_manually = false;
-let last_focused_compose_type_input: HTMLInputElement | undefined;
+let last_focused_compose_type_input: HTMLTextAreaElement | undefined;
 
 // We use this variable to keep track of whether user has viewed the topic resolved
 // banner for the current compose session, for a narrow. This prevents the banner
@@ -25,11 +25,11 @@ export function is_recipient_edited_manually(): boolean {
     return recipient_edited_manually;
 }
 
-export function set_last_focused_compose_type_input(element: HTMLInputElement): void {
+export function set_last_focused_compose_type_input(element: HTMLTextAreaElement): void {
     last_focused_compose_type_input = element;
 }
 
-export function get_last_focused_compose_type_input(): HTMLInputElement | undefined {
+export function get_last_focused_compose_type_input(): HTMLTextAreaElement | undefined {
     return last_focused_compose_type_input;
 }
 
