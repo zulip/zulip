@@ -194,7 +194,7 @@ function format_dm(user_ids_string, unread_count, latest_msg_id) {
         dm_url: hash_util.pm_with_url(reply_to),
         user_ids_string,
         unread_count,
-        is_hidden: filter_should_hide_row({dm_key: user_ids_string}),
+        is_hidden: filter_should_hide_dm_row({dm_key: user_ids_string}),
         is_collapsed: collapsed_containers.has("inbox-dm-header"),
         latest_msg_id,
     };
@@ -308,7 +308,7 @@ function format_topic(stream_id, topic, topic_unread_count, latest_msg_id) {
         unread_count: topic_unread_count,
         conversation_key: get_topic_key(stream_id, topic),
         topic_url: hash_util.by_stream_topic_url(stream_id, topic),
-        is_hidden: filter_should_hide_row({stream_id, topic}),
+        is_hidden: filter_should_hide_stream_row({stream_id, topic}),
         is_collapsed: collapsed_containers.has(STREAM_HEADER_PREFIX + stream_id),
         mention_in_unread: unread.topic_has_any_unread_mentions(stream_id, topic),
         latest_msg_id,
@@ -585,34 +585,39 @@ function row_in_search_results(keyword, text) {
     return search_words.every((word) => text.includes(word));
 }
 
-function filter_should_hide_row({stream_id, topic, dm_key}) {
-    let text;
-    if (dm_key !== undefined) {
-        const recipients_string = people.get_recipients(dm_key);
-        text = recipients_string.toLowerCase();
-    } else {
-        const sub = sub_store.get(stream_id);
-        if (sub === undefined || !sub.subscribed) {
-            return true;
-        }
+function filter_should_hide_dm_row({dm_key}) {
+    const recipients_string = people.get_recipients(dm_key);
+    const text = recipients_string.toLowerCase();
 
-        if (
-            filters.has(views_util.FILTERS.FOLLOWED_TOPICS) &&
-            !user_topics.is_topic_followed(stream_id, topic)
-        ) {
-            return true;
-        }
-
-        if (
-            filters.has(views_util.FILTERS.UNMUTED_TOPICS) &&
-            (user_topics.is_topic_muted(stream_id, topic) || stream_data.is_muted(stream_id)) &&
-            !user_topics.is_topic_unmuted_or_followed(stream_id, topic)
-        ) {
-            return true;
-        }
-
-        text = (sub.name + " " + topic).toLowerCase();
+    if (!row_in_search_results(search_keyword, text)) {
+        return true;
     }
+
+    return false;
+}
+
+function filter_should_hide_stream_row({stream_id, topic}) {
+    const sub = sub_store.get(stream_id);
+    if (sub === undefined || !sub.subscribed) {
+        return true;
+    }
+
+    if (
+        filters.has(views_util.FILTERS.FOLLOWED_TOPICS) &&
+        !user_topics.is_topic_followed(stream_id, topic)
+    ) {
+        return true;
+    }
+
+    if (
+        filters.has(views_util.FILTERS.UNMUTED_TOPICS) &&
+        (user_topics.is_topic_muted(stream_id, topic) || stream_data.is_muted(stream_id)) &&
+        !user_topics.is_topic_unmuted_or_followed(stream_id, topic)
+    ) {
+        return true;
+    }
+
+    const text = (sub.name + " " + topic).toLowerCase();
 
     if (!row_in_search_results(search_keyword, text)) {
         return true;
