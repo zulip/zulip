@@ -29,8 +29,8 @@ To register an outgoing webhook:
 
 There are currently two ways to trigger an outgoing webhook:
 
-*  **@-mention** the bot user in a stream.  If the bot replies, its
-    reply will be sent to that stream and topic.
+*  **@-mention** the bot user in a channel.  If the bot replies, its
+    reply will be sent to that channel and topic.
 *  **Send a direct message** with the bot as one of the recipients.
     If the bot replies, its reply will be sent to that thread.
 
@@ -124,11 +124,11 @@ Here's how we fill in the fields that a Slack-format webhook expects:
         </tr>
         <tr>
             <td><code>channel_id</code></td>
-            <td>Stream ID prefixed by "C"</td>
+            <td>Channel ID prefixed by "C"</td>
         </tr>
         <tr>
             <td><code>channel_name</code></td>
-            <td>Stream name</td>
+            <td>Channel name</td>
         </tr>
         <tr>
             <td><code>thread_ts</code></td>
