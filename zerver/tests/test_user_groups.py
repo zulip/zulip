@@ -267,15 +267,15 @@ class UserGroupTestCase(ZulipTestCase):
             name=SystemGroups.ADMINISTRATORS, realm=realm, is_system_group=True
         )
 
-        self.assertTrue(is_user_in_group(moderators_group, shiva))
+        self.assertTrue(is_user_in_group(moderators_group, shiva.id))
 
         # Iago is member of a subgroup of moderators group.
-        self.assertTrue(is_user_in_group(moderators_group, iago))
-        self.assertFalse(is_user_in_group(moderators_group, iago, direct_member_only=True))
-        self.assertTrue(is_user_in_group(administrators_group, iago, direct_member_only=True))
+        self.assertTrue(is_user_in_group(moderators_group, iago.id))
+        self.assertFalse(is_user_in_group(moderators_group, iago.id, direct_member_only=True))
+        self.assertTrue(is_user_in_group(administrators_group, iago.id, direct_member_only=True))
 
-        self.assertFalse(is_user_in_group(moderators_group, hamlet))
-        self.assertFalse(is_user_in_group(moderators_group, hamlet, direct_member_only=True))
+        self.assertFalse(is_user_in_group(moderators_group, hamlet.id))
+        self.assertFalse(is_user_in_group(moderators_group, hamlet.id, direct_member_only=True))
 
     def test_has_user_group_access_to_subgroup(self) -> None:
         iago = self.example_user("iago")

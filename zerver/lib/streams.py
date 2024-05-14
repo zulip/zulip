@@ -640,7 +640,7 @@ def can_remove_subscribers_from_stream(
 
     group_allowed_to_remove_subscribers = stream.can_remove_subscribers_group
     assert group_allowed_to_remove_subscribers is not None
-    return is_user_in_group(group_allowed_to_remove_subscribers, user_profile)
+    return is_user_in_group(group_allowed_to_remove_subscribers, user_profile.id)
 
 
 def filter_stream_authorization(

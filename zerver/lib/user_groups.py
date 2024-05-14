@@ -471,12 +471,12 @@ def get_recursive_membership_groups(user_profile: UserProfile) -> QuerySet[UserG
 
 
 def is_user_in_group(
-    user_group: UserGroup, user: UserProfile, *, direct_member_only: bool = False
+    user_group: UserGroup, user_id: int, *, direct_member_only: bool = False
 ) -> bool:
     if direct_member_only:
-        return get_user_group_direct_members(user_group=user_group).filter(id=user.id).exists()
+        return get_user_group_direct_members(user_group=user_group).filter(id=user_id).exists()
 
-    return get_recursive_group_members(user_group=user_group).filter(id=user.id).exists()
+    return get_recursive_group_members(user_group=user_group).filter(id=user_id).exists()
 
 
 def get_user_group_member_ids(

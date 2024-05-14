@@ -1234,7 +1234,7 @@ def check_user_group_mention_allowed(sender: UserProfile, user_group_ids: List[i
                 )
             )
 
-        if not is_user_in_group(can_mention_group, sender, direct_member_only=False):
+        if not is_user_in_group(can_mention_group, sender.id, direct_member_only=False):
             raise JsonableError(
                 _("You are not allowed to mention user group '{user_group_name}'.").format(
                     user_group_name=group.name
