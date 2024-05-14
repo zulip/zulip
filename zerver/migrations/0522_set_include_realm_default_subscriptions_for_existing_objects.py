@@ -62,6 +62,7 @@ def set_include_realm_default_subscriptions_for_existing_prereg_objects(
             PreregistrationUser.objects.filter(
                 id__range=(lower_bound, upper_bound), include_realm_default_subscriptions=None
             ).update(include_realm_default_subscriptions=False)
+        lower_bound += BATCH_SIZE
 
 
 def set_include_realm_default_subscriptions_for_existing_multiuse_invites(
@@ -88,6 +89,8 @@ def set_include_realm_default_subscriptions_for_existing_multiuse_invites(
         MultiuseInvite.objects.filter(
             id__range=(lower_bound, upper_bound), include_realm_default_subscriptions=None
         ).update(include_realm_default_subscriptions=False)
+
+        lower_bound += BATCH_SIZE
 
 
 class Migration(migrations.Migration):
