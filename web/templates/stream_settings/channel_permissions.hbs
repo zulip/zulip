@@ -37,6 +37,11 @@
       label=group_setting_labels.can_remove_subscribers_group
       prefix=prefix }}
 
+    {{> ../settings/group_setting_value_pill_input
+      setting_name="can_access_stream_topics_group"
+      label=group_setting_labels.can_access_stream_topics_group
+      prefix=prefix }}
+
     {{#unless is_stream_edit}}
         {{#if is_admin}}
         <div class="default-push-notifications">
