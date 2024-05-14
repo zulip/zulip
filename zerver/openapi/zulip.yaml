@@ -18752,7 +18752,7 @@ paths:
                         system groups.
 
                         **Changes**: Before Zulip 9.0 (feature level 258), the
-                        `can_mention_group` this field was always an integer.
+                        `can_mention_group` field was always an integer.
 
                         **Changes**: Before Zulip 8.0 (feature level 198),
                         the `can_mention_group` setting was named `can_mention_group_id`.
