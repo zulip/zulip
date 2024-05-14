@@ -1,13 +1,25 @@
 import isUrl from "is-url";
 import $ from "jquery";
 import _ from "lodash";
+import assert from "minimalistic-assert";
 import TurndownService from "turndown";
 
 import * as compose_ui from "./compose_ui";
 import * as message_lists from "./message_lists";
 import * as rows from "./rows";
 
-function find_boundary_tr($initial_tr, iterate_row) {
+declare global {
+    // eslint-disable-next-line @typescript-eslint/consistent-type-definitions
+    interface HTMLElementTagNameMap {
+        math: HTMLElement;
+        strike: HTMLElement;
+    }
+}
+
+function find_boundary_tr(
+    $initial_tr: JQuery,
+    iterate_row: ($tr: JQuery) => JQuery,
+): [number, boolean] | undefined {
     let j;
     let skip_same_td_check = false;
     let $tr = $initial_tr;
@@ -40,7 +52,7 @@ function find_boundary_tr($initial_tr, iterate_row) {
     return [rows.id($tr), skip_same_td_check];
 }
 
-function construct_recipient_header($message_row) {
+function construct_recipient_header($message_row: JQuery): JQuery {
     const message_header_content = rows
         .get_message_recipient_header($message_row)
         .text()
@@ -65,7 +77,7 @@ Do not be afraid to change this code if you understand
 how modern browsers deal with copy/paste.  Just test
 your changes carefully.
 */
-function construct_copy_div($div, start_id, end_id) {
+function construct_copy_div($div: JQuery, start_id: number, end_id: number): void {
     if (message_lists.current === undefined) {
         return;
     }
@@ -89,6 +101,7 @@ function construct_copy_div($div, start_id, end_id) {
             should_include_start_recipient_header = true;
         }
         const message = message_lists.current.get(rows.id($row));
+        assert(message !== undefined);
         const $content = $(message.content);
         $content.first().prepend(
             $("<span>")
@@ -103,7 +116,7 @@ function construct_copy_div($div, start_id, end_id) {
     }
 }
 
-function select_div($div, selection) {
+function select_div($div: JQuery, selection: Selection): void {
     $div.css({
         position: "absolute",
         left: "-99999px",
@@ -121,9 +134,10 @@ function select_div($div, selection) {
     selection.selectAllChildren($div[0]);
 }
 
-function remove_div(_div, ranges, selection) {
+function remove_div(_div: JQuery, ranges: Range[]): void {
     window.setTimeout(() => {
-        selection = window.getSelection();
+        const selection = window.getSelection();
+        assert(selection !== null);
         selection.removeAllRanges();
 
         for (const range of ranges) {
@@ -134,7 +148,7 @@ function remove_div(_div, ranges, selection) {
     }, 0);
 }
 
-export function copy_handler() {
+export function copy_handler(): void {
     // This is the main handler for copying message content via
     // `Ctrl+C` in Zulip (note that this is totally independent of the
     // "select region" copy behavior on Linux; that is handled
@@ -151,6 +165,7 @@ export function copy_handler() {
     //   were partially covered by the selection.
 
     const selection = window.getSelection();
+    assert(selection !== null);
     const analysis = analyze_selection(selection);
     const ranges = analysis.ranges;
     const start_id = analysis.start_id;
@@ -189,10 +204,15 @@ export function copy_handler() {
     // instead of copying the original selection
     select_div($div, selection);
     document.execCommand("copy");
-    remove_div($div, ranges, selection);
+    remove_div($div, ranges);
 }
 
-export function analyze_selection(selection) {
+export function analyze_selection(selection: Selection): {
+    ranges: Range[];
+    start_id: number | undefined;
+    end_id: number | undefined;
+    skip_same_td_check: boolean;
+} {
     // Here we analyze our selection to determine if part of a message
     // or multiple messages are selected.
     //
@@ -265,7 +285,7 @@ export function analyze_selection(selection) {
     };
 }
 
-function get_end_tr_from_endc($endc) {
+function get_end_tr_from_endc($endc: JQuery<Node>): JQuery {
     if ($endc.attr("id") === "bottom_whitespace" || $endc.attr("id") === "compose_close") {
         // If the selection ends in the bottom whitespace, we should
         // act as though the selection ends on the final message.
@@ -293,7 +313,7 @@ function get_end_tr_from_endc($endc) {
         // we can use the last message from the previous recipient_row.
         if ($endc.parents(".message_header").length > 0) {
             const $overflow_recipient_row = $endc.parents(".recipient_row").first();
-            return $overflow_recipient_row.prev(".recipient_row").last(".message_row");
+            return $overflow_recipient_row.prev(".recipient_row").last();
         }
         // If somehow we get here, do the default return.
     }
@@ -301,45 +321,52 @@ function get_end_tr_from_endc($endc) {
     return $endc.parents(".selectable_row").first();
 }
 
-function deduplicate_newlines(attribute) {
+function deduplicate_newlines(attribute: string): string {
     // We replace any occurrences of one or more consecutive newlines followed by
     // zero or more whitespace characters with a single newline character.
     return attribute ? attribute.replaceAll(/(\n+\s*)+/g, "\n") : "";
 }
 
-function image_to_zulip_markdown(_content, node) {
+function image_to_zulip_markdown(
+    _content: string,
+    node: Element | Document | DocumentFragment,
+): string {
+    assert(node instanceof Element);
     if (node.nodeName === "IMG" && node.classList.contains("emoji") && node.hasAttribute("alt")) {
         // For Zulip's custom emoji
-        return node.getAttribute("alt");
+        return node.getAttribute("alt") ?? "";
     }
-    const src = node.getAttribute("src") || node.getAttribute("href") || "";
-    const title = deduplicate_newlines(node.getAttribute("title")) || "";
+    const src = node.getAttribute("src") ?? node.getAttribute("href") ?? "";
+    const title = deduplicate_newlines(node.getAttribute("title") ?? "");
     // Using Zulip's link like syntax for images
-    return src ? "[" + title + "](" + src + ")" : node.getAttribute("alt") || "";
+    return src ? "[" + title + "](" + src + ")" : node.getAttribute("alt") ?? "";
 }
 
-function within_single_element(html_fragment) {
+function within_single_element(html_fragment: HTMLElement): boolean {
     return (
         html_fragment.childNodes.length === 1 &&
-        html_fragment.firstElementChild &&
-        html_fragment.firstElementChild.innerHTML
+        html_fragment.firstElementChild !== null &&
+        html_fragment.firstElementChild.innerHTML !== ""
     );
 }
 
-export function is_white_space_pre(paste_html) {
+export function is_white_space_pre(paste_html: string): boolean {
     const html_fragment = new DOMParser()
         .parseFromString(paste_html, "text/html")
         .querySelector("body");
+    assert(html_fragment !== null);
     return (
         within_single_element(html_fragment) &&
+        html_fragment.firstElementChild instanceof HTMLElement &&
         html_fragment.firstElementChild.style.whiteSpace === "pre"
     );
 }
 
-export function paste_handler_converter(paste_html) {
+export function paste_handler_converter(paste_html: string): string {
     const copied_html_fragment = new DOMParser()
         .parseFromString(paste_html, "text/html")
         .querySelector("body");
+    assert(copied_html_fragment !== null);
     const copied_within_single_element = within_single_element(copied_html_fragment);
     const outer_elements_to_retain = ["PRE", "UL", "OL", "A", "CODE"];
     // If the entire selection copied is within a single HTML element (like an
@@ -347,9 +374,10 @@ export function paste_handler_converter(paste_html) {
     // identify the intended structure of the copied content.
     if (
         copied_within_single_element &&
+        copied_html_fragment.firstElementChild !== null &&
         !outer_elements_to_retain.includes(copied_html_fragment.firstElementChild.nodeName)
     ) {
-        paste_html = copied_html_fragment.firstChild.innerHTML;
+        paste_html = copied_html_fragment.firstElementChild.innerHTML;
     }
 
     // turning off escaping (for now) to remove extra `/`
@@ -376,11 +404,12 @@ export function paste_handler_converter(paste_html) {
     turndownService.addRule("links", {
         filter: ["a"],
         replacement(content, node) {
+            assert(node instanceof HTMLAnchorElement);
             if (node.href === content) {
                 // Checks for raw links without custom text.
                 return content;
             }
-            if (node.childNodes.length === 1 && node.firstChild.nodeName === "IMG") {
+            if (node.childNodes.length === 1 && node.firstChild!.nodeName === "IMG") {
                 // ignore link's url if it only has an image
                 return content;
             }
@@ -398,20 +427,21 @@ export function paste_handler_converter(paste_html) {
                 .replace(/\n+$/, "\n") // replace trailing newlines with just a single one
                 .replaceAll(/\n/gm, "\n  "); // custom 2 space indent
             let prefix = "* ";
-            const parent = node.parentNode;
+            const parent = node.parentElement;
+            assert(parent !== null);
             if (parent.nodeName === "OL") {
                 const start = parent.getAttribute("start");
                 const index = Array.prototype.indexOf.call(parent.children, node);
                 prefix = (start ? Number(start) + index : index + 1) + ". ";
             }
-            return prefix + content + (node.nextSibling && !/\n$/.test(content) ? "\n" : "");
+            return prefix + content + (node.nextSibling && !content.endsWith("\n") ? "\n" : "");
         },
     });
     turndownService.addRule("zulipImagePreview", {
         filter(node) {
             // select image previews in Zulip messages
             return (
-                node.classList.contains("message_inline_image") && node.firstChild.nodeName === "A"
+                node.classList.contains("message_inline_image") && node.firstChild?.nodeName === "A"
             );
         },
 
@@ -423,18 +453,19 @@ export function paste_handler_converter(paste_html) {
             // does not have the `message_inline_image` class, it means it is the generating
             // link, and not the preview, meaning the generating link is copied as well.
             const copied_html = new DOMParser().parseFromString(paste_html, "text/html");
+            let href;
             if (
+                node.firstElementChild === null ||
+                (href = node.firstElementChild.getAttribute("href")) === null ||
                 !copied_html
-                    .querySelector(
-                        "a[href='" + CSS.escape(node.firstChild.getAttribute("href")) + "']",
-                    )
-                    ?.parentNode?.classList.contains("message_inline_image")
+                    .querySelector("a[href='" + CSS.escape(href) + "']")
+                    ?.parentElement?.classList.contains("message_inline_image")
             ) {
                 // We skip previews which have their generating link copied too, to avoid
                 // double pasting the same link.
                 return "";
             }
-            return image_to_zulip_markdown(content, node.firstChild);
+            return image_to_zulip_markdown(content, node.firstElementChild);
         },
     });
     turndownService.addRule("images", {
@@ -465,19 +496,23 @@ export function paste_handler_converter(paste_html) {
     // Everything else works the same.
     turndownService.addRule("fencedCodeBlock", {
         filter(node, options) {
+            let text_children;
             return (
                 options.codeBlockStyle === "fenced" &&
                 node.nodeName === "PRE" &&
-                [...node.childNodes].filter((child) => child.textContent.trim() !== "").length ===
-                    1 &&
-                [...node.childNodes].find((child) => child.textContent.trim() !== "").nodeName ===
-                    "CODE"
+                (text_children = [...node.childNodes].filter(
+                    (child) => child.textContent !== null && child.textContent.trim() !== "",
+                )).length === 1 &&
+                text_children[0].nodeName === "CODE"
             );
         },
 
         replacement(_content, node, options) {
-            const codeElement = [...node.childNodes].find((child) => child.nodeName === "CODE");
+            assert(node instanceof HTMLElement);
+            const codeElement = [...node.children].find((child) => child.nodeName === "CODE");
+            assert(codeElement !== undefined);
             const code = codeElement.textContent;
+            assert(code !== null);
 
             // We convert single line code inside a code block to inline markdown code,
             // and the code for this is taken from upstream's `code` rule.
@@ -490,7 +525,7 @@ export function paste_handler_converter(paste_html) {
                 // Pick the shortest sequence of backticks that is not found in the code
                 // to be the delimiter.
                 let delimiter = "`";
-                const matches = code.match(/`+/gm) || [];
+                const matches: string[] = code.match(/`+/gm) ?? [];
                 while (matches.includes(delimiter)) {
                     delimiter = delimiter + "`";
                 }
@@ -498,11 +533,12 @@ export function paste_handler_converter(paste_html) {
                 return delimiter + extraSpace + code + extraSpace + delimiter;
             }
 
-            const className = codeElement.getAttribute("class") || "";
+            const className = codeElement.getAttribute("class") ?? "";
             const language = node.parentElement?.classList.contains("zulip-code-block")
-                ? node.closest(".codehilite")?.dataset?.codeLanguage || ""
-                : (className.match(/language-(\S+)/) || [null, ""])[1];
+                ? node.closest<HTMLElement>(".codehilite")?.dataset?.codeLanguage ?? ""
+                : (className.match(/language-(\S+)/) ?? [null, ""])[1];
 
+            assert(options.fence !== undefined);
             const fenceChar = options.fence.charAt(0);
             let fenceSize = 3;
             const fenceInCodeRegex = new RegExp("^" + fenceChar + "{3,}", "gm");
@@ -532,7 +568,7 @@ export function paste_handler_converter(paste_html) {
     return markdown_text;
 }
 
-function is_safe_url_paste_target($textarea) {
+function is_safe_url_paste_target($textarea: JQuery<HTMLTextAreaElement>): boolean {
     const range = $textarea.range();
 
     if (!range.text) {
@@ -563,7 +599,7 @@ function is_safe_url_paste_target($textarea) {
     return true;
 }
 
-export function maybe_transform_html(html, text) {
+export function maybe_transform_html(html: string, text: string): string {
     if (is_white_space_pre(html)) {
         // Copied content styled with `white-space: pre` is pasted as is
         // but formatted as code. We need this for content copied from
@@ -573,7 +609,8 @@ export function maybe_transform_html(html, text) {
     return html;
 }
 
-export function paste_handler(event) {
+export function paste_handler(this: HTMLTextAreaElement, event: JQuery.TriggeredEvent): void {
+    assert(event.originalEvent instanceof ClipboardEvent);
     const clipboardData = event.originalEvent.clipboardData;
     if (!clipboardData) {
         // On IE11, ClipboardData isn't defined.  One can instead
@@ -585,7 +622,7 @@ export function paste_handler(event) {
     }
 
     if (clipboardData.getData) {
-        const $textarea = $(event.currentTarget);
+        const $textarea = $(this);
         const paste_text = clipboardData.getData("text");
         let paste_html = clipboardData.getData("text/html");
         // Trim the paste_text to accommodate sloppy copying
@@ -619,7 +656,7 @@ export function paste_handler(event) {
     }
 }
 
-export function initialize() {
-    $("textarea#compose-textarea").on("paste", paste_handler);
-    $("body").on("paste", ".message_edit_content", paste_handler);
+export function initialize(): void {
+    $<HTMLTextAreaElement>("textarea#compose-textarea").on("paste", paste_handler);
+    $("body").on("paste", "textarea.message_edit_content", paste_handler);
 }
