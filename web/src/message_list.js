@@ -392,14 +392,16 @@ export class MessageList {
         this.rerender();
     }
 
-    show_edit_message($row, edit_obj) {
+    show_edit_message($row, $form) {
         if ($row.find(".message_edit_form form").length !== 0) {
             return;
         }
-        $row.find(".message_edit_form").append(edit_obj.$form);
+        $row.find(".message_edit_form").append($form);
         $row.find(".message_content, .status-message, .message_controls").hide();
         $row.find(".messagebox-content").addClass("content_edit_mode");
         $row.find(".message_edit").css("display", "block");
+        // autosize will not change the height of the textarea if the `$row` is not
+        // rendered in DOM yet. So, we call `autosize.update` post render.
         autosize($row.find(".message_edit_content"));
     }
 

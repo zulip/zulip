@@ -1,3 +1,4 @@
+import autosize from "autosize";
 import $ from "jquery";
 import _ from "lodash";
 
@@ -978,6 +979,9 @@ export class MessageListView {
             this.$list.append($rendered_groups);
             condense.condense_and_collapse($dom_messages);
         }
+
+        // After all the messages are rendered, resize any message edit textarea if required.
+        autosize.update(this.$list.find(".message_edit_content"));
 
         restore_scroll_position();
 
