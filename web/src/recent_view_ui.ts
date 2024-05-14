@@ -551,7 +551,7 @@ type ConversationContext = {
           topic: string;
           topic_url: string;
           mention_in_unread: boolean;
-          visibility_policy: number | boolean;
+          visibility_policy: number | false;
           all_visibility_policies: {
               INHERIT: number;
               MUTED: number;
