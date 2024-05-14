@@ -1435,11 +1435,6 @@ class RealmAPITest(ZulipTestCase):
         super().setUp()
         self.login("desdemona")
 
-    def set_up_db(self, attr: str, value: Any) -> None:
-        realm = get_realm("zulip")
-        setattr(realm, attr, value)
-        realm.save(update_fields=[attr])
-
     def update_with_api(self, name: str, value: Union[int, str]) -> Realm:
         if not isinstance(value, str):
             value = orjson.dumps(value).decode()
@@ -1508,7 +1503,7 @@ class RealmAPITest(ZulipTestCase):
             self.assertIsNone(realm.jitsi_server_url, None)
             return
 
-        self.set_up_db(name, vals[0])
+        do_set_realm_property(get_realm("zulip"), name, vals[0], acting_user=None)
 
         for val in vals[1:]:
             realm = self.update_with_api(name, val)
@@ -1530,7 +1525,7 @@ class RealmAPITest(ZulipTestCase):
         default_group_name = setting_permission_configuration.default_group_name
         default_group = all_system_user_groups.get(name=default_group_name)
 
-        self.set_up_db(setting_name, default_group)
+        self.assertEqual(getattr(realm, setting_name), default_group.usergroup_ptr)
 
         for user_group in all_system_user_groups:
             if (
@@ -1583,7 +1578,7 @@ class RealmAPITest(ZulipTestCase):
     def test_update_realm_org_type(self) -> None:
         vals = [t["id"] for t in Realm.ORG_TYPES.values()]
 
-        self.set_up_db("org_type", vals[0])
+        do_change_realm_org_type(get_realm("zulip"), vals[0], acting_user=None)
 
         for val in vals[1:]:
             realm = self.update_with_api("org_type", val)
@@ -1713,7 +1708,8 @@ class RealmAPITest(ZulipTestCase):
 
     def test_update_realm_delete_own_message_policy(self) -> None:
         """Tests updating the realm property 'delete_own_message_policy'."""
-        self.set_up_db("delete_own_message_policy", Realm.POLICY_EVERYONE)
+        realm = get_realm("zulip")
+        self.assertEqual(realm.delete_own_message_policy, Realm.POLICY_EVERYONE)
         realm = self.update_with_api("delete_own_message_policy", Realm.POLICY_ADMINS_ONLY)
         self.assertEqual(realm.delete_own_message_policy, Realm.POLICY_ADMINS_ONLY)
         self.assertEqual(realm.message_content_delete_limit_seconds, 600)
@@ -1759,7 +1755,7 @@ class RealmAPITest(ZulipTestCase):
             vals = bool_tests
         assert vals is not None
 
-        self.set_up_db(setting_name, vals[0])
+        do_set_realm_property(get_realm("zulip"), setting_name, vals[0], acting_user=None)
         value = vals[1]
 
         if not isinstance(value, str):
