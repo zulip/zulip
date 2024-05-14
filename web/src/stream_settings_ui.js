@@ -185,6 +185,12 @@ export function update_can_remove_subscribers_group_id(sub, new_value) {
     stream_edit_subscribers.rerender_subscribers_list(sub);
 }
 
+export function update_stream_topic_access_group_id(sub, new_value) {
+    stream_data.update_stream_topic_access_group_id(sub, new_value);
+    stream_ui_updates.update_setting_element(sub, "stream_topic_access_group");
+    stream_edit_subscribers.rerender_subscribers_list(sub);
+}
+
 export function update_is_default_stream() {
     const active_stream_id = stream_settings_components.get_active_data().id;
     if (active_stream_id) {
