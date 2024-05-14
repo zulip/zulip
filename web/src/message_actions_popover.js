@@ -46,7 +46,7 @@ export function toggle_message_actions_menu(message) {
         return true;
     }
 
-    if (message.locally_echoed || message_edit.is_editing(message.id)) {
+    if (message.locally_echoed || message_edit.currently_editing_messages.has(message.id)) {
         // Don't open the popup for locally echoed messages for now.
         // It creates bugs with things like keyboard handlers when
         // we get the server response.

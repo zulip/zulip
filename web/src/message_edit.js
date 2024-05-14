@@ -50,7 +50,7 @@ import * as ui_report from "./ui_report";
 import * as upload from "./upload";
 import * as util from "./util";
 
-const currently_editing_messages = new Map();
+export const currently_editing_messages = new Map();
 let currently_deleting_messages = [];
 let currently_topic_editing_messages = [];
 const currently_echoing_messages = new Map();
@@ -789,10 +789,6 @@ export function start_inline_topic_edit($recipient_row) {
     );
 }
 
-export function is_editing(id) {
-    return currently_editing_messages.has(id);
-}
-
 export function end_inline_topic_edit($row) {
     assert(message_lists.current !== undefined);
     message_lists.current.hide_edit_topic_on_recipient_row($row);
@@ -1088,7 +1084,7 @@ export function save_message_row_edit($row) {
                     });
 
                     $row = message_lists.current.get_row(message_id);
-                    if (!is_editing(message_id)) {
+                    if (!currently_editing_messages.has(message_id)) {
                         // Return to the message editing open UI state with the edited content.
                         start_edit_maintaining_scroll($row, echo_data.raw_content);
                     }

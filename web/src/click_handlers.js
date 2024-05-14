@@ -185,7 +185,7 @@ export function initialize() {
         assert(message_lists.current !== undefined);
         message_lists.current.select_id(id);
 
-        if (message_edit.is_editing(id)) {
+        if (message_edit.currently_editing_messages.has(id)) {
             // Clicks on a message being edited shouldn't trigger a reply.
             return;
         }
