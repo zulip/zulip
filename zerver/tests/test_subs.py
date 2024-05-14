@@ -4470,7 +4470,20 @@ class SubscriptionAPITest(ZulipTestCase):
                 self.assertEqual(stream["creator_id"], iago.id)
                 continue
 
-            # Streams that aren't created using the api should have no creator
+            # We assign creator to some streams in populate_db.
+            if stream["name"] == "Venice":
+                self.assertEqual(stream["creator_id"], self.example_user("polonius").id)
+                continue
+
+            if stream["name"] == "Scotland":
+                self.assertEqual(stream["creator_id"], self.example_user("iago").id)
+                continue
+
+            if stream["name"] == "core team":
+                self.assertEqual(stream["creator_id"], self.example_user("desdemona").id)
+                continue
+
+            # Other streams that weren't created using the api should have no creator.
             self.assertIsNone(stream["creator_id"])
 
     def test_private_stream_policies(self) -> None:

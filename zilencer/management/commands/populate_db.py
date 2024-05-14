@@ -637,12 +637,13 @@ class Command(BaseCommand):
             ]
             stream_dict: Dict[str, Dict[str, Any]] = {
                 "Denmark": {"description": "A Scandinavian country"},
-                "Scotland": {"description": "Located in the United Kingdom"},
-                "Venice": {"description": "A northeastern Italian city"},
+                "Scotland": {"description": "Located in the United Kingdom", "creator": iago},
+                "Venice": {"description": "A northeastern Italian city", "creator": polonius},
                 "Rome": {"description": "Yet another Italian city", "is_web_public": True},
                 "core team": {
                     "description": "A private channel for core team members",
                     "invite_only": True,
+                    "creator": desdemona,
                 },
             }
 
@@ -1001,13 +1002,14 @@ class Command(BaseCommand):
                     "devel": {"description": "For developing"},
                     # ビデオゲーム - VideoGames (japanese)
                     "ビデオゲーム": {
-                        "description": f"Share your favorite video games!  {raw_emojis[2]}"
+                        "description": f"Share your favorite video games!  {raw_emojis[2]}",
+                        "creator": shiva,
                     },
                     "announce": {
                         "description": "For announcements",
                         "stream_post_policy": Stream.STREAM_POST_POLICY_ADMINS,
                     },
-                    "design": {"description": "For design"},
+                    "design": {"description": "For design", "creator": hamlet},
                     "support": {"description": "For support"},
                     "social": {"description": "For socializing"},
                     "test": {"description": "For testing `code`"},
