@@ -326,6 +326,13 @@ function create_stream() {
     );
     data.can_remove_subscribers_group = can_remove_subscribers_group_id;
 
+    const can_access_stream_topics_group_id = Number.parseInt(
+        stream_settings_components.new_stream_can_access_stream_topics_group_widget.value(),
+        10,
+    );
+
+    data.can_access_stream_topics_group = can_access_stream_topics_group_id;
+
     loading.make_indicator($("#stream_creating_indicator"), {
         text: $t({defaultMessage: "Creating channel..."}),
     });
@@ -519,4 +526,5 @@ export function set_up_handlers() {
     });
 
     stream_settings_components.new_stream_can_remove_subscribers_group_widget.setup();
+    stream_settings_components.new_stream_can_access_stream_topics_group_widget.setup();
 }
