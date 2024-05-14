@@ -14,6 +14,7 @@ from zerver.actions.message_send import (
     internal_prep_stream_message,
 )
 from zerver.lib.message import SendMessageRequest, remove_single_newlines
+from zerver.lib.topic import messages_for_topic
 from zerver.models.realm_audit_logs import RealmAuditLog
 from zerver.models.realms import Realm
 from zerver.models.users import UserProfile, get_system_bot
@@ -264,11 +265,47 @@ def send_zulip_update_announcements(
             ):
                 continue
 
-            messages = internal_prep_zulip_update_announcements_stream_messages(
-                current_level=realm_zulip_update_announcements_level,
-                latest_level=latest_zulip_update_announcements_level,
-                sender=sender,
-                realm=realm,
+            # Send an introductory message just before the first update message.
+            with override_language(realm.default_language):
+                topic_name = str(realm.ZULIP_UPDATE_ANNOUNCEMENTS_TOPIC_NAME)
+
+            stream = realm.zulip_update_announcements_stream
+            assert stream.recipient_id is not None
+            topic_has_messages = messages_for_topic(
+                realm.id, stream.recipient_id, topic_name
+            ).exists()
+
+            if not topic_has_messages:
+                content_of_introductory_message = (
+                    """
+To help you learn about new features and configuration options,
+this topic will receive messages about important changes in Zulip.
+
+You can read these update messages whenever it's convenient, or
+[mute]({mute_topic_help_url}) this topic if you are not interested.
+If your organization does not want to receive these announcements,
+they can be disabled. [Learn more]({zulip_update_announcements_help_url}).
+"""
+                ).format(
+                    zulip_update_announcements_help_url="/help/configure-automated-notices#zulip-update-announcements",
+                    mute_topic_help_url="/help/mute-a-topic",
+                )
+                messages = [
+                    internal_prep_stream_message(
+                        sender,
+                        stream,
+                        topic_name,
+                        remove_single_newlines(content_of_introductory_message),
+                    )
+                ]
+
+            messages.extend(
+                internal_prep_zulip_update_announcements_stream_messages(
+                    current_level=realm_zulip_update_announcements_level,
+                    latest_level=latest_zulip_update_announcements_level,
+                    sender=sender,
+                    realm=realm,
+                )
             )
 
             new_zulip_update_announcements_level = latest_zulip_update_announcements_level

@@ -359,21 +359,6 @@ This **greetings** topic is a great place to say “hi” :wave: to your teammat
 :point_right: Click on this message to start a new message in the same conversation.
 """)
 
-    content_of_zulip_update_announcements_topic_name = (
-        _("""
-Welcome! To help you learn about new features and configuration options,
-this topic will receive messages about important changes in Zulip.
-
-You can read these update messages whenever it's convenient, or
-[mute]({mute_topic_help_url}) this topic if you are not interested.
-If your organization does not want to receive these announcements,
-they can be disabled. [Learn more]({zulip_update_announcements_help_url}).
-        """)
-    ).format(
-        zulip_update_announcements_help_url="/help/configure-automated-notices#zulip-update-announcements",
-        mute_topic_help_url="/help/mute-a-topic",
-    )
-
     welcome_messages: List[Dict[str, str]] = []
 
     # Messages added to the "welcome messages" list last will be most
@@ -382,15 +367,6 @@ they can be disabled. [Learn more]({zulip_update_announcements_help_url}).
     # which are sorted newest-first.
     #
     # Initial messages are configured below.
-
-    # Zulip updates system advertisement.
-    welcome_messages += [
-        {
-            "channel_name": str(Realm.DEFAULT_NOTIFICATION_STREAM_NAME),
-            "topic_name": str(Realm.ZULIP_UPDATE_ANNOUNCEMENTS_TOPIC_NAME),
-            "content": content_of_zulip_update_announcements_topic_name,
-        },
-    ]
 
     # Advertising moving messages.
     welcome_messages += [
