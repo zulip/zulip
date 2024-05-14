@@ -45,6 +45,7 @@ export type MessageList = {
     can_mark_messages_read: () => boolean;
     can_mark_messages_read_without_setting: () => boolean;
     rerender_view: () => void;
+    update_muting_and_rerender: () => void;
     prevent_reading: () => void;
     resume_reading: () => void;
     data: MessageListData;
