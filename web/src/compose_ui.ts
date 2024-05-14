@@ -230,7 +230,7 @@ export function insert_syntax_and_focus(
     syntax: string,
     $textarea = $<HTMLTextAreaElement>("textarea#compose-textarea"),
     mode = "inline",
-    padding_newlines: number,
+    padding_newlines?: number,
 ): void {
     // Generic helper for inserting syntax into the main compose box
     // where the cursor was and focusing the area.  Mostly a thin
