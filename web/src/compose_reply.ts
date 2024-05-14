@@ -1,5 +1,6 @@
 import $ from "jquery";
 import assert from "minimalistic-assert";
+import {z} from "zod";
 
 import * as fenced_code from "../shared/src/fenced_code";
 
@@ -13,6 +14,7 @@ import {$t} from "./i18n";
 import * as inbox_ui from "./inbox_ui";
 import * as inbox_util from "./inbox_util";
 import * as message_lists from "./message_lists";
+import type {Message} from "./message_store";
 import * as narrow_state from "./narrow_state";
 import * as people from "./people";
 import * as recent_view_ui from "./recent_view_ui";
@@ -20,9 +22,14 @@ import * as recent_view_util from "./recent_view_util";
 import * as stream_data from "./stream_data";
 import * as unread_ops from "./unread_ops";
 
-export function respond_to_message(opts) {
+export function respond_to_message(opts: {
+    keep_composebox_empty?: boolean;
+    message_id?: number;
+    reply_type?: "personal";
+    trigger?: string;
+}): void {
     let message;
-    let msg_type;
+    let msg_type: "private" | "stream";
     if (recent_view_util.is_visible()) {
         message = recent_view_ui.get_focused_row_message();
         if (message === undefined) {
@@ -53,7 +60,10 @@ export function respond_to_message(opts) {
         assert(message_lists.current !== undefined);
 
         message =
-            message_lists.current.get(opts.message_id) || message_lists.current.selected_message();
+            (opts.message_id === undefined
+                ? undefined
+                : message_lists.current.get(opts.message_id)) ??
+            message_lists.current.selected_message();
 
         if (message === undefined) {
             // empty narrow implementation
@@ -70,6 +80,7 @@ export function respond_to_message(opts) {
                 return;
             }
             const current_filter = narrow_state.filter();
+            assert(current_filter !== undefined);
             const first_term = current_filter.terms()[0];
             const first_operator = first_term.operator;
             const first_operand = first_term.operand;
@@ -115,10 +126,11 @@ export function respond_to_message(opts) {
         msg_type = message.type;
     }
 
-    let stream_id = "";
+    let stream_id: number | undefined;
     let topic = "";
-    let pm_recipient = "";
+    let pm_recipient: string | undefined = "";
     if (msg_type === "stream") {
+        assert(message.type === "stream");
         stream_id = message.stream_id;
         topic = message.topic;
     } else if (opts.reply_type === "personal") {
@@ -141,7 +153,12 @@ export function respond_to_message(opts) {
     });
 }
 
-export function reply_with_mention(opts) {
+export function reply_with_mention(opts: {
+    keep_composebox_empty?: boolean;
+    message_id?: number;
+    reply_type?: "personal";
+    trigger?: string;
+}): void {
     assert(message_lists.current !== undefined);
     respond_to_message({
         ...opts,
@@ -152,9 +169,10 @@ export function reply_with_mention(opts) {
     compose_ui.insert_syntax_and_focus(mention);
 }
 
-export function selection_within_message_id(selection = window.getSelection()) {
+export function selection_within_message_id(selection = window.getSelection()): number | undefined {
     // Returns the message_id if the selection is entirely within a message,
     // otherwise returns undefined.
+    assert(selection !== null);
     if (!selection.toString()) {
         return undefined;
     }
@@ -165,7 +183,11 @@ export function selection_within_message_id(selection = window.getSelection()) {
     return undefined;
 }
 
-function get_quote_target(opts) {
+function get_quote_target(opts: {message_id?: number; quote_content?: string}): {
+    message_id: number;
+    message: Message;
+    quote_content: string | undefined;
+} {
     assert(message_lists.current !== undefined);
     let message_id;
     let quote_content;
@@ -189,21 +211,29 @@ function get_quote_target(opts) {
         }
     }
     const message = message_lists.current.get(message_id);
+    assert(message !== undefined);
     // If the current selection, if any, is not entirely within the target message,
     // we quote that entire message.
     quote_content ??= message.raw_content;
     return {message_id, message, quote_content};
 }
 
-export function quote_and_reply(opts) {
+export function quote_and_reply(opts: {
+    message_id: number;
+    quote_content?: string;
+    keep_composebox_empty?: boolean;
+    reply_type?: "personal";
+    trigger?: string;
+}): void {
     const {message_id, message, quote_content} = get_quote_target(opts);
     const quoting_placeholder = $t({defaultMessage: "[Quoting…]"});
 
     // If the last compose type textarea focused on is still in the DOM, we add
     // the quote in that textarea, else we default to the compose box.
-    const $textarea = compose_state.get_last_focused_compose_type_input()?.isConnected
-        ? $(compose_state.get_last_focused_compose_type_input())
-        : $("textarea#compose-textarea");
+    const last_focused_compose_type_input = compose_state.get_last_focused_compose_type_input();
+    const $textarea = last_focused_compose_type_input?.isConnected
+        ? $(last_focused_compose_type_input)
+        : $<HTMLTextAreaElement>("textarea#compose-textarea");
 
     if ($textarea.attr("id") === "compose-textarea" && !compose_state.has_message_content()) {
         // The user has not started typing a message,
@@ -221,7 +251,7 @@ export function quote_and_reply(opts) {
 
     compose_ui.insert_syntax_and_focus(quoting_placeholder, $textarea, "block");
 
-    function replace_content(message, raw_content) {
+    function replace_content(message: Message, raw_content: string): void {
         // Final message looks like:
         //     @_**Iago|5** [said](link to message):
         //     ```quote
@@ -231,7 +261,7 @@ export function quote_and_reply(opts) {
             {defaultMessage: "{username} [said]({link_to_message}):"},
             {
                 username: `@_**${message.sender_full_name}|${message.sender_id}**`,
-                link_to_message: `${hash_util.by_conversation_and_time_url(message)}`,
+                link_to_message: hash_util.by_conversation_and_time_url(message),
             },
         );
         content += "\n";
@@ -247,15 +277,16 @@ export function quote_and_reply(opts) {
         return;
     }
 
-    channel.get({
+    void channel.get({
         url: "/json/messages/" + message_id,
-        success(data) {
+        success(raw_data) {
+            const data = z.object({raw_content: z.string()}).parse(raw_data);
             replace_content(message, data.raw_content);
         },
     });
 }
 
-function extract_range_html(range, preserve_ancestors = false) {
+function extract_range_html(range: Range, preserve_ancestors = false): string {
     // Returns the html of the range as a string, optionally preserving 2
     // levels of ancestors.
     const temp_div = document.createElement("div");
@@ -263,23 +294,27 @@ function extract_range_html(range, preserve_ancestors = false) {
         temp_div.append(range.cloneContents());
         return temp_div.innerHTML;
     }
-    let container =
-        range.commonAncestorContainer.nodeType === Node.ELEMENT_NODE
+    const container =
+        range.commonAncestorContainer instanceof HTMLElement
             ? range.commonAncestorContainer
             : range.commonAncestorContainer.parentElement;
+    assert(container !== null);
+    assert(container.parentElement !== null);
     // The reason for preserving 2, not just 1, ancestors is code blocks; a
     // selection completely inside a code block has a code element as its
     // container element, inside a pre element, which is needed to identify
     // the selection as being part of a code block as opposed to inline code.
     const outer_container = container.parentElement.cloneNode();
-    container = container.cloneNode();
-    container.append(range.cloneContents());
-    outer_container.append(container);
+    assert(outer_container instanceof HTMLElement); // https://github.com/microsoft/TypeScript/issues/283
+    const container_clone = container.cloneNode();
+    assert(container_clone instanceof HTMLElement); // https://github.com/microsoft/TypeScript/issues/283
+    container_clone.append(range.cloneContents());
+    outer_container.append(container_clone);
     temp_div.append(outer_container);
     return temp_div.innerHTML;
 }
 
-function get_range_intersection_with_element(range, element) {
+function get_range_intersection_with_element(range: Range, element: Node): Range {
     // Returns a new range that is a subset of range and is inside element.
     const intersection = document.createRange();
     intersection.selectNodeContents(element);
@@ -295,7 +330,8 @@ function get_range_intersection_with_element(range, element) {
     return intersection;
 }
 
-export function get_message_selection(selection = window.getSelection()) {
+export function get_message_selection(selection = window.getSelection()): string {
+    assert(selection !== null);
     let selected_message_content_raw = "";
 
     // We iterate over all ranges in the selection, to find the ranges containing
@@ -306,10 +342,14 @@ export function get_message_selection(selection = window.getSelection()) {
         let range = selection.getRangeAt(i);
         const range_common_ancestor = range.commonAncestorContainer;
         let html_to_convert = "";
+        let message_content;
 
         // If the common ancestor is the message_content div or its child, we can quote
         // this entire range at least.
-        if (range_common_ancestor.classList?.contains("message_content")) {
+        if (
+            range_common_ancestor instanceof Element &&
+            range_common_ancestor.classList.contains("message_content")
+        ) {
             html_to_convert = extract_range_html(range);
         } else if ($(range_common_ancestor).parents(".message_content").length) {
             // We want to preserve the structure of the html with 2 levels of
@@ -319,14 +359,11 @@ export function get_message_selection(selection = window.getSelection()) {
             // If the common ancestor contains the message_content div, we can quote the part
             // of this range that is in the message_content div, if any.
             range_common_ancestor instanceof Element &&
-            range_common_ancestor.querySelector(".message_content") &&
+            (message_content = range_common_ancestor.querySelector(".message_content")) !== null &&
             range.cloneContents().querySelector(".message_content")
         ) {
             // Narrow down the range to the part that is in the message_content div.
-            range = get_range_intersection_with_element(
-                range,
-                range_common_ancestor.querySelector(".message_content"),
-            );
+            range = get_range_intersection_with_element(range, message_content);
             html_to_convert = extract_range_html(range);
         } else {
             continue;
@@ -338,7 +375,7 @@ export function get_message_selection(selection = window.getSelection()) {
     return selected_message_content_raw;
 }
 
-export function initialize() {
+export function initialize(): void {
     $("body").on("click", ".compose_reply_button", () => {
         respond_to_message({trigger: "reply button"});
     });

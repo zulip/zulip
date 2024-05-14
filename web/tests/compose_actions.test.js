@@ -330,7 +330,6 @@ test("reply_with_mention", ({override, override_rewire, mock_template}) => {
         sender_full_name: "Bob Roberts",
         sender_id: 40,
     };
-    override(message_lists.current, "get", (_id) => undefined);
     override(message_lists.current, "selected_message", () => msg);
 
     let syntax_to_insert;
