@@ -531,9 +531,6 @@ export function mark_stream_as_read(stream_id) {
             {operator: "channel", operand: stream_id},
         ],
         "add",
-        {
-            stream_id,
-        },
     );
 }
 
@@ -545,10 +542,6 @@ export function mark_topic_as_read(stream_id, topic) {
             {operator: "topic", operand: topic},
         ],
         "add",
-        {
-            stream_id,
-            topic,
-        },
     );
 }
 
@@ -559,10 +552,6 @@ export function mark_topic_as_unread(stream_id, topic) {
             {operator: "topic", operand: topic},
         ],
         "remove",
-        {
-            stream_id,
-            topic,
-        },
     );
 }
 
