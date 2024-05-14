@@ -123,7 +123,6 @@ function test_ui(label, f) {
 function initialize_handlers({override}) {
     override(realm, "realm_available_video_chat_providers", {disabled: {id: 0}});
     override(realm, "realm_video_chat_provider", 0);
-    override(upload, "feature_check", noop);
     override(resize, "watch_manual_resize", noop);
     compose_setup.initialize();
 }
@@ -510,7 +509,6 @@ test_ui("initialize", ({override}) => {
     override(upload, "compose_upload_cancel", () => {
         uppy_cancel_all_called = true;
     });
-    override(upload, "feature_check", noop);
 
     compose_setup.initialize();
 

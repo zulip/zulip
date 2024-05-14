@@ -453,7 +453,7 @@ function edit_message($row, raw_content) {
     const max_file_upload_size = realm.max_file_upload_size_mib;
     let file_upload_enabled = false;
 
-    if (max_file_upload_size > 0) {
+    if (max_file_upload_size > 0 && upload.feature_check()) {
         file_upload_enabled = true;
     }
 
@@ -483,7 +483,6 @@ function edit_message($row, raw_content) {
     $form
         .find(".message-edit-feature-group .audio_link")
         .toggle(compose_call.compute_show_audio_chat_button());
-    upload.feature_check($(`#edit_form_${CSS.escape(rows.id($row))} .compose_upload_file`));
 
     const $message_edit_content = $row.find("textarea.message_edit_content");
     const $message_edit_countdown_timer = $row.find(".message_edit_countdown_timer");

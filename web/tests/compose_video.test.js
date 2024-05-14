@@ -4,14 +4,13 @@ const {strict: assert} = require("assert");
 
 const events = require("./lib/events");
 const {mock_esm, set_global, with_overrides, zrequire} = require("./lib/namespace");
-const {run_test, noop} = require("./lib/test");
+const {run_test} = require("./lib/test");
 const $ = require("./lib/zjquery");
 const {current_user, page_params, realm} = require("./lib/zpage_params");
 
 const channel = mock_esm("../src/channel");
 const compose_closed_ui = mock_esm("../src/compose_closed_ui");
 const compose_ui = mock_esm("../src/compose_ui");
-const upload = mock_esm("../src/upload");
 mock_esm("../src/resize", {
     watch_manual_resize() {},
 });
@@ -69,8 +68,6 @@ function test(label, f) {
 
 test("videos", ({override}) => {
     realm.realm_video_chat_provider = realm_available_video_chat_providers.disabled.id;
-
-    override(upload, "feature_check", noop);
 
     stub_out_video_calls();
 
@@ -245,26 +242,20 @@ test("videos", ({override}) => {
     })();
 });
 
-test("test_video_chat_button_toggle disabled", ({override}) => {
-    override(upload, "feature_check", noop);
-
+test("test_video_chat_button_toggle disabled", () => {
     realm.realm_video_chat_provider = realm_available_video_chat_providers.disabled.id;
     compose_setup.initialize();
     assert.equal($(".compose-control-buttons-container .video_link").visible(), false);
 });
 
-test("test_video_chat_button_toggle no url", ({override}) => {
-    override(upload, "feature_check", noop);
-
+test("test_video_chat_button_toggle no url", () => {
     realm.realm_video_chat_provider = realm_available_video_chat_providers.jitsi_meet.id;
     page_params.jitsi_server_url = null;
     compose_setup.initialize();
     assert.equal($(".compose-control-buttons-container .video_link").visible(), false);
 });
 
-test("test_video_chat_button_toggle enabled", ({override}) => {
-    override(upload, "feature_check", noop);
-
+test("test_video_chat_button_toggle enabled", () => {
     realm.realm_video_chat_provider = realm_available_video_chat_providers.jitsi_meet.id;
     realm.realm_jitsi_server_url = "https://meet.jit.si";
     compose_setup.initialize();

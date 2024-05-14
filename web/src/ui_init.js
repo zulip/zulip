@@ -176,7 +176,7 @@ function initialize_compose_box() {
         $(
             render_compose({
                 embedded: $("#compose").attr("data-embedded") === "",
-                file_upload_enabled: realm.max_file_upload_size_mib > 0,
+                file_upload_enabled: realm.max_file_upload_size_mib > 0 && upload.feature_check(),
                 giphy_enabled: giphy.is_giphy_enabled(),
                 max_stream_name_length: realm.max_stream_name_length,
                 max_topic_length: realm.max_topic_length,

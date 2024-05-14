@@ -40,14 +40,10 @@ function test(label, f) {
 }
 
 test("feature_check", ({override}) => {
-    const $upload_button = $.create("upload-button-stub");
-    $upload_button.addClass("notdisplayed");
-    upload.feature_check($upload_button);
-    assert.ok($upload_button.hasClass("notdisplayed"));
+    assert.ok(!upload.feature_check());
 
     override(window, "XMLHttpRequest", () => ({upload: true}));
-    upload.feature_check($upload_button);
-    assert.ok(!$upload_button.hasClass("notdisplayed"));
+    assert.ok(upload.feature_check());
 });
 
 test("get_item", () => {

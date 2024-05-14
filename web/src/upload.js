@@ -26,11 +26,9 @@ export function compose_upload_cancel() {
     compose_upload_object.cancelAll();
 }
 
-// Show the upload button only if the browser supports it.
-export function feature_check($upload_button) {
-    if (window.XMLHttpRequest && new window.XMLHttpRequest().upload) {
-        $upload_button.removeClass("notdisplayed");
-    }
+export function feature_check() {
+    // Show the upload button only if the browser supports it.
+    return window.XMLHttpRequest && new window.XMLHttpRequest().upload;
 }
 
 export function get_translated_status(file) {

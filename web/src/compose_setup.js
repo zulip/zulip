@@ -103,8 +103,6 @@ export function initialize() {
     const update_compose_max_height = new ResizeObserver(resize.reset_compose_message_max_height);
     update_compose_max_height.observe(document.querySelector("#compose"));
 
-    upload.feature_check($("#compose .compose_upload_file"));
-
     function get_input_info(event) {
         const $edit_banners_container = $(event.target).closest(".edit_form_banners");
         const is_edit_input = Boolean($edit_banners_container.length);
