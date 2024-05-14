@@ -70,7 +70,7 @@ export function update_user_topics(
     }
 }
 
-export function get_topic_visibility_policy(stream_id: number, topic: string): number | boolean {
+export function get_topic_visibility_policy(stream_id: number, topic: string): number | false {
     if (stream_id === undefined) {
         return false;
     }
