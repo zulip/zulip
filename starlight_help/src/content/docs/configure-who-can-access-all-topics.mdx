@@ -1,0 +1,50 @@
+---
+title: Configure who can access all topics
+---
+
+import FlattenedSteps from "../../components/FlattenedSteps.astro";
+import NavigationSteps from "../../components/NavigationSteps.astro";
+import ZulipTip from "../../components/ZulipTip.astro";
+import ChannelSettingsNavbarTip from "../include/_ChannelSettingsNavbarTip.mdx";
+import SaveChanges from "../include/_SaveChanges.mdx";
+import SelectChannelViewPermissions from "../include/_SelectChannelViewPermissions.mdx";
+
+You can restrict a channel so that only some users can access all of its topics.
+Everyone else can start their own topics and participate in them, but they
+cannot see or send messages in topics started by others. This is useful for:
+
+* A **support channel**, where each customer discusses their issue in their own
+  topic, and only the support team can see all the conversations.
+* A **Q\&A channel**, where each person asks their question in their own topic.
+
+Users who are not selected can:
+
+* Start a new topic, and read and send messages in topics they started.
+* Not see or send messages in topics started by other users.
+* See only their own topics in the channel.
+
+<ZulipTip>
+  Selecting **Everyone** (the default) means there are no topic access
+  restrictions: everyone can see all topics, just like in a regular channel.
+</ZulipTip>
+
+<FlattenedSteps>
+  <NavigationSteps target="relative/channel/all" />
+
+  1. Select a channel.
+
+  <SelectChannelViewPermissions />
+
+  1. Under **Subscription permissions**, configure **Who can access all topics in
+     this channel**.
+
+  <SaveChanges />
+</FlattenedSteps>
+
+<ChannelSettingsNavbarTip />
+
+## Related articles
+
+* [Channel permissions](/help/channel-permissions)
+* [Configure who can start new topics](/help/configure-who-can-start-new-topics)
+* [Channel posting policy](/help/channel-posting-policy)
