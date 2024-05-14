@@ -1081,7 +1081,18 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
         # Stream objects are created by Django.
         fix_datetime_fields(data, "zerver_stream")
         re_map_foreign_keys(data, "zerver_stream", "realm", related_table="realm")
+
         re_map_foreign_keys(data, "zerver_stream", "creator", related_table="user_profile")
+        # There's a circular dependency between Stream and UserProfile due to
+        # the .creator attribute. We untangle it by first remembering the creator_id
+        # for all the streams and then removing those fields from the data.
+        # That allows us to successfully import streams, and then later after users
+        # are imported, we can set the .creator_id for all these streams correctly.
+        stream_id_to_creator_id = {}
+        for stream in data["zerver_stream"]:
+            creator_id = stream.pop("creator_id", None)
+            stream_id_to_creator_id[stream["id"]] = creator_id
+
         if role_system_groups_dict is not None:
             # Because the system user groups are missing, we manually set up
             # the defaults for can_remove_subscribers_group for all the
@@ -1135,6 +1146,13 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
         user_profile.set_unusable_password()
         user_profile.tos_version = UserProfile.TOS_VERSION_BEFORE_FIRST_LOGIN
     UserProfile.objects.bulk_create(user_profiles)
+
+    # UserProfiles have been loaded, so now we're ready to set .creator_id
+    # for streams based on the mapping we saved earlier.
+    streams = Stream.objects.filter(id__in=stream_id_to_creator_id.keys())
+    for stream in streams:
+        stream.creator_id = stream_id_to_creator_id[stream.id]
+    Stream.objects.bulk_update(streams, ["creator_id"])
 
     re_map_foreign_keys(data, "zerver_defaultstream", "stream", related_table="stream")
     re_map_foreign_keys(data, "zerver_realmemoji", "author", related_table="user_profile")
