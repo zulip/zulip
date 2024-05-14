@@ -84,7 +84,7 @@ function get_message_view_header_context(filter: Filter | undefined): MessageVie
     const description = filter.get_description()?.description;
     const link = filter.get_description()?.link;
     assert(title !== undefined);
-    const icon_data = filter.add_icon_data({
+    const context = filter.add_icon_data({
         title,
         description,
         link,
@@ -93,7 +93,7 @@ function get_message_view_header_context(filter: Filter | undefined): MessageVie
 
     if (filter.has_operator("channel") && !filter._sub) {
         return {
-            ...icon_data,
+            ...context,
             sub_count: "0",
             formatted_sub_count: "0",
             rendered_narrow_description: $t({
@@ -109,7 +109,7 @@ function get_message_view_header_context(filter: Filter | undefined): MessageVie
         const current_stream = filter._sub;
         const sub_count = peer_data.get_subscriber_count(current_stream.stream_id);
         return {
-            ...icon_data,
+            ...context,
             is_admin: current_user.is_admin,
             rendered_narrow_description: current_stream.rendered_description,
             sub_count,
@@ -118,7 +118,7 @@ function get_message_view_header_context(filter: Filter | undefined): MessageVie
         };
     }
 
-    return icon_data;
+    return context;
 }
 
 export function colorize_message_view_header(): void {
