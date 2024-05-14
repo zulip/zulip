@@ -425,7 +425,9 @@ export function paste_handler_converter(paste_html) {
             const copied_html = new DOMParser().parseFromString(paste_html, "text/html");
             if (
                 !copied_html
-                    .querySelector("a[href='" + node.firstChild.getAttribute("href") + "']")
+                    .querySelector(
+                        "a[href='" + CSS.escape(node.firstChild.getAttribute("href")) + "']",
+                    )
                     ?.parentNode?.classList.contains("message_inline_image")
             ) {
                 // We skip previews which have their generating link copied too, to avoid
