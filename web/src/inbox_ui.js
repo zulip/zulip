@@ -72,7 +72,7 @@ const LEFT_NAVIGATION_KEYS = ["left_arrow", "shift_tab", "vim_left"];
 const RIGHT_NAVIGATION_KEYS = ["right_arrow", "tab", "vim_right"];
 
 function get_row_from_conversation_key(key) {
-    return $(`#${CONVERSATION_ID_PREFIX}` + CSS.escape(`${key}`));
+    return $(`#${CSS.escape(CONVERSATION_ID_PREFIX + key)}`);
 }
 
 function save_data_to_ls() {
@@ -648,7 +648,7 @@ export function collapse_or_expand(container_id) {
 }
 
 function focus_current_id() {
-    $(`#${current_focus_id}`).trigger("focus");
+    $(`#${CSS.escape(current_focus_id)}`).trigger("focus");
 }
 
 function focus_inbox_search() {
@@ -860,7 +860,7 @@ function set_list_focus(input_key) {
 
 function focus_filters_dropdown() {
     current_focus_id = INBOX_FILTERS_DROPDOWN_ID;
-    $(`#${INBOX_FILTERS_DROPDOWN_ID}`).trigger("focus");
+    $(`#${CSS.escape(INBOX_FILTERS_DROPDOWN_ID)}`).trigger("focus");
 }
 
 function is_search_focused() {
@@ -915,7 +915,7 @@ function page_down_navigation() {
 
 export function change_focused_element(input_key) {
     if (is_search_focused()) {
-        const textInput = $(`#${INBOX_SEARCH_ID}`).get(0);
+        const textInput = $(`#${CSS.escape(INBOX_SEARCH_ID)}`).get(0);
         const start = textInput.selectionStart;
         const end = textInput.selectionEnd;
         const text_length = textInput.value.length;
