@@ -1,4 +1,5 @@
 import "./common";
+import "../portico/events_api_docs";
 import "../portico/header";
 import "../portico/google-analytics";
 import "../portico/portico_modals";

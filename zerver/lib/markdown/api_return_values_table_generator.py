@@ -195,8 +195,8 @@ class APIReturnValuesTablePreprocessor(Preprocessor):
         # Use argument section design for better visuals
         # Directly using `###` for subheading causes errors so use h3 with made up id.
         argument_template = (
-            '<div class="api-argument"><p class="api-argument-name"><h3 id="{h3_id}">'
-            "{event_type} {op}</h3></p></div> \n{description}\n\n\n"
+            '<div markdown="1"><div class="event-heading"><div class="api-argument"><p class="api-argument-name"><h3 id="{h3_id}" class="event-name">'
+            '{event_type} {op}</h3></p></div><i class="fa fa-chevron-down event-dropdown-icon"></i></div> \n{description}\n\n\n'
         )
         for events in events_dict["oneOf"]:
             event_type: Dict[str, Any] = events["properties"]["type"]
@@ -216,6 +216,7 @@ class APIReturnValuesTablePreprocessor(Preprocessor):
                     event_type=event_type_str, op=op_str, description=description, h3_id=h3_id
                 )
             )
+            text += [f'<div markdown="1" class="event-content" id="{h3_id}">\n']
             text += self.render_table(events["properties"], 0)
             # This part is for adding examples of individual events
             text.append("**Example**")
@@ -223,6 +224,8 @@ class APIReturnValuesTablePreprocessor(Preprocessor):
             example = json.dumps(events["example"], indent=4, sort_keys=True)
             text.append(example)
             text.append("```\n\n")
+            text.append("</div>")
+            text.append('<hr class="line"></div>')
         return text
 
 

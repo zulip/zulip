@@ -1404,6 +1404,36 @@ label.label-title {
     }
 }
 
+.event-heading {
+    display: grid;
+    grid-template-columns: 98% auto;
+    justify-content: space-between;
+    border-radius: 5px;
+    background-color: rgb(211 210 210 / 71%);
+    padding: 5px 10px;
+    margin: 15px 0 5px;
+}
+
+.event-heading:hover {
+    background-color: rgba(211, 210, 210, 0.893);
+}
+
+.event-name {
+    margin: 7px 0 5px !important;
+}
+
+.event-dropdown-icon {
+    margin-top: 12px;
+}
+
+.event-content {
+    display: none;
+}
+
+.line {
+    width: 100%;
+}
+
 .api-field-type {
     color: hsl(176deg 46.4% 41%);
 }
