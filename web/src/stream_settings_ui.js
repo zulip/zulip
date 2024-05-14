@@ -124,6 +124,9 @@ export function update_stream_name(sub, new_name) {
 
     // Update navbar if needed
     message_view_header.maybe_rerender_title_area_for_stream(sub);
+
+    // Update the create stream error if needed
+    stream_create.maybe_update_error_message();
 }
 
 export function update_stream_description(sub, description, rendered_description) {
