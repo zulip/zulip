@@ -291,6 +291,7 @@ function do_mark_unread_by_narrow(
                 message_id,
                 include_anchor,
                 messages_marked_unread_till_now,
+                num_after,
                 narrow,
             };
             handle_mark_unread_from_here_error(xhr, error_options);
@@ -349,6 +350,7 @@ function handle_mark_unread_from_here_error(xhr, options) {
                 options.message_id !== undefined &&
                     options.narrow !== undefined &&
                     options.messages_marked_unread_till_now !== undefined &&
+                    options.num_after !== undefined &&
                     options.include_anchor !== undefined,
             );
             setTimeout(() => {
@@ -356,6 +358,7 @@ function handle_mark_unread_from_here_error(xhr, options) {
                     options.message_id,
                     options.include_anchor,
                     options.messages_marked_unread_till_now,
+                    options.num_after,
                     options.narrow,
                 );
             }, milliseconds_to_wait);
