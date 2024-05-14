@@ -287,14 +287,17 @@ function do_mark_unread_by_narrow(
             }
         },
         error(xhr) {
-            const error_options = {
-                message_id,
-                include_anchor,
-                messages_marked_unread_till_now,
-                num_after,
-                narrow,
-            };
-            handle_mark_unread_from_here_error(xhr, error_options);
+            handle_mark_unread_from_here_error(xhr, {
+                retry() {
+                    do_mark_unread_by_narrow(
+                        message_id,
+                        include_anchor,
+                        messages_marked_unread_till_now,
+                        num_after,
+                        narrow,
+                    );
+                },
+            });
         },
     });
 }
@@ -309,8 +312,11 @@ function do_mark_unread_by_ids(message_ids_to_update) {
             }
         },
         error(xhr) {
-            const error_options = {message_ids_to_update};
-            handle_mark_unread_from_here_error(xhr, error_options);
+            handle_mark_unread_from_here_error(xhr, {
+                retry() {
+                    do_mark_unread_by_ids(message_ids_to_update);
+                },
+            });
         },
     });
 }
@@ -335,34 +341,13 @@ function finish_loading(messages_marked_unread_till_now) {
     );
 }
 
-function handle_mark_unread_from_here_error(xhr, options) {
+function handle_mark_unread_from_here_error(xhr, {retry}) {
     if (xhr.readyState === 0) {
         // client cancelled the request
     } else if (xhr.responseJSON?.code === "RATE_LIMIT_HIT") {
         // If we hit the rate limit, just continue without showing any error.
         const milliseconds_to_wait = 1000 * xhr.responseJSON["retry-after"];
-        if (options.message_ids_to_update !== undefined) {
-            setTimeout(() => {
-                do_mark_unread_by_ids(options.message_ids_to_update);
-            }, milliseconds_to_wait);
-        } else {
-            assert(
-                options.message_id !== undefined &&
-                    options.narrow !== undefined &&
-                    options.messages_marked_unread_till_now !== undefined &&
-                    options.num_after !== undefined &&
-                    options.include_anchor !== undefined,
-            );
-            setTimeout(() => {
-                do_mark_unread_by_narrow(
-                    options.message_id,
-                    options.include_anchor,
-                    options.messages_marked_unread_till_now,
-                    options.num_after,
-                    options.narrow,
-                );
-            }, milliseconds_to_wait);
-        }
+        setTimeout(retry, milliseconds_to_wait);
     } else {
         // TODO: Ideally, this case would communicate the
         // failure to the user, with some manual retry
