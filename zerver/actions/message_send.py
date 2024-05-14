@@ -1794,6 +1794,8 @@ def _internal_prep_message(
     mention_backend: Optional[MentionBackend] = None,
     limit_unread_user_ids: Optional[Set[int]] = None,
     disable_external_notifications: bool = False,
+    forged: bool = False,
+    forged_timestamp: Optional[float] = None,
 ) -> Optional[SendMessageRequest]:
     """
     Create a message object and checks it, but doesn't send it or save it to the database.
@@ -1822,6 +1824,8 @@ def _internal_prep_message(
             mention_backend=mention_backend,
             limit_unread_user_ids=limit_unread_user_ids,
             disable_external_notifications=disable_external_notifications,
+            forged=forged,
+            forged_timestamp=forged_timestamp,
         )
     except JsonableError as e:
         logging.exception(
@@ -1842,6 +1846,8 @@ def internal_prep_stream_message(
     *,
     email_gateway: bool = False,
     limit_unread_user_ids: Optional[Set[int]] = None,
+    forged: bool = False,
+    forged_timestamp: Optional[float] = None,
 ) -> Optional[SendMessageRequest]:
     """
     See _internal_prep_message for details of how this works.
@@ -1856,6 +1862,8 @@ def internal_prep_stream_message(
         content=content,
         email_gateway=email_gateway,
         limit_unread_user_ids=limit_unread_user_ids,
+        forged=forged,
+        forged_timestamp=forged_timestamp,
     )
 
 
