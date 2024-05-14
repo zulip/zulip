@@ -71,6 +71,13 @@
           label=(t 'Who can unsubscribe others from this channel?')
           value_type="number"}}
 
+        {{#if stream_topic_access_setting_widget_name}}
+            {{> ../dropdown_widget_with_label
+              widget_name=stream_topic_access_setting_widget_name
+              label=(t 'Who can see all the topics?')
+              value_type="number"}}
+        {{/if}}
+
         {{#if (or is_owner is_stream_edit)}}
             <div>
                 <div class="input-group inline-block message-retention-setting-group time-limit-setting">
