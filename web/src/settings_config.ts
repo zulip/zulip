@@ -843,6 +843,9 @@ export const all_group_setting_labels = {
         can_resolve_topics_group: $t({
             defaultMessage: "Who can resolve topics in this channel",
         }),
+        can_access_stream_topics_group: $t({
+            defaultMessage: "Who can access all topics in this channel",
+        }),
     },
     group: {
         can_add_members_group: $t({defaultMessage: "Who can add members to this group"}),
@@ -951,6 +954,7 @@ export const stream_group_permission_settings: StreamGroupSettingName[] = [
     "can_delete_any_message_group",
     "can_delete_own_message_group",
     "can_administer_channel_group",
+    "can_access_stream_topics_group",
 ];
 
 export const stream_group_permission_settings_requiring_content_access: StreamGroupSettingName[] = [
