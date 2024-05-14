@@ -763,6 +763,10 @@ class RealmImportExportTest(ExportFile):
         cordelia = self.example_user("cordelia")
         othello = self.example_user("othello")
 
+        denmark_stream = get_stream("Denmark", original_realm)
+        denmark_stream.creator = hamlet
+        denmark_stream.save()
+
         internal_realm = get_realm(settings.SYSTEM_BOT_REALM)
         cross_realm_bot = get_system_bot(settings.WELCOME_BOT, internal_realm.id)
 
@@ -1011,6 +1015,12 @@ class RealmImportExportTest(ExportFile):
             '<div class="codehilite"><pre><span></span><code>\'\n</code></pre></div>\n'
             f'<p><span class="user-mention" data-user-id="{imported_polonius_user.id}">@Polonius</span></p>',
         )
+
+        imported_hamlet_user = UserProfile.objects.get(
+            delivery_email=self.example_email("hamlet"), realm=imported_realm
+        )
+        imported_denmark_stream = Stream.objects.get(name="Denmark", realm=imported_realm)
+        self.assertEqual(imported_denmark_stream.creator, imported_hamlet_user)
 
         # Check recipient_id was generated correctly for the imported users and streams.
         for user_profile in UserProfile.objects.filter(realm=imported_realm):
