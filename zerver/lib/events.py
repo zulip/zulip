@@ -60,7 +60,7 @@ from zerver.lib.user_groups import (
     get_server_supported_permission_settings,
     user_groups_in_realm_serialized,
 )
-from zerver.lib.user_status import get_user_status_dict
+from zerver.lib.user_status import get_all_users_status_dict
 from zerver.lib.user_topics import get_topic_mutes, get_user_topics
 from zerver.lib.users import (
     get_cross_realm_dicts,
@@ -681,7 +681,7 @@ def fetch_initial_state_data(
         state["user_status"] = (
             {}
             if user_profile is None
-            else get_user_status_dict(realm=realm, user_profile=user_profile)
+            else get_all_users_status_dict(realm=realm, user_profile=user_profile)
         )
 
     if want("user_topic"):

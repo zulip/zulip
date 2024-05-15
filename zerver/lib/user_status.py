@@ -49,7 +49,7 @@ def format_user_status(row: RawUserInfoDict) -> UserInfoDict:
     return dct
 
 
-def get_user_status_dict(realm: Realm, user_profile: UserProfile) -> Dict[str, UserInfoDict]:
+def get_all_users_status_dict(realm: Realm, user_profile: UserProfile) -> Dict[str, UserInfoDict]:
     query = UserStatus.objects.filter(
         user_profile__realm_id=realm.id,
         user_profile__is_active=True,
