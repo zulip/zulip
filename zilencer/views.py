@@ -508,13 +508,53 @@ class PushNotificationsDisallowedError(JsonableError):
         ).format(reason=reason)
         super().__init__(msg)
 
+class BasePayload(BaseModel):
+    server: Optional[str] = None
+    realm_id: Optional[int] = None
+    realm_url: Optional[str] = None
+    realm_name: Optional[str] = None
+    user_id: Optional[int] = None
+
+# This class is abstract, it can only be used as a instance of MessageGcmPayload or RemoveGcmPayload
+class GcmPayload(BasePayload):
+    event: Optional[str] = None
+    zulip_message_id: Optional[int] = None
+    zulip_message_ids: Optional[str] = None
+
+class MessageGcmPayload(GcmPayload):
+    sender_id: Optional[int] = None
+    sender_email: Optional[str] = None
+    time: Optional[int] = None
+    mentioned_user_group_id: Optional[int] = None
+    mentioned_user_group_name: Optional[str] = None
+    recipient_type: Optional[str] = None
+    stream: Optional[str] = None
+    stream_id: Optional[int] = None
+    topic: Optional[str] = None
+    pm_users: Optional[str] = None
+    sender_avatar_url: Optional[str] = None
+    content: Optional[str] = None
+    content_truncated: Optional[bool] = False
+    sender_full_name: Optional[str] = None
+
+class RemoveGcmPayload(GcmPayload):
+    zulip_message_ids: Optional[str] = {}
+
+class ApnsPayload(BaseModel):
+    badge: Optional[int] = None
+    custom: Dict[str, Any] = {}
+
+class MessageApnsPayload(ApnsPayload):
+    message_ids: List[int] = []
+    alert: Dict[str, str] = {}
+    sound: Optional[str] = None
 
 class RemoteServerNotificationPayload(BaseModel):
     user_id: Optional[int] = None
     user_uuid: Optional[str] = None
     realm_uuid: Optional[str] = None
-    gcm_payload: Dict[str, Any] = {}
-    apns_payload: Dict[str, Any] = {}
+    gcm_payload: GcmPayload = {}
+    apns_payload: ApnsPayload = {}
     gcm_options: Dict[str, Any] = {}
 
     android_devices: List[str] = []
@@ -578,13 +618,14 @@ def remote_server_notify_push(
         apple_devices = delete_duplicate_registrations(apple_devices, server.id, user_id, user_uuid)
 
     remote_queue_latency: Optional[str] = None
-    sent_time: Optional[Union[float, int]] = gcm_payload.get(
+    apns_time: Optional[Union[float, int]] = apns_payload.custom.get("zulip", {}).get("time") if apns_payload.custom != None else None
+    sent_time: Optional[Union[float, int]] = apns_time
+    if hasattr(gcm_payload, "time"):
+        sent_time = gcm_payload.time
         # TODO/compatibility: This could be a lot simpler if not for pre-5.0 Zulip servers
         # that had an older format. Future implementation:
         #     "time", apns_payload["custom"]["zulip"].get("time")
-        "time",
-        apns_payload.get("custom", {}).get("zulip", {}).get("time"),
-    )
+    
     if sent_time is not None:
         if isinstance(sent_time, int):
             # The 'time' field only used to have whole-integer
@@ -636,7 +677,7 @@ def remote_server_notify_push(
     # commit.
     def truncate_payload(payload: Dict[str, Any]) -> Dict[str, Any]:
         MAX_MESSAGE_IDS = 200
-        if payload and payload.get("event") == "remove" and payload.get("zulip_message_ids"):
+        if payload and hasattr(payload, "event") and payload.event == "remove" and hasattr(payload, "zulip_message_ids"):
             ids = [int(id) for id in payload["zulip_message_ids"].split(",")]
             truncated_ids = sorted(ids)[-MAX_MESSAGE_IDS:]
             payload["zulip_message_ids"] = ",".join(str(id) for id in truncated_ids)
@@ -653,8 +694,8 @@ def remote_server_notify_push(
         user_identity, android_devices, gcm_payload, gcm_options, remote=server
     )
 
-    if isinstance(apns_payload.get("custom"), dict) and isinstance(
-        apns_payload["custom"].get("zulip"), dict
+    if hasattr(apns_payload, "custom") and isinstance(apns_payload.custom, dict) and isinstance(
+        apns_payload.custom.get("zulip"), dict
     ):
         apns_payload["custom"]["zulip"] = truncate_payload(apns_payload["custom"]["zulip"])
     apple_successfully_delivered = send_apple_push_notification(
@@ -733,7 +774,7 @@ def get_deleted_devices(
         user_identity.filter_q(),
         token__in=apple_devices,
         kind=RemotePushDeviceToken.APNS,
-        server=server,
+        server=server,payload.event == "remove"
     ).values_list("token", flat=True)
 
     return DevicesToCleanUpDict(
