@@ -106,17 +106,13 @@ export function edit_config(row) {
     };
 }
 
-export function get_item(key, config, file_id) {
-    return config[key](file_id);
-}
-
 export function hide_upload_banner(uppy, config, file_id) {
-    get_item("upload_banner", config, file_id).remove();
+    config.upload_banner(file_id).remove();
     if (uppy.getFiles().length === 0) {
         if (config.mode === "compose") {
             compose_validate.set_upload_in_progress(false);
         } else {
-            get_item("send_button", config).prop("disabled", false);
+            config.send_button().prop("disabled", false);
         }
     }
 }
@@ -136,7 +132,7 @@ function add_upload_banner(
     });
     compose_banner.append_compose_banner_to_banner_list(
         $(new_banner_html),
-        get_item("banner_container", config),
+        config.banner_container(),
     );
 }
 
@@ -146,9 +142,9 @@ export function show_error_message(
     file_id = null,
 ) {
     if (file_id) {
-        $(`${get_item("upload_banner_identifier", config, file_id)} .moving_bar`).hide();
-        get_item("upload_banner", config, file_id).removeClass("info").addClass("error");
-        get_item("upload_banner_message", config, file_id).text(message);
+        $(`${config.upload_banner_identifier(file_id)} .moving_bar`).hide();
+        config.upload_banner(file_id).removeClass("info").addClass("error");
+        config.upload_banner_message(file_id).text(message);
     } else {
         // We still use a "file_id" (that's not actually related to a file)
         // to differentiate this banner from banners that *are* associated
@@ -178,21 +174,21 @@ export async function upload_files(uppy, config, files) {
     // We implement this transition through triggering a click on the
     // toggle button to take advantage of the existing plumbing for
     // handling the compose and edit UIs.
-    if (get_item("markdown_preview_hide_button", config).is(":visible")) {
-        get_item("markdown_preview_hide_button", config).trigger("click");
+    if (config.markdown_preview_hide_button().is(":visible")) {
+        config.markdown_preview_hide_button().trigger("click");
     }
 
     for (const file of files) {
         try {
             compose_ui.insert_syntax_and_focus(
                 get_translated_status(file),
-                get_item("textarea", config),
+                config.textarea(),
                 "block",
                 1,
             );
-            compose_ui.autosize_textarea(get_item("textarea", config));
+            compose_ui.autosize_textarea(config.textarea());
             file.id = uppy.addFile({
-                source: get_item("source", config),
+                source: config.source(),
                 name: file.name,
                 type: file.type,
                 data: file,
@@ -205,7 +201,7 @@ export async function upload_files(uppy, config, files) {
         if (config.mode === "compose") {
             compose_validate.set_upload_in_progress(true);
         } else {
-            get_item("send_button", config).prop("disabled", true);
+            config.send_button().prop("disabled", true);
         }
         add_upload_banner(
             config,
@@ -214,19 +210,15 @@ export async function upload_files(uppy, config, files) {
             file.id,
             true,
         );
-        get_item("upload_banner_cancel_button", config, file.id).one("click", () => {
-            compose_ui.replace_syntax(
-                get_translated_status(file),
-                "",
-                get_item("textarea", config),
-            );
-            compose_ui.autosize_textarea(get_item("textarea", config));
-            get_item("textarea", config).trigger("focus");
+        config.upload_banner_cancel_button(file.id).one("click", () => {
+            compose_ui.replace_syntax(get_translated_status(file), "", config.textarea());
+            compose_ui.autosize_textarea(config.textarea());
+            config.textarea().trigger("focus");
 
             uppy.removeFile(file.id);
             hide_upload_banner(uppy, config, file.id);
         });
-        get_item("upload_banner_hide_button", config, file.id).one("click", () => {
+        config.upload_banner_hide_button(file.id).one("click", () => {
             hide_upload_banner(uppy, config, file.id);
         });
     }
@@ -276,19 +268,19 @@ export function setup_upload(config) {
 
     uppy.on("upload-progress", (file, progress) => {
         const percent_complete = (100 * progress.bytesUploaded) / progress.bytesTotal;
-        $(`${get_item("upload_banner_identifier", config, file.id)} .moving_bar`).css({
+        $(`${config.upload_banner_identifier(file.id)} .moving_bar`).css({
             width: `${percent_complete}%`,
         });
     });
 
-    $(get_item("file_input_identifier", config)).on("change", (event) => {
+    $(config.file_input_identifier()).on("change", (event) => {
         const files = event.target.files;
         upload_files(uppy, config, files);
-        get_item("textarea", config).trigger("focus");
+        config.textarea().trigger("focus");
         event.target.value = "";
     });
 
-    const $banner_container = get_item("banner_container", config);
+    const $banner_container = config.banner_container();
     $banner_container.on(
         "click",
         ".upload_banner.file_generic_error .main-view-banner-close-button",
@@ -298,7 +290,7 @@ export function setup_upload(config) {
         },
     );
 
-    const $drag_drop_container = get_item("drag_drop_container", config);
+    const $drag_drop_container = config.drag_drop_container();
     $drag_drop_container.on("dragover", (event) => event.preventDefault());
     $drag_drop_container.on("dragenter", (event) => event.preventDefault());
 
@@ -353,7 +345,7 @@ export function setup_upload(config) {
         const split_url = url.split("/");
         const filename = split_url.at(-1);
         const syntax_to_insert = "[" + filename + "](" + url + ")";
-        const $text_area = get_item("textarea", config);
+        const $text_area = config.textarea();
         const replacement_successful = compose_ui.replace_syntax(
             get_translated_status(file),
             syntax_to_insert,
@@ -413,13 +405,13 @@ export function setup_upload(config) {
         // Hide the upload status banner on error so only the error banner shows
         hide_upload_banner(uppy, config, file.id);
         show_error_message(config, message, file.id);
-        compose_ui.replace_syntax(get_translated_status(file), "", get_item("textarea", config));
-        compose_ui.autosize_textarea(get_item("textarea", config));
+        compose_ui.replace_syntax(get_translated_status(file), "", config.textarea());
+        compose_ui.autosize_textarea(config.textarea());
     });
 
     uppy.on("restriction-failed", (file) => {
-        compose_ui.replace_syntax(get_translated_status(file), "", get_item("textarea", config));
-        compose_ui.autosize_textarea(get_item("textarea", config));
+        compose_ui.replace_syntax(get_translated_status(file), "", config.textarea());
+        compose_ui.autosize_textarea(config.textarea());
     });
 
     return uppy;
@@ -427,9 +419,9 @@ export function setup_upload(config) {
 
 export function deactivate_upload(config) {
     // Remove event listeners added for handling uploads.
-    $(get_item("file_input_identifier", config)).off("change");
-    get_item("banner_container", config).off("click");
-    get_item("drag_drop_container", config).off("dragover dragenter drop paste");
+    $(config.file_input_identifier()).off("change");
+    config.banner_container().off("click");
+    config.drag_drop_container().off("dragover dragenter drop paste");
 
     let uppy;
 
@@ -499,7 +491,7 @@ export function initialize() {
         } else if ($last_drag_drop_edit_container.length !== 0) {
             // A message edit box is open; drop there.
             const row_id = rows.get_message_id($last_drag_drop_edit_container[0]);
-            const $drag_drop_container = get_item("drag_drop_container", edit_config(row_id));
+            const $drag_drop_container = edit_config(row_id).drag_drop_container();
             if (!$drag_drop_container.closest("html").length) {
                 return;
             }
