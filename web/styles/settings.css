@@ -851,7 +851,7 @@ input[type="checkbox"] {
     width: 100%;
 }
 
-#admin-default-streams-list .progressive-table-wrapper {
+#admin-default-channels-list .progressive-table-wrapper {
     max-height: calc(95vh - 280px);
 }
 

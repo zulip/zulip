@@ -91,7 +91,7 @@ export function maybe_disable_widgets() {
         return;
     }
 
-    $(".organization-box [data-name='default-streams-list']")
+    $(".organization-box [data-name='default-channels-list']")
         .find("input:not(.search), button, select")
         .prop("disabled", true);
 }
@@ -120,12 +120,12 @@ export function build_default_stream_table() {
                 scroll_util.reset_scrollbar($table);
             },
         },
-        $parent_container: $("#admin-default-streams-list").expectOne(),
+        $parent_container: $("#admin-default-channels-list").expectOne(),
         init_sort: "name_alphabetic",
         sort_fields: {
             ...ListWidget.generic_sort_functions("alphabetic", ["name"]),
         },
-        $simplebar_container: $("#admin-default-streams-list .progressive-table-wrapper"),
+        $simplebar_container: $("#admin-default-channels-list .progressive-table-wrapper"),
     });
 
     loading.destroy_indicator($("#admin_page_default_streams_loading_indicator"));
