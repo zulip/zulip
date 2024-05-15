@@ -175,7 +175,7 @@ export function show_error_message(
     if (file_id) {
         $(`${get_item("upload_banner_identifier", config, file_id)} .moving_bar`).hide();
         get_item("upload_banner", config, file_id).removeClass("info").addClass("error");
-        get_item("upload_banner_message", config).text(message);
+        get_item("upload_banner_message", config, file_id).text(message);
     } else {
         // We still use a "file_id" (that's not actually related to a file)
         // to differentiate this banner from banners that *are* associated
