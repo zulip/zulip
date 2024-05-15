@@ -36,6 +36,17 @@ export function get_translated_status(file) {
     return "[" + status + "]()";
 }
 
+export const compose_config = {
+    mode: "compose",
+};
+
+export function edit_config(row) {
+    return {
+        mode: "edit",
+        row,
+    };
+}
+
 export function get_item(key, config, file_id) {
     if (!config) {
         throw new Error("Missing config");
@@ -487,9 +498,7 @@ export function deactivate_upload(config) {
 }
 
 export function initialize() {
-    compose_upload_object = setup_upload({
-        mode: "compose",
-    });
+    compose_upload_object = setup_upload(compose_config);
 
     $(".app, #navbar-fixed-container").on("dragstart", (event) => {
         if (event.target.nodeName === "IMG") {
@@ -524,27 +533,24 @@ export function initialize() {
 
         if (compose_state.composing()) {
             // Compose box is open; drop there.
-            upload_files(compose_upload_object, {mode: "compose"}, files);
+            upload_files(compose_upload_object, compose_config, files);
         } else if ($last_drag_drop_edit_container.length !== 0) {
             // A message edit box is open; drop there.
             const row_id = rows.get_message_id($last_drag_drop_edit_container[0]);
-            const $drag_drop_container = get_item("drag_drop_container", {
-                mode: "edit",
-                row: row_id,
-            });
+            const $drag_drop_container = get_item("drag_drop_container", edit_config(row_id));
             if (!$drag_drop_container.closest("html").length) {
                 return;
             }
             const edit_upload_object = upload_objects_by_message_edit_row.get(row_id);
 
-            upload_files(edit_upload_object, {mode: "edit", row: row_id}, files);
+            upload_files(edit_upload_object, edit_config(row_id), files);
         } else if (message_lists.current?.selected_message()) {
             // Start a reply to selected message, if viewing a message feed.
             compose_reply.respond_to_message({
                 trigger: "drag_drop_file",
                 keep_composebox_empty: true,
             });
-            upload_files(compose_upload_object, {mode: "compose"}, files);
+            upload_files(compose_upload_object, compose_config, files);
         } else {
             // Start a new message in other views.
             compose_actions.start({
@@ -552,7 +558,7 @@ export function initialize() {
                 trigger: "drag_drop_file",
                 keep_composebox_empty: true,
             });
-            upload_files(compose_upload_object, {mode: "compose"}, files);
+            upload_files(compose_upload_object, compose_config, files);
         }
     });
 }

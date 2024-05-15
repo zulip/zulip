@@ -578,10 +578,7 @@ function start_edit_with_content($row, content, edit_box_open_callback) {
         edit_box_open_callback();
     }
     const row_id = rows.id($row);
-    upload.setup_upload({
-        mode: "edit",
-        row: row_id,
-    });
+    upload.setup_upload(upload.edit_config(row_id));
 }
 
 export function start($row, edit_box_open_callback) {
@@ -795,7 +792,7 @@ export function end_message_row_edit($row) {
     const row_id = rows.id($row);
 
     // Clean up the upload handler
-    upload.deactivate_upload({mode: "edit", row: row_id});
+    upload.deactivate_upload(upload.edit_config(row_id));
 
     const message = message_lists.current.get(row_id);
     if (message !== undefined && currently_editing_messages.has(message.id)) {
