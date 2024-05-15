@@ -1512,12 +1512,9 @@ class StreamAdminTest(ZulipTestCase):
         self.assertEqual(events[1]["event"]["subscriptions"][0]["stream_id"], stream.id)
         self.assertEqual(events[1]["users"], [desdemona.id])
 
-        # Send a message there logging the reactivation
-        self.assertEqual(events[2]["event"]["type"], "message")
-
         # iago (as an admin) gets to know that desdemona (the owner) is now subscribed.
         self.assertEqual(
-            events[3],
+            events[2],
             {
                 "event": {
                     "op": "peer_add",
@@ -1528,6 +1525,9 @@ class StreamAdminTest(ZulipTestCase):
                 "users": [iago.id],
             },
         )
+
+        # Send a message there logging the reactivation
+        self.assertEqual(events[3]["event"]["type"], "message")
 
         stream = Stream.objects.get(id=stream.id)
         self.assertFalse(stream.deactivated)
@@ -5056,8 +5056,8 @@ class SubscriptionAPITest(ZulipTestCase):
         # Verify that peer_event events are never sent in Zephyr
         # realm. This does generate stream creation events from
         # send_stream_creation_events_for_previously_inaccessible_streams.
-        with self.capture_send_event_calls(expected_num_events=num_streams + 1) as events:
-            with self.assert_database_query_count(num_streams + 11):
+        with self.assert_database_query_count(num_streams + 11):
+            with self.capture_send_event_calls(expected_num_events=num_streams + 1) as events:
                 self.common_subscribe_to_streams(
                     mit_user,
                     stream_names,

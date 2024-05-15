@@ -78,6 +78,7 @@ def get_topic_mutes(
     ]
 
 
+@transaction.atomic(savepoint=False)
 def set_topic_visibility_policy(
     user_profile: UserProfile,
     topics: List[List[str]],
@@ -125,7 +126,6 @@ def get_topic_visibility_policy(
     return visibility_policy
 
 
-@transaction.atomic(savepoint=False)
 def bulk_set_user_topic_visibility_policy_in_database(
     user_profiles: List[UserProfile],
     stream_id: int,

@@ -470,13 +470,13 @@ def send_subscription_add_events(
 
         # Send a notification to the user who subscribed.
         event = dict(type="subscription", op="add", subscriptions=sub_dicts)
-        send_event(realm, event, [user_id])
+        send_event_on_commit(realm, event, [user_id])
 
 
 # This function contains all the database changes as part of
-# subscribing users to streams; we use a transaction to ensure that
-# the RealmAuditLog entries are created atomically with the
-# Subscription object creation (and updates).
+# subscribing users to streams; the transaction ensures that the
+# RealmAuditLog entries are created atomically with the Subscription
+# object creation (and updates).
 @transaction.atomic(savepoint=False)
 def bulk_add_subs_to_db_with_logging(
     realm: Realm,
@@ -703,6 +703,7 @@ def send_user_creation_events_on_adding_subscriptions(
 SubT: TypeAlias = Tuple[List[SubInfo], List[SubInfo]]
 
 
+@transaction.atomic(savepoint=False)
 def bulk_add_subscriptions(
     realm: Realm,
     streams: Collection[Stream],
@@ -1190,6 +1191,7 @@ def send_change_stream_permission_notification(
         )
 
 
+@transaction.atomic(savepoint=False)
 def do_change_stream_permission(
     stream: Stream,
     *,
@@ -1205,78 +1207,76 @@ def do_change_stream_permission(
     stream.is_web_public = is_web_public
     stream.invite_only = invite_only
     stream.history_public_to_subscribers = history_public_to_subscribers
+    stream.save(update_fields=["invite_only", "history_public_to_subscribers", "is_web_public"])
 
     realm = stream.realm
 
-    with transaction.atomic():
-        stream.save(update_fields=["invite_only", "history_public_to_subscribers", "is_web_public"])
+    event_time = timezone_now()
+    if old_invite_only_value != stream.invite_only:
+        # Reset the Attachment.is_realm_public cache for all
+        # messages in the stream whose permissions were changed.
+        assert stream.recipient_id is not None
+        Attachment.objects.filter(messages__recipient_id=stream.recipient_id).update(
+            is_realm_public=None
+        )
+        # We need to do the same for ArchivedAttachment to avoid
+        # bugs if deleted attachments are later restored.
+        ArchivedAttachment.objects.filter(messages__recipient_id=stream.recipient_id).update(
+            is_realm_public=None
+        )
 
-        event_time = timezone_now()
-        if old_invite_only_value != stream.invite_only:
-            # Reset the Attachment.is_realm_public cache for all
-            # messages in the stream whose permissions were changed.
-            assert stream.recipient_id is not None
-            Attachment.objects.filter(messages__recipient_id=stream.recipient_id).update(
-                is_realm_public=None
-            )
-            # We need to do the same for ArchivedAttachment to avoid
-            # bugs if deleted attachments are later restored.
-            ArchivedAttachment.objects.filter(messages__recipient_id=stream.recipient_id).update(
-                is_realm_public=None
-            )
+        RealmAuditLog.objects.create(
+            realm=realm,
+            acting_user=acting_user,
+            modified_stream=stream,
+            event_type=RealmAuditLog.STREAM_PROPERTY_CHANGED,
+            event_time=event_time,
+            extra_data={
+                RealmAuditLog.OLD_VALUE: old_invite_only_value,
+                RealmAuditLog.NEW_VALUE: stream.invite_only,
+                "property": "invite_only",
+            },
+        )
 
-            RealmAuditLog.objects.create(
-                realm=realm,
-                acting_user=acting_user,
-                modified_stream=stream,
-                event_type=RealmAuditLog.STREAM_PROPERTY_CHANGED,
-                event_time=event_time,
-                extra_data={
-                    RealmAuditLog.OLD_VALUE: old_invite_only_value,
-                    RealmAuditLog.NEW_VALUE: stream.invite_only,
-                    "property": "invite_only",
-                },
-            )
+    if old_history_public_to_subscribers_value != stream.history_public_to_subscribers:
+        RealmAuditLog.objects.create(
+            realm=realm,
+            acting_user=acting_user,
+            modified_stream=stream,
+            event_type=RealmAuditLog.STREAM_PROPERTY_CHANGED,
+            event_time=event_time,
+            extra_data={
+                RealmAuditLog.OLD_VALUE: old_history_public_to_subscribers_value,
+                RealmAuditLog.NEW_VALUE: stream.history_public_to_subscribers,
+                "property": "history_public_to_subscribers",
+            },
+        )
 
-        if old_history_public_to_subscribers_value != stream.history_public_to_subscribers:
-            RealmAuditLog.objects.create(
-                realm=realm,
-                acting_user=acting_user,
-                modified_stream=stream,
-                event_type=RealmAuditLog.STREAM_PROPERTY_CHANGED,
-                event_time=event_time,
-                extra_data={
-                    RealmAuditLog.OLD_VALUE: old_history_public_to_subscribers_value,
-                    RealmAuditLog.NEW_VALUE: stream.history_public_to_subscribers,
-                    "property": "history_public_to_subscribers",
-                },
-            )
+    if old_is_web_public_value != stream.is_web_public:
+        # Reset the Attachment.is_realm_public cache for all
+        # messages in the stream whose permissions were changed.
+        assert stream.recipient_id is not None
+        Attachment.objects.filter(messages__recipient_id=stream.recipient_id).update(
+            is_web_public=None
+        )
+        # We need to do the same for ArchivedAttachment to avoid
+        # bugs if deleted attachments are later restored.
+        ArchivedAttachment.objects.filter(messages__recipient_id=stream.recipient_id).update(
+            is_web_public=None
+        )
 
-        if old_is_web_public_value != stream.is_web_public:
-            # Reset the Attachment.is_realm_public cache for all
-            # messages in the stream whose permissions were changed.
-            assert stream.recipient_id is not None
-            Attachment.objects.filter(messages__recipient_id=stream.recipient_id).update(
-                is_web_public=None
-            )
-            # We need to do the same for ArchivedAttachment to avoid
-            # bugs if deleted attachments are later restored.
-            ArchivedAttachment.objects.filter(messages__recipient_id=stream.recipient_id).update(
-                is_web_public=None
-            )
-
-            RealmAuditLog.objects.create(
-                realm=realm,
-                acting_user=acting_user,
-                modified_stream=stream,
-                event_type=RealmAuditLog.STREAM_PROPERTY_CHANGED,
-                event_time=event_time,
-                extra_data={
-                    RealmAuditLog.OLD_VALUE: old_is_web_public_value,
-                    RealmAuditLog.NEW_VALUE: stream.is_web_public,
-                    "property": "is_web_public",
-                },
-            )
+        RealmAuditLog.objects.create(
+            realm=realm,
+            acting_user=acting_user,
+            modified_stream=stream,
+            event_type=RealmAuditLog.STREAM_PROPERTY_CHANGED,
+            event_time=event_time,
+            extra_data={
+                RealmAuditLog.OLD_VALUE: old_is_web_public_value,
+                RealmAuditLog.NEW_VALUE: stream.is_web_public,
+                "property": "is_web_public",
+            },
+        )
 
     notify_stream_creation_ids = set()
     if old_invite_only_value and not stream.invite_only:
@@ -1309,7 +1309,7 @@ def do_change_stream_permission(
             stream_ids=[stream.id],
             user_ids=sorted(stream_subscriber_user_ids),
         )
-        send_event(stream.realm, peer_add_event, peer_notify_user_ids)
+        send_event_on_commit(stream.realm, peer_add_event, peer_notify_user_ids)
 
     event = dict(
         op="update",
@@ -1324,7 +1324,7 @@ def do_change_stream_permission(
     # we do not need to send update events to the users who received creation event
     # since they already have the updated stream info.
     notify_stream_update_ids = can_access_stream_user_ids(stream) - notify_stream_creation_ids
-    send_event(stream.realm, event, notify_stream_update_ids)
+    send_event_on_commit(stream.realm, event, notify_stream_update_ids)
 
     old_policy_name = get_stream_permission_policy_name(
         invite_only=old_invite_only_value,
