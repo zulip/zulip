@@ -275,6 +275,20 @@ def get_temp_user_group_id() -> dict[str, object]:
     }
 
 
+@openapi_param_value_generator(["/user_groups/{user_group_id}/deactivate:post"])
+def get_temp_user_group_id_for_deactivation() -> dict[str, object]:
+    user_group, _ = NamedUserGroup.objects.get_or_create(
+        name="temp-deactivation",
+        realm=get_realm("zulip"),
+        can_manage_group_id=11,
+        can_mention_group_id=11,
+        realm_for_sharding=get_realm("zulip"),
+    )
+    return {
+        "user_group_id": user_group.id,
+    }
+
+
 @openapi_param_value_generator(["/realm/filters/{filter_id}:delete"])
 def remove_realm_filters() -> dict[str, object]:
     filter_id = do_add_linkifier(

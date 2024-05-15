@@ -106,6 +106,7 @@ class AuditLogEventType(IntEnum):
     USER_GROUP_NAME_CHANGED = 720
     USER_GROUP_DESCRIPTION_CHANGED = 721
     USER_GROUP_GROUP_BASED_SETTING_CHANGED = 722
+    USER_GROUP_DEACTIVATED = 723
 
     # The following values are only for remote server/realm logs.
     # Values should be exactly 10000 greater than the corresponding

@@ -52,6 +52,7 @@ from zerver.actions.user_groups import (
     bulk_remove_members_from_user_groups,
     check_add_user_group,
     do_change_user_group_permission_setting,
+    do_deactivate_user_group,
     do_update_user_group_description,
     do_update_user_group_name,
     remove_subgroups_from_user_group,
@@ -1454,3 +1455,25 @@ class TestRealmAuditLog(ZulipTestCase):
                 "property": "can_mention_group",
             },
         )
+
+    def test_user_group_deactivation(self) -> None:
+        hamlet = self.example_user("hamlet")
+        cordelia = self.example_user("cordelia")
+        user_group = check_add_user_group(
+            hamlet.realm,
+            "test",
+            [hamlet, cordelia],
+            acting_user=hamlet,
+        )
+        now = timezone_now()
+        do_deactivate_user_group(user_group, acting_user=hamlet)
+
+        audit_log_entries = RealmAuditLog.objects.filter(
+            acting_user=hamlet,
+            realm=hamlet.realm,
+            event_time__gte=now,
+            event_type=AuditLogEventType.USER_GROUP_DEACTIVATED,
+        )
+        self.assert_length(audit_log_entries, 1)
+        self.assertIsNone(audit_log_entries[0].modified_user)
+        self.assertEqual(audit_log_entries[0].modified_user_group, user_group)
