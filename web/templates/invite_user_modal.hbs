@@ -12,7 +12,7 @@
     </div>
     {{else if (not can_subscribe_other_users)}}
     <div class="invite-stream-notice">
-        {{#tr}}The users you invite will be automatically added to <z-link>default streams</z-link> for this organization, as you do not have permission to configure which streams new users join.
+        {{#tr}}The users you invite will be automatically added to <z-link>default channels</z-link> for this organization, as you do not have permission to configure which channels new users join.
         {{#*inline "z-link"}}<a target="_blank" rel="noopener noreferrer" href="#organization/default-streams-list">{{> @partial-block}}</a>{{/inline}}
         {{/tr}}
     </div>
