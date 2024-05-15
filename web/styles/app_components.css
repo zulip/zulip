@@ -537,7 +537,6 @@ div.overlay {
     border: 1px solid hsl(49deg 20% 84%);
     border-radius: 4px;
     padding: 10px;
-    margin: 10px 0;
     font-size: 1rem;
     line-height: 1.5;
     color: hsl(0deg 0% 40%);
@@ -548,6 +547,16 @@ div.overlay {
         font-family: FontAwesome;
         font-weight: 600;
     }
+}
+
+.upgrade-tip,
+.upgrade-or-sponsorship-tip,
+.tip {
+    margin: 10px 0;
+}
+
+.invite-stream-notice {
+    margin-bottom: 20px;
 }
 
 .tip::before {
