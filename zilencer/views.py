@@ -509,19 +509,14 @@ class PushNotificationsDisallowedError(JsonableError):
         super().__init__(msg)
 
 
-class BasePayload(TypedDict, total=False):
+class GcmPayload(TypedDict, total=False):
     server: Optional[str]
     realm_id: Optional[int]
     realm_url: Optional[str]
     realm_name: Optional[str]
     user_id: Optional[int]
-
-# This class is abstract, it can only be used as a instance of MessageGcmPayload or RemoveGcmPayload
-class GcmPayload(BasePayload, total=False):
     event: Optional[str]
     zulip_message_id: Optional[int]
-
-class MessageGcmPayload(GcmPayload, total=False):
     sender_id: Optional[int]
     sender_email: Optional[str]
     time: Optional[int]
@@ -536,23 +531,19 @@ class MessageGcmPayload(GcmPayload, total=False):
     content: Optional[str]
     content_truncated: Optional[bool]
     sender_full_name: Optional[str]
-
-class RemoveGcmPayload(GcmPayload, total=False):
     zulip_message_ids: Optional[str]
 
 class ApnsPayload(TypedDict, total=False):
-    badge: Optional[int]
+    badge: int
     custom: Dict[str, Any]
-
-class MessageApnsPayload(ApnsPayload):
     message_ids: List[int]
     alert: Dict[str, str]
-    sound: Optional[str]
+    sound: str
 
 class RemoteServerNotificationPayload(BaseModel):
     user_id: Optional[int] = None
     user_uuid: Optional[str] = None
-    realm_uuid: Optional[str] = None
+    realm_uuid: Optional[str] = None 
     gcm_payload: GcmPayload = {}
     apns_payload: ApnsPayload = {}
     gcm_options: Dict[str, Any] = {}
@@ -687,8 +678,49 @@ def remote_server_notify_push(
     # PushBouncerSession).  The timeouts in the FCM and APNS codepaths
     # must be set accordingly; see send_android_push_notification and
     # send_apple_push_notification.
-
+    print()
+    print()
+    print()
+    print()
+    print()
+    print()
+    print()
+    print()
+    print()
+    print()
+    print(f"gcm puro: {gcm_payload}")
+    print()
+    print()
+    print()
+    print()
+    print()
+    print()
+    print()
+    print()
+    print()
+    print()
     gcm_payload = truncate_payload(gcm_payload)
+    print()
+    print()
+    print()
+    print()
+    print()
+    print()
+    print()
+    print()
+    print()
+    print()
+    print(f"gcm truncado: {gcm_payload}")
+    print()
+    print()
+    print()
+    print()
+    print()
+    print()
+    print()
+    print()
+    print()
+    print()
     android_successfully_delivered = send_android_push_notification(
         user_identity, android_devices, gcm_payload, gcm_options, remote=server
     )

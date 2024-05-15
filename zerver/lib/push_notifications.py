@@ -396,7 +396,6 @@ def send_android_push_notification_to_user(
     user_profile: UserProfile, data: Dict[str, Any], options: Dict[str, Any]
 ) -> None:
     devices = list(PushDeviceToken.objects.filter(user=user_profile, kind=PushDeviceToken.GCM))
-    print(devices)
     send_android_push_notification(
         UserPushIdentityCompat(user_id=user_profile.id), devices, data, options
     )
