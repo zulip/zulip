@@ -70,7 +70,7 @@ async function test_edit_linkifier(page: Page): Promise<void> {
     });
     await page.click(".dialog_submit_button");
 
-    await page.waitForSelector("#dialog_widget_modal", {hidden: true});
+    await page.waitForSelector(".micromodal", {hidden: true});
     await common.wait_for_micromodal_to_close(page);
 
     await page.waitForSelector(".linkifier_row:nth-last-child(1)", {visible: true});
@@ -117,7 +117,7 @@ async function test_edit_invalid_linkifier(page: Page): Promise<void> {
     assert.strictEqual(edit_linkifier_template_status, "Failed: Invalid URL template.");
 
     await page.click(".dialog_exit_button");
-    await page.waitForSelector("#dialog_widget_modal", {hidden: true});
+    await page.waitForSelector(".micromodal", {hidden: true});
 
     await page.waitForSelector(".linkifier_row:nth-last-child(1)", {visible: true});
     assert.strictEqual(

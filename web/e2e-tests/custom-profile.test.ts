@@ -15,7 +15,7 @@ async function test_add_new_profile_field(page: Page): Promise<void> {
         "Add a new custom profile field",
     );
     assert.strictEqual(
-        await common.get_text_from_selector(page, "#dialog_widget_modal .dialog_submit_button"),
+        await common.get_text_from_selector(page, ".micromodal .dialog_submit_button"),
         "Add",
     );
     await page.waitForSelector(".admin-profile-field-form", {visible: true});
@@ -23,7 +23,7 @@ async function test_add_new_profile_field(page: Page): Promise<void> {
         field_type: "1",
         name: "Teams",
     });
-    await page.click("#dialog_widget_modal .dialog_submit_button");
+    await page.click(".micromodal .dialog_submit_button");
     await common.wait_for_micromodal_to_close(page);
 
     await page.waitForSelector(
@@ -43,13 +43,13 @@ async function test_edit_profile_field(page: Page): Promise<void> {
         "Edit custom profile field",
     );
     assert.strictEqual(
-        await common.get_text_from_selector(page, "#dialog_widget_modal .dialog_submit_button"),
+        await common.get_text_from_selector(page, ".micromodal .dialog_submit_button"),
         "Save changes",
     );
     await common.fill_form(page, "form.name-setting", {
         name: "team",
     });
-    await page.click("#dialog_widget_modal .dialog_submit_button");
+    await page.click(".micromodal .dialog_submit_button");
     await common.wait_for_micromodal_to_close(page);
 
     await page.waitForSelector(
@@ -69,10 +69,10 @@ async function test_delete_custom_profile_field(page: Page): Promise<void> {
         "Delete custom profile field?",
     );
     assert.strictEqual(
-        await common.get_text_from_selector(page, "#dialog_widget_modal .dialog_submit_button"),
+        await common.get_text_from_selector(page, ".micromodal .dialog_submit_button"),
         "Confirm",
     );
-    await page.click("#dialog_widget_modal .dialog_submit_button");
+    await page.click(".micromodal .dialog_submit_button");
     await common.wait_for_micromodal_to_close(page);
 
     await page.waitForSelector("#admin-profile-field-status img", {visible: true});
