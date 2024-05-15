@@ -74,6 +74,7 @@ export const realm_schema = z.object({
         PRONOUNS: z.object({id: z.number(), name: z.string()}),
     }),
     max_avatar_file_size_mib: z.number(),
+    max_file_upload_size_mib: z.number(),
     max_icon_file_size_mib: z.number(),
     max_logo_file_size_mib: z.number(),
     max_message_length: z.number(),

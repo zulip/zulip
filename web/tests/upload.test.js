@@ -7,6 +7,13 @@ const {run_test, noop} = require("./lib/test");
 const $ = require("./lib/zjquery");
 const {realm} = require("./lib/zpage_params");
 
+class ClipboardEvent {
+    constructor({clipboardData}) {
+        this.clipboardData = clipboardData;
+    }
+}
+set_global("ClipboardEvent", ClipboardEvent);
+
 set_global("navigator", {
     userAgent: "Mozilla/5.0 (compatible; MSIE 9.0; Windows NT 6.1; Trident/5.0)",
 });
@@ -60,7 +67,7 @@ test("config", () => {
         upload.compose_config.upload_banner_hide_button("id_2"),
         $("#compose_banners .upload_banner.file_id_2 .main-view-banner-close-button"),
     );
-    assert.equal(upload.compose_config.file_input_identifier(), "#compose .file_input");
+    assert.equal(upload.compose_config.file_input_identifier(), "#compose input.file_input");
     assert.equal(upload.compose_config.source(), "compose-file-input");
     assert.equal(upload.compose_config.drag_drop_container(), $("#compose"));
     assert.equal(
@@ -70,7 +77,7 @@ test("config", () => {
 
     assert.equal(
         upload.edit_config(1).textarea(),
-        $(`#edit_form_${CSS.escape(1)} .message_edit_content`),
+        $(`#edit_form_${CSS.escape(1)} textarea.message_edit_content`),
     );
 
     $(`#edit_form_${CSS.escape(2)}`).set_find_results(
@@ -117,7 +124,7 @@ test("config", () => {
 
     assert.equal(
         upload.edit_config(123).file_input_identifier(),
-        `#edit_form_${CSS.escape(123)} .file_input`,
+        `#edit_form_${CSS.escape(123)} input.file_input`,
     );
     assert.equal(upload.edit_config(123).source(), "message-edit-file-input");
     assert.equal(
@@ -343,7 +350,7 @@ test("uppy_config", () => {
 test("file_input", ({override_rewire}) => {
     upload.setup_upload(upload.compose_config);
 
-    const change_handler = $("#compose .file_input").get_on_handler("change");
+    const change_handler = $("#compose input.file_input").get_on_handler("change");
     const files = ["file1", "file2"];
     const event = {
         target: {
@@ -417,7 +424,7 @@ test("copy_paste", ({override, override_rewire}) => {
     const paste_handler = $("#compose").get_on_handler("paste");
     let get_as_file_called = false;
     let event = {
-        originalEvent: {
+        originalEvent: new ClipboardEvent({
             clipboardData: {
                 items: [
                     {
@@ -428,10 +435,11 @@ test("copy_paste", ({override, override_rewire}) => {
                     },
                     {
                         kind: "notfile",
+                        getAsFile: () => null,
                     },
                 ],
             },
-        },
+        }),
         preventDefault() {},
     };
     let upload_files_called = false;
@@ -449,7 +457,7 @@ test("copy_paste", ({override, override_rewire}) => {
     assert.ok(compose_actions_start_called);
     upload_files_called = false;
     event = {
-        originalEvent: {},
+        originalEvent: new ClipboardEvent({}),
     };
     paste_handler(event);
     assert.equal(upload_files_called, false);
@@ -585,7 +593,7 @@ test("uppy_events", ({override_rewire, mock_template}) => {
     assert.ok(compose_ui_replace_syntax_called);
 
     compose_ui_replace_syntax_called = false;
-    on_upload_error_callback(file, null, null);
+    on_upload_error_callback(file, null, undefined);
     assert.ok(compose_ui_replace_syntax_called);
 
     $("#compose_banners .upload_banner .upload_msg").text("");
