@@ -509,12 +509,52 @@ class PushNotificationsDisallowedError(JsonableError):
         super().__init__(msg)
 
 
+class BasePayload(TypedDict, total=False):
+    server: Optional[str]
+    realm_id: Optional[int]
+    realm_url: Optional[str]
+    realm_name: Optional[str]
+    user_id: Optional[int]
+
+# This class is abstract, it can only be used as a instance of MessageGcmPayload or RemoveGcmPayload
+class GcmPayload(BasePayload, total=False):
+    event: Optional[str]
+    zulip_message_id: Optional[int]
+
+class MessageGcmPayload(GcmPayload, total=False):
+    sender_id: Optional[int]
+    sender_email: Optional[str]
+    time: Optional[int]
+    mentioned_user_group_id: Optional[int]
+    mentioned_user_group_name: Optional[str]
+    recipient_type: Optional[str]
+    stream: Optional[str]
+    stream_id: Optional[int]
+    topic: Optional[str]
+    pm_users: Optional[str]
+    sender_avatar_url: Optional[str]
+    content: Optional[str]
+    content_truncated: Optional[bool]
+    sender_full_name: Optional[str]
+
+class RemoveGcmPayload(GcmPayload, total=False):
+    zulip_message_ids: Optional[str]
+
+class ApnsPayload(TypedDict, total=False):
+    badge: Optional[int]
+    custom: Dict[str, Any]
+
+class MessageApnsPayload(ApnsPayload):
+    message_ids: List[int]
+    alert: Dict[str, str]
+    sound: Optional[str]
+
 class RemoteServerNotificationPayload(BaseModel):
     user_id: Optional[int] = None
     user_uuid: Optional[str] = None
     realm_uuid: Optional[str] = None
-    gcm_payload: Dict[str, Any] = {}
-    apns_payload: Dict[str, Any] = {}
+    gcm_payload: GcmPayload = {}
+    apns_payload: ApnsPayload = {}
     gcm_options: Dict[str, Any] = {}
 
     android_devices: List[str] = []
