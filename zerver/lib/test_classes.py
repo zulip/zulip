@@ -2001,6 +2001,135 @@ class ZulipTestCase(ZulipTestCaseMixin, TestCase):
 
         self.assert_length(lst, expected_num_events)
 
+    @override
+    def send_personal_message(
+        self,
+        from_user: UserProfile,
+        to_user: UserProfile,
+        content: str = "test content",
+        *,
+        read_by_sender: bool = True,
+        skip_capture_on_commit_callbacks: bool = False,
+    ) -> int:
+        """This function is a wrapper on 'send_personal_message',
+        defined in 'ZulipTestCaseMixin' with an extra parameter
+        'skip_capture_on_commit_callbacks'.
+
+        It should be set to 'True' when making a call with either
+        'verify_action' or 'capture_send_event_calls' as context manager
+        because they already have 'self.captureOnCommitCallbacks'
+        (See the comment in 'capture_send_event_calls').
+
+        For all other cases, we should call 'send_personal_message' with
+        'self.captureOnCommitCallbacks' for 'send_event_on_commit' or/and
+        'queue_event_on_commit' to work.
+        """
+        if skip_capture_on_commit_callbacks:
+            message_id = super().send_personal_message(
+                from_user,
+                to_user,
+                content,
+                read_by_sender=read_by_sender,
+            )
+        else:
+            with self.captureOnCommitCallbacks(execute=True):
+                message_id = super().send_personal_message(
+                    from_user,
+                    to_user,
+                    content,
+                    read_by_sender=read_by_sender,
+                )
+        return message_id
+
+    @override
+    def send_huddle_message(
+        self,
+        from_user: UserProfile,
+        to_users: List[UserProfile],
+        content: str = "test content",
+        *,
+        read_by_sender: bool = True,
+        skip_capture_on_commit_callbacks: bool = False,
+    ) -> int:
+        """This function is a wrapper on 'send_huddle_message',
+        defined in 'ZulipTestCaseMixin' with an extra parameter
+        'skip_capture_on_commit_callbacks'.
+
+        It should be set to 'True' when making a call with either
+        'verify_action' or 'capture_send_event_calls' as context manager
+        because they already have 'self.captureOnCommitCallbacks'
+        (See the comment in 'capture_send_event_calls').
+
+        For all other cases, we should call 'send_huddle_message' with
+        'self.captureOnCommitCallbacks' for 'send_event_on_commit' or/and
+        'queue_event_on_commit' to work.
+        """
+        if skip_capture_on_commit_callbacks:
+            message_id = super().send_huddle_message(
+                from_user,
+                to_users,
+                content,
+                read_by_sender=read_by_sender,
+            )
+        else:
+            with self.captureOnCommitCallbacks(execute=True):
+                message_id = super().send_huddle_message(
+                    from_user,
+                    to_users,
+                    content,
+                    read_by_sender=read_by_sender,
+                )
+        return message_id
+
+    @override
+    def send_stream_message(
+        self,
+        sender: UserProfile,
+        stream_name: str,
+        content: str = "test content",
+        topic_name: str = "test",
+        recipient_realm: Optional[Realm] = None,
+        *,
+        allow_unsubscribed_sender: bool = False,
+        read_by_sender: bool = True,
+        skip_capture_on_commit_callbacks: bool = False,
+    ) -> int:
+        """This function is a wrapper on 'send_stream_message',
+        defined in 'ZulipTestCaseMixin' with an extra parameter
+        'skip_capture_on_commit_callbacks'.
+
+        It should be set to 'True' when making a call with either
+        'verify_action' or 'capture_send_event_calls' as context manager
+        because they already have 'self.captureOnCommitCallbacks'
+        (See the comment in 'capture_send_event_calls').
+
+        For all other cases, we should call 'send_stream_message' with
+        'self.captureOnCommitCallbacks' for 'send_event_on_commit' or/and
+        'queue_event_on_commit' to work.
+        """
+        if skip_capture_on_commit_callbacks:
+            message_id = super().send_stream_message(
+                sender,
+                stream_name,
+                content,
+                topic_name,
+                recipient_realm,
+                allow_unsubscribed_sender=allow_unsubscribed_sender,
+                read_by_sender=read_by_sender,
+            )
+        else:
+            with self.captureOnCommitCallbacks(execute=True):
+                message_id = super().send_stream_message(
+                    sender,
+                    stream_name,
+                    content,
+                    topic_name,
+                    recipient_realm,
+                    allow_unsubscribed_sender=allow_unsubscribed_sender,
+                    read_by_sender=read_by_sender,
+                )
+        return message_id
+
 
 def get_row_ids_in_all_tables() -> Iterator[Tuple[str, Set[int]]]:
     all_models = apps.get_models(include_auto_created=True)

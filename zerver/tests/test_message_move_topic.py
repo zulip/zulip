@@ -192,8 +192,8 @@ class MessageMoveTopicTest(ZulipTestCase):
         users_to_be_notified = list(map(notify, [hamlet.id]))
         do_update_message_topic_success(hamlet, message, "Change again", users_to_be_notified)
 
-    @mock.patch("zerver.actions.user_topics.send_event")
-    def test_edit_muted_topic(self, mock_send_event: mock.MagicMock) -> None:
+    @mock.patch("zerver.actions.user_topics.send_event_on_commit")
+    def test_edit_muted_topic(self, mock_send_event_on_commit: mock.MagicMock) -> None:
         stream_name = "Stream 123"
         stream = self.make_stream(stream_name)
         hamlet = self.example_user("hamlet")
@@ -273,7 +273,7 @@ class MessageMoveTopicTest(ZulipTestCase):
         # Here we assert that the expected users are notified properly.
         users_notified_via_muted_topics_event: List[int] = []
         users_notified_via_user_topic_event: List[int] = []
-        for call_args in mock_send_event.call_args_list:
+        for call_args in mock_send_event_on_commit.call_args_list:
             (arg_realm, arg_event, arg_notified_users) = call_args[0]
             if arg_event["type"] == "user_topic":
                 users_notified_via_user_topic_event.append(*arg_notified_users)
@@ -459,8 +459,8 @@ class MessageMoveTopicTest(ZulipTestCase):
         assert_is_topic_muted(cordelia, new_public_stream.id, "final topic name", muted=False)
         assert_is_topic_muted(aaron, new_public_stream.id, "final topic name", muted=False)
 
-    @mock.patch("zerver.actions.user_topics.send_event")
-    def test_edit_unmuted_topic(self, mock_send_event: mock.MagicMock) -> None:
+    @mock.patch("zerver.actions.user_topics.send_event_on_commit")
+    def test_edit_unmuted_topic(self, mock_send_event_on_commit: mock.MagicMock) -> None:
         stream_name = "Stream 123"
         stream = self.make_stream(stream_name)
 
@@ -535,7 +535,7 @@ class MessageMoveTopicTest(ZulipTestCase):
         # Here we assert that the expected users are notified properly.
         users_notified_via_muted_topics_event: List[int] = []
         users_notified_via_user_topic_event: List[int] = []
-        for call_args in mock_send_event.call_args_list:
+        for call_args in mock_send_event_on_commit.call_args_list:
             (arg_realm, arg_event, arg_notified_users) = call_args[0]
             if arg_event["type"] == "user_topic":
                 users_notified_via_user_topic_event.append(*arg_notified_users)

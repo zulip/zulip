@@ -68,7 +68,7 @@ from zerver.lib.notification_data import (
     user_allows_notifications_in_StreamTopic,
 )
 from zerver.lib.query_helpers import query_for_ids
-from zerver.lib.queue import queue_json_publish
+from zerver.lib.queue import queue_event_on_commit
 from zerver.lib.recipient_users import recipient_for_user_profiles
 from zerver.lib.stream_subscription import (
     get_subscriptions_for_send_message,
@@ -108,7 +108,7 @@ from zerver.models.recipients import get_huddle_user_ids
 from zerver.models.scheduled_jobs import NotificationTriggers
 from zerver.models.streams import get_stream, get_stream_by_id_in_realm
 from zerver.models.users import get_system_bot, get_user_by_delivery_email, is_cross_realm_bot_email
-from zerver.tornado.django_api import send_event
+from zerver.tornado.django_api import send_event_on_commit
 
 
 def compute_irc_user_fullname(email: str) -> str:
@@ -843,6 +843,7 @@ def get_active_presence_idle_user_ids(
     return filter_presence_idle_user_ids(user_ids)
 
 
+@transaction.atomic(savepoint=False)
 def do_send_messages(
     send_message_requests_maybe_none: Sequence[Optional[SendMessageRequest]],
     *,
@@ -862,65 +863,65 @@ def do_send_messages(
 
     # Save the message receipts in the database
     user_message_flags: Dict[int, Dict[int, List[str]]] = defaultdict(dict)
-    with transaction.atomic(savepoint=False):
-        Message.objects.bulk_create(send_request.message for send_request in send_message_requests)
 
-        # Claim attachments in message
-        for send_request in send_message_requests:
-            if do_claim_attachments(
-                send_request.message, send_request.rendering_result.potential_attachment_path_ids
-            ):
-                send_request.message.has_attachment = True
-                send_request.message.save(update_fields=["has_attachment"])
+    Message.objects.bulk_create(send_request.message for send_request in send_message_requests)
 
-        ums: List[UserMessageLite] = []
-        for send_request in send_message_requests:
-            # Service bots (outgoing webhook bots and embedded bots) don't store UserMessage rows;
-            # they will be processed later.
-            mentioned_user_ids = send_request.rendering_result.mentions_user_ids
+    # Claim attachments in message
+    for send_request in send_message_requests:
+        if do_claim_attachments(
+            send_request.message, send_request.rendering_result.potential_attachment_path_ids
+        ):
+            send_request.message.has_attachment = True
+            send_request.message.save(update_fields=["has_attachment"])
 
-            # Extend the set with users who have muted the sender.
-            mark_as_read_user_ids = send_request.muted_sender_user_ids
-            mark_as_read_user_ids.update(mark_as_read)
+    ums: List[UserMessageLite] = []
+    for send_request in send_message_requests:
+        # Service bots (outgoing webhook bots and embedded bots) don't store UserMessage rows;
+        # they will be processed later.
+        mentioned_user_ids = send_request.rendering_result.mentions_user_ids
 
-            user_messages = create_user_messages(
-                message=send_request.message,
-                rendering_result=send_request.rendering_result,
-                um_eligible_user_ids=send_request.um_eligible_user_ids,
-                long_term_idle_user_ids=send_request.long_term_idle_user_ids,
-                stream_push_user_ids=send_request.stream_push_user_ids,
-                stream_email_user_ids=send_request.stream_email_user_ids,
-                mentioned_user_ids=mentioned_user_ids,
-                followed_topic_push_user_ids=send_request.followed_topic_push_user_ids,
-                followed_topic_email_user_ids=send_request.followed_topic_email_user_ids,
-                mark_as_read_user_ids=mark_as_read_user_ids,
-                limit_unread_user_ids=send_request.limit_unread_user_ids,
-                topic_participant_user_ids=send_request.topic_participant_user_ids,
-            )
+        # Extend the set with users who have muted the sender.
+        mark_as_read_user_ids = send_request.muted_sender_user_ids
+        mark_as_read_user_ids.update(mark_as_read)
 
-            for um in user_messages:
-                user_message_flags[send_request.message.id][um.user_profile_id] = um.flags_list()
+        user_messages = create_user_messages(
+            message=send_request.message,
+            rendering_result=send_request.rendering_result,
+            um_eligible_user_ids=send_request.um_eligible_user_ids,
+            long_term_idle_user_ids=send_request.long_term_idle_user_ids,
+            stream_push_user_ids=send_request.stream_push_user_ids,
+            stream_email_user_ids=send_request.stream_email_user_ids,
+            mentioned_user_ids=mentioned_user_ids,
+            followed_topic_push_user_ids=send_request.followed_topic_push_user_ids,
+            followed_topic_email_user_ids=send_request.followed_topic_email_user_ids,
+            mark_as_read_user_ids=mark_as_read_user_ids,
+            limit_unread_user_ids=send_request.limit_unread_user_ids,
+            topic_participant_user_ids=send_request.topic_participant_user_ids,
+        )
 
-            ums.extend(user_messages)
+        for um in user_messages:
+            user_message_flags[send_request.message.id][um.user_profile_id] = um.flags_list()
 
-            send_request.service_queue_events = get_service_bot_events(
-                sender=send_request.message.sender,
-                service_bot_tuples=send_request.service_bot_tuples,
-                mentioned_user_ids=mentioned_user_ids,
-                active_user_ids=send_request.active_user_ids,
-                recipient_type=send_request.message.recipient.type,
-            )
+        ums.extend(user_messages)
 
-        bulk_insert_ums(ums)
+        send_request.service_queue_events = get_service_bot_events(
+            sender=send_request.message.sender,
+            service_bot_tuples=send_request.service_bot_tuples,
+            mentioned_user_ids=mentioned_user_ids,
+            active_user_ids=send_request.active_user_ids,
+            recipient_type=send_request.message.recipient.type,
+        )
 
-        for send_request in send_message_requests:
-            do_widget_post_save_actions(send_request)
+    bulk_insert_ums(ums)
+
+    for send_request in send_message_requests:
+        do_widget_post_save_actions(send_request)
 
     # This next loop is responsible for notifying other parts of the
     # Zulip system about the messages we just committed to the database:
     # * Sender automatically follows or unmutes the topic depending on 'automatically_follow_topics_policy'
     #   and 'automatically_unmute_topics_in_muted_streams_policy' user settings.
-    # * Notifying clients via send_event
+    # * Notifying clients via send_event_on_commit
     # * Triggering outgoing webhooks via the service event queue.
     # * Updating the `first_message_id` field for streams without any message history.
     # * Implementing the Welcome Bot reply hack
@@ -1175,7 +1176,7 @@ def do_send_messages(
             event["local_id"] = send_request.local_id
         if send_request.sender_queue_id is not None:
             event["sender_queue_id"] = send_request.sender_queue_id
-        send_event(send_request.realm, event, users)
+        send_event_on_commit(send_request.realm, event, users)
 
         if send_request.links_for_embed:
             event_data = {
@@ -1184,7 +1185,7 @@ def do_send_messages(
                 "message_realm_id": send_request.realm.id,
                 "urls": list(send_request.links_for_embed),
             }
-            queue_json_publish("embed_links", event_data)
+            queue_event_on_commit("embed_links", event_data)
 
         if send_request.message.recipient.type == Recipient.PERSONAL:
             welcome_bot_id = get_system_bot(settings.WELCOME_BOT, send_request.realm.id).id
@@ -1199,7 +1200,7 @@ def do_send_messages(
         assert send_request.service_queue_events is not None
         for queue_name, events in send_request.service_queue_events.items():
             for event in events:
-                queue_json_publish(
+                queue_event_on_commit(
                     queue_name,
                     {
                         "message": wide_message_dict,
