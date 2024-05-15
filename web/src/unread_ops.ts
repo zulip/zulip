@@ -87,6 +87,7 @@ function bulk_update_read_flags_for_narrow(
         messages_read_till_now?: number;
         num_after?: number;
     } = {},
+    caller_modal_id?: string,
 ): void {
     let response_html;
     const request = {
@@ -139,11 +140,16 @@ function bulk_update_read_flags_for_narrow(
                     loading_indicator_displayed = true;
                 }
 
-                bulk_update_read_flags_for_narrow(narrow, op, {
-                    anchor: data.last_processed_id,
-                    messages_read_till_now,
-                    num_after: FOLLOWUP_BATCH_SIZE,
-                });
+                bulk_update_read_flags_for_narrow(
+                    narrow,
+                    op,
+                    {
+                        anchor: data.last_processed_id,
+                        messages_read_till_now,
+                        num_after: FOLLOWUP_BATCH_SIZE,
+                    },
+                    caller_modal_id,
+                );
             } else {
                 if (loading_indicator_displayed) {
                     // Only show the success message if a progress banner was displayed.
@@ -181,8 +187,11 @@ function bulk_update_read_flags_for_narrow(
                     unread.clear_old_unreads_missing();
                     blueslip.log("Cleared old_unreads_missing after bankruptcy.");
                 }
+
+                if (caller_modal_id) {
+                    modals.close_if_open(caller_modal_id);
+                }
             }
-            dialog_widget.close();
         },
         error(xhr) {
             let parsed;
@@ -196,11 +205,16 @@ function bulk_update_read_flags_for_narrow(
                 // If we hit the rate limit, just continue without showing any error.
                 const milliseconds_to_wait = 1000 * parsed.data["retry-after"];
                 setTimeout(() => {
-                    bulk_update_read_flags_for_narrow(narrow, op, {
-                        anchor,
-                        messages_read_till_now,
-                        num_after,
-                    });
+                    bulk_update_read_flags_for_narrow(
+                        narrow,
+                        op,
+                        {
+                            anchor,
+                            messages_read_till_now,
+                            num_after,
+                        },
+                        caller_modal_id,
+                    );
                 }, milliseconds_to_wait);
             } else {
                 // TODO: Ideally this would be a ui_report.error();
@@ -210,8 +224,10 @@ function bulk_update_read_flags_for_narrow(
                     status: xhr.status,
                     body: xhr.responseText,
                 });
+                if (caller_modal_id && modals.is_active(caller_modal_id)) {
+                    dialog_widget.hide_dialog_spinner();
+                }
             }
-            dialog_widget.hide_dialog_spinner();
         },
     });
 }
@@ -626,8 +642,8 @@ export function mark_topic_as_unread(stream_id: number, topic: string): void {
     );
 }
 
-export function mark_all_as_read(): void {
-    bulk_update_read_flags_for_narrow(all_unread_messages_narrow, "add");
+export function mark_all_as_read(modal_id?: string): void {
+    bulk_update_read_flags_for_narrow(all_unread_messages_narrow, "add", {}, modal_id);
 }
 
 export function mark_pm_as_read(user_ids_string: string): void {

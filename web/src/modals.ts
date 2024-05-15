@@ -46,6 +46,11 @@ export function active_modal(): string | undefined {
     return `#${CSS.escape($micromodal.attr("id")!)}`;
 }
 
+export function is_active(modal_id: string): boolean {
+    const $micromodal = $(".micromodal.modal--open");
+    return $micromodal.attr("id") === modal_id;
+}
+
 // If conf.autoremove is true, the modal element will be removed from the DOM
 // once the modal is hidden.
 // conf also accepts the following optional properties:
