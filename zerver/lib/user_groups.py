@@ -585,19 +585,20 @@ def bulk_create_system_user_groups(groups: list[dict[str, str]], realm: Realm) -
         user_group_ids = [id for (id,) in cursor.fetchall()]
 
     rows = [
-        SQL("({},{},{},{},{},{})").format(
+        SQL("({},{},{},{},{},{},{})").format(
             Literal(user_group_ids[idx]),
             Literal(realm.id),
             Literal(group["name"]),
             Literal(group["description"]),
             Literal(True),
             Literal(initial_group_setting_value),
+            Literal(False),
         )
         for idx, group in enumerate(groups)
     ]
     query = SQL(
         """
-        INSERT INTO zerver_namedusergroup (usergroup_ptr_id, realm_id, name, description, is_system_group, can_mention_group_id)
+        INSERT INTO zerver_namedusergroup (usergroup_ptr_id, realm_id, name, description, is_system_group, can_mention_group_id, deactivated)
         VALUES {rows}
         """
     ).format(rows=SQL(", ").join(rows))
