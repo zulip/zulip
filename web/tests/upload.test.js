@@ -46,36 +46,30 @@ test("feature_check", ({override}) => {
     assert.ok(upload.feature_check());
 });
 
-test("get_item", () => {
+test("config", () => {
+    assert.equal(upload.compose_config.textarea(), $("textarea#compose-textarea"));
     assert.equal(
-        upload.get_item("textarea", upload.compose_config),
-        $("textarea#compose-textarea"),
-    );
-    assert.equal(
-        upload.get_item("upload_banner_message", upload.compose_config, "id_1"),
+        upload.compose_config.upload_banner_message("id_1"),
         $("#compose_banners .upload_banner.file_id_1 .upload_msg"),
     );
     assert.equal(
-        upload.get_item("upload_banner_cancel_button", upload.compose_config, "id_2"),
+        upload.compose_config.upload_banner_cancel_button("id_2"),
         $("#compose_banners .upload_banner.file_id_2 .upload_banner_cancel_button"),
     );
     assert.equal(
-        upload.get_item("upload_banner_hide_button", upload.compose_config, "id_2"),
+        upload.compose_config.upload_banner_hide_button("id_2"),
         $("#compose_banners .upload_banner.file_id_2 .main-view-banner-close-button"),
     );
+    assert.equal(upload.compose_config.file_input_identifier(), "#compose .file_input");
+    assert.equal(upload.compose_config.source(), "compose-file-input");
+    assert.equal(upload.compose_config.drag_drop_container(), $("#compose"));
     assert.equal(
-        upload.get_item("file_input_identifier", upload.compose_config),
-        "#compose .file_input",
-    );
-    assert.equal(upload.get_item("source", upload.compose_config), "compose-file-input");
-    assert.equal(upload.get_item("drag_drop_container", upload.compose_config), $("#compose"));
-    assert.equal(
-        upload.get_item("markdown_preview_hide_button", upload.compose_config),
+        upload.compose_config.markdown_preview_hide_button(),
         $("#compose .undo_markdown_preview"),
     );
 
     assert.equal(
-        upload.get_item("textarea", upload.edit_config(1)),
+        upload.edit_config(1).textarea(),
         $(`#edit_form_${CSS.escape(1)} .message_edit_content`),
     );
 
@@ -83,14 +77,14 @@ test("get_item", () => {
         ".message_edit_save",
         $(".message_edit_save"),
     );
-    assert.equal(upload.get_item("send_button", upload.edit_config(2)), $(".message_edit_save"));
+    assert.equal(upload.edit_config(2).send_button(), $(".message_edit_save"));
 
     assert.equal(
-        upload.get_item("upload_banner_identifier", upload.edit_config(11), "id_3"),
+        upload.edit_config(11).upload_banner_identifier("id_3"),
         `#edit_form_${CSS.escape(11)} .upload_banner.file_id_3`,
     );
     assert.equal(
-        upload.get_item("upload_banner", upload.edit_config(75), "id_60"),
+        upload.edit_config(75).upload_banner("id_60"),
         $(`#edit_form_${CSS.escape(75)} .upload_banner.file_id_60`),
     );
 
@@ -99,7 +93,7 @@ test("get_item", () => {
         $(".upload_banner_cancel_button"),
     );
     assert.equal(
-        upload.get_item("upload_banner_cancel_button", upload.edit_config(2), "id_34"),
+        upload.edit_config(2).upload_banner_cancel_button("id_34"),
         $(`#edit_form_${CSS.escape(2)} .upload_banner.file_id_34 .upload_banner_cancel_button`),
     );
 
@@ -108,7 +102,7 @@ test("get_item", () => {
         $(".main-view-banner-close-button"),
     );
     assert.equal(
-        upload.get_item("upload_banner_hide_button", upload.edit_config(2), "id_34"),
+        upload.edit_config(2).upload_banner_hide_button("id_34"),
         $(`#edit_form_${CSS.escape(2)} .upload_banner.file_id_34 .main-view-banner-close-button`),
     );
 
@@ -117,21 +111,21 @@ test("get_item", () => {
         $(".upload_msg"),
     );
     assert.equal(
-        upload.get_item("upload_banner_message", upload.edit_config(22), "id_234"),
+        upload.edit_config(22).upload_banner_message("id_234"),
         $(`#edit_form_${CSS.escape(22)} .upload_banner.file_id_234 .upload_msg`),
     );
 
     assert.equal(
-        upload.get_item("file_input_identifier", upload.edit_config(123)),
+        upload.edit_config(123).file_input_identifier(),
         `#edit_form_${CSS.escape(123)} .file_input`,
     );
-    assert.equal(upload.get_item("source", upload.edit_config(123)), "message-edit-file-input");
+    assert.equal(upload.edit_config(123).source(), "message-edit-file-input");
     assert.equal(
-        upload.get_item("drag_drop_container", upload.edit_config(1)),
+        upload.edit_config(1).drag_drop_container(),
         $(`#message-row-1-${CSS.escape(1)} .message_edit_form`),
     );
     assert.equal(
-        upload.get_item("markdown_preview_hide_button", upload.edit_config(65)),
+        upload.edit_config(65).markdown_preview_hide_button(),
         $(`#edit_form_${CSS.escape(65)} .undo_markdown_preview`),
     );
 });
