@@ -134,52 +134,6 @@ test("get_item", () => {
         upload.get_item("markdown_preview_hide_button", upload.edit_config(65)),
         $(`#edit_form_${CSS.escape(65)} .undo_markdown_preview`),
     );
-
-    assert.throws(
-        () => {
-            upload.get_item("textarea");
-        },
-        {
-            name: "Error",
-            message: "Missing config",
-        },
-    );
-    assert.throws(
-        () => {
-            upload.get_item("textarea", upload.edit_config());
-        },
-        {
-            name: "Error",
-            message: "Missing row in config",
-        },
-    );
-    assert.throws(
-        () => {
-            upload.get_item("textarea", {mode: "blah"});
-        },
-        {
-            name: "Error",
-            message: "Invalid upload mode!",
-        },
-    );
-    assert.throws(
-        () => {
-            upload.get_item("invalid", upload.compose_config);
-        },
-        {
-            name: "Error",
-            message: 'Invalid key name for mode "compose"',
-        },
-    );
-    assert.throws(
-        () => {
-            upload.get_item("invalid", upload.edit_config(20));
-        },
-        {
-            name: "Error",
-            message: 'Invalid key name for mode "edit"',
-        },
-    );
 });
 
 test("show_error_message", ({mock_template}) => {

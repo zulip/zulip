@@ -38,114 +38,76 @@ export function get_translated_status(file) {
 
 export const compose_config = {
     mode: "compose",
+    textarea: () => $("textarea#compose-textarea"),
+    send_button: () => $("#compose-send-button"),
+    banner_container: () => $("#compose_banners"),
+    upload_banner_identifier: (file_id) =>
+        `#compose_banners .upload_banner.file_${CSS.escape(file_id)}`,
+    upload_banner: (file_id) => $(`#compose_banners .upload_banner.file_${CSS.escape(file_id)}`),
+    upload_banner_cancel_button: (file_id) =>
+        $(
+            `#compose_banners .upload_banner.file_${CSS.escape(
+                file_id,
+            )} .upload_banner_cancel_button`,
+        ),
+    upload_banner_hide_button: (file_id) =>
+        $(
+            `#compose_banners .upload_banner.file_${CSS.escape(
+                file_id,
+            )} .main-view-banner-close-button`,
+        ),
+    upload_banner_message: (file_id) =>
+        $(`#compose_banners .upload_banner.file_${CSS.escape(file_id)} .upload_msg`),
+    file_input_identifier: () => "#compose .file_input",
+    source: () => "compose-file-input",
+    drag_drop_container: () => $("#compose"),
+    markdown_preview_hide_button: () => $("#compose .undo_markdown_preview"),
 };
 
 export function edit_config(row) {
     return {
         mode: "edit",
         row,
+        textarea: () => $(`#edit_form_${CSS.escape(row)} .message_edit_content`),
+        send_button: () => $(`#edit_form_${CSS.escape(row)}`).find(".message_edit_save"),
+        banner_container: () => $(`#edit_form_${CSS.escape(row)} .edit_form_banners`),
+        upload_banner_identifier: (file_id) =>
+            `#edit_form_${CSS.escape(row)} .upload_banner.file_${CSS.escape(file_id)}`,
+        upload_banner: (file_id) =>
+            $(`#edit_form_${CSS.escape(row)} .upload_banner.file_${CSS.escape(file_id)}`),
+        upload_banner_cancel_button: (file_id) =>
+            $(
+                `#edit_form_${CSS.escape(row)} .upload_banner.file_${CSS.escape(
+                    file_id,
+                )} .upload_banner_cancel_button`,
+            ),
+        upload_banner_hide_button: (file_id) =>
+            $(
+                `#edit_form_${CSS.escape(row)} .upload_banner.file_${CSS.escape(
+                    file_id,
+                )} .main-view-banner-close-button`,
+            ),
+        upload_banner_message: (file_id) =>
+            $(
+                `#edit_form_${CSS.escape(row)} .upload_banner.file_${CSS.escape(
+                    file_id,
+                )} .upload_msg`,
+            ),
+        file_input_identifier: () => `#edit_form_${CSS.escape(row)} .file_input`,
+        source: () => "message-edit-file-input",
+        drag_drop_container() {
+            assert(message_lists.current !== undefined);
+            return $(
+                `#message-row-${message_lists.current.id}-${CSS.escape(row)} .message_edit_form`,
+            );
+        },
+        markdown_preview_hide_button: () =>
+            $(`#edit_form_${CSS.escape(row)} .undo_markdown_preview`),
     };
 }
 
 export function get_item(key, config, file_id) {
-    if (!config) {
-        throw new Error("Missing config");
-    }
-    if (config.mode === "compose") {
-        switch (key) {
-            case "textarea":
-                return $("textarea#compose-textarea");
-            case "send_button":
-                return $("#compose-send-button");
-            case "banner_container":
-                return $("#compose_banners");
-            case "upload_banner_identifier":
-                return `#compose_banners .upload_banner.file_${CSS.escape(file_id)}`;
-            case "upload_banner":
-                return $(`#compose_banners .upload_banner.file_${CSS.escape(file_id)}`);
-            case "upload_banner_cancel_button":
-                return $(
-                    `#compose_banners .upload_banner.file_${CSS.escape(
-                        file_id,
-                    )} .upload_banner_cancel_button`,
-                );
-            case "upload_banner_hide_button":
-                return $(
-                    `#compose_banners .upload_banner.file_${CSS.escape(
-                        file_id,
-                    )} .main-view-banner-close-button`,
-                );
-            case "upload_banner_message":
-                return $(`#compose_banners .upload_banner.file_${CSS.escape(file_id)} .upload_msg`);
-            case "file_input_identifier":
-                return "#compose .file_input";
-            case "source":
-                return "compose-file-input";
-            case "drag_drop_container":
-                return $("#compose");
-            case "markdown_preview_hide_button":
-                return $("#compose .undo_markdown_preview");
-            default:
-                throw new Error(`Invalid key name for mode "${config.mode}"`);
-        }
-    } else if (config.mode === "edit") {
-        if (!config.row) {
-            throw new Error("Missing row in config");
-        }
-        switch (key) {
-            case "textarea":
-                return $(`#edit_form_${CSS.escape(config.row)} .message_edit_content`);
-            case "send_button":
-                return $(`#edit_form_${CSS.escape(config.row)}`).find(".message_edit_save");
-            case "banner_container":
-                return $(`#edit_form_${CSS.escape(config.row)} .edit_form_banners`);
-            case "upload_banner_identifier":
-                return `#edit_form_${CSS.escape(config.row)} .upload_banner.file_${CSS.escape(
-                    file_id,
-                )}`;
-            case "upload_banner":
-                return $(
-                    `#edit_form_${CSS.escape(config.row)} .upload_banner.file_${CSS.escape(
-                        file_id,
-                    )}`,
-                );
-            case "upload_banner_cancel_button":
-                return $(
-                    `#edit_form_${CSS.escape(config.row)} .upload_banner.file_${CSS.escape(
-                        file_id,
-                    )} .upload_banner_cancel_button`,
-                );
-            case "upload_banner_hide_button":
-                return $(
-                    `#edit_form_${CSS.escape(config.row)} .upload_banner.file_${CSS.escape(
-                        file_id,
-                    )} .main-view-banner-close-button`,
-                );
-            case "upload_banner_message":
-                return $(
-                    `#edit_form_${CSS.escape(config.row)} .upload_banner.file_${CSS.escape(
-                        file_id,
-                    )} .upload_msg`,
-                );
-            case "file_input_identifier":
-                return `#edit_form_${CSS.escape(config.row)} .file_input`;
-            case "source":
-                return "message-edit-file-input";
-            case "drag_drop_container":
-                assert(message_lists.current !== undefined);
-                return $(
-                    `#message-row-${message_lists.current.id}-${CSS.escape(
-                        config.row,
-                    )} .message_edit_form`,
-                );
-            case "markdown_preview_hide_button":
-                return $(`#edit_form_${CSS.escape(config.row)} .undo_markdown_preview`);
-            default:
-                throw new Error(`Invalid key name for mode "${config.mode}"`);
-        }
-    } else {
-        throw new Error("Invalid upload mode!");
-    }
+    return config[key](file_id);
 }
 
 export function hide_upload_banner(uppy, config, file_id) {
