@@ -48,11 +48,11 @@ function open_linkifier_edit_form(linkifier_id: number): void {
         url_template: linkifier.url_template,
     });
 
-    function submit_linkifier_form(): void {
-        const $change_linkifier_button = $(".dialog_submit_button");
+    function submit_linkifier_form(dialog_widget_id: string): void {
+        const $modal = $(`#${dialog_widget_id}`);
+        const $change_linkifier_button = $modal.find(".dialog_submit_button");
         $change_linkifier_button.prop("disabled", true);
 
-        const $modal = $("#dialog_widget_modal");
         const url = "/json/realm/filters/" + encodeURIComponent(linkifier_id);
         const pattern = $modal.find<HTMLInputElement>("input#edit-linkifier-pattern").val()!.trim();
         const url_template = $modal
@@ -101,10 +101,12 @@ function open_linkifier_edit_form(linkifier_id: number): void {
         );
     }
 
-    dialog_widget.launch({
+    const dialog_widget_id = dialog_widget.launch({
         html_heading: $t_html({defaultMessage: "Edit linkfiers"}),
         html_body,
-        on_click: submit_linkifier_form,
+        on_click() {
+            submit_linkifier_form(dialog_widget_id);
+        },
     });
 }
 
