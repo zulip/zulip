@@ -364,7 +364,10 @@ function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void
 
         set_custom_time_inputs_visibility();
         set_expires_on_text();
-        set_streams_to_join_list_visibility();
+
+        if (settings_data.user_can_subscribe_other_users()) {
+            set_streams_to_join_list_visibility();
+        }
 
         $("#invite-user-modal").on("click", ".setup-tips-container .banner_content a", () => {
             dialog_widget.close();
