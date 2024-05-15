@@ -1,3 +1,4 @@
+import collections
 import logging
 import os
 import shutil
@@ -155,6 +156,22 @@ path_maps: Dict[str, Dict[str, str]] = {
     "attachment_path": {},
 }
 
+message_id_to_attachments: Dict[str, Dict[int, List[str]]] = {
+    "zerver_message": collections.defaultdict(list),
+    "zerver_scheduledmessage": collections.defaultdict(list),
+}
+
+
+def map_messages_to_attachments(data: TableData) -> None:
+    for attachment in data["zerver_attachment"]:
+        for message_id in attachment["messages"]:
+            message_id_to_attachments["zerver_message"][message_id].append(attachment["path_id"])
+
+        for scheduled_message_id in attachment["scheduled_messages"]:
+            message_id_to_attachments["zerver_scheduledmessage"][scheduled_message_id].append(
+                attachment["path_id"]
+            )
+
 
 def update_id_map(table: TableName, old_id: int, new_id: int) -> None:
     if table not in ID_MAP:
@@ -181,16 +198,20 @@ def fix_upload_links(data: TableData, message_table: TableName) -> None:
     organization being imported (which is only determined at import
     time), we need to rewrite the URLs of links to uploaded files
     during the import process.
+
+    Applied to attachments path_id found in messages of zerver_message and zerver_scheduledmessage tables.
     """
     for message in data[message_table]:
         if message["has_attachment"] is True:
-            for key, value in path_maps["attachment_path"].items():
-                if key in message["content"]:
-                    message["content"] = message["content"].replace(key, value)
-                    if message["rendered_content"]:
-                        message["rendered_content"] = message["rendered_content"].replace(
-                            key, value
-                        )
+            for attachment_path in message_id_to_attachments[message_table][message["id"]]:
+                message["content"] = message["content"].replace(
+                    attachment_path, path_maps["attachment_path"][attachment_path]
+                )
+
+                if message["rendered_content"]:
+                    message["rendered_content"] = message["rendered_content"].replace(
+                        attachment_path, path_maps["attachment_path"][attachment_path]
+                    )
 
 
 def fix_streams_can_remove_subscribers_group_column(data: TableData, realm: Realm) -> None:
@@ -1424,6 +1445,18 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
 
     sender_map = {user["id"]: user for user in data["zerver_userprofile"]}
 
+    # TODO: de-dup how we read these json files.
+    attachments_file = os.path.join(import_dir, "attachment.json")
+    if not os.path.exists(attachments_file):
+        raise Exception("Missing attachment.json file!")
+
+    # Important: map_messages_to_attachments should be called before fix_upload_links
+    # which is called by import_message_data and another for zerver_scheduledmessage.
+    with open(attachments_file, "rb") as f:
+        attachment_data = orjson.loads(f.read())
+
+    map_messages_to_attachments(attachment_data)
+
     # Import zerver_message and zerver_usermessage
     import_message_data(realm=realm, sender_map=sender_map, import_dir=import_dir)
 
@@ -1486,15 +1519,7 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
         bulk_import_model(data, UserStatus)
 
     # Do attachments AFTER message data is loaded.
-    # TODO: de-dup how we read these json files.
-    fn = os.path.join(import_dir, "attachment.json")
-    if not os.path.exists(fn):
-        raise Exception("Missing attachment.json file!")
-
-    logging.info("Importing attachment data from %s", fn)
-    with open(fn, "rb") as f:
-        attachment_data = orjson.loads(f.read())
-
+    logging.info("Importing attachment data from %s", attachments_file)
     import_attachments(attachment_data)
 
     # Import the analytics file.
