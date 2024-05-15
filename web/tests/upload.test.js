@@ -373,7 +373,7 @@ test("uppy_config", () => {
                     assert.equal(params.fieldName, "file");
                     assert.equal(params.limit, 5);
                     assert.equal(Object.keys(params.locale.strings).length, 1);
-                    assert.ok("timedOut" in params.locale.strings);
+                    assert.ok("uploadStalled" in params.locale.strings);
                 } else {
                     /* istanbul ignore next */
                     assert.fail(`Missing tests for ${func_name}`);

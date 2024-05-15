@@ -290,7 +290,7 @@ export function setup_upload(config) {
         limit: 5,
         locale: {
             strings: {
-                timedOut: $t({
+                uploadStalled: $t({
                     defaultMessage: "Upload stalled for %'{seconds}' seconds, aborting.",
                 }),
             },
