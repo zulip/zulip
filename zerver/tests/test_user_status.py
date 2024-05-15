@@ -3,7 +3,7 @@ from typing import Any, Dict, Optional
 import orjson
 
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.lib.user_status import UserInfoDict, get_user_status_dict, update_user_status
+from zerver.lib.user_status import UserInfoDict, get_all_users_status_dict, update_user_status
 from zerver.models import UserProfile, UserStatus
 from zerver.models.clients import get_client
 
@@ -11,7 +11,7 @@ from zerver.models.clients import get_client
 def user_status_info(user: UserProfile, acting_user: Optional[UserProfile] = None) -> UserInfoDict:
     if acting_user is None:
         acting_user = user
-    user_dict = get_user_status_dict(user.realm, acting_user)
+    user_dict = get_all_users_status_dict(user.realm, acting_user)
     return user_dict.get(str(user.id), {})
 
 
@@ -286,7 +286,7 @@ class UserStatusTest(ZulipTestCase):
             expected_event=dict(type="user_status", user_id=hamlet.id, status_text=""),
         )
         self.assertEqual(
-            get_user_status_dict(realm=realm, user_profile=hamlet),
+            get_all_users_status_dict(realm=realm, user_profile=hamlet),
             {},
         )
 
