@@ -180,6 +180,7 @@ def do_send_create_user_group_event(
             is_system_group=user_group.is_system_group,
             direct_subgroup_ids=[direct_subgroup.id for direct_subgroup in direct_subgroups],
             can_mention_group=get_group_setting_value_for_api(user_group.can_mention_group),
+            deactivated=False,
         ),
     )
     send_event_on_commit(user_group.realm, event, active_user_ids(user_group.realm_id))
@@ -432,6 +433,25 @@ def check_delete_user_group(user_group: NamedUserGroup, *, acting_user: UserProf
     user_group_id = user_group.id
     user_group.delete()
     do_send_delete_user_group_event(acting_user.realm, user_group_id, acting_user.realm.id)
+
+
+@transaction.atomic(savepoint=False)
+def do_deactivate_user_group(
+    user_group: NamedUserGroup, *, acting_user: UserProfile | None
+) -> None:
+    user_group.deactivated = True
+    user_group.save(update_fields=["deactivated"])
+
+    now = timezone_now()
+    RealmAuditLog.objects.create(
+        realm=user_group.realm,
+        modified_user_group_id=user_group.id,
+        event_type=RealmAuditLog.USER_GROUP_DEACTIVATED,
+        event_time=now,
+        acting_user=acting_user,
+    )
+
+    do_send_user_group_update_event(user_group, dict(deactivated=True))
 
 
 @transaction.atomic(savepoint=False)

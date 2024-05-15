@@ -79,6 +79,7 @@
 * [Create a user group](/api/create-user-group)
 * [Update a user group](/api/update-user-group)
 * [Delete a user group](/api/remove-user-group)
+* [Deactivate a user group](/api/deactivate-user-group)
 * [Update user group members](/api/update-user-group-members)
 * [Update subgroups of a user group](/api/update-user-group-subgroups)
 * [Get user group membership status](/api/get-is-user-group-member)
