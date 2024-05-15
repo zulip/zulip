@@ -13,6 +13,7 @@ from zerver.actions.user_groups import (
     check_add_user_group,
     check_delete_user_group,
     do_change_user_group_permission_setting,
+    do_deactivate_user_group,
     do_update_user_group_description,
     do_update_user_group_name,
     remove_subgroups_from_user_group,
@@ -26,6 +27,7 @@ from zerver.lib.user_groups import (
     AnonymousSettingGroupDict,
     GroupSettingChangeRequest,
     access_user_group_by_id,
+    access_user_group_for_deactivation,
     access_user_group_for_setting,
     check_user_group_name,
     get_direct_memberships_of_users,
@@ -180,6 +182,19 @@ def delete_user_group(
         [user_group_id], user_group_id, acting_user=user_profile
     ) as context:
         check_delete_user_group(context.supergroup, acting_user=user_profile)
+    return json_success(request)
+
+
+@typed_endpoint
+@transaction.atomic
+def deactivate_user_group(
+    request: HttpRequest,
+    user_profile: UserProfile,
+    *,
+    user_group_id: PathOnly[Json[int]],
+) -> HttpResponse:
+    user_group = access_user_group_for_deactivation(user_group_id, user_profile)
+    do_deactivate_user_group(user_group, acting_user=user_profile)
     return json_success(request)
 
 

@@ -3228,6 +3228,14 @@ paths:
                                             [setting-values]: /api/group-setting-values
                                             [system-groups]: /api/group-setting-values#system-groups
                                             [mentions]: /help/mention-a-user-or-group
+                                    deactivated:
+                                      type: boolean
+                                      description: |
+                                        Whether the user group is deactivated. Deactivated groups
+                                        cannot be used as a subgroup of another group or used for
+                                        any other purpose.
+
+                                        **Changes**: New in Zulip 10.0 (feature level 290).
                               example:
                                 {
                                   "type": "user_group",
@@ -20048,6 +20056,14 @@ paths:
                                     [setting-values]: /api/group-setting-values
                                     [system-groups]: /api/group-setting-values#system-groups
                                     [mentions]: /help/mention-a-user-or-group
+                            deactivated:
+                              type: boolean
+                              description: |
+                                Whether the user group is deactivated. Deactivated groups
+                                cannot be used as a subgroup of another group or used for
+                                any other purpose.
+
+                                **Changes**: New in Zulip 10.0 (feature level 290).
                         description: |
                           A list of `user_group` objects.
                     example:
@@ -20211,6 +20227,27 @@ paths:
                         "result": "success",
                         "is_user_group_member": false,
                       }
+  /user_groups/{user_group_id}/deactivate:
+    post:
+      operationId: deactivate-user-group
+      summary: Deactivate a user group
+      tags: ["users"]
+      description: |
+        Deactivate a user group. Deactivated user groups cannot be
+        used for mentions, permissions, or any other purpose, but can
+        be reactivated or renamed.
+
+        Deactivating user groups is preferable to deleting them from
+        the database, since the deactivation model allows audit logs
+        of changes to sensitive group-valued permissions to be
+        maintained.
+
+        **Changes**: New in Zulip 10.0 (feature level 290).
+      parameters:
+        - $ref: "#/components/parameters/UserGroupId"
+      responses:
+        "200":
+          $ref: "#/components/responses/SimpleSuccess"
   /real-time:
     # This entry is a hack; it exists to give us a place to put the text
     # documenting the parameters for call_on_each_event and friends.
@@ -21268,6 +21305,14 @@ components:
                 [setting-values]: /api/group-setting-values
                 [system-groups]: /api/group-setting-values#system-groups
                 [mentions]: /help/mention-a-user-or-group
+        deactivated:
+          type: boolean
+          description: |
+            Whether the user group is deactivated. Deactivated groups
+            cannot be used as a subgroup of another group or used for
+            any other purpose.
+
+            **Changes**: New in Zulip 10.0 (feature level 290).
     GroupSettingValue:
       oneOf:
         - type: integer

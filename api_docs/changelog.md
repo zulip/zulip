@@ -20,6 +20,16 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 10.0
 
+**Feature level 290**
+
+* [`POST /user_groups/{user_group_id}/deactivate`](/api/deactivate-user-group):
+  Added new API endpoint to deactivate a user group.
+* [`POST /register`](/api/register-queue), [`GET
+  /user_groups`](/api/get-user-groups): Added `deactivated` field in
+  the user group objects to identify deactivated user groups.
+* [`GET /events`](/api/get-events): When a user group is deactivated,
+  a `user_group` event with `op=update` is sent to clients.
+
 **Feature level 289**
 
 * [`POST /users/{user_id}/subscription`](/api/subscribe): In the response,

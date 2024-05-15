@@ -188,6 +188,7 @@ from zerver.views.upload import (
 )
 from zerver.views.user_groups import (
     add_user_group,
+    deactivate_user_group,
     delete_user_group,
     edit_user_group,
     get_is_user_group_member,
@@ -413,6 +414,7 @@ v1_api_and_json_patterns = [
     rest_path(
         "user_groups/<int:user_group_id>/members/<int:user_id>", GET=get_is_user_group_member
     ),
+    rest_path("user_groups/<int:user_group_id>/deactivate", POST=deactivate_user_group),
     # users/me -> zerver.views.user_settings
     rest_path("users/me/avatar", POST=set_avatar_backend, DELETE=delete_avatar_backend),
     # users/me/onboarding_steps -> zerver.views.onboarding_steps
