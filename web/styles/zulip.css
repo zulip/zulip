@@ -800,9 +800,9 @@ strong {
         word-break: break-word;
 
         & a {
-            display: block;
-            padding: 3px 20px;
-            clear: both;
+            display: flex;
+            padding: 3px 10px;
+            gap: 5px;
             font-weight: normal;
             line-height: 20px;
             color: var(--color-dropdown-item);
@@ -829,12 +829,18 @@ strong {
             .user_circle {
                 width: var(--length-user-status-circle);
                 height: var(--length-user-status-circle);
-                margin: 0 5px 0 -6px;
                 position: relative;
-                float: left;
-                top: 6px;
-                right: 8px;
-                display: inline-block;
+                left: -2px;
+                flex-shrink: 0;
+                align-self: center;
+            }
+
+            .typeahead-text-container {
+                align-self: center;
+
+                & > * {
+                    margin-right: 3px;
+                }
             }
         }
     }
@@ -1366,11 +1372,6 @@ div.focused-message-list {
     display: inline-block;
     height: 21px;
     width: 21px;
-    position: relative;
-    margin-top: -4px;
-    vertical-align: middle;
-    top: 2px;
-    right: 8px;
     border-radius: 4px;
 
     /* For FontAwesome icons and zulip icons used in place of images for some users. */
@@ -1382,8 +1383,7 @@ div.focused-message-list {
     }
 
     &.no-presence-circle {
-        margin-left: 9px;
-        top: 3px;
+        margin-left: 14px;
     }
 }
 
