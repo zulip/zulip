@@ -368,7 +368,7 @@ def revoke_reusable_invitation_link(client: Client) -> None:
     request = {
         "invite_expires_in_minutes": 14400,  # 10 days
         "invite_as": 400,
-        "stream_ids": [1, 8, 9],
+        "stream_ids": [1],
     }
     result = client.call_endpoint(url="/invites/multiuse", method="POST", request=request)
 
