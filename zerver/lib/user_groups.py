@@ -72,10 +72,18 @@ class LockedUserGroupContext:
 
 
 def has_user_group_access(
-    user_group: NamedUserGroup, user_profile: UserProfile, *, for_read: bool, as_subgroup: bool
+    user_group: NamedUserGroup,
+    user_profile: UserProfile,
+    *,
+    for_read: bool,
+    as_subgroup: bool,
+    allow_deactivated: bool = False,
 ) -> bool:
     if user_group.realm_id != user_profile.realm_id:
         return False
+
+    if not allow_deactivated and user_group.deactivated:
+        raise JsonableError(_("User group is deactivated."))
 
     if as_subgroup:
         # At this time, we only check for realm ID of a potential subgroup.
@@ -109,7 +117,12 @@ def has_user_group_access(
 
 
 def access_user_group_by_id(
-    user_group_id: int, user_profile: UserProfile, *, for_read: bool, for_setting: bool = False
+    user_group_id: int,
+    user_profile: UserProfile,
+    *,
+    for_read: bool,
+    for_setting: bool = False,
+    allow_deactivated: bool = False,
 ) -> NamedUserGroup:
     try:
         if for_read and not for_setting:
@@ -121,7 +134,13 @@ def access_user_group_by_id(
     except NamedUserGroup.DoesNotExist:
         raise JsonableError(_("Invalid user group"))
 
-    if not has_user_group_access(user_group, user_profile, for_read=for_read, as_subgroup=False):
+    if not has_user_group_access(
+        user_group,
+        user_profile,
+        for_read=for_read,
+        as_subgroup=False,
+        allow_deactivated=allow_deactivated,
+    ):
         raise JsonableError(_("Insufficient permission"))
 
     return user_group
@@ -246,9 +265,10 @@ def lock_subgroups_with_respect_to_supergroup(
             )
 
         for subgroup in potential_subgroups:
-            # At this time, we only do a check on the realm ID of the fetched
-            # subgroup. This would be caught by the check earlier, so there is
-            # no coverage here.
+            # At this time, we only do a check on the realm ID of the subgroup and
+            # whether the group is deactivated or not. Realm ID error would be caught
+            # above and in case the user group is deactivated the error will be raised
+            # in has_user_group_access itself, so there is no coverage here.
             if not has_user_group_access(subgroup, acting_user, for_read=False, as_subgroup=True):
                 raise JsonableError(_("Insufficient permission"))  # nocoverage
 
@@ -324,11 +344,12 @@ def check_setting_configuration_for_system_groups(
 
 
 def update_or_create_user_group_for_setting(
-    realm: Realm,
+    user_profile: UserProfile,
     direct_members: list[int],
     direct_subgroups: list[int],
     current_setting_value: UserGroup | None,
 ) -> UserGroup:
+    realm = user_profile.realm
     if current_setting_value is not None and not hasattr(current_setting_value, "named_user_group"):
         # We do not create a new group if the setting was already set
         # to an anonymous group. The memberships of existing group
@@ -353,6 +374,14 @@ def update_or_create_user_group_for_setting(
         raise JsonableError(
             _("Invalid user group ID: {group_id}").format(group_id=group_ids_not_found[0])
         )
+
+    for subgroup in potential_subgroups:
+        # At this time, we only do a check on the realm ID of the subgroup and
+        # whether the group is deactivated or not. Realm ID error would be caught
+        # above and in case the user group is deactivated the error will be raised
+        # in has_user_group_access itself, so there is no coverage here.
+        if not has_user_group_access(subgroup, user_profile, for_read=False, as_subgroup=True):
+            raise JsonableError(_("Insufficient permission"))  # nocoverage
 
     user_group.direct_subgroups.set(group_ids_found)
 
@@ -380,7 +409,7 @@ def access_user_group_for_setting(
         raise SystemGroupRequiredError(setting_name)
 
     user_group = update_or_create_user_group_for_setting(
-        user_profile.realm,
+        user_profile,
         setting_user_group.direct_members,
         setting_user_group.direct_subgroups,
         current_setting_value,

@@ -120,7 +120,14 @@ def edit_user_group(
     ):
         raise JsonableError(_("No new data supplied"))
 
-    user_group = access_user_group_by_id(user_group_id, user_profile, for_read=False)
+    user_group = access_user_group_by_id(
+        user_group_id, user_profile, for_read=False, allow_deactivated=True
+    )
+
+    if user_group.deactivated and (
+        description is not None or can_mention_group is not None or can_manage_group is not None
+    ):
+        raise JsonableError(_("You can only change name of deactivated user groups"))
 
     if name is not None and name != user_group.name:
         name = check_user_group_name(name)
