@@ -55,7 +55,7 @@ export function create_handlers($container) {
     $container.on("click", ".add_all_users_to_user_group", (e) => {
         e.preventDefault();
         add_all_users();
-        $(".add-user-list-filter").trigger("focus");
+        $(".add-people-list-filter").trigger("focus");
     });
 
     $container.on("click", ".remove_potential_subscriber", (e) => {
@@ -110,7 +110,7 @@ export function build_widgets() {
             return render_new_user_group_user(item);
         },
         filter: {
-            $element: $("#people_to_add_in_group .add-user-list-filter"),
+            $element: $("#people_to_add_in_group .add-people-list-filter"),
             predicate(user, search_term) {
                 return people.build_person_matcher(search_term)(user);
             },

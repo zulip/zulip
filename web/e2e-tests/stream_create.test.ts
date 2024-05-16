@@ -42,7 +42,7 @@ async function click_create_new_stream(page: Page): Promise<void> {
 }
 
 async function clear_ot_filter_with_backspace(page: Page): Promise<void> {
-    await page.click(".add-user-list-filter");
+    await page.click(".add-people-list-filter");
     await page.keyboard.press("Backspace");
     await page.keyboard.press("Backspace");
 }

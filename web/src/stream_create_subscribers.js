@@ -47,7 +47,7 @@ export function create_handlers($container) {
     $container.on("click", ".add_all_users_to_stream", (e) => {
         e.preventDefault();
         add_all_users();
-        $(".add-user-list-filter").trigger("focus");
+        $(".add-people-list-filter").trigger("focus");
     });
 
     $container.on("click", ".remove_potential_subscriber", (e) => {
@@ -107,7 +107,7 @@ export function build_widgets() {
             ...ListWidget.generic_sort_functions("alphabetic", ["full_name"]),
         },
         filter: {
-            $element: $("#people_to_add .add-user-list-filter"),
+            $element: $("#people_to_add .add-people-list-filter"),
             predicate(user, search_term) {
                 return people.build_person_matcher(search_term)(user);
             },
