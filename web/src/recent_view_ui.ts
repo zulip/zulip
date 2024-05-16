@@ -779,7 +779,7 @@ export function update_topics_of_deleted_message_ids(message_ids: number[]): voi
     }
 }
 
-export function filters_should_hide_topic(topic_data: ConversationData): boolean {
+export function filters_should_hide_row(topic_data: ConversationData): boolean {
     const msg = message_store.get(topic_data.last_msg_id);
     assert(msg !== undefined);
 
@@ -878,7 +878,7 @@ export function inplace_rerender(topic_key: string): boolean {
     assert(topics_widget !== undefined);
     topics_widget.filter_and_sort();
     const current_topics_list = topics_widget.get_current_list();
-    if (is_topic_rendered && filters_should_hide_topic(topic_data)) {
+    if (is_topic_rendered && filters_should_hide_row(topic_data)) {
         // Since the row needs to be removed from DOM, we need to adjust `row_focus`
         // if the row being removed is focused and is the last row in the list.
         // This prevents the row_focus either being reset to the first row or
@@ -891,16 +891,16 @@ export function inplace_rerender(topic_key: string): boolean {
             row_focus = current_topics_list.length - 1;
         }
         topics_widget.remove_rendered_row($topic_row);
-    } else if (!is_topic_rendered && filters_should_hide_topic(topic_data)) {
+    } else if (!is_topic_rendered && filters_should_hide_row(topic_data)) {
         // In case `topic_row` is not present, our job is already done here
         // since it has not been rendered yet and we already removed it from
         // the filtered list in `topic_widget`. So, it won't be displayed in
         // the future too.
-    } else if (is_topic_rendered && !filters_should_hide_topic(topic_data)) {
+    } else if (is_topic_rendered && !filters_should_hide_row(topic_data)) {
         // Only a re-render is required in this case.
         topics_widget.render_item(topic_data);
     } else {
-        // Final case: !is_topic_rendered && !filters_should_hide_topic(topic_data).
+        // Final case: !is_topic_rendered && !filters_should_hide_row(topic_data).
         topics_widget.insert_rendered_row(topic_data, () =>
             current_topics_list.findIndex(
                 (list_item) => list_item.last_msg_id === topic_data.last_msg_id,
@@ -1195,10 +1195,10 @@ export function complete_rerender(): void {
             return render_recent_view_row(format_conversation(item));
         },
         filter: {
-            // We use update_filters_view & filters_should_hide_topic to do all the
+            // We use update_filters_view & filters_should_hide_row to do all the
             // filtering for us, which is called using click_handlers.
             predicate(topic_data) {
-                return !filters_should_hide_topic(topic_data);
+                return !filters_should_hide_row(topic_data);
             },
         },
         sort_fields: {
