@@ -155,6 +155,7 @@
       "source-map@^0.6": "npm:source-map-js@1.0.1"
     },
     "patchedDependencies": {
+      "@types/plotly.js@2.29.2": "patches/@types__plotly.js@2.29.2.patch",
       "@uppy/core@3.10.1": "patches/@uppy__core@3.10.1.patch",
       "eslint-plugin-no-jquery@2.7.0": "patches/eslint-plugin-no-jquery@2.7.0.patch",
       "source-sans@3.46.0": "patches/source-sans@3.46.0.patch"
