@@ -5,6 +5,7 @@ import render_right_sidebar from "../templates/right_sidebar.hbs";
 
 import {buddy_list} from "./buddy_list";
 import {media_breakpoints_num} from "./css_variables";
+import {localstorage} from "./localstorage";
 import * as message_lists from "./message_lists";
 import * as message_viewport from "./message_viewport";
 import {page_params} from "./page_params";
@@ -15,6 +16,22 @@ import * as settings_data from "./settings_data";
 import * as spectators from "./spectators";
 import {current_user} from "./state_data";
 import {user_settings} from "./user_settings";
+
+function save_sidebar_toggle_status(): void {
+    const ls = localstorage();
+    ls.set("left-sidebar", $("body").hasClass("hide-left-sidebar"));
+    ls.set("right-sidebar", $("body").hasClass("hide-right-sidebar"));
+}
+
+export function restore_sidebar_toggle_status(): void {
+    const ls = localstorage();
+    if (ls.get("left-sidebar")) {
+        $("body").addClass("hide-left-sidebar");
+    }
+    if (ls.get("right-sidebar")) {
+        $("body").addClass("hide-right-sidebar");
+    }
+}
 
 export let left_sidebar_expanded_as_overlay = false;
 export let right_sidebar_expanded_as_overlay = false;
@@ -102,6 +119,7 @@ export function initialize(): void {
             if (!$("body").hasClass("hide-right-sidebar")) {
                 fix_invite_user_button_flicker();
             }
+            save_sidebar_toggle_status();
             return;
         }
 
@@ -126,6 +144,7 @@ export function initialize(): void {
                 // left sidebar is hidden. This can cause the pointer to move out of view.
                 message_viewport.scroll_to_selected();
             }
+            save_sidebar_toggle_status();
             return;
         }
 
