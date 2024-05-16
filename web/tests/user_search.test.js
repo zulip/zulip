@@ -87,8 +87,8 @@ function test(label, f) {
 }
 
 function set_input_val(val) {
-    $("input.user-list-filter").val(val);
-    $("input.user-list-filter").trigger("input");
+    $("input.people-list-filter").val(val);
+    $("input.people-list-filter").trigger("input");
 }
 
 function stub_buddy_list_empty_list_message_lengths() {
@@ -116,7 +116,7 @@ test("clear_search", ({override}) => {
         assert.deepEqual(user_ids, {all_user_ids: ordered_user_ids});
     });
     $("#clear_search_people_button").trigger("click");
-    assert.equal($("input.user-list-filter").val(), "");
+    assert.equal($("input.people-list-filter").val(), "");
     $("#clear_search_people_button").trigger("click");
     assert.ok($("#user_search_section").hasClass("notdisplayed"));
 });
@@ -130,7 +130,7 @@ test("escape_search", ({override}) => {
 
     set_input_val("somevalue");
     activity_ui.escape_search();
-    assert.equal($("input.user-list-filter").val(), "");
+    assert.equal($("input.people-list-filter").val(), "");
     activity_ui.escape_search();
     assert.ok($("#user_search_section").hasClass("notdisplayed"));
 
@@ -144,15 +144,15 @@ test("blur search right", ({override}) => {
     override(resize, "resize_sidebars", noop);
     mock_setTimeout();
 
-    $("input.user-list-filter").closest = (selector) => {
+    $("input.people-list-filter").closest = (selector) => {
         assert.equal(selector, ".app-main [class^='column-']");
         return $.create("right-sidebar").addClass("column-right");
     };
 
-    $("input.user-list-filter").trigger("blur");
-    assert.equal($("input.user-list-filter").is_focused(), false);
+    $("input.people-list-filter").trigger("blur");
+    assert.equal($("input.people-list-filter").is_focused(), false);
     activity_ui.initiate_search();
-    assert.equal($("input.user-list-filter").is_focused(), true);
+    assert.equal($("input.people-list-filter").is_focused(), true);
 });
 
 test("blur search left", ({override}) => {
@@ -161,15 +161,15 @@ test("blur search left", ({override}) => {
     override(resize, "resize_sidebars", noop);
     mock_setTimeout();
 
-    $("input.user-list-filter").closest = (selector) => {
+    $("input.people-list-filter").closest = (selector) => {
         assert.equal(selector, ".app-main [class^='column-']");
         return $.create("right-sidebar").addClass("column-left");
     };
 
-    $("input.user-list-filter").trigger("blur");
-    assert.equal($("input.user-list-filter").is_focused(), false);
+    $("input.people-list-filter").trigger("blur");
+    assert.equal($("input.people-list-filter").is_focused(), false);
     activity_ui.initiate_search();
-    assert.equal($("input.user-list-filter").is_focused(), true);
+    assert.equal($("input.people-list-filter").is_focused(), true);
 });
 
 test("filter_user_ids", ({override}) => {
@@ -184,7 +184,7 @@ test("filter_user_ids", ({override}) => {
 
     function test_filter(search_text, expected_users) {
         const expected_user_ids = expected_users.map((user) => user.user_id);
-        $("input.user-list-filter").val(search_text);
+        $("input.people-list-filter").val(search_text);
         const filter_text = activity_ui.get_filter_text();
         assert.deepEqual(
             buddy_data.get_filtered_and_sorted_user_ids(filter_text),
@@ -227,7 +227,7 @@ test("filter_user_ids", ({override}) => {
 });
 
 test("click on user header to toggle display", ({override}) => {
-    const $user_filter = $("input.user-list-filter");
+    const $user_filter = $("input.people-list-filter");
 
     override(popovers, "hide_all", noop);
     override(sidebar_ui, "show_userlist_sidebar", noop);
@@ -243,7 +243,7 @@ test("click on user header to toggle display", ({override}) => {
     assert.ok($("#user_search_section").hasClass("notdisplayed"));
     assert.equal($user_filter.val(), "");
 
-    $("input.user-list-filter").closest = (selector) => {
+    $("input.people-list-filter").closest = (selector) => {
         assert.equal(selector, ".app-main [class^='column-']");
         return $.create("sidebar").addClass("column-right");
     };
@@ -254,8 +254,8 @@ test("click on user header to toggle display", ({override}) => {
 
 test("searching", () => {
     assert.equal(activity_ui.searching(), false);
-    $("input.user-list-filter").trigger("focus");
+    $("input.people-list-filter").trigger("focus");
     assert.equal(activity_ui.searching(), true);
-    $("input.user-list-filter").trigger("blur");
+    $("input.people-list-filter").trigger("blur");
     assert.equal(activity_ui.searching(), false);
 });

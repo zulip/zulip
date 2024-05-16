@@ -12,7 +12,7 @@ export class UserSearch {
     // details of populating the list when we change.
 
     $widget = $("#user_search_section").expectOne();
-    $input = $<HTMLInputElement>("input.user-list-filter").expectOne();
+    $input = $<HTMLInputElement>("input.people-list-filter").expectOne();
     _reset_items: () => void;
     _update_list: () => void;
     _on_focus: () => void;
