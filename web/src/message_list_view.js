@@ -205,6 +205,67 @@ function get_users_for_recipient_row(message) {
     return users.sort(compare_by_name);
 }
 
+let message_id_to_focus_after_processing_message_events = {
+    id: undefined,
+    selectionStart: undefined,
+    selectionEnd: undefined,
+};
+
+function reset_restore_message_edit_focus_state() {
+    message_id_to_focus_after_processing_message_events = {
+        id: undefined,
+        selectionStart: undefined,
+        selectionEnd: undefined,
+    };
+}
+
+function capture_user_message_editing_state() {
+    if (document.activeElement?.classList.contains("message_edit_content")) {
+        message_id_to_focus_after_processing_message_events = {
+            id: rows.get_message_id(document.activeElement),
+            selectionStart: document.activeElement.selectionStart,
+            selectionEnd: document.activeElement.selectionEnd,
+        };
+    } else {
+        reset_restore_message_edit_focus_state();
+    }
+}
+
+function maybe_restore_focus_to_message_edit_form() {
+    if (
+        // It is possible that selected message might not be the one
+        // user was editing but is less likely the case. It makes
+        // things complicated to think about with selected message being different
+        // from the message edit form we are trying to restore focus to.
+        // So, we simply only restore focus if the selected message is the
+        // one user was editing.
+        message_lists.current?.data.selected_id() !==
+        message_id_to_focus_after_processing_message_events.id
+    ) {
+        // If user has navigated away from the message they were editing,
+        // we don't want to restore focus to the message edit form since
+        // we don't want to capture hotkey inside the message edit form
+        // when they navigate back to the message they were editing.
+        reset_restore_message_edit_focus_state();
+    }
+
+    setTimeout(() => {
+        const $message_edit_content = message_lists.current
+            ?.selected_row()
+            .find(".message_edit_content");
+        if (!$message_edit_content || $message_edit_content.length === 0) {
+            return;
+        }
+
+        $message_edit_content.trigger("focus");
+        $message_edit_content[0].setSelectionRange(
+            message_id_to_focus_after_processing_message_events.selectionStart,
+            message_id_to_focus_after_processing_message_events.selectionEnd,
+        );
+        reset_restore_message_edit_focus_state();
+    }, 0);
+}
+
 function populate_group_from_message_container(group, message_container) {
     group.is_stream = message_container.msg.is_stream;
     group.is_private = message_container.msg.is_private;
@@ -827,6 +888,8 @@ export class MessageListView {
             return undefined;
         }
 
+        capture_user_message_editing_state();
+
         const list = this.list; // for convenience
         let orig_scrolltop_offset;
 
@@ -982,6 +1045,7 @@ export class MessageListView {
 
         // After all the messages are rendered, resize any message edit textarea if required.
         autosize.update(this.$list.find(".message_edit_content"));
+        maybe_restore_focus_to_message_edit_form();
 
         restore_scroll_position();
 
@@ -1390,6 +1454,11 @@ export class MessageListView {
     }
 
     rerender_messages(messages, message_content_edited) {
+        // this.render is never called in this code path, we use
+        // `_rerender_message` instead which is optimized for this use
+        // case.
+        capture_user_message_editing_state();
+
         // We need to destroy all the tippy instances from the DOM before re-rendering to
         // prevent the appearance of tooltips whose reference has been removed.
         message_list_tooltips.destroy_all_message_list_tooltips();
@@ -1426,6 +1495,7 @@ export class MessageListView {
 
         if (message_lists.current === this.list && narrow_state.is_message_feed_visible()) {
             this.update_sticky_recipient_headers();
+            maybe_restore_focus_to_message_edit_form();
         }
     }
 
@@ -1485,6 +1555,7 @@ export class MessageListView {
     }
 
     clear_table() {
+        capture_user_message_editing_state();
         // We do not want to call .empty() because that also clears
         // jQuery data.  This does mean, however, that we need to be
         // mindful of memory leaks.
