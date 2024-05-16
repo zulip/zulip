@@ -16,6 +16,7 @@ from version import (
 )
 from zerver.lib.exceptions import InvalidSubdomainError
 from zerver.lib.i18n import get_language_list
+from zerver.lib.realm_background import get_realm_background_url
 from zerver.lib.realm_description import get_realm_rendered_description, get_realm_text_description
 from zerver.lib.realm_icon import get_realm_icon_url
 from zerver.lib.request import RequestNotes
@@ -122,10 +123,12 @@ def zulip_default_context(request: HttpRequest) -> Dict[str, Any]:
         realm_url = settings.ROOT_DOMAIN_URI
         realm_name = None
         realm_icon = None
+        realm_background = None
     else:
         realm_url = realm.url
         realm_name = realm.name
         realm_icon = get_realm_icon_url(realm)
+        realm_background = get_realm_background_url(realm)
 
     skip_footer = False
     register_link_disabled = settings.REGISTER_LINK_DISABLED
@@ -185,6 +188,7 @@ def zulip_default_context(request: HttpRequest) -> Dict[str, Any]:
         "realm_url": realm_url,
         "realm_name": realm_name,
         "realm_icon": realm_icon,
+        "realm_background": realm_background,
         "root_domain_url": settings.ROOT_DOMAIN_URI,
         "apps_page_url": get_apps_page_url(),
         "apps_page_web": apps_page_web,

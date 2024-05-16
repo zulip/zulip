@@ -991,6 +991,13 @@ authentication_data = DictType(
     ]
 )
 
+background_data = DictType(
+    required_keys=[
+        ("background_url", str),
+        ("background_source", str),
+    ]
+)
+
 icon_data = DictType(
     required_keys=[
         ("icon_url", str),
@@ -1060,6 +1067,7 @@ update_dict_data = UnionType(
         authentication_data,
         edit_topic_policy_data,
         icon_data,
+        background_data,
         logo_data,
         message_content_edit_limit_seconds_data,
         night_logo_data,
@@ -1071,7 +1079,7 @@ realm_update_dict_event = event_dict_type(
     required_keys=[
         ("type", Equals("realm")),
         ("op", Equals("update_dict")),
-        ("property", EnumType(["default", "icon", "logo", "night_logo"])),
+        ("property", EnumType(["default", "icon", "background", "logo", "night_logo"])),
         ("data", update_dict_data),
     ]
 )
@@ -1109,6 +1117,8 @@ def check_realm_update_dict(
         sub_type = logo_data
     elif event["property"] == "night_logo":
         sub_type = night_logo_data
+    elif event["property"] == "background":
+        sub_type = background_data
     else:
         raise AssertionError("unhandled property: {event['property']}")
 

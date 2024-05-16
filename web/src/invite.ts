@@ -313,13 +313,15 @@ function set_streams_to_join_list_visibility(): void {
 }
 
 function generate_invite_tips_data(): Record<string, boolean> {
-    const {realm_description, realm_icon_source, custom_profile_fields} = realm;
+    const {realm_description, realm_icon_source, custom_profile_fields, realm_background_source} =
+        realm;
 
     return {
         realm_has_description:
             realm_description !== "" &&
             !/^Organization imported from [A-Za-z]+[!.]$/.test(realm_description),
         realm_has_user_set_icon: realm_icon_source !== "G",
+        realm_has_background_set: realm_background_source !== "G",
         realm_has_custom_profile_fields: custom_profile_fields.length > 0,
     };
 }

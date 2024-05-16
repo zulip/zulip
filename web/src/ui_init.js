@@ -89,6 +89,7 @@ import * as popover_menus from "./popover_menus";
 import * as popovers from "./popovers";
 import * as presence from "./presence";
 import * as pygments_data from "./pygments_data";
+import * as realm_background from "./realm_background";
 import * as realm_logo from "./realm_logo";
 import * as realm_playground from "./realm_playground";
 import * as realm_user_settings_defaults from "./realm_user_settings_defaults";
@@ -492,6 +493,7 @@ export function initialize_everything(state_data) {
     });
 
     realm_logo.initialize();
+    realm_background.rerender();
     message_lists.initialize();
     recent_view_ui.initialize({
         on_click_participant(avatar_element, participant_user_id) {

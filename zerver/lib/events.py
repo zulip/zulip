@@ -41,6 +41,7 @@ from zerver.lib.narrow_helpers import NarrowTerm, read_stop_words
 from zerver.lib.narrow_predicate import check_narrow_for_events
 from zerver.lib.onboarding_steps import get_next_onboarding_steps
 from zerver.lib.presence import get_presence_for_user, get_presences_for_realm
+from zerver.lib.realm_background import realm_background_url
 from zerver.lib.realm_icon import realm_icon_url
 from zerver.lib.realm_logo import get_realm_logo_source, get_realm_logo_url
 from zerver.lib.scheduled_messages import get_undelivered_scheduled_messages
@@ -337,11 +338,14 @@ def fetch_initial_state_data(
         state["max_avatar_file_size_mib"] = settings.MAX_AVATAR_FILE_SIZE_MIB
         state["max_file_upload_size_mib"] = settings.MAX_FILE_UPLOAD_SIZE
         state["max_icon_file_size_mib"] = settings.MAX_ICON_FILE_SIZE_MIB
+        state["max_background_file_size_mib"] = settings.MAX_BACKGROUND_FILE_SIZE_MIB
         upload_quota_bytes = realm.upload_quota_bytes()
         state["realm_upload_quota_mib"] = optional_bytes_to_mib(upload_quota_bytes)
 
         state["realm_icon_url"] = realm_icon_url(realm)
         state["realm_icon_source"] = realm.icon_source
+        state["realm_background_url"] = realm_background_url(realm)
+        state["realm_background_source"] = realm.background_source
         add_realm_logo_fields(state, realm)
 
         # TODO/compatibility: realm_uri is a deprecated alias for realm_url that

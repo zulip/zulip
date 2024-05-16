@@ -10,7 +10,7 @@ from django.conf import settings
 from typing_extensions import override
 
 from zerver.lib.mime_types import guess_type
-from zerver.lib.thumbnail import resize_avatar, resize_logo
+from zerver.lib.thumbnail import resize_avatar, resize_background, resize_logo
 from zerver.lib.timestamp import timestamp_to_datetime
 from zerver.lib.upload.base import ZulipUploadBackend
 from zerver.lib.utils import assert_is_not_none
@@ -145,6 +145,22 @@ class LocalUploadBackend(ZulipUploadBackend):
 
         resized_data = resize_avatar(image_data)
         write_local_file("avatars", os.path.join(upload_path, "icon.png"), resized_data)
+
+    @override
+    def get_realm_background_url(self, realm_id: int, version: int) -> str:
+        file_name = "background.png"
+        return f"/user_avatars/{realm_id}/realm/{file_name}?version={version}"
+
+    @override
+    def upload_realm_background_image(
+        self, background_file: IO[bytes], user_profile: UserProfile
+    ) -> None:
+        upload_path = self.realm_avatar_and_logo_path(user_profile.realm)
+        image_data = background_file.read()
+        write_local_file("avatars", os.path.join(upload_path, "background.original"), image_data)
+
+        resized_data = resize_background(image_data)
+        write_local_file("avatars", os.path.join(upload_path, "background.png"), resized_data)
 
     @override
     def get_realm_logo_url(self, realm_id: int, version: int, night: bool) -> str:

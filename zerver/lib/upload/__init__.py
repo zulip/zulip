@@ -318,6 +318,10 @@ def upload_logo_image(user_file: IO[bytes], user_profile: UserProfile, night: bo
     upload_backend.upload_realm_logo_image(user_file, user_profile, night)
 
 
+def upload_background_image(user_file: IO[bytes], user_profile: UserProfile) -> None:
+    upload_backend.upload_realm_background_image(user_file, user_profile)
+
+
 # Realm emoji uploads
 
 

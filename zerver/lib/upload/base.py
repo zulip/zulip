@@ -101,6 +101,14 @@ class ZulipUploadBackend:
     ) -> None:
         raise NotImplementedError
 
+    def get_realm_background_url(self, realm_id: int, version: int) -> str:
+        raise NotImplementedError
+
+    def upload_realm_background_image(
+        self, background_file: IO[bytes], user_profile: UserProfile
+    ) -> None:
+        raise NotImplementedError
+
     # Realm emoji uploads
     def get_emoji_url(self, emoji_file_name: str, realm_id: int, still: bool = False) -> str:
         raise NotImplementedError

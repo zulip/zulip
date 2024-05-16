@@ -13,6 +13,7 @@ import {$t, $t_html, get_language_name} from "./i18n";
 import * as keydown_util from "./keydown_util";
 import * as loading from "./loading";
 import * as pygments_data from "./pygments_data";
+import * as realm_background from "./realm_background";
 import * as realm_icon from "./realm_icon";
 import * as realm_logo from "./realm_logo";
 import {realm_user_settings_defaults} from "./realm_user_settings_defaults";
@@ -1114,16 +1115,47 @@ export function build_page() {
         settings_realm_domains.show_realm_domains_modal();
     });
 
-    function realm_icon_logo_upload_complete($spinner, $upload_text, $delete_button) {
+    function realm_icon_logo_background_upload_complete($spinner, $upload_text, $delete_button) {
         $spinner.css({visibility: "hidden"});
         $upload_text.show();
         $delete_button.show();
     }
 
-    function realm_icon_logo_upload_start($spinner, $upload_text, $delete_button) {
+    function realm_icon_logo_background_upload_start($spinner, $upload_text, $delete_button) {
         $spinner.css({visibility: "visible"});
         $upload_text.hide();
         $delete_button.hide();
+    }
+
+    function upload_realm_background($file_input) {
+        const form_data = new FormData();
+
+        form_data.append("csrfmiddlewaretoken", csrf_token);
+        for (const [i, file] of Array.prototype.entries.call($file_input[0].files)) {
+            form_data.append("file-" + i, file);
+        }
+        const url = "/json/realm/background";
+        const widget = "#realm-background-upload-widget";
+        const $spinner = $(`${widget} .upload-spinner-background`).expectOne();
+        const $upload_text = $(`${widget}  .image-upload-text`).expectOne();
+        const $delete_button = $(`${widget}  .image-delete-button`).expectOne();
+        const $error_field = $(`${widget}  .image_file_input_error`).expectOne();
+        realm_icon_logo_background_upload_start($spinner, $upload_text, $delete_button);
+        $error_field.hide();
+        channel.post({
+            url,
+            data: form_data,
+            cache: false,
+            processData: false,
+            contentType: false,
+            success() {
+                realm_icon_logo_background_upload_complete($spinner, $upload_text, $delete_button);
+            },
+            error(xhr) {
+                realm_icon_logo_background_upload_complete($spinner, $upload_text, $delete_button);
+                ui_report.error("", xhr, $error_field);
+            },
+        });
     }
 
     function upload_realm_logo_or_icon($file_input, night, icon) {
@@ -1151,7 +1183,7 @@ export function build_page() {
         const $upload_text = $(`${widget}  .image-upload-text`).expectOne();
         const $delete_button = $(`${widget}  .image-delete-button`).expectOne();
         const $error_field = $(`${widget}  .image_file_input_error`).expectOne();
-        realm_icon_logo_upload_start($spinner, $upload_text, $delete_button);
+        realm_icon_logo_background_upload_start($spinner, $upload_text, $delete_button);
         $error_field.hide();
         channel.post({
             url,
@@ -1160,10 +1192,10 @@ export function build_page() {
             processData: false,
             contentType: false,
             success() {
-                realm_icon_logo_upload_complete($spinner, $upload_text, $delete_button);
+                realm_icon_logo_background_upload_complete($spinner, $upload_text, $delete_button);
             },
             error(xhr) {
-                realm_icon_logo_upload_complete($spinner, $upload_text, $delete_button);
+                realm_icon_logo_background_upload_complete($spinner, $upload_text, $delete_button);
                 ui_report.error("", xhr, $error_field);
             },
         });
@@ -1174,6 +1206,7 @@ export function build_page() {
         realm_logo.build_realm_logo_widget(upload_realm_logo_or_icon, false);
         realm_logo.build_realm_logo_widget(upload_realm_logo_or_icon, true);
     }
+    realm_background.build_realm_background_widget(upload_realm_background);
 
     $("#organization-profile .deactivate_realm_button").on("click", deactivate_organization);
 }

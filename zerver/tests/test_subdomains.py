@@ -99,6 +99,7 @@ class SubdomainsTest(ZulipTestCase):
 
         upload_backend = zerver.lib.upload.upload_backend
         self.assertTrue(test(upload_backend.get_realm_icon_url(realm.id, version=1)))
+        self.assertTrue(test(upload_backend.get_realm_background_url(realm.id, version=1)))
         self.assertTrue(test(upload_backend.get_realm_logo_url(realm.id, version=1, night=False)))
         self.assertTrue(test(upload_backend.get_avatar_url("deadbeefcafe")))
         self.assertTrue(test(upload_backend.get_emoji_url("emoji.gif", realm.id)))

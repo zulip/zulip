@@ -17,6 +17,7 @@ from zerver.actions.create_user import (
     do_create_user,
     do_reactivate_user,
 )
+from zerver.actions.realm_background import do_change_background_source
 from zerver.actions.realm_domains import (
     do_add_realm_domain,
     do_change_realm_domain,
@@ -652,6 +653,24 @@ class TestRealmAuditLog(ZulipTestCase):
         self.assert_length(audit_entries, 1)
         self.assertEqual(icon_source, realm.icon_source)
         self.assertEqual(audit_log.extra_data, {"icon_source": "G", "icon_version": 2})
+
+    def test_change_background_source(self) -> None:
+        test_start = timezone_now()
+        realm = get_realm("zulip")
+        user = self.example_user("hamlet")
+        background_source = "D"
+        do_change_background_source(realm, background_source, acting_user=user)
+        audit_entries = RealmAuditLog.objects.filter(
+            realm=realm,
+            event_type=RealmAuditLog.REALM_BACKGROUND_SOURCE_CHANGED,
+            acting_user=user,
+            event_time__gte=test_start,
+        )
+        audit_log = audit_entries.first()
+        assert audit_log is not None
+        self.assert_length(audit_entries, 1)
+        self.assertEqual(background_source, realm.background_source)
+        self.assertEqual(audit_log.extra_data, {"background_source": "D", "background_version": 2})
 
     def test_change_subscription_property(self) -> None:
         user = self.example_user("hamlet")
