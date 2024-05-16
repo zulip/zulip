@@ -1250,9 +1250,9 @@ function get_header_html(): string | false {
     return `<em>${_.escape(tip_text)}</em>`;
 }
 
-export function initialize_compose_typeahead(selector: string): void {
+export function initialize_compose_typeahead($element: JQuery<HTMLTextAreaElement>): void {
     const bootstrap_typeahead_input: TypeaheadInputElement = {
-        $element: $(selector),
+        $element,
         type: "textarea",
     };
 
@@ -1365,5 +1365,5 @@ export function initialize({
         stopAdvance: true, // Do not advance to the next field on a Tab or Enter
     });
 
-    initialize_compose_typeahead("textarea#compose-textarea");
+    initialize_compose_typeahead($("textarea#compose-textarea"));
 }

@@ -500,7 +500,7 @@ function edit_message($row, raw_content) {
     } else {
         $copy_message.remove();
         resize.watch_manual_resize_for_element($message_edit_content[0]);
-        composebox_typeahead.initialize_compose_typeahead($message_edit_content[0]);
+        composebox_typeahead.initialize_compose_typeahead($message_edit_content);
         compose_ui.handle_keyup(null, $message_edit_content);
         $message_edit_content.on("keydown", (event) => {
             compose_ui.handle_keydown(event, $message_edit_content);
