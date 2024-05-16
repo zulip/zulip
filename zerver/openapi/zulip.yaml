@@ -8416,6 +8416,68 @@ paths:
         "200":
           $ref: "#/components/responses/SimpleSuccess"
 
+  /users/{user_id}/status:
+    get:
+      operationId: get-user-status
+      summary: Get a user's status
+      tags: ["users"]
+      description: |
+        Get the [status](/help/status-and-availability) currently set by a
+        user in the organization.
+
+        **Changes**: New in Zulip 9.0 (feature level 262). Previously,
+        user statuses could only be fetched via the [`POST
+        /register`](/api/register-queue) endpoint.
+      parameters:
+        - $ref: "#/components/parameters/UserId"
+      responses:
+        "200":
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
+                      ignored_parameters_unsupported: {}
+                      status:
+                        allOf:
+                          - description: |
+                              The status set by the user. Note that, if the user doesn't have a status
+                              currently set, then the returned dictionary will be empty as none of the
+                              keys listed below will be present.
+                          - $ref: "#/components/schemas/UserStatus"
+
+                    example:
+                      {
+                        "result": "success",
+                        "msg": "",
+                        "status":
+                          {
+                            "status_text": "on vacation",
+                            "emoji_name": "car",
+                            "emoji_code": "1f697",
+                            "reaction_type": "unicode_emoji",
+                          },
+                      }
+        "400":
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/CodedError"
+                  - example:
+                      {
+                        "result": "error",
+                        "msg": "No such user",
+                        "code": "BAD_REQUEST",
+                      }
+                    description: |
+                      An example JSON error response when the user does not exist:
   /users/{user_id_or_email}/presence:
     get:
       operationId: get-user-presence
@@ -13652,63 +13714,11 @@ paths:
                           **Changes**: The emoji parameters are new in Zulip 5.0 (feature level 86).
                           Previously, Zulip did not support emoji associated with statuses.
                         additionalProperties:
-                          description: |
-                            `{user_id}`: Object containing the status details of a user
-                            with the key of the object being the ID of the user.
-                          type: object
-                          additionalProperties: false
-                          properties:
-                            away:
-                              type: boolean
-                              deprecated: true
-                              description: |
-                                If present, the user has marked themself "away".
-
-                                **Changes**: Deprecated in Zulip 6.0 (feature level 148);
-                                starting with that feature level, `away` is a legacy way to
-                                access the user's `presence_enabled` setting, with
-                                `away = !presence_enabled`. To be removed in a future release.
-                            status_text:
-                              type: string
-                              description: |
-                                If present, the text content of the user's status message.
-                            emoji_name:
-                              type: string
-                              description: |
-                                If present, the name for the emoji to associate with the user's status.
-
-                                **Changes**: New in Zulip 5.0 (feature level 86).
-                            emoji_code:
-                              type: string
-                              description: |
-                                If present, a unique identifier, defining the specific emoji codepoint
-                                requested, within the namespace of the `reaction_type`.
-
-                                **Changes**: New in Zulip 5.0 (feature level 86).
-                            reaction_type:
-                              type: string
-                              enum:
-                                - unicode_emoji
-                                - realm_emoji
-                                - zulip_extra_emoji
-                              description: |
-                                If present, a string indicating the type of emoji. Each emoji
-                                `reaction_type` has an independent namespace for values of `emoji_code`.
-
-                                Must be one of the following values:
-
-                                - `unicode_emoji` : In this namespace, `emoji_code` will be a
-                                  dash-separated hex encoding of the sequence of Unicode codepoints
-                                  that define this emoji in the Unicode specification.
-
-                                - `realm_emoji` : In this namespace, `emoji_code` will be the ID of
-                                  the uploaded [custom emoji](/help/custom-emoji).
-
-                                - `zulip_extra_emoji` : These are special emoji included with Zulip.
-                                  In this namespace, `emoji_code` will be the name of the emoji (e.g.
-                                  "zulip").
-
-                                **Changes**: New in Zulip 5.0 (feature level 86).
+                          allOf:
+                            - description: |
+                                `{user_id}`: Object containing the status details of a user
+                                with the key of the object being the ID of the user.
+                            - $ref: "#/components/schemas/UserStatus"
                       user_settings:
                         type: object
                         description: |
@@ -21100,6 +21110,61 @@ components:
             **Changes**: Starting with Zulip 7.0 (feature level 178), always
             `false` when present as the server no longer stores which client
             submitted presence data.
+    UserStatus:
+      type: object
+      additionalProperties: false
+      properties:
+        away:
+          type: boolean
+          deprecated: true
+          description: |
+            If present, the user has marked themself "away".
+
+            **Changes**: Deprecated in Zulip 6.0 (feature level 148);
+            starting with that feature level, `away` is a legacy way to
+            access the user's `presence_enabled` setting, with
+            `away = !presence_enabled`. To be removed in a future release.
+        status_text:
+          type: string
+          description: |
+            If present, the text content of the user's status message.
+        emoji_name:
+          type: string
+          description: |
+            If present, the name for the emoji to associate with the user's status.
+
+            **Changes**: New in Zulip 5.0 (feature level 86).
+        emoji_code:
+          type: string
+          description: |
+            If present, a unique identifier, defining the specific emoji codepoint
+            requested, within the namespace of the `reaction_type`.
+
+            **Changes**: New in Zulip 5.0 (feature level 86).
+        reaction_type:
+          type: string
+          enum:
+            - unicode_emoji
+            - realm_emoji
+            - zulip_extra_emoji
+          description: |
+            If present, a string indicating the type of emoji. Each emoji
+            `reaction_type` has an independent namespace for values of `emoji_code`.
+
+            Must be one of the following values:
+
+            - `unicode_emoji` : In this namespace, `emoji_code` will be a
+              dash-separated hex encoding of the sequence of Unicode codepoints
+              that define this emoji in the Unicode specification.
+
+            - `realm_emoji` : In this namespace, `emoji_code` will be the ID of
+              the uploaded [custom emoji](/help/custom-emoji).
+
+            - `zulip_extra_emoji` : These are special emoji included with Zulip.
+              In this namespace, `emoji_code` will be the name of the emoji (e.g.
+              "zulip").
+
+            **Changes**: New in Zulip 5.0 (feature level 86).
     Draft:
       type: object
       description: |

@@ -195,6 +195,20 @@ def get_user_presence(client: Client) -> None:
     validate_against_openapi_schema(result, "/users/{user_id_or_email}/presence", "get", "200")
 
 
+@openapi_test_function("/users/{user_id}/status:get")
+def get_user_status(client: Client) -> None:
+    # {code_example|start}
+    # Get the status currently set by a user.
+    user_id = 11
+    result = client.call_endpoint(
+        url=f"/users/{user_id}/status",
+        method="GET",
+    )
+    # {code_example|end}
+
+    validate_against_openapi_schema(result, "/users/{user_id}/status", "get", "200")
+
+
 @openapi_test_function("/users/me/presence:post")
 def update_presence(client: Client) -> None:
     request = {
@@ -1701,6 +1715,7 @@ def test_users(client: Client, owner_client: Client) -> None:
     reactivate_user(client)
     update_user(client)
     update_status(client)
+    get_user_status(client)
     get_user_by_email(client)
     get_subscription_status(client)
     get_profile(client)

@@ -3,7 +3,12 @@ from typing import Any, Dict, Optional
 import orjson
 
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.lib.user_status import UserInfoDict, get_all_users_status_dict, update_user_status
+from zerver.lib.user_status import (
+    UserInfoDict,
+    get_all_users_status_dict,
+    get_user_status,
+    update_user_status,
+)
 from zerver.models import UserProfile, UserStatus
 from zerver.models.clients import get_client
 
@@ -65,6 +70,17 @@ class UserStatusTest(ZulipTestCase):
             ),
         )
 
+        fetched_status = get_user_status(hamlet)
+        self.assertEqual(
+            fetched_status,
+            dict(
+                status_text="out to lunch",
+                emoji_name="car",
+                emoji_code="1f697",
+                reaction_type=UserStatus.UNICODE_EMOJI,
+            ),
+        )
+
         rec_count = UserStatus.objects.filter(user_profile_id=hamlet.id).count()
         self.assertEqual(rec_count, 1)
 
@@ -88,6 +104,17 @@ class UserStatusTest(ZulipTestCase):
             ),
         )
 
+        fetched_status = get_user_status(hamlet)
+        self.assertEqual(
+            fetched_status,
+            dict(
+                status_text="out to lunch",
+                emoji_name="car",
+                emoji_code="1f697",
+                reaction_type=UserStatus.UNICODE_EMOJI,
+            ),
+        )
+
         # Clear the status_text and emoji_info now.
         update_user_status(
             user_profile_id=hamlet.id,
@@ -103,6 +130,12 @@ class UserStatusTest(ZulipTestCase):
             {},
         )
 
+        fetched_status = get_user_status(hamlet)
+        self.assertEqual(
+            fetched_status,
+            {},
+        )
+
         # Set Hamlet to in a meeting.
         update_user_status(
             user_profile_id=hamlet.id,
@@ -115,6 +148,12 @@ class UserStatusTest(ZulipTestCase):
 
         self.assertEqual(
             user_status_info(hamlet),
+            dict(status_text="in a meeting"),
+        )
+
+        fetched_status = get_user_status(hamlet)
+        self.assertEqual(
+            fetched_status,
             dict(status_text="in a meeting"),
         )
 
@@ -204,6 +243,13 @@ class UserStatusTest(ZulipTestCase):
             dict(away=True, status_text="on vacation"),
         )
 
+        result = self.client_get(f"/json/users/{hamlet.id}/status")
+        result_dict = self.assert_json_success(result)
+        self.assertEqual(
+            result_dict["status"],
+            dict(away=True, status_text="on vacation"),
+        )
+
         # Setting away is a deprecated way of accessing a user's presence_enabled
         # setting. Can be removed when clients migrate "away" (also referred to as
         # "unavailable") feature to directly use the presence_enabled setting.
@@ -234,6 +280,19 @@ class UserStatusTest(ZulipTestCase):
             ),
         )
 
+        result = self.client_get(f"/json/users/{hamlet.id}/status")
+        result_dict = self.assert_json_success(result)
+        self.assertEqual(
+            result_dict["status"],
+            dict(
+                away=True,
+                status_text="on vacation",
+                emoji_name="car",
+                emoji_code="1f697",
+                reaction_type=UserStatus.UNICODE_EMOJI,
+            ),
+        )
+
         # Server should remove emoji_code and reaction_type if emoji_name is empty.
         self.update_status_and_assert_event(
             payload=dict(
@@ -249,6 +308,13 @@ class UserStatusTest(ZulipTestCase):
         )
         self.assertEqual(
             user_status_info(hamlet),
+            dict(away=True, status_text="on vacation"),
+        )
+
+        result = self.client_get(f"/json/users/{hamlet.id}/status")
+        result_dict = self.assert_json_success(result)
+        self.assertEqual(
+            result_dict["status"],
             dict(away=True, status_text="on vacation"),
         )
 
@@ -280,6 +346,13 @@ class UserStatusTest(ZulipTestCase):
             dict(status_text="in office"),
         )
 
+        result = self.client_get(f"/json/users/{hamlet.id}/status")
+        result_dict = self.assert_json_success(result)
+        self.assertEqual(
+            result_dict["status"],
+            dict(status_text="in office"),
+        )
+
         # And finally clear your info.
         self.update_status_and_assert_event(
             payload=dict(status_text=""),
@@ -287,6 +360,13 @@ class UserStatusTest(ZulipTestCase):
         )
         self.assertEqual(
             get_all_users_status_dict(realm=realm, user_profile=hamlet),
+            {},
+        )
+
+        result = self.client_get(f"/json/users/{hamlet.id}/status")
+        result_dict = self.assert_json_success(result)
+        self.assertEqual(
+            result_dict["status"],
             {},
         )
 
@@ -311,4 +391,24 @@ class UserStatusTest(ZulipTestCase):
         self.assertEqual(
             user_status_info(hamlet),
             dict(status_text="at the beach", away=True),
+        )
+
+        result = self.client_get(f"/json/users/{hamlet.id}/status")
+        result_dict = self.assert_json_success(result)
+        self.assertEqual(
+            result_dict["status"],
+            dict(status_text="at the beach", away=True),
+        )
+
+        # Invalid user ID should fail
+        result = self.client_get("/json/users/12345/status")
+        self.assert_json_error(result, "No such user")
+
+        # Test status if the status has not been set
+        iago = self.example_user("iago")
+        result = self.client_get(f"/json/users/{iago.id}/status")
+        result_dict = self.assert_json_success(result)
+        self.assertEqual(
+            result_dict["status"],
+            {},
         )
