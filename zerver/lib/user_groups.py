@@ -10,7 +10,7 @@ from django_cte import With
 from django_stubs_ext import ValuesQuerySet
 from psycopg2.sql import SQL, Literal
 
-from zerver.lib.exceptions import JsonableError
+from zerver.lib.exceptions import JsonableError, PreviousSettingValueMismatchedError
 from zerver.lib.types import GroupPermissionSetting, ServerSupportedPermissionSettings
 from zerver.models import (
     GroupGroupMembership,
@@ -29,6 +29,12 @@ from zerver.models.groups import SystemGroups
 class AnonymousSettingGroupDict:
     direct_members: List[int]
     direct_subgroups: List[int]
+
+
+@dataclass
+class GroupSettingChangeRequest:
+    new: Union[int, AnonymousSettingGroupDict]
+    old: Optional[Union[int, AnonymousSettingGroupDict]] = None
 
 
 class UserGroupDict(TypedDict):
@@ -702,3 +708,53 @@ def get_server_supported_permission_settings() -> ServerSupportedPermissionSetti
         stream=Stream.stream_permission_group_settings,
         group=NamedUserGroup.GROUP_PERMISSION_SETTINGS,
     )
+
+
+def parse_group_setting_value(
+    setting_value: Union[int, AnonymousSettingGroupDict],
+) -> Union[int, AnonymousSettingGroupDict]:
+    if isinstance(setting_value, int):
+        return setting_value
+
+    if len(setting_value.direct_members) == 0 and len(setting_value.direct_subgroups) == 1:
+        return setting_value.direct_subgroups[0]
+
+    return setting_value
+
+
+def are_both_setting_values_equal(
+    first_setting_value: Union[int, AnonymousSettingGroupDict],
+    second_setting_value: Union[int, AnonymousSettingGroupDict],
+) -> bool:
+    if isinstance(first_setting_value, int) and isinstance(second_setting_value, int):
+        return first_setting_value == second_setting_value
+
+    if isinstance(first_setting_value, AnonymousSettingGroupDict) and isinstance(
+        second_setting_value, AnonymousSettingGroupDict
+    ):
+        return set(first_setting_value.direct_members) == set(
+            second_setting_value.direct_members
+        ) and set(first_setting_value.direct_subgroups) == set(
+            second_setting_value.direct_subgroups
+        )
+
+    return False
+
+
+def validate_group_setting_value_change(
+    current_value: UserGroup,
+    new_setting_value: Union[int, AnonymousSettingGroupDict],
+    expected_current_setting_value: Optional[Union[int, AnonymousSettingGroupDict]],
+) -> bool:
+    current_setting_api_value = get_group_setting_value_for_api(current_value)
+
+    if expected_current_setting_value is not None and not are_both_setting_values_equal(
+        expected_current_setting_value,
+        current_setting_api_value,
+    ):
+        # This check is here to help prevent races, by refusing to
+        # change a setting where the client (and thus the UI presented
+        # to user) showed a different existing state.
+        raise PreviousSettingValueMismatchedError
+
+    return not are_both_setting_values_equal(current_setting_api_value, new_setting_value)
