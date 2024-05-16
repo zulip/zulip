@@ -592,6 +592,35 @@ class UserGroupAPITestCase(UserGroupTestCase):
         result = self.client_post("/json/user_groups/create", info=params)
         self.assert_json_error(result, "Invalid user group ID: 1111")
 
+        # Test can_mention_group cannot be set to a deactivated group.
+        do_deactivate_user_group(leadership_group, acting_user=None)
+        params = {
+            "name": "social",
+            "members": orjson.dumps([hamlet.id]).decode(),
+            "description": "Social team",
+            "can_mention_group": orjson.dumps(leadership_group.id).decode(),
+        }
+        result = self.client_post("/json/user_groups/create", info=params)
+        self.assert_json_error(result, "User group is deactivated.")
+
+        params = {
+            "name": "social",
+            "members": orjson.dumps([hamlet.id]).decode(),
+            "description": "Social team",
+            "can_mention_group": orjson.dumps(
+                {
+                    "direct_members": [othello.id],
+                    "direct_subgroups": [leadership_group.id],
+                }
+            ).decode(),
+        }
+        result = self.client_post("/json/user_groups/create", info=params)
+        self.assert_json_error(result, "User group is deactivated.")
+
+        # Reactivate group to use it in further tests.
+        leadership_group.deactivated = False
+        leadership_group.save()
+
         with self.settings(ALLOW_GROUP_VALUED_SETTINGS=False):
             params = {
                 "name": "frontend",
@@ -725,6 +754,17 @@ class UserGroupAPITestCase(UserGroupTestCase):
         params = {"name": "channel:1"}
         result = self.client_patch(f"/json/user_groups/{user_group.id}", info=params)
         self.assert_json_error(result, "User group name cannot start with 'channel:'.")
+
+        do_deactivate_user_group(user_group, acting_user=None)
+        params = {"description": "Troubleshooting and support team"}
+        result = self.client_patch(f"/json/user_groups/{user_group.id}", info=params)
+        self.assert_json_error(result, "You can only change name of deactivated user groups")
+
+        params = {"name": "Support team"}
+        result = self.client_patch(f"/json/user_groups/{user_group.id}", info=params)
+        self.assert_json_success(result)
+        user_group = NamedUserGroup.objects.get(id=user_group.id)
+        self.assertEqual(user_group.name, "Support team")
 
     def test_update_can_mention_group_setting(self) -> None:
         hamlet = self.example_user("hamlet")
@@ -887,6 +927,30 @@ class UserGroupAPITestCase(UserGroupTestCase):
         result = self.client_patch(f"/json/user_groups/{support_group.id}", info=params)
         self.assert_json_error(result, "Invalid user group ID: 1111")
 
+        leadership_group = check_add_user_group(
+            hamlet.realm, "leadership", [hamlet], acting_user=None
+        )
+        do_deactivate_user_group(leadership_group, acting_user=None)
+
+        params = {
+            "can_mention_group": orjson.dumps({"new": leadership_group.id}).decode(),
+        }
+        result = self.client_patch(f"/json/user_groups/{support_group.id}", info=params)
+        self.assert_json_error(result, "User group is deactivated.")
+
+        params = {
+            "can_mention_group": orjson.dumps(
+                {
+                    "new": {
+                        "direct_members": [prospero.id],
+                        "direct_subgroups": [leadership_group.id],
+                    }
+                }
+            ).decode()
+        }
+        result = self.client_patch(f"/json/user_groups/{support_group.id}", info=params)
+        self.assert_json_error(result, "User group is deactivated.")
+
         # Test case when ALLOW_GROUP_VALUED_SETTINGS is False.
         with self.settings(ALLOW_GROUP_VALUED_SETTINGS=False):
             params = {
@@ -928,6 +992,17 @@ class UserGroupAPITestCase(UserGroupTestCase):
             self.assert_json_success(result)
             support_group = NamedUserGroup.objects.get(name="support", realm=hamlet.realm)
             self.assertEqual(support_group.can_mention_group_id, marketing_group.id)
+
+            do_deactivate_user_group(support_group, acting_user=None)
+            params = {
+                "can_mention_group": orjson.dumps(
+                    {
+                        "new": moderators_group.id,
+                    }
+                ).decode()
+            }
+            result = self.client_patch(f"/json/user_groups/{support_group.id}", info=params)
+            self.assert_json_error(result, "You can only change name of deactivated user groups")
 
     def test_user_group_update_to_already_existing_name(self) -> None:
         hamlet = self.example_user("hamlet")
@@ -1512,6 +1587,19 @@ class UserGroupAPITestCase(UserGroupTestCase):
         self.assert_json_error(result, msg)
         self.assert_user_membership(user_group, [hamlet])
 
+        # Test adding or removing members from a deactivated group.
+        do_deactivate_user_group(user_group, acting_user=None)
+
+        params = {"delete": orjson.dumps([hamlet.id]).decode()}
+        result = self.client_post(f"/json/user_groups/{user_group.id}/members", info=params)
+        self.assert_json_error(result, "User group is deactivated.")
+        self.assert_user_membership(user_group, [hamlet])
+
+        params = {"add": orjson.dumps([iago.id]).decode()}
+        result = self.client_post(f"/json/user_groups/{user_group.id}/members", info=params)
+        self.assert_json_error(result, "User group is deactivated.")
+        self.assert_user_membership(user_group, [hamlet])
+
     def test_mentions(self) -> None:
         cordelia = self.example_user("cordelia")
         hamlet = self.example_user("hamlet")
@@ -2065,6 +2153,31 @@ class UserGroupAPITestCase(UserGroupTestCase):
         result = self.client_post(f"/json/user_groups/{support_group.id}/subgroups", info={})
         self.assert_json_error(result, 'Nothing to do. Specify at least one of "add" or "delete".')
         self.assert_subgroup_membership(support_group, [leadership_group])
+
+        # Do not have support group as subgroup of any group to follow
+        # the condition a group used as a subgroup cannot be deactivated.
+        params = {"delete": orjson.dumps([support_group.id]).decode()}
+        result = self.client_post(f"/json/user_groups/{test_group.id}/subgroups", info=params)
+        self.assert_json_success(result)
+        self.assert_subgroup_membership(test_group, [])
+
+        # Test adding or removing subgroups from a deactivated group.
+        do_deactivate_user_group(support_group, acting_user=None)
+
+        params = {"delete": orjson.dumps([leadership_group.id]).decode()}
+        result = self.client_post(f"/json/user_groups/{support_group.id}/subgroups", info=params)
+        self.assert_json_error(result, "User group is deactivated.")
+        self.assert_subgroup_membership(support_group, [leadership_group])
+
+        params = {"add": orjson.dumps([test_group.id]).decode()}
+        result = self.client_post(f"/json/user_groups/{support_group.id}/subgroups", info=params)
+        self.assert_json_error(result, "User group is deactivated.")
+        self.assert_subgroup_membership(support_group, [leadership_group])
+
+        # Test that a deactivated group cannot be used as a subgroup.
+        params = {"add": orjson.dumps([support_group.id]).decode()}
+        result = self.client_post(f"/json/user_groups/{test_group.id}/subgroups", info=params)
+        self.assert_json_error(result, "User group is deactivated.")
 
     def test_get_is_user_group_member_status(self) -> None:
         self.login("iago")
