@@ -240,11 +240,24 @@ html {
             );
             padding-right: calc(var(--help-sidebar-padding));
 
+            &:focus {
+                /* Zero out shoddy Bootstrap styles. */
+                outline: 0;
+            }
+
+            &:focus-visible {
+                /* We set an outline on focus-visible that works
+                   cross-browser. For the sake of accessibility,
+                   especially for keyboard users, this should
+                   NOT be zeroed out for the .highlighted row,
+                   as the focused navbar element retains focus
+                   even after navigating to a new section. */
+                outline: 2px solid hsl(0deg 0% 100%);
+                outline-offset: -2px;
+            }
+
             &.highlighted {
                 background-color: hsl(152deg 40% 42%);
-
-                /* Don't show the focus outline for the highlighted page. */
-                outline: 0;
             }
         }
     }
