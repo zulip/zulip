@@ -11,10 +11,6 @@
         overflow: hidden !important;
         display: flex;
         flex-direction: column;
-        border-style: solid;
-        border-color: hsl(0deg 0% 88%);
-        border-width: 0 1px;
-        border-radius: 0;
         /* To make the table span full height
          * when rows don't reach bottom of the
          * window. This makes the border span
@@ -164,7 +160,6 @@
 
         #recent_view_filter_buttons {
             padding-top: 12px;
-            margin: 0 10px;
             display: flex;
             /* Search box has no height without this in safari. */
             flex: 0 0 auto;
@@ -175,7 +170,9 @@
         .search_group {
             display: flex;
             flex-grow: 1;
-            margin: 0 -27px 10px 0;
+            /* The negative margin here is to move the
+               clear search icon inside the search input. */
+            margin: 0 -23px 10px 4px;
         }
 
         #recent_view_search {
@@ -558,6 +555,7 @@
     }
 
     &:focus {
+        outline-offset: -2px;
         outline: 2px solid var(--color-outline-focus);
     }
 }

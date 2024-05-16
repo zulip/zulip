@@ -724,8 +724,6 @@
     }
 
     #recent_view_table {
-        border-color: hsl(0deg 0% 0% / 60%);
-
         .fa-envelope,
         .fa-group {
             opacity: 0.7;
