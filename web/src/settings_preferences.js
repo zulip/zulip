@@ -21,7 +21,7 @@ const meta = {
     loaded: false,
 };
 
-export const user_settings_panel = {};
+export let user_settings_panel;
 
 export let user_default_language_name;
 
@@ -335,7 +335,10 @@ export function initialize() {
     const user_language_name = get_language_name(user_settings.default_language);
     set_default_language_name(user_language_name);
 
-    user_settings_panel.container = "#user-preferences";
-    user_settings_panel.settings_object = user_settings;
-    user_settings_panel.for_realm_settings = false;
+    user_settings_panel = {
+        container: "#user-preferences",
+        settings_object: user_settings,
+        for_realm_settings: false,
+        notification_sound_elem: null,
+    };
 }
