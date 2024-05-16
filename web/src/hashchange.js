@@ -73,6 +73,12 @@ function is_somebody_else_profile_open() {
 }
 
 export function set_hash_to_home_view(triggered_by_escape_key = false) {
+    const current_hash = window.location.hash;
+    if (current_hash === "") {
+        // Empty hash for home view is always valid.
+        return;
+    }
+
     let home_view_hash = `#${user_settings.web_home_view}`;
     if (home_view_hash === "#recent_topics") {
         home_view_hash = "#recent";
@@ -82,7 +88,7 @@ export function set_hash_to_home_view(triggered_by_escape_key = false) {
         home_view_hash = "#feed";
     }
 
-    if (window.location.hash !== home_view_hash) {
+    if (current_hash !== home_view_hash) {
         const hash_before_current = browser_history.old_hash();
         if (
             triggered_by_escape_key &&
