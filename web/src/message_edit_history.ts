@@ -30,15 +30,15 @@ type EditHistoryEntry = {
     edited_by_notice: string;
     timestamp: number; // require to set data-message-id for overlay message row
     is_stream: boolean;
-    recipient_bar_color?: string;
-    body_to_render?: string;
-    topic_edited?: boolean;
-    prev_topic?: string;
-    new_topic?: string;
-    stream_changed?: boolean;
-    prev_stream?: string;
-    prev_stream_id?: number;
-    new_stream?: string;
+    recipient_bar_color: string | undefined;
+    body_to_render: string | undefined;
+    topic_edited: boolean | undefined;
+    prev_topic: string | undefined;
+    new_topic: string | undefined;
+    stream_changed: boolean | undefined;
+    prev_stream: string | undefined;
+    prev_stream_id: number | undefined;
+    new_stream: string | undefined;
 };
 
 const server_message_history_schema = z.object({

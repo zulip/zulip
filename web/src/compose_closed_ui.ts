@@ -18,9 +18,9 @@ function format_stream_recipient_label(stream_id: number, topic: string): string
 }
 
 type ComposeClosedMessage = {
-    stream_id?: number;
+    stream_id?: number | undefined;
     topic?: string;
-    display_reply_to?: string;
+    display_reply_to?: string | undefined;
 };
 
 export function get_recipient_label(message?: ComposeClosedMessage): string {

@@ -17,7 +17,7 @@ export type InputPillItem<T> = {
     type: string;
     img_src?: string;
     deactivated?: boolean;
-    status_emoji_info?: EmojiRenderingDetails & {emoji_alt_code?: boolean}; // TODO: Move this in user_status.js
+    status_emoji_info?: (EmojiRenderingDetails & {emoji_alt_code?: boolean}) | undefined; // TODO: Move this in user_status.js
     should_add_guest_user_indicator?: boolean;
 } & T;
 
@@ -58,11 +58,11 @@ type InputPillStore<T> = {
 type InputPillRenderingDetails = {
     display_value: string;
     has_image: boolean;
-    img_src?: string;
-    deactivated?: boolean;
+    img_src?: string | undefined;
+    deactivated: boolean | undefined;
     has_status?: boolean;
-    status_emoji_info?: EmojiRenderingDetails & {emoji_alt_code?: boolean};
-    should_add_guest_user_indicator?: boolean;
+    status_emoji_info?: (EmojiRenderingDetails & {emoji_alt_code?: boolean}) | undefined;
+    should_add_guest_user_indicator: boolean | undefined;
 };
 
 // These are the functions that are exposed to other modules.

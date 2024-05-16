@@ -141,7 +141,7 @@ export function spinner_li(): ListInfoNode {
 }
 
 export class TopicListWidget {
-    prior_dom?: vdom.Tag<ListInfoNodeOptions> = undefined;
+    prior_dom: vdom.Tag<ListInfoNodeOptions> | undefined = undefined;
     $parent_elem: JQuery;
     my_stream_id: number;
 

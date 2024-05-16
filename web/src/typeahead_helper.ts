@@ -97,12 +97,12 @@ type StreamData = {
 };
 
 export function render_typeahead_item(args: {
-    primary?: string;
+    primary?: string | undefined;
     is_person?: boolean;
     img_src?: string;
-    status_emoji_info?: UserStatusEmojiInfo;
+    status_emoji_info?: UserStatusEmojiInfo | undefined;
     secondary?: string | null;
-    pronouns?: string;
+    pronouns?: string | undefined;
     is_user_group?: boolean;
     stream?: StreamData;
     is_unsubscribed?: boolean;
@@ -443,10 +443,10 @@ export function sort_recipients<UserType extends UserOrMentionPillData | UserPil
 }: {
     users: UserType[];
     query: string;
-    current_stream_id?: number;
-    current_topic?: string;
+    current_stream_id?: number | undefined;
+    current_topic?: string | undefined;
     groups?: UserGroupPillData[];
-    max_num_items?: number;
+    max_num_items?: number | undefined;
 }): (UserType | UserGroupPillData)[] {
     function sort_relevance(items: UserType[]): UserType[] {
         return sort_people_for_relevance(items, current_stream_id, current_topic);

@@ -204,7 +204,7 @@ export function get_title_data(
     is_group: boolean,
 ): {
     first_line: string;
-    second_line?: string;
+    second_line: string | undefined;
     third_line: string;
     show_you?: boolean;
 } {

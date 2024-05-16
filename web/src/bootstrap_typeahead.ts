@@ -215,7 +215,7 @@ export class Typeahead<ItemType extends string | object> {
     dropup: boolean;
     automated: () => boolean;
     trigger_selection: (event: JQuery.KeyDownEvent) => boolean;
-    on_escape?: () => void;
+    on_escape: (() => void) | undefined;
     // returns a string to show in typeahead header or false.
     header_html: () => string | false;
     // returns a string to show in typeahead items or false.
@@ -224,16 +224,16 @@ export class Typeahead<ItemType extends string | object> {
     query = "";
     mouse_moved_since_typeahead = false;
     shown = false;
-    openInputFieldOnKeyUp?: () => void;
-    closeInputFieldOnHide?: () => void;
+    openInputFieldOnKeyUp: (() => void) | undefined;
+    closeInputFieldOnHide: (() => void) | undefined;
     helpOnEmptyStrings: boolean;
     tabIsEnter: boolean;
     naturalSearch: boolean;
     stopAdvance: boolean;
     advanceKeyCodes: number[];
-    parentElement?: string;
+    parentElement: string | undefined;
     values: WeakMap<HTMLElement, ItemType>;
-    instance?: Instance;
+    instance: Instance | undefined;
 
     constructor(input_element: TypeaheadInputElement, options: TypeaheadOptions<ItemType>) {
         this.input_element = input_element;

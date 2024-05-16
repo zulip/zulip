@@ -38,8 +38,8 @@ type DisplayObject = {
     is_zero: boolean;
     is_active: boolean;
     url: string;
-    status_emoji_info?: UserStatusEmojiInfo;
-    user_circle_class?: string;
+    status_emoji_info: UserStatusEmojiInfo | undefined;
+    user_circle_class: string | undefined;
     is_group: boolean;
     is_bot: boolean;
 };

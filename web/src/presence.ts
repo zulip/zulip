@@ -4,13 +4,13 @@ import {user_settings} from "./user_settings";
 
 export type RawPresence = {
     server_timestamp: number;
-    active_timestamp?: number;
-    idle_timestamp?: number;
+    active_timestamp?: number | undefined;
+    idle_timestamp?: number | undefined;
 };
 
 export type PresenceStatus = {
     status: "active" | "idle" | "offline";
-    last_active?: number;
+    last_active?: number | undefined;
 };
 
 export type PresenceInfoFromEvent = {

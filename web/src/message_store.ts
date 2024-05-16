@@ -7,8 +7,8 @@ import type {UserStatusEmojiInfo} from "./user_status";
 const stored_messages = new Map<number, Message>();
 
 export type MatchedMessage = {
-    match_content?: string;
-    match_subject?: string;
+    match_content?: string | undefined;
+    match_subject?: string | undefined;
 };
 
 export type MessageReactionType = "unicode_emoji" | "realm_emoji" | "zulip_extra_emoji";
@@ -130,7 +130,7 @@ export type Message = (
     flags?: string[];
 
     small_avatar_url?: string; // Used in `message_avatar.hbs`
-    status_emoji_info?: UserStatusEmojiInfo; // Used in `message_body.hbs`
+    status_emoji_info?: UserStatusEmojiInfo | undefined; // Used in `message_body.hbs`
 } & (
         | {
               type: "private";
