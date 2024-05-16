@@ -8,6 +8,9 @@ overrides:
   source-map@^0.6: npm:source-map-js@1.0.1
 
 patchedDependencies:
+  '@types/plotly.js@2.29.2':
+    hash: iagbbcdfsh4npp27hj45urzgum
+    path: patches/@types__plotly.js@2.29.2.patch
   '@uppy/core@3.10.1':
     hash: p55fuvtzi4wgpu6zqubw64gyay
     path: patches/@uppy__core@3.10.1.patch
@@ -322,7 +325,7 @@ importers:
         version: 20.12.7
       '@types/plotly.js':
         specifier: ^2.12.20
-        version: 2.29.2
+        version: 2.29.2(patch_hash=iagbbcdfsh4npp27hj45urzgum)
       '@types/sortablejs':
         specifier: ^1.15.1
         version: 1.15.8
@@ -9149,7 +9152,7 @@ snapshots:
 
   '@types/picomatch@2.3.3': {}
 
-  '@types/plotly.js@2.29.2': {}
+  '@types/plotly.js@2.29.2(patch_hash=iagbbcdfsh4npp27hj45urzgum)': {}
 
   '@types/qs@6.9.15': {}
 
