@@ -4,6 +4,7 @@ import _ from "lodash";
 import * as blueslip from "./blueslip";
 import * as channel from "./channel";
 import * as echo from "./echo";
+import * as loading from "./loading";
 import * as message_events from "./message_events";
 import {page_params} from "./page_params";
 import * as reload from "./reload";
@@ -282,6 +283,8 @@ export function force_get_events() {
 export function finished_initial_fetch() {
     waiting_on_initial_fetch = false;
     get_events_success([]);
+    // Destroy loading indicator after we added fetched messages.
+    loading.destroy_indicator($("#page_loading_indicator"));
 }
 
 export function initialize(params) {
