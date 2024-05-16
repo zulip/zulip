@@ -658,6 +658,7 @@ export function initialize_everything(state_data) {
        user_settings before setting the theme. Because information
        density is so fundamental, we initialize that first, however. */
     initialize_user_settings(user_settings_params);
+    sidebar_ui.restore_sidebar_toggle_status();
     information_density.initialize();
     if (page_params.is_spectator) {
         const ls = localstorage();
