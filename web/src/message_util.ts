@@ -1,7 +1,4 @@
-import $ from "jquery";
-
 import {all_messages_data} from "./all_messages_data";
-import * as loading from "./loading";
 import type {MessageListData} from "./message_list_data";
 import type {MessageList, RenderInfo} from "./message_lists";
 import * as message_store from "./message_store";
@@ -27,8 +24,6 @@ export function add_messages(
     if (!messages) {
         return undefined;
     }
-
-    loading.destroy_indicator($("#page_loading_indicator"));
 
     const render_info = msg_list.add_messages(messages, append_to_view_opts);
 

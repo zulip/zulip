@@ -7,6 +7,9 @@ const {run_test, noop} = require("./lib/test");
 const blueslip = require("./lib/zblueslip");
 const {page_params} = require("./lib/zpage_params");
 
+mock_esm("../src/loading", {
+    destroy_indicator: noop,
+});
 set_global("addEventListener", noop);
 
 const channel = mock_esm("../src/channel");
