@@ -113,3 +113,22 @@ def update_user_status(
         user_profile_id=user_profile_id,
         defaults=defaults,
     )
+
+
+def get_user_status(user_profile: UserProfile) -> UserInfoDict:
+    status_set_by_user = (
+        UserStatus.objects.filter(user_profile=user_profile)
+        .values(
+            "user_profile_id",
+            "user_profile__presence_enabled",
+            "status_text",
+            "emoji_name",
+            "emoji_code",
+            "reaction_type",
+        )
+        .first()
+    )
+
+    if not status_set_by_user:
+        return {}
+    return format_user_status(status_set_by_user)
