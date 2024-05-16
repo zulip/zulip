@@ -845,13 +845,21 @@ export function filters_should_hide_row(topic_data: ConversationData): boolean {
         return true;
     }
 
+    const search_keyword = $<HTMLInputElement>("#recent_view_search").val();
+    assert(search_keyword !== undefined);
     if (msg.type === "stream") {
-        const search_keyword = $<HTMLInputElement>("#recent_view_search").val();
-        assert(search_keyword !== undefined);
         const stream_name = stream_data.get_stream_name_from_id(msg.stream_id);
         if (!topic_in_search_results(search_keyword, stream_name, msg.topic)) {
             return true;
         }
+    } else {
+        assert(msg.type === "private");
+        // Display recipient contains user information for DMs.
+        assert(typeof msg.display_recipient !== "string");
+        const participants = [...msg.display_recipient].map((recipient) =>
+            people.get_by_user_id(recipient.id),
+        );
+        return people.filter_people_by_search_terms(participants, search_keyword).size === 0;
     }
 
     return false;
