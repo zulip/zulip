@@ -33,13 +33,13 @@
                         {% trans %}
                         This organization has been deactivated.
                         {% endtrans %}
-                        {% if is_self_hosting_management_page %}
+                        {% if corporate_enabled %}
                             {% trans %}
-                            If you are an owner of this organization, you can <a href="mailto:{{ support_email }}">contact this Zulip server's administrators</a> to reactivate it.
+                            If you are an owner of this organization, you can <a href="mailto:{{ support_email }}">contact Zulip support</a> to reactivate it.
                             {% endtrans %}
                         {% else %}
                             {% trans %}
-                            If you are an owner of this organization, you can <a href="mailto:{{ support_email }}">contact Zulip support</a> to reactivate it.
+                            If you are an owner of this organization, you can <a href="mailto:{{ support_email }}">contact this Zulip server's administrators</a> to reactivate it.
                             {% endtrans %}
                         {% endif %}
                     {% endif %}

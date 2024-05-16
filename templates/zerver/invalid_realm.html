@@ -16,10 +16,10 @@
             <p>
                 {% trans %}There is no Zulip organization at <b>{{ current_url }}</b>.{% endtrans %}
                 <br />
-                {% if is_self_hosting_management_page %}
-                    {% trans %}Please try a different URL, or <a href="mailto:{{ support_email }}">contact this Zulip server's administrators</a>.{% endtrans %}
-                {% else %}
+                {% if corporate_enabled %}
                     {% trans %}Please try a different URL, or <a href="mailto:{{ support_email }}">contact Zulip support</a>.{% endtrans %}
+                {% else %}
+                    {% trans %}Please try a different URL, or <a href="mailto:{{ support_email }}">contact this Zulip server's administrators</a>.{% endtrans %}
                 {% endif %}
             </p>
         </div>
