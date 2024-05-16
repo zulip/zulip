@@ -224,25 +224,22 @@ html {
             line-height: 1.7;
 
             cursor: pointer;
-
-            & a {
-                color: inherit;
-                display: block;
-
-                /* Extend to entire width of sidebar, not just link area */
-                margin-left: calc(
-                    0px - var(--help-sidebar-padding) -
-                        var(--help-sidebar-indent)
-                );
-                margin-right: calc(0px - var(--help-sidebar-padding));
-                padding-left: calc(
-                    var(--help-sidebar-padding) + var(--help-sidebar-indent)
-                );
-                padding-right: calc(var(--help-sidebar-padding));
-            }
         }
 
         & a {
+            color: inherit;
+            display: block;
+
+            /* Extend to entire width of sidebar, not just link area */
+            margin-left: calc(
+                0px - var(--help-sidebar-padding) - var(--help-sidebar-indent)
+            );
+            margin-right: calc(0px - var(--help-sidebar-padding));
+            padding-left: calc(
+                var(--help-sidebar-padding) + var(--help-sidebar-indent)
+            );
+            padding-right: calc(var(--help-sidebar-padding));
+
             &.highlighted {
                 background-color: hsl(152deg 40% 42%);
 
