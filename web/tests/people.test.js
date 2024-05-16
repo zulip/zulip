@@ -726,33 +726,33 @@ test_people("filtered_users", () => {
 
     const search_term = "a";
     const users = people.get_realm_users();
-    let filtered_people = people.filter_people_by_search_terms(users, [search_term]);
+    let filtered_people = people.filter_people_by_search_terms(users, search_term);
     assert.equal(filtered_people.size, 2);
     assert.ok(filtered_people.has(ashton.user_id));
     assert.ok(filtered_people.has(maria.user_id));
     assert.ok(!filtered_people.has(charles.user_id));
 
-    filtered_people = people.filter_people_by_search_terms(users, []);
-    assert.equal(filtered_people.size, 0);
+    filtered_people = people.filter_people_by_search_terms(users, "");
+    assert.equal(filtered_people.size, 7);
 
-    filtered_people = people.filter_people_by_search_terms(users, ["ltorv"]);
+    filtered_people = people.filter_people_by_search_terms(users, "ltorv");
     assert.equal(filtered_people.size, 1);
     assert.ok(filtered_people.has(linus.user_id));
 
-    filtered_people = people.filter_people_by_search_terms(users, ["ch di", "maria"]);
+    filtered_people = people.filter_people_by_search_terms(users, "ch di, maria");
     assert.equal(filtered_people.size, 2);
     assert.ok(filtered_people.has(charles.user_id));
     assert.ok(filtered_people.has(maria.user_id));
 
     // Test filtering of names with diacritics
     // This should match Nöôáàh by ignoring diacritics, and also match Nooaah
-    filtered_people = people.filter_people_by_search_terms(users, ["noOa"]);
+    filtered_people = people.filter_people_by_search_terms(users, "noOa");
     assert.equal(filtered_people.size, 2);
     assert.ok(filtered_people.has(noah.user_id));
     assert.ok(filtered_people.has(plain_noah.user_id));
 
     // This should match ëmerson, but not emerson
-    filtered_people = people.filter_people_by_search_terms(users, ["ëm"]);
+    filtered_people = people.filter_people_by_search_terms(users, "ëm");
     assert.equal(filtered_people.size, 1);
     assert.ok(filtered_people.has(noah.user_id));
 });

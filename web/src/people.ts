@@ -1224,7 +1224,10 @@ export function build_person_matcher(query: string): (user: User) => boolean {
     };
 }
 
-export function filter_people_by_search_terms(users: User[], search_terms: string[]): Set<number> {
+export function filter_people_by_search_terms(users: User[], search_string: string): Set<number> {
+    let search_terms = search_string.toLowerCase().split(/[,|]+/);
+    search_terms = search_terms.map((s) => s.trim());
+
     const filtered_users = new Set<number>();
 
     // Build our matchers outside the loop to avoid some
