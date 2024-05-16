@@ -1,4 +1,3 @@
-from dataclasses import dataclass
 from typing import List, Optional, Sequence, Union
 
 from django.conf import settings
@@ -21,42 +20,32 @@ from zerver.actions.user_groups import (
     remove_subgroups_from_user_group,
 )
 from zerver.decorator import require_member_or_admin, require_user_group_edit_permission
-from zerver.lib.exceptions import JsonableError, PreviousSettingValueMismatchedError
+from zerver.lib.exceptions import JsonableError
 from zerver.lib.mention import MentionBackend, silent_mention_syntax_for_user
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.typed_endpoint import PathOnly, typed_endpoint
 from zerver.lib.user_groups import (
     AnonymousSettingGroupDict,
+    GroupSettingChangeRequest,
     access_user_group_by_id,
     access_user_group_for_setting,
     check_user_group_name,
     get_direct_memberships_of_users,
-    get_group_setting_value_for_api,
     get_subgroup_ids,
     get_user_group_direct_member_ids,
     get_user_group_member_ids,
     is_user_in_group,
     lock_subgroups_with_respect_to_supergroup,
+    parse_group_setting_value,
     user_groups_in_realm_serialized,
+    validate_group_setting_value_change,
 )
 from zerver.lib.users import access_user_by_id, user_ids_to_users
 from zerver.lib.validator import check_bool, check_int, check_list
-from zerver.models import NamedUserGroup, UserGroup, UserProfile
+from zerver.models import NamedUserGroup, UserProfile
 from zerver.models.users import get_system_bot
 from zerver.views.streams import compose_views
-
-
-def parse_group_setting_value(
-    setting_value: Union[int, AnonymousSettingGroupDict],
-) -> Union[int, AnonymousSettingGroupDict]:
-    if isinstance(setting_value, int):
-        return setting_value
-
-    if len(setting_value.direct_members) == 0 and len(setting_value.direct_subgroups) == 1:
-        return setting_value.direct_subgroups[0]
-
-    return setting_value
 
 
 @require_user_group_edit_permission
@@ -105,50 +94,6 @@ def add_user_group(
 def get_user_group(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
     user_groups = user_groups_in_realm_serialized(user_profile.realm)
     return json_success(request, data={"user_groups": user_groups})
-
-
-def are_both_setting_values_equal(
-    first_setting_value: Union[int, AnonymousSettingGroupDict],
-    second_setting_value: Union[int, AnonymousSettingGroupDict],
-) -> bool:
-    if isinstance(first_setting_value, int) and isinstance(second_setting_value, int):
-        return first_setting_value == second_setting_value
-
-    if isinstance(first_setting_value, AnonymousSettingGroupDict) and isinstance(
-        second_setting_value, AnonymousSettingGroupDict
-    ):
-        return set(first_setting_value.direct_members) == set(
-            second_setting_value.direct_members
-        ) and set(first_setting_value.direct_subgroups) == set(
-            second_setting_value.direct_subgroups
-        )
-
-    return False
-
-
-def validate_group_setting_value_change(
-    current_value: UserGroup,
-    new_setting_value: Union[int, AnonymousSettingGroupDict],
-    expected_current_setting_value: Optional[Union[int, AnonymousSettingGroupDict]],
-) -> bool:
-    current_setting_api_value = get_group_setting_value_for_api(current_value)
-
-    if expected_current_setting_value is not None and not are_both_setting_values_equal(
-        expected_current_setting_value,
-        current_setting_api_value,
-    ):
-        # This check is here to help prevent races, by refusing to
-        # change a setting where the client (and thus the UI presented
-        # to user) showed a different existing state.
-        raise PreviousSettingValueMismatchedError
-
-    return not are_both_setting_values_equal(current_setting_api_value, new_setting_value)
-
-
-@dataclass
-class GroupSettingChangeRequest:
-    new: Union[int, AnonymousSettingGroupDict]
-    old: Optional[Union[int, AnonymousSettingGroupDict]] = None
 
 
 @transaction.atomic
