@@ -722,7 +722,7 @@ def parse_group_setting_value(
     return setting_value
 
 
-def are_both_setting_values_equal(
+def are_both_group_setting_values_equal(
     first_setting_value: Union[int, AnonymousSettingGroupDict],
     second_setting_value: Union[int, AnonymousSettingGroupDict],
 ) -> bool:
@@ -748,7 +748,7 @@ def validate_group_setting_value_change(
 ) -> bool:
     current_setting_api_value = get_group_setting_value_for_api(current_value)
 
-    if expected_current_setting_value is not None and not are_both_setting_values_equal(
+    if expected_current_setting_value is not None and not are_both_group_setting_values_equal(
         expected_current_setting_value,
         current_setting_api_value,
     ):
@@ -757,4 +757,4 @@ def validate_group_setting_value_change(
         # to user) showed a different existing state.
         raise PreviousSettingValueMismatchedError
 
-    return not are_both_setting_values_equal(current_setting_api_value, new_setting_value)
+    return not are_both_group_setting_values_equal(current_setting_api_value, new_setting_value)
