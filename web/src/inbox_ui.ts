@@ -860,7 +860,7 @@ function update_closed_compose_text($row: JQuery, is_header_row: boolean): void 
     compose_closed_ui.update_reply_recipient_label(message);
 }
 
-export function get_focused_row_message(): {message?: Message} & (
+export function get_focused_row_message(): {message?: Message | undefined} & (
     | {msg_type: "private"; private_message_recipient?: string}
     | {msg_type: "stream"; stream_id: number; topic?: string}
     | {msg_type?: never}
@@ -893,6 +893,7 @@ export function get_focused_row_message(): {message?: Message} & (
         const message = message_store.get(row_info.latest_msg_id);
         if (message === undefined) {
             const recipients = people.user_ids_string_to_emails_string(row_info.user_ids_string);
+            assert(recipients !== undefined);
             return {
                 msg_type: "private",
                 private_message_recipient: recipients,

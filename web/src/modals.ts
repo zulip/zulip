@@ -10,9 +10,9 @@ type Hook = () => void;
 export type ModalConfig = {
     autoremove?: boolean;
     on_show?: () => void;
-    on_shown?: () => void;
-    on_hide?: () => void;
-    on_hidden?: () => void;
+    on_shown?: (() => void) | undefined;
+    on_hide?: (() => void) | undefined;
+    on_hidden?: (() => void) | undefined;
 };
 
 const pre_open_hooks: Hook[] = [];

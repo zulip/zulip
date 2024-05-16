@@ -243,7 +243,7 @@ function message_matches_search_term(message: Message, operator: string, operand
 
 export class Filter {
     _terms: NarrowTerm[];
-    _sub?: StreamSubscription;
+    _sub?: StreamSubscription | undefined;
     _sorted_term_types?: string[] = undefined;
     _predicate?: (message: Message) => boolean;
     _can_mark_messages_read?: boolean;
@@ -914,8 +914,8 @@ export class Filter {
 
     add_icon_data(context: {
         title: string;
-        description?: string;
-        link?: string;
+        description?: string | undefined;
+        link?: string | undefined;
         is_spectator: boolean;
     }): IconData {
         // We have special icons for the simple narrows available for the via sidebars.

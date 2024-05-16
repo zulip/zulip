@@ -14,17 +14,19 @@ import * as spectators from "./spectators";
 type AjaxRequestHandlerOptions = Omit<JQuery.AjaxSettings, "success"> & {
     url: string;
     ignore_reload?: boolean;
-    success?: (
-        data: unknown,
-        textStatus: JQuery.Ajax.SuccessTextStatus,
-        jqXHR: JQuery.jqXHR<unknown>,
-    ) => void;
+    success?:
+        | ((
+              data: unknown,
+              textStatus: JQuery.Ajax.SuccessTextStatus,
+              jqXHR: JQuery.jqXHR<unknown>,
+          ) => void)
+        | undefined;
     error?: JQuery.Ajax.ErrorCallback<unknown>;
 };
 
 type PatchRequestData =
     | {processData: false; data: FormData}
-    | {processData?: true; data: Record<string, unknown>};
+    | {processData?: true | undefined; data: Record<string, unknown>};
 
 export type AjaxRequestHandler = typeof call | typeof patch;
 

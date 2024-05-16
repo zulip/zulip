@@ -101,8 +101,9 @@ export function set_compose_defaults(): {
         }
     }
 
-    if (single.has("topic")) {
-        opts.topic = single.get("topic");
+    const topic = single.get("topic");
+    if (topic !== undefined) {
+        opts.topic = topic;
     }
 
     const private_message_recipient = single.get("dm");

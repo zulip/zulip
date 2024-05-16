@@ -628,9 +628,9 @@ export async function run_test_async(test_function: (page: Page) => Promise<void
             columnNumber,
         }: ConsoleMessageLocation): Promise<string> => {
             let frame = new StackFrame({
-                fileName: url,
-                lineNumber: lineNumber === undefined ? undefined : lineNumber + 1,
-                columnNumber: columnNumber === undefined ? undefined : columnNumber + 1,
+                ...(url !== undefined && {fileName: url}),
+                ...(lineNumber !== undefined && {lineNumber: lineNumber + 1}),
+                ...(columnNumber !== undefined && {columnNumber: columnNumber + 1}),
             });
             try {
                 frame = await gps.getMappedLocation(frame);

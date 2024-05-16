@@ -146,8 +146,8 @@ export function respond_to_message(opts: {
         message_type: msg_type,
         stream_id,
         topic,
-        private_message_recipient: pm_recipient,
-        trigger: opts.trigger,
+        ...(pm_recipient !== undefined && {private_message_recipient: pm_recipient}),
+        ...(opts.trigger !== undefined && {trigger: opts.trigger}),
         is_reply: true,
         keep_composebox_empty: opts.keep_composebox_empty,
     });

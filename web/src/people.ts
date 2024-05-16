@@ -20,7 +20,7 @@ import * as util from "./util";
 
 export type ProfileData = {
     value: string;
-    rendered_value?: string;
+    rendered_value?: string | undefined;
 };
 
 export type User = {
@@ -29,7 +29,7 @@ export type User = {
     email: string;
     full_name: string;
     // used for caching result of remove_diacritics.
-    name_with_diacritics_removed?: string;
+    name_with_diacritics_removed?: string | undefined;
     date_joined: string;
     is_active: boolean;
     is_owner: boolean;
@@ -1489,7 +1489,6 @@ export function make_user(user_id: number, email: string, full_name: string): Us
         // We explicitly don't set `avatar_url` for fake person objects so that fallback code
         // will ask the server or compute a gravatar URL only once we need the avatar URL,
         // it's important for performance that we not hash every user's email to get gravatar URLs.
-        avatar_url: undefined,
         avatar_version: 0,
         timezone: "",
         date_joined: "",

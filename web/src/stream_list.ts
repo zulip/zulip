@@ -664,11 +664,11 @@ export function refresh_muted_or_unmuted_stream(sub: StreamSubscription): void {
 }
 
 export function get_sidebar_stream_topic_info(filter: Filter): {
-    stream_id?: number;
+    stream_id: number | undefined;
     topic_selected: boolean;
 } {
     const result: {
-        stream_id?: number;
+        stream_id: number | undefined;
         topic_selected: boolean;
     } = {
         stream_id: undefined,

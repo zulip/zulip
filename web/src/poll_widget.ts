@@ -19,8 +19,8 @@ import * as people from "./people";
 export type Event = {sender_id: number; data: InboundData};
 
 export type PollWidgetExtraData = {
-    question?: string;
-    options?: string[];
+    question?: string | undefined;
+    options?: string[] | undefined;
 };
 
 export function activate({

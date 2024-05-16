@@ -33,14 +33,14 @@ type ComposeActionsStartOpts = {
     force_close?: boolean;
     trigger?: string;
     private_message_recipient?: string;
-    message?: Message;
-    stream_id?: number;
+    message?: Message | undefined;
+    stream_id?: number | undefined;
     topic?: string;
     content?: string;
     draft_id?: string;
     skip_scrolling_selected_message?: boolean;
     is_reply?: boolean;
-    keep_composebox_empty?: boolean;
+    keep_composebox_empty?: boolean | undefined;
 };
 
 // An iteration on `ComposeActionsStartOpts` that enforces that

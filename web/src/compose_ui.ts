@@ -31,7 +31,7 @@ export type ComposeTriggeredOptions = {
     | {
           message_type: "stream";
           topic: string;
-          stream_id?: number;
+          stream_id?: number | undefined;
       }
     | {
           message_type: "private";

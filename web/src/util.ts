@@ -74,7 +74,7 @@ export function extract_pm_recipients(recipients: string): string[] {
 // When the type is "private", properties from to_user_ids might be undefined.
 // See https://github.com/zulip/zulip/pull/23032#discussion_r1038480596.
 export type Recipient =
-    | {type: "private"; to_user_ids?: string; reply_to: string}
+    | {type: "private"; to_user_ids?: string | undefined; reply_to: string}
     | ({type: "stream"} & StreamTopic);
 
 export const same_recipient = function util_same_recipient(a?: Recipient, b?: Recipient): boolean {

@@ -555,7 +555,7 @@ type FormattedDraft =
     | {
           is_stream: true;
           draft_id: string;
-          stream_name?: string;
+          stream_name?: string | undefined;
           recipient_bar_color: string;
           stream_privacy_icon_color: string;
           topic: string;
