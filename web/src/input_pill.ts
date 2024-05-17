@@ -3,11 +3,13 @@
 import $ from "jquery";
 import assert from "minimalistic-assert";
 
+import render_editable_pill from "../templates/editable_pill.hbs";
 import render_input_pill from "../templates/input_pill.hbs";
 
 import * as blueslip from "./blueslip";
 import type {EmojiRenderingDetails} from "./emoji";
 import * as keydown_util from "./keydown_util";
+import type {SetupTypeahead} from "./typeahead_helper";
 import * as ui_util from "./ui_util";
 
 // See https://zulip.readthedocs.io/en/latest/subsystems/input-pills.html
@@ -50,11 +52,13 @@ type InputPillStore<T> = {
     pill_config: InputPillCreateOptions<T>["pill_config"];
     $parent: JQuery;
     $input: JQuery;
+    $editable_pill?: JQuery | undefined;
     create_item_from_text: InputPillCreateOptions<T>["create_item_from_text"];
     get_text_from_item: InputPillCreateOptions<T>["get_text_from_item"];
     onPillCreate?: () => void;
     onPillRemove?: (pill: InputPill<T>) => void;
     createPillonPaste?: () => void;
+    setupTypeahead?: SetupTypeahead;
 };
 
 type InputPillRenderingDetails = {
@@ -79,11 +83,13 @@ export type InputPillContainer<T> = {
     onPillRemove: (callback: (pill: InputPill<T>) => void) => void;
     onTextInputHook: (callback: () => void) => void;
     createPillonPaste: (callback: () => void) => void;
+    addSetupTypeahead: (callback: SetupTypeahead) => void;
     clear: () => void;
     clear_text: () => void;
     getCurrentText: () => string | null;
     is_pending: () => boolean;
     _get_pills_for_testing: () => InputPill<T>[];
+    _get_setup_typeahead_for_testing: () => SetupTypeahead | undefined;
 };
 
 export function create<T>(opts: InputPillCreateOptions<T>): InputPillContainer<T> {
@@ -186,9 +192,13 @@ export function create<T>(opts: InputPillCreateOptions<T>): InputPillContainer<T
                 item,
                 $element: $(pill_html),
             };
-
-            store.pills.push(payload);
-            store.$input.before(payload.$element);
+            if (store.$editable_pill) {
+                this.insertPillBefore(store.$editable_pill, payload);
+                store.$editable_pill = undefined;
+            } else {
+                store.pills.push(payload);
+                store.$input.before(payload.$element);
+            }
 
             if (store.onPillCreate !== undefined) {
                 store.onPillCreate();
@@ -264,6 +274,7 @@ export function create<T>(opts: InputPillCreateOptions<T>): InputPillContainer<T
                 this.removeLastPill(quiet);
             }
 
+            store.$parent.find(".editable-pill").remove();
             this.clear(store.$input[0]!);
         },
 
@@ -293,12 +304,57 @@ export function create<T>(opts: InputPillCreateOptions<T>): InputPillContainer<T
             return drafts.length === 0;
         },
 
+        // insert new pill received from an editable pill along with it's payload
+        // before the next sibling pill.
+        insertPillBefore($editable_pill: JQuery, payload: InputPill<T>) {
+            const $next_pill = $editable_pill.next(".pill");
+            const idx = store.pills.findIndex((pill) => pill.$element[0] === $next_pill[0]);
+            if (idx !== -1) {
+                store.pills.splice(idx, 0, payload);
+                $editable_pill.after(payload.$element);
+                store.$input.trigger("change");
+            } else {
+                store.pills.push(payload);
+                store.$input.before(payload.$element);
+            }
+        },
+
+        // replace the pill with an editable-pill element.
+        editPill($pill: JQuery) {
+            if (!$pill[0]) {
+                return;
+            }
+            const $new_input = $(render_editable_pill());
+            $new_input.insertAfter($pill);
+            $new_input.on("keyup", (e) => {
+                if (keydown_util.is_enter_event(e) && store.setupTypeahead) {
+                    store.$editable_pill = $new_input;
+                }
+            });
+
+            const text = $pill.find(".pill-label")?.text()?.trim() ?? "";
+            funcs.removePill($pill[0]);
+
+            $new_input.text(text);
+            $new_input.trigger("focus");
+            window.getSelection()?.modify("move", "forward", "line");
+
+            if (store.setupTypeahead) {
+                store.setupTypeahead($new_input);
+            }
+            $new_input.trigger("click");
+        },
+
         getByElement(element: HTMLElement) {
             return store.pills.find((pill) => pill.$element[0] === element);
         },
 
         _get_pills_for_testing() {
             return store.pills;
+        },
+
+        _get_setup_typeahead_for_testing() {
+            return store.setupTypeahead;
         },
 
         items() {
@@ -326,15 +382,22 @@ export function create<T>(opts: InputPillCreateOptions<T>): InputPillContainer<T
                 // and append the pill, then clear the input.
                 const value = funcs.value(this).trim();
                 if (value.length > 0) {
+                    const $target_input = $(this);
+                    if ($target_input.hasClass("editable-pill")) {
+                        store.$editable_pill = $target_input;
+                    }
                     // append the pill and by proxy create the pill object.
                     const ret = funcs.appendPill(value);
-
                     // if the pill to append was rejected, no need to clear the
                     // input; it may have just been a typo or something close but
                     // incorrect.
-                    if (ret) {
+                    if (ret && !$target_input.hasClass("editable-pill")) {
                         // clear the input.
                         funcs.clear(this);
+                        e.stopPropagation();
+                    } else if (ret) {
+                        $target_input.remove();
+                        store.$input.trigger("focus");
                         e.stopPropagation();
                     }
                 }
@@ -351,17 +414,42 @@ export function create<T>(opts: InputPillCreateOptions<T>): InputPillContainer<T
                     (selection?.anchorOffset === 0 && selection?.toString()?.length === 0))
             ) {
                 e.preventDefault();
+                if ($(this).hasClass("editable-pill")) {
+                    $(this).remove();
+                    store.$input.trigger("focus");
+                    return;
+                }
+                if ($(this).prev().hasClass("editable-pill")) {
+                    $(this).prev().trigger("focus");
+                    window.getSelection()?.modify("move", "forward", "line");
+                    return;
+                }
                 funcs.removeLastPill();
 
                 return;
             }
 
             // if one is on the ".input" element and back/left arrows, then it
-            // should switch to focus the last pill in the list.
-            // the rest of the events then will be taken care of in the function
-            // below that handles events on the ".pill" class.
+            // should switch to focus the pill or editable-pill previous to it.
             if (e.key === "ArrowLeft" && selection?.anchorOffset === 0) {
-                store.$parent.find(".pill").last().trigger("focus");
+                e.preventDefault();
+                $(this).prev().trigger("focus");
+                if ($(this).prev().hasClass("editable-pill")) {
+                    window.getSelection()?.modify("move", "forward", "line");
+                }
+            }
+
+            // if one is on the ".editable-pill" element and right arrows, the it
+            // should switch to focus the pill or editable-pill next to it.
+            // the rest of the events then will be taken care of in the function
+            // that handles keydown events on the ".pill" class.
+            if (
+                e.key === "ArrowRight" &&
+                selection?.anchorOffset === funcs.value(this).length &&
+                $(this).hasClass("editable-pill")
+            ) {
+                e.preventDefault();
+                $(this).next().trigger("focus");
             }
 
             // Typing of the comma is prevented if the last field doesn't validate,
@@ -389,10 +477,14 @@ export function create<T>(opts: InputPillCreateOptions<T>): InputPillContainer<T
         // the three primary events are next, previous, and delete.
         store.$parent.on("keydown", ".pill", (e) => {
             const $pill = store.$parent.find(".pill:focus");
+            e.preventDefault();
 
             switch (e.key) {
                 case "ArrowLeft":
                     $pill.prev().trigger("focus");
+                    if ($pill.prev().hasClass("editable-pill")) {
+                        window.getSelection()?.modify("move", "forward", "line");
+                    }
                     break;
                 case "ArrowRight":
                     $pill.next().trigger("focus");
@@ -403,9 +495,17 @@ export function create<T>(opts: InputPillCreateOptions<T>): InputPillContainer<T
                     $next.trigger("focus");
                     // the "Backspace" key in Firefox will go back a page if you do
                     // not prevent it.
-                    e.preventDefault();
                     break;
                 }
+            }
+        });
+
+        store.$parent.on("keyup", ".pill", (e) => {
+            const $pill = store.$parent.find(".pill:focus");
+            if (e.key === "Enter") {
+                e.preventDefault();
+                funcs.editPill($pill);
+                e.stopPropagation();
             }
         });
 
@@ -449,6 +549,11 @@ export function create<T>(opts: InputPillCreateOptions<T>): InputPillContainer<T
             }
         });
 
+        store.$parent.on("dblclick", ".pill", function (this: HTMLElement, e) {
+            e.stopPropagation();
+            funcs.editPill($(this));
+        });
+
         store.$parent.on("copy", ".pill", function (this: HTMLElement, e) {
             const {item} = funcs.getByElement(this)!;
             assert(e.originalEvent instanceof ClipboardEvent);
@@ -482,10 +587,15 @@ export function create<T>(opts: InputPillCreateOptions<T>): InputPillContainer<T
             store.createPillonPaste = callback;
         },
 
+        addSetupTypeahead(callback) {
+            store.setupTypeahead = callback;
+        },
+
         clear: funcs.removeAllPills.bind(funcs),
         clear_text: funcs.clear_text.bind(funcs),
         is_pending: funcs.is_pending.bind(funcs),
         _get_pills_for_testing: funcs._get_pills_for_testing.bind(funcs),
+        _get_setup_typeahead_for_testing: funcs._get_setup_typeahead_for_testing.bind(funcs),
     };
 
     return prototype;

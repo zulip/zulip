@@ -4,11 +4,10 @@ import * as blueslip from "./blueslip";
 import {Typeahead} from "./bootstrap_typeahead";
 import type {TypeaheadInputElement} from "./bootstrap_typeahead";
 import * as people from "./people";
-import type {User} from "./people";
 import * as stream_pill from "./stream_pill";
 import type {StreamPillData} from "./stream_pill";
 import * as typeahead_helper from "./typeahead_helper";
-import type {CombinedPillContainer} from "./typeahead_helper";
+import type {CombinedPillContainer, TypeaheadOptions} from "./typeahead_helper";
 import * as user_group_pill from "./user_group_pill";
 import type {UserGroupPillData} from "./user_group_pill";
 import * as user_pill from "./user_pill";
@@ -26,22 +25,18 @@ function group_matcher(query: string, item: UserGroupPillData): boolean {
 
 type TypeaheadItem = UserGroupPillData | StreamPillData | UserPillData;
 
-export function set_up(
-    $input: JQuery,
-    pills: CombinedPillContainer,
-    opts: {
-        user: boolean;
-        user_group?: boolean;
-        stream?: boolean;
-        user_source?: () => User[];
-        exclude_bots?: boolean;
-        update_func?: () => void;
-    },
-): void {
+export function set_up($input: JQuery, pills: CombinedPillContainer, opts: TypeaheadOptions): void {
+    if (!$input) {
+        return;
+    }
     if (!opts.user && !opts.user_group && !opts.stream) {
         blueslip.error("Unspecified possible item types");
         return;
     }
+    pills.addSetupTypeahead(($input) => {
+        set_up($input, pills, opts);
+    });
+
     const include_streams = (query: string): boolean =>
         opts.stream !== undefined && query.trim().startsWith("#");
     const include_user_groups = opts.user_group;

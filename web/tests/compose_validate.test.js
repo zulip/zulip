@@ -124,6 +124,7 @@ test_ui("validate", ({mock_template}) => {
         $("#private_message_recipient")[0] = {};
         $("#private_message_recipient").set_parent($pm_pill_container);
         $pm_pill_container.set_find_results(".input", $("#private_message_recipient"));
+        $pm_pill_container.set_find_results(".editable-pill", {remove: noop});
         $("#private_message_recipient").before = noop;
 
         compose_pm_pill.initialize({

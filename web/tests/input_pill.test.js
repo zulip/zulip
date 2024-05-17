@@ -19,6 +19,7 @@ mock_esm("../src/ui_util", {
 
 set_global("getSelection", () => ({
     anchorOffset: 0,
+    modify(_a, _b, _c) {},
 }));
 
 const input_pill = zrequire("input_pill");
@@ -218,7 +219,7 @@ run_test("paste to input", ({mock_template}) => {
     assert.ok(entered);
 });
 
-run_test("arrows on pills", ({mock_template}) => {
+run_test("arrows and enter on pills", ({mock_template}) => {
     mock_template("input_pill.hbs", true, (data, html) => {
         assert.equal(typeof data.has_image, "boolean");
         return html;
@@ -231,11 +232,13 @@ run_test("arrows on pills", ({mock_template}) => {
     const widget = input_pill.create(config);
     widget.appendValue("blue,red");
 
-    const key_handler = $container.get_on_handler("keydown", ".pill");
+    let key_handler = $container.get_on_handler("keydown", ".pill");
 
     function test_key(c) {
         key_handler({
             key: c,
+            preventDefault: noop,
+            stopPropagation: noop,
         });
     }
 
@@ -248,6 +251,9 @@ run_test("arrows on pills", ({mock_template}) => {
                 if (type === "focus") {
                     prev_focused = true;
                 }
+            },
+            hasClass(_) {
+                return true;
             },
         }),
         next: () => ({
@@ -269,9 +275,12 @@ run_test("arrows on pills", ({mock_template}) => {
 
     test_key("ArrowRight");
     assert.ok(next_focused);
+
+    key_handler = $container.get_on_handler("keyup", ".pill");
+    test_key("Enter");
 });
 
-run_test("left arrow on input", ({mock_template}) => {
+run_test("left/right arrow on input", ({mock_template}) => {
     mock_template("input_pill.hbs", true, (data, html) => {
         assert.equal(typeof data.display_value, "string");
         return html;
@@ -286,23 +295,49 @@ run_test("left arrow on input", ({mock_template}) => {
 
     const key_handler = $container.get_on_handler("keydown", ".input");
 
-    let last_pill_focused = false;
+    let pill_focused = false;
 
-    $container.set_find_results(".pill", {
-        last: () => ({
-            trigger(type) {
-                if (type === "focus") {
-                    last_pill_focused = true;
-                }
-            },
+    let input_stub = {
+        to_$: () => ({
+            prev: () => ({
+                trigger(type) {
+                    if (type === "focus") {
+                        pill_focused = true;
+                    }
+                },
+                hasClass: (_) => true,
+            }),
         }),
-    });
+    };
 
-    key_handler({
+    key_handler.call(input_stub, {
         key: "ArrowLeft",
+        preventDefault: noop,
     });
 
-    assert.ok(last_pill_focused);
+    assert.ok(pill_focused);
+
+    pill_focused = false;
+    input_stub = {
+        to_$: () => ({
+            next: () => ({
+                trigger(type) {
+                    if (type === "focus") {
+                        pill_focused = true;
+                    }
+                },
+            }),
+            hasClass: (_) => true,
+        }),
+        textContent: "",
+    };
+
+    key_handler.call(input_stub, {
+        key: "ArrowRight",
+        preventDefault: noop,
+    });
+
+    assert.ok(pill_focused);
 });
 
 run_test("comma", ({mock_template}) => {
@@ -361,16 +396,20 @@ run_test("Enter key with text", ({mock_template}) => {
 
     const key_handler = $container.get_on_handler("keydown", ".input");
 
-    key_handler.call(
-        {
-            textContent: " yellow ",
-        },
-        {
-            key: "Enter",
-            preventDefault: noop,
-            stopPropagation: noop,
-        },
-    );
+    const input_stub = {
+        to_$: () => ({
+            hasClass(_class) {
+                return false;
+            },
+        }),
+        textContent: " yellow ",
+    };
+
+    key_handler.call(input_stub, {
+        key: "Enter",
+        preventDefault: noop,
+        stopPropagation: noop,
+    });
 
     assert.deepEqual(widget.items(), [items.blue, items.red, items.yellow]);
 });
@@ -441,9 +480,19 @@ run_test("insert_remove", ({mock_template}) => {
     }
 
     let key_handler = $container.get_on_handler("keydown", ".input");
-
+    function hasClass(_class) {
+        return false;
+    }
     key_handler.call(
         {
+            to_$: () => ({
+                hasClass,
+                prev() {
+                    return {
+                        hasClass,
+                    };
+                },
+            }),
             textContent: "",
         },
         {
@@ -609,6 +658,10 @@ run_test("appendValue/clear", ({mock_template}) => {
     const $container = $.create("container");
     $container.set_find_results(".input", $pill_input);
 
+    const $editable_pill = $.create(".input");
+    $editable_pill.remove = noop;
+    $container.set_find_results(".editable-pill", $editable_pill);
+
     const config = {
         $container,
         create_item_from_text: (s) => ({type: "color", display_value: s}),
@@ -703,4 +756,134 @@ run_test("onTextInputHook", () => {
     input_handler();
 
     assert.ok(hookCalled);
+});
+
+run_test("double click", ({mock_template}) => {
+    mock_template("input_pill.hbs", true, (data, html) => {
+        assert.equal(typeof data.display_value, "string");
+        assert.ok(html.startsWith, "<div class='pill'");
+        $(html)[0] = `<pill-stub ${data.display_value}>`;
+        return html;
+    });
+
+    const $editable_pill = $.create(".input");
+    $editable_pill.insertAfter = (_) => {};
+    $editable_pill.remove = noop;
+    $editable_pill.hasClass = (classname) => {
+        assert.equal(classname, "editable-pill");
+        return true;
+    };
+
+    mock_template("editable_pill.hbs", false, (_data) => ({
+        to_$: () => $editable_pill,
+    }));
+
+    const info = set_up();
+
+    const config = info.config;
+    const $pill_input = info.$pill_input;
+    const items = info.items;
+    const $container = info.$container;
+
+    $pill_input.prev = () => $editable_pill;
+
+    const widget = input_pill.create(config);
+    widget.addSetupTypeahead((_) => {});
+    widget.appendValue("blue,red");
+
+    assert.deepEqual(widget.items(), [items.blue, items.red]);
+
+    const pills = widget._get_pills_for_testing();
+
+    for (const pill of pills) {
+        pill.$element.remove = noop;
+    }
+
+    // selecting the first pill which is "blue".
+    const $pill = pills[0].$element;
+    $pill.set_find_results(".pill-label", {
+        text() {
+            return "blue";
+        },
+    });
+
+    const dblclick_handler = $container.get_on_handler("dblclick", ".pill");
+    let input_stub = {
+        to_$: () => $pill,
+    };
+
+    // double clicking on first pill which is blue removes it, and
+    // sets the text in $new_input "blue".
+    dblclick_handler.call(input_stub, {
+        stopPropagation: noop,
+        preventDefault: noop,
+    });
+
+    assert.equal($editable_pill.text(), "blue");
+    assert.deepEqual(widget.items(), [items.red]);
+
+    // pressing enter on $editable_pill with text "blue" will
+    // insert it's payload at the position specified by setting
+    // the next available pill for $editable_pill.
+    $editable_pill.next = (_selector) => ({
+        [0]: pills[0].$element[0],
+    });
+    $editable_pill.after = ($element) => {
+        assert.deepEqual($element[0], "<pill-stub BLUE>");
+    };
+    const keydown_handler = $container.get_on_handler("keydown", ".input");
+    function call_enter(input_stub) {
+        keydown_handler.call(input_stub, {
+            key: "Enter",
+            stopPropagation: noop,
+            preventDefault: noop,
+        });
+    }
+    input_stub = {
+        to_$: () => $editable_pill,
+        textContent: "blue",
+    };
+    call_enter(input_stub);
+    assert.deepEqual(widget.items(), [items.blue, items.red]);
+    // case when there is no pill next to the $editable_pill
+    $editable_pill.next = (_selector) => ({
+        [0]: null,
+    });
+    input_stub = {
+        to_$: () => $editable_pill,
+        textContent: "yellow",
+    };
+    call_enter(input_stub);
+    assert.deepEqual(widget.items(), [items.blue, items.red, items.yellow]);
+
+    // testing backspace keypress event to focus into previous pill
+    // from the $editable_pill
+    keydown_handler.call(
+        {
+            to_$: () => $editable_pill,
+            textContent: "",
+        },
+        {
+            key: "Backspace",
+            preventDefault: noop,
+        },
+    );
+    // testing backspace keypress event to focus into editable pill
+    // from the $pill_input
+    keydown_handler.call(
+        {
+            to_$: () => $pill_input,
+            textContent: "",
+        },
+        {
+            key: "Backspace",
+            preventDefault: noop,
+        },
+    );
+
+    // testing the keyup event listener for $editable_pill
+    const keyup_handler = $editable_pill.get_on_handler("keyup");
+    keyup_handler.call(null, {
+        key: "Enter",
+    });
 });

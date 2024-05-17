@@ -337,6 +337,8 @@ run_test("set_up", ({mock_template, override, override_rewire}) => {
 
     function test_pill_typeahead(opts) {
         pill_typeahead.set_up($fake_input, $pill_widget, opts);
+        const setup_typeahead = $pill_widget._get_setup_typeahead_for_testing();
+        setup_typeahead(null);
         assert.ok(input_pill_typeahead_called);
     }
 

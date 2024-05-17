@@ -288,6 +288,10 @@ export class Typeahead<ItemType extends string | object> {
             // Empty text after the change event handler
             // converts the input text to html elements.
             this.input_element.$element.text("");
+            if (this.input_element.$element.hasClass("editable-pill")) {
+                this.input_element.$element.siblings(".input").trigger("focus");
+                this.input_element.$element.remove();
+            }
         } else {
             const after_text = this.updater(val, this.query, this.input_element, e) ?? "";
             const element_val = this.input_element.$element.val();
