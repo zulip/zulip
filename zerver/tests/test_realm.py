@@ -779,6 +779,7 @@ class RealmTest(ZulipTestCase):
             f"Bad value for '{val_name}'",
             f"Bad value for '{val_name}': {invalid_val}",
             f"Invalid {val_name} {invalid_val}",
+            f"{val_name} is too small",
         }
 
         req = {val_name: invalid_val}
@@ -1114,7 +1115,7 @@ class RealmTest(ZulipTestCase):
 
         req = dict(jitsi_server_url=orjson.dumps(12).decode())
         result = self.client_patch("/json/realm", req)
-        self.assert_json_error(result, "jitsi_server_url is not an allowed_type")
+        self.assert_json_error(result, "jitsi_server_url is not a string")
 
         url_string = "".join(random.choices(string.ascii_lowercase, k=180))
         long_url = "https://jitsi.example.com/" + url_string
