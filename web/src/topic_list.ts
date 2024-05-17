@@ -337,7 +337,7 @@ export function initialize({
 }): void {
     $("#stream_filters").on(
         "click",
-        ".sidebar-topic-check, .topic-name, .topic-markers-and-controls",
+        ".sidebar-topic-check, .sidebar-topic-name, .topic-markers-and-controls",
         (e) => {
             if (e.metaKey || e.ctrlKey || e.shiftKey) {
                 return;
