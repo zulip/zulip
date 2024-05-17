@@ -41,7 +41,7 @@ export function initialize() {
                         .expectOne();
                     const $stream_li = $elt.closest(".narrow-filter").expectOne();
                     topic_name = $elt.closest("li").expectOne().attr("data-topic-name");
-                    url = $elt.closest("li").find(".topic-name").expectOne().prop("href");
+                    url = $elt.closest("li").find(".sidebar-topic-name").expectOne().prop("href");
                     stream_id = stream_popover.elem_to_stream_id($stream_li);
                 }
 
