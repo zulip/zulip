@@ -1,5 +1,6 @@
 import {addDays} from "date-fns";
 import $ from "jquery";
+import assert from "minimalistic-assert";
 
 import render_bankruptcy_alert_content from "../templates/navbar_alerts/bankruptcy.hbs";
 import render_configure_email_alert_content from "../templates/navbar_alerts/configure_outgoing_email.hbs";
@@ -13,6 +14,7 @@ import render_server_needs_upgrade_alert_content from "../templates/navbar_alert
 
 import * as desktop_notifications from "./desktop_notifications";
 import * as keydown_util from "./keydown_util";
+import type {LocalStorage} from "./localstorage";
 import {localstorage} from "./localstorage";
 import {page_params} from "./page_params";
 import * as people from "./people";
@@ -23,7 +25,10 @@ import * as unread_ops from "./unread_ops";
 import * as unread_ui from "./unread_ui";
 import * as util from "./util";
 
-const show_step = function ($process, step) {
+const show_step: ($process: JQuery, step: number) => void = function (
+    $process: JQuery,
+    step: number,
+) {
     $process
         .find("[data-step]")
         .hide()
@@ -31,11 +36,11 @@ const show_step = function ($process, step) {
         .show();
 };
 
-const get_step = function ($process) {
-    return $process.find("[data-step]:visible").data("step");
+const get_step = function ($process: JQuery): number {
+    return Number($process.find("[data-step]:visible").attr("data-step"));
 };
 
-export function should_show_notifications(ls) {
+export function should_show_notifications(ls: LocalStorage): boolean {
     // if the user said to never show banner on this computer again, it will
     // be stored as `true` so we want to negate that.
     if (localstorage.supported() && ls.get("dontAskForNotifications") === true) {
@@ -57,14 +62,14 @@ export function should_show_notifications(ls) {
     );
 }
 
-export function should_show_server_upgrade_notification(ls) {
+export function should_show_server_upgrade_notification(ls: LocalStorage): boolean {
     // We do not show the server upgrade nag for a week after the user
     // clicked "dismiss".
     if (!localstorage.supported() || ls.get("lastUpgradeNagDismissalTime") === undefined) {
         return true;
     }
-
     const last_notification_dismissal_time = ls.get("lastUpgradeNagDismissalTime");
+    assert(typeof last_notification_dismissal_time === "number");
 
     const upgrade_nag_dismissal_duration = addDays(
         new Date(last_notification_dismissal_time),
@@ -75,7 +80,7 @@ export function should_show_server_upgrade_notification(ls) {
     return Date.now() > upgrade_nag_dismissal_duration;
 }
 
-export function maybe_show_empty_required_profile_fields_alert() {
+export function maybe_show_empty_required_profile_fields_alert(): void {
     const $navbar_alert = $("#navbar_alerts_wrapper").children(".alert").first();
     const empty_required_profile_fields_exist = realm.custom_profile_fields
         .map((f) => ({
@@ -84,7 +89,7 @@ export function maybe_show_empty_required_profile_fields_alert() {
         }))
         .find((f) => f.required && !f.value);
     if (!empty_required_profile_fields_exist) {
-        if ($navbar_alert.data("process") === "profile-missing-required") {
+        if ($navbar_alert.attr("data-process") === "profile-missing-required") {
             $navbar_alert.hide();
         }
         return;
@@ -98,14 +103,14 @@ export function maybe_show_empty_required_profile_fields_alert() {
     }
 }
 
-export function dismiss_upgrade_nag(ls) {
+export function dismiss_upgrade_nag(ls: LocalStorage): void {
     $(".alert[data-process='server-needs-upgrade'").hide();
     if (localstorage.supported()) {
         ls.set("lastUpgradeNagDismissalTime", Date.now());
     }
 }
 
-export function check_profile_incomplete() {
+export function check_profile_incomplete(): boolean {
     if (!current_user.is_admin) {
         return false;
     }
@@ -125,7 +130,7 @@ export function check_profile_incomplete() {
     return false;
 }
 
-export function show_profile_incomplete(is_profile_incomplete) {
+export function show_profile_incomplete(is_profile_incomplete: boolean): void {
     if (is_profile_incomplete) {
         // Note that this will be a noop unless we'd already displayed
         // the notice in this session.  This seems OK, given that
@@ -136,17 +141,17 @@ export function show_profile_incomplete(is_profile_incomplete) {
     }
 }
 
-export function get_demo_organization_deadline_days_remaining() {
+export function get_demo_organization_deadline_days_remaining(): number {
     const now = Date.now();
+    assert(realm.demo_organization_scheduled_deletion_date !== undefined);
     const deadline = realm.demo_organization_scheduled_deletion_date * 1000;
     const day = 24 * 60 * 60 * 1000; // hours * minutes * seconds * milliseconds
     const days_remaining = Math.round(Math.abs(deadline - now) / day);
     return days_remaining;
 }
 
-export function initialize() {
+export function initialize(): void {
     const ls = localstorage();
-
     if (realm.demo_organization_scheduled_deletion_date) {
         const days_remaining = get_demo_organization_deadline_days_remaining();
         open({
@@ -225,25 +230,29 @@ export function initialize() {
         $(window).trigger("resize");
     });
 
-    $(".dismiss-upgrade-nag").on("click", (e) => {
+    $(".dismiss-upgrade-nag").on("click", (e: JQuery.ClickEvent) => {
         e.preventDefault();
         e.stopPropagation();
         dismiss_upgrade_nag(ls);
     });
 
-    $("#navbar_alerts_wrapper").on("click", ".alert .close, .alert .exit", function (e) {
-        e.stopPropagation();
-        const $process = $(e.target).closest("[data-process]");
-        if (get_step($process) === 1 && $process.data("process") === "notifications") {
-            show_step($process, 2);
-        } else {
-            $(this).closest(".alert").hide();
-            if ($process.data("process") !== "profile-missing-required") {
-                maybe_show_empty_required_profile_fields_alert();
+    $("#navbar_alerts_wrapper").on(
+        "click",
+        ".alert .close, .alert .exit",
+        function (this: HTMLElement, e) {
+            e.stopPropagation();
+            const $process = $(this).closest("[data-process]");
+            if (get_step($process) === 1 && $process.attr("data-process") === "notifications") {
+                show_step($process, 2);
+            } else {
+                $(this).closest(".alert").hide();
+                if ($process.attr("data-process") !== "profile-missing-required") {
+                    maybe_show_empty_required_profile_fields_alert();
+                }
             }
-        }
-        $(window).trigger("resize");
-    });
+            $(window).trigger("resize");
+        },
+    );
 
     // Treat Enter with links in the navbar alerts UI focused like a click.,
     $("#navbar_alerts_wrapper").on("keyup", ".alert-link[role=button]", function (e) {
@@ -254,7 +263,11 @@ export function initialize() {
     });
 }
 
-export function open(args) {
+export function open(args: {
+    data_process: string;
+    rendered_alert_content_html: string;
+    custom_class?: string | undefined;
+}): void {
     const rendered_alert_wrapper_html = render_navbar_alert_wrapper(args);
 
     // Note: We only support one alert being rendered at a time; as a
