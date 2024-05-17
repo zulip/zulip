@@ -12,7 +12,7 @@ and the channels you are subscribed to.
 
 !!! tip ""
 
-    To see all conversations, click on **more conversations** (in direct messages) or **more topics**
+    To see all conversations, click on **more conversations** (in direct messages) or **show all topics**
     (in a channel).
 
 {end_tabs}

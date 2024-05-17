@@ -91,7 +91,7 @@ IGNORED_PHRASES = [
     r"find accounts for another email address",
     # SPECIAL CASES
     # Because topics usually are lower-case, this would look weird if it were capitalized
-    r"more topics",
+    r"show all topics",
     # Used alone in a parenthetical where capitalized looks worse.
     r"^deprecated$",
     # We want the similar text in the Private Messages section to have the same capitalization.

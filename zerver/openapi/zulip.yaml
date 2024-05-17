@@ -19675,7 +19675,7 @@ components:
             The ID of the first message in the channel.
 
             Intended to help clients determine whether they need to display
-            UI like the "more topics" widget that would suggest the channel
+            UI like the "show all topics" widget that would suggest the channel
             has older history that can be accessed.
 
             Is `null` for channels with no message history.
@@ -20519,7 +20519,7 @@ components:
             The ID of the first message in the channel.
 
             Intended to help clients determine whether they need to display
-            UI like the "more topics" widget that would suggest the channel
+            UI like the "show all topics" widget that would suggest the channel
             has older history that can be accessed.
 
             Is `null` for channels with no message history.

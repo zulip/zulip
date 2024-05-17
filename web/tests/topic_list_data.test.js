@@ -326,7 +326,7 @@ test("get_list_info unreads", ({override}) => {
     list_info = get_list_info();
     assert.equal(list_info.items.length, 12);
     assert.equal(list_info.more_topics_unreads, 3);
-    // Topic 14 now makes it above the "more topics" fold.
+    // Topic 14 now makes it above the "show all topics" fold.
     assert.equal(list_info.more_topics_have_unread_mention_messages, false);
     assert.equal(list_info.num_possible_topics, 16);
     assert.equal(list_info.more_topics_unread_count_muted, true);
