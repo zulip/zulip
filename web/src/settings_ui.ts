@@ -8,11 +8,11 @@ import * as loading from "./loading";
 import * as ui_report from "./ui_report";
 
 type RequestOpts = {
-    success_msg_html?: string;
+    success_msg_html?: string | undefined;
     failure_msg_html?: string;
     success_continuation?: (response_data: unknown) => void;
     error_continuation?: (xhr: JQuery.jqXHR) => void;
-    sticky?: boolean;
+    sticky?: boolean | undefined;
     $error_msg_element?: JQuery;
 };
 
