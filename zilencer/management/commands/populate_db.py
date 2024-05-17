@@ -318,7 +318,7 @@ class Command(ZulipBaseCommand):
 
         if options["max_topics"] is None:
             # If max_topics is not set, we use a default that's big
-            # enough "more topics" should appear, and scales slowly
+            # enough "show all topics" should appear, and scales slowly
             # with the number of messages.
             options["max_topics"] = 8 + options["num_messages"] // 1000
 

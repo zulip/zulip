@@ -98,7 +98,7 @@ function choose_topics(
 
                 // Otherwise, we don't show the topic in the
                 // unzoomed view.  We might display its unread
-                // count in in "more topics" if it is not muted.
+                // count in "show all topics" if it is not muted.
                 return false;
             }
 
@@ -203,7 +203,7 @@ export function get_list_info(
         stream_muted
     ) {
         // For muted streams, if the only unreads are in muted topics,
-        // we have a muted styling "more topics" row.
+        // we have a muted styling "all topics" row.
         return {
             items: topic_choice_state.items,
             num_possible_topics: topic_names.length,
