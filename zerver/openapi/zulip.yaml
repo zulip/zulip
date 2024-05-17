@@ -19526,11 +19526,11 @@ components:
               type: integer
               nullable: true
               description: |
-                The average number of messages sent to the stream per week, as
+                The average number of messages sent to the channel per week, as
                 estimated based on recent weeks, rounded to the nearest integer.
 
                 If `null`, no information is provided on the average traffic.
-                This can be because the stream was recently created and there
+                This can be because the channel was recently created and there
                 is insufficient data to make an estimate, or because the server
                 wishes to omit this information for this client, this realm, or
                 this endpoint or type of event.
@@ -19593,36 +19593,36 @@ components:
     BasicStreamBase:
       type: object
       description: |
-        Object containing basic details about the stream.
+        Object containing basic details about the channel.
       properties:
         stream_id:
           type: integer
           description: |
-            The unique ID of the stream.
+            The unique ID of the channel.
         name:
           type: string
           description: |
-            The name of the stream.
+            The name of the channel.
         description:
           type: string
           description: |
-            The short description of the stream in text/markdown format,
-            intended to be used to prepopulate UI for editing a stream's
+            The short description of the channel in text/markdown format,
+            intended to be used to prepopulate UI for editing a channel's
             description.
         date_created:
           type: integer
           description: |
-            The UNIX timestamp for when the stream was created, in UTC seconds.
+            The UNIX timestamp for when the channel was created, in UTC seconds.
 
             **Changes**: New in Zulip 4.0 (feature level 30).
         creator_id:
           type: integer
           nullable: true
           description: |
-            The ID of the user who created this stream.
+            The ID of the user who created this channel.
 
-            A `null` value means the stream has no recorded creator, which is often
-            because the stream is very old, or because it was created via a data
+            A `null` value means the channel has no recorded creator, which is often
+            because the channel is very old, or because it was created via a data
             import tool or [management command][management-commands].
 
             **Changes**: New in Zulip 9.0 (feature level 254).
@@ -19631,13 +19631,13 @@ components:
         invite_only:
           type: boolean
           description: |
-            Specifies whether the stream is private or not.
-            Only people who have been invited can access a private stream.
+            Specifies whether the channel is private or not.
+            Only people who have been invited can access a private channel.
         rendered_description:
           type: string
           description: |
-            The short description of the stream rendered as HTML, intended to
-            be used when displaying the stream description in a UI.
+            The short description of the channel rendered as HTML, intended to
+            be used when displaying the channel description in a UI.
 
             One should use the standard Zulip rendered_markdown CSS when
             displaying this content so that emoji, LaTeX, and other syntax
@@ -19647,14 +19647,14 @@ components:
         is_web_public:
           type: boolean
           description: |
-            Whether the stream has been configured to allow unauthenticated
+            Whether the channel has been configured to allow unauthenticated
             access to its message history from the web.
 
             **Changes**: New in Zulip 2.1.0.
         stream_post_policy:
           type: integer
           description: |
-            [Policy][permission-level] for which users can post messages to the stream.
+            [Policy][permission-level] for which users can post messages to the channel.
 
             - 1 = Any user can post.
             - 2 = Only administrators can post.
@@ -19670,41 +19670,41 @@ components:
           type: integer
           nullable: true
           description: |
-            Number of days that messages sent to this stream will be stored
+            Number of days that messages sent to this channel will be stored
             before being automatically deleted by the [message retention
             policy](/help/message-retention-policy). There are two special values:
 
-            - `null`, the default, means the stream will inherit the organization
+            - `null`, the default, means the channel will inherit the organization
               level setting.
-            - `-1` encodes retaining messages in this stream forever.
+            - `-1` encodes retaining messages in this channel forever.
 
             **Changes**: New in Zulip 3.0 (feature level 17).
         history_public_to_subscribers:
           type: boolean
           description: |
-            Whether the history of the stream is public to its subscribers.
+            Whether the history of the channel is public to its subscribers.
 
-            Currently always true for public streams (i.e. `"invite_only": false` implies
+            Currently always true for public channels (i.e. `"invite_only": false` implies
             `"history_public_to_subscribers": true`), but clients should not make that
             assumption, as we may change that behavior in the future.
         first_message_id:
           type: integer
           nullable: true
           description: |
-            The ID of the first message in the stream.
+            The ID of the first message in the channel.
 
             Intended to help clients determine whether they need to display
-            UI like the "more topics" widget that would suggest the stream
+            UI like the "more topics" widget that would suggest the channel
             has older history that can be accessed.
 
-            Is `null` for streams with no message history.
+            Is `null` for channels with no message history.
 
             **Changes**: New in Zulip 2.1.0.
         is_announcement_only:
           type: boolean
           deprecated: true
           description: |
-            Whether the given stream is announcement only or not.
+            Whether the given channel is announcement only or not.
 
             **Changes**: Deprecated in Zulip 3.0 (feature level 1). Clients
             should use `stream_post_policy` instead.
@@ -19712,7 +19712,7 @@ components:
           type: integer
           description: |
             ID of the user group whose members are allowed to unsubscribe others
-            from the stream.
+            from the channel.
 
             **Changes**: Before Zulip 8.0 (feature level 197),
             the `can_remove_subscribers_group` setting
@@ -19764,18 +19764,18 @@ components:
           type: string
           nullable: true
           description: |
-            The default sending stream of the bot. If `null`, the bot doesn't
-            have a default sending stream.
+            The default sending channel of the bot. If `null`, the bot doesn't
+            have a default sending channel.
         default_events_register_stream:
           type: string
           nullable: true
           description: |
-            The default stream for which the bot receives events/register data.
-            If `null`, the bot doesn't have such a default stream.
+            The default channel for which the bot receives events/register data.
+            If `null`, the bot doesn't have such a default channel.
         default_all_public_streams:
           type: boolean
           description: |
-            Whether the bot can send messages to all streams by default.
+            Whether the bot can send messages to all channels by default.
         avatar_url:
           type: string
           description: |
@@ -20340,24 +20340,24 @@ components:
         stream_id:
           type: integer
           description: |
-            The unique ID of a stream.
+            The unique ID of a channel.
         name:
           type: string
           description: |
-            The name of a stream.
+            The name of a channel.
         description:
           type: string
           description: |
-            The [description](/help/change-the-channel-description) of the stream in text/markdown format,
-            intended to be used to prepopulate UI for editing a stream's
+            The [description](/help/change-the-channel-description) of the channel in text/markdown format,
+            intended to be used to prepopulate UI for editing a channel's
             description.
 
             See also `rendered_description`.
         rendered_description:
           type: string
           description: |
-            The [description](/help/change-the-channel-description) of the stream rendered as HTML, intended to
-            be used when displaying the stream description in a UI.
+            The [description](/help/change-the-channel-description) of the channel rendered as HTML, intended to
+            be used when displaying the channel description in a UI.
 
             One should use the standard Zulip rendered_markdown CSS when
             displaying this content so that emoji, LaTeX, and other syntax
@@ -20369,17 +20369,17 @@ components:
         date_created:
           type: integer
           description: |
-            The UNIX timestamp for when the stream was created, in UTC seconds.
+            The UNIX timestamp for when the channel was created, in UTC seconds.
 
             **Changes**: New in Zulip 4.0 (feature level 30).
         creator_id:
           type: integer
           nullable: true
           description: |
-            The ID of the user who created this stream.
+            The ID of the user who created this channel.
 
-            A `null` value means the stream has no recorded creator, which is often
-            because the stream is very old, or because it was created via a data
+            A `null` value means the channel has no recorded creator, which is often
+            because the channel is very old, or because it was created via a data
             import tool or [management command][management-commands].
 
             **Changes**: New in Zulip 9.0 (feature level 254).
@@ -20388,8 +20388,8 @@ components:
         invite_only:
           type: boolean
           description: |
-            Specifies whether the stream is private or not.
-            Only people who have been invited can access a private stream.
+            Specifies whether the channel is private or not.
+            Only people who have been invited can access a private channel.
         # TODO: This subscribers item should probably be declared optional more
         # explicitly in the OpenAPI format?
         subscribers:
@@ -20398,72 +20398,72 @@ components:
             type: integer
           description: |
             A list of user IDs of users who are also subscribed
-            to a given stream. Included only if `include_subscribers` is `true`.
+            to a given channel. Included only if `include_subscribers` is `true`.
         desktop_notifications:
           type: boolean
           nullable: true
           description: |
             A boolean specifying whether desktop notifications
-            are enabled for the given stream.
+            are enabled for the given channel.
 
             A `null` value means the value of this setting
             should be inherited from the user-level default
-            setting, enable_stream_desktop_notifications, for
-            this stream.
+            setting, `enable_stream_desktop_notifications`, for
+            this channel.
         email_notifications:
           type: boolean
           nullable: true
           description: |
             A boolean specifying whether email notifications
-            are enabled for the given stream.
+            are enabled for the given channel.
 
             A `null` value means the value of this setting
             should be inherited from the user-level default
-            setting, enable_stream_email_notifications, for
-            this stream.
+            setting, `enable_stream_email_notifications`, for
+            this channel.
         wildcard_mentions_notify:
           type: boolean
           nullable: true
           description: |
             A boolean specifying whether wildcard mentions
             trigger notifications as though they were personal
-            mentions in this stream.
+            mentions in this channel.
 
             A `null` value means the value of this setting
             should be inherited from the user-level default
             setting, wildcard_mentions_notify, for
-            this stream.
+            this channel.
         push_notifications:
           type: boolean
           nullable: true
           description: |
             A boolean specifying whether push notifications
-            are enabled for the given stream.
+            are enabled for the given channel.
 
             A `null` value means the value of this setting
             should be inherited from the user-level default
-            setting, enable_stream_push_notifications, for
-            this stream.
+            setting, `enable_stream_push_notifications`, for
+            this channel.
         audible_notifications:
           type: boolean
           nullable: true
           description: |
             A boolean specifying whether audible notifications
-            are enabled for the given stream.
+            are enabled for the given channel.
 
             A `null` value means the value of this setting
             should be inherited from the user-level default
-            setting, enable_stream_audible_notifications, for
-            this stream.
+            setting, `enable_stream_audible_notifications`, for
+            this channel.
         pin_to_top:
           type: boolean
           description: |
-            A boolean specifying whether the given stream has been pinned
+            A boolean specifying whether the given channel has been pinned
             to the top.
         is_muted:
           type: boolean
           description: |
-            Whether the user has muted the stream. Muted streams do
+            Whether the user has muted the channel. Muted channels do
             not count towards your total unread count and do not show
             up in the `Combined feed` view (previously known as `All messages`).
 
@@ -20474,7 +20474,7 @@ components:
           type: boolean
           deprecated: true
           description: |
-            Legacy property for if the given stream is muted, with inverted meaning.
+            Legacy property for if the given channel is muted, with inverted meaning.
 
             **Changes**: Deprecated in Zulip 2.1.0. Clients should use `is_muted`
             where available.
@@ -20482,23 +20482,23 @@ components:
           type: boolean
           deprecated: true
           description: |
-            Whether only organization administrators can post to the stream.
+            Whether only organization administrators can post to the channel.
 
             **Changes**: Deprecated in Zulip 3.0 (feature level 1). Clients
             should use `stream_post_policy` instead.
         is_web_public:
           type: boolean
           description: |
-            Whether the stream has been configured to allow unauthenticated
+            Whether the channel has been configured to allow unauthenticated
             access to its message history from the web.
         color:
           type: string
           description: |
-            The user's personal color for the stream.
+            The user's personal color for the channel.
         stream_post_policy:
           type: integer
           description: |
-            [Policy][permission-level] for which users can post messages to the stream.
+            [Policy][permission-level] for which users can post messages to the channel.
 
             - 1 = Any user can post.
             - 2 = Only administrators can post.
@@ -20514,48 +20514,48 @@ components:
           type: integer
           nullable: true
           description: |
-            Number of days that messages sent to this stream will be stored
+            Number of days that messages sent to this channel will be stored
             before being automatically deleted by the [message retention
             policy](/help/message-retention-policy). There are two special values:
 
-            - `null`, the default, means the stream will inherit the organization
+            - `null`, the default, means the channel will inherit the organization
               level setting.
-            - `-1` encodes retaining messages in this stream forever.
+            - `-1` encodes retaining messages in this channel forever.
 
             **Changes**: New in Zulip 3.0 (feature level 17).
         history_public_to_subscribers:
           type: boolean
           description: |
-            Whether the history of the stream is public to its subscribers.
+            Whether the history of the channel is public to its subscribers.
 
-            Currently always true for public streams (i.e. `"invite_only": false` implies
+            Currently always true for public channels (i.e. `"invite_only": false` implies
             `"history_public_to_subscribers": true`), but clients should not make that
             assumption, as we may change that behavior in the future.
         first_message_id:
           type: integer
           nullable: true
           description: |
-            The ID of the first message in the stream.
+            The ID of the first message in the channel.
 
             Intended to help clients determine whether they need to display
-            UI like the "more topics" widget that would suggest the stream
+            UI like the "more topics" widget that would suggest the channel
             has older history that can be accessed.
 
-            Is `null` for streams with no message history.
+            Is `null` for channels with no message history.
         stream_weekly_traffic:
           type: integer
           nullable: true
           description: |
-            The average number of messages sent to the stream per week, as
+            The average number of messages sent to the channel per week, as
             estimated based on recent weeks, rounded to the nearest integer.
 
-            If `null`, the stream was recently created and there is
+            If `null`, the channel was recently created and there is
             insufficient data to estimate the average traffic.
         can_remove_subscribers_group:
           type: integer
           description: |
             ID of the user group whose members are allowed to unsubscribe others
-            from the stream.
+            from the channel.
 
             **Changes**: Before Zulip 8.0 (feature level 197),
             the `can_remove_subscribers_group` setting
@@ -20565,27 +20565,27 @@ components:
     DefaultStreamGroup:
       type: object
       description: |
-        Dictionary containing details of a default stream
+        Dictionary containing details of a default channel
         group.
       additionalProperties: false
       properties:
         name:
           type: string
           description: |
-            Name of the default stream group.
+            Name of the default channel group.
         description:
           type: string
           description: |
-            Description of the default stream group.
+            Description of the default channel group.
         id:
           type: integer
           description: |
-            The ID of the default stream group.
+            The ID of the default channel group.
         streams:
           type: array
           description: |
-            Array containing details about the streams
-            in the default stream group.
+            Array containing details about the channels
+            in the default channel group.
           items:
             $ref: "#/components/schemas/DefaultStream"
     EmailAddressVisibility:
@@ -20821,7 +20821,7 @@ components:
                       Whether the user is a mirror dummy.
           description: |
             Data on the recipient of the message;
-            either the name of a stream or a dictionary containing basic data on
+            either the name of a channel or a dictionary containing basic data on
             the users who received the message.
         edit_history:
           type: array
@@ -20852,9 +20852,9 @@ components:
               prev_stream:
                 type: integer
                 description: |
-                  Only present if message's stream was edited.
+                  Only present if message's channel was edited.
 
-                  The stream ID of the message immediately prior to this
+                  The channel ID of the message immediately prior to this
                   edit event.
 
                   **Changes**: New in Zulip 3.0 (feature level 1).
@@ -20874,9 +20874,9 @@ components:
               stream:
                 type: integer
                 description: |
-                  Only present if message's stream was edited.
+                  Only present if message's channel was edited.
 
-                  The ID of the stream containing the message
+                  The ID of the channel containing the message
                   immediately after this edit event.
 
                   **Changes**: New in Zulip 5.0 (feature level 118).
@@ -20919,7 +20919,7 @@ components:
             Every object will contain `user_id` and `timestamp`.
 
             The other fields are optional, and will be present or not
-            depending on whether the stream, topic, and/or message
+            depending on whether the channel, topic, and/or message
             content were modified in the edit event. For example, if
             only the topic was edited, only `prev_topic` and `topic`
             will be present in addition to `user_id` and `timestamp`.
@@ -20953,7 +20953,7 @@ components:
           type: integer
           description: |
             A unique ID for the set of users receiving the
-            message (either a stream or group of users). Useful primarily
+            message (either a channel or group of users). Useful primarily
             for hashing.
         sender_email:
           type: string
@@ -20977,7 +20977,7 @@ components:
         stream_id:
           type: integer
           description: |
-            Only present for stream messages; the ID of the stream.
+            Only present for channel messages; the ID of the channel.
         subject:
           type: string
           description: |
@@ -21049,7 +21049,7 @@ components:
         type:
           type: string
           description: |
-            The type of the message: `stream` or `private`.
+            The type of the message: `"stream"` or `"private"`.
     Presence:
       type: object
       description: |
@@ -21111,8 +21111,8 @@ components:
         type:
           type: string
           description: |
-            The type of the draft. Either unaddressed (empty string), "stream",
-            or "private" (for one-on-one and group direct messages).
+            The type of the draft. Either unaddressed (empty string), `"stream"`,
+            or `"private"` (for one-on-one and group direct messages).
           enum:
             - ""
             - stream
@@ -21120,9 +21120,9 @@ components:
         to:
           type: array
           description: |
-            An array of the tentative target audience IDs. For "stream"
+            An array of the tentative target audience IDs. For channel
             messages, this should contain exactly 1 ID, the ID of the
-            target stream. For direct messages, this should be an array
+            target channel. For direct messages, this should be an array
             of target user IDs. For unaddressed drafts, this is ignored,
             and clients should send an empty array.
           items:
@@ -21130,7 +21130,7 @@ components:
         topic:
           type: string
           description: |
-            For stream message drafts, the tentative topic name. For direct
+            For channel message drafts, the tentative topic name. For direct
             or unaddressed messages, this will be ignored and should ideally
             be the empty string. Should not contain null bytes.
         content:
@@ -21179,15 +21179,15 @@ components:
           description: |
             The scheduled message's tentative target audience.
 
-            For stream messages, it will be the unique ID of the target
-            stream. For direct messages, it will be an array with the
+            For channel messages, it will be the unique ID of the target
+            channel. For direct messages, it will be an array with the
             target users' IDs.
         topic:
           type: string
           description: |
             Only present if `type` is `"stream"`.
 
-            The topic for the stream message.
+            The topic for the channel message.
         content:
           type: string
           description: |
@@ -21673,7 +21673,7 @@ components:
             stream:
               type: string
               description: |
-                The name of the stream that could not be found.
+                The name of the channel that could not be found.
           example:
             {
               "code": "STREAM_DOES_NOT_EXIST",
@@ -21692,7 +21692,7 @@ components:
             stream_id:
               type: integer
               description: |
-                The stream ID that could not be found.
+                The channel ID that could not be found.
           example:
             {
               "code": "STREAM_DOES_NOT_EXIST",
@@ -21940,25 +21940,25 @@ components:
 
         Unlike the API for [fetching messages](/api/get-messages),
         this narrow parameter is simply a filter on messages that the
-        user receives through their stream subscriptions (or because
+        user receives through their channel subscriptions (or because
         they are a recipient of a direct message).
 
         This means that a client that requests a `narrow` filter of
-        `[["stream", "Denmark"]]` will receive events for new messages
-        sent to that stream while the user is subscribed to that
-        stream. The client will not receive any message events at all
+        `[["channel", "Denmark"]]` will receive events for new messages
+        sent to that channel while the user is subscribed to that
+        channel. The client will not receive any message events at all
         if the user is not subscribed to `"Denmark"`.
 
         Newly created bot users are not usually subscribed to any
-        streams, so bots using this API need to be
-        [subscribed](/api/subscribe) to any streams whose messages
+        channels, so bots using this API need to be
+        [subscribed](/api/subscribe) to any channels whose messages
         you'd like them to process using this endpoint.
 
         See the `all_public_streams` parameter for how to process all
-        public stream messages in an organization.
+        public channel messages in an organization.
 
         **Changes**: In Zulip 9.0 (feature level 250), narrows gained support
-        for two new filters related to stream messages: `channel` and `channels`;
+        for two new filters related to channel messages: `channel` and `channels`;
         which are aliases for (and return the same results as) the `stream` and
         `streams` filters respectively.
 
@@ -21976,12 +21976,12 @@ components:
         items:
           type: string
       default: []
-      example: [["stream", "Denmark"]]
+      example: [["channel", "Denmark"]]
     AllPublicStreams:
       description: |
         Whether you would like to request message events from all public
-        streams. Useful for workflow bots that you'd like to see all new messages
-        sent to public streams. (You can also subscribe the user to private streams).
+        channels. Useful for workflow bots that you'd like to see all new messages
+        sent to public channels. (You can also subscribe the user to private channels).
       type: boolean
       default: false
       example: true
@@ -22002,14 +22002,14 @@ components:
         [`POST /register`](/api/register-queue) endpoint to determine
         the maximum message size.
 
-        Note that a message's content and stream cannot be changed at the
+        Note that a message's content and channel cannot be changed at the
         same time, so sending both `content` and `stream_id` parameters will
         throw an error.
       type: string
       example: Hello
     StreamPostPolicy:
       description: |
-        [Policy][permission-level] for which users can post messages to the stream.
+        [Policy][permission-level] for which users can post messages to the channel.
 
         - 1 = Any user can post.
         - 2 = Only administrators can post.
@@ -22026,9 +22026,9 @@ components:
       example: 2
     HistoryPublicToSubscribers:
       description: |
-        Whether the stream's message history should be available to
+        Whether the channel's message history should be available to
         newly subscribed members, or users can only access messages
-        they actually received while subscribed to the stream.
+        they actually received while subscribed to the channel.
 
         Corresponds to the [shared history](/help/channel-permissions)
         option in documentation.
@@ -22038,7 +22038,7 @@ components:
       description: |
         A list of user IDs (preferred) or Zulip API email
         addresses of the users to be subscribed to or unsubscribed
-        from the streams specified in the `subscriptions` parameter. If
+        from the channels specified in the `subscriptions` parameter. If
         not provided, then the requesting user/bot is subscribed.
 
         **Changes**: The integer format is new in Zulip 3.0 (feature level 9).
@@ -22096,7 +22096,7 @@ components:
       example: "1f419"
     MessageRetentionDays:
       description: |
-        Number of days that messages sent to this stream will be stored
+        Number of days that messages sent to this channel will be stored
         before being automatically deleted by the [message retention
         policy](/help/message-retention-policy). Two special string format
         values are supported:
@@ -22116,9 +22116,9 @@ components:
     CanRemoveSubscribersGroupId:
       description: |
         ID of the [user group](/api/get-user-groups) whose members are
-        allowed to unsubscribe others from the stream. Note that a user
+        allowed to unsubscribe others from the channel. Note that a user
         who is a member of the specified user group must also [have
-        access](/help/channel-permissions) to the stream in order to
+        access](/help/channel-permissions) to the channel in order to
         unsubscribe others.
 
         This setting can currently only be set to user groups that are
@@ -22197,7 +22197,7 @@ components:
       name: stream_id
       in: path
       description: |
-        The ID of the stream to access.
+        The ID of the channel to access.
       schema:
         type: integer
       example: 1
@@ -22255,11 +22255,11 @@ components:
       name: include_subscribers
       in: query
       description: |
-        Whether each returned stream object should include a `subscribers`
+        Whether each returned channel object should include a `subscribers`
         field containing a list of the user IDs of its subscribers.
 
         (This may be significantly slower in organizations with
-        thousands of users subscribed to many streams.)
+        thousands of users subscribed to many channels.)
 
         **Changes**: New in Zulip 2.1.0.
       schema:
