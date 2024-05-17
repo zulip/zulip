@@ -1,5 +1,5 @@
 from email.headerregistry import Address
-from enum import Enum, IntEnum
+from enum import IntEnum
 from typing import TYPE_CHECKING, Dict, List, Optional, Tuple, TypedDict, Union
 from uuid import uuid4
 
@@ -76,7 +76,7 @@ def generate_realm_uuid_owner_secret() -> str:
     return f"zuliprealm_{token}"
 
 
-class OrgTypeEnum(Enum):
+class OrgTypeEnum(IntEnum):
     Unspecified = 0
     Business = 10
     OpenSource = 20
